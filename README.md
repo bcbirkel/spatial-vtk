@@ -43,5 +43,6 @@ The package imports as `spatial_vtk` and installs the `svtk` command:
 - `spatial_vtk.visualize`: context figures, QC views, and dashboard data.
 - `spatial_vtk.cli`: command-line entry points.
 
-See the documentation in `docs/` for installation, package overview, examples,
-API reference, support, and changelog pages.
+See the [public documentation](https://bcbirkel.github.io/spatial-vtk/) for
+installation, package overview, examples, API reference, support, and changelog
+pages.
