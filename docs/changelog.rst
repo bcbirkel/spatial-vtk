@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-09
+   Released ``0.1.2`` to refresh PyPI project metadata so the README workflow
+   image uses an absolute GitHub-hosted URL that renders on PyPI.
+
+2026-06-09
    Released ``0.1.1`` to refresh PyPI project metadata so the package page
    points readers to the public GitHub Pages documentation.
 

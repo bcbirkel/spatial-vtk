@@ -11,7 +11,7 @@ with data QC, residual and metric calculations, geologic metadata integration,
 spatial statistics, mapping, and dashboard preparation for understanding model
 performance patterns.
 
-![Spatial-VTK workflow](ValidationToolkit_Workflow.png)
+![Spatial-VTK workflow](https://raw.githubusercontent.com/bcbirkel/spatial-vtk/main/ValidationToolkit_Workflow.png)
 
 ## Install
 
