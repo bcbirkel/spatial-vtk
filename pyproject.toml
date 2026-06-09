@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spatial-vtk"
-version = "0.1.2"
+version = "0.1.3"
 description = "spatial-vtk provides spatial validation tools for ground-motion simulations, with data QC, residual and metric calculations, geologic metadata integration, spatial statistics, extensive mapping capabilities, and interactive dashboards for quantifying and visualizing model performance patterns."
 readme = "README.md"
 requires-python = ">=3.10"

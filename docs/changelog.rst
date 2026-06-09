@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-09
+   Released ``0.1.3`` to publish the PyPI README workflow-image fix after
+   external Sigstore/Rekor ``502`` errors blocked the ``0.1.2`` publish.
+
+2026-06-09
    Released ``0.1.2`` to refresh PyPI project metadata so the README workflow
    image uses an absolute GitHub-hosted URL that renders on PyPI.
 
