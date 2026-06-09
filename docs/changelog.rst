@@ -1,6 +1,10 @@
 Changelog
 =========
 
+2026-06-09
+   Released ``0.1.1`` to refresh PyPI project metadata so the package page
+   points readers to the public GitHub Pages documentation.
+
 2026-06-08
    Added a QC-to-metrics valid-window contract. Waveform QC now records
    processing-valid trace intervals, metric QC preserves those intervals, and
