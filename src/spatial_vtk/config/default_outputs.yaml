@@ -1,0 +1,221 @@
+tables:
+  prepared_stations:
+    filename: prepared_stations.csv
+    description: Prepared station metadata
+  prepared_events:
+    filename: prepared_events.csv
+    description: Prepared event metadata
+  event_station_records:
+    filename: event_station_records.csv
+    description: Prepared event-station records
+  record_coverage:
+    filename: record_coverage.csv
+    description: Record coverage table
+  qc_inventory:
+    filename: qc_inventory.csv
+    description: QC inventory
+  comparison_eligible_records:
+    filename: comparison_eligible_records.csv
+    description: Comparison-eligible records
+  manual_review_queue:
+    filename: manual_review_queue.csv
+    description: Manual-review queue
+  metric_tasks:
+    filename: metric_tasks.csv
+    description: Metric task preview
+  metrics_long:
+    filename: metrics_long.parquet
+    description: Long metrics table
+  metrics_enriched:
+    filename: metrics_enriched.parquet
+    description: Enriched metrics table
+  path_table:
+    filename: path_table.parquet
+    description: Station-event path table
+  path_summary:
+    filename: path_summary.parquet
+    description: Distance and azimuth path summary
+  metric_field:
+    filename: metric_field.parquet
+    description: Metric field table
+  event_centered_residuals:
+    filename: event_centered_residuals.parquet
+    description: Event-centered residuals
+  station_bias:
+    filename: station_bias.parquet
+    description: Station-bias summary
+  morans_i:
+    filename: morans_i.csv
+    description: Moran's I summary
+  permutation_moran:
+    filename: permutation_moran.csv
+    description: Permutation Moran test summary
+  distance_bin_correlations:
+    filename: distance_bin_correlations.csv
+    description: Distance-bin correlations
+  clusters:
+    filename: clusters.parquet
+    description: Cluster assignments
+  cluster_scores:
+    filename: cluster_scores.csv
+    description: Cluster solution scores
+  cluster_summary:
+    filename: cluster_summary.csv
+    description: Cluster summary
+  pca_station_scores:
+    filename: pca_station_scores.parquet
+    description: PCA station scores
+  pca_feature_loadings:
+    filename: pca_feature_loadings.csv
+    description: PCA feature loadings
+  pca_explained_variance:
+    filename: pca_explained_variance.csv
+    description: PCA explained variance
+  geology_contrasts:
+    filename: geology_contrasts.csv
+    description: Geology contrast summary
+  geojson_region_summaries:
+    filename: geojson_region_summaries.csv
+    description: GeoJSON region summaries
+  qc_trace_summary:
+    filename: qc_trace_summary.csv
+    description: QC trace summary for dashboards
+
+figures:
+  station_event_context:
+    filename: station_event_context.png
+    description: Station-event context map
+  event_magnitude_map:
+    filename: event_magnitude_map.png
+    description: Event magnitude map
+  station_coverage:
+    filename: station_coverage.png
+    description: Station coverage figure
+  event_coverage:
+    filename: event_coverage.png
+    description: Event coverage figure
+  record_coverage:
+    filename: record_coverage.png
+    description: Record coverage figure
+  retention_summary:
+    filename: retention_summary.png
+    description: QC retention summary
+  data_synthetic_availability:
+    filename: data_synthetic_availability.png
+    description: Observed/synthetic availability figure
+  post_qc_station_event_map:
+    filename: post_qc_station_event_map.png
+    description: Post-QC station-event map
+  event_trace_comparison:
+    filename: event_trace_comparison.png
+    description: Observed/synthetic event trace comparison
+  drop_cause_diagnostics:
+    filename: drop_cause_diagnostics.png
+    description: QC drop-cause diagnostics
+  qc_drop_cause_diagnostics:
+    filename: drop_cause_diagnostics.png
+    description: QC drop-cause diagnostics
+  psa_period_curve:
+    filename: psa_period_curve.png
+    description: PSA period curve
+  residuals_vs_distance:
+    filename: residuals_vs_distance.png
+    description: Residuals versus distance
+  residuals_vs_depth:
+    filename: residuals_vs_depth.png
+    description: Residuals versus depth
+  score_trends:
+    filename: score_trends.png
+    description: Score trends
+  phase_delay_vs_distance:
+    filename: phase_delay_vs_distance.png
+    description: Phase delay versus distance
+  station_event_network_map:
+    filename: station_event_network_map.png
+    description: Station-event network map
+  event_beachball_map:
+    filename: event_beachball_map.png
+    description: Event beachball map
+  station_event_beachball_map:
+    filename: event_beachball_map.png
+    description: Event beachball map
+  station_metric_map:
+    filename: station_residual_map.png
+    description: Station residual map
+  station_residual_map:
+    filename: station_residual_map.png
+    description: Station residual map
+  score_map:
+    filename: score_map.png
+    description: Score map
+  metric_map_by_model:
+    filename: metric_map_by_model.png
+    description: Metric map by model
+  residual_grid:
+    filename: residual_grid.png
+    description: Residual grid
+  spatial_correlation_distance:
+    filename: spatial_correlation_distance.png
+    description: Spatial correlation by station separation distance
+  pca_mode_map:
+    filename: pca_mode_map.png
+    description: PCA mode map
+  pca_explained_variance:
+    filename: pca_explained_variance.png
+    description: PCA explained variance figure
+  pca_feature_loadings:
+    filename: pca_feature_loadings.png
+    description: PCA feature loading figure
+  geology_contrast:
+    filename: geology_contrast.png
+    description: Geology-class contrast figure
+  scatterplot:
+    filename: scatterplot.png
+    description: Generic metric scatterplot
+  boxplot:
+    filename: boxplot.png
+    description: Generic categorical metric boxplot
+  heatmap:
+    filename: heatmap.png
+    description: Generic categorical metric heatmap
+  event_residual_map:
+    filename: event_residual_map.png
+    description: Event residual map
+  geojson_polygons_map:
+    filename: geojson_polygons_map.png
+    description: GeoJSON polygon region map
+  corridor_map:
+    filename: corridor_map.png
+    description: Corridor map
+  station_event_waveform_map:
+    filename: station_event_waveform_map.png
+    description: Station-event waveform map
+  pattern_similarity:
+    filename: pattern_similarity.png
+    description: Observed/synthetic station-pattern similarity plot
+  block_holdout_summary:
+    filename: block_holdout_summary.png
+    description: Spatial block holdout summary
+  cluster_summary:
+    filename: cluster_summary.png
+    description: Residual cluster summary
+  redcap_cluster_map:
+    filename: redcap_cluster_map.png
+    description: REDCAP cluster map
+  model_metric_heatmap:
+    filename: model_metric_heatmap.png
+    description: Model-metric heatmap
+  winner_heatmap:
+    filename: winner_heatmap.png
+    description: Winning model heatmap
+  band_score_distribution:
+    filename: band_score_distribution.png
+    description: Band score distribution
+
+dashboards:
+  metrics_dashboard:
+    filename: metrics_dashboard
+    description: Metrics dashboard dataset
+  dashboard_summaries:
+    filename: dashboard_summaries
+    description: Dashboard summary tables

@@ -1,0 +1,6 @@
+source,event_id,station,component,passband,metric_group,metric,period_s,qc_status,qc_reason
+observed,ci38038071,BFS,Z,1-2 sec,amplitude,PGA,,pass,
+synthetic,ci38038071,BFS,Z,1-2 sec,amplitude,PGA,,pass,
+observed,ci38695658,BHP,R,2-3 sec,spectral,PSA,2.0,pass,
+synthetic,ci38695658,BHP,R,2-3 sec,spectral,PSA,2.0,pass,
+synthetic,ci38695658,BHP,R,1-2 sec,spectral,PSA,1.0,fail,period_below_min_supported_period

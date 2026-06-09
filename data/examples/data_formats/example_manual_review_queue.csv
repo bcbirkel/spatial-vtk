@@ -1,0 +1,3 @@
+event_id,station,event_title,event_lat,event_lon,station_lat,station_lon,network,distance_km,source_context_count,source_contexts
+ci38038071,BHP,ci38038071,34.1363333,-117.7746667,33.991,-118.362,CI,56.5,2,"observed,synthetic"
+ci38695658,BLC,ci38695658,34.038,-118.08,34.244,-118.673,CI,58.9,2,"observed,synthetic"

@@ -1,0 +1,27 @@
+name: spatial-vtk
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10
+  - contextily
+  - h5py
+  - matplotlib
+  - nbsphinx
+  - numpy
+  - obspy
+  - pandas
+  - plotly
+  - pyproj
+  - pytest
+  - pyyaml
+  - scikit-learn
+  - scipy
+  - shapely
+  - sphinx
+  - sphinx-rtd-theme
+  - streamlit
+  - pip
+  - pip:
+      - build
+      - phasenet>=0.2.5
+      - streamlit-folium>=0.26

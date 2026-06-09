@@ -1,0 +1,218 @@
+# PROJECT
+# Give this workflow a name and set the project root. Relative paths below are
+# resolved from the directory that contains this config file unless you use
+# {root_dir} or {config_dir} explicitly.
+project:
+  name: example_ground_motion_validation
+  root_dir: ../../..
+
+# PATHS
+# Point Spatial-VTK to the input files you already have on disk.
+# Templates can use {root_dir}, {config_dir}, {model}, and {event_id}.
+paths:
+  observed_root: data/observed
+  synthetic_template: data/synthetics/{model}/{event_id}.mseed
+  station_metadata: data/metadata/stations.csv
+  event_metadata: data/metadata/events.csv
+  event_station_table: data/metadata/event_station_records.csv
+  region_geojson: data/metadata/regions.geojson
+
+# OUTPUTS
+# Choose where generated tables, figures, maps, and dashboard files should go.
+outputs:
+  root: outputs
+  tables: outputs/tables
+  prepared_inputs: outputs/prepared
+  preprocessed_waveforms: outputs/preprocessed_waveforms
+  qc: outputs/qc
+  metrics: outputs/metrics/metrics_long.parquet
+  spatial: outputs/spatial
+  figures: outputs/figures
+  dashboards: outputs/dashboards
+
+# NOTEBOOKS
+# Set this to false if you do not want tutorial cells to print run-time lines.
+notebooks:
+  show_cell_timing: true
+
+# BOUNDS
+# Named bounds let you reuse map windows or station/event subsets.
+# Bounds are always [lon_min, lon_max, lat_min, lat_max].
+bounds:
+  presets:
+    study_area:
+      lon_min: -119.5
+      lon_max: -116.5
+      lat_min: 33.0
+      lat_max: 35.0
+    specific_area_of_interest:
+      lon_min: -118.8
+      lon_max: -117.8
+      lat_min: 33.5
+      lat_max: 34.5
+  # Optional: load more named bounds from a CSV with columns
+  # keyword, lon_min, lon_max, lat_min, lat_max.
+  presets_csv: data/metadata/bounds_presets.csv
+
+# METRICS
+# Choose either groups OR individual metrics. Do not set both in one run.
+metrics:
+  # Group options: all, duration, amplitude, spectral, intensity,
+  # delay, cross_correlation.
+  # duration: arias_duration, energy_duration
+  # amplitude: PGA, PGV, PGD
+  # spectral: PSA, FAS
+  # intensity: arias_intensity, energy_intensity, CAV
+  # delay: traveltime_delay
+  # cross_correlation: original_cc, delay_corrected_cc
+  groups: [amplitude, spectral, cross_correlation]
+
+  # If you prefer to select individual metrics, comment out groups above and
+  # use metrics instead. Metric options: all, PGA, PGV, PGD, PSA, FAS, CAV,
+  # arias_duration, energy_duration, arias_intensity, energy_intensity,
+  # traveltime_delay, original_cc, delay_corrected_cc.
+  # metrics: [PGA, PGV, PSA, original_cc]
+
+  # Transform options: residual, log2_residual, ln_residual,
+  # anderson_2004_gof, olsen_mayhew_gof.
+  transforms: [log2_residual, anderson_2004_gof]
+
+  # Output mode options: observed, synthetic, residual, gof, full.
+  output_mode: full
+
+  # Component examples: Z, N, E, R, T.
+  components: [R, T, Z]
+
+  # Passbands are period bands in seconds.
+  passbands:
+    - [1, 2]
+    - [2, 3]
+    - [3, 5]
+
+  models: [example_model]
+
+  spectral:
+    # Periods, in seconds, where PSA/FAS values should be stored.
+    periods_s: [1.0, 2.0, 3.0, 5.0]
+    # A period passes spectral QC only if its amplitude is at least this
+    # fraction of the maximum supported spectral amplitude.
+    relative_amplitude_threshold: 0.25
+    # Require this many cycles in the record before accepting a period.
+    min_cycles_in_record: 3.0
+
+# SYNTHETICS
+# Set the maximum valid synthetic frequency in Hz. Synthetic spectral periods
+# shorter than 1 / max_frequency_hz will be rejected.
+synthetics:
+  max_frequency_hz: 0.5
+
+# WAVEFORMS
+# Optional project-specific preprocessing applied to observed and synthetic
+# waveforms before QC, metric calculations, and waveform figures.
+# Leave values empty when your inputs are already filtered/sampled as needed.
+# Use either bandpass_low_hz/bandpass_high_hz OR highpass_hz/lowpass_hz.
+waveforms:
+  preprocessing:
+    lowpass_hz:
+    highpass_hz:
+    bandpass_low_hz:
+    bandpass_high_hz:
+    resample_hz:
+    filter_order: 4
+
+# QC
+# These automatic checks are used when waveform-level QC is requested.
+qc:
+  automatic:
+    min_record_length_s: 60.0
+    min_end_after_origin_s: 60.0
+    snr_threshold: 3.0
+
+# RUN SCENARIOS
+# Optional named scenarios let you reuse focused overrides without editing the
+# main defaults above. Select one with --run-scenario or run_scenario="...".
+run_scenarios:
+  tutorial:
+    # This scenario expects the companion five-event LA Basin waveform bundle
+    # under data/examples/20260605_five_event_subset/. The repo keeps the
+    # metadata tables in git and ignores the large MiniSEED products.
+    paths:
+      observed_root: "{root_dir}/data/examples/20260605_five_event_subset/observed"
+      synthetic_root: "{root_dir}/data/examples/20260605_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf"
+      synthetic_template: "{root_dir}/data/examples/20260605_five_event_subset/synthetics/{model}/{event_id}.mseed"
+      station_metadata: "{root_dir}/data/examples/20260605_five_event_subset/metadata/selected_stations.csv"
+      event_metadata: "{root_dir}/data/examples/20260605_five_event_subset/metadata/events.csv"
+      event_station_table: "{root_dir}/data/examples/20260605_five_event_subset/metadata/selected_event_stations.csv"
+      site_metadata: "{root_dir}/data/examples/data_formats/example_site_metadata.csv"
+      region_geojson: "{root_dir}/data/examples/la_basin_five_event_subset/metadata/example_path_regions.geojson"
+      metric_snapshot: "{root_dir}/data/examples/data_formats/example_metrics_snapshot.csv"
+      metric_figure_snapshot: "{root_dir}/data/examples/data_formats/example_metrics_large_qc_passed.parquet"
+    outputs:
+      tutorials_root: "{root_dir}/outputs/tutorials"
+      root: "{root_dir}/outputs/tutorials"
+      tables: "{root_dir}/outputs/tutorials/tables"
+      preprocessed_waveforms: "{root_dir}/outputs/tutorials/preprocessed_waveforms"
+      figures: "{root_dir}/outputs/tutorials/figures"
+      dashboards: "{root_dir}/outputs/tutorials/dashboards"
+    metrics:
+      groups: [amplitude, spectral]
+      transforms: [log2_residual, anderson_2004_gof]
+      output_mode: full
+      components: [Z, R, T]
+      models: [cvmsi_20260506_material_0p6x1p2_asdf]
+      passbands:
+        - [1, 2]
+        - [2, 3]
+      spectral:
+        periods_s: [1.0, 2.0, 3.0, 5.0]
+    synthetics:
+      max_frequency_hz: 1.0
+    waveforms:
+      preprocessing:
+        lowpass_hz: 1.0
+        highpass_hz:
+        bandpass_low_hz:
+        bandpass_high_hz:
+        resample_hz:
+        filter_order: 4
+    qc:
+      automatic:
+        min_record_length_s: 60.0
+        min_end_after_origin_s: 60.0
+        snr_threshold: 3.0
+    spatial:
+      metric: all
+      field_mode: log2_residual
+      value_column: log2_residual
+      min_stations_per_event: 2
+      min_events_per_station: 1
+      moran_neighbors: 2
+      moran_permutations: 99
+      distance_bin_width_km: 20
+      cluster_min_k: 2
+      cluster_max_k: 4
+      pca_components: 2
+      # Compare average residuals between these geology class sets.
+      # The reported contrast is mean(geology_left_values) - mean(geology_right_values).
+      geology_group_column: mapped_region_type
+      geology_left_values: [Basin]
+      geology_right_values: [Mountains]
+      geology_statistic: mean
+      # The tutorial subset is small; use a larger value for full datasets.
+      geology_min_stations_per_group: 1
+      geology_bootstrap_samples: 100
+      random_seed: 42
+
+  quick_amplitude_check:
+    metrics:
+      groups: [amplitude]
+      transforms: [log2_residual]
+    outputs:
+      metrics: outputs/metrics/quick_amplitude_metrics.parquet
+
+  spectral_period_review:
+    metrics:
+      metrics: [PSA, FAS]
+      transforms: [log2_residual, anderson_2004_gof]
+      spectral:
+        periods_s: [1.0, 2.0, 3.0, 5.0, 7.5]

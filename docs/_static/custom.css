@@ -1,0 +1,32 @@
+/* Improve spacing on nbsphinx tutorial pages. */
+
+.nbinput,
+.nboutput {
+  margin-bottom: 1.6rem;
+}
+
+.nbinput + .section,
+.nboutput + .section,
+.nbinput + section,
+.nboutput + section {
+  margin-top: 2.2rem;
+}
+
+.nbinput + p,
+.nboutput + p {
+  margin-top: 1rem;
+}
+
+section h2,
+.section h2 {
+  margin-top: 2.3rem;
+}
+
+section h3,
+.section h3 {
+  margin-top: 1.8rem;
+}
+
+.wy-table-responsive {
+  margin-bottom: 1.4rem;
+}

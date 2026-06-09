@@ -1,0 +1,4 @@
+summary_type,group_name,metric,band,value_column,n_events,n_stations,median_value,mean_value,p_value
+station_bias,BFS,PGA,1-2 sec,log2_residual,1,1,0.184,0.184,
+region_summary,west_basin,PGV,1-2 sec,log2_residual,1,1,-0.201,-0.201,
+moran_test,all_stations,PSA,2-3 sec,log2_residual,2,2,0.114,0.114,0.08

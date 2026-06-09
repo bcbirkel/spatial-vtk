@@ -1,0 +1,99 @@
+[build-system]
+requires = ["setuptools>=77.0.3", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spatial-vtk"
+version = "0.1.0"
+description = "spatial-vtk provides spatial validation tools for ground-motion simulations, with data QC, residual and metric calculations, geologic metadata integration, spatial statistics, extensive mapping capabilities, and interactive dashboards for quantifying and visualizing model performance patterns."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+authors = [
+  { name = "Brianna Birkel", email = "birkel@usc.edu" },
+]
+keywords = [
+  "ground motion",
+  "seismology",
+  "spatial statistics",
+  "model validation",
+  "earthquake simulations",
+  "geology",
+  "mapping",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: GIS",
+  "Topic :: Scientific/Engineering :: Information Analysis",
+  "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+  "branca>=0.7",
+  "contextily>=1.6",
+  "folium>=0.17",
+  "geopandas>=1.0",
+  "matplotlib>=3.8",
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "phasenet>=0.2.5",
+  "plotly>=6",
+  "pyarrow>=15",
+  "pyproj>=3.6",
+  "PyYAML>=6.0",
+  "scikit-learn>=1.4",
+  "scipy>=1.11",
+  "shapely>=2.0",
+  "statsmodels>=0.14",
+  "streamlit>=1.58",
+  "streamlit-folium>=0.26",
+]
+
+[project.optional-dependencies]
+docs = [
+  "ipython>=8.24",
+  "nbsphinx>=0.9",
+  "sphinx>=8,<9",
+  "sphinx-rtd-theme>=3,<4",
+]
+dashboard = []
+waveforms = [
+  "h5py>=3.10",
+  "obspy>=1.4",
+]
+validation = [
+  "build>=1.2",
+  "coverage[toml]>=7.6",
+  "ipython>=8.24",
+  "pytest>=8",
+  "twine>=6.2,<7",
+]
+
+[project.urls]
+Homepage = "https://github.com/bcbirkel/spatial-vtk"
+Documentation = "https://bcbirkel.github.io/spatial-vtk/"
+Repository = "https://github.com/bcbirkel/spatial-vtk"
+Issues = "https://github.com/bcbirkel/spatial-vtk/issues"
+Changelog = "https://bcbirkel.github.io/spatial-vtk/changelog.html"
+
+[project.scripts]
+svtk = "spatial_vtk.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["spatial_vtk*"]
+
+[tool.setuptools.package-data]
+spatial_vtk = ["config/*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

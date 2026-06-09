@@ -1,0 +1,161 @@
+cff-version: 1.2.0
+message: "If you use spatial-vtk, please cite the package and the data, models, and software used by your workflow."
+title: "Spatial Validation Toolkit for Ground Motion Simulations"
+authors:
+  - family-names: Birkel
+    given-names: Brianna
+    email: birkel@usc.edu
+version: 0.1.0
+license: BSD-3-Clause
+repository-code: "https://github.com/bcbirkel/spatial-vtk"
+abstract: "spatial-vtk provides spatial validation tools for ground-motion simulations, with data QC, residual and metric calculations, geologic metadata integration, spatial statistics, extensive mapping capabilities, and interactive dashboards for quantifying and visualizing model performance patterns."
+keywords:
+  - ground-motion simulation
+  - validation
+  - residuals
+  - spatial statistics
+  - geologic metadata
+  - mapping
+references:
+  - type: data
+    title: "Southern California Seismic Network"
+    authors:
+      - name: "California Institute of Technology and U.S. Geological Survey"
+    doi: "10.7914/SN/CI"
+    url: "https://scedc.caltech.edu/"
+    notes: "Observed waveform and station metadata source for the public LA Basin examples."
+  - type: data
+    title: "Center for Engineering Strong Motion Data"
+    authors:
+      - name: "Center for Engineering Strong Motion Data"
+    url: "https://www.strongmotioncenter.org/"
+    notes: "Strong-motion data source for the public LA Basin examples."
+  - type: software
+    title: "gmprocess"
+    authors:
+      - name: "U.S. Geological Survey"
+    url: "https://github.com/usgs/groundmotion-processing"
+    notes: "Processing software used for the observed records in the public examples."
+  - type: software
+    title: "Salvus"
+    authors:
+      - name: "Mondaic AG"
+    url: "https://mondaic.com/"
+    notes: "Waveform simulation software used to generate the synthetic records in the public examples."
+  - type: software
+    title: "Unified Community Velocity Model"
+    authors:
+      - name: "Southern California Earthquake Center"
+    url: "https://github.com/SCECcode/UCVMC"
+    notes: "Velocity-model software context for the example synthetic simulations."
+  - type: data
+    title: "CVM-S4.26.M01"
+    authors:
+      - name: "Southern California Earthquake Center"
+    url: "https://www.scec.org/research/cvm"
+    notes: "SCEC community velocity model context for the example LA Basin synthetics."
+  - type: software
+    title: "contextily"
+    authors:
+      - name: "contextily developers"
+    url: "https://contextily.readthedocs.io/"
+    notes: "Basemap tile retrieval used by static Spatial-VTK map figures."
+  - type: data
+    title: "Esri World Imagery"
+    authors:
+      - name: "Esri"
+    url: "https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9"
+    notes: "Default static-map basemap source used by Spatial-VTK examples."
+  - type: data
+    title: "OpenStreetMap"
+    authors:
+      - name: "OpenStreetMap contributors"
+    url: "https://www.openstreetmap.org/copyright"
+    notes: "Optional dashboard and map tile source."
+  - type: data
+    title: "CARTO basemaps"
+    authors:
+      - name: "CARTO"
+    url: "https://carto.com/basemaps/"
+    notes: "Optional dashboard basemap source."
+  - type: software
+    title: "ObsPy"
+    authors:
+      - name: "The ObsPy Development Team"
+    doi: "10.1785/gssrl.81.3.530"
+    url: "https://github.com/obspy/obspy"
+  - type: software
+    title: "PhaseNet"
+    authors:
+      - family-names: Zhu
+        given-names: Weiqiang
+      - family-names: Beroza
+        given-names: Gregory C.
+    doi: "10.1093/gji/ggy423"
+    url: "https://github.com/AI4EPS/PhaseNet"
+  - type: software
+    title: "NumPy"
+    authors:
+      - name: "NumPy developers"
+    doi: "10.1038/s41586-020-2649-2"
+    url: "https://numpy.org/"
+  - type: software
+    title: "pandas"
+    authors:
+      - name: "pandas developers"
+    doi: "10.5281/zenodo.3509134"
+    url: "https://pandas.pydata.org/"
+  - type: software
+    title: "GeoPandas"
+    authors:
+      - name: "GeoPandas developers"
+    doi: "10.5281/zenodo.3946761"
+    url: "https://geopandas.org/"
+  - type: software
+    title: "Matplotlib"
+    authors:
+      - name: "Matplotlib Development Team"
+    doi: "10.1109/MCSE.2007.55"
+    url: "https://matplotlib.org/"
+  - type: software
+    title: "SciPy"
+    authors:
+      - name: "SciPy developers"
+    doi: "10.1038/s41592-019-0686-2"
+    url: "https://scipy.org/"
+  - type: software
+    title: "scikit-learn"
+    authors:
+      - name: "scikit-learn developers"
+    doi: "10.5555/1953048.2078195"
+    url: "https://scikit-learn.org/"
+  - type: software
+    title: "statsmodels"
+    authors:
+      - name: "statsmodels developers"
+    url: "https://www.statsmodels.org/"
+  - type: software
+    title: "Shapely"
+    authors:
+      - name: "Shapely developers"
+    url: "https://shapely.readthedocs.io/"
+  - type: software
+    title: "pyproj"
+    authors:
+      - name: "pyproj developers"
+    url: "https://pyproj4.github.io/pyproj/"
+  - type: software
+    title: "Folium"
+    authors:
+      - name: "Folium developers"
+    url: "https://python-visualization.github.io/folium/"
+  - type: software
+    title: "Streamlit"
+    authors:
+      - name: "Streamlit developers"
+    url: "https://streamlit.io/"
+  - type: software
+    title: "PyArrow"
+    authors:
+      - name: "Apache Arrow developers"
+    url: "https://arrow.apache.org/docs/python/"

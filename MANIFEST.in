@@ -1,0 +1,32 @@
+# Purpose: keep PyPI source distributions focused on installable package files.
+# Usage: python -m build --no-isolation
+
+include README.md
+include LICENSE
+include CITATION.cff
+include DATA_PROVENANCE.md
+include RELEASE_CHECKLIST.md
+include pyproject.toml
+include svtk_environment.yaml
+include ValidationToolkit_Workflow.png
+
+recursive-include src/spatial_vtk *.py
+recursive-include src/spatial_vtk *.yaml
+
+prune .github
+prune data
+prune docs
+prune docs/_build
+prune outputs
+prune tests
+prune tools
+prune .cache
+prune build
+prune dist
+prune .pytest_cache
+prune **/__pycache__
+
+exclude .DS_Store
+global-exclude *.py[cod]
+global-exclude .DS_Store
+global-exclude *.ipynb

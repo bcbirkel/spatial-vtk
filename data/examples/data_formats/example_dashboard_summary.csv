@@ -1,0 +1,4 @@
+summary_level,model,band,metric,value_column,row_count,event_count,station_count,median_value,iqr_value
+metric_band,cvmsi,1-2 sec,PGA,log2_residual,1,1,1,0.184,0.0
+metric_band,cvmsi,1-2 sec,PGV,log2_residual,1,1,1,-0.201,0.0
+metric_band,cvmsi,2-3 sec,PSA,log2_residual,1,1,1,0.429,0.0

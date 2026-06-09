@@ -1,0 +1,5 @@
+station,station_lon,station_lat,lab_zone,lab_edge_distance_km,mapped_region,mapped_region_long_name,mapped_region_type,geomorphology_class
+BFS,-117.65853,34.23883,outside_LAB,40.7155652453678,SGM:Mountains,San Gabriel Mountains,Mountains,Mountain/hill
+50501,-117.561058,33.87574,outside_LAB,22.224194072379,CB:Basin,Chino Basin,Basin,Other basin
+BLC,-118.67312,34.24356,outside_LAB,27.29899457016873,SMM:Mountains,Santa Monica Mountains,Mountains,Mountain/hill
+BRE,-117.98116,33.80776,LAB_edge_inside,7.454245421943712,LAB:Basin,Los Angeles Basin,Basin,LA Basin edge inside

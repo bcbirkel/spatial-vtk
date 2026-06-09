@@ -1,0 +1,96 @@
+[
+  {
+    "event_id": "ci38038071",
+    "observed_source_description": "Observed waveforms processed with gmprocess from the five-component ground-motion archive.",
+    "synthetic_source_description": "Synthetic waveforms generated with Salvus for the CVM-SI 20260506 material 0.6x1.2 model and extracted from the source ASDF archive.",
+    "observed_file": "observed/ci38038071.mseed",
+    "observed_event_json": "observed/ci38038071.json",
+    "synthetic_file": "synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci38038071.mseed",
+    "observed_traces": 90,
+    "synthetic_traces": 90,
+    "missing_observed": [],
+    "missing_synthetic": []
+  },
+  {
+    "event_id": "ci38695658",
+    "observed_source_description": "Observed waveforms processed with gmprocess from the five-component ground-motion archive.",
+    "synthetic_source_description": "Synthetic waveforms generated with Salvus for the CVM-SI 20260506 material 0.6x1.2 model and extracted from the source ASDF archive.",
+    "observed_file": "observed/ci38695658.mseed",
+    "observed_event_json": "observed/ci38695658.json",
+    "synthetic_file": "synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci38695658.mseed",
+    "observed_traces": 84,
+    "synthetic_traces": 90,
+    "missing_observed": [
+      "CRN.R",
+      "CRN.T",
+      "CRN.Z",
+      "GSA.R",
+      "GSA.T",
+      "GSA.Z"
+    ],
+    "missing_synthetic": []
+  },
+  {
+    "event_id": "ci39756418",
+    "observed_source_description": "Observed waveforms processed with gmprocess from the five-component ground-motion archive.",
+    "synthetic_source_description": "Synthetic waveforms generated with Salvus for the CVM-SI 20260506 material 0.6x1.2 model and extracted from the source ASDF archive.",
+    "observed_file": "observed/ci39756418.mseed",
+    "observed_event_json": "observed/ci39756418.json",
+    "synthetic_file": "synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci39756418.mseed",
+    "observed_traces": 78,
+    "synthetic_traces": 90,
+    "missing_observed": [
+      "BLC.R",
+      "BLC.T",
+      "BLC.Z",
+      "CRF.R",
+      "CRF.T",
+      "CRF.Z",
+      "IVY.R",
+      "IVY.T",
+      "IVY.Z",
+      "MWC.R",
+      "MWC.T",
+      "MWC.Z"
+    ],
+    "missing_synthetic": []
+  },
+  {
+    "event_id": "ci39812319",
+    "observed_source_description": "Observed waveforms processed with gmprocess from the five-component ground-motion archive.",
+    "synthetic_source_description": "Synthetic waveforms generated with Salvus for the CVM-SI 20260506 material 0.6x1.2 model and extracted from the source ASDF archive.",
+    "observed_file": "observed/ci39812319.mseed",
+    "observed_event_json": "observed/ci39812319.json",
+    "synthetic_file": "synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci39812319.mseed",
+    "observed_traces": 87,
+    "synthetic_traces": 90,
+    "missing_observed": [
+      "CJM.R",
+      "CJM.T",
+      "CJM.Z"
+    ],
+    "missing_synthetic": []
+  },
+  {
+    "event_id": "ci40699207",
+    "observed_source_description": "Observed waveforms processed with gmprocess from the five-component ground-motion archive.",
+    "synthetic_source_description": "Synthetic waveforms generated with Salvus for the CVM-SI 20260506 material 0.6x1.2 model and extracted from the source ASDF archive.",
+    "observed_file": "observed/ci40699207.mseed",
+    "observed_event_json": "observed/ci40699207.json",
+    "synthetic_file": "synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci40699207.mseed",
+    "observed_traces": 81,
+    "synthetic_traces": 90,
+    "missing_observed": [
+      "BFS.R",
+      "BFS.T",
+      "BFS.Z",
+      "CRF.R",
+      "CRF.T",
+      "CRF.Z",
+      "MWC.R",
+      "MWC.T",
+      "MWC.Z"
+    ],
+    "missing_synthetic": []
+  }
+]

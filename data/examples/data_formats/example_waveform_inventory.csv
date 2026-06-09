@@ -1,0 +1,5 @@
+source,event_id,station,component,model,waveform_path,dt,sampling_rate,starttime,endtime,synthetic_max_frequency_hz
+observed,ci38038071,BFS,Z,,observed/ci38038071_proc.pkl,0.01,100,2018-08-29T02:33:20Z,2018-08-29T02:35:20Z,
+synthetic,ci38038071,BFS,Z,cvmsi,synthetics/cvmsi/ci38038071.mseed,0.01,100,2018-08-29T02:33:20Z,2018-08-29T02:35:20Z,1.0
+observed,ci38695658,BHP,R,,observed/ci38695658_proc.pkl,0.01,100,2020-09-19T06:38:39Z,2020-09-19T06:40:39Z,
+synthetic,ci38695658,BHP,R,cvmsi,synthetics/cvmsi/ci38695658.mseed,0.01,100,2020-09-19T06:38:39Z,2020-09-19T06:40:39Z,1.0

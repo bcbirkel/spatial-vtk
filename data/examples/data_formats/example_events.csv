@@ -1,0 +1,4 @@
+event_id,event_title,event_place,start,event_lat,event_lon,depth_km,magnitude,observed_file,synthetic_file
+ci38038071,ci38038071,"4km N of La Verne, CA",2018-08-29T02:33:28.330000+00:00,34.1363333,-117.7746667,5.46,4.38,observed/ci38038071.mseed,synthetics/cvmsi/ci38038071.mseed
+ci38695658,ci38695658,"3km WSW of South El Monte, CA",2020-09-19T06:38:46.930000+00:00,34.038,-118.08,16.87,4.54,observed/ci38695658.mseed,synthetics/cvmsi/ci38695658.mseed
+ci39812319,ci39812319,"2km E of Carson, CA",2021-09-18T02:58:34.700000+00:00,33.8313333,-118.2636667,11.86,4.28,observed/ci39812319.mseed,synthetics/cvmsi/ci39812319.mseed
