@@ -114,6 +114,8 @@ def read_waveform_file(path: str | Path, format: str | None = None) -> Any:
     if suffix in {".pkl", ".pickle"}:
         with source.open("rb") as handle:
             return pickle.load(handle)
+    if suffix == ".asdf":
+        return _read_asdf_waveform(source)
     obspy = _optional_obspy()
     if obspy is None:
         raise ImportError(
@@ -122,6 +124,29 @@ def read_waveform_file(path: str | Path, format: str | None = None) -> Any:
         )
     kwargs = {"format": format} if format else {}
     return obspy.read(str(source), **kwargs)
+
+
+def _read_asdf_waveform(source: Path) -> Any:
+    """Read all waveform tags from one ASDF file into an ObsPy Stream."""
+
+    try:
+        import pyasdf
+        from obspy import Stream
+    except Exception as exc:
+        raise RuntimeError("pyasdf and ObsPy are required to read ASDF waveform files.") from exc
+
+    stream = Stream()
+    with pyasdf.ASDFDataSet(str(source), mode="r") as dataset:
+        for station_name in dataset.waveforms.list():
+            station_waveforms = dataset.waveforms[station_name]
+            for tag in station_waveforms.get_waveform_tags():
+                try:
+                    current = station_waveforms[tag]
+                except Exception:
+                    continue
+                if current:
+                    stream += current
+    return stream
 
 
 def load_waveform_collection(paths: Sequence[str | Path], format: str | None = None) -> Any:

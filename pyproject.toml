@@ -66,6 +66,7 @@ dashboard = []
 waveforms = [
   "h5py>=3.10",
   "obspy>=1.4",
+  "pyasdf>=0.8",
 ]
 validation = [
   "build>=1.2",
