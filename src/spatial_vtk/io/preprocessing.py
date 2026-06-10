@@ -121,6 +121,7 @@ def preprocess_waveform_files(
     overwrite: bool = False,
     continue_on_error: bool = False,
     replace_input_columns: bool = True,
+    verbose: bool = False,
     event_station_name: str = "event_station_records_preprocessed.csv",
     manifest_name: str = "waveform_preprocessing_manifest.csv",
     trace_metadata_name: str = "trace_metadata_preprocessed.csv",
@@ -153,6 +154,10 @@ def preprocess_waveform_files(
     replace_input_columns
         When true, the original waveform path columns are replaced with
         processed paths while raw paths are preserved in ``*_raw_waveform``.
+    verbose
+        Print progress messages while resolving and preprocessing waveform
+        files. This is useful in notebooks for long-running ASDF/MiniSEED
+        preprocessing.
     event_station_name, manifest_name, trace_metadata_name
         Output filenames written under ``output_root/metadata``.
 
@@ -175,6 +180,8 @@ def preprocess_waveform_files(
     _validate_source_columns(records, columns=columns, config=config, event_id_col=event_id_col)
 
     root = _resolve_output_root(output_root, config)
+    _progress(verbose, f"Preprocessing waveforms into {root}")
+    _progress(verbose, f"Resolved waveform sources: {', '.join(sorted(columns))}")
     metadata_dir = root / "metadata"
     metadata_dir.mkdir(parents=True, exist_ok=True)
     updated = records.copy()
@@ -188,7 +195,10 @@ def preprocess_waveform_files(
         if raw_column not in updated.columns:
             updated[raw_column] = updated[column]
         updated[processed_column] = ""
-        for key, group in records.loc[records[column].notna() & records[column].astype(str).str.strip().ne("")].groupby([event_id_col, column], sort=False):
+        source_records = records.loc[records[column].notna() & records[column].astype(str).str.strip().ne("")]
+        source_groups = list(source_records.groupby([event_id_col, column], sort=False))
+        _progress(verbose, f"{source}: {len(source_groups)} unique event waveform file(s) from column {column!r}")
+        for item_index, (key, group) in enumerate(source_groups, start=1):
             event_id, input_value = key
             input_path = Path(str(input_value)).expanduser()
             lookup_key = (source, str(event_id), str(input_path))
@@ -196,6 +206,12 @@ def preprocess_waveform_files(
             if output_path is None:
                 output_path = _processed_output_path(root, source, str(event_id), input_path)
                 processed_lookup[lookup_key] = output_path
+                action = "Reusing" if output_path.exists() and not overwrite else "Writing"
+                _progress(
+                    verbose,
+                    f"{source} {item_index}/{len(source_groups)} event {event_id}: "
+                    f"{action.lower()} {output_path.name}",
+                )
                 manifest_row, trace_frame = _preprocess_one_file(
                     input_path,
                     output_path,
@@ -205,6 +221,9 @@ def preprocess_waveform_files(
                     overwrite=overwrite,
                 )
                 manifest_rows.append(manifest_row)
+                status = str(manifest_row.get("status", "unknown"))
+                trace_count = int(manifest_row.get("trace_count", 0) or 0)
+                _progress(verbose, f"{source} event {event_id}: {status} ({trace_count} trace(s))")
                 if manifest_row.get("status") == "error" and not continue_on_error:
                     raise RuntimeError(
                         f"Failed to preprocess {source} waveform for event {event_id}: "
@@ -226,6 +245,9 @@ def preprocess_waveform_files(
     write_table(updated, event_station_path)
     write_table(manifest, manifest_path)
     write_table(trace_metadata, trace_metadata_path)
+    _progress(verbose, f"Wrote event-station records: {event_station_path}")
+    _progress(verbose, f"Wrote preprocessing manifest: {manifest_path}")
+    _progress(verbose, f"Wrote trace metadata: {trace_metadata_path}")
     return WaveformPreprocessingWorkflowResult(
         event_station_records=updated,
         event_station_path=event_station_path,
@@ -234,6 +256,13 @@ def preprocess_waveform_files(
         trace_metadata=trace_metadata,
         trace_metadata_path=trace_metadata_path,
     )
+
+
+def _progress(verbose: bool, message: str) -> None:
+    """Print one flushed progress message when verbose mode is enabled."""
+
+    if verbose:
+        print(message, flush=True)
 
 
 def _resolve_source_columns(records: pd.DataFrame, source_columns: Mapping[str, str] | None) -> dict[str, str]:

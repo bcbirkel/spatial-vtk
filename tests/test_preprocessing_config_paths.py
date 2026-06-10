@@ -13,7 +13,7 @@ from spatial_vtk.io import preprocessing as preprocessing_module
 from spatial_vtk.io.preprocessing import preprocess_waveform_files
 
 
-def test_preprocess_waveform_files_uses_configured_waveform_paths(tmp_path: Path, monkeypatch) -> None:
+def test_preprocess_waveform_files_uses_configured_waveform_paths(tmp_path: Path, monkeypatch, capsys) -> None:
     """Configured waveform roots/templates should populate missing path columns."""
 
     observed_root = tmp_path / "raw" / "observed"
@@ -69,9 +69,14 @@ def test_preprocess_waveform_files_uses_configured_waveform_paths(tmp_path: Path
 
     monkeypatch.setattr(preprocessing_module, "_preprocess_one_file", fake_preprocess_one_file)
 
-    result = preprocess_waveform_files(records, config=cfg)
+    result = preprocess_waveform_files(records, config=cfg, verbose=True)
+    output = capsys.readouterr().out
 
     assert set(result.manifest["source"]) == {"observed", "synthetic"}
+    assert "Resolved waveform sources: observed, synthetic" in output
+    assert "observed 1/1 event E01" in output
+    assert "synthetic 1/1 event E01" in output
+    assert "Wrote preprocessing manifest:" in output
     assert set(result.manifest["input_file"]) == {str(observed_path), str(synthetic_path)}
     assert result.event_station_records.loc[0, "event_id"] == "E01"
     assert "event_title" not in result.event_station_records.columns
