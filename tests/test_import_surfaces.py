@@ -46,3 +46,9 @@ def test_public_package_discovery_excludes_legacy_namespace():
     assert 'include = ["spatial_vtk*"]' in text
     assert legacy_namespace not in text
     assert not (pyproject.parent / "src" / legacy_namespace).exists()
+
+
+def test_waveform_extra_includes_pickle_runtime_dependencies():
+    pyproject = pathlib.Path(__file__).resolve().parents[1] / "pyproject.toml"
+    text = pyproject.read_text(encoding="utf-8")
+    assert '"gmprocess>=' in text

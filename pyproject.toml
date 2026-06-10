@@ -64,6 +64,7 @@ docs = [
 ]
 dashboard = []
 waveforms = [
+  "gmprocess>=2.4",
   "h5py>=3.10",
   "obspy>=1.4",
   "pyasdf>=0.8",
