@@ -347,7 +347,16 @@ def read_config_table(
     path = config.path(dotted_key, must_exist=must_exist)
     if path is None:
         raise ValueError(f"No path is configured for {dotted_key!r}.")
-    return read_table(path, **kwargs)
+    table = read_table(path, **kwargs)
+    if dotted_key == "paths.station_metadata":
+        from spatial_vtk.io.metadata import prepare_station_metadata
+
+        return prepare_station_metadata(table, required_columns=("station",))
+    if dotted_key == "paths.event_metadata":
+        from spatial_vtk.io.metadata import prepare_event_metadata
+
+        return prepare_event_metadata(table, required_columns=("event_id",))
+    return table
 
 
 def write_output_table(

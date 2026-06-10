@@ -16,6 +16,7 @@ from spatial_vtk.io import (
     prepare_event_station_table,
     prepare_station_metadata,
     load_output_table,
+    read_config_table,
     write_output_tables,
 )
 from spatial_vtk.visualize.context import plot_event_coverage, plot_station_coverage, plot_station_event_context, summarize_coverage
@@ -123,6 +124,54 @@ def test_prepare_event_station_table_builds_pairs_when_config_path_is_missing(tm
         ("E02", "STA02"),
     }
     assert {"event_lat", "event_lon", "lat", "lon", "distance_km"} <= set(pairs.columns)
+
+
+def test_prepare_event_station_table_normalizes_supplied_event_metadata_aliases() -> None:
+    """Raw event metadata aliases should be canonicalized before pair joins."""
+
+    stations = pd.DataFrame({"station": ["STA01"], "lat": [34.1], "lon": [-118.2]})
+    events = prepare_event_metadata(
+        pd.DataFrame({"event_title": ["E01"], "lat": [34.0], "lon": [-118.4], "mag": [4.2]})
+    )
+
+    pairs = prepare_event_station_table(station_metadata=stations, event_metadata=events)
+
+    assert pairs.loc[0, "event_id"] == "E01"
+    assert pairs.loc[0, "event_lat"] == 34.0
+    assert pairs.loc[0, "event_lon"] == -118.4
+    assert pairs.loc[0, "magnitude"] == 4.2
+    assert "event_title" not in pairs.columns
+    assert "distance_km" in pairs.columns
+
+
+def test_read_config_table_normalizes_event_metadata_aliases(tmp_path: Path) -> None:
+    """Configured event metadata reads should not expose raw event_title IDs."""
+
+    events_path = tmp_path / "events.csv"
+    config_path = tmp_path / "spatial-vtk.yaml"
+    events_path.write_text("event_title,lat,lon,mag\nE01,34.0,-118.4,4.2\n", encoding="utf-8")
+    config_path.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  root_dir: .",
+                "paths:",
+                "  event_metadata: events.csv",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    try:
+        SpatialVTKConfig.from_file(config_path).activate()
+        events = read_config_table("paths.event_metadata")
+    finally:
+        clear_active_config()
+
+    assert events.loc[0, "event_id"] == "E01"
+    assert events.loc[0, "event_lat"] == 34.0
+    assert events.loc[0, "event_lon"] == -118.4
+    assert "event_title" not in events.columns
 
 
 def test_standard_output_table_helpers_use_active_config(tmp_path: Path) -> None:

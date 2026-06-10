@@ -298,10 +298,17 @@ def prepare_event_station_table(
         Event-station table with canonical identifiers and joined metadata.
     """
 
+    prepared_station_metadata = None
+    if station_metadata is not None:
+        prepared_station_metadata = prepare_station_metadata(station_metadata, required_columns=("station",))
+    prepared_event_metadata = None
+    if event_metadata is not None:
+        prepared_event_metadata = prepare_event_metadata(event_metadata, required_columns=("event_id",))
+
     if event_station_metadata is not None:
         df = event_station_metadata.copy()
-    elif station_metadata is not None and event_metadata is not None:
-        df = _build_event_station_pairs(station_metadata=station_metadata, event_metadata=event_metadata)
+    elif prepared_station_metadata is not None and prepared_event_metadata is not None:
+        df = _build_event_station_pairs(station_metadata=prepared_station_metadata, event_metadata=prepared_event_metadata)
     else:
         df = read_config_table("paths.event_station_table")
     mapping: dict[str, str] = {}
@@ -313,10 +320,10 @@ def prepare_event_station_table(
     out["event_id"] = out["event_id"].astype(str).str.strip()
     out["station"] = out["station"].astype(str).str.strip()
     out = out.dropna(subset=["event_id", "station"]).drop_duplicates(subset=["event_id", "station"])
-    if station_metadata is not None and not station_metadata.empty:
-        out = out.merge(station_metadata, on="station", how="left", validate="many_to_one")
-    if event_metadata is not None and not event_metadata.empty:
-        out = out.merge(event_metadata, on="event_id", how="left", validate="many_to_one", suffixes=("", "_event"))
+    if prepared_station_metadata is not None and not prepared_station_metadata.empty:
+        out = out.merge(prepared_station_metadata, on="station", how="left", validate="many_to_one")
+    if prepared_event_metadata is not None and not prepared_event_metadata.empty:
+        out = out.merge(prepared_event_metadata, on="event_id", how="left", validate="many_to_one", suffixes=("", "_event"))
     out = _add_path_geometry(out)
     return out.reset_index(drop=True)
 
