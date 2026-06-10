@@ -19,6 +19,7 @@ Use explicit preprocessing settings:
 from __future__ import annotations
 
 from dataclasses import dataclass
+import glob
 from pathlib import Path
 from typing import Any, Mapping
 import pickle
@@ -26,6 +27,7 @@ import warnings
 
 import pandas as pd
 
+from spatial_vtk.io.inventory import DEFAULT_WAVEFORM_SUFFIXES
 from spatial_vtk.io.tables import read_table, write_table
 from spatial_vtk.io.waveforms import (
     WaveformPreprocessing,
@@ -132,6 +134,7 @@ def preprocess_waveform_files(
     if event_id_col not in records.columns:
         raise ValueError(f"Event-station records must include an {event_id_col!r} column.")
     settings = preprocessing or waveform_preprocessing_from_config(config)
+    records = _add_configured_waveform_paths(records, config=config, event_id_col=event_id_col)
     columns = _resolve_source_columns(records, source_columns)
     if not columns:
         expected = sorted({candidate for values in DEFAULT_SOURCE_COLUMN_CANDIDATES.values() for candidate in values})
@@ -214,6 +217,105 @@ def _resolve_source_columns(records: pd.DataFrame, source_columns: Mapping[str, 
                 resolved[source] = candidate
                 break
     return resolved
+
+
+def _add_configured_waveform_paths(records: pd.DataFrame, *, config: Any | None, event_id_col: str) -> pd.DataFrame:
+    """Fill standard waveform path columns from config roots/templates."""
+
+    cfg = config
+    if cfg is None:
+        try:
+            from spatial_vtk.config import SpatialVTKConfig
+
+            cfg = SpatialVTKConfig.active()
+        except Exception:
+            cfg = None
+    if cfg is None:
+        return records
+
+    out = records.copy()
+    if not _has_source_column(out, "observed"):
+        observed_paths = _waveform_paths_from_root(out[event_id_col], cfg=cfg, root_key="paths.observed_root")
+        if observed_paths is not None:
+            out["observed_waveform"] = observed_paths
+    if not _has_source_column(out, "synthetic"):
+        synthetic_paths = _waveform_paths_from_template(out, cfg=cfg, template_key="paths.synthetic_template")
+        if synthetic_paths is None:
+            synthetic_paths = _waveform_paths_from_root(out[event_id_col], cfg=cfg, root_key="paths.synthetic_root")
+        if synthetic_paths is not None:
+            out["synthetic_waveform"] = synthetic_paths
+    return out
+
+
+def _has_source_column(records: pd.DataFrame, source: str) -> bool:
+    """Return whether records already include one recognized source path column."""
+
+    return any(column in records.columns for column in DEFAULT_SOURCE_COLUMN_CANDIDATES[source])
+
+
+def _waveform_paths_from_root(event_ids: pd.Series, *, cfg: Any, root_key: str) -> pd.Series | None:
+    """Resolve one event-level waveform path per event from a configured root."""
+
+    root = _config_path(cfg, root_key)
+    if root is None:
+        return None
+    path_by_event = _index_waveform_root(root)
+    paths = event_ids.astype(str).str.strip().map(path_by_event).fillna("")
+    return paths if paths.astype(bool).any() else None
+
+
+def _waveform_paths_from_template(records: pd.DataFrame, *, cfg: Any, template_key: str) -> pd.Series | None:
+    """Resolve one event-level waveform path per row from a configured template."""
+
+    template = cfg.section(template_key) if hasattr(cfg, "section") else None
+    if not template:
+        return None
+    paths = records.apply(lambda row: _resolve_template_row(row, cfg=cfg, template=str(template)), axis=1)
+    return paths if paths.astype(bool).any() else None
+
+
+def _config_path(cfg: Any, dotted_key: str) -> Path | None:
+    """Resolve one config path when the config object supports the runtime API."""
+
+    if not hasattr(cfg, "path"):
+        return None
+    try:
+        return cfg.path(dotted_key)
+    except Exception:
+        return None
+
+
+def _index_waveform_root(root: Path) -> dict[str, str]:
+    """Map event IDs to waveform files found directly or recursively under root."""
+
+    if not root.exists():
+        return {}
+    suffixes = {suffix.lower() for suffix in DEFAULT_WAVEFORM_SUFFIXES}
+    paths = [path for path in sorted(root.rglob("*")) if path.is_file() and path.suffix.lower() in suffixes]
+    by_stem = {path.stem: str(path) for path in paths}
+    by_name = {path.name: str(path) for path in paths}
+    return {**by_name, **by_stem}
+
+
+def _resolve_template_row(row: pd.Series, *, cfg: Any, template: str) -> str:
+    """Resolve a configured waveform template for one event-station row."""
+
+    values = {key: value for key, value in row.items() if pd.notna(value)}
+    if "model" not in values:
+        models = cfg.section("metrics.models", []) if hasattr(cfg, "section") else []
+        if isinstance(models, (list, tuple)) and len(models) == 1:
+            values["model"] = models[0]
+    try:
+        formatted = cfg.format_template(template, **values) if hasattr(cfg, "format_template") else template.format(**values)
+    except KeyError:
+        return ""
+    resolved = cfg.path_from_value(formatted) if hasattr(cfg, "path_from_value") else Path(formatted).expanduser()
+    if resolved is None:
+        return ""
+    matches = sorted(glob.glob(str(resolved)))
+    if matches:
+        return matches[0]
+    return str(resolved) if resolved.exists() else ""
 
 
 def _resolve_output_root(output_root: str | Path | None, config: Any | None) -> Path:
