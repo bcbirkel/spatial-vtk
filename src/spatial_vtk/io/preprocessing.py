@@ -172,6 +172,7 @@ def preprocess_waveform_files(
     if not columns:
         expected = sorted({candidate for values in DEFAULT_SOURCE_COLUMN_CANDIDATES.values() for candidate in values})
         raise ValueError(f"No waveform path columns were found. Provide source_columns or add one of: {expected}")
+    _validate_source_columns(records, columns=columns, config=config, event_id_col=event_id_col)
 
     root = _resolve_output_root(output_root, config)
     metadata_dir = root / "metadata"
@@ -250,6 +251,56 @@ def _resolve_source_columns(records: pd.DataFrame, source_columns: Mapping[str, 
                 resolved[source] = candidate
                 break
     return resolved
+
+
+def _validate_source_columns(
+    records: pd.DataFrame,
+    *,
+    columns: Mapping[str, str],
+    config: Any | None,
+    event_id_col: str,
+) -> None:
+    """Raise when configured waveform sources did not resolve usable paths."""
+
+    configured_sources = _configured_sources(config)
+    for source in configured_sources:
+        if source not in columns:
+            raise ValueError(
+                f"{source.capitalize()} waveform input is configured, but no {source} waveform path column was resolved. "
+                f"Check {', '.join((*CONFIG_TEMPLATE_KEYS[source], *CONFIG_ROOT_KEYS[source]))}."
+            )
+    for source, column in columns.items():
+        nonempty = records[column].notna() & records[column].astype(str).str.strip().ne("")
+        if nonempty.any():
+            continue
+        if source in configured_sources:
+            event_preview = records[event_id_col].dropna().astype(str).head(5).tolist()
+            raise ValueError(
+                f"{source.capitalize()} waveform input is configured, but no files matched the configured paths. "
+                f"Check {', '.join((*CONFIG_TEMPLATE_KEYS[source], *CONFIG_ROOT_KEYS[source]))}. "
+                f"Example event IDs: {event_preview}"
+            )
+
+
+def _configured_sources(config: Any | None) -> set[str]:
+    """Return waveform sources with config template/root settings."""
+
+    cfg = config
+    if cfg is None:
+        try:
+            from spatial_vtk.config import SpatialVTKConfig
+
+            cfg = SpatialVTKConfig.active()
+        except Exception:
+            cfg = None
+    if cfg is None or not hasattr(cfg, "section"):
+        return set()
+    configured: set[str] = set()
+    for source in DEFAULT_SOURCE_COLUMN_CANDIDATES:
+        keys = (*CONFIG_TEMPLATE_KEYS[source], *CONFIG_ROOT_KEYS[source])
+        if any(cfg.section(key) for key in keys):
+            configured.add(source)
+    return configured
 
 
 def _ensure_event_id_column(records: pd.DataFrame, *, event_id_col: str) -> pd.DataFrame:

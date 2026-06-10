@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+import pickle
 
 import pandas as pd
+import pytest
 
 from spatial_vtk.config import SpatialVTKConfig
 from spatial_vtk.io import preprocessing as preprocessing_module
@@ -135,3 +137,80 @@ def test_configured_observed_template_avoids_json_sidecars(tmp_path: Path, monke
 
     assert result.manifest["input_file"].tolist() == [str(observed_path)]
     assert result.event_station_records.loc[0, "observed_raw_waveform"] == str(observed_path)
+
+
+def test_configured_missing_observed_paths_stop_before_partial_writes(tmp_path: Path, monkeypatch) -> None:
+    """If observed is configured but unmatched, do not preprocess only synthetic."""
+
+    synthetic_root = tmp_path / "raw" / "synthetic" / "model_a"
+    synthetic_root.mkdir(parents=True)
+    (synthetic_root / "E01.pkl").write_bytes(b"synthetic")
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  root_dir: .",
+                "paths:",
+                "  observed_template: raw/observed/{event_id}.pkl",
+                "  synthetic_template: raw/synthetic/{model}/{event_id}.pkl",
+                "outputs:",
+                "  preprocessed_waveforms: processed",
+                "metrics:",
+                "  models: [model_a]",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    records = pd.DataFrame({"event_id": ["E01"], "station": ["STA01"]})
+
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("preprocessing should not run when a configured source is missing")
+
+    monkeypatch.setattr(preprocessing_module, "_preprocess_one_file", fail_if_called)
+
+    with pytest.raises(ValueError, match="Observed waveform input is configured"):
+        preprocess_waveform_files(records, config=cfg)
+
+    assert not (tmp_path / "processed").exists()
+
+
+def test_existing_processed_waveforms_are_cached_unless_overwrite(tmp_path: Path, monkeypatch) -> None:
+    """Existing processed waveform files should be reused by default."""
+
+    raw_path = tmp_path / "raw" / "E01.pkl"
+    raw_path.parent.mkdir()
+    raw_path.write_bytes(b"raw")
+    output_root = tmp_path / "processed"
+    cached_path = output_root / "observed" / "E01" / "E01.pkl"
+    cached_path.parent.mkdir(parents=True)
+    with cached_path.open("wb") as handle:
+        pickle.dump(["cached"], handle)
+    records = pd.DataFrame({"event_id": ["E01"], "station": ["STA01"], "observed_waveform": [raw_path]})
+
+    monkeypatch.setattr(preprocessing_module, "read_waveform_file", lambda path: ["cached"])
+    monkeypatch.setattr(
+        preprocessing_module,
+        "trace_metadata_table",
+        lambda stream, source=None, event_id=None: pd.DataFrame({"event_id": [event_id], "station": ["STA01"]}),
+    )
+
+    def fail_write(*args, **kwargs):
+        raise AssertionError("cached waveform should not be overwritten")
+
+    monkeypatch.setattr(preprocessing_module, "_write_waveform_file", fail_write)
+
+    result = preprocess_waveform_files(records, output_root=output_root)
+
+    assert result.manifest.loc[0, "status"] == "cached"
+    assert result.event_station_records.loc[0, "observed_processed_waveform"] == str(cached_path)
+
+    writes: list[Path] = []
+    monkeypatch.setattr(preprocessing_module, "preprocess_stream", lambda stream, settings: stream)
+    monkeypatch.setattr(preprocessing_module, "_write_waveform_file", lambda stream, output_path, input_path: writes.append(output_path))
+
+    overwritten = preprocess_waveform_files(records, output_root=output_root, overwrite=True)
+
+    assert overwritten.manifest.loc[0, "status"] == "written"
+    assert writes == [cached_path]
