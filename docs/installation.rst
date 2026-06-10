@@ -5,7 +5,7 @@ This page walks you through setting up Spatial-VTK in a conda environment,
 installing the package, and running a few quick checks before you start a
 workflow.
 
-You will need Python 3.10 or newer and conda. If you are new to conda, the
+You will need Python 3.10 through 3.13 and conda. If you are new to conda, the
 `conda getting started guide <https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html>`__
 is a good place to start.
 
@@ -53,11 +53,11 @@ part of the PyPI wheel.
    Use this only if you want to run the public test suite, build the docs, or
    validate a release from a source checkout.
    </p>
-   <pre><code>python -m pip install "spatial-vtk[dashboard,docs,validation,waveforms]"</code></pre>
+   <pre><code>python -m pip install "spatial-vtk[dashboard,docs,notebooks,validation,waveforms]"</code></pre>
    <p>
    From a source checkout, use the editable form:
    </p>
-   <pre><code>python -m pip install -e ".[dashboard,docs,validation,waveforms]"</code></pre>
+   <pre><code>python -m pip install -e ".[dashboard,docs,notebooks,validation,waveforms]"</code></pre>
    <p>
    After installing the validation extras, you can run:
    </p>
@@ -77,7 +77,15 @@ notebooks, example data, tests, and editable source code.
    cd spatial-vtk
    conda env create -f svtk_environment.yaml
    conda activate spatial-vtk
-   python -m pip install -e .
+   python -m pip install -e ".[notebooks,waveforms]"
+
+If you are adding the package to an existing conda environment for interactive
+notebook work, include the notebook extra and register the kernel:
+
+.. code-block:: bash
+
+   python -m pip install -e ".[notebooks,waveforms]"
+   python -m ipykernel install --user --name spatial-vtk --display-name "spatial-vtk"
 
 The editable install means changes in the source checkout are picked up by the
 environment immediately. That is the most convenient setup while you are

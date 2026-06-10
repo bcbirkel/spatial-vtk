@@ -63,6 +63,9 @@ docs = [
   "sphinx-rtd-theme>=3,<4",
 ]
 dashboard = []
+notebooks = [
+  "ipykernel>=6.29",
+]
 waveforms = [
   "gmprocess>=2.4",
   "h5py>=3.10",

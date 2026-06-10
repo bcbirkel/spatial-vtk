@@ -52,4 +52,5 @@ def test_waveform_extra_includes_pickle_runtime_dependencies():
     pyproject = pathlib.Path(__file__).resolve().parents[1] / "pyproject.toml"
     text = pyproject.read_text(encoding="utf-8")
     assert 'requires-python = ">=3.10,<3.14"' in text
+    assert '"ipykernel>=' in text
     assert '"gmprocess>=' in text
