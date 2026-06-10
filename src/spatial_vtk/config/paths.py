@@ -34,7 +34,7 @@ METRICS_DIR: Path = OUTPUTS_DIR / "metrics"
 STATS_DIR: Path = OUTPUTS_DIR / "stats"
 CACHE_DIR: Path = OUTPUTS_DIR / "cache"
 EXAMPLE_FORMATS_DIR: Path = EXAMPLE_DATA_DIR / "data_formats"
-EXAMPLE_WORKFLOW_DIR: Path = EXAMPLE_DATA_DIR / "la_basin_five_event_subset"
+EXAMPLE_WORKFLOW_DIR: Path = EXAMPLE_DATA_DIR / "example_five_event_subset"
 
 
 def ensure_dir(path: Path) -> Path:

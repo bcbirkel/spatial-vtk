@@ -5,7 +5,6 @@ include README.md
 include LICENSE
 include CITATION.cff
 include DATA_PROVENANCE.md
-include RELEASE_CHECKLIST.md
 include pyproject.toml
 include svtk_environment.yaml
 include ValidationToolkit_Workflow.png

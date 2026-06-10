@@ -27,15 +27,15 @@ Prepare station and event metadata, preprocess the waveform files once, and make
      --section paths
 
    svtk io prepare-stations \
-     --input data/examples/20260605_five_event_subset/metadata/selected_stations.csv \
+     --input data/examples/example_five_event_subset/metadata/selected_stations.csv \
      --output "$TABLES/prepared_stations.csv"
 
    svtk io prepare-events \
-     --input data/examples/20260605_five_event_subset/metadata/events.csv \
+     --input data/examples/example_five_event_subset/metadata/events.csv \
      --output "$TABLES/prepared_events.csv"
 
    svtk io preprocess-waveforms \
-     --records data/examples/20260605_five_event_subset/metadata/selected_event_stations.csv \
+     --records data/examples/example_five_event_subset/metadata/selected_event_stations.csv \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --output-root "$PREPROCESSED" \
@@ -225,7 +225,7 @@ Work with region polygons and corridor selections, then make maps and waveform s
 
 .. code-block:: bash
 
-   export REGIONS=data/examples/la_basin_five_event_subset/metadata/example_path_regions.geojson
+   export REGIONS=data/examples/example_five_event_subset/metadata/example_path_regions.geojson
 
    svtk plot metrics boxplot \
      --input "$TABLES/metrics_long.parquet" \

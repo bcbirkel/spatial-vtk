@@ -1,14 +1,14 @@
 {
-  "dataset_name": "la_basin_five_event_subset",
+  "dataset_name": "example_five_event_subset",
   "selected_events": [
     {
       "event_id": "ci39812319",
-      "event_json": "data/examples/la_basin_five_event_subset/observed/ci39812319.json",
+      "event_json": "data/examples/example_five_event_subset/observed/ci39812319.json",
       "event_lat": 33.8313333,
       "event_lon": -118.2636667,
       "magnitude": 4.28,
       "observed_broadband_station_count": 177,
-      "observed_pickle": "data/examples/la_basin_five_event_subset/observed/ci39812319_proc.pkl",
+      "observed_pickle": "data/examples/example_five_event_subset/observed/ci39812319.mseed",
       "overlapping_broadband_station_count": 77,
       "selected_station_count": 30,
       "selected_stations": [
@@ -44,17 +44,17 @@
         "LCG"
       ],
       "synthetic_file_count": 1,
-      "synthetic_pattern": "data/examples/la_basin_five_event_subset/synthetics/cvmsi_unstructuredmesh_qp2qs_abs2.5_minvs500_minvp1700/ci39812319.mseed",
+      "synthetic_pattern": "data/examples/example_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci39812319.mseed",
       "synthetic_station_count": 363
     },
     {
       "event_id": "ci40699207",
-      "event_json": "data/examples/la_basin_five_event_subset/observed/ci40699207.json",
+      "event_json": "data/examples/example_five_event_subset/observed/ci40699207.json",
       "event_lat": 34.0825,
       "event_lon": -118.1788333,
       "magnitude": 4.39,
       "observed_broadband_station_count": 204,
-      "observed_pickle": "data/examples/la_basin_five_event_subset/observed/ci40699207_proc.pkl",
+      "observed_pickle": "data/examples/example_five_event_subset/observed/ci40699207.mseed",
       "overlapping_broadband_station_count": 76,
       "selected_station_count": 30,
       "selected_stations": [
@@ -90,17 +90,17 @@
         "LLS"
       ],
       "synthetic_file_count": 1,
-      "synthetic_pattern": "data/examples/la_basin_five_event_subset/synthetics/cvmsi_unstructuredmesh_qp2qs_abs2.5_minvs500_minvp1700/ci40699207.mseed",
+      "synthetic_pattern": "data/examples/example_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci40699207.mseed",
       "synthetic_station_count": 363
     },
     {
       "event_id": "ci38695658",
-      "event_json": "data/examples/la_basin_five_event_subset/observed/ci38695658.json",
+      "event_json": "data/examples/example_five_event_subset/observed/ci38695658.json",
       "event_lat": 34.038,
       "event_lon": -118.08,
       "magnitude": 4.54,
       "observed_broadband_station_count": 220,
-      "observed_pickle": "data/examples/la_basin_five_event_subset/observed/ci38695658_proc.pkl",
+      "observed_pickle": "data/examples/example_five_event_subset/observed/ci38695658.mseed",
       "overlapping_broadband_station_count": 75,
       "selected_station_count": 30,
       "selected_stations": [
@@ -136,17 +136,17 @@
         "LMH"
       ],
       "synthetic_file_count": 1,
-      "synthetic_pattern": "data/examples/la_basin_five_event_subset/synthetics/cvmsi_unstructuredmesh_qp2qs_abs2.5_minvs500_minvp1700/ci38695658.mseed",
+      "synthetic_pattern": "data/examples/example_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci38695658.mseed",
       "synthetic_station_count": 363
     },
     {
       "event_id": "ci39756418",
-      "event_json": "data/examples/la_basin_five_event_subset/observed/ci39756418.json",
+      "event_json": "data/examples/example_five_event_subset/observed/ci39756418.json",
       "event_lat": 34.1116667,
       "event_lon": -117.3115,
       "magnitude": 4.24,
       "observed_broadband_station_count": 157,
-      "observed_pickle": "data/examples/la_basin_five_event_subset/observed/ci39756418_proc.pkl",
+      "observed_pickle": "data/examples/example_five_event_subset/observed/ci39756418.mseed",
       "overlapping_broadband_station_count": 61,
       "selected_station_count": 30,
       "selected_stations": [
@@ -182,17 +182,17 @@
         "MLS"
       ],
       "synthetic_file_count": 1,
-      "synthetic_pattern": "data/examples/la_basin_five_event_subset/synthetics/cvmsi_unstructuredmesh_qp2qs_abs2.5_minvs500_minvp1700/ci39756418.mseed",
+      "synthetic_pattern": "data/examples/example_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci39756418.mseed",
       "synthetic_station_count": 363
     },
     {
       "event_id": "ci38038071",
-      "event_json": "data/examples/la_basin_five_event_subset/observed/ci38038071.json",
+      "event_json": "data/examples/example_five_event_subset/observed/ci38038071.json",
       "event_lat": 34.1363333,
       "event_lon": -117.7746667,
       "magnitude": 4.38,
       "observed_broadband_station_count": 135,
-      "observed_pickle": "data/examples/la_basin_five_event_subset/observed/ci38038071_proc.pkl",
+      "observed_pickle": "data/examples/example_five_event_subset/observed/ci38038071.mseed",
       "overlapping_broadband_station_count": 52,
       "selected_station_count": 30,
       "selected_stations": [
@@ -228,7 +228,7 @@
         "PASC"
       ],
       "synthetic_file_count": 1,
-      "synthetic_pattern": "data/examples/la_basin_five_event_subset/synthetics/cvmsi_unstructuredmesh_qp2qs_abs2.5_minvs500_minvp1700/ci38038071.mseed",
+      "synthetic_pattern": "data/examples/example_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf/ci38038071.mseed",
       "synthetic_station_count": 363
     }
   ],
@@ -254,5 +254,5 @@
   "synthetic_simulation_software": "Salvus",
   "velocity_model_context": "UCVM / SCEC CVM-S4.26.M01",
   "example_region": "LA Basin",
-  "synthetic_model_name": "cvmsi_unstructuredmesh_qp2qs_abs2.5_minvs500_minvp1700"
+  "synthetic_model_name": "cvmsi_20260506_material_0p6x1p2_asdf"
 }

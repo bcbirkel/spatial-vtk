@@ -101,7 +101,7 @@ def context_dataset_paths(root: str | Path | None = None) -> dict[str, Path]:
     metadata_dir = root_path / "inputs" / "metadata"
     geospatial_dir = root_path / "inputs" / "geospatial"
     example_formats_dir = root_path / "data" / "examples" / "data_formats"
-    example_workflow_dir = root_path / "data" / "examples" / "la_basin_five_event_subset"
+    example_workflow_dir = root_path / "data" / "examples" / "example_five_event_subset"
 
     def first_existing(candidates: tuple[Path, ...]) -> Path | None:
         """Return the first existing path from a candidate list.

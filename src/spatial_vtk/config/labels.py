@@ -117,6 +117,7 @@ MODEL_DISPLAY_NAMES: dict[str, str] = {
     "cvmsi_alt": "CVM-SI Alt",
     "cvm-si": "CVM-SI",
     "cvm_si": "CVM-SI",
+    "cvmsi_20260506_material_0p6x1p2_asdf": "CVM-SI",
     "cvmsi_unstructuredmesh_qp2qs_abs2.5_minvs500_minvp1700": "CVM-SI",
 }
 

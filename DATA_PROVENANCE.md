@@ -7,13 +7,11 @@ been prepared so you can focus on the validation workflow.
 ## Example Dataset
 
 The tutorial dataset is a five-event LA Basin subset under
-`data/examples/20260605_five_event_subset/`. It includes observed and synthetic
-MiniSEED files, event metadata, station metadata, and event-station tables for
-the tutorial notebooks.
-
-The supporting `data/examples/la_basin_five_event_subset/` folder contains
-lightweight event, station, and GeoJSON files used by the data-format examples
-and regional/corridor tutorials.
+`data/examples/example_five_event_subset/`. It includes event metadata, station
+metadata, event-station tables, GeoJSON regions, event JSON files, and local
+paths for observed and synthetic MiniSEED files used by the tutorial notebooks.
+The public repository keeps the lightweight metadata in git; large waveform
+binaries and processed waveform copies stay local.
 
 The example events are southern California earthquakes with public USGS event
 pages:

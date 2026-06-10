@@ -14,13 +14,10 @@ AGENTS.md
 inputs/basemaps/
 .DS_Store
 
-# large local tutorial waveform artifacts are kept out of git
-/data/examples/la_basin_five_event_subset/observed/*.pkl
-/data/examples/la_basin_five_event_subset/synthetics/
-
-# compact CARC example metadata can be versioned, but waveform binaries and
-# processed copies stay local
-/data/examples/20260605_five_event_subset/observed/
-/data/examples/20260605_five_event_subset/synthetics/
-/data/examples/20260605_five_event_subset/processed/
-/data/examples/20260605_five_event_subset/metadata/selected_event_stations_lowpass_1hz.csv
+# Compact example metadata can be versioned, but waveform binaries and
+# processed copies stay local.
+/data/examples/example_five_event_subset/observed/*.mseed
+/data/examples/example_five_event_subset/observed/*.pkl
+/data/examples/example_five_event_subset/synthetics/
+/data/examples/example_five_event_subset/processed/
+/data/examples/example_five_event_subset/metadata/selected_event_stations_lowpass_1hz.csv

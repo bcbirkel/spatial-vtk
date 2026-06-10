@@ -134,17 +134,17 @@ qc:
 run_scenarios:
   tutorial:
     # This scenario expects the companion five-event LA Basin waveform bundle
-    # under data/examples/20260605_five_event_subset/. The repo keeps the
+    # under data/examples/example_five_event_subset/. The repo keeps the
     # metadata tables in git and ignores the large MiniSEED products.
     paths:
-      observed_root: "{root_dir}/data/examples/20260605_five_event_subset/observed"
-      synthetic_root: "{root_dir}/data/examples/20260605_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf"
-      synthetic_template: "{root_dir}/data/examples/20260605_five_event_subset/synthetics/{model}/{event_id}.mseed"
-      station_metadata: "{root_dir}/data/examples/20260605_five_event_subset/metadata/selected_stations.csv"
-      event_metadata: "{root_dir}/data/examples/20260605_five_event_subset/metadata/events.csv"
-      event_station_table: "{root_dir}/data/examples/20260605_five_event_subset/metadata/selected_event_stations.csv"
+      observed_root: "{root_dir}/data/examples/example_five_event_subset/observed"
+      synthetic_root: "{root_dir}/data/examples/example_five_event_subset/synthetics/cvmsi_20260506_material_0p6x1p2_asdf"
+      synthetic_template: "{root_dir}/data/examples/example_five_event_subset/synthetics/{model}/{event_id}.mseed"
+      station_metadata: "{root_dir}/data/examples/example_five_event_subset/metadata/selected_stations.csv"
+      event_metadata: "{root_dir}/data/examples/example_five_event_subset/metadata/events.csv"
+      event_station_table: "{root_dir}/data/examples/example_five_event_subset/metadata/selected_event_stations.csv"
       site_metadata: "{root_dir}/data/examples/data_formats/example_site_metadata.csv"
-      region_geojson: "{root_dir}/data/examples/la_basin_five_event_subset/metadata/example_path_regions.geojson"
+      region_geojson: "{root_dir}/data/examples/example_five_event_subset/metadata/example_path_regions.geojson"
       metric_snapshot: "{root_dir}/data/examples/data_formats/example_metrics_snapshot.csv"
       metric_figure_snapshot: "{root_dir}/data/examples/data_formats/example_metrics_large_qc_passed.parquet"
     outputs:

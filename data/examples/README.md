@@ -4,17 +4,15 @@ Spatial-VTK includes small example files so you can run the tutorials from a
 source checkout and see the expected table, waveform, map, and dashboard
 outputs. The example files are not included in the PyPI wheel.
 
-## Included Example Bundles
+## Included Example Bundle
 
-`la_basin_five_event_subset/` contains lightweight metadata, GeoJSON regions,
-and event JSON files for five southern California earthquakes used by the docs
-and data-format examples.
-
-`20260605_five_event_subset/` contains the waveform-backed tutorial bundle:
-observed MiniSEED files, synthetic MiniSEED files, event metadata, station
-metadata, and event-station tables for the same five-event LA Basin workflow.
-The tutorial configuration applies a 1 Hz lowpass preprocessing step before
-QC, metric calculations, waveform figures, spatial analysis, and dashboards.
+`example_five_event_subset/` contains the five-event LA Basin tutorial bundle:
+event metadata, station metadata, event-station tables, GeoJSON regions, event
+JSON files, and local paths for the observed and synthetic MiniSEED products
+used by the workflow. The public repository keeps the lightweight metadata in
+git; large waveform binaries and processed waveform copies stay local. The
+tutorial configuration applies a 1 Hz lowpass preprocessing step before QC,
+metric calculations, waveform figures, spatial analysis, and dashboards.
 
 `data_formats/` contains tiny preview inputs and outputs used by the Data
 Formats page. These examples show file structure and column conventions; they
