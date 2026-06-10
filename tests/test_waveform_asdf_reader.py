@@ -62,3 +62,14 @@ def test_read_waveform_file_reads_asdf_with_pyasdf(monkeypatch, tmp_path) -> Non
     stream = read_waveform_file(path)
 
     assert stream == ["trace:raw"]
+
+
+def test_read_waveform_file_handles_numpy_core_pickle_alias(tmp_path) -> None:
+    """Cached pickles written with NumPy 2 module paths should load in NumPy 1."""
+
+    path = tmp_path / "numpy2_alias.pkl"
+    path.write_bytes(b"cnumpy._core.numeric\narray\n.")
+
+    loaded = read_waveform_file(path)
+
+    assert loaded.__name__ == "array"

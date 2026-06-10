@@ -19,6 +19,7 @@ import argparse
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from fractions import Fraction
+import io
 from pathlib import Path
 from typing import Any
 import pickle
@@ -112,8 +113,7 @@ def read_waveform_file(path: str | Path, format: str | None = None) -> Any:
     if suffix in {".npz", ".npy"}:
         return _read_numpy_waveform(source)
     if suffix in {".pkl", ".pickle"}:
-        with source.open("rb") as handle:
-            return pickle.load(handle)
+        return _read_pickle_waveform(source)
     if suffix == ".asdf":
         return _read_asdf_waveform(source)
     obspy = _optional_obspy()
@@ -124,6 +124,28 @@ def read_waveform_file(path: str | Path, format: str | None = None) -> Any:
         )
     kwargs = {"format": format} if format else {}
     return obspy.read(str(source), **kwargs)
+
+
+class _NumpyCompatUnpickler(pickle.Unpickler):
+    """Unpickle NumPy objects across NumPy 1.x and 2.x module paths."""
+
+    def find_class(self, module: str, name: str) -> Any:
+        if module.startswith("numpy._core"):
+            module = "numpy.core" + module[len("numpy._core") :]
+        return super().find_class(module, name)
+
+
+def _read_pickle_waveform(source: Path) -> Any:
+    """Read waveform pickle files with a NumPy 1/2 module-path fallback."""
+
+    payload = source.read_bytes()
+    try:
+        return pickle.loads(payload)
+    except ModuleNotFoundError as exc:
+        missing = str(exc)
+        if "numpy._core" not in missing:
+            raise
+        return _NumpyCompatUnpickler(io.BytesIO(payload)).load()
 
 
 def _read_asdf_waveform(source: Path) -> Any:
