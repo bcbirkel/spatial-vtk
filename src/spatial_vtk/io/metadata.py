@@ -282,8 +282,11 @@ def prepare_event_station_table(
     Parameters
     ----------
     event_station_metadata
-        Table containing event and station identifiers. When omitted,
-        ``paths.event_station_table`` is read from the active config.
+        Table containing event and station identifiers. When omitted and both
+        ``station_metadata`` and ``event_metadata`` are provided, every
+        event-station pair is generated from those tables. When omitted without
+        both metadata tables, ``paths.event_station_table`` is read from the
+        active config.
     station_metadata
         Optional prepared station metadata table.
     event_metadata
@@ -295,7 +298,12 @@ def prepare_event_station_table(
         Event-station table with canonical identifiers and joined metadata.
     """
 
-    df = (event_station_metadata.copy() if event_station_metadata is not None else read_config_table("paths.event_station_table"))
+    if event_station_metadata is not None:
+        df = event_station_metadata.copy()
+    elif station_metadata is not None and event_metadata is not None:
+        df = _build_event_station_pairs(station_metadata=station_metadata, event_metadata=event_metadata)
+    else:
+        df = read_config_table("paths.event_station_table")
     mapping: dict[str, str] = {}
     for target, candidates in EVENT_STATION_COLUMN_CANDIDATES.items():
         source = _resolve_column(df, target, candidates, required=target in {"event_id", "station"})
@@ -311,6 +319,24 @@ def prepare_event_station_table(
         out = out.merge(event_metadata, on="event_id", how="left", validate="many_to_one", suffixes=("", "_event"))
     out = _add_path_geometry(out)
     return out.reset_index(drop=True)
+
+
+def _build_event_station_pairs(*, station_metadata: pd.DataFrame, event_metadata: pd.DataFrame) -> pd.DataFrame:
+    """Build the full event-station pair table from station and event metadata."""
+
+    if station_metadata.empty or event_metadata.empty:
+        return pd.DataFrame(columns=["event_id", "station"])
+    station_col = _resolve_column(station_metadata, "station", STATION_COLUMN_CANDIDATES["station"], required=True)
+    event_col = _resolve_column(event_metadata, "event_id", EVENT_COLUMN_CANDIDATES["event_id"], required=True)
+    stations = station_metadata[[station_col]].rename(columns={station_col: "station"}).copy()
+    events = event_metadata[[event_col]].rename(columns={event_col: "event_id"}).copy()
+    stations = stations.dropna(subset=["station"])
+    events = events.dropna(subset=["event_id"])
+    stations["station"] = stations["station"].astype(str).str.strip()
+    events["event_id"] = events["event_id"].astype(str).str.strip()
+    stations = stations[stations["station"] != ""].drop_duplicates(subset=["station"])
+    events = events[events["event_id"] != ""].drop_duplicates(subset=["event_id"])
+    return events.merge(stations, how="cross")
 
 
 def read_event_station_table(path: str | Path, **kwargs) -> pd.DataFrame:

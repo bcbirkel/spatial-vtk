@@ -80,13 +80,49 @@ def test_prepare_metadata_can_read_active_config_tables(tmp_path: Path) -> None:
         SpatialVTKConfig.from_file(config_path).activate()
         stations = prepare_station_metadata()
         events = prepare_event_metadata()
+        configured_pairs = prepare_event_station_table()
         pairs = prepare_event_station_table(station_metadata=stations, event_metadata=events)
     finally:
         clear_active_config()
 
     assert stations.loc[0, "station"] == "STA01"
     assert events.loc[0, "event_id"] == "E01"
+    assert configured_pairs.loc[0, "station"] == "STA01"
     assert {"event_lat", "event_lon", "lat", "lon"} <= set(pairs.columns)
+
+
+def test_prepare_event_station_table_builds_pairs_when_config_path_is_missing(tmp_path: Path) -> None:
+    """Event-station preparation should generate pairs from provided metadata."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  root_dir: .",
+                "paths:",
+                "  event_station_table: missing_pairs.csv",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    stations = pd.DataFrame({"station": ["STA01", "STA02"], "lat": [34.1, 34.2], "lon": [-118.2, -118.1]})
+    events = pd.DataFrame({"event_id": ["E01", "E02"], "event_lat": [34.0, 34.3], "event_lon": [-118.4, -118.0]})
+
+    try:
+        SpatialVTKConfig.from_file(config_path).activate()
+        pairs = prepare_event_station_table(station_metadata=stations, event_metadata=events)
+    finally:
+        clear_active_config()
+
+    assert len(pairs) == 4
+    assert set(map(tuple, pairs[["event_id", "station"]].to_numpy())) == {
+        ("E01", "STA01"),
+        ("E01", "STA02"),
+        ("E02", "STA01"),
+        ("E02", "STA02"),
+    }
+    assert {"event_lat", "event_lon", "lat", "lon", "distance_km"} <= set(pairs.columns)
 
 
 def test_standard_output_table_helpers_use_active_config(tmp_path: Path) -> None:
