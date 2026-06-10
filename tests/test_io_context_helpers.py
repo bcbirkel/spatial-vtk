@@ -191,13 +191,19 @@ def test_standard_output_table_helpers_use_active_config(tmp_path: Path) -> None
     )
 
     try:
-        SpatialVTKConfig.from_file(config_path).activate()
-        written = write_output_tables(prepared_stations=pd.DataFrame({"station": ["STA01"], "lat": [34.1], "lon": [-118.2]}))
+        cfg = SpatialVTKConfig.from_file(config_path).activate()
+        written = write_output_tables(
+            prepared_stations=pd.DataFrame({"station": ["STA01"], "lat": [34.1], "lon": [-118.2]}),
+            record_coverage=pd.DataFrame({"event_id": ["E01"], "station": ["STA01"], "source": ["observed"]}),
+            cfg=cfg,
+        )
         stations = load_output_table("prepared_stations")
     finally:
         clear_active_config()
 
     assert written["prepared_stations"].exists()
+    assert written["record_coverage"] == tmp_path / "outputs" / "tables" / "record_coverage.csv"
+    assert written["record_coverage"].exists()
     assert stations.loc[0, "station"] == "STA01"
 
 
