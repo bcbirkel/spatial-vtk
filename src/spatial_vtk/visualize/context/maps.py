@@ -174,6 +174,7 @@ def plot_station_event_beachball_map(
     basemap_kwargs: dict[str, Any] | None = None,
     showfig: bool | None = None,
     savefig: bool | None = None,
+    close: bool | None = None,
     outpath: str | Path | None = None,
 ) -> plt.Figure:
     """Plot focal mechanism beachballs when ObsPy is available.
@@ -242,7 +243,7 @@ def plot_station_event_beachball_map(
         cbar.set_label(display_label(magnitude_col))
     ax.legend(frameon=True, fontsize=8, loc="best")
     _finish_map(ax, title)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig, close=close)
 
 
 def _magnitude_mappable(magnitudes: pd.Series, cmap: str) -> ScalarMappable | None:

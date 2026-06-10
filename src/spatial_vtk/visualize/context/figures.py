@@ -67,6 +67,7 @@ def plot_station_event_context(
     basemap_kwargs: dict[str, Any] | None = None,
     showfig: bool | None = None,
     savefig: bool | None = None,
+    close: bool | None = None,
     outpath: str | Path | None = None,
 ) -> plt.Figure:
     """Plot station and event locations on one context map.
@@ -155,7 +156,7 @@ def plot_station_event_context(
     ax.set_title(title)
     ax.grid(True, alpha=0.18)
     ax.legend(frameon=True)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig, close=close)
 
 
 def _coordinate_columns(df: pd.DataFrame, *, kind: str) -> tuple[str, str]:
@@ -419,6 +420,7 @@ def plot_station_coverage(
     max_stations: int = 40,
     showfig: bool | None = None,
     savefig: bool | None = None,
+    close: bool | None = None,
     outpath: str | Path | None = None,
 ) -> plt.Figure:
     """Plot event counts by station.
@@ -452,7 +454,7 @@ def plot_station_coverage(
         ax.tick_params(axis="x", rotation=75)
     ax.set_title(title)
     ax.grid(True, axis="y", alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig, close=close)
 
 
 def plot_event_coverage(
@@ -462,6 +464,7 @@ def plot_event_coverage(
     title: str = "Event Coverage",
     showfig: bool | None = None,
     savefig: bool | None = None,
+    close: bool | None = None,
     outpath: str | Path | None = None,
 ) -> plt.Figure:
     """Plot station counts by event.
@@ -493,7 +496,7 @@ def plot_event_coverage(
         ax.tick_params(axis="x", rotation=45)
     ax.set_title(title)
     ax.grid(True, axis="y", alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig, close=close)
 
 
 def build_record_coverage_table(
@@ -748,6 +751,7 @@ def plot_record_coverage(
     title: str = "Record Coverage",
     showfig: bool | None = None,
     savefig: bool | None = None,
+    close: bool | None = None,
     outpath: str | Path | None = None,
 ) -> plt.Figure:
     """Plot observed and synthetic record time coverage by station.
@@ -815,7 +819,7 @@ def plot_record_coverage(
         ax.text(0.5, 0.5, "No record rows", ha="center", va="center", transform=ax.transAxes)
         ax.set_axis_off()
         ax.set_title(title)
-        return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+        return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig, close=close)
 
     y_positions = np.arange(len(df), dtype=float)
     y_labels: list[str] = []
@@ -857,7 +861,7 @@ def plot_record_coverage(
         ],
         loc="best",
     )
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig, close=close)
 
 
 def _validate_record_coverage_timing(
