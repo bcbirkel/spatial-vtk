@@ -87,6 +87,38 @@ def _source_checkpoint_path(path: str | Path | None, source: str) -> Path | None
     return checkpoint.with_name(f"{stem}.{str(source).strip().lower()}.checkpoint{suffix}")
 
 
+def _combine_csv_checkpoints(paths: Sequence[Path], output_path: str | Path) -> Path:
+    """Combine source CSV checkpoints without loading them all into memory."""
+
+    target = Path(output_path).expanduser()
+    suffix = target.suffix.lower()
+    if suffix not in {"", ".csv"}:
+        raise ValueError("Disk-backed QC checkpoint combining currently requires a CSV output path.")
+    if not suffix:
+        target = target.with_suffix(".csv")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = target.with_name(f".{target.name}.tmp")
+    wrote_header = False
+    with tmp_path.open("w", encoding="utf-8") as output:
+        for path in paths:
+            checkpoint = Path(path).expanduser()
+            if not checkpoint.exists() or checkpoint.stat().st_size == 0:
+                continue
+            with checkpoint.open("r", encoding="utf-8") as handle:
+                header = handle.readline()
+                if not header:
+                    continue
+                if not wrote_header:
+                    output.write(header)
+                    wrote_header = True
+                for line in handle:
+                    output.write(line)
+    if not wrote_header:
+        pd.DataFrame().to_csv(tmp_path, index=False)
+    tmp_path.replace(target)
+    return target
+
+
 def _metric_qc_completed_records(df: pd.DataFrame) -> set[tuple[str, str]]:
     """Return completed event/station records from a metric-QC checkpoint."""
 
@@ -271,6 +303,7 @@ def build_waveform_qc_summary(
     checkpoint_path: str | Path | None = None,
     resume: bool = True,
     checkpoint_interval: int = 25,
+    return_result: bool = True,
 ) -> pd.DataFrame:
     """Build observed/synthetic waveform QC rows from event-station records.
 
@@ -314,6 +347,10 @@ def build_waveform_qc_summary(
         event/station/component groups.
     checkpoint_interval
         Number of event-station records between checkpoint writes.
+    return_result
+        When false, write per-source checkpoints and combine them on disk into
+        ``checkpoint_path`` instead of keeping all source QC rows in memory.
+        This is intended for Slurm workers on large inventories.
 
     Returns
     -------
@@ -348,6 +385,7 @@ def build_waveform_qc_summary(
     resolved_snr_threshold = float(snr_threshold if snr_threshold is not None else qc_settings.get("snr_threshold", 3.0))
 
     rows: list[pd.DataFrame] = []
+    source_checkpoint_paths: list[Path] = []
     source_columns = waveform_path_columns or {}
     _progress(
         verbose,
@@ -367,32 +405,41 @@ def build_waveform_qc_summary(
         if source_preprocessing is None and path_column.endswith("_processed_waveform") and not apply_config_preprocessing_to_processed_files:
             source_preprocessing = WaveformPreprocessing()
         _progress(verbose, f"Waveform QC: source {source_key!r} using column {path_column!r}")
-        rows.append(
-            build_waveform_trace_qc_summary(
-                source_records,
-                source=source_key,
-                waveform_path_col=path_column,
-                components=resolved_components,
-                passbands=resolved_passbands,
-                preprocessing=source_preprocessing,
-                min_record_length_s=resolved_min_record_length_s,
-                min_end_after_origin_s=resolved_min_end_after_origin_s,
-                snr_threshold=resolved_snr_threshold,
-                arrival_pick_catalog=arrival_pick_catalog,
-                onset_phase=onset_phase,
-                min_onset_pick_probability=min_onset_pick_probability,
-                verbose=verbose,
-                progress_interval=progress_interval,
-                checkpoint_path=_source_checkpoint_path(checkpoint_path, source_key),
-                resume=resume,
-                checkpoint_interval=checkpoint_interval,
-            )
+        source_checkpoint = _source_checkpoint_path(checkpoint_path, source_key)
+        if source_checkpoint is not None:
+            source_checkpoint_paths.append(source_checkpoint)
+        source_result = build_waveform_trace_qc_summary(
+            source_records,
+            source=source_key,
+            waveform_path_col=path_column,
+            components=resolved_components,
+            passbands=resolved_passbands,
+            preprocessing=source_preprocessing,
+            min_record_length_s=resolved_min_record_length_s,
+            min_end_after_origin_s=resolved_min_end_after_origin_s,
+            snr_threshold=resolved_snr_threshold,
+            arrival_pick_catalog=arrival_pick_catalog,
+            onset_phase=onset_phase,
+            min_onset_pick_probability=min_onset_pick_probability,
+            verbose=verbose,
+            progress_interval=progress_interval,
+            checkpoint_path=source_checkpoint,
+            resume=resume,
+            checkpoint_interval=checkpoint_interval,
         )
-        _progress(verbose, f"Waveform QC: source {source_key!r} complete ({len(rows[-1])} row(s))")
-    result = pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
-    _write_qc_checkpoint(result, checkpoint_path)
-    _progress(verbose, f"Waveform QC: built {len(result)} row(s)")
-    return result
+        _progress(verbose, f"Waveform QC: source {source_key!r} complete ({len(source_result)} row(s))")
+        if return_result:
+            rows.append(source_result)
+        del source_result
+    if return_result:
+        result = pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
+        _write_qc_checkpoint(result, checkpoint_path)
+        _progress(verbose, f"Waveform QC: built {len(result)} row(s)")
+        return result
+    if checkpoint_path is not None:
+        _combine_csv_checkpoints(source_checkpoint_paths, checkpoint_path)
+        _progress(verbose, f"Waveform QC: wrote combined checkpoint {checkpoint_path}")
+    return pd.DataFrame()
 
 
 def build_comparison_eligibility(qc_summary: pd.DataFrame | str | Path) -> pd.DataFrame:

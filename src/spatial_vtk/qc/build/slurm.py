@@ -52,14 +52,14 @@ def run_qc_inventory_job(
         if qc_inventory_output
         else resolve_output_path("qc_inventory", kind="table", cfg=config, create_parent=True)
     )
-    trace_qc_summary = build_waveform_qc_summary(
+    build_waveform_qc_summary(
         event_stations,
         components=metric_settings.components,
         passbands=metric_settings.passbands,
         verbose=verbose,
         checkpoint_path=trace_path,
+        return_result=False,
     )
-    write_table(trace_qc_summary, trace_path)
     qc_summary = build_metric_qc_summary(
         event_stations,
         metrics=metric_settings.metrics,
@@ -67,7 +67,7 @@ def run_qc_inventory_job(
         passbands=metric_settings.passbands,
         spectral_periods_s=metric_settings.spectral.periods_s,
         synthetic_max_frequency_hz=metric_settings.synthetic_max_frequency_hz,
-        trace_qc_summary=trace_qc_summary,
+        trace_qc_summary=trace_path,
         verbose=verbose,
         checkpoint_path=inventory_path,
     )

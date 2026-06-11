@@ -9,8 +9,9 @@ import pytest
 
 from spatial_vtk.io.tables import write_table
 from spatial_vtk.qc.build import inventory as qc_inventory_module
+from spatial_vtk.qc.build import workflow as qc_workflow_module
 from spatial_vtk.qc.build.inventory import build_waveform_trace_qc_summary
-from spatial_vtk.qc.build.workflow import build_metric_qc_summary
+from spatial_vtk.qc.build.workflow import build_metric_qc_summary, build_waveform_qc_summary
 
 
 def test_waveform_trace_qc_resumes_from_checkpoint_without_reloading_waveforms(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -94,6 +95,54 @@ def test_metric_qc_summary_resumes_from_checkpoint(tmp_path: Path) -> None:
 
     assert qc["event_id"].tolist() == ["E1", "E2"]
     assert qc["station"].tolist() == ["S1", "S2"]
+
+
+def test_waveform_qc_summary_combines_source_checkpoints_without_returning_rows(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Slurm trace QC should combine source checkpoints without retaining both sources."""
+
+    event_stations = pd.DataFrame(
+        {
+            "event_id": ["E1"],
+            "station": ["S1"],
+            "observed_processed_waveform": [tmp_path / "obs.pkl"],
+            "synthetic_processed_waveform": [tmp_path / "syn.pkl"],
+        }
+    )
+    checkpoint_path = tmp_path / "qc_trace_summary.csv"
+
+    def fake_build_waveform_trace_qc_summary(records, *, source, checkpoint_path=None, **kwargs):
+        rows = pd.DataFrame(
+            {
+                "source": [source],
+                "event_id": ["E1"],
+                "station": ["S1"],
+                "component": ["Z"],
+                "passband": ["1-2 sec"],
+                "qc_status": ["pass"],
+            }
+        )
+        rows.to_csv(checkpoint_path, index=False)
+        return rows
+
+    monkeypatch.setattr(qc_workflow_module, "build_waveform_trace_qc_summary", fake_build_waveform_trace_qc_summary)
+
+    result = build_waveform_qc_summary(
+        event_stations,
+        sources=("observed", "synthetic"),
+        components=("Z",),
+        passbands=[(1.0, 2.0)],
+        checkpoint_path=checkpoint_path,
+        return_result=False,
+    )
+
+    combined = pd.read_csv(checkpoint_path)
+    assert result.empty
+    assert combined["source"].tolist() == ["observed", "synthetic"]
+    assert (tmp_path / "qc_trace_summary.observed.checkpoint.csv").exists()
+    assert (tmp_path / "qc_trace_summary.synthetic.checkpoint.csv").exists()
 
 
 def test_waveform_trace_qc_reports_missing_component_without_window_failures(
