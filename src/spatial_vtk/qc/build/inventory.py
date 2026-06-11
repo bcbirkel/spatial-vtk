@@ -397,6 +397,9 @@ def build_waveform_trace_qc_summary(
             f"({completed_count}/{total_component_groups} complete; {remaining_count} "
             f"new {_plural(remaining_count, 'group')} remaining)",
         )
+        if remaining_count == 0:
+            _progress(verbose, f"{progress_prefix}: checkpoint already complete; returning cached rows")
+            return pd.DataFrame(rows)
     elif checkpoint_path is not None:
         _progress(verbose, f"{progress_prefix}: no completed component groups found; all work is new")
     for record_index, (_, record) in enumerate(records.iterrows(), start=1):

@@ -254,6 +254,9 @@ def build_metric_qc_summary(
             f"({completed_count}/{total_records} complete; {remaining_count} "
             f"new {_plural(remaining_count, 'record')} remaining)",
         )
+        if remaining_count == 0:
+            _progress(verbose, "Metric QC: checkpoint already complete; returning cached rows")
+            return pd.DataFrame(rows)
     elif checkpoint_path is not None:
         _progress(verbose, "Metric QC: no completed event-station records found; all work is new")
     for record_index, (_, record) in enumerate(records.iterrows(), start=1):

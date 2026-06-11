@@ -61,9 +61,11 @@ def test_waveform_trace_qc_resumes_from_checkpoint_without_reloading_waveforms(t
 
     assert len(resumed) == 1
     assert "resuming with 1 completed component group" in output
+    assert "checkpoint already complete; returning cached rows" in output
+    assert "record 1/1" not in output
 
 
-def test_metric_qc_summary_resumes_from_checkpoint(tmp_path: Path) -> None:
+def test_metric_qc_summary_resumes_from_checkpoint(tmp_path: Path, capsys) -> None:
     """Metric QC checkpoints should skip completed event-station records."""
 
     checkpoint_path = tmp_path / "qc_inventory.csv"
@@ -95,6 +97,39 @@ def test_metric_qc_summary_resumes_from_checkpoint(tmp_path: Path) -> None:
 
     assert qc["event_id"].tolist() == ["E1", "E2"]
     assert qc["station"].tolist() == ["S1", "S2"]
+
+    complete_checkpoint_path = tmp_path / "qc_inventory_complete.csv"
+    pd.DataFrame(
+        {
+            "source": ["observed", "observed"],
+            "event_id": ["E1", "E2"],
+            "station": ["S1", "S2"],
+            "component": ["Z", "Z"],
+            "passband": ["1-2 sec", "1-2 sec"],
+            "metric_group": ["amplitude", "amplitude"],
+            "metric": ["PGA", "PGA"],
+            "period_s": [np.nan, np.nan],
+            "qc_status": ["pass", "pass"],
+            "qc_reason": ["", ""],
+        }
+    ).to_csv(complete_checkpoint_path, index=False)
+
+    complete_qc = build_metric_qc_summary(
+        event_stations,
+        metrics=("PGA",),
+        components=("Z",),
+        passbands=[(1.0, 2.0)],
+        sources=("observed",),
+        checkpoint_path=complete_checkpoint_path,
+        checkpoint_interval=1,
+        verbose=True,
+        progress_interval=1,
+    )
+    output = capsys.readouterr().out
+
+    assert len(complete_qc) == 2
+    assert "checkpoint already complete; returning cached rows" in output
+    assert "record 1/2" not in output
 
 
 def test_waveform_qc_summary_combines_source_checkpoints_without_returning_rows(
