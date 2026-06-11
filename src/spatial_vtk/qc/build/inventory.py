@@ -387,7 +387,7 @@ def build_waveform_trace_qc_summary(
         event_id = str(record.get("event_id", "")).strip()
         station = str(record.get("station", "")).strip().upper()
         origin = _event_origin_time(record)
-        path_text = str(record.get(waveform_path_col, "")).strip()
+        path_text = _path_cell_text(record.get(waveform_path_col, ""))
         for component in components:
             component_text = str(component).strip().upper()
             completed_key = (str(source).strip().lower(), event_id, station, component_text)
@@ -528,6 +528,20 @@ def _read_table(value: pd.DataFrame | str | Path) -> pd.DataFrame:
     if path.suffix.lower() in {".parquet", ".pq"}:
         return pd.read_parquet(path)
     return pd.read_csv(path)
+
+
+def _path_cell_text(value: object) -> str:
+    """Return one waveform path cell as text, treating missing values as blank."""
+
+    if value is None:
+        return ""
+    try:
+        if pd.isna(value):
+            return ""
+    except Exception:
+        pass
+    text = str(value).strip()
+    return "" if text.lower() in {"", "nan", "none", "null"} else text
 
 
 def _progress(verbose: bool, message: str) -> None:

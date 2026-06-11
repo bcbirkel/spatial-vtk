@@ -357,14 +357,19 @@ def build_waveform_qc_summary(
     )
     for source in sources:
         source_key = str(source).strip().lower()
-        path_column = source_columns.get(source_key) or _default_waveform_path_column(records, source_key)
+        explicit_column = source_columns.get(source_key)
+        source_records, path_column = _waveform_path_records_and_column(
+            records,
+            source_key,
+            explicit_column=explicit_column,
+        )
         source_preprocessing = preprocessing
         if source_preprocessing is None and path_column.endswith("_processed_waveform") and not apply_config_preprocessing_to_processed_files:
             source_preprocessing = WaveformPreprocessing()
         _progress(verbose, f"Waveform QC: source {source_key!r} using column {path_column!r}")
         rows.append(
             build_waveform_trace_qc_summary(
-                records,
+                source_records,
                 source=source_key,
                 waveform_path_col=path_column,
                 components=resolved_components,
@@ -814,33 +819,72 @@ def _read_table(value: pd.DataFrame | str | Path) -> pd.DataFrame:
     return pd.read_csv(path)
 
 
-def _default_waveform_path_column(records: pd.DataFrame, source: str) -> str:
-    """Return the best waveform path column for one source.
+def _waveform_path_records_and_column(
+    records: pd.DataFrame,
+    source: str,
+    *,
+    explicit_column: str | None = None,
+) -> tuple[pd.DataFrame, str]:
+    """Return records and a source path column, coalescing default candidates."""
 
-    Parameters
-    ----------
-    records
-        Event-station table.
-    source
-        Source label, usually ``observed`` or ``synthetic``.
+    if explicit_column:
+        if explicit_column not in records.columns:
+            raise KeyError(f"Configured waveform path column {explicit_column!r} is missing for source {source!r}.")
+        return records, explicit_column
 
-    Returns
-    -------
-    str
-        Existing column name containing waveform file paths.
-    """
+    candidates = _waveform_path_column_candidates(source)
+    existing = [column for column in candidates if column in records.columns]
+    usable = [column for column in existing if _column_has_path_values(records[column])]
+    if not usable:
+        tried = ", ".join(candidates)
+        raise KeyError(f"Could not find a waveform path column with paths for source {source!r}. Tried: {tried}")
+    if len(usable) == 1:
+        return records, usable[0]
 
-    candidates = (
+    coalesced = records.copy()
+    column = f"__svtk_{source}_waveform_path"
+    values: list[str] = []
+    for _, row in records.iterrows():
+        text = ""
+        for candidate in usable:
+            text = _path_cell_text(row.get(candidate, ""))
+            if text:
+                break
+        values.append(text)
+    coalesced[column] = values
+    return coalesced, column
+
+
+def _waveform_path_column_candidates(source: str) -> tuple[str, ...]:
+    """Return preferred waveform path columns for one source."""
+
+    return (
         f"{source}_processed_waveform",
         f"{source}_waveform",
         f"{source}_mseed",
         f"{source}_pickle",
         f"{source}_raw_waveform",
     )
-    for column in candidates:
-        if column in records.columns:
-            return column
-    raise KeyError(f"Could not find a waveform path column for source {source!r}. Tried: {', '.join(candidates)}")
+
+
+def _column_has_path_values(series: pd.Series) -> bool:
+    """Return whether a path column has at least one non-empty path value."""
+
+    return any(_path_cell_text(value) for value in series)
+
+
+def _path_cell_text(value: object) -> str:
+    """Return one waveform path cell as text, treating missing values as blank."""
+
+    if value is None:
+        return ""
+    try:
+        if pd.isna(value):
+            return ""
+    except Exception:
+        pass
+    text = str(value).strip()
+    return "" if text.lower() in {"", "nan", "none", "null"} else text
 
 
 def _period_band_label(passband: str | Sequence[float]) -> str:

@@ -86,6 +86,100 @@ def test_preprocess_waveform_files_uses_configured_waveform_paths(tmp_path: Path
     assert Path(result.event_station_records.loc[0, "synthetic_processed_waveform"]).is_file()
 
 
+def test_preprocess_waveform_files_backfills_blank_existing_waveform_columns(tmp_path: Path, monkeypatch) -> None:
+    """Blank waveform columns should not prevent config-derived path resolution."""
+
+    observed_root = tmp_path / "raw" / "observed"
+    synthetic_root = tmp_path / "raw" / "synthetic" / "model_a"
+    observed_root.mkdir(parents=True)
+    synthetic_root.mkdir(parents=True)
+    observed_path = observed_root / "E01.pkl"
+    synthetic_path = synthetic_root / "E01.pkl"
+    observed_path.write_bytes(b"observed")
+    synthetic_path.write_bytes(b"synthetic")
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  root_dir: .",
+                "paths:",
+                "  observed_root: raw/observed/{event_id}.pkl",
+                "  synthetic_template: raw/synthetic/{model}/{event_id}.pkl",
+                "outputs:",
+                "  preprocessed_waveforms: processed",
+                "metrics:",
+                "  models: [model_a]",
+                "waveforms:",
+                "  preprocessing:",
+                "    lowpass_hz: 1.0",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    records = pd.DataFrame(
+        {
+            "event_id": ["E01"],
+            "station": ["STA01"],
+            "observed_waveform": [""],
+            "synthetic_waveform": [pd.NA],
+            "observed_raw_waveform": [""],
+            "synthetic_raw_waveform": [""],
+            "observed_processed_waveform": [""],
+            "synthetic_processed_waveform": [""],
+        }
+    )
+
+    def fake_preprocess_one_file(input_path, output_path, *, source, event_id, settings, overwrite, cached_metadata=None):
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_bytes(b"processed")
+        return (
+            {
+                "event_id": event_id,
+                "source": source,
+                "input_file": str(input_path),
+                "output_file": str(output_path),
+                "status": "written",
+                "message": "",
+                "processing": "Filter: lowpass 1 Hz",
+                "lowpass_hz": settings.lowpass_hz,
+                "highpass_hz": settings.highpass_hz,
+                "bandpass_low_hz": settings.bandpass_low_hz,
+                "bandpass_high_hz": settings.bandpass_high_hz,
+                "resample_hz": settings.resample_hz,
+                "filter_order": settings.filter_order,
+                "trace_count": 0,
+            },
+            pd.DataFrame(),
+        )
+
+    monkeypatch.setattr(preprocessing_module, "_preprocess_one_file", fake_preprocess_one_file)
+
+    result = preprocess_waveform_files(records, config=cfg)
+    out = result.event_station_records.loc[0]
+
+    assert set(result.manifest["input_file"]) == {str(observed_path), str(synthetic_path)}
+    assert out["observed_raw_waveform"] == str(observed_path)
+    assert out["synthetic_raw_waveform"] == str(synthetic_path)
+    assert Path(out["observed_processed_waveform"]).is_file()
+    assert Path(out["synthetic_processed_waveform"]).is_file()
+    assert out["observed_waveform_preprocessing"] == "Filter: lowpass 1 Hz"
+    assert out["synthetic_waveform_preprocessing"] == "Filter: lowpass 1 Hz"
+
+
+def test_preprocess_waveform_files_does_not_label_rows_without_paths(tmp_path: Path) -> None:
+    """Preprocessing labels should not imply that blank source rows were processed."""
+
+    records = pd.DataFrame({"event_id": ["E01"], "station": ["STA01"], "observed_waveform": [""]})
+
+    result = preprocess_waveform_files(records, output_root=tmp_path / "processed", source_columns={"observed": "observed_waveform"})
+
+    assert result.manifest.empty
+    assert result.event_station_records.loc[0, "observed_processed_waveform"] == ""
+    assert result.event_station_records.loc[0, "observed_waveform_preprocessing"] == ""
+
+
 def test_configured_observed_template_avoids_json_sidecars(tmp_path: Path, monkeypatch) -> None:
     """Explicit waveform templates should win over mixed-format root scans."""
 

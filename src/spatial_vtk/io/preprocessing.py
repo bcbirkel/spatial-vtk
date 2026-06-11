@@ -196,15 +196,21 @@ def preprocess_waveform_files(
     for source, column in columns.items():
         raw_column = f"{source}_raw_waveform"
         processed_column = f"{source}_processed_waveform"
+        preprocessing_column = f"{source}_waveform_preprocessing"
         if raw_column not in updated.columns:
             updated[raw_column] = updated[column]
+        else:
+            raw_missing = updated[raw_column].map(_path_cell_text).eq("")
+            source_present = updated[column].map(_path_cell_text).ne("")
+            updated.loc[raw_missing & source_present, raw_column] = updated.loc[raw_missing & source_present, column]
         updated[processed_column] = ""
-        source_records = records.loc[records[column].notna() & records[column].astype(str).str.strip().ne("")]
+        updated[preprocessing_column] = ""
+        source_records = records.loc[records[column].map(_path_cell_text).ne("")]
         source_groups = list(source_records.groupby([event_id_col, column], sort=False))
         _progress(verbose, f"{source}: {len(source_groups)} unique event waveform file(s) from column {column!r}")
         for item_index, (key, group) in enumerate(source_groups, start=1):
             event_id, input_value = key
-            input_path = Path(str(input_value)).expanduser()
+            input_path = Path(_path_cell_text(input_value)).expanduser()
             lookup_key = (source, str(event_id), str(input_path))
             output_path = processed_lookup.get(lookup_key)
             if output_path is None:
@@ -238,9 +244,9 @@ def preprocess_waveform_files(
                     trace_frames.append(trace_frame)
             row_index = group.index
             updated.loc[row_index, processed_column] = str(output_path)
+            updated.loc[row_index, preprocessing_column] = waveform_preprocessing_label(settings)
             if replace_input_columns:
                 updated.loc[row_index, column] = str(output_path)
-        updated[f"{source}_waveform_preprocessing"] = waveform_preprocessing_label(settings)
 
     manifest = pd.DataFrame(manifest_rows)
     trace_metadata = pd.concat(trace_frames, ignore_index=True) if trace_frames else pd.DataFrame()
@@ -278,7 +284,7 @@ def _resolve_source_columns(records: pd.DataFrame, source_columns: Mapping[str, 
     resolved: dict[str, str] = {}
     for source, candidates in DEFAULT_SOURCE_COLUMN_CANDIDATES.items():
         for candidate in candidates:
-            if candidate in records.columns:
+            if candidate in records.columns and _column_has_path_values(records[candidate]):
                 resolved[source] = candidate
                 break
     return resolved
@@ -301,7 +307,7 @@ def _validate_source_columns(
                 f"Check {', '.join((*CONFIG_TEMPLATE_KEYS[source], *CONFIG_ROOT_KEYS[source]))}."
             )
     for source, column in columns.items():
-        nonempty = records[column].notna() & records[column].astype(str).str.strip().ne("")
+        nonempty = records[column].map(_path_cell_text).ne("")
         if nonempty.any():
             continue
         if source in configured_sources:
@@ -368,13 +374,13 @@ def _add_configured_waveform_paths(records: pd.DataFrame, *, config: Any | None,
         return records
 
     out = records.copy()
-    if not _has_source_column(out, "observed"):
+    if not _has_usable_source_column(out, "observed"):
         observed_paths = _waveform_paths_from_templates(out, cfg=cfg, template_keys=CONFIG_TEMPLATE_KEYS["observed"])
         if observed_paths is None:
             observed_paths = _waveform_paths_from_roots(out[event_id_col], cfg=cfg, root_keys=CONFIG_ROOT_KEYS["observed"])
         if observed_paths is not None:
             out["observed_waveform"] = observed_paths
-    if not _has_source_column(out, "synthetic"):
+    if not _has_usable_source_column(out, "synthetic"):
         synthetic_paths = _waveform_paths_from_templates(out, cfg=cfg, template_keys=CONFIG_TEMPLATE_KEYS["synthetic"])
         if synthetic_paths is None:
             synthetic_paths = _waveform_paths_from_roots(out[event_id_col], cfg=cfg, root_keys=CONFIG_ROOT_KEYS["synthetic"])
@@ -383,10 +389,33 @@ def _add_configured_waveform_paths(records: pd.DataFrame, *, config: Any | None,
     return out
 
 
-def _has_source_column(records: pd.DataFrame, source: str) -> bool:
-    """Return whether records already include one recognized source path column."""
+def _has_usable_source_column(records: pd.DataFrame, source: str) -> bool:
+    """Return whether records include one recognized source column with paths."""
 
-    return any(column in records.columns for column in DEFAULT_SOURCE_COLUMN_CANDIDATES[source])
+    return any(
+        column in records.columns and _column_has_path_values(records[column])
+        for column in DEFAULT_SOURCE_COLUMN_CANDIDATES[source]
+    )
+
+
+def _column_has_path_values(series: pd.Series) -> bool:
+    """Return whether a path column has at least one non-empty path value."""
+
+    return any(_path_cell_text(value) for value in series)
+
+
+def _path_cell_text(value: object) -> str:
+    """Return one waveform path cell as text, treating missing values as blank."""
+
+    if value is None:
+        return ""
+    try:
+        if pd.isna(value):
+            return ""
+    except Exception:
+        pass
+    text = str(value).strip()
+    return "" if text.lower() in {"", "nan", "none", "null"} else text
 
 
 def _waveform_paths_from_templates(records: pd.DataFrame, *, cfg: Any, template_keys: tuple[str, ...]) -> pd.Series | None:
