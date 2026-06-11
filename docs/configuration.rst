@@ -120,7 +120,7 @@ defaults in ``compute.slurm``:
          - mamba activate spatial-vtk-py312
        partition: main
        account: my_account
-       walltime: 12:00:00
+       walltime: "12:00:00"
        memory: 16G
        cpus_per_task: 1
        max_concurrent: 10
@@ -135,13 +135,13 @@ generation without changing metric task arrays:
    qc:
      slurm:
        job_name: svtk-qc
-       walltime: 24:00:00
+       walltime: "24:00:00"
        memory: 32G
 
    metrics:
      slurm:
        job_name: svtk-metrics
-       walltime: 24:00:00
+       walltime: "24:00:00"
        memory: 32G
 
 Write a QC inventory Slurm script:

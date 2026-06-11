@@ -5,6 +5,7 @@ from __future__ import annotations
 import glob
 from collections.abc import Sequence
 from pathlib import Path
+import tempfile
 from types import SimpleNamespace
 from typing import Any
 
@@ -251,17 +252,41 @@ def write_table(df: pd.DataFrame, path: str | Path, *, index: bool = False) -> P
     """
 
     output_path = Path(path).expanduser()
-    output_path.parent.mkdir(parents=True, exist_ok=True)
     suffix = output_path.suffix.lower()
     if suffix in {"", ".csv"}:
         if not suffix:
             output_path = output_path.with_suffix(".csv")
-        df.to_csv(output_path, index=index)
+        _atomic_write_table(df, output_path, index=index, format="csv")
     elif suffix in {".parquet", ".pq"}:
-        df.to_parquet(output_path, index=index)
+        _atomic_write_table(df, output_path, index=index, format="parquet")
     else:
         raise ValueError(f"Unsupported table output extension: {output_path.suffix}")
     return output_path
+
+
+def _atomic_write_table(df: pd.DataFrame, output_path: Path, *, index: bool, format: str) -> None:
+    """Write one table through a same-directory temporary file."""
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    handle = tempfile.NamedTemporaryFile(
+        delete=False,
+        dir=output_path.parent,
+        prefix=f".{output_path.name}.",
+        suffix=".tmp",
+    )
+    tmp_path = Path(handle.name)
+    handle.close()
+    try:
+        if format == "csv":
+            df.to_csv(tmp_path, index=index)
+        elif format == "parquet":
+            df.to_parquet(tmp_path, index=index)
+        else:
+            raise ValueError(f"Unsupported table output format: {format}")
+        tmp_path.replace(output_path)
+    except Exception:
+        tmp_path.unlink(missing_ok=True)
+        raise
 
 
 def read_table(path: str | Path, **kwargs: Any) -> pd.DataFrame:
@@ -285,7 +310,8 @@ def read_table(path: str | Path, **kwargs: Any) -> pd.DataFrame:
     suffix = input_path.suffix.lower()
     if suffix in {".parquet", ".pq"}:
         return pd.read_parquet(input_path, **kwargs)
-    return pd.read_csv(input_path, **kwargs)
+    csv_kwargs = {"low_memory": False, **kwargs}
+    return pd.read_csv(input_path, **csv_kwargs)
 
 
 def load_output_table(

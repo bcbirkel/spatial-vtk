@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from importlib import import_module
+
 from spatial_vtk.qc.build import (
     InventoryBandSpec,
     TraceInventoryLookup,
@@ -20,13 +22,22 @@ from spatial_vtk.qc.build import (
     discover_event_ids,
     export_manual_review_queue,
     load_trace_inventory_lookup,
-    run_qc_inventory_job,
-    submit_qc_slurm_job,
     trace_passband_is_accepted,
-    write_qc_slurm_script,
 )
 from spatial_vtk.qc.review import filter_trace_summary, queue_rows_from_filtered_trace_df
 from spatial_vtk.qc.summary import classify_station_family, global_trace_reject_reasons, reject_passband
+
+_SLURM_EXPORTS = {"run_qc_inventory_job", "submit_qc_slurm_job", "write_qc_slurm_script"}
+
+
+def __getattr__(name: str):
+    """Lazily expose Slurm helpers without pre-importing worker modules."""
+
+    if name in _SLURM_EXPORTS:
+        slurm = import_module("spatial_vtk.qc.build.slurm")
+        return getattr(slurm, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     "InventoryBandSpec",

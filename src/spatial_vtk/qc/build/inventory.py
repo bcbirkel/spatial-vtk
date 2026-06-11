@@ -31,6 +31,14 @@ from spatial_vtk.qc.summary.rules import (
 )
 
 PROCESSING_EDGE_FRACTION = 0.05
+TRACE_UNAVAILABLE_REASONS = {
+    "missing_waveform_path",
+    "missing_waveform_file",
+    "waveform_read_error",
+    "missing_station",
+    "missing_component",
+    "missing_trace",
+}
 
 
 def discover_event_ids(*roots: str | Path) -> list[str]:
@@ -387,6 +395,7 @@ def build_waveform_trace_qc_summary(
                 continue
             trace = None
             load_reason = ""
+            load_message = ""
             if not path_text:
                 load_reason = "missing_waveform_path"
             else:
@@ -397,9 +406,18 @@ def build_waveform_trace_qc_summary(
                         station=station,
                         component=component_text,
                     )
-                    trace = _select_trace(stream, station=station, component=component_text)
-                except Exception:
-                    load_reason = "missing_trace"
+                except FileNotFoundError as exc:
+                    load_reason = "missing_waveform_file"
+                    load_message = str(exc)
+                except Exception as exc:
+                    load_reason = "waveform_read_error"
+                    load_message = str(exc)
+                else:
+                    try:
+                        trace = _select_trace(stream, station=station, component=component_text)
+                    except Exception as exc:
+                        load_reason = _trace_selection_failure_reason(stream, station=station, component=component_text)
+                        load_message = str(exc)
             trace_summary = _trace_quality_summary(
                 trace,
                 origin=origin,
@@ -433,18 +451,21 @@ def build_waveform_trace_qc_summary(
                     global_reasons=global_reasons,
                     pick_onset_rel_s=pick_onset_rel_s,
                 )
-                reject_flag, reasons = reject_passband(
-                    global_reasons=global_reasons,
-                    snr_rms=float(band_summary["snr_rms"]),
-                    snr_threshold=snr_threshold,
-                    noise_window_valid=bool(band_summary["noise_window_valid"]),
-                    signal_window_valid=bool(band_summary["signal_window_valid"]),
-                    pre_origin_window_valid=bool(band_summary["pre_origin_window_valid"]),
-                    pre_origin_signal_ratio=float(band_summary["pre_origin_signal_ratio"]),
-                    pre_origin_signal_ratio_threshold=pre_origin_signal_ratio_threshold,
-                    origin_window_valid=bool(band_summary["origin_window_valid"]),
-                    origin_signal_ratio=float(band_summary["origin_signal_ratio"]),
-                )
+                if _trace_unavailable(global_reasons):
+                    reject_flag, reasons = True, list(global_reasons)
+                else:
+                    reject_flag, reasons = reject_passband(
+                        global_reasons=global_reasons,
+                        snr_rms=float(band_summary["snr_rms"]),
+                        snr_threshold=snr_threshold,
+                        noise_window_valid=bool(band_summary["noise_window_valid"]),
+                        signal_window_valid=bool(band_summary["signal_window_valid"]),
+                        pre_origin_window_valid=bool(band_summary["pre_origin_window_valid"]),
+                        pre_origin_signal_ratio=float(band_summary["pre_origin_signal_ratio"]),
+                        pre_origin_signal_ratio_threshold=pre_origin_signal_ratio_threshold,
+                        origin_window_valid=bool(band_summary["origin_window_valid"]),
+                        origin_signal_ratio=float(band_summary["origin_signal_ratio"]),
+                    )
                 rows.append(
                     {
                         "source": str(source).strip().lower(),
@@ -469,6 +490,7 @@ def build_waveform_trace_qc_summary(
                         "valid_end_sample": trace_summary["valid_end_sample"],
                         "sample_interval_s": trace_summary["dt"],
                         "sample_count": int(np.asarray(trace_summary.get("samples", [])).size),
+                        "load_message": load_message,
                         "onset_rel_s": band_summary["onset_rel_s"],
                         "snr_rms": band_summary["snr_rms"],
                         "noise_rms": band_summary["noise_rms"],
@@ -691,6 +713,42 @@ def _select_trace(stream: Any, *, station: str, component: str) -> Any:
     """
 
     return select_waveform_trace(stream, station=station, component=component)
+
+
+def _trace_selection_failure_reason(stream: Any, *, station: str, component: str) -> str:
+    """Classify why trace selection failed for a loaded waveform stream."""
+
+    try:
+        metadata = trace_metadata_table(stream)
+    except Exception:
+        return "missing_trace"
+    if metadata.empty:
+        return "missing_trace"
+    station_key = str(station).strip().upper()
+    component_key = str(component).strip().upper()
+    stations = {
+        str(value).strip().upper()
+        for value in metadata.get("station", pd.Series(dtype=object)).dropna()
+    }
+    if station_key and station_key not in stations:
+        return "missing_station"
+    station_rows = metadata
+    if station_key and "station" in metadata.columns:
+        station_mask = metadata["station"].astype(str).str.strip().str.upper().eq(station_key)
+        station_rows = metadata.loc[station_mask]
+    components = {
+        str(value).strip().upper()
+        for value in station_rows.get("component", pd.Series(dtype=object)).dropna()
+    }
+    if component_key and component_key not in components:
+        return "missing_component"
+    return "missing_trace"
+
+
+def _trace_unavailable(reasons: list[str]) -> bool:
+    """Return whether passband window checks should be skipped."""
+
+    return bool({str(reason).strip() for reason in reasons} & TRACE_UNAVAILABLE_REASONS)
 
 
 def _trace_quality_summary(

@@ -75,7 +75,7 @@ def slurm_settings_from_config(config: SpatialVTKConfig, *, section: str | None 
         environment_setup=setup_lines,
         partition=str(payload.get("partition", "") or ""),
         account=str(payload.get("account", "") or ""),
-        walltime=str(payload.get("walltime", payload.get("time", "12:00:00"))),
+        walltime=_slurm_walltime(payload.get("walltime", payload.get("time", "12:00:00"))),
         memory=str(payload.get("memory", payload.get("mem", "8G"))),
         cpus_per_task=int(payload.get("cpus_per_task", payload.get("cpus", 1))),
         max_concurrent=int(payload.get("max_concurrent", 10)),
@@ -85,6 +85,25 @@ def slurm_settings_from_config(config: SpatialVTKConfig, *, section: str | None 
         submit_command=str(payload.get("submit_command", "sbatch") or "sbatch"),
         extra_directives=extra_directives,
     )
+
+
+def _slurm_walltime(value: Any) -> str:
+    """Normalize YAML-parsed Slurm walltime values to ``HH:MM:SS``."""
+
+    if value in (None, ""):
+        return "12:00:00"
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        total_seconds = int(value)
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        return f"{hours:d}:{minutes:02d}:{seconds:02d}"
+    text = str(value).strip()
+    if text.isdigit():
+        total_seconds = int(text)
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        return f"{hours:d}:{minutes:02d}:{seconds:02d}"
+    return text
 
 
 def slurm_header(settings: SlurmSettings, *, array: str | None = None) -> list[str]:

@@ -46,7 +46,7 @@ compute:
     #   - mamba activate spatial-vtk-py312
     partition:
     account:
-    walltime: 12:00:00
+    walltime: "12:00:00"
     memory: 16G
     cpus_per_task: 1
     max_concurrent: 10
@@ -120,7 +120,7 @@ metrics:
   # Optional SLURM overrides for metric task arrays.
   slurm:
     job_name: svtk-metrics
-    walltime: 24:00:00
+    walltime: "24:00:00"
     memory: 32G
 
 # SYNTHETICS
@@ -153,7 +153,7 @@ qc:
   # Optional SLURM overrides for building qc_trace_summary and qc_inventory.
   slurm:
     job_name: svtk-qc
-    walltime: 24:00:00
+    walltime: "24:00:00"
     memory: 32G
 
 # RUN SCENARIOS

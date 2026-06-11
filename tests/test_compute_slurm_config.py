@@ -43,6 +43,27 @@ def test_shared_slurm_settings_support_task_overrides() -> None:
     assert settings.environment_setup == ("mamba activate spatial-vtk",)
 
 
+def test_slurm_settings_normalize_yaml_sexagesimal_walltime() -> None:
+    """Unquoted YAML times may parse as seconds and still need Slurm syntax."""
+
+    cfg = SpatialVTKConfig(
+        None,
+        Path(".").resolve(),
+        {
+            "compute": {
+                "slurm": {
+                    "python_command": "python",
+                    "walltime": 86400,
+                }
+            },
+        },
+    )
+
+    settings = slurm_settings_from_config(cfg, section="qc.slurm")
+
+    assert settings.walltime == "24:00:00"
+
+
 def test_slurm_settings_require_python_command() -> None:
     """SLURM settings should fail early when no Python command is configured."""
 
