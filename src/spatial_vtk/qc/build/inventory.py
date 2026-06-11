@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import re
+import time
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
@@ -374,16 +375,18 @@ def build_waveform_trace_qc_summary(
     total_records = len(records)
     progress_every = max(int(progress_interval), 1)
     checkpoint_every = max(int(checkpoint_interval), 1)
+    progress_start = time.monotonic()
+    progress_prefix = f"Trace QC {str(source).strip().lower()}"
     _progress(
         verbose,
-        f"Trace QC {str(source).strip().lower()}: "
+        f"{progress_prefix}: "
         f"{total_records} event-station record(s), {len(tuple(components))} component(s), {len(bands)} passband(s)",
     )
     if completed:
-        _progress(verbose, f"Trace QC {str(source).strip().lower()}: resuming with {len(completed)} completed component group(s)")
+        _progress(verbose, f"{progress_prefix}: resuming with {len(completed)} completed component group(s)")
     for record_index, (_, record) in enumerate(records.iterrows(), start=1):
         if record_index == 1 or record_index % progress_every == 0 or record_index == total_records:
-            _progress(verbose, f"Trace QC {str(source).strip().lower()}: record {record_index}/{total_records}")
+            _progress(verbose, _progress_status(progress_prefix, record_index, total_records, progress_start))
         event_id = str(record.get("event_id", "")).strip()
         station = str(record.get("station", "")).strip().upper()
         origin = _event_origin_time(record)
@@ -504,7 +507,7 @@ def build_waveform_trace_qc_summary(
             _write_qc_checkpoint(pd.DataFrame(rows), checkpoint_path)
     result = pd.DataFrame(rows)
     _write_qc_checkpoint(result, checkpoint_path)
-    _progress(verbose, f"Trace QC {str(source).strip().lower()}: built {len(result)} row(s)")
+    _progress(verbose, f"{progress_prefix}: built {len(result)} row(s) in {_format_duration(time.monotonic() - progress_start)}")
     return result
 
 
@@ -549,6 +552,32 @@ def _progress(verbose: bool, message: str) -> None:
 
     if verbose:
         print(message, flush=True)
+
+
+def _format_duration(seconds: float) -> str:
+    """Format elapsed seconds for progress messages."""
+
+    seconds = max(float(seconds), 0.0)
+    if seconds < 60.0:
+        return f"{seconds:.1f}s"
+    minutes, remaining = divmod(int(seconds), 60)
+    if minutes < 60:
+        return f"{minutes}m{remaining:02d}s"
+    hours, minutes = divmod(minutes, 60)
+    return f"{hours}h{minutes:02d}m{remaining:02d}s"
+
+
+def _progress_status(prefix: str, current: int, total: int, start_time: float) -> str:
+    """Return a progress message with elapsed time, rate, and ETA."""
+
+    elapsed = max(time.monotonic() - float(start_time), 0.0)
+    rate = float(current) / elapsed if elapsed > 0 else 0.0
+    remaining = max(int(total) - int(current), 0)
+    eta = remaining / rate if rate > 0 else 0.0
+    return (
+        f"{prefix}: record {current}/{total} "
+        f"(elapsed {_format_duration(elapsed)}, {rate:.2f} records/s, ETA {_format_duration(eta)})"
+    )
 
 
 def _load_qc_checkpoint(path: str | Path | None) -> pd.DataFrame:

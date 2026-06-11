@@ -11,6 +11,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 import re
+import time
 
 import numpy as np
 import pandas as pd
@@ -50,6 +51,32 @@ def _progress(verbose: bool, message: str) -> None:
 
     if verbose:
         print(message, flush=True)
+
+
+def _format_duration(seconds: float) -> str:
+    """Format elapsed seconds for progress messages."""
+
+    seconds = max(float(seconds), 0.0)
+    if seconds < 60.0:
+        return f"{seconds:.1f}s"
+    minutes, remaining = divmod(int(seconds), 60)
+    if minutes < 60:
+        return f"{minutes}m{remaining:02d}s"
+    hours, minutes = divmod(minutes, 60)
+    return f"{hours}h{minutes:02d}m{remaining:02d}s"
+
+
+def _progress_status(prefix: str, current: int, total: int, start_time: float) -> str:
+    """Return a progress message with elapsed time, rate, and ETA."""
+
+    elapsed = max(time.monotonic() - float(start_time), 0.0)
+    rate = float(current) / elapsed if elapsed > 0 else 0.0
+    remaining = max(int(total) - int(current), 0)
+    eta = remaining / rate if rate > 0 else 0.0
+    return (
+        f"{prefix}: record {current}/{total} "
+        f"(elapsed {_format_duration(elapsed)}, {rate:.2f} records/s, ETA {_format_duration(eta)})"
+    )
 
 
 def _load_qc_checkpoint(path: str | Path | None) -> pd.DataFrame:
@@ -200,6 +227,7 @@ def build_metric_qc_summary(
     total_records = len(records)
     interval = max(int(progress_interval), 1)
     checkpoint_every = max(int(checkpoint_interval), 1)
+    progress_start = time.monotonic()
     _progress(
         verbose,
         "Metric QC: "
@@ -210,7 +238,7 @@ def build_metric_qc_summary(
         _progress(verbose, f"Metric QC: resuming with {len(completed_records)} completed event-station record(s)")
     for record_index, (_, record) in enumerate(records.iterrows(), start=1):
         if record_index == 1 or record_index % interval == 0 or record_index == total_records:
-            _progress(verbose, f"Metric QC: record {record_index}/{total_records}")
+            _progress(verbose, _progress_status("Metric QC", record_index, total_records, progress_start))
         record_key = (str(record.get("event_id", "")).strip(), str(record.get("station", "")).strip().upper())
         if record_key in completed_records:
             continue
@@ -276,7 +304,7 @@ def build_metric_qc_summary(
         completed_records.add(record_key)
         if checkpoint_path is not None and (record_index % checkpoint_every == 0 or record_index == total_records):
             _write_qc_checkpoint(pd.DataFrame(rows), checkpoint_path)
-    _progress(verbose, f"Metric QC: built {len(rows)} row(s)")
+    _progress(verbose, f"Metric QC: built {len(rows)} row(s) in {_format_duration(time.monotonic() - progress_start)}")
     result = pd.DataFrame(rows)
     _write_qc_checkpoint(result, checkpoint_path)
     return result
@@ -394,6 +422,7 @@ def build_waveform_qc_summary(
         f"{len(tuple(resolved_components))} component(s), {len(tuple(resolved_passbands))} passband(s)",
     )
     for source in sources:
+        source_start = time.monotonic()
         source_key = str(source).strip().lower()
         explicit_column = source_columns.get(source_key)
         source_records, path_column = _waveform_path_records_and_column(
@@ -427,7 +456,11 @@ def build_waveform_qc_summary(
             resume=resume,
             checkpoint_interval=checkpoint_interval,
         )
-        _progress(verbose, f"Waveform QC: source {source_key!r} complete ({len(source_result)} row(s))")
+        _progress(
+            verbose,
+            f"Waveform QC: source {source_key!r} complete "
+            f"({len(source_result)} row(s), elapsed {_format_duration(time.monotonic() - source_start)})",
+        )
         if return_result:
             rows.append(source_result)
         del source_result
