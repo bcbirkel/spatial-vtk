@@ -183,7 +183,11 @@ def preprocess_waveform_files(
     _progress(verbose, f"Preprocessing waveforms into {root}")
     _progress(verbose, f"Resolved waveform sources: {', '.join(sorted(columns))}")
     metadata_dir = root / "metadata"
+    event_station_path = metadata_dir / event_station_name
+    manifest_path = metadata_dir / manifest_name
+    trace_metadata_path = metadata_dir / trace_metadata_name
     metadata_dir.mkdir(parents=True, exist_ok=True)
+    cached_trace_metadata = _index_cached_trace_metadata(trace_metadata_path)
     updated = records.copy()
     manifest_rows: list[dict[str, Any]] = []
     trace_frames: list[pd.DataFrame] = []
@@ -219,6 +223,7 @@ def preprocess_waveform_files(
                     event_id=str(event_id),
                     settings=settings,
                     overwrite=overwrite,
+                    cached_metadata=_cached_trace_metadata_for_output(cached_trace_metadata, output_path) if not overwrite else None,
                 )
                 manifest_rows.append(manifest_row)
                 status = str(manifest_row.get("status", "unknown"))
@@ -237,9 +242,6 @@ def preprocess_waveform_files(
                 updated.loc[row_index, column] = str(output_path)
         updated[f"{source}_waveform_preprocessing"] = waveform_preprocessing_label(settings)
 
-    event_station_path = metadata_dir / event_station_name
-    manifest_path = metadata_dir / manifest_name
-    trace_metadata_path = metadata_dir / trace_metadata_name
     manifest = pd.DataFrame(manifest_rows)
     trace_metadata = pd.concat(trace_frames, ignore_index=True) if trace_frames else pd.DataFrame()
     write_table(updated, event_station_path)
@@ -515,12 +517,16 @@ def _preprocess_one_file(
     event_id: str,
     settings: WaveformPreprocessing,
     overwrite: bool,
+    cached_metadata: pd.DataFrame | None = None,
 ) -> tuple[dict[str, Any], pd.DataFrame | None]:
     """Preprocess one waveform file and return manifest metadata."""
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     label = waveform_preprocessing_label(settings)
     if output_path.exists() and not overwrite:
+        if cached_metadata is not None and not cached_metadata.empty:
+            metadata = cached_metadata.copy()
+            return _manifest_row(input_path, output_path, source, event_id, settings, label, "cached", "", metadata), metadata
         stream = read_waveform_file(output_path)
         metadata = trace_metadata_table(stream, source=output_path, event_id=event_id)
         metadata = _tag_trace_metadata(metadata, source=source, input_path=input_path, output_path=output_path)
@@ -553,6 +559,47 @@ def _write_waveform_file(stream: Any, output_path: Path, *, input_path: Path) ->
         return
     with output_path.open("wb") as handle:
         pickle.dump(stream, handle)
+
+
+def _index_cached_trace_metadata(trace_metadata_path: Path) -> dict[str, pd.DataFrame]:
+    """Load prior trace metadata by processed output file path."""
+
+    if not trace_metadata_path.exists():
+        return {}
+    try:
+        metadata = read_table(trace_metadata_path)
+    except Exception:
+        return {}
+    if metadata.empty or "output_file" not in metadata.columns:
+        return {}
+    out: dict[str, pd.DataFrame] = {}
+    for output_file, group in metadata.groupby("output_file", dropna=True, sort=False):
+        for key in _path_cache_keys(output_file):
+            out.setdefault(key, group.copy())
+    return out
+
+
+def _cached_trace_metadata_for_output(cache: Mapping[str, pd.DataFrame], output_path: Path) -> pd.DataFrame | None:
+    """Return cached trace metadata for one processed output path."""
+
+    for key in _path_cache_keys(output_path):
+        metadata = cache.get(key)
+        if metadata is not None:
+            return metadata.copy()
+    return None
+
+
+def _path_cache_keys(value: object) -> tuple[str, ...]:
+    """Return stable path keys without forcing filesystem resolution."""
+
+    text = str(value).strip()
+    if not text:
+        return ()
+    expanded = str(Path(text).expanduser())
+    keys = [text]
+    if expanded not in keys:
+        keys.append(expanded)
+    return tuple(keys)
 
 
 def _tag_trace_metadata(metadata: pd.DataFrame, *, source: str, input_path: Path, output_path: Path) -> pd.DataFrame:

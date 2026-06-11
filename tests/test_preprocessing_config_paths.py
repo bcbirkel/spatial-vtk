@@ -44,7 +44,7 @@ def test_preprocess_waveform_files_uses_configured_waveform_paths(tmp_path: Path
     cfg = SpatialVTKConfig.from_file(config_path)
     records = pd.DataFrame({"event_title": ["E01"], "station": ["STA01"]})
 
-    def fake_preprocess_one_file(input_path, output_path, *, source, event_id, settings, overwrite):
+    def fake_preprocess_one_file(input_path, output_path, *, source, event_id, settings, overwrite, cached_metadata=None):
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_bytes(b"processed")
         return (
@@ -113,7 +113,7 @@ def test_configured_observed_template_avoids_json_sidecars(tmp_path: Path, monke
     cfg = SpatialVTKConfig.from_file(config_path)
     records = pd.DataFrame({"event_id": ["E01"], "station": ["STA01"]})
 
-    def fake_preprocess_one_file(input_path, output_path, *, source, event_id, settings, overwrite):
+    def fake_preprocess_one_file(input_path, output_path, *, source, event_id, settings, overwrite, cached_metadata=None):
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_bytes(b"processed")
         return (
@@ -219,3 +219,40 @@ def test_existing_processed_waveforms_are_cached_unless_overwrite(tmp_path: Path
 
     assert overwritten.manifest.loc[0, "status"] == "written"
     assert writes == [cached_path]
+
+
+def test_cached_waveforms_reuse_existing_trace_metadata_without_reading_files(tmp_path: Path, monkeypatch) -> None:
+    """Existing trace metadata should avoid reopening cached waveform files."""
+
+    raw_path = tmp_path / "raw" / "E01.pkl"
+    raw_path.parent.mkdir()
+    raw_path.write_bytes(b"raw")
+    output_root = tmp_path / "processed"
+    cached_path = output_root / "observed" / "E01" / "E01.pkl"
+    metadata_dir = output_root / "metadata"
+    cached_path.parent.mkdir(parents=True)
+    metadata_dir.mkdir(parents=True)
+    cached_path.write_bytes(b"cached waveform placeholder")
+    pd.DataFrame(
+        {
+            "event_id": ["E01"],
+            "station": ["STA01"],
+            "starttime": ["2020-01-01T00:00:00Z"],
+            "endtime": ["2020-01-01T00:01:00Z"],
+            "source_type": ["observed"],
+            "input_file": [str(raw_path)],
+            "output_file": [str(cached_path)],
+        }
+    ).to_csv(metadata_dir / "trace_metadata_preprocessed.csv", index=False)
+    records = pd.DataFrame({"event_id": ["E01"], "station": ["STA01"], "observed_waveform": [raw_path]})
+
+    def fail_read(path):
+        raise AssertionError(f"cached waveform should not be opened: {path}")
+
+    monkeypatch.setattr(preprocessing_module, "read_waveform_file", fail_read)
+
+    result = preprocess_waveform_files(records, output_root=output_root)
+
+    assert result.manifest.loc[0, "status"] == "cached"
+    assert result.manifest.loc[0, "trace_count"] == 1
+    assert result.trace_metadata.loc[0, "station"] == "STA01"
