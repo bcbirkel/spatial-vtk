@@ -121,6 +121,7 @@ def preprocess_waveform_files(
     overwrite: bool = False,
     continue_on_error: bool = False,
     replace_input_columns: bool = True,
+    drop_unprocessed_rows: bool = True,
     verbose: bool = False,
     event_station_name: str = "event_station_records_preprocessed.csv",
     manifest_name: str = "waveform_preprocessing_manifest.csv",
@@ -154,6 +155,11 @@ def preprocess_waveform_files(
     replace_input_columns
         When true, the original waveform path columns are replaced with
         processed paths while raw paths are preserved in ``*_raw_waveform``.
+    drop_unprocessed_rows
+        When true, rows that did not resolve to any processed waveform path
+        are removed from the returned/written event-station table. Disable this
+        only when you need to audit the full input table, including unavailable
+        waveform records.
     verbose
         Print progress messages while resolving and preprocessing waveform
         files. This is useful in notebooks for long-running ASDF/MiniSEED
@@ -198,11 +204,13 @@ def preprocess_waveform_files(
     manifest_rows: list[dict[str, Any]] = []
     trace_frames: list[pd.DataFrame] = []
     processed_lookup: dict[tuple[str, str, str], Path] = {}
+    processed_columns: list[str] = []
 
     for source, column in columns.items():
         raw_column = f"{source}_raw_waveform"
         processed_column = f"{source}_processed_waveform"
         preprocessing_column = f"{source}_waveform_preprocessing"
+        processed_columns.append(processed_column)
         if raw_column not in updated.columns:
             updated[raw_column] = updated[column]
         else:
@@ -253,6 +261,16 @@ def preprocess_waveform_files(
             updated.loc[row_index, preprocessing_column] = waveform_preprocessing_label(settings)
             if replace_input_columns:
                 updated.loc[row_index, column] = str(output_path)
+
+    if drop_unprocessed_rows and processed_columns:
+        keep_mask = pd.Series(False, index=updated.index)
+        for processed_column in processed_columns:
+            if processed_column in updated.columns:
+                keep_mask |= updated[processed_column].map(_path_cell_text).ne("")
+        dropped = int((~keep_mask).sum())
+        if dropped:
+            _progress(verbose, f"Dropped {dropped} event-station row(s) without processed waveform paths")
+        updated = updated.loc[keep_mask].reset_index(drop=True)
 
     manifest = pd.DataFrame(manifest_rows)
     trace_metadata = pd.concat(trace_frames, ignore_index=True) if trace_frames else pd.DataFrame()

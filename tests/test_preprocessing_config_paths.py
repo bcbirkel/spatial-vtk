@@ -176,8 +176,61 @@ def test_preprocess_waveform_files_does_not_label_rows_without_paths(tmp_path: P
     result = preprocess_waveform_files(records, output_root=tmp_path / "processed", source_columns={"observed": "observed_waveform"})
 
     assert result.manifest.empty
-    assert result.event_station_records.loc[0, "observed_processed_waveform"] == ""
-    assert result.event_station_records.loc[0, "observed_waveform_preprocessing"] == ""
+    assert result.event_station_records.empty
+
+    audit = preprocess_waveform_files(
+        records,
+        output_root=tmp_path / "processed-audit",
+        source_columns={"observed": "observed_waveform"},
+        drop_unprocessed_rows=False,
+    )
+    assert audit.event_station_records.loc[0, "observed_processed_waveform"] == ""
+    assert audit.event_station_records.loc[0, "observed_waveform_preprocessing"] == ""
+
+
+def test_preprocess_waveform_files_drops_rows_without_processed_paths(tmp_path: Path, monkeypatch) -> None:
+    """The preprocessed handoff table should only include usable waveform rows."""
+
+    raw_path = tmp_path / "raw" / "E01.pkl"
+    raw_path.parent.mkdir()
+    raw_path.write_bytes(b"raw")
+    records = pd.DataFrame(
+        {
+            "event_id": ["E01", "E02"],
+            "station": ["STA01", "STA02"],
+            "observed_waveform": [raw_path, ""],
+        }
+    )
+
+    def fake_preprocess_one_file(input_path, output_path, *, source, event_id, settings, overwrite, cached_metadata=None):
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_bytes(b"processed")
+        return (
+            {
+                "event_id": event_id,
+                "source": source,
+                "input_file": str(input_path),
+                "output_file": str(output_path),
+                "status": "written",
+                "message": "",
+                "processing": "none",
+                "lowpass_hz": settings.lowpass_hz,
+                "highpass_hz": settings.highpass_hz,
+                "bandpass_low_hz": settings.bandpass_low_hz,
+                "bandpass_high_hz": settings.bandpass_high_hz,
+                "resample_hz": settings.resample_hz,
+                "filter_order": settings.filter_order,
+                "trace_count": 0,
+            },
+            pd.DataFrame(),
+        )
+
+    monkeypatch.setattr(preprocessing_module, "_preprocess_one_file", fake_preprocess_one_file)
+
+    result = preprocess_waveform_files(records, output_root=tmp_path / "processed", source_columns={"observed": "observed_waveform"})
+
+    assert result.event_station_records["event_id"].tolist() == ["E01"]
+    assert result.event_station_records.loc[0, "observed_processed_waveform"]
 
 
 def test_configured_observed_template_avoids_json_sidecars(tmp_path: Path, monkeypatch) -> None:
