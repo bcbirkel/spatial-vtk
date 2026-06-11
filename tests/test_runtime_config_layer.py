@@ -230,6 +230,21 @@ def test_finish_figure_uses_rich_display_in_notebooks(monkeypatch):
     assert finished is fig
     assert len(displayed) == 1
     assert displayed[0].data
+    assert not plt.fignum_exists(fig.number)
+
+
+def test_finish_figure_can_keep_displayed_notebook_figures_open(monkeypatch):
+    """Callers can opt out of notebook auto-close when they need the figure open."""
+
+    monkeypatch.setattr(figure_io, "_in_notebook", lambda: True)
+    monkeypatch.setattr("IPython.display.display", lambda fig: None)
+
+    fig, ax = plt.subplots()
+    ax.plot([0, 1], [0, 1])
+    finished = finish_figure(fig, showfig=True, savefig=False, close=False)
+
+    assert finished is fig
+    assert plt.fignum_exists(fig.number)
     plt.close(fig)
 
 

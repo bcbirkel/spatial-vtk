@@ -192,8 +192,9 @@ def finish_figure(
         path is provided.
     close
         Whether to close the figure after saving/display handling. When
-        ``None``, saved non-notebook figures are closed; displayed figures stay
-        open so notebooks can render them.
+        ``None``, finished figures that are saved or explicitly displayed are
+        closed after handling. This prevents notebook backends from auto-
+        rendering a second copy after Spatial-VTK has already displayed one.
     bbox_inches
         Matplotlib bounding-box setting used by ``Figure.savefig``.
     **savefig_kwargs
@@ -208,12 +209,14 @@ def finish_figure(
     path = outpath if outpath is not None else output_path
     should_show = _in_notebook() if showfig is None else bool(showfig)
     should_save = (path is not None) if savefig is None else bool(savefig)
-    should_close = bool(path is not None and not should_show) if close is None else bool(close)
+    should_close = bool(should_save or should_show) if close is None else bool(close)
     if should_save:
         resolved_path = resolve_output_path(output_key, kind="figure", outpath=path, cfg=cfg, create_parent=True)
-        globals()["savefig"](fig, resolved_path, close=should_close, bbox_inches=bbox_inches, **savefig_kwargs)
+        globals()["savefig"](fig, resolved_path, close=False, bbox_inches=bbox_inches, **savefig_kwargs)
     if should_show:
         _display_figure(fig, bbox_inches=bbox_inches)
+    if should_close:
+        plt.close(fig)
     return fig
 
 
