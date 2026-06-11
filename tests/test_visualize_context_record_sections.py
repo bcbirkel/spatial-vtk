@@ -195,6 +195,58 @@ def test_record_coverage_trace_metadata_matches_numeric_station_alias() -> None:
     assert coverage.loc[0, "observed_start_s"] == -5.0
 
 
+def test_record_coverage_drops_trace_metadata_without_event_station_match() -> None:
+    """Extra placeholder trace stations should not stop coverage table creation."""
+
+    trace_metadata = pd.DataFrame(
+        {
+            "source_type": ["observed", "synthetic", "observed", "synthetic"],
+            "event_id": ["E1", "E1", "E1", "E1"],
+            "station": ["S1", "S1", "00000", "00000"],
+            "starttime": [
+                "2020-01-01T00:00:05Z",
+                "2020-01-01T00:00:10Z",
+                "2020-01-01T00:00:00Z",
+                "2020-01-01T00:00:00Z",
+            ],
+            "endtime": [
+                "2020-01-01T00:01:05Z",
+                "2020-01-01T00:01:15Z",
+                "2020-01-01T00:01:00Z",
+                "2020-01-01T00:01:00Z",
+            ],
+        }
+    )
+    event_stations = pd.DataFrame({"event_id": ["E1"], "station": ["S1"], "start": ["2020-01-01T00:00:10Z"]})
+
+    coverage = build_record_coverage_table_from_trace_metadata(trace_metadata, event_station_df=event_stations)
+
+    assert coverage["station"].tolist() == ["S1"]
+    assert coverage.attrs["dropped_missing_metadata"] == 1
+
+
+def test_record_coverage_can_raise_on_missing_event_station_match() -> None:
+    """Strict mode should still flag trace stations absent from event-station metadata."""
+
+    trace_metadata = pd.DataFrame(
+        {
+            "source_type": ["observed"],
+            "event_id": ["E1"],
+            "station": ["00000"],
+            "starttime": ["2020-01-01T00:00:00Z"],
+            "endtime": ["2020-01-01T00:01:00Z"],
+        }
+    )
+    event_stations = pd.DataFrame({"event_id": ["E1"], "station": ["S1"], "start": ["2020-01-01T00:00:10Z"]})
+
+    with pytest.raises(ValueError, match="No event-station metadata"):
+        build_record_coverage_table_from_trace_metadata(
+            trace_metadata,
+            event_station_df=event_stations,
+            on_missing_metadata="raise",
+        )
+
+
 def test_record_section_figures_write_outputs(tmp_path: Path) -> None:
     """Generic record-section helpers should render single and obs/syn sections."""
 

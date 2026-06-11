@@ -564,6 +564,7 @@ def build_record_coverage_table_from_trace_metadata(
     synthetic_source: str = "synthetic",
     source_type_col: str = "source_type",
     on_missing_source: str = "drop",
+    on_missing_metadata: str = "drop",
 ) -> pd.DataFrame:
     """Build paired record coverage from processed trace metadata.
 
@@ -585,6 +586,9 @@ def build_record_coverage_table_from_trace_metadata(
     on_missing_source
         ``"drop"`` keeps complete observed/synthetic pairs only. ``"raise"``
         raises when a selected event-station record is missing either source.
+    on_missing_metadata
+        ``"drop"`` skips trace event/station groups that are absent from
+        ``event_station_df``. ``"raise"`` preserves strict validation.
 
     Returns
     -------
@@ -610,16 +614,23 @@ def build_record_coverage_table_from_trace_metadata(
     metadata = _coverage_metadata(event_station_df)
     rows: list[dict[str, object]] = []
     dropped_missing_source = 0
+    dropped_missing_metadata = 0
     observed_key = str(observed_source).strip().lower()
     synthetic_key = str(synthetic_source).strip().lower()
     missing_mode = str(on_missing_source).strip().lower()
     if missing_mode not in {"drop", "raise"}:
         raise ValueError("on_missing_source must be 'drop' or 'raise'.")
+    missing_metadata_mode = str(on_missing_metadata).strip().lower()
+    if missing_metadata_mode not in {"drop", "raise"}:
+        raise ValueError("on_missing_metadata must be 'drop' or 'raise'.")
     for (event_id, station), group in traces.groupby(["event_id", "station"], dropna=False, sort=False):
         event_text = str(event_id)
         station_text = str(station).upper()
         meta = _coverage_metadata_lookup(metadata, event_text, station_text)
         if meta is None:
+            if missing_metadata_mode == "drop":
+                dropped_missing_metadata += 1
+                continue
             raise ValueError(
                 f"No event-station metadata found for event {event_text!r}, station {station_text!r}. "
                 "Provide event_station_df with matching event_id/station rows and event origin times."
@@ -654,11 +665,13 @@ def build_record_coverage_table_from_trace_metadata(
     out = pd.DataFrame(rows)
     if out.empty:
         out.attrs["dropped_missing_source"] = dropped_missing_source
+        out.attrs["dropped_missing_metadata"] = dropped_missing_metadata
         return out
     _validate_record_coverage_timing(out)
     sort_cols = [column for column in ("event_id", "distance_km", "station") if column in out.columns]
     out = out.sort_values(sort_cols, na_position="last").reset_index(drop=True)
     out.attrs["dropped_missing_source"] = dropped_missing_source
+    out.attrs["dropped_missing_metadata"] = dropped_missing_metadata
     return out
 
 
