@@ -234,8 +234,20 @@ def build_metric_qc_summary(
         f"{total_records} event-station record(s), {len(tuple(sources))} source(s), "
         f"{len(tuple(components))} component(s), {len(tuple(metrics))} metric(s)",
     )
+    if checkpoint_path is None:
+        _progress(verbose, "Metric QC: checkpointing disabled; starting from scratch")
+    else:
+        _progress(verbose, f"Metric QC: checkpoint path {Path(checkpoint_path).expanduser()}")
     if completed_records:
-        _progress(verbose, f"Metric QC: resuming with {len(completed_records)} completed event-station record(s)")
+        completed_count = min(len(completed_records), total_records)
+        remaining_count = max(total_records - completed_count, 0)
+        _progress(
+            verbose,
+            f"Metric QC: resuming with {completed_count}/{total_records} "
+            f"event-station record(s) complete; {remaining_count} new record(s) remaining",
+        )
+    elif checkpoint_path is not None:
+        _progress(verbose, "Metric QC: no completed event-station records found; all work is new")
     for record_index, (_, record) in enumerate(records.iterrows(), start=1):
         if record_index == 1 or record_index % interval == 0 or record_index == total_records:
             _progress(verbose, _progress_status("Metric QC", record_index, total_records, progress_start))
@@ -437,6 +449,9 @@ def build_waveform_qc_summary(
         source_checkpoint = _source_checkpoint_path(checkpoint_path, source_key)
         if source_checkpoint is not None:
             source_checkpoint_paths.append(source_checkpoint)
+            _progress(verbose, f"Waveform QC: source {source_key!r} checkpoint path {source_checkpoint}")
+        else:
+            _progress(verbose, f"Waveform QC: source {source_key!r} checkpointing disabled")
         source_result = build_waveform_trace_qc_summary(
             source_records,
             source=source_key,

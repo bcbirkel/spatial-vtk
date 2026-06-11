@@ -382,8 +382,21 @@ def build_waveform_trace_qc_summary(
         f"{progress_prefix}: "
         f"{total_records} event-station record(s), {len(tuple(components))} component(s), {len(bands)} passband(s)",
     )
+    total_component_groups = total_records * len(tuple(components))
+    if checkpoint_path is None:
+        _progress(verbose, f"{progress_prefix}: checkpointing disabled; starting from scratch")
+    else:
+        _progress(verbose, f"{progress_prefix}: checkpoint path {Path(checkpoint_path).expanduser()}")
     if completed:
-        _progress(verbose, f"{progress_prefix}: resuming with {len(completed)} completed component group(s)")
+        completed_count = min(len(completed), total_component_groups)
+        remaining_count = max(total_component_groups - completed_count, 0)
+        _progress(
+            verbose,
+            f"{progress_prefix}: resuming with {completed_count}/{total_component_groups} "
+            f"component group(s) complete; {remaining_count} new group(s) remaining",
+        )
+    elif checkpoint_path is not None:
+        _progress(verbose, f"{progress_prefix}: no completed component groups found; all work is new")
     for record_index, (_, record) in enumerate(records.iterrows(), start=1):
         if record_index == 1 or record_index % progress_every == 0 or record_index == total_records:
             _progress(verbose, _progress_status(progress_prefix, record_index, total_records, progress_start))
