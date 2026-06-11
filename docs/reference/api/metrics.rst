@@ -68,6 +68,7 @@ Workflow
 
 .. automodule:: spatial_vtk.metrics.workflow.slurm
    :members:
+   :exclude-members: SlurmSettings
 
 .. automodule:: spatial_vtk.metrics.workflow.tasks
    :members:
