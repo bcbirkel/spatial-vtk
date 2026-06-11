@@ -11,6 +11,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from spatial_vtk.io.tables import write_table
 from spatial_vtk.io.waveforms import (
     WaveformPreprocessing,
     apply_waveform_preprocessing_with_metadata,
@@ -280,6 +281,11 @@ def build_waveform_trace_qc_summary(
     arrival_pick_catalog: pd.DataFrame | str | Path | None = None,
     onset_phase: str = "P",
     min_onset_pick_probability: float = 0.0,
+    verbose: bool = False,
+    progress_interval: int = 25,
+    checkpoint_path: str | Path | None = None,
+    resume: bool = True,
+    checkpoint_interval: int = 25,
 ) -> pd.DataFrame:
     """Build side-specific trace QC rows from waveform files.
 
@@ -326,6 +332,17 @@ def build_waveform_trace_qc_summary(
         Pick phase used to anchor QC noise and signal windows.
     min_onset_pick_probability
         Minimum picker probability accepted for the QC onset pick.
+    verbose
+        Print progress messages while loading waveform files and building rows.
+    progress_interval
+        Number of event-station records between progress messages.
+    checkpoint_path
+        Optional table path where intermediate QC rows are written.
+    resume
+        When true and ``checkpoint_path`` exists, skip event/station/component
+        groups already present in that checkpoint.
+    checkpoint_interval
+        Number of event-station records between checkpoint writes.
 
     Returns
     -------
@@ -342,15 +359,32 @@ def build_waveform_trace_qc_summary(
         phase=onset_phase,
         min_probability=min_onset_pick_probability,
     )
-    rows: list[dict[str, object]] = []
+    checkpoint = _load_qc_checkpoint(checkpoint_path) if resume else pd.DataFrame()
+    rows: list[dict[str, object]] = checkpoint.to_dict(orient="records") if not checkpoint.empty else []
+    completed = _waveform_qc_completed_keys(checkpoint)
     stream_cache: dict[str, Any] = {}
-    for _, record in records.iterrows():
+    total_records = len(records)
+    progress_every = max(int(progress_interval), 1)
+    checkpoint_every = max(int(checkpoint_interval), 1)
+    _progress(
+        verbose,
+        f"Trace QC {str(source).strip().lower()}: "
+        f"{total_records} event-station record(s), {len(tuple(components))} component(s), {len(bands)} passband(s)",
+    )
+    if completed:
+        _progress(verbose, f"Trace QC {str(source).strip().lower()}: resuming with {len(completed)} completed component group(s)")
+    for record_index, (_, record) in enumerate(records.iterrows(), start=1):
+        if record_index == 1 or record_index % progress_every == 0 or record_index == total_records:
+            _progress(verbose, f"Trace QC {str(source).strip().lower()}: record {record_index}/{total_records}")
         event_id = str(record.get("event_id", "")).strip()
         station = str(record.get("station", "")).strip().upper()
         origin = _event_origin_time(record)
         path_text = str(record.get(waveform_path_col, "")).strip()
         for component in components:
             component_text = str(component).strip().upper()
+            completed_key = (str(source).strip().lower(), event_id, station, component_text)
+            if completed_key in completed:
+                continue
             trace = None
             load_reason = ""
             if not path_text:
@@ -443,7 +477,13 @@ def build_waveform_trace_qc_summary(
                         "origin_signal_ratio": band_summary["origin_signal_ratio"],
                     }
                 )
-    return pd.DataFrame(rows)
+            completed.add(completed_key)
+        if checkpoint_path is not None and (record_index % checkpoint_every == 0 or record_index == total_records):
+            _write_qc_checkpoint(pd.DataFrame(rows), checkpoint_path)
+    result = pd.DataFrame(rows)
+    _write_qc_checkpoint(result, checkpoint_path)
+    _progress(verbose, f"Trace QC {str(source).strip().lower()}: built {len(result)} row(s)")
+    return result
 
 
 def _read_table(value: pd.DataFrame | str | Path) -> pd.DataFrame:
@@ -466,6 +506,54 @@ def _read_table(value: pd.DataFrame | str | Path) -> pd.DataFrame:
     if path.suffix.lower() in {".parquet", ".pq"}:
         return pd.read_parquet(path)
     return pd.read_csv(path)
+
+
+def _progress(verbose: bool, message: str) -> None:
+    """Print one flushed progress message when verbose mode is enabled."""
+
+    if verbose:
+        print(message, flush=True)
+
+
+def _load_qc_checkpoint(path: str | Path | None) -> pd.DataFrame:
+    """Load an existing QC checkpoint table if present."""
+
+    if path is None:
+        return pd.DataFrame()
+    checkpoint = Path(path).expanduser()
+    if not checkpoint.exists():
+        return pd.DataFrame()
+    try:
+        return _read_table(checkpoint)
+    except Exception:
+        return pd.DataFrame()
+
+
+def _write_qc_checkpoint(df: pd.DataFrame, path: str | Path | None) -> None:
+    """Write one QC checkpoint table when a path is configured."""
+
+    if path is None:
+        return
+    checkpoint = Path(path).expanduser()
+    checkpoint.parent.mkdir(parents=True, exist_ok=True)
+    write_table(df, checkpoint)
+
+
+def _waveform_qc_completed_keys(df: pd.DataFrame) -> set[tuple[str, str, str, str]]:
+    """Return completed source/event/station/component groups from a checkpoint."""
+
+    required = {"source", "event_id", "station", "component"}
+    if df.empty or not required <= set(df.columns):
+        return set()
+    return {
+        (
+            str(row["source"]).strip().lower(),
+            str(row["event_id"]).strip(),
+            str(row["station"]).strip().upper(),
+            str(row["component"]).strip().upper(),
+        )
+        for _, row in df.loc[:, list(required)].drop_duplicates().iterrows()
+    }
 
 
 def _normalize_qc_passbands(passbands: tuple[str | tuple[float, float], ...] | list[str | tuple[float, float]] | None) -> list[tuple[str, float, float]]:

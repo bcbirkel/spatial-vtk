@@ -20,6 +20,7 @@ from spatial_vtk.config.metrics import metrics_settings_from_config
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io.inventory import build_file_inventory
+from spatial_vtk.io.tables import write_table
 from spatial_vtk.io.waveforms import WaveformPreprocessing, read_waveform_file, select_waveform_trace
 from spatial_vtk.qc.build.inventory import build_waveform_trace_qc_summary
 from spatial_vtk.visualize.dashboard import write_manual_review_queue
@@ -44,6 +45,60 @@ _COMPARISON_METADATA_COLUMNS = (
 )
 
 
+def _progress(verbose: bool, message: str) -> None:
+    """Print one flushed progress message when verbose mode is enabled."""
+
+    if verbose:
+        print(message, flush=True)
+
+
+def _load_qc_checkpoint(path: str | Path | None) -> pd.DataFrame:
+    """Load an existing QC checkpoint table if present."""
+
+    if path is None:
+        return pd.DataFrame()
+    checkpoint = Path(path).expanduser()
+    if not checkpoint.exists():
+        return pd.DataFrame()
+    try:
+        return _read_table(checkpoint)
+    except Exception:
+        return pd.DataFrame()
+
+
+def _write_qc_checkpoint(df: pd.DataFrame, path: str | Path | None) -> None:
+    """Write one QC checkpoint table when a path is configured."""
+
+    if path is None:
+        return
+    checkpoint = Path(path).expanduser()
+    checkpoint.parent.mkdir(parents=True, exist_ok=True)
+    write_table(df, checkpoint)
+
+
+def _source_checkpoint_path(path: str | Path | None, source: str) -> Path | None:
+    """Return a source-specific checkpoint path next to the combined table."""
+
+    if path is None:
+        return None
+    checkpoint = Path(path).expanduser()
+    suffix = checkpoint.suffix or ".csv"
+    stem = checkpoint.name[: -len(checkpoint.suffix)] if checkpoint.suffix else checkpoint.name
+    return checkpoint.with_name(f"{stem}.{str(source).strip().lower()}.checkpoint{suffix}")
+
+
+def _metric_qc_completed_records(df: pd.DataFrame) -> set[tuple[str, str]]:
+    """Return completed event/station records from a metric-QC checkpoint."""
+
+    required = {"event_id", "station"}
+    if df.empty or not required <= set(df.columns):
+        return set()
+    return {
+        (str(row["event_id"]).strip(), str(row["station"]).strip().upper())
+        for _, row in df.loc[:, ["event_id", "station"]].drop_duplicates().iterrows()
+    }
+
+
 def build_metric_qc_summary(
     event_station_records: pd.DataFrame | str | Path,
     *,
@@ -56,6 +111,11 @@ def build_metric_qc_summary(
     observed_available: bool = True,
     synthetic_available: bool = True,
     trace_qc_summary: pd.DataFrame | str | Path | None = None,
+    verbose: bool = False,
+    progress_interval: int = 25,
+    checkpoint_path: str | Path | None = None,
+    resume: bool = True,
+    checkpoint_interval: int = 25,
 ) -> pd.DataFrame:
     """Build a side-specific metric QC summary from event-station records.
 
@@ -78,6 +138,17 @@ def build_metric_qc_summary(
     trace_qc_summary
         Optional side-specific waveform QC table. When provided, failed
         source/event/station/component/passband rows fail matching metric rows.
+    verbose
+        Print progress messages while building QC rows.
+    progress_interval
+        Number of event-station records between progress messages.
+    checkpoint_path
+        Optional table path where intermediate QC rows are written.
+    resume
+        When true and ``checkpoint_path`` exists, skip event/station records
+        already present in that checkpoint.
+    checkpoint_interval
+        Number of event-station records between checkpoint writes.
 
     Returns
     -------
@@ -91,8 +162,26 @@ def build_metric_qc_summary(
         "observed": bool(observed_available),
         "synthetic": bool(synthetic_available),
     }
-    rows: list[dict[str, object]] = []
-    for _, record in records.iterrows():
+    checkpoint = _load_qc_checkpoint(checkpoint_path) if resume else pd.DataFrame()
+    rows: list[dict[str, object]] = checkpoint.to_dict(orient="records") if not checkpoint.empty else []
+    completed_records = _metric_qc_completed_records(checkpoint)
+    total_records = len(records)
+    interval = max(int(progress_interval), 1)
+    checkpoint_every = max(int(checkpoint_interval), 1)
+    _progress(
+        verbose,
+        "Metric QC: "
+        f"{total_records} event-station record(s), {len(tuple(sources))} source(s), "
+        f"{len(tuple(components))} component(s), {len(tuple(metrics))} metric(s)",
+    )
+    if completed_records:
+        _progress(verbose, f"Metric QC: resuming with {len(completed_records)} completed event-station record(s)")
+    for record_index, (_, record) in enumerate(records.iterrows(), start=1):
+        if record_index == 1 or record_index % interval == 0 or record_index == total_records:
+            _progress(verbose, f"Metric QC: record {record_index}/{total_records}")
+        record_key = (str(record.get("event_id", "")).strip(), str(record.get("station", "")).strip().upper())
+        if record_key in completed_records:
+            continue
         for source in sources:
             source_key = str(source).strip().lower()
             is_available = _source_available(record, source_key, default=source_defaults.get(source_key, True))
@@ -152,7 +241,13 @@ def build_metric_qc_summary(
                                     "valid_end_sample": trace_payload.get("valid_end_sample", np.nan),
                                 }
                             )
-    return pd.DataFrame(rows)
+        completed_records.add(record_key)
+        if checkpoint_path is not None and (record_index % checkpoint_every == 0 or record_index == total_records):
+            _write_qc_checkpoint(pd.DataFrame(rows), checkpoint_path)
+    _progress(verbose, f"Metric QC: built {len(rows)} row(s)")
+    result = pd.DataFrame(rows)
+    _write_qc_checkpoint(result, checkpoint_path)
+    return result
 
 
 def build_waveform_qc_summary(
@@ -171,6 +266,11 @@ def build_waveform_qc_summary(
     arrival_pick_catalog: pd.DataFrame | str | Path | None = None,
     onset_phase: str = "P",
     min_onset_pick_probability: float = 0.0,
+    verbose: bool = False,
+    progress_interval: int = 25,
+    checkpoint_path: str | Path | None = None,
+    resume: bool = True,
+    checkpoint_interval: int = 25,
 ) -> pd.DataFrame:
     """Build observed/synthetic waveform QC rows from event-station records.
 
@@ -202,6 +302,18 @@ def build_waveform_qc_summary(
         Pick phase used as the QC onset when available.
     min_onset_pick_probability
         Minimum picker probability accepted for the QC onset pick.
+    verbose
+        Print progress messages while loading waveforms and building QC rows.
+    progress_interval
+        Number of event-station records between progress messages.
+    checkpoint_path
+        Optional table path where the combined waveform QC summary is written.
+        Per-source intermediate checkpoints are written next to this path.
+    resume
+        When true, existing per-source checkpoints are used to skip completed
+        event/station/component groups.
+    checkpoint_interval
+        Number of event-station records between checkpoint writes.
 
     Returns
     -------
@@ -237,12 +349,19 @@ def build_waveform_qc_summary(
 
     rows: list[pd.DataFrame] = []
     source_columns = waveform_path_columns or {}
+    _progress(
+        verbose,
+        "Waveform QC: "
+        f"{len(records)} event-station row(s), {len(tuple(sources))} source(s), "
+        f"{len(tuple(resolved_components))} component(s), {len(tuple(resolved_passbands))} passband(s)",
+    )
     for source in sources:
         source_key = str(source).strip().lower()
         path_column = source_columns.get(source_key) or _default_waveform_path_column(records, source_key)
         source_preprocessing = preprocessing
         if source_preprocessing is None and path_column.endswith("_processed_waveform") and not apply_config_preprocessing_to_processed_files:
             source_preprocessing = WaveformPreprocessing()
+        _progress(verbose, f"Waveform QC: source {source_key!r} using column {path_column!r}")
         rows.append(
             build_waveform_trace_qc_summary(
                 records,
@@ -257,9 +376,18 @@ def build_waveform_qc_summary(
                 arrival_pick_catalog=arrival_pick_catalog,
                 onset_phase=onset_phase,
                 min_onset_pick_probability=min_onset_pick_probability,
+                verbose=verbose,
+                progress_interval=progress_interval,
+                checkpoint_path=_source_checkpoint_path(checkpoint_path, source_key),
+                resume=resume,
+                checkpoint_interval=checkpoint_interval,
             )
         )
-    return pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
+        _progress(verbose, f"Waveform QC: source {source_key!r} complete ({len(rows[-1])} row(s))")
+    result = pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
+    _write_qc_checkpoint(result, checkpoint_path)
+    _progress(verbose, f"Waveform QC: built {len(result)} row(s)")
+    return result
 
 
 def build_comparison_eligibility(qc_summary: pd.DataFrame | str | Path) -> pd.DataFrame:
