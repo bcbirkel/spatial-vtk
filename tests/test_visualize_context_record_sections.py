@@ -166,6 +166,35 @@ def test_record_coverage_table_from_trace_metadata(tmp_path: Path) -> None:
     _assert_png(output)
 
 
+def test_record_coverage_trace_metadata_matches_numeric_station_alias() -> None:
+    """Trace station codes with leading zeros should match numeric metadata IDs."""
+
+    trace_metadata = pd.DataFrame(
+        {
+            "source_type": ["observed", "synthetic"],
+            "event_id": ["ci15481673", "ci15481673"],
+            "station": ["0637", "0637"],
+            "component": ["Z", "Z"],
+            "starttime": ["2020-01-01T00:00:05Z", "2020-01-01T00:00:10Z"],
+            "endtime": ["2020-01-01T00:01:05Z", "2020-01-01T00:01:15Z"],
+        }
+    )
+    event_stations = pd.DataFrame(
+        {
+            "event_id": ["ci15481673"],
+            "station": [637],
+            "start": ["2020-01-01T00:00:10Z"],
+            "distance_km": [4.2],
+        }
+    )
+
+    coverage = build_record_coverage_table_from_trace_metadata(trace_metadata, event_station_df=event_stations)
+
+    assert coverage.loc[0, "station"] == "0637"
+    assert coverage.loc[0, "distance_km"] == 4.2
+    assert coverage.loc[0, "observed_start_s"] == -5.0
+
+
 def test_record_section_figures_write_outputs(tmp_path: Path) -> None:
     """Generic record-section helpers should render single and obs/syn sections."""
 

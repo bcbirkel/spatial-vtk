@@ -618,7 +618,7 @@ def build_record_coverage_table_from_trace_metadata(
     for (event_id, station), group in traces.groupby(["event_id", "station"], dropna=False, sort=False):
         event_text = str(event_id)
         station_text = str(station).upper()
-        meta = metadata.get((event_text, station_text))
+        meta = _coverage_metadata_lookup(metadata, event_text, station_text)
         if meta is None:
             raise ValueError(
                 f"No event-station metadata found for event {event_text!r}, station {station_text!r}. "
@@ -715,7 +715,7 @@ def build_record_coverage_table_from_qc(
     rows: list[dict[str, object]] = []
     for (event_id, station), group in qc.groupby(["event_id", "station"], dropna=False, sort=False):
         row: dict[str, object] = {"event_id": event_id, "station": str(station).upper()}
-        meta = metadata.get((str(event_id), str(station).upper()), {})
+        meta = _coverage_metadata_lookup(metadata, str(event_id), str(station).upper()) or {}
         row.update(meta)
         for source_label, prefix in ((observed_source, "observed"), (synthetic_source, "synthetic")):
             source_rows = group[group["source"].astype(str).str.lower().eq(str(source_label).lower())]
@@ -973,9 +973,47 @@ def _coverage_metadata(event_station_df: pd.DataFrame | str | Path | None) -> di
     ]
     metadata: dict[tuple[str, str], dict[str, object]] = {}
     for _, row in table[keep].drop_duplicates(["event_id", "station"]).iterrows():
-        key = (str(row["event_id"]), str(row["station"]).upper())
-        metadata[key] = {column: row[column] for column in keep if column not in {"event_id", "station"}}
+        event_key = _coverage_event_key(row["event_id"])
+        values = {column: row[column] for column in keep if column not in {"event_id", "station"}}
+        for station_key in _coverage_station_aliases(row["station"]):
+            metadata.setdefault((event_key, station_key), values)
     return metadata
+
+
+def _coverage_metadata_lookup(
+    metadata: dict[tuple[str, str], dict[str, object]],
+    event_id: object,
+    station: object,
+) -> dict[str, object] | None:
+    """Return event-station metadata using tolerant station aliases."""
+
+    event_key = _coverage_event_key(event_id)
+    for station_key in _coverage_station_aliases(station):
+        meta = metadata.get((event_key, station_key))
+        if meta is not None:
+            return meta
+    return None
+
+
+def _coverage_event_key(value: object) -> str:
+    """Normalize event identifiers for record-coverage matching."""
+
+    return str(value).strip()
+
+
+def _coverage_station_aliases(value: object) -> tuple[str, ...]:
+    """Return common station aliases for matching trace metadata to tables."""
+
+    text = str(value).strip().upper()
+    aliases: list[str] = []
+    for candidate in (text, text.split(".")[-1]):
+        candidate = candidate.strip()
+        if candidate and candidate not in aliases:
+            aliases.append(candidate)
+        numeric = candidate.lstrip("0")
+        if numeric and numeric.isdigit() and numeric not in aliases:
+            aliases.append(numeric)
+    return tuple(aliases)
 
 
 def _coverage_source_type(row: pd.Series, *, source_type_col: str = "source_type") -> str:
