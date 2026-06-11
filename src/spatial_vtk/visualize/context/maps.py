@@ -219,7 +219,16 @@ def plot_station_event_beachball_map(
     else:
         _set_bounds(ax, events_df, event_lon_col, event_lat_col)
     if add_basemap:
-        add_contextily_basemap(ax, crs="EPSG:4326", primary_source=basemap_source, **dict(basemap_kwargs or {}))
+        basemap_success, basemap_source_used = add_contextily_basemap(
+            ax,
+            crs="EPSG:4326",
+            primary_source=basemap_source,
+            **dict(basemap_kwargs or {}),
+        )
+        fig.spatial_vtk_basemap = {"success": basemap_success, "source": basemap_source_used}
+        ax.spatial_vtk_basemap = {"success": basemap_success, "source": basemap_source_used}
+    map_xlim = ax.get_xlim()
+    map_ylim = ax.get_ylim()
     if stations_df is not None and {station_lon_col, station_lat_col} <= set(stations_df.columns):
         ax.scatter(stations_df[station_lon_col], stations_df[station_lat_col], marker="^", s=24, c="#4c78a8", edgecolors="black", linewidths=0.2, alpha=1.0, label="Stations", zorder=4)
     magnitude_mappable = None
@@ -242,6 +251,9 @@ def plot_station_event_beachball_map(
         cbar = fig.colorbar(magnitude_mappable, cax=cax)
         cbar.set_label(display_label(magnitude_col))
     ax.legend(frameon=True, fontsize=8, loc="best")
+    ax.set_xlim(map_xlim)
+    ax.set_ylim(map_ylim)
+    _set_geographic_aspect(ax)
     _finish_map(ax, title)
     return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig, close=close)
 
