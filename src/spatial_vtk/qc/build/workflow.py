@@ -79,6 +79,12 @@ def _progress_status(prefix: str, current: int, total: int, start_time: float) -
     )
 
 
+def _plural(count: int, singular: str, plural: str | None = None) -> str:
+    """Return the singular or plural form for a count."""
+
+    return singular if int(count) == 1 else (plural or f"{singular}s")
+
+
 def _load_qc_checkpoint(path: str | Path | None) -> pd.DataFrame:
     """Load an existing QC checkpoint table if present."""
 
@@ -243,8 +249,10 @@ def build_metric_qc_summary(
         remaining_count = max(total_records - completed_count, 0)
         _progress(
             verbose,
-            f"Metric QC: resuming with {completed_count}/{total_records} "
-            f"event-station record(s) complete; {remaining_count} new record(s) remaining",
+            f"Metric QC: resuming with {completed_count} completed "
+            f"{_plural(completed_count, 'event-station record')} "
+            f"({completed_count}/{total_records} complete; {remaining_count} "
+            f"new {_plural(remaining_count, 'record')} remaining)",
         )
     elif checkpoint_path is not None:
         _progress(verbose, "Metric QC: no completed event-station records found; all work is new")

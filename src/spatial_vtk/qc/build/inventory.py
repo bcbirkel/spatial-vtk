@@ -392,8 +392,10 @@ def build_waveform_trace_qc_summary(
         remaining_count = max(total_component_groups - completed_count, 0)
         _progress(
             verbose,
-            f"{progress_prefix}: resuming with {completed_count}/{total_component_groups} "
-            f"component group(s) complete; {remaining_count} new group(s) remaining",
+            f"{progress_prefix}: resuming with {completed_count} completed "
+            f"{_plural(completed_count, 'component group')} "
+            f"({completed_count}/{total_component_groups} complete; {remaining_count} "
+            f"new {_plural(remaining_count, 'group')} remaining)",
         )
     elif checkpoint_path is not None:
         _progress(verbose, f"{progress_prefix}: no completed component groups found; all work is new")
@@ -591,6 +593,12 @@ def _progress_status(prefix: str, current: int, total: int, start_time: float) -
         f"{prefix}: record {current}/{total} "
         f"(elapsed {_format_duration(elapsed)}, {rate:.2f} records/s, ETA {_format_duration(eta)})"
     )
+
+
+def _plural(count: int, singular: str, plural: str | None = None) -> str:
+    """Return the singular or plural form for a count."""
+
+    return singular if int(count) == 1 else (plural or f"{singular}s")
 
 
 def _load_qc_checkpoint(path: str | Path | None) -> pd.DataFrame:
