@@ -336,6 +336,16 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     queue.add_argument("--band", default=None, help="Optional passband filter.")
     queue.set_defaults(handler=_cmd_qc_manual_queue)
 
+    slurm = qc_sub.add_parser("slurm", help="Write a SLURM script for QC inventory generation.")
+    slurm.add_argument("--event-stations", required=True, help="Prepared event-station table.")
+    slurm.add_argument("--output", required=True, help="Output SLURM script path.")
+    slurm.add_argument("--config", required=True, help="Config file containing compute.slurm or qc.slurm settings.")
+    slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    slurm.add_argument("--trace-output", default=None, help="Output waveform QC table path.")
+    slurm.add_argument("--inventory-output", default=None, help="Output metric QC inventory path.")
+    slurm.add_argument("--submit", action="store_true", help="Submit the script with sbatch after writing it.")
+    slurm.set_defaults(handler=_cmd_qc_slurm)
+
 
 def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     """Register metric workflow CLI commands."""
@@ -397,6 +407,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     slurm.add_argument("--output", required=True, help="Output SLURM script path.")
     slurm.add_argument("--config", required=True, help="Config file containing metrics.slurm settings.")
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    slurm.add_argument("--submit", action="store_true", help="Submit the script with sbatch after writing it.")
     slurm.set_defaults(handler=_cmd_metrics_slurm)
 
 
@@ -651,6 +662,43 @@ def _cmd_qc_manual_queue(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_qc_slurm(args: argparse.Namespace) -> int:
+    """Run ``svtk qc slurm``."""
+
+    from spatial_vtk.config import SpatialVTKConfig
+    from spatial_vtk.qc.build.slurm import (
+        slurm_settings_from_config,
+        submit_qc_slurm_job,
+        write_qc_slurm_script,
+    )
+
+    config = SpatialVTKConfig.from_file(args.config, run_scenario=args.run_scenario)
+    settings = slurm_settings_from_config(config)
+    if args.submit:
+        submission = submit_qc_slurm_job(
+            args.event_stations,
+            args.output,
+            settings,
+            config_path=args.config,
+            run_scenario=args.run_scenario,
+            trace_qc_output=args.trace_output,
+            qc_inventory_output=args.inventory_output,
+        )
+        print(submission.stdout or f"submitted {submission.script_path}")
+        return int(submission.returncode)
+    path = write_qc_slurm_script(
+        args.event_stations,
+        args.output,
+        settings,
+        config_path=args.config,
+        run_scenario=args.run_scenario,
+        trace_qc_output=args.trace_output,
+        qc_inventory_output=args.inventory_output,
+    )
+    print(path)
+    return 0
+
+
 def _cmd_metrics_plan(args: argparse.Namespace) -> int:
     """Run ``svtk metrics plan``."""
 
@@ -746,9 +794,17 @@ def _cmd_metrics_slurm(args: argparse.Namespace) -> int:
     """Run ``svtk metrics slurm``."""
 
     from spatial_vtk.config import SpatialVTKConfig
-    from spatial_vtk.metrics.workflow import slurm_settings_from_config, write_metrics_slurm_script
+    from spatial_vtk.metrics.workflow import (
+        slurm_settings_from_config,
+        submit_metrics_slurm_job,
+        write_metrics_slurm_script,
+    )
 
     settings = slurm_settings_from_config(SpatialVTKConfig.from_file(args.config, run_scenario=args.run_scenario))
+    if args.submit:
+        submission = submit_metrics_slurm_job(args.manifest, args.output, settings)
+        print(submission.stdout or f"submitted {submission.script_path}")
+        return int(submission.returncode)
     path = write_metrics_slurm_script(args.manifest, args.output, settings)
     print(path)
     return 0

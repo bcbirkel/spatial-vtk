@@ -45,6 +45,11 @@ from spatial_vtk.qc.build.workflow import (
     build_waveform_qc_summary,
     export_manual_review_queue,
 )
+from spatial_vtk.qc.build.slurm import (
+    run_qc_inventory_job,
+    submit_qc_slurm_job,
+    write_qc_slurm_script,
+)
 
 __all__ = [
     "InventoryBandSpec",
@@ -77,9 +82,12 @@ __all__ = [
     "qc_fas_periods",
     "qc_psa_periods",
     "relevant_inventory_bands",
+    "run_qc_inventory_job",
     "spectral_relative_amplitude_mask",
     "spectral_valid_period_bounds",
+    "submit_qc_slurm_job",
     "export_manual_review_queue",
     "trace_has_any_accepted_passband",
     "trace_passband_is_accepted",
+    "write_qc_slurm_script",
 ]

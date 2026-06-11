@@ -103,6 +103,81 @@ before metric calculations:
 Use these as starting values, then tune them for the record lengths, noise
 windows, and signal levels in your project.
 
+Submit Heavy Work To Slurm
+--------------------------
+
+Long-running QC and metric workflows can run locally from notebooks, or you
+can write a Slurm batch script from the same config. Put shared cluster
+defaults in ``compute.slurm``:
+
+.. code-block:: yaml
+
+   compute:
+     slurm:
+       python_command: python
+       environment_setup:
+         - module load mamba
+         - mamba activate spatial-vtk-py312
+       partition: main
+       account: my_account
+       walltime: 12:00:00
+       memory: 16G
+       cpus_per_task: 1
+       max_concurrent: 10
+       log_dir: outputs/logs
+
+Task-specific sections such as ``qc.slurm`` and ``metrics.slurm`` override
+only the values you set there. For example, use more memory for QC inventory
+generation without changing metric task arrays:
+
+.. code-block:: yaml
+
+   qc:
+     slurm:
+       job_name: svtk-qc
+       walltime: 24:00:00
+       memory: 32G
+
+   metrics:
+     slurm:
+       job_name: svtk-metrics
+       walltime: 24:00:00
+       memory: 32G
+
+Write a QC inventory Slurm script:
+
+.. code-block:: bash
+
+   svtk qc slurm \
+     --config spatial-vtk.yaml \
+     --event-stations outputs/tables/event_station_records.csv \
+     --output outputs/slurm/build_qc.slurm
+
+Submit it in the same command when your login node can run ``sbatch``:
+
+.. code-block:: bash
+
+   svtk qc slurm \
+     --config spatial-vtk.yaml \
+     --event-stations outputs/tables/event_station_records.csv \
+     --output outputs/slurm/build_qc.slurm \
+     --submit
+
+QC Slurm jobs call the same checkpointed builders used in Python, so rerunning
+the job resumes from the saved ``qc_trace_summary`` and ``qc_inventory`` tables
+when those checkpoint paths already exist.
+
+Metric Slurm jobs run as task arrays from a manifest produced by the metric
+workflow. After creating the manifest, write or submit the array script:
+
+.. code-block:: bash
+
+   svtk metrics slurm \
+     --config spatial-vtk.yaml \
+     --manifest outputs/metrics/metric_manifest.json \
+     --output outputs/slurm/run_metrics.slurm \
+     --submit
+
 Show Or Hide Notebook Run Times
 -------------------------------
 

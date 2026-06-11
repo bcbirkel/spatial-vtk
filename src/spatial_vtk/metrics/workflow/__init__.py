@@ -35,6 +35,7 @@ from spatial_vtk.metrics.workflow.run import (
 from spatial_vtk.metrics.workflow.slurm import (
     SlurmSettings,
     slurm_settings_from_config,
+    submit_metrics_slurm_job,
     write_metrics_slurm_script,
 )
 from spatial_vtk.metrics.workflow.tasks import (
@@ -63,6 +64,7 @@ __all__ = [
     "run_manifest_batch",
     "run_metric_tasks",
     "slurm_settings_from_config",
+    "submit_metrics_slurm_job",
     "summarize_metric_tasks",
     "tasks_from_frame",
     "tasks_to_frame",

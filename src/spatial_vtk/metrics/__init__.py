@@ -82,6 +82,7 @@ _WORKFLOW_EXPORTS = {
     "run_manifest_batch",
     "run_metric_tasks",
     "slurm_settings_from_config",
+    "submit_metrics_slurm_job",
     "summarize_metric_tasks",
     "tasks_from_frame",
     "tasks_to_frame",

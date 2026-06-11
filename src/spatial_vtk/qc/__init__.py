@@ -20,7 +20,10 @@ from spatial_vtk.qc.build import (
     discover_event_ids,
     export_manual_review_queue,
     load_trace_inventory_lookup,
+    run_qc_inventory_job,
+    submit_qc_slurm_job,
     trace_passband_is_accepted,
+    write_qc_slurm_script,
 )
 from spatial_vtk.qc.review import filter_trace_summary, queue_rows_from_filtered_trace_df
 from spatial_vtk.qc.summary import classify_station_family, global_trace_reject_reasons, reject_passband
@@ -48,5 +51,8 @@ __all__ = [
     "load_trace_inventory_lookup",
     "queue_rows_from_filtered_trace_df",
     "reject_passband",
+    "run_qc_inventory_job",
+    "submit_qc_slurm_job",
     "trace_passband_is_accepted",
+    "write_qc_slurm_script",
 ]

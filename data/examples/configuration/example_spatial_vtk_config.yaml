@@ -35,6 +35,23 @@ outputs:
 notebooks:
   show_cell_timing: true
 
+# COMPUTE
+# Optional SLURM settings for long-running workflows. Task-specific sections
+# such as qc.slurm or metrics.slurm can override any value below.
+compute:
+  slurm:
+    python_command: python
+    # environment_setup:
+    #   - module load mamba
+    #   - mamba activate spatial-vtk-py312
+    partition:
+    account:
+    walltime: 12:00:00
+    memory: 16G
+    cpus_per_task: 1
+    max_concurrent: 10
+    log_dir: outputs/logs
+
 # BOUNDS
 # Named bounds let you reuse map windows or station/event subsets.
 # Bounds are always [lon_min, lon_max, lat_min, lat_max].
@@ -100,6 +117,12 @@ metrics:
     # Require this many cycles in the record before accepting a period.
     min_cycles_in_record: 3.0
 
+  # Optional SLURM overrides for metric task arrays.
+  slurm:
+    job_name: svtk-metrics
+    walltime: 24:00:00
+    memory: 32G
+
 # SYNTHETICS
 # Set the maximum valid synthetic frequency in Hz. Synthetic spectral periods
 # shorter than 1 / max_frequency_hz will be rejected.
@@ -127,6 +150,11 @@ qc:
     min_record_length_s: 60.0
     min_end_after_origin_s: 60.0
     snr_threshold: 3.0
+  # Optional SLURM overrides for building qc_trace_summary and qc_inventory.
+  slurm:
+    job_name: svtk-qc
+    walltime: 24:00:00
+    memory: 32G
 
 # RUN SCENARIOS
 # Optional named scenarios let you reuse focused overrides without editing the

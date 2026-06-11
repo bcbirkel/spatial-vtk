@@ -3,6 +3,13 @@
 from __future__ import annotations
 
 from spatial_vtk.config.bounds import load_bounds_presets, preset_keywords, resolve_named_bounds
+from spatial_vtk.config.compute import (
+    SlurmSettings,
+    SlurmSubmission,
+    slurm_header,
+    slurm_settings_from_config,
+    submit_slurm_script,
+)
 from spatial_vtk.config.labels import (
     METRIC_DISPLAY_NAMES,
     VALUE_COLUMN_LABELS,
@@ -88,6 +95,8 @@ __all__ = [
     "OutputSpec",
     "SpectralSettings",
     "SVTK_CONFIG_ENV",
+    "SlurmSettings",
+    "SlurmSubmission",
     "SpatialVTKConfig",
     "METRIC_DISPLAY_NAMES",
     "VALUE_COLUMN_LABELS",
@@ -128,6 +137,9 @@ __all__ = [
     "resolve_output_path",
     "resolve_path",
     "resolve_named_bounds",
+    "slurm_header",
+    "slurm_settings_from_config",
+    "submit_slurm_script",
     "resolve_metric_names",
     "resolve_run_defaults",
     "transform_display_options",
