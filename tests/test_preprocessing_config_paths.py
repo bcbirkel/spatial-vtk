@@ -275,6 +275,47 @@ def test_configured_missing_observed_paths_stop_before_partial_writes(tmp_path: 
     assert not (tmp_path / "processed").exists()
 
 
+def test_configured_partial_waveform_matches_stop_before_writing_blank_rows(tmp_path: Path, monkeypatch) -> None:
+    """Configured waveform templates should not silently write blank unmatched rows."""
+
+    observed_root = tmp_path / "raw" / "observed"
+    observed_root.mkdir(parents=True)
+    (observed_root / "E01.pkl").write_bytes(b"observed")
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  root_dir: .",
+                "paths:",
+                "  observed_template: raw/observed/{event_id}.pkl",
+                "outputs:",
+                "  preprocessed_waveforms: processed",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    records = pd.DataFrame(
+        {
+            "event_id": ["E01", "E02"],
+            "station": ["STA01", "STA02"],
+            "observed_waveform": ["", ""],
+            "observed_processed_waveform": ["", ""],
+        }
+    )
+
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("preprocessing should not run when configured paths are incomplete")
+
+    monkeypatch.setattr(preprocessing_module, "_preprocess_one_file", fail_if_called)
+
+    with pytest.raises(ValueError, match="Example unmatched event IDs: \\['E02'\\]"):
+        preprocess_waveform_files(records, config=cfg)
+
+    assert not (tmp_path / "processed").exists()
+
+
 def test_existing_processed_waveforms_are_cached_unless_overwrite(tmp_path: Path, monkeypatch) -> None:
     """Existing processed waveform files should be reused by default."""
 

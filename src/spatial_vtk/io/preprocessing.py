@@ -177,7 +177,13 @@ def preprocess_waveform_files(
     if not columns:
         expected = sorted({candidate for values in DEFAULT_SOURCE_COLUMN_CANDIDATES.values() for candidate in values})
         raise ValueError(f"No waveform path columns were found. Provide source_columns or add one of: {expected}")
-    _validate_source_columns(records, columns=columns, config=config, event_id_col=event_id_col)
+    _validate_source_columns(
+        records,
+        columns=columns,
+        config=config,
+        event_id_col=event_id_col,
+        allow_missing_paths=continue_on_error,
+    )
 
     root = _resolve_output_root(output_root, config)
     _progress(verbose, f"Preprocessing waveforms into {root}")
@@ -296,6 +302,7 @@ def _validate_source_columns(
     columns: Mapping[str, str],
     config: Any | None,
     event_id_col: str,
+    allow_missing_paths: bool = False,
 ) -> None:
     """Raise when configured waveform sources did not resolve usable paths."""
 
@@ -307,16 +314,23 @@ def _validate_source_columns(
                 f"Check {', '.join((*CONFIG_TEMPLATE_KEYS[source], *CONFIG_ROOT_KEYS[source]))}."
             )
     for source, column in columns.items():
-        nonempty = records[column].map(_path_cell_text).ne("")
-        if nonempty.any():
+        has_path = records[column].map(_path_cell_text).ne("")
+        if has_path.all() or source not in configured_sources or allow_missing_paths:
             continue
-        if source in configured_sources:
-            event_preview = records[event_id_col].dropna().astype(str).head(5).tolist()
-            raise ValueError(
-                f"{source.capitalize()} waveform input is configured, but no files matched the configured paths. "
-                f"Check {', '.join((*CONFIG_TEMPLATE_KEYS[source], *CONFIG_ROOT_KEYS[source]))}. "
-                f"Example event IDs: {event_preview}"
-            )
+        missing = records.loc[~has_path, event_id_col].dropna().astype(str)
+        event_preview = missing.drop_duplicates().head(10).tolist()
+        resolved_count = int(has_path.sum())
+        total_count = int(len(records))
+        if resolved_count == 0:
+            detail = "no files matched the configured paths"
+        else:
+            detail = f"{total_count - resolved_count} of {total_count} row(s) did not match a configured file"
+        raise ValueError(
+            f"{source.capitalize()} waveform input is configured, but {detail}. "
+            f"Check {', '.join((*CONFIG_TEMPLATE_KEYS[source], *CONFIG_ROOT_KEYS[source]))}. "
+            f"Example unmatched event IDs: {event_preview}. "
+            "Pass continue_on_error=True only if you intentionally want a partial event-station table."
+        )
 
 
 def _configured_sources(config: Any | None) -> set[str]:
