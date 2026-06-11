@@ -343,7 +343,9 @@ def test_existing_processed_waveforms_are_cached_unless_overwrite(tmp_path: Path
 
     result = preprocess_waveform_files(records, output_root=output_root)
 
-    assert result.manifest.loc[0, "status"] == "cached"
+    assert result.manifest.loc[0, "status"] == "cached_missing_metadata"
+    assert "trace metadata was not available" in result.manifest.loc[0, "message"]
+    assert result.manifest.loc[0, "trace_count"] == 0
     assert result.event_station_records.loc[0, "observed_processed_waveform"] == str(cached_path)
 
     writes: list[Path] = []
@@ -354,6 +356,31 @@ def test_existing_processed_waveforms_are_cached_unless_overwrite(tmp_path: Path
 
     assert overwritten.manifest.loc[0, "status"] == "written"
     assert writes == [cached_path]
+
+
+def test_cached_waveforms_without_metadata_do_not_read_processed_files(tmp_path: Path, monkeypatch) -> None:
+    """Fast resume should not open cached waveform files just to check existence."""
+
+    raw_path = tmp_path / "raw" / "E01.pkl"
+    raw_path.parent.mkdir()
+    raw_path.write_bytes(b"raw")
+    output_root = tmp_path / "processed"
+    cached_path = output_root / "observed" / "E01" / "E01.pkl"
+    cached_path.parent.mkdir(parents=True)
+    cached_path.write_bytes(b"cached waveform placeholder")
+    records = pd.DataFrame({"event_id": ["E01"], "station": ["STA01"], "observed_waveform": [raw_path]})
+
+    def fail_read(path):
+        raise AssertionError(f"cached waveform should not be opened during fast resume: {path}")
+
+    monkeypatch.setattr(preprocessing_module, "read_waveform_file", fail_read)
+
+    result = preprocess_waveform_files(records, output_root=output_root)
+
+    assert result.manifest.loc[0, "status"] == "cached_missing_metadata"
+    assert result.manifest.loc[0, "trace_count"] == 0
+    assert "Skipping waveform read for fast resume" in result.manifest.loc[0, "message"]
+    assert result.trace_metadata.empty
 
 
 def test_cached_waveforms_reuse_existing_trace_metadata_without_reading_files(tmp_path: Path, monkeypatch) -> None:

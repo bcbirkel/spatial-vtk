@@ -570,10 +570,22 @@ def _preprocess_one_file(
         if cached_metadata is not None and not cached_metadata.empty:
             metadata = cached_metadata.copy()
             return _manifest_row(input_path, output_path, source, event_id, settings, label, "cached", "", metadata), metadata
-        stream = read_waveform_file(output_path)
-        metadata = trace_metadata_table(stream, source=output_path, event_id=event_id)
-        metadata = _tag_trace_metadata(metadata, source=source, input_path=input_path, output_path=output_path)
-        return _manifest_row(input_path, output_path, source, event_id, settings, label, "cached", "", metadata), metadata
+        message = (
+            "Processed waveform exists; trace metadata was not available. "
+            "Skipping waveform read for fast resume. Rerun with overwrite=True "
+            "to regenerate trace metadata."
+        )
+        return _manifest_row(
+            input_path,
+            output_path,
+            source,
+            event_id,
+            settings,
+            label,
+            "cached_missing_metadata",
+            message,
+            pd.DataFrame(),
+        ), None
     try:
         stream = read_waveform_file(input_path)
         processed = preprocess_stream(stream, settings)
