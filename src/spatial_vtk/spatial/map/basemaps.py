@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Iterable
 import math
 import re
+import warnings
 
 from spatial_vtk.config.paths import ROOT_DIR
 
@@ -460,6 +461,7 @@ def add_contextily_basemap(
     attribution: bool = False,
     cache_dir: str | Path | None = None,
     cache_download: bool = True,
+    on_error: str = "warn",
 ) -> tuple[bool, str]:
     """Add a tiled basemap with provider fallbacks.
 
@@ -483,6 +485,10 @@ def add_contextily_basemap(
     cache_download
         Whether to save the preferred provider raster into the cache when the
         local file is missing and network tile access is available.
+    on_error
+        Error handling when no tiled or cached basemap can be drawn. ``"warn"``
+        emits a warning and draws a static fallback, ``"raise"`` raises a
+        RuntimeError, and ``"ignore"`` only draws the fallback.
 
     Returns
     -------
@@ -502,10 +508,13 @@ def add_contextily_basemap(
         crs=crs,
     )
     effective_zoom = recommended_zoom if zoom is None else max(int(zoom), int(recommended_zoom or zoom))
+    error_mode = str(on_error or "warn").strip().lower()
+    errors: list[str] = []
 
     try:
         import contextily as ctx  # type: ignore
     except Exception as exc:
+        errors.append(f"contextily unavailable: {exc}")
         if effective_zoom is not None:
             covering_cache = _cached_basemap_covering_extent(
                 source_name=primary_source,
@@ -522,8 +531,13 @@ def add_contextily_basemap(
                 crs=crs,
             ):
                 return True, str(covering_cache)
-        draw_static_basemap_fallback(ax)
-        return False, f"contextily unavailable: {exc}"
+            if covering_cache is not None:
+                errors.append(f"cached raster could not be drawn: {covering_cache}")
+            else:
+                errors.append(f"no cached raster covers extent in {cache_root}")
+        message = _basemap_failure_message(errors, xlim=xlim, ylim=ylim, cache_dir=cache_root)
+        _handle_basemap_failure(ax, message, xlim=xlim, ylim=ylim, crs=crs, on_error=error_mode)
+        return False, message
 
     if effective_zoom is not None:
         cache_path = _basemap_cache_path(
@@ -542,14 +556,15 @@ def add_contextily_basemap(
                 crs=crs,
             ):
                 return True, str(cache_path)
+            errors.append(f"cached raster could not be drawn: {cache_path}")
             try:
                 ctx.add_basemap(ax, source=str(cache_path), crs=crs, attribution=attribution)
                 ax.set_xlim(xlim)
                 ax.set_ylim(ylim)
                 _set_geographic_aspect(ax, crs=crs)
                 return True, str(cache_path)
-            except Exception:
-                pass
+            except Exception as exc:
+                errors.append(f"contextily failed to draw cached raster {cache_path}: {exc}")
 
         covering_cache = _cached_basemap_covering_extent(
             source_name=primary_source,
@@ -566,14 +581,15 @@ def add_contextily_basemap(
                 crs=crs,
             ):
                 return True, str(covering_cache)
+            errors.append(f"cached raster could not be drawn: {covering_cache}")
             try:
                 ctx.add_basemap(ax, source=str(covering_cache), crs=crs, attribution=attribution)
                 ax.set_xlim(xlim)
                 ax.set_ylim(ylim)
                 _set_geographic_aspect(ax, crs=crs)
                 return True, str(covering_cache)
-            except Exception:
-                pass
+            except Exception as exc:
+                errors.append(f"contextily failed to draw cached raster {covering_cache}: {exc}")
         covering_cache = _cached_basemap_covering_extent(
             source_name=primary_source,
             xlim=(float(xlim[0]), float(xlim[1])),
@@ -590,14 +606,15 @@ def add_contextily_basemap(
                 crs=crs,
             ):
                 return True, str(covering_cache)
+            errors.append(f"cached raster could not be drawn: {covering_cache}")
             try:
                 ctx.add_basemap(ax, source=str(covering_cache), crs=crs, attribution=attribution)
                 ax.set_xlim(xlim)
                 ax.set_ylim(ylim)
                 _set_geographic_aspect(ax, crs=crs)
                 return True, str(covering_cache)
-            except Exception:
-                pass
+            except Exception as exc:
+                errors.append(f"contextily failed to draw cached raster {covering_cache}: {exc}")
         elif cache_download:
             try:
                 provider = _resolve_contextily_provider(ctx, primary_source)
@@ -616,8 +633,8 @@ def add_contextily_basemap(
                 ax.set_ylim(ylim)
                 _set_geographic_aspect(ax, crs=crs)
                 return True, str(cache_path)
-            except Exception:
-                pass
+            except Exception as exc:
+                errors.append(f"contextily failed to download cached raster {cache_path}: {exc}")
 
     attempts = [primary_source, *list(fallback_sources)]
     last_error = "unknown basemap failure"
@@ -634,10 +651,58 @@ def add_contextily_basemap(
             return True, str(source_name)
         except Exception as exc:
             last_error = str(exc)
+            errors.append(f"{source_name}: {exc}")
             continue
 
+    if not errors:
+        errors.append(last_error)
+    message = _basemap_failure_message(errors, xlim=xlim, ylim=ylim, cache_dir=cache_root)
+    _handle_basemap_failure(ax, message, xlim=xlim, ylim=ylim, crs=crs, on_error=error_mode)
+    return False, message
+
+
+def _basemap_failure_message(
+    errors: Iterable[str],
+    *,
+    xlim: tuple[float, float],
+    ylim: tuple[float, float],
+    cache_dir: Path,
+) -> str:
+    """Build a concise basemap failure diagnostic."""
+
+    unique_errors: list[str] = []
+    seen: set[str] = set()
+    for error in errors:
+        text = str(error).strip()
+        if not text or text in seen:
+            continue
+        seen.add(text)
+        unique_errors.append(text)
+    detail = "; ".join(unique_errors[:4]) or "unknown basemap failure"
+    return (
+        "Basemap tiles could not be drawn; using static fallback. "
+        f"Extent lon=({float(xlim[0]):.4f}, {float(xlim[1]):.4f}), "
+        f"lat=({float(ylim[0]):.4f}, {float(ylim[1]):.4f}); "
+        f"cache={cache_dir}; details: {detail}"
+    )
+
+
+def _handle_basemap_failure(
+    ax: Any,
+    message: str,
+    *,
+    xlim: tuple[float, float],
+    ylim: tuple[float, float],
+    crs: str,
+    on_error: str,
+) -> None:
+    """Apply fallback/error policy for failed basemap rendering."""
+
+    if on_error == "raise":
+        raise RuntimeError(message)
     draw_static_basemap_fallback(ax)
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
     _set_geographic_aspect(ax, crs=crs)
-    return False, last_error
+    if on_error not in {"ignore", "silent", "false", "none"}:
+        warnings.warn(message, RuntimeWarning, stacklevel=3)
