@@ -372,24 +372,38 @@ def build_waveform_trace_qc_summary(
     rows: list[dict[str, object]] = checkpoint.to_dict(orient="records") if not checkpoint.empty else []
     completed = _waveform_qc_completed_keys(checkpoint)
     stream_cache: dict[str, Any] = {}
+    source_key = str(source).strip().lower()
+    components_text = tuple(str(component).strip().upper() for component in components)
     total_records = len(records)
     progress_every = max(int(progress_interval), 1)
     checkpoint_every = max(int(checkpoint_interval), 1)
     progress_start = time.monotonic()
-    progress_prefix = f"Trace QC {str(source).strip().lower()}"
+    progress_prefix = f"Trace QC {source_key}"
     _progress(
         verbose,
         f"{progress_prefix}: "
-        f"{total_records} event-station record(s), {len(tuple(components))} component(s), {len(bands)} passband(s)",
+        f"{total_records} event-station record(s), {len(components_text)} component(s), {len(bands)} passband(s)",
     )
-    total_component_groups = total_records * len(tuple(components))
+    pending_work: list[tuple[pd.Series, tuple[str, ...]]] = []
+    for _, record in records.iterrows():
+        event_id = str(record.get("event_id", "")).strip()
+        station = str(record.get("station", "")).strip().upper()
+        pending_components = tuple(
+            component_text
+            for component_text in components_text
+            if (source_key, event_id, station, component_text) not in completed
+        )
+        if pending_components:
+            pending_work.append((record, pending_components))
+    pending_component_groups = sum(len(pending_components) for _, pending_components in pending_work)
+    total_component_groups = total_records * len(components_text)
     if checkpoint_path is None:
         _progress(verbose, f"{progress_prefix}: checkpointing disabled; starting from scratch")
     else:
         _progress(verbose, f"{progress_prefix}: checkpoint path {Path(checkpoint_path).expanduser()}")
     if completed:
-        completed_count = min(len(completed), total_component_groups)
-        remaining_count = max(total_component_groups - completed_count, 0)
+        completed_count = max(total_component_groups - pending_component_groups, 0)
+        remaining_count = pending_component_groups
         _progress(
             verbose,
             f"{progress_prefix}: resuming with {completed_count} completed "
@@ -400,20 +414,23 @@ def build_waveform_trace_qc_summary(
         if remaining_count == 0:
             _progress(verbose, f"{progress_prefix}: checkpoint already complete; returning cached rows")
             return pd.DataFrame(rows)
+        _progress(
+            verbose,
+            f"{progress_prefix}: processing {remaining_count} new {_plural(remaining_count, 'component group')} "
+            f"across {len(pending_work)} event-station {_plural(len(pending_work), 'record')}",
+        )
     elif checkpoint_path is not None:
         _progress(verbose, f"{progress_prefix}: no completed component groups found; all work is new")
-    for record_index, (_, record) in enumerate(records.iterrows(), start=1):
-        if record_index == 1 or record_index % progress_every == 0 or record_index == total_records:
-            _progress(verbose, _progress_status(progress_prefix, record_index, total_records, progress_start))
+    total_pending_records = len(pending_work)
+    for record_index, (record, pending_components) in enumerate(pending_work, start=1):
+        if record_index == 1 or record_index % progress_every == 0 or record_index == total_pending_records:
+            _progress(verbose, _progress_status(progress_prefix, record_index, total_pending_records, progress_start))
         event_id = str(record.get("event_id", "")).strip()
         station = str(record.get("station", "")).strip().upper()
         origin = _event_origin_time(record)
         path_text = _path_cell_text(record.get(waveform_path_col, ""))
-        for component in components:
-            component_text = str(component).strip().upper()
+        for component_text in pending_components:
             completed_key = (str(source).strip().lower(), event_id, station, component_text)
-            if completed_key in completed:
-                continue
             trace = None
             load_reason = ""
             load_message = ""
@@ -521,7 +538,7 @@ def build_waveform_trace_qc_summary(
                     }
                 )
             completed.add(completed_key)
-        if checkpoint_path is not None and (record_index % checkpoint_every == 0 or record_index == total_records):
+        if checkpoint_path is not None and (record_index % checkpoint_every == 0 or record_index == total_pending_records):
             _write_qc_checkpoint(pd.DataFrame(rows), checkpoint_path)
     result = pd.DataFrame(rows)
     _write_qc_checkpoint(result, checkpoint_path)

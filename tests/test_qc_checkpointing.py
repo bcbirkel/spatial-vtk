@@ -65,6 +65,53 @@ def test_waveform_trace_qc_resumes_from_checkpoint_without_reloading_waveforms(t
     assert "record 1/1" not in output
 
 
+def test_waveform_trace_qc_reports_only_pending_resume_records(tmp_path: Path, capsys) -> None:
+    """Partial waveform QC resumes should iterate pending records, not all records."""
+
+    checkpoint_path = tmp_path / "qc_trace_summary.observed.checkpoint.csv"
+    pd.DataFrame(
+        {
+            "source": ["observed"],
+            "event_id": ["E1"],
+            "station": ["S1"],
+            "component": ["Z"],
+            "passband": ["1-2 sec"],
+            "metric_group": [""],
+            "metric": [""],
+            "period_s": [np.nan],
+            "qc_status": ["pass"],
+            "qc_reason": [""],
+        }
+    ).to_csv(checkpoint_path, index=False)
+    event_stations = pd.DataFrame(
+        {
+            "event_id": ["E1", "E2"],
+            "station": ["S1", "S2"],
+            "start": ["2020-01-01T00:00:00Z", "2020-01-01T00:01:00Z"],
+            "observed_processed_waveform": ["", ""],
+        }
+    )
+
+    resumed = build_waveform_trace_qc_summary(
+        event_stations,
+        source="observed",
+        waveform_path_col="observed_processed_waveform",
+        components=("Z",),
+        passbands=[(1.0, 2.0)],
+        checkpoint_path=checkpoint_path,
+        verbose=True,
+        progress_interval=1,
+        checkpoint_interval=1,
+    )
+    output = capsys.readouterr().out
+
+    assert len(resumed) == 2
+    assert "resuming with 1 completed component group (1/2 complete; 1 new group remaining)" in output
+    assert "processing 1 new component group across 1 event-station record" in output
+    assert "record 1/1" in output
+    assert "record 1/2" not in output
+
+
 def test_metric_qc_summary_resumes_from_checkpoint(tmp_path: Path, capsys) -> None:
     """Metric QC checkpoints should skip completed event-station records."""
 
