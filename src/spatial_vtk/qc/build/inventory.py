@@ -369,7 +369,10 @@ def build_waveform_trace_qc_summary(
         min_probability=min_onset_pick_probability,
     )
     checkpoint = _load_qc_checkpoint(checkpoint_path) if resume else pd.DataFrame()
+    if checkpoint_path is not None and not resume:
+        _reset_qc_checkpoint(checkpoint_path)
     rows: list[dict[str, object]] = checkpoint.to_dict(orient="records") if not checkpoint.empty else []
+    checkpoint_buffer: list[dict[str, object]] = []
     completed = _waveform_qc_completed_keys(checkpoint)
     stream_cache: dict[str, Any] = {}
     source_key = str(source).strip().lower()
@@ -504,44 +507,46 @@ def build_waveform_trace_qc_summary(
                         origin_window_valid=bool(band_summary["origin_window_valid"]),
                         origin_signal_ratio=float(band_summary["origin_signal_ratio"]),
                     )
-                rows.append(
-                    {
-                        "source": str(source).strip().lower(),
-                        "event_id": event_id,
-                        "station": station,
-                        "component": component_text,
-                        "passband": _display_passband_label(label),
-                        "metric_group": "",
-                        "metric": "",
-                        "period_s": np.nan,
-                        "qc_status": "fail" if reject_flag else "pass",
-                        "qc_reason": ";".join(reasons),
-                        "record_length_s": trace_summary["record_length_s"],
-                        "start_rel_s": trace_summary["start_rel_s"],
-                        "end_rel_s": trace_summary["end_rel_s"],
-                        "trace_start_s": trace_summary["start_rel_s"],
-                        "trace_end_s": trace_summary["end_rel_s"],
-                        "trace_duration_s": trace_summary["record_length_s"],
-                        "valid_start_rel_s": trace_summary["valid_start_rel_s"],
-                        "valid_end_rel_s": trace_summary["valid_end_rel_s"],
-                        "valid_start_sample": trace_summary["valid_start_sample"],
-                        "valid_end_sample": trace_summary["valid_end_sample"],
-                        "sample_interval_s": trace_summary["dt"],
-                        "sample_count": int(np.asarray(trace_summary.get("samples", [])).size),
-                        "load_message": load_message,
-                        "onset_rel_s": band_summary["onset_rel_s"],
-                        "snr_rms": band_summary["snr_rms"],
-                        "noise_rms": band_summary["noise_rms"],
-                        "signal_rms": band_summary["signal_rms"],
-                        "pre_origin_signal_ratio": band_summary["pre_origin_signal_ratio"],
-                        "origin_signal_ratio": band_summary["origin_signal_ratio"],
-                    }
-                )
+                row = {
+                    "source": str(source).strip().lower(),
+                    "event_id": event_id,
+                    "station": station,
+                    "component": component_text,
+                    "passband": _display_passband_label(label),
+                    "metric_group": "",
+                    "metric": "",
+                    "period_s": np.nan,
+                    "qc_status": "fail" if reject_flag else "pass",
+                    "qc_reason": ";".join(reasons),
+                    "record_length_s": trace_summary["record_length_s"],
+                    "start_rel_s": trace_summary["start_rel_s"],
+                    "end_rel_s": trace_summary["end_rel_s"],
+                    "trace_start_s": trace_summary["start_rel_s"],
+                    "trace_end_s": trace_summary["end_rel_s"],
+                    "trace_duration_s": trace_summary["record_length_s"],
+                    "valid_start_rel_s": trace_summary["valid_start_rel_s"],
+                    "valid_end_rel_s": trace_summary["valid_end_rel_s"],
+                    "valid_start_sample": trace_summary["valid_start_sample"],
+                    "valid_end_sample": trace_summary["valid_end_sample"],
+                    "sample_interval_s": trace_summary["dt"],
+                    "sample_count": int(np.asarray(trace_summary.get("samples", [])).size),
+                    "load_message": load_message,
+                    "onset_rel_s": band_summary["onset_rel_s"],
+                    "snr_rms": band_summary["snr_rms"],
+                    "noise_rms": band_summary["noise_rms"],
+                    "signal_rms": band_summary["signal_rms"],
+                    "pre_origin_signal_ratio": band_summary["pre_origin_signal_ratio"],
+                    "origin_signal_ratio": band_summary["origin_signal_ratio"],
+                }
+                rows.append(row)
+                checkpoint_buffer.append(row)
             completed.add(completed_key)
         if checkpoint_path is not None and (record_index % checkpoint_every == 0 or record_index == total_pending_records):
-            _write_qc_checkpoint(pd.DataFrame(rows), checkpoint_path)
+            _append_qc_checkpoint_rows(checkpoint_buffer, checkpoint_path)
+            checkpoint_buffer.clear()
     result = pd.DataFrame(rows)
-    _write_qc_checkpoint(result, checkpoint_path)
+    if checkpoint_buffer:
+        _append_qc_checkpoint_rows(checkpoint_buffer, checkpoint_path)
     _progress(verbose, f"{progress_prefix}: built {len(result)} row(s) in {_format_duration(time.monotonic() - progress_start)}")
     return result
 
@@ -643,6 +648,34 @@ def _write_qc_checkpoint(df: pd.DataFrame, path: str | Path | None) -> None:
     checkpoint = Path(path).expanduser()
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
     write_table(df, checkpoint)
+
+
+def _reset_qc_checkpoint(path: str | Path | None) -> None:
+    """Remove one checkpoint table when a non-resume run should start fresh."""
+
+    if path is None:
+        return
+    checkpoint = Path(path).expanduser()
+    checkpoint.unlink(missing_ok=True)
+
+
+def _append_qc_checkpoint_rows(rows: list[dict[str, object]], path: str | Path | None) -> None:
+    """Append newly generated rows to one CSV checkpoint table."""
+
+    if path is None or not rows:
+        return
+    checkpoint = Path(path).expanduser()
+    suffix = checkpoint.suffix.lower()
+    if suffix not in {"", ".csv"}:
+        existing = _load_qc_checkpoint(checkpoint)
+        combined = pd.concat([existing, pd.DataFrame(rows)], ignore_index=True) if not existing.empty else pd.DataFrame(rows)
+        _write_qc_checkpoint(combined, checkpoint)
+        return
+    if not suffix:
+        checkpoint = checkpoint.with_suffix(".csv")
+    checkpoint.parent.mkdir(parents=True, exist_ok=True)
+    write_header = not checkpoint.exists() or checkpoint.stat().st_size == 0
+    pd.DataFrame(rows).to_csv(checkpoint, mode="a", header=write_header, index=False)
 
 
 def _waveform_qc_completed_keys(df: pd.DataFrame) -> set[tuple[str, str, str, str]]:

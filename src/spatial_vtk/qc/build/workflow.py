@@ -109,6 +109,34 @@ def _write_qc_checkpoint(df: pd.DataFrame, path: str | Path | None) -> None:
     write_table(df, checkpoint)
 
 
+def _reset_qc_checkpoint(path: str | Path | None) -> None:
+    """Remove one checkpoint table when a non-resume run should start fresh."""
+
+    if path is None:
+        return
+    checkpoint = Path(path).expanduser()
+    checkpoint.unlink(missing_ok=True)
+
+
+def _append_qc_checkpoint_rows(rows: list[dict[str, object]], path: str | Path | None) -> None:
+    """Append newly generated rows to one CSV checkpoint table."""
+
+    if path is None or not rows:
+        return
+    checkpoint = Path(path).expanduser()
+    suffix = checkpoint.suffix.lower()
+    if suffix not in {"", ".csv"}:
+        existing = _load_qc_checkpoint(checkpoint)
+        combined = pd.concat([existing, pd.DataFrame(rows)], ignore_index=True) if not existing.empty else pd.DataFrame(rows)
+        _write_qc_checkpoint(combined, checkpoint)
+        return
+    if not suffix:
+        checkpoint = checkpoint.with_suffix(".csv")
+    checkpoint.parent.mkdir(parents=True, exist_ok=True)
+    write_header = not checkpoint.exists() or checkpoint.stat().st_size == 0
+    pd.DataFrame(rows).to_csv(checkpoint, mode="a", header=write_header, index=False)
+
+
 def _source_checkpoint_path(path: str | Path | None, source: str) -> Path | None:
     """Return a source-specific checkpoint path next to the combined table."""
 
@@ -228,7 +256,10 @@ def build_metric_qc_summary(
         "synthetic": bool(synthetic_available),
     }
     checkpoint = _load_qc_checkpoint(checkpoint_path) if resume else pd.DataFrame()
+    if checkpoint_path is not None and not resume:
+        _reset_qc_checkpoint(checkpoint_path)
     rows: list[dict[str, object]] = checkpoint.to_dict(orient="records") if not checkpoint.empty else []
+    checkpoint_buffer: list[dict[str, object]] = []
     completed_records = _metric_qc_completed_records(checkpoint)
     total_records = len(records)
     interval = max(int(progress_interval), 1)
@@ -296,40 +327,42 @@ def build_metric_qc_summary(
                                     current_status=status,
                                     current_reason=reason,
                                 )
-                            rows.append(
-                                {
-                                    "source": source_key,
-                                    "event_id": record.get("event_id", ""),
-                                    "station": str(record.get("station", "")).strip().upper(),
-                                    "event_title": record.get("event_title", ""),
-                                    "event_lat": _first_present(record, "event_lat", "source_lat"),
-                                    "event_lon": _first_present(record, "event_lon", "source_lon"),
-                                    "station_lat": _first_present(record, "station_lat", "lat", "sta_lat"),
-                                    "station_lon": _first_present(record, "station_lon", "lon", "sta_lon"),
-                                    "network": _first_present(record, "network", "network_x", "network_y"),
-                                    "magnitude": _first_present(record, "magnitude", "event_magnitude", "Mw"),
-                                    "distance_km": _first_present(record, "distance_km", "hypocentral_distance_km"),
-                                    "component": str(component).strip().upper(),
-                                    "passband": band_label,
-                                    "metric_group": group,
-                                    "metric": str(metric),
-                                    "period_s": period_s,
-                                    "qc_status": status,
-                                    "qc_reason": reason,
-                                    "trace_start_s": trace_payload.get("trace_start_s", np.nan),
-                                    "sample_interval_s": trace_payload.get("sample_interval_s", np.nan),
-                                    "valid_start_rel_s": trace_payload.get("valid_start_rel_s", np.nan),
-                                    "valid_end_rel_s": trace_payload.get("valid_end_rel_s", np.nan),
-                                    "valid_start_sample": trace_payload.get("valid_start_sample", np.nan),
-                                    "valid_end_sample": trace_payload.get("valid_end_sample", np.nan),
-                                }
-                            )
+                            row = {
+                                "source": source_key,
+                                "event_id": record.get("event_id", ""),
+                                "station": str(record.get("station", "")).strip().upper(),
+                                "event_title": record.get("event_title", ""),
+                                "event_lat": _first_present(record, "event_lat", "source_lat"),
+                                "event_lon": _first_present(record, "event_lon", "source_lon"),
+                                "station_lat": _first_present(record, "station_lat", "lat", "sta_lat"),
+                                "station_lon": _first_present(record, "station_lon", "lon", "sta_lon"),
+                                "network": _first_present(record, "network", "network_x", "network_y"),
+                                "magnitude": _first_present(record, "magnitude", "event_magnitude", "Mw"),
+                                "distance_km": _first_present(record, "distance_km", "hypocentral_distance_km"),
+                                "component": str(component).strip().upper(),
+                                "passband": band_label,
+                                "metric_group": group,
+                                "metric": str(metric),
+                                "period_s": period_s,
+                                "qc_status": status,
+                                "qc_reason": reason,
+                                "trace_start_s": trace_payload.get("trace_start_s", np.nan),
+                                "sample_interval_s": trace_payload.get("sample_interval_s", np.nan),
+                                "valid_start_rel_s": trace_payload.get("valid_start_rel_s", np.nan),
+                                "valid_end_rel_s": trace_payload.get("valid_end_rel_s", np.nan),
+                                "valid_start_sample": trace_payload.get("valid_start_sample", np.nan),
+                                "valid_end_sample": trace_payload.get("valid_end_sample", np.nan),
+                            }
+                            rows.append(row)
+                            checkpoint_buffer.append(row)
         completed_records.add(record_key)
         if checkpoint_path is not None and (record_index % checkpoint_every == 0 or record_index == total_records):
-            _write_qc_checkpoint(pd.DataFrame(rows), checkpoint_path)
+            _append_qc_checkpoint_rows(checkpoint_buffer, checkpoint_path)
+            checkpoint_buffer.clear()
     _progress(verbose, f"Metric QC: built {len(rows)} row(s) in {_format_duration(time.monotonic() - progress_start)}")
     result = pd.DataFrame(rows)
-    _write_qc_checkpoint(result, checkpoint_path)
+    if checkpoint_buffer:
+        _append_qc_checkpoint_rows(checkpoint_buffer, checkpoint_path)
     return result
 
 
