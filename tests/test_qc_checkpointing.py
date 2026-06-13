@@ -271,6 +271,58 @@ def test_waveform_trace_qc_reports_missing_component_without_window_failures(
     assert "Available traces include" in qc.loc[0, "load_message"]
 
 
+def test_waveform_trace_qc_reuses_one_asdf_station_read_for_components(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """ASDF QC should read one station stream once and reuse it for components."""
+
+    import spatial_vtk.io.synthetic_formats as synthetic_formats
+
+    calls = []
+
+    class FakeSyntheticReader:
+        def __init__(self, info):
+            self.info = info
+
+        def read(self, request):
+            calls.append((self.info.root, request.station, request.component))
+            return [
+                {
+                    "data": np.ones(120, dtype=float),
+                    "stats": {
+                        "station": "ABC",
+                        "channel": f"BH{component}",
+                        "sampling_rate": 1.0,
+                        "starttime": "2020-01-01T00:00:00Z",
+                    },
+                }
+                for component in ("R", "T", "Z")
+            ]
+
+    monkeypatch.setattr(synthetic_formats, "synthetic_reader_for", FakeSyntheticReader)
+    event_stations = pd.DataFrame(
+        {
+            "event_id": ["ci123"],
+            "station": ["ABC"],
+            "start": ["2020-01-01T00:00:00Z"],
+            "synthetic_processed_waveform": [tmp_path / "ci123.asdf"],
+        }
+    )
+
+    qc = build_waveform_trace_qc_summary(
+        event_stations,
+        source="synthetic",
+        waveform_path_col="synthetic_processed_waveform",
+        components=("R", "T", "Z"),
+        passbands=[(1.0, 2.0)],
+        preprocessing=qc_inventory_module.WaveformPreprocessing(),
+    )
+
+    assert qc["component"].tolist() == ["R", "T", "Z"]
+    assert calls == [(str(tmp_path / "ci123.asdf"), "ABC", None)]
+
+
 def test_write_table_keeps_existing_csv_when_replacement_write_fails(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

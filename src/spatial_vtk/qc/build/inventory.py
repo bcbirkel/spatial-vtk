@@ -795,7 +795,7 @@ def _cached_waveform(path: str | Path, cache: dict[str, Any], *, station: str | 
     source = Path(path).expanduser()
     key = str(source)
     if source.suffix.lower() == ".asdf":
-        key = f"{key}::{station or ''}::{component or ''}"
+        key = f"{key}::{station or ''}"
     if key not in cache:
         if source.suffix.lower() == ".asdf":
             from spatial_vtk.io.synthetic_formats import (
@@ -806,7 +806,7 @@ def _cached_waveform(path: str | Path, cache: dict[str, Any], *, station: str | 
 
             info = SyntheticFormatInfo(str(source), "asdf", True, False)
             cache[key] = synthetic_reader_for(info).read(
-                SyntheticReadRequest(station=station, component=component)
+                SyntheticReadRequest(station=station)
             )
         else:
             cache[key] = read_waveform_file(source)
