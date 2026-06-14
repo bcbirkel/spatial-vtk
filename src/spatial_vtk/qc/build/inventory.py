@@ -675,7 +675,11 @@ def _append_qc_checkpoint_rows(rows: list[dict[str, object]], path: str | Path |
         checkpoint = checkpoint.with_suffix(".csv")
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
     write_header = not checkpoint.exists() or checkpoint.stat().st_size == 0
-    pd.DataFrame(rows).to_csv(checkpoint, mode="a", header=write_header, index=False)
+    frame = pd.DataFrame(rows)
+    if not write_header:
+        header = pd.read_csv(checkpoint, nrows=0)
+        frame = frame.reindex(columns=list(header.columns))
+    frame.to_csv(checkpoint, mode="a", header=write_header, index=False)
 
 
 def _waveform_qc_completed_keys(df: pd.DataFrame) -> set[tuple[str, str, str, str]]:

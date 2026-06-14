@@ -153,7 +153,11 @@ def _append_qc_checkpoint_rows(rows: list[dict[str, object]], path: str | Path |
         checkpoint = checkpoint.with_suffix(".csv")
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
     write_header = not checkpoint.exists() or checkpoint.stat().st_size == 0
-    pd.DataFrame(rows).to_csv(checkpoint, mode="a", header=write_header, index=False)
+    frame = pd.DataFrame(rows)
+    if not write_header:
+        header = pd.read_csv(checkpoint, nrows=0)
+        frame = frame.reindex(columns=list(header.columns))
+    frame.to_csv(checkpoint, mode="a", header=write_header, index=False)
 
 
 def _source_checkpoint_path(path: str | Path | None, source: str) -> Path | None:
@@ -211,6 +215,43 @@ def _metric_qc_completed_records(df: pd.DataFrame) -> set[tuple[str, str]]:
     }
 
 
+def _metric_qc_completed_records_from_path(path: str | Path | None) -> tuple[set[tuple[str, str]], int]:
+    """Return completed event/station keys and row count without loading full rows."""
+
+    if path is None:
+        return set(), 0
+    checkpoint = Path(path).expanduser()
+    if not checkpoint.exists() or checkpoint.stat().st_size == 0:
+        return set(), 0
+    suffix = checkpoint.suffix.lower()
+    if suffix in {"", ".csv"}:
+        try:
+            header = pd.read_csv(checkpoint, nrows=0)
+            if not {"event_id", "station"} <= set(header.columns):
+                return set(), 0
+            completed: set[tuple[str, str]] = set()
+            row_count = 0
+            for chunk in pd.read_csv(
+                checkpoint,
+                usecols=["event_id", "station"],
+                chunksize=1_000_000,
+                low_memory=False,
+            ):
+                row_count += len(chunk)
+                completed.update(_metric_qc_completed_records(chunk))
+            return completed, row_count
+        except Exception:
+            return set(), 0
+    if suffix in {".parquet", ".pq"}:
+        try:
+            checkpoint_rows = pd.read_parquet(checkpoint, columns=["event_id", "station"])
+        except Exception:
+            return set(), 0
+        return _metric_qc_completed_records(checkpoint_rows), len(checkpoint_rows)
+    checkpoint_rows = _load_qc_checkpoint(checkpoint)
+    return _metric_qc_completed_records(checkpoint_rows), len(checkpoint_rows)
+
+
 def build_metric_qc_summary(
     event_station_records: pd.DataFrame | str | Path,
     *,
@@ -228,6 +269,7 @@ def build_metric_qc_summary(
     checkpoint_path: str | Path | None = None,
     resume: bool = True,
     checkpoint_interval: int = 25,
+    return_result: bool = True,
 ) -> pd.DataFrame:
     """Build a side-specific metric QC summary from event-station records.
 
@@ -261,6 +303,10 @@ def build_metric_qc_summary(
         already present in that checkpoint.
     checkpoint_interval
         Number of event-station records between checkpoint writes.
+    return_result
+        When false, append checkpoint rows on disk and return an empty
+        dataframe instead of loading/returning the full QC inventory. This is
+        intended for large Slurm jobs.
 
     Returns
     -------
@@ -277,19 +323,33 @@ def build_metric_qc_summary(
         "observed": bool(observed_available),
         "synthetic": bool(synthetic_available),
     }
-    if resume and checkpoint_path is not None:
+    checkpoint = pd.DataFrame()
+    checkpoint_row_count = 0
+    completed_records: set[tuple[str, str]] = set()
+    if resume and checkpoint_path is not None and return_result:
         _progress(verbose, f"Metric QC: loading checkpoint {Path(checkpoint_path).expanduser()}")
-    checkpoint = _load_qc_checkpoint(checkpoint_path) if resume else pd.DataFrame()
-    if resume and checkpoint_path is not None:
+        checkpoint = _load_qc_checkpoint(checkpoint_path)
+        checkpoint_row_count = len(checkpoint)
         _progress(verbose, f"Metric QC: loaded {len(checkpoint)} checkpoint row(s)")
+        completed_records = _metric_qc_completed_records(checkpoint)
+    elif resume and checkpoint_path is not None:
+        scan_start = time.monotonic()
+        _progress(verbose, f"Metric QC: scanning checkpoint completion keys {Path(checkpoint_path).expanduser()}")
+        completed_records, checkpoint_row_count = _metric_qc_completed_records_from_path(checkpoint_path)
+        _progress(
+            verbose,
+            f"Metric QC: found {len(completed_records)} completed event-station "
+            f"{_plural(len(completed_records), 'record')} from {checkpoint_row_count} checkpoint "
+            f"{_plural(checkpoint_row_count, 'row')} in {_format_duration(time.monotonic() - scan_start)}",
+        )
     if checkpoint_path is not None and not resume:
         _reset_qc_checkpoint(checkpoint_path)
         _progress(verbose, f"Metric QC: reset checkpoint {Path(checkpoint_path).expanduser()}")
     if not checkpoint.empty:
         _progress(verbose, "Metric QC: converting checkpoint rows for resume output")
-    rows: list[dict[str, object]] = checkpoint.to_dict(orient="records") if not checkpoint.empty else []
+    rows: list[dict[str, object]] = checkpoint.to_dict(orient="records") if return_result and not checkpoint.empty else []
     checkpoint_buffer: list[dict[str, object]] = []
-    completed_records = _metric_qc_completed_records(checkpoint)
+    generated_row_count = 0
     total_records = len(records)
     interval = max(int(progress_interval), 1)
     checkpoint_every = max(int(checkpoint_interval), 1)
@@ -381,14 +441,17 @@ def build_metric_qc_summary(
                                 "valid_start_sample": trace_payload.get("valid_start_sample", np.nan),
                                 "valid_end_sample": trace_payload.get("valid_end_sample", np.nan),
                             }
-                            rows.append(row)
+                            if return_result:
+                                rows.append(row)
                             checkpoint_buffer.append(row)
+                            generated_row_count += 1
         completed_records.add(record_key)
         if checkpoint_path is not None and (record_index % checkpoint_every == 0 or record_index == total_records):
             _append_qc_checkpoint_rows(checkpoint_buffer, checkpoint_path)
             checkpoint_buffer.clear()
-    _progress(verbose, f"Metric QC: built {len(rows)} row(s) in {_format_duration(time.monotonic() - progress_start)}")
-    result = pd.DataFrame(rows)
+    result_count = checkpoint_row_count + generated_row_count if not return_result else len(rows)
+    _progress(verbose, f"Metric QC: built {result_count} row(s) in {_format_duration(time.monotonic() - progress_start)}")
+    result = pd.DataFrame(rows) if return_result else pd.DataFrame()
     if checkpoint_buffer:
         _append_qc_checkpoint_rows(checkpoint_buffer, checkpoint_path)
     return result

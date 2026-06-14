@@ -16,7 +16,7 @@ from spatial_vtk.config.compute import (
 from spatial_vtk.config.metrics import metrics_settings_from_config
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
-from spatial_vtk.io.tables import read_table, write_table
+from spatial_vtk.io.tables import read_table
 from spatial_vtk.qc.build.workflow import build_metric_qc_summary, build_waveform_qc_summary
 
 
@@ -60,7 +60,7 @@ def run_qc_inventory_job(
         checkpoint_path=trace_path,
         return_result=False,
     )
-    qc_summary = build_metric_qc_summary(
+    build_metric_qc_summary(
         event_stations,
         metrics=metric_settings.metrics,
         components=metric_settings.components,
@@ -70,8 +70,8 @@ def run_qc_inventory_job(
         trace_qc_summary=trace_path,
         verbose=verbose,
         checkpoint_path=inventory_path,
+        return_result=False,
     )
-    write_table(qc_summary, inventory_path)
     return {"qc_trace_summary": trace_path, "qc_inventory": inventory_path}
 
 

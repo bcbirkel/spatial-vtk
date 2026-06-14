@@ -179,6 +179,51 @@ def test_metric_qc_summary_resumes_from_checkpoint(tmp_path: Path, capsys) -> No
     assert "record 1/2" not in output
 
 
+def test_metric_qc_summary_disk_resume_appends_without_loading_checkpoint(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Disk-backed metric QC resumes should scan keys instead of loading full rows."""
+
+    checkpoint_path = tmp_path / "qc_inventory.csv"
+    pd.DataFrame(
+        {
+            "source": ["observed"],
+            "event_id": ["E1"],
+            "station": ["S1"],
+            "component": ["Z"],
+            "passband": ["1-2 sec"],
+            "metric_group": ["amplitude"],
+            "metric": ["PGA"],
+            "period_s": [np.nan],
+            "qc_status": ["pass"],
+            "qc_reason": [""],
+        }
+    ).to_csv(checkpoint_path, index=False)
+    event_stations = pd.DataFrame({"event_id": ["E1", "E2"], "station": ["S1", "S2"]})
+
+    def fail_full_checkpoint_load(path):
+        raise AssertionError(f"checkpoint should not be fully loaded: {path}")
+
+    monkeypatch.setattr(qc_workflow_module, "_load_qc_checkpoint", fail_full_checkpoint_load)
+
+    result = build_metric_qc_summary(
+        event_stations,
+        metrics=("PGA",),
+        components=("Z",),
+        passbands=[(1.0, 2.0)],
+        sources=("observed",),
+        checkpoint_path=checkpoint_path,
+        checkpoint_interval=1,
+        return_result=False,
+    )
+
+    checkpoint = pd.read_csv(checkpoint_path)
+    assert result.empty
+    assert checkpoint["event_id"].tolist() == ["E1", "E2"]
+    assert checkpoint["station"].tolist() == ["S1", "S2"]
+
+
 def test_waveform_qc_summary_combines_source_checkpoints_without_returning_rows(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
