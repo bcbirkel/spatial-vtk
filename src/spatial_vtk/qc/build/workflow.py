@@ -661,6 +661,7 @@ def write_comparison_eligibility_from_qc_inventory(
     output_path: str | Path,
     *,
     chunksize: int = 1_000_000,
+    verbose: bool = False,
 ) -> Path:
     """Write comparison-eligible rows from a large side-specific QC inventory.
 
@@ -672,12 +673,28 @@ def write_comparison_eligibility_from_qc_inventory(
     output.parent.mkdir(parents=True, exist_ok=True)
     output.unlink(missing_ok=True)
     wrote_header = False
-    for group in _iter_qc_event_station_groups(qc_summary, chunksize=chunksize):
-        eligible = build_comparison_eligibility(group)
+    usecols = sorted(
+        {
+            "source",
+            "event_id",
+            "station",
+            "component",
+            "passband",
+            "metric_group",
+            "metric",
+            "period_s",
+            "qc_status",
+            *_COMPARISON_METADATA_COLUMNS,
+        }
+    )
+    for index, chunk in enumerate(_iter_qc_complete_chunks(qc_summary, chunksize=chunksize, usecols=usecols), start=1):
+        eligible = build_comparison_eligibility(chunk)
         if eligible.empty:
+            _progress(verbose, f"Comparison eligibility: chunk {index} had no retained rows")
             continue
         eligible.to_csv(output, mode="a", header=not wrote_header, index=False)
         wrote_header = True
+        _progress(verbose, f"Comparison eligibility: chunk {index} wrote {len(eligible)} row(s)")
     if not wrote_header:
         columns = ["event_id", "station", "component", "passband", "metric_group", "metric", "period_s"]
         pd.DataFrame(columns=columns).to_csv(output, index=False)
@@ -906,6 +923,7 @@ def build_metric_pair_retention_table_from_qc_inventory(
     *,
     group_cols: Sequence[str] = ("metric", "passband"),
     chunksize: int = 1_000_000,
+    verbose: bool = False,
 ) -> pd.DataFrame:
     """Summarize pair retention from a large QC inventory in event/station chunks."""
 
@@ -913,9 +931,10 @@ def build_metric_pair_retention_table_from_qc_inventory(
     requested_columns = sorted(set(required_columns).union(group_cols))
     totals: dict[tuple[object, ...], list[int]] = {}
     output_groups: list[str] = [column for column in group_cols if column in requested_columns] or ["metric"]
-    for group in _iter_qc_event_station_groups(qc_summary, chunksize=chunksize, usecols=requested_columns):
-        pairs = _comparison_pair_table(group)
+    for index, chunk in enumerate(_iter_qc_complete_chunks(qc_summary, chunksize=chunksize, usecols=requested_columns), start=1):
+        pairs = _comparison_pair_table(chunk)
         if pairs.empty:
+            _progress(verbose, f"Metric pair retention: chunk {index} had no comparison pairs")
             continue
         groups = [column for column in group_cols if column in pairs.columns] or ["metric"]
         output_groups = groups
@@ -929,6 +948,7 @@ def build_metric_pair_retention_table_from_qc_inventory(
             current = totals.setdefault(key, [0, 0])
             current[0] += int(row["total_pairs"])
             current[1] += int(row["retained_pairs"])
+        _progress(verbose, f"Metric pair retention: chunk {index} processed {len(pairs)} pair(s)")
     if not totals:
         return pd.DataFrame(columns=[*output_groups, "total_pairs", "retained_pairs", "retention_percent"])
     rows = []
@@ -973,19 +993,31 @@ def build_event_station_pair_retention_table_from_qc_inventory(
     qc_summary: pd.DataFrame | str | Path,
     *,
     chunksize: int = 1_000_000,
+    verbose: bool = False,
 ) -> pd.DataFrame:
     """Summarize event/station pair retention from a large QC inventory."""
 
     required_columns = ["source", "event_id", "station", "component", "passband", "metric_group", "metric", "period_s", "qc_status"]
-    rows: list[dict[str, object]] = []
-    for group in _iter_qc_event_station_groups(qc_summary, chunksize=chunksize, usecols=required_columns):
-        pairs = _comparison_pair_table(group)
+    totals: dict[tuple[str, str], list[int]] = {}
+    for index, chunk in enumerate(_iter_qc_complete_chunks(qc_summary, chunksize=chunksize, usecols=required_columns), start=1):
+        pairs = _comparison_pair_table(chunk)
         if pairs.empty:
+            _progress(verbose, f"Event-station pair retention: chunk {index} had no comparison pairs")
             continue
-        event_id = str(pairs["event_id"].iloc[0])
-        station = str(pairs["station"].iloc[0]).strip().upper()
-        total = int(len(pairs))
-        retained = int(pairs["is_retained_pair"].sum())
+        summary = (
+            pairs.assign(station=pairs["station"].astype(str).str.strip().str.upper())
+            .groupby(["event_id", "station"], dropna=False)
+            .agg(total_pairs=("is_retained_pair", "size"), retained_pairs=("is_retained_pair", "sum"))
+            .reset_index()
+        )
+        for row in summary.to_dict(orient="records"):
+            key = (str(row["event_id"]), str(row["station"]).strip().upper())
+            current = totals.setdefault(key, [0, 0])
+            current[0] += int(row["total_pairs"])
+            current[1] += int(row["retained_pairs"])
+        _progress(verbose, f"Event-station pair retention: chunk {index} processed {len(pairs)} pair(s)")
+    rows: list[dict[str, object]] = []
+    for (event_id, station), (total, retained) in totals.items():
         rows.append(
             {
                 "event_id": event_id,
@@ -1005,12 +1037,19 @@ def build_post_qc_record_table_from_qc_inventory(
     events: pd.DataFrame | str | Path | None = None,
     qc_summary: pd.DataFrame | str | Path,
     chunksize: int = 1_000_000,
+    pair_retention: pd.DataFrame | str | Path | None = None,
+    verbose: bool = False,
 ) -> pd.DataFrame:
     """Build post-QC record rows without loading a large QC inventory."""
 
-    retention = build_event_station_pair_retention_table_from_qc_inventory(
-        qc_summary,
-        chunksize=chunksize,
+    retention = (
+        _read_table(pair_retention)
+        if pair_retention is not None
+        else build_event_station_pair_retention_table_from_qc_inventory(
+            qc_summary,
+            chunksize=chunksize,
+            verbose=verbose,
+        )
     )
     records = build_post_qc_record_table(event_station_records, events=events)
     if retention.empty:
@@ -1032,6 +1071,7 @@ def build_qc_drop_cause_table_from_qc_inventory(
     group_col: str | None = None,
     max_reasons: int = 12,
     chunksize: int = 1_000_000,
+    verbose: bool = False,
 ) -> pd.DataFrame:
     """Summarize QC rejection reasons from a large inventory in chunks."""
 
@@ -1040,22 +1080,25 @@ def build_qc_drop_cause_table_from_qc_inventory(
         usecols.append(group_col)
     fail_set = {str(value).strip().lower() for value in fail_values}
     counts: dict[tuple[object, ...], int] = {}
-    for chunk in _iter_qc_chunks(qc_summary, chunksize=chunksize, usecols=usecols):
+    for index, chunk in enumerate(_iter_qc_chunks(qc_summary, chunksize=chunksize, usecols=usecols), start=1):
         missing = [column for column in (reason_col, status_col) if column not in chunk.columns]
         if missing:
             raise KeyError(f"QC summary is missing required columns: {missing}")
         work = chunk.loc[chunk[status_col].fillna("").astype(str).str.strip().str.lower().isin(fail_set)].copy()
         if work.empty:
+            _progress(verbose, f"QC drop causes: chunk {index} had no failed rows")
             continue
         if group_col and group_col not in work.columns:
             work[group_col] = ""
-        for _, row in work.iterrows():
-            raw_reasons = [part.strip() for part in str(row.get(reason_col, "") or "").split(";") if part.strip()]
-            group_value = row.get(group_col, "") if group_col else None
-            for reason in raw_reasons or ["unspecified"]:
-                label = _readable_qc_reason_label(reason)
-                key = (label, group_value) if group_col else (label,)
-                counts[key] = counts.get(key, 0) + 1
+        work["_reason"] = work[reason_col].fillna("").astype(str).str.split(";")
+        work = work.explode("_reason")
+        work["_reason"] = work["_reason"].fillna("").astype(str).str.strip().replace("", "unspecified").map(_readable_qc_reason_label)
+        group_columns = ["_reason", *([group_col] if group_col else [])]
+        summary = work.groupby(group_columns, dropna=False).size().reset_index(name="count")
+        for row in summary.to_dict(orient="records"):
+            key = (row["_reason"], row.get(group_col, None)) if group_col else (row["_reason"],)
+            counts[key] = counts.get(key, 0) + int(row["count"])
+        _progress(verbose, f"QC drop causes: chunk {index} counted {len(work)} reason row(s)")
     columns = ["_reason", *([group_col] if group_col else []), "count"]
     if not counts:
         return pd.DataFrame(columns=columns)
@@ -1100,6 +1143,19 @@ def _iter_qc_event_station_groups(
 ):
     """Yield contiguous event/station QC groups from a dataframe or table path."""
 
+    for chunk in _iter_qc_complete_chunks(qc_summary, chunksize=chunksize, usecols=usecols):
+        for _, group in chunk.groupby(["event_id", "station"], sort=False, dropna=False):
+            yield group.reset_index(drop=True)
+
+
+def _iter_qc_complete_chunks(
+    qc_summary: pd.DataFrame | str | Path,
+    *,
+    chunksize: int = 1_000_000,
+    usecols: Sequence[str] | None = None,
+):
+    """Yield chunks without splitting the final event/station group."""
+
     required = ["event_id", "station"]
     pending = pd.DataFrame()
     requested = sorted(set(usecols or []).union(required)) if usecols is not None else None
@@ -1118,11 +1174,9 @@ def _iter_qc_event_station_groups(
         pending = frame.loc[tail_mask].copy()
         if body.empty:
             continue
-        for _, group in body.groupby(["event_id", "station"], sort=False, dropna=False):
-            yield group.reset_index(drop=True)
+        yield body.reset_index(drop=True)
     if not pending.empty:
-        for _, group in pending.groupby(["event_id", "station"], sort=False, dropna=False):
-            yield group.reset_index(drop=True)
+        yield pending.reset_index(drop=True)
 
 
 def _iter_qc_chunks(
@@ -1381,13 +1435,14 @@ def export_manual_review_queue_from_qc_inventory(
     *,
     cfg: SpatialVTKConfig | None = None,
     chunksize: int = 1_000_000,
+    verbose: bool = False,
 ) -> Path:
     """Write a manual-review queue from a large QC inventory in chunks."""
 
     resolved_path = output_path or resolve_output_path("manual_review_queue", kind="table", cfg=cfg, create_parent=True)
     queue_columns = list(QUEUE_COLUMNS)
     rows_by_key: dict[tuple[str, str], dict[str, object]] = {}
-    for chunk in _iter_qc_chunks(qc_summary, chunksize=chunksize, usecols=queue_columns):
+    for index, chunk in enumerate(_iter_qc_chunks(qc_summary, chunksize=chunksize, usecols=queue_columns), start=1):
         missing = [column for column in ("event_id", "station") if column not in chunk.columns]
         if missing:
             raise KeyError(f"QC summary is missing required columns: {missing}")
@@ -1407,6 +1462,7 @@ def export_manual_review_queue_from_qc_inventory(
                     current[column] = value
             current["event_id"] = key[0]
             current["station"] = key[1]
+        _progress(verbose, f"Manual review queue: chunk {index} scanned {len(chunk)} row(s); {len(rows_by_key)} event-station row(s)")
     rows = [rows_by_key[key] for key in sorted(rows_by_key)]
     return write_manual_review_queue(rows, resolved_path)
 
