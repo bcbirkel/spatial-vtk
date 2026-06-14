@@ -386,6 +386,7 @@ def plot_qc_drop_cause_diagnostics(
     *,
     reason_col: str = "qc_reason",
     status_col: str | None = "qc_status",
+    count_col: str | None = None,
     fail_values: tuple[str, ...] = ("fail", "failed", "reject", "rejected"),
     group_col: str | None = None,
     max_reasons: int = 12,
@@ -408,6 +409,9 @@ def plot_qc_drop_cause_diagnostics(
         Optional QC status column used to keep only rejected rows before
         counting causes. Set to ``None`` when the input table already contains
         only rejected rows.
+    count_col
+        Optional precomputed count column. Use this with chunked reason-count
+        summaries to avoid plotting from row-level QC inventories.
     fail_values
         Status labels treated as rejected when ``status_col`` is present.
     group_col
@@ -435,6 +439,25 @@ def plot_qc_drop_cause_diagnostics(
         ax.text(0.5, 0.5, "No rejected records in QC table", ha="center", va="center", transform=ax.transAxes)
         ax.set_axis_off()
         ax.set_title(title)
+        return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    if count_col and count_col in df.columns:
+        df[reason_col] = df[reason_col].astype(str).replace("", "Unspecified")
+        top = df.groupby(reason_col, dropna=False)[count_col].sum().sort_values(ascending=False).head(int(max_reasons)).index
+        df[reason_col] = df[reason_col].where(df[reason_col].isin(top), "Other")
+        fig, ax = plt.subplots(figsize=(9.0, 5.2), dpi=180)
+        if group_col and group_col in df.columns:
+            counts = df.groupby([reason_col, group_col], dropna=False)[count_col].sum().reset_index(name="count")
+            pivot = counts.pivot_table(index=reason_col, columns=group_col, values="count", fill_value=0, aggfunc="sum")
+            pivot = pivot.loc[pivot.sum(axis=1).sort_values(ascending=True).index]
+            pivot.plot(kind="barh", stacked=True, ax=ax)
+            ax.legend(title=group_col.replace("_", " ").title(), frameon=True, fontsize=8)
+        else:
+            counts = df.groupby(reason_col, dropna=False)[count_col].sum().sort_values()
+            ax.barh(counts.index.astype(str), counts.values, color="#4c78a8")
+        ax.set_xlabel("Rejected record count")
+        ax.set_ylabel("QC reason")
+        ax.set_title(title)
+        ax.grid(True, axis="x", alpha=0.25)
         return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
     reason_rows: list[dict[str, object]] = []
     for _, row in df.iterrows():

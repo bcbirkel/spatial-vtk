@@ -29,11 +29,18 @@ from spatial_vtk.qc.build.inventory import (
 from spatial_vtk.qc.build.workflow import (
     build_comparison_eligibility,
     build_event_station_pair_retention_table,
+    build_event_station_pair_retention_table_from_qc_inventory,
     build_metric_pair_retention_table,
+    build_metric_pair_retention_table_from_qc_inventory,
     build_metric_qc_summary,
+    build_post_qc_record_table_from_qc_inventory,
     build_qc_availability_table,
+    build_qc_drop_cause_table_from_qc_inventory,
     build_qc_waveform_comparison_records,
     build_waveform_qc_summary,
+    export_manual_review_queue_from_qc_inventory,
+    load_comparison_eligible_records,
+    write_comparison_eligibility_from_qc_inventory,
 )
 from spatial_vtk.qc.review.tables import apply_manual_qc_decisions, load_manual_qc_decisions, write_manual_qc_decisions
 
@@ -464,6 +471,77 @@ def test_event_station_pair_retention_table_counts_across_metrics() -> None:
     assert e1_s1["retention_percent"] == pytest.approx(50.0)
     e2_s1 = retention.loc[retention["event_id"].eq("e2") & retention["station"].eq("S1")].iloc[0]
     assert e2_s1["retention_percent"] == pytest.approx(100.0)
+
+
+def test_large_qc_inventory_helpers_stream_event_station_chunks(tmp_path: Path) -> None:
+    qc_summary = pd.DataFrame(
+        [
+            {"source": "observed", "event_id": "e1", "station": "S1", "component": "Z", "passband": "1-2 sec", "metric_group": "amplitude", "metric": "PGA", "period_s": 0.0, "qc_status": "pass", "qc_reason": "", "event_lat": 1.0, "event_lon": 2.0, "station_lat": 3.0, "station_lon": 4.0},
+            {"source": "synthetic", "event_id": "e1", "station": "S1", "component": "Z", "passband": "1-2 sec", "metric_group": "amplitude", "metric": "PGA", "period_s": 0.0, "qc_status": "pass", "qc_reason": "", "event_lat": 1.0, "event_lon": 2.0, "station_lat": 3.0, "station_lon": 4.0},
+            {"source": "observed", "event_id": "e1", "station": "S1", "component": "R", "passband": "1-2 sec", "metric_group": "amplitude", "metric": "PGV", "period_s": 0.0, "qc_status": "fail", "qc_reason": "low_snr", "event_lat": 1.0, "event_lon": 2.0, "station_lat": 3.0, "station_lon": 4.0},
+            {"source": "synthetic", "event_id": "e1", "station": "S1", "component": "R", "passband": "1-2 sec", "metric_group": "amplitude", "metric": "PGV", "period_s": 0.0, "qc_status": "pass", "qc_reason": "", "event_lat": 1.0, "event_lon": 2.0, "station_lat": 3.0, "station_lon": 4.0},
+            {"source": "observed", "event_id": "e2", "station": "S2", "component": "Z", "passband": "2-3 sec", "metric_group": "amplitude", "metric": "PGA", "period_s": 0.0, "qc_status": "pass", "qc_reason": "", "event_lat": 5.0, "event_lon": 6.0, "station_lat": 7.0, "station_lon": 8.0},
+            {"source": "synthetic", "event_id": "e2", "station": "S2", "component": "Z", "passband": "2-3 sec", "metric_group": "amplitude", "metric": "PGA", "period_s": 0.0, "qc_status": "fail", "qc_reason": "missing_waveform_file", "event_lat": 5.0, "event_lon": 6.0, "station_lat": 7.0, "station_lon": 8.0},
+        ]
+    )
+    qc_path = tmp_path / "qc_inventory.csv"
+    qc_summary.to_csv(qc_path, index=False)
+
+    eligible_path = tmp_path / "comparison_eligible.csv"
+    write_comparison_eligibility_from_qc_inventory(qc_path, eligible_path, chunksize=3)
+    eligible = pd.read_csv(eligible_path)
+    expected_eligible = build_comparison_eligibility(qc_summary)
+    assert eligible[["event_id", "station", "component", "metric"]].to_dict("records") == expected_eligible[["event_id", "station", "component", "metric"]].to_dict("records")
+
+    eligible_sample = load_comparison_eligible_records(
+        eligible_path,
+        component="Z",
+        max_records=1,
+        chunksize=1,
+    )
+    assert eligible_sample[["event_id", "station", "component", "metric"]].to_dict("records") == [
+        {"event_id": "e1", "station": "S1", "component": "Z", "metric": "PGA"}
+    ]
+
+    metric_retention = build_metric_pair_retention_table_from_qc_inventory(qc_path, chunksize=3)
+    expected_metric_retention = build_metric_pair_retention_table(qc_summary)
+    pd.testing.assert_frame_equal(metric_retention.reset_index(drop=True), expected_metric_retention.reset_index(drop=True))
+
+    event_station_retention = build_event_station_pair_retention_table_from_qc_inventory(qc_path, chunksize=3)
+    expected_event_station_retention = build_event_station_pair_retention_table(qc_summary)
+    pd.testing.assert_frame_equal(event_station_retention.reset_index(drop=True), expected_event_station_retention.reset_index(drop=True))
+
+    event_stations = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2"],
+            "station": ["S1", "S2"],
+            "lat": [3.0, 7.0],
+            "lon": [4.0, 8.0],
+        }
+    )
+    post_qc = build_post_qc_record_table_from_qc_inventory(
+        event_stations,
+        qc_summary=qc_path,
+        chunksize=3,
+    )
+    assert post_qc.set_index(["event_id", "station"])["qc_status"].to_dict() == {
+        ("e1", "S1"): "pass",
+        ("e2", "S2"): "fail",
+    }
+
+    drop_causes = build_qc_drop_cause_table_from_qc_inventory(qc_path, chunksize=3)
+    assert drop_causes.set_index("_reason")["count"].to_dict() == {
+        "Low SNR": 1,
+        "Missing waveform file": 1,
+    }
+
+    queue_path = tmp_path / "manual_queue.csv"
+    export_manual_review_queue_from_qc_inventory(qc_path, queue_path, chunksize=3)
+    queue = pd.read_csv(queue_path)
+    assert queue[["event_id", "station"]].to_dict("records") == [
+        {"event_id": "e1", "station": "S1"},
+        {"event_id": "e2", "station": "S2"},
+    ]
 
 
 def test_qc_waveform_comparison_records_loads_retained_pairs(tmp_path) -> None:
