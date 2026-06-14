@@ -45,6 +45,25 @@ _COMPARISON_METADATA_COLUMNS = (
     "sta_lon",
 )
 
+_TRACE_QC_REQUIRED_COLUMNS = (
+    "source",
+    "event_id",
+    "station",
+    "component",
+    "passband",
+    "qc_status",
+    "qc_reason",
+)
+
+_TRACE_QC_PAYLOAD_COLUMNS = (
+    "trace_start_s",
+    "sample_interval_s",
+    "valid_start_rel_s",
+    "valid_end_rel_s",
+    "valid_start_sample",
+    "valid_end_sample",
+)
+
 
 def _progress(verbose: bool, message: str) -> None:
     """Print one flushed progress message when verbose mode is enabled."""
@@ -249,22 +268,31 @@ def build_metric_qc_summary(
         Standard metric QC rows.
     """
 
+    progress_start = time.monotonic()
+    _progress(verbose, "Metric QC: loading event-station records")
     records = _read_table(event_station_records).drop_duplicates(["event_id", "station"])
-    trace_qc = _trace_qc_lookup(trace_qc_summary)
+    _progress(verbose, f"Metric QC: loaded {len(records)} event-station record(s)")
+    trace_qc = _trace_qc_lookup(trace_qc_summary, verbose=verbose)
     source_defaults = {
         "observed": bool(observed_available),
         "synthetic": bool(synthetic_available),
     }
+    if resume and checkpoint_path is not None:
+        _progress(verbose, f"Metric QC: loading checkpoint {Path(checkpoint_path).expanduser()}")
     checkpoint = _load_qc_checkpoint(checkpoint_path) if resume else pd.DataFrame()
+    if resume and checkpoint_path is not None:
+        _progress(verbose, f"Metric QC: loaded {len(checkpoint)} checkpoint row(s)")
     if checkpoint_path is not None and not resume:
         _reset_qc_checkpoint(checkpoint_path)
+        _progress(verbose, f"Metric QC: reset checkpoint {Path(checkpoint_path).expanduser()}")
+    if not checkpoint.empty:
+        _progress(verbose, "Metric QC: converting checkpoint rows for resume output")
     rows: list[dict[str, object]] = checkpoint.to_dict(orient="records") if not checkpoint.empty else []
     checkpoint_buffer: list[dict[str, object]] = []
     completed_records = _metric_qc_completed_records(checkpoint)
     total_records = len(records)
     interval = max(int(progress_interval), 1)
     checkpoint_every = max(int(checkpoint_interval), 1)
-    progress_start = time.monotonic()
     _progress(
         verbose,
         "Metric QC: "
@@ -1110,18 +1138,59 @@ def _qc_status(
     return "pass", ""
 
 
-def _trace_qc_lookup(trace_qc_summary: pd.DataFrame | str | Path | None) -> dict[tuple[str, str, str, str, str], dict[str, object]]:
+def _read_trace_qc_lookup_table(trace_qc_summary: pd.DataFrame | str | Path) -> pd.DataFrame:
+    """Read only the trace-QC columns needed by metric-QC lookup."""
+
+    if isinstance(trace_qc_summary, pd.DataFrame):
+        return trace_qc_summary.copy()
+    path = Path(trace_qc_summary).expanduser()
+    wanted = set(_TRACE_QC_REQUIRED_COLUMNS) | set(_TRACE_QC_PAYLOAD_COLUMNS)
+    if path.suffix.lower() in {".csv", ""}:
+        header = pd.read_csv(path, nrows=0)
+        columns = [column for column in header.columns if column in wanted]
+        return pd.read_csv(path, usecols=columns, low_memory=False)
+    if path.suffix.lower() in {".parquet", ".pq"}:
+        try:
+            import pyarrow.parquet as pq
+
+            available = set(pq.ParquetFile(path).schema.names)
+            columns = [column for column in wanted if column in available]
+            return pd.read_parquet(path, columns=columns)
+        except Exception:
+            return pd.read_parquet(path)
+    return _read_table(path)
+
+
+def _trace_qc_lookup(
+    trace_qc_summary: pd.DataFrame | str | Path | None,
+    *,
+    verbose: bool = False,
+) -> dict[tuple[str, str, str, str, str], dict[str, object]]:
     """Build a lookup for side-specific waveform QC rows."""
 
     if trace_qc_summary is None:
+        _progress(verbose, "Metric QC: no trace QC summary provided")
         return {}
-    qc = _read_table(trace_qc_summary).copy()
-    required = ["source", "event_id", "station", "component", "passband", "qc_status", "qc_reason"]
-    missing = [column for column in required if column not in qc.columns]
+    load_start = time.monotonic()
+    if isinstance(trace_qc_summary, pd.DataFrame):
+        _progress(verbose, f"Metric QC: indexing trace QC dataframe with {len(trace_qc_summary)} row(s)")
+    else:
+        _progress(verbose, f"Metric QC: loading trace QC summary {Path(trace_qc_summary).expanduser()}")
+    qc = _read_trace_qc_lookup_table(trace_qc_summary)
+    _progress(
+        verbose,
+        f"Metric QC: loaded {len(qc)} trace QC row(s) in {_format_duration(time.monotonic() - load_start)}",
+    )
+    missing = [column for column in _TRACE_QC_REQUIRED_COLUMNS if column not in qc.columns]
     if missing:
         raise KeyError(f"Trace QC summary is missing required columns: {missing}")
+    index_start = time.monotonic()
+    _progress(verbose, "Metric QC: building trace QC lookup")
+    columns = list(_TRACE_QC_REQUIRED_COLUMNS)
+    columns.extend(column for column in _TRACE_QC_PAYLOAD_COLUMNS if column in qc.columns)
     lookup: dict[tuple[str, str, str, str, str], dict[str, object]] = {}
-    for _, row in qc.iterrows():
+    for values in qc.loc[:, columns].itertuples(index=False, name=None):
+        row = dict(zip(columns, values))
         key = (
             str(row.get("source", "")).strip().lower(),
             str(row.get("event_id", "")).strip(),
@@ -1132,10 +1201,14 @@ def _trace_qc_lookup(trace_qc_summary: pd.DataFrame | str | Path | None) -> dict
         status = str(row.get("qc_status", "")).strip().lower() or "pass"
         reason = str(row.get("qc_reason", "") if not pd.isna(row.get("qc_reason", "")) else "").strip()
         if key not in lookup or status == "fail":
-            payload = row.to_dict()
+            payload = dict(row)
             payload["qc_status"] = status
             payload["qc_reason"] = reason
             lookup[key] = payload
+    _progress(
+        verbose,
+        f"Metric QC: indexed {len(lookup)} trace QC group(s) in {_format_duration(time.monotonic() - index_start)}",
+    )
     return lookup
 
 
