@@ -262,6 +262,13 @@ def _read_parquet_qc_scoped(path: Path, scope: dict[str, set[str]]) -> pd.DataFr
     schema_names = set(parquet.schema.names)
     columns = [column for column in METRIC_QC_COLUMNS if column in schema_names]
     read_columns = columns or None
+    filters = _parquet_scope_filters(schema_names, scope)
+    if filters:
+        try:
+            table = pq.read_table(path, columns=read_columns, filters=filters)
+            return _filter_qc_scope(table.to_pandas(), scope)
+        except Exception:
+            pass
     frames: list[pd.DataFrame] = []
     for batch in parquet.iter_batches(batch_size=500_000, columns=read_columns):
         frame = batch.to_pandas()
@@ -269,6 +276,17 @@ def _read_parquet_qc_scoped(path: Path, scope: dict[str, set[str]]) -> pd.DataFr
         if not filtered.empty:
             frames.append(filtered)
     return pd.concat(frames, ignore_index=True, sort=False) if frames else pd.DataFrame(columns=columns)
+
+
+def _parquet_scope_filters(schema_names: set[str], scope: dict[str, set[str]]) -> list[tuple[str, str, list[str]]]:
+    """Return PyArrow filters for canonical QC scope columns."""
+
+    filters: list[tuple[str, str, list[str]]] = []
+    for column in ("event_id", "station", "component"):
+        values = sorted(str(value) for value in scope.get(column, set()) if str(value))
+        if column in schema_names and values:
+            filters.append((column, "in", values))
+    return filters
 
 
 def _read_csv_qc_scoped(path: Path, scope: dict[str, set[str]]) -> pd.DataFrame:
