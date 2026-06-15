@@ -1402,9 +1402,10 @@ def _filter_qc_trace_overlap_chunk(chunk: pd.DataFrame) -> pd.DataFrame:
     work["__component"] = work["component"].astype(str).str.strip().str.upper()
     work["__passband"] = work["passband"].astype(str).str.strip()
     work["__structural_missing"] = work["qc_reason"].map(_has_structural_missing_reason)
+    work["__trace_present"] = _trace_evidence_mask(work)
     key_columns = ["__event_id", "__station", "__component", "__passband"]
     present = work.loc[
-        work["__source"].isin(["observed", "synthetic"]) & ~work["__structural_missing"],
+        work["__source"].isin(["observed", "synthetic"]) & ~work["__structural_missing"] & work["__trace_present"],
         [*key_columns, "__source"],
     ].drop_duplicates()
     if present.empty:
@@ -1416,6 +1417,7 @@ def _filter_qc_trace_overlap_chunk(chunk: pd.DataFrame) -> pd.DataFrame:
     row_keys = list(zip(work["__event_id"], work["__station"], work["__component"], work["__passband"]))
     keep_mask = pd.Series([key in keep_keys for key in row_keys], index=work.index)
     keep_mask &= ~work["__structural_missing"]
+    keep_mask &= work["__trace_present"]
     return chunk.loc[keep_mask].copy()
 
 
@@ -1431,6 +1433,24 @@ def _has_structural_missing_reason(reason: object) -> bool:
         pass
     parts = [part.strip().lower() for part in str(reason).split(";") if part.strip()]
     return any(part in _STRUCTURAL_MISSING_QC_REASONS for part in parts)
+
+
+def _trace_evidence_mask(df: pd.DataFrame) -> pd.Series:
+    """Return rows with evidence that waveform trace QC found a trace."""
+
+    evidence_columns = [
+        column
+        for column in ("trace_start_s", "sample_interval_s", "valid_start_sample", "valid_end_sample")
+        if column in df.columns
+    ]
+    if not evidence_columns:
+        return pd.Series(True, index=df.index)
+    mask = pd.Series(False, index=df.index)
+    for column in evidence_columns:
+        values = df[column]
+        nonempty = values.notna() & ~values.astype(str).str.strip().str.lower().isin({"", "nan", "none", "null"})
+        mask |= nonempty
+    return mask
 
 
 def _iter_qc_event_station_groups(
