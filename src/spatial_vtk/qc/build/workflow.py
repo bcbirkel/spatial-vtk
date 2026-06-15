@@ -1443,11 +1443,19 @@ def export_manual_review_queue_from_qc_inventory(
     *,
     cfg: SpatialVTKConfig | None = None,
     chunksize: int = 1_000_000,
+    overwrite: bool = True,
     verbose: bool = False,
 ) -> Path:
-    """Write a manual-review queue from a large QC inventory in chunks."""
+    """Write a manual-review queue from a large QC inventory in chunks.
+
+    Set ``overwrite=False`` to reuse an existing queue on notebook reruns.
+    """
 
     resolved_path = output_path or resolve_output_path("manual_review_queue", kind="table", cfg=cfg, create_parent=True)
+    resolved_path = Path(resolved_path).expanduser()
+    if resolved_path.exists() and not overwrite:
+        _progress(verbose, f"Manual review queue: reusing existing {resolved_path}")
+        return resolved_path
     queue_columns = list(QUEUE_COLUMNS)
     rows_by_key: dict[tuple[str, str], dict[str, object]] = {}
     for index, chunk in enumerate(_iter_qc_chunks(qc_summary, chunksize=chunksize, usecols=queue_columns), start=1):

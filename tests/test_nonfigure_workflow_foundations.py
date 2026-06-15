@@ -553,6 +553,9 @@ def test_large_qc_inventory_helpers_stream_event_station_chunks(tmp_path: Path) 
         {"event_id": "e1", "station": "S1"},
         {"event_id": "e2", "station": "S2"},
     ]
+    queue_path.write_text("event_id,station\ncached,row\n", encoding="utf-8")
+    export_manual_review_queue_from_qc_inventory(qc_path, queue_path, chunksize=3, overwrite=False)
+    assert pd.read_csv(queue_path).to_dict("records") == [{"event_id": "cached", "station": "row"}]
 
 
 def test_qc_waveform_comparison_records_loads_retained_pairs(tmp_path) -> None:

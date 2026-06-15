@@ -16,6 +16,7 @@ from spatial_vtk.io import (
     prepare_event_station_table,
     prepare_station_metadata,
     load_output_table,
+    preview_output_table,
     read_config_table,
     write_output_tables,
 )
@@ -198,6 +199,7 @@ def test_standard_output_table_helpers_use_active_config(tmp_path: Path) -> None
             cfg=cfg,
         )
         stations = load_output_table("prepared_stations")
+        preview = preview_output_table("prepared_stations", nrows=1, columns=["station"])
     finally:
         clear_active_config()
 
@@ -205,6 +207,7 @@ def test_standard_output_table_helpers_use_active_config(tmp_path: Path) -> None
     assert written["record_coverage"] == tmp_path / "outputs" / "tables" / "record_coverage.csv"
     assert written["record_coverage"].exists()
     assert stations.loc[0, "station"] == "STA01"
+    assert preview.to_dict("records") == [{"station": "STA01"}]
 
 
 def test_inventory_and_context_figures_write_outputs(tmp_path: Path) -> None:

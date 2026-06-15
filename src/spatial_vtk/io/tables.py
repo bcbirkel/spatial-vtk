@@ -342,6 +342,49 @@ def load_output_table(
     return read_table(path, **kwargs)
 
 
+def preview_table(
+    path: str | Path,
+    *,
+    nrows: int = 5,
+    columns: Sequence[str] | None = None,
+    **kwargs: Any,
+) -> pd.DataFrame:
+    """Load only the first rows of a table for notebook previews.
+
+    This avoids loading large workflow outputs such as ``qc_inventory.csv`` just
+    to inspect their schema or first few rows.
+    """
+
+    input_path = Path(path).expanduser()
+    row_count = max(int(nrows), 0)
+    suffix = input_path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        parquet_kwargs = dict(kwargs)
+        if columns is not None:
+            parquet_kwargs["columns"] = list(columns)
+        return pd.read_parquet(input_path, **parquet_kwargs).head(row_count)
+    csv_kwargs = {"low_memory": False, **kwargs}
+    csv_kwargs["nrows"] = row_count
+    if columns is not None:
+        requested = set(columns)
+        csv_kwargs["usecols"] = lambda column: column in requested
+    return pd.read_csv(input_path, **csv_kwargs)
+
+
+def preview_output_table(
+    key: str,
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    nrows: int = 5,
+    columns: Sequence[str] | None = None,
+    **kwargs: Any,
+) -> pd.DataFrame:
+    """Preview a standard output table without loading the full file."""
+
+    path = resolve_output_path(key, kind="table", cfg=cfg)
+    return preview_table(path, nrows=nrows, columns=columns, **kwargs)
+
+
 def read_config_table(
     dotted_key: str,
     *,
