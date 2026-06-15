@@ -293,6 +293,109 @@ def filter_event_station_records_for_source_overlap(
     return out.reset_index(drop=True)
 
 
+def write_qc_inventory_overlap_from_full(
+    qc_inventory: pd.DataFrame | str | Path,
+    event_station_records: pd.DataFrame | str | Path,
+    output_path: str | Path | None = None,
+    *,
+    scope: str = "event",
+    chunksize: int = 1_000_000,
+    overwrite: bool = True,
+    verbose: bool = False,
+    cfg: SpatialVTKConfig | None = None,
+) -> Path:
+    """Write a QC inventory sidecar restricted to observed/synthetic overlap.
+
+    The canonical ``qc_inventory`` can contain observed-only or synthetic-only
+    rows that are useful for source-specific diagnostics. Comparison metrics
+    only make sense where both sources are present, so this helper streams the
+    full inventory and writes a smaller sidecar for downstream metric and
+    plotting steps without recomputing QC.
+    """
+
+    output = Path(
+        output_path
+        if output_path is not None
+        else resolve_output_path("qc_inventory_overlap", kind="table", cfg=cfg, create_parent=True)
+    ).expanduser()
+    suffix = output.suffix.lower()
+    if suffix not in {"", ".csv"}:
+        raise ValueError("Overlap QC inventory sidecars are currently written as CSV files.")
+    if not suffix:
+        output = output.with_suffix(".csv")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    if output.exists() and not overwrite:
+        _progress(verbose, f"QC overlap inventory: reusing existing {output}")
+        return output
+
+    overlap_records = filter_event_station_records_for_source_overlap(event_station_records, scope=scope)
+    scope_key = _normalize_source_overlap_scope(scope)
+    if overlap_records.empty:
+        event_ids: set[str] = set()
+        event_station_keys: set[tuple[str, str]] = set()
+    elif scope_key == "event":
+        event_ids = {str(value).strip() for value in overlap_records["event_id"] if str(value).strip()}
+        event_station_keys = set()
+    else:
+        event_ids = set()
+        event_station_keys = {
+            (str(row["event_id"]).strip(), str(row["station"]).strip().upper())
+            for _, row in overlap_records.loc[:, ["event_id", "station"]].iterrows()
+            if str(row["event_id"]).strip() and str(row["station"]).strip()
+        }
+    _progress(
+        verbose,
+        "QC overlap inventory: "
+        f"{len(overlap_records)} overlapping event-station {_plural(len(overlap_records), 'record')} "
+        f"(scope={scope_key})",
+    )
+
+    output.unlink(missing_ok=True)
+    wrote_header = False
+    template_columns: list[str] | None = None
+    input_rows = 0
+    output_rows = 0
+    start_time = time.monotonic()
+    for index, chunk in enumerate(_iter_qc_chunks(qc_inventory, chunksize=chunksize), start=1):
+        if template_columns is None:
+            template_columns = list(chunk.columns)
+        missing = [column for column in ("event_id", "station") if column not in chunk.columns]
+        if missing:
+            raise KeyError(f"QC inventory is missing required columns: {missing}")
+        input_rows += len(chunk)
+        if scope_key == "event":
+            mask = chunk["event_id"].astype(str).str.strip().isin(event_ids)
+        else:
+            event_values = chunk["event_id"].astype(str).str.strip()
+            station_values = chunk["station"].astype(str).str.strip().str.upper()
+            mask = pd.Series(
+                [(event_id, station) in event_station_keys for event_id, station in zip(event_values, station_values)],
+                index=chunk.index,
+            )
+        selected = chunk.loc[mask].copy()
+        if selected.empty:
+            _progress(verbose, f"QC overlap inventory: chunk {index} scanned {len(chunk)} row(s), wrote 0")
+            continue
+        selected.to_csv(output, mode="a", header=not wrote_header, index=False)
+        wrote_header = True
+        output_rows += len(selected)
+        _progress(
+            verbose,
+            f"QC overlap inventory: chunk {index} scanned {len(chunk)} row(s), "
+            f"wrote {len(selected)} ({output_rows} total)",
+        )
+    if not wrote_header:
+        if template_columns is None:
+            template_columns = _table_columns(qc_inventory)
+        pd.DataFrame(columns=template_columns).to_csv(output, index=False)
+    _progress(
+        verbose,
+        f"QC overlap inventory: wrote {output_rows}/{input_rows} row(s) to {output} "
+        f"in {_format_duration(time.monotonic() - start_time)}",
+    )
+    return output
+
+
 def build_metric_qc_summary(
     event_station_records: pd.DataFrame | str | Path,
     *,
@@ -1583,6 +1686,17 @@ def _read_table(value: pd.DataFrame | str | Path) -> pd.DataFrame:
     return pd.read_csv(path)
 
 
+def _table_columns(value: pd.DataFrame | str | Path) -> list[str]:
+    """Return table columns without loading full CSV data when possible."""
+
+    if isinstance(value, pd.DataFrame):
+        return list(value.columns)
+    path = Path(value).expanduser()
+    if path.suffix.lower() in {".parquet", ".pq"}:
+        return list(pd.read_parquet(path).columns)
+    return list(pd.read_csv(path, nrows=0).columns)
+
+
 def _waveform_path_records_and_column(
     records: pd.DataFrame,
     source: str,
@@ -2111,4 +2225,5 @@ __all__ = [
     "filter_event_station_records_for_source_overlap",
     "load_comparison_eligible_records",
     "write_comparison_eligibility_from_qc_inventory",
+    "write_qc_inventory_overlap_from_full",
 ]

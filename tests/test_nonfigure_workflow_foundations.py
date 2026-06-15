@@ -42,6 +42,7 @@ from spatial_vtk.qc.build.workflow import (
     filter_event_station_records_for_source_overlap,
     load_comparison_eligible_records,
     write_comparison_eligibility_from_qc_inventory,
+    write_qc_inventory_overlap_from_full,
 )
 from spatial_vtk.qc.review.tables import apply_manual_qc_decisions, load_manual_qc_decisions, write_manual_qc_decisions
 
@@ -527,6 +528,42 @@ def test_metric_qc_can_restrict_to_source_overlap() -> None:
     assert set(event_qc["station"]) == {"S1", "S2"}
     assert set(event_station_qc["event_id"]) == {"e1"}
     assert set(event_station_qc["station"]) == {"S1"}
+
+
+def test_qc_inventory_overlap_sidecar_streams_filtered_rows(tmp_path: Path) -> None:
+    records = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1", "e2"],
+            "station": ["S1", "S2", "S1"],
+            "observed_processed_waveform": ["obs-e1-s1.pkl", "obs-e1-s2.pkl", "obs-e2-s1.pkl"],
+            "synthetic_processed_waveform": ["syn-e1-s1.pkl", "", ""],
+        }
+    )
+    qc_summary = pd.DataFrame(
+        [
+            {"source": "observed", "event_id": "e1", "station": "S1", "component": "Z", "passband": "1-2 sec", "metric_group": "amplitude", "metric": "PGA", "period_s": 0.0, "qc_status": "pass", "qc_reason": ""},
+            {"source": "synthetic", "event_id": "e1", "station": "S1", "component": "Z", "passband": "1-2 sec", "metric_group": "amplitude", "metric": "PGA", "period_s": 0.0, "qc_status": "pass", "qc_reason": ""},
+            {"source": "observed", "event_id": "e1", "station": "S2", "component": "Z", "passband": "1-2 sec", "metric_group": "amplitude", "metric": "PGA", "period_s": 0.0, "qc_status": "fail", "qc_reason": "missing_waveform_path"},
+            {"source": "observed", "event_id": "e2", "station": "S1", "component": "Z", "passband": "1-2 sec", "metric_group": "amplitude", "metric": "PGA", "period_s": 0.0, "qc_status": "pass", "qc_reason": ""},
+        ]
+    )
+    qc_path = tmp_path / "qc_inventory.csv"
+    qc_summary.to_csv(qc_path, index=False)
+
+    event_sidecar = tmp_path / "qc_inventory_overlap_event.csv"
+    write_qc_inventory_overlap_from_full(qc_path, records, event_sidecar, scope="event", chunksize=2)
+    event_overlap = pd.read_csv(event_sidecar)
+    assert event_overlap[["event_id", "station"]].drop_duplicates().to_dict("records") == [
+        {"event_id": "e1", "station": "S1"},
+        {"event_id": "e1", "station": "S2"},
+    ]
+
+    event_station_sidecar = tmp_path / "qc_inventory_overlap_event_station.csv"
+    write_qc_inventory_overlap_from_full(qc_path, records, event_station_sidecar, scope="event_station", chunksize=2)
+    event_station_overlap = pd.read_csv(event_station_sidecar)
+    assert event_station_overlap[["event_id", "station"]].drop_duplicates().to_dict("records") == [
+        {"event_id": "e1", "station": "S1"}
+    ]
 
 
 def test_large_qc_inventory_helpers_stream_event_station_chunks(tmp_path: Path) -> None:

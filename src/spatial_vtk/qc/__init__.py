@@ -31,6 +31,7 @@ from spatial_vtk.qc.build import (
     load_trace_inventory_lookup,
     trace_passband_is_accepted,
     write_comparison_eligibility_from_qc_inventory,
+    write_qc_inventory_overlap_from_full,
 )
 from spatial_vtk.qc.review import filter_trace_summary, queue_rows_from_filtered_trace_df
 from spatial_vtk.qc.summary import classify_station_family, global_trace_reject_reasons, reject_passband
@@ -81,5 +82,6 @@ __all__ = [
     "submit_qc_slurm_job",
     "trace_passband_is_accepted",
     "write_comparison_eligibility_from_qc_inventory",
+    "write_qc_inventory_overlap_from_full",
     "write_qc_slurm_script",
 ]

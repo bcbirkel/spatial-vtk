@@ -62,35 +62,37 @@ Step 2: Quality Control
 -----------------------
 
 Build waveform and metric QC tables, export comparison-ready rows, make QC figures, and launch the QC dashboard.
-Set ``metrics.require_source_overlap: true`` in the config when metric QC and
-metric calculation should ignore events that do not have both observed and
-synthetic data. Waveform QC can still inspect all configured source data before
-that comparison-only filter is applied.
+The full ``qc_inventory.csv`` is retained for observed-only and synthetic-only
+diagnostics. Comparison metrics should use ``qc_inventory_overlap.csv``, a
+streamed sidecar restricted to events with both observed and synthetic data.
 
 .. code-block:: bash
 
    export EVENT_STATIONS="$PREPROCESSED/metadata/event_station_records_preprocessed.csv"
    export TRACE_QC="$TABLES/qc_trace_summary.csv"
    export QC_INVENTORY="$TABLES/qc_inventory.csv"
+   export QC_INVENTORY_OVERLAP="$TABLES/qc_inventory_overlap.csv"
 
    svtk call spatial_vtk.qc.build_waveform_qc_summary \
      --kwargs event_station_records="$EVENT_STATIONS" components='[Z, R, T]' passbands='[[1, 2], [2, 3]]' \
      --output "$TRACE_QC"
 
    svtk call spatial_vtk.qc.build_metric_qc_summary \
-     --kwargs event_station_records="$EVENT_STATIONS" metrics='[PGA, PGV, PGD, PSA, FAS]' components='[Z, R, T]' passbands='[[1, 2], [2, 3]]' spectral_periods_s='[1.0, 2.0, 3.0, 5.0]' synthetic_max_frequency_hz=1.0 require_source_overlap=true source_overlap_scope=event trace_qc_summary="$TRACE_QC" \
+     --kwargs event_station_records="$EVENT_STATIONS" metrics='[PGA, PGV, PGD, PSA, FAS]' components='[Z, R, T]' passbands='[[1, 2], [2, 3]]' spectral_periods_s='[1.0, 2.0, 3.0, 5.0]' synthetic_max_frequency_hz=1.0 trace_qc_summary="$TRACE_QC" \
      --output "$QC_INVENTORY"
 
-   svtk call spatial_vtk.qc.build_comparison_eligibility \
-     --args "$QC_INVENTORY" \
-     --output "$TABLES/comparison_eligible_records.csv"
+   svtk call spatial_vtk.qc.write_qc_inventory_overlap_from_full \
+     --kwargs qc_inventory="$QC_INVENTORY" event_station_records="$EVENT_STATIONS" output_path="$QC_INVENTORY_OVERLAP" scope=event chunksize=1000000 verbose=true
 
-   svtk call spatial_vtk.qc.build_metric_pair_retention_table \
-     --args "$QC_INVENTORY" \
+   svtk call spatial_vtk.qc.write_comparison_eligibility_from_qc_inventory \
+     --kwargs qc_summary="$QC_INVENTORY_OVERLAP" output_path="$TABLES/comparison_eligible_records.csv" chunksize=1000000 verbose=true
+
+   svtk call spatial_vtk.qc.build_metric_pair_retention_table_from_qc_inventory \
+     --args "$QC_INVENTORY_OVERLAP" \
      --output "$TABLES/metric_pair_retention.csv"
 
-   svtk call spatial_vtk.qc.build_event_station_pair_retention_table \
-     --args "$QC_INVENTORY" \
+   svtk call spatial_vtk.qc.build_event_station_pair_retention_table_from_qc_inventory \
+     --args "$QC_INVENTORY_OVERLAP" \
      --output "$TABLES/event_station_pair_retention.csv"
 
    svtk qc manual-queue \
@@ -99,7 +101,7 @@ that comparison-only filter is applied.
      --component R
 
    svtk visualize qc retention-summary \
-     --input "$QC_INVENTORY" \
+     --input "$QC_INVENTORY_OVERLAP" \
      --output "$FIGURES/retention_summary.png"
 
    svtk visualize qc event-station-retention \
@@ -131,7 +133,7 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
      --run-scenario "$SCENARIO" \
      --observed-inventory "$TABLES/observed_metric_inventory.csv" \
      --synthetic-inventory "$TABLES/synthetic_metric_inventory.csv" \
-     --qc-table "$QC_INVENTORY" \
+     --qc-table "$QC_INVENTORY_OVERLAP" \
      --metric-group amplitude \
      --metric-group spectral \
      --component Z \
@@ -148,7 +150,7 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
 
    svtk metrics run \
      --tasks "$METRIC_TASKS" \
-     --qc-table "$QC_INVENTORY" \
+     --qc-table "$QC_INVENTORY_OVERLAP" \
      --output "$METRIC_ROWS"
 
    svtk metrics outputs \

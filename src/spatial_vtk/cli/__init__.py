@@ -343,6 +343,7 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     slurm.add_argument("--trace-output", default=None, help="Output waveform QC table path.")
     slurm.add_argument("--inventory-output", default=None, help="Output metric QC inventory path.")
+    slurm.add_argument("--overlap-inventory-output", default=None, help="Output overlap-only metric QC inventory path.")
     slurm.add_argument("--submit", action="store_true", help="Submit the script with sbatch after writing it.")
     slurm.set_defaults(handler=_cmd_qc_slurm)
 
@@ -685,6 +686,7 @@ def _cmd_qc_slurm(args: argparse.Namespace) -> int:
             run_scenario=args.run_scenario,
             trace_qc_output=args.trace_output,
             qc_inventory_output=args.inventory_output,
+            qc_inventory_overlap_output=args.overlap_inventory_output,
         )
         print(submission.stdout or f"submitted {submission.script_path}")
         return int(submission.returncode)
@@ -696,6 +698,7 @@ def _cmd_qc_slurm(args: argparse.Namespace) -> int:
         run_scenario=args.run_scenario,
         trace_qc_output=args.trace_output,
         qc_inventory_output=args.inventory_output,
+        qc_inventory_overlap_output=args.overlap_inventory_output,
     )
     print(path)
     return 0

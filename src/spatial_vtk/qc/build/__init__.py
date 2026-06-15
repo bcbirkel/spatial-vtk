@@ -54,6 +54,7 @@ from spatial_vtk.qc.build.workflow import (
     filter_event_station_records_for_source_overlap,
     load_comparison_eligible_records,
     write_comparison_eligibility_from_qc_inventory,
+    write_qc_inventory_overlap_from_full,
 )
 _SLURM_EXPORTS = {"run_qc_inventory_job", "submit_qc_slurm_job", "write_qc_slurm_script"}
 
@@ -112,5 +113,6 @@ __all__ = [
     "trace_has_any_accepted_passband",
     "trace_passband_is_accepted",
     "write_comparison_eligibility_from_qc_inventory",
+    "write_qc_inventory_overlap_from_full",
     "write_qc_slurm_script",
 ]

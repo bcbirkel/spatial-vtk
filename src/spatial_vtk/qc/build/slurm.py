@@ -17,7 +17,11 @@ from spatial_vtk.config.metrics import metrics_settings_from_config
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.io.tables import read_table
-from spatial_vtk.qc.build.workflow import build_metric_qc_summary, build_waveform_qc_summary
+from spatial_vtk.qc.build.workflow import (
+    build_metric_qc_summary,
+    build_waveform_qc_summary,
+    write_qc_inventory_overlap_from_full,
+)
 
 
 def slurm_settings_from_config(config: SpatialVTKConfig, *, section: str = "qc.slurm") -> SlurmSettings:
@@ -35,6 +39,7 @@ def run_qc_inventory_job(
     config: SpatialVTKConfig,
     trace_qc_output: str | Path | None = None,
     qc_inventory_output: str | Path | None = None,
+    qc_inventory_overlap_output: str | Path | None = None,
     verbose: bool = True,
 ) -> dict[str, Path]:
     """Run the standard waveform and metric QC inventory workflow."""
@@ -52,6 +57,11 @@ def run_qc_inventory_job(
         if qc_inventory_output
         else resolve_output_path("qc_inventory", kind="table", cfg=config, create_parent=True)
     )
+    overlap_inventory_path = (
+        Path(qc_inventory_overlap_output).expanduser()
+        if qc_inventory_overlap_output
+        else resolve_output_path("qc_inventory_overlap", kind="table", cfg=config, create_parent=True)
+    )
     build_waveform_qc_summary(
         event_stations,
         components=metric_settings.components,
@@ -67,14 +77,28 @@ def run_qc_inventory_job(
         passbands=metric_settings.passbands,
         spectral_periods_s=metric_settings.spectral.periods_s,
         synthetic_max_frequency_hz=metric_settings.synthetic_max_frequency_hz,
-        require_source_overlap=metric_settings.require_source_overlap,
-        source_overlap_scope=metric_settings.source_overlap_scope,
         trace_qc_summary=trace_path,
         verbose=verbose,
         checkpoint_path=inventory_path,
         return_result=False,
     )
-    return {"qc_trace_summary": trace_path, "qc_inventory": inventory_path}
+    overlap_stale = (
+        not overlap_inventory_path.exists()
+        or (inventory_path.exists() and inventory_path.stat().st_mtime > overlap_inventory_path.stat().st_mtime)
+    )
+    write_qc_inventory_overlap_from_full(
+        inventory_path,
+        event_stations,
+        overlap_inventory_path,
+        scope=metric_settings.source_overlap_scope,
+        overwrite=overlap_stale,
+        verbose=verbose,
+    )
+    return {
+        "qc_trace_summary": trace_path,
+        "qc_inventory": inventory_path,
+        "qc_inventory_overlap": overlap_inventory_path,
+    }
 
 
 def write_qc_slurm_script(
@@ -86,6 +110,7 @@ def write_qc_slurm_script(
     run_scenario: str | None = None,
     trace_qc_output: str | Path | None = None,
     qc_inventory_output: str | Path | None = None,
+    qc_inventory_overlap_output: str | Path | None = None,
 ) -> Path:
     """Write a SLURM script that builds QC trace and inventory tables."""
 
@@ -104,6 +129,10 @@ def write_qc_slurm_script(
     if qc_inventory_output:
         args.append(
             f"--inventory-output {shlex.quote(str(Path(qc_inventory_output).expanduser().resolve()))}"
+        )
+    if qc_inventory_overlap_output:
+        args.append(
+            f"--overlap-inventory-output {shlex.quote(str(Path(qc_inventory_overlap_output).expanduser().resolve()))}"
         )
     lines = slurm_header(settings)
     lines.extend(
@@ -126,6 +155,7 @@ def submit_qc_slurm_job(
     run_scenario: str | None = None,
     trace_qc_output: str | Path | None = None,
     qc_inventory_output: str | Path | None = None,
+    qc_inventory_overlap_output: str | Path | None = None,
 ):
     """Write and submit a SLURM job for the QC inventory workflow."""
 
@@ -137,6 +167,7 @@ def submit_qc_slurm_job(
         run_scenario=run_scenario,
         trace_qc_output=trace_qc_output,
         qc_inventory_output=qc_inventory_output,
+        qc_inventory_overlap_output=qc_inventory_overlap_output,
     )
     return submit_slurm_script(script, settings)
 
@@ -150,6 +181,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     parser.add_argument("--trace-output", default=None, help="Output waveform QC table path.")
     parser.add_argument("--inventory-output", default=None, help="Output metric QC inventory path.")
+    parser.add_argument("--overlap-inventory-output", default=None, help="Output overlap-only metric QC inventory path.")
     parser.add_argument("--quiet", action="store_true", help="Disable progress messages.")
     return parser
 
@@ -164,6 +196,7 @@ def main(argv: list[str] | None = None) -> int:
         config=config,
         trace_qc_output=args.trace_output,
         qc_inventory_output=args.inventory_output,
+        qc_inventory_overlap_output=args.overlap_inventory_output,
         verbose=not args.quiet,
     )
     for key, path in written.items():

@@ -14,6 +14,9 @@ tables:
   qc_inventory:
     filename: qc_inventory.csv
     description: QC inventory
+  qc_inventory_overlap:
+    filename: qc_inventory_overlap.csv
+    description: QC inventory restricted to overlapping observed/synthetic events
   comparison_eligible_records:
     filename: comparison_eligible_records.csv
     description: Comparison-eligible records
