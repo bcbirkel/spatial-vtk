@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import csv
 import importlib
+import socket
 
 import pandas as pd
+import pytest
 
 from spatial_vtk.visualize.dashboard import (
     available_dashboard_value_columns,
@@ -26,6 +28,7 @@ from spatial_vtk.visualize.dashboard import (
 )
 from spatial_vtk.visualize.dashboard.tables import build_dashboard_summaries
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _available_nonempty_value_columns
+from spatial_vtk.visualize.dashboard.launch import _raise_if_port_in_use
 from spatial_vtk.visualize.selection import FigureSelection, configured_band_options
 
 
@@ -239,6 +242,15 @@ def test_streamlit_entrypoints_import_and_launch_command():
     assert command[:4][-2:] == ["streamlit", "run"]
     assert "--server.port" in command
     assert "8509" in command
-    assert "--server.enableCORS" in command
-    assert "--server.enableXsrfProtection" in command
-    assert "--browser.gatherUsageStats" in command
+    assert "--server.enableCORS=false" in command
+    assert "--server.enableXsrfProtection=false" in command
+    assert "--browser.gatherUsageStats=false" in command
+
+
+def test_dashboard_launch_detects_busy_port():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
+        server.bind(("127.0.0.1", 0))
+        server.listen(1)
+        port = server.getsockname()[1]
+        with pytest.raises(RuntimeError, match="already in use"):
+            _raise_if_port_in_use("127.0.0.1", port)

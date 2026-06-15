@@ -5,8 +5,10 @@ from __future__ import annotations
 import importlib.util
 import os
 from pathlib import Path
+import socket
 import subprocess
 import sys
+import time
 from typing import Any
 
 from spatial_vtk.config import active_config, resolve_output_path
@@ -25,12 +27,9 @@ def build_streamlit_command(
 
     proxy_args = (
         [
-            "--server.enableCORS",
-            "false",
-            "--server.enableXsrfProtection",
-            "false",
-            "--browser.gatherUsageStats",
-            "false",
+            "--server.enableCORS=false",
+            "--server.enableXsrfProtection=false",
+            "--browser.gatherUsageStats=false",
         ]
         if proxy_mode
         else []
@@ -124,6 +123,7 @@ def launch_streamlit_dashboard(
     """Start one Streamlit dashboard process."""
 
     _require_streamlit()
+    _raise_if_port_in_use(server_address, server_port)
     command = build_streamlit_command(
         entrypoint,
         server_address=server_address,
@@ -132,7 +132,28 @@ def launch_streamlit_dashboard(
         proxy_mode=proxy_mode,
         extra_args=extra_args,
     )
-    return subprocess.Popen(command, env=env or os.environ.copy())
+    process = subprocess.Popen(command, env=env or os.environ.copy())
+    time.sleep(0.75)
+    if process.poll() is not None:
+        raise RuntimeError(
+            f"Streamlit dashboard exited immediately with status {process.returncode}. "
+            f"Check the Streamlit output above, or try another port with --port {int(server_port) + 1}."
+        )
+    return process
+
+
+def _raise_if_port_in_use(server_address: str, server_port: int) -> None:
+    """Raise a clear error when the requested dashboard port is occupied."""
+
+    host = "127.0.0.1" if str(server_address) in {"", "0.0.0.0", "::"} else str(server_address)
+    try:
+        with socket.create_connection((host, int(server_port)), timeout=0.25):
+            raise RuntimeError(
+                f"Port {server_port} is already in use on {server_address}. "
+                "Stop the existing Streamlit dashboard or launch this one with a different --port."
+            )
+    except OSError:
+        return
 
 
 def _entrypoint(name: str) -> Path:
