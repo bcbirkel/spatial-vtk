@@ -147,6 +147,8 @@ def plan_metric_tasks(
     *,
     plan: MetricPlan,
     use_qc: bool = True,
+    qc_table: pd.DataFrame | str | Path | None = None,
+    require_passing_qc_pairs: bool = True,
     require_source_overlap: bool | None = None,
     source_overlap_scope: str | None = None,
     spectral_relative_amplitude_threshold: float = 0.25,
@@ -167,6 +169,13 @@ def plan_metric_tasks(
         Resolved metric plan.
     use_qc
         Whether tasks should honor QC tables during execution.
+    qc_table
+        Optional side-specific metric QC table. When supplied for pair output
+        modes, planning keeps only event/station/component/passband task keys
+        with at least one observed/synthetic metric pair that passed QC.
+    require_passing_qc_pairs
+        Whether ``qc_table`` should restrict planned pair-mode tasks to keys
+        with at least one retained observed/synthetic metric row.
     require_source_overlap
         Override for whether source-specific task plans should keep only
         records whose event or event/station has both observed and synthetic
@@ -229,6 +238,8 @@ def plan_metric_tasks(
         for syn_row in candidates:
             for period_min_s, period_max_s in passbands:
                 tasks.append(_task_from_rows(obs_row, syn_row, plan, metrics, period_min_s, period_max_s, use_qc, spectral_relative_amplitude_threshold, spectral_min_cycles_in_record, disable_spectral_relative_amplitude_qc))
+    if use_qc and require_passing_qc_pairs and qc_table is not None:
+        tasks = _filter_tasks_for_retained_qc_pairs(tasks, qc_table)
     return tasks
 
 
@@ -478,6 +489,138 @@ def _filter_inventory_to_keys(df: pd.DataFrame, keys: set[tuple[str, ...]], *, s
     )
     mask = normalized.apply(lambda row: (row["_event_key"], row["_station_key"]) in keys, axis=1)
     return normalized.loc[mask].drop(columns=["_event_key", "_station_key"]).reset_index(drop=True)
+
+
+def _filter_tasks_for_retained_qc_pairs(
+    tasks: list[MetricWorkflowTask],
+    qc_table: pd.DataFrame | str | Path,
+) -> list[MetricWorkflowTask]:
+    """Keep tasks with at least one retained observed/synthetic QC pair."""
+
+    if not tasks:
+        return tasks
+    retained_keys = _retained_task_keys_from_qc_table(qc_table)
+    if not retained_keys:
+        return []
+    return [task for task in tasks if _task_key(task) in retained_keys]
+
+
+def _retained_task_keys_from_qc_table(qc_table: pd.DataFrame | str | Path) -> set[tuple[str, str, str, str]]:
+    """Return task keys with at least one passing observed/synthetic metric pair."""
+
+    required_columns = ["source", "event_id", "station", "component", "passband", "metric_group", "metric", "period_s", "qc_status"]
+    retained: set[tuple[str, str, str, str]] = set()
+    observed_pass_keys: set[tuple[str, str, str, str, str, str, str]] = set()
+    synthetic_pass_keys: set[tuple[str, str, str, str, str, str, str]] = set()
+    for chunk in _iter_table_chunks(qc_table, columns=required_columns):
+        missing = [column for column in required_columns if column not in chunk.columns]
+        if missing:
+            raise KeyError(f"QC table is missing required columns for retained-pair planning: {missing}")
+        if chunk.empty:
+            continue
+        work = chunk.loc[:, required_columns].copy()
+        work["source"] = work["source"].astype(str).str.strip().str.lower()
+        work["event_id"] = work["event_id"].astype(str).str.strip()
+        work["station"] = work["station"].astype(str).str.strip().str.upper()
+        work["component"] = work["component"].astype(str).str.strip().str.upper()
+        work["passband"] = work["passband"].astype(str).str.strip()
+        work["metric_group"] = work["metric_group"].astype(str).str.strip()
+        work["metric"] = work["metric"].astype(str).str.strip()
+        work["period_s"] = work["period_s"].map(_qc_period_key)
+        work["qc_pass"] = work["qc_status"].astype(str).str.strip().str.lower().eq("pass")
+        key_columns = ["event_id", "station", "component", "passband", "metric_group", "metric", "period_s"]
+        side = work.loc[
+            work["qc_pass"] & work["source"].isin(("observed", "synthetic")),
+            [*key_columns, "source"],
+        ].drop_duplicates()
+        if side.empty:
+            continue
+        observed_keys = _qc_side_keys(side.loc[side["source"].eq("observed")], key_columns)
+        synthetic_keys = _qc_side_keys(side.loc[side["source"].eq("synthetic")], key_columns)
+        retained.update(_qc_task_keys(observed_keys & synthetic_keys))
+        retained.update(_qc_task_keys(observed_keys & synthetic_pass_keys))
+        retained.update(_qc_task_keys(synthetic_keys & observed_pass_keys))
+        observed_pass_keys.update(observed_keys)
+        synthetic_pass_keys.update(synthetic_keys)
+    return retained
+
+
+def _qc_side_keys(frame: pd.DataFrame, key_columns: list[str]) -> set[tuple[str, str, str, str, str, str, str]]:
+    """Return normalized side keys from one QC side frame."""
+
+    return {tuple(str(value) for value in row) for row in frame.loc[:, key_columns].itertuples(index=False, name=None)}
+
+
+def _qc_task_keys(keys: set[tuple[str, str, str, str, str, str, str]]) -> set[tuple[str, str, str, str]]:
+    """Collapse metric-level QC keys to metric task keys."""
+
+    return {(event_id, station, component, passband) for event_id, station, component, passband, *_ in keys}
+
+
+def _task_key(task: MetricWorkflowTask) -> tuple[str, str, str, str]:
+    """Return the QC task key for one metric task."""
+
+    return (
+        str(task.event_id).strip(),
+        str(task.station).strip().upper(),
+        str(task.component).strip().upper(),
+        str(task.passband).strip(),
+    )
+
+
+def _qc_period_key(value: object) -> str:
+    """Normalize period values for QC row pairing."""
+
+    if value is None:
+        return ""
+    try:
+        if pd.isna(value):
+            return ""
+    except Exception:
+        pass
+    text = str(value).strip()
+    if text.lower() in {"", "nan", "none", "null"}:
+        return ""
+    try:
+        number = float(text)
+    except Exception:
+        return text
+    return f"{number:g}"
+
+
+def _iter_table_chunks(
+    table: pd.DataFrame | str | Path,
+    *,
+    columns: list[str],
+    chunksize: int = 1_000_000,
+):
+    """Yield selected table chunks for planning filters."""
+
+    if isinstance(table, pd.DataFrame):
+        selected = [column for column in columns if column in table.columns]
+        yield table.loc[:, selected].copy()
+        return
+    path = Path(table).expanduser()
+    if path.suffix.lower() in {".parquet", ".pq"}:
+        import pyarrow.parquet as pq
+
+        parquet = pq.ParquetFile(path)
+        selected = [column for column in parquet.schema.names if column in set(columns)]
+        for batch in parquet.iter_batches(batch_size=max(int(chunksize), 1), columns=selected):
+            yield batch.to_pandas()
+        return
+    if path.suffix.lower() in {"", ".csv"}:
+        wanted = set(columns)
+        yield from pd.read_csv(
+            path,
+            chunksize=max(int(chunksize), 1),
+            low_memory=False,
+            usecols=lambda column: column in wanted,
+        )
+        return
+    frame = _read_table(path)
+    selected = [column for column in columns if column in frame.columns]
+    yield frame.loc[:, selected].copy()
 
 
 def _normalize_source_overlap_scope(value: object) -> str:

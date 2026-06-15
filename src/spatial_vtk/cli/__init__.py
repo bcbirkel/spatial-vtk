@@ -374,6 +374,11 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     plan.add_argument("--batch-size", type=int, default=100, help="Tasks per batch when writing a manifest.")
     plan.add_argument("--qc-table", default=None, help="Optional QC inventory recorded in a manifest.")
     plan.add_argument("--no-qc", action="store_true", help="Do not mark planned tasks as QC-filtered by default.")
+    plan.add_argument(
+        "--include-qc-failed-tasks",
+        action="store_true",
+        help="When --qc-table is supplied, keep task keys even if no observed/synthetic metric pair passed QC.",
+    )
     plan.set_defaults(handler=_cmd_metrics_plan)
 
     run = metrics_sub.add_parser("run", help="Run a task table locally.")
@@ -713,7 +718,14 @@ def _cmd_metrics_plan(args: argparse.Namespace) -> int:
 
     config = SpatialVTKConfig.from_file(args.config, run_scenario=args.run_scenario)
     plan = metric_plan_from_config(config, command="metrics.calculate", overrides=_metric_plan_overrides(args))
-    tasks = plan_metric_tasks(args.observed_inventory, args.synthetic_inventory, plan=plan, use_qc=not args.no_qc)
+    tasks = plan_metric_tasks(
+        args.observed_inventory,
+        args.synthetic_inventory,
+        plan=plan,
+        use_qc=not args.no_qc,
+        qc_table=args.qc_table,
+        require_passing_qc_pairs=not args.include_qc_failed_tasks,
+    )
     if args.manifest:
         batch_dir = args.batch_output_dir or str(Path(args.output).with_suffix("")) + "_batches"
         write_task_manifest(tasks, args.output, output_dir=batch_dir, batch_size=args.batch_size, qc_table=args.qc_table)

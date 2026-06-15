@@ -141,6 +141,98 @@ def test_metric_task_planning_can_restrict_source_specific_modes_to_overlap(tmp_
     assert [task.event_id for task in tasks] == ["e1"]
 
 
+def test_metric_task_planning_defaults_to_retained_qc_pairs(tmp_path) -> None:
+    """Pair manifests should only include task keys with observed/synthetic QC pass pairs."""
+
+    obs_inventory = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1"],
+            "station": ["S1", "S2"],
+            "component": ["Z", "Z"],
+            "waveform_path": [tmp_path / "obs_s1.npz", tmp_path / "obs_s2.npz"],
+            "dt": [0.01, 0.01],
+        }
+    )
+    syn_inventory = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1"],
+            "station": ["S1", "S2"],
+            "component": ["Z", "Z"],
+            "model": ["m1", "m1"],
+            "waveform_path": [tmp_path / "syn_s1.npz", tmp_path / "syn_s2.npz"],
+            "dt": [0.01, 0.01],
+        }
+    )
+    plan = MetricPlan(
+        metrics=("PGA",),
+        passbands=(),
+        components=("Z",),
+        models=("m1",),
+        transforms=("log2_residual",),
+        output_mode="full",
+    )
+    qc_table = pd.DataFrame(
+        [
+            {
+                "source": "observed",
+                "event_id": "e1",
+                "station": "S1",
+                "component": "Z",
+                "passband": "",
+                "metric_group": "amplitude",
+                "metric": "PGA",
+                "period_s": np.nan,
+                "qc_status": "pass",
+            },
+            {
+                "source": "synthetic",
+                "event_id": "e1",
+                "station": "S1",
+                "component": "Z",
+                "passband": "",
+                "metric_group": "amplitude",
+                "metric": "PGA",
+                "period_s": np.nan,
+                "qc_status": "pass",
+            },
+            {
+                "source": "observed",
+                "event_id": "e1",
+                "station": "S2",
+                "component": "Z",
+                "passband": "",
+                "metric_group": "amplitude",
+                "metric": "PGA",
+                "period_s": np.nan,
+                "qc_status": "pass",
+            },
+            {
+                "source": "synthetic",
+                "event_id": "e1",
+                "station": "S2",
+                "component": "Z",
+                "passband": "",
+                "metric_group": "amplitude",
+                "metric": "PGA",
+                "period_s": np.nan,
+                "qc_status": "fail",
+            },
+        ]
+    )
+
+    retained_tasks = plan_metric_tasks(obs_inventory, syn_inventory, plan=plan, qc_table=qc_table)
+    all_tasks = plan_metric_tasks(
+        obs_inventory,
+        syn_inventory,
+        plan=plan,
+        qc_table=qc_table,
+        require_passing_qc_pairs=False,
+    )
+
+    assert [(task.event_id, task.station, task.component, task.passband) for task in retained_tasks] == [("e1", "S1", "Z", "")]
+    assert [(task.event_id, task.station) for task in all_tasks] == [("e1", "S1"), ("e1", "S2")]
+
+
 def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> None:
     """Manifest execution should run batches, merge outputs, and write SLURM scripts."""
 
