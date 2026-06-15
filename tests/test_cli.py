@@ -64,6 +64,61 @@ metrics:
     assert not settings.exists()
 
 
+def test_cli_plot_band_score_distribution_uses_config_defaults(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    metrics = table_dir / "metrics_long.csv"
+    metrics.write_text("band,score,metric\n1-2 sec,0.5,PGA\n", encoding="utf-8")
+    config.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+  artifacts:
+    metrics_long:
+      filename: metrics_long.csv
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    from spatial_vtk.metrics.plot import model_comparison
+
+    def fake_plot_band_score_distribution(df, output_path=None, **kwargs):
+        seen["rows"] = len(df)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(model_comparison, "plot_band_score_distribution", fake_plot_band_score_distribution)
+
+    assert (
+        main(
+            [
+                "plot",
+                "metrics",
+                "band-score-distribution",
+                "--config",
+                str(config),
+                "--kwargs",
+                "score_col=score",
+            ]
+        )
+        == 0
+    )
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "band_score_distribution.png"
+    assert seen["rows"] == 1
+    assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["score_col"] == "score"
+    assert captured.out.strip() == str(expected_output)
+
+
 def test_cli_prepare_station_metadata(tmp_path):
     src = tmp_path / "stations.csv"
     out = tmp_path / "prepared.csv"

@@ -48,6 +48,10 @@ class PlotCommand:
         Short command help text.
     table_aliases
         Convenience table options mapped to function argument names.
+    input_key
+        Optional registered table output key used when ``--input`` is omitted.
+    output_key
+        Optional registered figure output key used when ``--output`` is omitted.
 
     Returns
     -------
@@ -59,13 +63,21 @@ class PlotCommand:
     primary_arg: str | None
     help: str
     table_aliases: dict[str, str] | None = None
+    input_key: str | None = None
+    output_key: str | None = None
 
 
 METRICS_PLOT_COMMANDS: dict[str, PlotCommand] = {
     "example-metric-pairs": PlotCommand("spatial_vtk.metrics.plot.example_metric_plots.plot_example_metric_pairs", None, "Plot synthetic trace-pair examples that illustrate metric behavior."),
     "model-metric-heatmap": PlotCommand("spatial_vtk.metrics.plot.model_comparison.plot_model_metric_heatmap", "summary_df", "Plot a model-by-metric heatmap."),
     "winner-heatmap": PlotCommand("spatial_vtk.metrics.plot.model_comparison.plot_winner_heatmap", "summary_df", "Plot a winner/class heatmap."),
-    "band-score-distribution": PlotCommand("spatial_vtk.metrics.plot.model_comparison.plot_band_score_distribution", "df", "Plot score distributions by passband."),
+    "band-score-distribution": PlotCommand(
+        "spatial_vtk.metrics.plot.model_comparison.plot_band_score_distribution",
+        "df",
+        "Plot score distributions by passband.",
+        input_key="metrics_long",
+        output_key="band_score_distribution",
+    ),
     "psa-period-curve": PlotCommand("spatial_vtk.metrics.plot.periods.plot_psa_period_curve", "df", "Plot PSA values by period."),
     "period-spectra": PlotCommand("spatial_vtk.metrics.plot.periods.plot_period_spectra", "spectra_df", "Plot period spectra."),
     "period-spectrogram": PlotCommand("spatial_vtk.metrics.plot.periods.plot_period_spectrogram", "spectrogram_df", "Plot a period spectrogram."),
@@ -522,16 +534,26 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
     """Add shared file-backed plotting arguments."""
 
     if spec.primary_arg is not None:
-        parser.add_argument("--input", required=True, help=f"Input CSV/parquet table for the {spec.primary_arg} argument.")
-    parser.add_argument("--output", required=True, help="Output figure path.")
+        input_help = f"Input CSV/parquet table for the {spec.primary_arg} argument."
+        if spec.input_key:
+            input_help += f" Defaults to configured output table '{spec.input_key}'."
+        parser.add_argument("--input", required=spec.input_key is None, help=input_help)
+    output_help = "Output figure path."
+    if spec.output_key:
+        output_help += f" Defaults to configured figure output '{spec.output_key}'."
+    parser.add_argument("--output", required=spec.output_key is None, help=output_help)
+    if spec.input_key or spec.output_key:
+        parser.add_argument("--config", default=None, help="Optional Spatial-VTK config for default input/output paths.")
+        parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     parser.add_argument("--table", action="append", default=(), help="Extra table as argument_name=path. May be repeated.")
     parser.add_argument("--kwargs", nargs="*", default=(), help="Extra function keyword arguments as key=value.")
     parser.add_argument("--kwargs-json", default=None, help="Extra function keyword arguments as a JSON/YAML mapping.")
     for option in sorted((spec.table_aliases or {}).keys()):
         parser.add_argument(f"--{option.replace('_', '-')}", default=None, help=f"Convenience table path for the {spec.table_aliases[option]} argument.")
     if include_map_options:
-        parser.add_argument("--config", default=None, help="Optional Spatial-VTK config for named bounds.")
-        parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+        if not (spec.input_key or spec.output_key):
+            parser.add_argument("--config", default=None, help="Optional Spatial-VTK config for named bounds.")
+            parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
         parser.add_argument("--bounds", default=None, help="Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.")
         parser.add_argument("--no-basemap", action="store_true", help="Disable basemap rendering for map figures.")
         parser.add_argument("--basemap-source", default=None, help="Optional contextily basemap source.")
@@ -1011,8 +1033,15 @@ def _cmd_list_registered_plots(args: argparse.Namespace) -> int:
     """List available registered plotting commands."""
 
     for name, spec in sorted(args.registry.items()):
-        input_note = f" --input <table>" if spec.primary_arg is not None else ""
-        print(f"{name}{input_note} --output <path>  # {spec.help}")
+        input_note = f" --input <table>" if spec.primary_arg is not None and spec.input_key is None else ""
+        output_note = " --output <path>" if spec.output_key is None else ""
+        default_notes = []
+        if spec.input_key:
+            default_notes.append(f"input={spec.input_key}")
+        if spec.output_key:
+            default_notes.append(f"output={spec.output_key}")
+        default_note = f" ({', '.join(default_notes)} from config)" if default_notes else ""
+        print(f"{name}{input_note}{output_note}  # {spec.help}{default_note}")
     return 0
 
 
@@ -1049,9 +1078,12 @@ def _cmd_call(args: argparse.Namespace) -> int:
 def _registered_plot_kwargs(args: argparse.Namespace, spec: PlotCommand) -> dict[str, Any]:
     """Build plotting keyword arguments from CLI table and scalar options."""
 
-    kwargs: dict[str, Any] = {"output_path": args.output}
+    config = _registered_plot_config(args, spec)
+    output_path = _registered_plot_output_path(args, spec, config)
+    kwargs: dict[str, Any] = {"output_path": output_path}
     if spec.primary_arg is not None:
-        kwargs[spec.primary_arg] = _read_table(args.input)
+        input_path = _registered_plot_input_path(args, spec, config)
+        kwargs[spec.primary_arg] = _read_table(input_path)
     for table_arg, table_path in _parse_table_arguments(getattr(args, "table", ())):
         kwargs[table_arg] = _read_table(table_path)
     for option, table_arg in (spec.table_aliases or {}).items():
@@ -1073,6 +1105,54 @@ def _registered_plot_kwargs(args: argparse.Namespace, spec: PlotCommand) -> dict
     if bounds is not None:
         kwargs["bounds"] = bounds
     return kwargs
+
+
+def _registered_plot_config(args: argparse.Namespace, spec: PlotCommand):
+    """Load a config only when a registered plot needs one."""
+
+    needs_config = (
+        (spec.input_key is not None and not getattr(args, "input", None))
+        or (spec.output_key is not None and not getattr(args, "output", None))
+        or bool(getattr(args, "config", None))
+        or bool(getattr(args, "run_scenario", None))
+    )
+    if not needs_config:
+        return None
+    return _optional_cli_config(getattr(args, "config", None), run_scenario=getattr(args, "run_scenario", None))
+
+
+def _registered_plot_input_path(args: argparse.Namespace, spec: PlotCommand, config: Any) -> Path:
+    """Resolve the input table path for a registered plot."""
+
+    if getattr(args, "input", None):
+        return Path(args.input).expanduser()
+    if spec.input_key is None:
+        raise ValueError("No input table was provided. Pass --input.")
+    if config is None:
+        raise ValueError(
+            f"No --input was provided for '{spec.input_key}' and no Spatial-VTK config was found. "
+            "Pass --input, pass --config, or run 'svtk config set CONFIG_PATH'."
+        )
+    from spatial_vtk.config import resolve_output_path
+
+    return resolve_output_path(spec.input_key, kind="table", cfg=config)
+
+
+def _registered_plot_output_path(args: argparse.Namespace, spec: PlotCommand, config: Any) -> Path:
+    """Resolve the output figure path for a registered plot."""
+
+    if getattr(args, "output", None):
+        return Path(args.output).expanduser()
+    if spec.output_key is None:
+        raise ValueError("No output path was provided. Pass --output.")
+    if config is None:
+        raise ValueError(
+            f"No --output was provided for '{spec.output_key}' and no Spatial-VTK config was found. "
+            "Pass --output, pass --config, or run 'svtk config set CONFIG_PATH'."
+        )
+    from spatial_vtk.config import resolve_output_path
+
+    return resolve_output_path(spec.output_key, kind="figure", cfg=config, create_parent=True)
 
 
 def _parse_table_arguments(items: Iterable[str]) -> list[tuple[str, str]]:

@@ -103,8 +103,11 @@ svtk plot metrics band-score-distribution
 
 .. code-block:: bash
 
-   svtk plot metrics band-score-distribution [-h] --input INPUT --output
-                                                 OUTPUT [--table TABLE]
+   svtk plot metrics band-score-distribution [-h] [--input INPUT]
+                                                 [--output OUTPUT]
+                                                 [--config CONFIG]
+                                                 [--run-scenario RUN_SCENARIO]
+                                                 [--table TABLE]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
 
@@ -123,13 +126,21 @@ svtk plot metrics band-score-distribution
      - 
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      - 
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table ``metrics_long``.
    * - ``--output``
-     - Yes
+     - No
      - 
-     - Value: ``output``. Output figure path.
+     - Value: ``output``. Output figure path. Defaults to configured figure output ``band_score_distribution``.
+   * - ``--config``
+     - No
+     - 
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     - 
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable

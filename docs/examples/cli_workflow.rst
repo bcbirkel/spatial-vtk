@@ -176,9 +176,11 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
      --kwargs value_col=log2_residual metric=PGA
 
    svtk plot metrics band-score-distribution \
-     --input "$TABLES/metrics_long.parquet" \
-     --output "$FIGURES/band_score_distribution.png" \
      --kwargs score_col=log2_residual color_col=metric
+
+   The band-score plot defaults to the configured ``metrics_long`` table and
+   ``band_score_distribution`` figure path. Pass ``--input`` or ``--output``
+   only when you want to override those paths.
 
 
 Step 4: Spatial Statistics
