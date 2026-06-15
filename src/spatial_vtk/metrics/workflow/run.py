@@ -315,12 +315,13 @@ def _calculate_pair_metric_row(
     obs_ok = _side_ok(task, obs_qc, _side_available(observed))
     syn_ok = _side_ok(task, syn_qc, _side_available(synthetic))
     comparison_ok = _comparison_ok(task, obs_ok, syn_ok)
-    observed_pair, synthetic_pair = _trim_pair_to_common_valid(observed, synthetic) if comparison_ok and observed is not None and synthetic is not None else (None, None)
     pair_failure_reason = ""
     pair_value = np.nan
-    if comparison_ok:
+    if comparison_ok and observed is not None and synthetic is not None:
         try:
-            pair_value = _calculate_pair_metric(metric, observed_pair, synthetic_pair, _pair_dt(observed, synthetic))
+            aligned_observed, aligned_synthetic, pair_dt = _align_pair_sample_intervals(observed, synthetic)
+            observed_pair, synthetic_pair = _trim_pair_to_common_valid(aligned_observed, aligned_synthetic)
+            pair_value = _calculate_pair_metric(metric, observed_pair, synthetic_pair, pair_dt)
         except ValueError as exc:
             comparison_ok = False
             pair_failure_reason = str(exc)
@@ -564,6 +565,52 @@ def _trim_pair_to_common_valid(observed: _LoadedSide, synthetic: _LoadedSide) ->
     if count <= 0:
         return obs[:0], syn[:0]
     return obs[:count], syn[:count]
+
+
+def _align_pair_sample_intervals(observed: _LoadedSide, synthetic: _LoadedSide) -> tuple[_LoadedSide, _LoadedSide, float]:
+    """Return pair sides on a shared sample interval for pair-only metrics."""
+
+    if not np.isfinite(observed.dt) or observed.dt <= 0.0 or not np.isfinite(synthetic.dt) or synthetic.dt <= 0.0:
+        raise ValueError("Pair-only metrics require observed and synthetic traces with positive sample intervals.")
+    target_dt = max(float(observed.dt), float(synthetic.dt))
+    return (
+        _resample_side_to_dt(observed, target_dt),
+        _resample_side_to_dt(synthetic, target_dt),
+        target_dt,
+    )
+
+
+def _resample_side_to_dt(side: _LoadedSide, target_dt: float) -> _LoadedSide:
+    """Resample one side to ``target_dt`` while carrying its validity mask."""
+
+    if np.isclose(side.dt, target_dt, rtol=1e-6, atol=1e-9):
+        return side
+    if not np.isfinite(target_dt) or target_dt <= 0.0:
+        raise ValueError(f"Pair-only metric resampling requires a positive target sample interval, got {target_dt!r}.")
+    target_hz = 1.0 / float(target_dt)
+    processed = apply_waveform_preprocessing_with_metadata(
+        side.data,
+        side.dt,
+        WaveformPreprocessing(resample_hz=target_hz),
+    )
+    valid_mask = _resample_valid_mask(side.valid_mask, side.dt, processed.data.size, processed.dt)
+    return _LoadedSide(processed.data, processed.dt, valid_mask)
+
+
+def _resample_valid_mask(mask: np.ndarray | None, source_dt: float, target_count: int, target_dt: float) -> np.ndarray | None:
+    """Map a boolean validity mask onto a resampled time grid."""
+
+    if mask is None:
+        return None
+    source_mask = np.asarray(mask, dtype=bool)
+    count = int(target_count)
+    if count <= 0:
+        return np.zeros(0, dtype=bool)
+    if source_mask.size == 0:
+        return np.zeros(count, dtype=bool)
+    source_times = np.arange(source_mask.size, dtype=float) * float(source_dt)
+    target_times = np.arange(count, dtype=float) * float(target_dt)
+    return np.interp(target_times, source_times, source_mask.astype(float), left=0.0, right=0.0) >= 0.999
 
 
 def _optional_float(value: object) -> float | None:

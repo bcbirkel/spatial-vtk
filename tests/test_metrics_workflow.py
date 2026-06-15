@@ -387,13 +387,25 @@ def test_metric_workflow_uses_qc_valid_sample_window_for_peak_metrics(tmp_path) 
     assert float(masked_rows.loc[0, "log2_residual"]) == pytest.approx(0.0)
 
 
-def test_pair_only_metrics_fail_row_when_sample_intervals_differ(tmp_path) -> None:
-    """Pair-only metric sample-interval mismatches should not abort a batch."""
+def test_pair_only_metrics_resample_when_sample_intervals_differ(tmp_path) -> None:
+    """Pair-only metrics should resample mismatched pairs before calculation."""
 
     obs_path = tmp_path / "obs_dt_0p05.npz"
     syn_path = tmp_path / "syn_dt_0p1.npz"
-    _write_npz_waveform(obs_path, np.ones(200), station="ABC", channel="HNZ", sampling_rate=20.0)
-    _write_npz_waveform(syn_path, np.ones(100), station="ABC", channel="HNZ", sampling_rate=10.0)
+    _write_npz_waveform(
+        obs_path,
+        np.sin(2.0 * np.pi * 1.0 * np.arange(0.0, 10.0, 0.05)),
+        station="ABC",
+        channel="HNZ",
+        sampling_rate=20.0,
+    )
+    _write_npz_waveform(
+        syn_path,
+        np.sin(2.0 * np.pi * 1.0 * np.arange(0.0, 10.0, 0.1)),
+        station="ABC",
+        channel="HNZ",
+        sampling_rate=10.0,
+    )
     task = MetricWorkflowTask(
         task_id="dt-mismatch-test",
         event_id="e1",
@@ -414,11 +426,11 @@ def test_pair_only_metrics_fail_row_when_sample_intervals_differ(tmp_path) -> No
     assert len(rows) == 1
     row = rows.iloc[0]
     assert row["metric"] == "original_cc"
-    assert np.isnan(row["value"])
+    assert row["value"] == pytest.approx(1.0, abs=0.02)
     assert row["obs_qc_status"] == "pass"
     assert row["syn_qc_status"] == "pass"
-    assert row["comparison_qc_status"] == "fail"
-    assert "matching sample intervals" in row["comparison_qc_reason"]
+    assert row["comparison_qc_status"] == "pass"
+    assert row["comparison_qc_reason"] == ""
 
 
 def test_slurm_settings_from_config_requires_python_command() -> None:
