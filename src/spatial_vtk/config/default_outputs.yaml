@@ -15,7 +15,7 @@ tables:
     filename: qc_inventory.csv
     description: QC inventory
   qc_inventory_overlap:
-    filename: qc_inventory_overlap.csv
+    filename: qc_inventory_overlap.parquet
     description: QC inventory restricted to overlapping observed/synthetic events
   comparison_eligible_records:
     filename: comparison_eligible_records.csv

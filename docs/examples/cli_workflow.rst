@@ -63,7 +63,7 @@ Step 2: Quality Control
 
 Build waveform and metric QC tables, export comparison-ready rows, make QC figures, and launch the QC dashboard.
 The full ``qc_inventory.csv`` is retained for observed-only and synthetic-only
-diagnostics. Comparison metrics should use ``qc_inventory_overlap.csv``, a
+diagnostics. Comparison metrics should use ``qc_inventory_overlap.parquet``, a
 streamed sidecar restricted to events with both observed and synthetic data.
 
 .. code-block:: bash
@@ -71,7 +71,7 @@ streamed sidecar restricted to events with both observed and synthetic data.
    export EVENT_STATIONS="$PREPROCESSED/metadata/event_station_records_preprocessed.csv"
    export TRACE_QC="$TABLES/qc_trace_summary.csv"
    export QC_INVENTORY="$TABLES/qc_inventory.csv"
-   export QC_INVENTORY_OVERLAP="$TABLES/qc_inventory_overlap.csv"
+   export QC_INVENTORY_OVERLAP="$TABLES/qc_inventory_overlap.parquet"
 
    svtk call spatial_vtk.qc.build_waveform_qc_summary \
      --kwargs event_station_records="$EVENT_STATIONS" components='[Z, R, T]' passbands='[[1, 2], [2, 3]]' \

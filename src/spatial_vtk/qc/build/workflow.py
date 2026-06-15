@@ -319,10 +319,10 @@ def write_qc_inventory_overlap_from_full(
         else resolve_output_path("qc_inventory_overlap", kind="table", cfg=cfg, create_parent=True)
     ).expanduser()
     suffix = output.suffix.lower()
-    if suffix not in {"", ".csv"}:
-        raise ValueError("Overlap QC inventory sidecars are currently written as CSV files.")
+    if suffix not in {"", ".csv", ".parquet", ".pq"}:
+        raise ValueError("Overlap QC inventory sidecars must be CSV or Parquet files.")
     if not suffix:
-        output = output.with_suffix(".csv")
+        output = output.with_suffix(".parquet")
     output.parent.mkdir(parents=True, exist_ok=True)
     if output.exists() and not overwrite:
         _progress(verbose, f"QC overlap inventory: reusing existing {output}")
@@ -350,44 +350,82 @@ def write_qc_inventory_overlap_from_full(
         f"(scope={scope_key})",
     )
 
-    output.unlink(missing_ok=True)
+    is_parquet_output = output.suffix.lower() in {".parquet", ".pq"}
+    tmp_output = output.with_name(f".{output.name}.tmp") if is_parquet_output else output
+    tmp_output.unlink(missing_ok=True)
     wrote_header = False
+    parquet_writer = None
+    parquet_schema = None
     template_columns: list[str] | None = None
     input_rows = 0
     output_rows = 0
     start_time = time.monotonic()
-    for index, chunk in enumerate(_iter_qc_chunks(qc_inventory, chunksize=chunksize), start=1):
-        if template_columns is None:
-            template_columns = list(chunk.columns)
-        missing = [column for column in ("event_id", "station") if column not in chunk.columns]
-        if missing:
-            raise KeyError(f"QC inventory is missing required columns: {missing}")
-        input_rows += len(chunk)
-        if scope_key == "event":
-            mask = chunk["event_id"].astype(str).str.strip().isin(event_ids)
-        else:
-            event_values = chunk["event_id"].astype(str).str.strip()
-            station_values = chunk["station"].astype(str).str.strip().str.upper()
-            mask = pd.Series(
-                [(event_id, station) in event_station_keys for event_id, station in zip(event_values, station_values)],
-                index=chunk.index,
+    if is_parquet_output:
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+    try:
+        for index, chunk in enumerate(
+            _iter_qc_chunks(
+                qc_inventory,
+                chunksize=chunksize,
+                csv_dtype=str if is_parquet_output else None,
+            ),
+            start=1,
+        ):
+            if template_columns is None:
+                template_columns = list(chunk.columns)
+            missing = [column for column in ("event_id", "station") if column not in chunk.columns]
+            if missing:
+                raise KeyError(f"QC inventory is missing required columns: {missing}")
+            input_rows += len(chunk)
+            if scope_key == "event":
+                mask = chunk["event_id"].astype(str).str.strip().isin(event_ids)
+            else:
+                event_values = chunk["event_id"].astype(str).str.strip()
+                station_values = chunk["station"].astype(str).str.strip().str.upper()
+                mask = pd.Series(
+                    [(event_id, station) in event_station_keys for event_id, station in zip(event_values, station_values)],
+                    index=chunk.index,
+                )
+            selected = chunk.loc[mask].copy()
+            if selected.empty:
+                _progress(verbose, f"QC overlap inventory: chunk {index} scanned {len(chunk)} row(s), wrote 0")
+                continue
+            if is_parquet_output:
+                selected = selected.fillna("").astype(str)
+                table = pa.Table.from_pandas(selected, preserve_index=False)
+                if parquet_writer is None:
+                    parquet_schema = table.schema
+                    parquet_writer = pq.ParquetWriter(tmp_output, parquet_schema, compression="snappy")
+                else:
+                    table = pa.Table.from_pandas(
+                        selected.reindex(columns=parquet_schema.names),
+                        schema=parquet_schema,
+                        preserve_index=False,
+                    )
+                parquet_writer.write_table(table)
+            else:
+                selected.to_csv(output, mode="a", header=not wrote_header, index=False)
+            wrote_header = True
+            output_rows += len(selected)
+            _progress(
+                verbose,
+                f"QC overlap inventory: chunk {index} scanned {len(chunk)} row(s), "
+                f"wrote {len(selected)} ({output_rows} total)",
             )
-        selected = chunk.loc[mask].copy()
-        if selected.empty:
-            _progress(verbose, f"QC overlap inventory: chunk {index} scanned {len(chunk)} row(s), wrote 0")
-            continue
-        selected.to_csv(output, mode="a", header=not wrote_header, index=False)
-        wrote_header = True
-        output_rows += len(selected)
-        _progress(
-            verbose,
-            f"QC overlap inventory: chunk {index} scanned {len(chunk)} row(s), "
-            f"wrote {len(selected)} ({output_rows} total)",
-        )
+    finally:
+        if parquet_writer is not None:
+            parquet_writer.close()
     if not wrote_header:
         if template_columns is None:
             template_columns = _table_columns(qc_inventory)
-        pd.DataFrame(columns=template_columns).to_csv(output, index=False)
+        empty = pd.DataFrame(columns=template_columns)
+        if is_parquet_output:
+            empty.to_parquet(tmp_output, index=False)
+        else:
+            empty.to_csv(output, index=False)
+    if is_parquet_output:
+        tmp_output.replace(output)
     _progress(
         verbose,
         f"QC overlap inventory: wrote {output_rows}/{input_rows} row(s) to {output} "
@@ -1384,6 +1422,7 @@ def _iter_qc_chunks(
     *,
     chunksize: int = 1_000_000,
     usecols: Sequence[str] | None = None,
+    csv_dtype: object | None = None,
 ):
     """Yield QC table chunks."""
 
@@ -1397,10 +1436,23 @@ def _iter_qc_chunks(
     path = Path(qc_summary).expanduser()
     if path.suffix.lower() in {"", ".csv"}:
         reader_kwargs: dict[str, object] = {"chunksize": max(int(chunksize), 1), "low_memory": False}
+        if csv_dtype is not None:
+            reader_kwargs["dtype"] = csv_dtype
         if usecols is not None:
             wanted = set(usecols)
             reader_kwargs["usecols"] = lambda column: column in wanted
         yield from pd.read_csv(path, **reader_kwargs)
+        return
+    if path.suffix.lower() in {".parquet", ".pq"}:
+        import pyarrow.parquet as pq
+
+        parquet = pq.ParquetFile(path)
+        columns = None
+        if usecols is not None:
+            wanted = set(usecols)
+            columns = [column for column in parquet.schema.names if column in wanted]
+        for batch in parquet.iter_batches(batch_size=max(int(chunksize), 1), columns=columns):
+            yield batch.to_pandas()
         return
     frame = _read_table(path)
     if usecols is not None:
@@ -1693,7 +1745,9 @@ def _table_columns(value: pd.DataFrame | str | Path) -> list[str]:
         return list(value.columns)
     path = Path(value).expanduser()
     if path.suffix.lower() in {".parquet", ".pq"}:
-        return list(pd.read_parquet(path).columns)
+        import pyarrow.parquet as pq
+
+        return list(pq.ParquetFile(path).schema.names)
     return list(pd.read_csv(path, nrows=0).columns)
 
 

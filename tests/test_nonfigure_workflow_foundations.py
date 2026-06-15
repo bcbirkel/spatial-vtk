@@ -565,6 +565,12 @@ def test_qc_inventory_overlap_sidecar_streams_filtered_rows(tmp_path: Path) -> N
         {"event_id": "e1", "station": "S1"}
     ]
 
+    parquet_sidecar = tmp_path / "qc_inventory_overlap.parquet"
+    write_qc_inventory_overlap_from_full(qc_path, records, parquet_sidecar, scope="event", chunksize=2)
+    parquet_overlap = build_metric_pair_retention_table_from_qc_inventory(parquet_sidecar, chunksize=2)
+    assert parquet_sidecar.exists()
+    assert parquet_overlap["total_pairs"].sum() == 1
+
 
 def test_large_qc_inventory_helpers_stream_event_station_chunks(tmp_path: Path) -> None:
     qc_summary = pd.DataFrame(
