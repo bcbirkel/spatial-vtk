@@ -565,6 +565,13 @@ def test_qc_inventory_overlap_sidecar_streams_filtered_rows(tmp_path: Path) -> N
         {"event_id": "e1", "station": "S1"}
     ]
 
+    default_sidecar = tmp_path / "qc_inventory_overlap_default.csv"
+    write_qc_inventory_overlap_from_full(qc_path, records, default_sidecar, chunksize=2)
+    default_overlap = pd.read_csv(default_sidecar)
+    assert default_overlap[["event_id", "station"]].drop_duplicates().to_dict("records") == [
+        {"event_id": "e1", "station": "S1"}
+    ]
+
     parquet_sidecar = tmp_path / "qc_inventory_overlap.parquet"
     write_qc_inventory_overlap_from_full(qc_path, records, parquet_sidecar, scope="event", chunksize=2)
     parquet_overlap = build_metric_pair_retention_table_from_qc_inventory(parquet_sidecar, chunksize=2)

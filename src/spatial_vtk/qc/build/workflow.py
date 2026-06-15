@@ -257,7 +257,7 @@ def filter_event_station_records_for_source_overlap(
     event_station_records: pd.DataFrame | str | Path,
     *,
     sources: Sequence[str] = ("observed", "synthetic"),
-    scope: str = "event",
+    scope: str = "event_station",
 ) -> pd.DataFrame:
     """Keep event-station rows that have overlapping observed/synthetic data.
 
@@ -298,7 +298,7 @@ def write_qc_inventory_overlap_from_full(
     event_station_records: pd.DataFrame | str | Path,
     output_path: str | Path | None = None,
     *,
-    scope: str = "event",
+    scope: str = "event_station",
     chunksize: int = 1_000_000,
     overwrite: bool = True,
     verbose: bool = False,
@@ -308,9 +308,9 @@ def write_qc_inventory_overlap_from_full(
 
     The canonical ``qc_inventory`` can contain observed-only or synthetic-only
     rows that are useful for source-specific diagnostics. Comparison metrics
-    only make sense where both sources are present, so this helper streams the
-    full inventory and writes a smaller sidecar for downstream metric and
-    plotting steps without recomputing QC.
+    only make sense where both sources are present for the same event-station
+    record, so this helper streams the full inventory and writes a smaller
+    sidecar for downstream metric and plotting steps without recomputing QC.
     """
 
     output = Path(
@@ -446,7 +446,7 @@ def build_metric_qc_summary(
     observed_available: bool = True,
     synthetic_available: bool = True,
     require_source_overlap: bool = False,
-    source_overlap_scope: str = "event",
+    source_overlap_scope: str = "event_station",
     trace_qc_summary: pd.DataFrame | str | Path | None = None,
     verbose: bool = False,
     progress_interval: int = 25,
@@ -479,7 +479,8 @@ def build_metric_qc_summary(
     source_overlap_scope
         ``"event"`` keeps all records for events that have both sources
         somewhere. ``"event_station"`` keeps only rows where that specific
-        event/station has both sources.
+        event/station has both sources; this is the default for comparison
+        metric workflows.
     trace_qc_summary
         Optional side-specific waveform QC table. When provided, failed
         source/event/station/component/passband rows fail matching metric rows.

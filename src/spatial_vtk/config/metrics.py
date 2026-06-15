@@ -118,7 +118,7 @@ class MetricSettings:
     spectral: SpectralSettings = field(default_factory=SpectralSettings)
     synthetic_max_frequency_hz: float | None = None
     require_source_overlap: bool = False
-    source_overlap_scope: str = "event"
+    source_overlap_scope: str = "event_station"
 
 
 def metrics_settings_from_config(
@@ -182,7 +182,9 @@ def metrics_settings_from_config(
             merged.get("require_observed_synthetic_overlap", merged.get("overlap_only", False)),
         )
     )
-    source_overlap_scope = _normalize_source_overlap_scope(merged.get("source_overlap_scope", merged.get("overlap_scope", "event")))
+    source_overlap_scope = _normalize_source_overlap_scope(
+        merged.get("source_overlap_scope", merged.get("overlap_scope", "event_station"))
+    )
     synthetic_max_frequency_hz = _optional_positive_float(
         merged.get("synthetic_max_frequency_hz", synthetic_cfg.get("max_frequency_hz"))
     )

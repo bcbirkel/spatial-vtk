@@ -56,7 +56,7 @@ class MetricPlan:
     waveform_resample_hz: float | None = None
     waveform_filter_order: int | None = None
     require_source_overlap: bool = False
-    source_overlap_scope: str = "event"
+    source_overlap_scope: str = "event_station"
     output_path: Path | None = None
 
     @property

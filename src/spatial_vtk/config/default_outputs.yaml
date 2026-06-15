@@ -16,7 +16,7 @@ tables:
     description: QC inventory
   qc_inventory_overlap:
     filename: qc_inventory_overlap.parquet
-    description: QC inventory restricted to overlapping observed/synthetic events
+    description: QC inventory restricted to overlapping observed/synthetic event-station records
   comparison_eligible_records:
     filename: comparison_eligible_records.csv
     description: Comparison-eligible records
@@ -97,7 +97,7 @@ tables:
     description: QC rejection reason counts
   qc_drop_causes_overlap:
     filename: qc_drop_causes_overlap.csv
-    description: QC rejection reason counts for overlapping observed/synthetic events
+    description: QC rejection reason counts for overlapping observed/synthetic event-station records
 
 figures:
   station_event_context:
