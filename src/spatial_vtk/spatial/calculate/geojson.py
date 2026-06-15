@@ -406,6 +406,77 @@ def add_geojson_metadata_to_metrics(
     raise ValueError("target must be 'station', 'event', or 'path'.")
 
 
+def build_geojson_region_summary(
+    df: pd.DataFrame,
+    geojson_path: str | Path,
+    *,
+    selector: object = "all",
+    verbose: bool = False,
+) -> pd.DataFrame:
+    """Summarize station, event, and path GeoJSON membership efficiently.
+
+    The summary is computed on unique station, event, and event-station
+    geometry records instead of every metric row. This keeps large metric
+    tables from repeating the same GeoJSON point-in-polygon and path-crossing
+    checks for each metric, component, passband, and model row.
+    """
+
+    source_rows = len(df)
+    rows: list[pd.DataFrame] = []
+    for point in ("station", "event"):
+        relation = f"{point}_inside"
+        try:
+            point_records = _unique_point_records(df, point=point)
+            _progress(verbose, f"GeoJSON summary: {relation} on {len(point_records)} unique record(s) from {source_rows} row(s)")
+            annotated = annotate_points_with_geojson(
+                point_records,
+                geojson_path,
+                point=point,  # type: ignore[arg-type]
+                selector=selector,
+                include_per_polygon=False,
+                require_overlap=False,
+            )
+            rows.append(
+                _geojson_label_count_table(
+                    annotated[f"{point}_geojson_labels"],
+                    relation=relation,
+                    source_rows=source_rows,
+                    unique_records=len(point_records),
+                )
+            )
+        except Exception as exc:  # pragma: no cover - exercised through Slurm workflows
+            rows.append(_geojson_error_row(relation, source_rows=source_rows, message=str(exc)))
+            _progress(verbose, f"GeoJSON summary: {relation} failed: {exc}")
+
+    relation = "crosses_boundary"
+    try:
+        path_records = _unique_path_records(df)
+        _progress(verbose, f"GeoJSON summary: {relation} on {len(path_records)} unique path(s) from {source_rows} row(s)")
+        paths = classify_paths_with_geojson(
+            path_records,
+            geojson_path,
+            relation=relation,
+            selector=selector,
+            include_per_polygon=False,
+            require_overlap=False,
+        )
+        rows.append(
+            _geojson_label_count_table(
+                paths["path_geojson_labels"],
+                relation=relation,
+                source_rows=source_rows,
+                unique_records=len(path_records),
+            )
+        )
+    except Exception as exc:  # pragma: no cover - exercised through Slurm workflows
+        rows.append(_geojson_error_row(relation, source_rows=source_rows, message=str(exc)))
+        _progress(verbose, f"GeoJSON summary: {relation} failed: {exc}")
+
+    summary = pd.concat(rows, ignore_index=True, sort=False) if rows else pd.DataFrame(columns=["relation", "region", "count"])
+    _progress(verbose, f"GeoJSON summary: complete with {len(summary)} row(s)")
+    return summary
+
+
 def summarize_metrics_by_geojson(
     df: pd.DataFrame,
     *,
@@ -473,6 +544,72 @@ def summarize_metrics_by_geojson(
     out = out.drop(columns=["q25", "q75"]).rename(columns={"_geojson_label": "geojson_label"})
     _maybe_write_csv(out, savecsv=savecsv, outpath=outpath)
     return out
+
+
+def _unique_point_records(df: pd.DataFrame, *, point: str) -> pd.DataFrame:
+    """Return unique point geometry records for one point role."""
+
+    lon_col, lat_col = _resolve_point_columns(df, point=point, lon_col=None, lat_col=None)
+    id_col = "station" if point == "station" else "event_id"
+    columns = [column for column in (id_col, lon_col, lat_col) if column in df.columns]
+    return df.loc[:, columns].dropna(subset=[lon_col, lat_col]).drop_duplicates().reset_index(drop=True)
+
+
+def _unique_path_records(df: pd.DataFrame) -> pd.DataFrame:
+    """Return unique event-station geometry records for path classification."""
+
+    event_lon, event_lat = _resolve_point_columns(df, point="event", lon_col=None, lat_col=None)
+    station_lon, station_lat = _resolve_point_columns(df, point="station", lon_col=None, lat_col=None)
+    columns = [column for column in ("event_id", "station", event_lon, event_lat, station_lon, station_lat) if column in df.columns]
+    return df.loc[:, columns].dropna(subset=[event_lon, event_lat, station_lon, station_lat]).drop_duplicates().reset_index(drop=True)
+
+
+def _geojson_label_count_table(
+    labels: pd.Series,
+    *,
+    relation: str,
+    source_rows: int,
+    unique_records: int,
+) -> pd.DataFrame:
+    """Count GeoJSON labels with an explicit outside bin."""
+
+    clean = labels.fillna("").astype(str).str.strip()
+    outside_count = int(clean.eq("").sum())
+    inside = clean.loc[clean.ne("")].str.split(";").explode().astype(str).str.strip()
+    inside = inside.loc[inside.ne("")]
+    counts = inside.value_counts().rename_axis("region").reset_index(name="count")
+    if outside_count:
+        counts = pd.concat([counts, pd.DataFrame([{"region": "outside", "count": outside_count}])], ignore_index=True)
+    if counts.empty:
+        counts = pd.DataFrame([{"region": "outside", "count": 0}])
+    counts["relation"] = relation
+    counts["source_rows"] = int(source_rows)
+    counts["unique_records"] = int(unique_records)
+    return counts.loc[:, ["relation", "region", "count", "unique_records", "source_rows"]]
+
+
+def _geojson_error_row(relation: str, *, source_rows: int, message: str) -> pd.DataFrame:
+    """Return one GeoJSON summary error row."""
+
+    return pd.DataFrame(
+        [
+            {
+                "relation": relation,
+                "region": "error",
+                "count": 0,
+                "unique_records": 0,
+                "source_rows": int(source_rows),
+                "message": message,
+            }
+        ]
+    )
+
+
+def _progress(enabled: bool, message: str) -> None:
+    """Print one flushed progress line when enabled."""
+
+    if enabled:
+        print(message, flush=True)
 
 
 def _maybe_write_csv(df: pd.DataFrame, *, savecsv: bool, outpath: str | Path | None) -> None:

@@ -16,6 +16,7 @@ from spatial_vtk.spatial.calculate import (
     add_geojson_metadata_to_metrics,
     annotate_points_with_geojson,
     apply_geojson_path_control,
+    build_geojson_region_summary,
     build_boundary_corridors,
     build_station_edge_corridors,
     classify_records_by_corridors,
@@ -94,6 +95,15 @@ def test_geojson_point_and_path_controls_are_general(tmp_path):
     assert set(summary["geojson_label"]) == {"West Basin", "East Block"}
     assert summary["n"].sum() == 2
     assert summary_path.exists()
+
+    region_summary = build_geojson_region_summary(pd.concat([metrics, metrics], ignore_index=True), geojson, verbose=True)
+    station_rows = region_summary.loc[region_summary["relation"] == "station_inside"]
+    event_rows = region_summary.loc[region_summary["relation"] == "event_inside"]
+    path_rows = region_summary.loc[region_summary["relation"] == "crosses_boundary"]
+    assert int(station_rows["unique_records"].max()) == 3
+    assert int(event_rows["unique_records"].max()) == 3
+    assert int(path_rows["unique_records"].max()) == 3
+    assert "outside" in set(station_rows["region"])
 
 
 def test_geojson_no_overlap_error_is_clear(tmp_path):
