@@ -211,21 +211,46 @@ def plan_metric_tasks(
             raise ValueError("Observed and synthetic inventories are both required when require_source_overlap is true.")
         obs, syn = _filter_inventories_for_overlap(obs, syn, scope=overlap_scope)
     metrics = resolve_metric_names(plan.metrics, plan.metric_groups)
+    passband_metrics, spectral_metrics = _split_passband_and_spectral_metrics(metrics)
     passbands = plan.passbands or ((None, None),)
     tasks: list[MetricWorkflowTask] = []
 
     if output_mode == "observed":
         source_rows = _filter_inventory(obs, components=plan.components, models=())
         for _, obs_row in source_rows.iterrows():
-            for period_min_s, period_max_s in passbands:
-                tasks.append(_task_from_rows(obs_row, None, plan, metrics, period_min_s, period_max_s, use_qc, spectral_relative_amplitude_threshold, spectral_min_cycles_in_record, disable_spectral_relative_amplitude_qc))
+            tasks.extend(
+                _tasks_for_metric_families(
+                    obs_row,
+                    None,
+                    plan,
+                    passband_metrics,
+                    spectral_metrics,
+                    passbands,
+                    use_qc,
+                    spectral_relative_amplitude_threshold,
+                    spectral_min_cycles_in_record,
+                    disable_spectral_relative_amplitude_qc,
+                )
+            )
         return tasks
 
     if output_mode == "synthetic":
         source_rows = _filter_inventory(syn, components=plan.components, models=plan.models)
         for _, syn_row in source_rows.iterrows():
-            for period_min_s, period_max_s in passbands:
-                tasks.append(_task_from_rows(None, syn_row, plan, metrics, period_min_s, period_max_s, use_qc, spectral_relative_amplitude_threshold, spectral_min_cycles_in_record, disable_spectral_relative_amplitude_qc))
+            tasks.extend(
+                _tasks_for_metric_families(
+                    None,
+                    syn_row,
+                    plan,
+                    passband_metrics,
+                    spectral_metrics,
+                    passbands,
+                    use_qc,
+                    spectral_relative_amplitude_threshold,
+                    spectral_min_cycles_in_record,
+                    disable_spectral_relative_amplitude_qc,
+                )
+            )
         return tasks
 
     if obs.empty or syn.empty:
@@ -236,8 +261,20 @@ def plan_metric_tasks(
     for _, obs_row in obs_rows.iterrows():
         candidates = syn_index.get((str(obs_row["event_id"]), str(obs_row["station"]), str(obs_row["component"])), [])
         for syn_row in candidates:
-            for period_min_s, period_max_s in passbands:
-                tasks.append(_task_from_rows(obs_row, syn_row, plan, metrics, period_min_s, period_max_s, use_qc, spectral_relative_amplitude_threshold, spectral_min_cycles_in_record, disable_spectral_relative_amplitude_qc))
+            tasks.extend(
+                _tasks_for_metric_families(
+                    obs_row,
+                    syn_row,
+                    plan,
+                    passband_metrics,
+                    spectral_metrics,
+                    passbands,
+                    use_qc,
+                    spectral_relative_amplitude_threshold,
+                    spectral_min_cycles_in_record,
+                    disable_spectral_relative_amplitude_qc,
+                )
+            )
     if use_qc and require_passing_qc_pairs and qc_table is not None:
         tasks = _filter_tasks_for_retained_qc_pairs(tasks, qc_table)
     return tasks
@@ -432,6 +469,68 @@ def _task_from_rows(
     return MetricWorkflowTask(task_id=task_id, **payload)
 
 
+def _tasks_for_metric_families(
+    obs_row: pd.Series | None,
+    syn_row: pd.Series | None,
+    plan: MetricPlan,
+    passband_metrics: tuple[str, ...],
+    spectral_metrics: tuple[str, ...],
+    passbands: tuple[tuple[float | None, float | None], ...],
+    use_qc: bool,
+    spectral_relative_amplitude_threshold: float,
+    spectral_min_cycles_in_record: float,
+    disable_spectral_relative_amplitude_qc: bool,
+) -> list[MetricWorkflowTask]:
+    """Build passband-dependent and broadband spectral tasks."""
+
+    tasks: list[MetricWorkflowTask] = []
+    if passband_metrics:
+        for period_min_s, period_max_s in passbands:
+            tasks.append(
+                _task_from_rows(
+                    obs_row,
+                    syn_row,
+                    plan,
+                    passband_metrics,
+                    period_min_s,
+                    period_max_s,
+                    use_qc,
+                    spectral_relative_amplitude_threshold,
+                    spectral_min_cycles_in_record,
+                    disable_spectral_relative_amplitude_qc,
+                )
+            )
+    if spectral_metrics:
+        tasks.append(
+            _task_from_rows(
+                obs_row,
+                syn_row,
+                plan,
+                spectral_metrics,
+                None,
+                None,
+                use_qc,
+                spectral_relative_amplitude_threshold,
+                spectral_min_cycles_in_record,
+                disable_spectral_relative_amplitude_qc,
+            )
+        )
+    return tasks
+
+
+def _split_passband_and_spectral_metrics(metrics: tuple[str, ...]) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Split metrics into passband-dependent and broadband spectral metrics."""
+
+    passband_metrics: list[str] = []
+    spectral_metrics: list[str] = []
+    for metric in metrics:
+        if metric_group_for(metric) == "spectral":
+            spectral_metrics.append(metric)
+        else:
+            passband_metrics.append(metric)
+    return tuple(passband_metrics), tuple(spectral_metrics)
+
+
 def _filter_inventory(df: pd.DataFrame, *, components: tuple[str, ...], models: tuple[str, ...]) -> pd.DataFrame:
     """Filter inventory rows by component and model."""
 
@@ -554,7 +653,11 @@ def _qc_side_keys(frame: pd.DataFrame, key_columns: list[str]) -> set[tuple[str,
 def _qc_task_keys(keys: set[tuple[str, str, str, str, str, str, str]]) -> set[tuple[str, str, str, str]]:
     """Collapse metric-level QC keys to metric task keys."""
 
-    return {(event_id, station, component, passband) for event_id, station, component, passband, *_ in keys}
+    task_keys: set[tuple[str, str, str, str]] = set()
+    for event_id, station, component, passband, metric_group, *_ in keys:
+        task_passband = "" if str(metric_group).strip().lower() == "spectral" else passband
+        task_keys.add((event_id, station, component, task_passband))
+    return task_keys
 
 
 def _task_key(task: MetricWorkflowTask) -> tuple[str, str, str, str]:

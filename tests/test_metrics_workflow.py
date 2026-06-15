@@ -79,8 +79,10 @@ def test_metric_workflow_runs_tasks_and_applies_side_specific_spectral_qc(tmp_pa
         spectral_min_cycles_in_record=1.0,
         disable_spectral_relative_amplitude_qc=True,
     )
-    assert len(tasks) == 1
-    assert tasks[0].metrics == ("PGA", "PSA", "original_cc")
+    assert [(task.metrics, task.passband) for task in tasks] == [
+        (("PGA", "original_cc"), ""),
+        (("PSA",), ""),
+    ]
 
     rows = run_metric_tasks(tasks)
     pga = rows.loc[rows["metric"].eq("PGA")].iloc[0]
@@ -104,6 +106,48 @@ def test_metric_workflow_runs_tasks_and_applies_side_specific_spectral_qc(tmp_pa
 
     psa_period_2 = rows.loc[rows["metric"].eq("PSA") & rows["period_s"].eq(2.0)].iloc[0]
     assert psa_period_2["comparison_qc_status"] == "pass"
+
+
+def test_metric_planning_calculates_spectral_metrics_once_across_passbands(tmp_path) -> None:
+    """PSA/FAS should be planned as broadband rows, not repeated per passband."""
+
+    dt = 0.01
+    time = np.arange(0.0, 5.0, dt)
+    obs_path = tmp_path / "obs.npz"
+    syn_path = tmp_path / "syn.npz"
+    _write_npz_waveform(obs_path, 2.0 * np.sin(2.0 * np.pi * time), station="ABC", channel="HNZ", sampling_rate=1.0 / dt)
+    _write_npz_waveform(syn_path, np.sin(2.0 * np.pi * time), station="ABC", channel="HNZ", sampling_rate=1.0 / dt)
+    plan = MetricPlan(
+        metrics=("PGA", "PSA"),
+        passbands=((1.0, 2.0), (2.0, 3.0)),
+        components=("Z",),
+        models=("m1",),
+        transforms=("log2_residual",),
+        output_mode="full",
+        spectral_periods_s=(1.0, 2.0),
+        disable_spectral_relative_amplitude_qc=True,
+    )
+    obs_inventory = pd.DataFrame(
+        {"event_id": ["e1"], "station": ["ABC"], "component": ["Z"], "waveform_path": [obs_path], "dt": [dt]}
+    )
+    syn_inventory = pd.DataFrame(
+        {"event_id": ["e1"], "station": ["ABC"], "component": ["Z"], "model": ["m1"], "waveform_path": [syn_path], "dt": [dt]}
+    )
+
+    tasks = plan_metric_tasks(obs_inventory, syn_inventory, plan=plan, use_qc=False)
+    rows = run_metric_tasks(tasks)
+
+    assert [(task.metrics, task.passband) for task in tasks] == [
+        (("PGA",), "1-2 sec"),
+        (("PGA",), "2-3 sec"),
+        (("PSA",), ""),
+    ]
+    pga_rows = rows.loc[rows["metric"].eq("PGA")]
+    psa_rows = rows.loc[rows["metric"].eq("PSA")]
+    assert sorted(pga_rows["passband"].unique()) == ["1-2 sec", "2-3 sec"]
+    assert psa_rows["passband"].unique().tolist() == [""]
+    assert sorted(psa_rows["period_s"].dropna().unique()) == [1.0, 2.0]
+    assert len(psa_rows) == 2
 
 
 def test_metric_task_planning_can_restrict_source_specific_modes_to_overlap(tmp_path) -> None:
@@ -232,6 +276,56 @@ def test_metric_task_planning_defaults_to_retained_qc_pairs(tmp_path) -> None:
 
     assert [(task.event_id, task.station, task.component, task.passband) for task in retained_tasks] == [("e1", "S1", "Z", "")]
     assert [(task.event_id, task.station) for task in all_tasks] == [("e1", "S1"), ("e1", "S2")]
+
+
+def test_metric_task_planning_retains_spectral_qc_as_broadband_task(tmp_path) -> None:
+    """Spectral QC pass rows should retain one broadband spectral task."""
+
+    obs_inventory = pd.DataFrame(
+        {"event_id": ["e1"], "station": ["S1"], "component": ["Z"], "waveform_path": [tmp_path / "obs.npz"], "dt": [0.01]}
+    )
+    syn_inventory = pd.DataFrame(
+        {"event_id": ["e1"], "station": ["S1"], "component": ["Z"], "model": ["m1"], "waveform_path": [tmp_path / "syn.npz"], "dt": [0.01]}
+    )
+    plan = MetricPlan(
+        metrics=("PSA",),
+        passbands=((1.0, 2.0), (2.0, 3.0)),
+        components=("Z",),
+        models=("m1",),
+        transforms=("log2_residual",),
+        output_mode="full",
+        spectral_periods_s=(1.0,),
+    )
+    qc_table = pd.DataFrame(
+        [
+            {
+                "source": "observed",
+                "event_id": "e1",
+                "station": "S1",
+                "component": "Z",
+                "passband": "1-2 sec",
+                "metric_group": "spectral",
+                "metric": "PSA",
+                "period_s": 1.0,
+                "qc_status": "pass",
+            },
+            {
+                "source": "synthetic",
+                "event_id": "e1",
+                "station": "S1",
+                "component": "Z",
+                "passband": "1-2 sec",
+                "metric_group": "spectral",
+                "metric": "PSA",
+                "period_s": 1.0,
+                "qc_status": "pass",
+            },
+        ]
+    )
+
+    tasks = plan_metric_tasks(obs_inventory, syn_inventory, plan=plan, qc_table=qc_table)
+
+    assert [(task.metrics, task.passband) for task in tasks] == [(("PSA",), "")]
 
 
 def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> None:
