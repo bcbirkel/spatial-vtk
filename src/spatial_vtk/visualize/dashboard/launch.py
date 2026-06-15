@@ -35,6 +35,7 @@ def launch_metrics_dashboard(
     *,
     metrics_root: str | Path,
     summary_root: str | Path,
+    config_path: str | Path | None = None,
     server_address: str = "127.0.0.1",
     server_port: int = 8501,
     show: bool = True,
@@ -45,6 +46,8 @@ def launch_metrics_dashboard(
     env = os.environ.copy()
     env["SVTK_METRICS_ROOT"] = str(Path(metrics_root).expanduser())
     env["SVTK_SUMMARY_ROOT"] = str(Path(summary_root).expanduser())
+    if config_path is not None:
+        env["SVTK_CONFIG_FILE"] = str(Path(config_path).expanduser())
     return launch_streamlit_dashboard(_entrypoint("streamlit_metrics.py"), server_address=server_address, server_port=server_port, show=show, extra_args=extra_args, env=env)
 
 

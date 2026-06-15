@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -326,6 +327,41 @@ metrics:
     assert "Wrote metric Slurm script" in captured.out
     assert "No job was submitted" in captured.out
     assert script.exists()
+
+
+def test_cli_dashboard_metrics_uses_configured_output_roots(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    launched = {}
+
+    class FakeProcess:
+        pid = 12345
+
+    def fake_launch_metrics_dashboard(**kwargs):
+        launched.update(kwargs)
+        return FakeProcess()
+
+    monkeypatch.setattr(
+        "spatial_vtk.visualize.dashboard.launch_metrics_dashboard",
+        fake_launch_metrics_dashboard,
+    )
+
+    assert main(["dashboard", "metrics", "--config", str(config), "--port", "8555"]) == 0
+
+    captured = capsys.readouterr()
+    assert "Metrics dashboard data:" in captured.out
+    assert Path(launched["metrics_root"]) == tmp_path / "outputs" / "tables" / "dashboard_metrics"
+    assert Path(launched["summary_root"]) == tmp_path / "outputs" / "tables" / "dashboard_summaries"
+    assert Path(launched["config_path"]) == config.resolve()
+    assert launched["server_port"] == 8555
 
 
 def test_cli_call_importable_function(capsys):

@@ -446,8 +446,18 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     dashboard_sub = dashboard.add_subparsers(dest="dashboard_command", required=True)
 
     metrics = dashboard_sub.add_parser("metrics", help="Launch the metrics Streamlit dashboard.")
-    metrics.add_argument("--metrics-root", required=True, help="Dashboard metric dataset root.")
-    metrics.add_argument("--summary-root", required=True, help="Dashboard summary dataset root.")
+    metrics.add_argument("--config", default=None, help="Spatial-VTK config used to find default dashboard outputs.")
+    metrics.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    metrics.add_argument(
+        "--metrics-root",
+        default=None,
+        help="Dashboard-ready long metric dataset directory, usually outputs/tables/dashboard_metrics from 'svtk metrics outputs'.",
+    )
+    metrics.add_argument(
+        "--summary-root",
+        default=None,
+        help="Dashboard summary table directory, usually outputs/tables/dashboard_summaries from 'svtk metrics outputs'.",
+    )
     metrics.add_argument("--port", type=int, default=8501, help="Streamlit server port.")
     metrics.add_argument("--address", default="127.0.0.1", help="Streamlit server address.")
     metrics.add_argument("--show", action="store_true", help="Open Streamlit in a browser when supported.")
@@ -618,6 +628,34 @@ def _optional_cli_config(config_path: str | None = None, *, run_scenario: str | 
     if path is None and not run_scenario:
         return None
     return SpatialVTKConfig.from_file(path, run_scenario=run_scenario)
+
+
+def _resolve_metrics_dashboard_paths(
+    *,
+    metrics_root: str | None,
+    summary_root: str | None,
+    config_path: str | None,
+    run_scenario: str | None,
+) -> tuple[Path, Path, str | None]:
+    """Resolve metrics dashboard dataset and summary directories."""
+
+    if metrics_root and summary_root:
+        resolved_config_path = _effective_config_path(config_path)
+        return Path(metrics_root).expanduser(), Path(summary_root).expanduser(), resolved_config_path
+
+    from spatial_vtk.config import resolve_output_path
+
+    config = _optional_cli_config(config_path, run_scenario=run_scenario)
+    if config is None:
+        raise ValueError(
+            "No dashboard roots were provided and no Spatial-VTK config was found. "
+            "Pass --metrics-root/--summary-root, pass --config, or run 'svtk config set CONFIG_PATH'."
+        )
+    table_root = resolve_output_path("metrics_long", kind="table", cfg=config).parent
+    resolved_metrics_root = Path(metrics_root).expanduser() if metrics_root else table_root / "dashboard_metrics"
+    resolved_summary_root = Path(summary_root).expanduser() if summary_root else table_root / "dashboard_summaries"
+    resolved_config_path = str(config.config_path) if config.config_path is not None else None
+    return resolved_metrics_root, resolved_summary_root, resolved_config_path
 
 
 def _cmd_io_prepare_stations(args: argparse.Namespace) -> int:
@@ -939,7 +977,22 @@ def _cmd_dashboard_metrics(args: argparse.Namespace) -> int:
 
     from spatial_vtk.visualize.dashboard import launch_metrics_dashboard
 
-    process = launch_metrics_dashboard(metrics_root=args.metrics_root, summary_root=args.summary_root, server_address=args.address, server_port=args.port, show=args.show)
+    metrics_root, summary_root, config_path = _resolve_metrics_dashboard_paths(
+        metrics_root=args.metrics_root,
+        summary_root=args.summary_root,
+        config_path=args.config,
+        run_scenario=args.run_scenario,
+    )
+    process = launch_metrics_dashboard(
+        metrics_root=metrics_root,
+        summary_root=summary_root,
+        config_path=config_path,
+        server_address=args.address,
+        server_port=args.port,
+        show=args.show,
+    )
+    print(f"Metrics dashboard data: {metrics_root}")
+    print(f"Metrics dashboard summaries: {summary_root}")
     print(f"Metrics dashboard running at http://{args.address}:{args.port} (pid {process.pid})")
     return 0
 

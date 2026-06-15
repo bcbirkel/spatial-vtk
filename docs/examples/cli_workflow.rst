@@ -315,8 +315,6 @@ Write dashboard-ready Parquet datasets and launch the Streamlit dashboard apps.
      --dashboard-partitioned
 
    svtk dashboard metrics \
-     --metrics-root "$TABLES/dashboard_metrics" \
-     --summary-root "$TABLES/dashboard_summaries" \
      --port 8501
 
    svtk dashboard qc \
