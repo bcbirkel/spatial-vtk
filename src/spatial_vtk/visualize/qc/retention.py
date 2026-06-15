@@ -233,6 +233,9 @@ def plot_event_station_retention_heatmap(
     total_col: str = "total_pairs",
     title: str = "Event-Station Pair Retention",
     show_counts: bool = True,
+    max_count_labels: int = 2500,
+    max_tick_labels: int = 80,
+    max_figsize: tuple[float, float] = (18.0, 12.0),
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
@@ -256,6 +259,18 @@ def plot_event_station_retention_heatmap(
         Figure title.
     show_counts
         Whether to label each cell with retained/total pair counts.
+        Labels are automatically skipped when the heatmap contains more than
+        ``max_count_labels`` populated cells.
+    max_count_labels
+        Maximum number of heatmap cells that may receive retained/total text.
+        This keeps large production runs from spending minutes to hours placing
+        unreadable labels.
+    max_tick_labels
+        Maximum event/station tick labels to draw on each axis before labels
+        are thinned.
+    max_figsize
+        Maximum figure size in inches. Large datasets are drawn as a dense
+        raster instead of creating one huge Matplotlib canvas.
     showfig, savefig
         Standard display/save flags.
 
@@ -269,16 +284,17 @@ def plot_event_station_retention_heatmap(
     df = retention_df.copy()
     df[value_col] = pd.to_numeric(df[value_col], errors="coerce")
     matrix = df.pivot_table(index=station_col, columns=event_col, values=value_col, aggfunc="mean", fill_value=np.nan)
-    fig, ax = plt.subplots(figsize=(max(6.8, 0.42 * matrix.shape[1] + 3.2), max(4.8, 0.24 * matrix.shape[0] + 2.0)), dpi=180)
+    width = min(float(max_figsize[0]), max(6.8, 0.42 * matrix.shape[1] + 3.2))
+    height = min(float(max_figsize[1]), max(4.8, 0.24 * matrix.shape[0] + 2.0))
+    fig, ax = plt.subplots(figsize=(width, height), dpi=180)
     image = ax.imshow(matrix.to_numpy(dtype=float), aspect="auto", cmap="viridis", vmin=0.0, vmax=100.0)
-    ax.set_xticks(np.arange(matrix.shape[1]))
-    ax.set_xticklabels(matrix.columns.astype(str), rotation=45, ha="right", fontsize=8)
-    ax.set_yticks(np.arange(matrix.shape[0]))
-    ax.set_yticklabels(matrix.index.astype(str), fontsize=8)
+    _set_sparse_tick_labels(ax, axis="x", labels=matrix.columns.astype(str), max_labels=max_tick_labels)
+    _set_sparse_tick_labels(ax, axis="y", labels=matrix.index.astype(str), max_labels=max_tick_labels)
     ax.set_xlabel("Event")
     ax.set_ylabel("Station")
     ax.set_title(title)
-    if show_counts and {retained_col, total_col} <= set(df.columns):
+    cell_count = int(matrix.shape[0] * matrix.shape[1])
+    if show_counts and cell_count <= int(max_count_labels) and {retained_col, total_col} <= set(df.columns):
         counts = df.pivot_table(
             index=station_col,
             columns=event_col,
@@ -308,6 +324,34 @@ def plot_event_station_retention_heatmap(
         showfig=showfig,
         savefig=savefig,
     )
+
+
+def _set_sparse_tick_labels(
+    ax: plt.Axes,
+    *,
+    axis: str,
+    labels: pd.Index,
+    max_labels: int,
+) -> None:
+    """Set axis tick labels, thinning dense axes for large heatmaps."""
+
+    total = len(labels)
+    if total == 0:
+        if axis == "x":
+            ax.set_xticks([])
+        else:
+            ax.set_yticks([])
+        return
+    limit = max(1, int(max_labels))
+    step = max(1, math.ceil(total / limit))
+    positions = np.arange(0, total, step)
+    text = labels[positions]
+    if axis == "x":
+        ax.set_xticks(positions)
+        ax.set_xticklabels(text, rotation=45, ha="right", fontsize=8)
+    else:
+        ax.set_yticks(positions)
+        ax.set_yticklabels(text, fontsize=8)
 
 
 def plot_post_qc_station_event_map(
