@@ -15,14 +15,9 @@ Plan and run metric tasks from Python:
 
 from __future__ import annotations
 
-from spatial_vtk.metrics.workflow.execution import (
-    MetricWorkflowManifest,
-    chunk_tasks,
-    merge_batch_outputs,
-    read_task_manifest,
-    run_manifest_batch,
-    write_task_manifest,
-)
+from importlib import import_module
+from typing import Any
+
 from spatial_vtk.metrics.workflow.outputs import (
     prepare_metric_workflow_outputs,
     write_metric_outputs,
@@ -49,6 +44,15 @@ from spatial_vtk.metrics.workflow.tasks import (
 )
 
 
+_EXECUTION_EXPORTS = {
+    "MetricWorkflowManifest",
+    "chunk_tasks",
+    "merge_batch_outputs",
+    "read_task_manifest",
+    "run_manifest_batch",
+    "write_task_manifest",
+}
+
 __all__ = [
     "MetricWorkflowManifest",
     "MetricWorkflowTask",
@@ -73,3 +77,13 @@ __all__ = [
     "write_metrics_slurm_script",
     "write_task_manifest",
 ]
+
+
+def __getattr__(name: str) -> Any:
+    """Load execution helpers lazily to keep ``python -m`` execution clean."""
+
+    if name in _EXECUTION_EXPORTS:
+        value = getattr(import_module("spatial_vtk.metrics.workflow.execution"), name)
+        globals()[name] = value
+        return value
+    raise AttributeError(f"module 'spatial_vtk.metrics.workflow' has no attribute {name!r}")
