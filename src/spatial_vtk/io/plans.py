@@ -31,6 +31,11 @@ class MetricPlan:
         Synthetic model aliases or names.
     output_path
         Optional output path for the metric table.
+    require_source_overlap
+        Whether source-specific metric plans should keep only records with
+        observed/synthetic overlap.
+    source_overlap_scope
+        Scope for observed/synthetic overlap filtering.
 
     Returns
     -------
@@ -50,6 +55,8 @@ class MetricPlan:
     waveform_lowpass_hz: float | None = None
     waveform_resample_hz: float | None = None
     waveform_filter_order: int | None = None
+    require_source_overlap: bool = False
+    source_overlap_scope: str = "event"
     output_path: Path | None = None
 
     @property
@@ -120,6 +127,8 @@ def metric_plan_from_config(
         waveform_lowpass_hz=_optional_float(waveform_cfg.get("lowpass_hz")),
         waveform_resample_hz=_optional_float(waveform_cfg.get("resample_hz") or waveform_cfg.get("target_sampling_rate_hz")),
         waveform_filter_order=_optional_int(waveform_cfg.get("filter_order")),
+        require_source_overlap=settings.require_source_overlap,
+        source_overlap_scope=settings.source_overlap_scope,
         output_path=output_path,
     )
 

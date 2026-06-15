@@ -62,6 +62,10 @@ Step 2: Quality Control
 -----------------------
 
 Build waveform and metric QC tables, export comparison-ready rows, make QC figures, and launch the QC dashboard.
+Set ``metrics.require_source_overlap: true`` in the config when metric QC and
+metric calculation should ignore events that do not have both observed and
+synthetic data. Waveform QC can still inspect all configured source data before
+that comparison-only filter is applied.
 
 .. code-block:: bash
 
@@ -74,7 +78,7 @@ Build waveform and metric QC tables, export comparison-ready rows, make QC figur
      --output "$TRACE_QC"
 
    svtk call spatial_vtk.qc.build_metric_qc_summary \
-     --kwargs event_station_records="$EVENT_STATIONS" metrics='[PGA, PGV, PGD, PSA, FAS]' components='[Z, R, T]' passbands='[[1, 2], [2, 3]]' spectral_periods_s='[1.0, 2.0, 3.0, 5.0]' synthetic_max_frequency_hz=1.0 trace_qc_summary="$TRACE_QC" \
+     --kwargs event_station_records="$EVENT_STATIONS" metrics='[PGA, PGV, PGD, PSA, FAS]' components='[Z, R, T]' passbands='[[1, 2], [2, 3]]' spectral_periods_s='[1.0, 2.0, 3.0, 5.0]' synthetic_max_frequency_hz=1.0 require_source_overlap=true source_overlap_scope=event trace_qc_summary="$TRACE_QC" \
      --output "$QC_INVENTORY"
 
    svtk call spatial_vtk.qc.build_comparison_eligibility \

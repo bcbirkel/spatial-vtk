@@ -97,6 +97,13 @@ metrics:
   # Output mode options: observed, synthetic, residual, gof, full.
   output_mode: full
 
+  # When true, metric QC and source-specific metric planning skip events that
+  # do not have both observed and synthetic data. Waveform QC can still inspect
+  # all configured observed/synthetic files before this filter is applied.
+  require_source_overlap: false
+  # Overlap scope options: event, event_station.
+  source_overlap_scope: event
+
   # Component examples: Z, N, E, R, T.
   components: [R, T, Z]
 
@@ -186,6 +193,8 @@ run_scenarios:
       groups: [amplitude, spectral]
       transforms: [log2_residual, anderson_2004_gof]
       output_mode: full
+      require_source_overlap: true
+      source_overlap_scope: event
       components: [Z, R, T]
       models: [cvmsi_20260506_material_0p6x1p2_asdf]
       passbands:

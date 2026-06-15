@@ -39,6 +39,7 @@ from spatial_vtk.qc.build.workflow import (
     build_qc_waveform_comparison_records,
     build_waveform_qc_summary,
     export_manual_review_queue_from_qc_inventory,
+    filter_event_station_records_for_source_overlap,
     load_comparison_eligible_records,
     write_comparison_eligibility_from_qc_inventory,
 )
@@ -473,6 +474,61 @@ def test_event_station_pair_retention_table_counts_across_metrics() -> None:
     assert e2_s1["retention_percent"] == pytest.approx(100.0)
 
 
+def test_source_overlap_filter_supports_event_and_event_station_scopes() -> None:
+    records = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1", "e2", "e3"],
+            "station": ["S1", "S2", "S1", "S1"],
+            "observed_processed_waveform": ["obs-e1-s1.pkl", "obs-e1-s2.pkl", "obs-e2-s1.pkl", ""],
+            "synthetic_processed_waveform": ["syn-e1-s1.pkl", "", "", "syn-e3-s1.pkl"],
+        }
+    )
+
+    event_scope = filter_event_station_records_for_source_overlap(records, scope="event")
+    event_station_scope = filter_event_station_records_for_source_overlap(records, scope="event_station")
+
+    assert event_scope[["event_id", "station"]].to_dict("records") == [
+        {"event_id": "e1", "station": "S1"},
+        {"event_id": "e1", "station": "S2"},
+    ]
+    assert event_station_scope[["event_id", "station"]].to_dict("records") == [
+        {"event_id": "e1", "station": "S1"}
+    ]
+
+
+def test_metric_qc_can_restrict_to_source_overlap() -> None:
+    records = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1", "e2"],
+            "station": ["S1", "S2", "S1"],
+            "observed_processed_waveform": ["obs-e1-s1.pkl", "obs-e1-s2.pkl", "obs-e2-s1.pkl"],
+            "synthetic_processed_waveform": ["syn-e1-s1.pkl", "", ""],
+        }
+    )
+
+    event_qc = build_metric_qc_summary(
+        records,
+        metrics=["PGA"],
+        components=["Z"],
+        passbands=[[1.0, 2.0]],
+        require_source_overlap=True,
+        source_overlap_scope="event",
+    )
+    event_station_qc = build_metric_qc_summary(
+        records,
+        metrics=["PGA"],
+        components=["Z"],
+        passbands=[[1.0, 2.0]],
+        require_source_overlap=True,
+        source_overlap_scope="event_station",
+    )
+
+    assert set(event_qc["event_id"]) == {"e1"}
+    assert set(event_qc["station"]) == {"S1", "S2"}
+    assert set(event_station_qc["event_id"]) == {"e1"}
+    assert set(event_station_qc["station"]) == {"S1"}
+
+
 def test_large_qc_inventory_helpers_stream_event_station_chunks(tmp_path: Path) -> None:
     qc_summary = pd.DataFrame(
         [
@@ -545,6 +601,8 @@ def test_large_qc_inventory_helpers_stream_event_station_chunks(tmp_path: Path) 
         "Low SNR": 1,
         "Missing waveform file": 1,
     }
+    overlap_drop_causes = build_qc_drop_cause_table_from_qc_inventory(qc_path, event_ids=["e1"], chunksize=3)
+    assert overlap_drop_causes.set_index("_reason")["count"].to_dict() == {"Low SNR": 1}
 
     queue_path = tmp_path / "manual_queue.csv"
     export_manual_review_queue_from_qc_inventory(qc_path, queue_path, chunksize=3)

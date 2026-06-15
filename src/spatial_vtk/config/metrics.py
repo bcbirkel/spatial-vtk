@@ -97,6 +97,11 @@ class MetricSettings:
         Spectral settings for PSA/FAS.
     synthetic_max_frequency_hz
         Maximum valid synthetic frequency, if configured.
+    require_source_overlap
+        Whether metric-QC and metric planning should restrict work to records
+        with both observed and synthetic data.
+    source_overlap_scope
+        Scope for overlap filtering: ``"event"`` or ``"event_station"``.
 
     Returns
     -------
@@ -112,6 +117,8 @@ class MetricSettings:
     output_mode: str = DEFAULT_OUTPUT_MODE
     spectral: SpectralSettings = field(default_factory=SpectralSettings)
     synthetic_max_frequency_hz: float | None = None
+    require_source_overlap: bool = False
+    source_overlap_scope: str = "event"
 
 
 def metrics_settings_from_config(
@@ -169,6 +176,13 @@ def metrics_settings_from_config(
     components = _normalize_components(merged.get("components") or merged.get("component") or ("Z",))
     passbands = _normalize_passbands(merged.get("passbands") or merged.get("passband") or ())
     output_mode = _normalize_output_mode(merged.get("output_mode") or merged.get("mode") or DEFAULT_OUTPUT_MODE)
+    require_source_overlap = _as_bool(
+        merged.get(
+            "require_source_overlap",
+            merged.get("require_observed_synthetic_overlap", merged.get("overlap_only", False)),
+        )
+    )
+    source_overlap_scope = _normalize_source_overlap_scope(merged.get("source_overlap_scope", merged.get("overlap_scope", "event")))
     synthetic_max_frequency_hz = _optional_positive_float(
         merged.get("synthetic_max_frequency_hz", synthetic_cfg.get("max_frequency_hz"))
     )
@@ -189,6 +203,8 @@ def metrics_settings_from_config(
         output_mode=output_mode,
         spectral=spectral,
         synthetic_max_frequency_hz=synthetic_max_frequency_hz,
+        require_source_overlap=require_source_overlap,
+        source_overlap_scope=source_overlap_scope,
     )
 
 
@@ -220,6 +236,8 @@ def metric_settings_summary(settings: MetricSettings) -> pd.DataFrame:
         ("Components", ", ".join(settings.components)),
         ("Passbands", ", ".join(_format_passband(item) for item in settings.passbands) or "none"),
         ("Output mode", settings.output_mode),
+        ("Require source overlap", "yes" if settings.require_source_overlap else "no"),
+        ("Source overlap scope", settings.source_overlap_scope),
         ("Spectral periods", ", ".join(f"{period:g} s" for period in settings.spectral.periods_s) or "none"),
     ]
     if settings.synthetic_max_frequency_hz is not None:
@@ -305,6 +323,27 @@ def _normalize_output_mode(value: object) -> str:
     token = aliases.get(token, token)
     if token not in VALID_OUTPUT_MODES:
         raise ValueError(f"Unknown metric output mode {value!r}. Expected one of {VALID_OUTPUT_MODES}.")
+    return token
+
+
+def _normalize_source_overlap_scope(value: object) -> str:
+    """Normalize observed/synthetic overlap-filtering scope."""
+
+    token = str(value or "event").strip().lower().replace("-", "_")
+    aliases = {
+        "events": "event",
+        "event_id": "event",
+        "event_station_pair": "event_station",
+        "event_station_pairs": "event_station",
+        "event_station_record": "event_station",
+        "record": "event_station",
+        "records": "event_station",
+        "pair": "event_station",
+        "pairs": "event_station",
+    }
+    token = aliases.get(token, token)
+    if token not in {"event", "event_station"}:
+        raise ValueError("metrics.source_overlap_scope must be 'event' or 'event_station'.")
     return token
 
 

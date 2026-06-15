@@ -92,6 +92,9 @@ tables:
   qc_drop_causes:
     filename: qc_drop_causes.csv
     description: QC rejection reason counts
+  qc_drop_causes_overlap:
+    filename: qc_drop_causes_overlap.csv
+    description: QC rejection reason counts for overlapping observed/synthetic events
 
 figures:
   station_event_context:
@@ -127,6 +130,9 @@ figures:
   qc_drop_cause_diagnostics:
     filename: drop_cause_diagnostics.png
     description: QC drop-cause diagnostics
+  qc_drop_cause_diagnostics_overlap:
+    filename: drop_cause_diagnostics_overlap.png
+    description: QC drop-cause diagnostics for overlapping observed/synthetic events
   psa_period_curve:
     filename: psa_period_curve.png
     description: PSA period curve

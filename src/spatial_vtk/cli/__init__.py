@@ -365,6 +365,8 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     plan.add_argument("--model", action="append", dest="models", default=None, help="Synthetic model override. Repeat for multiple models.")
     plan.add_argument("--transform", action="append", dest="transforms", default=None, help="Metric transform override. Repeat for multiple transforms.")
     plan.add_argument("--output-mode", default=None, help="Metric output mode override.")
+    plan.add_argument("--require-source-overlap", action="store_true", help="Only plan metric tasks for events or event-station rows with both observed and synthetic data.")
+    plan.add_argument("--source-overlap-scope", choices=("event", "event_station"), default=None, help="Overlap scope for --require-source-overlap.")
     plan.add_argument("--output", required=True, help="Output task table or manifest path.")
     plan.add_argument("--manifest", action="store_true", help="Write a JSON manifest instead of a task table.")
     plan.add_argument("--batch-output-dir", default=None, help="Batch output directory when writing a manifest.")
@@ -736,6 +738,10 @@ def _metric_plan_overrides(args: argparse.Namespace) -> dict[str, Any]:
         overrides["transforms"] = args.transforms
     if getattr(args, "output_mode", None):
         overrides["output_mode"] = args.output_mode
+    if getattr(args, "require_source_overlap", False):
+        overrides["require_source_overlap"] = True
+    if getattr(args, "source_overlap_scope", None):
+        overrides["source_overlap_scope"] = args.source_overlap_scope
     return overrides
 
 

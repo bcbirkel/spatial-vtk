@@ -44,6 +44,7 @@ DEFAULT_FIGURE_NAMES: tuple[str, ...] = (
     "post_qc_station_event_map",
     "event_trace_comparison",
     "drop_cause_diagnostics",
+    "qc_drop_cause_diagnostics_overlap",
     "psa_period_curve",
     "residuals_vs_distance",
     "score_trends",

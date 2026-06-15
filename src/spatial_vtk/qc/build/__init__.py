@@ -51,6 +51,7 @@ from spatial_vtk.qc.build.workflow import (
     build_waveform_qc_summary,
     export_manual_review_queue,
     export_manual_review_queue_from_qc_inventory,
+    filter_event_station_records_for_source_overlap,
     load_comparison_eligible_records,
     write_comparison_eligibility_from_qc_inventory,
 )
@@ -106,6 +107,7 @@ __all__ = [
     "submit_qc_slurm_job",
     "export_manual_review_queue",
     "export_manual_review_queue_from_qc_inventory",
+    "filter_event_station_records_for_source_overlap",
     "load_comparison_eligible_records",
     "trace_has_any_accepted_passband",
     "trace_passband_is_accepted",

@@ -105,6 +105,42 @@ def test_metric_workflow_runs_tasks_and_applies_side_specific_spectral_qc(tmp_pa
     assert psa_period_2["comparison_qc_status"] == "pass"
 
 
+def test_metric_task_planning_can_restrict_source_specific_modes_to_overlap(tmp_path) -> None:
+    obs_inventory = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2"],
+            "station": ["ABC", "ABC"],
+            "component": ["Z", "Z"],
+            "waveform_path": [tmp_path / "obs1.npz", tmp_path / "obs2.npz"],
+            "dt": [0.01, 0.01],
+        }
+    )
+    syn_inventory = pd.DataFrame(
+        {
+            "event_id": ["e1"],
+            "station": ["ABC"],
+            "component": ["Z"],
+            "model": ["m1"],
+            "waveform_path": [tmp_path / "syn1.npz"],
+            "dt": [0.01],
+        }
+    )
+    plan = MetricPlan(
+        metrics=("PGA",),
+        passbands=(),
+        components=("Z",),
+        models=("m1",),
+        transforms=(),
+        output_mode="observed",
+        require_source_overlap=True,
+        source_overlap_scope="event",
+    )
+
+    tasks = plan_metric_tasks(obs_inventory, syn_inventory, plan=plan)
+
+    assert [task.event_id for task in tasks] == ["e1"]
+
+
 def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> None:
     """Manifest execution should run batches, merge outputs, and write SLURM scripts."""
 

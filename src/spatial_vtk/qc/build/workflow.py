@@ -253,6 +253,46 @@ def _metric_qc_completed_records_from_path(path: str | Path | None) -> tuple[set
     return _metric_qc_completed_records(checkpoint_rows), len(checkpoint_rows)
 
 
+def filter_event_station_records_for_source_overlap(
+    event_station_records: pd.DataFrame | str | Path,
+    *,
+    sources: Sequence[str] = ("observed", "synthetic"),
+    scope: str = "event",
+) -> pd.DataFrame:
+    """Keep event-station rows that have overlapping observed/synthetic data.
+
+    ``scope="event"`` keeps all station rows for events that have at least one
+    row with each requested source. ``scope="event_station"`` keeps only rows
+    where that specific event/station has every requested source.
+    """
+
+    records = _read_table(event_station_records).copy()
+    missing = [column for column in ("event_id", "station") if column not in records.columns]
+    if missing:
+        raise KeyError(f"event_station_records is missing required columns: {missing}")
+    records = records.drop_duplicates(["event_id", "station"]).copy()
+    if records.empty:
+        return records
+    scope_key = _normalize_source_overlap_scope(scope)
+    source_keys = tuple(str(source).strip().lower() for source in sources if str(source).strip())
+    availability = records.loc[:, ["event_id", "station"]].copy()
+    availability["event_id"] = availability["event_id"].astype(str)
+    availability["station"] = availability["station"].astype(str).str.strip().str.upper()
+    for source in source_keys:
+        availability[f"__has_{source}"] = records.apply(lambda row: _record_has_source_data(row, source), axis=1).astype(bool)
+    source_columns = [f"__has_{source}" for source in source_keys]
+    if not source_columns:
+        return records.reset_index(drop=True)
+    if scope_key == "event":
+        event_status = availability.groupby("event_id", dropna=False)[source_columns].any()
+        keep_events = event_status.loc[event_status.all(axis=1)].index.astype(str)
+        out = records.loc[records["event_id"].astype(str).isin(keep_events)].copy()
+    else:
+        keep_mask = availability[source_columns].all(axis=1)
+        out = records.loc[keep_mask.to_numpy()].copy()
+    return out.reset_index(drop=True)
+
+
 def build_metric_qc_summary(
     event_station_records: pd.DataFrame | str | Path,
     *,
@@ -264,6 +304,8 @@ def build_metric_qc_summary(
     synthetic_max_frequency_hz: float | None = None,
     observed_available: bool = True,
     synthetic_available: bool = True,
+    require_source_overlap: bool = False,
+    source_overlap_scope: str = "event",
     trace_qc_summary: pd.DataFrame | str | Path | None = None,
     verbose: bool = False,
     progress_interval: int = 25,
@@ -290,6 +332,13 @@ def build_metric_qc_summary(
     observed_available, synthetic_available
         Default availability values when the input table does not include
         source-specific availability columns.
+    require_source_overlap
+        When true, metric QC is generated only for event-station records whose
+        event or event-station has both observed and synthetic data.
+    source_overlap_scope
+        ``"event"`` keeps all records for events that have both sources
+        somewhere. ``"event_station"`` keeps only rows where that specific
+        event/station has both sources.
     trace_qc_summary
         Optional side-specific waveform QC table. When provided, failed
         source/event/station/component/passband rows fail matching metric rows.
@@ -318,6 +367,14 @@ def build_metric_qc_summary(
     progress_start = time.monotonic()
     _progress(verbose, "Metric QC: loading event-station records")
     records = _read_table(event_station_records).drop_duplicates(["event_id", "station"])
+    if require_source_overlap:
+        before_count = len(records)
+        records = filter_event_station_records_for_source_overlap(records, scope=source_overlap_scope)
+        _progress(
+            verbose,
+            f"Metric QC: source-overlap filter kept {len(records)}/{before_count} "
+            f"event-station {_plural(before_count, 'record')} (scope={source_overlap_scope})",
+        )
     _progress(verbose, f"Metric QC: loaded {len(records)} event-station record(s)")
     trace_qc = _trace_qc_lookup(trace_qc_summary, verbose=verbose)
     source_defaults = {
@@ -365,19 +422,36 @@ def build_metric_qc_summary(
     else:
         _progress(verbose, f"Metric QC: checkpoint path {Path(checkpoint_path).expanduser()}")
     if completed_records:
-        completed_count = min(len(completed_records), total_records)
-        remaining_count = max(total_records - completed_count, 0)
-        _progress(
-            verbose,
-            f"Metric QC: resuming with {completed_count} completed "
-            f"{_plural(completed_count, 'event-station record')} "
-            f"({completed_count}/{total_records} complete; {remaining_count} "
-            f"new {_plural(remaining_count, 'record')} remaining)",
-        )
-        if remaining_count == 0:
-            _progress(verbose, "Metric QC: checkpoint already complete; returning cached rows")
-            return pd.DataFrame(rows)
-    elif checkpoint_path is not None:
+        target_keys = {
+            (str(row["event_id"]).strip(), str(row["station"]).strip().upper())
+            for _, row in records.loc[:, ["event_id", "station"]].iterrows()
+        }
+        extra_completed = completed_records - target_keys
+        if require_source_overlap and extra_completed and checkpoint_path is not None:
+            _progress(
+                verbose,
+                f"Metric QC: checkpoint contains {len(extra_completed)} non-overlap completed "
+                f"{_plural(len(extra_completed), 'record')}; resetting {Path(checkpoint_path).expanduser()}",
+            )
+            _reset_qc_checkpoint(checkpoint_path)
+            checkpoint = pd.DataFrame()
+            rows = []
+            completed_records = set()
+            checkpoint_row_count = 0
+        else:
+            completed_count = min(len(completed_records), total_records)
+            remaining_count = max(total_records - completed_count, 0)
+            _progress(
+                verbose,
+                f"Metric QC: resuming with {completed_count} completed "
+                f"{_plural(completed_count, 'event-station record')} "
+                f"({completed_count}/{total_records} complete; {remaining_count} "
+                f"new {_plural(remaining_count, 'record')} remaining)",
+            )
+            if remaining_count == 0:
+                _progress(verbose, "Metric QC: checkpoint already complete; returning cached rows")
+                return pd.DataFrame(rows)
+    if not completed_records and checkpoint_path is not None:
         _progress(verbose, "Metric QC: no completed event-station records found; all work is new")
     for record_index, (_, record) in enumerate(records.iterrows(), start=1):
         if record_index == 1 or record_index % interval == 0 or record_index == total_records:
@@ -1077,6 +1151,7 @@ def build_qc_drop_cause_table_from_qc_inventory(
     status_col: str = "qc_status",
     fail_values: Sequence[str] = ("fail", "failed", "reject", "rejected"),
     group_col: str | None = None,
+    event_ids: Sequence[str] | pd.Series | None = None,
     max_reasons: int = 12,
     chunksize: int = 1_000_000,
     verbose: bool = False,
@@ -1084,6 +1159,13 @@ def build_qc_drop_cause_table_from_qc_inventory(
     """Summarize QC rejection reasons from a large inventory in chunks."""
 
     usecols = [reason_col, status_col]
+    if event_ids is None:
+        event_filter = None
+    else:
+        raw_event_ids = [event_ids] if isinstance(event_ids, str) else list(event_ids)
+        event_filter = {str(value).strip() for value in raw_event_ids if str(value).strip()}
+    if event_filter is not None:
+        usecols.append("event_id")
     if group_col:
         usecols.append(group_col)
     fail_set = {str(value).strip().lower() for value in fail_values}
@@ -1092,6 +1174,13 @@ def build_qc_drop_cause_table_from_qc_inventory(
         missing = [column for column in (reason_col, status_col) if column not in chunk.columns]
         if missing:
             raise KeyError(f"QC summary is missing required columns: {missing}")
+        if event_filter is not None:
+            if "event_id" not in chunk.columns:
+                raise KeyError("QC summary is missing required column: 'event_id'")
+            chunk = chunk.loc[chunk["event_id"].astype(str).isin(event_filter)]
+            if chunk.empty:
+                _progress(verbose, f"QC drop causes: chunk {index} had no overlapping-event rows")
+                continue
         work = chunk.loc[chunk[status_col].fillna("").astype(str).str.strip().str.lower().isin(fail_set)].copy()
         if work.empty:
             _progress(verbose, f"QC drop causes: chunk {index} had no failed rows")
@@ -1585,7 +1674,97 @@ def _source_available(record: pd.Series, source: str, *, default: bool) -> bool:
             if pd.isna(value):
                 return default
             return str(value).strip().lower() not in {"0", "false", "no", "n", "missing", "nan", ""}
+    path_columns = _source_waveform_path_columns(record.index, source)
+    if path_columns:
+        return any(_nonempty_path_value(record.get(column)) for column in path_columns)
     return default
+
+
+def _record_has_source_data(record: pd.Series, source: str) -> bool:
+    """Return whether one row has data for a source."""
+
+    candidates = [f"{source}_available", f"{source}_exists", f"has_{source}"]
+    for column in candidates:
+        if column in record.index:
+            value = record.get(column)
+            if pd.isna(value):
+                return False
+            return str(value).strip().lower() not in {"0", "false", "no", "n", "missing", "nan", ""}
+    path_columns = _source_waveform_path_columns(record.index, source)
+    if not path_columns:
+        return True
+    return any(_nonempty_path_value(record.get(column)) for column in path_columns)
+
+
+def _source_waveform_path_columns(columns: Sequence[str], source: str) -> list[str]:
+    """Return likely waveform path columns for one source."""
+
+    source_key = str(source).strip().lower()
+    aliases = {
+        "observed": ("observed", "obs"),
+        "synthetic": ("synthetic", "syn"),
+    }.get(source_key, (source_key,))
+    explicit = []
+    for alias in aliases:
+        explicit.extend(
+            [
+                f"{alias}_processed_waveform",
+                f"{alias}_raw_waveform",
+                f"{alias}_waveform",
+                f"{alias}_waveform_path",
+                f"{alias}_path",
+                f"{alias}_mseed",
+                f"{alias}_pickle",
+            ]
+        )
+    present = [column for column in explicit if column in columns]
+    if present:
+        return present
+    out: list[str] = []
+    for column in columns:
+        text = str(column).strip().lower()
+        if not any(text.startswith(f"{alias}_") for alias in aliases):
+            continue
+        if "preprocessing" in text:
+            continue
+        if any(token in text for token in ("path", "waveform", "mseed", "pickle", "pkl", "asdf")):
+            out.append(str(column))
+    return out
+
+
+def _nonempty_path_value(value: object) -> bool:
+    """Return whether a table cell contains a plausible non-empty path."""
+
+    if value is None:
+        return False
+    try:
+        if pd.isna(value):
+            return False
+    except Exception:
+        pass
+    text = str(value).strip()
+    return text.lower() not in {"", "nan", "none", "null"}
+
+
+def _normalize_source_overlap_scope(value: object) -> str:
+    """Normalize observed/synthetic overlap scope values."""
+
+    token = str(value or "event").strip().lower().replace("-", "_")
+    aliases = {
+        "events": "event",
+        "event_id": "event",
+        "event_station_pair": "event_station",
+        "event_station_pairs": "event_station",
+        "event_station_record": "event_station",
+        "records": "event_station",
+        "record": "event_station",
+        "pair": "event_station",
+        "pairs": "event_station",
+    }
+    token = aliases.get(token, token)
+    if token not in {"event", "event_station"}:
+        raise ValueError("source_overlap_scope must be 'event' or 'event_station'.")
+    return token
 
 
 def _first_present(record: pd.Series, *columns: str) -> object:
@@ -1929,6 +2108,7 @@ __all__ = [
     "build_waveform_qc_summary",
     "export_manual_review_queue",
     "export_manual_review_queue_from_qc_inventory",
+    "filter_event_station_records_for_source_overlap",
     "load_comparison_eligible_records",
     "write_comparison_eligibility_from_qc_inventory",
 ]

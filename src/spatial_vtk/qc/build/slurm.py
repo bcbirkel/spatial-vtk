@@ -67,6 +67,8 @@ def run_qc_inventory_job(
         passbands=metric_settings.passbands,
         spectral_periods_s=metric_settings.spectral.periods_s,
         synthetic_max_frequency_hz=metric_settings.synthetic_max_frequency_hz,
+        require_source_overlap=metric_settings.require_source_overlap,
+        source_overlap_scope=metric_settings.source_overlap_scope,
         trace_qc_summary=trace_path,
         verbose=verbose,
         checkpoint_path=inventory_path,

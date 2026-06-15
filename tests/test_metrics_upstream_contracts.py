@@ -32,6 +32,8 @@ def test_metric_config_supports_multiple_transforms_and_spectral_settings() -> N
             "passbands": [[1, 2], "2-4 sec"],
             "transforms": ["residual", "log2_residual", "anderson", "olsen_mayhew"],
             "output_mode": "full",
+            "require_source_overlap": True,
+            "source_overlap_scope": "event_station",
             "synthetic_max_frequency_hz": 1.0,
             "spectral": {
                 "periods_s": [1.0, 2.0, 10.0],
@@ -49,6 +51,8 @@ def test_metric_config_supports_multiple_transforms_and_spectral_settings() -> N
     assert settings.components == ("Z", "R")
     assert settings.passbands == ((1.0, 2.0), "2-4 sec")
     assert settings.transforms == ("residual", "log2_residual", "anderson_2004_gof", "olsen_mayhew_gof")
+    assert settings.require_source_overlap is True
+    assert settings.source_overlap_scope == "event_station"
     assert settings.synthetic_max_frequency_hz == 1.0
     assert settings.spectral.periods_s == (1.0, 2.0, 10.0)
     assert settings.spectral.relative_amplitude_threshold == 0.2
@@ -56,6 +60,7 @@ def test_metric_config_supports_multiple_transforms_and_spectral_settings() -> N
     summary = metric_settings_summary(settings)
     assert list(summary.columns) == ["Setting", "Value"]
     assert "Spectral periods" in set(summary["Setting"])
+    assert "Require source overlap" in set(summary["Setting"])
     assert "1 s, 2 s, 10 s" in set(summary["Value"])
 
 

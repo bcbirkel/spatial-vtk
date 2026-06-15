@@ -147,6 +147,8 @@ def plan_metric_tasks(
     *,
     plan: MetricPlan,
     use_qc: bool = True,
+    require_source_overlap: bool | None = None,
+    source_overlap_scope: str | None = None,
     spectral_relative_amplitude_threshold: float = 0.25,
     spectral_min_cycles_in_record: float = 3.0,
     disable_spectral_relative_amplitude_qc: bool = False,
@@ -165,6 +167,12 @@ def plan_metric_tasks(
         Resolved metric plan.
     use_qc
         Whether tasks should honor QC tables during execution.
+    require_source_overlap
+        Override for whether source-specific task plans should keep only
+        records whose event or event/station has both observed and synthetic
+        data. When omitted, ``plan.require_source_overlap`` is used.
+    source_overlap_scope
+        Override for overlap scope: ``"event"`` or ``"event_station"``.
     spectral_relative_amplitude_threshold
         Relative amplitude threshold copied into each task for spectral QC.
     spectral_min_cycles_in_record
@@ -187,6 +195,12 @@ def plan_metric_tasks(
         source="synthetic",
         synthetic_max_frequency_hz=plan.synthetic_max_frequency_hz,
     ) if synthetic_inventory is not None else pd.DataFrame()
+    overlap_required = bool(plan.require_source_overlap if require_source_overlap is None else require_source_overlap)
+    overlap_scope = _normalize_source_overlap_scope(source_overlap_scope or plan.source_overlap_scope)
+    if overlap_required:
+        if obs.empty or syn.empty:
+            raise ValueError("Observed and synthetic inventories are both required when require_source_overlap is true.")
+        obs, syn = _filter_inventories_for_overlap(obs, syn, scope=overlap_scope)
     metrics = resolve_metric_names(plan.metrics, plan.metric_groups)
     passbands = plan.passbands or ((None, None),)
     tasks: list[MetricWorkflowTask] = []
@@ -426,6 +440,65 @@ def _synthetic_index(df: pd.DataFrame) -> dict[tuple[str, str, str], list[pd.Ser
         key = (str(row["event_id"]), str(row["station"]).upper(), str(row["component"]).upper())
         lookup.setdefault(key, []).append(row)
     return lookup
+
+
+def _filter_inventories_for_overlap(obs: pd.DataFrame, syn: pd.DataFrame, *, scope: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Filter observed/synthetic inventories to overlapping events or rows."""
+
+    scope_key = _normalize_source_overlap_scope(scope)
+    obs_keys = _overlap_keys(obs, scope=scope_key)
+    syn_keys = _overlap_keys(syn, scope=scope_key)
+    keep = obs_keys & syn_keys
+    return _filter_inventory_to_keys(obs, keep, scope=scope_key), _filter_inventory_to_keys(syn, keep, scope=scope_key)
+
+
+def _overlap_keys(df: pd.DataFrame, *, scope: str) -> set[tuple[str, ...]]:
+    """Return overlap keys for one inventory."""
+
+    if df.empty:
+        return set()
+    if scope == "event":
+        return {(str(value),) for value in df["event_id"].dropna().astype(str)}
+    return {
+        (str(row["event_id"]), str(row["station"]).upper())
+        for _, row in df.loc[:, ["event_id", "station"]].drop_duplicates().iterrows()
+    }
+
+
+def _filter_inventory_to_keys(df: pd.DataFrame, keys: set[tuple[str, ...]], *, scope: str) -> pd.DataFrame:
+    """Keep inventory rows matching overlap keys."""
+
+    if df.empty or not keys:
+        return df.iloc[0:0].copy()
+    if scope == "event":
+        return df.loc[df["event_id"].astype(str).map(lambda value: (value,) in keys)].reset_index(drop=True)
+    normalized = df.assign(
+        _event_key=df["event_id"].astype(str),
+        _station_key=df["station"].astype(str).str.upper(),
+    )
+    mask = normalized.apply(lambda row: (row["_event_key"], row["_station_key"]) in keys, axis=1)
+    return normalized.loc[mask].drop(columns=["_event_key", "_station_key"]).reset_index(drop=True)
+
+
+def _normalize_source_overlap_scope(value: object) -> str:
+    """Normalize observed/synthetic overlap scope values."""
+
+    token = str(value or "event").strip().lower().replace("-", "_")
+    aliases = {
+        "events": "event",
+        "event_id": "event",
+        "event_station_pair": "event_station",
+        "event_station_pairs": "event_station",
+        "event_station_record": "event_station",
+        "records": "event_station",
+        "record": "event_station",
+        "pair": "event_station",
+        "pairs": "event_station",
+    }
+    token = aliases.get(token, token)
+    if token not in {"event", "event_station"}:
+        raise ValueError("source_overlap_scope must be 'event' or 'event_station'.")
+    return token
 
 
 def _normalize_inventory_or_empty(table: pd.DataFrame | str | Path, *, source: str, synthetic_max_frequency_hz: float | None = None) -> pd.DataFrame:
