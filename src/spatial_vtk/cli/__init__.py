@@ -395,6 +395,17 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     batch.add_argument("--overwrite", action="store_true", help="Replace an existing batch output.")
     batch.set_defaults(handler=_cmd_metrics_run_batch)
 
+    cache = metrics_sub.add_parser("cache-waveforms", help="Write a metric manifest backed by lightweight cached waveform traces.")
+    cache.add_argument("--manifest", required=True, help="Source metric workflow manifest JSON.")
+    cache.add_argument("--output", required=True, help="Cached metric workflow manifest JSON.")
+    cache.add_argument("--cache-root", required=True, help="Directory for cached metric-ready waveform .npz files.")
+    cache.add_argument("--batch-output-dir", default=None, help="Batch output directory for the cached manifest.")
+    cache.add_argument("--overwrite", action="store_true", help="Rewrite existing cached waveform files.")
+    cache.add_argument("--compressed", action="store_true", help="Write compressed .npz files instead of faster uncompressed .npz files.")
+    cache.add_argument("--verbose", action="store_true", help="Print progress while materializing waveform traces.")
+    cache.add_argument("--progress-interval", type=int, default=100, help="Task interval for verbose progress messages.")
+    cache.set_defaults(handler=_cmd_metrics_cache_waveforms)
+
     merge = metrics_sub.add_parser("merge-batches", help="Merge metric manifest batch outputs.")
     merge.add_argument("--manifest", required=True, help="Metric workflow manifest JSON.")
     merge.add_argument("--output", required=True, help="Merged output CSV/parquet path.")
@@ -786,6 +797,34 @@ def _cmd_metrics_run_batch(args: argparse.Namespace) -> int:
 
     path = run_manifest_batch(args.manifest, batch_index=args.batch_index, overwrite=args.overwrite)
     print(path)
+    return 0
+
+
+def _cmd_metrics_cache_waveforms(args: argparse.Namespace) -> int:
+    """Run ``svtk metrics cache-waveforms``."""
+
+    from spatial_vtk.metrics.workflow import cache_metric_manifest_waveforms
+
+    result = cache_metric_manifest_waveforms(
+        args.manifest,
+        args.output,
+        cache_root=args.cache_root,
+        batch_output_dir=args.batch_output_dir,
+        overwrite=args.overwrite,
+        compressed=args.compressed,
+        progress_label="Metric waveform cache" if args.verbose else None,
+        progress_interval=args.progress_interval,
+    )
+    print(f"Cached manifest: {result.manifest.manifest_path}")
+    print(f"Cache root: {result.cache_root}")
+    print(
+        "Waveform cache files: "
+        f"{result.materialized_files} materialized, "
+        f"{result.reused_files} reused from disk, "
+        f"{result.in_memory_reuses} reused within manifest "
+        f"({result.source_references} source references)"
+    )
+    print(f"Batches: {len(result.manifest.batches)}")
     return 0
 
 

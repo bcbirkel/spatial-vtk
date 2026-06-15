@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 
+import numpy as np
 import pandas as pd
 
 from spatial_vtk.cli import main
@@ -200,10 +201,82 @@ metrics:
     assert [len(batch["task_indices"]) for batch in manifest["batches"]] == [2, 1]
 
 
+def test_cli_metrics_cache_waveforms_writes_cached_manifest(tmp_path):
+    obs = tmp_path / "obs.npz"
+    syn = tmp_path / "syn.npz"
+    manifest_path = tmp_path / "manifest.json"
+    output_path = tmp_path / "cached_manifest.json"
+    batch_dir = tmp_path / "cached_batches"
+    cache_root = tmp_path / "cache"
+    _write_cli_npz(obs, [0.0, 1.0, 0.0], station="ABC", channel="HNZ")
+    _write_cli_npz(syn, [0.0, 0.5, 0.0], station="ABC", channel="HNZ")
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "manifest_version": 1,
+                "qc_table": "",
+                "tasks": [
+                    {
+                        "task_id": "task-1",
+                        "event_id": "e1",
+                        "station": "ABC",
+                        "component": "Z",
+                        "model": "m1",
+                        "passband": "",
+                        "obs_waveform_path": str(obs),
+                        "syn_waveform_path": str(syn),
+                        "dt": 0.01,
+                        "metrics": "PGA",
+                        "transforms": "log2_residual",
+                        "output_mode": "full",
+                    }
+                ],
+                "batches": [{"batch_index": 0, "task_indices": [0], "output_path": str(tmp_path / "old_batch.csv")}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert (
+        main(
+            [
+                "metrics",
+                "cache-waveforms",
+                "--manifest",
+                str(manifest_path),
+                "--output",
+                str(output_path),
+                "--cache-root",
+                str(cache_root),
+                "--batch-output-dir",
+                str(batch_dir),
+            ]
+        )
+        == 0
+    )
+
+    cached = json.loads(output_path.read_text(encoding="utf-8"))
+    assert cached["tasks"][0]["obs_waveform_path"] != str(obs)
+    assert cached["tasks"][0]["syn_waveform_path"] != str(syn)
+    assert cached["tasks"][0]["obs_waveform_path"].endswith(".npz")
+    assert cached["batches"][0]["output_path"] == str(batch_dir / "metrics_batch_0000.csv")
+    assert len(list(cache_root.rglob("*.npz"))) == 2
+
+
 def test_cli_call_importable_function(capsys):
     assert main(["call", "spatial_vtk.config.labels.metric_display_name", "--args", "C5"]) == 0
     captured = capsys.readouterr()
     assert "Peak acceleration" in captured.out
+
+
+def _write_cli_npz(path, samples, *, station: str, channel: str) -> None:
+    np.savez(
+        path,
+        data=np.asarray(samples, dtype=float),
+        channels=np.asarray([channel]),
+        station=np.asarray(station),
+        sampling_rate=np.asarray(100.0, dtype=float),
+    )
 
 
 def test_cli_plot_metrics_wrapper(tmp_path):

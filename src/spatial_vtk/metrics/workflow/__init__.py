@@ -52,12 +52,18 @@ _EXECUTION_EXPORTS = {
     "run_manifest_batch",
     "write_task_manifest",
 }
+_CACHE_EXPORTS = {
+    "MetricWaveformCacheResult",
+    "cache_metric_manifest_waveforms",
+}
 
 __all__ = [
+    "MetricWaveformCacheResult",
     "MetricWorkflowManifest",
     "MetricWorkflowTask",
     "SlurmSettings",
     "calculate_task_rows",
+    "cache_metric_manifest_waveforms",
     "chunk_tasks",
     "merge_batch_outputs",
     "metric_group_for",
@@ -84,6 +90,10 @@ def __getattr__(name: str) -> Any:
 
     if name in _EXECUTION_EXPORTS:
         value = getattr(import_module("spatial_vtk.metrics.workflow.execution"), name)
+        globals()[name] = value
+        return value
+    if name in _CACHE_EXPORTS:
+        value = getattr(import_module("spatial_vtk.metrics.workflow.cache"), name)
         globals()[name] = value
         return value
     raise AttributeError(f"module 'spatial_vtk.metrics.workflow' has no attribute {name!r}")

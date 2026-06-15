@@ -8,6 +8,7 @@ from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.io.plans import MetricPlan
 from spatial_vtk.metrics.workflow import (
     SlurmSettings,
+    cache_metric_manifest_waveforms,
     merge_batch_outputs,
     plan_metric_tasks,
     prepare_metric_workflow_outputs,
@@ -289,6 +290,69 @@ def test_metric_manifest_orders_tasks_for_waveform_cache_reuse(tmp_path) -> None
 
     assert [task.task_id for task in parsed.tasks] == ["task-a1", "task-a2", "task-b"]
     assert parsed.batches[0]["task_indices"] == [0, 1]
+
+
+def test_metric_manifest_waveform_cache_rewrites_paths_and_runs_batches(tmp_path) -> None:
+    """Cached manifests should point at reusable .npz traces and run normally."""
+
+    dt = 0.01
+    time = np.arange(0.0, 3.0, dt)
+    obs_path = tmp_path / "source_obs.npz"
+    syn_path = tmp_path / "source_syn.npz"
+    _write_npz_waveform(obs_path, 2.0 * np.sin(2.0 * np.pi * time), station="ABC", channel="HNZ", sampling_rate=1.0 / dt)
+    _write_npz_waveform(syn_path, np.sin(2.0 * np.pi * time), station="ABC", channel="HNZ", sampling_rate=1.0 / dt)
+    tasks = [
+        MetricWorkflowTask(
+            "cache-a",
+            "e1",
+            "ABC",
+            "Z",
+            obs_waveform_path=str(obs_path),
+            syn_waveform_path=str(syn_path),
+            metrics=("PGA",),
+            transforms=("log2_residual",),
+        ),
+        MetricWorkflowTask(
+            "cache-b",
+            "e1",
+            "ABC",
+            "Z",
+            obs_waveform_path=str(obs_path),
+            syn_waveform_path=str(syn_path),
+            metrics=("PGV",),
+            transforms=("log2_residual",),
+        ),
+    ]
+    manifest = write_task_manifest(tasks, tmp_path / "manifest.json", output_dir=tmp_path / "batches", batch_size=2)
+
+    result = cache_metric_manifest_waveforms(
+        manifest.manifest_path,
+        tmp_path / "cached_manifest.json",
+        cache_root=tmp_path / "cache",
+        batch_output_dir=tmp_path / "cached_batches",
+    )
+
+    assert result.materialized_files == 2
+    assert result.in_memory_reuses == 2
+    cached_manifest = read_task_manifest(result.manifest.manifest_path)
+    assert len(cached_manifest.tasks) == 2
+    assert cached_manifest.tasks[0].obs_waveform_path.endswith(".npz")
+    assert cached_manifest.tasks[0].obs_waveform_path != str(obs_path)
+    assert cached_manifest.tasks[0].obs_waveform_path == cached_manifest.tasks[1].obs_waveform_path
+    assert Path(cached_manifest.batches[0]["output_path"]).parent == tmp_path / "cached_batches"
+
+    batch_output = run_manifest_batch(cached_manifest, batch_index=0)
+    rows = pd.read_csv(batch_output)
+    assert set(rows["metric"]) == {"PGA", "PGV"}
+
+    resumed = cache_metric_manifest_waveforms(
+        manifest.manifest_path,
+        tmp_path / "cached_manifest_resumed.json",
+        cache_root=tmp_path / "cache",
+        batch_output_dir=tmp_path / "cached_batches_resumed",
+    )
+    assert resumed.materialized_files == 0
+    assert resumed.reused_files == 2
 
 
 def test_metric_workflow_applies_configured_lowpass_before_metrics(tmp_path) -> None:
