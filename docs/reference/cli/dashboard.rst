@@ -44,7 +44,7 @@ svtk dashboard qc
 .. code-block:: bash
 
    svtk dashboard qc [-h] --trace-summary TRACE_SUMMARY [--port PORT]
-                         [--address ADDRESS] [--show]
+                         [--address ADDRESS] [--proxy-mode] [--show]
 
 .. rubric:: Parameters
 
@@ -72,6 +72,10 @@ svtk dashboard qc
      - No
      - Default: ``127.0.0.1``
      - Value: ``address``. Streamlit server address.
+   * - ``--proxy-mode``
+     - No
+     - Flag
+     - Allow access through reverse proxies such as Open OnDemand.
    * - ``--show``
      - No
      - Flag
@@ -86,9 +90,11 @@ svtk dashboard metrics
 
 .. code-block:: bash
 
-   svtk dashboard metrics [-h] --metrics-root METRICS_ROOT --summary-root
-                              SUMMARY_ROOT [--port PORT] [--address ADDRESS]
-                              [--show]
+   svtk dashboard metrics [-h] [--config CONFIG]
+                              [--run-scenario RUN_SCENARIO]
+                              [--metrics-root METRICS_ROOT]
+                              [--summary-root SUMMARY_ROOT] [--port PORT]
+                              [--address ADDRESS] [--proxy-mode] [--show]
 
 .. rubric:: Parameters
 
@@ -104,14 +110,22 @@ svtk dashboard metrics
      - No
      - 
      - show this help message and exit
+   * - ``--config``
+     - No
+     - 
+     - Value: ``config``. Spatial-VTK config used to find default dashboard outputs.
+   * - ``--run-scenario``
+     - No
+     - 
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--metrics-root``
-     - Yes
+     - No
      - 
-     - Value: ``metrics_root``. Dashboard metric dataset root.
+     - Value: ``metrics_root``. Dashboard-ready long metric dataset directory, usually outputs/tables/dashboard_metrics from ``svtk metrics outputs``. Defaults from config.
    * - ``--summary-root``
-     - Yes
+     - No
      - 
-     - Value: ``summary_root``. Dashboard summary dataset root.
+     - Value: ``summary_root``. Dashboard summary table directory, usually outputs/tables/dashboard_summaries from ``svtk metrics outputs``. Defaults from config.
    * - ``--port``
      - No
      - Default: ``8501``
@@ -120,6 +134,10 @@ svtk dashboard metrics
      - No
      - Default: ``127.0.0.1``
      - Value: ``address``. Streamlit server address.
+   * - ``--proxy-mode``
+     - No
+     - Flag
+     - Allow access through reverse proxies such as Open OnDemand.
    * - ``--show``
      - No
      - Flag

@@ -409,7 +409,7 @@ outputs:
         fake_launch_metrics_dashboard,
     )
 
-    assert main(["dashboard", "metrics", "--config", str(config), "--port", "8555"]) == 0
+    assert main(["dashboard", "metrics", "--config", str(config), "--port", "8555", "--proxy-mode"]) == 0
 
     captured = capsys.readouterr()
     assert "Metrics dashboard data:" in captured.out
@@ -417,6 +417,7 @@ outputs:
     assert Path(launched["summary_root"]) == tmp_path / "outputs" / "tables" / "dashboard_summaries"
     assert Path(launched["config_path"]) == config.resolve()
     assert launched["server_port"] == 8555
+    assert launched["proxy_mode"] is True
 
 
 def test_cli_call_importable_function(capsys):

@@ -235,7 +235,10 @@ def test_qc_filter_accepts_timezone_aware_event_dates():
 def test_streamlit_entrypoints_import_and_launch_command():
     importlib.import_module("spatial_vtk.visualize.dashboard.streamlit_metrics")
     importlib.import_module("spatial_vtk.visualize.dashboard.streamlit_qc")
-    command = build_streamlit_command("/tmp/app.py", server_address="0.0.0.0", server_port=8509, show=False)
+    command = build_streamlit_command("/tmp/app.py", server_address="0.0.0.0", server_port=8509, show=False, proxy_mode=True)
     assert command[:4][-2:] == ["streamlit", "run"]
     assert "--server.port" in command
     assert "8509" in command
+    assert "--server.enableCORS" in command
+    assert "--server.enableXsrfProtection" in command
+    assert "--browser.gatherUsageStats" in command

@@ -317,8 +317,14 @@ Write dashboard-ready Parquet datasets and launch the Streamlit dashboard apps.
      --dashboard-partitioned
 
    svtk dashboard metrics \
-     --port 8501
+     --port 8501 \
+     --proxy-mode
 
    svtk dashboard qc \
      --trace-summary "$TRACE_QC" \
-     --port 8502
+     --port 8502 \
+     --proxy-mode
+
+   Use ``--proxy-mode`` when opening dashboards through Open OnDemand or another
+   reverse proxy. It disables Streamlit's local origin checks for the dashboard
+   process so the proxied browser connection can attach to the app.
