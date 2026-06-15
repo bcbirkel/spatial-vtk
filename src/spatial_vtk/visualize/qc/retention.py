@@ -290,8 +290,14 @@ def plot_event_station_retention_heatmap(
     image = ax.imshow(matrix.to_numpy(dtype=float), aspect="auto", cmap="viridis", vmin=0.0, vmax=100.0)
     _set_sparse_tick_labels(ax, axis="x", labels=matrix.columns.astype(str), max_labels=max_tick_labels)
     _set_sparse_tick_labels(ax, axis="y", labels=matrix.index.astype(str), max_labels=max_tick_labels)
-    ax.set_xlabel("Event")
-    ax.set_ylabel("Station")
+    event_label = "Event"
+    station_label = "Station"
+    if matrix.shape[1] > int(max_tick_labels):
+        event_label = f"Event ({matrix.shape[1]} total; labels sampled)"
+    if matrix.shape[0] > int(max_tick_labels):
+        station_label = f"Station ({matrix.shape[0]} total; labels sampled)"
+    ax.set_xlabel(event_label)
+    ax.set_ylabel(station_label)
     ax.set_title(title)
     cell_count = int(matrix.shape[0] * matrix.shape[1])
     if show_counts and cell_count <= int(max_count_labels) and {retained_col, total_col} <= set(df.columns):
