@@ -154,7 +154,6 @@ def test_cli_metrics_plan_manifest_accepts_batch_count(tmp_path):
 project:
   root_dir: .
 metrics:
-  groups: [amplitude]
   metrics: [PGA]
   components: [Z]
   passbands: [[1, 2]]
