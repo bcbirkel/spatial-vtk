@@ -23,7 +23,7 @@ from typing import Any
 import pandas as pd
 
 from spatial_vtk.io.compute_manifest import read_json, write_json
-from spatial_vtk.metrics.workflow.run import run_metric_tasks, write_metric_rows
+from spatial_vtk.metrics.workflow.run import METRIC_TEXT_COLUMNS, run_metric_tasks, write_metric_rows
 from spatial_vtk.metrics.workflow.tasks import MetricWorkflowTask
 
 
@@ -347,7 +347,20 @@ def _read_table(path: str | Path) -> pd.DataFrame:
     table_path = Path(path).expanduser()
     if table_path.suffix.lower() in {".parquet", ".pq"}:
         return pd.read_parquet(table_path)
-    return pd.read_csv(table_path)
+    text_columns = _csv_text_columns(table_path)
+    dtype = {column: str for column in text_columns}
+    return pd.read_csv(table_path, dtype=dtype, low_memory=False)
+
+
+def _csv_text_columns(path: Path) -> list[str]:
+    """Return known metric text columns present in a CSV header."""
+
+    try:
+        header = pd.read_csv(path, nrows=0)
+    except pd.errors.EmptyDataError:
+        return []
+    present = set(header.columns)
+    return [column for column in METRIC_TEXT_COLUMNS if column in present]
 
 
 def _completed_batch_count(manifest: MetricWorkflowManifest) -> int:

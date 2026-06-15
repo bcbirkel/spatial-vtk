@@ -59,6 +59,24 @@ TRACE_VALUE_METRICS = {
     "CAV",
 }
 SPECTRAL_METRICS = {"PSA", "FAS"}
+METRIC_TEXT_COLUMNS: tuple[str, ...] = (
+    "task_id",
+    "event_id",
+    "station",
+    "component",
+    "model",
+    "passband",
+    "metric_group",
+    "metric",
+    "obs_qc_status",
+    "obs_qc_reason",
+    "syn_qc_status",
+    "syn_qc_reason",
+    "comparison_qc_status",
+    "comparison_qc_reason",
+    "obs_waveform_path",
+    "syn_waveform_path",
+)
 
 
 @dataclass(frozen=True)
@@ -234,11 +252,35 @@ def write_metric_rows(df: pd.DataFrame, path: str | Path) -> Path:
 
     output = Path(path).expanduser()
     output.parent.mkdir(parents=True, exist_ok=True)
+    rows = _normalize_metric_row_dtypes(df)
     if output.suffix.lower() in {".parquet", ".pq"}:
-        df.to_parquet(output, index=False)
+        rows.to_parquet(output, index=False)
     else:
-        df.to_csv(output, index=False)
+        rows.to_csv(output, index=False)
     return output
+
+
+def _normalize_metric_row_dtypes(df: pd.DataFrame) -> pd.DataFrame:
+    """Return metric rows with stable dtypes for CSV/parquet output."""
+
+    out = df.copy()
+    for column in METRIC_TEXT_COLUMNS:
+        if column in out.columns:
+            out[column] = out[column].map(_metric_text_value)
+    return out
+
+
+def _metric_text_value(value: Any) -> str:
+    """Return one metric identifier/status/path value as text."""
+
+    if value is None:
+        return ""
+    try:
+        if pd.isna(value):
+            return ""
+    except Exception:
+        pass
+    return str(value)
 
 
 def _add_timing(timing: dict[str, float] | None, key: str, elapsed: float) -> None:

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -18,6 +20,7 @@ from spatial_vtk.metrics.workflow import (
     slurm_settings_from_config,
     summarize_metric_tasks,
     write_metric_outputs,
+    write_metric_rows,
     write_metrics_slurm_script,
     write_task_manifest,
     MetricWorkflowTask,
@@ -368,6 +371,74 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     assert "#SBATCH --array=0-0%2" in text
     assert "python -m spatial_vtk.metrics.workflow.execution" in text
     assert "source activate spatial-vtk" in text
+
+
+def test_metric_merge_preserves_text_identifiers_for_parquet(tmp_path) -> None:
+    """Merging CSV batches should keep station IDs textual for parquet output."""
+
+    batch_a = tmp_path / "batch_a.csv"
+    batch_b = tmp_path / "batch_b.csv"
+    manifest_path = tmp_path / "manifest.json"
+    pd.DataFrame(
+        {
+            "event_id": ["e1"],
+            "station": ["00000"],
+            "component": ["Z"],
+            "metric_group": ["amplitude"],
+            "metric": ["PGA"],
+            "value_obs": [1.0],
+        }
+    ).to_csv(batch_a, index=False)
+    pd.DataFrame(
+        {
+            "event_id": ["e2"],
+            "station": [637],
+            "component": ["Z"],
+            "metric_group": ["amplitude"],
+            "metric": ["PGA"],
+            "value_obs": [2.0],
+        }
+    ).to_csv(batch_b, index=False)
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "manifest_version": 1,
+                "qc_table": "",
+                "tasks": [],
+                "batches": [
+                    {"batch_index": 0, "task_indices": [], "output_path": str(batch_a)},
+                    {"batch_index": 1, "task_indices": [], "output_path": str(batch_b)},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    merged_path = merge_batch_outputs(manifest_path, tmp_path / "merged.parquet")
+    merged = pd.read_parquet(merged_path)
+
+    assert merged["station"].tolist() == ["00000", "637"]
+
+
+def test_metric_row_parquet_write_normalizes_mixed_text_columns(tmp_path) -> None:
+    """Metric parquet writes should not fail on mixed object identifier columns."""
+
+    output = write_metric_rows(
+        pd.DataFrame(
+            {
+                "event_id": ["e1", "e2"],
+                "station": ["ABC", 637],
+                "component": ["Z", "R"],
+                "metric_group": ["amplitude", "amplitude"],
+                "metric": ["PGA", "PGV"],
+                "value_obs": [1.0, 2.0],
+            }
+        ),
+        tmp_path / "metrics.parquet",
+    )
+    rows = pd.read_parquet(output)
+
+    assert rows["station"].tolist() == ["ABC", "637"]
 
 
 def test_metric_manifest_orders_tasks_for_waveform_cache_reuse(tmp_path) -> None:
