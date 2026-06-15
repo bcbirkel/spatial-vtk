@@ -96,7 +96,7 @@ def run_metric_tasks(
         Long metric table.
     """
 
-    lookup = metric_qc_lookup(qc_table)
+    lookup = metric_qc_lookup(qc_table, tasks=tasks)
     rows: list[dict[str, Any]] = []
     waveform_cache: dict[str, Any] = {}
     cache_group: tuple[str, str, str, str] | None = None

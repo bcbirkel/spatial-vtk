@@ -155,13 +155,21 @@ def normalize_metric_qc_table(table: pd.DataFrame | str | Path, *, source: str |
     return out.loc[:, list(METRIC_QC_COLUMNS)]
 
 
-def metric_qc_lookup(qc_table: pd.DataFrame | str | Path | None) -> dict[tuple[str, str, str, str, str, str, str], dict[str, Any]]:
+def metric_qc_lookup(
+    qc_table: pd.DataFrame | str | Path | None,
+    *,
+    tasks: Any | None = None,
+) -> dict[tuple[str, str, str, str, str, str, str], dict[str, Any]]:
     """Build a lookup for side-specific metric QC decisions.
 
     Parameters
     ----------
     qc_table
         QC table or path. ``None`` returns an empty lookup.
+    tasks
+        Optional metric tasks used to restrict large QC tables before building
+        the lookup. This keeps Slurm batches from materializing a full
+        production QC inventory in memory.
 
     Returns
     -------
@@ -171,7 +179,10 @@ def metric_qc_lookup(qc_table: pd.DataFrame | str | Path | None) -> dict[tuple[s
 
     if qc_table is None:
         return {}
-    df = normalize_metric_qc_table(qc_table)
+    scope = _task_scope(tasks)
+    df = normalize_metric_qc_table(_read_qc_table_scoped(qc_table, scope))
+    if scope is not None:
+        df = _filter_qc_scope(df, scope)
     lookup: dict[tuple[str, str, str, str, str, str, str], dict[str, Any]] = {}
     for _, row in df.iterrows():
         key = (
@@ -199,6 +210,94 @@ def comparison_qc_passed(obs_row: dict[str, Any] | None, syn_row: dict[str, Any]
     """Return whether both observed and synthetic QC rows pass."""
 
     return metric_qc_passed(obs_row) and metric_qc_passed(syn_row)
+
+
+def _task_scope(tasks: Any | None) -> dict[str, set[str]] | None:
+    """Return event/station/component filters from metric tasks."""
+
+    if tasks is None:
+        return None
+    events: set[str] = set()
+    stations: set[str] = set()
+    components: set[str] = set()
+    try:
+        iterator = iter(tasks)
+    except TypeError:
+        return None
+    for task in iterator:
+        event_id = getattr(task, "event_id", None)
+        station = getattr(task, "station", None)
+        component = getattr(task, "component", None)
+        if event_id not in (None, ""):
+            events.add(str(event_id))
+        if station not in (None, ""):
+            stations.add(str(station).strip().upper())
+        if component not in (None, ""):
+            components.add(str(component).strip().upper())
+    if not events and not stations and not components:
+        return None
+    return {"event_id": events, "station": stations, "component": components}
+
+
+def _read_qc_table_scoped(table: pd.DataFrame | str | Path, scope: dict[str, set[str]] | None) -> pd.DataFrame:
+    """Read a QC table, streaming large path inputs when a task scope exists."""
+
+    if isinstance(table, pd.DataFrame) or scope is None:
+        return _read_table(table)
+    path = Path(table).expanduser()
+    suffix = path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        return _read_parquet_qc_scoped(path, scope)
+    return _read_csv_qc_scoped(path, scope)
+
+
+def _read_parquet_qc_scoped(path: Path, scope: dict[str, set[str]]) -> pd.DataFrame:
+    """Read only scoped QC rows from a parquet file."""
+
+    try:
+        import pyarrow.parquet as pq
+    except Exception:
+        return _filter_qc_scope(pd.read_parquet(path), scope)
+    parquet = pq.ParquetFile(path)
+    schema_names = set(parquet.schema.names)
+    columns = [column for column in METRIC_QC_COLUMNS if column in schema_names]
+    read_columns = columns or None
+    frames: list[pd.DataFrame] = []
+    for batch in parquet.iter_batches(batch_size=500_000, columns=read_columns):
+        frame = batch.to_pandas()
+        filtered = _filter_qc_scope(frame, scope)
+        if not filtered.empty:
+            frames.append(filtered)
+    return pd.concat(frames, ignore_index=True, sort=False) if frames else pd.DataFrame(columns=columns)
+
+
+def _read_csv_qc_scoped(path: Path, scope: dict[str, set[str]]) -> pd.DataFrame:
+    """Read only scoped QC rows from a CSV file."""
+
+    frames: list[pd.DataFrame] = []
+    for chunk in pd.read_csv(path, chunksize=500_000, low_memory=False):
+        filtered = _filter_qc_scope(chunk, scope)
+        if not filtered.empty:
+            frames.append(filtered)
+    return pd.concat(frames, ignore_index=True, sort=False) if frames else pd.DataFrame()
+
+
+def _filter_qc_scope(df: pd.DataFrame, scope: dict[str, set[str]]) -> pd.DataFrame:
+    """Filter raw or normalized QC rows to a task scope."""
+
+    if df.empty:
+        return df.copy()
+    out = df
+    event_col = _find_column(out, QC_ALIASES["event_id"])
+    station_col = _find_column(out, QC_ALIASES["station"])
+    component_col = _find_column(out, QC_ALIASES["component"])
+    if event_col is not None and scope["event_id"]:
+        out = out.loc[out[event_col].astype(str).isin(scope["event_id"])]
+    if station_col is not None and scope["station"]:
+        out = out.loc[out[station_col].astype(str).str.strip().str.upper().isin(scope["station"])]
+    if component_col is not None and scope["component"]:
+        out = out.loc[out[component_col].astype(str).str.strip().str.upper().isin(scope["component"])]
+    return out.copy()
 
 
 def _read_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
