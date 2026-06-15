@@ -25,6 +25,7 @@ import argparse
 import importlib
 import inspect
 import json
+import math
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Iterable
@@ -372,6 +373,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     plan.add_argument("--manifest", action="store_true", help="Write a JSON manifest instead of a task table.")
     plan.add_argument("--batch-output-dir", default=None, help="Batch output directory when writing a manifest.")
     plan.add_argument("--batch-size", type=int, default=100, help="Tasks per batch when writing a manifest.")
+    plan.add_argument("--batch-count", type=int, default=None, help="Target number of batches when writing a manifest. Overrides --batch-size.")
     plan.add_argument("--qc-table", default=None, help="Optional QC inventory recorded in a manifest.")
     plan.add_argument("--no-qc", action="store_true", help="Do not mark planned tasks as QC-filtered by default.")
     plan.add_argument(
@@ -728,7 +730,12 @@ def _cmd_metrics_plan(args: argparse.Namespace) -> int:
     )
     if args.manifest:
         batch_dir = args.batch_output_dir or str(Path(args.output).with_suffix("")) + "_batches"
-        write_task_manifest(tasks, args.output, output_dir=batch_dir, batch_size=args.batch_size, qc_table=args.qc_table)
+        batch_size = args.batch_size
+        if args.batch_count is not None:
+            if args.batch_count <= 0:
+                raise ValueError("--batch-count must be positive.")
+            batch_size = max(1, math.ceil(len(tasks) / args.batch_count))
+        write_task_manifest(tasks, args.output, output_dir=batch_dir, batch_size=batch_size, qc_table=args.qc_table)
     else:
         _write_table(tasks_to_frame(tasks), args.output)
     print(f"Planned {len(tasks)} metric tasks.")

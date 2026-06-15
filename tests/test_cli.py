@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import pandas as pd
 
 from spatial_vtk.cli import main
@@ -140,6 +142,63 @@ run_scenarios:
     tasks = pd.read_csv(out)
     assert tasks["metrics"].unique().tolist() == ["PGA"]
     assert tasks["component"].unique().tolist() == ["Z"]
+
+
+def test_cli_metrics_plan_manifest_accepts_batch_count(tmp_path):
+    config = tmp_path / "spatial-vtk.yaml"
+    obs = tmp_path / "obs.csv"
+    syn = tmp_path / "syn.csv"
+    out = tmp_path / "manifest.json"
+    config.write_text(
+        """
+project:
+  root_dir: .
+metrics:
+  groups: [amplitude]
+  metrics: [PGA]
+  components: [Z]
+  passbands: [[1, 2]]
+  models: [m1]
+""",
+        encoding="utf-8",
+    )
+    rows = {
+        "event_id": ["ev1", "ev1", "ev1"],
+        "station": ["STA1", "STA2", "STA3"],
+        "component": ["Z", "Z", "Z"],
+        "path": ["one.npz", "two.npz", "three.npz"],
+        "dt": [0.01, 0.01, 0.01],
+    }
+    pd.DataFrame(rows).to_csv(obs, index=False)
+    synthetic_rows = {**rows, "model": ["m1", "m1", "m1"]}
+    pd.DataFrame(synthetic_rows).to_csv(syn, index=False)
+
+    assert (
+        main(
+            [
+                "metrics",
+                "plan",
+                "--config",
+                str(config),
+                "--observed-inventory",
+                str(obs),
+                "--synthetic-inventory",
+                str(syn),
+                "--manifest",
+                "--batch-count",
+                "2",
+                "--batch-output-dir",
+                str(tmp_path / "metric_batches"),
+                "--output",
+                str(out),
+            ]
+        )
+        == 0
+    )
+
+    manifest = json.loads(out.read_text(encoding="utf-8"))
+    assert len(manifest["tasks"]) == 3
+    assert [len(batch["task_indices"]) for batch in manifest["batches"]] == [2, 1]
 
 
 def test_cli_call_importable_function(capsys):
