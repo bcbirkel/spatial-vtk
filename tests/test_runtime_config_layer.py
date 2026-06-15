@@ -117,11 +117,16 @@ metrics:
 def test_default_output_and_figure_paths_are_named(tmp_path):
     """Default path helpers should avoid repeated filename declarations."""
 
-    tables = default_output_paths(tmp_path / "tables", ["qc_inventory", "manual_review_queue"])
+    tables = default_output_paths(
+        tmp_path / "tables",
+        ["qc_inventory", "manual_review_queue", "qc_metric_pair_retention", "post_qc_records"],
+    )
     figures = default_figure_paths(tmp_path / "figures")
 
     assert tables.qc_inventory == tmp_path / "tables" / "qc_inventory.csv"
     assert tables.manual_review_queue == tmp_path / "tables" / "manual_review_queue.csv"
+    assert tables.qc_metric_pair_retention == tmp_path / "tables" / "qc_metric_pair_retention.csv"
+    assert tables.post_qc_records == tmp_path / "tables" / "post_qc_records.csv"
     assert figures.retention_summary == tmp_path / "figures" / "retention_summary.png"
     assert figures.station_event_context == tmp_path / "figures" / "station_event_context.png"
 

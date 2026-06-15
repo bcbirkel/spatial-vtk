@@ -80,6 +80,18 @@ tables:
   qc_trace_summary:
     filename: qc_trace_summary.csv
     description: QC trace summary for dashboards
+  qc_metric_pair_retention:
+    filename: qc_metric_pair_retention.csv
+    description: QC metric/passband pair-retention summary
+  qc_event_station_pair_retention:
+    filename: qc_event_station_pair_retention.csv
+    description: QC event-station pair-retention summary
+  post_qc_records:
+    filename: post_qc_records.csv
+    description: Event-station records annotated with post-QC status
+  qc_drop_causes:
+    filename: qc_drop_causes.csv
+    description: QC rejection reason counts
 
 figures:
   station_event_context:
