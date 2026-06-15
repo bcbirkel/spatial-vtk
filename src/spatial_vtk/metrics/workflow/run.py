@@ -316,13 +316,20 @@ def _calculate_pair_metric_row(
     syn_ok = _side_ok(task, syn_qc, _side_available(synthetic))
     comparison_ok = _comparison_ok(task, obs_ok, syn_ok)
     observed_pair, synthetic_pair = _trim_pair_to_common_valid(observed, synthetic) if comparison_ok and observed is not None and synthetic is not None else (None, None)
-    pair_value = _calculate_pair_metric(metric, observed_pair, synthetic_pair, _pair_dt(observed, synthetic)) if comparison_ok else np.nan
+    pair_failure_reason = ""
+    pair_value = np.nan
+    if comparison_ok:
+        try:
+            pair_value = _calculate_pair_metric(metric, observed_pair, synthetic_pair, _pair_dt(observed, synthetic))
+        except ValueError as exc:
+            comparison_ok = False
+            pair_failure_reason = str(exc)
     row = build_metric_value_row(
         metric_group=group,
         metric=metric,
         transforms=(),
         **_context(task),
-        **_qc_payload(task, obs_qc, syn_qc, obs_ok, syn_ok, comparison_ok),
+        **_qc_payload(task, obs_qc, syn_qc, obs_ok, syn_ok, comparison_ok, comparison_reason=pair_failure_reason),
     )
     row["value"] = pair_value
     return row
@@ -683,6 +690,7 @@ def _qc_payload(
     obs_ok: bool,
     syn_ok: bool,
     comparison_ok: bool,
+    comparison_reason: str = "",
 ) -> dict[str, str]:
     """Return standardized QC output fields."""
 
@@ -698,7 +706,7 @@ def _qc_payload(
         "syn_qc_status": syn_status,
         "syn_qc_reason": "" if syn_ok else str((syn_qc or {}).get("qc_reason", "synthetic_unavailable_or_failed_qc")),
         "comparison_qc_status": "pass" if comparison_ok else ("not_applicable" if task.output_mode in {"observed", "synthetic"} else "fail"),
-        "comparison_qc_reason": "" if comparison_ok else ("single_side_output_mode" if task.output_mode in {"observed", "synthetic"} else "observed_or_synthetic_failed_qc"),
+        "comparison_qc_reason": "" if comparison_ok else (comparison_reason or ("single_side_output_mode" if task.output_mode in {"observed", "synthetic"} else "observed_or_synthetic_failed_qc")),
     }
 
 
