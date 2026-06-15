@@ -9,17 +9,21 @@ import pandas as pd
 import pytest
 
 from spatial_vtk.config import (
+    SVTK_CLI_CONFIG_ENV,
     SVTK_CONFIG_ENV,
     SpatialVTKConfig,
     active_config,
+    clear_saved_config_path,
     clear_active_config,
     find_config_file,
     format_run_time,
+    get_saved_config_path,
     load_config,
     notebook_timing_enabled,
     register_svtk_cell_timer,
     resolve_output_path,
     resolve_run_defaults,
+    set_saved_config_path,
 )
 from spatial_vtk.io import (
     ArtifactSpec,
@@ -112,6 +116,31 @@ metrics:
     monkeypatch.setenv(SVTK_CONFIG_ENV, str(config_path))
     assert find_config_file() == config_path.resolve()
     assert load_config()["project"]["name"] == "example"
+
+
+def test_saved_cli_config_path_is_used_after_env(tmp_path, monkeypatch):
+    """A saved CLI config should be used when no explicit path/env config is set."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    settings_path = tmp_path / "cli-config.json"
+    config_path.write_text(
+        """
+project:
+  name: saved
+  root_dir: .
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(settings_path))
+
+    saved = set_saved_config_path(config_path)
+
+    assert saved == config_path.resolve()
+    assert get_saved_config_path() == config_path.resolve()
+    assert find_config_file() == config_path.resolve()
+    assert load_config()["project"]["name"] == "saved"
+    assert clear_saved_config_path() == settings_path.resolve()
+    assert get_saved_config_path() is None
 
 
 def test_default_output_and_figure_paths_are_named(tmp_path):

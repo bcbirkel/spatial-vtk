@@ -31,6 +31,7 @@ from spatial_vtk.config.paths import ROOT_DIR
 
 
 SVTK_CONFIG_ENV = "SVTK_CONFIG_FILE"
+SVTK_CLI_CONFIG_ENV = "SVTK_CLI_CONFIG_FILE"
 DEFAULT_CONFIG_FILENAMES = (
     "spatial-vtk.yaml",
     "spatial-vtk.yml",
@@ -39,6 +40,7 @@ DEFAULT_CONFIG_FILENAMES = (
     "svtk.yaml",
     "svtk.yml",
 )
+DEFAULT_CLI_CONFIG_PATH = Path.home() / ".config" / "spatial-vtk" / "config.json"
 
 _ACTIVE_CONFIG: "SpatialVTKConfig | None" = None
 
@@ -93,6 +95,9 @@ def find_config_file(explicit_path: str | Path | None = None, *, start_dir: str 
     env_value = os.environ.get(SVTK_CONFIG_ENV)
     if env_value:
         return Path(env_value).expanduser().resolve()
+    saved_path = get_saved_config_path()
+    if saved_path is not None:
+        return saved_path
     base = Path(start_dir or Path.cwd()).expanduser().resolve()
     for directory in (base, *base.parents):
         for name in DEFAULT_CONFIG_FILENAMES:
@@ -100,6 +105,50 @@ def find_config_file(explicit_path: str | Path | None = None, *, start_dir: str 
             if candidate.exists():
                 return candidate.resolve()
     return None
+
+
+def cli_config_file() -> Path:
+    """Return the user-level Spatial-VTK CLI settings file."""
+
+    value = os.environ.get(SVTK_CLI_CONFIG_ENV)
+    return Path(value).expanduser().resolve() if value else DEFAULT_CLI_CONFIG_PATH
+
+
+def get_saved_config_path() -> Path | None:
+    """Return the config path saved by ``svtk config set`` if one exists."""
+
+    settings_path = cli_config_file()
+    if not settings_path.exists():
+        return None
+    try:
+        payload = json.loads(settings_path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    value = payload.get("config_path") if isinstance(payload, dict) else None
+    if not value:
+        return None
+    return Path(value).expanduser().resolve()
+
+
+def set_saved_config_path(config_path: str | Path) -> Path:
+    """Persist the default CLI config path and return the resolved config."""
+
+    resolved = Path(config_path).expanduser().resolve()
+    if not resolved.exists():
+        raise FileNotFoundError(f"Spatial-VTK config file does not exist: {resolved}")
+    settings_path = cli_config_file()
+    settings_path.parent.mkdir(parents=True, exist_ok=True)
+    settings_path.write_text(json.dumps({"config_path": str(resolved)}, indent=2) + "\n", encoding="utf-8")
+    return resolved
+
+
+def clear_saved_config_path() -> Path:
+    """Remove the saved CLI config pointer and return the settings path."""
+
+    settings_path = cli_config_file()
+    if settings_path.exists():
+        settings_path.unlink()
+    return settings_path
 
 
 def load_config(config_path: str | Path | None = None, *, start_dir: str | Path | None = None) -> dict[str, Any]:

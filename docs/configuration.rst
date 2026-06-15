@@ -202,7 +202,8 @@ Spatial-VTK looks for a config file in this order:
 
 1. A path you pass directly, such as ``--config spatial-vtk.yaml``.
 2. The ``SVTK_CONFIG_FILE`` environment variable.
-3. A standard filename in your current folder or one of its parent folders:
+3. The saved CLI default set by ``svtk config set /path/to/spatial-vtk.yaml``.
+4. A standard filename in your current folder or one of its parent folders:
    ``spatial-vtk.yaml``, ``spatial-vtk.yml``, ``svtk_config.yaml``,
    ``svtk_config.yml``, ``svtk.yaml``, or ``svtk.yml``.
 
@@ -219,6 +220,19 @@ For a whole terminal session, set the environment variable:
 
    export SVTK_CONFIG_FILE=/path/to/spatial-vtk.yaml
    svtk config find
+
+To persist a default across terminal sessions, save it once:
+
+.. code-block:: bash
+
+   svtk config set /path/to/spatial-vtk.yaml
+   svtk config find
+
+Clear the saved default with:
+
+.. code-block:: bash
+
+   svtk config unset
 
 In a notebook or script, load the same file with Python:
 

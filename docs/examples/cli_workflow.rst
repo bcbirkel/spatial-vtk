@@ -20,9 +20,9 @@ Prepare station and event metadata, preprocess the waveform files once, and make
    export PREPROCESSED=outputs/tutorials/preprocessed_waveforms
 
    mkdir -p "$TABLES" "$FIGURES" "$PREPROCESSED"
+   svtk config set "$CONFIG"
 
    svtk config show \
-     --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --section paths
 

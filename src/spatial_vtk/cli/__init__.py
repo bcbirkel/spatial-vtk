@@ -248,6 +248,13 @@ def _add_config_commands(subparsers: argparse._SubParsersAction[argparse.Argumen
     find.add_argument("--start-dir", default=None, help="Directory used for config discovery.")
     find.set_defaults(handler=_cmd_config_find)
 
+    set_config = config_sub.add_parser("set", help="Save the default config path for future svtk commands.")
+    set_config.add_argument("config_path", help="Spatial-VTK config file to use by default.")
+    set_config.set_defaults(handler=_cmd_config_set)
+
+    unset_config = config_sub.add_parser("unset", help="Clear the saved default config path.")
+    unset_config.set_defaults(handler=_cmd_config_unset)
+
     show = config_sub.add_parser("show", help="Print the active config or one section.")
     show.add_argument("--config", default=None, help="Explicit config file.")
     show.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay before printing.")
@@ -340,7 +347,7 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     slurm = qc_sub.add_parser("slurm", help="Write a SLURM script for QC inventory generation.")
     slurm.add_argument("--event-stations", required=True, help="Prepared event-station table.")
     slurm.add_argument("--output", required=True, help="Output SLURM script path.")
-    slurm.add_argument("--config", required=True, help="Config file containing compute.slurm or qc.slurm settings.")
+    slurm.add_argument("--config", default=None, help="Config file containing compute.slurm or qc.slurm settings.")
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     slurm.add_argument("--trace-output", default=None, help="Output waveform QC table path.")
     slurm.add_argument("--inventory-output", default=None, help="Output metric QC inventory path.")
@@ -426,7 +433,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     slurm = metrics_sub.add_parser("slurm", help="Write a SLURM array script for a metric manifest.")
     slurm.add_argument("--manifest", required=True, help="Metric workflow manifest JSON.")
     slurm.add_argument("--output", required=True, help="Output SLURM script path.")
-    slurm.add_argument("--config", required=True, help="Config file containing metrics.slurm settings.")
+    slurm.add_argument("--config", default=None, help="Config file containing metrics.slurm settings.")
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     slurm.add_argument("--submit", action="store_true", help="Submit the script with sbatch after writing it.")
     slurm.set_defaults(handler=_cmd_metrics_slurm)
@@ -543,6 +550,26 @@ def _cmd_config_find(args: argparse.Namespace) -> int:
     return 0 if path is not None else 1
 
 
+def _cmd_config_set(args: argparse.Namespace) -> int:
+    """Run ``svtk config set``."""
+
+    from spatial_vtk.config import set_saved_config_path
+
+    path = set_saved_config_path(args.config_path)
+    print(f"Saved default Spatial-VTK config: {path}")
+    return 0
+
+
+def _cmd_config_unset(args: argparse.Namespace) -> int:
+    """Run ``svtk config unset``."""
+
+    from spatial_vtk.config import clear_saved_config_path
+
+    path = clear_saved_config_path()
+    print(f"Cleared default Spatial-VTK config setting: {path}")
+    return 0
+
+
 def _cmd_config_show(args: argparse.Namespace) -> int:
     """Run ``svtk config show``."""
 
@@ -562,6 +589,35 @@ def _cmd_config_bounds(args: argparse.Namespace) -> int:
     config = SpatialVTKConfig.from_file(args.config, run_scenario=args.run_scenario)
     _print_payload(config.bounds_presets(), as_json=args.json)
     return 0
+
+
+def _effective_config_path(config_path: str | None = None) -> str | None:
+    """Return the effective config path from CLI/env/saved/default discovery."""
+
+    from spatial_vtk.config import find_config_file
+
+    path = find_config_file(config_path)
+    return str(path) if path is not None else None
+
+
+def _required_config_path(config_path: str | None = None) -> str:
+    """Return a config path or raise for commands that must write it into scripts."""
+
+    path = _effective_config_path(config_path)
+    if path is None:
+        raise ValueError("No Spatial-VTK config was found. Pass --config or run 'svtk config set CONFIG_PATH'.")
+    return path
+
+
+def _optional_cli_config(config_path: str | None = None, *, run_scenario: str | None = None):
+    """Load a config when one is explicitly, environmentally, or persistently available."""
+
+    from spatial_vtk.config import SpatialVTKConfig
+
+    path = _effective_config_path(config_path)
+    if path is None and not run_scenario:
+        return None
+    return SpatialVTKConfig.from_file(path, run_scenario=run_scenario)
 
 
 def _cmd_io_prepare_stations(args: argparse.Namespace) -> int:
@@ -620,10 +676,9 @@ def _cmd_io_inventory(args: argparse.Namespace) -> int:
 def _cmd_io_preprocess_waveforms(args: argparse.Namespace) -> int:
     """Run ``svtk io preprocess-waveforms``."""
 
-    from spatial_vtk.config import SpatialVTKConfig
     from spatial_vtk.io import preprocess_waveform_files, waveform_preprocessing_from_config
 
-    config = SpatialVTKConfig.from_file(args.config, run_scenario=args.run_scenario) if args.config or args.run_scenario else None
+    config = _optional_cli_config(args.config, run_scenario=args.run_scenario)
     settings = waveform_preprocessing_from_config(config)
     overrides = {
         "lowpass_hz": args.lowpass_hz,
@@ -693,14 +748,15 @@ def _cmd_qc_slurm(args: argparse.Namespace) -> int:
         write_qc_slurm_script,
     )
 
-    config = SpatialVTKConfig.from_file(args.config, run_scenario=args.run_scenario)
+    config_path = _required_config_path(args.config)
+    config = SpatialVTKConfig.from_file(config_path, run_scenario=args.run_scenario)
     settings = slurm_settings_from_config(config)
     if args.submit:
         submission = submit_qc_slurm_job(
             args.event_stations,
             args.output,
             settings,
-            config_path=args.config,
+            config_path=config_path,
             run_scenario=args.run_scenario,
             trace_qc_output=args.trace_output,
             qc_inventory_output=args.inventory_output,
@@ -712,7 +768,7 @@ def _cmd_qc_slurm(args: argparse.Namespace) -> int:
         args.event_stations,
         args.output,
         settings,
-        config_path=args.config,
+        config_path=config_path,
         run_scenario=args.run_scenario,
         trace_qc_output=args.trace_output,
         qc_inventory_output=args.inventory_output,
@@ -867,7 +923,7 @@ def _cmd_metrics_slurm(args: argparse.Namespace) -> int:
         write_metrics_slurm_script,
     )
 
-    settings = slurm_settings_from_config(SpatialVTKConfig.from_file(args.config, run_scenario=args.run_scenario))
+    settings = slurm_settings_from_config(SpatialVTKConfig.from_file(_required_config_path(args.config), run_scenario=args.run_scenario))
     if args.submit:
         submission = submit_metrics_slurm_job(args.manifest, args.output, settings)
         print(submission.stdout or f"submitted {submission.script_path}")

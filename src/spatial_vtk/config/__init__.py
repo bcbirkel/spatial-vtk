@@ -67,16 +67,20 @@ from spatial_vtk.config.metrics import (
     transform_columns,
 )
 from spatial_vtk.config.runtime import (
+    SVTK_CLI_CONFIG_ENV,
     SVTK_CONFIG_ENV,
     SpatialVTKConfig,
     active_config,
     apply_run_scenario,
+    clear_saved_config_path,
     clear_active_config,
     deep_merge,
     find_config_file,
+    get_saved_config_path,
     load_config,
     resolve_path,
     resolve_run_defaults,
+    set_saved_config_path,
 )
 
 __all__ = [
@@ -94,6 +98,7 @@ __all__ = [
     "MetricSettings",
     "OutputSpec",
     "SpectralSettings",
+    "SVTK_CLI_CONFIG_ENV",
     "SVTK_CONFIG_ENV",
     "SlurmSettings",
     "SlurmSubmission",
@@ -104,6 +109,7 @@ __all__ = [
     "abbreviate_model",
     "active_config",
     "apply_run_scenario",
+    "clear_saved_config_path",
     "clear_active_config",
     "available_dashboard_value_columns",
     "band_display_label",
@@ -117,6 +123,7 @@ __all__ = [
     "ensure_dir",
     "find_config_file",
     "format_run_time",
+    "get_saved_config_path",
     "load_bounds_presets",
     "load_config",
     "infer_output_key",
@@ -140,6 +147,7 @@ __all__ = [
     "slurm_header",
     "slurm_settings_from_config",
     "submit_slurm_script",
+    "set_saved_config_path",
     "resolve_metric_names",
     "resolve_run_defaults",
     "transform_display_options",

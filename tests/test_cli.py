@@ -36,6 +36,33 @@ metrics:
     assert "passbands" in captured.out
 
 
+def test_cli_config_set_supplies_default_config(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    settings = tmp_path / "svtk-cli-config.json"
+    config.write_text(
+        """
+project:
+  root_dir: .
+metrics:
+  passbands: ["1-2"]
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(settings))
+
+    assert main(["config", "set", str(config)]) == 0
+    assert main(["config", "find"]) == 0
+    assert main(["config", "show", "--section", "metrics"]) == 0
+
+    captured = capsys.readouterr()
+    assert "Saved default Spatial-VTK config" in captured.out
+    assert str(config.resolve()) in captured.out
+    assert "passbands" in captured.out
+
+    assert main(["config", "unset"]) == 0
+    assert not settings.exists()
+
+
 def test_cli_prepare_station_metadata(tmp_path):
     src = tmp_path / "stations.csv"
     out = tmp_path / "prepared.csv"
@@ -263,10 +290,11 @@ def test_cli_metrics_cache_waveforms_writes_cached_manifest(tmp_path):
     assert len(list(cache_root.rglob("*.npz"))) == 2
 
 
-def test_cli_metrics_slurm_reports_script_without_submit(tmp_path, capsys):
+def test_cli_metrics_slurm_reports_script_without_submit(tmp_path, monkeypatch, capsys):
     config = tmp_path / "spatial-vtk.yaml"
     manifest = tmp_path / "manifest.json"
     script = tmp_path / "run_metrics.slurm"
+    settings = tmp_path / "svtk-cli-config.json"
     config.write_text(
         """
 project:
@@ -289,8 +317,10 @@ metrics:
         ),
         encoding="utf-8",
     )
+    monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(settings))
+    assert main(["config", "set", str(config)]) == 0
 
-    assert main(["metrics", "slurm", "--manifest", str(manifest), "--output", str(script), "--config", str(config)]) == 0
+    assert main(["metrics", "slurm", "--manifest", str(manifest), "--output", str(script)]) == 0
 
     captured = capsys.readouterr()
     assert "Wrote metric Slurm script" in captured.out
