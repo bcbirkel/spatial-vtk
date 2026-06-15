@@ -25,7 +25,6 @@ from spatial_vtk.config.compute import (
     submit_slurm_script,
 )
 from spatial_vtk.config.runtime import SpatialVTKConfig
-from spatial_vtk.metrics.workflow.execution import read_task_manifest
 
 
 def slurm_settings_from_config(config: SpatialVTKConfig, *, section: str = "metrics.slurm") -> SlurmSettings:
@@ -72,6 +71,8 @@ def write_metrics_slurm_script(
     pathlib.Path
         Written script path.
     """
+
+    from spatial_vtk.metrics.workflow.execution import read_task_manifest
 
     manifest = read_task_manifest(manifest_path)
     if not manifest.batches:
