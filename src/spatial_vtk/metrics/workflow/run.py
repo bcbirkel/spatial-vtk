@@ -306,6 +306,16 @@ def _calculate_spectral_metric_rows(
     if not periods:
         return []
     rows: list[dict[str, Any]] = []
+    obs_values_by_period = (
+        _calculate_spectral_values(metric, _valid_data(observed), observed.dt, periods)
+        if observed is not None
+        else np.full(len(periods), np.nan)
+    )
+    syn_values_by_period = (
+        _calculate_spectral_values(metric, _valid_data(synthetic), synthetic.dt, periods)
+        if synthetic is not None
+        else np.full(len(periods), np.nan)
+    )
     for idx, period_s in enumerate(periods):
         obs_qc = _combine_qc_rows(
             _lookup_qc(task, lookup, "observed", "spectral", metric, period_s),
@@ -319,15 +329,13 @@ def _calculate_spectral_metric_rows(
         synthetic_for_period = _apply_qc_valid_window(synthetic, syn_qc) if task.use_qc else synthetic
         obs_ok = _side_ok(task, obs_qc, _side_available(observed_for_period))
         syn_ok = _side_ok(task, syn_qc, _side_available(synthetic_for_period))
-        obs_values = _calculate_spectral_values(metric, _valid_data(observed_for_period), observed_for_period.dt, periods) if observed_for_period is not None else np.full(len(periods), np.nan)
-        syn_values = _calculate_spectral_values(metric, _valid_data(synthetic_for_period), synthetic_for_period.dt, periods) if synthetic_for_period is not None else np.full(len(periods), np.nan)
         comparison_ok = _comparison_ok(task, obs_ok, syn_ok)
         rows.extend(
             build_spectral_metric_rows(
                 metric=metric,
                 periods_s=[period_s],
-                values_obs=[obs_values[idx] if obs_ok and task.output_mode != "synthetic" else np.nan],
-                values_syn=[syn_values[idx] if syn_ok and task.output_mode != "observed" else np.nan],
+                values_obs=[obs_values_by_period[idx] if obs_ok and task.output_mode != "synthetic" else np.nan],
+                values_syn=[syn_values_by_period[idx] if syn_ok and task.output_mode != "observed" else np.nan],
                 transforms=task.transforms if comparison_ok else (),
                 **_context(task),
                 **_qc_payload(task, obs_qc, syn_qc, obs_ok, syn_ok, comparison_ok),
