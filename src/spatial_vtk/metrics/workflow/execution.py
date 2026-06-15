@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
+import time
 from typing import Any
 
 import pandas as pd
@@ -189,11 +190,46 @@ def run_manifest_batch(
     parsed = read_task_manifest(manifest) if not isinstance(manifest, MetricWorkflowManifest) else manifest
     batch = _batch_by_index(parsed, batch_index)
     output_path = Path(batch["output_path"]).expanduser()
+    batch_number = int(batch["batch_index"]) + 1
+    total_batches = len(parsed.batches)
+    completed_before = _completed_batch_count(parsed)
+    _print_batch_progress(
+        parsed,
+        batch_number=batch_number,
+        total_batches=total_batches,
+        completed_batches=completed_before,
+        message=f"starting batch {batch_number}/{total_batches}",
+    )
     if output_path.exists() and not overwrite:
+        _print_batch_progress(
+            parsed,
+            batch_number=batch_number,
+            total_batches=total_batches,
+            completed_batches=completed_before,
+            message=f"batch output already exists; skipping {output_path}",
+        )
         return output_path
     selected_tasks = [parsed.tasks[int(index)] for index in batch["task_indices"]]
+    start = time.monotonic()
+    print(
+        f"Metric batch {batch_number}/{total_batches}: running {len(selected_tasks)} task(s) -> {output_path}",
+        flush=True,
+    )
     rows = run_metric_tasks(selected_tasks, qc_table=parsed.qc_table or None)
-    return write_metric_rows(rows, output_path)
+    written = write_metric_rows(rows, output_path)
+    batch_elapsed = time.monotonic() - start
+    completed_after = _completed_batch_count(parsed)
+    _print_batch_progress(
+        parsed,
+        batch_number=batch_number,
+        total_batches=total_batches,
+        completed_batches=completed_after,
+        message=(
+            f"finished batch {batch_number}/{total_batches} "
+            f"({len(rows)} metric row(s), batch elapsed {_format_duration(batch_elapsed)})"
+        ),
+    )
+    return written
 
 
 def merge_batch_outputs(
@@ -250,6 +286,57 @@ def _read_table(path: str | Path) -> pd.DataFrame:
     if table_path.suffix.lower() in {".parquet", ".pq"}:
         return pd.read_parquet(table_path)
     return pd.read_csv(table_path)
+
+
+def _completed_batch_count(manifest: MetricWorkflowManifest) -> int:
+    """Count manifest batch outputs that already exist."""
+
+    return sum(1 for batch in manifest.batches if Path(batch["output_path"]).expanduser().exists())
+
+
+def _workflow_elapsed_seconds(manifest: MetricWorkflowManifest) -> float:
+    """Estimate workflow wall time from the manifest mtime."""
+
+    try:
+        return max(0.0, time.time() - manifest.manifest_path.expanduser().stat().st_mtime)
+    except OSError:
+        return 0.0
+
+
+def _print_batch_progress(
+    manifest: MetricWorkflowManifest,
+    *,
+    batch_number: int,
+    total_batches: int,
+    completed_batches: int,
+    message: str,
+) -> None:
+    """Print one metric workflow progress line with elapsed time and ETA."""
+
+    elapsed = _workflow_elapsed_seconds(manifest)
+    remaining = max(total_batches - completed_batches, 0)
+    eta = ""
+    if completed_batches > 0 and elapsed > 0:
+        seconds_per_batch = elapsed / completed_batches
+        eta = f", ETA {_format_duration(seconds_per_batch * remaining)}"
+    print(
+        f"Metric workflow: {message}; {completed_batches}/{total_batches} batch(es) complete; "
+        f"elapsed {_format_duration(elapsed)}{eta}",
+        flush=True,
+    )
+
+
+def _format_duration(seconds: float) -> str:
+    """Format elapsed seconds as compact human-readable time."""
+
+    total = max(0, int(seconds))
+    hours, remainder = divmod(total, 3600)
+    minutes, secs = divmod(remainder, 60)
+    if hours:
+        return f"{hours}h{minutes:02d}m{secs:02d}s"
+    if minutes:
+        return f"{minutes}m{secs:02d}s"
+    return f"{secs}s"
 
 
 def build_arg_parser() -> argparse.ArgumentParser:

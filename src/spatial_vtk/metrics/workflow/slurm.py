@@ -83,6 +83,9 @@ def write_metrics_slurm_script(
     lines = slurm_header(settings, array=f"0-{last_index}%{max(1, int(settings.max_concurrent))}")
     lines.extend(
         [
+            f'echo "Metric Slurm array: task $SLURM_ARRAY_TASK_ID of {len(manifest.batches)} batch(es)"',
+            f'echo "Metric manifest: {manifest_abs}"',
+            f'echo "Metric max concurrent batches: {max(1, int(settings.max_concurrent))}"',
             f"{settings.python_command} -m spatial_vtk.metrics.workflow.execution --manifest {manifest_abs} --batch-index $SLURM_ARRAY_TASK_ID",
             "",
         ]
