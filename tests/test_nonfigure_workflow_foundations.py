@@ -492,6 +492,9 @@ def test_large_qc_inventory_helpers_stream_event_station_chunks(tmp_path: Path) 
     eligible = pd.read_csv(eligible_path)
     expected_eligible = build_comparison_eligibility(qc_summary)
     assert eligible[["event_id", "station", "component", "metric"]].to_dict("records") == expected_eligible[["event_id", "station", "component", "metric"]].to_dict("records")
+    mtime = eligible_path.stat().st_mtime_ns
+    write_comparison_eligibility_from_qc_inventory(qc_path, eligible_path, chunksize=3, overwrite=False)
+    assert eligible_path.stat().st_mtime_ns == mtime
 
     eligible_sample = load_comparison_eligible_records(
         eligible_path,

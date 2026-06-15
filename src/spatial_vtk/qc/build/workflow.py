@@ -661,6 +661,7 @@ def write_comparison_eligibility_from_qc_inventory(
     output_path: str | Path,
     *,
     chunksize: int = 1_000_000,
+    overwrite: bool = True,
     verbose: bool = False,
 ) -> Path:
     """Write comparison-eligible rows from a large side-specific QC inventory.
@@ -671,6 +672,9 @@ def write_comparison_eligibility_from_qc_inventory(
 
     output = Path(output_path).expanduser()
     output.parent.mkdir(parents=True, exist_ok=True)
+    if output.exists() and not overwrite:
+        _progress(verbose, f"Comparison eligibility: reusing existing {output}")
+        return output
     output.unlink(missing_ok=True)
     wrote_header = False
     usecols = sorted(
