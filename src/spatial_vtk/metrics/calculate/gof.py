@@ -29,6 +29,7 @@ Compute one metrics bundle for aligned traces:
 
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import Dict, Iterable, Optional, Tuple
 import numpy as np
 
@@ -661,64 +662,77 @@ def PGD(trace, dt: float, *, fmin: Optional[float] = None, edge_frac: float = 0.
     displacement = _integrate_acc_to_disp(_as_metric_trace(trace), dt, fmin=fmin)
     return float(_peak_abs(displacement, edge_frac=edge_frac))
 
-# ---------- Response spectra (C8) with Newmark-β ----------
+# ---------- Response spectra (C8) with bilinear Newmark-equivalent filter ----------
 
 def _psa_newmark(acc: np.ndarray, dt: float, freq_hz: float, zeta: float = 0.05) -> float:
     """
-    Stable Newmark-β (β=1/4, γ=1/2) SDOF relative motion with base acceleration input.
+    Stable SDOF relative motion with base acceleration input.
+
+    The average-acceleration Newmark method is equivalent to a trapezoidal
+    integration rule for this linear oscillator. A bilinear-transform digital
+    filter gives the same response to numerical precision while running in
+    compiled SciPy code instead of a Python loop over every sample.
+
     Returns PSA = ω^2 * max|u|.
     """
-    # ---- Guards & casting ----
     if dt <= 0.0 or freq_hz <= 0.0:
         return 0.0
     acc = np.asarray(acc, dtype=np.float64)
     if acc.size == 0:
         return 0.0
-    # Replace NaNs/Infs defensively
     acc = np.nan_to_num(acc, nan=0.0, posinf=0.0, neginf=0.0)
-
-    # ---- System ----
-    m = 1.0
     omega = 2.0 * np.pi * float(freq_hz)
-    k = m * omega * omega
-    c = 2.0 * zeta * omega * m
+    try:
+        b, a = _psa_filter_coefficients(float(dt), float(freq_hz), float(zeta))
+        from scipy.signal import lfilter
 
-    # ---- Newmark constants (β=1/4, γ=1/2) ----
+        u = lfilter(b, a, acc)
+        return float((omega * omega) * np.nanmax(np.abs(u)))
+    except Exception:
+        return _psa_newmark_loop(acc, float(dt), float(freq_hz), float(zeta))
+
+
+@lru_cache(maxsize=4096)
+def _psa_filter_coefficients(dt: float, freq_hz: float, zeta: float = 0.05) -> tuple[np.ndarray, np.ndarray]:
+    """Return bilinear-transform filter coefficients for PSA response."""
+
+    from scipy.signal import bilinear
+
+    omega = 2.0 * np.pi * float(freq_hz)
+    numerator = [-1.0]
+    denominator = [1.0, 2.0 * float(zeta) * omega, omega * omega]
+    b, a = bilinear(numerator, denominator, fs=1.0 / float(dt))
+    return np.asarray(b, dtype=np.float64), np.asarray(a, dtype=np.float64)
+
+
+def _psa_newmark_loop(acc: np.ndarray, dt: float, freq_hz: float, zeta: float = 0.05) -> float:
+    """Pure-Python Newmark fallback used only when SciPy filtering is unavailable."""
+
+    omega = 2.0 * np.pi * float(freq_hz)
+    k = omega * omega
+    c = 2.0 * zeta * omega
     beta = 0.25
     gamma = 0.5
-    a0 = 1.0 / (beta * dt * dt)              # 4 / dt^2
-    a1 = gamma / (beta * dt)                 # 2 / dt
-    a2 = 1.0 / (beta * dt)                   # 4 / dt
-    a3 = 1.0 / (2.0 * beta) - 1.0            # 1
-    a4 = gamma / beta - 1.0                  # 1
-    a5 = dt * (gamma / (2.0 * beta) - 1.0)   # 0
-
-    keff = k + a0 * m + a1 * c               # effective stiffness
-
-    # ---- State ----
+    a0 = 1.0 / (beta * dt * dt)
+    a1 = gamma / (beta * dt)
+    a2 = 1.0 / (beta * dt)
+    a3 = 1.0 / (2.0 * beta) - 1.0
+    a4 = gamma / beta - 1.0
+    a5 = dt * (gamma / (2.0 * beta) - 1.0)
+    keff = k + a0 + a1 * c
     u = 0.0
     v = 0.0
     a_rel = 0.0
     umax = 0.0
-
-    # ---- Time stepping ----
-    # Effective load uses current state (u, v, a_rel); no predictor needed.
-    # p_eff = -m*ag + m*(a0*u + a2*v + a3*a_rel) + c*(a1*u + a4*v + a5*a_rel)
     for ag in acc:
-        p_eff = (-m * ag
-                 + m * (a0 * u + a2 * v + a3 * a_rel)
-                 + c * (a1 * u + a4 * v + a5 * a_rel))
-
+        p_eff = -ag + (a0 * u + a2 * v + a3 * a_rel) + c * (a1 * u + a4 * v + a5 * a_rel)
         u_new = p_eff / keff
         a_rel_new = a0 * (u_new - u) - a2 * v - a3 * a_rel
         v_new = v + dt * ((1.0 - gamma) * a_rel + gamma * a_rel_new)
-
         u, v, a_rel = u_new, v_new, a_rel_new
         if abs(u) > abs(umax):
             umax = u
-
-    psa = (omega * omega) * abs(umax)
-    return float(psa)
+    return float((omega * omega) * abs(umax))
 
 
 def PSA(trace, dt: float, periods: Iterable[float], *, damping: float = 0.05) -> np.ndarray:

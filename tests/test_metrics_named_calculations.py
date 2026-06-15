@@ -30,6 +30,7 @@ from spatial_vtk.metrics.calculate.transforms import (
     olsen_mayhew_gof,
     residual,
 )
+from spatial_vtk.metrics.calculate.gof import _psa_newmark, _psa_newmark_loop
 
 
 def test_named_trace_metrics_return_finite_values() -> None:
@@ -65,6 +66,22 @@ def test_named_spectral_metrics_follow_requested_period_grid() -> None:
     assert np.all(np.isfinite(psa))
     assert np.all(np.isfinite(fas))
     assert fas[1] > fas[0]
+
+
+def test_fast_psa_matches_newmark_fallback() -> None:
+    """The optimized PSA filter should preserve Newmark response values."""
+
+    dt = 0.01
+    time = np.arange(0.0, 20.0, dt)
+    acceleration = (
+        0.7 * np.sin(2.0 * np.pi * 0.8 * time)
+        + 0.2 * np.sin(2.0 * np.pi * 2.2 * time)
+    )
+
+    for period in (0.5, 1.0, 2.0, 5.0):
+        fast = _psa_newmark(acceleration, dt, 1.0 / period)
+        fallback = _psa_newmark_loop(acceleration, dt, 1.0 / period)
+        assert fast == pytest.approx(fallback, rel=1e-9, abs=1e-9)
 
 
 def test_public_delay_correction_uses_shift_needed_to_align_synthetic() -> None:
