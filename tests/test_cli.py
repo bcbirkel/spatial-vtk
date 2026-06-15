@@ -263,6 +263,41 @@ def test_cli_metrics_cache_waveforms_writes_cached_manifest(tmp_path):
     assert len(list(cache_root.rglob("*.npz"))) == 2
 
 
+def test_cli_metrics_slurm_reports_script_without_submit(tmp_path, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    manifest = tmp_path / "manifest.json"
+    script = tmp_path / "run_metrics.slurm"
+    config.write_text(
+        """
+project:
+  root_dir: .
+metrics:
+  slurm:
+    python_command: python
+    max_concurrent: 2
+""",
+        encoding="utf-8",
+    )
+    manifest.write_text(
+        json.dumps(
+            {
+                "manifest_version": 1,
+                "qc_table": "",
+                "tasks": [],
+                "batches": [{"batch_index": 0, "task_indices": [], "output_path": str(tmp_path / "batch.csv")}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert main(["metrics", "slurm", "--manifest", str(manifest), "--output", str(script), "--config", str(config)]) == 0
+
+    captured = capsys.readouterr()
+    assert "Wrote metric Slurm script" in captured.out
+    assert "No job was submitted" in captured.out
+    assert script.exists()
+
+
 def test_cli_call_importable_function(capsys):
     assert main(["call", "spatial_vtk.config.labels.metric_display_name", "--args", "C5"]) == 0
     captured = capsys.readouterr()

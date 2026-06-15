@@ -149,7 +149,9 @@ def main(argv: list[str] | None = None) -> int:
         else SpatialVTKConfig.empty(root_dir=".")
     )
     settings = slurm_settings_from_config(config)
-    write_metrics_slurm_script(args.manifest, args.output, settings)
+    path = write_metrics_slurm_script(args.manifest, args.output, settings)
+    print(f"Wrote metric Slurm script: {path}")
+    print("No job was submitted. Submit the script with sbatch.")
     return 0
 
 

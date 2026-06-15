@@ -873,7 +873,8 @@ def _cmd_metrics_slurm(args: argparse.Namespace) -> int:
         print(submission.stdout or f"submitted {submission.script_path}")
         return int(submission.returncode)
     path = write_metrics_slurm_script(args.manifest, args.output, settings)
-    print(path)
+    print(f"Wrote metric Slurm script: {path}")
+    print("No job was submitted. Re-run with --submit or submit the script with sbatch.")
     return 0
 
 
