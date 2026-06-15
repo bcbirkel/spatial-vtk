@@ -823,6 +823,10 @@ def build_post_qc_record_table(
 
     records = _read_table(event_station_records).copy()
     out = records.rename(columns={"station_lat": "sta_lat", "station_lon": "sta_lon"})
+    if "sta_lat" not in out.columns and "lat" in out.columns:
+        out["sta_lat"] = out["lat"]
+    if "sta_lon" not in out.columns and "lon" in out.columns:
+        out["sta_lon"] = out["lon"]
     if events is not None:
         event_df = _read_table(events)
         keep = [column for column in ("event_id", "event_lat", "event_lon", "magnitude") if column in event_df.columns]

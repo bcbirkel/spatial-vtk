@@ -528,6 +528,14 @@ def test_large_qc_inventory_helpers_stream_event_station_chunks(tmp_path: Path) 
         ("e1", "S1"): "pass",
         ("e2", "S2"): "fail",
     }
+    assert post_qc.set_index(["event_id", "station"])["sta_lat"].to_dict() == {
+        ("e1", "S1"): 3.0,
+        ("e2", "S2"): 7.0,
+    }
+    assert post_qc.set_index(["event_id", "station"])["sta_lon"].to_dict() == {
+        ("e1", "S1"): 4.0,
+        ("e2", "S2"): 8.0,
+    }
 
     drop_causes = build_qc_drop_cause_table_from_qc_inventory(qc_path, chunksize=3)
     assert drop_causes.set_index("_reason")["count"].to_dict() == {
