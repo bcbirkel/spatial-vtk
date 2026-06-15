@@ -215,7 +215,11 @@ def run_manifest_batch(
         f"Metric batch {batch_number}/{total_batches}: running {len(selected_tasks)} task(s) -> {output_path}",
         flush=True,
     )
-    rows = run_metric_tasks(selected_tasks, qc_table=parsed.qc_table or None)
+    rows = run_metric_tasks(
+        selected_tasks,
+        qc_table=parsed.qc_table or None,
+        progress_label=f"Metric batch {batch_number}/{total_batches}",
+    )
     written = write_metric_rows(rows, output_path)
     batch_elapsed = time.monotonic() - start
     completed_after = _completed_batch_count(parsed)

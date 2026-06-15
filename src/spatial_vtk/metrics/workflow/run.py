@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
+import time
 from typing import Any
 
 import numpy as np
@@ -73,6 +74,8 @@ def run_metric_tasks(
     tasks: list[MetricWorkflowTask],
     *,
     qc_table: pd.DataFrame | str | Path | None = None,
+    progress_label: str | None = None,
+    progress_interval: int = 10,
 ) -> pd.DataFrame:
     """Run metric workflow tasks and return a long metric table.
 
@@ -82,6 +85,10 @@ def run_metric_tasks(
         Metric workflow tasks.
     qc_table
         Optional side-specific QC inventory.
+    progress_label
+        Optional label used to print flushed task-level progress.
+    progress_interval
+        Print progress every N tasks when ``progress_label`` is provided.
 
     Returns
     -------
@@ -92,8 +99,25 @@ def run_metric_tasks(
     lookup = metric_qc_lookup(qc_table)
     rows: list[dict[str, Any]] = []
     waveform_cache: dict[str, Any] = {}
-    for task in tasks:
+    cache_group: tuple[str, str, str, str] | None = None
+    start = time.monotonic()
+    total = len(tasks)
+    interval = max(1, int(progress_interval))
+    for index, task in enumerate(tasks, start=1):
+        next_group = (task.obs_waveform_path, task.syn_waveform_path, task.station, task.component)
+        if next_group != cache_group:
+            waveform_cache.clear()
+            cache_group = next_group
         rows.extend(calculate_task_rows(task, qc_lookup=lookup, waveform_cache=waveform_cache))
+        if progress_label and (index == 1 or index == total or index % interval == 0):
+            elapsed = time.monotonic() - start
+            rate = index / elapsed if elapsed > 0 else 0.0
+            eta = (total - index) / rate if rate > 0 else 0.0
+            print(
+                f"{progress_label}: task {index}/{total} "
+                f"(elapsed {_format_duration(elapsed)}, {rate:.2f} tasks/s, ETA {_format_duration(eta)})",
+                flush=True,
+            )
     return pd.DataFrame(rows)
 
 
@@ -184,6 +208,19 @@ def write_metric_rows(df: pd.DataFrame, path: str | Path) -> Path:
     else:
         df.to_csv(output, index=False)
     return output
+
+
+def _format_duration(seconds: float) -> str:
+    """Format elapsed seconds as compact human-readable time."""
+
+    total = max(0, int(seconds))
+    hours, remainder = divmod(total, 3600)
+    minutes, secs = divmod(remainder, 60)
+    if hours:
+        return f"{hours}h{minutes:02d}m{secs:02d}s"
+    if minutes:
+        return f"{minutes}m{secs:02d}s"
+    return f"{secs}s"
 
 
 def _calculate_trace_metric_row(
