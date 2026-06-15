@@ -64,6 +64,13 @@ _TRACE_QC_PAYLOAD_COLUMNS = (
     "valid_start_sample",
     "valid_end_sample",
 )
+_STRUCTURAL_MISSING_QC_REASONS = {
+    "missing_component",
+    "missing_station",
+    "missing_trace",
+    "missing_waveform_file",
+    "missing_waveform_path",
+}
 
 
 def _progress(verbose: bool, message: str) -> None:
@@ -299,6 +306,7 @@ def write_qc_inventory_overlap_from_full(
     output_path: str | Path | None = None,
     *,
     scope: str = "event_station",
+    require_trace_overlap: bool = True,
     chunksize: int = 1_000_000,
     overwrite: bool = True,
     verbose: bool = False,
@@ -309,8 +317,9 @@ def write_qc_inventory_overlap_from_full(
     The canonical ``qc_inventory`` can contain observed-only or synthetic-only
     rows that are useful for source-specific diagnostics. Comparison metrics
     only make sense where both sources are present for the same event-station
-    record, so this helper streams the full inventory and writes a smaller
-    sidecar for downstream metric and plotting steps without recomputing QC.
+    record and trace component, so this helper streams the full inventory and
+    writes a smaller sidecar for downstream metric and plotting steps without
+    recomputing QC.
     """
 
     output = Path(
@@ -347,7 +356,7 @@ def write_qc_inventory_overlap_from_full(
         verbose,
         "QC overlap inventory: "
         f"{len(overlap_records)} overlapping event-station {_plural(len(overlap_records), 'record')} "
-        f"(scope={scope_key})",
+        f"(scope={scope_key}, trace_overlap={'yes' if require_trace_overlap else 'no'})",
     )
 
     is_parquet_output = output.suffix.lower() in {".parquet", ".pq"}
@@ -365,9 +374,10 @@ def write_qc_inventory_overlap_from_full(
         import pyarrow.parquet as pq
     try:
         for index, chunk in enumerate(
-            _iter_qc_chunks(
+            _iter_qc_complete_chunks(
                 qc_inventory,
                 chunksize=chunksize,
+                usecols=None,
                 csv_dtype=str if is_parquet_output else None,
             ),
             start=1,
@@ -388,6 +398,8 @@ def write_qc_inventory_overlap_from_full(
                     index=chunk.index,
                 )
             selected = chunk.loc[mask].copy()
+            if require_trace_overlap and not selected.empty:
+                selected = _filter_qc_trace_overlap_chunk(selected)
             if selected.empty:
                 _progress(verbose, f"QC overlap inventory: chunk {index} scanned {len(chunk)} row(s), wrote 0")
                 continue
@@ -1374,6 +1386,53 @@ def _comparison_pair_table(qc_summary: pd.DataFrame | str | Path) -> pd.DataFram
     return pairs
 
 
+def _filter_qc_trace_overlap_chunk(chunk: pd.DataFrame) -> pd.DataFrame:
+    """Keep rows whose event/station/component/passband has both real sources."""
+
+    if chunk.empty:
+        return chunk.copy()
+    required = ["source", "event_id", "station", "component", "passband", "qc_reason"]
+    missing = [column for column in required if column not in chunk.columns]
+    if missing:
+        raise KeyError(f"QC inventory is missing required columns for trace-overlap filtering: {missing}")
+    work = chunk.copy()
+    work["__source"] = work["source"].astype(str).str.strip().str.lower()
+    work["__event_id"] = work["event_id"].astype(str).str.strip()
+    work["__station"] = work["station"].astype(str).str.strip().str.upper()
+    work["__component"] = work["component"].astype(str).str.strip().str.upper()
+    work["__passband"] = work["passband"].astype(str).str.strip()
+    work["__structural_missing"] = work["qc_reason"].map(_has_structural_missing_reason)
+    key_columns = ["__event_id", "__station", "__component", "__passband"]
+    present = work.loc[
+        work["__source"].isin(["observed", "synthetic"]) & ~work["__structural_missing"],
+        [*key_columns, "__source"],
+    ].drop_duplicates()
+    if present.empty:
+        return chunk.iloc[0:0].copy()
+    source_counts = present.groupby(key_columns, dropna=False)["__source"].nunique()
+    keep_keys = {key if isinstance(key, tuple) else (key,) for key, count in source_counts.items() if int(count) >= 2}
+    if not keep_keys:
+        return chunk.iloc[0:0].copy()
+    row_keys = list(zip(work["__event_id"], work["__station"], work["__component"], work["__passband"]))
+    keep_mask = pd.Series([key in keep_keys for key in row_keys], index=work.index)
+    keep_mask &= ~work["__structural_missing"]
+    return chunk.loc[keep_mask].copy()
+
+
+def _has_structural_missing_reason(reason: object) -> bool:
+    """Return whether a QC reason means the waveform trace is absent."""
+
+    if reason is None:
+        return False
+    try:
+        if pd.isna(reason):
+            return False
+    except Exception:
+        pass
+    parts = [part.strip().lower() for part in str(reason).split(";") if part.strip()]
+    return any(part in _STRUCTURAL_MISSING_QC_REASONS for part in parts)
+
+
 def _iter_qc_event_station_groups(
     qc_summary: pd.DataFrame | str | Path,
     *,
@@ -1392,13 +1451,14 @@ def _iter_qc_complete_chunks(
     *,
     chunksize: int = 1_000_000,
     usecols: Sequence[str] | None = None,
+    csv_dtype: object | None = None,
 ):
     """Yield chunks without splitting the final event/station group."""
 
     required = ["event_id", "station"]
     pending = pd.DataFrame()
     requested = sorted(set(usecols or []).union(required)) if usecols is not None else None
-    for chunk in _iter_qc_chunks(qc_summary, chunksize=chunksize, usecols=requested):
+    for chunk in _iter_qc_chunks(qc_summary, chunksize=chunksize, usecols=requested, csv_dtype=csv_dtype):
         if chunk.empty:
             continue
         missing = [column for column in required if column not in chunk.columns]
