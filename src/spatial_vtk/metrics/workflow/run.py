@@ -76,6 +76,7 @@ def run_metric_tasks(
     qc_table: pd.DataFrame | str | Path | None = None,
     progress_label: str | None = None,
     progress_interval: int = 10,
+    timing: dict[str, float] | None = None,
 ) -> pd.DataFrame:
     """Run metric workflow tasks and return a long metric table.
 
@@ -89,6 +90,8 @@ def run_metric_tasks(
         Optional label used to print flushed task-level progress.
     progress_interval
         Print progress every N tasks when ``progress_label`` is provided.
+    timing
+        Optional mutable dictionary populated with coarse timing totals.
 
     Returns
     -------
@@ -96,7 +99,9 @@ def run_metric_tasks(
         Long metric table.
     """
 
+    qc_start = time.monotonic()
     lookup = metric_qc_lookup(qc_table, tasks=tasks)
+    _add_timing(timing, "qc_lookup_s", time.monotonic() - qc_start)
     rows: list[dict[str, Any]] = []
     waveform_cache: dict[str, Any] = {}
     cache_group: tuple[str, str, str, str] | None = None
@@ -108,7 +113,9 @@ def run_metric_tasks(
         if next_group != cache_group:
             waveform_cache.clear()
             cache_group = next_group
-        rows.extend(calculate_task_rows(task, qc_lookup=lookup, waveform_cache=waveform_cache))
+        task_start = time.monotonic()
+        rows.extend(calculate_task_rows(task, qc_lookup=lookup, waveform_cache=waveform_cache, timing=timing))
+        _add_timing(timing, "task_total_s", time.monotonic() - task_start)
         if progress_label and (index == 1 or index == total or index % interval == 0):
             elapsed = time.monotonic() - start
             rate = index / elapsed if elapsed > 0 else 0.0
@@ -118,7 +125,10 @@ def run_metric_tasks(
                 f"(elapsed {_format_duration(elapsed)}, {rate:.2f} tasks/s, ETA {_format_duration(eta)})",
                 flush=True,
             )
-    return pd.DataFrame(rows)
+    frame_start = time.monotonic()
+    frame = pd.DataFrame(rows)
+    _add_timing(timing, "dataframe_s", time.monotonic() - frame_start)
+    return frame
 
 
 def calculate_task_rows(
@@ -126,6 +136,7 @@ def calculate_task_rows(
     *,
     qc_lookup: dict[tuple[str, str, str, str, str, str, str], dict[str, Any]] | None = None,
     waveform_cache: dict[str, Any] | None = None,
+    timing: dict[str, float] | None = None,
 ) -> list[dict[str, Any]]:
     """Calculate all metric rows for one workflow task.
 
@@ -137,6 +148,8 @@ def calculate_task_rows(
         Optional normalized QC lookup.
     waveform_cache
         Optional cache of loaded waveform files reused across tasks.
+    timing
+        Optional mutable dictionary populated with coarse timing totals.
 
     Returns
     -------
@@ -145,6 +158,7 @@ def calculate_task_rows(
     """
 
     lookup = qc_lookup or {}
+    observed_start = time.monotonic()
     observed = _load_and_prepare_side(
         task.obs_waveform_path,
         task.station,
@@ -156,6 +170,11 @@ def calculate_task_rows(
         task.waveform_filter_order,
         waveform_cache=waveform_cache,
     ) if task.obs_waveform_path else None
+    observed_elapsed = time.monotonic() - observed_start
+    if task.obs_waveform_path:
+        _add_timing(timing, "observed_load_s", observed_elapsed)
+        _add_timing(timing, "load_s", observed_elapsed)
+    synthetic_start = time.monotonic()
     synthetic = _load_and_prepare_side(
         task.syn_waveform_path,
         task.station,
@@ -167,18 +186,30 @@ def calculate_task_rows(
         task.waveform_filter_order,
         waveform_cache=waveform_cache,
     ) if task.syn_waveform_path else None
+    synthetic_elapsed = time.monotonic() - synthetic_start
+    if task.syn_waveform_path:
+        _add_timing(timing, "synthetic_load_s", synthetic_elapsed)
+        _add_timing(timing, "load_s", synthetic_elapsed)
     if task.output_mode in {"residual", "gof", "full"} and (observed is None or synthetic is None):
         raise ValueError(f"Task {task.task_id} requires both observed and synthetic waveforms for output_mode={task.output_mode!r}.")
     rows: list[dict[str, Any]] = []
+    spectral_qc_start = time.monotonic()
     spectral_qc = _build_spectral_qc(task, observed, synthetic)
+    _add_timing(timing, "spectral_qc_s", time.monotonic() - spectral_qc_start)
     for metric in task.metrics:
         group = metric_group_for(metric)
         if metric in TRACE_VALUE_METRICS:
+            metric_start = time.monotonic()
             rows.append(_calculate_trace_metric_row(task, metric, group, observed, synthetic, lookup))
+            _add_timing(timing, "trace_metric_s", time.monotonic() - metric_start)
         elif metric in SPECTRAL_METRICS:
+            metric_start = time.monotonic()
             rows.extend(_calculate_spectral_metric_rows(task, metric, observed, synthetic, lookup, spectral_qc))
+            _add_timing(timing, "spectral_metric_s", time.monotonic() - metric_start)
         elif metric in PAIR_ONLY_METRICS:
+            metric_start = time.monotonic()
             rows.append(_calculate_pair_metric_row(task, metric, group, observed, synthetic, lookup))
+            _add_timing(timing, "pair_metric_s", time.monotonic() - metric_start)
         else:
             raise ValueError(f"Unsupported metric in workflow task: {metric!r}")
     return rows
@@ -208,6 +239,13 @@ def write_metric_rows(df: pd.DataFrame, path: str | Path) -> Path:
     else:
         df.to_csv(output, index=False)
     return output
+
+
+def _add_timing(timing: dict[str, float] | None, key: str, elapsed: float) -> None:
+    """Accumulate one timing value when instrumentation is enabled."""
+
+    if timing is not None:
+        timing[key] = timing.get(key, 0.0) + max(0.0, float(elapsed))
 
 
 def _format_duration(seconds: float) -> str:

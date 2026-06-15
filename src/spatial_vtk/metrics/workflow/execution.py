@@ -113,7 +113,8 @@ def write_task_manifest(
     manifest = Path(manifest_path).expanduser()
     batch_dir = Path(output_dir).expanduser()
     batch_dir.mkdir(parents=True, exist_ok=True)
-    chunks = chunk_tasks(tasks, chunk_size=batch_size)
+    ordered_tasks = _sort_tasks_for_cache(tasks)
+    chunks = chunk_tasks(ordered_tasks, chunk_size=batch_size)
     batches: list[dict[str, Any]] = []
     cursor = 0
     suffix = output_suffix if str(output_suffix).startswith(".") else f".{output_suffix}"
@@ -131,11 +132,11 @@ def write_task_manifest(
     payload = {
         "manifest_version": MANIFEST_VERSION,
         "qc_table": str(qc_table or ""),
-        "tasks": [task.to_dict() for task in tasks],
+        "tasks": [task.to_dict() for task in ordered_tasks],
         "batches": batches,
     }
     write_json(manifest, payload)
-    return MetricWorkflowManifest(manifest_path=manifest, tasks=tuple(tasks), batches=tuple(batches), qc_table=str(qc_table or ""))
+    return MetricWorkflowManifest(manifest_path=manifest, tasks=tuple(ordered_tasks), batches=tuple(batches), qc_table=str(qc_table or ""))
 
 
 def read_task_manifest(path: str | Path) -> MetricWorkflowManifest:
@@ -211,6 +212,7 @@ def run_manifest_batch(
         return output_path
     selected_tasks = [parsed.tasks[int(index)] for index in batch["task_indices"]]
     start = time.monotonic()
+    timing: dict[str, float] = {}
     print(
         f"Metric batch {batch_number}/{total_batches}: running {len(selected_tasks)} task(s) -> {output_path}",
         flush=True,
@@ -219,9 +221,13 @@ def run_manifest_batch(
         selected_tasks,
         qc_table=parsed.qc_table or None,
         progress_label=f"Metric batch {batch_number}/{total_batches}",
+        timing=timing,
     )
+    write_start = time.monotonic()
     written = write_metric_rows(rows, output_path)
+    timing["write_s"] = timing.get("write_s", 0.0) + (time.monotonic() - write_start)
     batch_elapsed = time.monotonic() - start
+    print(_format_timing_summary(f"Metric batch {batch_number}/{total_batches}", timing), flush=True)
     completed_after = _completed_batch_count(parsed)
     _print_batch_progress(
         parsed,
@@ -281,6 +287,58 @@ def _batch_by_index(manifest: MetricWorkflowManifest, batch_index: int) -> dict[
         if int(batch["batch_index"]) == int(batch_index):
             return batch
     raise IndexError(f"Batch index {batch_index} is not present in manifest {manifest.manifest_path}.")
+
+
+def _sort_tasks_for_cache(tasks: list[MetricWorkflowTask]) -> list[MetricWorkflowTask]:
+    """Return tasks ordered to maximize per-process waveform cache reuse."""
+
+    indexed = list(enumerate(tasks))
+    indexed.sort(key=lambda item: (*_task_cache_sort_key(item[1]), item[0]))
+    return [task for _, task in indexed]
+
+
+def _task_cache_sort_key(task: MetricWorkflowTask) -> tuple[Any, ...]:
+    """Return a stable key that keeps reusable waveform loads adjacent."""
+
+    return (
+        str(task.obs_waveform_path or ""),
+        str(task.syn_waveform_path or ""),
+        str(task.station or "").strip().upper(),
+        str(task.component or "").strip().upper(),
+        str(task.event_id or ""),
+        str(task.model or ""),
+        _none_last_float(task.period_min_s),
+        _none_last_float(task.period_max_s),
+        str(task.passband or ""),
+    )
+
+
+def _none_last_float(value: object) -> tuple[int, float]:
+    """Sort finite numeric values before missing values."""
+
+    try:
+        number = float(value)
+    except Exception:
+        return (1, 0.0)
+    return (0, number) if pd.notna(number) else (1, 0.0)
+
+
+def _format_timing_summary(label: str, timing: dict[str, float]) -> str:
+    """Format batch timing totals for Slurm stdout."""
+
+    ordered = [
+        ("qc_lookup_s", "qc_lookup"),
+        ("task_total_s", "tasks"),
+        ("load_s", "load"),
+        ("spectral_qc_s", "spectral_qc"),
+        ("trace_metric_s", "trace_metrics"),
+        ("spectral_metric_s", "spectral_metrics"),
+        ("pair_metric_s", "pair_metrics"),
+        ("dataframe_s", "dataframe"),
+        ("write_s", "write"),
+    ]
+    parts = [f"{name} {_format_duration(timing.get(key, 0.0))}" for key, name in ordered if timing.get(key, 0.0) > 0.0]
+    return f"{label} timing: " + (", ".join(parts) if parts else "no timing recorded")
 
 
 def _read_table(path: str | Path) -> pd.DataFrame:

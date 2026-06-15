@@ -275,6 +275,22 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     assert "source activate spatial-vtk" in text
 
 
+def test_metric_manifest_orders_tasks_for_waveform_cache_reuse(tmp_path) -> None:
+    """Manifest writing should keep tasks with the same loaded waveforms adjacent."""
+
+    tasks = [
+        MetricWorkflowTask("task-b", "e1", "BBB", "Z", obs_waveform_path="obs_b.pkl", syn_waveform_path="syn_b.asdf", period_min_s=2.0, period_max_s=3.0),
+        MetricWorkflowTask("task-a2", "e1", "AAA", "Z", obs_waveform_path="obs_a.pkl", syn_waveform_path="syn_a.asdf", period_min_s=3.0, period_max_s=5.0),
+        MetricWorkflowTask("task-a1", "e1", "AAA", "Z", obs_waveform_path="obs_a.pkl", syn_waveform_path="syn_a.asdf", period_min_s=1.0, period_max_s=2.0),
+    ]
+
+    manifest = write_task_manifest(tasks, tmp_path / "manifest.json", output_dir=tmp_path / "batches", batch_size=2)
+    parsed = read_task_manifest(manifest.manifest_path)
+
+    assert [task.task_id for task in parsed.tasks] == ["task-a1", "task-a2", "task-b"]
+    assert parsed.batches[0]["task_indices"] == [0, 1]
+
+
 def test_metric_workflow_applies_configured_lowpass_before_metrics(tmp_path) -> None:
     """Configured waveform lowpass should run before metric calculations."""
 
