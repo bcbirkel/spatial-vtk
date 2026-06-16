@@ -189,6 +189,7 @@ def preprocess_waveform_files(
         config=config,
         event_id_col=event_id_col,
         allow_missing_paths=continue_on_error,
+        require_configured_sources=source_columns is None,
     )
 
     root = _resolve_output_root(output_root, config)
@@ -327,16 +328,18 @@ def _validate_source_columns(
     config: Any | None,
     event_id_col: str,
     allow_missing_paths: bool = False,
+    require_configured_sources: bool = True,
 ) -> None:
     """Raise when configured waveform sources did not resolve usable paths."""
 
     configured_sources = _configured_sources(config)
-    for source in configured_sources:
-        if source not in columns:
-            raise ValueError(
-                f"{source.capitalize()} waveform input is configured, but no {source} waveform path column was resolved. "
-                f"Check {', '.join((*CONFIG_TEMPLATE_KEYS[source], *CONFIG_ROOT_KEYS[source]))}."
-            )
+    if require_configured_sources:
+        for source in configured_sources:
+            if source not in columns:
+                raise ValueError(
+                    f"{source.capitalize()} waveform input is configured, but no {source} waveform path column was resolved. "
+                    f"Check {', '.join((*CONFIG_TEMPLATE_KEYS[source], *CONFIG_ROOT_KEYS[source]))}."
+                )
     for source, column in columns.items():
         has_path = records[column].map(_path_cell_text).ne("")
         if has_path.all() or source not in configured_sources or allow_missing_paths:

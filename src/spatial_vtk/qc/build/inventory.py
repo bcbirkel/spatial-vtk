@@ -953,7 +953,8 @@ def _trace_quality_summary(
             record_length_s = float(processed.size * processed_dt) if np.isfinite(processed_dt) and processed_dt > 0.0 else record_length_s
             times_s = start_rel_s + np.arange(processed.size, dtype=float) * processed_dt if processed.size else np.asarray([], dtype=float)
             end_rel_s = float(start_rel_s + record_length_s) if np.isfinite(record_length_s) else float("nan")
-    valid_mask = _processing_valid_mask(np.asarray(processed).size, preprocessing)
+    mask_preprocessing = WaveformPreprocessing() if preprocessing_message else preprocessing
+    valid_mask = _processing_valid_mask(np.asarray(processed).size, mask_preprocessing)
     valid_start_sample, valid_end_sample = _valid_sample_bounds(valid_mask)
     if (
         valid_start_sample is not None
