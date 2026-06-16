@@ -103,6 +103,9 @@ Changelog
    ``write_sidecar``/``sidecar_rows``/``sidecar_dir`` plotting options so
    event-map provenance works consistently for direct Python calls, CLI-routed
    plotting, and large-run notebook wrappers.
+   GitHub CI and docs workflows now install the ``notebooks`` extra wherever
+   tutorial execution or notebook-backed docs checks are part of the public
+   source-checkout validation path.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

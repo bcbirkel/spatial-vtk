@@ -89,6 +89,9 @@ def test_ci_runs_clean_tutorial_notebooks_with_notebook_extras() -> None:
 
     repo_root = Path(__file__).resolve().parents[1]
     workflow = (repo_root / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    docs_workflow = (repo_root / ".github" / "workflows" / "docs.yml").read_text(encoding="utf-8")
 
-    assert 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"' in workflow
+    install = 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
+    assert install in workflow
+    assert install in docs_workflow
     assert "python tools/execute_tutorial_notebooks.py --clean" in workflow
