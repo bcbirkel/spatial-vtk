@@ -121,6 +121,10 @@ Changelog
    Added first-class ``svtk qc build`` and ``svtk metrics estimate`` commands
    so the shell workflow tutorial no longer needs generic ``svtk call`` for
    routine QC inventory generation or metric task resource summaries.
+   Tightened Step 1 tutorial and large-run notebook figure sidecar calls so
+   every figure that enables row-provenance sidecars also passes the configured
+   sidecar directory. Added a notebook regression to keep sidecar directory
+   controls from being dropped.
    Added a tutorial-notebook regression that rejects committed notebook cells
    containing private/local cluster paths or host names, keeping public
    notebooks runnable from a fresh source checkout.

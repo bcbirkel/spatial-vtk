@@ -138,3 +138,17 @@ def test_tutorial_notebooks_use_grouped_output_paths() -> None:
         for index, cell in enumerate(notebook.get("cells", []), start=1):
             source = "".join(cell.get("source", []))
             assert "resolve_output_path(" not in source, f"{notebook_path.relative_to(repo_root)} cell {index}"
+
+
+def test_tutorial_figure_sidecar_calls_include_directory_control() -> None:
+    """Notebook figure sidecar calls should honor configured sidecar directories."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    assert notebooks
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            source = "".join(cell.get("source", []))
+            if "write_sidecar=" in source:
+                assert "sidecar_dir=" in source, f"{notebook_path.relative_to(repo_root)} cell {index}"
