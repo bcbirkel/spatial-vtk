@@ -692,6 +692,7 @@ def _finish(
     include_model: bool = True,
     include_metric: bool = True,
     include_period: bool = True,
+    include_component: bool = True,
     extra: list[str] | None = None,
 ) -> None:
     """Apply common map labels."""
@@ -708,6 +709,7 @@ def _finish(
         include_model=include_model,
         include_metric=include_metric,
         include_period=include_period,
+        include_component=include_component,
         include_value=False,
         max_line_chars=72,
         extra=extra,
