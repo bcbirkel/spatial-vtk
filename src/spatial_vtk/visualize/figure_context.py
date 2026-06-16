@@ -389,6 +389,90 @@ def value_color_settings(
     return sequential_cmap, vmin, vmax
 
 
+def robust_value_limits(
+    values: Sequence[float] | np.ndarray | pd.Series,
+    value_col: str | None = None,
+    df: pd.DataFrame | None = None,
+    *,
+    robust_percentile: float | None = 98.0,
+    symmetric: bool | None = None,
+    pad_fraction: float = 0.06,
+) -> tuple[float, float] | None:
+    """Return robust numeric display limits for plotted values.
+
+    Parameters
+    ----------
+    values
+        Numeric values that would otherwise determine an axis or color range.
+    value_col, df
+        Optional value context used to infer whether zero-centered symmetric
+        limits are appropriate.
+    robust_percentile
+        Upper percentile used to exclude extreme values from display limits.
+        Set to ``None`` to use the full finite data range.
+    symmetric
+        Whether limits should be symmetric around zero. When omitted, residual-
+        like/log/error fields are symmetric.
+    pad_fraction
+        Fractional padding added to the returned finite range.
+
+    Returns
+    -------
+    tuple[float, float] | None
+        Lower and upper display limits, or ``None`` when there are no finite
+        values.
+    """
+
+    array = np.asarray(values, dtype=float)
+    finite = array[np.isfinite(array)]
+    if finite.size == 0:
+        return None
+    use_symmetric = value_uses_zero_reference(value_col, df) if symmetric is None else bool(symmetric)
+    if robust_percentile is not None and finite.size >= 10:
+        upper = min(max(float(robust_percentile), 50.0), 100.0)
+        if use_symmetric:
+            limit = float(np.nanpercentile(np.abs(finite), upper))
+            limit = max(limit, 1.0e-12)
+            return -limit, limit
+        lower = 100.0 - upper
+        low = float(np.nanpercentile(finite, lower))
+        high = float(np.nanpercentile(finite, upper))
+    else:
+        low = float(np.nanmin(finite))
+        high = float(np.nanmax(finite))
+        if use_symmetric:
+            limit = max(abs(low), abs(high), 1.0e-12)
+            return -limit, limit
+    if np.isclose(low, high):
+        pad = max(abs(high) * float(pad_fraction), 1.0e-6)
+        return low - pad, high + pad
+    pad = max((high - low) * float(pad_fraction), 1.0e-12)
+    return low - pad, high + pad
+
+
+def apply_robust_axis_limits(
+    ax: plt.Axes,
+    values: Sequence[float] | np.ndarray | pd.Series,
+    *,
+    axis: str = "y",
+    value_col: str | None = None,
+    df: pd.DataFrame | None = None,
+    robust_percentile: float | None = 98.0,
+    symmetric: bool | None = None,
+) -> None:
+    """Apply robust axis limits so outliers do not dominate a plot."""
+
+    limits = robust_value_limits(values, value_col=value_col, df=df, robust_percentile=robust_percentile, symmetric=symmetric)
+    if limits is None:
+        return
+    if axis == "x":
+        ax.set_xlim(*limits)
+    elif axis == "y":
+        ax.set_ylim(*limits)
+    else:
+        raise ValueError("axis must be 'x' or 'y'.")
+
+
 def add_below_axes_table(
     ax: plt.Axes,
     *,

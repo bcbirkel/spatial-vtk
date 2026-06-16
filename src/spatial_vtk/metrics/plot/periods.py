@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from spatial_vtk.config.labels import value_column_display_name
-from spatial_vtk.visualize.figure_context import apply_figure_context
+from spatial_vtk.visualize.figure_context import apply_figure_context, apply_robust_axis_limits, value_color_settings
 from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure_spatial_selection
 
@@ -24,6 +24,7 @@ def plot_psa_period_curve(
     value_col: str = "residual",
     group_col: str | None = "model",
     title: str = "PSA Period Response",
+    robust_axis_percentile: float | None = 98.0,
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
@@ -66,6 +67,7 @@ def plot_psa_period_curve(
         ax.plot(pd.to_numeric(summary[period_col], errors="coerce"), pd.to_numeric(summary[value_col], errors="coerce"), marker="o", linewidth=1.2, label=str(label) if label is not None else None)
     ax.set_xscale("log")
     ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
+    apply_robust_axis_limits(ax, pd.to_numeric(plot_df[value_col], errors="coerce"), value_col=value_col, df=plot_df, robust_percentile=robust_axis_percentile)
     ax.set_xlabel("Period (s)")
     ax.set_ylabel(value_column_display_name(value_col))
     apply_figure_context(ax, plot_df, value_col=value_col, title=title, max_values=3, include_period=False, include_metric=False, include_value=False, extra=[subset_label] if subset_label else None)
@@ -140,6 +142,7 @@ def plot_period_spectrogram(
     period_col: str = "period_s",
     value_col: str = "amplitude",
     title: str = "Period Spectrogram",
+    robust_percentile: float | None = 98.0,
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
@@ -152,7 +155,9 @@ def plot_period_spectrogram(
         raise KeyError(f"Missing required columns: {missing}")
     pivot = spectrogram_df.pivot_table(index=period_col, columns=time_col, values=value_col, aggfunc="mean")
     fig, ax = plt.subplots(figsize=(7.5, 5.2), dpi=180)
-    image = ax.imshow(pivot.to_numpy(dtype=float), aspect="auto", origin="lower", extent=(float(pivot.columns.min()), float(pivot.columns.max()), float(pivot.index.min()), float(pivot.index.max())), cmap="magma")
+    values = pivot.to_numpy(dtype=float)
+    cmap, vmin, vmax = value_color_settings(values, value_col, spectrogram_df, sequential_cmap="magma", robust_percentile=robust_percentile)
+    image = ax.imshow(values, aspect="auto", origin="lower", extent=(float(pivot.columns.min()), float(pivot.columns.max()), float(pivot.index.min()), float(pivot.index.max())), cmap=cmap, vmin=vmin, vmax=vmax)
     ax.set_yscale("log")
     ax.set_xlabel("Time (s)")
     ax.set_ylabel("Period (s)")

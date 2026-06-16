@@ -16,6 +16,7 @@ from spatial_vtk.spatial.calculate.settings import spatial_statistics_settings_f
 from spatial_vtk.visualize.figure_context import (
     add_below_axes_table,
     apply_figure_context,
+    apply_robust_axis_limits,
     context_value_label,
     figure_context_text,
     value_color_settings,
@@ -62,6 +63,7 @@ def scatterplot(
     groupby: str | None = None,
     fit: str | Callable[[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray] | pd.DataFrame] | None = None,
     lowess_frac: float = 0.65,
+    robust_axis_percentile: float | None = 98.0,
     cmap: str | Sequence[object] | None = None,
     title: str | None = None,
     data_label: str | None = None,
@@ -185,6 +187,14 @@ def scatterplot(
     _apply_categorical_axis(ax, y_axis, axis="y")
     if not y_axis["categorical"] and (_uses_zero_reference(y_col) or str(resolved_value_col or "").endswith("residual")):
         ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
+    if not y_axis["categorical"]:
+        apply_robust_axis_limits(
+            ax,
+            pd.to_numeric(plot_df[y_col], errors="coerce"),
+            value_col=str(resolved_value_col or y_col),
+            df=plot_df,
+            robust_percentile=robust_axis_percentile,
+        )
     ax.set_xlabel(_feature_axis_label(x_col))
     ax.set_ylabel(_scatter_y_label(dep_labels, resolved_value_col, y_col, data_label=data_label))
     plot_title = title or _scatter_default_title(dep_labels, x_col, resolved_value_col, data_label=data_label)
@@ -232,6 +242,7 @@ def boxplot(
     random_seed: int = 42,
     title: str | None = None,
     cmap: str | Sequence[object] | None = None,
+    robust_axis_percentile: float | None = 98.0,
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
@@ -326,6 +337,13 @@ def boxplot(
         ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
     ax.set_xlabel(display_label(category_col))
     ax.set_ylabel(context_value_label(str(resolved_value_col), plot_df))
+    apply_robust_axis_limits(
+        ax,
+        pd.to_numeric(plot_df[value_column], errors="coerce"),
+        value_col=str(resolved_value_col),
+        df=plot_df,
+        robust_percentile=robust_axis_percentile,
+    )
     apply_figure_context(
         ax,
         plot_df,
@@ -518,6 +536,7 @@ def plot_azimuthal_residuals(
     fit_method: str | Callable[[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray] | pd.DataFrame] | None = None,
     fit: str | Callable[[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray] | pd.DataFrame] | None = None,
     lowess_frac: float = 0.65,
+    robust_axis_percentile: float | None = 98.0,
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
@@ -567,15 +586,17 @@ def plot_azimuthal_residuals(
         legend_label = display_label(label) if label is not None else None
         color = palette(group_index % 10)
         if selected_fit is None:
-            ax.plot(trend["x"], trend["y"], marker="o", markersize=4.0, linewidth=1.1, alpha=0.78, color=color, label=legend_label)
+            ax.plot(trend["x"], trend["y"], marker="o", markersize=3.2, linewidth=1.0, alpha=0.55, color=color, label=legend_label)
         else:
-            ax.scatter(trend["x"], trend["y"], s=24, alpha=0.70, color=color, label=legend_label)
+            point_label = legend_label if _fit_labels_points(selected_fit) else "_nolegend_"
+            ax.scatter(trend["x"], trend["y"], s=10, alpha=0.18, color=color, label=point_label, rasterized=len(trend) > 5000)
             draw_scatter_fit(ax, trend["x"].to_numpy(dtype=float), trend["y"].to_numpy(dtype=float), fit_method=selected_fit, lowess_frac=lowess_frac, color=color, label=legend_label)
     if _uses_zero_reference(value_col):
         ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
     ax.set_xlim(0.0, 360.0)
     ax.set_xlabel("Azimuth (deg)")
     ax.set_ylabel(value_column_display_name(value_col))
+    apply_robust_axis_limits(ax, pd.to_numeric(plot_df[value_col], errors="coerce"), value_col=value_col, df=plot_df, robust_percentile=robust_axis_percentile)
     apply_figure_context(
         ax,
         plot_df,
@@ -640,6 +661,7 @@ def plot_residual_correlation(
     group_col: str | None = None,
     fit_method: str | Callable[[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray] | pd.DataFrame] | None = None,
     lowess_frac: float = 0.65,
+    robust_axis_percentile: float | None = 98.0,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
     station_region_col: str | None = None,
     station_regions: Sequence[str] | str | None = None,
@@ -719,12 +741,14 @@ def plot_residual_correlation(
         finite = x.notna() & y.notna()
         color = palette(group_index % 10)
         legend_label = _group_display_label(label, group_col) if label is not None else None
-        ax.scatter(x[finite], y[finite], s=28, alpha=0.74, color=color, label=legend_label)
+        point_label = legend_label if _fit_labels_points(fit_method) else "_nolegend_"
+        ax.scatter(x[finite], y[finite], s=10, alpha=0.18, color=color, label=point_label, rasterized=int(finite.sum()) > 5000)
         draw_scatter_fit(ax, x[finite].to_numpy(dtype=float), y[finite].to_numpy(dtype=float), fit_method=fit_method, lowess_frac=lowess_frac, color=color, label=legend_label)
     if _uses_zero_reference(y_col):
         ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
     ax.set_xlabel(_feature_axis_label(x_col))
     ax.set_ylabel(value_column_display_name(y_col))
+    apply_robust_axis_limits(ax, pd.to_numeric(plot_df[y_col], errors="coerce"), value_col=y_col, df=plot_df, robust_percentile=robust_axis_percentile)
     apply_figure_context(ax, plot_df, value_col=y_col, title=title, max_values=3, include_value=False, include_period=not (group_col in {"band", "passband"}), extra=[subset_label] if subset_label else None)
     ax.grid(True, alpha=0.25)
     if group_col and group_col in correlation_df.columns:
@@ -843,6 +867,7 @@ def plot_geology_contrast(
     class_values: tuple[str, ...] | list[str] | None = None,
     statistic: str | None = None,
     title: str | None = None,
+    robust_axis_percentile: float | None = 98.0,
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
@@ -955,6 +980,7 @@ def plot_geology_contrast(
         ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
     ax.set_xlabel(display_label(selected_group_col))
     ax.set_ylabel(context_value_label(value_col, work))
+    apply_robust_axis_limits(ax, pd.to_numeric(work[value_col], errors="coerce"), value_col=value_col, df=work, robust_percentile=robust_axis_percentile)
     plot_title = title or _geology_title(contrast_df, labels)
     apply_figure_context(ax, work, value_col=value_col, title=plot_title, max_values=3, include_value=False)
     ax.grid(True, axis="y", alpha=0.25)

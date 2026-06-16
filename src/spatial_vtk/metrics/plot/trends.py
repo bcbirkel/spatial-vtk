@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from spatial_vtk.config.labels import display_label, metric_display_name, model_display_name, value_column_display_name
-from spatial_vtk.visualize.figure_context import apply_figure_context, figure_context_text
+from spatial_vtk.visualize.figure_context import apply_figure_context, apply_robust_axis_limits, figure_context_text
 from spatial_vtk.visualize.fit import FitMethod, draw_scatter_fit
 from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure_spatial_selection
@@ -32,6 +32,7 @@ def plot_metric_trend(
     fit_method: FitMethod = None,
     fit: FitMethod = None,
     lowess_frac: float = 0.65,
+    robust_axis_percentile: float | None = 98.0,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
@@ -81,6 +82,7 @@ def plot_metric_trend(
         return finish_figure(fig, output_path, outpath=outpath, output_key=output_key, showfig=showfig, savefig=savefig)
     if _uses_zero_reference(y_col):
         ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
+    apply_robust_axis_limits(ax, pd.to_numeric(plot_df[y_col], errors="coerce"), value_col=y_col, df=plot_df, robust_percentile=robust_axis_percentile)
     metric_part = ""
     if metric_col in plot_df.columns and plot_df[metric_col].nunique(dropna=True) == 1:
         metric_part = f" ({metric_display_name(plot_df[metric_col].dropna().iloc[0])})"
@@ -177,6 +179,7 @@ def plot_residuals_vs_distance_and_depth(
     fit_method: FitMethod = None,
     fit: FitMethod = None,
     lowess_frac: float = 0.65,
+    robust_axis_percentile: float | None = 98.0,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
@@ -200,6 +203,7 @@ def plot_residuals_vs_distance_and_depth(
         ax.grid(True, alpha=0.25)
         if _uses_zero_reference(residual_col):
             ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
+        apply_robust_axis_limits(ax, pd.to_numeric(plot_df[residual_col], errors="coerce"), value_col=residual_col, df=plot_df, robust_percentile=robust_axis_percentile)
     context = figure_context_text(
         plot_df,
         value_col=residual_col,

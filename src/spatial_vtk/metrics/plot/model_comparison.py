@@ -11,7 +11,7 @@ import pandas as pd
 from matplotlib.colors import BoundaryNorm, ListedColormap
 
 from spatial_vtk.config.labels import band_display_label, metric_display_name, model_display_name, value_column_display_name
-from spatial_vtk.visualize.figure_context import apply_figure_context, value_color_settings
+from spatial_vtk.visualize.figure_context import apply_figure_context, apply_robust_axis_limits, value_color_settings
 from spatial_vtk.visualize.figure_io import finish_figure
 
 
@@ -88,6 +88,7 @@ def plot_band_score_distribution(
     metric_col: str = "metric",
     color_col: str | None = "metric",
     title: str = "Band Score Distribution",
+    robust_axis_percentile: float | None = 98.0,
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
@@ -138,6 +139,7 @@ def plot_band_score_distribution(
     ax.set_xticklabels([band_display_label(band) for band in bands], rotation=25, ha="right")
     ax.set_ylabel(value_column_display_name(score_col))
     ax.set_xlabel("Passband")
+    apply_robust_axis_limits(ax, pd.to_numeric(work[score_col], errors="coerce"), value_col=score_col, df=work, robust_percentile=robust_axis_percentile)
     apply_figure_context(
         ax,
         df,
