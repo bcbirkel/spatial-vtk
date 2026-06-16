@@ -290,12 +290,46 @@ spatial:
     assert result.tables["metric_field"]["metric"].eq("C5").all()
     assert result.tables["station_bias"]["metric"].eq("C5").all()
 
-    figure_context = SpatialFigureContext.from_config(figure_dir=tmp_path / "figures", make_figures=True)
+    figure_context = SpatialFigureContext.from_config(
+        figure_dir=tmp_path / "figures",
+        make_figures=True,
+        write_sidecars=True,
+        sidecar_rows=2,
+    )
     assert figure_context.metric_field is not None
     assert not figure_context.metric_field.empty
     assert figure_context.metric_value_col == "field_value"
     assert figure_context.event_value_col == "field_centered"
     assert figure_context.table("station_bias") is not None
+
+    item = {"key": "c5", "label": "C5", "metric": "C5", "period_s": None, "df": figure_context.metric_field}
+    station_summary = figure_context.station_summary_for_map(item["df"], "field_value")
+    assert len(station_summary) == 16
+    assert {"sta_lon", "sta_lat", "source_row_count", "source_event_count", "aggregation"} <= set(station_summary.columns)
+    assert set(station_summary["source_event_count"]) == {4}
+
+    def _dummy_plot(frame: pd.DataFrame, *, output_path, **kwargs) -> None:
+        Path(output_path).write_text(str(len(frame)), encoding="utf-8")
+
+    output = figure_context.write_spatial_plot(
+        "spatial_debug_station_map",
+        item,
+        _dummy_plot,
+        df=station_summary,
+        source_df=item["df"],
+        required=["sta_lon", "sta_lat", "field_value"],
+        value_col="field_value",
+    )
+    assert output is not None
+    sidecar_path = tmp_path / "figures" / "sidecars" / f"{output.stem}.csv"
+    source_sidecar_path = tmp_path / "figures" / "sidecars" / f"{output.stem}.source.csv"
+    metadata = json.loads(sidecar_path.with_suffix(".json").read_text(encoding="utf-8"))
+    assert sidecar_path.exists()
+    assert source_sidecar_path.exists()
+    assert metadata["plot_station_count"] == 16
+    assert metadata["source_station_count"] == 16
+    assert metadata["source_event_count"] == 4
+    assert metadata["source_written_row_count"] == 2
 
 
 def test_write_large_run_region_boxplot_from_bounded_table(tmp_path: Path) -> None:

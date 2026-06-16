@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import json
 from pathlib import Path
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Iterable, Sequence
 
 import pandas as pd
 
@@ -306,6 +306,30 @@ class SpatialFigureContext:
             showfig=showfig,
             **kwargs,
         )
+
+    def station_summary_for_map(
+        self,
+        df: pd.DataFrame,
+        value_col: str | None = None,
+        *,
+        extra_group_cols: Iterable[str | None] | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate event-station spatial rows to one plotted value per station."""
+
+        context = self._context_for(df) or self.metric_context
+        return context.station_summary_for_map(df, value_col=value_col, extra_group_cols=extra_group_cols)
+
+    def station_period_summary_for_map(
+        self,
+        df: pd.DataFrame,
+        value_col: str | None = None,
+        *,
+        extra_group_cols: Iterable[str | None] | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate PSA spatial rows to one plotted value per station and oscillator period."""
+
+        context = self._context_for(df) or self.metric_context
+        return context.station_period_summary_for_map(df, value_col=value_col, extra_group_cols=extra_group_cols)
 
     def filter_like_item(
         self,

@@ -296,9 +296,12 @@ class MetricFigureContext:
         """Aggregate all selected metric rows to one plotted value per station."""
 
         resolved_value_col = self.value_col if value_col is None else value_col
-        if not all(column in df.columns for column in ["station", "sta_lon", "sta_lat", resolved_value_col]):
+        lon_col, lat_col = _station_coordinate_columns(df)
+        if lon_col is None or lat_col is None:
             return df
-        group_cols = _ordered_existing_columns(df, ["station", "sta_lon", "sta_lat", *(extra_group_cols or [])])
+        if not all(column in df.columns for column in ["station", resolved_value_col]):
+            return df
+        group_cols = _ordered_existing_columns(df, ["station", lon_col, lat_col, *(extra_group_cols or [])])
         context_cols = [
             column
             for column in [self.metric_col, self.band_col, self.model_col, self.component_col, self.period_col]
@@ -314,6 +317,7 @@ class MetricFigureContext:
         for column in context_cols:
             summary[column] = dimension_value(df, column, self.context_multi_label(column))
         summary["aggregation"] = self.station_aggregation
+        summary = _rename_station_coordinates(summary, lon_col=lon_col, lat_col=lat_col)
         return summary
 
     def station_period_summary_for_map(
@@ -328,9 +332,12 @@ class MetricFigureContext:
         resolved_value_col = self.value_col if value_col is None else value_col
         if self.period_col is None or self.period_col not in df.columns:
             return self.station_summary_for_map(df, value_col=resolved_value_col, extra_group_cols=extra_group_cols)
-        if not all(column in df.columns for column in ["station", "sta_lon", "sta_lat", self.period_col, resolved_value_col]):
+        lon_col, lat_col = _station_coordinate_columns(df)
+        if lon_col is None or lat_col is None:
             return df
-        group_cols = _ordered_existing_columns(df, ["station", "sta_lon", "sta_lat", self.period_col, *(extra_group_cols or [])])
+        if not all(column in df.columns for column in ["station", self.period_col, resolved_value_col]):
+            return df
+        group_cols = _ordered_existing_columns(df, ["station", lon_col, lat_col, self.period_col, *(extra_group_cols or [])])
         context_cols = [
             column
             for column in [self.metric_col, self.band_col, self.model_col, self.component_col]
@@ -346,6 +353,7 @@ class MetricFigureContext:
         for column in context_cols:
             summary[column] = dimension_value(df, column, self.context_multi_label(column))
         summary["aggregation"] = self.station_aggregation
+        summary = _rename_station_coordinates(summary, lon_col=lon_col, lat_col=lat_col)
         return summary
 
     def write_metric_plot(
@@ -834,6 +842,25 @@ def _ordered_existing_columns(df: pd.DataFrame, columns: Iterable[str | None]) -
         if column and column in df.columns and column not in out:
             out.append(column)
     return out
+
+
+def _station_coordinate_columns(df: pd.DataFrame) -> tuple[str | None, str | None]:
+    """Resolve station longitude and latitude columns from supported schemas."""
+
+    lon = next((column for column in ("sta_lon", "lon", "station_lon", "station_longitude") if column in df.columns), None)
+    lat = next((column for column in ("sta_lat", "lat", "station_lat", "station_latitude") if column in df.columns), None)
+    return lon, lat
+
+
+def _rename_station_coordinates(df: pd.DataFrame, *, lon_col: str, lat_col: str) -> pd.DataFrame:
+    """Return a copy with canonical station coordinate names for plotting."""
+
+    rename: dict[str, str] = {}
+    if lon_col != "sta_lon":
+        rename[lon_col] = "sta_lon"
+    if lat_col != "sta_lat":
+        rename[lat_col] = "sta_lat"
+    return df.rename(columns=rename) if rename else df
 
 
 def _sidecar_dimension_counts(df: pd.DataFrame | None, *, prefix: str) -> dict[str, int]:

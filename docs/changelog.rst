@@ -22,6 +22,11 @@ Changelog
    source rows. Metric-by-model maps now aggregate rows by station and model
    before plotting, with raw metric rows preserved in the optional source
    sidecar.
+   Extended the same station-level aggregation and source-row sidecar pattern
+   to large-run spatial metric maps. Spatial ``metric_field`` outputs with
+   ``lon``/``lat`` coordinates are now normalized to the canonical
+   ``sta_lon``/``sta_lat`` plotting schema before station maps, residual
+   grids, and model-faceted maps are rendered.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after
