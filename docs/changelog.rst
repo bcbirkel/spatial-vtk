@@ -78,6 +78,9 @@ Changelog
    report whether each summary table is missing, empty, schema-invalid,
    missing finite value data, or ready, so notebooks can explain blank
    dashboard tabs before Streamlit is launched.
+   The metrics Streamlit dashboard now displays those readiness diagnostics
+   and stops before building sidebar filters when the primary
+   ``model_metric_band`` summary is not usable.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

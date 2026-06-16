@@ -23,7 +23,12 @@ from spatial_vtk.visualize.dashboard.charts import (
     build_value_histogram_figure,
     build_value_vs_distance_figure,
 )
-from spatial_vtk.visualize.dashboard.contracts import load_dashboard_summary_tables, load_metric_long_table, validate_dashboard_tables
+from spatial_vtk.visualize.dashboard.contracts import (
+    dashboard_summary_readiness_frame,
+    load_dashboard_summary_tables,
+    load_metric_long_table,
+    validate_dashboard_tables,
+)
 from spatial_vtk.visualize.dashboard.filters import filter_dashboard_metrics
 from spatial_vtk.config.labels import (
     available_dashboard_value_columns,
@@ -52,8 +57,14 @@ def main() -> None:
             return
     try:
         summaries = validate_dashboard_tables(load_dashboard_summary_tables(summary_root))
+        readiness = dashboard_summary_readiness_frame(summary_root, create_parent=False)
     except Exception as exc:
         st.error(str(exc))
+        return
+    _render_dashboard_readiness(readiness)
+    blocker = _metrics_dashboard_startup_blocker(readiness)
+    if blocker:
+        st.warning(blocker)
         return
     long_metrics = _try_load_long_metrics(metrics_root)
     config = _load_optional_config(config_path)
@@ -69,6 +80,10 @@ def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: 
     configured_bands = configured_band_options(config, command="metrics.dashboard", fallback_df=summaries["model_metric_band"])
     all_bands = _merged_options(configured_bands, data_bands, key=band_display_label)
     component_options = _component_options(config, summaries, long_metrics)
+    if not all_metrics or not all_models or not all_bands:
+        st.info("The model/metric/passband summary is empty, so dashboard filters cannot be built yet.")
+        st.dataframe(_display_table(summaries["model_metric_band"]), width="stretch")
+        return
 
     with st.sidebar:
         st.header("Filters")
@@ -179,6 +194,46 @@ def _try_load_long_metrics(metrics_root: str) -> pd.DataFrame | None:
     except Exception as exc:
         st.warning(f"Long metric table was not loaded: {exc}")
         return None
+
+
+def _render_dashboard_readiness(readiness: pd.DataFrame) -> None:
+    """Render summary-table readiness when any dashboard input is incomplete."""
+
+    if readiness.empty or "ready" not in readiness.columns:
+        return
+    ready = readiness["ready"].map(lambda value: bool(value) if pd.notna(value) else True)
+    if bool(ready.all()):
+        return
+    st.warning("Some dashboard summary tables are not ready. Affected tabs may be empty until those files are rebuilt.")
+    columns = [
+        "dashboard_table",
+        "dashboard_tabs",
+        "ready",
+        "readiness",
+        "row_count",
+        "missing_columns",
+        "nonempty_value_columns",
+        "message",
+    ]
+    shown = [column for column in columns if column in readiness.columns]
+    st.dataframe(_display_table(readiness[shown]), width="stretch")
+
+
+def _metrics_dashboard_startup_blocker(readiness: pd.DataFrame) -> str | None:
+    """Return a startup-blocking message for missing primary dashboard input."""
+
+    if readiness.empty or "dashboard_table" not in readiness.columns:
+        return None
+    primary = readiness.loc[readiness["dashboard_table"].astype(str).eq("model_metric_band")]
+    if primary.empty:
+        return "The model_metric_band dashboard summary is missing from the readiness table."
+    row = primary.iloc[0]
+    ready = row.get("ready")
+    is_ready = bool(ready) if pd.notna(ready) else False
+    if is_ready:
+        return None
+    message = str(row.get("message") or "").strip()
+    return message or "The model_metric_band dashboard summary is not ready."
 
 
 def _path_setting(query_key: str, env_key: str) -> str:

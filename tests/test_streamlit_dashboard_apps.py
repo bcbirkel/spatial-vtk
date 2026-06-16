@@ -36,6 +36,7 @@ from spatial_vtk.visualize.dashboard import (
 from spatial_vtk.visualize.dashboard.tables import build_dashboard_summaries
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _available_nonempty_value_columns
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _empty_rows_message as _metrics_empty_rows_message
+from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard_startup_blocker
 from spatial_vtk.visualize.dashboard.streamlit_qc import _empty_rows_message as _qc_empty_rows_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _missing_columns_message as _qc_missing_columns_message
 import spatial_vtk.visualize.dashboard.launch as dashboard_launch
@@ -162,6 +163,12 @@ outputs:
     readiness = dashboard_summary_readiness_frame(paths["dashboard_summary_root"])
     assert set(readiness["dashboard_table"]) == {"model_metric_band", "station_rollup", "event_rollup", "path_hex"}
     assert readiness.loc[readiness["dashboard_table"].eq("model_metric_band"), "ready"].iloc[0] is True
+    assert _metrics_dashboard_startup_blocker(readiness) is None
+
+    blocked = readiness.copy()
+    blocked.loc[blocked["dashboard_table"].eq("model_metric_band"), "ready"] = False
+    blocked.loc[blocked["dashboard_table"].eq("model_metric_band"), "message"] = "model table is empty"
+    assert _metrics_dashboard_startup_blocker(blocked) == "model table is empty"
 
     contracts = dashboard_summary_table_contracts()
     assert set(contracts["table"]) == {"model_metric_band", "station_rollup", "event_rollup", "path_hex"}
