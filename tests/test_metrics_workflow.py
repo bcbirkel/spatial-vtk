@@ -130,6 +130,9 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     psa_item = [item for item in context.iter_metric_frames(components=["Z"], model="m1", split_psa_period=False) if item["key"] == "psa"][0]
     assert "all-psa-periods" in context.figure_name("station_metric_map", psa_item)
     assert "1-2-sec" not in context.figure_name("station_metric_map", psa_item)
+    station_period_summary = context.station_period_summary_for_map(psa_item["df"])
+    assert set(station_period_summary["period_s"]) == {1.0, 2.0}
+    assert station_period_summary["source_row_count"].tolist() == [1, 1]
 
     def _dummy_plot(frame: pd.DataFrame, *, output_path, **kwargs) -> None:
         Path(output_path).write_text(str(len(frame)), encoding="utf-8")
@@ -146,6 +149,36 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert metadata["source_row_count"] == 2
     assert metadata["written_row_count"] == 1
     assert metadata["sampled"] is True
+
+    context.sample_rows = 0
+    context.sidecar_rows = None
+
+    def _dummy_png_plot(frame: pd.DataFrame, *, output_path, **kwargs) -> None:
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots(figsize=(2, 1.5))
+        ax.text(0.5, 0.5, f"rows={len(frame)}", ha="center", va="center")
+        ax.set_axis_off()
+        fig.savefig(output_path)
+        plt.close(fig)
+
+    psa_output = context.write_psa_period_sheet(
+        "station_metric_map",
+        psa_item,
+        _dummy_png_plot,
+        df_factory=lambda period_item: context.station_period_summary_for_map(period_item["df"]),
+        required=("station", "sta_lon", "sta_lat", "period_s", "log2_residual"),
+    )
+    assert psa_output is not None
+    psa_sidecar = context.sidecar_output_dir / f"{psa_output.stem}.csv"
+    psa_metadata = json.loads(psa_sidecar.with_suffix(".json").read_text(encoding="utf-8"))
+    psa_rows = pd.read_csv(psa_sidecar)
+    assert psa_sidecar.exists()
+    assert set(psa_rows["__svtk_panel_period_s"]) == {1.0, 2.0}
+    assert set(psa_rows["period_s"]) == {1.0, 2.0}
+    assert psa_metadata["source_row_count"] == 2
+    assert psa_metadata["written_row_count"] == 2
+    assert psa_metadata["sampled"] is False
 
 
 def test_metric_workflow_runs_tasks_and_applies_side_specific_spectral_qc(tmp_path) -> None:
