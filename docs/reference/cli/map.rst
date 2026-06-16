@@ -90,6 +90,9 @@ svtk map spatial block-holdout-error
                                             [--table TABLE]
                                             [--kwargs [KWARGS ...]]
                                             [--kwargs-json KWARGS_JSON]
+                                            [--write-sidecar]
+                                            [--sidecar-rows SIDECAR_ROWS]
+                                            [--sidecar-dir SIDECAR_DIR]
                                             [--bounds BOUNDS] [--no-basemap]
                                             [--basemap-source BASEMAP_SOURCE]
 
@@ -135,6 +138,18 @@ svtk map spatial block-holdout-error
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -161,7 +176,9 @@ svtk map spatial cluster
                                 [--config CONFIG]
                                 [--run-scenario RUN_SCENARIO] [--table TABLE]
                                 [--kwargs [KWARGS ...]]
-                                [--kwargs-json KWARGS_JSON] [--bounds BOUNDS]
+                                [--kwargs-json KWARGS_JSON] [--write-sidecar]
+                                [--sidecar-rows SIDECAR_ROWS]
+                                [--sidecar-dir SIDECAR_DIR] [--bounds BOUNDS]
                                 [--no-basemap]
                                 [--basemap-source BASEMAP_SOURCE]
 
@@ -207,6 +224,18 @@ svtk map spatial cluster
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -233,7 +262,9 @@ svtk map spatial corridor
                                  [--config CONFIG]
                                  [--run-scenario RUN_SCENARIO] [--table TABLE]
                                  [--kwargs [KWARGS ...]]
-                                 [--kwargs-json KWARGS_JSON] [--events EVENTS]
+                                 [--kwargs-json KWARGS_JSON] [--write-sidecar]
+                                 [--sidecar-rows SIDECAR_ROWS]
+                                 [--sidecar-dir SIDECAR_DIR] [--events EVENTS]
                                  [--records RECORDS] [--stations STATIONS]
                                  [--bounds BOUNDS] [--no-basemap]
                                  [--basemap-source BASEMAP_SOURCE]
@@ -280,6 +311,18 @@ svtk map spatial corridor
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--events``
      - No
      -
@@ -319,6 +362,9 @@ svtk map spatial event-residual
                                        [--run-scenario RUN_SCENARIO]
                                        [--table TABLE] [--kwargs [KWARGS ...]]
                                        [--kwargs-json KWARGS_JSON]
+                                       [--write-sidecar]
+                                       [--sidecar-rows SIDECAR_ROWS]
+                                       [--sidecar-dir SIDECAR_DIR]
                                        [--bounds BOUNDS] [--no-basemap]
                                        [--basemap-source BASEMAP_SOURCE]
 
@@ -364,6 +410,18 @@ svtk map spatial event-residual
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -418,6 +476,9 @@ svtk map spatial metric-by-model
                                         [--table TABLE]
                                         [--kwargs [KWARGS ...]]
                                         [--kwargs-json KWARGS_JSON]
+                                        [--write-sidecar]
+                                        [--sidecar-rows SIDECAR_ROWS]
+                                        [--sidecar-dir SIDECAR_DIR]
                                         [--bounds BOUNDS] [--no-basemap]
                                         [--basemap-source BASEMAP_SOURCE]
 
@@ -463,6 +524,18 @@ svtk map spatial metric-by-model
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -491,6 +564,9 @@ svtk map spatial model-improvement
                                           [--table TABLE]
                                           [--kwargs [KWARGS ...]]
                                           [--kwargs-json KWARGS_JSON]
+                                          [--write-sidecar]
+                                          [--sidecar-rows SIDECAR_ROWS]
+                                          [--sidecar-dir SIDECAR_DIR]
                                           [--bounds BOUNDS] [--no-basemap]
                                           [--basemap-source BASEMAP_SOURCE]
 
@@ -536,6 +612,18 @@ svtk map spatial model-improvement
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -562,7 +650,9 @@ svtk map spatial pca-mode
                                  [--config CONFIG]
                                  [--run-scenario RUN_SCENARIO] [--table TABLE]
                                  [--kwargs [KWARGS ...]]
-                                 [--kwargs-json KWARGS_JSON] [--bounds BOUNDS]
+                                 [--kwargs-json KWARGS_JSON] [--write-sidecar]
+                                 [--sidecar-rows SIDECAR_ROWS]
+                                 [--sidecar-dir SIDECAR_DIR] [--bounds BOUNDS]
                                  [--no-basemap]
                                  [--basemap-source BASEMAP_SOURCE]
 
@@ -608,6 +698,18 @@ svtk map spatial pca-mode
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -635,6 +737,9 @@ svtk map spatial redcap-cluster
                                        [--run-scenario RUN_SCENARIO]
                                        [--table TABLE] [--kwargs [KWARGS ...]]
                                        [--kwargs-json KWARGS_JSON]
+                                       [--write-sidecar]
+                                       [--sidecar-rows SIDECAR_ROWS]
+                                       [--sidecar-dir SIDECAR_DIR]
                                        [--bounds BOUNDS] [--no-basemap]
                                        [--basemap-source BASEMAP_SOURCE]
 
@@ -680,6 +785,18 @@ svtk map spatial redcap-cluster
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -707,6 +824,9 @@ svtk map spatial residual-grid
                                       [--run-scenario RUN_SCENARIO]
                                       [--table TABLE] [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
+                                      [--write-sidecar]
+                                      [--sidecar-rows SIDECAR_ROWS]
+                                      [--sidecar-dir SIDECAR_DIR]
                                       [--bounds BOUNDS] [--no-basemap]
                                       [--basemap-source BASEMAP_SOURCE]
 
@@ -752,6 +872,18 @@ svtk map spatial residual-grid
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -777,7 +909,9 @@ svtk map spatial score
    svtk map spatial score [-h] [--input INPUT] [--output OUTPUT]
                               [--config CONFIG] [--run-scenario RUN_SCENARIO]
                               [--table TABLE] [--kwargs [KWARGS ...]]
-                              [--kwargs-json KWARGS_JSON] [--bounds BOUNDS]
+                              [--kwargs-json KWARGS_JSON] [--write-sidecar]
+                              [--sidecar-rows SIDECAR_ROWS]
+                              [--sidecar-dir SIDECAR_DIR] [--bounds BOUNDS]
                               [--no-basemap] [--basemap-source BASEMAP_SOURCE]
 
 .. rubric:: Parameters
@@ -822,6 +956,18 @@ svtk map spatial score
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -849,6 +995,9 @@ svtk map spatial station-bias
                                      [--run-scenario RUN_SCENARIO]
                                      [--table TABLE] [--kwargs [KWARGS ...]]
                                      [--kwargs-json KWARGS_JSON]
+                                     [--write-sidecar]
+                                     [--sidecar-rows SIDECAR_ROWS]
+                                     [--sidecar-dir SIDECAR_DIR]
                                      [--bounds BOUNDS] [--no-basemap]
                                      [--basemap-source BASEMAP_SOURCE]
 
@@ -894,6 +1043,18 @@ svtk map spatial station-bias
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -921,6 +1082,9 @@ svtk map spatial station-metric
                                        [--run-scenario RUN_SCENARIO]
                                        [--table TABLE] [--kwargs [KWARGS ...]]
                                        [--kwargs-json KWARGS_JSON]
+                                       [--write-sidecar]
+                                       [--sidecar-rows SIDECAR_ROWS]
+                                       [--sidecar-dir SIDECAR_DIR]
                                        [--bounds BOUNDS] [--no-basemap]
                                        [--basemap-source BASEMAP_SOURCE]
 
@@ -966,6 +1130,18 @@ svtk map spatial station-metric
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -

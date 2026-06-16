@@ -22,7 +22,7 @@ import pandas as pd
 
 from spatial_vtk.visualize.figure_context import title_with_subtitle
 from spatial_vtk.visualize.selection import FigureSelection
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 
 
 def plot_trace_inventory_samples(
@@ -42,6 +42,9 @@ def plot_trace_inventory_samples(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot sample traces from a QC inventory.
 
@@ -63,6 +66,9 @@ def plot_trace_inventory_samples(
         Figure title.
     filter_label
         Optional second title line describing any bandpass or lowpass filter.
+    write_sidecar, sidecar_rows, sidecar_dir
+        Optional CSV row-provenance sidecar controls for the plotted sample
+        trace rows.
 
     Returns
     -------
@@ -92,7 +98,18 @@ def plot_trace_inventory_samples(
     axes[-1].set_xlabel("Time (s)")
     fig.suptitle(title_with_subtitle(title, filter_label), y=0.995)
     fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.96))
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "trace_inventory_samples", "trace_col": trace_col},
+    )
 
 
 def _trace_data_and_dt(value: Any, default_dt: object) -> tuple[np.ndarray, float]:

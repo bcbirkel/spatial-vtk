@@ -333,6 +333,13 @@ def test_waveform_figures_write_optional_row_sidecars(tmp_path: Path) -> None:
         sidecar_rows=2,
         sidecar_dir=sidecar_dir,
     )
+    plot_distance_amplitude_diagnostics(
+        records,
+        tmp_path / "distance_amplitude.png",
+        write_sidecar=True,
+        sidecar_rows=2,
+        sidecar_dir=sidecar_dir,
+    )
 
     expected_counts = {
         "trace_comparison": 2,
@@ -341,13 +348,17 @@ def test_waveform_figures_write_optional_row_sidecars(tmp_path: Path) -> None:
         "waveform_map": 2,
         "radial_section": 6,
         "overlay_matrix": 6,
+        "distance_amplitude": 6,
     }
     for stem, row_count in expected_counts.items():
         meta = json.loads((sidecar_dir / f"{stem}.json").read_text(encoding="utf-8"))
         assert meta["plot_row_count"] == row_count
         assert meta["written_row_count"] == min(2, row_count)
         assert (sidecar_dir / f"{stem}.csv").exists()
-        assert (sidecar_dir / f"{stem}.source.csv").exists()
+        if stem != "distance_amplitude":
+            assert (sidecar_dir / f"{stem}.source.csv").exists()
+    distance_metadata = json.loads((sidecar_dir / "distance_amplitude.json").read_text(encoding="utf-8"))
+    assert distance_metadata["figure_type"] == "distance_amplitude_diagnostics"
 
 
 def test_record_sections_apply_selection_before_truncation(tmp_path: Path) -> None:

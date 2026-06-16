@@ -1646,6 +1646,9 @@ def plot_distance_amplitude_diagnostics(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot amplitude decay diagnostics for observed and synthetic records.
 
@@ -1665,6 +1668,9 @@ def plot_distance_amplitude_diagnostics(
         Optional event color/grouping column.
     title
         Figure title.
+    write_sidecar, sidecar_rows, sidecar_dir
+        Optional CSV row-provenance sidecar controls for the plotted diagnostic
+        rows.
 
     Returns
     -------
@@ -1707,7 +1713,23 @@ def plot_distance_amplitude_diagnostics(
     axes[0].legend(loc="best", fontsize=7)
     fig.suptitle(title, y=0.99)
     fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.94))
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={
+            "figure_type": "distance_amplitude_diagnostics",
+            "distance_col": distance_col,
+            "observed_col": observed_col,
+            "synthetic_col": synthetic_col,
+        },
+    )
 
 
 def summarize_coverage(event_station_df: pd.DataFrame) -> dict[str, int | None]:

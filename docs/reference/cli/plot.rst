@@ -110,6 +110,9 @@ svtk plot metrics band-score-distribution
                                                  [--table TABLE]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
+                                                 [--write-sidecar]
+                                                 [--sidecar-rows SIDECAR_ROWS]
+                                                 [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -153,6 +156,18 @@ svtk plot metrics band-score-distribution
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-boxplot:
 
@@ -167,7 +182,9 @@ svtk plot metrics boxplot
                                  [--config CONFIG]
                                  [--run-scenario RUN_SCENARIO] [--table TABLE]
                                  [--kwargs [KWARGS ...]]
-                                 [--kwargs-json KWARGS_JSON]
+                                 [--kwargs-json KWARGS_JSON] [--write-sidecar]
+                                 [--sidecar-rows SIDECAR_ROWS]
+                                 [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -211,6 +228,18 @@ svtk plot metrics boxplot
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-example-metric-pairs:
 
@@ -227,6 +256,9 @@ svtk plot metrics example-metric-pairs
                                               [--table TABLE]
                                               [--kwargs [KWARGS ...]]
                                               [--kwargs-json KWARGS_JSON]
+                                              [--write-sidecar]
+                                              [--sidecar-rows SIDECAR_ROWS]
+                                              [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -266,6 +298,18 @@ svtk plot metrics example-metric-pairs
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-geology-boxplot:
 
@@ -282,6 +326,9 @@ svtk plot metrics geology-boxplot
                                          [--table TABLE]
                                          [--kwargs [KWARGS ...]]
                                          [--kwargs-json KWARGS_JSON]
+                                         [--write-sidecar]
+                                         [--sidecar-rows SIDECAR_ROWS]
+                                         [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -325,6 +372,18 @@ svtk plot metrics geology-boxplot
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-heatmap:
 
@@ -339,7 +398,9 @@ svtk plot metrics heatmap
                                  [--config CONFIG]
                                  [--run-scenario RUN_SCENARIO] [--table TABLE]
                                  [--kwargs [KWARGS ...]]
-                                 [--kwargs-json KWARGS_JSON]
+                                 [--kwargs-json KWARGS_JSON] [--write-sidecar]
+                                 [--sidecar-rows SIDECAR_ROWS]
+                                 [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -383,6 +444,18 @@ svtk plot metrics heatmap
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-list:
 
@@ -424,6 +497,9 @@ svtk plot metrics metric-trend
                                       [--run-scenario RUN_SCENARIO]
                                       [--table TABLE] [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
+                                      [--write-sidecar]
+                                      [--sidecar-rows SIDECAR_ROWS]
+                                      [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -467,6 +543,18 @@ svtk plot metrics metric-trend
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-model-metric-heatmap:
 
@@ -484,6 +572,9 @@ svtk plot metrics model-metric-heatmap
                                               [--table TABLE]
                                               [--kwargs [KWARGS ...]]
                                               [--kwargs-json KWARGS_JSON]
+                                              [--write-sidecar]
+                                              [--sidecar-rows SIDECAR_ROWS]
+                                              [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -527,6 +618,18 @@ svtk plot metrics model-metric-heatmap
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-period-spectra:
 
@@ -543,6 +646,9 @@ svtk plot metrics period-spectra
                                         [--table TABLE]
                                         [--kwargs [KWARGS ...]]
                                         [--kwargs-json KWARGS_JSON]
+                                        [--write-sidecar]
+                                        [--sidecar-rows SIDECAR_ROWS]
+                                        [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -586,6 +692,18 @@ svtk plot metrics period-spectra
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-period-spectrogram:
 
@@ -603,6 +721,9 @@ svtk plot metrics period-spectrogram
                                             [--table TABLE]
                                             [--kwargs [KWARGS ...]]
                                             [--kwargs-json KWARGS_JSON]
+                                            [--write-sidecar]
+                                            [--sidecar-rows SIDECAR_ROWS]
+                                            [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -646,6 +767,18 @@ svtk plot metrics period-spectrogram
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-phase-delay-vs-distance:
 
@@ -663,6 +796,9 @@ svtk plot metrics phase-delay-vs-distance
                                                  [--table TABLE]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
+                                                 [--write-sidecar]
+                                                 [--sidecar-rows SIDECAR_ROWS]
+                                                 [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -706,6 +842,18 @@ svtk plot metrics phase-delay-vs-distance
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-psa-period-curve:
 
@@ -722,6 +870,9 @@ svtk plot metrics psa-period-curve
                                           [--table TABLE]
                                           [--kwargs [KWARGS ...]]
                                           [--kwargs-json KWARGS_JSON]
+                                          [--write-sidecar]
+                                          [--sidecar-rows SIDECAR_ROWS]
+                                          [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -765,6 +916,18 @@ svtk plot metrics psa-period-curve
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-residuals-vs-depth:
 
@@ -782,6 +945,9 @@ svtk plot metrics residuals-vs-depth
                                             [--table TABLE]
                                             [--kwargs [KWARGS ...]]
                                             [--kwargs-json KWARGS_JSON]
+                                            [--write-sidecar]
+                                            [--sidecar-rows SIDECAR_ROWS]
+                                            [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -825,6 +991,18 @@ svtk plot metrics residuals-vs-depth
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-residuals-vs-distance:
 
@@ -842,6 +1020,9 @@ svtk plot metrics residuals-vs-distance
                                                [--table TABLE]
                                                [--kwargs [KWARGS ...]]
                                                [--kwargs-json KWARGS_JSON]
+                                               [--write-sidecar]
+                                               [--sidecar-rows SIDECAR_ROWS]
+                                               [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -885,6 +1066,18 @@ svtk plot metrics residuals-vs-distance
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-scatterplot:
 
@@ -900,6 +1093,9 @@ svtk plot metrics scatterplot
                                      [--run-scenario RUN_SCENARIO]
                                      [--table TABLE] [--kwargs [KWARGS ...]]
                                      [--kwargs-json KWARGS_JSON]
+                                     [--write-sidecar]
+                                     [--sidecar-rows SIDECAR_ROWS]
+                                     [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -943,6 +1139,18 @@ svtk plot metrics scatterplot
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-score-trends:
 
@@ -958,6 +1166,9 @@ svtk plot metrics score-trends
                                       [--run-scenario RUN_SCENARIO]
                                       [--table TABLE] [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
+                                      [--write-sidecar]
+                                      [--sidecar-rows SIDECAR_ROWS]
+                                      [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1001,6 +1212,18 @@ svtk plot metrics score-trends
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-vs30-scatter:
 
@@ -1016,6 +1239,9 @@ svtk plot metrics vs30-scatter
                                       [--run-scenario RUN_SCENARIO]
                                       [--table TABLE] [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
+                                      [--write-sidecar]
+                                      [--sidecar-rows SIDECAR_ROWS]
+                                      [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1059,6 +1285,18 @@ svtk plot metrics vs30-scatter
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-winner-heatmap:
 
@@ -1075,6 +1313,9 @@ svtk plot metrics winner-heatmap
                                         [--table TABLE]
                                         [--kwargs [KWARGS ...]]
                                         [--kwargs-json KWARGS_JSON]
+                                        [--write-sidecar]
+                                        [--sidecar-rows SIDECAR_ROWS]
+                                        [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1118,6 +1359,18 @@ svtk plot metrics winner-heatmap
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial:
 
@@ -1163,6 +1416,9 @@ svtk plot spatial azimuthal-residuals
                                              [--table TABLE]
                                              [--kwargs [KWARGS ...]]
                                              [--kwargs-json KWARGS_JSON]
+                                             [--write-sidecar]
+                                             [--sidecar-rows SIDECAR_ROWS]
+                                             [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1206,6 +1462,18 @@ svtk plot spatial azimuthal-residuals
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-block-holdout-scatter:
 
@@ -1223,6 +1491,9 @@ svtk plot spatial block-holdout-scatter
                                                [--table TABLE]
                                                [--kwargs [KWARGS ...]]
                                                [--kwargs-json KWARGS_JSON]
+                                               [--write-sidecar]
+                                               [--sidecar-rows SIDECAR_ROWS]
+                                               [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1266,6 +1537,18 @@ svtk plot spatial block-holdout-scatter
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-cluster-feature-heatmap:
 
@@ -1283,6 +1566,9 @@ svtk plot spatial cluster-feature-heatmap
                                                  [--table TABLE]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
+                                                 [--write-sidecar]
+                                                 [--sidecar-rows SIDECAR_ROWS]
+                                                 [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1326,6 +1612,18 @@ svtk plot spatial cluster-feature-heatmap
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-cluster-solution-scores:
 
@@ -1343,6 +1641,9 @@ svtk plot spatial cluster-solution-scores
                                                  [--table TABLE]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
+                                                 [--write-sidecar]
+                                                 [--sidecar-rows SIDECAR_ROWS]
+                                                 [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1386,6 +1687,18 @@ svtk plot spatial cluster-solution-scores
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-correlogram:
 
@@ -1401,6 +1714,9 @@ svtk plot spatial correlogram
                                      [--run-scenario RUN_SCENARIO]
                                      [--table TABLE] [--kwargs [KWARGS ...]]
                                      [--kwargs-json KWARGS_JSON]
+                                     [--write-sidecar]
+                                     [--sidecar-rows SIDECAR_ROWS]
+                                     [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1444,6 +1760,18 @@ svtk plot spatial correlogram
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-directional-correlogram:
 
@@ -1461,6 +1789,9 @@ svtk plot spatial directional-correlogram
                                                  [--table TABLE]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
+                                                 [--write-sidecar]
+                                                 [--sidecar-rows SIDECAR_ROWS]
+                                                 [--sidecar-dir SIDECAR_DIR]
                                                  [--fit FIT]
 
 .. rubric:: Parameters
@@ -1505,6 +1836,18 @@ svtk plot spatial directional-correlogram
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--fit``
      - No
      -
@@ -1551,6 +1894,9 @@ svtk plot spatial path-bin-summary
                                           [--table TABLE]
                                           [--kwargs [KWARGS ...]]
                                           [--kwargs-json KWARGS_JSON]
+                                          [--write-sidecar]
+                                          [--sidecar-rows SIDECAR_ROWS]
+                                          [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1594,6 +1940,18 @@ svtk plot spatial path-bin-summary
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-pattern-similarity:
 
@@ -1611,6 +1969,9 @@ svtk plot spatial pattern-similarity
                                             [--table TABLE]
                                             [--kwargs [KWARGS ...]]
                                             [--kwargs-json KWARGS_JSON]
+                                            [--write-sidecar]
+                                            [--sidecar-rows SIDECAR_ROWS]
+                                            [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1654,6 +2015,18 @@ svtk plot spatial pattern-similarity
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-pca-explained-variance:
 
@@ -1671,6 +2044,9 @@ svtk plot spatial pca-explained-variance
                                                 [--table TABLE]
                                                 [--kwargs [KWARGS ...]]
                                                 [--kwargs-json KWARGS_JSON]
+                                                [--write-sidecar]
+                                                [--sidecar-rows SIDECAR_ROWS]
+                                                [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1714,6 +2090,18 @@ svtk plot spatial pca-explained-variance
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-pca-feature-loadings:
 
@@ -1731,6 +2119,9 @@ svtk plot spatial pca-feature-loadings
                                               [--table TABLE]
                                               [--kwargs [KWARGS ...]]
                                               [--kwargs-json KWARGS_JSON]
+                                              [--write-sidecar]
+                                              [--sidecar-rows SIDECAR_ROWS]
+                                              [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1774,6 +2165,18 @@ svtk plot spatial pca-feature-loadings
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-polar-residuals:
 
@@ -1790,6 +2193,9 @@ svtk plot spatial polar-residuals
                                          [--table TABLE]
                                          [--kwargs [KWARGS ...]]
                                          [--kwargs-json KWARGS_JSON]
+                                         [--write-sidecar]
+                                         [--sidecar-rows SIDECAR_ROWS]
+                                         [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1833,6 +2239,18 @@ svtk plot spatial polar-residuals
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-residual-correlation:
 
@@ -1850,6 +2268,9 @@ svtk plot spatial residual-correlation
                                               [--table TABLE]
                                               [--kwargs [KWARGS ...]]
                                               [--kwargs-json KWARGS_JSON]
+                                              [--write-sidecar]
+                                              [--sidecar-rows SIDECAR_ROWS]
+                                              [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1893,6 +2314,18 @@ svtk plot spatial residual-correlation
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-semivariogram:
 
@@ -1908,6 +2341,9 @@ svtk plot spatial semivariogram
                                        [--run-scenario RUN_SCENARIO]
                                        [--table TABLE] [--kwargs [KWARGS ...]]
                                        [--kwargs-json KWARGS_JSON]
+                                       [--write-sidecar]
+                                       [--sidecar-rows SIDECAR_ROWS]
+                                       [--sidecar-dir SIDECAR_DIR]
 
 .. rubric:: Parameters
 
@@ -1951,3 +2387,15 @@ svtk plot spatial semivariogram
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--write-sidecar``
+     - No
+     - Flag
+     - Write CSV/JSON sidecars with rows used by the figure.
+   * - ``--sidecar-rows``
+     - No
+     -
+     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+   * - ``--sidecar-dir``
+     - No
+     -
+     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.

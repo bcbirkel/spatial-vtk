@@ -175,6 +175,12 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
    ``band_score_distribution`` figure path. Pass ``--input`` or ``--output``
    only when you want to override those paths.
 
+   Add ``--write-sidecar`` to any ``svtk plot``, ``svtk map``, or
+   ``svtk visualize`` figure command to write CSV/JSON provenance next to the
+   figure. Use ``--sidecar-rows N`` to write a deterministic row sample or omit
+   it to write every plotted row. Use ``--sidecar-dir`` when sidecars should go
+   somewhere other than the figure directory's ``sidecars`` folder.
+
 
 Step 4: Spatial Statistics
 --------------------------

@@ -124,6 +124,11 @@ outputs:
                 "band-score-distribution",
                 "--config",
                 str(config),
+                "--write-sidecar",
+                "--sidecar-rows",
+                "5",
+                "--sidecar-dir",
+                str(tmp_path / "sidecars"),
                 "--kwargs",
                 "score_col=score",
             ]
@@ -135,6 +140,9 @@ outputs:
     assert seen["rows"] == 1
     assert seen["output_path"] == expected_output
     assert seen["kwargs"]["score_col"] == "score"
+    assert seen["kwargs"]["write_sidecar"] is True
+    assert seen["kwargs"]["sidecar_rows"] == 5
+    assert seen["kwargs"]["sidecar_dir"] == tmp_path / "sidecars"
     assert captured.out.strip() == str(expected_output)
 
 

@@ -344,6 +344,7 @@ VISUALIZE_COMMAND_GROUPS: dict[str, dict[str, PlotCommand]] = {
 
 
 AUTO_PLOT_OPTION_KEYS = frozenset({"add_basemap", "basemap_source", "bounds"})
+FIGURE_SIDECAR_OPTION_KEYS = frozenset({"write_sidecar", "sidecar_rows", "sidecar_dir"})
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -779,6 +780,9 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
     parser.add_argument("--table", action="append", default=(), help="Extra table as argument_name=path. May be repeated.")
     parser.add_argument("--kwargs", nargs="*", default=(), help="Extra function keyword arguments as key=value.")
     parser.add_argument("--kwargs-json", default=None, help="Extra function keyword arguments as a JSON/YAML mapping.")
+    parser.add_argument("--write-sidecar", action="store_true", help="Write CSV/JSON sidecars with rows used by the figure.")
+    parser.add_argument("--sidecar-rows", type=int, default=None, help="Maximum rows to write to each sidecar. Omit to write all rows.")
+    parser.add_argument("--sidecar-dir", default=None, help="Directory for figure sidecars. Defaults next to the output figure.")
     for option in sorted((spec.table_aliases or {}).keys()):
         alias_help = f"Convenience table path for the {spec.table_aliases[option]} argument."
         if option in (spec.table_alias_defaults or {}):
@@ -1404,6 +1408,7 @@ def _cmd_registered_plot(args: argparse.Namespace) -> int:
     function = _resolve_function(spec.function)
     kwargs = _registered_plot_kwargs(args, spec)
     _drop_unsupported_auto_plot_kwargs(function, kwargs)
+    _validate_supported_plot_kwargs(function, kwargs, FIGURE_SIDECAR_OPTION_KEYS)
     result = function(**kwargs)
     if result is not None and str(result) != str(kwargs["output_path"]):
         print(result)
@@ -1454,6 +1459,12 @@ def _registered_plot_kwargs(args: argparse.Namespace, spec: PlotCommand) -> dict
     if getattr(args, "kwargs_json", None):
         kwargs.update(_parse_mapping(args.kwargs_json))
     kwargs.update(_parse_key_values(getattr(args, "kwargs", ())))
+    if getattr(args, "write_sidecar", False):
+        kwargs["write_sidecar"] = True
+    if getattr(args, "sidecar_rows", None) is not None:
+        kwargs["sidecar_rows"] = args.sidecar_rows
+    if getattr(args, "sidecar_dir", None):
+        kwargs["sidecar_dir"] = Path(args.sidecar_dir).expanduser()
     if hasattr(args, "no_basemap") and args.no_basemap:
         kwargs["add_basemap"] = False
     if getattr(args, "basemap_source", None):
@@ -1571,6 +1582,19 @@ def _drop_unsupported_auto_plot_kwargs(function: Any, kwargs: dict[str, Any]) ->
     for key in list(AUTO_PLOT_OPTION_KEYS):
         if key in kwargs and key not in accepted:
             kwargs.pop(key)
+
+
+def _validate_supported_plot_kwargs(function: Any, kwargs: dict[str, Any], keys: Iterable[str]) -> None:
+    """Raise when a user-requested plotting option is unsupported."""
+
+    signature = inspect.signature(function)
+    if any(parameter.kind == inspect.Parameter.VAR_KEYWORD for parameter in signature.parameters.values()):
+        return
+    accepted = set(signature.parameters)
+    unsupported = sorted(key for key in keys if key in kwargs and key not in accepted)
+    if unsupported:
+        names = ", ".join(f"--{key.replace('_', '-')}" for key in unsupported)
+        raise ValueError(f"{function.__module__}.{function.__name__} does not support {names}.")
 
 
 def _resolve_function(path: str):

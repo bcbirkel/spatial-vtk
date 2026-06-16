@@ -402,6 +402,7 @@ def test_qc_figures_write_optional_row_sidecars(tmp_path: Path) -> None:
             "qc_status": ["pass", "fail", "pass"],
         }
     )
+    trace_samples = _waveform_records().assign(qc_status=["pass", "fail", "pass"])
 
     sidecar_dir = tmp_path / "sidecars"
     figures = [
@@ -434,6 +435,13 @@ def test_qc_figures_write_optional_row_sidecars(tmp_path: Path) -> None:
             sidecar_rows=2,
             sidecar_dir=sidecar_dir,
         ),
+        plot_trace_inventory_samples(
+            trace_samples,
+            tmp_path / "trace_samples.png",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
     ]
     for figure in figures:
         _assert_png(figure.spatial_vtk_saved_path)
@@ -451,6 +459,10 @@ def test_qc_figures_write_optional_row_sidecars(tmp_path: Path) -> None:
     assert pair_metadata["plot"] == "pair_retention_summary"
     post_qc_sidecar = pd.read_csv(sidecar_dir / "post_qc.csv")
     assert "_retained" in post_qc_sidecar.columns
+    trace_metadata = json.loads((sidecar_dir / "trace_samples.json").read_text(encoding="utf-8"))
+    assert trace_metadata["figure_type"] == "trace_inventory_samples"
+    assert trace_metadata["plot_row_count"] == 3
+    assert trace_metadata["written_row_count"] == 2
 
 
 def test_metric_and_spatial_figure_families(tmp_path: Path) -> None:

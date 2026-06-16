@@ -64,6 +64,10 @@ Changelog
    maps, and wired the standard and large-run tutorial notebooks so every
    saved direct plotting call can emit the plotted rows when sidecars are
    enabled.
+   Added first-class ``--write-sidecar``, ``--sidecar-rows``, and
+   ``--sidecar-dir`` flags to registered ``svtk plot``, ``svtk map``, and
+   ``svtk visualize`` figure commands. Trace sample and distance/amplitude
+   diagnostic figures now support the same row-provenance sidecar interface.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after
