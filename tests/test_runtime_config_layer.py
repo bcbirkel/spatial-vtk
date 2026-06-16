@@ -42,6 +42,7 @@ from spatial_vtk.io import (
     output_group_namespace,
     output_group_paths,
     output_group_status,
+    output_readiness,
     output_status_frame,
     should_rebuild_paths,
     should_rebuild_outputs,
@@ -510,6 +511,41 @@ outputs:
     assert list(status_frame["name"]) == ["metrics_long_path"]
 
     clear_active_config()
+
+
+def test_output_readiness_reports_notebook_step_decisions(tmp_path):
+    """Output readiness should explain missing, stale, current, and overwrite states."""
+
+    required_input = tmp_path / "inputs" / "metrics.parquet"
+    output = tmp_path / "outputs" / "summary.csv"
+
+    missing_input = output_readiness(output, inputs=[required_input])
+    assert missing_input.should_run is False
+    assert missing_input.reason == "missing_inputs"
+    assert missing_input.missing_inputs == (required_input,)
+
+    required_input.parent.mkdir()
+    required_input.write_text("source\n", encoding="utf-8")
+
+    missing_output = output_readiness(output, inputs=[required_input], sources=[required_input])
+    assert missing_output.should_run is True
+    assert missing_output.reason == "missing_outputs"
+    assert missing_output.missing_outputs == (output,)
+
+    output.parent.mkdir()
+    output.write_text("old\n", encoding="utf-8")
+    assert output_readiness(output, inputs=[required_input], sources=[required_input]).reason == "current"
+
+    newer_time = output.stat().st_mtime + 10
+    os.utime(required_input, (newer_time, newer_time))
+    stale = output_readiness(output, inputs=[required_input], sources=[required_input])
+    assert stale.should_run is True
+    assert stale.reason == "stale_sources"
+    assert stale.stale_outputs == (output,)
+
+    forced = output_readiness({"summary": output}, inputs={"metrics": required_input}, overwrite=True)
+    assert forced.should_run is True
+    assert forced.reason == "overwrite"
 
 
 def test_finish_figure_uses_rich_display_in_notebooks(monkeypatch):

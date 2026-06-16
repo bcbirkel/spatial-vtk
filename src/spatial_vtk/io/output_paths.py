@@ -61,6 +61,45 @@ class OutputArtifact:
     required: bool = True
 
 
+@dataclass(frozen=True)
+class OutputReadiness:
+    """Decision record for one output-producing workflow step.
+
+    Parameters
+    ----------
+    should_run
+        Whether the step should run now.
+    reason
+        Stable reason code: ``"missing_inputs"``, ``"overwrite"``,
+        ``"missing_outputs"``, ``"stale_sources"``, or ``"current"``.
+    message
+        Human-readable status message suitable for notebook output.
+    outputs
+        Target outputs checked by the decision.
+    inputs
+        Required input paths that must exist before the step can run.
+    sources
+        Dependency paths used for freshness checks.
+    missing_inputs
+        Required input paths that do not exist.
+    missing_outputs
+        Target output paths that do not exist.
+    stale_outputs
+        Existing target outputs that are older than at least one existing
+        source dependency.
+    """
+
+    should_run: bool
+    reason: str
+    message: str
+    outputs: tuple[Path, ...]
+    inputs: tuple[Path, ...] = ()
+    sources: tuple[Path, ...] = ()
+    missing_inputs: tuple[Path, ...] = ()
+    missing_outputs: tuple[Path, ...] = ()
+    stale_outputs: tuple[Path, ...] = ()
+
+
 OUTPUT_GROUPS: dict[str, tuple[OutputArtifact, ...]] = {
     "step_01_ingest": (
         OutputArtifact("prepared_stations_path", "prepared_stations"),
@@ -380,6 +419,121 @@ def should_rebuild_paths(
     )
 
 
+def output_readiness(
+    outputs,
+    *,
+    inputs=(),
+    sources: Iterable[str | Path] = (),
+    overwrite: bool = False,
+    missing_input_message: str | None = None,
+    current_message: str | None = None,
+    rebuild_message: str | None = None,
+) -> OutputReadiness:
+    """Return a notebook-friendly rebuild decision for target outputs.
+
+    This is a small structured wrapper around :func:`should_rebuild_paths`.
+    It centralizes the common notebook pattern of checking required inputs,
+    deciding whether outputs are missing or stale, and printing a clear
+    skip/run message.
+
+    Parameters
+    ----------
+    outputs
+        Target output path, iterable of output paths, or mapping whose values
+        are output paths.
+    inputs
+        Required input path, iterable of input paths, or mapping whose values
+        are input paths. Missing inputs block the step.
+    sources
+        Existing dependency paths used for freshness checks. Missing sources
+        are ignored here; pass required dependencies through ``inputs``.
+    overwrite
+        Whether to force the step to run.
+    missing_input_message, current_message, rebuild_message
+        Optional message overrides for notebook display.
+
+    Returns
+    -------
+    OutputReadiness
+        Structured decision with a stable reason and display message.
+    """
+
+    output_paths = _coerce_path_tuple(outputs)
+    input_paths = _coerce_path_tuple(inputs)
+    source_paths = _coerce_path_tuple(sources)
+
+    missing_inputs = tuple(path for path in input_paths if not path.exists())
+    missing_outputs = tuple(path for path in output_paths if not path.exists())
+    existing_sources = tuple(path for path in source_paths if path.exists())
+    stale_outputs = tuple(
+        output
+        for output in output_paths
+        if output.exists() and any(source.stat().st_mtime > output.stat().st_mtime for source in existing_sources)
+    )
+
+    if missing_inputs:
+        message = missing_input_message or _paths_message("Required input is not ready yet", missing_inputs)
+        return OutputReadiness(
+            should_run=False,
+            reason="missing_inputs",
+            message=message,
+            outputs=output_paths,
+            inputs=input_paths,
+            sources=source_paths,
+            missing_inputs=missing_inputs,
+            missing_outputs=missing_outputs,
+            stale_outputs=stale_outputs,
+        )
+
+    if overwrite:
+        message = rebuild_message or _paths_message("Overwrite requested; rebuilding", output_paths)
+        return OutputReadiness(
+            should_run=True,
+            reason="overwrite",
+            message=message,
+            outputs=output_paths,
+            inputs=input_paths,
+            sources=source_paths,
+            missing_outputs=missing_outputs,
+            stale_outputs=stale_outputs,
+        )
+
+    if missing_outputs:
+        message = rebuild_message or _paths_message("Output is missing; building", missing_outputs)
+        return OutputReadiness(
+            should_run=True,
+            reason="missing_outputs",
+            message=message,
+            outputs=output_paths,
+            inputs=input_paths,
+            sources=source_paths,
+            missing_outputs=missing_outputs,
+            stale_outputs=stale_outputs,
+        )
+
+    if stale_outputs:
+        message = rebuild_message or _paths_message("Source dependency changed; rebuilding", stale_outputs)
+        return OutputReadiness(
+            should_run=True,
+            reason="stale_sources",
+            message=message,
+            outputs=output_paths,
+            inputs=input_paths,
+            sources=source_paths,
+            stale_outputs=stale_outputs,
+        )
+
+    message = current_message or _paths_message("Outputs are current; skipping", output_paths)
+    return OutputReadiness(
+        should_run=False,
+        reason="current",
+        message=message,
+        outputs=output_paths,
+        inputs=input_paths,
+        sources=source_paths,
+    )
+
+
 def output_group_completion(
     group: str,
     *,
@@ -438,6 +592,30 @@ def _coerce_named_paths(paths) -> dict[str, str | Path]:
     return dict(items)
 
 
+def _coerce_path_tuple(paths) -> tuple[Path, ...]:
+    """Coerce a path, mapping, or sequence into a tuple of paths."""
+
+    if paths is None:
+        return ()
+    if isinstance(paths, dict):
+        values = paths.values()
+    elif isinstance(paths, (str, Path)):
+        values = (paths,)
+    else:
+        values = tuple(paths)
+    return tuple(Path(path) for path in values if path is not None)
+
+
+def _paths_message(prefix: str, paths: tuple[Path, ...]) -> str:
+    """Return a compact status message that includes affected paths."""
+
+    if not paths:
+        return f"{prefix}."
+    if len(paths) == 1:
+        return f"{prefix}: {paths[0]}"
+    return f"{prefix}: {len(paths)} path(s); first is {paths[0]}"
+
+
 OUTPUT_GROUPS["large_run_core"] = tuple(
     _dedupe_artifacts(
         [
@@ -464,6 +642,7 @@ __all__ = [
     "OUTPUT_GROUPS",
     "OutputArtifact",
     "OutputGroupName",
+    "OutputReadiness",
     "default_output_paths",
     "output_group_artifacts",
     "output_group_completion",
@@ -471,6 +650,7 @@ __all__ = [
     "output_group_paths",
     "output_group_status",
     "output_group_status_frame",
+    "output_readiness",
     "output_status_frame",
     "output_status_rows",
     "required_outputs_exist",
