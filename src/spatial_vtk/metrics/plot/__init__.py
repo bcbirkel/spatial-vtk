@@ -25,6 +25,7 @@ _EXPORT_MODULES = {
     "plot_band_score_distribution": "spatial_vtk.metrics.plot.model_comparison",
     "plot_model_metric_heatmap": "spatial_vtk.metrics.plot.model_comparison",
     "plot_winner_heatmap": "spatial_vtk.metrics.plot.model_comparison",
+    "plot_period_score_distribution": "spatial_vtk.metrics.plot.periods",
     "plot_period_spectra": "spatial_vtk.metrics.plot.periods",
     "plot_period_spectrogram": "spatial_vtk.metrics.plot.periods",
     "plot_psa_period_curve": "spatial_vtk.metrics.plot.periods",

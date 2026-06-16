@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from spatial_vtk.config.labels import value_column_display_name
+from spatial_vtk.config.labels import metric_display_name, value_column_display_name
 from spatial_vtk.visualize.figure_context import apply_figure_context, apply_robust_axis_limits, value_color_settings
 from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure_spatial_selection
@@ -77,6 +77,87 @@ def plot_psa_period_curve(
     return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
 
 
+def plot_period_score_distribution(
+    df: pd.DataFrame,
+    output_path: str | Path | None = None,
+    *,
+    metric: str | None = "PSA",
+    metric_col: str = "metric",
+    period_col: str = "period_s",
+    score_col: str = "log2_residual",
+    color_col: str | None = "component",
+    title: str = "Period Score Distribution",
+    robust_axis_percentile: float | None = 95.0,
+    showfig: bool | None = None,
+    savefig: bool | None = None,
+    outpath: str | Path | None = None,
+) -> plt.Figure:
+    """Plot spectral metric distributions grouped by oscillator period.
+
+    This is the period-domain counterpart to passband distribution plots. It is
+    intended for broadband spectral metrics such as PSA and FAS, where
+    ``period_s`` is the meaningful x-axis and passband labels should not be
+    used.
+    """
+
+    plot_df = _select_metric_rows(df, metric=metric, metric_col=metric_col)
+    missing = [column for column in (period_col, score_col) if column not in plot_df.columns]
+    if missing:
+        raise KeyError(f"Missing required columns: {missing}")
+    selected_color_col = color_col if color_col and color_col in plot_df.columns else None
+    columns = [period_col, score_col] + ([selected_color_col] if selected_color_col else [])
+    work = plot_df[columns].copy()
+    work[period_col] = pd.to_numeric(work[period_col], errors="coerce")
+    work[score_col] = pd.to_numeric(work[score_col], errors="coerce")
+    work = work.dropna(subset=[period_col, score_col])
+
+    fig, ax = plt.subplots(figsize=(8.5, 5.0), dpi=180)
+    if work.empty:
+        ax.text(0.5, 0.5, "No spectral period rows", ha="center", va="center", transform=ax.transAxes)
+    else:
+        periods = sorted(dict.fromkeys(work[period_col].astype(float)))
+        color_values = sorted(dict.fromkeys(work[selected_color_col].astype(str))) if selected_color_col else ["All"]
+        centers = np.arange(len(periods), dtype=float) * 1.25
+        offsets = np.linspace(-0.30, 0.30, len(color_values)) if len(color_values) > 1 else np.array([0.0])
+        width = min(0.56 / max(len(color_values), 1), 0.20)
+        palette = plt.get_cmap("tab10")
+        for period_index, center in enumerate(centers):
+            if period_index % 2 == 0:
+                ax.axvspan(center - 0.55, center + 0.55, color="0.96", zorder=0)
+            if period_index > 0:
+                ax.axvline((centers[period_index - 1] + center) / 2.0, color="0.82", linewidth=0.8, zorder=0)
+        for color_index, color_value in enumerate(color_values):
+            values = []
+            positions = []
+            for period_index, period in enumerate(periods):
+                selector = work[period_col].eq(float(period))
+                if selected_color_col:
+                    selector &= work[selected_color_col].astype(str).eq(str(color_value))
+                series = work.loc[selector, score_col].dropna().to_numpy(dtype=float)
+                values.append(series)
+                positions.append(centers[period_index] + offsets[color_index])
+            boxplot = ax.boxplot(values, positions=positions, widths=width, patch_artist=True, manage_ticks=False, showfliers=False)
+            color = palette(color_index % 10)
+            for patch in boxplot["boxes"]:
+                patch.set_facecolor(color)
+                patch.set_alpha(0.55)
+            for median in boxplot["medians"]:
+                median.set_color("black")
+            label = _period_color_label(color_value, selected_color_col)
+            ax.plot([], [], color=color, linewidth=6, alpha=0.55, label=label)
+        ax.set_xticks(centers)
+        ax.set_xticklabels([_period_tick_label(period) for period in periods], rotation=25, ha="right")
+        if selected_color_col:
+            ax.legend(title=_period_color_label(selected_color_col, None), frameon=True, fontsize=8, loc="upper left", bbox_to_anchor=(1.02, 1.0), borderaxespad=0.0)
+            fig.subplots_adjust(right=0.76, bottom=0.18)
+    ax.set_ylabel(value_column_display_name(score_col))
+    ax.set_xlabel("PSA oscillator period")
+    apply_robust_axis_limits(ax, pd.to_numeric(work[score_col], errors="coerce"), value_col=score_col, df=work, robust_percentile=robust_axis_percentile)
+    apply_figure_context(ax, plot_df, value_col=score_col, title=title, max_values=3, include_period=False, include_metric=False, include_value=False)
+    ax.grid(True, axis="y", alpha=0.25)
+    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+
+
 def _select_metric_rows(df: pd.DataFrame, *, metric: str | None, metric_col: str) -> pd.DataFrame:
     """Return rows for one metric when a metric column is present.
 
@@ -101,6 +182,22 @@ def _select_metric_rows(df: pd.DataFrame, *, metric: str | None, metric_col: str
     if selected.empty:
         raise ValueError(f"No rows found for metric {metric!r} in column {metric_col!r}.")
     return selected
+
+
+def _period_tick_label(period: float) -> str:
+    """Return a compact PSA period/frequency tick label."""
+
+    if not np.isfinite(period) or period <= 0:
+        return "unknown"
+    return f"T={period:g}s\nf={1.0 / period:g}Hz"
+
+
+def _period_color_label(value: object, color_col: str | None) -> str:
+    """Return a readable legend label for period distribution groups."""
+
+    if color_col == "metric":
+        return metric_display_name(value)
+    return str(value).replace("_", " ").title()
 
 
 def plot_period_spectra(
@@ -166,4 +263,4 @@ def plot_period_spectrogram(
     return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
 
 
-__all__ = ["plot_period_spectra", "plot_period_spectrogram", "plot_psa_period_curve"]
+__all__ = ["plot_period_score_distribution", "plot_period_spectra", "plot_period_spectrogram", "plot_psa_period_curve"]
