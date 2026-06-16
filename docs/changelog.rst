@@ -121,6 +121,10 @@ Changelog
    Added a tutorial-notebook regression that rejects committed notebook cells
    containing private/local cluster paths or host names, keeping public
    notebooks runnable from a fresh source checkout.
+   Cleaned the large-run notebooks so remaining Step 2/3/4/5 path lookups use
+   grouped config-backed output paths instead of notebook-local
+   ``resolve_output_path`` calls, including the metric-output station/event
+   inputs and the overlap drop-cause figure path.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

@@ -549,12 +549,17 @@ outputs:
     assert qc_paths["qc_inventory_path"] == tmp_path / "run_outputs" / "tables" / "qc_inventory.csv"
     assert qc_paths["qc_inventory_overlap_path"] == tmp_path / "run_outputs" / "tables" / "qc_inventory_overlap.parquet"
     assert qc_paths["comparison_eligible_path"] == tmp_path / "run_outputs" / "tables" / "comparison_eligible_records.csv"
+    assert qc_paths["drop_causes_overlap_figure_path"] == tmp_path / "run_outputs" / "figures" / "drop_cause_diagnostics_overlap.png"
 
     paths = output_group_paths("step_04_spatial", cfg=cfg)
 
     assert paths["metrics_long_path"] == tmp_path / "run_outputs" / "tables" / "metrics_long.parquet"
     assert paths["cluster_features_path"] == tmp_path / "run_outputs" / "tables" / "cluster_feature_summary.csv"
     assert paths["pca_scores_path"] == tmp_path / "run_outputs" / "tables" / "pca_station_scores.parquet"
+
+    metric_paths = output_group_paths("step_03_metrics", cfg=cfg)
+    assert metric_paths["prepared_events_path"] == tmp_path / "run_outputs" / "tables" / "prepared_events.csv"
+    assert metric_paths["prepared_stations_path"] == tmp_path / "run_outputs" / "tables" / "prepared_stations.csv"
 
     namespace = output_group_namespace("step_07_dashboards", cfg=cfg)
     assert namespace.qc_trace_summary_path == tmp_path / "run_outputs" / "tables" / "qc_trace_summary.csv"

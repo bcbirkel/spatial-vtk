@@ -119,9 +119,12 @@ OUTPUT_GROUPS: dict[str, tuple[OutputArtifact, ...]] = {
         OutputArtifact("post_qc_records_path", "post_qc_records"),
         OutputArtifact("drop_causes_path", "qc_drop_causes"),
         OutputArtifact("drop_causes_overlap_path", "qc_drop_causes_overlap"),
+        OutputArtifact("drop_causes_overlap_figure_path", "qc_drop_cause_diagnostics_overlap", kind="figure", required=False),
     ),
     "step_03_metrics": (
         OutputArtifact("qc_inventory_overlap_path", "qc_inventory_overlap"),
+        OutputArtifact("prepared_events_path", "prepared_events"),
+        OutputArtifact("prepared_stations_path", "prepared_stations"),
         OutputArtifact("metrics_long_path", "metrics_long"),
         OutputArtifact("metrics_enriched_path", "metrics_enriched"),
         OutputArtifact("path_table_path", "path_table"),
