@@ -485,7 +485,7 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     )
     metrics.add_argument("--port", type=int, default=8501, help="Streamlit server port.")
     metrics.add_argument("--address", default="127.0.0.1", help="Streamlit server address.")
-    metrics.add_argument("--proxy-mode", action="store_true", help="Allow access through reverse proxies such as Open OnDemand.")
+    metrics.add_argument("--proxy-mode", action="store_true", help="Allow access through reverse proxies.")
     metrics.add_argument("--show", action="store_true", help="Open Streamlit in a browser when supported.")
     metrics.set_defaults(handler=_cmd_dashboard_metrics)
 
@@ -493,7 +493,7 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     qc.add_argument("--trace-summary", required=True, help="Trace-summary CSV/parquet path.")
     qc.add_argument("--port", type=int, default=8502, help="Streamlit server port.")
     qc.add_argument("--address", default="127.0.0.1", help="Streamlit server address.")
-    qc.add_argument("--proxy-mode", action="store_true", help="Allow access through reverse proxies such as Open OnDemand.")
+    qc.add_argument("--proxy-mode", action="store_true", help="Allow access through reverse proxies.")
     qc.add_argument("--show", action="store_true", help="Open Streamlit in a browser when supported.")
     qc.set_defaults(handler=_cmd_dashboard_qc)
 

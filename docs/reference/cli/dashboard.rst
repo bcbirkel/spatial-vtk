@@ -75,7 +75,7 @@ svtk dashboard qc
    * - ``--proxy-mode``
      - No
      - Flag
-     - Allow access through reverse proxies such as Open OnDemand.
+     - Allow access through reverse proxies.
    * - ``--show``
      - No
      - Flag
@@ -137,7 +137,7 @@ svtk dashboard metrics
    * - ``--proxy-mode``
      - No
      - Flag
-     - Allow access through reverse proxies such as Open OnDemand.
+     - Allow access through reverse proxies.
    * - ``--show``
      - No
      - Flag

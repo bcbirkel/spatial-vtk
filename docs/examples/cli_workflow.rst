@@ -325,6 +325,6 @@ Write dashboard-ready Parquet datasets and launch the Streamlit dashboard apps.
      --port 8502 \
      --proxy-mode
 
-   Use ``--proxy-mode`` when opening dashboards through Open OnDemand or another
-   reverse proxy. It disables Streamlit's local origin checks for the dashboard
-   process so the proxied browser connection can attach to the app.
+Use ``--proxy-mode`` when opening dashboards through a reverse proxy. It
+disables Streamlit's local origin checks for the dashboard process so the
+proxied browser connection can attach to the app.
