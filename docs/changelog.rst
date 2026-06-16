@@ -74,6 +74,10 @@ Changelog
    ``--color-col``, ``--fit``, and ``--title`` to registered figure
    commands so routine figure configuration does not need to be hidden inside
    ``--kwargs``.
+   Added dashboard summary readiness diagnostics. Dashboard status tables now
+   report whether each summary table is missing, empty, schema-invalid,
+   missing finite value data, or ready, so notebooks can explain blank
+   dashboard tabs before Streamlit is launched.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

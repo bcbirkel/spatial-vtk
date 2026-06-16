@@ -20,6 +20,7 @@ from spatial_vtk.visualize.dashboard import (
     build_streamlit_command,
     dashboard_output_paths,
     dashboard_output_status_frame,
+    dashboard_summary_readiness_frame,
     dashboard_summary_table_contracts,
     dashboard_summary_table_paths,
     display_table,
@@ -129,6 +130,8 @@ outputs:
 
     existing = paths["dashboard_summary_root"] / "station_rollup.csv"
     existing.write_text("station,model,metric,band,n\nSTA,m1,PGA,1-2 sec,1\n", encoding="utf-8")
+    ready_summary = paths["dashboard_summary_root"] / "model_metric_band.csv"
+    ready_summary.write_text("model,metric,band,n,med_log2_residual\nm1,PGA,1-2 sec,1,0.25\n", encoding="utf-8")
     summary_paths = dashboard_summary_table_paths(paths["dashboard_summary_root"])
     assert summary_paths["station_rollup_summary_path"] == existing
 
@@ -141,6 +144,24 @@ outputs:
     assert station_status["dashboard_table"] == "station_rollup"
     assert station_status["dashboard_tabs"] == "Stations"
     assert "station" in station_status["required_columns"]
+    assert station_status["ready"] is False
+    assert station_status["readiness"] == "no_value_data"
+    assert station_status["row_count"] == 1
+    assert "finite dashboard value" in station_status["message"]
+
+    model_status = status.loc[status["name"].eq("model_metric_band_summary_path")].iloc[0]
+    assert model_status["ready"] is True
+    assert model_status["readiness"] == "ready"
+    assert model_status["nonempty_value_columns"] == "med_log2_residual"
+
+    missing_status = status.loc[status["name"].eq("path_hex_summary_path")].iloc[0]
+    assert missing_status["ready"] is False
+    assert missing_status["readiness"] == "missing"
+    assert "dist_bin_km" in missing_status["missing_columns"]
+
+    readiness = dashboard_summary_readiness_frame(paths["dashboard_summary_root"])
+    assert set(readiness["dashboard_table"]) == {"model_metric_band", "station_rollup", "event_rollup", "path_hex"}
+    assert readiness.loc[readiness["dashboard_table"].eq("model_metric_band"), "ready"].iloc[0] is True
 
     contracts = dashboard_summary_table_contracts()
     assert set(contracts["table"]) == {"model_metric_band", "station_rollup", "event_rollup", "path_hex"}

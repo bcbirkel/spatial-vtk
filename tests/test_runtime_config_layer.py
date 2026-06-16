@@ -57,6 +57,7 @@ import spatial_vtk.visualize.figure_io as figure_io
 import spatial_vtk.config.notebook as notebook_helpers
 from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize import default_figure_paths
+from spatial_vtk.visualize.dashboard import dashboard_summary_readiness_frame
 
 
 def test_runtime_config_loads_paths_defaults_and_bounds(tmp_path, monkeypatch):
@@ -557,6 +558,36 @@ outputs:
     assert list(status_frame["name"]) == ["metrics_long_path"]
 
     clear_active_config()
+
+
+def test_dashboard_summary_readiness_reports_missing_empty_and_value_states(tmp_path):
+    """Dashboard preflight should explain why tabs will be blank."""
+
+    summary_root = tmp_path / "dashboard_summaries"
+    summary_root.mkdir()
+    (summary_root / "model_metric_band.csv").write_text(
+        "model,metric,band,n,med_log2_residual\nm1,PGA,1-2 sec,1,0.25\n",
+        encoding="utf-8",
+    )
+    (summary_root / "station_rollup.csv").write_text(
+        "station,model,metric,band,n\nSTA,m1,PGA,1-2 sec,1\n",
+        encoding="utf-8",
+    )
+    (summary_root / "event_rollup.csv").write_text(
+        "event_id,model,metric,band,n,med_log2_residual\n",
+        encoding="utf-8",
+    )
+
+    readiness = dashboard_summary_readiness_frame(summary_root, create_parent=False)
+    by_table = readiness.set_index("dashboard_table")
+
+    assert by_table.loc["model_metric_band", "readiness"] == "ready"
+    assert by_table.loc["model_metric_band", "ready"] is True
+    assert by_table.loc["station_rollup", "readiness"] == "no_value_data"
+    assert "finite dashboard value" in by_table.loc["station_rollup", "message"]
+    assert by_table.loc["event_rollup", "readiness"] == "empty"
+    assert by_table.loc["path_hex", "readiness"] == "missing"
+    assert "dist_bin_km" in by_table.loc["path_hex", "missing_columns"]
 
 
 def test_output_readiness_reports_notebook_step_decisions(tmp_path):

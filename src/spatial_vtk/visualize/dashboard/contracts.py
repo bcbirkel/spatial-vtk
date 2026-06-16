@@ -194,7 +194,35 @@ def dashboard_output_status_frame(
             )
         )
     )
-    return _attach_dashboard_contract(status)
+    return _attach_dashboard_readiness(_attach_dashboard_contract(status))
+
+
+def dashboard_summary_readiness_frame(
+    summary_root: str | Path | None = None,
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    create_parent: bool = True,
+    summary_format: str = "parquet",
+) -> pd.DataFrame:
+    """Return schema and content readiness for metrics-dashboard summaries.
+
+    The returned rows are intentionally small: each standard dashboard summary
+    file is checked for existence, required columns, row count, and finite
+    dashboard value columns. This is suitable for notebooks and command-line
+    preflight checks before launching Streamlit.
+    """
+
+    status = pd.DataFrame(
+        _status_rows(
+            dashboard_summary_table_paths(
+                summary_root,
+                cfg=cfg,
+                create_parent=create_parent,
+                format=summary_format,
+            )
+        )
+    )
+    return _attach_dashboard_readiness(_attach_dashboard_contract(status))
 
 
 def _status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
@@ -236,6 +264,107 @@ def _attach_dashboard_contract(status: pd.DataFrame) -> pd.DataFrame:
         out.loc[mask, "required_columns"] = str(contract["required_columns"])
         out.loc[mask, "purpose"] = str(contract["purpose"])
     return out
+
+
+def _attach_dashboard_readiness(status: pd.DataFrame) -> pd.DataFrame:
+    """Attach dashboard summary schema/content readiness to status rows."""
+
+    if status.empty:
+        return status
+    out = status.copy()
+    for column in (
+        "ready",
+        "readiness",
+        "row_count",
+        "missing_columns",
+        "value_columns",
+        "nonempty_value_columns",
+        "message",
+    ):
+        out[column] = pd.Series([pd.NA] * len(out), index=out.index, dtype="object")
+    for index, row in out.iterrows():
+        table_name = str(row.get("dashboard_table", ""))
+        if not table_name:
+            continue
+        readiness = _inspect_dashboard_summary_table(Path(str(row["path"])), table_name)
+        for key, value in readiness.items():
+            out.at[index, key] = value
+    return out
+
+
+def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, object]:
+    """Return readiness details for one dashboard summary table path."""
+
+    required = set(REQUIRED_METRICS_TABLE_COLUMNS[table_name])
+    if not path.exists():
+        return {
+            "ready": False,
+            "readiness": "missing",
+            "row_count": "",
+            "missing_columns": ", ".join(sorted(required)),
+            "value_columns": "",
+            "nonempty_value_columns": "",
+            "message": f"{table_name} summary file is missing.",
+        }
+    try:
+        table = read_dashboard_table(path)
+    except Exception as exc:  # pragma: no cover - exercised by integration failures
+        return {
+            "ready": False,
+            "readiness": "read_error",
+            "row_count": "",
+            "missing_columns": "",
+            "value_columns": "",
+            "nonempty_value_columns": "",
+            "message": f"{table_name} summary file could not be read: {exc}",
+        }
+    missing = sorted(column for column in required if column not in table.columns)
+    value_columns = _dashboard_value_columns(table)
+    nonempty_value_columns = _nonempty_dashboard_value_columns(table, value_columns)
+    row_count = int(len(table))
+    if missing:
+        readiness = "missing_columns"
+        ready = False
+        message = f"{table_name} summary is missing required columns: {', '.join(missing)}."
+    elif table.empty:
+        readiness = "empty"
+        ready = False
+        message = f"{table_name} summary has no rows."
+    elif not nonempty_value_columns:
+        readiness = "no_value_data"
+        ready = False
+        message = f"{table_name} summary has rows but no finite dashboard value columns."
+    else:
+        readiness = "ready"
+        ready = True
+        message = f"{table_name} summary is ready."
+    return {
+        "ready": ready,
+        "readiness": readiness,
+        "row_count": row_count,
+        "missing_columns": ", ".join(missing),
+        "value_columns": ", ".join(value_columns),
+        "nonempty_value_columns": ", ".join(nonempty_value_columns),
+        "message": message,
+    }
+
+
+def _dashboard_value_columns(table: pd.DataFrame) -> list[str]:
+    """Return dashboard value columns without importing labels at module load."""
+
+    from spatial_vtk.config.labels import available_dashboard_value_columns
+
+    return available_dashboard_value_columns(table)
+
+
+def _nonempty_dashboard_value_columns(table: pd.DataFrame, columns: list[str]) -> list[str]:
+    """Return value columns that contain at least one finite numeric value."""
+
+    return [
+        column
+        for column in columns
+        if column in table.columns and pd.to_numeric(table[column], errors="coerce").notna().any()
+    ]
 
 
 def _format_mtime(mtime: float) -> str:
@@ -330,6 +459,7 @@ __all__ = [
     "REQUIRED_METRICS_TABLE_COLUMNS",
     "dashboard_output_paths",
     "dashboard_output_status_frame",
+    "dashboard_summary_readiness_frame",
     "dashboard_summary_table_contracts",
     "dashboard_summary_table_paths",
     "load_dashboard_summary_tables",
