@@ -50,6 +50,9 @@ class MetricPlan:
     metric_groups: tuple[str, ...] = ()
     transforms: tuple[str, ...] = ()
     spectral_periods_s: tuple[float, ...] = ()
+    spectral_relative_amplitude_threshold: float = 0.25
+    spectral_min_cycles_in_record: float = 3.0
+    disable_spectral_relative_amplitude_qc: bool = False
     output_mode: str = "full"
     synthetic_max_frequency_hz: float | None = None
     waveform_lowpass_hz: float | None = None
@@ -122,6 +125,9 @@ def metric_plan_from_config(
         metric_groups=settings.groups,
         transforms=settings.transforms,
         spectral_periods_s=settings.spectral.periods_s,
+        spectral_relative_amplitude_threshold=settings.spectral.relative_amplitude_threshold,
+        spectral_min_cycles_in_record=settings.spectral.min_cycles_in_record,
+        disable_spectral_relative_amplitude_qc=settings.spectral.disable_relative_amplitude_qc,
         output_mode=settings.output_mode,
         synthetic_max_frequency_hz=settings.synthetic_max_frequency_hz,
         waveform_lowpass_hz=_optional_float(waveform_cfg.get("lowpass_hz")),

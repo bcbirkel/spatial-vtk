@@ -151,9 +151,9 @@ def plan_metric_tasks(
     require_passing_qc_pairs: bool = True,
     require_source_overlap: bool | None = None,
     source_overlap_scope: str | None = None,
-    spectral_relative_amplitude_threshold: float = 0.25,
-    spectral_min_cycles_in_record: float = 3.0,
-    disable_spectral_relative_amplitude_qc: bool = False,
+    spectral_relative_amplitude_threshold: float | None = None,
+    spectral_min_cycles_in_record: float | None = None,
+    disable_spectral_relative_amplitude_qc: bool | None = None,
 ) -> list[MetricWorkflowTask]:
     """Plan metric workflow tasks from observed/synthetic inventories.
 
@@ -198,6 +198,21 @@ def plan_metric_tasks(
     output_mode = str(plan.output_mode or "full").lower()
     if output_mode not in {"observed", "synthetic", "residual", "gof", "full"}:
         raise ValueError("plan.output_mode must be observed, synthetic, residual, gof, or full.")
+    spectral_threshold = (
+        float(plan.spectral_relative_amplitude_threshold)
+        if spectral_relative_amplitude_threshold is None
+        else float(spectral_relative_amplitude_threshold)
+    )
+    spectral_min_cycles = (
+        float(plan.spectral_min_cycles_in_record)
+        if spectral_min_cycles_in_record is None
+        else float(spectral_min_cycles_in_record)
+    )
+    disable_spectral_qc = (
+        bool(plan.disable_spectral_relative_amplitude_qc)
+        if disable_spectral_relative_amplitude_qc is None
+        else bool(disable_spectral_relative_amplitude_qc)
+    )
     obs = _normalize_inventory_or_empty(observed_inventory, source="observed") if observed_inventory is not None else pd.DataFrame()
     syn = _normalize_inventory_or_empty(
         synthetic_inventory,
@@ -227,9 +242,9 @@ def plan_metric_tasks(
                     spectral_metrics,
                     passbands,
                     use_qc,
-                    spectral_relative_amplitude_threshold,
-                    spectral_min_cycles_in_record,
-                    disable_spectral_relative_amplitude_qc,
+                    spectral_threshold,
+                    spectral_min_cycles,
+                    disable_spectral_qc,
                 )
             )
         return tasks
@@ -246,9 +261,9 @@ def plan_metric_tasks(
                     spectral_metrics,
                     passbands,
                     use_qc,
-                    spectral_relative_amplitude_threshold,
-                    spectral_min_cycles_in_record,
-                    disable_spectral_relative_amplitude_qc,
+                    spectral_threshold,
+                    spectral_min_cycles,
+                    disable_spectral_qc,
                 )
             )
         return tasks
@@ -270,9 +285,9 @@ def plan_metric_tasks(
                     spectral_metrics,
                     passbands,
                     use_qc,
-                    spectral_relative_amplitude_threshold,
-                    spectral_min_cycles_in_record,
-                    disable_spectral_relative_amplitude_qc,
+                    spectral_threshold,
+                    spectral_min_cycles,
+                    disable_spectral_qc,
                 )
             )
     if use_qc and require_passing_qc_pairs and qc_table is not None:
