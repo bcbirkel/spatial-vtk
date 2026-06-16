@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 from shapely.geometry import Polygon, mapping
 
+from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.spatial.calculate import (
     BoundaryCorridorConfig,
     CorridorAnchorConfig,
@@ -17,10 +18,12 @@ from spatial_vtk.spatial.calculate import (
     annotate_points_with_geojson,
     apply_geojson_path_control,
     build_geojson_region_summary,
+    build_geojson_region_summary_from_table,
     build_boundary_corridors,
     build_station_edge_corridors,
     classify_records_by_corridors,
     classify_paths_with_geojson,
+    run_geojson_region_summary_workflow,
     select_events_in_corridors,
     select_records_by_corridors,
     summarize_corridor_event_counts,
@@ -105,6 +108,66 @@ def test_geojson_point_and_path_controls_are_general(tmp_path):
     assert int(event_rows["unique_records"].max()) == 3
     assert int(path_rows["unique_records"].max()) == 3
     assert "outside" in set(station_rows["region"])
+
+
+def test_geojson_region_summary_reads_only_needed_table_columns(tmp_path):
+    """GeoJSON summary workflow should handle large metric tables via slim reads."""
+
+    geojson = _write_geojson(
+        tmp_path / "regions.geojson",
+        [_feature("West Basin", Polygon([(-118.4, 34.0), (-118.0, 34.0), (-118.0, 34.4), (-118.4, 34.4)]))],
+    )
+    metrics = pd.DataFrame(
+        {
+            "model": ["m1", "m1", "m1", "m1"],
+            "metric": ["PGA", "PGA", "PGV", "PGV"],
+            "event_title": ["e1", "e1", "e2", "e2"],
+            "station_name": ["S1", "S1", "S2", "S3"],
+            "event_lon": [-118.2, -118.2, -118.6, -118.6],
+            "event_lat": [34.2, 34.2, 34.2, 34.2],
+            "station_longitude": [-118.6, -118.6, -118.2, -117.9],
+            "station_latitude": [34.2, 34.2, 34.2, 34.2],
+            "large_unused_payload": ["x" * 64, "y" * 64, "z" * 64, "q" * 64],
+        }
+    )
+    metrics_csv = tmp_path / "metrics_long.csv"
+    metrics.to_csv(metrics_csv, index=False)
+
+    summary = build_geojson_region_summary_from_table(metrics_csv, geojson, chunksize=2, verbose=True)
+
+    assert set(summary["relation"]) == {"station_inside", "event_inside", "crosses_boundary"}
+    assert int(summary["source_rows"].max()) == len(metrics)
+    assert int(summary.loc[summary["relation"] == "station_inside", "unique_records"].max()) == 3
+    assert "large_unused_payload" not in summary.columns
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+paths:
+  region_geojson: regions.geojson
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    result = run_geojson_region_summary_workflow(metrics_csv, cfg=cfg, chunksize=2, verbose=True)
+
+    assert result.path == tmp_path / "outputs" / "tables" / "geojson_region_summaries.csv"
+    assert result.path.exists()
+    assert result.rows == len(pd.read_csv(result.path))
+    assert result.source_rows == len(metrics)
+
+    parquet_path = tmp_path / "metrics_long.parquet"
+    try:
+        metrics.to_parquet(parquet_path, index=False)
+    except Exception:
+        return
+    parquet_summary = build_geojson_region_summary_from_table(parquet_path, geojson, verbose=True)
+    assert int(parquet_summary["source_rows"].max()) == len(metrics)
 
 
 def test_geojson_no_overlap_error_is_clear(tmp_path):

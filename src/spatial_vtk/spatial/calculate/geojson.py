@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+import time
 from typing import Literal
 
 import numpy as np
@@ -16,6 +17,32 @@ from spatial_vtk.spatial.calculate.settings import spatial_statistics_settings_f
 
 GeoJSONRelation = Literal["crosses_boundary", "begins_in", "ends_in", "station_inside", "event_inside"]
 GeoJSONDirection = Literal["either", "inside_to_outside", "outside_to_inside"]
+
+GEOJSON_SUMMARY_INPUT_COLUMNS: tuple[str, ...] = (
+    "event_id",
+    "event_title",
+    "station",
+    "station_id",
+    "station_name",
+    "sta_lon",
+    "station_longitude",
+    "station_lon",
+    "longitude",
+    "lon",
+    "sta_lat",
+    "station_latitude",
+    "station_lat",
+    "latitude",
+    "lat",
+    "event_lon",
+    "event_longitude",
+    "source_lon",
+    "source_longitude",
+    "event_lat",
+    "event_latitude",
+    "source_lat",
+    "source_latitude",
+)
 
 
 class GeoJSONNoOverlapError(ValueError):
@@ -47,6 +74,16 @@ class GeoJSONPathControl:
     direction: GeoJSONDirection = "either"
     start_role: str = "event"
     end_role: str = "station"
+
+
+@dataclass(frozen=True)
+class GeoJSONRegionSummaryWorkflowResult:
+    """Result metadata for the table-backed GeoJSON region summary workflow."""
+
+    path: Path
+    rows: int
+    source_rows: int
+    elapsed_s: float
 
 
 def load_geojson_polygons(geojson_path: str | Path) -> list[PolygonFeature]:
@@ -412,6 +449,7 @@ def build_geojson_region_summary(
     *,
     selector: object = "all",
     verbose: bool = False,
+    source_rows: int | None = None,
 ) -> pd.DataFrame:
     """Summarize station, event, and path GeoJSON membership efficiently.
 
@@ -421,7 +459,7 @@ def build_geojson_region_summary(
     checks for each metric, component, passband, and model row.
     """
 
-    source_rows = len(df)
+    source_rows = len(df) if source_rows is None else int(source_rows)
     rows: list[pd.DataFrame] = []
     for point in ("station", "event"):
         relation = f"{point}_inside"
@@ -475,6 +513,99 @@ def build_geojson_region_summary(
     summary = pd.concat(rows, ignore_index=True, sort=False) if rows else pd.DataFrame(columns=["relation", "region", "count"])
     _progress(verbose, f"GeoJSON summary: complete with {len(summary)} row(s)")
     return summary
+
+
+def build_geojson_region_summary_from_table(
+    table: pd.DataFrame | str | Path,
+    geojson_path: str | Path,
+    *,
+    selector: object = "all",
+    chunksize: int | None = 1_000_000,
+    verbose: bool = False,
+) -> pd.DataFrame:
+    """Build a GeoJSON region summary from a metrics table path or dataframe.
+
+    Only event/station identifiers and coordinate columns are read from table
+    paths. Repeated metric rows are de-duplicated before geometry operations,
+    while the returned summary still reports the original table row count in
+    ``source_rows``.
+    """
+
+    frame, source_rows = _geojson_summary_input(table, chunksize=chunksize, verbose=verbose)
+    return build_geojson_region_summary(
+        frame,
+        geojson_path,
+        selector=selector,
+        verbose=verbose,
+        source_rows=source_rows,
+    )
+
+
+def run_geojson_region_summary_workflow(
+    metrics_table: pd.DataFrame | str | Path | None = None,
+    geojson_path: str | Path | None = None,
+    *,
+    output_key: str = "geojson_region_summaries",
+    cfg: object | None = None,
+    selector: object = "all",
+    chunksize: int | None = 1_000_000,
+    verbose: bool = False,
+) -> GeoJSONRegionSummaryWorkflowResult:
+    """Build and write the configured GeoJSON region summary table.
+
+    Parameters
+    ----------
+    metrics_table
+        Metrics table path or dataframe. When omitted, the active config output
+        registry entry for ``"metrics_long"`` is used.
+    geojson_path
+        GeoJSON feature path. When omitted, ``paths.region_geojson`` is read
+        from the active/configured project.
+    output_key
+        Output table registry key used for the written summary.
+    cfg
+        Optional :class:`~spatial_vtk.config.runtime.SpatialVTKConfig`.
+    selector, chunksize, verbose
+        Passed through to :func:`build_geojson_region_summary_from_table`.
+
+    Returns
+    -------
+    GeoJSONRegionSummaryWorkflowResult
+        Written path, output row count, source row count, and elapsed seconds.
+    """
+
+    from spatial_vtk.config.outputs import resolve_output_path
+    from spatial_vtk.config.runtime import active_config
+    from spatial_vtk.io import write_output_table
+
+    started = time.perf_counter()
+    config = cfg or active_config()
+    resolved_metrics = metrics_table
+    if resolved_metrics is None:
+        resolved_metrics = resolve_output_path("metrics_long", kind="table", cfg=config)
+    resolved_geojson = Path(geojson_path).expanduser() if geojson_path is not None else config.path("paths.region_geojson", must_exist=False)
+    if resolved_geojson is None:
+        summary = pd.DataFrame(columns=["relation", "region", "count", "unique_records", "source_rows"])
+        source_rows = 0
+        _progress(verbose, "GeoJSON summary: no paths.region_geojson configured; writing empty summary")
+    else:
+        frame, source_rows = _geojson_summary_input(resolved_metrics, chunksize=chunksize, verbose=verbose)
+        summary = build_geojson_region_summary(
+            frame,
+            resolved_geojson,
+            selector=selector,
+            verbose=verbose,
+            source_rows=source_rows,
+        )
+    output_path = write_output_table(output_key, summary, cfg=config)
+    elapsed = time.perf_counter() - started
+    _progress(verbose, f"GeoJSON summary: wrote {len(summary)} row(s) to {output_path} in {elapsed:.1f}s")
+    return GeoJSONRegionSummaryWorkflowResult(
+        path=output_path,
+        rows=len(summary),
+        source_rows=int(source_rows),
+        elapsed_s=float(elapsed),
+    )
 
 
 def summarize_metrics_by_geojson(
@@ -544,6 +675,94 @@ def summarize_metrics_by_geojson(
     out = out.drop(columns=["q25", "q75"]).rename(columns={"_geojson_label": "geojson_label"})
     _maybe_write_csv(out, savecsv=savecsv, outpath=outpath)
     return out
+
+
+def _geojson_summary_input(
+    table: pd.DataFrame | str | Path,
+    *,
+    chunksize: int | None,
+    verbose: bool,
+) -> tuple[pd.DataFrame, int]:
+    """Return de-duplicated GeoJSON summary columns and original row count."""
+
+    if isinstance(table, pd.DataFrame):
+        return _dedupe_geojson_summary_frame(table), len(table)
+
+    path = Path(table).expanduser()
+    if not path.exists():
+        raise FileNotFoundError(f"Metrics table does not exist: {path}")
+
+    suffix = path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        available, row_count = _parquet_columns_and_rows(path)
+        columns = _available_geojson_summary_columns(available)
+        if not columns:
+            raise KeyError(f"No GeoJSON summary coordinate columns were found in {path}")
+        _progress(verbose, f"GeoJSON summary: reading {len(columns)} column(s) from {path}")
+        frame = pd.read_parquet(path, columns=columns)
+        return _dedupe_geojson_summary_frame(frame), row_count if row_count is not None else len(frame)
+
+    if suffix in {".csv", ".txt"}:
+        available = list(pd.read_csv(path, nrows=0).columns)
+        columns = _available_geojson_summary_columns(available)
+        if not columns:
+            raise KeyError(f"No GeoJSON summary coordinate columns were found in {path}")
+        if chunksize:
+            source_rows = 0
+            chunks: list[pd.DataFrame] = []
+            for index, chunk in enumerate(pd.read_csv(path, usecols=columns, chunksize=chunksize), start=1):
+                source_rows += len(chunk)
+                chunks.append(_dedupe_geojson_summary_frame(chunk))
+                _progress(verbose, f"GeoJSON summary: read CSV chunk {index} ({source_rows} row(s) total)")
+            frame = pd.concat(chunks, ignore_index=True, sort=False) if chunks else pd.DataFrame(columns=columns)
+            return _dedupe_geojson_summary_frame(frame), source_rows
+        frame = pd.read_csv(path, usecols=columns)
+        return _dedupe_geojson_summary_frame(frame), len(frame)
+
+    from spatial_vtk.io import read_table
+
+    frame = read_table(path)
+    return _dedupe_geojson_summary_frame(frame), len(frame)
+
+
+def _parquet_columns_and_rows(path: Path) -> tuple[list[str], int | None]:
+    """Return parquet column names and row count without reading row groups."""
+
+    try:
+        import pyarrow.parquet as pq
+    except Exception:
+        frame = pd.read_parquet(path)
+        return list(frame.columns), len(frame)
+    metadata = pq.ParquetFile(path)
+    return list(metadata.schema.names), int(metadata.metadata.num_rows)
+
+
+def _available_geojson_summary_columns(columns: Sequence[str]) -> list[str]:
+    """Return GeoJSON summary columns available in a table schema."""
+
+    available = set(columns)
+    return [column for column in GEOJSON_SUMMARY_INPUT_COLUMNS if column in available]
+
+
+def _dedupe_geojson_summary_frame(df: pd.DataFrame) -> pd.DataFrame:
+    """Normalize aliases and remove repeated geometry rows."""
+
+    columns = _available_geojson_summary_columns(df.columns)
+    work = df.loc[:, columns].copy()
+    _copy_alias_column(work, target="event_id", aliases=("event_title",))
+    _copy_alias_column(work, target="station", aliases=("station_id", "station_name"))
+    return work.drop_duplicates().reset_index(drop=True)
+
+
+def _copy_alias_column(df: pd.DataFrame, *, target: str, aliases: Sequence[str]) -> None:
+    """Copy the first available alias into a canonical column when absent."""
+
+    if target in df.columns:
+        return
+    for alias in aliases:
+        if alias in df.columns:
+            df[target] = df[alias]
+            return
 
 
 def _unique_point_records(df: pd.DataFrame, *, point: str) -> pd.DataFrame:
