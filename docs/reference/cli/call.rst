@@ -32,11 +32,11 @@ Command Details
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``function``
      - Yes
-     - 
+     -
      - Import path, for example spatial_vtk.config.labels.metric_display_name.
    * - ``--args``
      - No
@@ -44,7 +44,7 @@ Command Details
      - Value: ``args``. Positional arguments parsed as YAML scalars/sequences.
    * - ``--args-json``
      - No
-     - 
+     -
      - Value: ``args_json``. JSON/YAML list of positional arguments.
    * - ``--kwargs``
      - No
@@ -52,9 +52,9 @@ Command Details
      - Value: ``kwargs``. Keyword arguments as key=value, parsed as YAML values.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. JSON/YAML mapping of keyword arguments.
    * - ``--output``
      - No
-     - 
+     -
      - Value: ``output``. Optional output path for DataFrame/dict/list results.

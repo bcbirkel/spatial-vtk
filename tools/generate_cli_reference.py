@@ -308,12 +308,18 @@ def _render_arguments(parser: argparse.ArgumentParser) -> list[str]:
             [
                 f"   * - {name}",
                 f"     - {required}",
-                f"     - {default}",
-                f"     - {description}",
+                _table_cell(default),
+                _table_cell(description),
             ]
         )
     lines.append("")
     return lines
+
+
+def _table_cell(value: str) -> str:
+    """Return one RST list-table cell without trailing whitespace."""
+
+    return f"     - {value}" if value else "     -"
 
 
 def _argument_row(action: argparse.Action) -> tuple[str, str, str, str] | None:

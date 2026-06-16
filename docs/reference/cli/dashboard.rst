@@ -31,7 +31,7 @@ Command Details
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
 
 .. _cli-svtk-dashboard-qc:
@@ -43,8 +43,7 @@ svtk dashboard qc
 
 .. code-block:: bash
 
-   svtk dashboard qc [-h] [--config CONFIG]
-                         [--run-scenario RUN_SCENARIO]
+   svtk dashboard qc [-h] [--config CONFIG] [--run-scenario RUN_SCENARIO]
                          [--trace-summary TRACE_SUMMARY] [--port PORT]
                          [--address ADDRESS] [--proxy-mode] [--show]
 
@@ -60,19 +59,19 @@ svtk dashboard qc
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--config``
      - No
-     - 
+     -
      - Value: ``config``. Spatial-VTK config used to find the default trace-summary output.
    * - ``--run-scenario``
      - No
-     - 
+     -
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--trace-summary``
      - No
-     - 
+     -
      - Value: ``trace_summary``. Trace-summary CSV/parquet path. Defaults from config.
    * - ``--port``
      - No
@@ -118,24 +117,24 @@ svtk dashboard metrics
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--config``
      - No
-     - 
+     -
      - Value: ``config``. Spatial-VTK config used to find default dashboard outputs.
    * - ``--run-scenario``
      - No
-     - 
+     -
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--metrics-root``
      - No
-     - 
-     - Value: ``metrics_root``. Dashboard-ready long metric dataset directory, usually outputs/tables/dashboard_metrics from ``svtk metrics outputs``. Defaults from config.
+     -
+     - Value: ``metrics_root``. Dashboard-ready long metric dataset directory, usually outputs/tables/dashboard_metrics from 'svtk metrics outputs'.
    * - ``--summary-root``
      - No
-     - 
-     - Value: ``summary_root``. Dashboard summary table directory, usually outputs/tables/dashboard_summaries from ``svtk metrics outputs``. Defaults from config.
+     -
+     - Value: ``summary_root``. Dashboard summary table directory, usually outputs/tables/dashboard_summaries from 'svtk metrics outputs'.
    * - ``--port``
      - No
      - Default: ``8501``

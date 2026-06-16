@@ -7,6 +7,8 @@ Command Tree
 ------------
 
 - :ref:`svtk metrics <cli-svtk-metrics>`
+   - :ref:`svtk metrics cache-waveforms <cli-svtk-metrics-cache-waveforms>`
+   - :ref:`svtk metrics inventories <cli-svtk-metrics-inventories>`
    - :ref:`svtk metrics merge-batches <cli-svtk-metrics-merge-batches>`
    - :ref:`svtk metrics outputs <cli-svtk-metrics-outputs>`
    - :ref:`svtk metrics plan <cli-svtk-metrics-plan>`
@@ -21,7 +23,9 @@ Command Details
 
 .. code-block:: bash
 
-   svtk metrics [-h] {plan,run,run-batch,merge-batches,outputs,slurm} ...
+   svtk metrics [-h]
+                    {inventories,plan,run,run-batch,cache-waveforms,merge-batches,outputs,slurm}
+                    ...
 
 .. rubric:: Parameters
 
@@ -35,8 +39,144 @@ Command Details
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
+
+.. _cli-svtk-metrics-cache-waveforms:
+
+svtk metrics cache-waveforms
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. rubric:: Usage
+
+.. code-block:: bash
+
+   svtk metrics cache-waveforms [-h] --manifest MANIFEST --output OUTPUT
+                                    --cache-root CACHE_ROOT
+                                    [--batch-output-dir BATCH_OUTPUT_DIR]
+                                    [--overwrite] [--compressed] [--verbose]
+                                    [--progress-interval PROGRESS_INTERVAL]
+
+.. rubric:: Parameters
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 13 14 47
+
+   * - Name
+     - Required
+     - Default / choices
+     - Description
+   * - ``-h``, ``--help``
+     - No
+     -
+     - show this help message and exit
+   * - ``--manifest``
+     - Yes
+     -
+     - Value: ``manifest``. Source metric workflow manifest JSON.
+   * - ``--output``
+     - Yes
+     -
+     - Value: ``output``. Cached metric workflow manifest JSON.
+   * - ``--cache-root``
+     - Yes
+     -
+     - Value: ``cache_root``. Directory for cached metric-ready waveform .npz files.
+   * - ``--batch-output-dir``
+     - No
+     -
+     - Value: ``batch_output_dir``. Batch output directory for the cached manifest.
+   * - ``--overwrite``
+     - No
+     - Flag
+     - Rewrite existing cached waveform files.
+   * - ``--compressed``
+     - No
+     - Flag
+     - Write compressed .npz files instead of faster uncompressed .npz files.
+   * - ``--verbose``
+     - No
+     - Flag
+     - Print progress while materializing waveform traces.
+   * - ``--progress-interval``
+     - No
+     - Default: ``100``
+     - Value: ``progress_interval``. Task interval for verbose progress messages.
+
+.. _cli-svtk-metrics-inventories:
+
+svtk metrics inventories
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. rubric:: Usage
+
+.. code-block:: bash
+
+   svtk metrics inventories [-h] --trace-metadata TRACE_METADATA
+                                --observed-output OBSERVED_OUTPUT
+                                --synthetic-output SYNTHETIC_OUTPUT
+                                [--config CONFIG]
+                                [--run-scenario RUN_SCENARIO]
+                                [--synthetic-model SYNTHETIC_MODEL]
+                                [--observed-path-column OBSERVED_PATH_COLUMN]
+                                [--synthetic-path-column SYNTHETIC_PATH_COLUMN]
+                                [--overwrite] [--verbose]
+
+.. rubric:: Parameters
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 13 14 47
+
+   * - Name
+     - Required
+     - Default / choices
+     - Description
+   * - ``-h``, ``--help``
+     - No
+     -
+     - show this help message and exit
+   * - ``--trace-metadata``
+     - Yes
+     -
+     - Value: ``trace_metadata``. Preprocessed trace metadata CSV/parquet path.
+   * - ``--observed-output``
+     - Yes
+     -
+     - Value: ``observed_output``. Observed metric inventory CSV/parquet output path.
+   * - ``--synthetic-output``
+     - Yes
+     -
+     - Value: ``synthetic_output``. Synthetic metric inventory CSV/parquet output path.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config used to infer a single synthetic model.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+   * - ``--synthetic-model``
+     - No
+     -
+     - Value: ``synthetic_model``. Synthetic model label override.
+   * - ``--observed-path-column``
+     - No
+     - Default: ``output_file``
+     - Value: ``observed_path_column``. Trace metadata column used for observed waveform_path.
+   * - ``--synthetic-path-column``
+     - No
+     - Default: ``input_file``
+     - Value: ``synthetic_path_column``. Trace metadata column used for synthetic waveform_path.
+   * - ``--overwrite``
+     - No
+     - Flag
+     - Replace existing inventory outputs.
+   * - ``--verbose``
+     - No
+     - Flag
+     - Print row counts and output paths.
 
 .. _cli-svtk-metrics-merge-batches:
 
@@ -62,15 +202,15 @@ svtk metrics merge-batches
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--manifest``
      - Yes
-     - 
+     -
      - Value: ``manifest``. Metric workflow manifest JSON.
    * - ``--output``
      - Yes
-     - 
+     -
      - Value: ``output``. Merged output CSV/parquet path.
    * - ``--allow-missing``
      - No
@@ -104,31 +244,31 @@ svtk metrics outputs
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--metrics``
      - Yes
-     - 
+     -
      - Value: ``metrics``. Metric workflow rows CSV/parquet path.
    * - ``--output-dir``
      - Yes
-     - 
+     -
      - Value: ``output_dir``. Output directory.
    * - ``--events``
      - No
-     - 
+     -
      - Value: ``events``. Optional event metadata CSV/parquet path.
    * - ``--stations``
      - No
-     - 
+     -
      - Value: ``stations``. Optional station metadata CSV/parquet path.
    * - ``--residual-column``
      - No
-     - 
+     -
      - Value: ``residual_column``. Column exposed as canonical residual.
    * - ``--score-column``
      - No
-     - 
+     -
      - Value: ``score_column``. Column exposed as canonical score.
    * - ``--format``
      - No
@@ -154,10 +294,14 @@ svtk metrics plan
                          [--metric METRICS] [--metric-group METRIC_GROUPS]
                          [--component COMPONENTS] [--passband PASSBANDS]
                          [--model MODELS] [--transform TRANSFORMS]
-                         [--output-mode OUTPUT_MODE] --output OUTPUT
-                         [--manifest] [--batch-output-dir BATCH_OUTPUT_DIR]
-                         [--batch-size BATCH_SIZE] [--qc-table QC_TABLE]
-                         [--no-qc]
+                         [--output-mode OUTPUT_MODE]
+                         [--require-source-overlap]
+                         [--source-overlap-scope {event,event_station}]
+                         --output OUTPUT [--manifest]
+                         [--batch-output-dir BATCH_OUTPUT_DIR]
+                         [--batch-size BATCH_SIZE] [--batch-count BATCH_COUNT]
+                         [--qc-table QC_TABLE] [--no-qc]
+                         [--include-qc-failed-tasks]
 
 .. rubric:: Parameters
 
@@ -171,23 +315,23 @@ svtk metrics plan
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--observed-inventory``
      - No
-     - 
+     -
      - Value: ``observed_inventory``. Observed metric waveform inventory.
    * - ``--synthetic-inventory``
      - No
-     - 
+     -
      - Value: ``synthetic_inventory``. Synthetic metric waveform inventory.
    * - ``--config``
      - No
-     - 
+     -
      - Value: ``config``. Spatial-VTK config file.
    * - ``--run-scenario``
      - No
-     - 
+     -
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--metric``
      - No
@@ -215,11 +359,19 @@ svtk metrics plan
      - Value: ``transforms``. Metric transform override. Repeat for multiple transforms.
    * - ``--output-mode``
      - No
-     - 
+     -
      - Value: ``output_mode``. Metric output mode override.
+   * - ``--require-source-overlap``
+     - No
+     - Flag
+     - Only plan metric tasks for events or event-station rows with both observed and synthetic data.
+   * - ``--source-overlap-scope``
+     - No
+     - Choices: ``event``, ``event_station``
+     - Value: ``source_overlap_scope``. Overlap scope for --require-source-overlap.
    * - ``--output``
      - Yes
-     - 
+     -
      - Value: ``output``. Output task table or manifest path.
    * - ``--manifest``
      - No
@@ -227,20 +379,28 @@ svtk metrics plan
      - Write a JSON manifest instead of a task table.
    * - ``--batch-output-dir``
      - No
-     - 
+     -
      - Value: ``batch_output_dir``. Batch output directory when writing a manifest.
    * - ``--batch-size``
      - No
      - Default: ``100``
      - Value: ``batch_size``. Tasks per batch when writing a manifest.
+   * - ``--batch-count``
+     - No
+     -
+     - Value: ``batch_count``. Target number of batches when writing a manifest. Overrides --batch-size.
    * - ``--qc-table``
      - No
-     - 
+     -
      - Value: ``qc_table``. Optional QC inventory recorded in a manifest.
    * - ``--no-qc``
      - No
      - Flag
      - Do not mark planned tasks as QC-filtered by default.
+   * - ``--include-qc-failed-tasks``
+     - No
+     - Flag
+     - When --qc-table is supplied, keep task keys even if no observed/synthetic metric pair passed QC.
 
 .. _cli-svtk-metrics-run:
 
@@ -266,19 +426,19 @@ svtk metrics run
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--tasks``
      - Yes
-     - 
+     -
      - Value: ``tasks``. Task CSV/parquet path.
    * - ``--output``
      - Yes
-     - 
+     -
      - Value: ``output``. Output metric CSV/parquet path.
    * - ``--qc-table``
      - No
-     - 
+     -
      - Value: ``qc_table``. Optional QC inventory.
 
 .. _cli-svtk-metrics-run-batch:
@@ -305,15 +465,15 @@ svtk metrics run-batch
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--manifest``
      - Yes
-     - 
+     -
      - Value: ``manifest``. Metric workflow manifest JSON.
    * - ``--batch-index``
      - Yes
-     - 
+     -
      - Value: ``batch_index``. Batch index to run.
    * - ``--overwrite``
      - No
@@ -329,8 +489,9 @@ svtk metrics slurm
 
 .. code-block:: bash
 
-   svtk metrics slurm [-h] --manifest MANIFEST --output OUTPUT --config
-                          CONFIG [--run-scenario RUN_SCENARIO]
+   svtk metrics slurm [-h] --manifest MANIFEST --output OUTPUT
+                          [--config CONFIG] [--run-scenario RUN_SCENARIO]
+                          [--submit]
 
 .. rubric:: Parameters
 
@@ -344,21 +505,25 @@ svtk metrics slurm
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--manifest``
      - Yes
-     - 
+     -
      - Value: ``manifest``. Metric workflow manifest JSON.
    * - ``--output``
      - Yes
-     - 
+     -
      - Value: ``output``. Output SLURM script path.
    * - ``--config``
-     - Yes
-     - 
+     - No
+     -
      - Value: ``config``. Config file containing metrics.slurm settings.
    * - ``--run-scenario``
      - No
-     - 
+     -
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+   * - ``--submit``
+     - No
+     - Flag
+     - Submit the script with sbatch after writing it.

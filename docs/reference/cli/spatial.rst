@@ -9,7 +9,7 @@ Command Tree
 ------------
 
 - :ref:`svtk spatial <cli-svtk-spatial>`
-   - :ref:`svtk spatial summaries <cli-svtk-spatial-summaries>`
+   - :ref:`svtk spatial summaries <cli-svtk-spatial-summaries>` - Build standard spatial-statistics summary tables.
 
 Command Details
 ---------------
@@ -47,8 +47,9 @@ Build standard spatial-statistics summary tables.
 .. code-block:: bash
 
    svtk spatial summaries [-h] [--metrics METRICS] [--config CONFIG]
-                          [--run-scenario RUN_SCENARIO] [--metric METRIC]
-                          [--station-metadata STATION_METADATA] [--verbose]
+                              [--run-scenario RUN_SCENARIO] [--metric METRIC]
+                              [--station-metadata STATION_METADATA]
+                              [--verbose]
 
 .. rubric:: Parameters
 
@@ -67,7 +68,7 @@ Build standard spatial-statistics summary tables.
    * - ``--metrics``
      - No
      -
-     - Value: ``metrics``. Metric rows table. Defaults to configured output table ``metrics_long``.
+     - Value: ``metrics``. Metric rows table. Defaults to configured output table 'metrics_long'.
    * - ``--config``
      - No
      -
@@ -75,15 +76,15 @@ Build standard spatial-statistics summary tables.
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named ``run_scenarios`` overlay.
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric override. Use ``all`` to process each metric in the input table.
+     - Value: ``metric``. Metric override. Use 'all' to process each metric in the input table.
    * - ``--station-metadata``
      - No
      -
-     - Value: ``station_metadata``. Prepared station metadata table for geology contrasts. Defaults to configured ``prepared_stations``.
+     - Value: ``station_metadata``. Prepared station metadata table for geology contrasts. Defaults to configured 'prepared_stations'.
    * - ``--verbose``
      - No
      - Flag

@@ -43,7 +43,7 @@ Command Details
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
 
 .. _cli-svtk-map-spatial:
@@ -71,7 +71,7 @@ svtk map spatial
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
 
 .. _cli-svtk-map-spatial-block-holdout-error:
@@ -83,12 +83,13 @@ svtk map spatial block-holdout-error
 
 .. code-block:: bash
 
-   svtk map spatial block-holdout-error [-h] --input INPUT --output OUTPUT
+   svtk map spatial block-holdout-error [-h] --input INPUT
+                                            [--output OUTPUT]
+                                            [--config CONFIG]
+                                            [--run-scenario RUN_SCENARIO]
                                             [--table TABLE]
                                             [--kwargs [KWARGS ...]]
                                             [--kwargs-json KWARGS_JSON]
-                                            [--config CONFIG]
-                                            [--run-scenario RUN_SCENARIO]
                                             [--bounds BOUNDS] [--no-basemap]
                                             [--basemap-source BASEMAP_SOURCE]
 
@@ -104,16 +105,24 @@ svtk map spatial block-holdout-error
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the prediction_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'block_holdout_error'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -124,19 +133,11 @@ svtk map spatial block-holdout-error
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
-   * - ``--config``
-     - No
-     - 
-     - Value: ``config``. Optional Spatial-VTK config for named bounds.
-   * - ``--run-scenario``
-     - No
-     - 
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--bounds``
      - No
-     - 
+     -
      - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
@@ -144,7 +145,7 @@ svtk map spatial block-holdout-error
      - Disable basemap rendering for map figures.
    * - ``--basemap-source``
      - No
-     - 
+     -
      - Value: ``basemap_source``. Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-cluster:
@@ -156,11 +157,12 @@ svtk map spatial cluster
 
 .. code-block:: bash
 
-   svtk map spatial cluster [-h] --input INPUT --output OUTPUT
-                                [--table TABLE] [--kwargs [KWARGS ...]]
-                                [--kwargs-json KWARGS_JSON] [--config CONFIG]
-                                [--run-scenario RUN_SCENARIO]
-                                [--bounds BOUNDS] [--no-basemap]
+   svtk map spatial cluster [-h] --input INPUT [--output OUTPUT]
+                                [--config CONFIG]
+                                [--run-scenario RUN_SCENARIO] [--table TABLE]
+                                [--kwargs [KWARGS ...]]
+                                [--kwargs-json KWARGS_JSON] [--bounds BOUNDS]
+                                [--no-basemap]
                                 [--basemap-source BASEMAP_SOURCE]
 
 .. rubric:: Parameters
@@ -175,16 +177,24 @@ svtk map spatial cluster
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the assignments_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'cluster'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -195,19 +205,11 @@ svtk map spatial cluster
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
-   * - ``--config``
-     - No
-     - 
-     - Value: ``config``. Optional Spatial-VTK config for named bounds.
-   * - ``--run-scenario``
-     - No
-     - 
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--bounds``
      - No
-     - 
+     -
      - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
@@ -215,7 +217,7 @@ svtk map spatial cluster
      - Disable basemap rendering for map figures.
    * - ``--basemap-source``
      - No
-     - 
+     -
      - Value: ``basemap_source``. Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-corridor:
@@ -227,12 +229,12 @@ svtk map spatial corridor
 
 .. code-block:: bash
 
-   svtk map spatial corridor [-h] --input INPUT --output OUTPUT
-                                 [--table TABLE] [--kwargs [KWARGS ...]]
+   svtk map spatial corridor [-h] --input INPUT [--output OUTPUT]
+                                 [--config CONFIG]
+                                 [--run-scenario RUN_SCENARIO] [--table TABLE]
+                                 [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--events EVENTS]
                                  [--records RECORDS] [--stations STATIONS]
-                                 [--config CONFIG]
-                                 [--run-scenario RUN_SCENARIO]
                                  [--bounds BOUNDS] [--no-basemap]
                                  [--basemap-source BASEMAP_SOURCE]
 
@@ -248,16 +250,24 @@ svtk map spatial corridor
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the corridors_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'corridor'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -268,31 +278,23 @@ svtk map spatial corridor
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
    * - ``--events``
      - No
-     - 
+     -
      - Value: ``events``. Convenience table path for the events_df argument.
    * - ``--records``
      - No
-     - 
+     -
      - Value: ``records``. Convenience table path for the records_df argument.
    * - ``--stations``
      - No
-     - 
+     -
      - Value: ``stations``. Convenience table path for the stations_df argument.
-   * - ``--config``
-     - No
-     - 
-     - Value: ``config``. Optional Spatial-VTK config for named bounds.
-   * - ``--run-scenario``
-     - No
-     - 
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--bounds``
      - No
-     - 
+     -
      - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
@@ -300,7 +302,7 @@ svtk map spatial corridor
      - Disable basemap rendering for map figures.
    * - ``--basemap-source``
      - No
-     - 
+     -
      - Value: ``basemap_source``. Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-event-residual:
@@ -312,11 +314,11 @@ svtk map spatial event-residual
 
 .. code-block:: bash
 
-   svtk map spatial event-residual [-h] --input INPUT --output OUTPUT
-                                       [--table TABLE] [--kwargs [KWARGS ...]]
-                                       [--kwargs-json KWARGS_JSON]
+   svtk map spatial event-residual [-h] --input INPUT [--output OUTPUT]
                                        [--config CONFIG]
                                        [--run-scenario RUN_SCENARIO]
+                                       [--table TABLE] [--kwargs [KWARGS ...]]
+                                       [--kwargs-json KWARGS_JSON]
                                        [--bounds BOUNDS] [--no-basemap]
                                        [--basemap-source BASEMAP_SOURCE]
 
@@ -332,16 +334,24 @@ svtk map spatial event-residual
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'event_residual'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -352,19 +362,11 @@ svtk map spatial event-residual
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
-   * - ``--config``
-     - No
-     - 
-     - Value: ``config``. Optional Spatial-VTK config for named bounds.
-   * - ``--run-scenario``
-     - No
-     - 
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--bounds``
      - No
-     - 
+     -
      - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
@@ -372,7 +374,7 @@ svtk map spatial event-residual
      - Disable basemap rendering for map figures.
    * - ``--basemap-source``
      - No
-     - 
+     -
      - Value: ``basemap_source``. Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-list:
@@ -398,7 +400,7 @@ svtk map spatial list
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
 
 .. _cli-svtk-map-spatial-metric-by-model:
@@ -410,12 +412,12 @@ svtk map spatial metric-by-model
 
 .. code-block:: bash
 
-   svtk map spatial metric-by-model [-h] --input INPUT --output OUTPUT
+   svtk map spatial metric-by-model [-h] --input INPUT [--output OUTPUT]
+                                        [--config CONFIG]
+                                        [--run-scenario RUN_SCENARIO]
                                         [--table TABLE]
                                         [--kwargs [KWARGS ...]]
                                         [--kwargs-json KWARGS_JSON]
-                                        [--config CONFIG]
-                                        [--run-scenario RUN_SCENARIO]
                                         [--bounds BOUNDS] [--no-basemap]
                                         [--basemap-source BASEMAP_SOURCE]
 
@@ -431,16 +433,24 @@ svtk map spatial metric-by-model
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'metric_by_model'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -451,19 +461,11 @@ svtk map spatial metric-by-model
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
-   * - ``--config``
-     - No
-     - 
-     - Value: ``config``. Optional Spatial-VTK config for named bounds.
-   * - ``--run-scenario``
-     - No
-     - 
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--bounds``
      - No
-     - 
+     -
      - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
@@ -471,7 +473,7 @@ svtk map spatial metric-by-model
      - Disable basemap rendering for map figures.
    * - ``--basemap-source``
      - No
-     - 
+     -
      - Value: ``basemap_source``. Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-model-improvement:
@@ -483,12 +485,12 @@ svtk map spatial model-improvement
 
 .. code-block:: bash
 
-   svtk map spatial model-improvement [-h] --input INPUT --output OUTPUT
+   svtk map spatial model-improvement [-h] --input INPUT [--output OUTPUT]
+                                          [--config CONFIG]
+                                          [--run-scenario RUN_SCENARIO]
                                           [--table TABLE]
                                           [--kwargs [KWARGS ...]]
                                           [--kwargs-json KWARGS_JSON]
-                                          [--config CONFIG]
-                                          [--run-scenario RUN_SCENARIO]
                                           [--bounds BOUNDS] [--no-basemap]
                                           [--basemap-source BASEMAP_SOURCE]
 
@@ -504,16 +506,24 @@ svtk map spatial model-improvement
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'model_improvement'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -524,19 +534,11 @@ svtk map spatial model-improvement
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
-   * - ``--config``
-     - No
-     - 
-     - Value: ``config``. Optional Spatial-VTK config for named bounds.
-   * - ``--run-scenario``
-     - No
-     - 
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--bounds``
      - No
-     - 
+     -
      - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
@@ -544,7 +546,7 @@ svtk map spatial model-improvement
      - Disable basemap rendering for map figures.
    * - ``--basemap-source``
      - No
-     - 
+     -
      - Value: ``basemap_source``. Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-pca-mode:
@@ -556,11 +558,12 @@ svtk map spatial pca-mode
 
 .. code-block:: bash
 
-   svtk map spatial pca-mode [-h] --input INPUT --output OUTPUT
-                                 [--table TABLE] [--kwargs [KWARGS ...]]
-                                 [--kwargs-json KWARGS_JSON] [--config CONFIG]
-                                 [--run-scenario RUN_SCENARIO]
-                                 [--bounds BOUNDS] [--no-basemap]
+   svtk map spatial pca-mode [-h] --input INPUT [--output OUTPUT]
+                                 [--config CONFIG]
+                                 [--run-scenario RUN_SCENARIO] [--table TABLE]
+                                 [--kwargs [KWARGS ...]]
+                                 [--kwargs-json KWARGS_JSON] [--bounds BOUNDS]
+                                 [--no-basemap]
                                  [--basemap-source BASEMAP_SOURCE]
 
 .. rubric:: Parameters
@@ -575,16 +578,24 @@ svtk map spatial pca-mode
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the station_scores_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'pca_mode'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -595,19 +606,11 @@ svtk map spatial pca-mode
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
-   * - ``--config``
-     - No
-     - 
-     - Value: ``config``. Optional Spatial-VTK config for named bounds.
-   * - ``--run-scenario``
-     - No
-     - 
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--bounds``
      - No
-     - 
+     -
      - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
@@ -615,7 +618,7 @@ svtk map spatial pca-mode
      - Disable basemap rendering for map figures.
    * - ``--basemap-source``
      - No
-     - 
+     -
      - Value: ``basemap_source``. Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-redcap-cluster:
@@ -627,11 +630,11 @@ svtk map spatial redcap-cluster
 
 .. code-block:: bash
 
-   svtk map spatial redcap-cluster [-h] --input INPUT --output OUTPUT
-                                       [--table TABLE] [--kwargs [KWARGS ...]]
-                                       [--kwargs-json KWARGS_JSON]
+   svtk map spatial redcap-cluster [-h] --input INPUT [--output OUTPUT]
                                        [--config CONFIG]
                                        [--run-scenario RUN_SCENARIO]
+                                       [--table TABLE] [--kwargs [KWARGS ...]]
+                                       [--kwargs-json KWARGS_JSON]
                                        [--bounds BOUNDS] [--no-basemap]
                                        [--basemap-source BASEMAP_SOURCE]
 
@@ -647,16 +650,24 @@ svtk map spatial redcap-cluster
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the redcap_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'redcap_cluster'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -667,19 +678,11 @@ svtk map spatial redcap-cluster
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
-   * - ``--config``
-     - No
-     - 
-     - Value: ``config``. Optional Spatial-VTK config for named bounds.
-   * - ``--run-scenario``
-     - No
-     - 
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--bounds``
      - No
-     - 
+     -
      - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
@@ -687,7 +690,7 @@ svtk map spatial redcap-cluster
      - Disable basemap rendering for map figures.
    * - ``--basemap-source``
      - No
-     - 
+     -
      - Value: ``basemap_source``. Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-residual-grid:
@@ -699,11 +702,11 @@ svtk map spatial residual-grid
 
 .. code-block:: bash
 
-   svtk map spatial residual-grid [-h] --input INPUT --output OUTPUT
-                                      [--table TABLE] [--kwargs [KWARGS ...]]
-                                      [--kwargs-json KWARGS_JSON]
+   svtk map spatial residual-grid [-h] --input INPUT [--output OUTPUT]
                                       [--config CONFIG]
                                       [--run-scenario RUN_SCENARIO]
+                                      [--table TABLE] [--kwargs [KWARGS ...]]
+                                      [--kwargs-json KWARGS_JSON]
                                       [--bounds BOUNDS] [--no-basemap]
                                       [--basemap-source BASEMAP_SOURCE]
 
@@ -719,16 +722,24 @@ svtk map spatial residual-grid
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the grid_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'residual_grid'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -739,19 +750,11 @@ svtk map spatial residual-grid
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
-   * - ``--config``
-     - No
-     - 
-     - Value: ``config``. Optional Spatial-VTK config for named bounds.
-   * - ``--run-scenario``
-     - No
-     - 
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--bounds``
      - No
-     - 
+     -
      - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
@@ -759,7 +762,7 @@ svtk map spatial residual-grid
      - Disable basemap rendering for map figures.
    * - ``--basemap-source``
      - No
-     - 
+     -
      - Value: ``basemap_source``. Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-score:
@@ -771,10 +774,10 @@ svtk map spatial score
 
 .. code-block:: bash
 
-   svtk map spatial score [-h] --input INPUT --output OUTPUT
+   svtk map spatial score [-h] --input INPUT [--output OUTPUT]
+                              [--config CONFIG] [--run-scenario RUN_SCENARIO]
                               [--table TABLE] [--kwargs [KWARGS ...]]
-                              [--kwargs-json KWARGS_JSON] [--config CONFIG]
-                              [--run-scenario RUN_SCENARIO] [--bounds BOUNDS]
+                              [--kwargs-json KWARGS_JSON] [--bounds BOUNDS]
                               [--no-basemap] [--basemap-source BASEMAP_SOURCE]
 
 .. rubric:: Parameters
@@ -789,16 +792,24 @@ svtk map spatial score
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'score'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -809,19 +820,11 @@ svtk map spatial score
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
-   * - ``--config``
-     - No
-     - 
-     - Value: ``config``. Optional Spatial-VTK config for named bounds.
-   * - ``--run-scenario``
-     - No
-     - 
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--bounds``
      - No
-     - 
+     -
      - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
@@ -829,7 +832,7 @@ svtk map spatial score
      - Disable basemap rendering for map figures.
    * - ``--basemap-source``
      - No
-     - 
+     -
      - Value: ``basemap_source``. Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-station-bias:
@@ -841,11 +844,11 @@ svtk map spatial station-bias
 
 .. code-block:: bash
 
-   svtk map spatial station-bias [-h] --input INPUT --output OUTPUT
-                                     [--table TABLE] [--kwargs [KWARGS ...]]
-                                     [--kwargs-json KWARGS_JSON]
+   svtk map spatial station-bias [-h] --input INPUT [--output OUTPUT]
                                      [--config CONFIG]
                                      [--run-scenario RUN_SCENARIO]
+                                     [--table TABLE] [--kwargs [KWARGS ...]]
+                                     [--kwargs-json KWARGS_JSON]
                                      [--bounds BOUNDS] [--no-basemap]
                                      [--basemap-source BASEMAP_SOURCE]
 
@@ -861,16 +864,24 @@ svtk map spatial station-bias
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the station_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_bias'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -881,19 +892,11 @@ svtk map spatial station-bias
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
-   * - ``--config``
-     - No
-     - 
-     - Value: ``config``. Optional Spatial-VTK config for named bounds.
-   * - ``--run-scenario``
-     - No
-     - 
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--bounds``
      - No
-     - 
+     -
      - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
@@ -901,7 +904,7 @@ svtk map spatial station-bias
      - Disable basemap rendering for map figures.
    * - ``--basemap-source``
      - No
-     - 
+     -
      - Value: ``basemap_source``. Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-station-metric:
@@ -913,11 +916,11 @@ svtk map spatial station-metric
 
 .. code-block:: bash
 
-   svtk map spatial station-metric [-h] --input INPUT --output OUTPUT
-                                       [--table TABLE] [--kwargs [KWARGS ...]]
-                                       [--kwargs-json KWARGS_JSON]
+   svtk map spatial station-metric [-h] --input INPUT [--output OUTPUT]
                                        [--config CONFIG]
                                        [--run-scenario RUN_SCENARIO]
+                                       [--table TABLE] [--kwargs [KWARGS ...]]
+                                       [--kwargs-json KWARGS_JSON]
                                        [--bounds BOUNDS] [--no-basemap]
                                        [--basemap-source BASEMAP_SOURCE]
 
@@ -933,16 +936,24 @@ svtk map spatial station-metric
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_metric'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -953,19 +964,11 @@ svtk map spatial station-metric
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
-   * - ``--config``
-     - No
-     - 
-     - Value: ``config``. Optional Spatial-VTK config for named bounds.
-   * - ``--run-scenario``
-     - No
-     - 
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--bounds``
      - No
-     - 
+     -
      - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
@@ -973,5 +976,5 @@ svtk map spatial station-metric
      - Disable basemap rendering for map figures.
    * - ``--basemap-source``
      - No
-     - 
+     -
      - Value: ``basemap_source``. Optional contextily basemap source.

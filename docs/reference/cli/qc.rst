@@ -3,15 +3,13 @@
 svtk qc
 =======
 
-Prepare QC review outputs.
-
 Command Tree
 ------------
 
 - :ref:`svtk qc <cli-svtk-qc>`
    - :ref:`svtk qc manual-queue <cli-svtk-qc-manual-queue>`
    - :ref:`svtk qc slurm <cli-svtk-qc-slurm>`
-   - :ref:`svtk qc summaries <cli-svtk-qc-summaries>`
+   - :ref:`svtk qc summaries <cli-svtk-qc-summaries>` - Build compact QC summary tables from configured QC inventories.
 
 Command Details
 ---------------
@@ -41,8 +39,6 @@ Command Details
 
 svtk qc manual-queue
 ^^^^^^^^^^^^^^^^^^^^
-
-Export a manual-QC review queue from trace summary rows.
 
 .. rubric:: Usage
 
@@ -103,18 +99,16 @@ Export a manual-QC review queue from trace summary rows.
 svtk qc slurm
 ^^^^^^^^^^^^^
 
-Write a SLURM script for QC inventory generation.
-
 .. rubric:: Usage
 
 .. code-block:: bash
 
    svtk qc slurm [-h] --event-stations EVENT_STATIONS --output OUTPUT
-                 [--config CONFIG] [--run-scenario RUN_SCENARIO]
-                 [--trace-output TRACE_OUTPUT]
-                 [--inventory-output INVENTORY_OUTPUT]
-                 [--overlap-inventory-output OVERLAP_INVENTORY_OUTPUT]
-                 [--submit]
+                     [--config CONFIG] [--run-scenario RUN_SCENARIO]
+                     [--trace-output TRACE_OUTPUT]
+                     [--inventory-output INVENTORY_OUTPUT]
+                     [--overlap-inventory-output OVERLAP_INVENTORY_OUTPUT]
+                     [--submit]
 
 .. rubric:: Parameters
 
@@ -141,11 +135,11 @@ Write a SLURM script for QC inventory generation.
    * - ``--config``
      - No
      -
-     - Value: ``config``. Config file containing ``compute.slurm`` or ``qc.slurm`` settings.
+     - Value: ``config``. Config file containing compute.slurm or qc.slurm settings.
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named ``run_scenarios`` overlay.
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--trace-output``
      - No
      -
@@ -161,7 +155,7 @@ Write a SLURM script for QC inventory generation.
    * - ``--submit``
      - No
      - Flag
-     - Submit the script with ``sbatch`` after writing it.
+     - Submit the script with sbatch after writing it.
 
 .. _cli-svtk-qc-summaries:
 
@@ -175,7 +169,7 @@ Build compact QC summary tables from configured QC inventories.
 .. code-block:: bash
 
    svtk qc summaries [-h] [--config CONFIG] [--run-scenario RUN_SCENARIO]
-                     [--chunksize CHUNKSIZE] [--overwrite] [--verbose]
+                         [--chunksize CHUNKSIZE] [--overwrite] [--verbose]
 
 .. rubric:: Parameters
 
@@ -198,7 +192,7 @@ Build compact QC summary tables from configured QC inventories.
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named ``run_scenarios`` overlay.
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--chunksize``
      - No
      - Default: ``1000000``

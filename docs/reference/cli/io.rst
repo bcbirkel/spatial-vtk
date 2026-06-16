@@ -37,7 +37,7 @@ Command Details
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
 
 .. _cli-svtk-io-inventory:
@@ -65,19 +65,19 @@ svtk io inventory
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--observed-root``
      - Yes
-     - 
+     -
      - Value: ``observed_root``. Observed waveform root directory.
    * - ``--synthetic-root``
      - Yes
-     - 
+     -
      - Value: ``synthetic_root``. Synthetic waveform root directory.
    * - ``--output``
      - Yes
-     - 
+     -
      - Value: ``output``. Output CSV/parquet path.
    * - ``--suffix``
      - No
@@ -85,7 +85,7 @@ svtk io inventory
      - Value: ``suffix``. Waveform suffix to include. May be repeated.
    * - ``--relative-to``
      - No
-     - 
+     -
      - Value: ``relative_to``. Base path used for relative inventory paths.
    * - ``--no-sha256``
      - No
@@ -115,7 +115,7 @@ svtk io master-events
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
@@ -123,7 +123,7 @@ svtk io master-events
      - Value: ``input``. Event CSV/parquet paths.
    * - ``--output``
      - Yes
-     - 
+     -
      - Value: ``output``. Output CSV path.
 
 .. _cli-svtk-io-master-stations:
@@ -149,7 +149,7 @@ svtk io master-stations
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
@@ -157,7 +157,7 @@ svtk io master-stations
      - Value: ``input``. Station CSV/parquet paths.
    * - ``--output``
      - Yes
-     - 
+     -
      - Value: ``output``. Output CSV path.
 
 .. _cli-svtk-io-prepare-events:
@@ -183,15 +183,15 @@ svtk io prepare-events
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Event CSV/parquet path.
    * - ``--output``
      - Yes
-     - 
+     -
      - Value: ``output``. Output CSV/parquet path.
 
 .. _cli-svtk-io-prepare-stations:
@@ -217,15 +217,15 @@ svtk io prepare-stations
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Station CSV/parquet path.
    * - ``--output``
      - Yes
-     - 
+     -
      - Value: ``output``. Output CSV/parquet path.
 
 .. _cli-svtk-io-preprocess-waveforms:
@@ -265,31 +265,31 @@ svtk io preprocess-waveforms
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--records``
      - Yes
-     - 
+     -
      - Value: ``records``. Event-station CSV/parquet with waveform path columns.
    * - ``--output-root``
      - No
-     - 
+     -
      - Value: ``output_root``. Folder where processed waveforms and metadata tables are written. Defaults to outputs.preprocessed_waveforms from config.
    * - ``--config``
      - No
-     - 
+     -
      - Value: ``config``. Spatial-VTK config file.
    * - ``--run-scenario``
      - No
-     - 
+     -
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--observed-column``
      - No
-     - 
+     -
      - Value: ``observed_column``. Observed waveform path column. Auto-detected when omitted.
    * - ``--synthetic-column``
      - No
-     - 
+     -
      - Value: ``synthetic_column``. Synthetic waveform path column. Auto-detected when omitted.
    * - ``--event-id-col``
      - No
@@ -297,27 +297,27 @@ svtk io preprocess-waveforms
      - Value: ``event_id_col``. Event ID column in --records.
    * - ``--lowpass-hz``
      - No
-     - 
+     -
      - Value: ``lowpass_hz``. Optional lowpass cutoff in Hz.
    * - ``--highpass-hz``
      - No
-     - 
+     -
      - Value: ``highpass_hz``. Optional highpass cutoff in Hz.
    * - ``--bandpass-low-hz``
      - No
-     - 
+     -
      - Value: ``bandpass_low_hz``. Optional bandpass low corner in Hz.
    * - ``--bandpass-high-hz``
      - No
-     - 
+     -
      - Value: ``bandpass_high_hz``. Optional bandpass high corner in Hz.
    * - ``--resample-hz``
      - No
-     - 
+     -
      - Value: ``resample_hz``. Optional target sampling rate in Hz.
    * - ``--filter-order``
      - No
-     - 
+     -
      - Value: ``filter_order``. Butterworth filter order.
    * - ``--overwrite``
      - No

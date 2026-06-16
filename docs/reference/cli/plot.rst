@@ -63,7 +63,7 @@ Command Details
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
 
 .. _cli-svtk-plot-metrics:
@@ -91,7 +91,7 @@ svtk plot metrics
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
 
 .. _cli-svtk-plot-metrics-band-score-distribution:
@@ -123,23 +123,23 @@ svtk plot metrics band-score-distribution
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - No
-     - 
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table ``metrics_long``.
+     -
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
      - No
-     - 
-     - Value: ``output``. Output figure path. Defaults to configured figure output ``band_score_distribution``.
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'band_score_distribution'.
    * - ``--config``
      - No
-     - 
+     -
      - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
-     - 
+     -
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
@@ -151,7 +151,7 @@ svtk plot metrics band-score-distribution
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-boxplot:
@@ -163,8 +163,10 @@ svtk plot metrics boxplot
 
 .. code-block:: bash
 
-   svtk plot metrics boxplot [-h] --input INPUT --output OUTPUT
-                                 [--table TABLE] [--kwargs [KWARGS ...]]
+   svtk plot metrics boxplot [-h] [--input INPUT] [--output OUTPUT]
+                                 [--config CONFIG]
+                                 [--run-scenario RUN_SCENARIO] [--table TABLE]
+                                 [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON]
 
 .. rubric:: Parameters
@@ -179,16 +181,24 @@ svtk plot metrics boxplot
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
-     - Yes
-     - 
-     - Value: ``input``. Input CSV/parquet table for the data argument.
+     - No
+     -
+     - Value: ``input``. Input CSV/parquet table for the data argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'boxplot'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -199,7 +209,7 @@ svtk plot metrics boxplot
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-example-metric-pairs:
@@ -211,7 +221,9 @@ svtk plot metrics example-metric-pairs
 
 .. code-block:: bash
 
-   svtk plot metrics example-metric-pairs [-h] --output OUTPUT
+   svtk plot metrics example-metric-pairs [-h] [--output OUTPUT]
+                                              [--config CONFIG]
+                                              [--run-scenario RUN_SCENARIO]
                                               [--table TABLE]
                                               [--kwargs [KWARGS ...]]
                                               [--kwargs-json KWARGS_JSON]
@@ -228,12 +240,20 @@ svtk plot metrics example-metric-pairs
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'example_metric_pairs'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -244,7 +264,7 @@ svtk plot metrics example-metric-pairs
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-geology-boxplot:
@@ -256,7 +276,9 @@ svtk plot metrics geology-boxplot
 
 .. code-block:: bash
 
-   svtk plot metrics geology-boxplot [-h] --input INPUT --output OUTPUT
+   svtk plot metrics geology-boxplot [-h] [--input INPUT]
+                                         [--output OUTPUT] [--config CONFIG]
+                                         [--run-scenario RUN_SCENARIO]
                                          [--table TABLE]
                                          [--kwargs [KWARGS ...]]
                                          [--kwargs-json KWARGS_JSON]
@@ -273,16 +295,24 @@ svtk plot metrics geology-boxplot
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
-     - Yes
-     - 
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - No
+     -
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'geology_boxplot'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -293,7 +323,7 @@ svtk plot metrics geology-boxplot
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-heatmap:
@@ -305,8 +335,10 @@ svtk plot metrics heatmap
 
 .. code-block:: bash
 
-   svtk plot metrics heatmap [-h] --input INPUT --output OUTPUT
-                                 [--table TABLE] [--kwargs [KWARGS ...]]
+   svtk plot metrics heatmap [-h] [--input INPUT] [--output OUTPUT]
+                                 [--config CONFIG]
+                                 [--run-scenario RUN_SCENARIO] [--table TABLE]
+                                 [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON]
 
 .. rubric:: Parameters
@@ -321,16 +353,24 @@ svtk plot metrics heatmap
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
-     - Yes
-     - 
-     - Value: ``input``. Input CSV/parquet table for the data argument.
+     - No
+     -
+     - Value: ``input``. Input CSV/parquet table for the data argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'heatmap'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -341,7 +381,7 @@ svtk plot metrics heatmap
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-list:
@@ -367,7 +407,7 @@ svtk plot metrics list
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
 
 .. _cli-svtk-plot-metrics-metric-trend:
@@ -379,7 +419,9 @@ svtk plot metrics metric-trend
 
 .. code-block:: bash
 
-   svtk plot metrics metric-trend [-h] --input INPUT --output OUTPUT
+   svtk plot metrics metric-trend [-h] [--input INPUT] [--output OUTPUT]
+                                      [--config CONFIG]
+                                      [--run-scenario RUN_SCENARIO]
                                       [--table TABLE] [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
 
@@ -395,16 +437,24 @@ svtk plot metrics metric-trend
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
-     - Yes
-     - 
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - No
+     -
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'metric_trend'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -415,7 +465,7 @@ svtk plot metrics metric-trend
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-model-metric-heatmap:
@@ -427,8 +477,11 @@ svtk plot metrics model-metric-heatmap
 
 .. code-block:: bash
 
-   svtk plot metrics model-metric-heatmap [-h] --input INPUT --output
-                                              OUTPUT [--table TABLE]
+   svtk plot metrics model-metric-heatmap [-h] --input INPUT
+                                              [--output OUTPUT]
+                                              [--config CONFIG]
+                                              [--run-scenario RUN_SCENARIO]
+                                              [--table TABLE]
                                               [--kwargs [KWARGS ...]]
                                               [--kwargs-json KWARGS_JSON]
 
@@ -444,16 +497,24 @@ svtk plot metrics model-metric-heatmap
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the summary_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'model_metric_heatmap'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -464,7 +525,7 @@ svtk plot metrics model-metric-heatmap
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-period-spectra:
@@ -476,7 +537,9 @@ svtk plot metrics period-spectra
 
 .. code-block:: bash
 
-   svtk plot metrics period-spectra [-h] --input INPUT --output OUTPUT
+   svtk plot metrics period-spectra [-h] --input INPUT [--output OUTPUT]
+                                        [--config CONFIG]
+                                        [--run-scenario RUN_SCENARIO]
                                         [--table TABLE]
                                         [--kwargs [KWARGS ...]]
                                         [--kwargs-json KWARGS_JSON]
@@ -493,16 +556,24 @@ svtk plot metrics period-spectra
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the spectra_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'period_spectra'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -513,7 +584,7 @@ svtk plot metrics period-spectra
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-period-spectrogram:
@@ -525,7 +596,10 @@ svtk plot metrics period-spectrogram
 
 .. code-block:: bash
 
-   svtk plot metrics period-spectrogram [-h] --input INPUT --output OUTPUT
+   svtk plot metrics period-spectrogram [-h] --input INPUT
+                                            [--output OUTPUT]
+                                            [--config CONFIG]
+                                            [--run-scenario RUN_SCENARIO]
                                             [--table TABLE]
                                             [--kwargs [KWARGS ...]]
                                             [--kwargs-json KWARGS_JSON]
@@ -542,16 +616,24 @@ svtk plot metrics period-spectrogram
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the spectrogram_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'period_spectrogram'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -562,7 +644,7 @@ svtk plot metrics period-spectrogram
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-phase-delay-vs-distance:
@@ -574,8 +656,11 @@ svtk plot metrics phase-delay-vs-distance
 
 .. code-block:: bash
 
-   svtk plot metrics phase-delay-vs-distance [-h] --input INPUT --output
-                                                 OUTPUT [--table TABLE]
+   svtk plot metrics phase-delay-vs-distance [-h] [--input INPUT]
+                                                 [--output OUTPUT]
+                                                 [--config CONFIG]
+                                                 [--run-scenario RUN_SCENARIO]
+                                                 [--table TABLE]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
 
@@ -591,16 +676,24 @@ svtk plot metrics phase-delay-vs-distance
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
-     - Yes
-     - 
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - No
+     -
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'phase_delay_vs_distance'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -611,7 +704,7 @@ svtk plot metrics phase-delay-vs-distance
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-psa-period-curve:
@@ -623,7 +716,9 @@ svtk plot metrics psa-period-curve
 
 .. code-block:: bash
 
-   svtk plot metrics psa-period-curve [-h] --input INPUT --output OUTPUT
+   svtk plot metrics psa-period-curve [-h] [--input INPUT]
+                                          [--output OUTPUT] [--config CONFIG]
+                                          [--run-scenario RUN_SCENARIO]
                                           [--table TABLE]
                                           [--kwargs [KWARGS ...]]
                                           [--kwargs-json KWARGS_JSON]
@@ -640,16 +735,24 @@ svtk plot metrics psa-period-curve
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
-     - Yes
-     - 
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - No
+     -
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'psa_period_curve'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -660,7 +763,7 @@ svtk plot metrics psa-period-curve
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-residuals-vs-depth:
@@ -672,7 +775,10 @@ svtk plot metrics residuals-vs-depth
 
 .. code-block:: bash
 
-   svtk plot metrics residuals-vs-depth [-h] --input INPUT --output OUTPUT
+   svtk plot metrics residuals-vs-depth [-h] [--input INPUT]
+                                            [--output OUTPUT]
+                                            [--config CONFIG]
+                                            [--run-scenario RUN_SCENARIO]
                                             [--table TABLE]
                                             [--kwargs [KWARGS ...]]
                                             [--kwargs-json KWARGS_JSON]
@@ -689,16 +795,24 @@ svtk plot metrics residuals-vs-depth
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
-     - Yes
-     - 
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - No
+     -
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'residuals_vs_depth'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -709,7 +823,7 @@ svtk plot metrics residuals-vs-depth
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-residuals-vs-distance:
@@ -721,8 +835,11 @@ svtk plot metrics residuals-vs-distance
 
 .. code-block:: bash
 
-   svtk plot metrics residuals-vs-distance [-h] --input INPUT --output
-                                               OUTPUT [--table TABLE]
+   svtk plot metrics residuals-vs-distance [-h] [--input INPUT]
+                                               [--output OUTPUT]
+                                               [--config CONFIG]
+                                               [--run-scenario RUN_SCENARIO]
+                                               [--table TABLE]
                                                [--kwargs [KWARGS ...]]
                                                [--kwargs-json KWARGS_JSON]
 
@@ -738,16 +855,24 @@ svtk plot metrics residuals-vs-distance
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
-     - Yes
-     - 
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - No
+     -
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'residuals_vs_distance'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -758,7 +883,7 @@ svtk plot metrics residuals-vs-distance
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-scatterplot:
@@ -770,7 +895,9 @@ svtk plot metrics scatterplot
 
 .. code-block:: bash
 
-   svtk plot metrics scatterplot [-h] --input INPUT --output OUTPUT
+   svtk plot metrics scatterplot [-h] [--input INPUT] [--output OUTPUT]
+                                     [--config CONFIG]
+                                     [--run-scenario RUN_SCENARIO]
                                      [--table TABLE] [--kwargs [KWARGS ...]]
                                      [--kwargs-json KWARGS_JSON]
 
@@ -786,16 +913,24 @@ svtk plot metrics scatterplot
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
-     - Yes
-     - 
-     - Value: ``input``. Input CSV/parquet table for the data argument.
+     - No
+     -
+     - Value: ``input``. Input CSV/parquet table for the data argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'scatterplot'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -806,7 +941,7 @@ svtk plot metrics scatterplot
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-score-trends:
@@ -818,7 +953,9 @@ svtk plot metrics score-trends
 
 .. code-block:: bash
 
-   svtk plot metrics score-trends [-h] --input INPUT --output OUTPUT
+   svtk plot metrics score-trends [-h] [--input INPUT] [--output OUTPUT]
+                                      [--config CONFIG]
+                                      [--run-scenario RUN_SCENARIO]
                                       [--table TABLE] [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
 
@@ -834,16 +971,24 @@ svtk plot metrics score-trends
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
-     - Yes
-     - 
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - No
+     -
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'score_trends'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -854,7 +999,7 @@ svtk plot metrics score-trends
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-vs30-scatter:
@@ -866,7 +1011,9 @@ svtk plot metrics vs30-scatter
 
 .. code-block:: bash
 
-   svtk plot metrics vs30-scatter [-h] --input INPUT --output OUTPUT
+   svtk plot metrics vs30-scatter [-h] [--input INPUT] [--output OUTPUT]
+                                      [--config CONFIG]
+                                      [--run-scenario RUN_SCENARIO]
                                       [--table TABLE] [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
 
@@ -882,16 +1029,24 @@ svtk plot metrics vs30-scatter
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
-     - Yes
-     - 
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - No
+     -
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'vs30_scatter'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -902,7 +1057,7 @@ svtk plot metrics vs30-scatter
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-metrics-winner-heatmap:
@@ -914,7 +1069,9 @@ svtk plot metrics winner-heatmap
 
 .. code-block:: bash
 
-   svtk plot metrics winner-heatmap [-h] --input INPUT --output OUTPUT
+   svtk plot metrics winner-heatmap [-h] --input INPUT [--output OUTPUT]
+                                        [--config CONFIG]
+                                        [--run-scenario RUN_SCENARIO]
                                         [--table TABLE]
                                         [--kwargs [KWARGS ...]]
                                         [--kwargs-json KWARGS_JSON]
@@ -931,16 +1088,24 @@ svtk plot metrics winner-heatmap
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the summary_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'winner_heatmap'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -951,7 +1116,7 @@ svtk plot metrics winner-heatmap
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-spatial:
@@ -979,7 +1144,7 @@ svtk plot spatial
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
 
 .. _cli-svtk-plot-spatial-azimuthal-residuals:
@@ -991,8 +1156,11 @@ svtk plot spatial azimuthal-residuals
 
 .. code-block:: bash
 
-   svtk plot spatial azimuthal-residuals [-h] --input INPUT --output
-                                             OUTPUT [--table TABLE]
+   svtk plot spatial azimuthal-residuals [-h] --input INPUT
+                                             [--output OUTPUT]
+                                             [--config CONFIG]
+                                             [--run-scenario RUN_SCENARIO]
+                                             [--table TABLE]
                                              [--kwargs [KWARGS ...]]
                                              [--kwargs-json KWARGS_JSON]
 
@@ -1008,16 +1176,24 @@ svtk plot spatial azimuthal-residuals
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'azimuthal_residuals'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -1028,7 +1204,7 @@ svtk plot spatial azimuthal-residuals
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-spatial-block-holdout-scatter:
@@ -1040,8 +1216,11 @@ svtk plot spatial block-holdout-scatter
 
 .. code-block:: bash
 
-   svtk plot spatial block-holdout-scatter [-h] --input INPUT --output
-                                               OUTPUT [--table TABLE]
+   svtk plot spatial block-holdout-scatter [-h] --input INPUT
+                                               [--output OUTPUT]
+                                               [--config CONFIG]
+                                               [--run-scenario RUN_SCENARIO]
+                                               [--table TABLE]
                                                [--kwargs [KWARGS ...]]
                                                [--kwargs-json KWARGS_JSON]
 
@@ -1057,16 +1236,24 @@ svtk plot spatial block-holdout-scatter
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the prediction_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'block_holdout_scatter'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -1077,7 +1264,7 @@ svtk plot spatial block-holdout-scatter
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-spatial-cluster-feature-heatmap:
@@ -1089,8 +1276,11 @@ svtk plot spatial cluster-feature-heatmap
 
 .. code-block:: bash
 
-   svtk plot spatial cluster-feature-heatmap [-h] --input INPUT --output
-                                                 OUTPUT [--table TABLE]
+   svtk plot spatial cluster-feature-heatmap [-h] --input INPUT
+                                                 [--output OUTPUT]
+                                                 [--config CONFIG]
+                                                 [--run-scenario RUN_SCENARIO]
+                                                 [--table TABLE]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
 
@@ -1106,16 +1296,24 @@ svtk plot spatial cluster-feature-heatmap
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the feature_summary_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'cluster_feature_heatmap'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -1126,7 +1324,7 @@ svtk plot spatial cluster-feature-heatmap
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-spatial-cluster-solution-scores:
@@ -1138,8 +1336,11 @@ svtk plot spatial cluster-solution-scores
 
 .. code-block:: bash
 
-   svtk plot spatial cluster-solution-scores [-h] --input INPUT --output
-                                                 OUTPUT [--table TABLE]
+   svtk plot spatial cluster-solution-scores [-h] --input INPUT
+                                                 [--output OUTPUT]
+                                                 [--config CONFIG]
+                                                 [--run-scenario RUN_SCENARIO]
+                                                 [--table TABLE]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
 
@@ -1155,16 +1356,24 @@ svtk plot spatial cluster-solution-scores
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the score_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'cluster_solution_scores'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -1175,7 +1384,7 @@ svtk plot spatial cluster-solution-scores
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-spatial-correlogram:
@@ -1187,7 +1396,9 @@ svtk plot spatial correlogram
 
 .. code-block:: bash
 
-   svtk plot spatial correlogram [-h] --input INPUT --output OUTPUT
+   svtk plot spatial correlogram [-h] --input INPUT [--output OUTPUT]
+                                     [--config CONFIG]
+                                     [--run-scenario RUN_SCENARIO]
                                      [--table TABLE] [--kwargs [KWARGS ...]]
                                      [--kwargs-json KWARGS_JSON]
 
@@ -1203,16 +1414,24 @@ svtk plot spatial correlogram
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the distance_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'correlogram'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -1223,7 +1442,7 @@ svtk plot spatial correlogram
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-spatial-directional-correlogram:
@@ -1235,8 +1454,11 @@ svtk plot spatial directional-correlogram
 
 .. code-block:: bash
 
-   svtk plot spatial directional-correlogram [-h] --input INPUT --output
-                                                 OUTPUT [--table TABLE]
+   svtk plot spatial directional-correlogram [-h] --input INPUT
+                                                 [--output OUTPUT]
+                                                 [--config CONFIG]
+                                                 [--run-scenario RUN_SCENARIO]
+                                                 [--table TABLE]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
                                                  [--fit FIT]
@@ -1253,16 +1475,24 @@ svtk plot spatial directional-correlogram
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the directional_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'directional_correlogram'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -1273,11 +1503,11 @@ svtk plot spatial directional-correlogram
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
    * - ``--fit``
      - No
-     - 
+     -
      - Value: ``fit``. Convenience table path for the fit_df argument.
 
 .. _cli-svtk-plot-spatial-list:
@@ -1303,7 +1533,7 @@ svtk plot spatial list
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
 
 .. _cli-svtk-plot-spatial-path-bin-summary:
@@ -1315,7 +1545,9 @@ svtk plot spatial path-bin-summary
 
 .. code-block:: bash
 
-   svtk plot spatial path-bin-summary [-h] --input INPUT --output OUTPUT
+   svtk plot spatial path-bin-summary [-h] --input INPUT [--output OUTPUT]
+                                          [--config CONFIG]
+                                          [--run-scenario RUN_SCENARIO]
                                           [--table TABLE]
                                           [--kwargs [KWARGS ...]]
                                           [--kwargs-json KWARGS_JSON]
@@ -1332,16 +1564,24 @@ svtk plot spatial path-bin-summary
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the path_summary_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'path_bin_summary'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -1352,7 +1592,7 @@ svtk plot spatial path-bin-summary
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-spatial-pattern-similarity:
@@ -1364,7 +1604,10 @@ svtk plot spatial pattern-similarity
 
 .. code-block:: bash
 
-   svtk plot spatial pattern-similarity [-h] --input INPUT --output OUTPUT
+   svtk plot spatial pattern-similarity [-h] --input INPUT
+                                            [--output OUTPUT]
+                                            [--config CONFIG]
+                                            [--run-scenario RUN_SCENARIO]
                                             [--table TABLE]
                                             [--kwargs [KWARGS ...]]
                                             [--kwargs-json KWARGS_JSON]
@@ -1381,16 +1624,24 @@ svtk plot spatial pattern-similarity
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the stations argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'pattern_similarity'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -1401,7 +1652,7 @@ svtk plot spatial pattern-similarity
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-spatial-pca-explained-variance:
@@ -1413,8 +1664,11 @@ svtk plot spatial pca-explained-variance
 
 .. code-block:: bash
 
-   svtk plot spatial pca-explained-variance [-h] --input INPUT --output
-                                                OUTPUT [--table TABLE]
+   svtk plot spatial pca-explained-variance [-h] --input INPUT
+                                                [--output OUTPUT]
+                                                [--config CONFIG]
+                                                [--run-scenario RUN_SCENARIO]
+                                                [--table TABLE]
                                                 [--kwargs [KWARGS ...]]
                                                 [--kwargs-json KWARGS_JSON]
 
@@ -1430,16 +1684,24 @@ svtk plot spatial pca-explained-variance
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the explained_variance_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'pca_explained_variance'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -1450,7 +1712,7 @@ svtk plot spatial pca-explained-variance
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-spatial-pca-feature-loadings:
@@ -1462,8 +1724,11 @@ svtk plot spatial pca-feature-loadings
 
 .. code-block:: bash
 
-   svtk plot spatial pca-feature-loadings [-h] --input INPUT --output
-                                              OUTPUT [--table TABLE]
+   svtk plot spatial pca-feature-loadings [-h] --input INPUT
+                                              [--output OUTPUT]
+                                              [--config CONFIG]
+                                              [--run-scenario RUN_SCENARIO]
+                                              [--table TABLE]
                                               [--kwargs [KWARGS ...]]
                                               [--kwargs-json KWARGS_JSON]
 
@@ -1479,16 +1744,24 @@ svtk plot spatial pca-feature-loadings
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the feature_loadings_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'pca_feature_loadings'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -1499,7 +1772,7 @@ svtk plot spatial pca-feature-loadings
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-spatial-polar-residuals:
@@ -1511,7 +1784,9 @@ svtk plot spatial polar-residuals
 
 .. code-block:: bash
 
-   svtk plot spatial polar-residuals [-h] --input INPUT --output OUTPUT
+   svtk plot spatial polar-residuals [-h] --input INPUT [--output OUTPUT]
+                                         [--config CONFIG]
+                                         [--run-scenario RUN_SCENARIO]
                                          [--table TABLE]
                                          [--kwargs [KWARGS ...]]
                                          [--kwargs-json KWARGS_JSON]
@@ -1528,16 +1803,24 @@ svtk plot spatial polar-residuals
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'polar_residuals'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -1548,7 +1831,7 @@ svtk plot spatial polar-residuals
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-spatial-residual-correlation:
@@ -1560,8 +1843,11 @@ svtk plot spatial residual-correlation
 
 .. code-block:: bash
 
-   svtk plot spatial residual-correlation [-h] --input INPUT --output
-                                              OUTPUT [--table TABLE]
+   svtk plot spatial residual-correlation [-h] --input INPUT
+                                              [--output OUTPUT]
+                                              [--config CONFIG]
+                                              [--run-scenario RUN_SCENARIO]
+                                              [--table TABLE]
                                               [--kwargs [KWARGS ...]]
                                               [--kwargs-json KWARGS_JSON]
 
@@ -1577,16 +1863,24 @@ svtk plot spatial residual-correlation
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the correlation_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'residual_correlation'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -1597,7 +1891,7 @@ svtk plot spatial residual-correlation
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
 
 .. _cli-svtk-plot-spatial-semivariogram:
@@ -1609,7 +1903,9 @@ svtk plot spatial semivariogram
 
 .. code-block:: bash
 
-   svtk plot spatial semivariogram [-h] --input INPUT --output OUTPUT
+   svtk plot spatial semivariogram [-h] --input INPUT [--output OUTPUT]
+                                       [--config CONFIG]
+                                       [--run-scenario RUN_SCENARIO]
                                        [--table TABLE] [--kwargs [KWARGS ...]]
                                        [--kwargs-json KWARGS_JSON]
 
@@ -1625,16 +1921,24 @@ svtk plot spatial semivariogram
      - Description
    * - ``-h``, ``--help``
      - No
-     - 
+     -
      - show this help message and exit
    * - ``--input``
      - Yes
-     - 
+     -
      - Value: ``input``. Input CSV/parquet table for the distance_df argument.
    * - ``--output``
-     - Yes
-     - 
-     - Value: ``output``. Output figure path.
+     - No
+     -
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'semivariogram'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Repeatable
@@ -1645,5 +1949,5 @@ svtk plot spatial semivariogram
      - Value: ``kwargs``. Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
-     - 
+     -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
