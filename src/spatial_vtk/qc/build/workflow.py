@@ -9,6 +9,7 @@ figures, metric filtering, dashboards, and manual-review exports.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
 import re
 import time
@@ -21,7 +22,7 @@ from spatial_vtk.config.metrics import metrics_settings_from_config
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io.inventory import build_file_inventory
-from spatial_vtk.io.tables import write_table
+from spatial_vtk.io.tables import load_output_table, write_output_table, write_table
 from spatial_vtk.io.waveforms import WaveformPreprocessing, read_waveform_file, select_waveform_trace
 from spatial_vtk.qc.build.inventory import build_waveform_trace_qc_summary
 from spatial_vtk.visualize.dashboard import write_manual_review_queue
@@ -71,6 +72,25 @@ _STRUCTURAL_MISSING_QC_REASONS = {
     "missing_waveform_file",
     "missing_waveform_path",
 }
+
+
+@dataclass(frozen=True)
+class QCSummaryWorkflowResult:
+    """Result returned by :func:`run_qc_summary_workflow`.
+
+    Parameters
+    ----------
+    paths
+        Written output paths keyed by standard output table name.
+    rows
+        Row counts for tables materialized in memory during the workflow.
+    elapsed_s
+        Total wall time in seconds.
+    """
+
+    paths: dict[str, Path]
+    rows: dict[str, int]
+    elapsed_s: float
 
 
 def _progress(verbose: bool, message: str) -> None:
@@ -972,6 +992,119 @@ def load_comparison_eligible_records(
     if not frames:
         return pd.DataFrame()
     return pd.concat(frames, ignore_index=True)
+
+
+def run_qc_summary_workflow(
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    chunksize: int = 1_000_000,
+    overwrite: bool = True,
+    verbose: bool = False,
+) -> QCSummaryWorkflowResult:
+    """Build and write compact QC summary tables from configured QC outputs.
+
+    The workflow reads ``qc_inventory_overlap`` for comparison-only summaries
+    and reads the full ``qc_inventory`` only for full drop-cause and manual
+    review outputs. All paths are resolved from the active Spatial-VTK output
+    registry, so notebooks and Slurm scripts do not need to duplicate path
+    plumbing.
+
+    Parameters
+    ----------
+    cfg
+        Optional config. When provided, it is activated for the workflow.
+    chunksize
+        Row chunks used when streaming large QC inventories.
+    overwrite
+        Whether to overwrite disk-backed outputs that already exist.
+    verbose
+        Print chunked progress messages.
+
+    Returns
+    -------
+    QCSummaryWorkflowResult
+        Standard output paths, row counts, and elapsed time.
+    """
+
+    start = time.monotonic()
+    config = cfg or active_config()
+    config.activate()
+
+    qc_inventory = resolve_output_path("qc_inventory", kind="table", cfg=config, create_parent=True)
+    qc_overlap = resolve_output_path("qc_inventory_overlap", kind="table", cfg=config, create_parent=True)
+    event_station_path = resolve_output_path("event_station_records", kind="table", cfg=config, create_parent=True)
+    comparison_path = resolve_output_path("comparison_eligible_records", kind="table", cfg=config, create_parent=True)
+    if not Path(qc_overlap).exists():
+        raise FileNotFoundError(f"Overlap QC inventory is not ready: {qc_overlap}")
+    if not Path(event_station_path).exists():
+        raise FileNotFoundError(f"Event-station table is not ready: {event_station_path}")
+
+    _progress(verbose, f"QC summaries: using overlap inventory {qc_overlap}")
+    paths: dict[str, Path] = {}
+    rows: dict[str, int] = {}
+
+    paths["comparison_eligible_records"] = write_comparison_eligibility_from_qc_inventory(
+        qc_overlap,
+        comparison_path,
+        chunksize=chunksize,
+        overwrite=overwrite,
+        verbose=verbose,
+    )
+
+    retention = build_metric_pair_retention_table_from_qc_inventory(qc_overlap, chunksize=chunksize, verbose=verbose)
+    paths["qc_metric_pair_retention"] = write_output_table("qc_metric_pair_retention", retention, cfg=config)
+    rows["qc_metric_pair_retention"] = len(retention)
+
+    event_station_retention = build_event_station_pair_retention_table_from_qc_inventory(
+        qc_overlap,
+        chunksize=chunksize,
+        verbose=verbose,
+    )
+    paths["qc_event_station_pair_retention"] = write_output_table(
+        "qc_event_station_pair_retention",
+        event_station_retention,
+        cfg=config,
+    )
+    rows["qc_event_station_pair_retention"] = len(event_station_retention)
+
+    event_stations = load_output_table("event_station_records", cfg=config)
+    try:
+        events = load_output_table("prepared_events", cfg=config)
+    except Exception:
+        events = None
+    overlap_records = filter_event_station_records_for_source_overlap(event_stations, scope="event_station")
+    post_qc = build_post_qc_record_table_from_qc_inventory(
+        overlap_records,
+        events=events,
+        qc_summary=qc_overlap,
+        chunksize=chunksize,
+        pair_retention=event_station_retention,
+        verbose=verbose,
+    )
+    paths["post_qc_records"] = write_output_table("post_qc_records", post_qc, cfg=config)
+    rows["post_qc_records"] = len(post_qc)
+
+    if Path(qc_inventory).exists():
+        drop_causes = build_qc_drop_cause_table_from_qc_inventory(qc_inventory, chunksize=chunksize, verbose=verbose)
+        paths["qc_drop_causes"] = write_output_table("qc_drop_causes", drop_causes, cfg=config)
+        rows["qc_drop_causes"] = len(drop_causes)
+        paths["manual_review_queue"] = export_manual_review_queue_from_qc_inventory(
+            qc_inventory,
+            chunksize=chunksize,
+            overwrite=overwrite,
+            verbose=verbose,
+            cfg=config,
+        )
+    else:
+        _progress(verbose, f"QC summaries: full QC inventory is not ready, skipping full drop causes and manual queue: {qc_inventory}")
+
+    drop_causes_overlap = build_qc_drop_cause_table_from_qc_inventory(qc_overlap, chunksize=chunksize, verbose=verbose)
+    paths["qc_drop_causes_overlap"] = write_output_table("qc_drop_causes_overlap", drop_causes_overlap, cfg=config)
+    rows["qc_drop_causes_overlap"] = len(drop_causes_overlap)
+
+    elapsed = time.monotonic() - start
+    _progress(verbose, f"QC summaries: complete in {_format_duration(elapsed)}")
+    return QCSummaryWorkflowResult(paths=paths, rows=rows, elapsed_s=float(elapsed))
 
 
 def build_qc_availability_table(
@@ -2359,6 +2492,8 @@ __all__ = [
     "export_manual_review_queue_from_qc_inventory",
     "filter_event_station_records_for_source_overlap",
     "load_comparison_eligible_records",
+    "QCSummaryWorkflowResult",
+    "run_qc_summary_workflow",
     "write_comparison_eligibility_from_qc_inventory",
     "write_qc_inventory_overlap_from_full",
 ]

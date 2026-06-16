@@ -31,6 +31,15 @@ def test_cli_spatial_summaries_help(capsys):
     assert "--station-metadata" in captured.out
 
 
+def test_cli_qc_summaries_help(capsys):
+    with pytest.raises(SystemExit) as excinfo:
+        main(["qc", "summaries", "--help"])
+    assert excinfo.value.code == 0
+    captured = capsys.readouterr()
+    assert "Build compact QC summary tables" in captured.out
+    assert "--chunksize" in captured.out
+
+
 def test_cli_config_show_section(tmp_path, capsys):
     config = tmp_path / "spatial-vtk.yaml"
     config.write_text(

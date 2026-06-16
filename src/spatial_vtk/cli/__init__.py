@@ -368,6 +368,18 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     slurm.add_argument("--submit", action="store_true", help="Submit the script with sbatch after writing it.")
     slurm.set_defaults(handler=_cmd_qc_slurm)
 
+    summaries = qc_sub.add_parser(
+        "summaries",
+        help="Build compact QC summary tables from configured QC inventories.",
+        description="Build compact QC summary tables from configured QC inventories.",
+    )
+    summaries.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    summaries.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    summaries.add_argument("--chunksize", type=int, default=1_000_000, help="Rows per streamed QC chunk.")
+    summaries.add_argument("--overwrite", action="store_true", help="Replace existing disk-backed summary outputs.")
+    summaries.add_argument("--verbose", action="store_true", help="Print chunked progress messages.")
+    summaries.set_defaults(handler=_cmd_qc_summaries)
+
 
 def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     """Register metric workflow CLI commands."""
@@ -912,6 +924,26 @@ def _cmd_qc_slurm(args: argparse.Namespace) -> int:
         qc_inventory_overlap_output=args.overlap_inventory_output,
     )
     print(path)
+    return 0
+
+
+def _cmd_qc_summaries(args: argparse.Namespace) -> int:
+    """Run ``svtk qc summaries``."""
+
+    from spatial_vtk.config import SpatialVTKConfig
+    from spatial_vtk.qc import run_qc_summary_workflow
+
+    config = SpatialVTKConfig.from_file(_required_config_path(args.config), run_scenario=args.run_scenario)
+    result = run_qc_summary_workflow(
+        cfg=config,
+        chunksize=args.chunksize,
+        overwrite=args.overwrite,
+        verbose=args.verbose,
+    )
+    print(f"QC summaries elapsed: {result.elapsed_s:.1f}s")
+    _print_payload({key: str(path) for key, path in result.paths.items()}, as_json=False)
+    if result.rows:
+        _print_payload({f"{key}_rows": count for key, count in result.rows.items()}, as_json=False)
     return 0
 
 

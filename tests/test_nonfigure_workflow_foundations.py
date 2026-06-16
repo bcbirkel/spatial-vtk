@@ -41,6 +41,7 @@ from spatial_vtk.qc.build.workflow import (
     export_manual_review_queue_from_qc_inventory,
     filter_event_station_records_for_source_overlap,
     load_comparison_eligible_records,
+    run_qc_summary_workflow,
     write_comparison_eligibility_from_qc_inventory,
     write_qc_inventory_overlap_from_full,
 )
@@ -700,6 +701,71 @@ def test_large_qc_inventory_helpers_stream_event_station_chunks(tmp_path: Path) 
     queue_path.write_text("event_id,station\ncached,row\n", encoding="utf-8")
     export_manual_review_queue_from_qc_inventory(qc_path, queue_path, chunksize=3, overwrite=False)
     assert pd.read_csv(queue_path).to_dict("records") == [{"event_id": "cached", "station": "row"}]
+
+
+def test_qc_summary_workflow_writes_standard_outputs(tmp_path: Path) -> None:
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    records = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2"],
+            "station": ["S1", "S2"],
+            "lat": [3.0, 7.0],
+            "lon": [4.0, 8.0],
+            "observed_processed_waveform": ["obs1.pkl", "obs2.pkl"],
+            "synthetic_processed_waveform": ["syn1.pkl", "syn2.pkl"],
+        }
+    )
+    events = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2"],
+            "event_lat": [1.0, 5.0],
+            "event_lon": [2.0, 6.0],
+        }
+    )
+    qc_summary = pd.DataFrame(
+        [
+            {"source": "observed", "event_id": "e1", "station": "S1", "component": "Z", "passband": "1-2 sec", "metric_group": "amplitude", "metric": "PGA", "period_s": 0.0, "qc_status": "pass", "qc_reason": ""},
+            {"source": "synthetic", "event_id": "e1", "station": "S1", "component": "Z", "passband": "1-2 sec", "metric_group": "amplitude", "metric": "PGA", "period_s": 0.0, "qc_status": "pass", "qc_reason": ""},
+            {"source": "observed", "event_id": "e2", "station": "S2", "component": "Z", "passband": "2-3 sec", "metric_group": "amplitude", "metric": "PGV", "period_s": 0.0, "qc_status": "fail", "qc_reason": "low_snr"},
+            {"source": "synthetic", "event_id": "e2", "station": "S2", "component": "Z", "passband": "2-3 sec", "metric_group": "amplitude", "metric": "PGV", "period_s": 0.0, "qc_status": "pass", "qc_reason": ""},
+        ]
+    )
+    output_root = tmp_path / "outputs" / "tables"
+    output_root.mkdir(parents=True)
+    records.to_csv(output_root / "event_station_records.csv", index=False)
+    events.to_csv(output_root / "prepared_events.csv", index=False)
+    qc_summary.to_csv(output_root / "qc_inventory.csv", index=False)
+    qc_summary.to_parquet(output_root / "qc_inventory_overlap.parquet", index=False)
+
+    result = run_qc_summary_workflow(cfg=cfg, chunksize=2, overwrite=True, verbose=True)
+
+    assert result.paths["comparison_eligible_records"].exists()
+    assert result.paths["qc_metric_pair_retention"].exists()
+    assert result.paths["qc_event_station_pair_retention"].exists()
+    assert result.paths["post_qc_records"].exists()
+    assert result.paths["qc_drop_causes"].exists()
+    assert result.paths["qc_drop_causes_overlap"].exists()
+    assert result.paths["manual_review_queue"].exists()
+    eligible = pd.read_csv(result.paths["comparison_eligible_records"])
+    assert eligible[["event_id", "station", "metric"]].to_dict("records") == [
+        {"event_id": "e1", "station": "S1", "metric": "PGA"}
+    ]
+    post_qc = pd.read_csv(result.paths["post_qc_records"])
+    assert post_qc.set_index(["event_id", "station"])["qc_status"].to_dict() == {
+        ("e1", "S1"): "pass",
+        ("e2", "S2"): "fail",
+    }
 
 
 def test_qc_waveform_comparison_records_loads_retained_pairs(tmp_path) -> None:
