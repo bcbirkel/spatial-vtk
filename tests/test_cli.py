@@ -284,6 +284,58 @@ metrics:
     assert [len(batch["task_indices"]) for batch in manifest["batches"]] == [2, 1]
 
 
+def test_cli_metrics_inventories_builds_from_trace_metadata(tmp_path):
+    trace_metadata = tmp_path / "trace_metadata.csv"
+    observed = tmp_path / "observed_inventory.parquet"
+    synthetic = tmp_path / "synthetic_inventory.parquet"
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        """
+project:
+  root_dir: .
+metrics:
+  models: [model_a]
+""",
+        encoding="utf-8",
+    )
+    pd.DataFrame(
+        {
+            "source_type": ["observed", "synthetic"],
+            "event_id": ["e1", "e1"],
+            "station": ["abc", "abc"],
+            "component": ["z", "z"],
+            "input_file": ["raw_obs.mseed", "synthetic_source.mseed"],
+            "output_file": ["processed_obs.npz", "processed_syn.npz"],
+            "delta": [0.01, 0.02],
+        }
+    ).to_csv(trace_metadata, index=False)
+
+    assert (
+        main(
+            [
+                "metrics",
+                "inventories",
+                "--config",
+                str(config),
+                "--trace-metadata",
+                str(trace_metadata),
+                "--observed-output",
+                str(observed),
+                "--synthetic-output",
+                str(synthetic),
+                "--overwrite",
+            ]
+        )
+        == 0
+    )
+
+    observed_rows = pd.read_parquet(observed)
+    synthetic_rows = pd.read_parquet(synthetic)
+    assert observed_rows.loc[0, "waveform_path"] == "processed_obs.npz"
+    assert synthetic_rows.loc[0, "waveform_path"] == "synthetic_source.mseed"
+    assert synthetic_rows.loc[0, "model"] == "model_a"
+
+
 def test_cli_metrics_cache_waveforms_writes_cached_manifest(tmp_path):
     obs = tmp_path / "obs.npz"
     syn = tmp_path / "syn.npz"

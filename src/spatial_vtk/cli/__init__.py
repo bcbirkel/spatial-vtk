@@ -374,6 +374,19 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     metrics = subparsers.add_parser("metrics", help="Plan, run, and post-process metric calculations.")
     metrics_sub = metrics.add_subparsers(dest="metrics_command", required=True)
 
+    inventories = metrics_sub.add_parser("inventories", help="Build observed/synthetic metric waveform inventories from trace metadata.")
+    inventories.add_argument("--trace-metadata", required=True, help="Preprocessed trace metadata CSV/parquet path.")
+    inventories.add_argument("--observed-output", required=True, help="Observed metric inventory CSV/parquet output path.")
+    inventories.add_argument("--synthetic-output", required=True, help="Synthetic metric inventory CSV/parquet output path.")
+    inventories.add_argument("--config", default=None, help="Optional Spatial-VTK config used to infer a single synthetic model.")
+    inventories.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    inventories.add_argument("--synthetic-model", default=None, help="Synthetic model label override.")
+    inventories.add_argument("--observed-path-column", default="output_file", help="Trace metadata column used for observed waveform_path.")
+    inventories.add_argument("--synthetic-path-column", default="input_file", help="Trace metadata column used for synthetic waveform_path.")
+    inventories.add_argument("--overwrite", action="store_true", help="Replace existing inventory outputs.")
+    inventories.add_argument("--verbose", action="store_true", help="Print row counts and output paths.")
+    inventories.set_defaults(handler=_cmd_metrics_inventories)
+
     plan = metrics_sub.add_parser("plan", help="Plan metric tasks from inventories and config.")
     plan.add_argument("--observed-inventory", default=None, help="Observed metric waveform inventory.")
     plan.add_argument("--synthetic-inventory", default=None, help="Synthetic metric waveform inventory.")
@@ -868,6 +881,34 @@ def _cmd_metrics_plan(args: argparse.Namespace) -> int:
     else:
         _write_table(tasks_to_frame(tasks), args.output)
     print(f"Planned {len(tasks)} metric tasks.")
+    return 0
+
+
+def _cmd_metrics_inventories(args: argparse.Namespace) -> int:
+    """Run ``svtk metrics inventories``."""
+
+    from spatial_vtk.metrics.workflow import build_metric_waveform_inventories_from_trace_metadata
+
+    config = _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    result = build_metric_waveform_inventories_from_trace_metadata(
+        args.trace_metadata,
+        args.observed_output,
+        args.synthetic_output,
+        config=config,
+        synthetic_model=args.synthetic_model,
+        observed_path_column=args.observed_path_column,
+        synthetic_path_column=args.synthetic_path_column,
+        overwrite=args.overwrite,
+        verbose=args.verbose,
+    )
+    payload = {
+        "observed_path": str(result.observed_path),
+        "synthetic_path": str(result.synthetic_path),
+        "observed_rows": result.observed_rows,
+        "synthetic_rows": result.synthetic_rows,
+        "reused": result.reused,
+    }
+    _print_payload(payload, as_json=False)
     return 0
 
 

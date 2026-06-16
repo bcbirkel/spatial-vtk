@@ -10,6 +10,7 @@ from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.io.plans import MetricPlan
 from spatial_vtk.metrics.workflow import (
     SlurmSettings,
+    build_metric_waveform_inventories_from_trace_metadata,
     cache_metric_manifest_waveforms,
     merge_batch_outputs,
     plan_metric_tasks,
@@ -27,6 +28,60 @@ from spatial_vtk.metrics.workflow import (
 )
 from spatial_vtk.spatial.map.path import plot_event_residual_map
 from spatial_vtk.visualize.dashboard import available_dashboard_value_columns, build_dashboard_summaries, load_dashboard_metric_dataset
+
+
+def test_metric_inventories_from_trace_metadata_use_explicit_path_columns(tmp_path) -> None:
+    """Trace metadata should become normalized observed/synthetic inventories."""
+
+    trace_metadata = pd.DataFrame(
+        {
+            "source_type": ["observed", "synthetic"],
+            "event_id": ["e1", "e1"],
+            "station": ["abc", "abc"],
+            "component": ["z", "z"],
+            "input_file": ["raw_obs.mseed", "synthetic_source.mseed"],
+            "output_file": ["processed_obs.npz", "processed_syn.npz"],
+            "delta": [0.01, 0.02],
+            "sampling_rate": [100.0, 50.0],
+        }
+    )
+    config = SpatialVTKConfig(
+        tmp_path / "config.yaml",
+        tmp_path,
+        {"metrics": {"models": ["model_a"]}},
+    )
+    observed_path = tmp_path / "observed_inventory.parquet"
+    synthetic_path = tmp_path / "synthetic_inventory.parquet"
+
+    result = build_metric_waveform_inventories_from_trace_metadata(
+        trace_metadata,
+        observed_path,
+        synthetic_path,
+        config=config,
+        overwrite=True,
+    )
+
+    observed = pd.read_parquet(result.observed_path)
+    synthetic = pd.read_parquet(result.synthetic_path)
+    assert result.observed_rows == 1
+    assert result.synthetic_rows == 1
+    assert observed.loc[0, "station"] == "ABC"
+    assert observed.loc[0, "component"] == "Z"
+    assert observed.loc[0, "waveform_path"] == "processed_obs.npz"
+    assert observed.loc[0, "dt"] == pytest.approx(0.01)
+    assert synthetic.loc[0, "waveform_path"] == "synthetic_source.mseed"
+    assert synthetic.loc[0, "model"] == "model_a"
+    assert synthetic.loc[0, "dt"] == pytest.approx(0.02)
+
+    reused = build_metric_waveform_inventories_from_trace_metadata(
+        trace_metadata,
+        observed_path,
+        synthetic_path,
+        overwrite=False,
+    )
+    assert reused.reused
+    assert reused.observed_rows is None
+    assert reused.synthetic_rows is None
 
 
 def test_metric_workflow_runs_tasks_and_applies_side_specific_spectral_qc(tmp_path) -> None:

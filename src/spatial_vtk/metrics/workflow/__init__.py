@@ -22,6 +22,10 @@ from spatial_vtk.metrics.workflow.outputs import (
     prepare_metric_workflow_outputs,
     write_metric_outputs,
 )
+from spatial_vtk.metrics.workflow.inventory import (
+    MetricWaveformInventoryResult,
+    build_metric_waveform_inventories_from_trace_metadata,
+)
 from spatial_vtk.metrics.workflow.run import (
     calculate_task_rows,
     run_metric_tasks,
@@ -59,11 +63,13 @@ _CACHE_EXPORTS = {
 
 __all__ = [
     "MetricWaveformCacheResult",
+    "MetricWaveformInventoryResult",
     "MetricWorkflowManifest",
     "MetricWorkflowTask",
     "SlurmSettings",
     "calculate_task_rows",
     "cache_metric_manifest_waveforms",
+    "build_metric_waveform_inventories_from_trace_metadata",
     "chunk_tasks",
     "merge_batch_outputs",
     "metric_group_for",
