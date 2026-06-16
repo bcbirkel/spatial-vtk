@@ -308,6 +308,12 @@ def _resolve_source_columns(records: pd.DataFrame, source_columns: Mapping[str, 
     resolved: dict[str, str] = {}
     for source, candidates in DEFAULT_SOURCE_COLUMN_CANDIDATES.items():
         for candidate in candidates:
+            if candidate in records.columns and _column_has_existing_path_values(records[candidate]):
+                resolved[source] = candidate
+                break
+        if source in resolved:
+            continue
+        for candidate in candidates:
             if candidate in records.columns and _column_has_path_values(records[candidate]):
                 resolved[source] = candidate
                 break
@@ -406,18 +412,17 @@ def _add_configured_waveform_paths(records: pd.DataFrame, *, config: Any | None,
         return records
 
     out = records.copy()
-    if not _has_usable_source_column(out, "observed"):
-        observed_paths = _waveform_paths_from_templates(out, cfg=cfg, template_keys=CONFIG_TEMPLATE_KEYS["observed"])
-        if observed_paths is None:
-            observed_paths = _waveform_paths_from_roots(out[event_id_col], cfg=cfg, root_keys=CONFIG_ROOT_KEYS["observed"])
-        if observed_paths is not None:
-            out["observed_waveform"] = observed_paths
-    if not _has_usable_source_column(out, "synthetic"):
-        synthetic_paths = _waveform_paths_from_templates(out, cfg=cfg, template_keys=CONFIG_TEMPLATE_KEYS["synthetic"])
-        if synthetic_paths is None:
-            synthetic_paths = _waveform_paths_from_roots(out[event_id_col], cfg=cfg, root_keys=CONFIG_ROOT_KEYS["synthetic"])
-        if synthetic_paths is not None:
-            out["synthetic_waveform"] = synthetic_paths
+    observed_paths = _waveform_paths_from_templates(out, cfg=cfg, template_keys=CONFIG_TEMPLATE_KEYS["observed"])
+    if observed_paths is None and not _has_existing_source_column(out, "observed"):
+        observed_paths = _waveform_paths_from_roots(out[event_id_col], cfg=cfg, root_keys=CONFIG_ROOT_KEYS["observed"])
+    if observed_paths is not None:
+        out["observed_waveform"] = observed_paths
+
+    synthetic_paths = _waveform_paths_from_templates(out, cfg=cfg, template_keys=CONFIG_TEMPLATE_KEYS["synthetic"])
+    if synthetic_paths is None and not _has_existing_source_column(out, "synthetic"):
+        synthetic_paths = _waveform_paths_from_roots(out[event_id_col], cfg=cfg, root_keys=CONFIG_ROOT_KEYS["synthetic"])
+    if synthetic_paths is not None:
+        out["synthetic_waveform"] = synthetic_paths
     return out
 
 
@@ -430,10 +435,29 @@ def _has_usable_source_column(records: pd.DataFrame, source: str) -> bool:
     )
 
 
+def _has_existing_source_column(records: pd.DataFrame, source: str) -> bool:
+    """Return whether records include one recognized source column with existing paths."""
+
+    return any(
+        column in records.columns and _column_has_existing_path_values(records[column])
+        for column in DEFAULT_SOURCE_COLUMN_CANDIDATES[source]
+    )
+
+
 def _column_has_path_values(series: pd.Series) -> bool:
     """Return whether a path column has at least one non-empty path value."""
 
     return any(_path_cell_text(value) for value in series)
+
+
+def _column_has_existing_path_values(series: pd.Series) -> bool:
+    """Return whether a path column has at least one existing filesystem path."""
+
+    for value in series:
+        text = _path_cell_text(value)
+        if text and Path(text).expanduser().exists():
+            return True
+    return False
 
 
 def _path_cell_text(value: object) -> str:

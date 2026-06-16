@@ -8,11 +8,14 @@ outputs. The example files are not included in the PyPI wheel.
 
 `example_five_event_subset/` contains the five-event LA Basin tutorial bundle:
 event metadata, station metadata, event-station tables, GeoJSON regions, event
-JSON files, and local paths for the observed and synthetic MiniSEED products
-used by the workflow. The public repository keeps the lightweight metadata in
-git; large waveform binaries and processed waveform copies stay local. The
-tutorial configuration applies a 1 Hz lowpass preprocessing step before QC,
-metric calculations, waveform figures, spatial analysis, and dashboards.
+JSON files, and small tracked NumPy waveform fixtures used by the workflow.
+The public tutorial scenario reads the fixtures from
+`example_five_event_subset/waveforms_npz/` using `{event_id}/{station}.npz`
+templates, so a fresh source checkout can run the notebooks without private
+MiniSEED files. Larger MiniSEED products and processed waveform copies stay
+local and are ignored by git. The tutorial configuration applies a 1 Hz lowpass
+preprocessing step before QC, metric calculations, waveform figures, spatial
+analysis, and dashboards.
 
 `data_formats/` contains tiny preview inputs and outputs used by the Data
 Formats page. These examples show file structure and column conventions; they
