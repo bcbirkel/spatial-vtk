@@ -302,7 +302,7 @@ class MetricFigureContext:
             return df
         if not all(column in df.columns for column in ["station", resolved_value_col]):
             return df
-        group_cols = _ordered_existing_columns(df, ["station", lon_col, lat_col, *(extra_group_cols or [])])
+        group_cols = _station_group_columns(df, lon_col=lon_col, lat_col=lat_col, extra_group_cols=extra_group_cols)
         context_cols = [
             column
             for column in [self.metric_col, self.band_col, self.model_col, self.component_col, self.period_col]
@@ -312,6 +312,8 @@ class MetricFigureContext:
         values = _aggregate_grouped_values(grouped[resolved_value_col], self.station_aggregation).reset_index(name=resolved_value_col)
         counts = grouped.size().reset_index(name="source_row_count")
         summary = values.merge(counts, on=group_cols, how="left")
+        coordinates = _station_coordinate_summary(grouped, lon_col=lon_col, lat_col=lat_col).reset_index()
+        summary = summary.merge(coordinates, on=group_cols, how="left")
         if "event_id" in df.columns:
             event_counts = grouped["event_id"].nunique(dropna=True).reset_index(name="source_event_count")
             summary = summary.merge(event_counts, on=group_cols, how="left")
@@ -338,7 +340,12 @@ class MetricFigureContext:
             return df
         if not all(column in df.columns for column in ["station", self.period_col, resolved_value_col]):
             return df
-        group_cols = _ordered_existing_columns(df, ["station", lon_col, lat_col, self.period_col, *(extra_group_cols or [])])
+        group_cols = _station_group_columns(
+            df,
+            lon_col=lon_col,
+            lat_col=lat_col,
+            extra_group_cols=[self.period_col, *(extra_group_cols or [])],
+        )
         context_cols = [
             column
             for column in [self.metric_col, self.band_col, self.model_col, self.component_col]
@@ -348,6 +355,8 @@ class MetricFigureContext:
         values = _aggregate_grouped_values(grouped[resolved_value_col], self.station_aggregation).reset_index(name=resolved_value_col)
         counts = grouped.size().reset_index(name="source_row_count")
         summary = values.merge(counts, on=group_cols, how="left")
+        coordinates = _station_coordinate_summary(grouped, lon_col=lon_col, lat_col=lat_col).reset_index()
+        summary = summary.merge(coordinates, on=group_cols, how="left")
         if "event_id" in df.columns:
             event_counts = grouped["event_id"].nunique(dropna=True).reset_index(name="source_event_count")
             summary = summary.merge(event_counts, on=group_cols, how="left")
@@ -816,6 +825,46 @@ def _station_coordinate_columns(df: pd.DataFrame) -> tuple[str | None, str | Non
     lon = next((column for column in ("sta_lon", "lon", "station_lon", "station_longitude") if column in df.columns), None)
     lat = next((column for column in ("sta_lat", "lat", "station_lat", "station_latitude") if column in df.columns), None)
     return lon, lat
+
+
+def _station_group_columns(
+    df: pd.DataFrame,
+    *,
+    lon_col: str,
+    lat_col: str,
+    extra_group_cols: Iterable[str | None] | None,
+) -> list[str]:
+    """Return station-summary grouping columns without splitting by coordinates."""
+
+    base_columns = ["station"] if "station" in df.columns else [lon_col, lat_col]
+    return _ordered_existing_columns(df, [*base_columns, *(extra_group_cols or [])])
+
+
+def _station_coordinate_summary(grouped: Any, *, lon_col: str, lat_col: str) -> pd.DataFrame:
+    """Summarize station coordinates for grouped event-level rows."""
+
+    lon_summary = grouped[lon_col].agg(_representative_coordinate).rename(lon_col)
+    lat_summary = grouped[lat_col].agg(_representative_coordinate).rename(lat_col)
+    coordinate_counts = grouped[[lon_col, lat_col]].apply(_coordinate_pair_count).rename("source_coordinate_count")
+    return pd.concat([lon_summary, lat_summary, coordinate_counts], axis=1)
+
+
+def _representative_coordinate(values: pd.Series) -> float | object:
+    """Return a stable representative coordinate for one station group."""
+
+    numeric = pd.to_numeric(values, errors="coerce").dropna()
+    if not numeric.empty:
+        return float(numeric.median())
+    non_null = values.dropna()
+    return np.nan if non_null.empty else non_null.iloc[0]
+
+
+def _coordinate_pair_count(rows: pd.DataFrame) -> int:
+    """Count distinct coordinate pairs in one station group."""
+
+    if rows.empty:
+        return 0
+    return int(rows.dropna(how="all").drop_duplicates().shape[0])
 
 
 def _rename_station_coordinates(df: pd.DataFrame, *, lon_col: str, lat_col: str) -> pd.DataFrame:

@@ -48,6 +48,11 @@ Changelog
    Added ``notebook_figure_sidecar_settings()`` so standard and large-run
    notebooks use one parser for optional figure row-provenance sidecars instead
    of duplicating environment-variable handling in setup cells.
+   Tightened large-run station metric map aggregation so event-level rows are
+   grouped by station, period, and model rather than by station-coordinate
+   pairs. Station coordinates are now summarized separately and optional
+   figure sidecars record coordinate multiplicity, source row counts, and
+   source event counts for auditing.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

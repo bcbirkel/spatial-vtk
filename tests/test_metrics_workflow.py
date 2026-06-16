@@ -93,8 +93,8 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
         {
             "event_id": ["e1", "e2", "e3", "e4", "e1", "e2"],
             "station": ["STA", "STA", "STB", "STA", "STA", "STA"],
-            "sta_lon": [-118.0, -118.0, -117.5, -118.0, -118.0, -118.0],
-            "sta_lat": [34.0, 34.0, 34.2, 34.0, 34.0, 34.0],
+            "sta_lon": [-118.00, -118.02, -117.5, -118.01, -118.0, -118.02],
+            "sta_lat": [34.00, 34.02, 34.2, 34.01, 34.0, 34.02],
             "metric": ["PGA", "PGA", "PGA", "PGA", "PSA", "PSA"],
             "band": ["1-2 sec", "1-2 sec", "1-2 sec", "1-2 sec", "", ""],
             "model": ["m1", "m1", "m1", "m2", "m1", "m1"],
@@ -123,8 +123,11 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     station_summary = context.station_summary_for_map(pga_item["df"])
     sta = station_summary.loc[station_summary["station"].eq("STA")].iloc[0]
     assert sta["log2_residual"] == pytest.approx(2.0)
+    assert sta["sta_lon"] == pytest.approx(-118.01)
+    assert sta["sta_lat"] == pytest.approx(34.01)
     assert sta["source_row_count"] == 2
     assert sta["source_event_count"] == 2
+    assert sta["source_coordinate_count"] == 2
     assert sta["aggregation"] == "mean"
 
     station_model_summary = context.station_summary_for_map(
@@ -142,6 +145,8 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert sta_m2["log2_residual"] == pytest.approx(7.0)
     assert sta_m1["source_event_count"] == 2
     assert sta_m2["source_event_count"] == 1
+    assert sta_m1["source_coordinate_count"] == 2
+    assert sta_m2["source_coordinate_count"] == 1
 
     psa_item = [item for item in context.iter_metric_frames(components=["Z"], model="m1", split_psa_period=False) if item["key"] == "psa"][0]
     assert "all-psa-periods" in context.figure_name("station_metric_map", psa_item)
@@ -179,6 +184,18 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
 
     context.sample_rows = 0
     context.sidecar_rows = None
+
+    output_all = context.write_metric_plot("debug_all_rows", pga_item, _dummy_plot, df=station_summary, source_df=pga_item["df"])
+    assert output_all is not None
+    all_sidecar = pd.read_csv(context.sidecar_output_dir / f"{output_all.stem}.csv")
+    all_source_sidecar = pd.read_csv(context.sidecar_output_dir / f"{output_all.stem}.source.csv")
+    all_metadata = json.loads((context.sidecar_output_dir / f"{output_all.stem}.json").read_text(encoding="utf-8"))
+    assert len(all_sidecar) == 2
+    assert len(all_source_sidecar) == 3
+    assert all_metadata["plot_row_count"] == 2
+    assert all_metadata["source_row_count"] == 3
+    assert all_metadata["source_written_row_count"] == 3
+    assert all_metadata["source_sampled"] is False
 
     def _dummy_png_plot(frame: pd.DataFrame, *, output_path, **kwargs) -> None:
         import matplotlib.pyplot as plt
