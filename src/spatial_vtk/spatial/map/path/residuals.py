@@ -14,7 +14,7 @@ from spatial_vtk.config.labels import metric_display_name, value_column_display_
 from spatial_vtk.metrics.calculate.enrich import prepare_metric_residual_table
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import apply_figure_context, value_color_settings
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 
 
 def plot_event_residual_map(
@@ -31,11 +31,16 @@ def plot_event_residual_map(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot station residuals for one event/metric selection.
 
     Map figures add a basemap by default, following the repository figure rule.
-    Tests may pass ``add_basemap=False`` for fully offline rendering.
+    Tests may pass ``add_basemap=False`` for fully offline rendering. Set
+    ``write_sidecar=True`` to write the filtered event/metric rows and the
+    unfiltered source rows next to the saved figure.
     """
 
     work = prepare_metric_residual_table(df)
@@ -82,7 +87,19 @@ def plot_event_residual_map(
     cbar = fig.colorbar(scatter, ax=ax, pad=0.045)
     cbar.set_label(value_column_display_name(value_col))
 
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=work,
+        source_rows=prepare_metric_residual_table(df),
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "event_residual_map", "event_id": event_id, "metric": metric, "value_col": value_col},
+    )
 
 
 def _xy_columns(df: pd.DataFrame) -> tuple[str, str]:

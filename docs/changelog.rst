@@ -99,6 +99,10 @@ Changelog
    model, component, and PSA-period column aliases so JSON provenance remains
    informative for both ``band``/``passband`` and canonicalized station/event
    table variants.
+   ``plot_event_residual_map()`` now supports the shared
+   ``write_sidecar``/``sidecar_rows``/``sidecar_dir`` plotting options so
+   event-map provenance works consistently for direct Python calls, CLI-routed
+   plotting, and large-run notebook wrappers.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

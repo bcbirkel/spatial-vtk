@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pandas as pd
 
@@ -66,9 +68,29 @@ def test_metric_outputs_feed_dashboard_and_path_map(tmp_path):
     path_summary = summarize_residuals_by_path_bin(path_table, distance_bin_km=20.0, azimuth_bin_deg=45.0)
     assert path_summary["n"].sum() == 2
 
-    figure_path = plot_event_residual_map(long, tmp_path / "event_residual_map.png", event_id="e1", metric="C5", add_basemap=False)
+    sidecar_dir = tmp_path / "sidecars"
+    figure_path = plot_event_residual_map(
+        long,
+        tmp_path / "event_residual_map.png",
+        event_id="e1",
+        metric="C5",
+        add_basemap=False,
+        write_sidecar=True,
+        sidecar_rows=None,
+        sidecar_dir=sidecar_dir,
+    )
     assert figure_path.exists()
     assert figure_path.stat().st_size > 0
+    sidecar = sidecar_dir / "event_residual_map.csv"
+    source_sidecar = sidecar_dir / "event_residual_map.source.csv"
+    metadata = json.loads(sidecar.with_suffix(".json").read_text(encoding="utf-8"))
+    assert sidecar.exists()
+    assert source_sidecar.exists()
+    assert metadata["figure_type"] == "event_residual_map"
+    assert metadata["plot_row_count"] == 2
+    assert metadata["source_row_count"] == len(long)
+    assert metadata["plot_event_count"] == 1
+    assert metadata["source_event_count"] == 1
 
 
 def test_arrival_picks_metric_examples_and_rotation(tmp_path):

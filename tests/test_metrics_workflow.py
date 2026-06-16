@@ -247,6 +247,14 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert any(stem.startswith("heatmap__pga") for stem in stems)
     assert any(stem.startswith("scatterplot__psa") for stem in stems)
     assert any(stem.startswith("boxplot__psa") for stem in stems)
+    for path in generic_outputs:
+        generic_sidecar = context.sidecar_output_dir / f"{path.stem}.csv"
+        generic_metadata = context.sidecar_output_dir / f"{path.stem}.json"
+        assert generic_sidecar.exists(), path.name
+        assert generic_metadata.exists(), path.name
+        metadata = json.loads(generic_metadata.read_text(encoding="utf-8"))
+        assert metadata["plot_row_count"] >= metadata["written_row_count"] > 0
+        assert metadata["source_row_count"] >= metadata["written_row_count"]
 
 
 def test_metric_workflow_runs_tasks_and_applies_side_specific_spectral_qc(tmp_path) -> None:
