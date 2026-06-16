@@ -90,3 +90,6 @@ Plotting
 
 .. automodule:: spatial_vtk.metrics.plot.trends
    :members:
+
+.. automodule:: spatial_vtk.metrics.plot.large_run
+   :members:
