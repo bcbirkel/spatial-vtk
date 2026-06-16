@@ -1,7 +1,7 @@
 CLI API
 =======
 
-The public command is ``svtk``. It gives you file-based access to the same major Spatial-VTK workflows used from Python: configuration inspection, metadata and waveform preparation, QC queue export, metric planning and execution, plotting, mapping, dashboards, and advanced calls to importable public functions.
+The public command is ``svtk``. It gives you file-based access to the same major Spatial-VTK workflows used from Python: configuration inspection, metadata and waveform preparation, QC queue export, metric planning and execution, spatial statistics, plotting, mapping, dashboards, and advanced calls to importable public functions.
 
 Run ``svtk --help`` to see the command tree from your installed environment.
 
@@ -27,6 +27,8 @@ Command Groups
      - Prepare QC review outputs.
    * - :doc:`svtk metrics <cli/metrics>`
      - Plan, run, and post-process metric calculations.
+   * - :doc:`svtk spatial <cli/spatial>`
+     - Run spatial-statistics table workflows.
    * - :doc:`svtk plot <cli/plot>`
      - Create static metric and spatial plots.
    * - :doc:`svtk map <cli/map>`
@@ -48,6 +50,7 @@ Detailed Command Reference
    cli/io
    cli/qc
    cli/metrics
+   cli/spatial
    cli/plot
    cli/map
    cli/visualize

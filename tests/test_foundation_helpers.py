@@ -12,7 +12,9 @@ from spatial_vtk.io import (
     classify_model_folder,
     inspect_station_event_layouts,
     load_csv_bundle,
+    read_bounded_table,
     resolve_model_aliases,
+    slugify,
     wide_to_long_metrics,
     write_station_event_kml,
 )
@@ -69,6 +71,9 @@ def test_table_helpers(tmp_path):
     ).to_csv(csv_path, index=False)
 
     loaded = load_csv_bundle(csv_path)
+    bounded = read_bounded_table(csv_path, max_rows=1)
+    assert len(bounded) == 1
+    assert slugify("CVM-SI / 2-3 sec") == "cvm_si_2_3_sec"
     long = wide_to_long_metrics(loaded)
     assert set(["metric", "value_obs", "value_syn", "residual"]).issubset(long.columns)
     assert long["metric"].tolist() == ["C1", "C1"]

@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from spatial_vtk.cli import main
 
@@ -19,6 +20,15 @@ def test_cli_version(capsys):
     assert main(["--version"]) == 0
     captured = capsys.readouterr()
     assert captured.out.strip()
+
+
+def test_cli_spatial_summaries_help(capsys):
+    with pytest.raises(SystemExit) as excinfo:
+        main(["spatial", "summaries", "--help"])
+    assert excinfo.value.code == 0
+    captured = capsys.readouterr()
+    assert "Build standard spatial-statistics summary tables" in captured.out
+    assert "--station-metadata" in captured.out
 
 
 def test_cli_config_show_section(tmp_path, capsys):

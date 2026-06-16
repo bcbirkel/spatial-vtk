@@ -14,6 +14,7 @@ from shapely.geometry import Polygon, mapping
 os.environ.setdefault("LOKY_MAX_CPU_COUNT", "1")
 matplotlib.use("Agg", force=True)
 
+from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.spatial.calculate.clustering import assign_redcap_clusters, run_residual_feature_clustering
 from spatial_vtk.spatial.calculate.correlation import (
     build_distance_bin_summary,
@@ -42,6 +43,7 @@ from spatial_vtk.spatial.calculate.prepare_stats import (
     summarize_station_bias,
 )
 from spatial_vtk.spatial.calculate.workflow import spatial_statistics_output_paths
+from spatial_vtk.spatial.calculate.workflow import run_spatial_statistics_workflow
 from spatial_vtk.spatial.map.correlation import (
     plot_block_holdout_error_map,
     plot_cluster_map,
@@ -237,6 +239,55 @@ def test_spatial_workflow_helpers_write_and_prepare_tables(tmp_path: Path) -> No
         showfig=False,
     )
     assert multiclass_fig.spatial_vtk_saved_path.exists()
+
+
+def test_spatial_statistics_workflow_writes_standard_outputs(tmp_path: Path) -> None:
+    """The Step 4 spatial workflow should be callable outside notebooks."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+spatial:
+  metric: C5
+  value_column: log2_residual
+  min_stations_per_event: 3
+  min_events_per_station: 2
+  moran_neighbors: 2
+  moran_permutations: 3
+  cluster_min_k: 2
+  cluster_max_k: 3
+  pca_components: 2
+  geology_min_stations_per_group: 1
+  geology_bootstrap_samples: 3
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    metrics = normalize_metrics_table(_toy_metrics_table(), default_model="example")
+    station_metadata = pd.DataFrame(
+        {
+            "station": metrics["station"].drop_duplicates().tolist(),
+            "mapped_region_type": (["Basin", "Mountains"] * 8)[: metrics["station"].nunique()],
+        }
+    )
+
+    result = run_spatial_statistics_workflow(metrics, cfg=cfg, station_metadata=station_metadata, verbose=True)
+
+    assert result.metrics == ("C5",)
+    assert not result.tables["metric_field"].empty
+    assert not result.tables["event_centered_residuals"].empty
+    assert not result.tables["station_bias"].empty
+    assert set(result.paths) >= {"metric_field", "station_bias", "geology_contrasts"}
+    assert result.paths["metric_field"] == tmp_path / "outputs" / "tables" / "metric_field.parquet"
+    assert result.paths["metric_field"].exists()
+    assert result.paths["station_bias"].exists()
+    assert result.tables["metric_field"]["metric"].eq("C5").all()
+    assert result.tables["station_bias"]["metric"].eq("C5").all()
 
 
 def test_redcap_clusters_use_spatial_constraints_and_scores() -> None:

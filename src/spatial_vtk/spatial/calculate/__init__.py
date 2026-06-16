@@ -52,6 +52,9 @@ from spatial_vtk.spatial.calculate.settings import SpatialStatisticsSettings, sp
 from spatial_vtk.spatial.calculate.workflow import (
     SPATIAL_STATISTICS_OUTPUT_DESCRIPTIONS,
     SPATIAL_STATISTICS_OUTPUT_NAMES,
+    SPATIAL_SUMMARY_OUTPUT_KEYS,
+    SpatialStatisticsWorkflowResult,
+    run_spatial_statistics_workflow,
     spatial_statistics_output_paths,
 )
 
@@ -101,7 +104,10 @@ __all__ = [
     "select_near_edge_stations",
     "SPATIAL_STATISTICS_OUTPUT_DESCRIPTIONS",
     "SPATIAL_STATISTICS_OUTPUT_NAMES",
+    "SPATIAL_SUMMARY_OUTPUT_KEYS",
+    "SpatialStatisticsWorkflowResult",
     "SpatialStatisticsSettings",
+    "run_spatial_statistics_workflow",
     "spatial_statistics_output_paths",
     "spatial_statistics_settings_from_config",
     "summarize_corridor_event_counts",

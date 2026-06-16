@@ -231,6 +231,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_io_commands(subparsers)
     _add_qc_commands(subparsers)
     _add_metrics_commands(subparsers)
+    _add_spatial_commands(subparsers)
     _add_plot_commands(subparsers)
     _add_map_commands(subparsers)
     _add_visualize_commands(subparsers)
@@ -462,6 +463,42 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     slurm.add_argument("--submit", action="store_true", help="Submit the script with sbatch after writing it.")
     slurm.set_defaults(handler=_cmd_metrics_slurm)
+
+
+def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
+    """Register spatial-statistics workflow CLI commands."""
+
+    spatial = subparsers.add_parser(
+        "spatial",
+        help="Run spatial-statistics table workflows.",
+        description="Run spatial-statistics table workflows.",
+    )
+    spatial_sub = spatial.add_subparsers(dest="spatial_command", required=True)
+
+    summaries = spatial_sub.add_parser(
+        "summaries",
+        help="Build standard spatial-statistics summary tables.",
+        description="Build standard spatial-statistics summary tables.",
+    )
+    summaries.add_argument(
+        "--metrics",
+        default=None,
+        help="Metric rows table. Defaults to configured output table 'metrics_long'.",
+    )
+    summaries.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    summaries.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    summaries.add_argument(
+        "--metric",
+        default=None,
+        help="Metric override. Use 'all' to process each metric in the input table.",
+    )
+    summaries.add_argument(
+        "--station-metadata",
+        default=None,
+        help="Prepared station metadata table for geology contrasts. Defaults to configured 'prepared_stations'.",
+    )
+    summaries.add_argument("--verbose", action="store_true", help="Print elapsed-time progress for Slurm logs.")
+    summaries.set_defaults(handler=_cmd_spatial_summaries)
 
 
 def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -1059,6 +1096,32 @@ def _cmd_metrics_slurm(args: argparse.Namespace) -> int:
     path = write_metrics_slurm_script(args.manifest, args.output, settings)
     print(f"Wrote metric Slurm script: {path}")
     print("No job was submitted. Re-run with --submit or submit the script with sbatch.")
+    return 0
+
+
+def _cmd_spatial_summaries(args: argparse.Namespace) -> int:
+    """Run ``svtk spatial summaries``."""
+
+    from spatial_vtk.config import SpatialVTKConfig
+    from spatial_vtk.spatial.calculate import run_spatial_statistics_workflow
+
+    cfg = SpatialVTKConfig.from_file(_required_config_path(args.config), run_scenario=args.run_scenario)
+    result = run_spatial_statistics_workflow(
+        args.metrics,
+        cfg=cfg,
+        metric=args.metric,
+        station_metadata=args.station_metadata,
+        verbose=args.verbose,
+    )
+    print(f"Spatial statistics metrics: {', '.join(result.metrics)}")
+    print(f"Elapsed: {result.elapsed_s:.1f}s")
+    _print_payload({key: str(path) for key, path in result.paths.items()}, as_json=False)
+    if result.failures:
+        print(f"Non-fatal spatial diagnostic failures: {len(result.failures)}")
+        for failure in result.failures[:10]:
+            print(f"- {failure['metric']} {failure['step']}: {failure['error']}: {failure['message']}")
+        if len(result.failures) > 10:
+            print(f"- ... {len(result.failures) - 10} more")
     return 0
 
 

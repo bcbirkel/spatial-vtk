@@ -92,6 +92,54 @@ def load_csv_bundle(
     return pd.concat(frames, ignore_index=True)
 
 
+def read_bounded_table(path: str | Path, max_rows: int) -> pd.DataFrame:
+    """Read at most ``max_rows`` from a CSV or Parquet table.
+
+    This is intended for notebook previews and lightweight plotting cells that
+    need representative rows from a large output table without loading the full
+    table into memory. Parquet files are streamed by row batch when PyArrow is
+    available.
+
+    Parameters
+    ----------
+    path
+        CSV or Parquet table path.
+    max_rows
+        Maximum number of rows to return. Values less than one return an empty
+        dataframe.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Bounded table prefix.
+    """
+
+    input_path = Path(path).expanduser()
+    limit = int(max_rows)
+    if limit < 1:
+        return pd.DataFrame()
+    suffix = input_path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        try:
+            import pyarrow.parquet as pq
+
+            parquet_file = pq.ParquetFile(input_path)
+            frames: list[pd.DataFrame] = []
+            remaining = limit
+            for batch in parquet_file.iter_batches(batch_size=min(limit, 100_000)):
+                frame = batch.to_pandas()
+                bounded = frame.head(remaining)
+                if not bounded.empty:
+                    frames.append(bounded)
+                remaining -= len(bounded)
+                if remaining <= 0:
+                    break
+            return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+        except Exception:
+            return pd.read_parquet(input_path).head(limit)
+    return pd.read_csv(input_path, nrows=limit, low_memory=False)
+
+
 def normalize_metric_table(df: pd.DataFrame) -> pd.DataFrame:
     """Normalize common legacy metric-table column names.
 

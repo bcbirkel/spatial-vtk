@@ -29,7 +29,7 @@ DOCS_ROOT = ROOT / "docs"
 CLI_DIR = DOCS_ROOT / "reference" / "cli"
 CLI_INDEX = DOCS_ROOT / "reference" / "cli_api.rst"
 
-TOP_LEVEL_ORDER = ["config", "io", "qc", "metrics", "plot", "map", "visualize", "dashboard", "call"]
+TOP_LEVEL_ORDER = ["config", "io", "qc", "metrics", "spatial", "plot", "map", "visualize", "dashboard", "call"]
 HEADING_CHARS = ["=", "-", "~", "^", '"']
 
 
