@@ -30,6 +30,7 @@ from spatial_vtk.spatial.map import (
     plot_residual_grid,
     plot_score_map,
     plot_station_metric_map,
+    plot_station_metric_map_by_period,
 )
 from spatial_vtk.spatial.plot import (
     boxplot,
@@ -384,6 +385,7 @@ def test_metric_and_spatial_figure_families(tmp_path: Path) -> None:
         scatterplot(observed_wide, tmp_path / "scatter_wide.png", indep="distance", dep="pgv", passband="1-2", fit="linear", data_label="Observed"),
         plot_polar_residuals(metrics, tmp_path / "polar.png"),
         plot_station_metric_map(metrics, tmp_path / "station_metric_map.png", value_col="log2_residual", add_basemap=False),
+        plot_station_metric_map_by_period(metrics, tmp_path / "station_metric_map_by_period.png", value_col="log2_residual", add_basemap=False),
         plot_score_map(metrics, tmp_path / "score_map.png", add_basemap=False),
         plot_residual_grid(grid, tmp_path / "residual_grid.png", add_basemap=False),
         plot_metric_map_by_model(metrics, tmp_path / "map_by_model.png", value_col="value_obs", add_basemap=False),

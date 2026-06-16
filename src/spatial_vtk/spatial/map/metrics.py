@@ -71,6 +71,92 @@ def plot_station_metric_map(
     )
 
 
+def plot_station_metric_map_by_period(
+    df: pd.DataFrame,
+    output_path: str | Path | None = None,
+    *,
+    period_col: str = "period_s",
+    value_col: str = "residual",
+    lon_col: str = "sta_lon",
+    lat_col: str = "sta_lat",
+    title: str = "Station Metric Map by PSA Period",
+    add_basemap: bool = True,
+    basemap_source: str = "Esri.WorldImagery",
+    basemap_kwargs: dict[str, Any] | None = None,
+    max_periods: int | None = None,
+    showfig: bool | None = None,
+    savefig: bool | None = None,
+    outpath: str | Path | None = None,
+    spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    **spatial_kwargs: object,
+) -> plt.Figure:
+    """Plot station metric maps faceted by oscillator period.
+
+    This is intended for PSA rows, where ``period_s`` is the oscillator period
+    and should be compared directly across panels. The waveform-processing
+    passband is intentionally omitted from the title context so PSA maps do not
+    look like passband maps.
+    """
+
+    plot_df, subset_label = apply_figure_spatial_selection(df, spatial_selection, **spatial_kwargs)
+    _require(plot_df, [period_col, value_col, lon_col, lat_col])
+    period_values = pd.to_numeric(plot_df[period_col], errors="coerce")
+    periods = sorted(period_values.dropna().unique())
+    if max_periods is not None:
+        periods = periods[: int(max_periods)]
+    if not periods:
+        raise ValueError(f"No finite PSA periods were found in {period_col!r}.")
+
+    ncols = min(4, max(1, len(periods)))
+    nrows = int(math.ceil(len(periods) / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(4.9 * ncols, 4.0 * nrows), dpi=180, squeeze=False)
+    axes_flat = axes.ravel()
+    values_all = pd.to_numeric(plot_df[value_col], errors="coerce")
+    cmap, vmin, vmax = _color_settings(values_all.to_numpy(dtype=float), value_col, plot_df)
+    basemap_options = dict(basemap_kwargs or {})
+    scatter = None
+    for ax, period in zip(axes_flat, periods):
+        subset = plot_df.loc[period_values.eq(period)].copy()
+        _set_bounds(ax, plot_df, lon_col, lat_col)
+        if add_basemap:
+            add_contextily_basemap(ax, crs="EPSG:4326", primary_source=basemap_source, **basemap_options)
+        scatter = ax.scatter(
+            pd.to_numeric(subset[lon_col], errors="coerce"),
+            pd.to_numeric(subset[lat_col], errors="coerce"),
+            c=pd.to_numeric(subset[value_col], errors="coerce"),
+            cmap=cmap,
+            vmin=vmin,
+            vmax=vmax,
+            s=34,
+            edgecolors="black",
+            linewidths=0.25,
+            zorder=4,
+        )
+        ax.set_title(_psa_period_panel_label(float(period)), fontsize=10)
+        ax.set_xlabel("Longitude")
+        ax.set_ylabel("Latitude")
+        ax.grid(True, alpha=0.18)
+    for ax in axes_flat[len(periods) :]:
+        ax.set_axis_off()
+    if scatter is not None:
+        fig.colorbar(scatter, ax=axes_flat[: len(periods)].tolist(), pad=0.02, shrink=0.82, label=value_column_display_name(value_col))
+    context = figure_context_text(
+        plot_df,
+        value_col=value_col,
+        max_values=3,
+        include_value=True,
+        include_counts=True,
+        include_metric=True,
+        include_model=True,
+        include_period=False,
+        include_component=True,
+        extra=[_psa_periods_summary(periods), subset_label] if subset_label else [_psa_periods_summary(periods)],
+    )
+    fig.suptitle(f"{_title_with_value(title, value_col, plot_df)}\n{context}" if context else _title_with_value(title, value_col, plot_df), y=0.995)
+    fig.subplots_adjust(left=0.055, right=0.90, bottom=0.08, top=0.88, wspace=0.18, hspace=0.30)
+    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+
+
 def plot_score_map(df: pd.DataFrame, output_path: str | Path | None = None, *, score_col: str = "score", **kwargs) -> plt.Figure:
     """Plot station or path scores on a map."""
 
@@ -645,10 +731,30 @@ def _single_metric_label(df: pd.DataFrame | None) -> str:
     return metric_display_name(values[0])
 
 
+def _psa_period_panel_label(period_s: float) -> str:
+    """Return a compact oscillator period/frequency label for PSA panels."""
+
+    if not np.isfinite(period_s) or period_s <= 0.0:
+        return "PSA period unknown"
+    frequency_hz = 1.0 / float(period_s)
+    return f"T={period_s:g} s (f={frequency_hz:g} Hz)"
+
+
+def _psa_periods_summary(periods: list[float]) -> str:
+    """Return a concise PSA oscillator-period/frequency summary."""
+
+    if not periods:
+        return ""
+    period_text = ", ".join(f"{float(period):g}" for period in periods)
+    frequency_text = ", ".join(f"{1.0 / float(period):g}" for period in periods if np.isfinite(period) and float(period) > 0.0)
+    return f"PSA oscillator periods: {period_text} s; frequencies: {frequency_text} Hz"
+
+
 __all__ = [
     "plot_metric_map_by_model",
     "plot_model_improvement_map",
     "plot_residual_grid",
     "plot_score_map",
     "plot_station_metric_map",
+    "plot_station_metric_map_by_period",
 ]

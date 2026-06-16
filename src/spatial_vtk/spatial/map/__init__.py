@@ -32,6 +32,7 @@ _EXPORT_MODULES = {
     "plot_residual_grid": "spatial_vtk.spatial.map.metrics",
     "plot_score_map": "spatial_vtk.spatial.map.metrics",
     "plot_station_metric_map": "spatial_vtk.spatial.map.metrics",
+    "plot_station_metric_map_by_period": "spatial_vtk.spatial.map.metrics",
     "plot_corridor_map": "spatial_vtk.spatial.map.path.corridors",
     "plot_event_residual_map": "spatial_vtk.spatial.map.path.residuals",
     "plot_pca_mode_map": "spatial_vtk.spatial.map.pca",
