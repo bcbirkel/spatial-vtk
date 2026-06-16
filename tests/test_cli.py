@@ -472,6 +472,40 @@ outputs:
     assert launched["proxy_mode"] is True
 
 
+def test_cli_dashboard_qc_uses_configured_trace_summary(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    launched = {}
+
+    class FakeProcess:
+        pid = 12346
+
+    def fake_launch_qc_dashboard(**kwargs):
+        launched.update(kwargs)
+        return FakeProcess()
+
+    monkeypatch.setattr(
+        "spatial_vtk.visualize.dashboard.launch_qc_dashboard",
+        fake_launch_qc_dashboard,
+    )
+
+    assert main(["dashboard", "qc", "--config", str(config), "--port", "8556"]) == 0
+
+    captured = capsys.readouterr()
+    assert "QC dashboard trace summary:" in captured.out
+    assert Path(launched["trace_summary"]) == tmp_path / "outputs" / "tables" / "qc_trace_summary.csv"
+    assert Path(launched["config_path"]) == config.resolve()
+    assert launched["server_port"] == 8556
+
+
 def test_cli_call_importable_function(capsys):
     assert main(["call", "spatial_vtk.config.labels.metric_display_name", "--args", "C5"]) == 0
     captured = capsys.readouterr()

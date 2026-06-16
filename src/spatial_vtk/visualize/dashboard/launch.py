@@ -92,9 +92,19 @@ def launch_qc_dashboard(
 ) -> subprocess.Popen[Any]:
     """Launch the Streamlit QC Explorer."""
 
-    config = active_config()
-    resolved_trace_summary = trace_summary or resolve_output_path("qc_inventory", kind="table", cfg=config)
-    resolved_config_path = config_path or config.config_path
+    config = None
+    if trace_summary is None or config_path is None:
+        try:
+            config = active_config()
+        except Exception:
+            config = None
+    if trace_summary is None:
+        if config is None:
+            raise ValueError("trace_summary is required when no active Spatial-VTK config is available.")
+        resolved_trace_summary = resolve_output_path("qc_trace_summary", kind="table", cfg=config)
+    else:
+        resolved_trace_summary = trace_summary
+    resolved_config_path = config_path or (config.config_path if config is not None else None)
     env = os.environ.copy()
     env["SVTK_TRACE_SUMMARY"] = str(Path(resolved_trace_summary).expanduser())
     if resolved_config_path is not None:

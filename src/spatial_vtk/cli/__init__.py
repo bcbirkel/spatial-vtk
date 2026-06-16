@@ -490,7 +490,9 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     metrics.set_defaults(handler=_cmd_dashboard_metrics)
 
     qc = dashboard_sub.add_parser("qc", help="Launch the QC Streamlit dashboard.")
-    qc.add_argument("--trace-summary", required=True, help="Trace-summary CSV/parquet path.")
+    qc.add_argument("--config", default=None, help="Spatial-VTK config used to find the default trace-summary output.")
+    qc.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    qc.add_argument("--trace-summary", default=None, help="Trace-summary CSV/parquet path. Defaults from config.")
     qc.add_argument("--port", type=int, default=8502, help="Streamlit server port.")
     qc.add_argument("--address", default="127.0.0.1", help="Streamlit server address.")
     qc.add_argument("--proxy-mode", action="store_true", help="Allow access through reverse proxies.")
@@ -693,6 +695,29 @@ def _resolve_metrics_dashboard_paths(
     resolved_summary_root = Path(summary_root).expanduser() if summary_root else table_root / "dashboard_summaries"
     resolved_config_path = str(config.config_path) if config.config_path is not None else None
     return resolved_metrics_root, resolved_summary_root, resolved_config_path
+
+
+def _resolve_qc_dashboard_path(
+    *,
+    trace_summary: str | None,
+    config_path: str | None,
+    run_scenario: str | None,
+) -> tuple[Path, str | None]:
+    """Resolve the QC dashboard trace-summary table path."""
+
+    if trace_summary:
+        return Path(trace_summary).expanduser(), _effective_config_path(config_path)
+
+    from spatial_vtk.config import resolve_output_path
+
+    config = _optional_cli_config(config_path, run_scenario=run_scenario)
+    if config is None:
+        raise ValueError(
+            "No trace-summary path was provided and no Spatial-VTK config was found. "
+            "Pass --trace-summary, pass --config, or run 'svtk config set CONFIG_PATH'."
+        )
+    resolved_config_path = str(config.config_path) if config.config_path is not None else None
+    return resolve_output_path("qc_trace_summary", kind="table", cfg=config), resolved_config_path
 
 
 def _cmd_io_prepare_stations(args: argparse.Namespace) -> int:
@@ -1070,13 +1095,20 @@ def _cmd_dashboard_qc(args: argparse.Namespace) -> int:
 
     from spatial_vtk.visualize.dashboard import launch_qc_dashboard
 
-    process = launch_qc_dashboard(
+    trace_summary, config_path = _resolve_qc_dashboard_path(
         trace_summary=args.trace_summary,
+        config_path=args.config,
+        run_scenario=args.run_scenario,
+    )
+    process = launch_qc_dashboard(
+        trace_summary=trace_summary,
+        config_path=config_path,
         server_address=args.address,
         server_port=args.port,
         proxy_mode=args.proxy_mode,
         show=args.show,
     )
+    print(f"QC dashboard trace summary: {trace_summary}")
     if args.proxy_mode:
         print("QC dashboard proxy mode: enabled")
     print(f"QC dashboard running at http://{args.address}:{args.port} (pid {process.pid})")

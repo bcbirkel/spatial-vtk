@@ -7,6 +7,7 @@ import socket
 import pandas as pd
 import pytest
 
+from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.visualize.dashboard import (
     available_dashboard_value_columns,
     band_display_label,
@@ -28,6 +29,7 @@ from spatial_vtk.visualize.dashboard import (
 )
 from spatial_vtk.visualize.dashboard.tables import build_dashboard_summaries
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _available_nonempty_value_columns
+import spatial_vtk.visualize.dashboard.launch as dashboard_launch
 from spatial_vtk.visualize.dashboard.launch import _raise_if_port_in_use
 from spatial_vtk.visualize.selection import FigureSelection, configured_band_options
 
@@ -245,6 +247,40 @@ def test_streamlit_entrypoints_import_and_launch_command():
     assert "--server.enableCORS=false" in command
     assert "--server.enableXsrfProtection=false" in command
     assert "--browser.gatherUsageStats=false" in command
+
+
+def test_qc_dashboard_launcher_defaults_to_trace_summary_output(tmp_path, monkeypatch):
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    SpatialVTKConfig.from_file(config_path).activate()
+    launched = {}
+
+    class FakeProcess:
+        pid = 222
+
+    def fake_launch_streamlit_dashboard(entrypoint, **kwargs):
+        launched["entrypoint"] = entrypoint
+        launched.update(kwargs)
+        return FakeProcess()
+
+    monkeypatch.setattr(dashboard_launch, "launch_streamlit_dashboard", fake_launch_streamlit_dashboard)
+    try:
+        process = dashboard_launch.launch_qc_dashboard(show=False)
+    finally:
+        clear_active_config()
+
+    assert process.pid == 222
+    env = launched["env"]
+    assert Path(env["SVTK_TRACE_SUMMARY"]) == tmp_path / "outputs" / "tables" / "qc_trace_summary.csv"
+    assert Path(env["SVTK_CONFIG_FILE"]) == config_path.resolve()
 
 
 def test_dashboard_launch_detects_busy_port():

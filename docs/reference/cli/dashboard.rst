@@ -43,7 +43,9 @@ svtk dashboard qc
 
 .. code-block:: bash
 
-   svtk dashboard qc [-h] --trace-summary TRACE_SUMMARY [--port PORT]
+   svtk dashboard qc [-h] [--config CONFIG]
+                         [--run-scenario RUN_SCENARIO]
+                         [--trace-summary TRACE_SUMMARY] [--port PORT]
                          [--address ADDRESS] [--proxy-mode] [--show]
 
 .. rubric:: Parameters
@@ -60,10 +62,18 @@ svtk dashboard qc
      - No
      - 
      - show this help message and exit
-   * - ``--trace-summary``
-     - Yes
+   * - ``--config``
+     - No
      - 
-     - Value: ``trace_summary``. Trace-summary CSV/parquet path.
+     - Value: ``config``. Spatial-VTK config used to find the default trace-summary output.
+   * - ``--run-scenario``
+     - No
+     - 
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+   * - ``--trace-summary``
+     - No
+     - 
+     - Value: ``trace_summary``. Trace-summary CSV/parquet path. Defaults from config.
    * - ``--port``
      - No
      - Default: ``8502``
