@@ -108,8 +108,16 @@ extras, you can also run the public test suite:
 
    python -m pytest
 
+To verify that the standard tutorial notebooks run cleanly from the committed
+example data, install the notebook extra and run:
+
+.. code-block:: bash
+
+   python tools/execute_tutorial_notebooks.py --clean
+
 You are ready to continue once the import prints a version, ``svtk --help``
-shows the command groups, and the tests pass if you chose to run them.
+shows the command groups, and the tests or tutorial notebook check pass if you
+chose to run them.
 
 Common Setup Notes
 ------------------

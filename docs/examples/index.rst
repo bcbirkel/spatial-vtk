@@ -18,6 +18,16 @@ Run these notebooks in order from a source checkout:
 6. :download:`Step 6: additional plotting options <step_06_additional_plotting_options.ipynb>`
 7. :download:`Step 7: dashboards <step_07_dashboards.ipynb>`
 
+To verify the full standard tutorial from a clean output directory, run:
+
+.. code-block:: bash
+
+   python tools/execute_tutorial_notebooks.py --clean
+
+The command executes the seven notebooks against the committed example data,
+writes ``outputs/tutorials/notebook_execution_report.json``, and fails if a
+notebook raises an error or emits warning-like cell output.
+
 Large-Run Driver Notebooks
 --------------------------
 

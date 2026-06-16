@@ -90,7 +90,7 @@ jobs:
       - name: Install package and docs extras
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[validation,docs,dashboard,waveforms]"
+          python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"
 
       - name: Install Pandoc
         run: |
@@ -100,6 +100,10 @@ jobs:
       - name: Build docs with warnings as errors
         run: |
           MPLCONFIGDIR=/tmp/mplconfig_svtk python -m sphinx -W -b html docs docs/_build/html
+
+      - name: Execute tutorial notebooks
+        run: |
+          MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --clean
 
       - name: Build source distribution and wheel
         run: |

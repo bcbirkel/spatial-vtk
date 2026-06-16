@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2026-06-16
+   Added ``tools/execute_tutorial_notebooks.py`` so source checkouts and CI can
+   execute the standard tutorial notebooks from a clean
+   ``outputs/tutorials`` directory and fail on notebook errors or warning-like
+   cell output. The source-install notebook extra and conda environment now
+   list ``nbclient`` and ``nbformat`` explicitly.
+
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after
    external Sigstore/Rekor ``502`` errors blocked the ``0.1.2`` publish.

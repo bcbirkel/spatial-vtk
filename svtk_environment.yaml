@@ -7,6 +7,8 @@ dependencies:
   - h5py
   - ipykernel
   - matplotlib
+  - nbclient
+  - nbformat
   - nbsphinx
   - numpy
   - obspy
