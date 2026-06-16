@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-import json
 from pathlib import Path
 import importlib
 import re
@@ -14,6 +13,8 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
+from spatial_vtk.visualize.figure_sidecars import write_figure_row_sidecar
 
 
 TARGET_METRIC_SPECS = (
@@ -642,47 +643,20 @@ class MetricFigureContext:
 
         if not self.write_sidecars:
             return None
-        sidecar_dir = self.sidecar_output_dir
-        sidecar_dir.mkdir(parents=True, exist_ok=True)
         figure = Path(figure_path)
-        sidecar_path = sidecar_dir / f"{figure.stem}.csv"
-        rows, sampled = _sidecar_rows(df, limit=self.sidecar_rows)
-        rows.to_csv(sidecar_path, index=False)
-        source_path = None
-        source_written_count = None
-        source_sampled = False
-        source_row_count = None
-        if source_df is not None:
-            source_path = sidecar_dir / f"{figure.stem}.source.csv"
-            source_rows, source_sampled = _sidecar_rows(source_df, limit=self.sidecar_rows)
-            source_rows.to_csv(source_path, index=False)
-            source_row_count = int(len(source_df))
-            source_written_count = int(len(source_rows))
-        metadata = {
-            "figure": str(figure),
-            "sidecar": str(sidecar_path),
-            "plot_row_count": int(len(df)),
-            "written_row_count": int(len(rows)),
-            "sampled": bool(sampled),
-            "value_col": self.value_col,
-            "station_aggregation": self.station_aggregation,
-        }
-        metadata.update(_sidecar_dimension_counts(df, prefix="plot"))
-        if source_path is not None:
-            metadata.update(
-                {
-                    "source_sidecar": str(source_path),
-                    "source_row_count": source_row_count,
-                    "source_written_row_count": source_written_count,
-                    "source_sampled": bool(source_sampled),
-                }
-            )
-            metadata.update(_sidecar_dimension_counts(source_df, prefix="source"))
-        else:
-            metadata["source_row_count"] = int(len(df))
-            metadata.update(_sidecar_dimension_counts(df, prefix="source"))
-        sidecar_path.with_suffix(".json").write_text(json.dumps(metadata, indent=2, sort_keys=True), encoding="utf-8")
-        return sidecar_path
+        result = write_figure_row_sidecar(
+            figure,
+            df,
+            enabled=True,
+            sidecar_rows=self.sidecar_rows,
+            sidecar_dir=self.sidecar_output_dir,
+            source_rows=source_df,
+            metadata={
+                "value_col": self.value_col,
+                "station_aggregation": self.station_aggregation,
+            },
+        )
+        return None if result is None else result.sidecar_path
 
     def first_value(self, df: pd.DataFrame | None, column: str | None) -> str | None:
         """Return the first non-null value from one column."""
@@ -826,14 +800,6 @@ def _sample_rows(df: pd.DataFrame, *, n: int) -> pd.DataFrame:
     return df.sample(n=n, random_state=42).copy()
 
 
-def _sidecar_rows(df: pd.DataFrame, *, limit: int | None) -> tuple[pd.DataFrame, bool]:
-    """Return rows for a sidecar and whether they were sampled."""
-
-    if limit is not None and limit > 0 and len(df) > limit:
-        return _sample_rows(df, n=limit), True
-    return df.copy(), False
-
-
 def _ordered_existing_columns(df: pd.DataFrame, columns: Iterable[str | None]) -> list[str]:
     """Return existing columns once, preserving caller order."""
 
@@ -861,27 +827,6 @@ def _rename_station_coordinates(df: pd.DataFrame, *, lon_col: str, lat_col: str)
     if lat_col != "sta_lat":
         rename[lat_col] = "sta_lat"
     return df.rename(columns=rename) if rename else df
-
-
-def _sidecar_dimension_counts(df: pd.DataFrame | None, *, prefix: str) -> dict[str, int]:
-    """Return cheap row-provenance counts for sidecar metadata."""
-
-    if df is None:
-        return {}
-    keys = {
-        "event": "event_id",
-        "station": "station",
-        "component": "component",
-        "model": "model",
-        "metric": "metric",
-        "passband": "band",
-        "period": "period_s",
-    }
-    counts: dict[str, int] = {}
-    for label, column in keys.items():
-        if column in df.columns:
-            counts[f"{prefix}_{label}_count"] = int(df[column].nunique(dropna=True))
-    return counts
 
 
 def _aggregate_grouped_values(grouped: Any, aggregation: str) -> pd.Series:

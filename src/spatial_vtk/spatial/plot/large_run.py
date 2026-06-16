@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-import json
 from pathlib import Path
 from typing import Any, Callable, Iterable, Sequence
 
@@ -17,6 +16,7 @@ from spatial_vtk.metrics.plot.large_run import (
 )
 from spatial_vtk.spatial.calculate import add_geojson_metadata_to_metrics
 from spatial_vtk.spatial.plot.metrics import _categorical_metric_plot_data, boxplot
+from spatial_vtk.visualize.figure_sidecars import write_figure_row_sidecar
 
 
 SPATIAL_FIGURE_TABLE_KEYS: tuple[str, ...] = (
@@ -616,34 +616,26 @@ def _write_region_boxplot_sidecar(
         event_id=None,
         filters=None,
     )
-    output_dir = Path(sidecar_dir).expanduser() if sidecar_dir is not None else figure_path.parent / "sidecars"
-    output_dir.mkdir(parents=True, exist_ok=True)
-    sidecar_path = output_dir / f"{figure_path.stem}.csv"
-    rows = plot_df.copy()
-    sampled = False
-    if sidecar_rows is not None and sidecar_rows > 0 and len(rows) > sidecar_rows:
-        rows = rows.sample(n=sidecar_rows, random_state=42).copy()
-        sampled = True
-    rows.to_csv(sidecar_path, index=False)
-    metadata = {
-        "figure": str(figure_path),
-        "sidecar": str(sidecar_path),
-        "source_row_count": int(len(plot_df)),
-        "written_row_count": int(len(rows)),
-        "sampled": bool(sampled),
-        "metric": metric,
-        "metric_labels": dep_labels,
-        "passband": _label_for_slug(passband),
-        "component": _label_for_slug(component),
-        "model": _label_for_slug(model),
-        "category_col": category_col,
-        "value_col": value_col,
-        "resolved_value_col": resolved_value_col,
-        "plot_value_col": plot_value_col,
-        "compare_to": compare_to,
-    }
-    sidecar_path.with_suffix(".json").write_text(json.dumps(metadata, indent=2, sort_keys=True), encoding="utf-8")
-    return sidecar_path
+    result = write_figure_row_sidecar(
+        figure_path,
+        plot_df,
+        enabled=True,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={
+            "metric": metric,
+            "metric_labels": dep_labels,
+            "passband": _label_for_slug(passband),
+            "component": _label_for_slug(component),
+            "model": _label_for_slug(model),
+            "category_col": category_col,
+            "value_col": value_col,
+            "resolved_value_col": resolved_value_col,
+            "plot_value_col": plot_value_col,
+            "compare_to": compare_to,
+        },
+    )
+    return None if result is None else result.sidecar_path
 
 
 def _label_for_slug(value: object) -> str | None:

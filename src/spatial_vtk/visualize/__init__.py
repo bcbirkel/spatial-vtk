@@ -13,6 +13,12 @@ from spatial_vtk.visualize.dashboard import (
     write_dashboard_summary_dataset,
 )
 from spatial_vtk.visualize.figure_io import DEFAULT_FIGURE_NAMES, default_figure_paths, finish_figure, savefig
+from spatial_vtk.visualize.figure_sidecars import (
+    FigureSidecarResult,
+    figure_sidecar_dimension_counts,
+    sidecar_rows_for_write,
+    write_figure_row_sidecar,
+)
 from spatial_vtk.visualize.figure_context import (
     apply_figure_context,
     context_value_label,
@@ -52,6 +58,7 @@ from spatial_vtk.visualize.waveforms import (
 
 __all__ = [
     "DEFAULT_FIGURE_NAMES",
+    "FigureSidecarResult",
     "apply_figure_context",
     "build_record_section_rows",
     "build_dashboard_summaries",
@@ -60,6 +67,7 @@ __all__ = [
     "default_figure_paths",
     "figure_context_lines",
     "figure_context_text",
+    "figure_sidecar_dimension_counts",
     "filter_trace_summary",
     "finish_figure",
     "is_log2_ratio_field",
@@ -85,8 +93,10 @@ __all__ = [
     "prepare_dashboard_metric_table",
     "queue_rows_from_filtered_trace_df",
     "savefig",
+    "sidecar_rows_for_write",
     "write_dashboard_metric_dataset",
     "write_dashboard_summaries",
     "write_dashboard_summary_dataset",
+    "write_figure_row_sidecar",
     "write_trace_qc_overview_html",
 ]

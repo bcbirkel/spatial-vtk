@@ -65,6 +65,7 @@ from spatial_vtk.spatial.plot.large_run import SpatialFigureContext, write_large
 from spatial_vtk.spatial.plot.metrics import plot_geology_contrast
 from spatial_vtk.spatial.plot.pca import plot_pca_explained_variance, plot_pca_feature_loadings
 from spatial_vtk.visualize.figure_context import value_color_settings
+from spatial_vtk.visualize.figure_sidecars import write_figure_row_sidecar
 
 
 def _toy_metrics_table() -> pd.DataFrame:
@@ -396,6 +397,56 @@ def test_write_large_run_region_boxplot_from_bounded_table(tmp_path: Path) -> No
     existing_metadata = json.loads(existing.sidecar_path.with_suffix(".json").read_text(encoding="utf-8"))
     assert len(existing_rows) == 4
     assert existing_metadata["sampled"] is False
+
+
+def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -> None:
+    """Shared figure sidecars should capture plotted rows and optional source rows."""
+
+    figure_path = tmp_path / "figures" / "station_map.png"
+    plot_rows = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3"],
+            "station": ["STA", "STB", "STC"],
+            "metric": ["PGA", "PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec"],
+            "log2_residual": [0.1, 0.2, -0.1],
+        }
+    )
+    source_rows = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3", "e4"],
+            "station": ["STA", "STA", "STB", "STC"],
+            "metric": ["PGA", "PGA", "PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec", "1-2 sec"],
+            "model": ["m1", "m1", "m1", "m2"],
+        }
+    )
+
+    result = write_figure_row_sidecar(
+        figure_path,
+        plot_rows,
+        sidecar_rows=2,
+        source_rows=source_rows,
+        metadata={"value_col": "log2_residual", "selection": ("PGA", "1-2 sec")},
+    )
+
+    assert result is not None
+    assert result.sidecar_path == tmp_path / "figures" / "sidecars" / "station_map.csv"
+    assert result.source_sidecar_path == tmp_path / "figures" / "sidecars" / "station_map.source.csv"
+    assert result.metadata_path.exists()
+    written_rows = pd.read_csv(result.sidecar_path)
+    written_source_rows = pd.read_csv(result.source_sidecar_path)
+    metadata = json.loads(result.metadata_path.read_text(encoding="utf-8"))
+    assert len(written_rows) == 2
+    assert len(written_source_rows) == 2
+    assert metadata["plot_row_count"] == 3
+    assert metadata["written_row_count"] == 2
+    assert metadata["source_row_count"] == 4
+    assert metadata["source_written_row_count"] == 2
+    assert metadata["plot_station_count"] == 3
+    assert metadata["source_station_count"] == 3
+    assert metadata["source_model_count"] == 2
+    assert metadata["selection"] == ["PGA", "1-2 sec"]
 
 
 def test_redcap_clusters_use_spatial_constraints_and_scores() -> None:
