@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -26,6 +27,7 @@ from spatial_vtk.metrics.workflow import (
     write_task_manifest,
     MetricWorkflowTask,
 )
+from spatial_vtk.metrics.plot import MetricFigureContext
 from spatial_vtk.spatial.map.path import plot_event_residual_map
 from spatial_vtk.visualize.dashboard import available_dashboard_value_columns, build_dashboard_summaries, load_dashboard_metric_dataset
 
@@ -82,6 +84,68 @@ def test_metric_inventories_from_trace_metadata_use_explicit_path_columns(tmp_pa
     assert reused.reused
     assert reused.observed_rows is None
     assert reused.synthetic_rows is None
+
+
+def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(tmp_path) -> None:
+    """Large-run figure helpers should aggregate full metric rows before plotting."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3", "e1", "e2"],
+            "station": ["STA", "STA", "STB", "STA", "STA"],
+            "sta_lon": [-118.0, -118.0, -117.5, -118.0, -118.0],
+            "sta_lat": [34.0, 34.0, 34.2, 34.0, 34.0],
+            "metric": ["PGA", "PGA", "PGA", "PSA", "PSA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec", "", ""],
+            "model": ["m1", "m1", "m1", "m1", "m1"],
+            "component": ["Z", "Z", "Z", "Z", "Z"],
+            "period_s": [np.nan, np.nan, np.nan, 1.0, 2.0],
+            "distance_km": [10.0, 20.0, 30.0, 10.0, 10.0],
+            "log2_residual": [1.0, 3.0, 5.0, 0.5, 0.75],
+        }
+    )
+    metrics_path = tmp_path / "metrics_long.parquet"
+    metrics.to_parquet(metrics_path, index=False)
+    context = MetricFigureContext.from_metrics_long(
+        metrics_path,
+        tmp_path / "figures",
+        make_figures=True,
+        overwrite=True,
+        sample_rows=2,
+        write_sidecars=True,
+        sidecar_rows=1,
+        station_aggregation="mean",
+    )
+
+    assert context.ready
+    assert len(context.metrics_for_figures) == len(metrics)
+    pga_item = next(context.iter_metric_frames(passband="1-2 sec", components=["Z"], model="m1", split_psa_period=False))
+    station_summary = context.station_summary_for_map(pga_item["df"])
+    sta = station_summary.loc[station_summary["station"].eq("STA")].iloc[0]
+    assert sta["log2_residual"] == pytest.approx(2.0)
+    assert sta["source_row_count"] == 2
+    assert sta["source_event_count"] == 2
+    assert sta["aggregation"] == "mean"
+
+    psa_item = [item for item in context.iter_metric_frames(components=["Z"], model="m1", split_psa_period=False) if item["key"] == "psa"][0]
+    assert "all-psa-periods" in context.figure_name("station_metric_map", psa_item)
+    assert "1-2-sec" not in context.figure_name("station_metric_map", psa_item)
+
+    def _dummy_plot(frame: pd.DataFrame, *, output_path, **kwargs) -> None:
+        Path(output_path).write_text(str(len(frame)), encoding="utf-8")
+
+    output = context.write_metric_plot("debug_rows", pga_item, _dummy_plot)
+    assert output is not None
+    sidecar = context.sidecar_output_dir / f"{output.stem}.csv"
+    metadata_path = sidecar.with_suffix(".json")
+    assert sidecar.exists()
+    assert metadata_path.exists()
+    sidecar_rows = pd.read_csv(sidecar)
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    assert len(sidecar_rows) == 1
+    assert metadata["source_row_count"] == 2
+    assert metadata["written_row_count"] == 1
+    assert metadata["sampled"] is True
 
 
 def test_metric_workflow_runs_tasks_and_applies_side_specific_spectral_qc(tmp_path) -> None:
