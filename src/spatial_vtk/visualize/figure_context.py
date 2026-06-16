@@ -227,6 +227,8 @@ def context_value_label(value_col: str, df: pd.DataFrame | None = None) -> str:
             label = f"Event-centered {display_label(source)}"
     if str(value_col) in {"mean_centered", "station_mean_centered"} and df is not None and "log2" in _source_text(df):
         label = "Mean event-centered log2(observed / synthetic)"
+    if str(value_col) == "log2_residual" and _has_event_centering_metadata(df):
+        label = "Event-centered log2(observed / synthetic)"
     return label
 
 
@@ -609,6 +611,8 @@ def _processing_notes(df: pd.DataFrame, *, value_col: str | None) -> str:
     notes: list[str] = []
     if str(value_col) == "field_centered" and "event_mean" in df.columns:
         notes.append("event mean removed")
+    if _has_event_centering_metadata(df):
+        notes.append("event mean removed")
     if _source_text(df).find("distance") >= 0:
         notes.append("distance scaled")
     return ", ".join(dict.fromkeys(notes))
@@ -633,6 +637,20 @@ def _source_text(df: pd.DataFrame | None) -> str:
     if df is None or "field_source" not in df.columns:
         return ""
     return " ".join(str(value).lower() for value in pd.unique(df["field_source"].dropna()) if str(value).strip())
+
+
+def _has_event_centering_metadata(df: pd.DataFrame | None) -> bool:
+    """Return whether dataframe metadata indicates event-mean centering."""
+
+    if df is None:
+        return False
+    source = _source_text(df)
+    if "event" in source and ("center" in source or "mean" in source):
+        return True
+    for column in ("event_mean", "event_centered_residual", "log2_residual_centered"):
+        if column in df.columns:
+            return True
+    return False
 
 
 def _value_key(value_col: str | None) -> str:
