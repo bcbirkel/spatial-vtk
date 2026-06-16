@@ -36,7 +36,7 @@ from spatial_vtk.visualize.dashboard.exports import (
     write_dashboard_filtered_export,
     write_manual_review_queue,
 )
-from spatial_vtk.visualize.dashboard.filters import filter_dashboard_metrics, filter_qc_dashboard_rows
+from spatial_vtk.visualize.dashboard.filters import filter_dashboard_metrics, filter_optional_dashboard_summary, filter_qc_dashboard_rows
 from spatial_vtk.visualize.dashboard.labels import (
     available_dashboard_value_columns,
     band_display_label,
@@ -82,6 +82,7 @@ __all__ = [
     "build_value_histogram_figure",
     "build_value_vs_distance_figure",
     "filter_dashboard_metrics",
+    "filter_optional_dashboard_summary",
     "filter_qc_dashboard_rows",
     "forward_azimuth_deg",
     "haversine_km",

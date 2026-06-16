@@ -6,7 +6,7 @@ from collections.abc import Iterable
 
 import pandas as pd
 
-from spatial_vtk.config.labels import band_display_label, normalize_metric_name
+from spatial_vtk.config.labels import band_display_label, normalize_metric_name, value_column_display_name
 
 
 def filter_dashboard_metrics(
@@ -52,6 +52,32 @@ def filter_dashboard_metrics(
     if min_count is not None and "n" in out.columns:
         out = out[pd.to_numeric(out["n"], errors="coerce").fillna(0) >= int(min_count)]
     return out.reset_index(drop=True)
+
+
+def filter_optional_dashboard_summary(
+    df: pd.DataFrame,
+    *,
+    table_label: str,
+    value_column: str,
+    **filters,
+) -> tuple[pd.DataFrame, str | None]:
+    """Filter an optional dashboard summary table without failing on value gaps.
+
+    The metrics dashboard chooses a value column from the primary
+    ``model_metric_band`` summary. Optional station, event, or path summaries
+    can legitimately be missing that column when they were not written yet or
+    were built from a narrower metric table. In that case, return an empty
+    table and a readable message instead of raising while the dashboard is
+    rendering.
+    """
+
+    if value_column and value_column not in df.columns:
+        message = (
+            f"The {table_label} summary does not include {value_column_display_name(value_column)} "
+            "for the selected dashboard value. Rebuild dashboard summaries from metric rows that contain this value."
+        )
+        return pd.DataFrame(columns=list(df.columns)), message
+    return filter_dashboard_metrics(df, value_column=value_column, **filters), None
 
 
 def filter_qc_dashboard_rows(
@@ -192,4 +218,4 @@ def _filter_band_labels(df: pd.DataFrame, bands: Iterable[str], *, band_columns:
     return df.loc[mask]
 
 
-__all__ = ["filter_dashboard_metrics", "filter_qc_dashboard_rows"]
+__all__ = ["filter_dashboard_metrics", "filter_optional_dashboard_summary", "filter_qc_dashboard_rows"]

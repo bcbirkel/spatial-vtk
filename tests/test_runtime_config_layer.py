@@ -57,7 +57,7 @@ import spatial_vtk.visualize.figure_io as figure_io
 import spatial_vtk.config.notebook as notebook_helpers
 from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize import default_figure_paths
-from spatial_vtk.visualize.dashboard import dashboard_summary_readiness_frame
+from spatial_vtk.visualize.dashboard import dashboard_summary_readiness_frame, filter_optional_dashboard_summary
 
 
 def test_runtime_config_loads_paths_defaults_and_bounds(tmp_path, monkeypatch):
@@ -588,6 +588,35 @@ def test_dashboard_summary_readiness_reports_missing_empty_and_value_states(tmp_
     assert by_table.loc["event_rollup", "readiness"] == "empty"
     assert by_table.loc["path_hex", "readiness"] == "missing"
     assert "dist_bin_km" in by_table.loc["path_hex", "missing_columns"]
+
+
+def test_optional_dashboard_summary_filter_reports_missing_value_columns():
+    """Optional dashboard tabs should not crash when a selected value is absent."""
+
+    station_summary = pd.DataFrame(
+        {
+            "station": ["STA"],
+            "model": ["m1"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "n": [1],
+        }
+    )
+
+    filtered, message = filter_optional_dashboard_summary(
+        station_summary,
+        table_label="station",
+        value_column="med_log2_residual",
+        models=["m1"],
+        metric="PGA",
+        bands=["1-2 sec"],
+    )
+
+    assert filtered.empty
+    assert list(filtered.columns) == list(station_summary.columns)
+    assert message is not None
+    assert "station summary" in message
+    assert "log2(observed / synthetic)" in message
 
 
 def test_output_readiness_reports_notebook_step_decisions(tmp_path):

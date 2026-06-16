@@ -29,7 +29,7 @@ from spatial_vtk.visualize.dashboard.contracts import (
     load_metric_long_table,
     validate_dashboard_tables,
 )
-from spatial_vtk.visualize.dashboard.filters import filter_dashboard_metrics
+from spatial_vtk.visualize.dashboard.filters import filter_dashboard_metrics, filter_optional_dashboard_summary
 from spatial_vtk.config.labels import (
     available_dashboard_value_columns,
     band_display_label,
@@ -111,9 +111,36 @@ def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: 
 
     component_filter = None if selected_component in {"", "all"} else selected_component
     heat = filter_dashboard_metrics(summaries["model_metric_band"], models=selected_models, metric=selected_metric, bands=selected_bands, value_column=value_col, component=component_filter)
-    stations = filter_dashboard_metrics(summaries["station_rollup"], models=selected_models, metric=selected_metric, bands=selected_bands, value_column=value_col, distance_range_km=distance_range, vs30_range=vs30_range, component=component_filter)
-    events = filter_dashboard_metrics(summaries["event_rollup"], models=selected_models, metric=selected_metric, bands=selected_bands, value_column=value_col, distance_range_km=distance_range, component=component_filter)
-    paths = filter_dashboard_metrics(summaries["path_hex"], models=selected_models, metric=selected_metric, bands=selected_bands, value_column=value_col, component=component_filter)
+    stations, station_value_message = filter_optional_dashboard_summary(
+        summaries["station_rollup"],
+        table_label="station",
+        value_column=value_col,
+        models=selected_models,
+        metric=selected_metric,
+        bands=selected_bands,
+        distance_range_km=distance_range,
+        vs30_range=vs30_range,
+        component=component_filter,
+    )
+    events, event_value_message = filter_optional_dashboard_summary(
+        summaries["event_rollup"],
+        table_label="event",
+        value_column=value_col,
+        models=selected_models,
+        metric=selected_metric,
+        bands=selected_bands,
+        distance_range_km=distance_range,
+        component=component_filter,
+    )
+    paths, path_value_message = filter_optional_dashboard_summary(
+        summaries["path_hex"],
+        table_label="path",
+        value_column=value_col,
+        models=selected_models,
+        metric=selected_metric,
+        bands=selected_bands,
+        component=component_filter,
+    )
     rows = None
     if long_metrics is not None:
         row_value = _row_value_column(value_col, long_metrics)
@@ -132,7 +159,9 @@ def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: 
             st.plotly_chart(build_metric_heatmap_figure(heat, value_col=value_col), width="stretch")
         st.dataframe(_display_table(heat), width="stretch")
     with station_tab:
-        if stations.empty:
+        if station_value_message:
+            st.info(station_value_message)
+        elif stations.empty:
             st.info(_empty_rows_message("station"))
         else:
             station_map = build_station_folium_map(stations, value_col=value_col, basemap=basemap, marker_cluster=marker_cluster, max_markers=int(max_markers))
@@ -140,13 +169,17 @@ def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: 
             st.download_button("Download station map HTML", render_folium_html(station_map), file_name="station_metric_map.html")
         st.dataframe(_display_table(stations), width="stretch")
     with event_tab:
-        if events.empty:
+        if event_value_message:
+            st.info(event_value_message)
+        elif events.empty:
             st.info(_empty_rows_message("event"))
         else:
             st_folium(build_event_folium_map(events, value_col=value_col, basemap=basemap, marker_cluster=marker_cluster, max_markers=int(max_markers)), use_container_width=True, height=560)
         st.dataframe(_display_table(events), width="stretch")
     with path_tab:
-        if paths.empty:
+        if path_value_message:
+            st.info(path_value_message)
+        elif paths.empty:
             st.info(_empty_rows_message("path"))
         else:
             st.plotly_chart(build_path_heatmap_figure(paths, value_col=value_col), width="stretch")

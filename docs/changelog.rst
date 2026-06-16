@@ -81,6 +81,9 @@ Changelog
    The metrics Streamlit dashboard now displays those readiness diagnostics
    and stops before building sidebar filters when the primary
    ``model_metric_band`` summary is not usable.
+   Optional metrics-dashboard station, event, and path tabs now handle summary
+   tables that lack the selected value column by showing a clear empty-state
+   message instead of raising during dashboard rendering.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after
