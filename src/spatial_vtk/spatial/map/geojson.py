@@ -23,7 +23,7 @@ import pandas as pd
 
 from spatial_vtk.spatial.calculate.geojson import load_geojson_polygons, select_geojson_polygons
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar, layered_figure_rows
 
 
 def plot_geojson_polygons_map(
@@ -41,6 +41,9 @@ def plot_geojson_polygons_map(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot selected GeoJSON polygons with optional station/event points.
 
@@ -64,6 +67,9 @@ def plot_geojson_polygons_map(
         Whether to annotate polygon names at their representative points.
     showfig, savefig, outpath
         Standard Spatial-VTK figure display/save controls.
+    write_sidecar, sidecar_rows, sidecar_dir
+        Optional CSV row-provenance sidecar controls. The sidecar records the
+        selected polygon rows and any station/event context rows drawn.
 
     Returns
     -------
@@ -120,7 +126,24 @@ def plot_geojson_polygons_map(
     ax.grid(True, alpha=0.18, zorder=1)
     if stations_df is not None or events_df is not None:
         ax.legend(loc="best", frameon=True)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = layered_figure_rows(
+        (
+            ("polygon", _feature_sidecar_rows(features)),
+            ("station", stations_df),
+            ("event", events_df),
+        )
+    )
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+    )
 
 
 def _plot_feature(ax: plt.Axes, geometry: object, *, color: object) -> None:
@@ -194,6 +217,27 @@ def _display_name(value: object) -> str:
 
     text = str(value).replace("_", " ").strip()
     return text.title() if text.islower() else text
+
+
+def _feature_sidecar_rows(features: list[object]) -> pd.DataFrame:
+    """Return CSV-friendly provenance rows for selected polygons."""
+
+    rows: list[dict[str, object]] = []
+    for index, feature in enumerate(features):
+        minx, miny, maxx, maxy = feature.geometry.bounds
+        row: dict[str, object] = {
+            "polygon_index": index,
+            "polygon_name": feature.name,
+            "geometry_wkt": feature.geometry.wkt,
+            "min_lon": float(minx),
+            "min_lat": float(miny),
+            "max_lon": float(maxx),
+            "max_lat": float(maxy),
+        }
+        for key, value in feature.properties.items():
+            row[f"property_{key}"] = value
+        rows.append(row)
+    return pd.DataFrame(rows)
 
 
 __all__ = ["plot_geojson_polygons_map"]

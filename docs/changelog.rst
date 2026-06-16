@@ -60,6 +60,10 @@ Changelog
    Added a CI contract test requiring the source-checkout workflow to install
    notebook extras and execute the standard tutorial notebooks from a clean
    tutorial output directory.
+   Added optional row-provenance sidecars to GeoJSON region maps and corridor
+   maps, and wired the standard and large-run tutorial notebooks so every
+   saved direct plotting call can emit the plotted rows when sidecars are
+   enabled.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

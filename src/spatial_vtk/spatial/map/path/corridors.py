@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import apply_figure_context
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar, layered_figure_rows
 
 
 def plot_corridor_map(
@@ -30,6 +30,9 @@ def plot_corridor_map(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot corridor footprints with optional station, event, and path context.
 
@@ -54,6 +57,9 @@ def plot_corridor_map(
         table is not available.
     title
         Optional figure title.
+    write_sidecar, sidecar_rows, sidecar_dir
+        Optional CSV row-provenance sidecar controls. The sidecar records the
+        corridor rows plus any station, event, and path rows drawn.
 
     Returns
     -------
@@ -104,7 +110,25 @@ def plot_corridor_map(
     if stations_df is not None or events_df is not None:
         ax.legend(loc="best", frameon=True)
 
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = layered_figure_rows(
+        (
+            ("corridor", _corridor_sidecar_rows(corridors_df)),
+            ("station", stations_df),
+            ("event", events_df),
+            ("path", records_df),
+        )
+    )
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+    )
 
 
 def _plot_corridor_anchors(
@@ -361,3 +385,14 @@ def _set_geographic_aspect(ax: plt.Axes) -> None:
     cos_lat = math.cos(math.radians(lat_mid))
     if math.isfinite(cos_lat) and abs(cos_lat) > 1.0e-6:
         ax.set_aspect(1.0 / cos_lat, adjustable="box")
+
+
+def _corridor_sidecar_rows(corridors_df: pd.DataFrame) -> pd.DataFrame:
+    """Return CSV-friendly provenance rows for plotted corridors."""
+
+    rows = corridors_df.copy()
+    for column in ("corridor_geometry", "polygon_geometry"):
+        if column in rows.columns:
+            rows[f"{column}_wkt"] = rows[column].map(lambda geom: geom.wkt if geom is not None else None)
+            rows = rows.drop(columns=[column])
+    return rows

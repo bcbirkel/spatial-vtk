@@ -26,6 +26,7 @@ from spatial_vtk.spatial.calculate import (
     summarize_corridor_event_counts,
     summarize_metrics_by_geojson,
 )
+from spatial_vtk.spatial.map.geojson import plot_geojson_polygons_map
 from spatial_vtk.spatial.map.path import plot_corridor_map
 
 
@@ -260,6 +261,49 @@ def test_corridor_map_wrapper_writes_context_figure(tmp_path):
     stations = pd.DataFrame({"station": ["S1"], "sta_lon": [-118.2], "sta_lat": [34.2]})
     events = pd.DataFrame({"event_id": ["E1"], "event_lon": [-118.5], "event_lat": [34.2]})
     records = pd.DataFrame({"event_lon": [-118.5], "event_lat": [34.2], "lon": [-118.2], "lat": [34.2]})
-    output = plot_corridor_map(corridors, tmp_path / "corridor_map.png", stations_df=stations, events_df=events, records_df=records, add_basemap=False)
+    output = plot_corridor_map(
+        corridors,
+        tmp_path / "corridor_map.png",
+        stations_df=stations,
+        events_df=events,
+        records_df=records,
+        add_basemap=False,
+        write_sidecar=True,
+    )
     assert output.exists()
     assert output.stat().st_size > 0
+    sidecar = tmp_path / "sidecars" / "corridor_map.csv"
+    assert sidecar.exists()
+    metadata = json.loads(sidecar.with_suffix(".json").read_text(encoding="utf-8"))
+    rows = pd.read_csv(sidecar)
+    assert {"corridor", "station", "event", "path"} <= set(rows["_figure_layer"])
+    assert metadata["plot_row_count"] == 4
+    assert "corridor_geometry_wkt" in rows.columns
+
+
+def test_geojson_polygon_map_writes_layer_sidecar(tmp_path):
+    geojson = _write_geojson(
+        tmp_path / "sidecar_regions.geojson",
+        [_feature("Example Region", Polygon([(-118.4, 34.0), (-118.0, 34.0), (-118.0, 34.4), (-118.4, 34.4)]))],
+    )
+    stations = pd.DataFrame({"station": ["S1"], "sta_lon": [-118.2], "sta_lat": [34.2]})
+    events = pd.DataFrame({"event_id": ["E1"], "event_lon": [-118.3], "event_lat": [34.1]})
+
+    output = plot_geojson_polygons_map(
+        geojson,
+        tmp_path / "geojson_map.png",
+        stations_df=stations,
+        events_df=events,
+        add_basemap=False,
+        write_sidecar=True,
+    )
+
+    assert output.exists()
+    assert output.stat().st_size > 0
+    sidecar = tmp_path / "sidecars" / "geojson_map.csv"
+    assert sidecar.exists()
+    metadata = json.loads(sidecar.with_suffix(".json").read_text(encoding="utf-8"))
+    rows = pd.read_csv(sidecar)
+    assert {"polygon", "station", "event"} <= set(rows["_figure_layer"])
+    assert metadata["plot_row_count"] == 3
+    assert "geometry_wkt" in rows.columns
