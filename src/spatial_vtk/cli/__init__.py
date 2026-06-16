@@ -708,7 +708,7 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     metrics.add_argument(
         "--metrics-root",
         default=None,
-        help="Dashboard-ready long metric dataset directory. Defaults to the configured metrics_dashboard_root output.",
+        help="Dashboard-ready long metric dataset directory or direct CSV/parquet table. Defaults to the configured metrics_dashboard_root output.",
     )
     metrics.add_argument(
         "--summary-root",

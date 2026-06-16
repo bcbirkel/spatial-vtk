@@ -130,7 +130,7 @@ svtk dashboard metrics
    * - ``--metrics-root``
      - No
      -
-     - Value: ``metrics_root``. Dashboard-ready long metric dataset directory. Defaults to the configured metrics_dashboard_root output.
+     - Value: ``metrics_root``. Dashboard-ready long metric dataset directory or direct CSV/parquet table. Defaults to the configured metrics_dashboard_root output.
    * - ``--summary-root``
      - No
      -

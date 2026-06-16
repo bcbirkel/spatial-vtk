@@ -58,6 +58,7 @@ import spatial_vtk.config.notebook as notebook_helpers
 from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize import default_figure_paths
 from spatial_vtk.visualize.dashboard import dashboard_summary_readiness_frame, filter_optional_dashboard_summary
+from spatial_vtk.visualize.dashboard.export import load_dashboard_metric_dataset
 
 
 def test_runtime_config_loads_paths_defaults_and_bounds(tmp_path, monkeypatch):
@@ -617,6 +618,33 @@ def test_optional_dashboard_summary_filter_reports_missing_value_columns():
     assert message is not None
     assert "station summary" in message
     assert "log2(observed / synthetic)" in message
+
+
+def test_dashboard_metric_dataset_loader_accepts_direct_table_files(tmp_path):
+    """Dashboard metric loading should accept a table file or dataset directory."""
+
+    direct_csv = tmp_path / "metrics_long.csv"
+    direct_csv.write_text(
+        "model,metric,band,station,event_id,log2_residual\n"
+        "m1,PGA,1-2 sec,STA,EV,0.25\n",
+        encoding="utf-8",
+    )
+    loaded_csv = load_dashboard_metric_dataset(direct_csv)
+    assert len(loaded_csv) == 1
+    assert loaded_csv["log2_residual"].iloc[0] == pytest.approx(0.25)
+
+    dataset_root = tmp_path / "dashboard_dataset"
+    dataset_root.mkdir()
+    loaded_csv.to_parquet(dataset_root / "metrics_long.parquet", index=False)
+    loaded_dataset = load_dashboard_metric_dataset(dataset_root)
+    assert loaded_dataset[["model", "metric", "band"]].to_dict("records") == [
+        {"model": "m1", "metric": "PGA", "band": "1-2 sec"}
+    ]
+
+    bad_file = tmp_path / "metrics_long.txt"
+    bad_file.write_text("not,a,table\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="Use Parquet or CSV"):
+        load_dashboard_metric_dataset(bad_file)
 
 
 def test_output_readiness_reports_notebook_step_decisions(tmp_path):

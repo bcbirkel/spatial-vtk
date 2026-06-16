@@ -84,6 +84,9 @@ Changelog
    Optional metrics-dashboard station, event, and path tabs now handle summary
    tables that lack the selected value column by showing a clear empty-state
    message instead of raising during dashboard rendering.
+   Dashboard long-metric loading now accepts either a dashboard dataset
+   directory or a direct CSV/Parquet metrics table, and the dashboard CLI help
+   documents both accepted forms.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

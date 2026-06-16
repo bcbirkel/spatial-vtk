@@ -76,13 +76,13 @@ def write_dashboard_metric_dataset(
 
 
 def load_dashboard_metric_dataset(input_root: str | Path) -> pd.DataFrame:
-    """Load a dashboard metric Parquet dataset.
+    """Load dashboard metric rows from a dataset directory or table file.
 
     Parameters
     ----------
     input_root
         Directory containing ``metrics_long.parquet`` or partitioned parquet
-        files.
+        files, or a direct ``.parquet``/``.csv`` long metric table path.
 
     Returns
     -------
@@ -91,6 +91,14 @@ def load_dashboard_metric_dataset(input_root: str | Path) -> pd.DataFrame:
     """
 
     root = Path(input_root).expanduser()
+    if root.is_file():
+        if root.suffix.lower() in {".parquet", ".pq"}:
+            return pd.read_parquet(root)
+        if root.suffix.lower() == ".csv":
+            return pd.read_csv(root)
+        raise ValueError(f"Unsupported dashboard metric table format for {root}. Use Parquet or CSV.")
+    if not root.exists():
+        raise FileNotFoundError(f"Dashboard metric dataset path does not exist: {root}")
     direct = root / "metrics_long.parquet"
     paths = [direct] if direct.exists() else sorted(root.rglob("*.parquet"))
     if not paths:
