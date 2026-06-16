@@ -4,16 +4,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Sequence
 
 import pandas as pd
 
 from spatial_vtk.config.outputs import resolve_output_path
-from spatial_vtk.io import load_output_table, read_table
+from spatial_vtk.io import load_output_table, read_bounded_table, read_table, slugify
 from spatial_vtk.metrics.plot.large_run import (
     MetricFigureContext,
     first_existing,
 )
+from spatial_vtk.spatial.calculate import add_geojson_metadata_to_metrics
+from spatial_vtk.spatial.plot.metrics import boxplot
 
 
 SPATIAL_FIGURE_TABLE_KEYS: tuple[str, ...] = (
@@ -338,10 +340,141 @@ class SpatialFigureContext:
         return self.metric_context
 
 
+@dataclass(frozen=True)
+class RegionBoxplotResult:
+    """Result from writing a large-run GeoJSON region boxplot."""
+
+    figure_path: Path | None
+    rows: int
+    status: str
+    message: str
+
+
 def prepare_spatial_figure_context(**kwargs: Any) -> SpatialFigureContext:
     """Return a reusable spatial figure context for large-run notebooks."""
 
     return SpatialFigureContext.from_config(**kwargs)
+
+
+def write_large_run_region_boxplot(
+    metric_source: str | Path,
+    *,
+    figure_dir: str | Path,
+    geojson_path: str | Path | None = None,
+    metric: str = "PGA",
+    passband: str | Sequence[str] = "2-3 sec",
+    component: str | Sequence[str] | None = None,
+    model: str | Sequence[str] | None = None,
+    value_col: str = "log2_residual",
+    compare_to: str | Sequence[str] | None = "LA Basin",
+    max_rows: int = 200_000,
+    output_prefix: str = "geojson_region_boxplot",
+    annotate_if_missing: bool = True,
+    overwrite: bool = False,
+    showfig: bool = False,
+) -> RegionBoxplotResult:
+    """Write a station-region metric boxplot from a bounded metric table read.
+
+    This helper keeps large-run notebooks lightweight: it reads at most
+    ``max_rows`` metric rows, reuses existing station-region columns when
+    present, can annotate station regions from a GeoJSON file, and writes one
+    reproducibly named figure under ``figure_dir``.
+    """
+
+    source_path = Path(metric_source).expanduser()
+    output_dir = Path(figure_dir).expanduser()
+    if not source_path.exists():
+        return RegionBoxplotResult(None, 0, "missing_input", "skip region boxplot: metrics table is not ready yet")
+
+    metric_rows = read_bounded_table(source_path, int(max_rows))
+    if metric_rows.empty:
+        return RegionBoxplotResult(None, 0, "empty_input", "skip region boxplot: metrics table has no rows")
+
+    region_col = first_existing(metric_rows, ["station_region", "station_geojson_region", "station_geojson_labels"])
+    geojson_file = None if geojson_path is None else Path(geojson_path).expanduser()
+    if region_col is None and annotate_if_missing and geojson_file is not None and geojson_file.exists():
+        try:
+            metric_rows = add_geojson_metadata_to_metrics(metric_rows, geojson_file, target="station", selector="all")
+            region_col = first_existing(metric_rows, ["station_region", "station_geojson_region", "station_geojson_labels"])
+        except Exception as exc:
+            return RegionBoxplotResult(
+                None,
+                len(metric_rows),
+                "annotation_failed",
+                f"skip region boxplot: could not annotate metric rows with GeoJSON regions: {exc}",
+            )
+    if region_col is None:
+        suffix = "; run Step 5 enrichment first" if not annotate_if_missing else ""
+        return RegionBoxplotResult(
+            None,
+            len(metric_rows),
+            "missing_region_column",
+            f"skip region boxplot: no station GeoJSON region column is available{suffix}",
+        )
+    if value_col not in metric_rows.columns:
+        return RegionBoxplotResult(
+            None,
+            len(metric_rows),
+            "missing_value_column",
+            f"skip region boxplot: {value_col!r} is not present",
+        )
+
+    plot_rows = metric_rows.copy()
+    plot_rows["station_region"] = plot_rows[region_col].fillna("").astype(str).str.replace("_", " ", regex=False)
+    plot_rows = plot_rows.loc[plot_rows["station_region"].str.len() > 0].copy()
+    if plot_rows.empty:
+        return RegionBoxplotResult(
+            None,
+            len(metric_rows),
+            "empty_region_labels",
+            "skip region boxplot: no rows have station-region labels",
+        )
+
+    output = output_dir / _region_boxplot_name(
+        output_prefix,
+        metric=metric,
+        passband=passband,
+        component=component,
+        model=model,
+        value_col=value_col,
+    )
+    output.parent.mkdir(parents=True, exist_ok=True)
+    if output.exists() and not overwrite:
+        return RegionBoxplotResult(output, len(plot_rows), "exists", f"skip {output.name}: exists")
+
+    try:
+        import matplotlib.pyplot as plt
+
+        boxplot(
+            data=plot_rows,
+            output_path=output,
+            dep=metric,
+            indep="station_region",
+            value_col=value_col,
+            passband=passband,
+            model=model,
+            component=component,
+            compare_to=compare_to,
+            table=True,
+            title=f"{metric} Residuals by Station Region",
+            showfig=showfig,
+            savefig=True,
+        )
+        plt.close("all")
+    except Exception as exc:
+        try:
+            import matplotlib.pyplot as plt
+
+            plt.close("all")
+        except Exception:
+            pass
+        return RegionBoxplotResult(
+            output,
+            len(plot_rows),
+            "plot_failed",
+            f"skip {output.name}: {type(exc).__name__}: {exc}",
+        )
+    return RegionBoxplotResult(output, len(plot_rows), "wrote", f"wrote {output}")
 
 
 def _read_if_exists(path: str | Path | None) -> pd.DataFrame | None:
@@ -361,8 +494,45 @@ def _first_existing(df: pd.DataFrame | None, candidates: list[str]) -> str | Non
     return first_existing(df, candidates) if df is not None else None
 
 
+def _region_boxplot_name(
+    prefix: str,
+    *,
+    metric: str,
+    passband: str | Sequence[str],
+    component: str | Sequence[str] | None,
+    model: str | Sequence[str] | None,
+    value_col: str,
+) -> str:
+    """Return a stable filename for a region boxplot."""
+
+    parts = [
+        prefix,
+        slugify(metric),
+        slugify(_label_for_slug(passband) or "all-passbands"),
+        slugify(_label_for_slug(component) or "all-components"),
+        slugify(_label_for_slug(model) or "all-models"),
+        slugify(value_col),
+    ]
+    return "__".join(parts) + ".png"
+
+
+def _label_for_slug(value: object) -> str | None:
+    """Return a compact text label for filename dimensions."""
+
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return value
+    if isinstance(value, Sequence):
+        labels = [str(item) for item in value if str(item).strip()]
+        return "_".join(labels) if labels else None
+    return str(value)
+
+
 __all__ = [
+    "RegionBoxplotResult",
     "SPATIAL_FIGURE_TABLE_KEYS",
     "SpatialFigureContext",
     "prepare_spatial_figure_context",
+    "write_large_run_region_boxplot",
 ]

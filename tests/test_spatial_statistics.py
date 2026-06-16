@@ -61,7 +61,7 @@ from spatial_vtk.spatial.plot.correlation import (
     plot_pattern_similarity,
     plot_semivariogram,
 )
-from spatial_vtk.spatial.plot.large_run import SpatialFigureContext
+from spatial_vtk.spatial.plot.large_run import SpatialFigureContext, write_large_run_region_boxplot
 from spatial_vtk.spatial.plot.metrics import plot_geology_contrast
 from spatial_vtk.spatial.plot.pca import plot_pca_explained_variance, plot_pca_feature_loadings
 from spatial_vtk.visualize.figure_context import value_color_settings
@@ -296,6 +296,40 @@ spatial:
     assert figure_context.metric_value_col == "field_value"
     assert figure_context.event_value_col == "field_centered"
     assert figure_context.table("station_bias") is not None
+
+
+def test_write_large_run_region_boxplot_from_bounded_table(tmp_path: Path) -> None:
+    """Large-run region boxplot helper should replace notebook-local plotting logic."""
+
+    metrics = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGA", "PGA", "PGA"],
+            "band": ["2-3 sec", "2-3 sec", "2-3 sec", "2-3 sec"],
+            "component": ["Z", "R", "Z", "R"],
+            "model": ["example", "example", "example", "example"],
+            "station_region": ["LA_Basin", "LA_Basin", "Mountains", "Mountains"],
+            "log2_residual": [0.2, 0.1, -0.2, -0.1],
+        }
+    )
+    metrics_path = tmp_path / "metrics.csv"
+    metrics.to_csv(metrics_path, index=False)
+
+    result = write_large_run_region_boxplot(
+        metrics_path,
+        figure_dir=tmp_path / "figures",
+        metric="PGA",
+        passband="2-3 sec",
+        model="example",
+        max_rows=10,
+        overwrite=True,
+        showfig=False,
+    )
+
+    assert result.status == "wrote"
+    assert result.figure_path is not None
+    assert result.figure_path.exists()
+    assert result.figure_path.name == "geojson_region_boxplot__pga__2_3_sec__all_components__example__log2_residual.png"
+    assert result.rows == 4
 
 
 def test_redcap_clusters_use_spatial_constraints_and_scores() -> None:

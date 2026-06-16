@@ -12,7 +12,12 @@ from spatial_vtk.spatial.plot.correlation import (
     plot_pattern_similarity,
     plot_semivariogram,
 )
-from spatial_vtk.spatial.plot.large_run import SpatialFigureContext, prepare_spatial_figure_context
+from spatial_vtk.spatial.plot.large_run import (
+    RegionBoxplotResult,
+    SpatialFigureContext,
+    prepare_spatial_figure_context,
+    write_large_run_region_boxplot,
+)
 from spatial_vtk.spatial.plot.metrics import (
     boxplot,
     heatmap,
@@ -44,6 +49,8 @@ __all__ = [
     "plot_residual_correlation",
     "plot_semivariogram",
     "prepare_spatial_figure_context",
+    "RegionBoxplotResult",
     "scatterplot",
     "SpatialFigureContext",
+    "write_large_run_region_boxplot",
 ]
