@@ -14,7 +14,7 @@ from spatial_vtk.config.labels import metric_display_name, model_display_name, v
 from spatial_vtk.spatial.calculate.geojson import load_geojson_polygons, select_geojson_polygons
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import apply_figure_context, context_value_label, figure_context_text, value_color_settings
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar, layered_figure_rows
 from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure_spatial_selection
 
 
@@ -41,6 +41,9 @@ def plot_station_metric_map(
     savefig: bool | None = None,
     outpath: str | Path | None = None,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot station-level metric values on a map."""
@@ -67,6 +70,9 @@ def plot_station_metric_map(
         savefig=savefig,
         outpath=outpath,
         spatial_selection=spatial_selection,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
         **spatial_kwargs,
     )
 
@@ -88,6 +94,9 @@ def plot_station_metric_map_by_period(
     savefig: bool | None = None,
     outpath: str | Path | None = None,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot station metric maps faceted by oscillator period.
@@ -155,7 +164,19 @@ def plot_station_metric_map_by_period(
     )
     fig.suptitle(f"{_title_with_value(title, value_col, plot_df)}\n{context}" if context else _title_with_value(title, value_col, plot_df), y=0.975, fontsize=10)
     fig.subplots_adjust(left=0.055, right=0.88, bottom=0.07, top=0.86, wspace=0.22, hspace=0.42)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "station_metric_map_by_period", "max_periods": max_periods},
+    )
 
 
 def plot_score_map(df: pd.DataFrame, output_path: str | Path | None = None, *, score_col: str = "score", **kwargs) -> plt.Figure:
@@ -179,6 +200,9 @@ def plot_residual_grid(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot gridded residual values on geographic axes.
 
@@ -207,7 +231,19 @@ def plot_residual_grid(
     _set_geographic_aspect(ax)
     fig.colorbar(image, ax=ax, pad=0.045, label=value_column_display_name(value_col))
     _finish(ax, _title_with_value(title, value_col, plot_df), plot_df, value_col=value_col)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=grid_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "residual_grid", "cell_size_deg": cell_size_deg},
+    )
 
 
 def plot_metric_map_by_model(
@@ -227,6 +263,9 @@ def plot_metric_map_by_model(
     savefig: bool | None = None,
     outpath: str | Path | None = None,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot station metric maps faceted by model."""
@@ -272,7 +311,19 @@ def plot_metric_map_by_model(
         extra=[subset_label] if subset_label else None,
     )
     fig.suptitle(f"{title}\n{context}" if context else _title_with_value(title, value_col, plot_df), y=0.96, fontsize=11)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "metric_map_by_model", "max_models": int(max_models)},
+    )
 
 
 def plot_model_improvement_map(
@@ -311,6 +362,9 @@ def _point_metric_map(
     savefig: bool | None = None,
     outpath: str | Path | None = None,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Draw a point metric map."""
@@ -345,7 +399,27 @@ def _point_metric_map(
         handles, labels = ax.get_legend_handles_labels()
         if handles:
             ax.legend(handles, labels, loc="best", frameon=True)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = layered_figure_rows(
+        (
+            ("metric", plot_df),
+            ("event", events_df),
+            ("record", records_df),
+            ("corridor", corridors_df),
+        )
+    )
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "point_metric_map", "value_col": value_col},
+    )
 
 
 def _require(df: pd.DataFrame, columns: list[str]) -> None:

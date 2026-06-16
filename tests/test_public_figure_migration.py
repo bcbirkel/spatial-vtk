@@ -499,3 +499,82 @@ def test_metric_and_spatial_figure_families(tmp_path: Path) -> None:
     ]
     for output in outputs:
         _assert_png(output)
+
+
+def test_spatial_metric_maps_write_optional_row_sidecars(tmp_path: Path) -> None:
+    """Spatial metric map figures should optionally write plotted/source rows."""
+
+    metrics = _metric_rows()
+    path_overlay = pd.DataFrame(
+        {
+            "event_lon": [-118.5, -118.45],
+            "event_lat": [34.05, 34.18],
+            "lon": [-118.4, -118.1],
+            "lat": [34.0, 34.2],
+        }
+    )
+    grid = pd.DataFrame({"lon": [-118.4, -118.2, -118.4, -118.2], "lat": [34.0, 34.0, 34.2, 34.2], "residual": [0.1, -0.2, 0.3, -0.1]})
+    sidecar_dir = tmp_path / "sidecars"
+
+    outputs = [
+        plot_station_metric_map(
+            metrics,
+            tmp_path / "station_metric_map.png",
+            value_col="log2_residual",
+            records_df=path_overlay,
+            add_basemap=False,
+            write_sidecar=True,
+            sidecar_rows=3,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_station_metric_map_by_period(
+            metrics,
+            tmp_path / "station_metric_map_by_period.png",
+            value_col="log2_residual",
+            add_basemap=False,
+            write_sidecar=True,
+            sidecar_rows=3,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_residual_grid(
+            grid,
+            tmp_path / "residual_grid.png",
+            add_basemap=False,
+            write_sidecar=True,
+            sidecar_rows=3,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_metric_map_by_model(
+            metrics,
+            tmp_path / "map_by_model.png",
+            value_col="value_obs",
+            add_basemap=False,
+            write_sidecar=True,
+            sidecar_rows=3,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_model_improvement_map(
+            metrics.assign(improvement=[0.1, -0.2, 0.3, 0.0]),
+            tmp_path / "improvement_map.png",
+            add_basemap=False,
+            write_sidecar=True,
+            sidecar_rows=3,
+            sidecar_dir=sidecar_dir,
+        ),
+    ]
+    for output in outputs:
+        _assert_png(output)
+
+    station_sidecar = sidecar_dir / "station_metric_map.csv"
+    station_metadata = json.loads((sidecar_dir / "station_metric_map.json").read_text(encoding="utf-8"))
+    station_rows = pd.read_csv(station_sidecar)
+    assert station_metadata["plot_row_count"] == len(metrics) + len(path_overlay)
+    assert station_metadata["written_row_count"] == 3
+    assert station_metadata["source_row_count"] == len(metrics)
+    assert set(station_rows["_figure_layer"]).issubset({"metric", "record"})
+    assert (sidecar_dir / "station_metric_map.source.csv").exists()
+
+    residual_metadata = json.loads((sidecar_dir / "residual_grid.json").read_text(encoding="utf-8"))
+    assert residual_metadata["figure_type"] == "residual_grid"
+    assert residual_metadata["source_row_count"] == len(grid)
+    assert residual_metadata["written_row_count"] <= 3

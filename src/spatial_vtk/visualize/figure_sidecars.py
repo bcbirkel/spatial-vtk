@@ -186,6 +186,32 @@ def sidecar_rows_for_write(
     return rows.copy(), False
 
 
+def layered_figure_rows(layers: list[tuple[str, pd.DataFrame | None]] | tuple[tuple[str, pd.DataFrame | None], ...]) -> pd.DataFrame:
+    """Return one sidecar table with a ``_figure_layer`` column.
+
+    Parameters
+    ----------
+    layers
+        Ordered ``(layer_name, rows)`` pairs. ``None`` rows are skipped.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Concatenated rows with one leading ``_figure_layer`` column.
+    """
+
+    frames: list[pd.DataFrame] = []
+    for layer, frame in layers:
+        if frame is None:
+            continue
+        rows = frame.copy()
+        rows.insert(0, "_figure_layer", str(layer))
+        frames.append(rows)
+    if not frames:
+        return pd.DataFrame()
+    return pd.concat(frames, ignore_index=True, sort=False)
+
+
 def figure_sidecar_dimension_counts(df: pd.DataFrame | None, *, prefix: str) -> dict[str, int]:
     """Return cheap dimension counts for figure sidecar metadata."""
 
@@ -225,6 +251,7 @@ __all__ = [
     "FigureSidecarResult",
     "figure_sidecar_dimension_counts",
     "finish_figure_with_sidecar",
+    "layered_figure_rows",
     "sidecar_rows_for_write",
     "write_figure_row_sidecar",
 ]

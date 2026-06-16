@@ -17,6 +17,7 @@ from spatial_vtk.visualize.figure_sidecars import (
     FigureSidecarResult,
     figure_sidecar_dimension_counts,
     finish_figure_with_sidecar,
+    layered_figure_rows,
     sidecar_rows_for_write,
     write_figure_row_sidecar,
 )
@@ -73,6 +74,7 @@ __all__ = [
     "finish_figure",
     "finish_figure_with_sidecar",
     "is_log2_ratio_field",
+    "layered_figure_rows",
     "launch_metrics_dashboard",
     "launch_qc_dashboard",
     "load_dashboard_metric_dataset",
