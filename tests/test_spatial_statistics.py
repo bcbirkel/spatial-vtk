@@ -61,6 +61,7 @@ from spatial_vtk.spatial.plot.correlation import (
     plot_pattern_similarity,
     plot_semivariogram,
 )
+from spatial_vtk.spatial.plot.large_run import SpatialFigureContext
 from spatial_vtk.spatial.plot.metrics import plot_geology_contrast
 from spatial_vtk.spatial.plot.pca import plot_pca_explained_variance, plot_pca_feature_loadings
 from spatial_vtk.visualize.figure_context import value_color_settings
@@ -288,6 +289,13 @@ spatial:
     assert result.paths["station_bias"].exists()
     assert result.tables["metric_field"]["metric"].eq("C5").all()
     assert result.tables["station_bias"]["metric"].eq("C5").all()
+
+    figure_context = SpatialFigureContext.from_config(figure_dir=tmp_path / "figures", make_figures=True)
+    assert figure_context.metric_field is not None
+    assert not figure_context.metric_field.empty
+    assert figure_context.metric_value_col == "field_value"
+    assert figure_context.event_value_col == "field_centered"
+    assert figure_context.table("station_bias") is not None
 
 
 def test_redcap_clusters_use_spatial_constraints_and_scores() -> None:

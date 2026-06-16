@@ -65,6 +65,9 @@ Plots
 .. automodule:: spatial_vtk.spatial.plot.correlation
    :members:
 
+.. automodule:: spatial_vtk.spatial.plot.large_run
+   :members:
+
 .. automodule:: spatial_vtk.spatial.plot.metrics
    :members:
 

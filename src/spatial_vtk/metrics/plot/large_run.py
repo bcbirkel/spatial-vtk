@@ -136,6 +136,66 @@ class MetricFigureContext:
             print(f"Figure sidecars enabled: {sidecar_dir} ({rows_text})")
         return context
 
+    @classmethod
+    def from_frame(
+        cls,
+        metrics: pd.DataFrame | None,
+        figure_dir: str | Path,
+        *,
+        make_figures: bool,
+        overwrite: bool = False,
+        sample_rows: int = 200_000,
+        value_col: str = "log2_residual",
+        default_passband: str | None = None,
+        default_components: list[str] | None = None,
+        default_showfig: bool = False,
+        default_model: str | None = None,
+        add_basemap: bool = False,
+        robust_axis_percentile: float = 95.0,
+        write_sidecars: bool = False,
+        sidecar_rows: int | None = None,
+        sidecar_dir: str | Path | None = None,
+        station_aggregation: str = "median",
+    ) -> "MetricFigureContext":
+        """Create a context from an already loaded metrics dataframe."""
+
+        output_dir = Path(figure_dir).expanduser()
+        output_dir.mkdir(parents=True, exist_ok=True)
+        context = cls(
+            metrics_long_path=Path(),
+            figure_dir=output_dir,
+            make_figures=bool(make_figures),
+            overwrite=bool(overwrite),
+            sample_rows=int(sample_rows),
+            value_col=str(value_col),
+            default_passband=default_passband,
+            default_components=default_components,
+            default_showfig=bool(default_showfig),
+            default_model=default_model,
+            add_basemap=bool(add_basemap),
+            robust_axis_percentile=float(robust_axis_percentile),
+            write_sidecars=bool(write_sidecars),
+            sidecar_rows=None if sidecar_rows is None else int(sidecar_rows),
+            sidecar_dir=None if sidecar_dir is None else Path(sidecar_dir).expanduser(),
+            station_aggregation=str(station_aggregation or "median").lower(),
+        )
+        if metrics is None or metrics.empty:
+            return context
+        context.metrics_for_figures = metrics.copy()
+        context.metric_col = first_existing(metrics, ["metric"])
+        context.band_col = first_existing(metrics, ["band", "passband"])
+        context.model_col = first_existing(metrics, ["model"])
+        context.component_col = first_existing(metrics, ["component"])
+        context.period_col = first_existing(metrics, ["period_s"])
+        context.distance_col = first_existing(metrics, ["distance_km"])
+        context.depth_col = first_existing(metrics, ["depth_km"])
+        context.vs30_col = first_existing(
+            metrics,
+            ["Vs30", "vs30", "VS30", "site_vs30", "station_vs30", "vs30_mps", "Vs30_mps"],
+        )
+        context.ready = context.value_col in metrics.columns
+        return context
+
     @property
     def sidecar_output_dir(self) -> Path:
         """Return the directory used for figure sidecar CSV files."""
