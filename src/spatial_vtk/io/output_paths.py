@@ -120,6 +120,7 @@ OUTPUT_GROUPS: dict[str, tuple[OutputArtifact, ...]] = {
         OutputArtifact("drop_causes_path", "qc_drop_causes"),
         OutputArtifact("drop_causes_overlap_path", "qc_drop_causes_overlap"),
         OutputArtifact("drop_causes_overlap_figure_path", "qc_drop_cause_diagnostics_overlap", kind="figure", required=False),
+        OutputArtifact("event_trace_comparison_path", "event_trace_comparison", kind="figure", required=False),
     ),
     "step_03_metrics": (
         OutputArtifact("qc_inventory_overlap_path", "qc_inventory_overlap"),

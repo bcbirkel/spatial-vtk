@@ -550,6 +550,7 @@ outputs:
     assert qc_paths["qc_inventory_overlap_path"] == tmp_path / "run_outputs" / "tables" / "qc_inventory_overlap.parquet"
     assert qc_paths["comparison_eligible_path"] == tmp_path / "run_outputs" / "tables" / "comparison_eligible_records.csv"
     assert qc_paths["drop_causes_overlap_figure_path"] == tmp_path / "run_outputs" / "figures" / "drop_cause_diagnostics_overlap.png"
+    assert qc_paths["event_trace_comparison_path"] == tmp_path / "run_outputs" / "figures" / "event_trace_comparison.png"
 
     paths = output_group_paths("step_04_spatial", cfg=cfg)
 

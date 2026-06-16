@@ -125,3 +125,16 @@ def test_committed_tutorial_notebooks_do_not_embed_private_paths() -> None:
             source = "".join(cell.get("source", []))
             matches = [token for token in private_tokens if token in source]
             assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} contains {matches}"
+
+
+def test_tutorial_notebooks_use_grouped_output_paths() -> None:
+    """Workflow notebooks should avoid inline output-path plumbing."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    assert notebooks
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            source = "".join(cell.get("source", []))
+            assert "resolve_output_path(" not in source, f"{notebook_path.relative_to(repo_root)} cell {index}"

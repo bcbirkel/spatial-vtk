@@ -125,6 +125,10 @@ Changelog
    grouped config-backed output paths instead of notebook-local
    ``resolve_output_path`` calls, including the metric-output station/event
    inputs and the overlap drop-cause figure path.
+   Cleaned the standard tutorial notebooks the same way: Step 2 now gets the
+   overlap drop-cause and waveform comparison figure paths from the Step 2
+   output group, and a notebook regression prevents inline
+   ``resolve_output_path`` calls from returning.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after
