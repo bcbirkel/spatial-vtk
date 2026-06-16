@@ -136,6 +136,9 @@ figures:
   data_synthetic_availability:
     filename: data_synthetic_availability.png
     description: Observed/synthetic availability figure
+  event_station_retention:
+    filename: event_station_retention.png
+    description: Post-QC event-station retention heatmap
   post_qc_station_event_map:
     filename: post_qc_station_event_map.png
     description: Post-QC station-event map
@@ -193,6 +196,9 @@ figures:
   spatial_correlation_distance:
     filename: spatial_correlation_distance.png
     description: Spatial correlation by station separation distance
+  cluster_solution_scores_plot:
+    filename: cluster_solution_scores.png
+    description: Cluster solution score figure
   pca_mode_map:
     filename: pca_mode_map.png
     description: PCA mode map

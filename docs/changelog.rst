@@ -36,6 +36,12 @@ Changelog
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file
    readiness so missing dashboard tabs are easier to diagnose.
+   Expanded config-backed defaults for registered ``svtk plot``, ``svtk map``,
+   and ``svtk visualize`` commands. Standard context, QC, waveform, metric,
+   and spatial-statistics figures now resolve their usual input tables and
+   figure paths from the active config when ``--input`` or ``--output`` is
+   omitted, and multi-table context maps can also resolve their standard
+   station/event alias tables from the config.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

@@ -193,6 +193,137 @@ outputs:
     assert captured.out.strip() == str(expected_output)
 
 
+def test_cli_spatial_plot_uses_configured_standard_table_default(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    distance_bins = table_dir / "distance_bin_correlations.csv"
+    distance_bins.write_text("distance_center_km,mean_pair_correlation,pair_count\n10,0.4,5\n", encoding="utf-8")
+    config.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    from spatial_vtk.spatial.plot import correlation
+
+    def fake_plot_correlogram(distance_df, output_path=None, **kwargs):
+        seen["rows"] = len(distance_df)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(correlation, "plot_correlogram", fake_plot_correlogram)
+
+    assert main(["plot", "spatial", "correlogram", "--config", str(config)]) == 0
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "correlogram.png"
+    assert seen["rows"] == 1
+    assert seen["output_path"] == expected_output
+    assert captured.out.strip() == str(expected_output)
+
+
+def test_cli_spatial_map_uses_configured_standard_table_default(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    station_bias = table_dir / "station_bias.csv"
+    station_bias.write_text("station,sta_lon,sta_lat,residual\nSTA,-118,34,0.2\n", encoding="utf-8")
+    config.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+  artifacts:
+    station_bias:
+      filename: station_bias.csv
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    from spatial_vtk.spatial.map import correlation
+
+    def fake_plot_station_bias_map(station_df, output_path=None, **kwargs):
+        seen["rows"] = len(station_df)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(correlation, "plot_station_bias_map", fake_plot_station_bias_map)
+
+    assert main(["map", "spatial", "station-bias", "--config", str(config), "--no-basemap"]) == 0
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "station_residual_map.png"
+    assert seen["rows"] == 1
+    assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["add_basemap"] is False
+    assert captured.out.strip() == str(expected_output)
+
+
+def test_cli_context_figure_uses_configured_primary_and_alias_tables(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    (table_dir / "prepared_stations.csv").write_text("station,lon,lat\nSTA,-118,34\n", encoding="utf-8")
+    (table_dir / "prepared_events.csv").write_text("event_id,event_lon,event_lat\nEV,-118.1,34.1\n", encoding="utf-8")
+    config.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.visualize.context as context
+
+    def fake_plot_station_event_context(stations_df, events_df, output_path=None, **kwargs):
+        seen["station_rows"] = len(stations_df)
+        seen["event_rows"] = len(events_df)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(context, "plot_station_event_context", fake_plot_station_event_context)
+
+    assert main(["visualize", "context", "station-event-context", "--config", str(config), "--no-basemap"]) == 0
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "station_event_context.png"
+    assert seen["station_rows"] == 1
+    assert seen["event_rows"] == 1
+    assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["add_basemap"] is False
+    assert captured.out.strip() == str(expected_output)
+
+
+def test_cli_registered_plot_help_describes_alias_defaults(capsys):
+    with pytest.raises(SystemExit) as excinfo:
+        main(["visualize", "context", "station-event-context", "--help"])
+    assert excinfo.value.code == 0
+    captured = capsys.readouterr()
+    help_text = " ".join(captured.out.split())
+    assert "Defaults to configured output table 'prepared_stations'" in help_text
+    assert "Defaults to configured output table 'prepared_events'" in help_text
+
+
 def test_cli_prepare_station_metadata(tmp_path):
     src = tmp_path / "stations.csv"
     out = tmp_path / "prepared.csv"

@@ -171,7 +171,7 @@ svtk visualize qc drop-cause-diagnostics
 
 .. code-block:: bash
 
-   svtk visualize qc drop-cause-diagnostics [-h] --input INPUT
+   svtk visualize qc drop-cause-diagnostics [-h] [--input INPUT]
                                                 [--output OUTPUT]
                                                 [--config CONFIG]
                                                 [--run-scenario RUN_SCENARIO]
@@ -197,9 +197,9 @@ svtk visualize qc drop-cause-diagnostics
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the qc_df argument.
+     - Value: ``input``. Input CSV/parquet table for the qc_df argument. Defaults to configured output table 'qc_drop_causes'.
    * - ``--output``
      - No
      -
@@ -246,7 +246,7 @@ svtk visualize qc event-station-retention
 
 .. code-block:: bash
 
-   svtk visualize qc event-station-retention [-h] --input INPUT
+   svtk visualize qc event-station-retention [-h] [--input INPUT]
                                                  [--output OUTPUT]
                                                  [--config CONFIG]
                                                  [--run-scenario RUN_SCENARIO]
@@ -272,9 +272,9 @@ svtk visualize qc event-station-retention
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the retention_df argument.
+     - Value: ``input``. Input CSV/parquet table for the retention_df argument. Defaults to configured output table 'qc_event_station_pair_retention'.
    * - ``--output``
      - No
      -
@@ -347,7 +347,7 @@ svtk visualize qc post-qc-station-event-map
 
 .. code-block:: bash
 
-   svtk visualize qc post-qc-station-event-map [-h] --input INPUT
+   svtk visualize qc post-qc-station-event-map [-h] [--input INPUT]
                                                    [--output OUTPUT]
                                                    [--config CONFIG]
                                                    [--run-scenario RUN_SCENARIO]
@@ -373,9 +373,9 @@ svtk visualize qc post-qc-station-event-map
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the records_df argument.
+     - Value: ``input``. Input CSV/parquet table for the records_df argument. Defaults to configured output table 'post_qc_records'.
    * - ``--output``
      - No
      -
@@ -422,7 +422,7 @@ svtk visualize qc retention-summary
 
 .. code-block:: bash
 
-   svtk visualize qc retention-summary [-h] --input INPUT
+   svtk visualize qc retention-summary [-h] [--input INPUT]
                                            [--output OUTPUT] [--config CONFIG]
                                            [--run-scenario RUN_SCENARIO]
                                            [--table TABLE]
@@ -446,9 +446,9 @@ svtk visualize qc retention-summary
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the qc_df argument.
+     - Value: ``input``. Input CSV/parquet table for the qc_df argument. Defaults to configured output table 'qc_metric_pair_retention'.
    * - ``--output``
      - No
      -
@@ -668,7 +668,7 @@ svtk visualize context event-coverage
 
 .. code-block:: bash
 
-   svtk visualize context event-coverage [-h] --input INPUT
+   svtk visualize context event-coverage [-h] [--input INPUT]
                                              [--output OUTPUT]
                                              [--config CONFIG]
                                              [--run-scenario RUN_SCENARIO]
@@ -693,9 +693,9 @@ svtk visualize context event-coverage
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the event_station_df argument.
+     - Value: ``input``. Input CSV/parquet table for the event_station_df argument. Defaults to configured output table 'event_station_records'.
    * - ``--output``
      - No
      -
@@ -742,7 +742,7 @@ svtk visualize context event-magnitude-map
 
 .. code-block:: bash
 
-   svtk visualize context event-magnitude-map [-h] --input INPUT
+   svtk visualize context event-magnitude-map [-h] [--input INPUT]
                                                   [--output OUTPUT]
                                                   [--config CONFIG]
                                                   [--run-scenario RUN_SCENARIO]
@@ -768,9 +768,9 @@ svtk visualize context event-magnitude-map
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the events_df argument.
+     - Value: ``input``. Input CSV/parquet table for the events_df argument. Defaults to configured output table 'prepared_events'.
    * - ``--output``
      - No
      -
@@ -918,7 +918,7 @@ svtk visualize context record-coverage
 
 .. code-block:: bash
 
-   svtk visualize context record-coverage [-h] --input INPUT
+   svtk visualize context record-coverage [-h] [--input INPUT]
                                               [--output OUTPUT]
                                               [--config CONFIG]
                                               [--run-scenario RUN_SCENARIO]
@@ -943,9 +943,9 @@ svtk visualize context record-coverage
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the records_df argument.
+     - Value: ``input``. Input CSV/parquet table for the records_df argument. Defaults to configured output table 'record_coverage'.
    * - ``--output``
      - No
      -
@@ -992,7 +992,7 @@ svtk visualize context station-coverage
 
 .. code-block:: bash
 
-   svtk visualize context station-coverage [-h] --input INPUT
+   svtk visualize context station-coverage [-h] [--input INPUT]
                                                [--output OUTPUT]
                                                [--config CONFIG]
                                                [--run-scenario RUN_SCENARIO]
@@ -1018,9 +1018,9 @@ svtk visualize context station-coverage
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the event_station_df argument.
+     - Value: ``input``. Input CSV/parquet table for the event_station_df argument. Defaults to configured output table 'event_station_records'.
    * - ``--output``
      - No
      -
@@ -1067,7 +1067,7 @@ svtk visualize context station-event-beachball
 
 .. code-block:: bash
 
-   svtk visualize context station-event-beachball [-h] --input INPUT
+   svtk visualize context station-event-beachball [-h] [--input INPUT]
                                                       [--output OUTPUT]
                                                       [--config CONFIG]
                                                       [--run-scenario RUN_SCENARIO]
@@ -1094,9 +1094,9 @@ svtk visualize context station-event-beachball
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the events_df argument.
+     - Value: ``input``. Input CSV/parquet table for the events_df argument. Defaults to configured output table 'prepared_events'.
    * - ``--output``
      - No
      -
@@ -1124,7 +1124,7 @@ svtk visualize context station-event-beachball
    * - ``--stations``
      - No
      -
-     - Value: ``stations``. Convenience table path for the stations_df argument.
+     - Value: ``stations``. Convenience table path for the stations_df argument. Defaults to configured output table 'prepared_stations'.
    * - ``--bounds``
      - No
      -
@@ -1147,7 +1147,7 @@ svtk visualize context station-event-context
 
 .. code-block:: bash
 
-   svtk visualize context station-event-context [-h] --input INPUT
+   svtk visualize context station-event-context [-h] [--input INPUT]
                                                     [--output OUTPUT]
                                                     [--config CONFIG]
                                                     [--run-scenario RUN_SCENARIO]
@@ -1174,9 +1174,9 @@ svtk visualize context station-event-context
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the stations_df argument.
+     - Value: ``input``. Input CSV/parquet table for the stations_df argument. Defaults to configured output table 'prepared_stations'.
    * - ``--output``
      - No
      -
@@ -1204,7 +1204,7 @@ svtk visualize context station-event-context
    * - ``--events``
      - No
      -
-     - Value: ``events``. Convenience table path for the events_df argument.
+     - Value: ``events``. Convenience table path for the events_df argument. Defaults to configured output table 'prepared_events'.
    * - ``--bounds``
      - No
      -
@@ -1227,7 +1227,7 @@ svtk visualize context station-event-network
 
 .. code-block:: bash
 
-   svtk visualize context station-event-network [-h] --input INPUT
+   svtk visualize context station-event-network [-h] [--input INPUT]
                                                     [--output OUTPUT]
                                                     [--config CONFIG]
                                                     [--run-scenario RUN_SCENARIO]
@@ -1254,9 +1254,9 @@ svtk visualize context station-event-network
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the stations_df argument.
+     - Value: ``input``. Input CSV/parquet table for the stations_df argument. Defaults to configured output table 'prepared_stations'.
    * - ``--output``
      - No
      -
@@ -1284,7 +1284,7 @@ svtk visualize context station-event-network
    * - ``--events``
      - No
      -
-     - Value: ``events``. Convenience table path for the events_df argument.
+     - Value: ``events``. Convenience table path for the events_df argument. Defaults to configured output table 'prepared_events'.
    * - ``--bounds``
      - No
      -
@@ -1307,7 +1307,7 @@ svtk visualize context study-domain
 
 .. code-block:: bash
 
-   svtk visualize context study-domain [-h] --input INPUT
+   svtk visualize context study-domain [-h] [--input INPUT]
                                            [--output OUTPUT] [--config CONFIG]
                                            [--run-scenario RUN_SCENARIO]
                                            [--table TABLE]
@@ -1332,9 +1332,9 @@ svtk visualize context study-domain
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the stations_df argument.
+     - Value: ``input``. Input CSV/parquet table for the stations_df argument. Defaults to configured output table 'prepared_stations'.
    * - ``--output``
      - No
      -
@@ -1362,7 +1362,7 @@ svtk visualize context study-domain
    * - ``--events``
      - No
      -
-     - Value: ``events``. Convenience table path for the events_df argument.
+     - Value: ``events``. Convenience table path for the events_df argument. Defaults to configured output table 'prepared_events'.
    * - ``--bounds``
      - No
      -

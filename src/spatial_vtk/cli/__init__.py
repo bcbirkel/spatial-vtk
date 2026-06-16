@@ -48,6 +48,9 @@ class PlotCommand:
         Short command help text.
     table_aliases
         Convenience table options mapped to function argument names.
+    table_alias_defaults
+        Optional registered table output keys used when a table alias is
+        omitted and a config is available.
     input_key
         Optional registered table output key used when ``--input`` is omitted.
     output_key
@@ -63,6 +66,7 @@ class PlotCommand:
     primary_arg: str | None
     help: str
     table_aliases: dict[str, str] | None = None
+    table_alias_defaults: dict[str, str] | None = None
     input_key: str | None = None
     output_key: str | None = None
 
@@ -140,7 +144,12 @@ SPATIAL_PLOT_COMMANDS: dict[str, PlotCommand] = {
     "semivariogram": PlotCommand("spatial_vtk.spatial.plot.correlation.plot_semivariogram", "distance_df", "Plot a semivariogram."),
     "directional-correlogram": PlotCommand("spatial_vtk.spatial.plot.correlation.plot_directional_correlogram", "directional_df", "Plot directional spatial correlations.", table_aliases={"fit": "fit_df"}),
     "block-holdout-scatter": PlotCommand("spatial_vtk.spatial.plot.correlation.plot_block_holdout_scatter", "prediction_df", "Plot observed versus held-out predictions."),
-    "cluster-solution-scores": PlotCommand("spatial_vtk.spatial.plot.correlation.plot_cluster_solution_scores", "score_df", "Plot clustering solution scores."),
+    "cluster-solution-scores": PlotCommand(
+        "spatial_vtk.spatial.plot.correlation.plot_cluster_solution_scores",
+        "score_df",
+        "Plot clustering solution scores.",
+        output_key="cluster_solution_scores_plot",
+    ),
     "cluster-feature-heatmap": PlotCommand("spatial_vtk.spatial.plot.correlation.plot_cluster_feature_heatmap", "feature_summary_df", "Plot cluster feature summaries."),
     "pattern-similarity": PlotCommand("spatial_vtk.spatial.plot.correlation.plot_pattern_similarity", "stations", "Plot observed/synthetic pattern similarity."),
     "azimuthal-residuals": PlotCommand("spatial_vtk.spatial.plot.metrics.plot_azimuthal_residuals", "df", "Plot residuals by azimuth."),
@@ -150,39 +159,141 @@ SPATIAL_PLOT_COMMANDS: dict[str, PlotCommand] = {
     "pca-explained-variance": PlotCommand("spatial_vtk.spatial.plot.pca.plot_pca_explained_variance", "explained_variance_df", "Plot PCA explained variance."),
     "pca-feature-loadings": PlotCommand("spatial_vtk.spatial.plot.pca.plot_pca_feature_loadings", "feature_loadings_df", "Plot PCA feature loadings."),
 }
-SPATIAL_PLOT_COMMANDS = _with_registered_plot_defaults(SPATIAL_PLOT_COMMANDS)
+SPATIAL_PLOT_COMMANDS = _with_registered_plot_defaults(
+    SPATIAL_PLOT_COMMANDS,
+    input_defaults={
+        "correlogram": "distance_bin_correlations",
+        "semivariogram": "distance_bin_correlations",
+        "block-holdout-scatter": "block_holdout_predictions",
+        "cluster-solution-scores": "cluster_solution_scores",
+        "cluster-feature-heatmap": "cluster_feature_summary",
+        "azimuthal-residuals": "event_centered_residuals",
+        "path-bin-summary": "path_summary",
+        "polar-residuals": "event_centered_residuals",
+        "pca-explained-variance": "pca_explained_variance",
+        "pca-feature-loadings": "pca_feature_loadings",
+    },
+)
 
 
 SPATIAL_MAP_COMMANDS: dict[str, PlotCommand] = {
-    "station-bias": PlotCommand("spatial_vtk.spatial.map.correlation.plot_station_bias_map", "station_df", "Map station bias values."),
+    "station-bias": PlotCommand(
+        "spatial_vtk.spatial.map.correlation.plot_station_bias_map",
+        "station_df",
+        "Map station bias values.",
+        output_key="station_residual_map",
+    ),
     "cluster": PlotCommand("spatial_vtk.spatial.map.correlation.plot_cluster_map", "assignments_df", "Map cluster assignments."),
-    "redcap-cluster": PlotCommand("spatial_vtk.spatial.map.correlation.plot_redcap_cluster_map", "redcap_df", "Map REDCAP cluster values."),
+    "redcap-cluster": PlotCommand(
+        "spatial_vtk.spatial.map.correlation.plot_redcap_cluster_map",
+        "redcap_df",
+        "Map REDCAP cluster values.",
+        output_key="redcap_cluster_map",
+    ),
     "block-holdout-error": PlotCommand("spatial_vtk.spatial.map.correlation.plot_block_holdout_error_map", "prediction_df", "Map block-holdout prediction errors."),
-    "pca-mode": PlotCommand("spatial_vtk.spatial.map.pca.plot_pca_mode_map", "station_scores_df", "Map one PCA spatial mode."),
-    "station-metric": PlotCommand("spatial_vtk.spatial.map.metrics.plot_station_metric_map", "df", "Map station metric values."),
+    "pca-mode": PlotCommand(
+        "spatial_vtk.spatial.map.pca.plot_pca_mode_map",
+        "station_scores_df",
+        "Map one PCA spatial mode.",
+        output_key="pca_mode_map",
+    ),
+    "station-metric": PlotCommand(
+        "spatial_vtk.spatial.map.metrics.plot_station_metric_map",
+        "df",
+        "Map station metric values.",
+        output_key="station_metric_map",
+    ),
     "score": PlotCommand("spatial_vtk.spatial.map.metrics.plot_score_map", "df", "Map score values."),
     "residual-grid": PlotCommand("spatial_vtk.spatial.map.metrics.plot_residual_grid", "grid_df", "Map residual grid values."),
-    "metric-by-model": PlotCommand("spatial_vtk.spatial.map.metrics.plot_metric_map_by_model", "df", "Map metric values by model."),
+    "metric-by-model": PlotCommand(
+        "spatial_vtk.spatial.map.metrics.plot_metric_map_by_model",
+        "df",
+        "Map metric values by model.",
+        output_key="metric_map_by_model",
+    ),
     "model-improvement": PlotCommand("spatial_vtk.spatial.map.metrics.plot_model_improvement_map", "df", "Map model improvement values."),
-    "event-residual": PlotCommand("spatial_vtk.spatial.map.path.plot_event_residual_map", "df", "Map event residual paths."),
-    "corridor": PlotCommand("spatial_vtk.spatial.map.path.plot_corridor_map", "corridors_df", "Map corridor selections.", table_aliases={"stations": "stations_df", "events": "events_df", "records": "records_df"}),
+    "event-residual": PlotCommand(
+        "spatial_vtk.spatial.map.path.plot_event_residual_map",
+        "df",
+        "Map event residual paths.",
+        output_key="event_residual_map",
+    ),
+    "corridor": PlotCommand(
+        "spatial_vtk.spatial.map.path.plot_corridor_map",
+        "corridors_df",
+        "Map corridor selections.",
+        table_aliases={"stations": "stations_df", "events": "events_df", "records": "records_df"},
+        table_alias_defaults={"stations": "prepared_stations", "events": "prepared_events", "records": "event_station_records"},
+        output_key="corridor_map",
+    ),
 }
-SPATIAL_MAP_COMMANDS = _with_registered_plot_defaults(SPATIAL_MAP_COMMANDS)
+SPATIAL_MAP_COMMANDS = _with_registered_plot_defaults(
+    SPATIAL_MAP_COMMANDS,
+    input_defaults={
+        "station-bias": "station_bias",
+        "cluster": "clusters",
+        "redcap-cluster": "redcap_clusters",
+        "block-holdout-error": "block_holdout_predictions",
+        "pca-mode": "pca_station_scores",
+        "station-metric": "metrics_long",
+        "score": "metrics_long",
+        "residual-grid": "metric_field",
+        "metric-by-model": "metrics_long",
+        "event-residual": "path_table",
+        "corridor": "corridors",
+    },
+)
 
 
 CONTEXT_VISUALIZE_COMMANDS: dict[str, PlotCommand] = {
-    "station-event-context": PlotCommand("spatial_vtk.visualize.context.plot_station_event_context", "stations_df", "Plot station and event context.", table_aliases={"events": "events_df"}),
-    "study-domain": PlotCommand("spatial_vtk.visualize.context.plot_study_domain_map", "stations_df", "Plot the study domain map.", table_aliases={"events": "events_df"}),
+    "station-event-context": PlotCommand(
+        "spatial_vtk.visualize.context.plot_station_event_context",
+        "stations_df",
+        "Plot station and event context.",
+        table_aliases={"events": "events_df"},
+        table_alias_defaults={"events": "prepared_events"},
+    ),
+    "study-domain": PlotCommand(
+        "spatial_vtk.visualize.context.plot_study_domain_map",
+        "stations_df",
+        "Plot the study domain map.",
+        table_aliases={"events": "events_df"},
+        table_alias_defaults={"events": "prepared_events"},
+    ),
     "station-coverage": PlotCommand("spatial_vtk.visualize.context.plot_station_coverage", "event_station_df", "Plot station record coverage."),
     "event-coverage": PlotCommand("spatial_vtk.visualize.context.plot_event_coverage", "event_station_df", "Plot event record coverage."),
     "record-coverage": PlotCommand("spatial_vtk.visualize.context.plot_record_coverage", "records_df", "Plot record-window coverage."),
     "event-trace-comparison": PlotCommand("spatial_vtk.visualize.context.plot_event_trace_comparison", "records_df", "Plot event trace comparisons."),
     "distance-amplitude-diagnostics": PlotCommand("spatial_vtk.visualize.context.plot_distance_amplitude_diagnostics", "records_df", "Plot distance/amplitude diagnostics."),
     "event-magnitude-map": PlotCommand("spatial_vtk.visualize.context.plot_event_magnitude_map", "events_df", "Map events by magnitude."),
-    "station-event-network": PlotCommand("spatial_vtk.visualize.context.plot_station_event_network_map", "stations_df", "Map station/event network geometry.", table_aliases={"events": "events_df"}),
-    "station-event-beachball": PlotCommand("spatial_vtk.visualize.context.plot_station_event_beachball_map", "events_df", "Map station/event context with beachballs.", table_aliases={"stations": "stations_df"}),
+    "station-event-network": PlotCommand(
+        "spatial_vtk.visualize.context.plot_station_event_network_map",
+        "stations_df",
+        "Map station/event network geometry.",
+        table_aliases={"events": "events_df"},
+        table_alias_defaults={"events": "prepared_events"},
+    ),
+    "station-event-beachball": PlotCommand(
+        "spatial_vtk.visualize.context.plot_station_event_beachball_map",
+        "events_df",
+        "Map station/event context with beachballs.",
+        table_aliases={"stations": "stations_df"},
+        table_alias_defaults={"stations": "prepared_stations"},
+    ),
 }
-CONTEXT_VISUALIZE_COMMANDS = _with_registered_plot_defaults(CONTEXT_VISUALIZE_COMMANDS)
+CONTEXT_VISUALIZE_COMMANDS = _with_registered_plot_defaults(
+    CONTEXT_VISUALIZE_COMMANDS,
+    input_defaults={
+        "station-event-context": "prepared_stations",
+        "study-domain": "prepared_stations",
+        "station-coverage": "event_station_records",
+        "event-coverage": "event_station_records",
+        "record-coverage": "record_coverage",
+        "event-magnitude-map": "prepared_events",
+        "station-event-network": "prepared_stations",
+        "station-event-beachball": "prepared_events",
+    },
+)
 
 
 QC_VISUALIZE_COMMANDS: dict[str, PlotCommand] = {
@@ -193,7 +304,15 @@ QC_VISUALIZE_COMMANDS: dict[str, PlotCommand] = {
     "post-qc-station-event-map": PlotCommand("spatial_vtk.visualize.qc.plot_post_qc_station_event_map", "records_df", "Map retained station/event records after QC."),
     "drop-cause-diagnostics": PlotCommand("spatial_vtk.visualize.qc.plot_qc_drop_cause_diagnostics", "qc_df", "Plot QC drop-cause diagnostics."),
 }
-QC_VISUALIZE_COMMANDS = _with_registered_plot_defaults(QC_VISUALIZE_COMMANDS)
+QC_VISUALIZE_COMMANDS = _with_registered_plot_defaults(
+    QC_VISUALIZE_COMMANDS,
+    input_defaults={
+        "retention-summary": "qc_metric_pair_retention",
+        "event-station-retention": "qc_event_station_pair_retention",
+        "post-qc-station-event-map": "post_qc_records",
+        "drop-cause-diagnostics": "qc_drop_causes",
+    },
+)
 
 
 WAVEFORM_VISUALIZE_COMMANDS: dict[str, PlotCommand] = {
@@ -654,16 +773,19 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
     if spec.output_key:
         output_help += f" Defaults to configured figure output '{spec.output_key}'."
     parser.add_argument("--output", required=spec.output_key is None, help=output_help)
-    if spec.input_key or spec.output_key:
+    if spec.input_key or spec.output_key or spec.table_alias_defaults:
         parser.add_argument("--config", default=None, help="Optional Spatial-VTK config for default input/output paths.")
         parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     parser.add_argument("--table", action="append", default=(), help="Extra table as argument_name=path. May be repeated.")
     parser.add_argument("--kwargs", nargs="*", default=(), help="Extra function keyword arguments as key=value.")
     parser.add_argument("--kwargs-json", default=None, help="Extra function keyword arguments as a JSON/YAML mapping.")
     for option in sorted((spec.table_aliases or {}).keys()):
-        parser.add_argument(f"--{option.replace('_', '-')}", default=None, help=f"Convenience table path for the {spec.table_aliases[option]} argument.")
+        alias_help = f"Convenience table path for the {spec.table_aliases[option]} argument."
+        if option in (spec.table_alias_defaults or {}):
+            alias_help += f" Defaults to configured output table '{spec.table_alias_defaults[option]}'."
+        parser.add_argument(f"--{option.replace('_', '-')}", default=None, help=alias_help)
     if include_map_options:
-        if not (spec.input_key or spec.output_key):
+        if not (spec.input_key or spec.output_key or spec.table_alias_defaults):
             parser.add_argument("--config", default=None, help="Optional Spatial-VTK config for named bounds.")
             parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
         parser.add_argument("--bounds", default=None, help="Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.")
@@ -1267,6 +1389,9 @@ def _cmd_list_registered_plots(args: argparse.Namespace) -> int:
             default_notes.append(f"input={spec.input_key}")
         if spec.output_key:
             default_notes.append(f"output={spec.output_key}")
+        for option, table_key in sorted((spec.table_alias_defaults or {}).items()):
+            table_arg = (spec.table_aliases or {}).get(option, option)
+            default_notes.append(f"{table_arg}={table_key}")
         default_note = f" ({', '.join(default_notes)} from config)" if default_notes else ""
         print(f"{name}{input_note}{output_note}  # {spec.help}{default_note}")
     return 0
@@ -1317,6 +1442,15 @@ def _registered_plot_kwargs(args: argparse.Namespace, spec: PlotCommand) -> dict
         value = getattr(args, option.replace("-", "_"), None)
         if value:
             kwargs[table_arg] = _read_table(value)
+        elif option in (spec.table_alias_defaults or {}):
+            if config is None:
+                raise ValueError(
+                    f"No --{option.replace('_', '-')} table was provided for '{table_arg}' and no Spatial-VTK config was found. "
+                    "Pass the table option, pass --config, or run 'svtk config set CONFIG_PATH'."
+                )
+            from spatial_vtk.config import resolve_output_path
+
+            kwargs[table_arg] = _read_table(resolve_output_path(spec.table_alias_defaults[option], kind="table", cfg=config))
     if getattr(args, "kwargs_json", None):
         kwargs.update(_parse_mapping(args.kwargs_json))
     kwargs.update(_parse_key_values(getattr(args, "kwargs", ())))
@@ -1340,6 +1474,10 @@ def _registered_plot_config(args: argparse.Namespace, spec: PlotCommand):
     needs_config = (
         (spec.input_key is not None and not getattr(args, "input", None))
         or (spec.output_key is not None and not getattr(args, "output", None))
+        or any(
+            option in (spec.table_alias_defaults or {}) and not getattr(args, option.replace("-", "_"), None)
+            for option in (spec.table_aliases or {})
+        )
         or bool(getattr(args, "config", None))
         or bool(getattr(args, "run_scenario", None))
     )

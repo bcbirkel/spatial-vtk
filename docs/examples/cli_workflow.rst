@@ -42,20 +42,14 @@ Prepare station and event metadata, preprocess the waveform files once, and make
      --overwrite
 
    svtk visualize context station-event-context \
-     --input "$TABLES/prepared_stations.csv" \
-     --events "$TABLES/prepared_events.csv" \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
-     --bounds study_area \
-     --output "$FIGURES/station_event_context.png"
+     --bounds study_area
 
    svtk visualize context station-event-beachball \
-     --input "$TABLES/prepared_events.csv" \
-     --stations "$TABLES/prepared_stations.csv" \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
-     --bounds study_area \
-     --output "$FIGURES/event_beachball_map.png"
+     --bounds study_area
 
 
 Step 2: Quality Control
@@ -89,11 +83,11 @@ streamed sidecar restricted to events with both observed and synthetic data.
 
    svtk call spatial_vtk.qc.build_metric_pair_retention_table_from_qc_inventory \
      --args "$QC_INVENTORY_OVERLAP" \
-     --output "$TABLES/metric_pair_retention.csv"
+     --output "$TABLES/qc_metric_pair_retention.csv"
 
    svtk call spatial_vtk.qc.build_event_station_pair_retention_table_from_qc_inventory \
      --args "$QC_INVENTORY_OVERLAP" \
-     --output "$TABLES/event_station_pair_retention.csv"
+     --output "$TABLES/qc_event_station_pair_retention.csv"
 
    svtk qc manual-queue \
      --trace-summary "$TRACE_QC" \
@@ -101,12 +95,12 @@ streamed sidecar restricted to events with both observed and synthetic data.
      --component R
 
    svtk visualize qc retention-summary \
-     --input "$QC_INVENTORY_OVERLAP" \
-     --output "$FIGURES/retention_summary.png"
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO"
 
    svtk visualize qc event-station-retention \
-     --input "$TABLES/event_station_pair_retention.csv" \
-     --output "$FIGURES/data_synthetic_availability.png"
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO"
 
    svtk visualize waveforms observed-synthetic-record-section \
      --input "$EVENT_STATIONS" \
@@ -114,7 +108,8 @@ streamed sidecar restricted to events with both observed and synthetic data.
      --kwargs component=R gain=2.0 max_distance_km=50.0 xlim_s='[0, 60]'
 
    svtk dashboard qc \
-     --trace-summary "$TRACE_QC" \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
      --port 8502
 
 
@@ -163,16 +158,14 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
      --format parquet
 
    svtk plot metrics residuals-vs-distance \
-     --input "$TABLES/metrics_long.parquet" \
-     --output "$FIGURES/residuals_vs_distance.png" \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
      --kwargs y_col=log2_residual group_col=metric fit=lowess connect_points=false
 
    svtk map spatial station-metric \
-     --input "$TABLES/metrics_long.parquet" \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --bounds study_area \
-     --output "$FIGURES/station_residual_map.png" \
      --kwargs value_col=log2_residual metric=PGA
 
    svtk plot metrics band-score-distribution \
@@ -190,39 +183,36 @@ Use the metric outputs to make spatial diagnostic maps and plots. The notebook v
 
 .. code-block:: bash
 
-   export SPATIAL=outputs/tutorials/spatial
-   mkdir -p "$SPATIAL"
+   svtk spatial summaries \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
+     --metrics "$TABLES/metrics_long.parquet" \
+     --metric PGA
 
    svtk map spatial station-bias \
-     --input "$TABLES/station_bias.parquet" \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --bounds study_area \
-     --output "$FIGURES/station_bias_map.png" \
      --kwargs value_col=mean_centered title="Mean PGA Station Bias"
 
    svtk map spatial residual-grid \
-     --input "$TABLES/residual_grid.parquet" \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --bounds study_area \
-     --output "$FIGURES/residual_grid.png" \
      --kwargs value_col=log2_residual
 
    svtk plot spatial correlogram \
-     --input "$SPATIAL/distance_bin_correlations.csv" \
-     --output "$FIGURES/correlogram.png"
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO"
 
    svtk plot spatial cluster-solution-scores \
-     --input "$TABLES/cluster_scores.csv" \
-     --output "$FIGURES/cluster_solution_scores.png"
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO"
 
    svtk map spatial pca-mode \
-     --input "$TABLES/pca_station_scores.parquet" \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --bounds study_area \
-     --output "$FIGURES/pca_mode_map.png" \
      --kwargs mode=PC1
 
 
@@ -241,22 +231,15 @@ Work with region polygons and corridor selections, then make maps and waveform s
      --kwargs value_col=log2_residual dep=PGA indep=station_geojson_labels compare_to="LA Basin" table=true passband="1-2 sec" model=cvmsi_20260506_material_0p6x1p2_asdf
 
    svtk map spatial event-residual \
-     --input "$TABLES/path_table.parquet" \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --bounds study_area \
-     --output "$FIGURES/event_residual_map.png" \
      --kwargs value_col=log2_residual metric=PGA station_region="LA Basin" event_region="Santa Monica Mountains"
 
    svtk map spatial corridor \
-     --input "$TABLES/corridors.parquet" \
-     --records "$TABLES/path_table.parquet" \
-     --stations "$TABLES/prepared_stations.csv" \
-     --events "$TABLES/prepared_events.csv" \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
-     --bounds study_area \
-     --output "$FIGURES/corridor_map.png"
+     --bounds study_area
 
    svtk visualize waveforms observed-synthetic-record-section \
      --input "$TABLES/corridor_waveform_records.csv" \
@@ -321,7 +304,8 @@ Write dashboard-ready Parquet datasets and launch the Streamlit dashboard apps.
      --proxy-mode
 
    svtk dashboard qc \
-     --trace-summary "$TRACE_QC" \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
      --port 8502 \
      --proxy-mode
 

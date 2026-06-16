@@ -1156,7 +1156,7 @@ svtk plot spatial azimuthal-residuals
 
 .. code-block:: bash
 
-   svtk plot spatial azimuthal-residuals [-h] --input INPUT
+   svtk plot spatial azimuthal-residuals [-h] [--input INPUT]
                                              [--output OUTPUT]
                                              [--config CONFIG]
                                              [--run-scenario RUN_SCENARIO]
@@ -1179,9 +1179,9 @@ svtk plot spatial azimuthal-residuals
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'event_centered_residuals'.
    * - ``--output``
      - No
      -
@@ -1216,7 +1216,7 @@ svtk plot spatial block-holdout-scatter
 
 .. code-block:: bash
 
-   svtk plot spatial block-holdout-scatter [-h] --input INPUT
+   svtk plot spatial block-holdout-scatter [-h] [--input INPUT]
                                                [--output OUTPUT]
                                                [--config CONFIG]
                                                [--run-scenario RUN_SCENARIO]
@@ -1239,9 +1239,9 @@ svtk plot spatial block-holdout-scatter
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the prediction_df argument.
+     - Value: ``input``. Input CSV/parquet table for the prediction_df argument. Defaults to configured output table 'block_holdout_predictions'.
    * - ``--output``
      - No
      -
@@ -1276,7 +1276,7 @@ svtk plot spatial cluster-feature-heatmap
 
 .. code-block:: bash
 
-   svtk plot spatial cluster-feature-heatmap [-h] --input INPUT
+   svtk plot spatial cluster-feature-heatmap [-h] [--input INPUT]
                                                  [--output OUTPUT]
                                                  [--config CONFIG]
                                                  [--run-scenario RUN_SCENARIO]
@@ -1299,9 +1299,9 @@ svtk plot spatial cluster-feature-heatmap
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the feature_summary_df argument.
+     - Value: ``input``. Input CSV/parquet table for the feature_summary_df argument. Defaults to configured output table 'cluster_feature_summary'.
    * - ``--output``
      - No
      -
@@ -1336,7 +1336,7 @@ svtk plot spatial cluster-solution-scores
 
 .. code-block:: bash
 
-   svtk plot spatial cluster-solution-scores [-h] --input INPUT
+   svtk plot spatial cluster-solution-scores [-h] [--input INPUT]
                                                  [--output OUTPUT]
                                                  [--config CONFIG]
                                                  [--run-scenario RUN_SCENARIO]
@@ -1359,13 +1359,13 @@ svtk plot spatial cluster-solution-scores
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the score_df argument.
+     - Value: ``input``. Input CSV/parquet table for the score_df argument. Defaults to configured output table 'cluster_solution_scores'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'cluster_solution_scores'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'cluster_solution_scores_plot'.
    * - ``--config``
      - No
      -
@@ -1396,7 +1396,7 @@ svtk plot spatial correlogram
 
 .. code-block:: bash
 
-   svtk plot spatial correlogram [-h] --input INPUT [--output OUTPUT]
+   svtk plot spatial correlogram [-h] [--input INPUT] [--output OUTPUT]
                                      [--config CONFIG]
                                      [--run-scenario RUN_SCENARIO]
                                      [--table TABLE] [--kwargs [KWARGS ...]]
@@ -1417,9 +1417,9 @@ svtk plot spatial correlogram
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the distance_df argument.
+     - Value: ``input``. Input CSV/parquet table for the distance_df argument. Defaults to configured output table 'distance_bin_correlations'.
    * - ``--output``
      - No
      -
@@ -1545,8 +1545,8 @@ svtk plot spatial path-bin-summary
 
 .. code-block:: bash
 
-   svtk plot spatial path-bin-summary [-h] --input INPUT [--output OUTPUT]
-                                          [--config CONFIG]
+   svtk plot spatial path-bin-summary [-h] [--input INPUT]
+                                          [--output OUTPUT] [--config CONFIG]
                                           [--run-scenario RUN_SCENARIO]
                                           [--table TABLE]
                                           [--kwargs [KWARGS ...]]
@@ -1567,9 +1567,9 @@ svtk plot spatial path-bin-summary
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the path_summary_df argument.
+     - Value: ``input``. Input CSV/parquet table for the path_summary_df argument. Defaults to configured output table 'path_summary'.
    * - ``--output``
      - No
      -
@@ -1664,7 +1664,7 @@ svtk plot spatial pca-explained-variance
 
 .. code-block:: bash
 
-   svtk plot spatial pca-explained-variance [-h] --input INPUT
+   svtk plot spatial pca-explained-variance [-h] [--input INPUT]
                                                 [--output OUTPUT]
                                                 [--config CONFIG]
                                                 [--run-scenario RUN_SCENARIO]
@@ -1687,9 +1687,9 @@ svtk plot spatial pca-explained-variance
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the explained_variance_df argument.
+     - Value: ``input``. Input CSV/parquet table for the explained_variance_df argument. Defaults to configured output table 'pca_explained_variance'.
    * - ``--output``
      - No
      -
@@ -1724,7 +1724,7 @@ svtk plot spatial pca-feature-loadings
 
 .. code-block:: bash
 
-   svtk plot spatial pca-feature-loadings [-h] --input INPUT
+   svtk plot spatial pca-feature-loadings [-h] [--input INPUT]
                                               [--output OUTPUT]
                                               [--config CONFIG]
                                               [--run-scenario RUN_SCENARIO]
@@ -1747,9 +1747,9 @@ svtk plot spatial pca-feature-loadings
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the feature_loadings_df argument.
+     - Value: ``input``. Input CSV/parquet table for the feature_loadings_df argument. Defaults to configured output table 'pca_feature_loadings'.
    * - ``--output``
      - No
      -
@@ -1784,8 +1784,8 @@ svtk plot spatial polar-residuals
 
 .. code-block:: bash
 
-   svtk plot spatial polar-residuals [-h] --input INPUT [--output OUTPUT]
-                                         [--config CONFIG]
+   svtk plot spatial polar-residuals [-h] [--input INPUT]
+                                         [--output OUTPUT] [--config CONFIG]
                                          [--run-scenario RUN_SCENARIO]
                                          [--table TABLE]
                                          [--kwargs [KWARGS ...]]
@@ -1806,9 +1806,9 @@ svtk plot spatial polar-residuals
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'event_centered_residuals'.
    * - ``--output``
      - No
      -
@@ -1903,7 +1903,7 @@ svtk plot spatial semivariogram
 
 .. code-block:: bash
 
-   svtk plot spatial semivariogram [-h] --input INPUT [--output OUTPUT]
+   svtk plot spatial semivariogram [-h] [--input INPUT] [--output OUTPUT]
                                        [--config CONFIG]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table TABLE] [--kwargs [KWARGS ...]]
@@ -1924,9 +1924,9 @@ svtk plot spatial semivariogram
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the distance_df argument.
+     - Value: ``input``. Input CSV/parquet table for the distance_df argument. Defaults to configured output table 'distance_bin_correlations'.
    * - ``--output``
      - No
      -

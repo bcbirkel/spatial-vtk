@@ -83,7 +83,7 @@ svtk map spatial block-holdout-error
 
 .. code-block:: bash
 
-   svtk map spatial block-holdout-error [-h] --input INPUT
+   svtk map spatial block-holdout-error [-h] [--input INPUT]
                                             [--output OUTPUT]
                                             [--config CONFIG]
                                             [--run-scenario RUN_SCENARIO]
@@ -108,9 +108,9 @@ svtk map spatial block-holdout-error
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the prediction_df argument.
+     - Value: ``input``. Input CSV/parquet table for the prediction_df argument. Defaults to configured output table 'block_holdout_predictions'.
    * - ``--output``
      - No
      -
@@ -157,7 +157,7 @@ svtk map spatial cluster
 
 .. code-block:: bash
 
-   svtk map spatial cluster [-h] --input INPUT [--output OUTPUT]
+   svtk map spatial cluster [-h] [--input INPUT] [--output OUTPUT]
                                 [--config CONFIG]
                                 [--run-scenario RUN_SCENARIO] [--table TABLE]
                                 [--kwargs [KWARGS ...]]
@@ -180,9 +180,9 @@ svtk map spatial cluster
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the assignments_df argument.
+     - Value: ``input``. Input CSV/parquet table for the assignments_df argument. Defaults to configured output table 'clusters'.
    * - ``--output``
      - No
      -
@@ -229,7 +229,7 @@ svtk map spatial corridor
 
 .. code-block:: bash
 
-   svtk map spatial corridor [-h] --input INPUT [--output OUTPUT]
+   svtk map spatial corridor [-h] [--input INPUT] [--output OUTPUT]
                                  [--config CONFIG]
                                  [--run-scenario RUN_SCENARIO] [--table TABLE]
                                  [--kwargs [KWARGS ...]]
@@ -253,13 +253,13 @@ svtk map spatial corridor
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the corridors_df argument.
+     - Value: ``input``. Input CSV/parquet table for the corridors_df argument. Defaults to configured output table 'corridors'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'corridor'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'corridor_map'.
    * - ``--config``
      - No
      -
@@ -283,15 +283,15 @@ svtk map spatial corridor
    * - ``--events``
      - No
      -
-     - Value: ``events``. Convenience table path for the events_df argument.
+     - Value: ``events``. Convenience table path for the events_df argument. Defaults to configured output table 'prepared_events'.
    * - ``--records``
      - No
      -
-     - Value: ``records``. Convenience table path for the records_df argument.
+     - Value: ``records``. Convenience table path for the records_df argument. Defaults to configured output table 'event_station_records'.
    * - ``--stations``
      - No
      -
-     - Value: ``stations``. Convenience table path for the stations_df argument.
+     - Value: ``stations``. Convenience table path for the stations_df argument. Defaults to configured output table 'prepared_stations'.
    * - ``--bounds``
      - No
      -
@@ -314,7 +314,7 @@ svtk map spatial event-residual
 
 .. code-block:: bash
 
-   svtk map spatial event-residual [-h] --input INPUT [--output OUTPUT]
+   svtk map spatial event-residual [-h] [--input INPUT] [--output OUTPUT]
                                        [--config CONFIG]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table TABLE] [--kwargs [KWARGS ...]]
@@ -337,13 +337,13 @@ svtk map spatial event-residual
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'path_table'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'event_residual'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'event_residual_map'.
    * - ``--config``
      - No
      -
@@ -412,7 +412,7 @@ svtk map spatial metric-by-model
 
 .. code-block:: bash
 
-   svtk map spatial metric-by-model [-h] --input INPUT [--output OUTPUT]
+   svtk map spatial metric-by-model [-h] [--input INPUT] [--output OUTPUT]
                                         [--config CONFIG]
                                         [--run-scenario RUN_SCENARIO]
                                         [--table TABLE]
@@ -436,13 +436,13 @@ svtk map spatial metric-by-model
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'metric_by_model'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'metric_map_by_model'.
    * - ``--config``
      - No
      -
@@ -558,7 +558,7 @@ svtk map spatial pca-mode
 
 .. code-block:: bash
 
-   svtk map spatial pca-mode [-h] --input INPUT [--output OUTPUT]
+   svtk map spatial pca-mode [-h] [--input INPUT] [--output OUTPUT]
                                  [--config CONFIG]
                                  [--run-scenario RUN_SCENARIO] [--table TABLE]
                                  [--kwargs [KWARGS ...]]
@@ -581,13 +581,13 @@ svtk map spatial pca-mode
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the station_scores_df argument.
+     - Value: ``input``. Input CSV/parquet table for the station_scores_df argument. Defaults to configured output table 'pca_station_scores'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'pca_mode'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'pca_mode_map'.
    * - ``--config``
      - No
      -
@@ -630,7 +630,7 @@ svtk map spatial redcap-cluster
 
 .. code-block:: bash
 
-   svtk map spatial redcap-cluster [-h] --input INPUT [--output OUTPUT]
+   svtk map spatial redcap-cluster [-h] [--input INPUT] [--output OUTPUT]
                                        [--config CONFIG]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table TABLE] [--kwargs [KWARGS ...]]
@@ -653,13 +653,13 @@ svtk map spatial redcap-cluster
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the redcap_df argument.
+     - Value: ``input``. Input CSV/parquet table for the redcap_df argument. Defaults to configured output table 'redcap_clusters'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'redcap_cluster'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'redcap_cluster_map'.
    * - ``--config``
      - No
      -
@@ -702,7 +702,7 @@ svtk map spatial residual-grid
 
 .. code-block:: bash
 
-   svtk map spatial residual-grid [-h] --input INPUT [--output OUTPUT]
+   svtk map spatial residual-grid [-h] [--input INPUT] [--output OUTPUT]
                                       [--config CONFIG]
                                       [--run-scenario RUN_SCENARIO]
                                       [--table TABLE] [--kwargs [KWARGS ...]]
@@ -725,9 +725,9 @@ svtk map spatial residual-grid
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the grid_df argument.
+     - Value: ``input``. Input CSV/parquet table for the grid_df argument. Defaults to configured output table 'metric_field'.
    * - ``--output``
      - No
      -
@@ -774,7 +774,7 @@ svtk map spatial score
 
 .. code-block:: bash
 
-   svtk map spatial score [-h] --input INPUT [--output OUTPUT]
+   svtk map spatial score [-h] [--input INPUT] [--output OUTPUT]
                               [--config CONFIG] [--run-scenario RUN_SCENARIO]
                               [--table TABLE] [--kwargs [KWARGS ...]]
                               [--kwargs-json KWARGS_JSON] [--bounds BOUNDS]
@@ -795,9 +795,9 @@ svtk map spatial score
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
      - No
      -
@@ -844,7 +844,7 @@ svtk map spatial station-bias
 
 .. code-block:: bash
 
-   svtk map spatial station-bias [-h] --input INPUT [--output OUTPUT]
+   svtk map spatial station-bias [-h] [--input INPUT] [--output OUTPUT]
                                      [--config CONFIG]
                                      [--run-scenario RUN_SCENARIO]
                                      [--table TABLE] [--kwargs [KWARGS ...]]
@@ -867,13 +867,13 @@ svtk map spatial station-bias
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the station_df argument.
+     - Value: ``input``. Input CSV/parquet table for the station_df argument. Defaults to configured output table 'station_bias'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_bias'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_residual_map'.
    * - ``--config``
      - No
      -
@@ -916,7 +916,7 @@ svtk map spatial station-metric
 
 .. code-block:: bash
 
-   svtk map spatial station-metric [-h] --input INPUT [--output OUTPUT]
+   svtk map spatial station-metric [-h] [--input INPUT] [--output OUTPUT]
                                        [--config CONFIG]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table TABLE] [--kwargs [KWARGS ...]]
@@ -939,13 +939,13 @@ svtk map spatial station-metric
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_metric'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_metric_map'.
    * - ``--config``
      - No
      -
