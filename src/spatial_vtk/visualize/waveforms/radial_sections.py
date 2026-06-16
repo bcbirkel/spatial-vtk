@@ -14,7 +14,7 @@ from matplotlib.ticker import MaxNLocator
 
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import title_with_subtitle
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 from spatial_vtk.visualize.record_sections import normalize_trace, trace_to_array
 from spatial_vtk.visualize.selection import FigureSelection
 
@@ -43,6 +43,9 @@ def plot_event_radial_trace_section(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot traces ordered by azimuth with a station/event map panel.
 
@@ -72,6 +75,14 @@ def plot_event_radial_trace_section(
         Contextily provider selector.
     basemap_kwargs
         Extra basemap keyword arguments.
+    write_sidecar
+        Whether to write a CSV/JSON sidecar with the radial-section rows
+        plotted in the figure. Sidecars are written only when the figure is
+        saved.
+    sidecar_rows
+        Maximum plotted/source rows to write. ``None`` writes all rows.
+    sidecar_dir
+        Optional directory for sidecar files.
 
     Returns
     -------
@@ -93,7 +104,19 @@ def plot_event_radial_trace_section(
     _section_panel(ax_section, df, trace_col, station_col, distance_col, azimuth_col, dt_col, normalize, time_limit_s)
     fig.suptitle(title_with_subtitle(title, filter_label), y=0.985)
     fig.subplots_adjust(top=0.88, bottom=0.11, left=0.07, right=0.92)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=df,
+        source_rows=records_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "event_radial_trace_section"},
+    )
 
 
 def _map_panel(ax: plt.Axes, df: pd.DataFrame, sta_lon: str, sta_lat: str, event_lon: str, event_lat: str, azimuth_col: str, add_basemap: bool, basemap_source: str, basemap_kwargs: dict[str, Any] | None) -> None:

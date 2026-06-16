@@ -1371,6 +1371,9 @@ def plot_event_trace_comparison(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot observed and synthetic traces sorted by source distance.
 
@@ -1414,6 +1417,13 @@ def plot_event_trace_comparison(
         Figure title.
     filter_label
         Optional second title line describing any bandpass or lowpass filter.
+    write_sidecar
+        Whether to write a CSV/JSON sidecar with the trace rows plotted in
+        the figure. Sidecars are written only when the figure is saved.
+    sidecar_rows
+        Maximum plotted/source rows to write. ``None`` writes all rows.
+    sidecar_dir
+        Optional directory for sidecar files.
 
     Returns
     -------
@@ -1432,6 +1442,7 @@ def plot_event_trace_comparison(
     has_time_offsets = observed_time_offset_col in df.columns or synthetic_time_offset_col in df.columns
     fig, axes = plt.subplots(1, len(components), figsize=(max(6.0, 4.8 * len(components)), 6.4), dpi=180, sharey=True)
     axes = np.atleast_1d(axes)
+    plotted_frames: list[pd.DataFrame] = []
     for ax, component in zip(axes, components):
         subset = df if component is None else df.loc[df[component_col].astype(str) == str(component)].copy()
         if distance_col in subset.columns:
@@ -1443,6 +1454,7 @@ def plot_event_trace_comparison(
             subset = subset.sort_values(station_col)
         if max_records is not None:
             subset = subset.head(int(max_records))
+        plotted_frames.append(subset.copy())
         if subset.empty:
             ax.text(0.5, 0.5, "No trace rows", ha="center", va="center", transform=ax.transAxes)
             continue
@@ -1506,7 +1518,20 @@ def plot_event_trace_comparison(
     axes[0].legend(loc="upper right")
     fig.suptitle(title_with_subtitle(title, filter_label), y=0.99)
     fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.95))
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = pd.concat(plotted_frames, ignore_index=True, sort=False) if plotted_frames else pd.DataFrame()
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=records_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "event_trace_comparison", "max_records": max_records},
+    )
 
 
 def _resolve_trace_comparison_gain(

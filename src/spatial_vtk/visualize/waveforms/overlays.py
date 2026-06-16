@@ -13,7 +13,7 @@ from matplotlib.ticker import MaxNLocator
 
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import title_with_subtitle
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 from spatial_vtk.visualize.record_sections import normalize_trace, trace_to_array
 from spatial_vtk.visualize.selection import FigureSelection
 
@@ -45,6 +45,9 @@ def plot_waveform_overlay_matrix(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot selected waveform groups with a shared map panel.
 
@@ -89,6 +92,14 @@ def plot_waveform_overlay_matrix(
         Contextily provider selector.
     basemap_kwargs
         Extra basemap keyword arguments.
+    write_sidecar
+        Whether to write a CSV/JSON sidecar with the selected waveform rows
+        plotted in the figure. Sidecars are written only when the figure is
+        saved.
+    sidecar_rows
+        Maximum plotted/source rows to write. ``None`` writes all rows.
+    sidecar_dir
+        Optional directory for sidecar files.
 
     Returns
     -------
@@ -124,7 +135,23 @@ def plot_waveform_overlay_matrix(
     fig.suptitle(full_title, y=0.985)
     top_margin = 0.8 if full_title.count("\n") >= 2 else 0.88 if "\n" in full_title else 0.93
     fig.subplots_adjust(top=top_margin)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=work,
+        source_rows=records_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={
+            "figure_type": "waveform_overlay_matrix",
+            "max_groups": int(max_groups),
+            "max_traces_per_group": int(max_traces_per_group),
+        },
+    )
 
 
 def _plot_map(ax: plt.Axes, df: pd.DataFrame, group_col: str, sta_lon: str, sta_lat: str, event_lon: str, event_lat: str, add_basemap: bool, basemap_source: str, basemap_kwargs: dict[str, Any] | None) -> None:

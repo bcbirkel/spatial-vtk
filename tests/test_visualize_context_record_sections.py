@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import matplotlib
@@ -27,7 +28,11 @@ from spatial_vtk.visualize.record_sections import (
     plot_record_section,
 )
 from spatial_vtk.visualize.selection import FigureSelection
-from spatial_vtk.visualize.waveforms import plot_station_event_waveform_map
+from spatial_vtk.visualize.waveforms import (
+    plot_event_radial_trace_section,
+    plot_station_event_waveform_map,
+    plot_waveform_overlay_matrix,
+)
 
 
 def _assert_png(path: Path) -> None:
@@ -260,6 +265,89 @@ def test_record_section_figures_write_outputs(tmp_path: Path) -> None:
     ]
     for output in outputs:
         _assert_png(output)
+
+
+def test_waveform_figures_write_optional_row_sidecars(tmp_path: Path) -> None:
+    """Waveform figures should expose the plotted rows when requested."""
+
+    records = _records().assign(
+        dt=0.05,
+        synthetic_dt=0.05,
+        sta_lon=[-118.4, -118.4, -118.2, -118.2, -118.0, -118.0],
+        sta_lat=[34.0, 34.0, 34.1, 34.1, 34.2, 34.2],
+        event_lon=-118.3,
+        event_lat=34.05,
+        azimuth_deg=[20.0, 30.0, 120.0, 130.0, 240.0, 250.0],
+        group=["A", "A", "A", "A", "B", "B"],
+    )
+    sidecar_dir = tmp_path / "sidecars"
+
+    plot_event_trace_comparison(
+        records,
+        tmp_path / "trace_comparison.png",
+        max_records=1,
+        write_sidecar=True,
+        sidecar_rows=2,
+        sidecar_dir=sidecar_dir,
+    )
+    plot_record_section(
+        records,
+        tmp_path / "record_section.png",
+        components=["Z", "R"],
+        max_records=1,
+        write_sidecar=True,
+        sidecar_rows=2,
+        sidecar_dir=sidecar_dir,
+    )
+    plot_observed_synthetic_record_section(
+        records,
+        tmp_path / "obs_syn_section.png",
+        components=["Z", "R"],
+        max_records=1,
+        write_sidecar=True,
+        sidecar_rows=2,
+        sidecar_dir=sidecar_dir,
+    )
+    plot_station_event_waveform_map(
+        records,
+        tmp_path / "waveform_map.png",
+        add_basemap=False,
+        max_traces=2,
+        write_sidecar=True,
+        sidecar_rows=2,
+        sidecar_dir=sidecar_dir,
+    )
+    plot_event_radial_trace_section(
+        records,
+        tmp_path / "radial_section.png",
+        add_basemap=False,
+        write_sidecar=True,
+        sidecar_rows=2,
+        sidecar_dir=sidecar_dir,
+    )
+    plot_waveform_overlay_matrix(
+        records,
+        tmp_path / "overlay_matrix.png",
+        add_basemap=False,
+        write_sidecar=True,
+        sidecar_rows=2,
+        sidecar_dir=sidecar_dir,
+    )
+
+    expected_counts = {
+        "trace_comparison": 2,
+        "record_section": 2,
+        "obs_syn_section": 2,
+        "waveform_map": 2,
+        "radial_section": 6,
+        "overlay_matrix": 6,
+    }
+    for stem, row_count in expected_counts.items():
+        meta = json.loads((sidecar_dir / f"{stem}.json").read_text(encoding="utf-8"))
+        assert meta["plot_row_count"] == row_count
+        assert meta["written_row_count"] == min(2, row_count)
+        assert (sidecar_dir / f"{stem}.csv").exists()
+        assert (sidecar_dir / f"{stem}.source.csv").exists()
 
 
 def test_record_sections_apply_selection_before_truncation(tmp_path: Path) -> None:

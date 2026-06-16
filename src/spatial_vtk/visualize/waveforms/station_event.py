@@ -18,7 +18,7 @@ import pandas as pd
 
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import title_with_subtitle
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 from spatial_vtk.visualize.record_sections import normalize_trace, trace_to_array
 from spatial_vtk.visualize.selection import FigureSelection
 
@@ -51,6 +51,9 @@ def plot_station_event_waveform_map(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot station/event geometry beside waveform traces.
 
@@ -97,6 +100,13 @@ def plot_station_event_waveform_map(
         Contextily provider selector.
     basemap_kwargs
         Extra basemap keyword arguments.
+    write_sidecar
+        Whether to write a CSV/JSON sidecar with the waveform rows plotted in
+        the figure. Sidecars are written only when the figure is saved.
+    sidecar_rows
+        Maximum plotted/source rows to write. ``None`` writes all rows.
+    sidecar_dir
+        Optional directory for sidecar files.
 
     Returns
     -------
@@ -120,7 +130,19 @@ def plot_station_event_waveform_map(
     resolved_time_offset_col = _resolve_time_offset_col(df, waveform_col=waveform_col, time_offset_col=time_offset_col)
     _plot_trace_stack(trace_ax, df, waveform_col, station_col, component_col, dt_col, normalize, time_offset_col=resolved_time_offset_col, time_limits_s=x_limits, distance_col=distance_col)
     fig.suptitle(title_with_subtitle(title, filter_label), y=0.995)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=df,
+        source_rows=records_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "station_event_waveform_map", "max_traces": int(max_traces)},
+    )
 
 
 def _plot_map_panel(ax: plt.Axes, df: pd.DataFrame, sta_lon: str, sta_lat: str, event_lon: str, event_lat: str, add_basemap: bool, basemap_source: str, basemap_kwargs: dict[str, Any] | None) -> None:

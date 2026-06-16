@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from spatial_vtk.visualize.figure_context import title_with_subtitle
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 from spatial_vtk.visualize.selection import FigureSelection
 
 
@@ -339,6 +339,9 @@ def plot_record_section(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot one or more component record sections.
 
@@ -370,6 +373,14 @@ def plot_record_section(
         Optional second title line describing any bandpass or lowpass filter.
     default_dt
         Sample interval used for array inputs without metadata.
+    write_sidecar
+        Whether to write a CSV/JSON sidecar with the record-section rows
+        plotted in the figure. Sidecars are written only when the figure is
+        saved.
+    sidecar_rows
+        Maximum plotted/source rows to write. ``None`` writes all rows.
+    sidecar_dir
+        Optional directory for sidecar files.
 
     Returns
     -------
@@ -391,7 +402,19 @@ def plot_record_section(
         ax.text(0.5, 0.5, "No record-section rows", ha="center", va="center", transform=ax.transAxes)
         ax.set_axis_off()
         ax.set_title(title)
-        return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+        return finish_figure_with_sidecar(
+            fig,
+            output_path,
+            outpath=outpath,
+            showfig=showfig,
+            savefig=savefig,
+            sidecar_df=rows,
+            source_rows=input_records if isinstance(input_records, pd.DataFrame) else None,
+            write_sidecar=write_sidecar,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
+            metadata={"figure_type": "record_section", "max_records": max_records},
+        )
 
     if components is None:
         component_values = sorted(value for value in rows["component"].dropna().astype(str).unique().tolist() if value)
@@ -399,11 +422,13 @@ def plot_record_section(
     components = [str(component).upper() for component in components]
     fig, axes = plt.subplots(1, len(components), figsize=(max(6.0, 4.8 * len(components)), 6.6), dpi=180, sharey=True)
     axes = np.atleast_1d(axes)
+    plotted_frames: list[pd.DataFrame] = []
     for ax, component in zip(axes, components):
         subset = rows if component == "TRACE" else rows.loc[rows["component"].astype(str).str.upper().isin([component, ""])]
         subset = subset.sort_values(["distance_km", "station"], na_position="last")
         if max_records is not None:
             subset = subset.head(int(max_records))
+        plotted_frames.append(subset.copy())
         if subset.empty:
             ax.text(0.5, 0.5, f"No {component} traces", ha="center", va="center", transform=ax.transAxes)
             ax.set_title(f"{component} component")
@@ -429,7 +454,20 @@ def plot_record_section(
         axes[0].set_ylabel("Record")
     fig.suptitle(title_with_subtitle(title, filter_label), y=0.99)
     fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.95))
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = pd.concat(plotted_frames, ignore_index=True, sort=False) if plotted_frames else pd.DataFrame()
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=input_records if isinstance(input_records, pd.DataFrame) else None,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "record_section", "max_records": max_records},
+    )
 
 
 def plot_observed_synthetic_record_section(
@@ -457,6 +495,9 @@ def plot_observed_synthetic_record_section(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot observed and synthetic traces on shared record-section axes.
 
@@ -496,6 +537,14 @@ def plot_observed_synthetic_record_section(
         Sample interval used for array inputs without metadata.
     time_limit_s
         Optional maximum seconds to display from each trace start.
+    write_sidecar
+        Whether to write a CSV/JSON sidecar with the observed/synthetic rows
+        plotted in the figure. Sidecars are written only when the figure is
+        saved.
+    sidecar_rows
+        Maximum plotted/source rows to write. ``None`` writes all rows.
+    sidecar_dir
+        Optional directory for sidecar files.
 
     Returns
     -------
@@ -517,6 +566,7 @@ def plot_observed_synthetic_record_section(
     has_time_offsets = observed_time_offset_col in rows.columns or synthetic_time_offset_col in rows.columns
     fig, axes = plt.subplots(1, len(components), figsize=(max(6.0, 4.8 * len(components)), 6.6), dpi=180, sharey=True)
     axes = np.atleast_1d(axes)
+    plotted_frames: list[pd.DataFrame] = []
     for ax, component in zip(axes, components):
         subset = rows
         if component_col and component_col in rows.columns and component != "TRACE":
@@ -528,6 +578,7 @@ def plot_observed_synthetic_record_section(
             subset = subset.sort_values(station_col)
         if max_records is not None:
             subset = subset.head(int(max_records))
+        plotted_frames.append(subset.copy())
         if subset.empty:
             ax.text(0.5, 0.5, f"No {component} pairs", ha="center", va="center", transform=ax.transAxes)
             ax.set_title(f"{component} component")
@@ -571,7 +622,20 @@ def plot_observed_synthetic_record_section(
     axes[0].legend(loc="upper right")
     fig.suptitle(title_with_subtitle(title, filter_label), y=0.99)
     fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.95))
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = pd.concat(plotted_frames, ignore_index=True, sort=False) if plotted_frames else pd.DataFrame()
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=records_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "observed_synthetic_record_section", "max_records": max_records},
+    )
 
 
 __all__ = [
