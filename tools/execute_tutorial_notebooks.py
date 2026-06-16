@@ -10,6 +10,7 @@ The script does not save executed notebooks back to the repository.
 from __future__ import annotations
 
 import argparse
+import csv
 import importlib.util
 import json
 import os
@@ -38,6 +39,18 @@ NOTEBOOK_RUNTIME_MODULES = {
     "ipykernel": "ipykernel",
     "IPython": "IPython",
 }
+TUTORIAL_EXAMPLE_ROOT = Path("data/examples/example_five_event_subset")
+TUTORIAL_SYNTHETIC_MODEL = "cvmsi_20260506_material_0p6x1p2_asdf"
+TUTORIAL_REQUIRED_FILES = (
+    Path("data/examples/configuration/example_spatial_vtk_config.yaml"),
+    TUTORIAL_EXAMPLE_ROOT / "metadata" / "events.csv",
+    TUTORIAL_EXAMPLE_ROOT / "metadata" / "selected_stations.csv",
+    TUTORIAL_EXAMPLE_ROOT / "metadata" / "selected_event_stations.csv",
+    TUTORIAL_EXAMPLE_ROOT / "metadata" / "example_path_regions.geojson",
+    Path("data/examples/data_formats/example_site_metadata.csv"),
+    Path("data/examples/data_formats/example_metrics_snapshot.csv"),
+    Path("data/examples/data_formats/example_metrics_large_qc_passed.parquet"),
+)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -50,6 +63,8 @@ def main(argv: list[str] | None = None) -> int:
     tutorial_output = repo_root / args.tutorial_output
 
     check_notebook_runtime()
+    if not args.skip_example_data_check:
+        check_tutorial_example_data(repo_root)
     if args.clean:
         _clean_path(tutorial_output)
     report_path.parent.mkdir(parents=True, exist_ok=True)
@@ -137,6 +152,53 @@ def missing_notebook_runtime_modules(required: dict[str, str] | None = None) -> 
 
     modules = NOTEBOOK_RUNTIME_MODULES if required is None else required
     return [label for label, module in modules.items() if importlib.util.find_spec(module) is None]
+
+
+def check_tutorial_example_data(repo_root: Path) -> None:
+    """Exit with a clear message when committed tutorial example data is incomplete."""
+
+    missing = missing_tutorial_example_data(repo_root)
+    if not missing:
+        return
+    preview = ", ".join(missing[:20])
+    suffix = f", ... {len(missing) - 20} more" if len(missing) > 20 else ""
+    raise SystemExit(
+        "Tutorial example data is incomplete. The standard notebooks expect "
+        f"the committed five-event NPZ subset. Missing {len(missing)} file(s): {preview}{suffix}"
+    )
+
+
+def missing_tutorial_example_data(repo_root: Path) -> list[str]:
+    """Return required tutorial data files that are missing from a checkout."""
+
+    missing: list[str] = []
+    for relative_path in TUTORIAL_REQUIRED_FILES:
+        if not (repo_root / relative_path).exists():
+            missing.append(str(relative_path))
+
+    records_path = repo_root / TUTORIAL_EXAMPLE_ROOT / "metadata" / "selected_event_stations.csv"
+    if not records_path.exists():
+        return missing
+
+    with records_path.open("r", encoding="utf-8", newline="") as handle:
+        records = list(csv.DictReader(handle))
+    if not records:
+        missing.append(str(records_path.relative_to(repo_root)) + " (empty)")
+        return missing
+
+    for row in records:
+        event_id = str(row.get("event_id", "")).strip()
+        station = str(row.get("station", "")).strip()
+        model = str(row.get("synthetic_model", "")).strip() or TUTORIAL_SYNTHETIC_MODEL
+        if not event_id or not station:
+            continue
+        observed = TUTORIAL_EXAMPLE_ROOT / "waveforms_npz" / "observed" / event_id / f"{station}.npz"
+        synthetic = TUTORIAL_EXAMPLE_ROOT / "waveforms_npz" / "synthetics" / model / event_id / f"{station}.npz"
+        if not (repo_root / observed).exists():
+            missing.append(str(observed))
+        if not (repo_root / synthetic).exists():
+            missing.append(str(synthetic))
+    return missing
 
 
 def scan_notebook_outputs(notebook: Any) -> list[dict[str, Any]]:
@@ -237,6 +299,11 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--clean", action="store_true", help="Delete outputs/tutorials before running.")
     parser.add_argument("--allow-warnings", action="store_true", help="Do not fail when warning-like cell output is captured.")
     parser.add_argument("--no-stop-on-failure", dest="stop_on_failure", action="store_false", help="Continue after a notebook failure.")
+    parser.add_argument(
+        "--skip-example-data-check",
+        action="store_true",
+        help="Skip the committed tutorial example-data preflight for custom notebook subsets.",
+    )
     parser.set_defaults(stop_on_failure=True)
     return parser.parse_args(argv)
 

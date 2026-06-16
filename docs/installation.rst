@@ -115,6 +115,10 @@ example data, install the notebook extra and run:
 
    python tools/execute_tutorial_notebooks.py --clean
 
+The tutorial checker first verifies that the committed five-event metadata,
+snapshot tables, and observed/synthetic NPZ waveform subset are present. It
+stops before cleaning ``outputs/tutorials`` if the example data is incomplete.
+
 You are ready to continue once the import prints a version, ``svtk --help``
 shows the command groups, and the tests or tutorial notebook check pass if you
 chose to run them.

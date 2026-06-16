@@ -125,6 +125,11 @@ Changelog
    every figure that enables row-provenance sidecars also passes the configured
    sidecar directory. Added a notebook regression to keep sidecar directory
    controls from being dropped.
+   Added a tutorial example-data preflight to
+   ``tools/execute_tutorial_notebooks.py``. The clean tutorial execution gate
+   now checks the committed five-event metadata, metric snapshots, and
+   observed/synthetic NPZ waveform subset before deleting ``outputs/tutorials``
+   or starting notebook execution.
    Added a tutorial-notebook regression that rejects committed notebook cells
    containing private/local cluster paths or host names, keeping public
    notebooks runnable from a fresh source checkout.

@@ -26,7 +26,9 @@ To verify the full standard tutorial from a clean output directory, run:
 
 The command executes the seven notebooks against the committed example data,
 writes ``outputs/tutorials/notebook_execution_report.json``, and fails if a
-notebook raises an error or emits warning-like cell output.
+notebook raises an error or emits warning-like cell output. It also checks the
+committed five-event metadata, snapshot tables, and observed/synthetic NPZ
+waveform subset before cleaning ``outputs/tutorials``.
 
 Large-Run Driver Notebooks
 --------------------------
