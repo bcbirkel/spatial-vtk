@@ -1,6 +1,6 @@
 # Large-Run Notebook Set
 
-These notebooks mirror the seven tutorial steps, but they are designed for full CARC-scale runs. They default to skipping existing outputs and submitting heavy work to Slurm or printing the exact command to run.
+These notebooks mirror the seven tutorial steps, but they are designed for full large-dataset runs. They default to skipping existing outputs and submitting heavy work to Slurm or printing the exact command to run.
 
 Environment switches:
 
