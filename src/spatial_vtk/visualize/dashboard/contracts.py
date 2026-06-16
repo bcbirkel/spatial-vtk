@@ -9,10 +9,14 @@ keeps schema errors clear and independent from the dashboard UI.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+
+from spatial_vtk.config.outputs import resolve_output_path
+from spatial_vtk.config.runtime import SpatialVTKConfig
 
 
 METRICS_TABLES: tuple[str, ...] = ("model_metric_band", "station_rollup", "event_rollup", "path_hex")
@@ -80,6 +84,111 @@ def load_dashboard_summary_tables(
     return tables
 
 
+def dashboard_summary_table_paths(
+    summary_root: str | Path | None = None,
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    create_parent: bool = True,
+    format: str = "parquet",
+) -> dict[str, Path]:
+    """Return expected dashboard summary table paths.
+
+    Existing ``.parquet`` or ``.csv`` files are reported as-is. Missing tables
+    are represented with the configured output format so notebook status tables
+    can show exactly which dashboard tab inputs are not ready yet.
+    """
+
+    suffix = _summary_suffix(format)
+    root = (
+        Path(summary_root).expanduser()
+        if summary_root is not None
+        else resolve_output_path("dashboard_summaries", kind="dashboard", cfg=cfg, create_parent=create_parent)
+    )
+    if create_parent:
+        root.mkdir(parents=True, exist_ok=True)
+    return {
+        f"{name}_summary_path": _find_table(root, name, required=False) or root / f"{name}{suffix}"
+        for name in METRICS_TABLES
+    }
+
+
+def dashboard_output_paths(
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    create_parent: bool = True,
+    include_summary_tables: bool = True,
+    summary_format: str = "parquet",
+) -> dict[str, Path]:
+    """Resolve the standard metrics and QC dashboard inputs from config."""
+
+    paths = {
+        "metrics_long_path": resolve_output_path("metrics_long", kind="table", cfg=cfg, create_parent=create_parent),
+        "qc_trace_summary_path": resolve_output_path("qc_trace_summary", kind="table", cfg=cfg, create_parent=create_parent),
+        "qc_inventory_path": resolve_output_path("qc_inventory", kind="table", cfg=cfg, create_parent=create_parent),
+        "qc_inventory_overlap_path": resolve_output_path("qc_inventory_overlap", kind="table", cfg=cfg, create_parent=create_parent),
+        "metrics_dashboard_root": resolve_output_path("metrics_dashboard", kind="dashboard", cfg=cfg, create_parent=create_parent),
+        "dashboard_summary_root": resolve_output_path("dashboard_summaries", kind="dashboard", cfg=cfg, create_parent=create_parent),
+    }
+    if include_summary_tables:
+        paths.update(
+            dashboard_summary_table_paths(
+                paths["dashboard_summary_root"],
+                cfg=cfg,
+                create_parent=create_parent,
+                format=summary_format,
+            )
+        )
+    return paths
+
+
+def dashboard_output_status_frame(
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    create_parent: bool = True,
+    include_summary_tables: bool = True,
+    summary_format: str = "parquet",
+) -> pd.DataFrame:
+    """Return file readiness for standard dashboard inputs and summaries."""
+
+    return pd.DataFrame(
+        _status_rows(
+            dashboard_output_paths(
+                cfg=cfg,
+                create_parent=create_parent,
+                include_summary_tables=include_summary_tables,
+                summary_format=summary_format,
+            )
+        )
+    )
+
+
+def _status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
+    """Return display-ready status rows for dashboard paths."""
+
+    rows: list[dict[str, object]] = []
+    for name, raw_path in paths.items():
+        path = Path(raw_path)
+        row: dict[str, object] = {
+            "name": str(name),
+            "path": str(path),
+            "exists": path.exists(),
+            "size_gb": None,
+            "modified": None,
+        }
+        if path.exists():
+            stat = path.stat()
+            row["size_gb"] = round(stat.st_size / 1024**3, 3)
+            row["modified"] = _format_mtime(stat.st_mtime)
+        rows.append(row)
+    return rows
+
+
+def _format_mtime(mtime: float) -> str:
+    """Format one filesystem modification time."""
+
+    return datetime.fromtimestamp(mtime).strftime("%Y-%m-%d %H:%M:%S")
+
+
 def validate_dashboard_tables(tables: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
     """Validate standard metrics dashboard tables."""
 
@@ -127,6 +236,17 @@ def _find_table(root: Path, name: str, *, required: bool = True) -> Path | None:
     raise FileNotFoundError(f"Could not find {name}.parquet or {name}.csv under {root}.")
 
 
+def _summary_suffix(format: str) -> str:
+    """Return the file suffix for one dashboard summary output format."""
+
+    clean = str(format).strip().lower()
+    if clean == "parquet":
+        return ".parquet"
+    if clean == "csv":
+        return ".csv"
+    raise ValueError("format must be 'csv' or 'parquet'.")
+
+
 def _empty_dashboard_table(name: str) -> pd.DataFrame:
     """Return an empty table with the schema needed by one dashboard tab."""
 
@@ -153,6 +273,9 @@ __all__ = [
     "OPTIONAL_METRICS_TABLE_COLUMNS",
     "QCDashboardPaths",
     "REQUIRED_METRICS_TABLE_COLUMNS",
+    "dashboard_output_paths",
+    "dashboard_output_status_frame",
+    "dashboard_summary_table_paths",
     "load_dashboard_summary_tables",
     "load_metric_long_table",
     "read_dashboard_table",

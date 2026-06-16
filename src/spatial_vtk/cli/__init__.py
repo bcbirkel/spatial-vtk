@@ -777,7 +777,7 @@ def _resolve_metrics_dashboard_paths(
         resolved_config_path = _effective_config_path(config_path)
         return Path(metrics_root).expanduser(), Path(summary_root).expanduser(), resolved_config_path
 
-    from spatial_vtk.config import resolve_output_path
+    from spatial_vtk.visualize.dashboard.contracts import dashboard_output_paths
 
     config = _optional_cli_config(config_path, run_scenario=run_scenario)
     if config is None:
@@ -785,9 +785,9 @@ def _resolve_metrics_dashboard_paths(
             "No dashboard roots were provided and no Spatial-VTK config was found. "
             "Pass --metrics-root/--summary-root, pass --config, or run 'svtk config set CONFIG_PATH'."
         )
-    table_root = resolve_output_path("metrics_long", kind="table", cfg=config).parent
-    resolved_metrics_root = Path(metrics_root).expanduser() if metrics_root else table_root / "dashboard_metrics"
-    resolved_summary_root = Path(summary_root).expanduser() if summary_root else table_root / "dashboard_summaries"
+    paths = dashboard_output_paths(cfg=config, include_summary_tables=False)
+    resolved_metrics_root = Path(metrics_root).expanduser() if metrics_root else paths["metrics_dashboard_root"]
+    resolved_summary_root = Path(summary_root).expanduser() if summary_root else paths["dashboard_summary_root"]
     resolved_config_path = str(config.config_path) if config.config_path is not None else None
     return resolved_metrics_root, resolved_summary_root, resolved_config_path
 

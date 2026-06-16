@@ -539,8 +539,8 @@ outputs:
 
     captured = capsys.readouterr()
     assert "Metrics dashboard data:" in captured.out
-    assert Path(launched["metrics_root"]) == tmp_path / "outputs" / "tables" / "dashboard_metrics"
-    assert Path(launched["summary_root"]) == tmp_path / "outputs" / "tables" / "dashboard_summaries"
+    assert Path(launched["metrics_root"]) == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    assert Path(launched["summary_root"]) == tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
     assert Path(launched["config_path"]) == config.resolve()
     assert launched["server_port"] == 8555
     assert launched["proxy_mode"] is True

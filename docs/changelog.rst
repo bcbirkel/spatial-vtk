@@ -7,6 +7,11 @@ Changelog
    ``outputs/tutorials`` directory and fail on notebook errors or warning-like
    cell output. The source-install notebook extra and conda environment now
    list ``nbclient`` and ``nbformat`` explicitly.
+   Added config-backed dashboard output helpers that report the metrics
+   dashboard root, dashboard summary root, QC trace table, and per-tab summary
+   files in one status table. The dashboard CLI now uses the configured
+   ``outputs.dashboards`` roots by default, and Step 7 notebooks use the shared
+   helper instead of spelling out each dashboard path.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

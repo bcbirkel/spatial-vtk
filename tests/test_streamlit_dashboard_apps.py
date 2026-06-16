@@ -18,6 +18,9 @@ from spatial_vtk.visualize.dashboard import (
     build_qc_histogram_figure,
     build_station_folium_map,
     build_streamlit_command,
+    dashboard_output_paths,
+    dashboard_output_status_frame,
+    dashboard_summary_table_paths,
     display_table,
     filter_dashboard_metrics,
     filter_qc_dashboard_rows,
@@ -101,6 +104,37 @@ def test_dashboard_summaries_preserve_transform_columns():
     assert "med_anderson_2004_gof" in columns
     assert "med_olsen_mayhew_gof" in columns
     assert "component" in station.columns
+
+
+def test_dashboard_output_helpers_use_configured_roots(tmp_path):
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+
+    paths = dashboard_output_paths(cfg=cfg)
+    assert paths["metrics_long_path"] == tmp_path / "outputs" / "tables" / "metrics_long.parquet"
+    assert paths["metrics_dashboard_root"] == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    assert paths["dashboard_summary_root"] == tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
+    assert paths["station_rollup_summary_path"] == tmp_path / "outputs" / "dashboards" / "dashboard_summaries" / "station_rollup.parquet"
+
+    existing = paths["dashboard_summary_root"] / "station_rollup.csv"
+    existing.write_text("station,model,metric,band,n\nSTA,m1,PGA,1-2 sec,1\n", encoding="utf-8")
+    summary_paths = dashboard_summary_table_paths(paths["dashboard_summary_root"])
+    assert summary_paths["station_rollup_summary_path"] == existing
+
+    status = dashboard_output_status_frame(cfg=cfg)
+    assert "name" in status.columns
+    assert "metrics_dashboard_root" in set(status["name"])
+    assert "path_hex_summary_path" in set(status["name"])
 
 
 def test_dashboard_summaries_do_not_require_residual_column():
