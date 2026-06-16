@@ -95,6 +95,10 @@ Changelog
    reference and added an import regression test so dashboard readiness/filter
    helpers and figure sidecar helpers remain available without importing the
    optional Streamlit app modules.
+   Figure sidecar metadata now counts common event, station, passband, metric,
+   model, component, and PSA-period column aliases so JSON provenance remains
+   informative for both ``band``/``passband`` and canonicalized station/event
+   table variants.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

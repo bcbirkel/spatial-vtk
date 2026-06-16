@@ -218,17 +218,18 @@ def figure_sidecar_dimension_counts(df: pd.DataFrame | None, *, prefix: str) -> 
     if df is None:
         return {}
     keys = {
-        "event": "event_id",
-        "station": "station",
-        "component": "component",
-        "model": "model",
-        "metric": "metric",
-        "passband": "band",
-        "period": "period_s",
+        "event": ("event_id", "event", "event_title"),
+        "station": ("station", "station_id", "station_code"),
+        "component": ("component", "channel_component"),
+        "model": ("model", "model_name"),
+        "metric": ("metric", "metric_name"),
+        "passband": ("band", "passband", "period_band"),
+        "period": ("period_s", "period"),
     }
     counts: dict[str, int] = {}
-    for label, column in keys.items():
-        if column in df.columns:
+    for label, candidates in keys.items():
+        column = next((candidate for candidate in candidates if candidate in df.columns), None)
+        if column is not None:
             counts[f"{prefix}_{label}_count"] = int(df[column].nunique(dropna=True))
     return counts
 

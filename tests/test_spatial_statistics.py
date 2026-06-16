@@ -416,9 +416,9 @@ def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -
     source_rows = pd.DataFrame(
         {
             "event_id": ["e1", "e2", "e3", "e4"],
-            "station": ["STA", "STA", "STB", "STC"],
+            "station_id": ["STA", "STA", "STB", "STC"],
             "metric": ["PGA", "PGA", "PGA", "PGA"],
-            "band": ["1-2 sec", "1-2 sec", "1-2 sec", "1-2 sec"],
+            "passband": ["1-2 sec", "1-2 sec", "2-3 sec", "2-3 sec"],
             "model": ["m1", "m1", "m1", "m2"],
         }
     )
@@ -447,6 +447,8 @@ def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -
     assert metadata["plot_station_count"] == 3
     assert metadata["source_station_count"] == 3
     assert metadata["source_model_count"] == 2
+    assert metadata["plot_passband_count"] == 1
+    assert metadata["source_passband_count"] == 2
     assert metadata["selection"] == ["PGA", "1-2 sec"]
 
 
