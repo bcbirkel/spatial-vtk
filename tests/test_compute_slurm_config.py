@@ -9,7 +9,9 @@ from spatial_vtk.config.compute import (
     SlurmSettings,
     slurm_header,
     slurm_settings_from_config,
+    submit_or_print_slurm_script,
     submit_slurm_script,
+    write_inline_python_slurm_script,
 )
 
 
@@ -120,3 +122,50 @@ def test_submit_slurm_script_splits_submit_command(
 
     assert captured["command"] == ("sbatch", "--parsable", str(script))
     assert submission.job_id == "12345"
+
+
+def test_write_inline_python_slurm_script_uses_shared_header(tmp_path: Path) -> None:
+    """Notebook-style inline Python scripts should use shared SLURM settings."""
+
+    script = tmp_path / "inline.slurm"
+    settings = SlurmSettings(
+        python_command="python",
+        environment_setup=("conda activate spatial-vtk",),
+        job_name="svtk-inline",
+        log_dir=str(tmp_path / "logs"),
+        working_directory="/project/spatial-vtk",
+        memory="12G",
+        cpus_per_task=3,
+    )
+
+    written = write_inline_python_slurm_script(
+        script,
+        """
+        print("hello")
+        """,
+        settings,
+    )
+
+    text = written.read_text(encoding="utf-8")
+    assert "#SBATCH --job-name=svtk-inline" in text
+    assert "#SBATCH --mem=12G" in text
+    assert "#SBATCH --cpus-per-task=3" in text
+    assert "cd /project/spatial-vtk" in text
+    assert "conda activate spatial-vtk" in text
+    assert "python - <<'PYJOB'" in text
+    assert 'print("hello")' in text
+
+
+def test_submit_or_print_slurm_script_can_skip_submission(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """Notebook drivers should be able to print a manual sbatch command."""
+
+    script = tmp_path / "job.slurm"
+    script.write_text("#!/bin/bash\n", encoding="utf-8")
+    settings = SlurmSettings(python_command="python", submit_command="sbatch --parsable")
+
+    result = submit_or_print_slurm_script(script, settings=settings, submit=False)
+
+    captured = capsys.readouterr().out
+    assert result is None
+    assert f"script: {script}" in captured
+    assert f"sbatch --parsable {script}" in captured

@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 import shlex
 import subprocess
+import textwrap
 from typing import Any
 
 from spatial_vtk.config.runtime import SpatialVTKConfig, deep_merge
@@ -165,10 +166,100 @@ def submit_slurm_script(script_path: str | Path, settings: SlurmSettings | None 
     )
 
 
+def write_inline_python_slurm_script(
+    script_path: str | Path,
+    python_body: str,
+    settings: SlurmSettings,
+    *,
+    here_doc_token: str = "PYJOB",
+) -> Path:
+    """Write a SLURM script that runs an inline Python body.
+
+    Parameters
+    ----------
+    script_path
+        Destination shell script.
+    python_body
+        Python source code to execute inside the job.
+    settings
+        Normalized SLURM settings. The configured ``python_command``,
+        environment setup, log directory, and working directory are used.
+    here_doc_token
+        Shell here-document marker. Override only if the Python body contains
+        the default marker.
+
+    Returns
+    -------
+    pathlib.Path
+        Written executable script path.
+    """
+
+    target = Path(script_path).expanduser()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    body = textwrap.dedent(python_body).strip()
+    token = str(here_doc_token).strip() or "PYJOB"
+    lines = slurm_header(settings)
+    lines.extend(
+        [
+            f"{settings.python_command} - <<'{token}'",
+            body,
+            token,
+            "",
+        ]
+    )
+    target.write_text("\n".join(lines), encoding="utf-8")
+    target.chmod(0o755)
+    return target
+
+
+def submit_or_print_slurm_script(
+    script_path: str | Path,
+    *,
+    settings: SlurmSettings | None = None,
+    submit: bool = False,
+) -> SlurmSubmission | None:
+    """Submit a SLURM script or print the manual submission command.
+
+    Parameters
+    ----------
+    script_path
+        Script to submit.
+    settings
+        Optional settings that provide the submit command.
+    submit
+        When true, run ``sbatch`` or ``settings.submit_command``. When false,
+        print a manual submission command and return ``None``.
+
+    Returns
+    -------
+    SlurmSubmission or None
+        Submission details when submitted; otherwise ``None``.
+    """
+
+    script = Path(script_path).expanduser()
+    print(f"script: {script}")
+    if not submit:
+        submit_command = settings.submit_command if settings is not None else "sbatch"
+        command = " ".join([*shlex.split(submit_command), shlex.quote(str(script))])
+        print("Set submit=True, or submit manually:")
+        print(command)
+        return None
+    result = submit_slurm_script(script, settings)
+    if result.stdout:
+        print(result.stdout)
+    if result.stderr:
+        print(result.stderr)
+    if result.returncode != 0:
+        raise RuntimeError(f"SLURM submit failed with return code {result.returncode}")
+    return result
+
+
 __all__ = [
     "SlurmSettings",
     "SlurmSubmission",
     "slurm_header",
     "slurm_settings_from_config",
+    "submit_or_print_slurm_script",
     "submit_slurm_script",
+    "write_inline_python_slurm_script",
 ]

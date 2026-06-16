@@ -8,7 +8,9 @@ from spatial_vtk.config.compute import (
     SlurmSubmission,
     slurm_header,
     slurm_settings_from_config,
+    submit_or_print_slurm_script,
     submit_slurm_script,
+    write_inline_python_slurm_script,
 )
 from spatial_vtk.config.labels import (
     METRIC_DISPLAY_NAMES,
@@ -146,7 +148,9 @@ __all__ = [
     "resolve_named_bounds",
     "slurm_header",
     "slurm_settings_from_config",
+    "submit_or_print_slurm_script",
     "submit_slurm_script",
+    "write_inline_python_slurm_script",
     "set_saved_config_path",
     "resolve_metric_names",
     "resolve_run_defaults",
