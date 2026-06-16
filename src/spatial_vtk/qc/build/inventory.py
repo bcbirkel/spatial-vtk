@@ -469,6 +469,7 @@ def build_waveform_trace_qc_summary(
             global_reasons = list(trace_summary.pop("global_reasons"))
             if load_reason:
                 global_reasons = [load_reason]
+            row_load_message = load_message or str(trace_summary.get("preprocessing_message", ""))
             pick_onset_rel_s = _lookup_onset_pick(
                 pick_lookup,
                 source=source,
@@ -530,7 +531,7 @@ def build_waveform_trace_qc_summary(
                     "valid_end_sample": trace_summary["valid_end_sample"],
                     "sample_interval_s": trace_summary["dt"],
                     "sample_count": int(np.asarray(trace_summary.get("samples", [])).size),
-                    "load_message": load_message,
+                    "load_message": row_load_message,
                     "onset_rel_s": band_summary["onset_rel_s"],
                     "snr_rms": band_summary["snr_rms"],
                     "noise_rms": band_summary["noise_rms"],
@@ -936,15 +937,22 @@ def _trace_quality_summary(
         min_end_after_origin_s=min_end_after_origin_s,
         min_record_length_s=min_record_length_s,
     )
+    global_reasons = list(global_reasons) if reject_global else []
     processed = samples
     processed_dt = dt
+    preprocessing_message = ""
     if samples.size and np.isfinite(dt) and dt > 0.0:
-        result = apply_waveform_preprocessing_with_metadata(samples, dt, preprocessing)
-        processed = result.data
-        processed_dt = result.dt
-        record_length_s = float(processed.size * processed_dt) if np.isfinite(processed_dt) and processed_dt > 0.0 else record_length_s
-        times_s = start_rel_s + np.arange(processed.size, dtype=float) * processed_dt if processed.size else np.asarray([], dtype=float)
-        end_rel_s = float(start_rel_s + record_length_s) if np.isfinite(record_length_s) else float("nan")
+        try:
+            result = apply_waveform_preprocessing_with_metadata(samples, dt, preprocessing)
+        except ValueError as exc:
+            preprocessing_message = str(exc)
+            global_reasons.append("preprocessing_error")
+        else:
+            processed = result.data
+            processed_dt = result.dt
+            record_length_s = float(processed.size * processed_dt) if np.isfinite(processed_dt) and processed_dt > 0.0 else record_length_s
+            times_s = start_rel_s + np.arange(processed.size, dtype=float) * processed_dt if processed.size else np.asarray([], dtype=float)
+            end_rel_s = float(start_rel_s + record_length_s) if np.isfinite(record_length_s) else float("nan")
     valid_mask = _processing_valid_mask(np.asarray(processed).size, preprocessing)
     valid_start_sample, valid_end_sample = _valid_sample_bounds(valid_mask)
     if (
@@ -971,7 +979,8 @@ def _trace_quality_summary(
         "valid_end_rel_s": valid_end_rel_s,
         "valid_start_sample": valid_start_sample if valid_start_sample is not None else np.nan,
         "valid_end_sample": valid_end_sample if valid_end_sample is not None else np.nan,
-        "global_reasons": global_reasons if reject_global else [],
+        "global_reasons": global_reasons,
+        "preprocessing_message": preprocessing_message,
     }
 
 

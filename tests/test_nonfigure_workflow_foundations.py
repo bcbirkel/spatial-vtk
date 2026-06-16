@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 
 from spatial_vtk.io.artifacts import ArtifactRegistry, ArtifactSpec
-from spatial_vtk.config import SpatialVTKConfig
+from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.io.master_lists import build_master_event_list, build_master_station_list
 from spatial_vtk.io.metadata import prepare_event_station_table
 from spatial_vtk.io.plans import MetricPlan, compare_metric_plan_to_table, expected_metric_rows_from_inventory
@@ -761,6 +761,7 @@ def test_qc_availability_table_can_reflect_post_qc_failures() -> None:
 
 
 def test_waveform_preprocessing_workflow_writes_processed_files(tmp_path) -> None:
+    clear_active_config()
     samples = np.sin(2.0 * np.pi * 1.0 * np.arange(0.0, 2.0, 0.01))
     trace = _trace()
     trace.data = samples
