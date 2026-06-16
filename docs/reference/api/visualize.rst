@@ -80,12 +80,6 @@ Dashboard Helpers
 .. automodule:: spatial_vtk.visualize.dashboard.maps
    :members:
 
-.. automodule:: spatial_vtk.visualize.dashboard.streamlit_metrics
-   :members:
-
-.. automodule:: spatial_vtk.visualize.dashboard.streamlit_qc
-   :members:
-
 .. automodule:: spatial_vtk.visualize.dashboard.tables
    :members:
 
