@@ -218,11 +218,12 @@ outputs:
 
     assert context.repo_root == repo.resolve()
     assert context.config_path == config_path.resolve()
-    assert context.outputs_root == repo / "run_outputs"
-    assert context.tables_dir == repo / "run_outputs" / "tables"
-    assert context.figures_dir == repo / "run_outputs" / "figures"
-    assert context.dashboards_dir == repo / "run_outputs" / "dashboards"
-    assert context.slurm_dir == repo / "run_outputs" / "slurm"
+    expected_outputs = config_path.parent / "run_outputs"
+    assert context.outputs_root == expected_outputs
+    assert context.tables_dir == expected_outputs / "tables"
+    assert context.figures_dir == expected_outputs / "figures"
+    assert context.dashboards_dir == expected_outputs / "dashboards"
+    assert context.slurm_dir == expected_outputs / "slurm"
     assert context.submit_slurm is True
     assert context.overwrite is True
     assert context.preview_rows == 12
