@@ -137,16 +137,23 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     def _dummy_plot(frame: pd.DataFrame, *, output_path, **kwargs) -> None:
         Path(output_path).write_text(str(len(frame)), encoding="utf-8")
 
-    output = context.write_metric_plot("debug_rows", pga_item, _dummy_plot)
+    output = context.write_metric_plot("debug_rows", pga_item, _dummy_plot, df=station_summary, source_df=pga_item["df"])
     assert output is not None
     sidecar = context.sidecar_output_dir / f"{output.stem}.csv"
+    source_sidecar = context.sidecar_output_dir / f"{output.stem}.source.csv"
     metadata_path = sidecar.with_suffix(".json")
     assert sidecar.exists()
+    assert source_sidecar.exists()
     assert metadata_path.exists()
     sidecar_rows = pd.read_csv(sidecar)
+    source_sidecar_rows = pd.read_csv(source_sidecar)
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     assert len(sidecar_rows) == 1
-    assert metadata["source_row_count"] == 2
+    assert len(source_sidecar_rows) == 1
+    assert metadata["plot_row_count"] == 2
+    assert metadata["source_row_count"] == 3
+    assert metadata["source_written_row_count"] == 1
+    assert metadata["source_sampled"] is True
     assert metadata["written_row_count"] == 1
     assert metadata["sampled"] is True
 
@@ -167,16 +174,24 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
         psa_item,
         _dummy_png_plot,
         df_factory=lambda period_item: context.station_period_summary_for_map(period_item["df"]),
+        source_df_factory=lambda period_item: period_item["df"],
         required=("station", "sta_lon", "sta_lat", "period_s", "log2_residual"),
     )
     assert psa_output is not None
     psa_sidecar = context.sidecar_output_dir / f"{psa_output.stem}.csv"
+    psa_source_sidecar = context.sidecar_output_dir / f"{psa_output.stem}.source.csv"
     psa_metadata = json.loads(psa_sidecar.with_suffix(".json").read_text(encoding="utf-8"))
     psa_rows = pd.read_csv(psa_sidecar)
+    psa_source_rows = pd.read_csv(psa_source_sidecar)
     assert psa_sidecar.exists()
+    assert psa_source_sidecar.exists()
     assert set(psa_rows["__svtk_panel_period_s"]) == {1.0, 2.0}
     assert set(psa_rows["period_s"]) == {1.0, 2.0}
+    assert set(psa_source_rows["__svtk_panel_period_s"]) == {1.0, 2.0}
+    assert set(psa_source_rows["period_s"]) == {1.0, 2.0}
+    assert psa_metadata["plot_row_count"] == 2
     assert psa_metadata["source_row_count"] == 2
+    assert psa_metadata["source_written_row_count"] == 2
     assert psa_metadata["written_row_count"] == 2
     assert psa_metadata["sampled"] is False
 

@@ -133,7 +133,7 @@ class MetricFigureContext:
         if context.write_sidecars:
             sidecar_dir = context.sidecar_output_dir
             rows_text = "all plotted rows" if context.sidecar_rows is None or context.sidecar_rows <= 0 else f"up to {context.sidecar_rows:,} plotted row(s)"
-            print(f"Figure sidecars enabled: {sidecar_dir} ({rows_text})")
+            print(f"Figure sidecars enabled: {sidecar_dir} ({rows_text}; source-row sidecars are written for aggregated figures)")
         return context
 
     @classmethod
@@ -334,6 +334,7 @@ class MetricFigureContext:
         item: dict[str, Any],
         func: Callable[..., Any],
         df: pd.DataFrame | None = None,
+        source_df: pd.DataFrame | None = None,
         required: tuple[str, ...] | list[str] = (),
         value_col: str | None = None,
         forward_value_col: bool = False,
@@ -347,7 +348,7 @@ class MetricFigureContext:
         output = self.figure_dir / f"{self.figure_name(base, item, resolved_value_col)}.png"
         if output.exists() and not self.overwrite:
             print(f"skip {output.name}: exists")
-            self.write_figure_sidecar(output, plot_df)
+            self.write_figure_sidecar(output, plot_df, source_df=source_df)
             return output
         missing = [column for column in required if column not in plot_df.columns]
         if missing:
@@ -358,7 +359,7 @@ class MetricFigureContext:
         try:
             func(plot_df, output_path=output, showfig=showfig, savefig=True, **kwargs)
             plt.close("all")
-            self.write_figure_sidecar(output, plot_df)
+            self.write_figure_sidecar(output, plot_df, source_df=source_df)
             print(f"wrote {output}")
             return output
         except Exception as exc:
@@ -372,6 +373,7 @@ class MetricFigureContext:
         item: dict[str, Any],
         func: Callable[..., Any],
         df_factory: Callable[[dict[str, Any]], pd.DataFrame] | None = None,
+        source_df_factory: Callable[[dict[str, Any]], pd.DataFrame | None] | None = None,
         required: tuple[str, ...] | list[str] = (),
         value_col: str | None = None,
         forward_value_col: bool = False,
@@ -388,6 +390,7 @@ class MetricFigureContext:
                 item,
                 func,
                 df=df_factory(item) if df_factory else None,
+                source_df=source_df_factory(item) if source_df_factory else None,
                 required=required,
                 value_col=resolved_value_col,
                 forward_value_col=forward_value_col,
@@ -397,18 +400,27 @@ class MetricFigureContext:
         output = self.figure_dir / f"{self.figure_name(base, item, resolved_value_col)}.png"
         if output.exists() and not self.overwrite:
             print(f"skip {output.name}: exists")
-            self.write_figure_sidecar(output, self.plot_rows(df_factory(item) if df_factory else item["df"]))
+            self.write_figure_sidecar(
+                output,
+                self.plot_rows(df_factory(item) if df_factory else item["df"]),
+                source_df=source_df_factory(item) if source_df_factory else None,
+            )
             return output
         ncols = min(3, max(1, len(period_items)))
         nrows = int(np.ceil(len(period_items) / ncols))
         fig, axes = plt.subplots(nrows, ncols, figsize=(5.8 * ncols, 4.7 * nrows), dpi=160, squeeze=False)
         axes_flat = axes.ravel()
         sidecar_frames: list[pd.DataFrame] = []
+        source_sidecar_frames: list[pd.DataFrame] = []
         with TemporaryDirectory() as tmpdir_raw:
             tmpdir = Path(tmpdir_raw)
             for ax, period_item in zip(axes_flat, period_items):
                 plot_df = self.plot_rows(df_factory(period_item) if df_factory else period_item["df"])
                 sidecar_frames.append(plot_df.assign(__svtk_panel_period_s=period_item.get("period_s")))
+                if source_df_factory is not None:
+                    source_rows = source_df_factory(period_item)
+                    if source_rows is not None:
+                        source_sidecar_frames.append(source_rows.copy().assign(__svtk_panel_period_s=period_item.get("period_s")))
                 missing = [column for column in required if column not in plot_df.columns]
                 if missing:
                     ax.text(0.5, 0.5, f"Missing columns: {missing}", ha="center", va="center", wrap=True)
@@ -435,7 +447,8 @@ class MetricFigureContext:
         fig.tight_layout(rect=[0.01, 0.01, 0.99, 0.96])
         fig.savefig(output, bbox_inches="tight")
         if sidecar_frames:
-            self.write_figure_sidecar(output, pd.concat(sidecar_frames, ignore_index=True, sort=False))
+            source_rows = pd.concat(source_sidecar_frames, ignore_index=True, sort=False) if source_sidecar_frames else None
+            self.write_figure_sidecar(output, pd.concat(sidecar_frames, ignore_index=True, sort=False), source_df=source_rows)
         if showfig:
             plt.show()
         plt.close(fig)
@@ -584,8 +597,20 @@ class MetricFigureContext:
             return df.copy()
         return _sample_rows(df, n=self.sample_rows)
 
-    def write_figure_sidecar(self, figure_path: str | Path, df: pd.DataFrame) -> Path | None:
-        """Optionally write a CSV and metadata file for rows used by one figure."""
+    def write_figure_sidecar(
+        self,
+        figure_path: str | Path,
+        df: pd.DataFrame,
+        *,
+        source_df: pd.DataFrame | None = None,
+    ) -> Path | None:
+        """Optionally write CSV and metadata files for rows used by one figure.
+
+        The main sidecar contains the exact rows passed to the plotting
+        function. When a figure is created from an aggregated table, callers can
+        also pass ``source_df`` to write a ``*.source.csv`` sidecar containing
+        the pre-aggregation rows that fed those plotted rows.
+        """
 
         if not self.write_sidecars:
             return None
@@ -593,21 +618,38 @@ class MetricFigureContext:
         sidecar_dir.mkdir(parents=True, exist_ok=True)
         figure = Path(figure_path)
         sidecar_path = sidecar_dir / f"{figure.stem}.csv"
-        rows = df
-        sampled = False
-        if self.sidecar_rows is not None and self.sidecar_rows > 0 and len(rows) > self.sidecar_rows:
-            rows = _sample_rows(rows, n=self.sidecar_rows)
-            sampled = True
+        rows, sampled = _sidecar_rows(df, limit=self.sidecar_rows)
         rows.to_csv(sidecar_path, index=False)
+        source_path = None
+        source_written_count = None
+        source_sampled = False
+        source_row_count = None
+        if source_df is not None:
+            source_path = sidecar_dir / f"{figure.stem}.source.csv"
+            source_rows, source_sampled = _sidecar_rows(source_df, limit=self.sidecar_rows)
+            source_rows.to_csv(source_path, index=False)
+            source_row_count = int(len(source_df))
+            source_written_count = int(len(source_rows))
         metadata = {
             "figure": str(figure),
             "sidecar": str(sidecar_path),
-            "source_row_count": int(len(df)),
+            "plot_row_count": int(len(df)),
             "written_row_count": int(len(rows)),
             "sampled": bool(sampled),
             "value_col": self.value_col,
             "station_aggregation": self.station_aggregation,
         }
+        if source_path is not None:
+            metadata.update(
+                {
+                    "source_sidecar": str(source_path),
+                    "source_row_count": source_row_count,
+                    "source_written_row_count": source_written_count,
+                    "source_sampled": bool(source_sampled),
+                }
+            )
+        else:
+            metadata["source_row_count"] = int(len(df))
         sidecar_path.with_suffix(".json").write_text(json.dumps(metadata, indent=2, sort_keys=True), encoding="utf-8")
         return sidecar_path
 
@@ -751,6 +793,14 @@ def _sample_rows(df: pd.DataFrame, *, n: int) -> pd.DataFrame:
     if len(df) <= n:
         return df.copy()
     return df.sample(n=n, random_state=42).copy()
+
+
+def _sidecar_rows(df: pd.DataFrame, *, limit: int | None) -> tuple[pd.DataFrame, bool]:
+    """Return rows for a sidecar and whether they were sampled."""
+
+    if limit is not None and limit > 0 and len(df) > limit:
+        return _sample_rows(df, n=limit), True
+    return df.copy(), False
 
 
 def _aggregate_grouped_values(grouped: Any, aggregation: str) -> pd.Series:
