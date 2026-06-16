@@ -152,7 +152,7 @@ def scatterplot(
         ax.set_axis_off()
         return finish_figure(fig, output_path, outpath=outpath, output_key="scatterplot", showfig=showfig, savefig=savefig)
     plot_df, x_col, y_col, dep_labels, resolved_value_col = _scatter_long_form(work, indep=indep, dep=dep, value_col=value_col)
-    fig, ax = plt.subplots(figsize=(7.2, 5.0), dpi=180)
+    fig, ax = plt.subplots(figsize=(8.4, 5.2), dpi=180)
     if plot_df.empty:
         ax.text(0.5, 0.5, "No rows matched the scatterplot request", ha="center", va="center", transform=ax.transAxes)
         ax.set_axis_off()
@@ -177,7 +177,8 @@ def scatterplot(
             continue
         legend_label = _group_display_label(label, group_col) if label is not None else None
         color = colors[group_index]
-        ax.scatter(x[finite], y[finite], s=30, alpha=0.76, color=color, label=legend_label)
+        point_label = legend_label if _fit_labels_points(fit) else "_nolegend_"
+        ax.scatter(x[finite], y[finite], s=10, alpha=0.18, color=color, label=point_label, rasterized=int(finite.sum()) > 5000)
         if not x_axis["categorical"] and not y_axis["categorical"]:
             draw_scatter_fit(ax, x[finite].to_numpy(dtype=float), y[finite].to_numpy(dtype=float), fit_method=fit, lowess_frac=lowess_frac, color=color, label=legend_label)
     _apply_categorical_axis(ax, x_axis, axis="x")
@@ -461,8 +462,30 @@ def _draw_scatter_legend(ax: plt.Axes, group_col: str | None) -> None:
     """Draw a scatterplot legend only when labeled artists are present."""
 
     handles, labels = ax.get_legend_handles_labels()
-    if handles and labels:
-        ax.legend(frameon=True, fontsize=8, title=_scatter_group_title(group_col))
+    pairs = [(handle, label) for handle, label in zip(handles, labels) if label and not str(label).startswith("_")]
+    if not pairs:
+        return
+    handles, labels = zip(*pairs)
+    ax.figure.subplots_adjust(right=0.72)
+    ax.legend(
+        handles,
+        labels,
+        loc="center left",
+        bbox_to_anchor=(1.01, 0.5),
+        frameon=True,
+        fontsize=7,
+        title=_scatter_group_title(group_col),
+    )
+
+
+def _fit_labels_points(fit: str | Callable[[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray] | pd.DataFrame] | None) -> bool:
+    """Return whether point markers should carry legend labels."""
+
+    if fit is None:
+        return True
+    if callable(fit):
+        return False
+    return str(fit).strip().lower().replace("_", "-") in {"point-to-point", "points", "connect", "connected"}
 
 
 def plot_azimuthal_residuals(

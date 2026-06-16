@@ -17,7 +17,8 @@ from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure
 def plot_vs30_scatter(df: pd.DataFrame, output_path: str | Path | None = None, *, vs30_col: str = "Vs30", value_col: str = "residual", **kwargs) -> plt.Figure:
     """Plot metric residuals or scores against Vs30."""
 
-    return plot_metric_trend(df, output_path, x_col=vs30_col, y_col=value_col, title=kwargs.pop("title", "Metric Response vs Vs30"), **kwargs)
+    resolved_vs30_col = _resolve_vs30_column(df, vs30_col)
+    return plot_metric_trend(df, output_path, x_col=resolved_vs30_col, y_col=value_col, title=kwargs.pop("title", "Metric Response vs Vs30"), **kwargs)
 
 
 def plot_geology_boxplot(
@@ -54,3 +55,13 @@ def plot_geology_boxplot(
 
 
 __all__ = ["plot_geology_boxplot", "plot_vs30_scatter"]
+
+
+def _resolve_vs30_column(df: pd.DataFrame, requested: str) -> str:
+    """Resolve common Vs30 column spellings before plotting."""
+
+    candidates = [requested, "Vs30", "vs30", "VS30", "site_vs30", "station_vs30", "vs30_mps", "Vs30_mps"]
+    for column in candidates:
+        if column in df.columns:
+            return column
+    raise KeyError(f"Dataframe must include a Vs30 column. Tried: {list(dict.fromkeys(candidates))}")

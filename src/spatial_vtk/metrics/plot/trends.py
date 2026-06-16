@@ -39,10 +39,11 @@ def plot_metric_trend(
 
     plot_df, subset_label = apply_figure_spatial_selection(df, spatial_selection, **spatial_kwargs)
     _require_columns(plot_df, [x_col, y_col, metric_col])
-    fig, ax = plt.subplots(figsize=(7.5, 5.0), dpi=180)
+    fig, ax = plt.subplots(figsize=(8.4, 5.2), dpi=180)
     groups = [(None, plot_df)] if group_col is None or group_col not in plot_df.columns else list(plot_df.groupby(group_col, dropna=False))
     selected_fit = fit_method if fit_method is not None else fit
     palette = plt.get_cmap("tab10")
+    plotted_groups = 0
     for group_index, (label, subset) in enumerate(groups):
         x = pd.to_numeric(subset[x_col], errors="coerce")
         y = pd.to_numeric(subset[y_col], errors="coerce")
@@ -50,12 +51,14 @@ def plot_metric_trend(
         plot_subset = pd.DataFrame({"x": x[finite], "y": y[finite]}).sort_values("x")
         if plot_subset.empty:
             continue
+        plotted_groups += 1
         legend_label = _group_label(label, group_col=group_col) if label is not None else None
         color = palette(group_index % 10)
         if connect_points and selected_fit is None and len(plot_subset) > 1:
-            ax.plot(plot_subset["x"], plot_subset["y"], marker="o", markersize=4.0, linewidth=1.1, alpha=0.78, color=color, label=legend_label)
+            ax.plot(plot_subset["x"], plot_subset["y"], marker="o", markersize=3.2, linewidth=1.0, alpha=0.55, color=color, label=legend_label)
         else:
-            ax.scatter(plot_subset["x"], plot_subset["y"], s=24, alpha=0.7, color=color, label=legend_label)
+            point_label = legend_label if _fit_labels_points(selected_fit) else "_nolegend_"
+            ax.scatter(plot_subset["x"], plot_subset["y"], s=10, alpha=0.18, color=color, label=point_label, rasterized=len(plot_subset) > 5000)
             draw_scatter_fit(
                 ax,
                 plot_subset["x"].to_numpy(dtype=float),
@@ -65,6 +68,17 @@ def plot_metric_trend(
                 color=color,
                 label=legend_label,
             )
+    if plotted_groups == 0:
+        ax.text(
+            0.5,
+            0.5,
+            f"No finite {display_label(x_col)} / {value_column_display_name(y_col)} values to plot",
+            ha="center",
+            va="center",
+            transform=ax.transAxes,
+        )
+        ax.set_axis_off()
+        return finish_figure(fig, output_path, outpath=outpath, output_key=output_key, showfig=showfig, savefig=savefig)
     if _uses_zero_reference(y_col):
         ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
     metric_part = ""
@@ -85,7 +99,7 @@ def plot_metric_trend(
     )
     ax.grid(True, alpha=0.25)
     if group_col and group_col in df.columns:
-        ax.legend(frameon=True, fontsize=8)
+        _add_outside_legend(fig, ax)
     return finish_figure(fig, output_path, outpath=outpath, output_key=output_key, showfig=showfig, savefig=savefig)
 
 
@@ -218,7 +232,8 @@ def _draw_trend_axis(ax: plt.Axes, df: pd.DataFrame, *, x_col: str, y_col: str, 
         if fit_method is None:
             ax.plot(plot_subset["x"], plot_subset["y"], marker="o", markersize=4.0, linewidth=1.1, alpha=0.78, color=color, label=legend_label)
         else:
-            ax.scatter(plot_subset["x"], plot_subset["y"], s=24, alpha=0.7, color=color, label=legend_label)
+            point_label = legend_label if _fit_labels_points(fit_method) else "_nolegend_"
+            ax.scatter(plot_subset["x"], plot_subset["y"], s=10, alpha=0.18, color=color, label=point_label, rasterized=len(plot_subset) > 5000)
             draw_scatter_fit(ax, plot_subset["x"].to_numpy(dtype=float), plot_subset["y"].to_numpy(dtype=float), fit_method=fit_method, lowess_frac=lowess_frac, color=color, label=legend_label)
 
 
@@ -243,6 +258,38 @@ def _add_figure_legend(fig: plt.Figure, source_ax: plt.Axes) -> None:
         frameon=True,
         fontsize=8,
     )
+
+
+def _add_outside_legend(fig: plt.Figure, source_ax: plt.Axes) -> None:
+    """Place one-axis trend legends outside the data area."""
+
+    handles, labels = source_ax.get_legend_handles_labels()
+    pairs = [(handle, label) for handle, label in zip(handles, labels) if label and not str(label).startswith("_")]
+    if not pairs:
+        return
+    handles, labels = zip(*pairs)
+    if source_ax.legend_:
+        source_ax.legend_.remove()
+    fig.subplots_adjust(right=0.72)
+    source_ax.legend(
+        handles,
+        labels,
+        loc="center left",
+        bbox_to_anchor=(1.01, 0.5),
+        frameon=True,
+        fontsize=7,
+        title=None,
+    )
+
+
+def _fit_labels_points(fit_method: FitMethod) -> bool:
+    """Return whether points, rather than fit lines, should carry labels."""
+
+    if fit_method is None:
+        return True
+    if callable(fit_method):
+        return False
+    return str(fit_method).strip().lower().replace("_", "-") in {"point-to-point", "points", "connect", "connected"}
 
 
 def _group_label(label: object, *, group_col: str | None) -> str:

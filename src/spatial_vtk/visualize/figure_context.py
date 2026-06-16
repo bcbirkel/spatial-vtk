@@ -336,6 +336,7 @@ def value_color_settings(
     *,
     diverging_cmap: str = "seismic",
     sequential_cmap: str = "viridis",
+    robust_percentile: float | None = 98.0,
 ) -> tuple[str, float, float]:
     """Return a consistent colormap and color limits for plotted values.
 
@@ -350,6 +351,10 @@ def value_color_settings(
     diverging_cmap, sequential_cmap
         Colormaps used for signed residual-like/log/centered values and
         positive/score-like values.
+    robust_percentile
+        Optional upper percentile for color limits. Residual-like fields use a
+        symmetric ``+/- robust_percentile`` absolute-value limit, which keeps a
+        few extreme failed rows from washing out the plotted spatial pattern.
 
     Returns
     -------
@@ -362,10 +367,21 @@ def value_color_settings(
     if finite.size == 0:
         return diverging_cmap if value_uses_zero_reference(value_col, df) else sequential_cmap, -1.0, 1.0
     if value_uses_zero_reference(value_col, df):
-        vmax = max(float(np.nanmax(np.abs(finite))), 1.0e-12)
+        if robust_percentile is not None and finite.size >= 10:
+            percentile = min(max(float(robust_percentile), 50.0), 100.0)
+            vmax = float(np.nanpercentile(np.abs(finite), percentile))
+        else:
+            vmax = float(np.nanmax(np.abs(finite)))
+        vmax = max(vmax, 1.0e-12)
         return diverging_cmap, -vmax, vmax
-    vmin = float(np.nanmin(finite))
-    vmax = float(np.nanmax(finite))
+    if robust_percentile is not None and finite.size >= 10:
+        upper = min(max(float(robust_percentile), 50.0), 100.0)
+        lower = 100.0 - upper
+        vmin = float(np.nanpercentile(finite, lower))
+        vmax = float(np.nanpercentile(finite, upper))
+    else:
+        vmin = float(np.nanmin(finite))
+        vmax = float(np.nanmax(finite))
     if np.isclose(vmin, vmax):
         pad = max(abs(vmax) * 0.05, 1.0e-6)
         vmin -= pad

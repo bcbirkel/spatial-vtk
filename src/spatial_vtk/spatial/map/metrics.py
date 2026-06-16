@@ -10,10 +10,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from spatial_vtk.config.labels import model_display_name, value_column_display_name
+from spatial_vtk.config.labels import metric_display_name, model_display_name, value_column_display_name
 from spatial_vtk.spatial.calculate.geojson import load_geojson_polygons, select_geojson_polygons
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
-from spatial_vtk.visualize.figure_context import apply_figure_context, value_color_settings
+from spatial_vtk.visualize.figure_context import apply_figure_context, context_value_label, figure_context_text, value_color_settings
 from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure_spatial_selection
 
@@ -84,7 +84,7 @@ def plot_residual_grid(
     lon_col: str = "lon",
     lat_col: str = "lat",
     value_col: str = "residual",
-    cell_size_deg: float | tuple[float, float] | None = None,
+    cell_size_deg: float | tuple[float, float] | None = 0.025,
     title: str = "Residual Grid",
     add_basemap: bool = True,
     basemap_source: str = "Esri.WorldImagery",
@@ -105,7 +105,7 @@ def plot_residual_grid(
     plot_df = _coarsen_grid(grid_df, lon_col=lon_col, lat_col=lat_col, value_col=value_col, cell_size_deg=cell_size_deg)
     pivot = plot_df.pivot_table(index=lat_col, columns=lon_col, values=value_col, aggfunc="mean")
     values = pivot.to_numpy(dtype=float)
-    cmap, vmin, vmax = _color_settings(values, value_col)
+    cmap, vmin, vmax = _color_settings(values, value_col, plot_df)
     fig, ax = plt.subplots(figsize=(8.0, 6.8), dpi=180, constrained_layout=True)
     dx, dy = _grid_cell_spacing(pivot, cell_size_deg=cell_size_deg)
     west = float(pivot.columns.min()) - 0.5 * dx
@@ -119,7 +119,7 @@ def plot_residual_grid(
     image = ax.imshow(values, extent=(west, east, south, north), origin="lower", cmap=cmap, vmin=vmin, vmax=vmax, alpha=0.72, zorder=3, aspect="auto")
     _set_geographic_aspect(ax)
     fig.colorbar(image, ax=ax, pad=0.045, label=value_column_display_name(value_col))
-    _finish(ax, title, plot_df, value_col=value_col)
+    _finish(ax, _title_with_value(title, value_col, plot_df), plot_df, value_col=value_col)
     return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
 
 
@@ -150,18 +150,29 @@ def plot_metric_map_by_model(
     fig, axes = plt.subplots(1, max(len(models), 1), figsize=(5.8 * max(len(models), 1), 3.8), dpi=180, squeeze=False)
     axes_flat = axes.ravel()
     values_all = pd.to_numeric(plot_df[value_col], errors="coerce")
-    cmap, vmin, vmax = _color_settings(values_all.to_numpy(dtype=float), value_col)
+    cmap, vmin, vmax = _color_settings(values_all.to_numpy(dtype=float), value_col, plot_df)
     for ax, model in zip(axes_flat, models or [""]):
         subset = plot_df.loc[plot_df[model_col].astype(str) == model] if models else plot_df
         _set_bounds(ax, subset, lon_col, lat_col)
         if add_basemap:
             add_contextily_basemap(ax, crs="EPSG:4326", primary_source=basemap_source, **dict(basemap_kwargs or {}))
         scatter = ax.scatter(subset[lon_col], subset[lat_col], c=pd.to_numeric(subset[value_col], errors="coerce"), cmap=cmap, vmin=vmin, vmax=vmax, s=38, edgecolors="black", linewidths=0.3, zorder=4)
-        _finish(ax, model_display_name(model) if model else title, subset, value_col=value_col, include_counts=False, include_model=False, include_metric=False, include_period=False)
+        _finish(ax, model_display_name(model) if model else _title_with_value(title, value_col, subset), subset, value_col=value_col, include_counts=False, include_model=False, include_metric=True, include_period=True)
     fig.subplots_adjust(left=0.055, right=0.86, bottom=0.16, top=0.74, wspace=0.20)
     cbar_ax = fig.add_axes([0.895, 0.20, 0.018, 0.48])
     fig.colorbar(scatter, cax=cbar_ax, label=value_column_display_name(value_col))
-    fig.suptitle(f"{title}\n{subset_label}" if subset_label else title, y=0.96)
+    context = figure_context_text(
+        plot_df,
+        value_col=value_col,
+        max_values=3,
+        include_value=True,
+        include_counts=False,
+        include_model=False,
+        include_metric=True,
+        include_period=True,
+        extra=[subset_label] if subset_label else None,
+    )
+    fig.suptitle(f"{title}\n{context}" if context else _title_with_value(title, value_col, plot_df), y=0.96)
     return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
 
 
@@ -208,7 +219,7 @@ def _point_metric_map(
     plot_df, subset_label = apply_figure_spatial_selection(df, spatial_selection, **spatial_kwargs)
     _require(plot_df, [value_col, lon_col, lat_col])
     values = pd.to_numeric(plot_df[value_col], errors="coerce")
-    cmap, vmin, vmax = _color_settings(values.to_numpy(dtype=float), value_col)
+    cmap, vmin, vmax = _color_settings(values.to_numpy(dtype=float), value_col, plot_df)
     polygon_features = _selected_geojson_features(geojson_path, polygon_selector)
     fig, ax = plt.subplots(figsize=(8.0, 6.8), dpi=180, constrained_layout=True)
     _set_bounds_from_layers(
@@ -230,7 +241,7 @@ def _point_metric_map(
     point_label = "Stations" if corridors_df is not None or events_df is not None or records_df is not None else None
     scatter = ax.scatter(plot_df[lon_col], plot_df[lat_col], c=values, cmap=cmap, vmin=vmin, vmax=vmax, s=42, edgecolors="black", linewidths=0.3, zorder=4, label=point_label)
     fig.colorbar(scatter, ax=ax, pad=0.045, label=value_column_display_name(value_col))
-    _finish(ax, title, plot_df, value_col=value_col, extra=[subset_label] if subset_label else None)
+    _finish(ax, _title_with_value(title, value_col, plot_df), plot_df, value_col=value_col, extra=[subset_label] if subset_label else None)
     if corridors_df is not None or events_df is not None or records_df is not None:
         handles, labels = ax.get_legend_handles_labels()
         if handles:
@@ -605,10 +616,33 @@ def _finish(
     ax.grid(True, alpha=0.18)
 
 
-def _color_settings(values: np.ndarray, value_col: str) -> tuple[str, float, float]:
+def _color_settings(values: np.ndarray, value_col: str, df: pd.DataFrame | None = None) -> tuple[str, float, float]:
     """Return colormap and color limits for a metric value column."""
 
-    return value_color_settings(values, value_col)
+    return value_color_settings(values, value_col, df)
+
+
+def _title_with_value(title: str, value_col: str, df: pd.DataFrame | None = None) -> str:
+    """Append value/metric context to generic map titles."""
+
+    value_label = context_value_label(value_col, df)
+    metric_label = _single_metric_label(df)
+    suffix = metric_label or value_label
+    title_text = str(title)
+    if suffix and suffix.lower() not in title_text.lower():
+        return f"{title_text} - {suffix}"
+    return title_text
+
+
+def _single_metric_label(df: pd.DataFrame | None) -> str:
+    """Return one metric label when a dataframe represents a single metric."""
+
+    if df is None or "metric" not in df.columns:
+        return ""
+    values = [value for value in pd.unique(df["metric"].dropna()) if str(value).strip()]
+    if len(values) != 1:
+        return ""
+    return metric_display_name(values[0])
 
 
 __all__ = [
