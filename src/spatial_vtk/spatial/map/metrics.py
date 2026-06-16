@@ -508,7 +508,12 @@ def _set_bounds_from_layers(
         ys.extend([float(miny), float(maxy)])
     for frame, lon_candidates, lat_candidates, label in [
         (events_df, ["event_lon", "event_longitude", "source_lon", "source_longitude", "lon", "longitude"], ["event_lat", "event_latitude", "source_lat", "source_latitude", "lat", "latitude"], "event"),
-        (records_df, ["station_lon", "station_longitude", "sta_lon"], ["station_lat", "station_latitude", "sta_lat"], "station"),
+        (
+            records_df,
+            ["station_lon", "station_longitude", "sta_lon", "lon", "longitude"],
+            ["station_lat", "station_latitude", "sta_lat", "lat", "latitude"],
+            "station",
+        ),
         (records_df, ["event_lon", "event_longitude", "source_lon", "source_longitude"], ["event_lat", "event_latitude", "source_lat", "source_latitude"], "event"),
     ]:
         if frame is None or frame.empty:
@@ -629,7 +634,12 @@ def _draw_path_overlays(ax: plt.Axes, records_df: pd.DataFrame | None) -> None:
 
     if records_df is None or records_df.empty:
         return
-    sta_lon, sta_lat = _resolve_xy(records_df, lon_candidates=["station_lon", "station_longitude", "sta_lon"], lat_candidates=["station_lat", "station_latitude", "sta_lat"], label="station")
+    sta_lon, sta_lat = _resolve_xy(
+        records_df,
+        lon_candidates=["station_lon", "station_longitude", "sta_lon", "lon", "longitude"],
+        lat_candidates=["station_lat", "station_latitude", "sta_lat", "lat", "latitude"],
+        label="station",
+    )
     ev_lon, ev_lat = _resolve_xy(records_df, lon_candidates=["event_lon", "event_longitude", "source_lon", "source_longitude"], lat_candidates=["event_lat", "event_latitude", "source_lat", "source_latitude"], label="event")
     for idx, row in enumerate(records_df.itertuples(index=False)):
         ax.plot(

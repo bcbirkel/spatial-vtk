@@ -367,6 +367,14 @@ def test_metric_and_spatial_figure_families(tmp_path: Path) -> None:
     path_summary = pd.DataFrame({"distance_bin_km": [0.0, 20.0, 0.0, 20.0], "azimuth_bin_deg": [0.0, 0.0, 90.0, 90.0], "mean_residual": [0.1, -0.1, 0.2, -0.2]})
     grid = pd.DataFrame({"lon": [-118.4, -118.2, -118.4, -118.2], "lat": [34.0, 34.0, 34.2, 34.2], "residual": [0.1, -0.2, 0.3, -0.1]})
     observed_wide = pd.DataFrame({"distance_km": [10.0, 25.0, 40.0], "pgv": [0.4, 0.7, 0.6], "band": ["1-2 sec", "1-2 sec", "1-2 sec"]})
+    path_overlay = pd.DataFrame(
+        {
+            "event_lon": [-118.5, -118.45],
+            "event_lat": [34.05, 34.18],
+            "lon": [-118.4, -118.1],
+            "lat": [34.0, 34.2],
+        }
+    )
 
     outputs = [
         plot_metric_trend(metrics, tmp_path / "metric_trend.png", x_col="distance_km", y_col="log2_residual"),
@@ -387,6 +395,7 @@ def test_metric_and_spatial_figure_families(tmp_path: Path) -> None:
         scatterplot(observed_wide, tmp_path / "scatter_wide.png", indep="distance", dep="pgv", passband="1-2", fit="linear", data_label="Observed"),
         plot_polar_residuals(metrics, tmp_path / "polar.png"),
         plot_station_metric_map(metrics, tmp_path / "station_metric_map.png", value_col="log2_residual", add_basemap=False),
+        plot_station_metric_map(metrics, tmp_path / "station_metric_map_paths.png", value_col="log2_residual", records_df=path_overlay, add_basemap=False),
         plot_station_metric_map_by_period(metrics, tmp_path / "station_metric_map_by_period.png", value_col="log2_residual", add_basemap=False),
         plot_score_map(metrics, tmp_path / "score_map.png", add_basemap=False),
         plot_residual_grid(grid, tmp_path / "residual_grid.png", add_basemap=False),
