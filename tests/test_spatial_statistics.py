@@ -47,10 +47,11 @@ from spatial_vtk.spatial.calculate.workflow import run_spatial_statistics_workfl
 from spatial_vtk.spatial.map.correlation import (
     plot_block_holdout_error_map,
     plot_cluster_map,
+    plot_cluster_summary,
     plot_redcap_cluster_map,
     plot_station_bias_map,
 )
-from spatial_vtk.spatial.map.pca import plot_pca_mode_map
+from spatial_vtk.spatial.map.pca import plot_pca_mode_map, plot_pca_summary
 from spatial_vtk.spatial.plot.correlation import (
     plot_block_holdout_scatter,
     plot_cluster_feature_heatmap,
@@ -578,6 +579,100 @@ def test_spatial_plot_and_map_wrappers_write_pngs(tmp_path: Path) -> None:
     for path in outputs:
         assert path.exists(), path
         assert path.stat().st_size > 0, path
+
+
+def test_spatial_statistics_figures_write_optional_row_sidecars(tmp_path: Path) -> None:
+    """Spatial statistics figures should optionally write plotted/source rows."""
+
+    normalized = normalize_metrics_table(_toy_metrics_table(), default_model="example")
+    field = build_metric_field(normalized, "C5")
+    centered = center_field_by_event(field, min_stations_per_event=3)
+    station_bias = summarize_station_bias(centered, min_events_per_station=2)
+    moran = moran_result_to_frame(compute_global_morans_i(station_bias, k=4, permutations=9, random_seed=7)).assign(metric="C5")
+    distance = build_distance_bin_summary(centered, bin_width_km=20, max_distance_km=120, random_seed=7).assign(metric="C5")
+    predictions = evaluate_spatial_block_holdouts(
+        field,
+        block_size_km=15,
+        min_block_stations=1,
+        min_stations_per_event=3,
+        min_events_per_station=2,
+        prediction_k=3,
+    )[1]
+    fingerprint = station_bias[["station", "lat", "lon", "mean_centered"]].copy()
+    fingerprint["synthetic_east_west_residual_pattern"] = (
+        fingerprint["lon"] - fingerprint["lon"].mean()
+    ) / fingerprint["lon"].std(ddof=0)
+    assignments, scores, feature_summary, _cluster_summary, _best, _features = run_residual_feature_clustering(
+        fingerprint,
+        cluster_min_k=2,
+        cluster_max_k=4,
+        random_seed=7,
+    )
+    pca_result = compute_pca_spatial_modes(fingerprint, n_components=2)
+    sidecar_dir = tmp_path / "sidecars"
+
+    figures = [
+        plot_distance_correlation_by_metric(
+            distance,
+            tmp_path / "distance_correlation.png",
+            significance_df=moran,
+            write_sidecar=True,
+            sidecar_rows=3,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_station_bias_map(
+            station_bias,
+            tmp_path / "station_bias_map.png",
+            add_basemap=False,
+            write_sidecar=True,
+            sidecar_rows=3,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_block_holdout_scatter(
+            predictions,
+            tmp_path / "holdout_scatter.png",
+            write_sidecar=True,
+            sidecar_rows=3,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_cluster_summary(
+            assignments,
+            scores,
+            feature_summary,
+            tmp_path / "cluster_summary.png",
+            add_basemap=False,
+            write_sidecar=True,
+            sidecar_rows=3,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_pca_summary(
+            pca_result.station_scores,
+            pca_result.explained_variance,
+            pca_result.feature_loadings,
+            tmp_path / "pca_summary.png",
+            mode="PC1",
+            add_basemap=False,
+            write_sidecar=True,
+            sidecar_rows=3,
+            sidecar_dir=sidecar_dir,
+        ),
+    ]
+    for figure in figures:
+        assert figure.spatial_vtk_saved_path.exists()
+
+    distance_metadata = json.loads((sidecar_dir / "distance_correlation.json").read_text(encoding="utf-8"))
+    assert distance_metadata["figure_type"] == "distance_correlation_by_metric"
+    distance_rows = pd.read_csv(sidecar_dir / "distance_correlation.csv")
+    assert set(distance_rows["_figure_layer"]).issubset({"distance_correlation", "significance"})
+
+    station_metadata = json.loads((sidecar_dir / "station_bias_map.json").read_text(encoding="utf-8"))
+    assert station_metadata["figure_type"] == "station_bias_map"
+    assert station_metadata["source_row_count"] == len(station_bias)
+
+    cluster_rows = pd.read_csv(sidecar_dir / "cluster_summary.csv")
+    assert set(cluster_rows["_figure_layer"]).issubset({"assignment", "score", "feature_summary"})
+    pca_rows = pd.read_csv(sidecar_dir / "pca_summary.csv")
+    assert set(pca_rows["_figure_layer"]).issubset({"station_score", "explained_variance", "feature_loading"})
 
 
 def test_residual_color_settings_use_seismic_diverging_scale() -> None:

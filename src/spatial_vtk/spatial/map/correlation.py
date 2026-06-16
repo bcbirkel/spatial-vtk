@@ -23,7 +23,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from spatial_vtk.config.labels import display_label, model_display_name, value_column_display_name
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import add_below_axes_table, apply_figure_context, figure_context_text, value_color_settings
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar, layered_figure_rows
 from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure_spatial_selection
 
 
@@ -145,6 +145,9 @@ def plot_station_bias_map(
     savefig: bool | None = None,
     outpath: str | Path | None = None,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot station bias values on a lon/lat map.
@@ -176,7 +179,19 @@ def plot_station_bias_map(
         cax = divider.append_axes("right", size="3.5%", pad=0.12)
         fig.colorbar(scatter, cax=cax, label=value_label or value_column_display_name(value_col))
     apply_figure_context(ax, plot_df, value_col=value_col, title=title, max_values=3, include_counts=False, include_value=False, max_line_chars=72, extra=[subset_label] if subset_label else None)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=station_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "station_bias_map", "value_col": value_col},
+    )
 
 
 def plot_cluster_map(
@@ -193,6 +208,9 @@ def plot_cluster_map(
     savefig: bool | None = None,
     outpath: str | Path | None = None,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot station cluster assignments on a lon/lat map."""
@@ -212,7 +230,19 @@ def plot_cluster_map(
         colorbar = fig.colorbar(scatter, ax=ax, pad=0.045, ticks=np.arange(len(unique_labels)), label=display_label(cluster_col))
         colorbar.ax.set_yticklabels([str(label) for label in unique_labels])
     apply_figure_context(ax, plot_df, value_col=cluster_col, title=title, max_values=3, include_counts=False, include_value=False, max_line_chars=72, extra=[subset_label] if subset_label else None)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=assignments_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "cluster_map", "cluster_col": cluster_col},
+    )
 
 
 def plot_redcap_cluster_map(
@@ -229,6 +259,9 @@ def plot_redcap_cluster_map(
     savefig: bool | None = None,
     outpath: str | Path | None = None,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot station values beside REDCAP cluster assignments."""
@@ -267,7 +300,19 @@ def plot_redcap_cluster_map(
     fig.text(0.5, 0.975, title, ha="center", va="top", fontsize=13)
     if context:
         fig.text(0.5, 0.915, context, ha="center", va="top", fontsize=10.5)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=redcap_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "redcap_cluster_map", "value_col": value_col},
+    )
 
 
 def _redcap_value_display_name(value_col: str) -> str:
@@ -291,6 +336,9 @@ def plot_block_holdout_error_map(
     savefig: bool | None = None,
     outpath: str | Path | None = None,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot held-out station prediction errors on a lon/lat map."""
@@ -310,7 +358,19 @@ def plot_block_holdout_error_map(
         scatter = ax.scatter(plot_df[lon_col], plot_df[lat_col], c=values, cmap=cmap, vmin=vmin, vmax=vmax, s=46, edgecolors="black", linewidths=0.35, zorder=3)
         fig.colorbar(scatter, ax=ax, pad=0.045, label=value_column_display_name("heldout_bias_error"))
     apply_figure_context(ax, plot_df, value_col="heldout_bias_error", title=title, max_values=3, include_counts=False, include_value=False, max_line_chars=72, extra=[subset_label] if subset_label else None)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=prediction_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "block_holdout_error_map"},
+    )
 
 
 def plot_block_holdout_summary(
@@ -326,6 +386,9 @@ def plot_block_holdout_summary(
     savefig: bool | None = None,
     outpath: str | Path | None = None,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot held-out station-bias errors and observed/predicted agreement."""
@@ -357,7 +420,20 @@ def plot_block_holdout_summary(
         _draw_holdout_scatter(scatter_ax, plot_df)
     context = figure_context_text(plot_df, value_col="heldout_bias_error", max_values=3, include_counts=False, include_value=False, extra=[subset_label] if subset_label else None)
     fig.suptitle(f"{title}\n{context}" if context else title)
-    return finish_figure(fig, output_path, outpath=outpath, output_key="block_holdout_summary", showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        output_key="block_holdout_summary",
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=prediction_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "block_holdout_summary"},
+    )
 
 
 def plot_cluster_summary(
@@ -381,6 +457,9 @@ def plot_cluster_summary(
     savefig: bool | None = None,
     outpath: str | Path | None = None,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot station cluster assignments and silhouette scores together."""
@@ -397,7 +476,28 @@ def plot_cluster_summary(
         context_parts.append(context)
     subtitle = " | ".join(context_parts)
     fig.suptitle(f"{title}\n{subtitle}" if subtitle else title)
-    return finish_figure(fig, output_path, outpath=outpath, output_key="cluster_summary", showfig=showfig, savefig=savefig)
+    sidecar_df = layered_figure_rows(
+        (
+            ("assignment", plot_assignments),
+            ("score", score_df),
+            ("feature_summary", feature_summary_df),
+            ("event", event_df),
+        )
+    )
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        output_key="cluster_summary",
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=assignments_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "cluster_summary", "cluster_col": cluster_col, "score_column": score_column},
+    )
 
 
 def _draw_holdout_scatter(ax: plt.Axes, prediction_df: pd.DataFrame) -> None:

@@ -23,7 +23,7 @@ from spatial_vtk.config.labels import display_label
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import apply_figure_context, figure_context_text
 from spatial_vtk.visualize.fit import FitMethod, draw_scatter_fit
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar, layered_figure_rows
 
 
 def _xy_columns(df: pd.DataFrame, *, lon_col: str | None = None, lat_col: str | None = None) -> tuple[str, str]:
@@ -91,6 +91,9 @@ def plot_pca_mode_map(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot one PCA station-score mode on a lon/lat map.
 
@@ -151,7 +154,20 @@ def plot_pca_mode_map(
             )
             fig.colorbar(scatter, ax=ax, pad=0.045, label=display_label(f"{mode} station score"))
     apply_figure_context(ax, station_scores_df, value_col=score_name, title=title or f"{mode} Spatial Mode", max_values=3, include_counts=False, include_value=False, max_line_chars=72)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = plot_df if "plot_df" in locals() else station_scores_df.iloc[0:0].copy()
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=station_scores_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "pca_mode_map", "mode": mode, "score_col": score_name},
+    )
 
 
 def plot_pca_summary(
@@ -178,6 +194,9 @@ def plot_pca_summary(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot PCA station scores, explained variance, and an interpretation panel."""
 
@@ -223,7 +242,29 @@ def plot_pca_summary(
         _draw_feature_loading_axis(axes[2], feature_loadings_df, mode=mode, feature_label_map=feature_label_map)
     context = figure_context_text(station_scores_df, value_col=score_name, max_values=3, include_counts=False, include_value=False)
     fig.suptitle(f"{title}\n{context}" if context else title)
-    return finish_figure(fig, output_path, outpath=outpath, output_key="pca_summary", showfig=showfig, savefig=savefig)
+    sidecar_df = layered_figure_rows(
+        (
+            ("station_score", station_scores_df),
+            ("explained_variance", explained_variance_df),
+            ("feature_loading", feature_loadings_df),
+            ("station_feature", station_feature_df),
+            ("event", event_df),
+        )
+    )
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        output_key="pca_summary",
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=station_scores_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "pca_summary", "mode": mode, "score_col": score_name},
+    )
 
 
 def _draw_pca_map_axis(

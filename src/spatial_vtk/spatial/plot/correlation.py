@@ -20,7 +20,7 @@ from spatial_vtk.config.labels import display_label, metric_display_name
 from spatial_vtk.spatial.calculate.correlation import CorrelationLengthFit
 from spatial_vtk.visualize.figure_context import add_below_axes_table, apply_figure_context, value_color_settings
 from spatial_vtk.visualize.fit import FitMethod, draw_scatter_fit
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar, layered_figure_rows
 from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure_spatial_selection
 
 
@@ -39,6 +39,9 @@ def plot_correlogram(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot an empirical distance-binned correlogram.
 
@@ -77,7 +80,19 @@ def plot_correlogram(
             ax.legend(frameon=True)
     apply_figure_context(ax, distance_df, value_col="mean_pair_correlation", title=title, max_values=3, include_value=False)
     ax.grid(True, alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=distance_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "correlogram"},
+    )
 
 
 def plot_distance_correlation_by_metric(
@@ -96,6 +111,9 @@ def plot_distance_correlation_by_metric(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot distance-binned spatial correlation for one or more metrics.
 
@@ -177,13 +195,20 @@ def plot_distance_correlation_by_metric(
             )
     apply_figure_context(ax, plot_df, value_col=correlation_col, title=title, max_values=3, include_value=False)
     ax.grid(True, alpha=0.25)
-    return finish_figure(
+    sidecar_df = layered_figure_rows((("distance_correlation", plot_df), ("significance", significance_df)))
+    return finish_figure_with_sidecar(
         fig,
         output_path,
         outpath=outpath,
         output_key="spatial_correlation_distance",
         showfig=showfig,
         savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=distance_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "distance_correlation_by_metric", "metric_col": metric_col, "distance_col": distance_col, "correlation_col": correlation_col},
     )
 
 
@@ -195,6 +220,9 @@ def plot_semivariogram(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot an empirical distance-binned semivariogram."""
 
@@ -208,7 +236,19 @@ def plot_semivariogram(
         ax.set_ylabel("Mean semivariance")
     apply_figure_context(ax, distance_df, value_col="mean_semivariance", title=title, max_values=3, include_value=False)
     ax.grid(True, alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=distance_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "semivariogram"},
+    )
 
 
 def plot_directional_correlogram(
@@ -220,6 +260,9 @@ def plot_directional_correlogram(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot distance-binned correlations split by station-pair orientation."""
 
@@ -247,7 +290,20 @@ def plot_directional_correlogram(
         ax.legend(frameon=True, fontsize=8)
     apply_figure_context(ax, directional_df, value_col="mean_pair_correlation", title=title, max_values=3, include_value=False)
     ax.grid(True, alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = layered_figure_rows((("directional_correlation", plot_df), ("fit", fit_df)))
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=directional_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "directional_correlogram"},
+    )
 
 
 def plot_block_holdout_scatter(
@@ -262,6 +318,9 @@ def plot_block_holdout_scatter(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot predicted versus observed held-out station bias."""
@@ -294,7 +353,19 @@ def plot_block_holdout_scatter(
             _add_holdout_table(ax, rmse=rmse, n_predictions=len(observed))
     apply_figure_context(ax, plot_df, value_col="prediction_error", title=title, max_values=3, include_value=False, extra=[subset_label] if subset_label else None)
     ax.grid(True, alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=prediction_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "block_holdout_scatter"},
+    )
 
 
 def plot_cluster_solution_scores(
@@ -307,6 +378,9 @@ def plot_cluster_solution_scores(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot silhouette score versus candidate cluster count."""
 
@@ -326,7 +400,20 @@ def plot_cluster_solution_scores(
         ax.set_xticks([int(value) for value in pd.to_numeric(plot_df[k_column], errors="coerce").dropna().unique()])
     apply_figure_context(ax, score_df, value_col=score_column, title=title, max_values=3, include_counts=False, include_value=False)
     ax.grid(True, alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = plot_df if "plot_df" in locals() else score_df.iloc[0:0].copy()
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=score_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "cluster_solution_scores", "k_column": k_column, "score_column": score_column},
+    )
 
 
 def plot_cluster_feature_heatmap(
@@ -340,6 +427,9 @@ def plot_cluster_feature_heatmap(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot a cluster-by-feature heatmap from cluster feature summaries."""
 
@@ -365,7 +455,19 @@ def plot_cluster_feature_heatmap(
         ax.set_yticklabels([_display_label(token) for token in pivot.index])
         fig.colorbar(image, ax=ax, label=_display_label(value_column))
     apply_figure_context(ax, feature_summary_df, value_col=value_column, title=title, max_values=3, include_counts=False, include_value=False)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=feature_summary_df,
+        source_rows=feature_summary_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "cluster_feature_heatmap", "value_column": value_column},
+    )
 
 
 def plot_pattern_similarity(
@@ -382,6 +484,9 @@ def plot_pattern_similarity(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot observed versus synthetic station anomaly values for one metric/bin."""
@@ -430,7 +535,20 @@ def plot_pattern_similarity(
         extra=[subset_label] if subset_label else None,
     )
     ax.grid(True, alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = matched.reset_index() if not matched.empty else pd.DataFrame(columns=["station_name", "observed", "synthetic"])
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=stations,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "pattern_similarity", "metric": metric, "bin_label": bin_label},
+    )
 
 
 def _add_correlation_fit_table(ax: plt.Axes, fit: CorrelationLengthFit, *, r_squared: float | None = None) -> None:

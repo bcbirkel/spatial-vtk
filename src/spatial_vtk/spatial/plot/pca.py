@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 
 from spatial_vtk.config.labels import display_label
 from spatial_vtk.visualize.figure_context import apply_figure_context
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 
 
 def _display_label(value: object, label_map: Mapping[str, str] | None = None) -> str:
@@ -34,6 +34,9 @@ def plot_pca_explained_variance(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot explained variance by PCA mode.
 
@@ -70,7 +73,20 @@ def plot_pca_explained_variance(
         ax.legend(frameon=True)
     apply_figure_context(ax, explained_variance_df, value_col="explained_variance_ratio", title=title, max_values=3, include_counts=False)
     ax.grid(True, axis="y", alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = plot_df if "plot_df" in locals() else explained_variance_df.iloc[0:0].copy()
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=explained_variance_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "pca_explained_variance"},
+    )
 
 
 def plot_pca_feature_loadings(
@@ -84,6 +100,9 @@ def plot_pca_feature_loadings(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot the strongest feature loadings for one PCA mode.
 
@@ -124,4 +143,16 @@ def plot_pca_feature_loadings(
         ax.set_xlabel("PCA loading")
     apply_figure_context(ax, subset, value_col="loading", title=title or f"{mode} Feature Loadings", max_values=3, include_counts=False)
     ax.grid(True, axis="x", alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=subset,
+        source_rows=feature_loadings_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "pca_feature_loadings", "mode": mode, "top_n": int(top_n)},
+    )
