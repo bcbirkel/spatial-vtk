@@ -770,6 +770,10 @@ def _trace_metadata(trace: Any, *, source: str | Path | None, event_id: str | No
     npts = _safe_int(_stat_value(stats, "npts", None))
     if npts is None and data is not None:
         npts = int(np.asarray(data).size)
+    starttime = str(_stat_value(stats, "starttime", "") or "")
+    endtime = str(_stat_value(stats, "endtime", "") or "")
+    if not endtime:
+        endtime = _endtime_from_start_delta_npts(starttime, delta, npts)
     coords = _stat_value(stats, "coordinates", None)
     lat = _safe_float(_first_stat(stats, coords, "latitude", "lat", "station_lat"))
     lon = _safe_float(_first_stat(stats, coords, "longitude", "lon", "station_lon"))
@@ -782,8 +786,8 @@ def _trace_metadata(trace: Any, *, source: str | Path | None, event_id: str | No
         "location": str(_stat_value(stats, "location", "") or "").strip(),
         "channel": channel.strip().upper(),
         "component": channel[-1:].upper() if channel else "",
-        "starttime": str(_stat_value(stats, "starttime", "") or ""),
-        "endtime": str(_stat_value(stats, "endtime", "") or ""),
+        "starttime": starttime,
+        "endtime": endtime,
         "sampling_rate": sampling_rate,
         "delta": delta,
         "npts": npts,
@@ -872,6 +876,21 @@ def _safe_int(value: Any) -> int | None:
         return int(value)
     except Exception:
         return None
+
+
+def _endtime_from_start_delta_npts(starttime: str, delta: float | None, npts: int | None) -> str:
+    """Return an ISO end time when trace metadata has enough timing fields."""
+
+    if not starttime or delta is None or npts is None or npts <= 0:
+        return ""
+    try:
+        start = pd.Timestamp(starttime)
+    except Exception:
+        return ""
+    if pd.isna(start):
+        return ""
+    duration_s = max(int(npts) - 1, 0) * float(delta)
+    return (start + pd.to_timedelta(duration_s, unit="s")).isoformat()
 
 
 def _optional_positive_float(value: Any) -> float | None:

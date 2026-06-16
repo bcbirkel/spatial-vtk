@@ -103,6 +103,25 @@ def test_waveform_metadata_feeds_master_station_list() -> None:
     ]
 
 
+def test_waveform_metadata_computes_missing_endtime_from_numpy_trace_fields() -> None:
+    trace = {
+        "data": np.ones(5, dtype=float),
+        "stats": {
+            "network": "CI",
+            "station": "ABC",
+            "channel": "HNZ",
+            "sampling_rate": 2.0,
+            "starttime": "2020-01-01T00:00:00Z",
+        },
+    }
+
+    meta = trace_metadata_table([trace], event_id="ci123", source="observed")
+
+    assert meta.loc[0, "delta"] == pytest.approx(0.5)
+    assert meta.loc[0, "npts"] == 5
+    assert meta.loc[0, "endtime"] == "2020-01-01T00:00:02+00:00"
+
+
 def test_master_event_list_uses_common_aliases() -> None:
     raw = pd.DataFrame(
         {
