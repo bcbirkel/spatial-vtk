@@ -254,6 +254,7 @@ outputs:
 compute:
   slurm:
     python_command: python
+    submit_command: sbatch --parsable
     partition: shared
     environment_setup:
       - module load python
@@ -288,7 +289,7 @@ compute:
     captured = capsys.readouterr().out
     assert result is None
     assert f"script: {script}" in captured
-    assert f"sbatch {script}" in captured
+    assert f"sbatch --parsable {script}" in captured
     clear_active_config()
 
 

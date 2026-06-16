@@ -25,6 +25,7 @@ from typing import Any, Iterator
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.config.compute import (
     SlurmSubmission,
+    slurm_settings_from_config,
     slurm_settings_with_overrides,
     submit_or_print_slurm_script,
     write_inline_python_slurm_script,
@@ -202,11 +203,15 @@ def write_notebook_python_slurm_script(
 def submit_notebook_slurm_script(
     context: NotebookRunContext,
     script_path: str | Path,
+    *,
+    section: str | None = "compute.slurm",
 ) -> SlurmSubmission | None:
     """Submit or print one notebook-generated SLURM script."""
 
+    settings = slurm_settings_from_config(context.cfg, section=section)
     return submit_or_print_slurm_script(
         script_path,
+        settings=settings,
         submit=context.submit_slurm,
     )
 
