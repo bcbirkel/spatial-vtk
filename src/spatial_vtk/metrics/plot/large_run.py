@@ -8,7 +8,7 @@ from pathlib import Path
 import importlib
 import re
 from tempfile import TemporaryDirectory
-from typing import Any, Callable
+from typing import Any, Callable, Iterable
 
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
@@ -286,14 +286,24 @@ class MetricFigureContext:
             parts.append(slug(resolved_value_col))
         return "__".join(dict.fromkeys(parts))
 
-    def station_summary_for_map(self, df: pd.DataFrame, value_col: str | None = None) -> pd.DataFrame:
+    def station_summary_for_map(
+        self,
+        df: pd.DataFrame,
+        value_col: str | None = None,
+        *,
+        extra_group_cols: Iterable[str | None] | None = None,
+    ) -> pd.DataFrame:
         """Aggregate all selected metric rows to one plotted value per station."""
 
         resolved_value_col = self.value_col if value_col is None else value_col
         if not all(column in df.columns for column in ["station", "sta_lon", "sta_lat", resolved_value_col]):
             return df
-        group_cols = ["station", "sta_lon", "sta_lat"]
-        context_cols = [column for column in [self.metric_col, self.band_col, self.model_col, self.component_col, self.period_col] if column and column in df.columns]
+        group_cols = _ordered_existing_columns(df, ["station", "sta_lon", "sta_lat", *(extra_group_cols or [])])
+        context_cols = [
+            column
+            for column in [self.metric_col, self.band_col, self.model_col, self.component_col, self.period_col]
+            if column and column in df.columns and column not in group_cols
+        ]
         grouped = df.groupby(group_cols, dropna=False)
         values = _aggregate_grouped_values(grouped[resolved_value_col], self.station_aggregation).reset_index(name=resolved_value_col)
         counts = grouped.size().reset_index(name="source_row_count")
@@ -306,16 +316,26 @@ class MetricFigureContext:
         summary["aggregation"] = self.station_aggregation
         return summary
 
-    def station_period_summary_for_map(self, df: pd.DataFrame, value_col: str | None = None) -> pd.DataFrame:
+    def station_period_summary_for_map(
+        self,
+        df: pd.DataFrame,
+        value_col: str | None = None,
+        *,
+        extra_group_cols: Iterable[str | None] | None = None,
+    ) -> pd.DataFrame:
         """Aggregate all selected PSA rows to one plotted value per station and period."""
 
         resolved_value_col = self.value_col if value_col is None else value_col
         if self.period_col is None or self.period_col not in df.columns:
-            return self.station_summary_for_map(df, value_col=resolved_value_col)
+            return self.station_summary_for_map(df, value_col=resolved_value_col, extra_group_cols=extra_group_cols)
         if not all(column in df.columns for column in ["station", "sta_lon", "sta_lat", self.period_col, resolved_value_col]):
             return df
-        group_cols = ["station", "sta_lon", "sta_lat", self.period_col]
-        context_cols = [column for column in [self.metric_col, self.band_col, self.model_col, self.component_col] if column and column in df.columns]
+        group_cols = _ordered_existing_columns(df, ["station", "sta_lon", "sta_lat", self.period_col, *(extra_group_cols or [])])
+        context_cols = [
+            column
+            for column in [self.metric_col, self.band_col, self.model_col, self.component_col]
+            if column and column in df.columns and column not in group_cols
+        ]
         grouped = df.groupby(group_cols, dropna=False)
         values = _aggregate_grouped_values(grouped[resolved_value_col], self.station_aggregation).reset_index(name=resolved_value_col)
         counts = grouped.size().reset_index(name="source_row_count")
@@ -639,6 +659,7 @@ class MetricFigureContext:
             "value_col": self.value_col,
             "station_aggregation": self.station_aggregation,
         }
+        metadata.update(_sidecar_dimension_counts(df, prefix="plot"))
         if source_path is not None:
             metadata.update(
                 {
@@ -648,8 +669,10 @@ class MetricFigureContext:
                     "source_sampled": bool(source_sampled),
                 }
             )
+            metadata.update(_sidecar_dimension_counts(source_df, prefix="source"))
         else:
             metadata["source_row_count"] = int(len(df))
+            metadata.update(_sidecar_dimension_counts(df, prefix="source"))
         sidecar_path.with_suffix(".json").write_text(json.dumps(metadata, indent=2, sort_keys=True), encoding="utf-8")
         return sidecar_path
 
@@ -801,6 +824,37 @@ def _sidecar_rows(df: pd.DataFrame, *, limit: int | None) -> tuple[pd.DataFrame,
     if limit is not None and limit > 0 and len(df) > limit:
         return _sample_rows(df, n=limit), True
     return df.copy(), False
+
+
+def _ordered_existing_columns(df: pd.DataFrame, columns: Iterable[str | None]) -> list[str]:
+    """Return existing columns once, preserving caller order."""
+
+    out: list[str] = []
+    for column in columns:
+        if column and column in df.columns and column not in out:
+            out.append(column)
+    return out
+
+
+def _sidecar_dimension_counts(df: pd.DataFrame | None, *, prefix: str) -> dict[str, int]:
+    """Return cheap row-provenance counts for sidecar metadata."""
+
+    if df is None:
+        return {}
+    keys = {
+        "event": "event_id",
+        "station": "station",
+        "component": "component",
+        "model": "model",
+        "metric": "metric",
+        "passband": "band",
+        "period": "period_s",
+    }
+    counts: dict[str, int] = {}
+    for label, column in keys.items():
+        if column in df.columns:
+            counts[f"{prefix}_{label}_count"] = int(df[column].nunique(dropna=True))
+    return counts
 
 
 def _aggregate_grouped_values(grouped: Any, aggregation: str) -> pd.Series:

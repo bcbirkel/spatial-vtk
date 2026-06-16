@@ -91,17 +91,17 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
 
     metrics = pd.DataFrame(
         {
-            "event_id": ["e1", "e2", "e3", "e1", "e2"],
-            "station": ["STA", "STA", "STB", "STA", "STA"],
-            "sta_lon": [-118.0, -118.0, -117.5, -118.0, -118.0],
-            "sta_lat": [34.0, 34.0, 34.2, 34.0, 34.0],
-            "metric": ["PGA", "PGA", "PGA", "PSA", "PSA"],
-            "band": ["1-2 sec", "1-2 sec", "1-2 sec", "", ""],
-            "model": ["m1", "m1", "m1", "m1", "m1"],
-            "component": ["Z", "Z", "Z", "Z", "Z"],
-            "period_s": [np.nan, np.nan, np.nan, 1.0, 2.0],
-            "distance_km": [10.0, 20.0, 30.0, 10.0, 10.0],
-            "log2_residual": [1.0, 3.0, 5.0, 0.5, 0.75],
+            "event_id": ["e1", "e2", "e3", "e4", "e1", "e2"],
+            "station": ["STA", "STA", "STB", "STA", "STA", "STA"],
+            "sta_lon": [-118.0, -118.0, -117.5, -118.0, -118.0, -118.0],
+            "sta_lat": [34.0, 34.0, 34.2, 34.0, 34.0, 34.0],
+            "metric": ["PGA", "PGA", "PGA", "PGA", "PSA", "PSA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec", "1-2 sec", "", ""],
+            "model": ["m1", "m1", "m1", "m2", "m1", "m1"],
+            "component": ["Z", "Z", "Z", "Z", "Z", "Z"],
+            "period_s": [np.nan, np.nan, np.nan, np.nan, 1.0, 2.0],
+            "distance_km": [10.0, 20.0, 30.0, 40.0, 10.0, 10.0],
+            "log2_residual": [1.0, 3.0, 5.0, 7.0, 0.5, 0.75],
         }
     )
     metrics_path = tmp_path / "metrics_long.parquet"
@@ -126,6 +126,22 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert sta["source_row_count"] == 2
     assert sta["source_event_count"] == 2
     assert sta["aggregation"] == "mean"
+
+    station_model_summary = context.station_summary_for_map(
+        metrics.loc[metrics["metric"].eq("PGA")],
+        extra_group_cols=["model"],
+    )
+    assert set(station_model_summary["model"]) == {"m1", "m2"}
+    sta_m1 = station_model_summary.loc[
+        station_model_summary["station"].eq("STA") & station_model_summary["model"].eq("m1")
+    ].iloc[0]
+    sta_m2 = station_model_summary.loc[
+        station_model_summary["station"].eq("STA") & station_model_summary["model"].eq("m2")
+    ].iloc[0]
+    assert sta_m1["log2_residual"] == pytest.approx(2.0)
+    assert sta_m2["log2_residual"] == pytest.approx(7.0)
+    assert sta_m1["source_event_count"] == 2
+    assert sta_m2["source_event_count"] == 1
 
     psa_item = [item for item in context.iter_metric_frames(components=["Z"], model="m1", split_psa_period=False) if item["key"] == "psa"][0]
     assert "all-psa-periods" in context.figure_name("station_metric_map", psa_item)
@@ -156,6 +172,10 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert metadata["source_sampled"] is True
     assert metadata["written_row_count"] == 1
     assert metadata["sampled"] is True
+    assert metadata["plot_station_count"] == 2
+    assert metadata["source_station_count"] == 2
+    assert metadata["source_event_count"] == 3
+    assert metadata["source_model_count"] == 1
 
     context.sample_rows = 0
     context.sidecar_rows = None

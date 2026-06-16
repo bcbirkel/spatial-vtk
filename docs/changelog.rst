@@ -17,6 +17,11 @@ Changelog
    ``SVTK_RUN_LOCAL=1``, or writes/submits a config-backed SLURM wrapper
    otherwise. The large-run QC, metrics, spatial, and dashboard notebooks now
    use this helper for repeated command-driver cells.
+   Extended large-run metric figure sidecars with event, station, component,
+   model, metric, passband, and PSA-period counts for both plotted rows and
+   source rows. Metric-by-model maps now aggregate rows by station and model
+   before plotting, with raw metric rows preserved in the optional source
+   sidecar.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after
