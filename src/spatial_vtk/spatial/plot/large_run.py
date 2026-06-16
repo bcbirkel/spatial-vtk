@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import json
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
@@ -15,7 +16,7 @@ from spatial_vtk.metrics.plot.large_run import (
     first_existing,
 )
 from spatial_vtk.spatial.calculate import add_geojson_metadata_to_metrics
-from spatial_vtk.spatial.plot.metrics import boxplot
+from spatial_vtk.spatial.plot.metrics import _categorical_metric_plot_data, boxplot
 
 
 SPATIAL_FIGURE_TABLE_KEYS: tuple[str, ...] = (
@@ -345,6 +346,7 @@ class RegionBoxplotResult:
     """Result from writing a large-run GeoJSON region boxplot."""
 
     figure_path: Path | None
+    sidecar_path: Path | None
     rows: int
     status: str
     message: str
@@ -370,6 +372,9 @@ def write_large_run_region_boxplot(
     max_rows: int = 200_000,
     output_prefix: str = "geojson_region_boxplot",
     annotate_if_missing: bool = True,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     overwrite: bool = False,
     showfig: bool = False,
 ) -> RegionBoxplotResult:
@@ -384,11 +389,11 @@ def write_large_run_region_boxplot(
     source_path = Path(metric_source).expanduser()
     output_dir = Path(figure_dir).expanduser()
     if not source_path.exists():
-        return RegionBoxplotResult(None, 0, "missing_input", "skip region boxplot: metrics table is not ready yet")
+        return RegionBoxplotResult(None, None, 0, "missing_input", "skip region boxplot: metrics table is not ready yet")
 
     metric_rows = read_bounded_table(source_path, int(max_rows))
     if metric_rows.empty:
-        return RegionBoxplotResult(None, 0, "empty_input", "skip region boxplot: metrics table has no rows")
+        return RegionBoxplotResult(None, None, 0, "empty_input", "skip region boxplot: metrics table has no rows")
 
     region_col = first_existing(metric_rows, ["station_region", "station_geojson_region", "station_geojson_labels"])
     geojson_file = None if geojson_path is None else Path(geojson_path).expanduser()
@@ -399,6 +404,7 @@ def write_large_run_region_boxplot(
         except Exception as exc:
             return RegionBoxplotResult(
                 None,
+                None,
                 len(metric_rows),
                 "annotation_failed",
                 f"skip region boxplot: could not annotate metric rows with GeoJSON regions: {exc}",
@@ -407,12 +413,14 @@ def write_large_run_region_boxplot(
         suffix = "; run Step 5 enrichment first" if not annotate_if_missing else ""
         return RegionBoxplotResult(
             None,
+            None,
             len(metric_rows),
             "missing_region_column",
             f"skip region boxplot: no station GeoJSON region column is available{suffix}",
         )
     if value_col not in metric_rows.columns:
         return RegionBoxplotResult(
+            None,
             None,
             len(metric_rows),
             "missing_value_column",
@@ -424,6 +432,7 @@ def write_large_run_region_boxplot(
     plot_rows = plot_rows.loc[plot_rows["station_region"].str.len() > 0].copy()
     if plot_rows.empty:
         return RegionBoxplotResult(
+            None,
             None,
             len(metric_rows),
             "empty_region_labels",
@@ -440,7 +449,23 @@ def write_large_run_region_boxplot(
     )
     output.parent.mkdir(parents=True, exist_ok=True)
     if output.exists() and not overwrite:
-        return RegionBoxplotResult(output, len(plot_rows), "exists", f"skip {output.name}: exists")
+        sidecar_path = _write_region_boxplot_sidecar(
+            output,
+            plot_rows,
+            write_sidecar=write_sidecar,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
+            metric=metric,
+            passband=passband,
+            component=component,
+            model=model,
+            value_col=value_col,
+            compare_to=compare_to,
+        )
+        message = f"skip {output.name}: exists"
+        if sidecar_path is not None:
+            message += f"; wrote {sidecar_path}"
+        return RegionBoxplotResult(output, sidecar_path, len(plot_rows), "exists", message)
 
     try:
         import matplotlib.pyplot as plt
@@ -461,6 +486,19 @@ def write_large_run_region_boxplot(
             savefig=True,
         )
         plt.close("all")
+        sidecar_path = _write_region_boxplot_sidecar(
+            output,
+            plot_rows,
+            write_sidecar=write_sidecar,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
+            metric=metric,
+            passband=passband,
+            component=component,
+            model=model,
+            value_col=value_col,
+            compare_to=compare_to,
+        )
     except Exception as exc:
         try:
             import matplotlib.pyplot as plt
@@ -470,11 +508,15 @@ def write_large_run_region_boxplot(
             pass
         return RegionBoxplotResult(
             output,
+            None,
             len(plot_rows),
             "plot_failed",
             f"skip {output.name}: {type(exc).__name__}: {exc}",
         )
-    return RegionBoxplotResult(output, len(plot_rows), "wrote", f"wrote {output}")
+    message = f"wrote {output}"
+    if sidecar_path is not None:
+        message += f" and {sidecar_path}"
+    return RegionBoxplotResult(output, sidecar_path, len(plot_rows), "wrote", message)
 
 
 def _read_if_exists(path: str | Path | None) -> pd.DataFrame | None:
@@ -514,6 +556,66 @@ def _region_boxplot_name(
         slugify(value_col),
     ]
     return "__".join(parts) + ".png"
+
+
+def _write_region_boxplot_sidecar(
+    figure_path: Path,
+    data: pd.DataFrame,
+    *,
+    write_sidecar: bool,
+    sidecar_rows: int | None,
+    sidecar_dir: str | Path | None,
+    metric: str,
+    passband: str | Sequence[str],
+    component: str | Sequence[str] | None,
+    model: str | Sequence[str] | None,
+    value_col: str,
+    compare_to: str | Sequence[str] | None,
+) -> Path | None:
+    """Write the normalized rows used by one region boxplot."""
+
+    if not write_sidecar:
+        return None
+    plot_df, category_col, plot_value_col, dep_labels, resolved_value_col, _subset_label = _categorical_metric_plot_data(
+        data,
+        dep=metric,
+        indep="station_region",
+        value_col=value_col,
+        passband=passband,
+        model=model,
+        component=component,
+        station=None,
+        event_id=None,
+        filters=None,
+    )
+    output_dir = Path(sidecar_dir).expanduser() if sidecar_dir is not None else figure_path.parent / "sidecars"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    sidecar_path = output_dir / f"{figure_path.stem}.csv"
+    rows = plot_df.copy()
+    sampled = False
+    if sidecar_rows is not None and sidecar_rows > 0 and len(rows) > sidecar_rows:
+        rows = rows.sample(n=sidecar_rows, random_state=42).copy()
+        sampled = True
+    rows.to_csv(sidecar_path, index=False)
+    metadata = {
+        "figure": str(figure_path),
+        "sidecar": str(sidecar_path),
+        "source_row_count": int(len(plot_df)),
+        "written_row_count": int(len(rows)),
+        "sampled": bool(sampled),
+        "metric": metric,
+        "metric_labels": dep_labels,
+        "passband": _label_for_slug(passband),
+        "component": _label_for_slug(component),
+        "model": _label_for_slug(model),
+        "category_col": category_col,
+        "value_col": value_col,
+        "resolved_value_col": resolved_value_col,
+        "plot_value_col": plot_value_col,
+        "compare_to": compare_to,
+    }
+    sidecar_path.with_suffix(".json").write_text(json.dumps(metadata, indent=2, sort_keys=True), encoding="utf-8")
+    return sidecar_path
 
 
 def _label_for_slug(value: object) -> str | None:

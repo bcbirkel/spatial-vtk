@@ -321,6 +321,8 @@ def test_write_large_run_region_boxplot_from_bounded_table(tmp_path: Path) -> No
         passband="2-3 sec",
         model="example",
         max_rows=10,
+        write_sidecar=True,
+        sidecar_rows=2,
         overwrite=True,
         showfig=False,
     )
@@ -328,8 +330,38 @@ def test_write_large_run_region_boxplot_from_bounded_table(tmp_path: Path) -> No
     assert result.status == "wrote"
     assert result.figure_path is not None
     assert result.figure_path.exists()
+    assert result.sidecar_path is not None
+    assert result.sidecar_path.exists()
     assert result.figure_path.name == "geojson_region_boxplot__pga__2_3_sec__all_components__example__log2_residual.png"
     assert result.rows == 4
+    sidecar_rows = pd.read_csv(result.sidecar_path)
+    metadata = json.loads(result.sidecar_path.with_suffix(".json").read_text(encoding="utf-8"))
+    assert len(sidecar_rows) == 2
+    assert {"station_region", "_plot_value", "dep"} <= set(sidecar_rows.columns)
+    assert metadata["source_row_count"] == 4
+    assert metadata["written_row_count"] == 2
+    assert metadata["sampled"] is True
+    assert metadata["category_col"] == "station_region"
+    assert metadata["resolved_value_col"] == "log2_residual"
+
+    existing = write_large_run_region_boxplot(
+        metrics_path,
+        figure_dir=tmp_path / "figures",
+        metric="PGA",
+        passband="2-3 sec",
+        model="example",
+        max_rows=10,
+        write_sidecar=True,
+        sidecar_rows=None,
+        overwrite=False,
+        showfig=False,
+    )
+    assert existing.status == "exists"
+    assert existing.sidecar_path == result.sidecar_path
+    existing_rows = pd.read_csv(existing.sidecar_path)
+    existing_metadata = json.loads(existing.sidecar_path.with_suffix(".json").read_text(encoding="utf-8"))
+    assert len(existing_rows) == 4
+    assert existing_metadata["sampled"] is False
 
 
 def test_redcap_clusters_use_spatial_constraints_and_scores() -> None:
