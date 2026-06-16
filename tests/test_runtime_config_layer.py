@@ -419,6 +419,7 @@ outputs:
     assert paths["pca_scores_path"] == tmp_path / "run_outputs" / "tables" / "pca_station_scores.parquet"
 
     namespace = output_group_namespace("step_07_dashboards", cfg=cfg)
+    assert namespace.qc_trace_summary_path == tmp_path / "run_outputs" / "tables" / "qc_trace_summary.csv"
     assert namespace.metrics_dashboard_root == tmp_path / "run_outputs" / "dashboards" / "metrics_dashboard"
     assert namespace.dashboard_summary_root == tmp_path / "run_outputs" / "dashboards" / "dashboard_summaries"
 

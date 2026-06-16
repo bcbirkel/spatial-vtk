@@ -120,6 +120,7 @@ OUTPUT_GROUPS: dict[str, tuple[OutputArtifact, ...]] = {
     ),
     "step_07_dashboards": (
         OutputArtifact("metrics_long_path", "metrics_long"),
+        OutputArtifact("qc_trace_summary_path", "qc_trace_summary"),
         OutputArtifact("qc_inventory_path", "qc_inventory"),
         OutputArtifact("qc_inventory_overlap_path", "qc_inventory_overlap"),
         OutputArtifact("metrics_dashboard_root", "metrics_dashboard", kind="dashboard"),
