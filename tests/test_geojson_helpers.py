@@ -259,7 +259,7 @@ def test_corridor_map_wrapper_writes_context_figure(tmp_path):
     )
     stations = pd.DataFrame({"station": ["S1"], "sta_lon": [-118.2], "sta_lat": [34.2]})
     events = pd.DataFrame({"event_id": ["E1"], "event_lon": [-118.5], "event_lat": [34.2]})
-    records = pd.DataFrame({"event_lon": [-118.5], "event_lat": [34.2], "sta_lon": [-118.2], "sta_lat": [34.2]})
+    records = pd.DataFrame({"event_lon": [-118.5], "event_lat": [34.2], "lon": [-118.2], "lat": [34.2]})
     output = plot_corridor_map(corridors, tmp_path / "corridor_map.png", stations_df=stations, events_df=events, records_df=records, add_basemap=False)
     assert output.exists()
     assert output.stat().st_size > 0
