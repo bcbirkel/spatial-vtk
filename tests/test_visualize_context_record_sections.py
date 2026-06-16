@@ -302,6 +302,28 @@ def test_trace_comparison_uses_event_origin_offsets() -> None:
     assert float(synthetic_x[-1]) == 8.0
 
 
+def test_trace_comparison_accepts_numpy_trace_dictionaries() -> None:
+    """Trace overlays should render the lightweight NumPy waveform fixture format."""
+
+    records = pd.DataFrame(
+        {
+            "event_id": ["E1"],
+            "station": ["S1"],
+            "component": ["Z"],
+            "distance_km": [20.0],
+            "observed": [{"data": np.arange(20, dtype=float), "stats": {"sampling_rate": 2.0}}],
+            "synthetic": [{"data": np.arange(20, dtype=float) * 0.5, "stats": {"delta": 0.5}}],
+        }
+    )
+
+    fig = plot_event_trace_comparison(records, max_records=1, showfig=False)
+    ax = fig.axes[0]
+    assert len(ax.lines) >= 2
+    assert float(ax.lines[0].get_xdata()[1]) == pytest.approx(0.5)
+    assert float(ax.lines[1].get_xdata()[1]) == pytest.approx(0.5)
+    plt.close(fig)
+
+
 def test_station_event_waveform_map_aligns_to_event_time_and_sorts_distance() -> None:
     """Station-event waveform maps should align traces and sort nearest at bottom."""
 

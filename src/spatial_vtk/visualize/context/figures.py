@@ -1157,6 +1157,17 @@ def _array_from_trace_like(value: Any, *, default_dt: float = 1.0) -> tuple[np.n
         ``(data, dt_seconds)``.
     """
 
+    if isinstance(value, dict):
+        data = np.asarray(value.get("data", []), dtype=float)
+        stats = value.get("stats", {})
+        dt = stats.get("delta") if isinstance(stats, dict) else getattr(stats, "delta", None)
+        if dt is None:
+            if isinstance(stats, dict):
+                sampling_rate = stats.get("sampling_rate")
+            else:
+                sampling_rate = getattr(stats, "sampling_rate", None)
+            dt = 1.0 / float(sampling_rate) if sampling_rate else default_dt
+        return data, float(dt)
     if hasattr(value, "data"):
         data = np.asarray(value.data, dtype=float)
         stats = getattr(value, "stats", None)
