@@ -21,6 +21,7 @@ from spatial_vtk.config import (
     get_saved_config_path,
     load_config,
     notebook_timing_enabled,
+    prepare_notebook_geospatial_environment,
     register_svtk_cell_timer,
     resolve_output_path,
     resolve_run_defaults,
@@ -190,6 +191,31 @@ def test_notebook_timing_config_and_formatter(tmp_path):
     assert not notebook_timing_enabled(disabled)
     assert format_run_time(0.0192) == "Run time: 19.2 ms"
     assert format_run_time(2.5) == "Run time: 2.50 s"
+
+
+def test_prepare_notebook_geospatial_environment_clears_proj_overrides(monkeypatch):
+    """Tutorial notebook bootstrap should ignore inherited external PROJ paths."""
+
+    monkeypatch.setenv("PROJ_LIB", "/external/proj")
+    monkeypatch.setenv("PROJ_DATA", "/external/proj-data")
+
+    removed = prepare_notebook_geospatial_environment()
+
+    assert removed == {"PROJ_LIB": "/external/proj", "PROJ_DATA": "/external/proj-data"}
+    assert "PROJ_LIB" not in os.environ
+    assert "PROJ_DATA" not in os.environ
+
+
+def test_prepare_notebook_geospatial_environment_can_keep_proj_overrides(monkeypatch):
+    """Users can keep custom PROJ paths when they intentionally need them."""
+
+    monkeypatch.setenv("PROJ_LIB", "/external/proj")
+    monkeypatch.setenv("SVTK_KEEP_PROJ_ENV", "1")
+
+    removed = prepare_notebook_geospatial_environment()
+
+    assert removed == {}
+    assert os.environ["PROJ_LIB"] == "/external/proj"
 
 
 def test_notebook_run_context_resolves_config_dirs_and_flags(tmp_path, monkeypatch):

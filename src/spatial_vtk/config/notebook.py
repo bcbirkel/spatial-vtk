@@ -91,6 +91,46 @@ def find_repo_root(start: str | Path | None = None) -> Path:
     return current
 
 
+def prepare_notebook_geospatial_environment(
+    *,
+    clear_proj_env: bool | None = None,
+) -> dict[str, str]:
+    """Clear inherited PROJ overrides that can break tutorial geospatial plots.
+
+    Some shell environments export ``PROJ_LIB`` or ``PROJ_DATA`` for a separate
+    GIS installation. Rasterio, pyproj, and contextily may then read an
+    incompatible ``proj.db`` before they can use the package environment's
+    database. Tutorial notebooks call this during bootstrap so a fresh checkout
+    can run without relying on the user's shell-specific GIS settings.
+
+    Parameters
+    ----------
+    clear_proj_env
+        Whether to remove ``PROJ_LIB`` and ``PROJ_DATA`` from ``os.environ``.
+        When omitted, the default is ``True`` unless
+        ``SVTK_KEEP_PROJ_ENV=1`` is set.
+
+    Returns
+    -------
+    dict
+        Mapping of environment variables that were removed to their previous
+        values. The return value is intended for debugging; notebooks do not
+        print it by default.
+    """
+
+    if clear_proj_env is None:
+        clear_proj_env = not _env_bool("SVTK_KEEP_PROJ_ENV", default=False)
+    if not clear_proj_env:
+        return {}
+
+    removed: dict[str, str] = {}
+    for name in ("PROJ_LIB", "PROJ_DATA"):
+        value = os.environ.pop(name, None)
+        if value:
+            removed[name] = value
+    return removed
+
+
 def notebook_run_context(
     config_path: str | Path | None = None,
     *,
@@ -471,6 +511,7 @@ __all__ = [
     "notebook_timer",
     "notebook_timing_enabled",
     "notebook_run_context",
+    "prepare_notebook_geospatial_environment",
     "print_run_time",
     "print_notebook_context",
     "register_svtk_cell_timer",
