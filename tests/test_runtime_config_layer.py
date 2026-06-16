@@ -480,6 +480,12 @@ outputs:
     )
     cfg = SpatialVTKConfig.from_file(config_path).activate()
 
+    qc_paths = output_group_paths("step_02_qc", cfg=cfg)
+    assert qc_paths["trace_qc_path"] == tmp_path / "run_outputs" / "tables" / "qc_trace_summary.csv"
+    assert qc_paths["qc_inventory_path"] == tmp_path / "run_outputs" / "tables" / "qc_inventory.csv"
+    assert qc_paths["qc_inventory_overlap_path"] == tmp_path / "run_outputs" / "tables" / "qc_inventory_overlap.parquet"
+    assert qc_paths["comparison_eligible_path"] == tmp_path / "run_outputs" / "tables" / "comparison_eligible_records.csv"
+
     paths = output_group_paths("step_04_spatial", cfg=cfg)
 
     assert paths["metrics_long_path"] == tmp_path / "run_outputs" / "tables" / "metrics_long.parquet"
