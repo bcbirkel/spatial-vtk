@@ -62,6 +62,12 @@ tables:
   cluster_scores:
     filename: cluster_scores.csv
     description: Cluster solution scores
+  cluster_solution_scores:
+    filename: cluster_scores.csv
+    description: Cluster solution scores
+  cluster_feature_summary:
+    filename: cluster_feature_summary.csv
+    description: Cluster feature summary
   cluster_summary:
     filename: cluster_summary.csv
     description: Cluster summary
@@ -80,6 +86,15 @@ tables:
   geojson_region_summaries:
     filename: geojson_region_summaries.csv
     description: GeoJSON region summaries
+  block_holdout_predictions:
+    filename: block_holdout_predictions.parquet
+    description: Spatial block holdout predictions
+  corridors:
+    filename: corridors.parquet
+    description: Corridor path summaries
+  redcap_clusters:
+    filename: redcap_clusters.parquet
+    description: REDCAP spatial clusters
   qc_trace_summary:
     filename: qc_trace_summary.csv
     description: QC trace summary for dashboards

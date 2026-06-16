@@ -33,6 +33,10 @@ from spatial_vtk.io import (
     default_output_paths,
     read_artifact_manifest,
     metric_plan_from_config,
+    output_group_completion,
+    output_group_namespace,
+    output_group_paths,
+    output_group_status,
     stable_hash,
     waveform_preprocessing_from_config,
     waveform_preprocessing_label,
@@ -253,6 +257,48 @@ outputs:
 
     explicit = resolve_output_path("record_coverage", kind="figure", outpath="override/custom.png")
     assert explicit == tmp_path / "override" / "custom.png"
+    clear_active_config()
+
+
+def test_output_groups_resolve_configured_paths(tmp_path, monkeypatch):
+    """Workflow output groups should avoid repeated notebook path plumbing."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+  figures: run_outputs/figures
+  dashboards: run_outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+
+    paths = output_group_paths("step_04_spatial", cfg=cfg)
+
+    assert paths["metrics_long_path"] == tmp_path / "run_outputs" / "tables" / "metrics_long.parquet"
+    assert paths["cluster_features_path"] == tmp_path / "run_outputs" / "tables" / "cluster_feature_summary.csv"
+    assert paths["pca_scores_path"] == tmp_path / "run_outputs" / "tables" / "pca_station_scores.parquet"
+
+    namespace = output_group_namespace("step_07_dashboards", cfg=cfg)
+    assert namespace.metrics_dashboard_root == tmp_path / "run_outputs" / "dashboards" / "metrics_dashboard"
+    assert namespace.dashboard_summary_root == tmp_path / "run_outputs" / "dashboards" / "dashboard_summaries"
+
+    status = output_group_status("step_04_spatial", cfg=cfg)
+    assert status[0]["name"] == "metrics_long_path"
+    assert status[0]["exists"] is False
+
+    write_output_table("metrics_long", pd.DataFrame({"metric": ["PGA"]}), cfg=cfg)
+    completion = output_group_completion("step_03_metrics", cfg=cfg)
+    assert completion["complete"] is False
+    assert completion["existing"] == 1
+    assert "metrics_enriched_path" in completion["missing"]
+
     clear_active_config()
 
 
