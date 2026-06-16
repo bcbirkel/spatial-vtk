@@ -117,7 +117,7 @@ defaults in ``compute.slurm``:
        python_command: python
        environment_setup:
          - module load mamba
-         - mamba activate spatial-vtk-py312
+         - mamba activate spatial-vtk
        partition: main
        account: my_account
        walltime: "12:00:00"
