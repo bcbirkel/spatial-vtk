@@ -25,6 +25,7 @@ from spatial_vtk.config import (
     register_svtk_cell_timer,
     resolve_output_path,
     resolve_run_defaults,
+    run_or_submit_notebook_cli_command,
     set_saved_config_path,
     submit_notebook_slurm_script,
     write_notebook_python_slurm_script,
@@ -51,6 +52,7 @@ from spatial_vtk.io import (
     write_output_table,
 )
 import spatial_vtk.visualize.figure_io as figure_io
+import spatial_vtk.config.notebook as notebook_helpers
 from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize import default_figure_paths
 
@@ -316,6 +318,71 @@ compute:
     assert result is None
     assert f"script: {script}" in captured
     assert f"sbatch --parsable {script}" in captured
+    clear_active_config()
+
+
+def test_notebook_cli_helper_runs_or_writes_slurm_wrapper(tmp_path, monkeypatch, capsys):
+    """Large-run notebooks should share one CLI run/submit helper."""
+
+    repo = tmp_path / "project"
+    (repo / "src" / "spatial_vtk").mkdir(parents=True)
+    (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
+    config_path = repo / "runs" / "spatial_vtk_config.yaml"
+    config_path.parent.mkdir()
+    config_path.write_text(
+        """
+project:
+  root_dir: ..
+outputs:
+  root: run_outputs
+compute:
+  slurm:
+    python_command: python
+    submit_command: sbatch --parsable
+""",
+        encoding="utf-8",
+    )
+    context = notebook_run_context(start=repo / "docs", create_dirs=True)
+    captured_args = {}
+
+    def fake_cli(args):
+        captured_args["args"] = list(args)
+        return 0
+
+    monkeypatch.setattr(notebook_helpers, "_run_spatial_vtk_cli", fake_cli)
+    result = run_or_submit_notebook_cli_command(
+        context,
+        ["svtk", "metrics", "outputs", "--config", str(config_path)],
+        script_name="metrics_outputs.slurm",
+        job_name="svtk-metrics-outputs",
+        run_local=True,
+    )
+
+    assert result is None
+    assert captured_args["args"] == ["metrics", "outputs", "--config", str(config_path)]
+
+    result = run_or_submit_notebook_cli_command(
+        context,
+        ["svtk", "qc", "summaries", "--verbose"],
+        script_name="qc_summaries.slurm",
+        job_name="svtk-qc-summaries",
+        walltime="02:00:00",
+        memory="8G",
+        cpus=2,
+        run_local=False,
+    )
+
+    script = context.slurm_dir / "qc_summaries.slurm"
+    text = script.read_text(encoding="utf-8")
+    printed = capsys.readouterr().out
+    assert result is None
+    assert "svtk qc summaries --verbose" in printed
+    assert "#SBATCH --job-name=svtk-qc-summaries" in text
+    assert "#SBATCH --time=02:00:00" in text
+    assert "#SBATCH --mem=8G" in text
+    assert "#SBATCH --cpus-per-task=2" in text
+    assert "main(['qc', 'summaries', '--verbose'])" in text
+    assert f"sbatch --parsable {script}" in printed
     clear_active_config()
 
 

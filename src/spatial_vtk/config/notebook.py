@@ -19,6 +19,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 import os
 from pathlib import Path
+import shlex
 from time import perf_counter
 from typing import Any, Iterator
 
@@ -254,6 +255,70 @@ def submit_notebook_slurm_script(
         settings=settings,
         submit=context.submit_slurm,
     )
+
+
+def run_or_submit_notebook_cli_command(
+    context: NotebookRunContext,
+    command: list[str] | tuple[str, ...],
+    *,
+    script_name: str,
+    job_name: str,
+    walltime: str = "12:00:00",
+    memory: str = "32G",
+    cpus: int = 1,
+    run_local: bool | None = None,
+    section: str | None = "compute.slurm",
+) -> SlurmSubmission | None:
+    """Run a Spatial-VTK CLI command locally or wrap it in a SLURM script.
+
+    Large-run notebooks use this helper for medium-to-heavy CLI steps so the
+    cell stays focused on readiness checks. The helper prints the exact command
+    either way. When running locally, the command is dispatched through
+    :func:`spatial_vtk.cli.main` so notebooks do not depend on a shell ``svtk``
+    executable. When not running locally, an inline-Python SLURM script is
+    written and then submitted or printed according to ``context.submit_slurm``.
+    """
+
+    cmd = [str(part) for part in command]
+    print(shlex.join(cmd))
+    should_run_local = context.run_local if run_local is None else bool(run_local)
+    cli_args = _spatial_vtk_cli_args(cmd)
+    if should_run_local:
+        return_code = _run_spatial_vtk_cli(cli_args)
+        if int(return_code or 0) != 0:
+            raise RuntimeError(f"Spatial-VTK CLI command failed with return code {return_code}: {shlex.join(cmd)}")
+        return None
+    script = write_notebook_python_slurm_script(
+        context,
+        script_name,
+        f"""
+        from spatial_vtk.cli import main
+        raise SystemExit(main({cli_args!r}))
+        """,
+        job_name=job_name,
+        walltime=walltime,
+        memory=memory,
+        cpus=cpus,
+        section=section,
+    )
+    return submit_notebook_slurm_script(context, script, section=section)
+
+
+def _spatial_vtk_cli_args(command: list[str]) -> list[str]:
+    """Return arguments suitable for ``spatial_vtk.cli.main``."""
+
+    if not command:
+        raise ValueError("CLI command cannot be empty.")
+    executable = Path(command[0]).name
+    return command[1:] if executable == "svtk" else command
+
+
+def _run_spatial_vtk_cli(args: list[str]) -> int:
+    """Run ``spatial_vtk.cli.main`` for a notebook helper."""
+
+    from spatial_vtk.cli import main
+
+    return int(main(args) or 0)
 
 
 def notebook_timing_enabled(config: SpatialVTKConfig | None = None, *, default: bool = True) -> bool:
@@ -516,6 +581,7 @@ __all__ = [
     "print_notebook_context",
     "register_svtk_cell_timer",
     "register_svtk_time_magic",
+    "run_or_submit_notebook_cli_command",
     "submit_notebook_slurm_script",
     "write_notebook_python_slurm_script",
 ]

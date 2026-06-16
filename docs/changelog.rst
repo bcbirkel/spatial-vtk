@@ -12,6 +12,11 @@ Changelog
    files in one status table. The dashboard CLI now uses the configured
    ``outputs.dashboards`` roots by default, and Step 7 notebooks use the shared
    helper instead of spelling out each dashboard path.
+   Added a shared large-run notebook helper for ``svtk`` CLI commands that
+   prints the exact command, runs it through the Python CLI entrypoint when
+   ``SVTK_RUN_LOCAL=1``, or writes/submits a config-backed SLURM wrapper
+   otherwise. The large-run QC, metrics, spatial, and dashboard notebooks now
+   use this helper for repeated command-driver cells.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after
