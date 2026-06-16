@@ -118,6 +118,9 @@ Changelog
    workflows are documented as config-backed commands with first-class
    plotting flags, while ``--kwargs`` is described as an advanced escape hatch
    rather than the normal interface.
+   Added a tutorial-notebook regression that rejects committed notebook cells
+   containing private/local cluster paths or host names, keeping public
+   notebooks runnable from a fresh source checkout.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

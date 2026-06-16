@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -95,3 +96,32 @@ def test_ci_runs_clean_tutorial_notebooks_with_notebook_extras() -> None:
     assert install in workflow
     assert install in docs_workflow
     assert "python tools/execute_tutorial_notebooks.py --clean" in workflow
+
+
+def test_committed_tutorial_notebooks_do_not_embed_private_paths() -> None:
+    """Tutorial notebooks should be runnable from a fresh public checkout."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    private_tokens = tuple(
+        "".join(parts)
+        for parts in (
+            ("/pro", "ject2/"),
+            ("jvi", "dale"),
+            ("bir", "kel@"),
+            ("/Us", "ers/", "bcb", "irkel"),
+            ("CA", "RC"),
+            ("ca", "rc"),
+            ("dis", "covery"),
+            ("h", "pc"),
+            ("geo", "sys"),
+            ("on", "demand"),
+        )
+    )
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    assert notebooks
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            source = "".join(cell.get("source", []))
+            matches = [token for token in private_tokens if token in source]
+            assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} contains {matches}"
