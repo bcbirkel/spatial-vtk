@@ -17,6 +17,7 @@ from spatial_vtk.config import (
     clear_active_config,
     find_config_file,
     format_run_time,
+    notebook_run_context,
     get_saved_config_path,
     load_config,
     notebook_timing_enabled,
@@ -37,6 +38,9 @@ from spatial_vtk.io import (
     output_group_namespace,
     output_group_paths,
     output_group_status,
+    output_status_frame,
+    should_rebuild_paths,
+    should_rebuild_outputs,
     stable_hash,
     waveform_preprocessing_from_config,
     waveform_preprocessing_label,
@@ -186,6 +190,47 @@ def test_notebook_timing_config_and_formatter(tmp_path):
     assert format_run_time(2.5) == "Run time: 2.50 s"
 
 
+def test_notebook_run_context_resolves_config_dirs_and_flags(tmp_path, monkeypatch):
+    """Notebook setup should be reusable instead of redefined in each notebook."""
+
+    repo = tmp_path / "project"
+    (repo / "src" / "spatial_vtk").mkdir(parents=True)
+    (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
+    config_path = repo / "runs" / "spatial_vtk_config.yaml"
+    config_path.parent.mkdir()
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+  figures: run_outputs/figures
+  dashboards: run_outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("SVTK_SUBMIT_SLURM", "1")
+    monkeypatch.setenv("SVTK_OVERWRITE", "true")
+    monkeypatch.setenv("SVTK_PREVIEW_ROWS", "12")
+
+    context = notebook_run_context(start=repo / "docs", create_dirs=True)
+
+    assert context.repo_root == repo.resolve()
+    assert context.config_path == config_path.resolve()
+    assert context.outputs_root == repo / "run_outputs"
+    assert context.tables_dir == repo / "run_outputs" / "tables"
+    assert context.figures_dir == repo / "run_outputs" / "figures"
+    assert context.dashboards_dir == repo / "run_outputs" / "dashboards"
+    assert context.slurm_dir == repo / "run_outputs" / "slurm"
+    assert context.submit_slurm is True
+    assert context.overwrite is True
+    assert context.preview_rows == 12
+    assert context.tables_dir.exists()
+
+    clear_active_config()
+
+
 def test_register_svtk_cell_timer_prints_for_successful_cells(tmp_path, monkeypatch, capsys):
     """Automatic notebook timing should register one reusable IPython hook."""
 
@@ -298,6 +343,15 @@ outputs:
     assert completion["complete"] is False
     assert completion["existing"] == 1
     assert "metrics_enriched_path" in completion["missing"]
+
+    assert should_rebuild_outputs({"metrics_long_path": paths["metrics_long_path"]}) is False
+    assert should_rebuild_paths(paths["metrics_long_path"]) is False
+    source = tmp_path / "newer_source.csv"
+    source.write_text("x\n1\n", encoding="utf-8")
+    assert should_rebuild_outputs({"metrics_long_path": paths["metrics_long_path"]}, sources=[source]) is True
+    assert should_rebuild_paths(paths["metrics_long_path"], sources=[source]) is True
+    status_frame = output_status_frame({"metrics_long_path": paths["metrics_long_path"]})
+    assert list(status_frame["name"]) == ["metrics_long_path"]
 
     clear_active_config()
 

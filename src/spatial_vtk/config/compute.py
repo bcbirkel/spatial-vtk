@@ -88,6 +88,62 @@ def slurm_settings_from_config(config: SpatialVTKConfig, *, section: str | None 
     )
 
 
+def slurm_settings_with_overrides(
+    config: SpatialVTKConfig,
+    *,
+    section: str | None = None,
+    python_command: str | None = None,
+    environment_setup: tuple[str, ...] | list[str] | str | None = None,
+    partition: str | None = None,
+    account: str | None = None,
+    walltime: str | int | float | None = None,
+    memory: str | None = None,
+    cpus_per_task: int | None = None,
+    max_concurrent: int | None = None,
+    job_name: str | None = None,
+    log_dir: str | Path | None = None,
+    working_directory: str | Path | None = None,
+    submit_command: str | None = None,
+    extra_directives: tuple[str, ...] | list[str] | str | None = None,
+) -> SlurmSettings:
+    """Read SLURM settings and apply explicit overrides.
+
+    This is useful for notebooks and workflow drivers that should inherit the
+    configured environment setup while varying job name, memory, time, or CPU
+    count for one task.
+    """
+
+    settings = slurm_settings_from_config(config, section=section)
+    updates: dict[str, object] = {}
+    if python_command is not None:
+        updates["python_command"] = str(python_command)
+    if environment_setup is not None:
+        updates["environment_setup"] = _as_lines(environment_setup)
+    if partition is not None:
+        updates["partition"] = str(partition)
+    if account is not None:
+        updates["account"] = str(account)
+    if walltime is not None:
+        updates["walltime"] = _slurm_walltime(walltime)
+    if memory is not None:
+        updates["memory"] = str(memory)
+    if cpus_per_task is not None:
+        updates["cpus_per_task"] = int(cpus_per_task)
+    if max_concurrent is not None:
+        updates["max_concurrent"] = int(max_concurrent)
+    if job_name is not None:
+        updates["job_name"] = str(job_name)
+    if log_dir is not None:
+        updates["log_dir"] = str(log_dir)
+    if working_directory is not None:
+        updates["working_directory"] = str(working_directory)
+    if submit_command is not None:
+        updates["submit_command"] = str(submit_command)
+    if extra_directives is not None:
+        updates["extra_directives"] = _as_lines(extra_directives)
+    return replace(settings, **updates)
+
+
 def _slurm_walltime(value: Any) -> str:
     """Normalize YAML-parsed Slurm walltime values to ``HH:MM:SS``."""
 
@@ -105,6 +161,14 @@ def _slurm_walltime(value: Any) -> str:
         minutes, seconds = divmod(remainder, 60)
         return f"{hours:d}:{minutes:02d}:{seconds:02d}"
     return text
+
+
+def _as_lines(value: tuple[str, ...] | list[str] | str) -> tuple[str, ...]:
+    """Normalize a string or sequence into non-empty shell lines."""
+
+    if isinstance(value, str):
+        return tuple(line for line in value.splitlines() if line.strip())
+    return tuple(str(line) for line in value if str(line).strip())
 
 
 def slurm_header(settings: SlurmSettings, *, array: str | None = None) -> list[str]:
@@ -259,6 +323,7 @@ __all__ = [
     "SlurmSubmission",
     "slurm_header",
     "slurm_settings_from_config",
+    "slurm_settings_with_overrides",
     "submit_or_print_slurm_script",
     "submit_slurm_script",
     "write_inline_python_slurm_script",

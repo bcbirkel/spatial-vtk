@@ -16,10 +16,147 @@ Register automatic timing for later notebook cells:
 from __future__ import annotations
 
 from contextlib import contextmanager
+from dataclasses import dataclass
+import os
+from pathlib import Path
 from time import perf_counter
 from typing import Any, Iterator
 
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
+
+
+@dataclass(frozen=True)
+class NotebookRunContext:
+    """Resolved paths and flags for a workflow notebook.
+
+    Parameters
+    ----------
+    repo_root
+        Repository or project root used by the notebook.
+    config_path
+        Config file loaded for the run.
+    cfg
+        Activated Spatial-VTK config.
+    outputs_root, tables_dir, figures_dir, dashboards_dir, slurm_dir, logs_dir
+        Standard output directories resolved from the config.
+    run_local, submit_slurm, overwrite
+        Common notebook execution flags read from environment variables.
+    preview_rows, qc_chunksize
+        Common notebook row/chunk controls read from environment variables.
+    """
+
+    repo_root: Path
+    config_path: Path
+    cfg: SpatialVTKConfig
+    outputs_root: Path
+    tables_dir: Path
+    figures_dir: Path
+    dashboards_dir: Path
+    slurm_dir: Path
+    logs_dir: Path
+    run_local: bool
+    submit_slurm: bool
+    overwrite: bool
+    preview_rows: int
+    qc_chunksize: int
+
+
+def find_repo_root(start: str | Path | None = None) -> Path:
+    """Find the nearest Spatial-VTK repository root.
+
+    Parameters
+    ----------
+    start
+        Directory to search from. When omitted, the current working directory
+        is used.
+
+    Returns
+    -------
+    pathlib.Path
+        First parent containing ``pyproject.toml`` and ``src/spatial_vtk``.
+        If none is found, the resolved start directory is returned.
+    """
+
+    current = Path(start or Path.cwd()).resolve()
+    for candidate in (current, *current.parents):
+        if (candidate / "pyproject.toml").exists() and (candidate / "src" / "spatial_vtk").exists():
+            return candidate
+    return current
+
+
+def notebook_run_context(
+    config_path: str | Path | None = None,
+    *,
+    start: str | Path | None = None,
+    activate: bool = True,
+    create_dirs: bool = True,
+) -> NotebookRunContext:
+    """Resolve the standard context for Spatial-VTK workflow notebooks.
+
+    Parameters
+    ----------
+    config_path
+        Explicit config path. When omitted, common project-relative locations
+        and ``SVTK_CONFIG`` discovery are used.
+    start
+        Directory used to find the repository root.
+    activate
+        Whether to activate the loaded config.
+    create_dirs
+        Whether to create standard output directories.
+
+    Returns
+    -------
+    NotebookRunContext
+        Resolved config, output directories, and execution flags.
+    """
+
+    repo_root = find_repo_root(start)
+    resolved_config = _resolve_notebook_config_path(repo_root, config_path)
+    cfg = SpatialVTKConfig.from_file(resolved_config)
+    if activate:
+        cfg.activate()
+
+    outputs_root = Path(cfg.path("outputs.root", create_parent=create_dirs) or (cfg.root_dir / "outputs"))
+    tables_dir = Path(cfg.path("outputs.tables", create_parent=create_dirs) or (outputs_root / "tables"))
+    figures_dir = Path(cfg.path("outputs.figures", create_parent=create_dirs) or (outputs_root / "figures"))
+    dashboards_dir = Path(cfg.path("outputs.dashboards", create_parent=create_dirs) or (outputs_root / "dashboards"))
+    slurm_dir = outputs_root / "slurm"
+    logs_dir = outputs_root / "logs"
+    if create_dirs:
+        for directory in (outputs_root, tables_dir, figures_dir, dashboards_dir, slurm_dir, logs_dir):
+            directory.mkdir(parents=True, exist_ok=True)
+
+    return NotebookRunContext(
+        repo_root=repo_root,
+        config_path=resolved_config,
+        cfg=cfg,
+        outputs_root=outputs_root,
+        tables_dir=tables_dir,
+        figures_dir=figures_dir,
+        dashboards_dir=dashboards_dir,
+        slurm_dir=slurm_dir,
+        logs_dir=logs_dir,
+        run_local=_env_bool("SVTK_RUN_LOCAL", default=False),
+        submit_slurm=_env_bool("SVTK_SUBMIT_SLURM", default=False),
+        overwrite=_env_bool("SVTK_OVERWRITE", default=False),
+        preview_rows=_env_int("SVTK_PREVIEW_ROWS", default=5),
+        qc_chunksize=_env_int("SVTK_QC_CHUNKSIZE", default=1_000_000),
+    )
+
+
+def print_notebook_context(context: NotebookRunContext) -> None:
+    """Print a compact run-context summary for a notebook setup cell."""
+
+    print(f"repo_root: {context.repo_root}")
+    print(f"config_path: {context.config_path}")
+    print(f"outputs_root: {context.outputs_root}")
+    print(f"tables_dir: {context.tables_dir}")
+    print(f"figures_dir: {context.figures_dir}")
+    print(
+        "SUBMIT_SLURM="
+        f"{context.submit_slurm} RUN_LOCAL={context.run_local} OVERWRITE={context.overwrite}"
+    )
 
 
 def notebook_timing_enabled(config: SpatialVTKConfig | None = None, *, default: bool = True) -> bool:
@@ -233,11 +370,52 @@ def _as_bool(value: object, *, default: bool) -> bool:
     return bool(default)
 
 
+def _resolve_notebook_config_path(repo_root: Path, config_path: str | Path | None) -> Path:
+    """Resolve the config path used by workflow notebooks."""
+
+    if config_path is not None:
+        return Path(config_path).expanduser().resolve()
+    env_path = os.environ.get("SVTK_CONFIG")
+    if env_path:
+        return Path(env_path).expanduser().resolve()
+    candidates = [
+        repo_root / "runs" / "spatial_vtk_config.yaml",
+        Path.cwd() / "spatial_vtk_config.yaml",
+        Path.cwd() / "runs" / "spatial_vtk_config.yaml",
+    ]
+    return next((path.resolve() for path in candidates if path.exists()), candidates[0].resolve())
+
+
+def _env_bool(name: str, *, default: bool) -> bool:
+    """Read one boolean environment variable."""
+
+    value = os.environ.get(name)
+    if value is None:
+        return bool(default)
+    return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _env_int(name: str, *, default: int) -> int:
+    """Read one integer environment variable."""
+
+    value = os.environ.get(name)
+    if value is None:
+        return int(default)
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return int(default)
+
+
 __all__ = [
+    "NotebookRunContext",
+    "find_repo_root",
     "format_run_time",
     "notebook_timer",
     "notebook_timing_enabled",
+    "notebook_run_context",
     "print_run_time",
+    "print_notebook_context",
     "register_svtk_cell_timer",
     "register_svtk_time_magic",
 ]

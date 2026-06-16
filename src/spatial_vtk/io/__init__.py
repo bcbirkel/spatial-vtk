@@ -62,8 +62,10 @@ from spatial_vtk.io.output_paths import (
     output_group_paths,
     output_group_status,
     output_group_status_frame,
+    output_status_frame,
     output_status_rows,
     required_outputs_exist,
+    should_rebuild_paths,
     should_rebuild_outputs,
 )
 from spatial_vtk.io.plans import (
@@ -167,6 +169,7 @@ __all__ = [
     "output_group_paths",
     "output_group_status",
     "output_group_status_frame",
+    "output_status_frame",
     "output_status_rows",
     "prepare_event_metadata",
     "prepare_event_station_table",
@@ -192,6 +195,7 @@ __all__ = [
     "stable_hash",
     "stream_station_table",
     "synthetic_reader_for",
+    "should_rebuild_paths",
     "should_rebuild_outputs",
     "trace_metadata_table",
     "utc_run_id",

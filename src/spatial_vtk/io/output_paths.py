@@ -270,6 +270,26 @@ def output_status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
     return rows
 
 
+def output_status_frame(paths):
+    """Return file status for a path collection as a pandas dataframe.
+
+    Parameters
+    ----------
+    paths
+        Mapping from display names to paths, a sequence of paths, or a sequence
+        of ``(name, path)`` pairs.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Display-ready status table.
+    """
+
+    import pandas as pd
+
+    return pd.DataFrame(output_status_rows(_coerce_named_paths(paths)))
+
+
 def output_group_status(
     group: str,
     *,
@@ -319,10 +339,39 @@ def should_rebuild_outputs(
     paths: dict[str, str | Path],
     *,
     overwrite: bool = False,
+    sources: Iterable[str | Path] = (),
 ) -> bool:
-    """Return whether a workflow step should run for the target outputs."""
+    """Return whether a workflow step should run for the target outputs.
 
-    return bool(overwrite) or not required_outputs_exist(paths)
+    A step should run when overwrite is requested, one or more outputs are
+    missing, or any existing source is newer than any output.
+    """
+
+    output_paths = [Path(path) for path in paths.values()]
+    if bool(overwrite) or not all(path.exists() for path in output_paths):
+        return True
+    source_paths = [Path(path) for path in sources if Path(path).exists()]
+    if not source_paths:
+        return False
+    return any(
+        source.stat().st_mtime > output.stat().st_mtime
+        for source in source_paths
+        for output in output_paths
+    )
+
+
+def should_rebuild_paths(
+    *paths: str | Path,
+    overwrite: bool = False,
+    sources: Iterable[str | Path] = (),
+) -> bool:
+    """Return whether unnamed output paths should be rebuilt."""
+
+    return should_rebuild_outputs(
+        {f"path_{index}": path for index, path in enumerate(paths)},
+        overwrite=overwrite,
+        sources=sources,
+    )
 
 
 def output_group_completion(
@@ -369,6 +418,20 @@ def _dedupe_artifacts(artifacts: Iterable[OutputArtifact]) -> list[OutputArtifac
     return out
 
 
+def _coerce_named_paths(paths) -> dict[str, str | Path]:
+    """Coerce common path collections into a named mapping."""
+
+    if isinstance(paths, dict):
+        return {str(name): path for name, path in paths.items()}
+    items = []
+    for index, item in enumerate(paths):
+        if isinstance(item, tuple) and len(item) == 2:
+            items.append((str(item[0]), item[1]))
+        else:
+            items.append((f"path_{index}", item))
+    return dict(items)
+
+
 OUTPUT_GROUPS["large_run_core"] = tuple(
     _dedupe_artifacts(
         [
@@ -402,7 +465,9 @@ __all__ = [
     "output_group_paths",
     "output_group_status",
     "output_group_status_frame",
+    "output_status_frame",
     "output_status_rows",
     "required_outputs_exist",
+    "should_rebuild_paths",
     "should_rebuild_outputs",
 ]

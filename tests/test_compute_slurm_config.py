@@ -9,6 +9,7 @@ from spatial_vtk.config.compute import (
     SlurmSettings,
     slurm_header,
     slurm_settings_from_config,
+    slurm_settings_with_overrides,
     submit_or_print_slurm_script,
     submit_slurm_script,
     write_inline_python_slurm_script,
@@ -64,6 +65,43 @@ def test_slurm_settings_normalize_yaml_sexagesimal_walltime() -> None:
     settings = slurm_settings_from_config(cfg, section="qc.slurm")
 
     assert settings.walltime == "24:00:00"
+
+
+def test_slurm_settings_with_overrides_preserves_configured_environment() -> None:
+    """Task overrides should not require notebooks to hard-code environment setup."""
+
+    cfg = SpatialVTKConfig(
+        None,
+        Path(".").resolve(),
+        {
+            "compute": {
+                "slurm": {
+                    "python_command": "python",
+                    "walltime": "01:00:00",
+                    "memory": "8G",
+                    "environment_setup": ["module load python"],
+                    "log_dir": "logs",
+                }
+            },
+        },
+    )
+
+    settings = slurm_settings_with_overrides(
+        cfg,
+        job_name="svtk-step",
+        walltime="02:00:00",
+        memory="24G",
+        cpus_per_task=4,
+        working_directory="/project",
+    )
+
+    assert settings.python_command == "python"
+    assert settings.environment_setup == ("module load python",)
+    assert settings.job_name == "svtk-step"
+    assert settings.walltime == "02:00:00"
+    assert settings.memory == "24G"
+    assert settings.cpus_per_task == 4
+    assert settings.working_directory == "/project"
 
 
 def test_slurm_settings_require_python_command() -> None:
