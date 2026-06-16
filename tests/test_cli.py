@@ -52,6 +52,16 @@ def test_cli_registered_plot_help_shows_common_options(capsys):
     assert "--write-sidecar" in captured.out
 
 
+def test_cli_reference_describes_config_defaults_before_kwargs():
+    """CLI docs should not present kwargs as the primary plotting interface."""
+
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "docs" / "reference" / "cli_api.rst").read_text(encoding="utf-8")
+    assert "resolve their standard input tables and figure paths from the active config" in text
+    assert "first-class flags where they apply" in text
+    assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
+
+
 def test_cli_config_show_section(tmp_path, capsys):
     config = tmp_path / "spatial-vtk.yaml"
     config.write_text(

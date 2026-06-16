@@ -114,6 +114,10 @@ Changelog
    wrappers now expose ``write_sidecar``, ``sidecar_rows``, and
    ``sidecar_dir`` directly in their signatures so generated docs and
    interactive help show the row-provenance controls.
+   Updated the generated CLI reference introduction so standard plotting
+   workflows are documented as config-backed commands with first-class
+   plotting flags, while ``--kwargs`` is described as an advanced escape hatch
+   rather than the normal interface.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after
