@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import matplotlib
@@ -12,6 +13,7 @@ matplotlib.use("Agg", force=True)
 from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.io import (
     build_observed_synthetic_inventory,
+    load_or_build_output_table,
     prepare_event_metadata,
     prepare_event_station_table,
     prepare_station_metadata,
@@ -208,6 +210,50 @@ def test_standard_output_table_helpers_use_active_config(tmp_path: Path) -> None
     assert written["record_coverage"].exists()
     assert stations.loc[0, "station"] == "STA01"
     assert preview.to_dict("records") == [{"station": "STA01"}]
+
+
+def test_load_or_build_output_table_reuses_and_refreshes_stale_tables(tmp_path: Path) -> None:
+    """Derived output helpers should rebuild only when requested or stale."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    source_path = tmp_path / "source.csv"
+    config_path.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  root_dir: .",
+                "outputs:",
+                "  tables: outputs/tables",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    source_path.write_text("version\n1\n", encoding="utf-8")
+    calls = {"count": 0}
+
+    def build_table() -> pd.DataFrame:
+        calls["count"] += 1
+        return pd.DataFrame({"station": [f"STA{calls['count']:02d}"]})
+
+    try:
+        SpatialVTKConfig.from_file(config_path).activate()
+        first = load_or_build_output_table("prepared_stations", build_table, source_path=source_path, verbose=False)
+        second = load_or_build_output_table("prepared_stations", build_table, source_path=source_path, verbose=False)
+
+        output_path = tmp_path / "outputs" / "tables" / "prepared_stations.csv"
+        new_mtime = output_path.stat().st_mtime + 10
+        source_path.touch()
+        source_path.write_text("version\n2\n", encoding="utf-8")
+        source_path.touch()
+        os.utime(source_path, (new_mtime, new_mtime))
+        refreshed = load_or_build_output_table("prepared_stations", build_table, source_path=source_path, verbose=False)
+    finally:
+        clear_active_config()
+
+    assert calls["count"] == 2
+    assert first.loc[0, "station"] == "STA01"
+    assert second.loc[0, "station"] == "STA01"
+    assert refreshed.loc[0, "station"] == "STA02"
 
 
 def test_inventory_and_context_figures_write_outputs(tmp_path: Path) -> None:

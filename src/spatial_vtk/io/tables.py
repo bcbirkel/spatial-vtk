@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import glob
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 import tempfile
 from types import SimpleNamespace
@@ -433,6 +433,78 @@ def preview_output_table(
     return preview_table(path, nrows=nrows, columns=columns, **kwargs)
 
 
+def load_or_build_output_table(
+    key: str,
+    builder: Callable[[], pd.DataFrame],
+    *,
+    source_path: str | Path | Sequence[str | Path] | None = None,
+    cfg: SpatialVTKConfig | None = None,
+    overwrite: bool = False,
+    verbose: bool = True,
+    index: bool = False,
+) -> pd.DataFrame:
+    """Load a registered output table or rebuild it when stale.
+
+    This helper is intended for compact derived tables used by notebooks and
+    dashboards. It keeps workflow cells focused on the table being produced
+    while centralizing the common "reuse unless source changed" behavior.
+
+    Parameters
+    ----------
+    key
+        Registered table output key.
+    builder
+        Zero-argument callable that returns the table when it needs to be
+        created or refreshed.
+    source_path
+        Optional source file path or paths. If any existing source is newer
+        than the output, the table is rebuilt.
+    cfg
+        Optional config object. When omitted, the active/discoverable config is
+        used.
+    overwrite
+        Force a rebuild even if the existing table is current.
+    verbose
+        Print reuse/rebuild messages.
+    index
+        Whether to include dataframe indexes when writing the rebuilt table.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Existing or rebuilt output table.
+    """
+
+    output_path = resolve_output_path(key, kind="table", cfg=cfg, create_parent=True)
+    sources = _table_source_paths(source_path)
+    output_exists = output_path.exists()
+    stale_sources = [
+        path
+        for path in sources
+        if path.exists() and output_exists and path.stat().st_mtime > output_path.stat().st_mtime
+    ]
+
+    if output_exists and not overwrite and not stale_sources:
+        if verbose:
+            print(f"Reusing {key}: {output_path}")
+        return load_output_table(key, cfg=cfg)
+
+    if verbose and output_exists and stale_sources:
+        changed = ", ".join(str(path) for path in stale_sources[:3])
+        suffix = "" if len(stale_sources) <= 3 else f", +{len(stale_sources) - 3} more"
+        print(f"Rebuilding {key}: source is newer than {output_path} ({changed}{suffix})")
+    elif verbose and overwrite:
+        print(f"Rebuilding {key}: overwrite=True")
+    elif verbose:
+        print(f"Building {key}: {output_path}")
+
+    table = builder()
+    written = write_output_table(key, table, cfg=cfg, index=index)
+    if verbose:
+        print(f"Wrote {key}: {written}")
+    return table
+
+
 def read_config_table(
     dotted_key: str,
     *,
@@ -610,6 +682,16 @@ def written_files_table(
         description = (descriptions or {}).get(name) or output_description(name) or _title_from_name(name)
         rows.append({"File": str(display_path), "Description": description})
     return pd.DataFrame(rows, columns=["File", "Description"])
+
+
+def _table_source_paths(source_path: str | Path | Sequence[str | Path] | None) -> list[Path]:
+    """Normalize optional table source paths."""
+
+    if source_path is None:
+        return []
+    if isinstance(source_path, (str, Path)):
+        return [Path(source_path).expanduser()]
+    return [Path(path).expanduser() for path in source_path]
 
 
 def _resolve_csv_sources(

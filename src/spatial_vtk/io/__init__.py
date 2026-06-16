@@ -85,6 +85,7 @@ from spatial_vtk.io.synthetic_formats import SyntheticFormatInfo, inspect_synthe
 from spatial_vtk.io.tables import (
     aggregate_metric_by_station_over_events,
     load_csv_bundle,
+    load_or_build_output_table,
     load_output_table,
     normalize_metric_table,
     preview_output_table,
@@ -155,6 +156,7 @@ __all__ = [
     "inspect_synthetic_format",
     "inspect_station_event_layouts",
     "load_csv_bundle",
+    "load_or_build_output_table",
     "load_output_table",
     "metric_plan_from_config",
     "metric_qc_lookup",
