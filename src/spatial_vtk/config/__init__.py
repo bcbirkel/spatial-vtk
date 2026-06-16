@@ -50,6 +50,8 @@ from spatial_vtk.config.notebook import (
     print_notebook_context,
     register_svtk_cell_timer,
     register_svtk_time_magic,
+    submit_notebook_slurm_script,
+    write_notebook_python_slurm_script,
 )
 from spatial_vtk.config.outputs import (
     OutputSpec,
@@ -159,8 +161,10 @@ __all__ = [
     "slurm_settings_from_config",
     "slurm_settings_with_overrides",
     "submit_or_print_slurm_script",
+    "submit_notebook_slurm_script",
     "submit_slurm_script",
     "write_inline_python_slurm_script",
+    "write_notebook_python_slurm_script",
     "set_saved_config_path",
     "resolve_metric_names",
     "resolve_run_defaults",

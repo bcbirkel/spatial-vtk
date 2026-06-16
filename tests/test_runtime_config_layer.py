@@ -25,6 +25,8 @@ from spatial_vtk.config import (
     resolve_output_path,
     resolve_run_defaults,
     set_saved_config_path,
+    submit_notebook_slurm_script,
+    write_notebook_python_slurm_script,
 )
 from spatial_vtk.io import (
     ArtifactSpec,
@@ -229,6 +231,64 @@ outputs:
     assert context.preview_rows == 12
     assert context.tables_dir.exists()
 
+    clear_active_config()
+
+
+def test_notebook_slurm_script_uses_configured_environment(tmp_path, capsys):
+    """Notebook SLURM scripts should inherit setup from config, not notebooks."""
+
+    repo = tmp_path / "project"
+    (repo / "src" / "spatial_vtk").mkdir(parents=True)
+    (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
+    config_path = repo / "runs" / "spatial_vtk_config.yaml"
+    config_path.parent.mkdir()
+    config_path.write_text(
+        """
+project:
+  root_dir: ..
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+  figures: run_outputs/figures
+  dashboards: run_outputs/dashboards
+compute:
+  slurm:
+    python_command: python
+    partition: shared
+    environment_setup:
+      - module load python
+""",
+        encoding="utf-8",
+    )
+
+    context = notebook_run_context(start=repo / "docs", create_dirs=True)
+    script = write_notebook_python_slurm_script(
+        context,
+        "example.slurm",
+        'print("ready")',
+        job_name="svtk-example",
+        walltime="01:00:00",
+        memory="4G",
+        cpus=2,
+    )
+
+    text = script.read_text(encoding="utf-8")
+    assert script == context.slurm_dir / "example.slurm"
+    assert "#SBATCH --job-name=svtk-example" in text
+    assert "#SBATCH --partition=shared" in text
+    assert "#SBATCH --time=01:00:00" in text
+    assert "#SBATCH --mem=4G" in text
+    assert "#SBATCH --cpus-per-task=2" in text
+    assert "module load python" in text
+    assert f"cd {context.repo_root}" in text
+    assert 'print("ready")' in text
+
+    result = submit_notebook_slurm_script(context, script)
+
+    captured = capsys.readouterr().out
+    assert result is None
+    assert f"script: {script}" in captured
+    assert f"sbatch {script}" in captured
     clear_active_config()
 
 

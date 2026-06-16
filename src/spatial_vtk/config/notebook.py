@@ -23,6 +23,12 @@ from time import perf_counter
 from typing import Any, Iterator
 
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
+from spatial_vtk.config.compute import (
+    SlurmSubmission,
+    slurm_settings_with_overrides,
+    submit_or_print_slurm_script,
+    write_inline_python_slurm_script,
+)
 
 
 @dataclass(frozen=True)
@@ -156,6 +162,52 @@ def print_notebook_context(context: NotebookRunContext) -> None:
     print(
         "SUBMIT_SLURM="
         f"{context.submit_slurm} RUN_LOCAL={context.run_local} OVERWRITE={context.overwrite}"
+    )
+
+
+def write_notebook_python_slurm_script(
+    context: NotebookRunContext,
+    script_name: str,
+    python_body: str,
+    *,
+    job_name: str,
+    walltime: str = "24:00:00",
+    memory: str = "32G",
+    cpus: int = 1,
+    section: str | None = "compute.slurm",
+) -> Path:
+    """Write an inline-Python SLURM script for a workflow notebook.
+
+    The job inherits Python command and environment setup from the active config
+    and only overrides resources supplied by the notebook cell.
+    """
+
+    settings = slurm_settings_with_overrides(
+        context.cfg,
+        section=section,
+        job_name=job_name,
+        walltime=walltime,
+        memory=memory,
+        cpus_per_task=cpus,
+        working_directory=context.repo_root,
+        log_dir=context.logs_dir,
+    )
+    return write_inline_python_slurm_script(
+        context.slurm_dir / script_name,
+        python_body,
+        settings,
+    )
+
+
+def submit_notebook_slurm_script(
+    context: NotebookRunContext,
+    script_path: str | Path,
+) -> SlurmSubmission | None:
+    """Submit or print one notebook-generated SLURM script."""
+
+    return submit_or_print_slurm_script(
+        script_path,
+        submit=context.submit_slurm,
     )
 
 
@@ -418,4 +470,6 @@ __all__ = [
     "print_notebook_context",
     "register_svtk_cell_timer",
     "register_svtk_time_magic",
+    "submit_notebook_slurm_script",
+    "write_notebook_python_slurm_script",
 ]
