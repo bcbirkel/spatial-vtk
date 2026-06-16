@@ -10,6 +10,7 @@ The script does not save executed notebooks back to the repository.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -31,6 +32,12 @@ STANDARD_TUTORIAL_NOTEBOOKS = (
 )
 
 WARNING_PATTERN = re.compile(r"warning|traceback", re.IGNORECASE)
+NOTEBOOK_RUNTIME_MODULES = {
+    "nbformat": "nbformat",
+    "nbclient": "nbclient",
+    "ipykernel": "ipykernel",
+    "IPython": "IPython",
+}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -42,6 +49,7 @@ def main(argv: list[str] | None = None) -> int:
     report_path = (repo_root / args.report).resolve() if not Path(args.report).is_absolute() else Path(args.report)
     tutorial_output = repo_root / args.tutorial_output
 
+    check_notebook_runtime()
     if args.clean:
         _clean_path(tutorial_output)
     report_path.parent.mkdir(parents=True, exist_ok=True)
@@ -77,14 +85,8 @@ def main(argv: list[str] | None = None) -> int:
 def execute_notebook(notebook_path: Path, *, repo_root: Path, timeout: int) -> dict[str, Any]:
     """Execute one notebook and return a report dictionary."""
 
-    try:
-        import nbformat
-        from nbclient import NotebookClient
-    except ImportError as exc:  # pragma: no cover - depends on optional env
-        raise SystemExit(
-            "Notebook execution requires the notebook extra: "
-            'python -m pip install -e ".[notebooks,waveforms]"'
-        ) from exc
+    import nbformat
+    from nbclient import NotebookClient
 
     start = time.time()
     result: dict[str, Any] = {
@@ -114,6 +116,27 @@ def execute_notebook(notebook_path: Path, *, repo_root: Path, timeout: int) -> d
     if result["errors"]:
         result["status"] = "failed"
     return result
+
+
+def check_notebook_runtime(required: dict[str, str] | None = None) -> None:
+    """Exit with an actionable message when notebook execution dependencies are missing."""
+
+    missing = missing_notebook_runtime_modules(required)
+    if not missing:
+        return
+    missing_text = ", ".join(missing)
+    raise SystemExit(
+        "Notebook execution requires the notebook runtime modules: "
+        f"{missing_text}. Install the tutorial extras with "
+        'python -m pip install -e ".[notebooks,waveforms]".'
+    )
+
+
+def missing_notebook_runtime_modules(required: dict[str, str] | None = None) -> list[str]:
+    """Return notebook-runtime dependency labels whose import modules are unavailable."""
+
+    modules = NOTEBOOK_RUNTIME_MODULES if required is None else required
+    return [label for label, module in modules.items() if importlib.util.find_spec(module) is None]
 
 
 def scan_notebook_outputs(notebook: Any) -> list[dict[str, Any]]:

@@ -49,3 +49,36 @@ def test_tutorial_notebook_clean_guard_only_allows_tutorial_outputs(tmp_path: Pa
     assert not allowed.exists()
     with pytest.raises(SystemExit, match="Refusing to clean"):
         module._clean_path(tmp_path / "outputs")
+
+
+def test_tutorial_notebook_runtime_preflight_reports_missing_modules() -> None:
+    """The notebook runner should explain missing runtime dependencies up front."""
+
+    module = _load_executor_module()
+
+    missing = module.missing_notebook_runtime_modules({"demo": "definitely_missing_svtk_module"})
+
+    assert missing == ["demo"]
+    with pytest.raises(SystemExit, match=r"demo.*\[notebooks,waveforms\]"):
+        module.check_notebook_runtime({"demo": "definitely_missing_svtk_module"})
+
+
+def test_tutorial_notebook_preflight_runs_before_clean(tmp_path: Path, monkeypatch) -> None:
+    """A missing notebook runtime should not erase existing tutorial outputs."""
+
+    module = _load_executor_module()
+    repo = tmp_path / "repo"
+    examples = repo / "docs" / "examples"
+    examples.mkdir(parents=True)
+    (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
+    notebook = examples / "step_01.ipynb"
+    notebook.write_text("{}", encoding="utf-8")
+    marker = repo / "outputs" / "tutorials" / "keep.txt"
+    marker.parent.mkdir(parents=True)
+    marker.write_text("do not delete", encoding="utf-8")
+    monkeypatch.setattr(module, "check_notebook_runtime", lambda: (_ for _ in ()).throw(SystemExit("missing runtime")))
+
+    with pytest.raises(SystemExit, match="missing runtime"):
+        module.main(["--repo-root", str(repo), "--notebook", str(notebook), "--clean"])
+
+    assert marker.exists()

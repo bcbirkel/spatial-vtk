@@ -53,6 +53,10 @@ Changelog
    pairs. Station coordinates are now summarized separately and optional
    figure sidecars record coordinate multiplicity, source row counts, and
    source event counts for auditing.
+   Hardened ``tools/execute_tutorial_notebooks.py`` with an upfront notebook
+   runtime dependency preflight. The tutorial execution gate now reports
+   missing ``nbformat``, ``nbclient``, ``ipykernel``, or ``IPython`` modules
+   before cleaning ``outputs/tutorials`` or attempting notebook execution.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after
