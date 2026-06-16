@@ -20,6 +20,7 @@ from spatial_vtk.visualize.dashboard import (
     build_streamlit_command,
     dashboard_output_paths,
     dashboard_output_status_frame,
+    dashboard_summary_table_contracts,
     dashboard_summary_table_paths,
     display_table,
     filter_dashboard_metrics,
@@ -135,6 +136,15 @@ outputs:
     assert "name" in status.columns
     assert "metrics_dashboard_root" in set(status["name"])
     assert "path_hex_summary_path" in set(status["name"])
+    assert "dashboard_tabs" in status.columns
+    station_status = status.loc[status["name"].eq("station_rollup_summary_path")].iloc[0]
+    assert station_status["dashboard_table"] == "station_rollup"
+    assert station_status["dashboard_tabs"] == "Stations"
+    assert "station" in station_status["required_columns"]
+
+    contracts = dashboard_summary_table_contracts()
+    assert set(contracts["table"]) == {"model_metric_band", "station_rollup", "event_rollup", "path_hex"}
+    assert "Compare Models" in contracts.loc[contracts["table"].eq("model_metric_band"), "tabs"].iloc[0]
 
 
 def test_dashboard_summaries_do_not_require_residual_column():

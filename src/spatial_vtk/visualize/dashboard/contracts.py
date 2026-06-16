@@ -20,6 +20,18 @@ from spatial_vtk.config.runtime import SpatialVTKConfig
 
 
 METRICS_TABLES: tuple[str, ...] = ("model_metric_band", "station_rollup", "event_rollup", "path_hex")
+METRICS_TABLE_TAB_LABELS: dict[str, tuple[str, ...]] = {
+    "model_metric_band": ("Overview", "Compare Models"),
+    "station_rollup": ("Stations",),
+    "event_rollup": ("Events",),
+    "path_hex": ("Paths",),
+}
+METRICS_TABLE_PURPOSES: dict[str, str] = {
+    "model_metric_band": "Model, metric, passband, and component summaries for overview and model-comparison tabs.",
+    "station_rollup": "Station-level rollups used by the station map, station table, and station filters.",
+    "event_rollup": "Event-level rollups used by the event map and event table.",
+    "path_hex": "Distance/azimuth path-bin summaries used by the paths heatmap.",
+}
 REQUIRED_METRICS_TABLE_COLUMNS: dict[str, tuple[str, ...]] = {
     "model_metric_band": ("model", "metric", "band", "n"),
     "station_rollup": ("station", "model", "metric", "band", "n"),
@@ -112,6 +124,28 @@ def dashboard_summary_table_paths(
     }
 
 
+def dashboard_summary_table_contracts() -> pd.DataFrame:
+    """Return the dashboard tab-to-summary-table contract.
+
+    The returned frame is small and display-ready. It documents which summary
+    file feeds each metrics-dashboard tab and which columns are required before
+    that tab can render meaningful content.
+    """
+
+    rows = []
+    for name in METRICS_TABLES:
+        rows.append(
+            {
+                "table": name,
+                "tabs": ", ".join(METRICS_TABLE_TAB_LABELS.get(name, ())),
+                "purpose": METRICS_TABLE_PURPOSES.get(name, ""),
+                "required_columns": ", ".join(REQUIRED_METRICS_TABLE_COLUMNS[name]),
+                "optional_columns": ", ".join(OPTIONAL_METRICS_TABLE_COLUMNS.get(name, ())),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def dashboard_output_paths(
     *,
     cfg: SpatialVTKConfig | None = None,
@@ -150,7 +184,7 @@ def dashboard_output_status_frame(
 ) -> pd.DataFrame:
     """Return file readiness for standard dashboard inputs and summaries."""
 
-    return pd.DataFrame(
+    status = pd.DataFrame(
         _status_rows(
             dashboard_output_paths(
                 cfg=cfg,
@@ -160,6 +194,7 @@ def dashboard_output_status_frame(
             )
         )
     )
+    return _attach_dashboard_contract(status)
 
 
 def _status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
@@ -181,6 +216,26 @@ def _status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
             row["modified"] = _format_mtime(stat.st_mtime)
         rows.append(row)
     return rows
+
+
+def _attach_dashboard_contract(status: pd.DataFrame) -> pd.DataFrame:
+    """Attach dashboard table contract columns to summary-table status rows."""
+
+    if status.empty:
+        return status
+    out = status.copy()
+    out["dashboard_table"] = ""
+    out["dashboard_tabs"] = ""
+    out["required_columns"] = ""
+    out["purpose"] = ""
+    contracts = dashboard_summary_table_contracts().set_index("table")
+    for table_name, contract in contracts.iterrows():
+        mask = out["name"].astype(str).eq(f"{table_name}_summary_path")
+        out.loc[mask, "dashboard_table"] = str(table_name)
+        out.loc[mask, "dashboard_tabs"] = str(contract["tabs"])
+        out.loc[mask, "required_columns"] = str(contract["required_columns"])
+        out.loc[mask, "purpose"] = str(contract["purpose"])
+    return out
 
 
 def _format_mtime(mtime: float) -> str:
@@ -275,6 +330,7 @@ __all__ = [
     "REQUIRED_METRICS_TABLE_COLUMNS",
     "dashboard_output_paths",
     "dashboard_output_status_frame",
+    "dashboard_summary_table_contracts",
     "dashboard_summary_table_paths",
     "load_dashboard_summary_tables",
     "load_metric_long_table",

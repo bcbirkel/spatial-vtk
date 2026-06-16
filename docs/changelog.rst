@@ -32,6 +32,10 @@ Changelog
    ``spatial_vtk.metrics.plot`` and ``spatial_vtk.spatial.map``. Updated the
    metrics-dashboard CLI help to describe config-backed dashboard output roots
    rather than stale table-directory examples.
+   Added a dashboard summary-table contract helper that maps each metrics
+   dashboard tab to its required summary file and columns. Dashboard output
+   status tables and Step 7 notebooks now show this contract alongside file
+   readiness so missing dashboard tabs are easier to diagnose.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after
