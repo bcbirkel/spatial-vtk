@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from pathlib import Path
+from typing import Any
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
@@ -23,7 +24,7 @@ from spatial_vtk.visualize.figure_context import (
     value_requires_model,
     value_uses_zero_reference,
 )
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 from spatial_vtk.visualize.fit import draw_scatter_fit
 from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure_spatial_selection
 
@@ -70,6 +71,9 @@ def scatterplot(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot any metric table variable against another variable.
 
@@ -106,6 +110,10 @@ def scatterplot(
         title, for example ``"Observed"``.
     showfig, savefig
         Standard Spatial-VTK display/save controls.
+    write_sidecar, sidecar_rows, sidecar_dir
+        Optional CSV/JSON row-provenance sidecars. The main sidecar contains
+        the exact rows handed to the plotting layer; a ``*.source.csv`` file
+        is written when the plotted rows are derived from filtered source rows.
 
     Returns
     -------
@@ -117,7 +125,20 @@ def scatterplot(
         fig, ax = plt.subplots(figsize=(7.0, 5.0), dpi=180)
         ax.text(0.5, 0.5, "No rows matched the scatterplot request", ha="center", va="center", transform=ax.transAxes)
         ax.set_axis_off()
-        return finish_figure(fig, output_path, outpath=outpath, output_key="scatterplot", showfig=showfig, savefig=savefig)
+        return _finish_spatial_figure(
+            fig,
+            output_path,
+            outpath=outpath,
+            output_key="scatterplot",
+            showfig=showfig,
+            savefig=savefig,
+            sidecar_df=data.iloc[0:0],
+            source_rows=data.iloc[0:0],
+            write_sidecar=write_sidecar,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
+            metadata={"figure_type": "scatterplot"},
+        )
 
     work = _filter_scatter_data(
         data,
@@ -152,13 +173,39 @@ def scatterplot(
         fig, ax = plt.subplots(figsize=(7.0, 5.0), dpi=180)
         ax.text(0.5, 0.5, "No rows matched the scatterplot filters", ha="center", va="center", transform=ax.transAxes)
         ax.set_axis_off()
-        return finish_figure(fig, output_path, outpath=outpath, output_key="scatterplot", showfig=showfig, savefig=savefig)
+        return _finish_spatial_figure(
+            fig,
+            output_path,
+            outpath=outpath,
+            output_key="scatterplot",
+            showfig=showfig,
+            savefig=savefig,
+            sidecar_df=work,
+            source_rows=work,
+            write_sidecar=write_sidecar,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
+            metadata={"figure_type": "scatterplot"},
+        )
     plot_df, x_col, y_col, dep_labels, resolved_value_col = _scatter_long_form(work, indep=indep, dep=dep, value_col=value_col)
     fig, ax = plt.subplots(figsize=(8.4, 5.2), dpi=180)
     if plot_df.empty:
         ax.text(0.5, 0.5, "No rows matched the scatterplot request", ha="center", va="center", transform=ax.transAxes)
         ax.set_axis_off()
-        return finish_figure(fig, output_path, outpath=outpath, output_key="scatterplot", showfig=showfig, savefig=savefig)
+        return _finish_spatial_figure(
+            fig,
+            output_path,
+            outpath=outpath,
+            output_key="scatterplot",
+            showfig=showfig,
+            savefig=savefig,
+            sidecar_df=plot_df,
+            source_rows=work,
+            write_sidecar=write_sidecar,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
+            metadata={"figure_type": "scatterplot", "x_col": x_col, "y_col": y_col, "value_col": resolved_value_col},
+        )
 
     group_col = groupby or colorby
     if group_col is None and len(dep_labels) > 1:
@@ -201,7 +248,26 @@ def scatterplot(
     ax.set_title(f"{plot_title}\n{subset_label}" if subset_label else plot_title)
     ax.grid(True, alpha=0.25)
     _draw_scatter_legend(ax, group_col)
-    return finish_figure(fig, output_path, outpath=outpath, output_key="scatterplot", showfig=showfig, savefig=savefig)
+    return _finish_spatial_figure(
+        fig,
+        output_path,
+        outpath=outpath,
+        output_key="scatterplot",
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=work,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={
+            "figure_type": "scatterplot",
+            "x_col": x_col,
+            "y_col": y_col,
+            "value_col": resolved_value_col,
+            "group_col": group_col,
+        },
+    )
 
 
 def boxplot(
@@ -246,6 +312,9 @@ def boxplot(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot metric distributions grouped by a categorical variable.
 
@@ -277,6 +346,10 @@ def boxplot(
         Summary statistic and bootstrap settings for the comparison table.
     title, cmap, showfig, savefig
         Standard display controls.
+    write_sidecar, sidecar_rows, sidecar_dir
+        Optional CSV/JSON row-provenance sidecars. The main sidecar contains
+        the rows plotted by the categorical figure; source rows are also
+        written for auditability when sidecars are enabled.
 
     Returns
     -------
@@ -319,7 +392,20 @@ def boxplot(
     if plot_df.empty:
         ax.text(0.5, 0.5, "No rows matched the boxplot request", ha="center", va="center", transform=ax.transAxes)
         ax.set_axis_off()
-        return finish_figure(fig, output_path, outpath=outpath, output_key="boxplot", showfig=showfig, savefig=savefig)
+        return _finish_spatial_figure(
+            fig,
+            output_path,
+            outpath=outpath,
+            output_key="boxplot",
+            showfig=showfig,
+            savefig=savefig,
+            sidecar_df=plot_df,
+            source_rows=plot_df,
+            write_sidecar=write_sidecar,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
+            metadata={"figure_type": "boxplot", "category_col": category_col, "value_col": resolved_value_col},
+        )
 
     categories = _ordered_categories(plot_df[category_col])
     if compare_to is not None:
@@ -375,7 +461,26 @@ def boxplot(
         if rows:
             ax.set_xlabel("")
             add_below_axes_table(ax, rows=rows, columns=["Comparison", "Effect", "95% CI", "p", "n"], col_widths=[0.42, 0.12, 0.24, 0.10, 0.08], font_size=7.0, max_visible_rows=6)
-    return finish_figure(fig, output_path, outpath=outpath, output_key="boxplot", showfig=showfig, savefig=savefig)
+    return _finish_spatial_figure(
+        fig,
+        output_path,
+        outpath=outpath,
+        output_key="boxplot",
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=plot_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={
+            "figure_type": "boxplot",
+            "category_col": category_col,
+            "value_col": resolved_value_col,
+            "plot_value_col": value_column,
+            "color_col": color_col,
+        },
+    )
 
 
 def heatmap(
@@ -415,12 +520,17 @@ def heatmap(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot categorical metric summaries as a heatmap.
 
     Parameters are the same as ``boxplot``. When ``column`` is omitted, heatmap
     columns are the selected dependent variables. When ``column`` is provided,
-    columns are that categorical field and ``dep`` filters the metric rows.
+    columns are that categorical field and ``dep`` filters the metric rows. The
+    heatmap sidecar stores the drawn pivot cells, with the filtered source rows
+    in ``*.source.csv`` when sidecars are enabled.
     """
 
     plot_df, row_col, value_column, dep_labels, resolved_value_col, subset_label = _categorical_metric_plot_data(
@@ -476,6 +586,19 @@ def heatmap(
         savefig=savefig,
         outpath=outpath,
         cmap=cmap,
+        sidecar_df=_pivot_sidecar_rows(pivot, row_name=row_col, column_name=col_col, value_name=value_column),
+        source_rows=plot_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={
+            "figure_type": "heatmap",
+            "row_col": row_col,
+            "column_col": col_col,
+            "value_col": resolved_value_col,
+            "plot_value_col": value_column,
+            "aggfunc": aggfunc,
+        },
     )
 
 
@@ -543,13 +666,17 @@ def plot_azimuthal_residuals(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot residuals against source-station azimuth.
 
     Inputs are metric rows with azimuth and residual columns. When
     ``fit_method`` is supplied, points are shown with a shared fitted curve
     such as ``"lowess"`` instead of connecting every point directly. The
-    output is a Matplotlib figure.
+    output is a Matplotlib figure. Set ``write_sidecar=True`` to write the
+    plotted rows and metadata next to the saved figure.
     """
 
     plot_df, subset_label = apply_figure_spatial_selection(
@@ -617,7 +744,19 @@ def plot_azimuthal_residuals(
         if handles and labels:
             fig.subplots_adjust(bottom=0.28, top=0.84)
             fig.legend(handles, labels, frameon=True, fontsize=8, loc="lower center", bbox_to_anchor=(0.5, 0.02), ncol=2)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return _finish_spatial_figure(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=plot_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "azimuthal_residuals", "azimuth_col": azimuth_col, "value_col": value_col, "group_col": group_col},
+    )
 
 
 def plot_path_bin_summary(
@@ -631,8 +770,15 @@ def plot_path_bin_summary(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
-    """Plot distance/azimuth binned residual values as a heatmap."""
+    """Plot distance/azimuth binned residual values as a heatmap.
+
+    Set ``write_sidecar=True`` to write the drawn bin values and the input
+    summary rows used to create them.
+    """
 
     _require(path_summary_df, [distance_col, azimuth_col, value_col])
     work = path_summary_df.copy()
@@ -652,6 +798,12 @@ def plot_path_bin_summary(
         showfig=showfig,
         savefig=savefig,
         outpath=outpath,
+        sidecar_df=_pivot_sidecar_rows(pivot, row_name=azimuth_col, column_name=distance_col, value_name=value_col),
+        source_rows=work,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "path_bin_summary", "distance_col": distance_col, "azimuth_col": azimuth_col, "value_col": value_col},
     )
 
 
@@ -686,6 +838,9 @@ def plot_residual_correlation(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot residuals against a spatial or geologic feature.
 
@@ -711,7 +866,8 @@ def plot_residual_correlation(
     Returns
     -------
     matplotlib.figure.Figure
-        The finished figure.
+        The finished figure. Set ``write_sidecar=True`` to write the plotted
+        rows and metadata next to the saved figure.
     """
 
     plot_df, subset_label = apply_figure_spatial_selection(
@@ -756,7 +912,19 @@ def plot_residual_correlation(
     ax.grid(True, alpha=0.25)
     if group_col and group_col in correlation_df.columns:
         ax.legend(frameon=True, fontsize=8, title=display_label(group_col))
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return _finish_spatial_figure(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=plot_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "residual_correlation", "x_col": x_col, "y_col": y_col, "group_col": group_col},
+    )
 
 
 def plot_polar_residuals(
@@ -790,8 +958,15 @@ def plot_polar_residuals(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
-    """Plot residuals on polar azimuth/distance axes."""
+    """Plot residuals on polar azimuth/distance axes.
+
+    Set ``write_sidecar=True`` to write the plotted rows and metadata next to
+    the saved figure.
+    """
 
     plot_df, subset_label = apply_figure_spatial_selection(
         df,
@@ -851,7 +1026,19 @@ def plot_polar_residuals(
         scatter = _draw_polar_residual_axis(ax, plot_df, azimuth_col=azimuth_col, radius_col=radius_col, value_col=value_col, cmap=cmap, vmin=vmin, vmax=vmax, radius_max=radius_max)
         apply_figure_context(ax, plot_df, value_col=value_col, title=title, max_values=3, include_value=False, extra=[subset_label] if subset_label else None)
         fig.colorbar(scatter, ax=ax, pad=0.12, label=value_column_display_name(value_col))
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return _finish_spatial_figure(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=plot_df,
+        source_rows=plot_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "polar_residuals", "azimuth_col": azimuth_col, "radius_col": radius_col, "value_col": value_col, "facet_col": facet_col},
+    )
 
 
 def plot_geology_contrast(
@@ -874,6 +1061,9 @@ def plot_geology_contrast(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot two-sided or baseline-relative geology residual contrasts.
 
@@ -906,6 +1096,9 @@ def plot_geology_contrast(
         Optional figure title.
     showfig, savefig, outpath
         Standard Spatial-VTK display and save controls.
+    write_sidecar, sidecar_rows, sidecar_dir
+        Optional CSV/JSON row-provenance sidecars. The main sidecar contains
+        the rows plotted for each geology class; source rows are also written.
 
     Returns
     -------
@@ -990,7 +1183,25 @@ def plot_geology_contrast(
     _annotate_contrast(ax, contrast_df)
     if contrast_df is not None and not contrast_df.empty:
         fig.subplots_adjust(bottom=0.34)
-    return finish_figure(fig, output_path, outpath=outpath, output_key="geology_contrast", showfig=showfig, savefig=savefig)
+    return _finish_spatial_figure(
+        fig,
+        output_path,
+        outpath=outpath,
+        output_key="geology_contrast",
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=_geology_sidecar_rows(work, group_specs, group_col=selected_group_col, value_col=value_col),
+        source_rows=work,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={
+            "figure_type": "geology_contrast",
+            "group_col": selected_group_col,
+            "value_col": value_col,
+            "statistic": selected_statistic,
+        },
+    )
 
 
 def _heatmap(
@@ -1010,6 +1221,12 @@ def _heatmap(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    sidecar_df: pd.DataFrame | None = None,
+    source_rows: pd.DataFrame | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
+    metadata: dict[str, object] | None = None,
 ) -> plt.Figure:
     """Draw numeric heatmap."""
 
@@ -1017,7 +1234,19 @@ def _heatmap(
         fig, ax = plt.subplots(figsize=(7.5, 5.2), dpi=180)
         ax.text(0.5, 0.5, "No rows matched the heatmap request", ha="center", va="center", transform=ax.transAxes)
         ax.set_axis_off()
-        return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+        return _finish_spatial_figure(
+            fig,
+            output_path,
+            outpath=outpath,
+            showfig=showfig,
+            savefig=savefig,
+            sidecar_df=sidecar_df if sidecar_df is not None else _pivot_sidecar_rows(pivot, row_name=y_label, column_name=x_label, value_name=value_col or "value"),
+            source_rows=source_rows if source_rows is not None else context_df,
+            write_sidecar=write_sidecar,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
+            metadata=metadata,
+        )
     values = pivot.to_numpy(dtype=float)
     cmap, vmin, vmax = value_color_settings(values, value_col, context_df, diverging_cmap=cmap, sequential_cmap="viridis")
     fig, ax = plt.subplots(figsize=(7.5, 5.2), dpi=180)
@@ -1049,7 +1278,90 @@ def _heatmap(
         extra=extra,
     )
     fig.colorbar(image, ax=ax, pad=0.04, label=cbar_label)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return _finish_spatial_figure(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df if sidecar_df is not None else _pivot_sidecar_rows(pivot, row_name=y_label, column_name=x_label, value_name=value_col or "value"),
+        source_rows=source_rows if source_rows is not None else context_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata=metadata,
+    )
+
+
+def _finish_spatial_figure(
+    fig: plt.Figure,
+    output_path: str | Path | None = None,
+    *,
+    outpath: str | Path | None = None,
+    output_key: str | None = None,
+    showfig: bool | None = None,
+    savefig: bool | None = None,
+    sidecar_df: pd.DataFrame | None = None,
+    source_rows: pd.DataFrame | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> plt.Figure:
+    """Finish one spatial plot and optionally write plotted/source rows."""
+
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        output_key=output_key,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=source_rows,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata=metadata,
+    )
+
+
+def _pivot_sidecar_rows(
+    pivot: pd.DataFrame,
+    *,
+    row_name: str,
+    column_name: str,
+    value_name: str,
+) -> pd.DataFrame:
+    """Return long-form rows for the values actually drawn in a heatmap."""
+
+    if pivot.empty:
+        return pd.DataFrame(columns=[row_name, column_name, value_name])
+    rows = pivot.copy()
+    rows.index.name = row_name
+    return rows.reset_index().melt(id_vars=[row_name], var_name=column_name, value_name=value_name)
+
+
+def _geology_sidecar_rows(
+    data: pd.DataFrame,
+    group_specs: Sequence[tuple[str, tuple[str, ...]]],
+    *,
+    group_col: str,
+    value_col: str,
+) -> pd.DataFrame:
+    """Return rows shown in a geology contrast boxplot with plot group labels."""
+
+    frames: list[pd.DataFrame] = []
+    for label, values_tuple in group_specs:
+        subset = data.loc[data[group_col].astype(str).isin(values_tuple)].copy()
+        if subset.empty:
+            continue
+        subset.insert(0, "_plot_group", label)
+        subset["_plot_value_col"] = value_col
+        frames.append(subset)
+    if not frames:
+        return data.iloc[0:0].copy()
+    return pd.concat(frames, ignore_index=True, sort=False)
 
 
 def _categorical_metric_plot_data(

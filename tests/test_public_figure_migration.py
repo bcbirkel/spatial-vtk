@@ -39,6 +39,7 @@ from spatial_vtk.spatial.plot import (
     boxplot,
     heatmap,
     plot_azimuthal_residuals,
+    plot_geology_contrast,
     plot_path_bin_summary,
     plot_polar_residuals,
     plot_residual_correlation,
@@ -698,3 +699,126 @@ def test_metric_plot_functions_write_optional_row_sidecars(tmp_path: Path) -> No
         assert metadata["figure_type"] == figure_type
         assert metadata["plot_row_count"] >= metadata["written_row_count"]
         assert metadata["source_row_count"] >= metadata["source_written_row_count"]
+
+
+def test_spatial_metric_plot_functions_write_optional_row_sidecars(tmp_path: Path) -> None:
+    """Direct spatial metric plots should write audit rows for plotted data."""
+
+    metrics = _metric_rows()
+    path_summary = pd.DataFrame({"distance_bin_km": [0.0, 20.0, 0.0, 20.0], "azimuth_bin_deg": [0.0, 0.0, 90.0, 90.0], "mean_residual": [0.1, -0.1, 0.2, -0.2]})
+    sidecar_dir = tmp_path / "spatial_plot_sidecars"
+
+    outputs = [
+        scatterplot(
+            metrics,
+            tmp_path / "scatter_long.png",
+            indep="distance",
+            dep=["pga", "psa"],
+            value_col="log2_residual",
+            model="m1",
+            passband="1-2",
+            colorby="dep",
+            fit="point-to-point",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        boxplot(
+            metrics,
+            tmp_path / "boxplot.png",
+            dep=["PGA", "PSA"],
+            indep="geology_class",
+            value_col="log2_residual",
+            model="m1",
+            passband="1-2",
+            table=True,
+            compare_to="basin",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        heatmap(
+            metrics,
+            tmp_path / "heatmap.png",
+            dep=["PGA", "PSA"],
+            indep="geology_class",
+            value_col="log2_residual",
+            model="m1",
+            passband="1-2",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_azimuthal_residuals(
+            metrics,
+            tmp_path / "azimuthal.png",
+            value_col="log2_residual",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_path_bin_summary(
+            path_summary,
+            tmp_path / "path_bins.png",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_residual_correlation(
+            metrics.rename(columns={"Vs30": "feature_value"}),
+            tmp_path / "residual_correlation.png",
+            y_col="log2_residual",
+            group_col="metric",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_polar_residuals(
+            metrics,
+            tmp_path / "polar.png",
+            value_col="log2_residual",
+            facet_col="metric",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_geology_contrast(
+            metrics,
+            tmp_path / "geology_contrast.png",
+            group_col="geology_class",
+            left_values=("basin",),
+            right_values=("rock",),
+            value_col="log2_residual",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+    ]
+    for output in outputs:
+        _assert_png(output)
+
+    expected_types = {
+        "scatter_long": "scatterplot",
+        "boxplot": "boxplot",
+        "heatmap": "heatmap",
+        "azimuthal": "azimuthal_residuals",
+        "path_bins": "path_bin_summary",
+        "residual_correlation": "residual_correlation",
+        "polar": "polar_residuals",
+        "geology_contrast": "geology_contrast",
+    }
+    for stem, figure_type in expected_types.items():
+        sidecar = sidecar_dir / f"{stem}.csv"
+        metadata_path = sidecar.with_suffix(".json")
+        source_sidecar = sidecar_dir / f"{stem}.source.csv"
+        assert sidecar.exists()
+        assert metadata_path.exists()
+        assert source_sidecar.exists()
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        assert metadata["figure_type"] == figure_type
+        assert metadata["plot_row_count"] >= metadata["written_row_count"]
+        assert metadata["source_row_count"] >= metadata["source_written_row_count"]
+    heatmap_rows = pd.read_csv(sidecar_dir / "heatmap.csv")
+    assert {"geology_class", "dep", "_plot_value"}.issubset(heatmap_rows.columns)
+    geology_rows = pd.read_csv(sidecar_dir / "geology_contrast.csv")
+    assert "_plot_group" in geology_rows.columns
