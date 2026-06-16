@@ -57,7 +57,11 @@ import spatial_vtk.visualize.figure_io as figure_io
 import spatial_vtk.config.notebook as notebook_helpers
 from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize import default_figure_paths
-from spatial_vtk.visualize.dashboard import dashboard_summary_readiness_frame, filter_optional_dashboard_summary
+from spatial_vtk.visualize.dashboard import (
+    dashboard_summary_readiness_frame,
+    filter_optional_dashboard_summary,
+    row_value_column_for_summary,
+)
 from spatial_vtk.visualize.dashboard.export import load_dashboard_metric_dataset
 
 
@@ -645,6 +649,27 @@ def test_dashboard_metric_dataset_loader_accepts_direct_table_files(tmp_path):
     bad_file.write_text("not,a,table\n", encoding="utf-8")
     with pytest.raises(ValueError, match="Use Parquet or CSV"):
         load_dashboard_metric_dataset(bad_file)
+
+
+def test_dashboard_summary_values_map_to_row_level_columns():
+    """Summary median/mean columns should map back to raw row value columns."""
+
+    rows = pd.DataFrame(
+        {
+            "log2_residual": [0.25],
+            "residual": [1.5],
+            "value_obs": [3.0],
+            "score": [0.8],
+        }
+    )
+
+    assert row_value_column_for_summary("med_log2_residual", rows) == "log2_residual"
+    assert row_value_column_for_summary("mean_log2_residual", rows) == "log2_residual"
+    assert row_value_column_for_summary("med_resid", rows) == "residual"
+    assert row_value_column_for_summary("med_residual", rows) == "residual"
+    assert row_value_column_for_summary("med_value_obs", rows) == "value_obs"
+    assert row_value_column_for_summary("score", rows) == "score"
+    assert row_value_column_for_summary("med_missing_value", rows) is None
 
 
 def test_output_readiness_reports_notebook_step_decisions(tmp_path):

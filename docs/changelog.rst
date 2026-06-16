@@ -87,6 +87,10 @@ Changelog
    Dashboard long-metric loading now accepts either a dashboard dataset
    directory or a direct CSV/Parquet metrics table, and the dashboard CLI help
    documents both accepted forms.
+   Metrics-dashboard row-level distribution plots now use a shared
+   summary-to-row value-column resolver for median/mean summary columns, and
+   show a clear message when the loaded long metric table lacks the requested
+   row-level value.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

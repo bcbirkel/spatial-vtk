@@ -80,6 +80,36 @@ def filter_optional_dashboard_summary(
     return filter_dashboard_metrics(df, value_column=value_column, **filters), None
 
 
+def row_value_column_for_summary(summary_value_column: str, rows: pd.DataFrame) -> str | None:
+    """Return the row-level value column corresponding to a summary value."""
+
+    candidates = [str(summary_value_column)]
+    candidates.extend(_summary_value_candidates(summary_value_column))
+    for candidate in candidates:
+        if candidate in rows.columns:
+            return candidate
+    return None
+
+
+def _summary_value_candidates(summary_value_column: str) -> list[str]:
+    """Return possible raw row columns for a summary value-column name."""
+
+    text = str(summary_value_column or "").strip()
+    aliases = {
+        "med_resid": "residual",
+        "med_residual": "residual",
+        "mean_resid": "residual",
+        "mean_residual": "residual",
+    }
+    candidates: list[str] = []
+    if text in aliases:
+        candidates.append(aliases[text])
+    for prefix in ("med_", "mean_"):
+        if text.startswith(prefix):
+            candidates.append(text.removeprefix(prefix))
+    return list(dict.fromkeys(candidate for candidate in candidates if candidate))
+
+
 def filter_qc_dashboard_rows(
     trace_df: pd.DataFrame,
     *,
@@ -218,4 +248,9 @@ def _filter_band_labels(df: pd.DataFrame, bands: Iterable[str], *, band_columns:
     return df.loc[mask]
 
 
-__all__ = ["filter_dashboard_metrics", "filter_optional_dashboard_summary", "filter_qc_dashboard_rows"]
+__all__ = [
+    "filter_dashboard_metrics",
+    "filter_optional_dashboard_summary",
+    "filter_qc_dashboard_rows",
+    "row_value_column_for_summary",
+]

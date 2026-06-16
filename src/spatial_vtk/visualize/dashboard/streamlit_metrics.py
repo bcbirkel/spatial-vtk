@@ -29,7 +29,11 @@ from spatial_vtk.visualize.dashboard.contracts import (
     load_metric_long_table,
     validate_dashboard_tables,
 )
-from spatial_vtk.visualize.dashboard.filters import filter_dashboard_metrics, filter_optional_dashboard_summary
+from spatial_vtk.visualize.dashboard.filters import (
+    filter_dashboard_metrics,
+    filter_optional_dashboard_summary,
+    row_value_column_for_summary,
+)
 from spatial_vtk.config.labels import (
     available_dashboard_value_columns,
     band_display_label,
@@ -142,9 +146,14 @@ def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: 
         component=component_filter,
     )
     rows = None
+    row_value = None
+    row_value_message = None
     if long_metrics is not None:
-        row_value = _row_value_column(value_col, long_metrics)
-        rows = filter_dashboard_metrics(long_metrics, models=selected_models, metric=selected_metric, bands=selected_bands, value_column=row_value if row_value else None, distance_range_km=distance_range, vs30_range=vs30_range, component=component_filter)
+        row_value = row_value_column_for_summary(value_col, long_metrics)
+        if row_value is None:
+            row_value_message = _missing_row_value_message(value_col)
+        else:
+            rows = filter_dashboard_metrics(long_metrics, models=selected_models, metric=selected_metric, bands=selected_bands, value_column=row_value, distance_range_km=distance_range, vs30_range=vs30_range, component=component_filter)
 
     overview_tab, station_tab, event_tab, path_tab, distribution_tab, compare_tab = st.tabs(["Overview", "Stations", "Events", "Paths", "Distributions", "Compare Models"])
     with overview_tab:
@@ -186,11 +195,10 @@ def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: 
         st.dataframe(_display_table(paths), width="stretch")
     with distribution_tab:
         if rows is None:
-            st.info("Load the long metrics dataset to view row-level distributions.")
+            st.info(row_value_message or "Load the long metrics dataset to view row-level distributions.")
         elif rows.empty:
             st.info(_empty_rows_message("row-level metric"))
         else:
-            row_value = _row_value_column(value_col, rows) or value_col
             st.plotly_chart(build_value_histogram_figure(rows, value_col=row_value), width="stretch")
             if {"distance_km", "med_dist_km"} & set(rows.columns):
                 st.plotly_chart(build_value_vs_distance_figure(rows, value_col=row_value), width="stretch")
@@ -331,18 +339,14 @@ def _range_slider_from_columns(label: str, df: pd.DataFrame, columns: tuple[str,
     return st.slider(label, min_value=lower, max_value=upper, value=(lower, upper))
 
 
-def _row_value_column(summary_value_col: str, rows: pd.DataFrame) -> str | None:
-    """Map a summary value column back to a row-level value column."""
+def _missing_row_value_message(summary_value_col: str) -> str:
+    """Return a clear message when a summary value has no row-level column."""
 
-    candidates = [summary_value_col]
-    if summary_value_col == "med_resid":
-        candidates.append("residual")
-    elif summary_value_col.startswith("med_"):
-        candidates.append(summary_value_col.removeprefix("med_"))
-    for candidate in candidates:
-        if candidate in rows.columns:
-            return candidate
-    return None
+    return (
+        f"The loaded long metrics dataset does not include a row-level column for "
+        f"{value_column_display_name(summary_value_col)}. Rebuild the dashboard metric dataset "
+        "from metric rows that contain this value to view row-level distributions."
+    )
 
 
 def _available_nonempty_value_columns(df: pd.DataFrame) -> list[str]:

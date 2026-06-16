@@ -36,7 +36,12 @@ from spatial_vtk.visualize.dashboard.exports import (
     write_dashboard_filtered_export,
     write_manual_review_queue,
 )
-from spatial_vtk.visualize.dashboard.filters import filter_dashboard_metrics, filter_optional_dashboard_summary, filter_qc_dashboard_rows
+from spatial_vtk.visualize.dashboard.filters import (
+    filter_dashboard_metrics,
+    filter_optional_dashboard_summary,
+    filter_qc_dashboard_rows,
+    row_value_column_for_summary,
+)
 from spatial_vtk.visualize.dashboard.labels import (
     available_dashboard_value_columns,
     band_display_label,
@@ -97,6 +102,7 @@ __all__ = [
     "queue_to_csv_bytes",
     "read_dashboard_table",
     "render_folium_html",
+    "row_value_column_for_summary",
     "safe_path_token",
     "validate_dashboard_tables",
     "validate_trace_qc_dashboard_table",
