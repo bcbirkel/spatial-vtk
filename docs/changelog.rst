@@ -68,6 +68,12 @@ Changelog
    ``--sidecar-dir`` flags to registered ``svtk plot``, ``svtk map``, and
    ``svtk visualize`` figure commands. Trace sample and distance/amplitude
    diagnostic figures now support the same row-provenance sidecar interface.
+   Added first-class common plotting flags such as ``--metric``,
+   ``--passband``, ``--component``, ``--model``, ``--value-col``,
+   ``--score-col``, ``--x-col``, ``--y-col``, ``--group-col``,
+   ``--color-col``, ``--fit``, and ``--title`` to registered figure
+   commands so routine figure configuration does not need to be hidden inside
+   ``--kwargs``.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

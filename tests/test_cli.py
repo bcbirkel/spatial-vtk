@@ -40,6 +40,18 @@ def test_cli_qc_summaries_help(capsys):
     assert "--chunksize" in captured.out
 
 
+def test_cli_registered_plot_help_shows_common_options(capsys):
+    with pytest.raises(SystemExit) as excinfo:
+        main(["plot", "metrics", "residuals-vs-distance", "--help"])
+    assert excinfo.value.code == 0
+    captured = capsys.readouterr()
+    assert "--metric" in captured.out
+    assert "--passband" in captured.out
+    assert "--value-col" in captured.out
+    assert "--y-col" in captured.out
+    assert "--write-sidecar" in captured.out
+
+
 def test_cli_config_show_section(tmp_path, capsys):
     config = tmp_path / "spatial-vtk.yaml"
     config.write_text(
@@ -187,8 +199,20 @@ outputs:
                 "residuals-vs-distance",
                 "--config",
                 str(config),
-                "--kwargs",
-                "value_col=log2_residual",
+                "--y-col",
+                "log2_residual",
+                "--group-col",
+                "metric",
+                "--fit",
+                "lowess",
+                "--metric",
+                "PGA",
+                "--passband",
+                "1-2 sec",
+                "--component",
+                "Z",
+                "--model",
+                "m1",
             ]
         )
         == 0
@@ -197,7 +221,13 @@ outputs:
     expected_output = tmp_path / "outputs" / "figures" / "residuals_vs_distance.png"
     assert seen["rows"] == 1
     assert seen["output_path"] == expected_output
-    assert seen["kwargs"]["value_col"] == "log2_residual"
+    assert seen["kwargs"]["y_col"] == "log2_residual"
+    assert seen["kwargs"]["group_col"] == "metric"
+    assert seen["kwargs"]["fit"] == "lowess"
+    assert seen["kwargs"]["metric"] == "PGA"
+    assert seen["kwargs"]["passband"] == "1-2 sec"
+    assert seen["kwargs"]["component"] == "Z"
+    assert seen["kwargs"]["model"] == "m1"
     assert captured.out.strip() == str(expected_output)
 
 

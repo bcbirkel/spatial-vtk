@@ -103,6 +103,18 @@ svtk visualize qc data-synthetic-availability
                                                      [--table TABLE]
                                                      [--kwargs [KWARGS ...]]
                                                      [--kwargs-json KWARGS_JSON]
+                                                     [--metric METRIC]
+                                                     [--passband PASSBAND]
+                                                     [--component COMPONENT]
+                                                     [--model MODEL]
+                                                     [--value-col VALUE_COL]
+                                                     [--score-col SCORE_COL]
+                                                     [--x-col X_COL]
+                                                     [--y-col Y_COL]
+                                                     [--group-col GROUP_COL]
+                                                     [--color-col COLOR_COL]
+                                                     [--fit FIT]
+                                                     [--title TITLE]
                                                      [--write-sidecar]
                                                      [--sidecar-rows SIDECAR_ROWS]
                                                      [--sidecar-dir SIDECAR_DIR]
@@ -152,6 +164,54 @@ svtk visualize qc data-synthetic-availability
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -193,6 +253,17 @@ svtk visualize qc drop-cause-diagnostics
                                                 [--table TABLE]
                                                 [--kwargs [KWARGS ...]]
                                                 [--kwargs-json KWARGS_JSON]
+                                                [--metric METRIC]
+                                                [--passband PASSBAND]
+                                                [--component COMPONENT]
+                                                [--model MODEL]
+                                                [--value-col VALUE_COL]
+                                                [--score-col SCORE_COL]
+                                                [--x-col X_COL]
+                                                [--y-col Y_COL]
+                                                [--group-col GROUP_COL]
+                                                [--color-col COLOR_COL]
+                                                [--fit FIT] [--title TITLE]
                                                 [--write-sidecar]
                                                 [--sidecar-rows SIDECAR_ROWS]
                                                 [--sidecar-dir SIDECAR_DIR]
@@ -242,6 +313,54 @@ svtk visualize qc drop-cause-diagnostics
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -283,6 +402,17 @@ svtk visualize qc event-station-retention
                                                  [--table TABLE]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
+                                                 [--metric METRIC]
+                                                 [--passband PASSBAND]
+                                                 [--component COMPONENT]
+                                                 [--model MODEL]
+                                                 [--value-col VALUE_COL]
+                                                 [--score-col SCORE_COL]
+                                                 [--x-col X_COL]
+                                                 [--y-col Y_COL]
+                                                 [--group-col GROUP_COL]
+                                                 [--color-col COLOR_COL]
+                                                 [--fit FIT] [--title TITLE]
                                                  [--write-sidecar]
                                                  [--sidecar-rows SIDECAR_ROWS]
                                                  [--sidecar-dir SIDECAR_DIR]
@@ -332,6 +462,54 @@ svtk visualize qc event-station-retention
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -399,6 +577,17 @@ svtk visualize qc post-qc-station-event-map
                                                    [--table TABLE]
                                                    [--kwargs [KWARGS ...]]
                                                    [--kwargs-json KWARGS_JSON]
+                                                   [--metric METRIC]
+                                                   [--passband PASSBAND]
+                                                   [--component COMPONENT]
+                                                   [--model MODEL]
+                                                   [--value-col VALUE_COL]
+                                                   [--score-col SCORE_COL]
+                                                   [--x-col X_COL]
+                                                   [--y-col Y_COL]
+                                                   [--group-col GROUP_COL]
+                                                   [--color-col COLOR_COL]
+                                                   [--fit FIT] [--title TITLE]
                                                    [--write-sidecar]
                                                    [--sidecar-rows SIDECAR_ROWS]
                                                    [--sidecar-dir SIDECAR_DIR]
@@ -448,6 +637,54 @@ svtk visualize qc post-qc-station-event-map
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -488,7 +725,16 @@ svtk visualize qc retention-summary
                                            [--table TABLE]
                                            [--kwargs [KWARGS ...]]
                                            [--kwargs-json KWARGS_JSON]
-                                           [--write-sidecar]
+                                           [--metric METRIC]
+                                           [--passband PASSBAND]
+                                           [--component COMPONENT]
+                                           [--model MODEL]
+                                           [--value-col VALUE_COL]
+                                           [--score-col SCORE_COL]
+                                           [--x-col X_COL] [--y-col Y_COL]
+                                           [--group-col GROUP_COL]
+                                           [--color-col COLOR_COL] [--fit FIT]
+                                           [--title TITLE] [--write-sidecar]
                                            [--sidecar-rows SIDECAR_ROWS]
                                            [--sidecar-dir SIDECAR_DIR]
                                            [--bounds BOUNDS] [--no-basemap]
@@ -536,6 +782,54 @@ svtk visualize qc retention-summary
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -577,6 +871,17 @@ svtk visualize qc trace-inventory-samples
                                                  [--table TABLE]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
+                                                 [--metric METRIC]
+                                                 [--passband PASSBAND]
+                                                 [--component COMPONENT]
+                                                 [--model MODEL]
+                                                 [--value-col VALUE_COL]
+                                                 [--score-col SCORE_COL]
+                                                 [--x-col X_COL]
+                                                 [--y-col Y_COL]
+                                                 [--group-col GROUP_COL]
+                                                 [--color-col COLOR_COL]
+                                                 [--fit FIT] [--title TITLE]
                                                  [--write-sidecar]
                                                  [--sidecar-rows SIDECAR_ROWS]
                                                  [--sidecar-dir SIDECAR_DIR]
@@ -626,6 +931,54 @@ svtk visualize qc trace-inventory-samples
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -691,9 +1044,13 @@ svtk visualize context distance-amplitude-diagnostics
    svtk visualize context distance-amplitude-diagnostics
        [-h] --input INPUT [--output OUTPUT] [--config CONFIG]
        [--run-scenario RUN_SCENARIO] [--table TABLE] [--kwargs [KWARGS ...]]
-       [--kwargs-json KWARGS_JSON] [--write-sidecar]
-       [--sidecar-rows SIDECAR_ROWS] [--sidecar-dir SIDECAR_DIR]
-       [--bounds BOUNDS] [--no-basemap] [--basemap-source BASEMAP_SOURCE]
+       [--kwargs-json KWARGS_JSON] [--metric METRIC] [--passband PASSBAND]
+       [--component COMPONENT] [--model MODEL] [--value-col VALUE_COL]
+       [--score-col SCORE_COL] [--x-col X_COL] [--y-col Y_COL]
+       [--group-col GROUP_COL] [--color-col COLOR_COL] [--fit FIT]
+       [--title TITLE] [--write-sidecar] [--sidecar-rows SIDECAR_ROWS]
+       [--sidecar-dir SIDECAR_DIR] [--bounds BOUNDS] [--no-basemap]
+       [--basemap-source BASEMAP_SOURCE]
 
 .. rubric:: Parameters
 
@@ -737,6 +1094,54 @@ svtk visualize context distance-amplitude-diagnostics
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -778,6 +1183,16 @@ svtk visualize context event-coverage
                                              [--table TABLE]
                                              [--kwargs [KWARGS ...]]
                                              [--kwargs-json KWARGS_JSON]
+                                             [--metric METRIC]
+                                             [--passband PASSBAND]
+                                             [--component COMPONENT]
+                                             [--model MODEL]
+                                             [--value-col VALUE_COL]
+                                             [--score-col SCORE_COL]
+                                             [--x-col X_COL] [--y-col Y_COL]
+                                             [--group-col GROUP_COL]
+                                             [--color-col COLOR_COL]
+                                             [--fit FIT] [--title TITLE]
                                              [--write-sidecar]
                                              [--sidecar-rows SIDECAR_ROWS]
                                              [--sidecar-dir SIDECAR_DIR]
@@ -826,6 +1241,54 @@ svtk visualize context event-coverage
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -867,6 +1330,17 @@ svtk visualize context event-magnitude-map
                                                   [--table TABLE]
                                                   [--kwargs [KWARGS ...]]
                                                   [--kwargs-json KWARGS_JSON]
+                                                  [--metric METRIC]
+                                                  [--passband PASSBAND]
+                                                  [--component COMPONENT]
+                                                  [--model MODEL]
+                                                  [--value-col VALUE_COL]
+                                                  [--score-col SCORE_COL]
+                                                  [--x-col X_COL]
+                                                  [--y-col Y_COL]
+                                                  [--group-col GROUP_COL]
+                                                  [--color-col COLOR_COL]
+                                                  [--fit FIT] [--title TITLE]
                                                   [--write-sidecar]
                                                   [--sidecar-rows SIDECAR_ROWS]
                                                   [--sidecar-dir SIDECAR_DIR]
@@ -916,6 +1390,54 @@ svtk visualize context event-magnitude-map
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -957,6 +1479,18 @@ svtk visualize context event-trace-comparison
                                                      [--table TABLE]
                                                      [--kwargs [KWARGS ...]]
                                                      [--kwargs-json KWARGS_JSON]
+                                                     [--metric METRIC]
+                                                     [--passband PASSBAND]
+                                                     [--component COMPONENT]
+                                                     [--model MODEL]
+                                                     [--value-col VALUE_COL]
+                                                     [--score-col SCORE_COL]
+                                                     [--x-col X_COL]
+                                                     [--y-col Y_COL]
+                                                     [--group-col GROUP_COL]
+                                                     [--color-col COLOR_COL]
+                                                     [--fit FIT]
+                                                     [--title TITLE]
                                                      [--write-sidecar]
                                                      [--sidecar-rows SIDECAR_ROWS]
                                                      [--sidecar-dir SIDECAR_DIR]
@@ -1006,6 +1540,54 @@ svtk visualize context event-trace-comparison
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -1073,6 +1655,16 @@ svtk visualize context record-coverage
                                               [--table TABLE]
                                               [--kwargs [KWARGS ...]]
                                               [--kwargs-json KWARGS_JSON]
+                                              [--metric METRIC]
+                                              [--passband PASSBAND]
+                                              [--component COMPONENT]
+                                              [--model MODEL]
+                                              [--value-col VALUE_COL]
+                                              [--score-col SCORE_COL]
+                                              [--x-col X_COL] [--y-col Y_COL]
+                                              [--group-col GROUP_COL]
+                                              [--color-col COLOR_COL]
+                                              [--fit FIT] [--title TITLE]
                                               [--write-sidecar]
                                               [--sidecar-rows SIDECAR_ROWS]
                                               [--sidecar-dir SIDECAR_DIR]
@@ -1121,6 +1713,54 @@ svtk visualize context record-coverage
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -1162,6 +1802,16 @@ svtk visualize context station-coverage
                                                [--table TABLE]
                                                [--kwargs [KWARGS ...]]
                                                [--kwargs-json KWARGS_JSON]
+                                               [--metric METRIC]
+                                               [--passband PASSBAND]
+                                               [--component COMPONENT]
+                                               [--model MODEL]
+                                               [--value-col VALUE_COL]
+                                               [--score-col SCORE_COL]
+                                               [--x-col X_COL] [--y-col Y_COL]
+                                               [--group-col GROUP_COL]
+                                               [--color-col COLOR_COL]
+                                               [--fit FIT] [--title TITLE]
                                                [--write-sidecar]
                                                [--sidecar-rows SIDECAR_ROWS]
                                                [--sidecar-dir SIDECAR_DIR]
@@ -1211,6 +1861,54 @@ svtk visualize context station-coverage
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -1252,6 +1950,18 @@ svtk visualize context station-event-beachball
                                                       [--table TABLE]
                                                       [--kwargs [KWARGS ...]]
                                                       [--kwargs-json KWARGS_JSON]
+                                                      [--metric METRIC]
+                                                      [--passband PASSBAND]
+                                                      [--component COMPONENT]
+                                                      [--model MODEL]
+                                                      [--value-col VALUE_COL]
+                                                      [--score-col SCORE_COL]
+                                                      [--x-col X_COL]
+                                                      [--y-col Y_COL]
+                                                      [--group-col GROUP_COL]
+                                                      [--color-col COLOR_COL]
+                                                      [--fit FIT]
+                                                      [--title TITLE]
                                                       [--write-sidecar]
                                                       [--sidecar-rows SIDECAR_ROWS]
                                                       [--sidecar-dir SIDECAR_DIR]
@@ -1302,6 +2012,54 @@ svtk visualize context station-event-beachball
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -1347,6 +2105,18 @@ svtk visualize context station-event-context
                                                     [--table TABLE]
                                                     [--kwargs [KWARGS ...]]
                                                     [--kwargs-json KWARGS_JSON]
+                                                    [--metric METRIC]
+                                                    [--passband PASSBAND]
+                                                    [--component COMPONENT]
+                                                    [--model MODEL]
+                                                    [--value-col VALUE_COL]
+                                                    [--score-col SCORE_COL]
+                                                    [--x-col X_COL]
+                                                    [--y-col Y_COL]
+                                                    [--group-col GROUP_COL]
+                                                    [--color-col COLOR_COL]
+                                                    [--fit FIT]
+                                                    [--title TITLE]
                                                     [--write-sidecar]
                                                     [--sidecar-rows SIDECAR_ROWS]
                                                     [--sidecar-dir SIDECAR_DIR]
@@ -1397,6 +2167,54 @@ svtk visualize context station-event-context
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -1442,6 +2260,18 @@ svtk visualize context station-event-network
                                                     [--table TABLE]
                                                     [--kwargs [KWARGS ...]]
                                                     [--kwargs-json KWARGS_JSON]
+                                                    [--metric METRIC]
+                                                    [--passband PASSBAND]
+                                                    [--component COMPONENT]
+                                                    [--model MODEL]
+                                                    [--value-col VALUE_COL]
+                                                    [--score-col SCORE_COL]
+                                                    [--x-col X_COL]
+                                                    [--y-col Y_COL]
+                                                    [--group-col GROUP_COL]
+                                                    [--color-col COLOR_COL]
+                                                    [--fit FIT]
+                                                    [--title TITLE]
                                                     [--write-sidecar]
                                                     [--sidecar-rows SIDECAR_ROWS]
                                                     [--sidecar-dir SIDECAR_DIR]
@@ -1492,6 +2322,54 @@ svtk visualize context station-event-network
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -1536,7 +2414,16 @@ svtk visualize context study-domain
                                            [--table TABLE]
                                            [--kwargs [KWARGS ...]]
                                            [--kwargs-json KWARGS_JSON]
-                                           [--write-sidecar]
+                                           [--metric METRIC]
+                                           [--passband PASSBAND]
+                                           [--component COMPONENT]
+                                           [--model MODEL]
+                                           [--value-col VALUE_COL]
+                                           [--score-col SCORE_COL]
+                                           [--x-col X_COL] [--y-col Y_COL]
+                                           [--group-col GROUP_COL]
+                                           [--color-col COLOR_COL] [--fit FIT]
+                                           [--title TITLE] [--write-sidecar]
                                            [--sidecar-rows SIDECAR_ROWS]
                                            [--sidecar-dir SIDECAR_DIR]
                                            [--events EVENTS] [--bounds BOUNDS]
@@ -1585,6 +2472,54 @@ svtk visualize context study-domain
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -1658,6 +2593,18 @@ svtk visualize waveforms event-radial-trace-section
                                                            [--table TABLE]
                                                            [--kwargs [KWARGS ...]]
                                                            [--kwargs-json KWARGS_JSON]
+                                                           [--metric METRIC]
+                                                           [--passband PASSBAND]
+                                                           [--component COMPONENT]
+                                                           [--model MODEL]
+                                                           [--value-col VALUE_COL]
+                                                           [--score-col SCORE_COL]
+                                                           [--x-col X_COL]
+                                                           [--y-col Y_COL]
+                                                           [--group-col GROUP_COL]
+                                                           [--color-col COLOR_COL]
+                                                           [--fit FIT]
+                                                           [--title TITLE]
                                                            [--write-sidecar]
                                                            [--sidecar-rows SIDECAR_ROWS]
                                                            [--sidecar-dir SIDECAR_DIR]
@@ -1707,6 +2654,54 @@ svtk visualize waveforms event-radial-trace-section
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -1770,9 +2765,13 @@ svtk visualize waveforms observed-synthetic-record-section
    svtk visualize waveforms observed-synthetic-record-section
        [-h] --input INPUT [--output OUTPUT] [--config CONFIG]
        [--run-scenario RUN_SCENARIO] [--table TABLE] [--kwargs [KWARGS ...]]
-       [--kwargs-json KWARGS_JSON] [--write-sidecar]
-       [--sidecar-rows SIDECAR_ROWS] [--sidecar-dir SIDECAR_DIR]
-       [--bounds BOUNDS] [--no-basemap] [--basemap-source BASEMAP_SOURCE]
+       [--kwargs-json KWARGS_JSON] [--metric METRIC] [--passband PASSBAND]
+       [--component COMPONENT] [--model MODEL] [--value-col VALUE_COL]
+       [--score-col SCORE_COL] [--x-col X_COL] [--y-col Y_COL]
+       [--group-col GROUP_COL] [--color-col COLOR_COL] [--fit FIT]
+       [--title TITLE] [--write-sidecar] [--sidecar-rows SIDECAR_ROWS]
+       [--sidecar-dir SIDECAR_DIR] [--bounds BOUNDS] [--no-basemap]
+       [--basemap-source BASEMAP_SOURCE]
 
 .. rubric:: Parameters
 
@@ -1816,6 +2815,54 @@ svtk visualize waveforms observed-synthetic-record-section
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -1857,6 +2904,16 @@ svtk visualize waveforms record-section
                                                [--table TABLE]
                                                [--kwargs [KWARGS ...]]
                                                [--kwargs-json KWARGS_JSON]
+                                               [--metric METRIC]
+                                               [--passband PASSBAND]
+                                               [--component COMPONENT]
+                                               [--model MODEL]
+                                               [--value-col VALUE_COL]
+                                               [--score-col SCORE_COL]
+                                               [--x-col X_COL] [--y-col Y_COL]
+                                               [--group-col GROUP_COL]
+                                               [--color-col COLOR_COL]
+                                               [--fit FIT] [--title TITLE]
                                                [--write-sidecar]
                                                [--sidecar-rows SIDECAR_ROWS]
                                                [--sidecar-dir SIDECAR_DIR]
@@ -1906,6 +2963,54 @@ svtk visualize waveforms record-section
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -1947,6 +3052,18 @@ svtk visualize waveforms station-event-waveform-map
                                                            [--table TABLE]
                                                            [--kwargs [KWARGS ...]]
                                                            [--kwargs-json KWARGS_JSON]
+                                                           [--metric METRIC]
+                                                           [--passband PASSBAND]
+                                                           [--component COMPONENT]
+                                                           [--model MODEL]
+                                                           [--value-col VALUE_COL]
+                                                           [--score-col SCORE_COL]
+                                                           [--x-col X_COL]
+                                                           [--y-col Y_COL]
+                                                           [--group-col GROUP_COL]
+                                                           [--color-col COLOR_COL]
+                                                           [--fit FIT]
+                                                           [--title TITLE]
                                                            [--write-sidecar]
                                                            [--sidecar-rows SIDECAR_ROWS]
                                                            [--sidecar-dir SIDECAR_DIR]
@@ -1996,6 +3113,54 @@ svtk visualize waveforms station-event-waveform-map
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -2037,6 +3202,18 @@ svtk visualize waveforms waveform-overlay-matrix
                                                         [--table TABLE]
                                                         [--kwargs [KWARGS ...]]
                                                         [--kwargs-json KWARGS_JSON]
+                                                        [--metric METRIC]
+                                                        [--passband PASSBAND]
+                                                        [--component COMPONENT]
+                                                        [--model MODEL]
+                                                        [--value-col VALUE_COL]
+                                                        [--score-col SCORE_COL]
+                                                        [--x-col X_COL]
+                                                        [--y-col Y_COL]
+                                                        [--group-col GROUP_COL]
+                                                        [--color-col COLOR_COL]
+                                                        [--fit FIT]
+                                                        [--title TITLE]
                                                         [--write-sidecar]
                                                         [--sidecar-rows SIDECAR_ROWS]
                                                         [--sidecar-dir SIDECAR_DIR]
@@ -2086,6 +3263,54 @@ svtk visualize waveforms waveform-overlay-matrix
      - No
      -
      - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+   * - ``--metric``
+     - No
+     -
+     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+   * - ``--passband``
+     - No
+     - Repeatable
+     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--component``
+     - No
+     - Repeatable
+     - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--model``
+     - No
+     - Repeatable
+     - Value: ``model``. Model filter/value. Repeat for multiple models.
+   * - ``--value-col``
+     - No
+     -
+     - Value: ``value_col``. Column containing the plotted value.
+   * - ``--score-col``
+     - No
+     -
+     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+   * - ``--x-col``
+     - No
+     -
+     - Value: ``x_col``. Column used on the x axis.
+   * - ``--y-col``
+     - No
+     -
+     - Value: ``y_col``. Column used on the y axis.
+   * - ``--group-col``
+     - No
+     -
+     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+   * - ``--color-col``
+     - No
+     -
+     - Value: ``color_col``. Column used to color plot groups.
+   * - ``--fit``
+     - No
+     -
+     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--title``
+     - No
+     -
+     - Value: ``title``. Figure title.
    * - ``--write-sidecar``
      - No
      - Flag

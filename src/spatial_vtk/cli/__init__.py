@@ -345,6 +345,23 @@ VISUALIZE_COMMAND_GROUPS: dict[str, dict[str, PlotCommand]] = {
 
 AUTO_PLOT_OPTION_KEYS = frozenset({"add_basemap", "basemap_source", "bounds"})
 FIGURE_SIDECAR_OPTION_KEYS = frozenset({"write_sidecar", "sidecar_rows", "sidecar_dir"})
+COMMON_FIGURE_OPTION_KEYS = frozenset(
+    {
+        "metric",
+        "passband",
+        "component",
+        "model",
+        "value_col",
+        "score_col",
+        "x_col",
+        "y_col",
+        "group_col",
+        "color_col",
+        "fit",
+        "title",
+    }
+)
+USER_FIGURE_OPTION_KEYS = FIGURE_SIDECAR_OPTION_KEYS | COMMON_FIGURE_OPTION_KEYS
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -780,6 +797,7 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
     parser.add_argument("--table", action="append", default=(), help="Extra table as argument_name=path. May be repeated.")
     parser.add_argument("--kwargs", nargs="*", default=(), help="Extra function keyword arguments as key=value.")
     parser.add_argument("--kwargs-json", default=None, help="Extra function keyword arguments as a JSON/YAML mapping.")
+    _add_common_figure_options(parser, exclude=set((spec.table_aliases or {}).keys()))
     parser.add_argument("--write-sidecar", action="store_true", help="Write CSV/JSON sidecars with rows used by the figure.")
     parser.add_argument("--sidecar-rows", type=int, default=None, help="Maximum rows to write to each sidecar. Omit to write all rows.")
     parser.add_argument("--sidecar-dir", default=None, help="Directory for figure sidecars. Defaults next to the output figure.")
@@ -795,6 +813,29 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
         parser.add_argument("--bounds", default=None, help="Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.")
         parser.add_argument("--no-basemap", action="store_true", help="Disable basemap rendering for map figures.")
         parser.add_argument("--basemap-source", default=None, help="Optional contextily basemap source.")
+
+
+def _add_common_figure_options(parser: argparse.ArgumentParser, *, exclude: set[str] | None = None) -> None:
+    """Add common plotting controls to registered figure commands."""
+
+    excluded = {item.replace("-", "_") for item in (exclude or set())}
+
+    def add(name: str, *args: Any, **kwargs: Any) -> None:
+        if name.replace("-", "_") not in excluded:
+            parser.add_argument(f"--{name}", *args, **kwargs)
+
+    add("metric", default=None, help="Metric name passed to plotting functions that support metric filtering.")
+    add("passband", action="append", default=None, help="Passband filter/value. Repeat for multiple passbands.")
+    add("component", action="append", default=None, help="Component filter/value. Repeat for multiple components.")
+    add("model", action="append", default=None, help="Model filter/value. Repeat for multiple models.")
+    add("value-col", default=None, help="Column containing the plotted value.")
+    add("score-col", default=None, help="Column containing scores or residual values for score-style plots.")
+    add("x-col", default=None, help="Column used on the x axis.")
+    add("y-col", default=None, help="Column used on the y axis.")
+    add("group-col", default=None, help="Column used for grouping, coloring, or trend groups.")
+    add("color-col", default=None, help="Column used to color plot groups.")
+    add("fit", default=None, help="Optional fit/trend method, such as 'linear' or 'lowess'.")
+    add("title", default=None, help="Figure title.")
 
 
 def _add_call_command(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
@@ -1408,7 +1449,7 @@ def _cmd_registered_plot(args: argparse.Namespace) -> int:
     function = _resolve_function(spec.function)
     kwargs = _registered_plot_kwargs(args, spec)
     _drop_unsupported_auto_plot_kwargs(function, kwargs)
-    _validate_supported_plot_kwargs(function, kwargs, FIGURE_SIDECAR_OPTION_KEYS)
+    _validate_supported_plot_kwargs(function, kwargs, USER_FIGURE_OPTION_KEYS)
     result = function(**kwargs)
     if result is not None and str(result) != str(kwargs["output_path"]):
         print(result)
@@ -1459,6 +1500,7 @@ def _registered_plot_kwargs(args: argparse.Namespace, spec: PlotCommand) -> dict
     if getattr(args, "kwargs_json", None):
         kwargs.update(_parse_mapping(args.kwargs_json))
     kwargs.update(_parse_key_values(getattr(args, "kwargs", ())))
+    _apply_common_figure_options(args, kwargs, exclude=set((spec.table_aliases or {}).keys()))
     if getattr(args, "write_sidecar", False):
         kwargs["write_sidecar"] = True
     if getattr(args, "sidecar_rows", None) is not None:
@@ -1477,6 +1519,25 @@ def _registered_plot_kwargs(args: argparse.Namespace, spec: PlotCommand) -> dict
     if bounds is not None:
         kwargs["bounds"] = bounds
     return kwargs
+
+
+def _apply_common_figure_options(args: argparse.Namespace, kwargs: dict[str, Any], *, exclude: set[str] | None = None) -> None:
+    """Apply first-class registered figure options to function kwargs."""
+
+    excluded = {item.replace("-", "_") for item in (exclude or set())}
+    for key in sorted(COMMON_FIGURE_OPTION_KEYS):
+        if key in excluded:
+            continue
+        value = getattr(args, key, None)
+        if value is None:
+            continue
+        if isinstance(value, list):
+            clean = [item for item in value if item is not None]
+            if not clean:
+                continue
+            kwargs[key] = clean[0] if len(clean) == 1 else clean
+        else:
+            kwargs[key] = value
 
 
 def _registered_plot_config(args: argparse.Namespace, spec: PlotCommand):

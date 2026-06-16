@@ -160,16 +160,23 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
    svtk plot metrics residuals-vs-distance \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
-     --kwargs y_col=log2_residual group_col=metric fit=lowess connect_points=false
+     --y-col log2_residual \
+     --group-col metric \
+     --fit lowess \
+     --kwargs connect_points=false
 
    svtk map spatial station-metric \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --bounds study_area \
-     --kwargs value_col=log2_residual metric=PGA
+     --value-col log2_residual \
+     --metric PGA
 
    svtk plot metrics band-score-distribution \
-     --kwargs score_col=log2_residual color_col=metric
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
+     --score-col log2_residual \
+     --color-col metric
 
    The band-score plot defaults to the configured ``metrics_long`` table and
    ``band_score_distribution`` figure path. Pass ``--input`` or ``--output``
@@ -199,13 +206,14 @@ Use the metric outputs to make spatial diagnostic maps and plots. The notebook v
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --bounds study_area \
-     --kwargs value_col=mean_centered title="Mean PGA Station Bias"
+     --value-col mean_centered \
+     --title "Mean PGA Station Bias"
 
    svtk map spatial residual-grid \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --bounds study_area \
-     --kwargs value_col=log2_residual
+     --value-col log2_residual
 
    svtk plot spatial correlogram \
      --config "$CONFIG" \
@@ -234,13 +242,18 @@ Work with region polygons and corridor selections, then make maps and waveform s
    svtk plot metrics boxplot \
      --input "$TABLES/metrics_long.parquet" \
      --output "$FIGURES/geojson_region_boxplot.png" \
-     --kwargs value_col=log2_residual dep=PGA indep=station_geojson_labels compare_to="LA Basin" table=true passband="1-2 sec" model=cvmsi_20260506_material_0p6x1p2_asdf
+     --value-col log2_residual \
+     --passband "1-2 sec" \
+     --model cvmsi_20260506_material_0p6x1p2_asdf \
+     --kwargs dep=PGA indep=station_geojson_labels compare_to="LA Basin" table=true
 
    svtk map spatial event-residual \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --bounds study_area \
-     --kwargs value_col=log2_residual metric=PGA station_region="LA Basin" event_region="Santa Monica Mountains"
+     --value-col log2_residual \
+     --metric PGA \
+     --kwargs station_region="LA Basin" event_region="Santa Monica Mountains"
 
    svtk map spatial corridor \
      --config "$CONFIG" \
@@ -275,17 +288,29 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
    svtk plot metrics scatterplot \
      --input "$TABLES/metrics_long.parquet" \
      --output "$FIGURES/scatterplot_distance.png" \
-     --kwargs value_col=log2_residual dep='[PGA, PGV]' indep=distance passband="1-2 sec" model=cvmsi_20260506_material_0p6x1p2_asdf fit=lowess colorby=dep title="PGA and PGV Residuals vs Distance"
+     --value-col log2_residual \
+     --passband "1-2 sec" \
+     --model cvmsi_20260506_material_0p6x1p2_asdf \
+     --fit lowess \
+     --title "PGA and PGV Residuals vs Distance" \
+     --kwargs dep='[PGA, PGV]' indep=distance colorby=dep
 
    svtk plot metrics boxplot \
      --input "$TABLES/metrics_long.parquet" \
      --output "$FIGURES/boxplot_by_region.png" \
-     --kwargs value_col=log2_residual dep='[PGA, PGV]' indep=station_geojson_labels compare_to="LA Basin" table=true passband="1-2 sec" model=cvmsi_20260506_material_0p6x1p2_asdf
+     --value-col log2_residual \
+     --passband "1-2 sec" \
+     --model cvmsi_20260506_material_0p6x1p2_asdf \
+     --kwargs dep='[PGA, PGV]' indep=station_geojson_labels compare_to="LA Basin" table=true
 
    svtk plot metrics heatmap \
      --input "$TABLES/metrics_long.parquet" \
      --output "$FIGURES/heatmap_by_region.png" \
-     --kwargs value_col=log2_residual dep='[PGA, PGV, PSA]' indep=station_geojson_labels passband='[1-2 sec, 2-3 sec]' model=cvmsi_20260506_material_0p6x1p2_asdf
+     --value-col log2_residual \
+     --passband "1-2 sec" \
+     --passband "2-3 sec" \
+     --model cvmsi_20260506_material_0p6x1p2_asdf \
+     --kwargs dep='[PGA, PGV, PSA]' indep=station_geojson_labels
 
 
 Step 7: Dashboards
