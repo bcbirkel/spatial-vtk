@@ -26,7 +26,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from spatial_vtk.config.labels import display_label
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 
 
 def plot_event_magnitude_map(
@@ -44,6 +44,9 @@ def plot_event_magnitude_map(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot events sized and colored by magnitude.
 
@@ -65,6 +68,13 @@ def plot_event_magnitude_map(
         Contextily provider selector.
     basemap_kwargs
         Extra basemap keyword arguments.
+    write_sidecar
+        Whether to write a CSV/JSON sidecar with the event rows plotted in the
+        figure. Sidecars are written only when the figure is saved.
+    sidecar_rows
+        Maximum plotted/source rows to write. ``None`` writes all rows.
+    sidecar_dir
+        Optional directory for sidecar files.
 
     Returns
     -------
@@ -88,7 +98,18 @@ def plot_event_magnitude_map(
     cbar = fig.colorbar(scatter, cax=cax)
     cbar.set_label(display_label(magnitude_col))
     _finish_map(ax, title)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=events_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "event_magnitude_map"},
+    )
 
 
 def plot_station_event_network_map(
@@ -108,6 +129,9 @@ def plot_station_event_network_map(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot station networks and event locations on one map.
 
@@ -129,6 +153,14 @@ def plot_station_event_network_map(
         Contextily provider selector.
     basemap_kwargs
         Extra basemap keyword arguments.
+    write_sidecar
+        Whether to write a CSV/JSON sidecar with the station and event rows
+        plotted in the figure. Sidecars are written only when the figure is
+        saved.
+    sidecar_rows
+        Maximum plotted/source rows to write. ``None`` writes all rows.
+    sidecar_dir
+        Optional directory for sidecar files.
 
     Returns
     -------
@@ -150,7 +182,19 @@ def plot_station_event_network_map(
     ax.scatter(events_df[event_lon_col], events_df[event_lat_col], marker="*", s=105, c="#ffd23f", edgecolors="black", linewidths=0.45, label="Events", zorder=5)
     ax.legend(frameon=True, fontsize=8)
     _finish_map(ax, title)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = _layered_map_rows((("station", stations_df), ("event", events_df)))
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "station_event_network_map"},
+    )
 
 
 def plot_station_event_beachball_map(
@@ -176,6 +220,9 @@ def plot_station_event_beachball_map(
     savefig: bool | None = None,
     close: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot focal mechanism beachballs when ObsPy is available.
 
@@ -205,6 +252,14 @@ def plot_station_event_beachball_map(
         Contextily provider selector.
     basemap_kwargs
         Extra basemap keyword arguments.
+    write_sidecar
+        Whether to write a CSV/JSON sidecar with the station and event rows
+        plotted in the figure. Sidecars are written only when the figure is
+        saved.
+    sidecar_rows
+        Maximum plotted/source rows to write. ``None`` writes all rows.
+    sidecar_dir
+        Optional directory for sidecar files.
 
     Returns
     -------
@@ -255,7 +310,20 @@ def plot_station_event_beachball_map(
     ax.set_ylim(map_ylim)
     _set_geographic_aspect(ax)
     _finish_map(ax, title)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig, close=close)
+    sidecar_df = _layered_map_rows((("station", stations_df), ("event", events_df)))
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        close=close,
+        sidecar_df=sidecar_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "station_event_beachball_map"},
+    )
 
 
 def _magnitude_mappable(magnitudes: pd.Series, cmap: str) -> ScalarMappable | None:
@@ -433,6 +501,21 @@ def _set_geographic_aspect(ax: plt.Axes) -> None:
     cos_lat = math.cos(math.radians(lat_mid))
     if math.isfinite(cos_lat) and abs(cos_lat) > 1.0e-6:
         ax.set_aspect(1.0 / cos_lat, adjustable="box")
+
+
+def _layered_map_rows(layers: tuple[tuple[str, pd.DataFrame | None], ...]) -> pd.DataFrame:
+    """Return one sidecar table for multi-layer map figures."""
+
+    frames: list[pd.DataFrame] = []
+    for layer, frame in layers:
+        if frame is None:
+            continue
+        rows = frame.copy()
+        rows.insert(0, "_figure_layer", layer)
+        frames.append(rows)
+    if not frames:
+        return pd.DataFrame()
+    return pd.concat(frames, ignore_index=True, sort=False)
 
 
 __all__ = [

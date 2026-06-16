@@ -21,6 +21,7 @@ from spatial_vtk.config.labels import display_label
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import title_with_subtitle
 from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 from spatial_vtk.visualize.selection import FigureSelection
 
 
@@ -69,6 +70,9 @@ def plot_station_event_context(
     savefig: bool | None = None,
     close: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot station and event locations on one context map.
 
@@ -104,6 +108,13 @@ def plot_station_event_context(
         Contextily provider selector.
     basemap_kwargs
         Extra keyword arguments passed to the shared basemap helper.
+    write_sidecar
+        Whether to write a CSV/JSON sidecar with the rows plotted in the
+        figure. Sidecars are written only when the figure is saved.
+    sidecar_rows
+        Maximum plotted/source rows to write. ``None`` writes all rows.
+    sidecar_dir
+        Optional directory for sidecar files.
 
     Returns
     -------
@@ -156,7 +167,20 @@ def plot_station_event_context(
     ax.set_title(title)
     ax.grid(True, alpha=0.18)
     ax.legend(frameon=True)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig, close=close)
+    sidecar_df = _layered_context_rows((("station", stations_df), ("event", events_df)))
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        close=close,
+        sidecar_df=sidecar_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "station_event_context"},
+    )
 
 
 def _coordinate_columns(df: pd.DataFrame, *, kind: str) -> tuple[str, str]:
@@ -307,6 +331,21 @@ def _label_column(df: pd.DataFrame, candidates: Iterable[str], *, fallback: str)
     return fallback
 
 
+def _layered_context_rows(layers: Iterable[tuple[str, pd.DataFrame | None]]) -> pd.DataFrame:
+    """Return one sidecar table for multi-layer context maps."""
+
+    frames: list[pd.DataFrame] = []
+    for layer, frame in layers:
+        if frame is None:
+            continue
+        rows = frame.copy()
+        rows.insert(0, "_figure_layer", layer)
+        frames.append(rows)
+    if not frames:
+        return pd.DataFrame()
+    return pd.concat(frames, ignore_index=True, sort=False)
+
+
 def plot_study_domain_map(
     stations_df: pd.DataFrame,
     events_df: pd.DataFrame,
@@ -322,6 +361,9 @@ def plot_study_domain_map(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot a station/event overview map for the study domain.
 
@@ -347,6 +389,13 @@ def plot_study_domain_map(
         Contextily provider selector.
     basemap_kwargs
         Extra keyword arguments passed to the shared basemap helper.
+    write_sidecar
+        Whether to write a CSV/JSON sidecar with the rows plotted in the
+        figure. Sidecars are written only when the figure is saved.
+    sidecar_rows
+        Maximum plotted/source rows to write. ``None`` writes all rows.
+    sidecar_dir
+        Optional directory for sidecar files.
 
     Returns
     -------
@@ -409,7 +458,19 @@ def plot_study_domain_map(
     ax.set_title(title or f"Study Domain ({len(stations_df)} stations, {len(events_df)} events)")
     ax.grid(True, alpha=0.18)
     ax.legend(frameon=True, fontsize=8, loc="best")
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = _layered_context_rows((("station", stations_df), ("event", events_df)))
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "study_domain_map"},
+    )
 
 
 def plot_station_coverage(
@@ -422,6 +483,9 @@ def plot_station_coverage(
     savefig: bool | None = None,
     close: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot event counts by station.
 
@@ -435,6 +499,14 @@ def plot_station_coverage(
         Figure title.
     max_stations
         Maximum number of stations to show.
+    write_sidecar
+        Whether to write a CSV/JSON sidecar with the station-count rows
+        plotted in the figure. Sidecars are written only when the figure is
+        saved.
+    sidecar_rows
+        Maximum plotted/source rows to write. ``None`` writes all rows.
+    sidecar_dir
+        Optional directory for sidecar files.
 
     Returns
     -------
@@ -443,6 +515,7 @@ def plot_station_coverage(
     """
 
     fig, ax = plt.subplots(figsize=(8.0, 4.0), dpi=180)
+    counts = pd.DataFrame()
     if event_station_df.empty:
         ax.text(0.5, 0.5, "No event-station rows", ha="center", va="center", transform=ax.transAxes)
     else:
@@ -454,7 +527,20 @@ def plot_station_coverage(
         ax.tick_params(axis="x", rotation=75)
     ax.set_title(title)
     ax.grid(True, axis="y", alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig, close=close)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        close=close,
+        sidecar_df=counts,
+        source_rows=event_station_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "station_coverage", "max_stations": int(max_stations)},
+    )
 
 
 def plot_event_coverage(
@@ -466,6 +552,9 @@ def plot_event_coverage(
     savefig: bool | None = None,
     close: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot station counts by event.
 
@@ -477,6 +566,13 @@ def plot_event_coverage(
         Destination figure path.
     title
         Figure title.
+    write_sidecar
+        Whether to write a CSV/JSON sidecar with the event-count rows plotted
+        in the figure. Sidecars are written only when the figure is saved.
+    sidecar_rows
+        Maximum plotted/source rows to write. ``None`` writes all rows.
+    sidecar_dir
+        Optional directory for sidecar files.
 
     Returns
     -------
@@ -485,6 +581,7 @@ def plot_event_coverage(
     """
 
     fig, ax = plt.subplots(figsize=(7.0, 4.0), dpi=180)
+    counts = pd.DataFrame()
     if event_station_df.empty:
         ax.text(0.5, 0.5, "No event-station rows", ha="center", va="center", transform=ax.transAxes)
     else:
@@ -496,7 +593,20 @@ def plot_event_coverage(
         ax.tick_params(axis="x", rotation=45)
     ax.set_title(title)
     ax.grid(True, axis="y", alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig, close=close)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        close=close,
+        sidecar_df=counts,
+        source_rows=event_station_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "event_coverage"},
+    )
 
 
 def build_record_coverage_table(
@@ -766,6 +876,9 @@ def plot_record_coverage(
     savefig: bool | None = None,
     close: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot observed and synthetic record time coverage by station.
 
@@ -791,6 +904,13 @@ def plot_record_coverage(
         Maximum rows to draw.
     title
         Figure title.
+    write_sidecar
+        Whether to write a CSV/JSON sidecar with the record rows plotted in
+        the figure. Sidecars are written only when the figure is saved.
+    sidecar_rows
+        Maximum plotted/source rows to write. ``None`` writes all rows.
+    sidecar_dir
+        Optional directory for sidecar files.
 
     Returns
     -------
@@ -832,7 +952,20 @@ def plot_record_coverage(
         ax.text(0.5, 0.5, "No record rows", ha="center", va="center", transform=ax.transAxes)
         ax.set_axis_off()
         ax.set_title(title)
-        return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig, close=close)
+        return finish_figure_with_sidecar(
+            fig,
+            output_path,
+            outpath=outpath,
+            showfig=showfig,
+            savefig=savefig,
+            close=close,
+            sidecar_df=df,
+            source_rows=records_df,
+            write_sidecar=write_sidecar,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
+            metadata={"figure_type": "record_coverage", "max_records": max_records},
+        )
 
     y_positions = np.arange(len(df), dtype=float)
     y_labels: list[str] = []
@@ -874,7 +1007,20 @@ def plot_record_coverage(
         ],
         loc="best",
     )
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig, close=close)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        close=close,
+        sidecar_df=df,
+        source_rows=records_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "record_coverage", "max_records": max_records},
+    )
 
 
 def _validate_record_coverage_timing(

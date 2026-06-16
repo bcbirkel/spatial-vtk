@@ -9,6 +9,8 @@ from typing import Any
 
 import pandas as pd
 
+from spatial_vtk.visualize.figure_io import finish_figure
+
 
 @dataclass(frozen=True)
 class FigureSidecarResult:
@@ -120,6 +122,57 @@ def write_figure_row_sidecar(
     return FigureSidecarResult(sidecar_path, metadata_path, source_path, result_metadata)
 
 
+def finish_figure_with_sidecar(
+    fig: Any,
+    output_path: str | Path | None = None,
+    *,
+    outpath: str | Path | None = None,
+    output_key: str | None = None,
+    cfg: Any | None = None,
+    showfig: bool | None = None,
+    savefig: bool | None = None,
+    close: bool | None = None,
+    bbox_inches: str = "tight",
+    sidecar_df: pd.DataFrame | None = None,
+    source_rows: pd.DataFrame | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
+    metadata: dict[str, Any] | None = None,
+    **savefig_kwargs: Any,
+) -> Any:
+    """Finish a Matplotlib figure and optionally write row sidecars.
+
+    This is a convenience wrapper for plotting functions that can identify the
+    exact rows handed to Matplotlib. Sidecars are written only when the figure
+    is saved, because the figure path is used as the stable sidecar basename.
+    """
+
+    finished = finish_figure(
+        fig,
+        output_path,
+        outpath=outpath,
+        output_key=output_key,
+        cfg=cfg,
+        showfig=showfig,
+        savefig=savefig,
+        close=close,
+        bbox_inches=bbox_inches,
+        **savefig_kwargs,
+    )
+    saved_path = getattr(finished, "spatial_vtk_saved_path", None)
+    if write_sidecar and saved_path is not None and sidecar_df is not None:
+        write_figure_row_sidecar(
+            saved_path,
+            sidecar_df,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
+            source_rows=source_rows,
+            metadata=metadata,
+        )
+    return finished
+
+
 def sidecar_rows_for_write(
     rows: pd.DataFrame,
     *,
@@ -171,6 +224,7 @@ def _json_ready(value: Any) -> Any:
 __all__ = [
     "FigureSidecarResult",
     "figure_sidecar_dimension_counts",
+    "finish_figure_with_sidecar",
     "sidecar_rows_for_write",
     "write_figure_row_sidecar",
 ]

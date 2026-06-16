@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
@@ -22,7 +23,14 @@ from spatial_vtk.io import (
     read_config_table,
     write_output_tables,
 )
-from spatial_vtk.visualize.context import plot_event_coverage, plot_station_coverage, plot_station_event_context, summarize_coverage
+from spatial_vtk.visualize.context import (
+    plot_event_coverage,
+    plot_record_coverage,
+    plot_station_coverage,
+    plot_station_event_beachball_map,
+    plot_station_event_context,
+    summarize_coverage,
+)
 
 
 def test_prepare_metadata_accepts_common_aliases() -> None:
@@ -284,3 +292,73 @@ def test_inventory_and_context_figures_write_outputs(tmp_path: Path) -> None:
     for path in outputs:
         assert path.exists()
         assert path.stat().st_size > 0
+
+
+def test_context_figures_write_optional_row_sidecars(tmp_path: Path) -> None:
+    """Context figures should expose plotted/source rows when requested."""
+
+    stations = pd.DataFrame({"station": ["S1", "S2"], "lat": [34.0, 34.2], "lon": [-118.4, -118.2]})
+    events = pd.DataFrame({"event_id": ["E1"], "event_lat": [34.1], "event_lon": [-118.3], "magnitude": [4.1]})
+    event_station = pd.DataFrame(
+        {
+            "event_id": ["E1", "E1"],
+            "station": ["S1", "S2"],
+            "distance_km": [10.0, 20.0],
+        }
+    )
+    records = event_station.assign(
+        observed_start_s=[-2.0, -1.0],
+        observed_end_s=[65.0, 66.0],
+        synthetic_start_s=[0.0, 0.0],
+        synthetic_end_s=[60.0, 60.0],
+    )
+    sidecar_dir = tmp_path / "sidecars"
+
+    plot_station_event_context(
+        stations,
+        events,
+        tmp_path / "context.png",
+        add_basemap=False,
+        write_sidecar=True,
+        sidecar_rows=1,
+        sidecar_dir=sidecar_dir,
+    )
+    plot_station_coverage(
+        event_station,
+        tmp_path / "station_coverage.png",
+        write_sidecar=True,
+        sidecar_rows=1,
+        sidecar_dir=sidecar_dir,
+    )
+    plot_station_event_beachball_map(
+        events,
+        tmp_path / "beachball.png",
+        stations_df=stations,
+        add_basemap=False,
+        write_sidecar=True,
+        sidecar_rows=1,
+        sidecar_dir=sidecar_dir,
+    )
+    plot_record_coverage(
+        records,
+        tmp_path / "record_coverage.png",
+        write_sidecar=True,
+        sidecar_rows=1,
+        sidecar_dir=sidecar_dir,
+    )
+
+    context_rows = pd.read_csv(sidecar_dir / "context.csv")
+    context_meta = json.loads((sidecar_dir / "context.json").read_text(encoding="utf-8"))
+    station_rows = pd.read_csv(sidecar_dir / "station_coverage.csv")
+    station_source = pd.read_csv(sidecar_dir / "station_coverage.source.csv")
+    beachball_meta = json.loads((sidecar_dir / "beachball.json").read_text(encoding="utf-8"))
+    record_meta = json.loads((sidecar_dir / "record_coverage.json").read_text(encoding="utf-8"))
+
+    assert len(context_rows) == 1
+    assert context_meta["plot_row_count"] == 3
+    assert context_meta["sampled"] is True
+    assert set(station_rows.columns) >= {"station", "event_count"}
+    assert len(station_source) == 1
+    assert beachball_meta["plot_row_count"] == 3
+    assert record_meta["plot_row_count"] == 2
+    assert record_meta["source_row_count"] == 2

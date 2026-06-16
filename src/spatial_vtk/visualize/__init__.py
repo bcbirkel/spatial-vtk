@@ -16,6 +16,7 @@ from spatial_vtk.visualize.figure_io import DEFAULT_FIGURE_NAMES, default_figure
 from spatial_vtk.visualize.figure_sidecars import (
     FigureSidecarResult,
     figure_sidecar_dimension_counts,
+    finish_figure_with_sidecar,
     sidecar_rows_for_write,
     write_figure_row_sidecar,
 )
@@ -70,6 +71,7 @@ __all__ = [
     "figure_sidecar_dimension_counts",
     "filter_trace_summary",
     "finish_figure",
+    "finish_figure_with_sidecar",
     "is_log2_ratio_field",
     "launch_metrics_dashboard",
     "launch_qc_dashboard",
