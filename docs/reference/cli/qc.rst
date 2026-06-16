@@ -7,6 +7,7 @@ Command Tree
 ------------
 
 - :ref:`svtk qc <cli-svtk-qc>`
+   - :ref:`svtk qc build <cli-svtk-qc-build>` - Build standard QC trace, inventory, and overlap tables from the active config.
    - :ref:`svtk qc manual-queue <cli-svtk-qc-manual-queue>`
    - :ref:`svtk qc slurm <cli-svtk-qc-slurm>`
    - :ref:`svtk qc summaries <cli-svtk-qc-summaries>` - Build compact QC summary tables from configured QC inventories.
@@ -18,7 +19,7 @@ Command Details
 
 .. code-block:: bash
 
-   svtk qc [-h] {manual-queue,slurm,summaries} ...
+   svtk qc [-h] {build,manual-queue,slurm,summaries} ...
 
 .. rubric:: Parameters
 
@@ -34,6 +35,67 @@ Command Details
      - No
      -
      - show this help message and exit
+
+.. _cli-svtk-qc-build:
+
+svtk qc build
+^^^^^^^^^^^^^
+
+Build standard QC trace, inventory, and overlap tables from the active config.
+
+.. rubric:: Usage
+
+.. code-block:: bash
+
+   svtk qc build [-h] [--event-stations EVENT_STATIONS] [--config CONFIG]
+                     [--run-scenario RUN_SCENARIO]
+                     [--trace-output TRACE_OUTPUT]
+                     [--inventory-output INVENTORY_OUTPUT]
+                     [--overlap-inventory-output OVERLAP_INVENTORY_OUTPUT]
+                     [--verbose]
+
+.. rubric:: Parameters
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 13 14 47
+
+   * - Name
+     - Required
+     - Default / choices
+     - Description
+   * - ``-h``, ``--help``
+     - No
+     -
+     - show this help message and exit
+   * - ``--event-stations``
+     - No
+     -
+     - Value: ``event_stations``. Prepared event-station table. Defaults to configured output table 'event_station_records'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config file.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+   * - ``--trace-output``
+     - No
+     -
+     - Value: ``trace_output``. Output waveform QC table path.
+   * - ``--inventory-output``
+     - No
+     -
+     - Value: ``inventory_output``. Output metric QC inventory path.
+   * - ``--overlap-inventory-output``
+     - No
+     -
+     - Value: ``overlap_inventory_output``. Output overlap-only metric QC inventory path.
+   * - ``--verbose``
+     - No
+     - Flag
+     - Print elapsed-time progress messages.
 
 .. _cli-svtk-qc-manual-queue:
 

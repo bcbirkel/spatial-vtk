@@ -8,6 +8,7 @@ Command Tree
 
 - :ref:`svtk metrics <cli-svtk-metrics>`
    - :ref:`svtk metrics cache-waveforms <cli-svtk-metrics-cache-waveforms>`
+   - :ref:`svtk metrics estimate <cli-svtk-metrics-estimate>`
    - :ref:`svtk metrics inventories <cli-svtk-metrics-inventories>`
    - :ref:`svtk metrics merge-batches <cli-svtk-metrics-merge-batches>`
    - :ref:`svtk metrics outputs <cli-svtk-metrics-outputs>`
@@ -24,7 +25,7 @@ Command Details
 .. code-block:: bash
 
    svtk metrics [-h]
-                    {inventories,plan,run,run-batch,cache-waveforms,merge-batches,outputs,slurm}
+                    {inventories,plan,estimate,run,run-batch,cache-waveforms,merge-batches,outputs,slurm}
                     ...
 
 .. rubric:: Parameters
@@ -103,6 +104,60 @@ svtk metrics cache-waveforms
      - No
      - Default: ``100``
      - Value: ``progress_interval``. Task interval for verbose progress messages.
+
+.. _cli-svtk-metrics-estimate:
+
+svtk metrics estimate
+^^^^^^^^^^^^^^^^^^^^^
+
+.. rubric:: Usage
+
+.. code-block:: bash
+
+   svtk metrics estimate [-h] --tasks TASKS [--output OUTPUT]
+                             [--seconds-per-task SECONDS_PER_TASK]
+                             [--memory-gb-per-task MEMORY_GB_PER_TASK]
+                             [--cpus-per-task CPUS_PER_TASK]
+                             [--parallel-tasks PARALLEL_TASKS]
+
+.. rubric:: Parameters
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 13 14 47
+
+   * - Name
+     - Required
+     - Default / choices
+     - Description
+   * - ``-h``, ``--help``
+     - No
+     -
+     - show this help message and exit
+   * - ``--tasks``
+     - Yes
+     -
+     - Value: ``tasks``. Metric task CSV/parquet path.
+   * - ``--output``
+     - No
+     -
+     - Value: ``output``. Optional output CSV/parquet path for the estimate table.
+   * - ``--seconds-per-task``
+     - No
+     - Default: ``60.0``
+     - Value: ``seconds_per_task``. Approximate runtime for one task in seconds.
+   * - ``--memory-gb-per-task``
+     - No
+     - Default: ``2.0``
+     - Value: ``memory_gb_per_task``. Approximate memory needed by one task.
+   * - ``--cpus-per-task``
+     - No
+     - Default: ``1``
+     - Value: ``cpus_per_task``. CPU cores requested per task.
+   * - ``--parallel-tasks``
+     - No
+     -
+     - Value: ``parallel_tasks``. Optional concurrent task count for wall-time estimates.
 
 .. _cli-svtk-metrics-inventories:
 

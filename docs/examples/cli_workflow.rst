@@ -67,27 +67,20 @@ streamed sidecar restricted to events with both observed and synthetic data.
    export QC_INVENTORY="$TABLES/qc_inventory.csv"
    export QC_INVENTORY_OVERLAP="$TABLES/qc_inventory_overlap.parquet"
 
-   svtk call spatial_vtk.qc.build_waveform_qc_summary \
-     --kwargs event_station_records="$EVENT_STATIONS" components='[Z, R, T]' passbands='[[1, 2], [2, 3]]' \
-     --output "$TRACE_QC"
+   svtk qc build \
+     --event-stations "$EVENT_STATIONS" \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
+     --trace-output "$TRACE_QC" \
+     --inventory-output "$QC_INVENTORY" \
+     --overlap-inventory-output "$QC_INVENTORY_OVERLAP" \
+     --verbose
 
-   svtk call spatial_vtk.qc.build_metric_qc_summary \
-     --kwargs event_station_records="$EVENT_STATIONS" metrics='[PGA, PGV, PGD, PSA, FAS]' components='[Z, R, T]' passbands='[[1, 2], [2, 3]]' spectral_periods_s='[1.0, 2.0, 3.0, 5.0]' synthetic_max_frequency_hz=1.0 trace_qc_summary="$TRACE_QC" \
-     --output "$QC_INVENTORY"
-
-   svtk call spatial_vtk.qc.write_qc_inventory_overlap_from_full \
-     --kwargs qc_inventory="$QC_INVENTORY" event_station_records="$EVENT_STATIONS" output_path="$QC_INVENTORY_OVERLAP" scope=event chunksize=1000000 verbose=true
-
-   svtk call spatial_vtk.qc.write_comparison_eligibility_from_qc_inventory \
-     --kwargs qc_summary="$QC_INVENTORY_OVERLAP" output_path="$TABLES/comparison_eligible_records.csv" chunksize=1000000 verbose=true
-
-   svtk call spatial_vtk.qc.build_metric_pair_retention_table_from_qc_inventory \
-     --args "$QC_INVENTORY_OVERLAP" \
-     --output "$TABLES/qc_metric_pair_retention.csv"
-
-   svtk call spatial_vtk.qc.build_event_station_pair_retention_table_from_qc_inventory \
-     --args "$QC_INVENTORY_OVERLAP" \
-     --output "$TABLES/qc_event_station_pair_retention.csv"
+   svtk qc summaries \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
+     --overwrite \
+     --verbose
 
    svtk qc manual-queue \
      --trace-summary "$TRACE_QC" \
@@ -122,6 +115,15 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
 
    export METRIC_TASKS="$TABLES/metric_tasks.csv"
    export METRIC_ROWS="$TABLES/metric_rows.parquet"
+   export TRACE_METADATA="$PREPROCESSED/metadata/trace_metadata_preprocessed.csv"
+
+   svtk metrics inventories \
+     --trace-metadata "$TRACE_METADATA" \
+     --observed-output "$TABLES/observed_metric_inventory.csv" \
+     --synthetic-output "$TABLES/synthetic_metric_inventory.csv" \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
+     --verbose
 
    svtk metrics plan \
      --config "$CONFIG" \
@@ -138,9 +140,11 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
      --passband 2-3 \
      --output "$METRIC_TASKS"
 
-   svtk call spatial_vtk.metrics.workflow.summarize_metric_tasks \
-     --args "$METRIC_TASKS" \
-     --kwargs seconds_per_task=60 memory_gb_per_task=2 parallel_tasks=4 \
+   svtk metrics estimate \
+     --tasks "$METRIC_TASKS" \
+     --seconds-per-task 60 \
+     --memory-gb-per-task 2 \
+     --parallel-tasks 4 \
      --output "$TABLES/metric_task_estimate.csv"
 
    svtk metrics run \

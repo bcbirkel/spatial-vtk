@@ -40,6 +40,51 @@ def test_cli_qc_summaries_help(capsys):
     assert "--chunksize" in captured.out
 
 
+def test_cli_qc_build_help(capsys):
+    with pytest.raises(SystemExit) as excinfo:
+        main(["qc", "build", "--help"])
+    assert excinfo.value.code == 0
+    captured = capsys.readouterr()
+    assert "Build standard QC trace, inventory, and overlap tables" in captured.out
+    assert "--event-stations" in captured.out
+    assert "--overlap-inventory-output" in captured.out
+
+
+def test_cli_metrics_estimate_writes_summary(tmp_path, capsys):
+    tasks = tmp_path / "metric_tasks.csv"
+    output = tmp_path / "metric_task_estimate.csv"
+    tasks.write_text(
+        "event_id,station,component,model,passband,metrics\n"
+        "e1,S1,R,m1,1-2 sec,\"['PGA','PGV']\"\n",
+        encoding="utf-8",
+    )
+
+    assert (
+        main(
+            [
+                "metrics",
+                "estimate",
+                "--tasks",
+                str(tasks),
+                "--seconds-per-task",
+                "30",
+                "--memory-gb-per-task",
+                "1.5",
+                "--parallel-tasks",
+                "2",
+                "--output",
+                str(output),
+            ]
+        )
+        == 0
+    )
+    captured = capsys.readouterr()
+    assert captured.out.strip() == str(output)
+    summary = pd.read_csv(output)
+    assert "Metric tasks" in set(summary["Estimate"])
+    assert "Wall time at 2 parallel tasks" in set(summary["Estimate"])
+
+
 def test_cli_registered_plot_help_shows_common_options(capsys):
     with pytest.raises(SystemExit) as excinfo:
         main(["plot", "metrics", "residuals-vs-distance", "--help"])
@@ -60,6 +105,14 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "resolve their standard input tables and figure paths from the active config" in text
     assert "first-class flags where they apply" in text
     assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
+
+
+def test_cli_workflow_uses_curated_commands_for_standard_steps():
+    """The shell workflow should not route routine tutorial steps through svtk call."""
+
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "docs" / "examples" / "cli_workflow.rst").read_text(encoding="utf-8")
+    assert "svtk call" not in text
 
 
 def test_cli_config_show_section(tmp_path, capsys):

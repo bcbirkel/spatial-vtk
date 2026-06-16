@@ -530,6 +530,24 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     qc = subparsers.add_parser("qc", help="Prepare QC review outputs.")
     qc_sub = qc.add_subparsers(dest="qc_command", required=True)
 
+    build = qc_sub.add_parser(
+        "build",
+        help="Build standard QC trace, inventory, and overlap tables.",
+        description="Build standard QC trace, inventory, and overlap tables from the active config.",
+    )
+    build.add_argument(
+        "--event-stations",
+        default=None,
+        help="Prepared event-station table. Defaults to configured output table 'event_station_records'.",
+    )
+    build.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    build.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    build.add_argument("--trace-output", default=None, help="Output waveform QC table path.")
+    build.add_argument("--inventory-output", default=None, help="Output metric QC inventory path.")
+    build.add_argument("--overlap-inventory-output", default=None, help="Output overlap-only metric QC inventory path.")
+    build.add_argument("--verbose", action="store_true", help="Print elapsed-time progress messages.")
+    build.set_defaults(handler=_cmd_qc_build)
+
     queue = qc_sub.add_parser("manual-queue", help="Export a manual-QC review queue from trace summary rows.")
     queue.add_argument("--trace-summary", required=True, help="Trace-summary CSV/parquet path.")
     queue.add_argument("--output", required=True, help="Output manual-review queue CSV.")
@@ -610,6 +628,15 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         help="When --qc-table is supplied, keep task keys even if no observed/synthetic metric pair passed QC.",
     )
     plan.set_defaults(handler=_cmd_metrics_plan)
+
+    estimate = metrics_sub.add_parser("estimate", help="Summarize metric task counts and resource estimates.")
+    estimate.add_argument("--tasks", required=True, help="Metric task CSV/parquet path.")
+    estimate.add_argument("--output", default=None, help="Optional output CSV/parquet path for the estimate table.")
+    estimate.add_argument("--seconds-per-task", type=float, default=60.0, help="Approximate runtime for one task in seconds.")
+    estimate.add_argument("--memory-gb-per-task", type=float, default=2.0, help="Approximate memory needed by one task.")
+    estimate.add_argument("--cpus-per-task", type=int, default=1, help="CPU cores requested per task.")
+    estimate.add_argument("--parallel-tasks", type=int, default=None, help="Optional concurrent task count for wall-time estimates.")
+    estimate.set_defaults(handler=_cmd_metrics_estimate)
 
     run = metrics_sub.add_parser("run", help="Run a task table locally.")
     run.add_argument("--tasks", required=True, help="Task CSV/parquet path.")
@@ -1100,6 +1127,31 @@ def _cmd_qc_manual_queue(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_qc_build(args: argparse.Namespace) -> int:
+    """Run ``svtk qc build``."""
+
+    from spatial_vtk.config import SpatialVTKConfig
+    from spatial_vtk.config.outputs import resolve_output_path
+    from spatial_vtk.qc.build.slurm import run_qc_inventory_job
+
+    config = SpatialVTKConfig.from_file(_required_config_path(args.config), run_scenario=args.run_scenario)
+    event_stations = (
+        Path(args.event_stations).expanduser()
+        if args.event_stations is not None
+        else resolve_output_path("event_station_records", kind="table", cfg=config, create_parent=True)
+    )
+    written = run_qc_inventory_job(
+        event_stations,
+        config=config,
+        trace_qc_output=args.trace_output,
+        qc_inventory_output=args.inventory_output,
+        qc_inventory_overlap_output=args.overlap_inventory_output,
+        verbose=args.verbose,
+    )
+    _print_payload({key: str(path) for key, path in written.items()}, as_json=False)
+    return 0
+
+
 def _cmd_qc_slurm(args: argparse.Namespace) -> int:
     """Run ``svtk qc slurm``."""
 
@@ -1216,6 +1268,25 @@ def _cmd_metrics_inventories(args: argparse.Namespace) -> int:
         "reused": result.reused,
     }
     _print_payload(payload, as_json=False)
+    return 0
+
+
+def _cmd_metrics_estimate(args: argparse.Namespace) -> int:
+    """Run ``svtk metrics estimate``."""
+
+    from spatial_vtk.metrics.workflow import summarize_metric_tasks
+
+    summary = summarize_metric_tasks(
+        args.tasks,
+        seconds_per_task=args.seconds_per_task,
+        memory_gb_per_task=args.memory_gb_per_task,
+        cpus_per_task=args.cpus_per_task,
+        parallel_tasks=args.parallel_tasks,
+    )
+    if args.output:
+        _write_table(summary, args.output)
+    else:
+        print(summary.to_string(index=False))
     return 0
 
 

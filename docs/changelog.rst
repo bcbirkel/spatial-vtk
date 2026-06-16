@@ -118,6 +118,9 @@ Changelog
    workflows are documented as config-backed commands with first-class
    plotting flags, while ``--kwargs`` is described as an advanced escape hatch
    rather than the normal interface.
+   Added first-class ``svtk qc build`` and ``svtk metrics estimate`` commands
+   so the shell workflow tutorial no longer needs generic ``svtk call`` for
+   routine QC inventory generation or metric task resource summaries.
    Added a tutorial-notebook regression that rejects committed notebook cells
    containing private/local cluster paths or host names, keeping public
    notebooks runnable from a fresh source checkout.
