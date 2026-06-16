@@ -8,9 +8,21 @@ import pickle
 import pandas as pd
 import pytest
 
-from spatial_vtk.config import SpatialVTKConfig
+from spatial_vtk.config import SpatialVTKConfig, clear_active_config
+from spatial_vtk.config.runtime import SVTK_CLI_CONFIG_ENV, SVTK_CONFIG_ENV
 from spatial_vtk.io import preprocessing as preprocessing_module
 from spatial_vtk.io.preprocessing import preprocess_waveform_files
+
+
+@pytest.fixture(autouse=True)
+def _isolate_config_discovery(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """Keep preprocessing tests independent of user-level config state."""
+
+    clear_active_config()
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(tmp_path / "missing-cli-config.json"))
+    yield
+    clear_active_config()
 
 
 def test_preprocess_waveform_files_uses_configured_waveform_paths(tmp_path: Path, monkeypatch, capsys) -> None:
