@@ -32,7 +32,7 @@ def plot_metric_trend(
     fit_method: FitMethod = None,
     fit: FitMethod = None,
     lowess_frac: float = 0.65,
-    robust_axis_percentile: float | None = 98.0,
+    robust_axis_percentile: float | None = 95.0,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
@@ -179,7 +179,7 @@ def plot_residuals_vs_distance_and_depth(
     fit_method: FitMethod = None,
     fit: FitMethod = None,
     lowess_frac: float = 0.65,
-    robust_axis_percentile: float | None = 98.0,
+    robust_axis_percentile: float | None = 95.0,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:

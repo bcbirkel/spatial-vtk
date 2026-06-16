@@ -336,7 +336,7 @@ def value_color_settings(
     *,
     diverging_cmap: str = "seismic",
     sequential_cmap: str = "viridis",
-    robust_percentile: float | None = 98.0,
+    robust_percentile: float | None = 95.0,
 ) -> tuple[str, float, float]:
     """Return a consistent colormap and color limits for plotted values.
 
@@ -394,7 +394,7 @@ def robust_value_limits(
     value_col: str | None = None,
     df: pd.DataFrame | None = None,
     *,
-    robust_percentile: float | None = 98.0,
+    robust_percentile: float | None = 95.0,
     symmetric: bool | None = None,
     pad_fraction: float = 0.06,
 ) -> tuple[float, float] | None:
@@ -457,7 +457,7 @@ def apply_robust_axis_limits(
     axis: str = "y",
     value_col: str | None = None,
     df: pd.DataFrame | None = None,
-    robust_percentile: float | None = 98.0,
+    robust_percentile: float | None = 95.0,
     symmetric: bool | None = None,
 ) -> None:
     """Apply robust axis limits so outliers do not dominate a plot."""

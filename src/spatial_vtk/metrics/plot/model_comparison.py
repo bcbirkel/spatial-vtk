@@ -88,7 +88,7 @@ def plot_band_score_distribution(
     metric_col: str = "metric",
     color_col: str | None = "metric",
     title: str = "Band Score Distribution",
-    robust_axis_percentile: float | None = 98.0,
+    robust_axis_percentile: float | None = 95.0,
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
