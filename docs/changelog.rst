@@ -57,6 +57,9 @@ Changelog
    runtime dependency preflight. The tutorial execution gate now reports
    missing ``nbformat``, ``nbclient``, ``ipykernel``, or ``IPython`` modules
    before cleaning ``outputs/tutorials`` or attempting notebook execution.
+   Added a CI contract test requiring the source-checkout workflow to install
+   notebook extras and execute the standard tutorial notebooks from a clean
+   tutorial output directory.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

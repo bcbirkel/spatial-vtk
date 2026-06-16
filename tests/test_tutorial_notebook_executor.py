@@ -82,3 +82,13 @@ def test_tutorial_notebook_preflight_runs_before_clean(tmp_path: Path, monkeypat
         module.main(["--repo-root", str(repo), "--notebook", str(notebook), "--clean"])
 
     assert marker.exists()
+
+
+def test_ci_runs_clean_tutorial_notebooks_with_notebook_extras() -> None:
+    """CI should prove source-checkout tutorial notebooks run from example data."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    workflow = (repo_root / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+
+    assert 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"' in workflow
+    assert "python tools/execute_tutorial_notebooks.py --clean" in workflow
