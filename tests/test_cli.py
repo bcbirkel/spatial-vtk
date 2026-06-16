@@ -138,6 +138,61 @@ outputs:
     assert captured.out.strip() == str(expected_output)
 
 
+def test_cli_metric_long_plot_commands_use_config_defaults(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    metrics = table_dir / "metrics_long.csv"
+    metrics.write_text("metric,band,model,component,distance_km,log2_residual\nPGA,1-2 sec,m1,Z,10,0.5\n", encoding="utf-8")
+    config.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+  artifacts:
+    metrics_long:
+      filename: metrics_long.csv
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    from spatial_vtk.metrics.plot import trends
+
+    def fake_plot_residuals_vs_distance(df, output_path=None, **kwargs):
+        seen["rows"] = len(df)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(trends, "plot_residuals_vs_distance", fake_plot_residuals_vs_distance)
+
+    assert (
+        main(
+            [
+                "plot",
+                "metrics",
+                "residuals-vs-distance",
+                "--config",
+                str(config),
+                "--kwargs",
+                "value_col=log2_residual",
+            ]
+        )
+        == 0
+    )
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "residuals_vs_distance.png"
+    assert seen["rows"] == 1
+    assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["value_col"] == "log2_residual"
+    assert captured.out.strip() == str(expected_output)
+
+
 def test_cli_prepare_station_metadata(tmp_path):
     src = tmp_path / "stations.csv"
     out = tmp_path / "prepared.csv"

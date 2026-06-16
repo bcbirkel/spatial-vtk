@@ -67,6 +67,30 @@ class PlotCommand:
     output_key: str | None = None
 
 
+def _with_registered_plot_defaults(
+    commands: dict[str, PlotCommand],
+    *,
+    input_defaults: dict[str, str] | None = None,
+) -> dict[str, PlotCommand]:
+    """Return plot command specs with config-backed output defaults.
+
+    Command names are stable, user-facing artifact names, so they make useful
+    fallback output keys when a command has not registered a more specific
+    figure key. ``input_defaults`` is intentionally opt-in because not every
+    command consumes the standard long metric table.
+    """
+
+    input_defaults = input_defaults or {}
+    return {
+        name: replace(
+            spec,
+            input_key=spec.input_key or input_defaults.get(name),
+            output_key=spec.output_key or name.replace("-", "_"),
+        )
+        for name, spec in commands.items()
+    }
+
+
 METRICS_PLOT_COMMANDS: dict[str, PlotCommand] = {
     "example-metric-pairs": PlotCommand("spatial_vtk.metrics.plot.example_metric_plots.plot_example_metric_pairs", None, "Plot synthetic trace-pair examples that illustrate metric behavior."),
     "model-metric-heatmap": PlotCommand("spatial_vtk.metrics.plot.model_comparison.plot_model_metric_heatmap", "summary_df", "Plot a model-by-metric heatmap."),
@@ -92,6 +116,23 @@ METRICS_PLOT_COMMANDS: dict[str, PlotCommand] = {
     "boxplot": PlotCommand("spatial_vtk.spatial.plot.metrics.boxplot", "data", "Plot metric distributions by categorical variables."),
     "heatmap": PlotCommand("spatial_vtk.spatial.plot.metrics.heatmap", "data", "Plot categorical metric summaries as a heatmap."),
 }
+METRICS_PLOT_COMMANDS = _with_registered_plot_defaults(
+    METRICS_PLOT_COMMANDS,
+    input_defaults={
+        "band-score-distribution": "metrics_long",
+        "psa-period-curve": "metrics_long",
+        "vs30-scatter": "metrics_long",
+        "geology-boxplot": "metrics_long",
+        "metric-trend": "metrics_long",
+        "residuals-vs-distance": "metrics_long",
+        "residuals-vs-depth": "metrics_long",
+        "score-trends": "metrics_long",
+        "phase-delay-vs-distance": "metrics_long",
+        "scatterplot": "metrics_long",
+        "boxplot": "metrics_long",
+        "heatmap": "metrics_long",
+    },
+)
 
 
 SPATIAL_PLOT_COMMANDS: dict[str, PlotCommand] = {
@@ -109,6 +150,7 @@ SPATIAL_PLOT_COMMANDS: dict[str, PlotCommand] = {
     "pca-explained-variance": PlotCommand("spatial_vtk.spatial.plot.pca.plot_pca_explained_variance", "explained_variance_df", "Plot PCA explained variance."),
     "pca-feature-loadings": PlotCommand("spatial_vtk.spatial.plot.pca.plot_pca_feature_loadings", "feature_loadings_df", "Plot PCA feature loadings."),
 }
+SPATIAL_PLOT_COMMANDS = _with_registered_plot_defaults(SPATIAL_PLOT_COMMANDS)
 
 
 SPATIAL_MAP_COMMANDS: dict[str, PlotCommand] = {
@@ -125,6 +167,7 @@ SPATIAL_MAP_COMMANDS: dict[str, PlotCommand] = {
     "event-residual": PlotCommand("spatial_vtk.spatial.map.path.plot_event_residual_map", "df", "Map event residual paths."),
     "corridor": PlotCommand("spatial_vtk.spatial.map.path.plot_corridor_map", "corridors_df", "Map corridor selections.", table_aliases={"stations": "stations_df", "events": "events_df", "records": "records_df"}),
 }
+SPATIAL_MAP_COMMANDS = _with_registered_plot_defaults(SPATIAL_MAP_COMMANDS)
 
 
 CONTEXT_VISUALIZE_COMMANDS: dict[str, PlotCommand] = {
@@ -139,6 +182,7 @@ CONTEXT_VISUALIZE_COMMANDS: dict[str, PlotCommand] = {
     "station-event-network": PlotCommand("spatial_vtk.visualize.context.plot_station_event_network_map", "stations_df", "Map station/event network geometry.", table_aliases={"events": "events_df"}),
     "station-event-beachball": PlotCommand("spatial_vtk.visualize.context.plot_station_event_beachball_map", "events_df", "Map station/event context with beachballs.", table_aliases={"stations": "stations_df"}),
 }
+CONTEXT_VISUALIZE_COMMANDS = _with_registered_plot_defaults(CONTEXT_VISUALIZE_COMMANDS)
 
 
 QC_VISUALIZE_COMMANDS: dict[str, PlotCommand] = {
@@ -149,6 +193,7 @@ QC_VISUALIZE_COMMANDS: dict[str, PlotCommand] = {
     "post-qc-station-event-map": PlotCommand("spatial_vtk.visualize.qc.plot_post_qc_station_event_map", "records_df", "Map retained station/event records after QC."),
     "drop-cause-diagnostics": PlotCommand("spatial_vtk.visualize.qc.plot_qc_drop_cause_diagnostics", "qc_df", "Plot QC drop-cause diagnostics."),
 }
+QC_VISUALIZE_COMMANDS = _with_registered_plot_defaults(QC_VISUALIZE_COMMANDS)
 
 
 WAVEFORM_VISUALIZE_COMMANDS: dict[str, PlotCommand] = {
@@ -158,6 +203,7 @@ WAVEFORM_VISUALIZE_COMMANDS: dict[str, PlotCommand] = {
     "event-radial-trace-section": PlotCommand("spatial_vtk.visualize.waveforms.plot_event_radial_trace_section", "records_df", "Plot event radial trace section."),
     "station-event-waveform-map": PlotCommand("spatial_vtk.visualize.waveforms.plot_station_event_waveform_map", "records_df", "Map station/event waveforms."),
 }
+WAVEFORM_VISUALIZE_COMMANDS = _with_registered_plot_defaults(WAVEFORM_VISUALIZE_COMMANDS)
 
 
 PLOT_COMMAND_GROUPS: dict[str, dict[str, PlotCommand]] = {
