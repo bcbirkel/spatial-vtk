@@ -111,21 +111,36 @@ def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: 
         cols[1].metric("Models", f"{len(selected_models):,}")
         cols[2].metric("Metrics", f"{heat['metric'].nunique() if 'metric' in heat else 0:,}")
         cols[3].metric("Passbands", f"{len(selected_bands):,}")
-        st.plotly_chart(build_metric_heatmap_figure(heat, value_col=value_col), width="stretch")
+        if heat.empty:
+            st.info(_empty_rows_message("model/metric/passband"))
+        else:
+            st.plotly_chart(build_metric_heatmap_figure(heat, value_col=value_col), width="stretch")
         st.dataframe(_display_table(heat), width="stretch")
     with station_tab:
-        st_folium(build_station_folium_map(stations, value_col=value_col, basemap=basemap, marker_cluster=marker_cluster, max_markers=int(max_markers)), use_container_width=True, height=620)
-        st.download_button("Download station map HTML", render_folium_html(build_station_folium_map(stations, value_col=value_col, basemap=basemap, marker_cluster=marker_cluster, max_markers=int(max_markers))), file_name="station_metric_map.html")
+        if stations.empty:
+            st.info(_empty_rows_message("station"))
+        else:
+            station_map = build_station_folium_map(stations, value_col=value_col, basemap=basemap, marker_cluster=marker_cluster, max_markers=int(max_markers))
+            st_folium(station_map, use_container_width=True, height=620)
+            st.download_button("Download station map HTML", render_folium_html(station_map), file_name="station_metric_map.html")
         st.dataframe(_display_table(stations), width="stretch")
     with event_tab:
-        st_folium(build_event_folium_map(events, value_col=value_col, basemap=basemap, marker_cluster=marker_cluster, max_markers=int(max_markers)), use_container_width=True, height=560)
+        if events.empty:
+            st.info(_empty_rows_message("event"))
+        else:
+            st_folium(build_event_folium_map(events, value_col=value_col, basemap=basemap, marker_cluster=marker_cluster, max_markers=int(max_markers)), use_container_width=True, height=560)
         st.dataframe(_display_table(events), width="stretch")
     with path_tab:
-        st.plotly_chart(build_path_heatmap_figure(paths, value_col=value_col), width="stretch")
+        if paths.empty:
+            st.info(_empty_rows_message("path"))
+        else:
+            st.plotly_chart(build_path_heatmap_figure(paths, value_col=value_col), width="stretch")
         st.dataframe(_display_table(paths), width="stretch")
     with distribution_tab:
-        if rows is None or rows.empty:
+        if rows is None:
             st.info("Load the long metrics dataset to view row-level distributions.")
+        elif rows.empty:
+            st.info(_empty_rows_message("row-level metric"))
         else:
             row_value = _row_value_column(value_col, rows) or value_col
             st.plotly_chart(build_value_histogram_figure(rows, value_col=row_value), width="stretch")
@@ -133,7 +148,10 @@ def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: 
                 st.plotly_chart(build_value_vs_distance_figure(rows, value_col=row_value), width="stretch")
             st.download_button("Download filtered metric rows", rows.to_csv(index=False).encode("utf-8"), file_name="filtered_metrics.csv")
     with compare_tab:
-        st.plotly_chart(build_metric_heatmap_figure(heat, value_col=value_col, title="Model Comparison"), width="stretch")
+        if heat.empty:
+            st.info(_empty_rows_message("model comparison"))
+        else:
+            st.plotly_chart(build_metric_heatmap_figure(heat, value_col=value_col, title="Model Comparison"), width="stretch")
         st.dataframe(_display_table(heat), width="stretch")
 
 
@@ -255,6 +273,12 @@ def _display_table(df: pd.DataFrame) -> pd.DataFrame:
     """Return a dashboard table with human-readable values and headers."""
 
     return display_table(df)
+
+
+def _empty_rows_message(row_label: str) -> str:
+    """Return a consistent filtered-empty dashboard message."""
+
+    return f"No {row_label} rows match the selected filters."
 
 
 if __name__ == "__main__":

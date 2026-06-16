@@ -73,6 +73,8 @@ def _render_qc_dashboard(df: pd.DataFrame, config: SpatialVTKConfig | None = Non
     )
     overview_tab, amp_tab, timing_tab, band_tab, table_tab, queue_tab = st.tabs(["Overview", "Amplitudes", "Timing", "Band Content", "Trace Table", "Manual Review Queue"])
     with overview_tab:
+        if filtered.empty:
+            st.info(_empty_rows_message("trace QC"))
         cols = st.columns(5)
         cols[0].metric("Traces", f"{len(filtered):,}")
         cols[1].metric("Event/Station Pairs", f"{len(queue_rows_from_filtered_trace_df(filtered)):,}")
@@ -82,16 +84,34 @@ def _render_qc_dashboard(df: pd.DataFrame, config: SpatialVTKConfig | None = Non
         if "dominant_band_label" in filtered.columns:
             st.plotly_chart(build_qc_bar_figure(filtered, column="dominant_band_label", title="Dominant Band Counts"), width="stretch", key="overview_dominant_band_counts")
     with amp_tab:
-        for column in _amplitude_columns(filtered):
-            st.plotly_chart(build_qc_histogram_figure(filtered, value_col=column, title=_qc_column_label(column), clip_iqr=clip_iqr), width="stretch", key=f"amp_{column}")
+        columns = _amplitude_columns(filtered)
+        if not columns:
+            st.info(_missing_columns_message("amplitude"))
+        elif filtered.empty:
+            st.info(_empty_rows_message("trace QC"))
+        else:
+            for column in columns:
+                st.plotly_chart(build_qc_histogram_figure(filtered, value_col=column, title=_qc_column_label(column), clip_iqr=clip_iqr), width="stretch", key=f"amp_{column}")
     with timing_tab:
-        for column in [item for item in ("start_rel_s", "end_rel_s", "duration_s") if item in filtered.columns]:
-            st.plotly_chart(build_qc_histogram_figure(filtered, value_col=column, title=_qc_column_label(column), clip_iqr=clip_iqr), width="stretch", key=f"timing_{column}")
+        columns = [item for item in ("start_rel_s", "end_rel_s", "duration_s") if item in filtered.columns]
+        if not columns:
+            st.info(_missing_columns_message("timing"))
+        elif filtered.empty:
+            st.info(_empty_rows_message("trace QC"))
+        else:
+            for column in columns:
+                st.plotly_chart(build_qc_histogram_figure(filtered, value_col=column, title=_qc_column_label(column), clip_iqr=clip_iqr), width="stretch", key=f"timing_{column}")
     with band_tab:
-        if "dominant_band_label" in filtered.columns:
-            st.plotly_chart(build_qc_bar_figure(filtered, column="dominant_band_label", title="Dominant Band Counts"), width="stretch", key="band_dominant_band_counts")
-        for column in _band_content_columns(filtered):
-            st.plotly_chart(build_qc_histogram_figure(filtered, value_col=column, title=_qc_column_label(column), clip_iqr=clip_iqr), width="stretch", key=f"band_{column}")
+        content_columns = _band_content_columns(filtered)
+        if not content_columns and "dominant_band_label" not in filtered.columns:
+            st.info(_missing_columns_message("band-content"))
+        elif filtered.empty:
+            st.info(_empty_rows_message("trace QC"))
+        else:
+            if "dominant_band_label" in filtered.columns:
+                st.plotly_chart(build_qc_bar_figure(filtered, column="dominant_band_label", title="Dominant Band Counts"), width="stretch", key="band_dominant_band_counts")
+            for column in content_columns:
+                st.plotly_chart(build_qc_histogram_figure(filtered, value_col=column, title=_qc_column_label(column), clip_iqr=clip_iqr), width="stretch", key=f"band_{column}")
     with table_tab:
         st.dataframe(display_table(filtered, max_rows=5000), width="stretch")
         st.download_button("Download filtered trace rows", filtered.to_csv(index=False).encode("utf-8"), file_name="filtered_trace_qc_rows.csv")
@@ -202,6 +222,18 @@ def _qc_column_label(column: str) -> str:
     """Return a readable QC column label."""
 
     return column.replace("band_peak_abs_", "Peak amplitude ").replace("energy_frac_", "Energy fraction ").replace("_", " ").replace(" s", " sec").title()
+
+
+def _empty_rows_message(row_label: str) -> str:
+    """Return a consistent filtered-empty dashboard message."""
+
+    return f"No {row_label} rows match the selected filters."
+
+
+def _missing_columns_message(column_label: str) -> str:
+    """Return a consistent missing-column dashboard message."""
+
+    return f"No {column_label} columns are available in the loaded trace-summary table."
 
 
 if __name__ == "__main__":

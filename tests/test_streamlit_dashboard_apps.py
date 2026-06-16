@@ -30,6 +30,9 @@ from spatial_vtk.visualize.dashboard import (
 )
 from spatial_vtk.visualize.dashboard.tables import build_dashboard_summaries
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _available_nonempty_value_columns
+from spatial_vtk.visualize.dashboard.streamlit_metrics import _empty_rows_message as _metrics_empty_rows_message
+from spatial_vtk.visualize.dashboard.streamlit_qc import _empty_rows_message as _qc_empty_rows_message
+from spatial_vtk.visualize.dashboard.streamlit_qc import _missing_columns_message as _qc_missing_columns_message
 import spatial_vtk.visualize.dashboard.launch as dashboard_launch
 from spatial_vtk.visualize.dashboard.launch import _raise_if_port_in_use
 from spatial_vtk.visualize.selection import FigureSelection, configured_band_options
@@ -248,6 +251,12 @@ def test_streamlit_entrypoints_import_and_launch_command():
     assert "--server.enableCORS=false" in command
     assert "--server.enableXsrfProtection=false" in command
     assert "--browser.gatherUsageStats=false" in command
+
+
+def test_dashboard_empty_state_messages_are_explicit():
+    assert _metrics_empty_rows_message("station") == "No station rows match the selected filters."
+    assert _qc_empty_rows_message("trace QC") == "No trace QC rows match the selected filters."
+    assert _qc_missing_columns_message("timing") == "No timing columns are available in the loaded trace-summary table."
 
 
 def test_qc_dashboard_launcher_defaults_to_trace_summary_output(tmp_path, monkeypatch):
