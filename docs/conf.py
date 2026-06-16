@@ -13,20 +13,12 @@ sys.path.insert(0, str(ROOT / "src"))
 
 project = "Spatial-VTK"
 author = "Brianna Birkel"
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "nbsphinx"]
+extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon"]
 templates_path = ["_templates"]
 exclude_patterns = ["_build", ".ipynb_checkpoints"]
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
-nbsphinx_execute = "never"
-nbsphinx_prolog = r"""
-{% set notebook_stem = env.docname.rsplit('/', 1)[-1] %}
-.. raw:: html
-
-   <p class="notebook-download"><a class="reference download" href="../_static/notebooks/{{ notebook_stem }}.ipynb.zip" download>Download this notebook</a></p>
-
-"""
 
 
 _PACKAGE_LABELS = {
@@ -248,7 +240,9 @@ def _write_notebook_download_zips(app, exception) -> None:
     examples_dir = Path(app.srcdir) / "examples"
     download_dir = Path(app.outdir) / "_static" / "notebooks"
     download_dir.mkdir(parents=True, exist_ok=True)
-    for notebook_path in sorted(examples_dir.glob("step_*.ipynb")):
+    notebook_paths = list(examples_dir.glob("step_*.ipynb"))
+    notebook_paths.extend((examples_dir / "large_run").glob("step_*.ipynb"))
+    for notebook_path in sorted(notebook_paths):
         zip_path = download_dir / f"{notebook_path.name}.zip"
         with ZipFile(zip_path, "w", compression=ZIP_DEFLATED) as archive:
             archive.write(notebook_path, arcname=notebook_path.name)

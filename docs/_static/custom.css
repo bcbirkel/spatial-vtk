@@ -1,21 +1,4 @@
-/* Improve spacing on nbsphinx tutorial pages. */
-
-.nbinput,
-.nboutput {
-  margin-bottom: 1.6rem;
-}
-
-.nbinput + .section,
-.nboutput + .section,
-.nbinput + section,
-.nboutput + section {
-  margin-top: 2.2rem;
-}
-
-.nbinput + p,
-.nboutput + p {
-  margin-top: 1rem;
-}
+/* Improve spacing in tutorial and API pages. */
 
 section h2,
 .section h2 {
