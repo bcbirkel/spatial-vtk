@@ -160,6 +160,10 @@ def test_categorical_metric_boxplot_and_heatmap(tmp_path: Path) -> None:
     _assert_png(heatmap_output)
     heatmap_fig = heatmap(metrics, dep=["PGV", "PGA"], indep="geomorphic region", value_col="observed", passband="all", showfig=False)
     assert "Model:" not in heatmap_fig.axes[0].get_title()
+    all_band_boxplot = boxplot(metrics, tmp_path / "all_band_boxplot.png", dep="PGA", indep="geomorphic region", value_col="log2_residual", model="cvmsi")
+    _assert_png(all_band_boxplot)
+    all_band_heatmap = heatmap(metrics, tmp_path / "all_band_heatmap.png", dep=["PGV", "PGA"], indep="geomorphic region", value_col="observed", passband=None)
+    _assert_png(all_band_heatmap)
 
 
 def test_spatial_subset_controls_across_generic_plots(tmp_path: Path) -> None:

@@ -211,7 +211,7 @@ def boxplot(
     dep: str | Sequence[str],
     indep: str,
     value_col: str,
-    passband: str | Sequence[str],
+    passband: str | Sequence[str] | None = None,
     model: str | Sequence[str] | None = None,
     component: str | Sequence[str] | None = None,
     station: str | Sequence[str] | None = None,
@@ -256,10 +256,13 @@ def boxplot(
         wide tables can pass real numeric dependent-variable columns.
     output_path, outpath
         Optional destination for saving the figure.
-    dep, indep, value_col, passband
+    dep, indep, value_col
         Required plotting controls. ``dep`` is one or more metrics or columns,
-        ``indep`` is the categorical grouping column, ``value_col`` is the
-        plotted value, and ``passband`` filters the period band.
+        ``indep`` is the categorical grouping column, and ``value_col`` is the
+        plotted value.
+    passband
+        Optional period-band filter. Set to ``None`` or ``"all"`` to keep all
+        rows, which is useful for broadband PSA/FAS period-domain plots.
     model
         Required when the requested value column depends on synthetics,
         residuals, or scores and the table contains model information.
@@ -382,7 +385,7 @@ def heatmap(
     dep: str | Sequence[str],
     indep: str,
     value_col: str,
-    passband: str | Sequence[str],
+    passband: str | Sequence[str] | None = None,
     model: str | Sequence[str] | None = None,
     column: str | None = None,
     component: str | Sequence[str] | None = None,
@@ -1055,7 +1058,7 @@ def _categorical_metric_plot_data(
     dep: str | Sequence[str],
     indep: str,
     value_col: str,
-    passband: str | Sequence[str],
+    passband: str | Sequence[str] | None,
     model: str | Sequence[str] | None,
     component: str | Sequence[str] | None,
     station: str | Sequence[str] | None,
@@ -1088,8 +1091,6 @@ def _categorical_metric_plot_data(
 
     if value_col is None or str(value_col).strip() == "":
         raise ValueError("value_col is required.")
-    if passband is None:
-        raise ValueError("passband is required.")
     _validate_model_requirement(data, value_col=value_col, model=model)
     work = _filter_scatter_data(
         data,
