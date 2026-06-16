@@ -34,6 +34,10 @@ OutputGroupName = Literal[
     "large_run_core",
 ]
 
+DEFAULT_OUTPUT_SUFFIXES: dict[str, str] = {
+    "qc_inventory_overlap": ".parquet",
+}
+
 
 @dataclass(frozen=True)
 class OutputArtifact:
@@ -159,7 +163,8 @@ def default_output_paths(
             continue
         path = Path(name)
         attr = path.stem.replace("-", "_").replace(" ", "_")
-        filename = path.name if path.suffix else f"{path.name}{suffix}"
+        resolved_suffix = DEFAULT_OUTPUT_SUFFIXES.get(path.name, suffix)
+        filename = path.name if path.suffix else f"{path.name}{resolved_suffix}"
         paths[attr] = root / filename
     return SimpleNamespace(**paths)
 

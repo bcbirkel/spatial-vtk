@@ -649,6 +649,7 @@ waveforms:
 
 def test_empty_config_has_no_private_defaults(tmp_path, monkeypatch):
     monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(tmp_path / "missing-cli-config.json"))
     cwd = os.getcwd()
     os.chdir(tmp_path)
     try:

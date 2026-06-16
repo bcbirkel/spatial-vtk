@@ -342,7 +342,7 @@ def _validate_source_columns(
                 )
     for source, column in columns.items():
         has_path = records[column].map(_path_cell_text).ne("")
-        if has_path.all() or source not in configured_sources or allow_missing_paths:
+        if has_path.all() or not require_configured_sources or source not in configured_sources or allow_missing_paths:
             continue
         missing = records.loc[~has_path, event_id_col].dropna().astype(str)
         event_preview = missing.drop_duplicates().head(10).tolist()
