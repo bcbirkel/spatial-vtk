@@ -180,6 +180,22 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert psa_metadata["written_row_count"] == 2
     assert psa_metadata["sampled"] is False
 
+    generic_outputs = context.write_generic_metric_diagnostic_plots(
+        _dummy_png_plot,
+        _dummy_png_plot,
+        _dummy_png_plot,
+        _dummy_png_plot,
+        passband="1-2 sec",
+        components=["Z"],
+        model="m1",
+    )
+    stems = {path.stem for path in generic_outputs}
+    assert any(stem.startswith("scatterplot__pga") for stem in stems)
+    assert any(stem.startswith("boxplot__pga") for stem in stems)
+    assert any(stem.startswith("heatmap__pga") for stem in stems)
+    assert any(stem.startswith("scatterplot__psa") for stem in stems)
+    assert any(stem.startswith("boxplot__psa") for stem in stems)
+
 
 def test_metric_workflow_runs_tasks_and_applies_side_specific_spectral_qc(tmp_path) -> None:
     """The workflow should plan pair tasks, run rows, and preserve QC provenance."""

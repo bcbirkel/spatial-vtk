@@ -442,6 +442,126 @@ class MetricFigureContext:
         print(f"wrote {output}")
         return output
 
+    def write_generic_metric_diagnostic_plots(
+        self,
+        scatterplot_func: Callable[..., Any],
+        boxplot_func: Callable[..., Any],
+        heatmap_func: Callable[..., Any],
+        period_distribution_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        showfig: bool = False,
+    ) -> list[Path]:
+        """Write generic scatter, box, and heatmap diagnostics for target metrics.
+
+        PSA rows are handled by oscillator period: scatter plots are written as
+        period contact sheets, period distributions replace passband boxplots,
+        and passband heatmaps are skipped because PSA is no longer calculated
+        per band in the large-run workflow.
+        """
+
+        if not self.ready:
+            print("Skipping generic metric diagnostics: metric figure context is not ready.")
+            return []
+        resolved_value_col = self.value_col if value_col is None else value_col
+        outputs: list[Path] = []
+        for item in self.iter_metric_frames(
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            metric_name = self.first_value(item["df"], self.metric_col) or item.get("metric", item["label"])
+            if item["key"] == "psa":
+                output = self.write_psa_period_sheet(
+                    "scatterplot",
+                    item,
+                    scatterplot_func,
+                    required=[self.distance_col, resolved_value_col],
+                    indep=self.distance_col,
+                    dep=metric_name,
+                    value_col=resolved_value_col,
+                    forward_value_col=True,
+                    passband=None,
+                    model=model,
+                    colorby=self.component_col,
+                    fit="lowess",
+                    robust_axis_percentile=self.robust_axis_percentile,
+                    showfig=showfig,
+                )
+                if output is not None:
+                    outputs.append(output)
+                output = self.write_metric_plot(
+                    "boxplot",
+                    item,
+                    period_distribution_func,
+                    required=[self.period_col, resolved_value_col],
+                    period_col=self.period_col,
+                    score_col=resolved_value_col,
+                    color_col=self.component_col,
+                    robust_axis_percentile=self.robust_axis_percentile,
+                    showfig=showfig,
+                )
+                if output is not None:
+                    outputs.append(output)
+                print("skip heatmap for PSA: use the PSA period curve and period distribution figures instead of passband heatmaps")
+                continue
+            output = self.write_metric_plot(
+                "scatterplot",
+                item,
+                scatterplot_func,
+                required=[self.distance_col, resolved_value_col],
+                indep=self.distance_col,
+                dep=metric_name,
+                value_col=resolved_value_col,
+                forward_value_col=True,
+                passband=passband,
+                model=model,
+                colorby=self.component_col,
+                fit="lowess",
+                robust_axis_percentile=self.robust_axis_percentile,
+                showfig=showfig,
+            )
+            if output is not None:
+                outputs.append(output)
+            output = self.write_metric_plot(
+                "boxplot",
+                item,
+                boxplot_func,
+                required=[self.component_col, resolved_value_col] if self.component_col else [resolved_value_col],
+                dep=metric_name,
+                indep=self.component_col or self.model_col,
+                value_col=resolved_value_col,
+                forward_value_col=True,
+                passband=passband,
+                model=model,
+                colorby=self.model_col if self.model_col in item["df"].columns else None,
+                robust_axis_percentile=self.robust_axis_percentile,
+                showfig=showfig,
+            )
+            if output is not None:
+                outputs.append(output)
+            output = self.write_metric_plot(
+                "heatmap",
+                item,
+                heatmap_func,
+                required=[resolved_value_col],
+                dep=metric_name,
+                indep=self.component_col or self.model_col,
+                column=self.model_col if self.model_col in item["df"].columns else None,
+                value_col=resolved_value_col,
+                forward_value_col=True,
+                passband=passband,
+                model=model,
+                showfig=showfig,
+            )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
     def psa_period_items(self, item: dict[str, Any]) -> list[dict[str, Any]]:
         """Return PSA item variants, one per oscillator period."""
 
