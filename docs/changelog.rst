@@ -106,6 +106,10 @@ Changelog
    GitHub CI and docs workflows now install the ``notebooks`` extra wherever
    tutorial execution or notebook-backed docs checks are part of the public
    source-checkout validation path.
+   Registered ``svtk plot`` and ``svtk map`` commands now resolve plotting
+   functions through the stable public ``spatial_vtk.metrics.plot``,
+   ``spatial_vtk.spatial.plot``, and ``spatial_vtk.spatial.map`` import
+   surfaces instead of implementation submodules.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

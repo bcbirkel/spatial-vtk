@@ -231,6 +231,36 @@ outputs:
     assert captured.out.strip() == str(expected_output)
 
 
+def test_registered_plot_commands_use_public_import_surfaces():
+    """Registered figure commands should point users at stable public imports."""
+
+    from spatial_vtk.cli import METRICS_PLOT_COMMANDS, SPATIAL_MAP_COMMANDS, SPATIAL_PLOT_COMMANDS, _resolve_function
+
+    for spec in METRICS_PLOT_COMMANDS.values():
+        assert spec.function.startswith(("spatial_vtk.metrics.plot.", "spatial_vtk.spatial.plot."))
+        assert ".model_comparison." not in spec.function
+        assert ".periods." not in spec.function
+        assert ".site_terms." not in spec.function
+        assert ".trends." not in spec.function
+        assert ".plot.metrics." not in spec.function
+        assert callable(_resolve_function(spec.function))
+
+    for spec in SPATIAL_PLOT_COMMANDS.values():
+        assert spec.function.startswith("spatial_vtk.spatial.plot.")
+        assert ".correlation." not in spec.function
+        assert ".metrics." not in spec.function
+        assert ".pca." not in spec.function
+        assert callable(_resolve_function(spec.function))
+
+    for spec in SPATIAL_MAP_COMMANDS.values():
+        assert spec.function.startswith("spatial_vtk.spatial.map.")
+        assert ".correlation." not in spec.function
+        assert ".metrics." not in spec.function
+        assert ".path." not in spec.function
+        assert ".pca." not in spec.function
+        assert callable(_resolve_function(spec.function))
+
+
 def test_cli_spatial_plot_uses_configured_standard_table_default(tmp_path, monkeypatch, capsys):
     config = tmp_path / "spatial-vtk.yaml"
     table_dir = tmp_path / "outputs" / "tables"
@@ -249,6 +279,7 @@ outputs:
     )
     seen = {}
 
+    import spatial_vtk.spatial.plot as spatial_plot
     from spatial_vtk.spatial.plot import correlation
 
     def fake_plot_correlogram(distance_df, output_path=None, **kwargs):
@@ -260,6 +291,7 @@ outputs:
         return seen["output_path"]
 
     monkeypatch.setattr(correlation, "plot_correlogram", fake_plot_correlogram)
+    monkeypatch.setattr(spatial_plot, "plot_correlogram", fake_plot_correlogram)
 
     assert main(["plot", "spatial", "correlogram", "--config", str(config)]) == 0
     captured = capsys.readouterr()
@@ -290,6 +322,7 @@ outputs:
     )
     seen = {}
 
+    import spatial_vtk.spatial.map as spatial_map
     from spatial_vtk.spatial.map import correlation
 
     def fake_plot_station_bias_map(station_df, output_path=None, **kwargs):
@@ -301,6 +334,7 @@ outputs:
         return seen["output_path"]
 
     monkeypatch.setattr(correlation, "plot_station_bias_map", fake_plot_station_bias_map)
+    monkeypatch.setattr(spatial_map, "plot_station_bias_map", fake_plot_station_bias_map)
 
     assert main(["map", "spatial", "station-bias", "--config", str(config), "--no-basemap"]) == 0
     captured = capsys.readouterr()
