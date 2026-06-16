@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import matplotlib
@@ -358,6 +359,96 @@ def test_qc_context_and_waveform_figures(tmp_path: Path) -> None:
     assert len(beachball_fig.axes) >= 2
     assert beachball_fig.axes[-1].get_ylabel() == "Magnitude"
     plt.close(beachball_fig)
+
+
+def test_qc_figures_write_optional_row_sidecars(tmp_path: Path) -> None:
+    """Direct QC plotting entry points should expose plotted-row sidecars."""
+
+    qc = pd.DataFrame(
+        {
+            "stage": ["window", "window", "snr"],
+            "qc_status": ["pass", "fail", "fail"],
+            "qc_reason": ["", "low_snr", "missing_trace"],
+        }
+    )
+    pair_retention = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGV"],
+            "passband": ["1-2 sec", "1-2 sec"],
+            "total_pairs": [10, 10],
+            "retained_pairs": [8, 7],
+            "retention_percent": [80.0, 70.0],
+        }
+    )
+    event_station_retention = pd.DataFrame(
+        {
+            "event_id": ["E1", "E1", "E2"],
+            "station": ["S1", "S2", "S1"],
+            "total_pairs": [12, 12, 12],
+            "retained_pairs": [12, 6, 9],
+            "retention_percent": [100.0, 50.0, 75.0],
+        }
+    )
+    qc_map = pd.DataFrame(
+        {
+            "event_id": ["E1", "E1", "E2"],
+            "station": ["S1", "S2", "S1"],
+            "sta_lon": [-118.2, -118.1, -118.3],
+            "sta_lat": [34.1, 34.2, 34.15],
+            "event_lon": [-118.0, -118.0, -118.4],
+            "event_lat": [34.0, 34.0, 34.3],
+            "qc_status": ["pass", "fail", "pass"],
+        }
+    )
+
+    sidecar_dir = tmp_path / "sidecars"
+    figures = [
+        plot_retention_summary(
+            pair_retention,
+            tmp_path / "pair_retention.png",
+            write_sidecar=True,
+            sidecar_rows=1,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_event_station_retention_heatmap(
+            event_station_retention,
+            tmp_path / "event_station.png",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_post_qc_station_event_map(
+            qc_map,
+            tmp_path / "post_qc.png",
+            add_basemap=False,
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_qc_drop_cause_diagnostics(
+            qc,
+            tmp_path / "drop_causes.png",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+    ]
+    for figure in figures:
+        _assert_png(figure.spatial_vtk_saved_path)
+        sidecar = sidecar_dir / f"{figure.spatial_vtk_saved_path.stem}.csv"
+        metadata_path = sidecar.with_suffix(".json")
+        assert sidecar.exists()
+        assert metadata_path.exists()
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        assert metadata["plot_row_count"] >= metadata["written_row_count"] >= 1
+        assert metadata["sidecar"] == str(sidecar)
+
+    pair_sidecar = pd.read_csv(sidecar_dir / "pair_retention.csv")
+    pair_metadata = json.loads((sidecar_dir / "pair_retention.json").read_text(encoding="utf-8"))
+    assert len(pair_sidecar) == 1
+    assert pair_metadata["plot"] == "pair_retention_summary"
+    post_qc_sidecar = pd.read_csv(sidecar_dir / "post_qc.csv")
+    assert "_retained" in post_qc_sidecar.columns
 
 
 def test_metric_and_spatial_figure_families(tmp_path: Path) -> None:

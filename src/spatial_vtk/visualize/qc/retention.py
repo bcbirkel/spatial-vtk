@@ -25,6 +25,7 @@ import pandas as pd
 from spatial_vtk.config.labels import display_label
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import write_figure_row_sidecar
 
 
 def plot_retention_summary(
@@ -38,6 +39,9 @@ def plot_retention_summary(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot pass/fail retention counts by workflow stage.
 
@@ -70,6 +74,9 @@ def plot_retention_summary(
             showfig=showfig,
             savefig=savefig,
             outpath=outpath,
+            write_sidecar=write_sidecar,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
         )
     _require_columns(qc_df, [group_col, status_col])
     if count_col and count_col in qc_df.columns:
@@ -85,7 +92,24 @@ def plot_retention_summary(
     ax.tick_params(axis="x", rotation=35)
     ax.grid(True, axis="y", alpha=0.25)
     ax.legend(title="Status", frameon=True)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return _finish_qc_figure(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=counts,
+        source_df=qc_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={
+            "plot": "retention_summary",
+            "group_col": group_col,
+            "status_col": status_col,
+            "count_col": count_col,
+        },
+    )
 
 
 def _plot_pair_retention_summary(
@@ -96,6 +120,9 @@ def _plot_pair_retention_summary(
     showfig: bool | None,
     savefig: bool | None,
     outpath: str | Path | None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot retained observed/synthetic pairs as percentages by metric.
 
@@ -167,7 +194,19 @@ def _plot_pair_retention_summary(
     ax.set_title(title)
     ax.grid(True, axis="y", alpha=0.25)
     ax.legend(title="Period band", frameon=True, loc="upper left", bbox_to_anchor=(1.01, 1.0))
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return _finish_qc_figure(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=df,
+        source_df=retention_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"plot": "pair_retention_summary"},
+    )
 
 
 def plot_data_synthetic_availability(
@@ -182,6 +221,9 @@ def plot_data_synthetic_availability(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot observed/synthetic availability as an event-station matrix.
 
@@ -219,7 +261,25 @@ def plot_data_synthetic_availability(
     ax.set_title(title)
     cbar = fig.colorbar(image, ax=ax, ticks=[0, 1, 2, 3])
     cbar.ax.set_yticklabels(["None", "Observed", "Synthetic", "Both"])
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return _finish_qc_figure(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=df,
+        source_df=availability_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={
+            "plot": "data_synthetic_availability",
+            "event_col": event_col,
+            "station_col": station_col,
+            "observed_col": observed_col,
+            "synthetic_col": synthetic_col,
+        },
+    )
 
 
 def plot_event_station_retention_heatmap(
@@ -239,6 +299,9 @@ def plot_event_station_retention_heatmap(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot retained comparison percentage for each event-station pair.
 
@@ -322,13 +385,26 @@ def plot_event_station_retention_heatmap(
                 ax.text(col_index, row_index, f"{retained}/{total}", ha="center", va="center", fontsize=5.5, color=text_color)
     cbar = fig.colorbar(image, ax=ax, pad=0.025)
     cbar.set_label("Retained observed/synthetic pairs (%)")
-    return finish_figure(
+    return _finish_qc_figure(
         fig,
         output_path,
         outpath=outpath,
         output_key="data_synthetic_availability",
         showfig=showfig,
         savefig=savefig,
+        sidecar_df=df,
+        source_df=retention_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={
+            "plot": "event_station_retention_heatmap",
+            "event_col": event_col,
+            "station_col": station_col,
+            "value_col": value_col,
+            "retained_col": retained_col,
+            "total_col": total_col,
+        },
     )
 
 
@@ -377,6 +453,9 @@ def plot_post_qc_station_event_map(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot retained and rejected station-event coverage after QC.
 
@@ -427,7 +506,26 @@ def plot_post_qc_station_event_map(
     ax.set_title(title)
     ax.grid(True, alpha=0.18)
     ax.legend(frameon=True, fontsize=8)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return _finish_qc_figure(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=df.assign(_retained=retained.to_numpy(dtype=bool)),
+        source_df=records_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={
+            "plot": "post_qc_station_event_map",
+            "station_lon_col": station_lon_col,
+            "station_lat_col": station_lat_col,
+            "event_lon_col": event_lon_col,
+            "event_lat_col": event_lat_col,
+            "status_col": status_col,
+        },
+    )
 
 
 def plot_qc_drop_cause_diagnostics(
@@ -444,6 +542,9 @@ def plot_qc_drop_cause_diagnostics(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot the most common QC rejection reasons.
 
@@ -489,7 +590,19 @@ def plot_qc_drop_cause_diagnostics(
         ax.text(0.5, 0.5, "No rejected records in QC table", ha="center", va="center", transform=ax.transAxes)
         ax.set_axis_off()
         ax.set_title(title)
-        return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+        return _finish_qc_figure(
+            fig,
+            output_path,
+            outpath=outpath,
+            showfig=showfig,
+            savefig=savefig,
+            sidecar_df=df,
+            source_df=qc_df,
+            write_sidecar=write_sidecar,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
+            metadata={"plot": "qc_drop_cause_diagnostics", "empty": True},
+        )
     if count_col and count_col in df.columns:
         df[reason_col] = df[reason_col].astype(str).replace("", "Unspecified")
         top = df.groupby(reason_col, dropna=False)[count_col].sum().sort_values(ascending=False).head(int(max_reasons)).index
@@ -508,7 +621,26 @@ def plot_qc_drop_cause_diagnostics(
         ax.set_ylabel("QC reason")
         ax.set_title(title)
         ax.grid(True, axis="x", alpha=0.25)
-        return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+        sidecar_df = _counts_to_sidecar_frame(counts)
+        return _finish_qc_figure(
+            fig,
+            output_path,
+            outpath=outpath,
+            showfig=showfig,
+            savefig=savefig,
+            sidecar_df=sidecar_df,
+            source_df=df,
+            write_sidecar=write_sidecar,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
+            metadata={
+                "plot": "qc_drop_cause_diagnostics",
+                "reason_col": reason_col,
+                "status_col": status_col,
+                "count_col": count_col,
+                "group_col": group_col,
+            },
+        )
     reason_rows: list[dict[str, object]] = []
     for _, row in df.iterrows():
         raw_reasons = [part.strip() for part in str(row.get(reason_col, "") or "").split(";") if part.strip()]
@@ -533,7 +665,73 @@ def plot_qc_drop_cause_diagnostics(
     ax.set_ylabel("QC reason")
     ax.set_title(title)
     ax.grid(True, axis="x", alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = _counts_to_sidecar_frame(counts)
+    return _finish_qc_figure(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_df=df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={
+            "plot": "qc_drop_cause_diagnostics",
+            "reason_col": reason_col,
+            "status_col": status_col,
+            "count_col": count_col,
+            "group_col": group_col,
+        },
+    )
+
+
+def _finish_qc_figure(
+    fig: plt.Figure,
+    output_path: str | Path | None = None,
+    *,
+    outpath: str | Path | None = None,
+    output_key: str | None = None,
+    showfig: bool | None = None,
+    savefig: bool | None = None,
+    sidecar_df: pd.DataFrame | None = None,
+    source_df: pd.DataFrame | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> plt.Figure:
+    """Finish a QC figure and optionally write plotted-row sidecars."""
+
+    finished = finish_figure(
+        fig,
+        output_path,
+        outpath=outpath,
+        output_key=output_key,
+        showfig=showfig,
+        savefig=savefig,
+    )
+    figure_path = getattr(finished, "spatial_vtk_saved_path", None)
+    if write_sidecar and figure_path is not None and sidecar_df is not None:
+        write_figure_row_sidecar(
+            figure_path,
+            sidecar_df,
+            enabled=True,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
+            source_rows=source_df,
+            metadata=metadata,
+        )
+    return finished
+
+
+def _counts_to_sidecar_frame(counts: pd.Series | pd.DataFrame) -> pd.DataFrame:
+    """Return count rows in a dataframe shape suitable for sidecars."""
+
+    if isinstance(counts, pd.Series):
+        return counts.reset_index(name="count")
+    return counts.copy()
 
 
 def _require_columns(df: pd.DataFrame, columns: list[str]) -> None:
