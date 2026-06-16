@@ -201,7 +201,7 @@ def test_notebook_run_context_resolves_config_dirs_and_flags(tmp_path, monkeypat
     config_path.write_text(
         """
 project:
-  root_dir: .
+  root_dir: ..
 outputs:
   root: run_outputs
   tables: run_outputs/tables
