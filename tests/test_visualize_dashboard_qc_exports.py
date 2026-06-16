@@ -4,6 +4,8 @@ import pandas as pd
 
 from spatial_vtk.visualize.dashboard import (
     load_dashboard_metric_dataset,
+    load_dashboard_summary_tables,
+    validate_dashboard_tables,
     write_dashboard_metric_dataset,
     write_dashboard_summary_dataset,
 )
@@ -46,6 +48,37 @@ def test_dashboard_metric_dataset_export_and_summary_tables(tmp_path) -> None:
     written = write_dashboard_summary_dataset(root, tmp_path / "dashboard_summaries", format="csv")
     assert {"model_metric_band", "station_rollup", "event_rollup", "path_hex"} <= set(written)
     assert written["model_metric_band"].exists()
+
+
+def test_dashboard_summary_loader_tolerates_missing_optional_tables(tmp_path) -> None:
+    """Metrics dashboard should open when optional summary tabs are missing."""
+
+    summary_root = tmp_path / "summaries"
+    summary_root.mkdir()
+    pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "n": [1]}).to_csv(
+        summary_root / "model_metric_band.csv",
+        index=False,
+    )
+    pd.DataFrame({"station": ["STA"], "model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "n": [1]}).to_csv(
+        summary_root / "station_rollup.csv",
+        index=False,
+    )
+    pd.DataFrame({"event_id": ["E1"], "model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "n": [1]}).to_csv(
+        summary_root / "event_rollup.csv",
+        index=False,
+    )
+
+    tables = validate_dashboard_tables(load_dashboard_summary_tables(summary_root))
+
+    assert set(tables) == {"model_metric_band", "station_rollup", "event_rollup", "path_hex"}
+    assert tables["path_hex"].empty
+    assert {"model", "metric", "band", "dist_bin_km", "az_bin_deg", "n"} <= set(tables["path_hex"].columns)
+    try:
+        load_dashboard_summary_tables(summary_root, allow_missing_optional=False)
+    except FileNotFoundError as exc:
+        assert "path_hex" in str(exc)
+    else:
+        raise AssertionError("strict dashboard summary loading should require missing path_hex")
 
 
 def test_qc_overview_filter_queue_and_html_helpers(tmp_path) -> None:

@@ -16,6 +16,18 @@ import pandas as pd
 
 
 METRICS_TABLES: tuple[str, ...] = ("model_metric_band", "station_rollup", "event_rollup", "path_hex")
+REQUIRED_METRICS_TABLE_COLUMNS: dict[str, tuple[str, ...]] = {
+    "model_metric_band": ("model", "metric", "band", "n"),
+    "station_rollup": ("station", "model", "metric", "band", "n"),
+    "event_rollup": ("event_id", "model", "metric", "band", "n"),
+    "path_hex": ("model", "metric", "band", "dist_bin_km", "az_bin_deg", "n"),
+}
+OPTIONAL_METRICS_TABLE_COLUMNS: dict[str, tuple[str, ...]] = {
+    "model_metric_band": ("component",),
+    "station_rollup": ("component", "sta_lat", "sta_lon", "med_dist_km", "Vs30", "vs30"),
+    "event_rollup": ("component", "event_lat", "event_lon", "med_dist_km", "magnitude", "event_magnitude"),
+    "path_hex": ("component",),
+}
 
 
 @dataclass(frozen=True)
@@ -48,30 +60,33 @@ def read_dashboard_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
     raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
 
 
-def load_dashboard_summary_tables(summary_root: str | Path) -> dict[str, pd.DataFrame]:
-    """Load standard metrics dashboard summary tables from one directory."""
+def load_dashboard_summary_tables(
+    summary_root: str | Path,
+    *,
+    allow_missing_optional: bool = True,
+) -> dict[str, pd.DataFrame]:
+    """Load standard metrics dashboard summary tables from one directory.
+
+    Missing optional tab tables are returned as empty schema-correct tables by
+    default. This lets the Streamlit dashboard open and show an empty-state tab
+    when, for example, a large run has not written path summaries yet.
+    """
 
     root = Path(summary_root).expanduser()
     tables: dict[str, pd.DataFrame] = {}
     for name in METRICS_TABLES:
-        path = _find_table(root, name)
-        tables[name] = read_dashboard_table(path)
+        path = _find_table(root, name, required=not allow_missing_optional)
+        tables[name] = _empty_dashboard_table(name) if path is None else read_dashboard_table(path)
     return tables
 
 
 def validate_dashboard_tables(tables: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
     """Validate standard metrics dashboard tables."""
 
-    required = {
-        "model_metric_band": {"model", "metric", "band", "n"},
-        "station_rollup": {"station", "model", "metric", "band", "n"},
-        "event_rollup": {"event_id", "model", "metric", "band", "n"},
-        "path_hex": {"model", "metric", "band", "dist_bin_km", "az_bin_deg", "n"},
-    }
-    for name, columns in required.items():
+    for name, columns in REQUIRED_METRICS_TABLE_COLUMNS.items():
         if name not in tables:
             raise ValueError(f"Missing dashboard summary table: {name}")
-        _require_columns(tables[name], columns, table_name=name)
+        _require_columns(tables[name], set(columns), table_name=name)
     return tables
 
 
@@ -100,14 +115,28 @@ def load_metric_long_table(metrics_root: str | Path) -> pd.DataFrame:
     return load_dashboard_metric_dataset(metrics_root)
 
 
-def _find_table(root: Path, name: str) -> Path:
+def _find_table(root: Path, name: str, *, required: bool = True) -> Path | None:
     """Find one named CSV or Parquet table."""
 
     for suffix in (".parquet", ".csv"):
         candidate = root / f"{name}{suffix}"
         if candidate.exists():
             return candidate
+    if not required:
+        return None
     raise FileNotFoundError(f"Could not find {name}.parquet or {name}.csv under {root}.")
+
+
+def _empty_dashboard_table(name: str) -> pd.DataFrame:
+    """Return an empty table with the schema needed by one dashboard tab."""
+
+    if name not in REQUIRED_METRICS_TABLE_COLUMNS:
+        raise KeyError(f"Unknown dashboard summary table: {name}")
+    columns = [
+        *REQUIRED_METRICS_TABLE_COLUMNS[name],
+        *OPTIONAL_METRICS_TABLE_COLUMNS.get(name, ()),
+    ]
+    return pd.DataFrame(columns=list(dict.fromkeys(columns)))
 
 
 def _require_columns(df: pd.DataFrame, columns: set[str], *, table_name: str) -> None:
@@ -121,7 +150,9 @@ def _require_columns(df: pd.DataFrame, columns: set[str], *, table_name: str) ->
 __all__ = [
     "METRICS_TABLES",
     "MetricsDashboardPaths",
+    "OPTIONAL_METRICS_TABLE_COLUMNS",
     "QCDashboardPaths",
+    "REQUIRED_METRICS_TABLE_COLUMNS",
     "load_dashboard_summary_tables",
     "load_metric_long_table",
     "read_dashboard_table",
