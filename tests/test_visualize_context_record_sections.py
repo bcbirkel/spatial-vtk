@@ -410,3 +410,25 @@ def test_observed_synthetic_record_section_uses_event_origin_offsets() -> None:
     assert float(synthetic_x[0]) == 0.0
     assert float(synthetic_x[-1]) == 8.0
     plt.close(fig)
+
+
+def test_observed_synthetic_record_section_accepts_numpy_trace_dictionaries() -> None:
+    """Record-section overlays should render lightweight NumPy trace fixtures."""
+
+    records = pd.DataFrame(
+        {
+            "event_id": ["E1"],
+            "station": ["S1"],
+            "component": ["R"],
+            "distance_km": [20.0],
+            "observed": [{"data": np.arange(20, dtype=float), "stats": {"sampling_rate": 2.0}}],
+            "synthetic": [{"data": np.arange(20, dtype=float) * 0.5, "stats": {"delta": 0.5}}],
+        }
+    )
+
+    fig = plot_observed_synthetic_record_section(records, components=["R"], max_records=1, showfig=False)
+    ax = fig.axes[0]
+    assert len(ax.lines) >= 2
+    assert float(ax.lines[0].get_xdata()[1]) == pytest.approx(0.5)
+    assert float(ax.lines[1].get_xdata()[1]) == pytest.approx(0.5)
+    plt.close(fig)
