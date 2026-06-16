@@ -10,7 +10,7 @@ import pandas as pd
 
 from spatial_vtk.config.labels import metric_display_name, value_column_display_name
 from spatial_vtk.visualize.figure_context import apply_figure_context, apply_robust_axis_limits, value_color_settings
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure_spatial_selection
 
 
@@ -29,6 +29,9 @@ def plot_psa_period_curve(
     savefig: bool | None = None,
     outpath: str | Path | None = None,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot PSA residuals or scores against oscillator period.
@@ -62,9 +65,12 @@ def plot_psa_period_curve(
         raise KeyError(f"Dataframe must include {period_col!r} and {value_col!r}.")
     fig, ax = plt.subplots(figsize=(7.4, 5.0), dpi=180)
     groups = [(None, plot_df)] if group_col is None or group_col not in plot_df.columns else list(plot_df.groupby(group_col, dropna=False))
+    sidecar_frames: list[pd.DataFrame] = []
     for label, subset in groups:
         summary = subset.groupby(period_col, dropna=False)[value_col].median().reset_index()
+        summary["_plot_group"] = str(label) if label is not None else "all"
         ax.plot(pd.to_numeric(summary[period_col], errors="coerce"), pd.to_numeric(summary[value_col], errors="coerce"), marker="o", linewidth=1.2, label=str(label) if label is not None else None)
+        sidecar_frames.append(summary)
     ax.set_xscale("log")
     ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
     apply_robust_axis_limits(ax, pd.to_numeric(plot_df[value_col], errors="coerce"), value_col=value_col, df=plot_df, robust_percentile=robust_axis_percentile)
@@ -74,7 +80,20 @@ def plot_psa_period_curve(
     ax.grid(True, which="both", alpha=0.25)
     if group_col and group_col in plot_df.columns:
         ax.legend(frameon=True, fontsize=8)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = pd.concat(sidecar_frames, ignore_index=True, sort=False) if sidecar_frames else plot_df.iloc[0:0].copy()
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "psa_period_curve", "period_col": period_col, "value_col": value_col, "group_col": group_col},
+    )
 
 
 def plot_period_score_distribution(
@@ -91,6 +110,9 @@ def plot_period_score_distribution(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot spectral metric distributions grouped by oscillator period.
 
@@ -155,7 +177,19 @@ def plot_period_score_distribution(
     apply_robust_axis_limits(ax, pd.to_numeric(work[score_col], errors="coerce"), value_col=score_col, df=work, robust_percentile=robust_axis_percentile)
     apply_figure_context(ax, plot_df, value_col=score_col, title=title, max_values=3, include_period=False, include_metric=False, include_value=False)
     ax.grid(True, axis="y", alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=work,
+        source_rows=df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "period_score_distribution", "period_col": period_col, "score_col": score_col, "color_col": selected_color_col},
+    )
 
 
 def _select_metric_rows(df: pd.DataFrame, *, metric: str | None, metric_col: str) -> pd.DataFrame:
@@ -212,6 +246,9 @@ def plot_period_spectra(
     savefig: bool | None = None,
     outpath: str | Path | None = None,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot period spectra from a long spectra table."""
@@ -227,6 +264,9 @@ def plot_period_spectra(
         savefig=savefig,
         outpath=outpath,
         spatial_selection=spatial_selection,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
         **spatial_kwargs,
     )
 
@@ -243,6 +283,9 @@ def plot_period_spectrogram(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot a time-period spectrogram from a long table."""
 
@@ -260,7 +303,19 @@ def plot_period_spectrogram(
     ax.set_ylabel("Period (s)")
     apply_figure_context(ax, spectrogram_df, value_col=value_col, title=title, max_values=3, include_value=False)
     fig.colorbar(image, ax=ax, label=value_column_display_name(value_col))
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=spectrogram_df,
+        source_rows=spectrogram_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "period_spectrogram", "time_col": time_col, "period_col": period_col, "value_col": value_col},
+    )
 
 
 __all__ = ["plot_period_score_distribution", "plot_period_spectra", "plot_period_spectrogram", "plot_psa_period_curve"]

@@ -10,7 +10,7 @@ import pandas as pd
 from spatial_vtk.config.labels import display_label, value_column_display_name
 from spatial_vtk.metrics.plot.trends import plot_metric_trend
 from spatial_vtk.visualize.figure_context import apply_figure_context
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure_spatial_selection
 
 
@@ -32,6 +32,9 @@ def plot_geology_boxplot(
     savefig: bool | None = None,
     outpath: str | Path | None = None,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot metric residuals or scores by geology class."""
@@ -51,7 +54,19 @@ def plot_geology_boxplot(
     apply_figure_context(ax, plot_df, value_col=value_col, title=title, max_values=3, include_value=False, extra=[subset_label] if subset_label else None)
     ax.tick_params(axis="x", rotation=35)
     ax.grid(True, axis="y", alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=work,
+        source_rows=df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "geology_boxplot", "geology_col": geology_col, "value_col": value_col},
+    )
 
 
 __all__ = ["plot_geology_boxplot", "plot_vs30_scatter"]

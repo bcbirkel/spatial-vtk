@@ -12,7 +12,7 @@ from matplotlib.colors import BoundaryNorm, ListedColormap
 
 from spatial_vtk.config.labels import band_display_label, metric_display_name, model_display_name, value_column_display_name
 from spatial_vtk.visualize.figure_context import apply_figure_context, apply_robust_axis_limits, value_color_settings
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 
 
 def plot_model_metric_heatmap(
@@ -26,6 +26,9 @@ def plot_model_metric_heatmap(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot model-by-metric summary values as a heatmap."""
 
@@ -34,7 +37,23 @@ def plot_model_metric_heatmap(
     work["_metric_label"] = work[metric_col].map(metric_display_name)
     work["_model_label"] = work[model_col].map(model_display_name)
     pivot = work.pivot_table(index="_metric_label", columns="_model_label", values=value_col, aggfunc="median")
-    return _heatmap(pivot, output_path, title=title, cbar_label=value_column_display_name(value_col), context_df=summary_df, value_col=value_col, showfig=showfig, savefig=savefig, outpath=outpath)
+    return _heatmap(
+        pivot,
+        output_path,
+        title=title,
+        cbar_label=value_column_display_name(value_col),
+        context_df=summary_df,
+        value_col=value_col,
+        showfig=showfig,
+        savefig=savefig,
+        outpath=outpath,
+        sidecar_df=work,
+        source_rows=summary_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "model_metric_heatmap", "model_col": model_col, "metric_col": metric_col, "value_col": value_col},
+    )
 
 
 def plot_winner_heatmap(
@@ -48,6 +67,9 @@ def plot_winner_heatmap(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot categorical winner labels by metric and band."""
 
@@ -75,7 +97,19 @@ def plot_winner_heatmap(
     cbar = fig.colorbar(image, ax=ax, pad=0.04, ticks=np.arange(len(labels)))
     cbar.ax.set_yticklabels([model_display_name(label) for label in labels])
     apply_figure_context(ax, None, title=title)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=work,
+        source_rows=summary_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "winner_heatmap", "row_col": row_col, "col_col": col_col, "winner_col": winner_col},
+    )
 
 
 def plot_band_score_distribution(
@@ -92,6 +126,9 @@ def plot_band_score_distribution(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot score distributions grouped by period band.
 
@@ -155,7 +192,19 @@ def plot_band_score_distribution(
         ax.legend(title=_color_group_label(selected_color_col, None), frameon=True, fontsize=8, loc="upper left", bbox_to_anchor=(1.02, 1.0), borderaxespad=0.0)
         fig.subplots_adjust(right=0.76, bottom=0.18)
     ax.grid(True, axis="y", alpha=0.25)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=work,
+        source_rows=df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "band_score_distribution", "band_col": band_col, "score_col": score_col, "color_col": selected_color_col},
+    )
 
 
 def _heatmap(
@@ -169,6 +218,12 @@ def _heatmap(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    sidecar_df: pd.DataFrame | None = None,
+    source_rows: pd.DataFrame | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
+    metadata: dict[str, object] | None = None,
 ) -> plt.Figure:
     """Draw a numeric heatmap."""
 
@@ -182,7 +237,19 @@ def _heatmap(
     ax.set_yticklabels(pivot.index.astype(str))
     apply_figure_context(ax, context_df, value_col=value_col, title=title, max_values=3, include_counts=False, include_value=False, include_metric=False, include_model=False)
     fig.colorbar(image, ax=ax, pad=0.04, label=cbar_label)
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=source_rows,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata=metadata,
+    )
 
 
 def _require(df: pd.DataFrame, columns: list[str]) -> None:

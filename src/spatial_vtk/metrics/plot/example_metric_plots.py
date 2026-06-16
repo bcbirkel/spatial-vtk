@@ -7,10 +7,11 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 from spatial_vtk.config.labels import metric_display_name
 from spatial_vtk.metrics.calculate.gof import compute_metrics_pair
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 
 
 @dataclass(frozen=True)
@@ -54,6 +55,9 @@ def plot_example_metric_pairs(
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
     """Plot deterministic trace pairs and a small metric-score summary."""
 
@@ -66,9 +70,18 @@ def plot_example_metric_pairs(
 
     fig, axes = plt.subplots(len(pairs), 1, figsize=(8.0, 2.2 * len(pairs)), dpi=170, sharex=True)
     axes = np.atleast_1d(axes)
+    sidecar_rows_data: list[dict[str, object]] = []
     for ax, pair in zip(axes, pairs, strict=True):
         time = np.arange(pair.observed.size) * pair.dt
         metrics = compute_metrics_pair(pair.observed, pair.synthetic, pair.dt, which=["C5", "C10", "C12"])
+        sidecar_rows_data.append(
+            {
+                "scenario": pair.name,
+                "sample_count": int(pair.observed.size),
+                "sample_interval_s": float(pair.dt),
+                **metrics,
+            }
+        )
         ax.plot(time, pair.observed, color="#1f77b4", linewidth=1.1, label="Observed")
         ax.plot(time, pair.synthetic, color="#d62728", linewidth=1.0, alpha=0.85, label="Synthetic")
         title = (
@@ -82,7 +95,20 @@ def plot_example_metric_pairs(
         ax.grid(True, alpha=0.25)
     axes[-1].set_xlabel("Time (s)")
     axes[0].legend(frameon=True, loc="upper right")
-    return finish_figure(fig, output_path, outpath=outpath, showfig=showfig, savefig=savefig)
+    sidecar_df = pd.DataFrame(sidecar_rows_data)
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=sidecar_df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "example_metric_pairs"},
+    )
 
 
 def _base_trace(t: np.ndarray, *, p_time: float = 2.0, s_time: float = 5.0) -> np.ndarray:

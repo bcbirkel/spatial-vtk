@@ -11,7 +11,7 @@ import pandas as pd
 from spatial_vtk.config.labels import display_label, metric_display_name, model_display_name, value_column_display_name
 from spatial_vtk.visualize.figure_context import apply_figure_context, apply_robust_axis_limits, figure_context_text
 from spatial_vtk.visualize.fit import FitMethod, draw_scatter_fit
-from spatial_vtk.visualize.figure_io import finish_figure
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure_spatial_selection
 
 
@@ -34,6 +34,9 @@ def plot_metric_trend(
     lowess_frac: float = 0.65,
     robust_axis_percentile: float | None = 95.0,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot metric values or residuals against one numeric variable."""
@@ -45,6 +48,7 @@ def plot_metric_trend(
     selected_fit = fit_method if fit_method is not None else fit
     palette = plt.get_cmap("tab10")
     plotted_groups = 0
+    sidecar_frames: list[pd.DataFrame] = []
     for group_index, (label, subset) in enumerate(groups):
         x = pd.to_numeric(subset[x_col], errors="coerce")
         y = pd.to_numeric(subset[y_col], errors="coerce")
@@ -54,6 +58,11 @@ def plot_metric_trend(
             continue
         plotted_groups += 1
         legend_label = _group_label(label, group_col=group_col) if label is not None else None
+        plotted_rows = subset.loc[finite].copy()
+        plotted_rows["_plot_group"] = legend_label or "all"
+        plotted_rows["_plot_x"] = x[finite]
+        plotted_rows["_plot_y"] = y[finite]
+        sidecar_frames.append(plotted_rows)
         color = palette(group_index % 10)
         if connect_points and selected_fit is None and len(plot_subset) > 1:
             ax.plot(plot_subset["x"], plot_subset["y"], marker="o", markersize=3.2, linewidth=1.0, alpha=0.55, color=color, label=legend_label)
@@ -79,7 +88,20 @@ def plot_metric_trend(
             transform=ax.transAxes,
         )
         ax.set_axis_off()
-        return finish_figure(fig, output_path, outpath=outpath, output_key=output_key, showfig=showfig, savefig=savefig)
+        return finish_figure_with_sidecar(
+            fig,
+            output_path,
+            outpath=outpath,
+            output_key=output_key,
+            showfig=showfig,
+            savefig=savefig,
+            sidecar_df=pd.DataFrame(),
+            source_rows=df,
+            write_sidecar=write_sidecar,
+            sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_dir,
+            metadata={"figure_type": "metric_trend", "x_col": x_col, "y_col": y_col, "group_col": group_col},
+        )
     if _uses_zero_reference(y_col):
         ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
     apply_robust_axis_limits(ax, pd.to_numeric(plot_df[y_col], errors="coerce"), value_col=y_col, df=plot_df, robust_percentile=robust_axis_percentile)
@@ -102,7 +124,21 @@ def plot_metric_trend(
     ax.grid(True, alpha=0.25)
     if group_col and group_col in df.columns:
         _add_outside_legend(fig, ax)
-    return finish_figure(fig, output_path, outpath=outpath, output_key=output_key, showfig=showfig, savefig=savefig)
+    sidecar_df = pd.concat(sidecar_frames, ignore_index=True, sort=False) if sidecar_frames else plot_df.iloc[0:0].copy()
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        output_key=output_key,
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "metric_trend", "x_col": x_col, "y_col": y_col, "group_col": group_col},
+    )
 
 
 def plot_residuals_vs_distance(df: pd.DataFrame, output_path: str | Path | None = None, **kwargs) -> plt.Figure:
@@ -181,6 +217,9 @@ def plot_residuals_vs_distance_and_depth(
     lowess_frac: float = 0.65,
     robust_axis_percentile: float | None = 95.0,
     spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **spatial_kwargs: object,
 ) -> plt.Figure:
     """Plot residual trends against distance and depth in one figure."""
@@ -217,7 +256,31 @@ def plot_residuals_vs_distance_and_depth(
     fig.suptitle(f"{title}\n{context}" if context else title)
     if group_col and group_col in df.columns:
         _add_figure_legend(fig, axes[0])
-    return finish_figure(fig, output_path, outpath=outpath, output_key="residuals_vs_distance_and_depth", showfig=showfig, savefig=savefig)
+    finite = (
+        pd.to_numeric(plot_df[distance_col], errors="coerce").notna()
+        | pd.to_numeric(plot_df[depth_col], errors="coerce").notna()
+    ) & pd.to_numeric(plot_df[residual_col], errors="coerce").notna()
+    sidecar_df = plot_df.loc[finite].copy()
+    return finish_figure_with_sidecar(
+        fig,
+        output_path,
+        outpath=outpath,
+        output_key="residuals_vs_distance_and_depth",
+        showfig=showfig,
+        savefig=savefig,
+        sidecar_df=sidecar_df,
+        source_rows=df,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={
+            "figure_type": "residuals_vs_distance_and_depth",
+            "distance_col": distance_col,
+            "depth_col": depth_col,
+            "residual_col": residual_col,
+            "group_col": group_col,
+        },
+    )
 
 
 def _draw_trend_axis(ax: plt.Axes, df: pd.DataFrame, *, x_col: str, y_col: str, group_col: str | None, fit_method: FitMethod = None, lowess_frac: float = 0.65) -> None:

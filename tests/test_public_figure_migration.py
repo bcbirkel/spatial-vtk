@@ -23,6 +23,7 @@ from spatial_vtk.metrics.plot import (
     plot_period_spectrogram,
     plot_psa_period_curve,
     plot_residuals_vs_distance,
+    plot_score_trends,
     plot_vs30_scatter,
     plot_winner_heatmap,
 )
@@ -578,3 +579,122 @@ def test_spatial_metric_maps_write_optional_row_sidecars(tmp_path: Path) -> None
     assert residual_metadata["figure_type"] == "residual_grid"
     assert residual_metadata["source_row_count"] == len(grid)
     assert residual_metadata["written_row_count"] <= 3
+
+
+def test_metric_plot_functions_write_optional_row_sidecars(tmp_path: Path) -> None:
+    """Direct metric plotting functions should write plotted/source row sidecars."""
+
+    metrics = _metric_rows()
+    summary = metrics.groupby(["model", "metric", "band"], as_index=False).agg(med_log2_residual=("log2_residual", "median"), score=("score", "median"))
+    winners = pd.DataFrame({"metric": ["PGA", "PSA"], "band": ["1-2 sec", "1-2 sec"], "winner": ["m2", "m1"]})
+    spectrogram = pd.DataFrame({"time_s": np.repeat([0.0, 1.0, 2.0], 3), "period_s": [0.5, 1.0, 2.0] * 3, "amplitude": np.linspace(0.2, 1.0, 9)})
+    sidecar_dir = tmp_path / "metric_sidecars"
+
+    outputs = [
+        plot_residuals_vs_distance(
+            metrics,
+            tmp_path / "resid_distance.png",
+            y_col="log2_residual",
+            group_col="metric",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_score_trends(
+            metrics,
+            tmp_path / "score_trends.png",
+            score_col="score",
+            group_col="metric",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_model_metric_heatmap(
+            summary,
+            tmp_path / "model_heatmap.png",
+            value_col="med_log2_residual",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_winner_heatmap(
+            winners,
+            tmp_path / "winner_heatmap.png",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_band_score_distribution(
+            metrics,
+            tmp_path / "band_distribution.png",
+            score_col="log2_residual",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_psa_period_curve(
+            metrics,
+            tmp_path / "psa_period_curve.png",
+            value_col="log2_residual",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_period_score_distribution(
+            metrics,
+            tmp_path / "period_distribution.png",
+            score_col="log2_residual",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_period_spectrogram(
+            spectrogram,
+            tmp_path / "period_spectrogram.png",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_vs30_scatter(
+            metrics,
+            tmp_path / "vs30.png",
+            value_col="log2_residual",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+        plot_geology_boxplot(
+            metrics,
+            tmp_path / "geology.png",
+            value_col="log2_residual",
+            write_sidecar=True,
+            sidecar_rows=2,
+            sidecar_dir=sidecar_dir,
+        ),
+    ]
+    for output in outputs:
+        _assert_png(output)
+
+    expected_types = {
+        "resid_distance": "metric_trend",
+        "score_trends": "metric_trend",
+        "model_heatmap": "model_metric_heatmap",
+        "winner_heatmap": "winner_heatmap",
+        "band_distribution": "band_score_distribution",
+        "psa_period_curve": "psa_period_curve",
+        "period_distribution": "period_score_distribution",
+        "period_spectrogram": "period_spectrogram",
+        "vs30": "metric_trend",
+        "geology": "geology_boxplot",
+    }
+    for stem, figure_type in expected_types.items():
+        sidecar = sidecar_dir / f"{stem}.csv"
+        metadata_path = sidecar.with_suffix(".json")
+        source_sidecar = sidecar_dir / f"{stem}.source.csv"
+        assert sidecar.exists()
+        assert metadata_path.exists()
+        assert source_sidecar.exists()
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        assert metadata["figure_type"] == figure_type
+        assert metadata["plot_row_count"] >= metadata["written_row_count"]
+        assert metadata["source_row_count"] >= metadata["source_written_row_count"]
