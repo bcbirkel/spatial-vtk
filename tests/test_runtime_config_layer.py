@@ -57,6 +57,7 @@ import spatial_vtk.visualize.figure_io as figure_io
 import spatial_vtk.config.notebook as notebook_helpers
 from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize import default_figure_paths
+from spatial_vtk.visualize.figure_sidecars import FigureSidecarResult, write_figure_row_sidecar
 from spatial_vtk.visualize.dashboard import (
     dashboard_summary_readiness_frame,
     filter_optional_dashboard_summary,
@@ -137,6 +138,23 @@ metrics:
     monkeypatch.setenv(SVTK_CONFIG_ENV, str(config_path))
     assert find_config_file() == config_path.resolve()
     assert load_config()["project"]["name"] == "example"
+
+
+def test_public_dashboard_and_sidecar_helpers_import_without_streamlit():
+    """Pure dashboard and sidecar helpers should be usable without app imports."""
+
+    import sys
+
+    import spatial_vtk.visualize.dashboard as dashboard_helpers
+    import spatial_vtk.visualize as visualize_helpers
+
+    assert dashboard_helpers.dashboard_summary_readiness_frame is dashboard_summary_readiness_frame
+    assert dashboard_helpers.filter_optional_dashboard_summary is filter_optional_dashboard_summary
+    assert dashboard_helpers.row_value_column_for_summary is row_value_column_for_summary
+    assert visualize_helpers.write_figure_row_sidecar is write_figure_row_sidecar
+    assert visualize_helpers.FigureSidecarResult is FigureSidecarResult
+    assert "spatial_vtk.visualize.dashboard.streamlit_metrics" not in sys.modules
+    assert "spatial_vtk.visualize.dashboard.streamlit_qc" not in sys.modules
 
 
 def test_saved_cli_config_path_is_used_after_env(tmp_path, monkeypatch):

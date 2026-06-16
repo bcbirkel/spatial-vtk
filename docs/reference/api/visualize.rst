@@ -56,6 +56,12 @@ Waveform Figures
 Dashboard Helpers
 -----------------
 
+Dashboard helpers separate reusable data contracts from the Streamlit app
+entry points. Scripts and notebooks should prefer the public functions exposed
+by ``spatial_vtk.visualize.dashboard`` for readiness checks, summary filtering,
+dashboard dataset export, and dashboard launch commands. These helpers are safe
+to import without starting Streamlit.
+
 .. automodule:: spatial_vtk.visualize.dashboard.charts
    :members:
 
@@ -86,10 +92,21 @@ Dashboard Helpers
 Shared Figure Utilities
 -----------------------
 
+Figure sidecars provide optional row-provenance files for saved figures. Pass
+``write_sidecar=True`` to supported plotting functions to write a CSV with the
+exact rows handed to the plot. Aggregated figures can also write a
+``*.source.csv`` file containing the pre-aggregation rows, plus a JSON metadata
+file with event, station, component, metric, passband, model, and PSA-period
+counts. Use ``sidecar_rows=None`` to write all rows, or a positive integer to
+write a deterministic sample.
+
 .. automodule:: spatial_vtk.visualize.figure_context
    :members:
 
 .. automodule:: spatial_vtk.visualize.figure_io
+   :members:
+
+.. automodule:: spatial_vtk.visualize.figure_sidecars
    :members:
 
 .. automodule:: spatial_vtk.visualize.fit
