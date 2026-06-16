@@ -62,6 +62,20 @@ Calculate
 Plots
 -----
 
+Use ``spatial_vtk.spatial.plot`` for public non-map plotting imports in
+notebooks and scripts:
+
+.. code-block:: python
+
+   from spatial_vtk.spatial.plot import (
+       plot_correlogram,
+       plot_distance_correlation_by_metric,
+       prepare_spatial_figure_context,
+   )
+
+.. automodule:: spatial_vtk.spatial.plot
+   :members:
+
 .. automodule:: spatial_vtk.spatial.plot.correlation
    :members:
 
@@ -76,6 +90,19 @@ Plots
 
 Maps
 ----
+
+Use ``spatial_vtk.spatial.map`` for public map imports:
+
+.. code-block:: python
+
+   from spatial_vtk.spatial.map import (
+       plot_metric_map_by_model,
+       plot_residual_grid,
+       plot_station_metric_map,
+   )
+
+.. automodule:: spatial_vtk.spatial.map
+   :members:
 
 .. automodule:: spatial_vtk.spatial.map.basemaps
    :members:

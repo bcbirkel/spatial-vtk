@@ -76,6 +76,21 @@ Workflow
 Plotting
 --------
 
+Use ``spatial_vtk.metrics.plot`` for public plotting imports in notebooks and
+scripts. The submodules below remain documented for implementation-level
+reference, but user-facing examples should prefer the package entry point:
+
+.. code-block:: python
+
+   from spatial_vtk.metrics.plot import (
+       plot_band_score_distribution,
+       plot_period_spectra,
+       plot_residuals_vs_distance,
+   )
+
+.. automodule:: spatial_vtk.metrics.plot
+   :members:
+
 .. automodule:: spatial_vtk.metrics.plot.example_metric_plots
    :members:
 

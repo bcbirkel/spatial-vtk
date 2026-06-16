@@ -571,12 +571,12 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     metrics.add_argument(
         "--metrics-root",
         default=None,
-        help="Dashboard-ready long metric dataset directory, usually outputs/tables/dashboard_metrics from 'svtk metrics outputs'.",
+        help="Dashboard-ready long metric dataset directory. Defaults to the configured metrics_dashboard_root output.",
     )
     metrics.add_argument(
         "--summary-root",
         default=None,
-        help="Dashboard summary table directory, usually outputs/tables/dashboard_summaries from 'svtk metrics outputs'.",
+        help="Dashboard summary table directory. Defaults to the configured dashboard_summary_root output.",
     )
     metrics.add_argument("--port", type=int, default=8501, help="Streamlit server port.")
     metrics.add_argument("--address", default="127.0.0.1", help="Streamlit server address.")

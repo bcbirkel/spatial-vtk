@@ -27,6 +27,11 @@ Changelog
    ``lon``/``lat`` coordinates are now normalized to the canonical
    ``sta_lon``/``sta_lat`` plotting schema before station maps, residual
    grids, and model-faceted maps are rendered.
+   Clarified the metrics and spatial API reference so notebooks and scripts
+   import plotting helpers from stable public package entry points such as
+   ``spatial_vtk.metrics.plot`` and ``spatial_vtk.spatial.map``. Updated the
+   metrics-dashboard CLI help to describe config-backed dashboard output roots
+   rather than stale table-directory examples.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after
