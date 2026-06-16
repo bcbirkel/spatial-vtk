@@ -141,37 +141,81 @@ def plot_metric_trend(
     )
 
 
-def plot_residuals_vs_distance(df: pd.DataFrame, output_path: str | Path | None = None, **kwargs) -> plt.Figure:
+def plot_residuals_vs_distance(
+    df: pd.DataFrame,
+    output_path: str | Path | None = None,
+    *,
+    y_col: str | None = None,
+    residual_col: str = "residual",
+    distance_col: str = "distance_km",
+    title: str = "Residuals vs Distance",
+    output_key: str = "residuals_vs_distance",
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
+    **kwargs,
+) -> plt.Figure:
     """Plot residuals against source-station distance."""
 
-    y_col = kwargs.pop("y_col", kwargs.pop("residual_col", "residual"))
+    resolved_y_col = y_col if y_col is not None else residual_col
     return plot_metric_trend(
         df,
         output_path,
-        x_col=kwargs.pop("distance_col", "distance_km"),
-        y_col=y_col,
-        title=kwargs.pop("title", "Residuals vs Distance"),
-        output_key=kwargs.pop("output_key", "residuals_vs_distance"),
+        x_col=distance_col,
+        y_col=resolved_y_col,
+        title=title,
+        output_key=output_key,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
         **kwargs,
     )
 
 
-def plot_residuals_vs_depth(df: pd.DataFrame, output_path: str | Path | None = None, **kwargs) -> plt.Figure:
+def plot_residuals_vs_depth(
+    df: pd.DataFrame,
+    output_path: str | Path | None = None,
+    *,
+    y_col: str | None = None,
+    residual_col: str = "residual",
+    depth_col: str = "depth_km",
+    title: str = "Residuals vs Depth",
+    output_key: str = "residuals_vs_depth",
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
+    **kwargs,
+) -> plt.Figure:
     """Plot residuals against event depth."""
 
-    y_col = kwargs.pop("y_col", kwargs.pop("residual_col", "residual"))
+    resolved_y_col = y_col if y_col is not None else residual_col
     return plot_metric_trend(
         df,
         output_path,
-        x_col=kwargs.pop("depth_col", "depth_km"),
-        y_col=y_col,
-        title=kwargs.pop("title", "Residuals vs Depth"),
-        output_key=kwargs.pop("output_key", "residuals_vs_depth"),
+        x_col=depth_col,
+        y_col=resolved_y_col,
+        title=title,
+        output_key=output_key,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
         **kwargs,
     )
 
 
-def plot_score_trends(df: pd.DataFrame, output_path: str | Path | None = None, *, x_col: str = "distance_km", score_col: str = "score", **kwargs) -> plt.Figure:
+def plot_score_trends(
+    df: pd.DataFrame,
+    output_path: str | Path | None = None,
+    *,
+    x_col: str = "distance_km",
+    score_col: str = "score",
+    title: str | None = None,
+    output_key: str = "score_trends",
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
+    **kwargs,
+) -> plt.Figure:
     """Plot GOF scores against one numeric variable."""
 
     return plot_metric_trend(
@@ -179,13 +223,28 @@ def plot_score_trends(df: pd.DataFrame, output_path: str | Path | None = None, *
         output_path,
         x_col=x_col,
         y_col=score_col,
-        title=kwargs.pop("title", f"{value_column_display_name(score_col)} vs {display_label(x_col)}"),
-        output_key=kwargs.pop("output_key", "score_trends"),
+        title=title or f"{value_column_display_name(score_col)} vs {display_label(x_col)}",
+        output_key=output_key,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
         **kwargs,
     )
 
 
-def plot_phase_delay_vs_distance(df: pd.DataFrame, output_path: str | Path | None = None, *, delay_col: str = "value", distance_col: str = "distance_km", **kwargs) -> plt.Figure:
+def plot_phase_delay_vs_distance(
+    df: pd.DataFrame,
+    output_path: str | Path | None = None,
+    *,
+    delay_col: str = "value",
+    distance_col: str = "distance_km",
+    title: str = "Delay vs Distance",
+    output_key: str = "phase_delay_vs_distance",
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
+    **kwargs,
+) -> plt.Figure:
     """Plot phase or travel-time delay against source-station distance."""
 
     return plot_metric_trend(
@@ -193,8 +252,11 @@ def plot_phase_delay_vs_distance(df: pd.DataFrame, output_path: str | Path | Non
         output_path,
         x_col=distance_col,
         y_col=delay_col,
-        title=kwargs.pop("title", "Delay vs Distance"),
-        output_key=kwargs.pop("output_key", "phase_delay_vs_distance"),
+        title=title,
+        output_key=output_key,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
         **kwargs,
     )
 

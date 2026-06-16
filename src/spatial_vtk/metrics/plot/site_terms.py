@@ -14,11 +14,32 @@ from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure_spatial_selection
 
 
-def plot_vs30_scatter(df: pd.DataFrame, output_path: str | Path | None = None, *, vs30_col: str = "Vs30", value_col: str = "residual", **kwargs) -> plt.Figure:
+def plot_vs30_scatter(
+    df: pd.DataFrame,
+    output_path: str | Path | None = None,
+    *,
+    vs30_col: str = "Vs30",
+    value_col: str = "residual",
+    title: str = "Metric Response vs Vs30",
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
+    **kwargs,
+) -> plt.Figure:
     """Plot metric residuals or scores against Vs30."""
 
     resolved_vs30_col = _resolve_vs30_column(df, vs30_col)
-    return plot_metric_trend(df, output_path, x_col=resolved_vs30_col, y_col=value_col, title=kwargs.pop("title", "Metric Response vs Vs30"), **kwargs)
+    return plot_metric_trend(
+        df,
+        output_path,
+        x_col=resolved_vs30_col,
+        y_col=value_col,
+        title=title,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        **kwargs,
+    )
 
 
 def plot_geology_boxplot(

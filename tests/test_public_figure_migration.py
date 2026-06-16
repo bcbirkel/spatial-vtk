@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import inspect
 from pathlib import Path
 
 import matplotlib
@@ -21,7 +22,9 @@ from spatial_vtk.metrics.plot import (
     plot_period_spectra,
     plot_period_score_distribution,
     plot_period_spectrogram,
+    plot_phase_delay_vs_distance,
     plot_psa_period_curve,
+    plot_residuals_vs_depth,
     plot_residuals_vs_distance,
     plot_score_trends,
     plot_vs30_scatter,
@@ -88,6 +91,23 @@ def test_plot_functions_return_saveable_figures(tmp_path: Path) -> None:
     assert hasattr(fig, "savefig")
     output = savefig(fig, tmp_path / "retention_from_figure.png", close=True)
     _assert_png(output)
+
+
+def test_public_plot_wrappers_expose_sidecar_controls() -> None:
+    """Convenience wrappers should advertise figure sidecar parameters."""
+
+    wrappers = [
+        plot_residuals_vs_distance,
+        plot_residuals_vs_depth,
+        plot_score_trends,
+        plot_phase_delay_vs_distance,
+        plot_vs30_scatter,
+        plot_score_map,
+        plot_model_improvement_map,
+    ]
+    for wrapper in wrappers:
+        parameters = inspect.signature(wrapper).parameters
+        assert {"write_sidecar", "sidecar_rows", "sidecar_dir"} <= set(parameters), wrapper.__name__
 
 
 def test_scatterplot_keyword_normalization_and_errors(tmp_path: Path, capsys) -> None:

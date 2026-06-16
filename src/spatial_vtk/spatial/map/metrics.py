@@ -179,10 +179,29 @@ def plot_station_metric_map_by_period(
     )
 
 
-def plot_score_map(df: pd.DataFrame, output_path: str | Path | None = None, *, score_col: str = "score", **kwargs) -> plt.Figure:
+def plot_score_map(
+    df: pd.DataFrame,
+    output_path: str | Path | None = None,
+    *,
+    score_col: str = "score",
+    title: str = "Score Map",
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
+    **kwargs,
+) -> plt.Figure:
     """Plot station or path scores on a map."""
 
-    return _point_metric_map(df, output_path, value_col=score_col, title=kwargs.pop("title", "Score Map"), **kwargs)
+    return _point_metric_map(
+        df,
+        output_path,
+        value_col=score_col,
+        title=title,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        **kwargs,
+    )
 
 
 def plot_residual_grid(
@@ -332,11 +351,23 @@ def plot_model_improvement_map(
     *,
     improvement_col: str = "improvement",
     title: str = "Model Improvement Map",
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
     **kwargs,
 ) -> plt.Figure:
     """Plot model improvement values on a map."""
 
-    return _point_metric_map(df, output_path, value_col=improvement_col, title=title, **kwargs)
+    return _point_metric_map(
+        df,
+        output_path,
+        value_col=improvement_col,
+        title=title,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        **kwargs,
+    )
 
 
 def _point_metric_map(

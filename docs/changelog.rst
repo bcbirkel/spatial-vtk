@@ -110,6 +110,10 @@ Changelog
    functions through the stable public ``spatial_vtk.metrics.plot``,
    ``spatial_vtk.spatial.plot``, and ``spatial_vtk.spatial.map`` import
    surfaces instead of implementation submodules.
+   Public metric trend, Vs30, score-map, and model-improvement plotting
+   wrappers now expose ``write_sidecar``, ``sidecar_rows``, and
+   ``sidecar_dir`` directly in their signatures so generated docs and
+   interactive help show the row-provenance controls.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after
