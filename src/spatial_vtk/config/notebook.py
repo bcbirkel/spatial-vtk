@@ -69,6 +69,35 @@ class NotebookRunContext:
     qc_chunksize: int
 
 
+@dataclass(frozen=True)
+class NotebookFigureSidecarSettings:
+    """Environment-backed figure sidecar controls for notebooks.
+
+    Parameters
+    ----------
+    enabled
+        Whether figures should write row-provenance sidecars.
+    rows
+        Maximum sidecar rows to write. ``None`` means write all rows.
+    directory
+        Optional sidecar directory. Plotting functions default to a
+        ``sidecars`` folder next to the figure when omitted.
+    """
+
+    enabled: bool = False
+    rows: int | None = None
+    directory: Path | None = None
+
+    def kwargs(self) -> dict[str, object]:
+        """Return keyword arguments accepted by Spatial-VTK plotting helpers."""
+
+        return {
+            "write_sidecar": self.enabled,
+            "sidecar_rows": self.rows,
+            "sidecar_dir": self.directory,
+        }
+
+
 def find_repo_root(start: str | Path | None = None) -> Path:
     """Find the nearest Spatial-VTK repository root.
 
@@ -205,6 +234,57 @@ def print_notebook_context(context: NotebookRunContext) -> None:
         "SUBMIT_SLURM="
         f"{context.submit_slurm} RUN_LOCAL={context.run_local} OVERWRITE={context.overwrite}"
     )
+
+
+def notebook_figure_sidecar_settings(
+    figure_kind: str | None = None,
+    *,
+    figure_dir: str | Path | None = None,
+    sidecar_dir: str | Path | None = None,
+    default_enabled: bool = False,
+    default_rows: int | None = None,
+) -> NotebookFigureSidecarSettings:
+    """Return standard notebook figure sidecar settings from the environment.
+
+    Parameters
+    ----------
+    figure_kind
+        Optional figure family token such as ``"metric"``, ``"spatial"``,
+        ``"context"``, ``"qc"``, or ``"waveform"``. Family-specific
+        variables such as ``SVTK_METRIC_FIGURE_SIDECARS`` and
+        ``SVTK_METRIC_FIGURE_SIDECAR_ROWS`` are checked before generic
+        ``SVTK_FIGURE_SIDECARS`` and ``SVTK_FIGURE_SIDECAR_ROWS``.
+    figure_dir
+        Figure output directory. When provided and ``sidecar_dir`` is omitted,
+        the returned directory is ``figure_dir / "sidecars"``.
+    sidecar_dir
+        Explicit sidecar directory override.
+    default_enabled
+        Fallback enabled value when no environment variable is set.
+    default_rows
+        Fallback row limit. ``None`` writes all rows.
+
+    Returns
+    -------
+    NotebookFigureSidecarSettings
+        Parsed settings suitable for ``plot(..., **settings.kwargs())``.
+    """
+
+    prefix = _figure_env_prefix(figure_kind)
+    enabled_names = []
+    row_names = []
+    if prefix:
+        enabled_names.append(f"SVTK_{prefix}_FIGURE_SIDECARS")
+        row_names.append(f"SVTK_{prefix}_FIGURE_SIDECAR_ROWS")
+    enabled_names.extend(("SVTK_FIGURE_SIDECARS", "SVTK_WRITE_FIGURE_SIDECARS", "SVTK_WRITE_SIDECARS"))
+    row_names.append("SVTK_FIGURE_SIDECAR_ROWS")
+
+    enabled = _env_bool_first(enabled_names, default=default_enabled)
+    rows = _env_optional_int_first(row_names, default=default_rows)
+    directory = Path(sidecar_dir).expanduser() if sidecar_dir is not None else None
+    if directory is None and figure_dir is not None:
+        directory = Path(figure_dir).expanduser() / "sidecars"
+    return NotebookFigureSidecarSettings(enabled=enabled, rows=rows, directory=directory)
 
 
 def write_notebook_python_slurm_script(
@@ -569,10 +649,48 @@ def _env_int(name: str, *, default: int) -> int:
         return int(default)
 
 
+def _env_bool_first(names: list[str] | tuple[str, ...], *, default: bool) -> bool:
+    """Read the first set boolean environment variable from ``names``."""
+
+    for name in names:
+        if name in os.environ:
+            return _env_bool(name, default=default)
+    return bool(default)
+
+
+def _env_optional_int_first(names: list[str] | tuple[str, ...], *, default: int | None) -> int | None:
+    """Read the first set optional integer environment variable from ``names``."""
+
+    for name in names:
+        if name not in os.environ:
+            continue
+        value = os.environ.get(name)
+        if value is None:
+            continue
+        text = str(value).strip().lower()
+        if text in {"", "0", "all", "none", "null"}:
+            return None
+        try:
+            return int(text)
+        except ValueError:
+            return default
+    return default
+
+
+def _figure_env_prefix(figure_kind: str | None) -> str:
+    """Return the environment-variable prefix for one figure family."""
+
+    if not figure_kind:
+        return ""
+    return str(figure_kind).strip().upper().replace("-", "_").replace(" ", "_")
+
+
 __all__ = [
+    "NotebookFigureSidecarSettings",
     "NotebookRunContext",
     "find_repo_root",
     "format_run_time",
+    "notebook_figure_sidecar_settings",
     "notebook_timer",
     "notebook_timing_enabled",
     "notebook_run_context",

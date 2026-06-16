@@ -45,6 +45,9 @@ Changelog
    Rewired the standard Step 2 QC notebook to use the shared
    ``output_group_paths("step_02_qc")`` helper for QC, overlap, and
    comparison-eligible outputs instead of resolving those paths one by one.
+   Added ``notebook_figure_sidecar_settings()`` so standard and large-run
+   notebooks use one parser for optional figure row-provenance sidecars instead
+   of duplicating environment-variable handling in setup cells.
 
 2026-06-09
    Released ``0.1.3`` to publish the PyPI README workflow-image fix after

@@ -17,6 +17,7 @@ from spatial_vtk.config import (
     clear_active_config,
     find_config_file,
     format_run_time,
+    notebook_figure_sidecar_settings,
     notebook_run_context,
     get_saved_config_path,
     load_config,
@@ -261,6 +262,45 @@ outputs:
     assert context.tables_dir.exists()
 
     clear_active_config()
+
+
+def test_notebook_figure_sidecar_settings_parse_env(tmp_path, monkeypatch):
+    """Notebook sidecar controls should use one parser across tutorials."""
+
+    monkeypatch.setenv("SVTK_FIGURE_SIDECARS", "1")
+    monkeypatch.setenv("SVTK_FIGURE_SIDECAR_ROWS", "all")
+    generic = notebook_figure_sidecar_settings("metric", figure_dir=tmp_path / "figures")
+    assert generic.enabled is True
+    assert generic.rows is None
+    assert generic.directory == tmp_path / "figures" / "sidecars"
+    assert generic.kwargs() == {
+        "write_sidecar": True,
+        "sidecar_rows": None,
+        "sidecar_dir": tmp_path / "figures" / "sidecars",
+    }
+
+    monkeypatch.setenv("SVTK_METRIC_FIGURE_SIDECARS", "0")
+    monkeypatch.setenv("SVTK_METRIC_FIGURE_SIDECAR_ROWS", "25")
+    metric = notebook_figure_sidecar_settings("metric", figure_dir=tmp_path / "figures")
+    assert metric.enabled is False
+    assert metric.rows == 25
+
+    for name in (
+        "SVTK_FIGURE_SIDECARS",
+        "SVTK_FIGURE_SIDECAR_ROWS",
+        "SVTK_METRIC_FIGURE_SIDECARS",
+        "SVTK_METRIC_FIGURE_SIDECAR_ROWS",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    explicit = notebook_figure_sidecar_settings(
+        "qc",
+        sidecar_dir=tmp_path / "custom_sidecars",
+        default_enabled=True,
+        default_rows=10,
+    )
+    assert explicit.enabled is True
+    assert explicit.rows == 10
+    assert explicit.directory == tmp_path / "custom_sidecars"
 
 
 def test_notebook_slurm_script_uses_configured_environment(tmp_path, capsys):
