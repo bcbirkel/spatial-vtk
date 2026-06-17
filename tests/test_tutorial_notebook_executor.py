@@ -5,6 +5,7 @@ import importlib.util
 import json
 import os
 import re
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -139,6 +140,46 @@ def test_tutorial_example_data_preflight_runs_before_clean(tmp_path: Path, monke
         module.main(["--repo-root", str(repo), "--notebook", str(notebook), "--clean"])
 
     assert marker.exists()
+
+
+def test_tutorial_source_bootstrap_helper_works_from_repo_and_examples_dir(monkeypatch) -> None:
+    """The notebook bootstrap helper should support fresh source checkouts."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    helper_path = repo_root / "docs" / "examples" / "_source_bootstrap.py"
+    spec = importlib.util.spec_from_file_location("_source_bootstrap_test", helper_path)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+
+    for start in (repo_root, repo_root / "docs" / "examples"):
+        monkeypatch.chdir(start)
+        found = module.use_source_checkout()
+        assert found == repo_root
+        assert str(repo_root / "src") in sys.path
+
+
+def test_tutorial_notebooks_use_shared_source_bootstrap() -> None:
+    """Tutorial notebooks should not duplicate source-checkout path plumbing."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    assert notebooks
+    forbidden = (
+        "repo_root = next(",
+        "src_path = repo_root",
+        "src_path = repo_root /",
+        "str(src_path)",
+        "import sys",
+    )
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        assert "_source_bootstrap.py" in source, f"{notebook_path.relative_to(repo_root)}"
+        assert "runpy.run_path(str(_bootstrap))" in source, f"{notebook_path.relative_to(repo_root)}"
+        matches = [pattern for pattern in forbidden if pattern in source]
+        assert not matches, f"{notebook_path.relative_to(repo_root)} embeds bootstrap plumbing: {matches}"
 
 
 def test_tutorial_notebook_preflight_runs_before_clean(tmp_path: Path, monkeypatch) -> None:
