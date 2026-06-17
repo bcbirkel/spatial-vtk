@@ -35,6 +35,7 @@ SPATIAL_FIGURE_TABLE_KEYS: tuple[str, ...] = (
     "block_holdout_predictions",
     "corridors",
     "redcap_clusters",
+    "pattern_similarity_station_anomalies",
     "morans_i",
     "geology_contrasts",
 )
@@ -549,13 +550,6 @@ class SpatialFigureContext:
                 "value_col": resolved_value_col,
             },
             {
-                "base": "spatial_pattern_similarity",
-                "table": "station_bias",
-                "func": "plot_pattern_similarity",
-                "required": ["metric", "bin"],
-                "value_col": resolved_value_col,
-            },
-            {
                 "base": "spatial_path_bin_summary",
                 "table": "path_summary",
                 "func": "plot_path_bin_summary",
@@ -599,6 +593,15 @@ class SpatialFigureContext:
                 outputs.append(output)
 
         outputs.extend(
+            self._write_pattern_similarity_overview_plots(
+                functions["plot_pattern_similarity"],
+                passband=passband,
+                components=components,
+                model=model,
+                showfig=showfig,
+            )
+        )
+        outputs.extend(
             self._write_geology_contrast_overview_plots(
                 functions["plot_geology_contrast"],
                 value_col=resolved_value_col,
@@ -610,6 +613,59 @@ class SpatialFigureContext:
                 robust_axis_percentile=resolved_robust,
             )
         )
+        return outputs
+
+    def _write_pattern_similarity_overview_plots(
+        self,
+        func: Callable[..., Any],
+        *,
+        passband: str | None,
+        components: list[str] | str | None,
+        model: str | None,
+        showfig: bool,
+    ) -> list[Path]:
+        """Write observed/synthetic station-pattern similarity overview plots."""
+
+        outputs: list[Path] = []
+        pattern_rows = self.table("pattern_similarity_station_anomalies")
+        if pattern_rows is None or pattern_rows.empty:
+            print("skip spatial_pattern_similarity: pattern_similarity_station_anomalies table missing or empty")
+            return outputs
+        work = pattern_rows.copy()
+        if passband is not None and "bin" in work.columns:
+            work = work.loc[work["bin"].astype(str).eq(str(passband))].copy()
+        component_values = _as_selection_list(components)
+        if component_values and "component" in work.columns:
+            work = work.loc[work["component"].astype(str).isin(component_values)].copy()
+        if model is not None and "model" in work.columns:
+            work = work.loc[work["model"].astype(str).eq(str(model))].copy()
+        if work.empty:
+            print("skip spatial_pattern_similarity: no rows match the requested passband/component/model filters")
+            return outputs
+        for (metric_name, bin_label), subset in work.groupby(["metric", "bin"], dropna=False):
+            if subset.empty:
+                continue
+            item = {
+                "key": "pattern_similarity",
+                "label": f"{metric_name} {bin_label}",
+                "metric": str(metric_name),
+                "period_s": None,
+                "df": subset,
+            }
+            output = self.write_spatial_plot(
+                "spatial_pattern_similarity",
+                item,
+                func,
+                df=subset,
+                source_df=subset,
+                required=["station_name", "dataset", "metric", "bin", "value"],
+                value_col="value",
+                metric=str(metric_name),
+                bin_label=str(bin_label),
+                showfig=showfig,
+            )
+            if output is not None:
+                outputs.append(output)
         return outputs
 
     def filter_like_item(
@@ -1034,6 +1090,18 @@ def _label_for_slug(value: object) -> str | None:
         labels = [str(item) for item in value if str(item).strip()]
         return "_".join(labels) if labels else None
     return str(value)
+
+
+def _as_selection_list(value: object) -> list[str]:
+    """Normalize one optional scalar/list selection to strings."""
+
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [item.strip() for item in value.split(",") if item.strip()]
+    if isinstance(value, Sequence):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return [str(value).strip()] if str(value).strip() else []
 
 
 def _spatial_overview_plot_functions() -> dict[str, Callable[..., Any]]:

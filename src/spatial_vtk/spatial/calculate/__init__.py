@@ -58,10 +58,13 @@ from spatial_vtk.spatial.calculate.prepare_stats import (
 from spatial_vtk.spatial.calculate.rotation import rotate_ne_to_rt, rotate_rt_to_ne
 from spatial_vtk.spatial.calculate.settings import SpatialStatisticsSettings, spatial_statistics_settings_from_config
 from spatial_vtk.spatial.calculate.workflow import (
+    SPATIAL_DERIVED_OUTPUT_KEYS,
     SPATIAL_STATISTICS_OUTPUT_DESCRIPTIONS,
     SPATIAL_STATISTICS_OUTPUT_NAMES,
     SPATIAL_SUMMARY_OUTPUT_KEYS,
+    SpatialDerivedOutputsWorkflowResult,
     SpatialStatisticsWorkflowResult,
+    run_spatial_derived_outputs_workflow,
     run_spatial_statistics_workflow,
     spatial_statistics_output_paths,
 )
@@ -117,11 +120,14 @@ __all__ = [
     "select_geojson_polygons",
     "select_near_edge_stations",
     "serialize_corridor_geometries",
+    "SPATIAL_DERIVED_OUTPUT_KEYS",
     "SPATIAL_STATISTICS_OUTPUT_DESCRIPTIONS",
     "SPATIAL_STATISTICS_OUTPUT_NAMES",
     "SPATIAL_SUMMARY_OUTPUT_KEYS",
+    "SpatialDerivedOutputsWorkflowResult",
     "SpatialStatisticsWorkflowResult",
     "SpatialStatisticsSettings",
+    "run_spatial_derived_outputs_workflow",
     "run_spatial_statistics_workflow",
     "spatial_statistics_output_paths",
     "spatial_statistics_settings_from_config",

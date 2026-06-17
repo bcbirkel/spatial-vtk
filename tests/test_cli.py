@@ -98,6 +98,80 @@ spatial_statistics:
     assert "metric_field:" in captured.out
 
 
+def test_cli_spatial_derived_outputs_use_saved_config_defaults(tmp_path, monkeypatch, capsys):
+    """After svtk config set, spatial derived outputs should use configured paths."""
+
+    from types import SimpleNamespace
+
+    settings = tmp_path / "settings" / "svtk-config.json"
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    def fake_run_spatial_derived_outputs_workflow(
+        metrics=None,
+        *,
+        metric_field=None,
+        station_bias=None,
+        cfg=None,
+        metric=None,
+        pattern_passband=None,
+        pattern_component=None,
+        pattern_model=None,
+        outputs="all",
+        overwrite=False,
+        verbose=False,
+    ):
+        seen["metrics"] = metrics
+        seen["metric_field"] = metric_field
+        seen["station_bias"] = station_bias
+        seen["cfg_root"] = cfg.root_dir
+        seen["metric"] = metric
+        seen["pattern_passband"] = pattern_passband
+        seen["pattern_component"] = pattern_component
+        seen["pattern_model"] = pattern_model
+        seen["outputs"] = outputs
+        seen["overwrite"] = overwrite
+        seen["verbose"] = verbose
+        return SimpleNamespace(
+            elapsed_s=2.5,
+            paths={"redcap_clusters": tmp_path / "outputs" / "tables" / "redcap_clusters.parquet"},
+            rows={"redcap_clusters": 4},
+            reused=(),
+            failures=(),
+        )
+
+    monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(settings))
+    monkeypatch.setattr("spatial_vtk.spatial.calculate.run_spatial_derived_outputs_workflow", fake_run_spatial_derived_outputs_workflow)
+
+    assert main(["config", "set", str(config)]) == 0
+    assert main(["spatial", "derived-outputs", "--outputs", "redcap_clusters", "--overwrite", "--verbose"]) == 0
+
+    captured = capsys.readouterr()
+    assert seen["metrics"] is None
+    assert seen["metric_field"] is None
+    assert seen["station_bias"] is None
+    assert seen["cfg_root"] == tmp_path
+    assert seen["metric"] is None
+    assert seen["pattern_passband"] is None
+    assert seen["pattern_component"] is None
+    assert seen["pattern_model"] is None
+    assert seen["outputs"] == "redcap_clusters"
+    assert seen["overwrite"] is True
+    assert seen["verbose"] is True
+    assert "Spatial derived outputs elapsed: 2.5s" in captured.out
+    assert "redcap_clusters_rows: 4" in captured.out
+
+
 def test_cli_spatial_status_reports_named_missing_input(tmp_path, capsys):
     config = tmp_path / "spatial-vtk.yaml"
     config.write_text(

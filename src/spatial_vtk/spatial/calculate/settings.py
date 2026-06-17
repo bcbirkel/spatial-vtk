@@ -18,6 +18,11 @@ from pathlib import Path
 from typing import Any
 
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
+from spatial_vtk.spatial.calculate._common import (
+    DEFAULT_BLOCK_DISTANCE_POWER,
+    DEFAULT_BLOCK_PREDICTION_K,
+    DEFAULT_BLOCK_SIZE_KM,
+)
 
 
 @dataclass(frozen=True)
@@ -50,6 +55,15 @@ class SpatialStatisticsSettings:
         Bootstrap draws used for geology contrasts.
     geology_statistic
         Station-summary statistic used for geology contrasts.
+    block_size_km, block_min_block_stations, block_prediction_k
+        Spatial block holdout tuning.
+    block_prediction_distance_power, block_max_folds
+        Inverse-distance prediction and optional fold cap for block holdouts.
+    redcap_neighbors, redcap_location_weight, redcap_residual_weight
+        REDCAP spatial regionalization tuning.
+    pattern_metric, pattern_passband, pattern_component, pattern_model
+        Optional filters for pattern-similarity anomaly rows. Use ``"all"``
+        or leave unset to write all available combinations.
     random_seed
         Reproducibility seed for stochastic spatial calculations.
     region_geojson_path
@@ -73,6 +87,18 @@ class SpatialStatisticsSettings:
     geology_min_stations_per_group: int = 3
     geology_bootstrap_samples: int = 100
     geology_statistic: str = "mean"
+    block_size_km: float = DEFAULT_BLOCK_SIZE_KM
+    block_min_block_stations: int = 3
+    block_prediction_k: int = DEFAULT_BLOCK_PREDICTION_K
+    block_prediction_distance_power: float = DEFAULT_BLOCK_DISTANCE_POWER
+    block_max_folds: int | None = None
+    redcap_neighbors: int = 2
+    redcap_location_weight: float = 0.1
+    redcap_residual_weight: float = 2.0
+    pattern_metric: str = "all"
+    pattern_passband: str = "all"
+    pattern_component: str | None = None
+    pattern_model: str | None = None
     random_seed: int = 42
     region_geojson_path: Path | None = None
 
@@ -112,6 +138,18 @@ def spatial_statistics_settings_from_config(cfg: SpatialVTKConfig | None = None)
         geology_min_stations_per_group=int(section.get("geology_min_stations_per_group", 3)),
         geology_bootstrap_samples=int(section.get("geology_bootstrap_samples", 100)),
         geology_statistic=str(section.get("geology_statistic", "mean")),
+        block_size_km=float(section.get("block_size_km", DEFAULT_BLOCK_SIZE_KM)),
+        block_min_block_stations=int(section.get("block_min_block_stations", 3)),
+        block_prediction_k=int(section.get("block_prediction_k", DEFAULT_BLOCK_PREDICTION_K)),
+        block_prediction_distance_power=float(section.get("block_prediction_distance_power", DEFAULT_BLOCK_DISTANCE_POWER)),
+        block_max_folds=_optional_int(section.get("block_max_folds")),
+        redcap_neighbors=int(section.get("redcap_neighbors", 2)),
+        redcap_location_weight=float(section.get("redcap_location_weight", 0.1)),
+        redcap_residual_weight=float(section.get("redcap_residual_weight", 2.0)),
+        pattern_metric=str(section.get("pattern_metric", "all")),
+        pattern_passband=str(section.get("pattern_passband", "all")),
+        pattern_component=_optional_str(section.get("pattern_component")),
+        pattern_model=_optional_str(section.get("pattern_model")),
         random_seed=int(section.get("random_seed", 42)),
         region_geojson_path=region_path,
     )
@@ -135,6 +173,26 @@ def _as_bool(value: Any) -> bool:
     if isinstance(value, str):
         return value.strip().lower() not in {"0", "false", "no", "off"}
     return bool(value)
+
+
+def _optional_int(value: Any) -> int | None:
+    """Convert a config value into an optional positive integer."""
+
+    if value in (None, "", "none", "None"):
+        return None
+    out = int(value)
+    return out if out > 0 else None
+
+
+def _optional_str(value: Any) -> str | None:
+    """Convert a config value into an optional non-empty string."""
+
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text or text.lower() in {"all", "*", "none", "null"}:
+        return None
+    return text
 
 
 __all__ = [

@@ -228,6 +228,18 @@ seen again. Use ``--no-resume`` only when you intentionally want to recompute
 each metric, or ``--checkpoint-dir`` to place the internal checkpoints outside
 the default hidden directory next to the spatial output tables.
 
+Optional overview plots also use compact derived tables for block-holdout
+predictions, REDCAP clusters, and observed/synthetic pattern-similarity
+station anomalies. Build or refresh those tables after the core summaries:
+
+.. code-block:: bash
+
+   svtk spatial derived-outputs \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
+     --metric PGA \
+     --verbose
+
    svtk map spatial station-bias \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \

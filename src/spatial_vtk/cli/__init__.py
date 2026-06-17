@@ -806,6 +806,29 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     summaries.add_argument("--verbose", action="store_true", help="Print elapsed-time progress for Slurm logs.")
     summaries.set_defaults(handler=_cmd_spatial_summaries)
 
+    derived = spatial_sub.add_parser(
+        "derived-outputs",
+        help="Build optional spatial plot-input tables.",
+        description=(
+            "Build optional Step 4 spatial tables used by overview plots: "
+            "block_holdout_predictions, redcap_clusters, and "
+            "pattern_similarity_station_anomalies."
+        ),
+    )
+    derived.add_argument("--metrics", default=None, help="Long metric rows table. Defaults to configured output table 'metrics_long'.")
+    derived.add_argument("--metric-field", default=None, help="Metric-field table. Defaults to configured output table 'metric_field'.")
+    derived.add_argument("--station-bias", default=None, help="Station-bias table. Defaults to configured output table 'station_bias'.")
+    derived.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    derived.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    derived.add_argument("--metric", default=None, help="Metric filter. Defaults to spatial.pattern_metric/spatial.metric; use 'all' for all available metrics.")
+    derived.add_argument("--pattern-passband", default=None, help="Pattern-similarity passband filter. Defaults to spatial.pattern_passband; use 'all' for all passbands.")
+    derived.add_argument("--pattern-component", default=None, help="Pattern-similarity component filter. Defaults to spatial.pattern_component; use 'all' for all components.")
+    derived.add_argument("--pattern-model", default=None, help="Pattern-similarity model filter. Defaults to spatial.pattern_model; use 'all' for all models.")
+    derived.add_argument("--outputs", default="all", help="Comma-separated derived output keys to build. Defaults to all optional spatial derived outputs.")
+    derived.add_argument("--overwrite", action="store_true", help="Overwrite existing derived output tables.")
+    derived.add_argument("--verbose", action="store_true", help="Print elapsed-time progress for Slurm logs.")
+    derived.set_defaults(handler=_cmd_spatial_derived_outputs)
+
     geojson_summaries = spatial_sub.add_parser(
         "geojson-summaries",
         help="Build GeoJSON region summary tables.",
@@ -1886,6 +1909,40 @@ def _cmd_spatial_summaries(args: argparse.Namespace) -> int:
         print(f"Non-fatal spatial diagnostic failures: {len(result.failures)}")
         for failure in result.failures[:10]:
             print(f"- {failure['metric']} {failure['step']}: {failure['error']}: {failure['message']}")
+        if len(result.failures) > 10:
+            print(f"- ... {len(result.failures) - 10} more")
+    return 0
+
+
+def _cmd_spatial_derived_outputs(args: argparse.Namespace) -> int:
+    """Run ``svtk spatial derived-outputs``."""
+
+    from spatial_vtk.spatial.calculate import run_spatial_derived_outputs_workflow
+
+    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
+    result = run_spatial_derived_outputs_workflow(
+        args.metrics,
+        metric_field=args.metric_field,
+        station_bias=args.station_bias,
+        cfg=cfg,
+        metric=args.metric,
+        pattern_passband=args.pattern_passband,
+        pattern_component=args.pattern_component,
+        pattern_model=args.pattern_model,
+        outputs=args.outputs,
+        overwrite=args.overwrite,
+        verbose=args.verbose,
+    )
+    print(f"Spatial derived outputs elapsed: {result.elapsed_s:.1f}s")
+    _print_payload({key: str(path) for key, path in result.paths.items()}, as_json=False)
+    if result.rows:
+        _print_payload({f"{key}_rows": count for key, count in result.rows.items()}, as_json=False)
+    if result.reused:
+        print(f"Reused existing outputs: {', '.join(result.reused)}")
+    if result.failures:
+        print(f"Non-fatal spatial derived-output failures: {len(result.failures)}")
+        for failure in result.failures[:10]:
+            print(f"- {failure['step']}: {failure['error']}: {failure['message']}")
         if len(result.failures) > 10:
             print(f"- ... {len(result.failures) - 10} more")
     return 0

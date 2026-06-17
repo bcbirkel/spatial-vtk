@@ -27,13 +27,15 @@ import pandas as pd
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io import default_output_paths, load_output_table, read_table, write_output_table, write_table
-from spatial_vtk.spatial.calculate.clustering import run_residual_feature_clustering
+from spatial_vtk.spatial.calculate.clustering import assign_redcap_clusters, run_residual_feature_clustering
 from spatial_vtk.spatial.calculate.correlation import (
     build_distance_bin_summary,
     compute_global_morans_i,
+    evaluate_spatial_block_holdouts,
     moran_result_to_frame,
 )
 from spatial_vtk.spatial.calculate.geology import bootstrap_contrast_table
+from spatial_vtk.spatial.calculate.patterns import build_pattern_similarity_station_anomalies
 from spatial_vtk.spatial.calculate.pca import compute_pca_spatial_modes
 from spatial_vtk.spatial.calculate.prepare_stats import (
     build_metric_field,
@@ -109,6 +111,12 @@ SPATIAL_WORKFLOW_TABLE_KEYS: tuple[str, ...] = (
     "pca_feature_loadings",
     "pca_explained_variance",
     "geology_contrasts",
+)
+
+SPATIAL_DERIVED_OUTPUT_KEYS: tuple[str, ...] = (
+    "block_holdout_predictions",
+    "redcap_clusters",
+    "pattern_similarity_station_anomalies",
 )
 
 SPATIAL_SUMMARY_COLUMNS: dict[str, tuple[str, ...]] = {
@@ -191,6 +199,47 @@ SPATIAL_SUMMARY_COLUMNS: dict[str, tuple[str, ...]] = {
         "n_events",
         "metric",
     ),
+    "block_holdout_predictions": (
+        "station",
+        "lat",
+        "lon",
+        "holdout_n_events",
+        "observed_mean_centered",
+        "predicted_mean_centered",
+        "baseline_prediction",
+        "prediction_error",
+        "absolute_error",
+        "neighbor_count",
+        "mean_neighbor_distance_km",
+        "max_neighbor_distance_km",
+        "block_id",
+        "block_station_count",
+        "train_station_count",
+        "block_size_km",
+        "metric",
+    ),
+    "redcap_clusters": (
+        "station",
+        "station_longitude",
+        "station_latitude",
+        "avg_observed_metric_distance_scaled_event_demeaned",
+        "cluster",
+        "selected_k",
+        "selected_silhouette_score",
+        "redcap_neighbors",
+        "redcap_location_weight",
+        "redcap_residual_weight",
+        "metric",
+    ),
+    "pattern_similarity_station_anomalies": (
+        "station_name",
+        "dataset",
+        "metric",
+        "bin",
+        "component",
+        "model",
+        "value",
+    ),
 }
 
 
@@ -217,6 +266,32 @@ class SpatialStatisticsWorkflowResult:
     metrics: tuple[str, ...]
     tables: dict[str, pd.DataFrame]
     paths: dict[str, Path]
+    failures: tuple[dict[str, str], ...]
+    elapsed_s: float
+
+
+@dataclass(frozen=True)
+class SpatialDerivedOutputsWorkflowResult:
+    """Result returned by :func:`run_spatial_derived_outputs_workflow`.
+
+    Parameters
+    ----------
+    paths
+        Output paths keyed by registered output name.
+    rows
+        Written or reused row counts keyed by registered output name.
+    reused
+        Output keys that were reused because the file already existed and
+        ``overwrite`` was false.
+    failures
+        Non-fatal per-output failures.
+    elapsed_s
+        Total workflow wall time in seconds.
+    """
+
+    paths: dict[str, Path]
+    rows: dict[str, int]
+    reused: tuple[str, ...]
     failures: tuple[dict[str, str], ...]
     elapsed_s: float
 
@@ -540,6 +615,334 @@ def run_spatial_statistics_workflow(
     )
 
 
+def run_spatial_derived_outputs_workflow(
+    metrics: pd.DataFrame | str | Path | None = None,
+    *,
+    metric_field: pd.DataFrame | str | Path | None = None,
+    station_bias: pd.DataFrame | str | Path | None = None,
+    cfg: SpatialVTKConfig | None = None,
+    metric: str | Sequence[str] | None = None,
+    pattern_passband: str | Sequence[str] | None = None,
+    pattern_component: str | Sequence[str] | None = None,
+    pattern_model: str | Sequence[str] | None = None,
+    outputs: Sequence[str] | str = "all",
+    overwrite: bool = False,
+    verbose: bool = False,
+) -> SpatialDerivedOutputsWorkflowResult:
+    """Build optional spatial tables used by overview plots and maps.
+
+    The core spatial summary workflow intentionally writes compact mandatory
+    summaries first. This companion workflow creates derived plot inputs that
+    are useful but can be more specialized: spatial block holdout predictions,
+    REDCAP cluster assignments, and observed/synthetic station-anomaly rows for
+    pattern-similarity plots. Existing outputs are reused unless
+    ``overwrite=True``.
+    """
+
+    config = cfg or active_config()
+    config.activate()
+    settings = spatial_statistics_settings_from_config(config)
+    start = time.monotonic()
+
+    def progress(message: str) -> None:
+        if verbose:
+            elapsed = time.monotonic() - start
+            print(f"Spatial derived outputs: {message} (elapsed {elapsed:.1f}s)", flush=True)
+
+    requested = _requested_derived_outputs(outputs)
+    failures: list[dict[str, str]] = []
+    reused: list[str] = []
+    rows: dict[str, int] = {}
+    paths = {
+        key: resolve_output_path(key, kind="table", cfg=config, create_parent=True)
+        for key in requested
+    }
+
+    def should_skip(key: str) -> bool:
+        path = paths[key]
+        if path.exists() and not overwrite:
+            try:
+                rows[key] = len(read_table(path))
+            except Exception:
+                rows[key] = -1
+            reused.append(key)
+            progress(f"{key}: reusing existing {path}")
+            return True
+        return False
+
+    if "block_holdout_predictions" in requested and not should_skip("block_holdout_predictions"):
+        try:
+            field = _load_metric_field_for_derived(metric_field, cfg=config, progress=progress)
+            predictions = _build_block_holdout_predictions(field, settings=settings, metric=metric or settings.metric, progress=progress)
+            paths["block_holdout_predictions"] = write_output_table("block_holdout_predictions", predictions, cfg=config)
+            rows["block_holdout_predictions"] = int(len(predictions))
+            progress(f"block_holdout_predictions: wrote {len(predictions)} row(s)")
+        except Exception as exc:
+            _record_failure(failures, "all", "block_holdout_predictions", exc, progress)
+
+    if "redcap_clusters" in requested and not should_skip("redcap_clusters"):
+        try:
+            station_bias_df = _load_station_bias_for_derived(station_bias, cfg=config, progress=progress)
+            redcap = _build_redcap_clusters(station_bias_df, settings=settings, metric=metric or settings.metric, progress=progress)
+            paths["redcap_clusters"] = write_output_table("redcap_clusters", redcap, cfg=config)
+            rows["redcap_clusters"] = int(len(redcap))
+            progress(f"redcap_clusters: wrote {len(redcap)} row(s)")
+        except Exception as exc:
+            _record_failure(failures, "all", "redcap_clusters", exc, progress)
+
+    if "pattern_similarity_station_anomalies" in requested and not should_skip("pattern_similarity_station_anomalies"):
+        try:
+            metrics_df = _load_metrics_for_derived(metrics, cfg=config, progress=progress)
+            anomalies = _build_pattern_similarity_anomalies(
+                metrics_df,
+                metric=metric or settings.pattern_metric or settings.metric,
+                passband=pattern_passband or settings.pattern_passband,
+                component=pattern_component if pattern_component is not None else settings.pattern_component,
+                model=pattern_model if pattern_model is not None else settings.pattern_model,
+                progress=progress,
+            )
+            paths["pattern_similarity_station_anomalies"] = write_output_table("pattern_similarity_station_anomalies", anomalies, cfg=config)
+            rows["pattern_similarity_station_anomalies"] = int(len(anomalies))
+            progress(f"pattern_similarity_station_anomalies: wrote {len(anomalies)} row(s)")
+        except Exception as exc:
+            _record_failure(failures, "all", "pattern_similarity_station_anomalies", exc, progress)
+
+    return SpatialDerivedOutputsWorkflowResult(
+        paths=paths,
+        rows=rows,
+        reused=tuple(reused),
+        failures=tuple(failures),
+        elapsed_s=float(time.monotonic() - start),
+    )
+
+
+def _requested_derived_outputs(outputs: Sequence[str] | str) -> tuple[str, ...]:
+    """Resolve requested derived output keys."""
+
+    if isinstance(outputs, str):
+        tokens = [item.strip() for item in outputs.split(",") if item.strip()]
+    else:
+        tokens = [str(item).strip() for item in outputs if str(item).strip()]
+    if not tokens or any(token.lower() in {"all", "*"} for token in tokens):
+        return SPATIAL_DERIVED_OUTPUT_KEYS
+    unknown = [token for token in tokens if token not in SPATIAL_DERIVED_OUTPUT_KEYS]
+    if unknown:
+        raise KeyError(f"Unknown spatial derived output(s): {unknown}. Choices: {list(SPATIAL_DERIVED_OUTPUT_KEYS)}")
+    return tuple(dict.fromkeys(tokens))
+
+
+def _load_metrics_for_derived(
+    metrics: pd.DataFrame | str | Path | None,
+    *,
+    cfg: SpatialVTKConfig,
+    progress,
+) -> pd.DataFrame:
+    """Load the long metrics table for derived spatial outputs."""
+
+    if isinstance(metrics, pd.DataFrame):
+        return metrics.copy()
+    path = resolve_output_path("metrics_long", kind="table", cfg=cfg, create_parent=True) if metrics is None else Path(metrics).expanduser()
+    progress(f"reading metrics {path}")
+    return read_table(path)
+
+
+def _load_metric_field_for_derived(
+    metric_field: pd.DataFrame | str | Path | None,
+    *,
+    cfg: SpatialVTKConfig,
+    progress,
+) -> pd.DataFrame:
+    """Load the metric-field table for derived spatial outputs."""
+
+    if isinstance(metric_field, pd.DataFrame):
+        return metric_field.copy()
+    path = resolve_output_path("metric_field", kind="table", cfg=cfg, create_parent=True) if metric_field is None else Path(metric_field).expanduser()
+    progress(f"reading metric field {path}")
+    return read_table(path)
+
+
+def _load_station_bias_for_derived(
+    station_bias: pd.DataFrame | str | Path | None,
+    *,
+    cfg: SpatialVTKConfig,
+    progress,
+) -> pd.DataFrame:
+    """Load the station-bias table for derived spatial outputs."""
+
+    if isinstance(station_bias, pd.DataFrame):
+        return station_bias.copy()
+    path = resolve_output_path("station_bias", kind="table", cfg=cfg, create_parent=True) if station_bias is None else Path(station_bias).expanduser()
+    progress(f"reading station bias {path}")
+    return read_table(path)
+
+
+def _build_block_holdout_predictions(
+    field: pd.DataFrame,
+    *,
+    settings: SpatialStatisticsSettings,
+    metric: str | Sequence[str] | None,
+    progress,
+) -> pd.DataFrame:
+    """Build block-holdout predictions for selected metrics."""
+
+    frames: list[pd.DataFrame] = []
+    metrics_to_run = _select_values(field, "metric", metric)
+    if not metrics_to_run:
+        metrics_to_run = ["all"]
+    for metric_name in metrics_to_run:
+        subset = field if metric_name == "all" or "metric" not in field.columns else field.loc[field["metric"].astype(str).eq(metric_name)].copy()
+        if subset.empty:
+            continue
+        progress(f"block_holdout_predictions {metric_name}: evaluating {len(subset)} field row(s)")
+        _blocks, predictions, _summary = evaluate_spatial_block_holdouts(
+            subset,
+            block_size_km=settings.block_size_km,
+            min_block_stations=settings.block_min_block_stations,
+            min_stations_per_event=settings.min_stations_per_event,
+            min_events_per_station=settings.min_events_per_station,
+            prediction_k=settings.block_prediction_k,
+            prediction_distance_power=settings.block_prediction_distance_power,
+            max_folds=settings.block_max_folds,
+        )
+        if not predictions.empty:
+            predictions["metric"] = metric_name
+            frames.append(predictions)
+    return _concat_or_empty(frames, SPATIAL_SUMMARY_COLUMNS["block_holdout_predictions"])
+
+
+def _build_redcap_clusters(
+    station_bias: pd.DataFrame,
+    *,
+    settings: SpatialStatisticsSettings,
+    metric: str | Sequence[str] | None,
+    progress,
+) -> pd.DataFrame:
+    """Build REDCAP cluster assignments for selected station-bias metrics."""
+
+    frames: list[pd.DataFrame] = []
+    metrics_to_run = _select_values(station_bias, "metric", metric)
+    if not metrics_to_run:
+        metrics_to_run = ["all"]
+    for metric_name in metrics_to_run:
+        subset = station_bias if metric_name == "all" or "metric" not in station_bias.columns else station_bias.loc[station_bias["metric"].astype(str).eq(metric_name)].copy()
+        if subset.empty:
+            continue
+        redcap_input = subset.rename(
+            columns={
+                "lon": "station_longitude",
+                "lat": "station_latitude",
+                "mean_centered": "avg_observed_metric_distance_scaled_event_demeaned",
+            }
+        )
+        progress(f"redcap_clusters {metric_name}: clustering {len(redcap_input)} station row(s)")
+        clustered, _scores = assign_redcap_clusters(
+            redcap_input,
+            min_k=settings.cluster_min_k,
+            max_k=settings.cluster_max_k,
+            n_neighbors=settings.redcap_neighbors,
+            location_weight=settings.redcap_location_weight,
+            residual_weight=settings.redcap_residual_weight,
+        )
+        clustered["metric"] = metric_name
+        frames.append(clustered)
+    return _concat_or_empty(frames, SPATIAL_SUMMARY_COLUMNS["redcap_clusters"])
+
+
+def _build_pattern_similarity_anomalies(
+    metrics: pd.DataFrame,
+    *,
+    metric: str | Sequence[str] | None,
+    passband: str | Sequence[str] | None,
+    component: str | Sequence[str] | None,
+    model: str | Sequence[str] | None,
+    progress,
+) -> pd.DataFrame:
+    """Build observed/synthetic station-anomaly rows for pattern-similarity plots."""
+
+    band_col = "band" if "band" in metrics.columns else "passband" if "passband" in metrics.columns else None
+    required = {"metric", "station", "value_obs", "value_syn"}
+    if band_col is None:
+        required.add("band")
+    missing = sorted(required.difference(metrics.columns))
+    if missing:
+        raise KeyError(f"Missing required columns for pattern similarity anomalies: {missing}")
+    metric_values = _select_values(metrics, "metric", metric)
+    band_values = _select_values(metrics, band_col, passband)
+    component_values = _select_values(metrics, "component", component, allow_missing=True)
+    model_values = _select_values(metrics, "model", model, allow_missing=True)
+    frames: list[pd.DataFrame] = []
+    for metric_name in metric_values:
+        metric_subset = metrics.loc[metrics["metric"].astype(str).eq(metric_name)].copy()
+        for band_name in band_values:
+            band_subset = metric_subset.loc[metric_subset[band_col].astype(str).eq(band_name)].copy()
+            if band_subset.empty:
+                continue
+            if "band" not in band_subset.columns:
+                band_subset["band"] = band_subset[band_col]
+            for component_name in component_values or [None]:
+                component_subset = (
+                    band_subset
+                    if component_name is None or "component" not in band_subset.columns
+                    else band_subset.loc[band_subset["component"].astype(str).eq(component_name)].copy()
+                )
+                if component_subset.empty:
+                    continue
+                for model_name in model_values or [None]:
+                    subset = (
+                        component_subset
+                        if model_name is None or "model" not in component_subset.columns
+                        else component_subset.loc[component_subset["model"].astype(str).eq(model_name)].copy()
+                    )
+                    if subset.empty:
+                        continue
+                    progress(
+                        "pattern_similarity_station_anomalies "
+                        f"{metric_name}/{band_name}/{component_name or 'all-components'}/{model_name or 'all-models'}: "
+                        f"{len(subset)} metric row(s)"
+                    )
+                    anomalies = build_pattern_similarity_station_anomalies(
+                        subset,
+                        metric=metric_name,
+                        passband=band_name,
+                        component=component_name,
+                        model=model_name,
+                    )
+                    if anomalies.empty:
+                        continue
+                    anomalies["component"] = component_name if component_name is not None else "all"
+                    anomalies["model"] = model_name if model_name is not None else "all"
+                    frames.append(anomalies)
+    return _concat_or_empty(frames, SPATIAL_SUMMARY_COLUMNS["pattern_similarity_station_anomalies"])
+
+
+def _select_values(
+    df: pd.DataFrame,
+    column: str,
+    selected: str | Sequence[str] | None,
+    *,
+    allow_missing: bool = False,
+) -> list[str]:
+    """Return selected or available string values for one column."""
+
+    if column not in df.columns:
+        if allow_missing:
+            return []
+        raise KeyError(f"Missing required column {column!r}.")
+    available = [str(value) for value in pd.unique(df[column].dropna().astype(str)) if str(value).strip()]
+    if selected is None:
+        return sorted(available)
+    if isinstance(selected, str):
+        tokens = [item.strip() for item in selected.split(",") if item.strip()]
+    else:
+        tokens = [str(item).strip() for item in selected if str(item).strip()]
+    if not tokens or any(token.lower() in {"all", "*"} for token in tokens):
+        return sorted(available)
+    missing = [token for token in tokens if token not in set(available)]
+    if missing:
+        raise KeyError(f"Selected {column} value(s) {missing!r} are not present. Choices: {sorted(available)}")
+    return tokens
+
+
 def _spatial_checkpoint_run_dir(
     cfg: SpatialVTKConfig,
     *,
@@ -787,10 +1190,13 @@ def _record_failure(failures: list[dict[str, str]], metric: str, step: str, exc:
 
 
 __all__ = [
+    "SPATIAL_DERIVED_OUTPUT_KEYS",
     "SPATIAL_STATISTICS_OUTPUT_DESCRIPTIONS",
     "SPATIAL_STATISTICS_OUTPUT_NAMES",
     "SPATIAL_SUMMARY_OUTPUT_KEYS",
+    "SpatialDerivedOutputsWorkflowResult",
     "SpatialStatisticsWorkflowResult",
+    "run_spatial_derived_outputs_workflow",
     "run_spatial_statistics_workflow",
     "spatial_statistics_output_paths",
 ]
