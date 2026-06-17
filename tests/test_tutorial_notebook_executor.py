@@ -4,6 +4,7 @@ import ast
 import importlib.util
 import json
 import os
+import re
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -363,7 +364,7 @@ def test_tutorial_notebooks_use_sidecar_settings_kwargs() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
     assert notebooks
-    forbidden_patterns = (
+    forbidden_names = (
         "write_context_figure_sidecars",
         "context_figure_sidecar_rows",
         "context_figure_sidecar_dir",
@@ -400,7 +401,11 @@ def test_tutorial_notebooks_use_sidecar_settings_kwargs() -> None:
     for notebook_path in notebooks:
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-        matches = [pattern for pattern in forbidden_patterns if pattern in source]
+        matches = [
+            name
+            for name in forbidden_names
+            if re.search(rf"(?<![A-Za-z0-9_]){re.escape(name)}(?![A-Za-z0-9_])", source)
+        ]
         assert not matches, f"{notebook_path.relative_to(repo_root)} expands sidecar settings: {matches}"
 
 
