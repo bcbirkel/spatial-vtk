@@ -218,6 +218,20 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
         assert helper not in source
 
 
+def test_step03_station_map_uses_package_aggregation_and_source_sidecar() -> None:
+    """The metric tutorial should not hand-roll station aggregation in notebook code."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "step_03_calculate_metrics.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "MetricFigureContext.from_frame(" in source
+    assert "station_summary_for_map(" in source
+    assert "source_df=station_pga_source" in source
+    assert ".groupby([" not in source
+
+
 def test_step06_uses_comparison_eligible_output_table() -> None:
     """The plotting tutorial should reuse QC outputs instead of re-filtering metrics."""
 

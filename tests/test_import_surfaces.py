@@ -7,6 +7,7 @@ def test_public_imports():
     import spatial_vtk
     from spatial_vtk.config import abbreviate_model
     from spatial_vtk.metrics import METRIC_NAMES, amplitude_spectrum, calculate_metrics_for_pairs, compute_metrics_pair
+    from spatial_vtk.metrics.plot import MetricFigureContext
     from spatial_vtk.io import inspect_synthetic_format, prepare_station_metadata, resolve_model_aliases
     from spatial_vtk.qc import load_trace_inventory_lookup
     from spatial_vtk.spatial.calculate import annotate_points_with_geojson, build_station_edge_corridors, classify_paths_with_geojson
@@ -21,6 +22,7 @@ def test_public_imports():
     assert callable(amplitude_spectrum)
     assert callable(calculate_metrics_for_pairs)
     assert callable(compute_metrics_pair)
+    assert callable(MetricFigureContext.from_frame)
     assert callable(inspect_synthetic_format)
     assert callable(prepare_station_metadata)
     assert callable(resolve_model_aliases)
