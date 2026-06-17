@@ -158,6 +158,51 @@ def test_prepare_stats_correlation_holdout_and_clustering() -> None:
     assert {"mean_centered", "synthetic_east_west_residual_pattern"} <= set(features)
 
 
+def test_metric_field_preserves_psa_period_and_path_geometry_for_large_run_figures(tmp_path: Path) -> None:
+    """Compact spatial fields should retain columns Step 4 needs for PSA/path plots."""
+
+    metrics = pd.DataFrame(
+        {
+            "metric": ["PSA", "PSA", "PSA", "PSA"],
+            "model": ["m1", "m1", "m1", "m1"],
+            "passband": ["", "", "", ""],
+            "component": ["Z", "Z", "Z", "Z"],
+            "event_id": ["e1", "e1", "e1", "e1"],
+            "station": ["STA", "STB", "STA", "STB"],
+            "sta_lat": [34.0, 34.1, 34.0, 34.1],
+            "sta_lon": [-118.0, -118.1, -118.0, -118.1],
+            "event_lat": [33.9, 33.9, 33.9, 33.9],
+            "event_lon": [-118.2, -118.2, -118.2, -118.2],
+            "period_s": [1.0, 1.0, 2.0, 2.0],
+            "distance_km": [10.0, 20.0, 10.0, 20.0],
+            "azimuth_deg": [45.0, 90.0, 45.0, 90.0],
+            "backazimuth_deg": [225.0, 270.0, 225.0, 270.0],
+            "log2_residual": [0.2, -0.1, 0.4, -0.2],
+        }
+    )
+
+    field = build_metric_field(metrics, metric="PSA", value_column="log2_residual")
+    centered = center_field_by_event(field, min_stations_per_event=2)
+    context = MetricFigureContext.from_frame(
+        centered,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+    )
+    items = list(context.iter_metric_frames(split_psa_period=True))
+
+    assert {"period_s", "distance_km", "azimuth_deg", "backazimuth_deg", "log2_residual"} <= set(centered.columns)
+    assert sorted(item["period_s"] for item in items) == [1.0, 2.0]
+    for item in items:
+        assert {"distance_km", "azimuth_deg", "backazimuth_deg"} <= set(item["df"].columns)
+    station_period = context.station_period_summary_for_item(
+        {"key": "psa", "label": "PSA", "metric": "PSA", "period_s": None, "df": centered}
+    )
+    assert set(station_period["period_s"]) == {1.0, 2.0}
+    assert "log2_residual" in station_period.columns
+
+
 def test_spatial_workflow_helpers_write_and_prepare_tables(tmp_path: Path) -> None:
     """Spatial workflow helpers should replace notebook-only dataframe handling."""
 

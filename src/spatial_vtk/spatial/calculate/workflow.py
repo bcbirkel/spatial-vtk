@@ -38,6 +38,8 @@ from spatial_vtk.spatial.calculate.geology import bootstrap_contrast_table
 from spatial_vtk.spatial.calculate.patterns import build_pattern_similarity_station_anomalies
 from spatial_vtk.spatial.calculate.pca import compute_pca_spatial_modes
 from spatial_vtk.spatial.calculate.prepare_stats import (
+    EVENT_CENTERED_FIELD_COLUMNS,
+    METRIC_FIELD_COLUMNS,
     build_metric_field,
     build_station_feature_table,
     center_field_by_event,
@@ -583,8 +585,8 @@ def run_spatial_statistics_workflow(
 
     progress("writing combined spatial tables")
     tables = {
-        "metric_field": _concat_or_empty(field_tables, tuple(metrics_df.columns)),
-        "event_centered_residuals": _concat_or_empty(centered_tables, ("model", "band", "component", "event_id", "station", "field_value", "field_centered", "metric")),
+        "metric_field": _concat_or_empty(field_tables, METRIC_FIELD_COLUMNS),
+        "event_centered_residuals": _concat_or_empty(centered_tables, EVENT_CENTERED_FIELD_COLUMNS),
         "station_bias": _concat_or_empty(station_bias_tables, SPATIAL_SUMMARY_COLUMNS["station_bias"]),
         "morans_i": _concat_or_empty(moran_tables, SPATIAL_SUMMARY_COLUMNS["morans_i"]),
         "permutation_moran": _concat_or_empty(moran_tables, SPATIAL_SUMMARY_COLUMNS["morans_i"]),

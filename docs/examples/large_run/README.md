@@ -24,6 +24,7 @@ Environment switches:
 - `SVTK_RUN_LOCAL=1`: run lightweight CLI commands directly from the notebook. Otherwise cells print commands.
 - `SVTK_OVERWRITE=1`: rebuild outputs even when they already exist.
 - `SVTK_MAKE_FIGURES=1`: render figure cells after compact input tables exist.
+- `SVTK_MAKE_SCORE_TRENDS=1`: render optional GOF score-trend diagnostics in Step 3. The main metric figure suite uses log2 residuals and does not render GOF score figures unless this is set.
 - `SVTK_QC_CHUNKSIZE=1000000`: chunk size for disk-backed QC readers.
 - `SVTK_FIGURE_SIDECARS=1`: write CSV/JSON row-provenance sidecars for saved figures.
 - `SVTK_FIGURE_SIDECAR_ROWS=all`: write every plotted/source row to each sidecar. Use a positive integer to write a deterministic sample of that many rows. The matching JSON metadata records whether each CSV is exact or sampled.

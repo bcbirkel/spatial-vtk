@@ -22,6 +22,53 @@ from spatial_vtk.spatial.calculate._common import (
 from spatial_vtk.spatial.calculate.settings import spatial_statistics_settings_from_config
 
 
+OPTIONAL_METRIC_FIELD_COLUMNS: tuple[tuple[str, tuple[str, ...], str], ...] = (
+    ("period_s", ("period_s", "period", "period_sec", "period_seconds"), "numeric"),
+    ("distance_km", ("distance_km", "dist_km", "distance", "hypocentral_distance_km"), "numeric"),
+    ("azimuth_deg", ("azimuth_deg", "azimuth", "azimuth_degrees"), "numeric"),
+    ("backazimuth_deg", ("backazimuth_deg", "backazimuth", "back_azimuth_deg", "baz_deg"), "numeric"),
+    ("depth_km", ("depth_km", "event_depth_km", "source_depth_km", "hypocenter_depth_km"), "numeric"),
+)
+
+
+METRIC_FIELD_BASE_COLUMNS: tuple[str, ...] = (
+    "model",
+    "band",
+    "component",
+    "event_id",
+    "event_name",
+    "event_magnitude",
+    "station",
+    "lat",
+    "lon",
+    "event_lat",
+    "event_lon",
+    "field_value",
+    "metric",
+    "field_source",
+    "log2_residual",
+    "residual",
+    "score",
+)
+
+
+METRIC_FIELD_COLUMNS: tuple[str, ...] = (
+    *METRIC_FIELD_BASE_COLUMNS,
+    *(column for column, _, _ in OPTIONAL_METRIC_FIELD_COLUMNS),
+)
+
+
+EVENT_CENTERED_FIELD_COLUMNS: tuple[str, ...] = (
+    *METRIC_FIELD_COLUMNS,
+    "is_reference",
+    "event_mean",
+    "event_std",
+    "event_station_count",
+    "field_centered",
+    "field_z",
+)
+
+
 def normalize_metrics_table(
     df: pd.DataFrame,
     *,
@@ -226,9 +273,23 @@ def build_metric_field(
             raise ValueError(f"Metric {metric_name!r} does not support field_mode={field_mode!r}. Available columns: {available}")
     out["metric"] = metric_name
     out["field_source"] = source
+    _copy_optional_metric_field_columns(df, out)
     out["field_value"] = as_float_series(out["field_value"])
     out.dropna(subset=["field_value", "event_id", "station", "lat", "lon"], inplace=True)
     return out
+
+
+def _copy_optional_metric_field_columns(source: pd.DataFrame, target: pd.DataFrame) -> None:
+    """Copy optional large-run plotting dimensions into one metric field table."""
+
+    for output_col, candidates, kind in OPTIONAL_METRIC_FIELD_COLUMNS:
+        if output_col in target.columns:
+            continue
+        value = coalesce_column(source, candidates, default=np.nan)
+        if kind == "numeric":
+            target[output_col] = as_float_series(value)
+        else:
+            target[output_col] = value
 
 
 def _build_long_metric_field(df: pd.DataFrame, metric: str, *, field_mode: str = "auto") -> pd.DataFrame:
@@ -295,6 +356,9 @@ def _build_long_metric_field(df: pd.DataFrame, metric: str, *, field_mode: str =
             "field_source": str(value_column).strip("_"),
         }
     )
+    _copy_optional_metric_field_columns(work, out)
+    if not str(value_column).startswith("__") and value_column not in out.columns:
+        out[value_column] = out["field_value"]
     if token.lower() in {"all", "*"}:
         out["metric"] = "all"
     out.dropna(subset=["field_value", "event_id", "station", "lat", "lon"], inplace=True)

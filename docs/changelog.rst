@@ -2,6 +2,13 @@ Changelog
 =========
 
 2026-06-17
+   Preserved PSA oscillator periods, path geometry, and public value columns in
+   compact spatial ``metric_field`` and ``event_centered_residuals`` outputs so
+   large-run Step 4 can split PSA figures by ``period_s`` and render
+   azimuth/distance plots from bounded table reads.
+   Made large-run Step 3 GOF score trend figures explicitly opt-in with
+   ``SVTK_MAKE_SCORE_TRENDS=1`` so the default metric plotting flow stays on
+   ``log2_residual`` figures while preserving optional score diagnostics.
    Made ``svtk io inventory`` config-backed. Observed and synthetic roots now
    default from ``paths.observed_root``/``paths.observed_template`` and
    ``paths.synthetic_root``/``paths.synthetic_template``, output defaults to
