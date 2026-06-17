@@ -42,6 +42,7 @@ from spatial_vtk.visualize.dashboard.streamlit_metrics import _available_nonempt
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _empty_rows_message as _metrics_empty_rows_message
 import spatial_vtk.visualize.dashboard.streamlit_metrics as streamlit_metrics
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard_startup_blocker
+from spatial_vtk.visualize.dashboard.streamlit_metrics import _metric_dataset_readiness_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _summary_readiness_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _value_columns_or_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_chart_columns_or_message
@@ -557,9 +558,11 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
     monkeypatch.setattr(streamlit_metrics, "_load_summary_tables_cached", fake_cached_loader)
     monkeypatch.setattr(streamlit_metrics, "load_dashboard_summary_tables", fail_uncached_loader)
     monkeypatch.setattr(streamlit_metrics, "dashboard_summary_readiness_frame", lambda *args, **kwargs: readiness)
-    monkeypatch.setattr(streamlit_metrics, "_try_load_long_metrics", lambda metrics_root: pd.DataFrame({"metric": ["PGA"]}))
+    monkeypatch.setattr(streamlit_metrics, "_try_load_long_metrics", lambda metrics_root, *, readiness=None: pd.DataFrame({"metric": ["PGA"]}))
     monkeypatch.setattr(streamlit_metrics, "_load_optional_config", lambda config_path: None)
     monkeypatch.setattr(streamlit_metrics, "_render_dashboard_readiness", lambda frame: None)
+    monkeypatch.setattr(streamlit_metrics, "_render_metric_dataset_readiness", lambda frame: None)
+    monkeypatch.setattr(streamlit_metrics, "dashboard_metric_dataset_readiness_frame", lambda metrics_root: pd.DataFrame({"ready": [True], "message": ["ready"]}))
     monkeypatch.setattr(streamlit_metrics, "_metrics_dashboard_startup_blocker", lambda frame: None)
     monkeypatch.setattr(streamlit_metrics, "_render_metrics_dashboard", fake_render_dashboard)
     monkeypatch.setattr(streamlit_metrics.st, "set_page_config", lambda **kwargs: None)
@@ -596,7 +599,7 @@ def test_metrics_dashboard_main_preflights_before_summary_load(monkeypatch):
     monkeypatch.setattr(streamlit_metrics, "dashboard_summary_readiness_frame", lambda *args, **kwargs: readiness)
     monkeypatch.setattr(streamlit_metrics, "_load_summary_tables_cached", fail_cached_loader)
     monkeypatch.setattr(streamlit_metrics, "_render_dashboard_readiness", lambda frame: rendered_readiness.append(frame))
-    monkeypatch.setattr(streamlit_metrics, "_try_load_long_metrics", lambda metrics_root: (_ for _ in ()).throw(AssertionError("long metrics should not load")))
+    monkeypatch.setattr(streamlit_metrics, "_try_load_long_metrics", lambda metrics_root, *, readiness=None: (_ for _ in ()).throw(AssertionError("long metrics should not load")))
     monkeypatch.setattr(streamlit_metrics, "_render_metrics_dashboard", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("dashboard should not render")))
     monkeypatch.setattr(streamlit_metrics.st, "set_page_config", lambda **kwargs: None)
     monkeypatch.setattr(streamlit_metrics.st, "title", lambda *args, **kwargs: None)
@@ -677,6 +680,25 @@ def test_metrics_tab_readiness_message_explains_optional_summary_gaps():
     assert _summary_readiness_message(readiness, "path_hex") == "path_hex summary is not ready for Paths. Rebuild dashboard summaries for this run."
     assert _summary_readiness_message(readiness, "model_metric_band") is None
     assert _summary_readiness_message(None, "station_rollup") is None
+
+
+def test_metrics_dashboard_row_dataset_readiness_message():
+    """Row-level metric dataset readiness should explain missing distribution data."""
+
+    ready = pd.DataFrame({"ready": [True], "message": ["ready"]})
+    missing = pd.DataFrame(
+        {
+            "ready": [False],
+            "readiness": ["missing_dataset_files"],
+            "message": ["Dashboard metric dataset contains no recognized files."],
+        }
+    )
+    blank = pd.DataFrame({"ready": [False], "message": [""]})
+
+    assert _metric_dataset_readiness_message(ready) is None
+    assert _metric_dataset_readiness_message(None) is None
+    assert _metric_dataset_readiness_message(missing) == "Dashboard metric dataset contains no recognized files."
+    assert _metric_dataset_readiness_message(blank) == "The row-level metrics dashboard dataset is not ready."
 
 
 def test_qc_chart_tab_state_prioritizes_empty_filtered_rows():

@@ -25,6 +25,7 @@ from spatial_vtk.visualize.dashboard.charts import (
 )
 from spatial_vtk.visualize.dashboard.contracts import (
     dashboard_map_readiness,
+    dashboard_metric_dataset_readiness_frame,
     dashboard_ready_value,
     dashboard_row_level_columns,
     dashboard_summary_readiness_frame,
@@ -72,13 +73,15 @@ def main() -> None:
     if blocker:
         st.warning(blocker)
         return
+    metric_dataset_readiness = dashboard_metric_dataset_readiness_frame(metrics_root) if metrics_root else pd.DataFrame()
+    _render_metric_dataset_readiness(metric_dataset_readiness)
     skip_tables = _not_ready_optional_summary_tables(readiness)
     try:
         summaries = _load_summary_tables_cached(summary_root, tuple(skip_tables))
     except Exception as exc:
         st.error(str(exc))
         return
-    long_metrics = _try_load_long_metrics(metrics_root)
+    long_metrics = _try_load_long_metrics(metrics_root, readiness=metric_dataset_readiness)
     config = _load_optional_config(config_path)
     _render_metrics_dashboard(summaries, long_metrics, config, readiness=readiness)
 
@@ -294,16 +297,44 @@ def _load_long_metrics_cached(metrics_root: str, columns: tuple[str, ...]) -> pd
     return load_metric_long_table(metrics_root, columns=columns)
 
 
-def _try_load_long_metrics(metrics_root: str) -> pd.DataFrame | None:
+def _try_load_long_metrics(metrics_root: str, *, readiness: pd.DataFrame | None = None) -> pd.DataFrame | None:
     """Load long metrics when a root is configured."""
 
     if not metrics_root:
+        return None
+    message = _metric_dataset_readiness_message(readiness)
+    if message:
         return None
     try:
         return _load_long_metrics_cached(metrics_root, dashboard_row_level_columns())
     except Exception as exc:
         st.warning(f"Long metric table was not loaded: {exc}")
         return None
+
+
+def _render_metric_dataset_readiness(readiness: pd.DataFrame) -> None:
+    """Render metric dataset readiness when row-level dashboard data is incomplete."""
+
+    message = _metric_dataset_readiness_message(readiness)
+    if not message:
+        return
+    st.warning(message)
+    columns = ["name", "ready", "readiness", "file_count", "row_count", "value_columns", "message"]
+    shown = [column for column in columns if column in readiness.columns]
+    if shown:
+        st.dataframe(_display_table(readiness[shown]), width="stretch")
+
+
+def _metric_dataset_readiness_message(readiness: pd.DataFrame | None) -> str | None:
+    """Return a warning message for an unavailable row-level metric dataset."""
+
+    if readiness is None or readiness.empty or "ready" not in readiness.columns:
+        return None
+    row = readiness.iloc[0]
+    if dashboard_ready_value(row.get("ready"), default=False):
+        return None
+    message = str(row.get("message") or "").strip()
+    return message or "The row-level metrics dashboard dataset is not ready."
 
 
 def _render_dashboard_readiness(readiness: pd.DataFrame) -> None:
