@@ -220,7 +220,6 @@ Use the metric outputs to make spatial diagnostic maps and plots. The notebook v
    svtk spatial summaries \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
-     --metrics "$TABLES/metrics_long.parquet" \
      --metric PGA
 
    svtk map spatial station-bias \

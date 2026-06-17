@@ -735,7 +735,7 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     summaries.add_argument(
         "--metrics",
         default=None,
-        help="Metric rows table. Defaults to configured output table 'metrics_long'.",
+        help="Metric rows table. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.",
     )
     summaries.add_argument("--config", default=None, help="Spatial-VTK config file.")
     summaries.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
@@ -747,7 +747,7 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     summaries.add_argument(
         "--station-metadata",
         default=None,
-        help="Prepared station metadata table for geology contrasts. Defaults to configured 'prepared_stations'.",
+        help="Prepared station metadata table for geology contrasts. Defaults to configured output table 'prepared_stations'.",
     )
     summaries.add_argument("--verbose", action="store_true", help="Print elapsed-time progress for Slurm logs.")
     summaries.set_defaults(handler=_cmd_spatial_summaries)
@@ -1618,10 +1618,9 @@ def _cmd_metrics_slurm(args: argparse.Namespace) -> int:
 def _cmd_spatial_summaries(args: argparse.Namespace) -> int:
     """Run ``svtk spatial summaries``."""
 
-    from spatial_vtk.config import SpatialVTKConfig
     from spatial_vtk.spatial.calculate import run_spatial_statistics_workflow
 
-    cfg = SpatialVTKConfig.from_file(_required_config_path(args.config), run_scenario=args.run_scenario)
+    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     result = run_spatial_statistics_workflow(
         args.metrics,
         cfg=cfg,

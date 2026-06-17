@@ -68,7 +68,7 @@ Build standard spatial-statistics summary tables.
    * - ``--metrics``
      - No
      -
-     - Value: ``metrics``. Metric rows table. Defaults to configured output table 'metrics_long'.
+     - Value: ``metrics``. Metric rows table. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -84,7 +84,7 @@ Build standard spatial-statistics summary tables.
    * - ``--station-metadata``
      - No
      -
-     - Value: ``station_metadata``. Prepared station metadata table for geology contrasts. Defaults to configured 'prepared_stations'.
+     - Value: ``station_metadata``. Prepared station metadata table for geology contrasts. Defaults to configured output table 'prepared_stations'.
    * - ``--verbose``
      - No
      - Flag

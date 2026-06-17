@@ -27,8 +27,60 @@ def test_cli_spatial_summaries_help(capsys):
         main(["spatial", "summaries", "--help"])
     assert excinfo.value.code == 0
     captured = capsys.readouterr()
+    help_text = " ".join(captured.out.split())
     assert "Build standard spatial-statistics summary tables" in captured.out
     assert "--station-metadata" in captured.out
+    assert "default config is set with 'svtk config set'" in help_text
+
+
+def test_cli_spatial_summaries_use_saved_config_defaults(tmp_path, monkeypatch, capsys):
+    """After svtk config set, spatial summaries should use configured table paths."""
+
+    from types import SimpleNamespace
+
+    settings = tmp_path / "settings" / "svtk-config.json"
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+spatial_statistics:
+  metric: PGA
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    def fake_run_spatial_statistics_workflow(metrics=None, *, cfg=None, metric=None, station_metadata=None, verbose=False):
+        seen["metrics"] = metrics
+        seen["cfg_root"] = cfg.root_dir
+        seen["metric"] = metric
+        seen["station_metadata"] = station_metadata
+        seen["verbose"] = verbose
+        return SimpleNamespace(
+            metrics=("PGA",),
+            elapsed_s=1.25,
+            paths={"metric_field": tmp_path / "outputs" / "tables" / "metric_field.parquet"},
+            failures=(),
+        )
+
+    monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(settings))
+    monkeypatch.setattr("spatial_vtk.spatial.calculate.run_spatial_statistics_workflow", fake_run_spatial_statistics_workflow)
+
+    assert main(["config", "set", str(config)]) == 0
+    assert main(["spatial", "summaries", "--verbose"]) == 0
+
+    captured = capsys.readouterr()
+    assert seen["metrics"] is None
+    assert seen["cfg_root"] == tmp_path
+    assert seen["metric"] is None
+    assert seen["station_metadata"] is None
+    assert seen["verbose"] is True
+    assert "Spatial statistics metrics: PGA" in captured.out
+    assert "metric_field:" in captured.out
 
 
 def test_cli_qc_summaries_help(capsys):
