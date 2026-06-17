@@ -55,11 +55,14 @@ Common tasks:
 - write artifact manifests for generated outputs
 - reshape metric tables for downstream workflows
 
-Main areas:
+Start with public helpers from ``spatial_vtk.io``:
 
-- ``io.metadata`` and ``io.inventory`` for prepared station, event, and waveform tables
-- ``io.waveforms``, ``io.preprocessing``, and ``io.synthetic_formats`` for waveform preprocessing and synthetic file helpers
-- ``io.artifacts`` and ``io.plans`` for reproducible output paths and metric plans
+- ``prepare_station_metadata``, ``prepare_event_metadata``, and
+  ``prepare_event_station_table`` for prepared station/event tables
+- ``preprocess_waveforms_from_config`` and ``build_record_coverage_from_config``
+  for config-backed waveform preprocessing and record coverage
+- ``output_group`` and ``output_readiness`` for notebook-friendly output status
+  checks without hand-written path cells
 
 ``config``
 ----------
@@ -88,11 +91,14 @@ Common tasks:
 - summarize retained and rejected records
 - export manual-review queues for the QC picker
 
-Main areas:
+Start with public helpers from ``spatial_vtk.qc``:
 
-- ``qc.build`` for QC inventory and filtering logic
-- ``qc.review`` for manual-review tables
-- ``qc.summary`` for retention summaries and reject-rule helpers
+- ``run_qc_inventory_from_config`` for full waveform and metric QC inventories
+- ``write_qc_inventory_overlap_from_config`` for comparison-ready overlap rows
+- ``run_qc_summary_workflow_from_config`` for compact retention, availability,
+  post-QC record, and drop-cause tables
+- ``filter_trace_summary`` and ``queue_rows_from_filtered_trace_df`` for
+  manual-review queues
 
 ``metrics``
 -----------
@@ -108,11 +114,15 @@ Common tasks:
 - enrich metric tables with station, event, path, and geologic metadata
 - prepare standard outputs for spatial analysis, plotting, and dashboards
 
-Main areas:
+Start with public helpers from ``spatial_vtk.metrics``:
 
-- ``metrics.calculate`` for metric math and table preparation
-- ``metrics.workflow`` for file-based task planning, batching, merging, and SLURM scripts
-- ``metrics.plot`` for metric-specific diagnostic figures
+- ``build_metric_waveform_inventories_from_config`` and
+  ``plan_metric_tasks_from_config`` for large-run planning
+- ``write_metrics_slurm_script_from_config`` and
+  ``merge_metric_batches_from_config`` for batch execution handoffs
+- ``write_metric_outputs_from_config`` for downstream metric, dashboard, and
+  spatial-statistics tables
+- ``spatial_vtk.metrics.plot`` for metric-specific diagnostic figures
 
 ``spatial``
 -----------

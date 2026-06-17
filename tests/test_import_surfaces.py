@@ -179,6 +179,35 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "svtk qc" not in workflows
 
 
+def test_package_overview_points_to_public_workflow_helpers():
+    docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "package_overview.rst"
+    text = docs.read_text(encoding="utf-8")
+
+    required = [
+        "Start with public helpers from ``spatial_vtk.io``",
+        "``prepare_event_station_table``",
+        "``preprocess_waveforms_from_config``",
+        "``output_group`` and ``output_readiness``",
+        "Start with public helpers from ``spatial_vtk.qc``",
+        "``run_qc_inventory_from_config``",
+        "``write_qc_inventory_overlap_from_config``",
+        "Start with public helpers from ``spatial_vtk.metrics``",
+        "``plan_metric_tasks_from_config``",
+        "``write_metric_outputs_from_config``",
+    ]
+    for snippet in required:
+        assert snippet in text
+
+    forbidden = (
+        "``io.metadata``",
+        "``io.preprocessing``",
+        "``qc.build``",
+        "``metrics.workflow`` for",
+    )
+    for snippet in forbidden:
+        assert snippet not in text
+
+
 def test_spatial_plot_public_entry_point_is_lazy():
     import spatial_vtk.spatial.plot as spatial_plot
 
