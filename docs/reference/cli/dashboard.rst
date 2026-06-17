@@ -74,7 +74,7 @@ svtk dashboard qc
    * - ``--trace-summary``, ``--qc-trace-summary``
      - No
      -
-     - Value: ``PATH``. QC trace-summary CSV/parquet table. Defaults to the configured output table 'qc_trace_summary'.
+     - Filesystem path. QC trace-summary CSV/parquet table. Defaults to the configured output table 'qc_trace_summary'.
    * - ``--port``
      - No
      - Default: ``8502``
@@ -137,11 +137,11 @@ svtk dashboard metrics
    * - ``--metrics-dataset-dir``, ``--metrics-root``, ``--metrics-dataset``
      - No
      -
-     - Value: ``PATH``. Dashboard-ready metric row dataset directory or direct CSV/parquet table. Defaults to the configured dashboard output key 'metrics_dashboard'.
+     - Filesystem path. Dashboard-ready metric row dataset directory or direct CSV/parquet table. Defaults to the configured dashboard output key 'metrics_dashboard'.
    * - ``--dashboard-summary-table-dir``, ``--summary-root``, ``--dashboard-summary-dir``
      - No
      -
-     - Value: ``DIR``. Directory containing dashboard summary tables (model_metric_band, station_rollup, event_rollup, path_hex). Defaults to the configured dashboard output key 'dashboard_summaries'.
+     - Directory path. Directory containing dashboard summary tables (model_metric_band, station_rollup, event_rollup, path_hex). Defaults to the configured dashboard output key 'dashboard_summaries'.
    * - ``--port``
      - No
      - Default: ``8501``

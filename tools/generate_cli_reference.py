@@ -347,10 +347,28 @@ def _argument_row(action: argparse.Action) -> tuple[str, str, str, str] | None:
         default = _default_text(action)
     description = _rst_escape((action.help or "").replace("%(default)s", str(action.default))).strip()
     if action.metavar:
-        description = f"Value: ``{action.metavar}``. {description}".strip()
+        prefix = _metavar_description_prefix(action.metavar)
+        description = f"{prefix} {description}".strip() if prefix else f"Value: ``{action.metavar}``. {description}".strip()
     elif action.option_strings and not isinstance(action, (argparse._StoreTrueAction, argparse._StoreFalseAction, argparse._HelpAction)):
         description = f"Value: ``{action.dest}``. {description}".strip()
     return name, required, default, description or ""
+
+
+def _metavar_description_prefix(metavar: object) -> str:
+    """Return a human-readable value prefix for common path metavars."""
+
+    if isinstance(metavar, tuple):
+        rendered = " ".join(str(item) for item in metavar)
+    else:
+        rendered = str(metavar)
+    normalized = rendered.strip().upper()
+    if normalized == "PATH":
+        return "Filesystem path."
+    if normalized == "DIR":
+        return "Directory path."
+    if normalized in {"CONFIG", "CONFIG_PATH"}:
+        return "Config file path."
+    return ""
 
 
 def _default_text(action: argparse.Action) -> str:

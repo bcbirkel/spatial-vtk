@@ -155,11 +155,11 @@ svtk visualize qc data-synthetic-availability
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (qc availability); accepts CSV or parquet. Defaults to configured output table 'qc_availability' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (qc availability); accepts CSV or parquet. Defaults to configured output table 'qc_availability' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'data_synthetic_availability' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'data_synthetic_availability' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -378,11 +378,11 @@ svtk visualize qc drop-cause-diagnostics
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (qc drop causes); accepts CSV or parquet. Defaults to configured output table 'qc_drop_causes' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (qc drop causes); accepts CSV or parquet. Defaults to configured output table 'qc_drop_causes' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'drop_cause_diagnostics' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'drop_cause_diagnostics' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -602,11 +602,11 @@ svtk visualize qc event-station-retention
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (qc event station pair retention); accepts CSV or parquet. Defaults to configured output table 'qc_event_station_pair_retention' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (qc event station pair retention); accepts CSV or parquet. Defaults to configured output table 'qc_event_station_pair_retention' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_station_retention' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_station_retention' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -852,11 +852,11 @@ svtk visualize qc post-qc-station-event-map
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (post qc records); accepts CSV or parquet. Defaults to configured output table 'post_qc_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (post qc records); accepts CSV or parquet. Defaults to configured output table 'post_qc_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'post_qc_station_event_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'post_qc_station_event_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1069,11 +1069,11 @@ svtk visualize qc retention-summary
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (qc metric pair retention); accepts CSV or parquet. Defaults to configured output table 'qc_metric_pair_retention' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (qc metric pair retention); accepts CSV or parquet. Defaults to configured output table 'qc_metric_pair_retention' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'retention_summary' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'retention_summary' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1293,11 +1293,11 @@ svtk visualize qc trace-inventory-samples
    * - ``--input``, ``--input-table``
      - Yes
      -
-     - Value: ``PATH``. Primary figure input table (sample); accepts CSV or parquet.
+     - Filesystem path. Primary figure input table (sample); accepts CSV or parquet.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'trace_inventory_samples' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'trace_inventory_samples' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1522,11 +1522,11 @@ svtk visualize context distance-amplitude-diagnostics
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'distance_amplitude_diagnostics' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'distance_amplitude_diagnostics' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1741,11 +1741,11 @@ svtk visualize context event-coverage
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_coverage' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_coverage' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1965,11 +1965,11 @@ svtk visualize context event-magnitude-map
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (prepared events); accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (prepared events); accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_magnitude_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_magnitude_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2189,11 +2189,11 @@ svtk visualize context event-trace-comparison
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_trace_comparison' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_trace_comparison' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2436,11 +2436,11 @@ svtk visualize context record-coverage
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (record coverage); accepts CSV or parquet. Defaults to configured output table 'record_coverage' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (record coverage); accepts CSV or parquet. Defaults to configured output table 'record_coverage' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'record_coverage' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'record_coverage' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2658,11 +2658,11 @@ svtk visualize context station-coverage
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_coverage' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_coverage' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2884,11 +2884,11 @@ svtk visualize context station-event-beachball
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (prepared events); accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (prepared events); accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_event_beachball' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_event_beachball' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3113,11 +3113,11 @@ svtk visualize context station-event-context
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (prepared stations); accepts CSV or parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (prepared stations); accepts CSV or parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_event_context' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_event_context' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3342,11 +3342,11 @@ svtk visualize context station-event-network
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (prepared stations); accepts CSV or parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (prepared stations); accepts CSV or parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_event_network' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_event_network' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3564,11 +3564,11 @@ svtk visualize context study-domain
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (prepared stations); accepts CSV or parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (prepared stations); accepts CSV or parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'study_domain' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'study_domain' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3780,7 +3780,7 @@ svtk visualize sidecars status
    * - ``--sidecar-dir``, ``--sidecars-dir``
      - Yes
      -
-     - Value: ``DIR``. Directory containing figure sidecar JSON files.
+     - Directory path. Directory containing figure sidecar JSON files.
    * - ``--json``
      - No
      - Flag
@@ -3881,11 +3881,11 @@ svtk visualize waveforms event-radial-trace-section
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_radial_trace_section' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_radial_trace_section' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4108,11 +4108,11 @@ svtk visualize waveforms observed-synthetic-record-section
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'observed_synthetic_record_section' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'observed_synthetic_record_section' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4330,11 +4330,11 @@ svtk visualize waveforms record-section
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'record_section' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'record_section' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4555,11 +4555,11 @@ svtk visualize waveforms station-event-waveform-map
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_event_waveform_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_event_waveform_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4780,11 +4780,11 @@ svtk visualize waveforms waveform-overlay-matrix
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'waveform_overlay_matrix' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'waveform_overlay_matrix' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -

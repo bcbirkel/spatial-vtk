@@ -888,6 +888,10 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "function argument 'df'" not in plot_text
     assert "``--input``, ``--input-table``" in plot_text
     assert "``--output``, ``--figure-output``" in plot_text
+    assert "Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet" in plot_text
+    assert "Filesystem path. Output figure path." in plot_text
+    assert "Value: ``PATH``. Primary figure input table" not in plot_text
+    assert "Value: ``PATH``. Output figure path" not in plot_text
     assert "configured output table 'metrics_long' when --config is passed" in plot_text
     assert "configured figure output 'band_score_distribution' when --config is passed" in plot_text
     assert "default config is set with 'svtk config set'" in plot_text
@@ -897,6 +901,10 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "function argument 'station_df'" not in map_text
     assert "``--input``, ``--input-table``" in map_text
     assert "``--output``, ``--figure-output``" in map_text
+    assert "Filesystem path. Primary figure input table (station bias); accepts CSV or parquet" in map_text
+    assert "Filesystem path. Output figure path." in map_text
+    assert "Value: ``PATH``. Primary figure input table" not in map_text
+    assert "Value: ``PATH``. Output figure path" not in map_text
     assert "configured output table 'station_bias' when --config is passed" in map_text
     assert "configured figure output 'station_residual_map' when --config is passed" in map_text
     assert "``--mode``" in map_text

@@ -157,11 +157,11 @@ svtk plot metrics band-score-distribution
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'band_score_distribution' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'band_score_distribution' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -354,11 +354,11 @@ svtk plot metrics boxplot
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'boxplot' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'boxplot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -560,7 +560,7 @@ svtk plot metrics example-metric-pairs
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'example_metric_pairs' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'example_metric_pairs' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -759,11 +759,11 @@ svtk plot metrics geology-boxplot
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'geology_boxplot' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'geology_boxplot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -956,11 +956,11 @@ svtk plot metrics heatmap
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'heatmap' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1182,11 +1182,11 @@ svtk plot metrics metric-trend
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'metric_trend' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'metric_trend' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1389,11 +1389,11 @@ svtk plot metrics model-metric-heatmap
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'model_metric_heatmap' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'model_metric_heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1592,11 +1592,11 @@ svtk plot metrics period-spectra
    * - ``--input``, ``--input-table``
      - Yes
      -
-     - Value: ``PATH``. Primary figure input table (spectra); accepts CSV or parquet.
+     - Filesystem path. Primary figure input table (spectra); accepts CSV or parquet.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'period_spectra' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'period_spectra' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1797,11 +1797,11 @@ svtk plot metrics period-spectrogram
    * - ``--input``, ``--input-table``
      - Yes
      -
-     - Value: ``PATH``. Primary figure input table (spectrogram); accepts CSV or parquet.
+     - Filesystem path. Primary figure input table (spectrogram); accepts CSV or parquet.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'period_spectrogram' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'period_spectrogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2006,11 +2006,11 @@ svtk plot metrics phase-delay-vs-distance
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'phase_delay_vs_distance' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'phase_delay_vs_distance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2209,11 +2209,11 @@ svtk plot metrics psa-period-curve
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'psa_period_curve' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'psa_period_curve' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2414,11 +2414,11 @@ svtk plot metrics residuals-vs-depth
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'residuals_vs_depth' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'residuals_vs_depth' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2621,11 +2621,11 @@ svtk plot metrics residuals-vs-distance
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'residuals_vs_distance' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'residuals_vs_distance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2821,11 +2821,11 @@ svtk plot metrics scatterplot
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'scatterplot' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'scatterplot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3021,11 +3021,11 @@ svtk plot metrics score-trends
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'score_trends' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'score_trends' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3221,11 +3221,11 @@ svtk plot metrics vs30-scatter
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'vs30_scatter' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'vs30_scatter' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3424,11 +3424,11 @@ svtk plot metrics winner-heatmap
    * - ``--input``, ``--input-table``
      - Yes
      -
-     - Value: ``PATH``. Primary figure input table (summary); accepts CSV or parquet.
+     - Filesystem path. Primary figure input table (summary); accepts CSV or parquet.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'winner_heatmap' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'winner_heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3657,11 +3657,11 @@ svtk plot spatial azimuthal-residuals
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (event centered residuals); accepts CSV or parquet. Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event centered residuals); accepts CSV or parquet. Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'azimuthal_residuals' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'azimuthal_residuals' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3864,11 +3864,11 @@ svtk plot spatial block-holdout-scatter
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (block holdout predictions); accepts CSV or parquet. Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (block holdout predictions); accepts CSV or parquet. Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'block_holdout_scatter' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'block_holdout_scatter' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4073,11 +4073,11 @@ svtk plot spatial cluster-feature-heatmap
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (cluster feature summary); accepts CSV or parquet. Defaults to configured output table 'cluster_feature_summary' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (cluster feature summary); accepts CSV or parquet. Defaults to configured output table 'cluster_feature_summary' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'cluster_feature_heatmap' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'cluster_feature_heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4282,11 +4282,11 @@ svtk plot spatial cluster-solution-scores
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (cluster solution scores); accepts CSV or parquet. Defaults to configured output table 'cluster_solution_scores' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (cluster solution scores); accepts CSV or parquet. Defaults to configured output table 'cluster_solution_scores' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'cluster_solution_scores_plot' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'cluster_solution_scores_plot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4482,11 +4482,11 @@ svtk plot spatial correlogram
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (distance bin correlations); accepts CSV or parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'correlogram' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'correlogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4691,11 +4691,11 @@ svtk plot spatial directional-correlogram
    * - ``--input``, ``--input-table``
      - Yes
      -
-     - Value: ``PATH``. Primary figure input table (directional); accepts CSV or parquet.
+     - Filesystem path. Primary figure input table (directional); accepts CSV or parquet.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'directional_correlogram' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'directional_correlogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4920,11 +4920,11 @@ svtk plot spatial path-bin-summary
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (path summary); accepts CSV or parquet. Defaults to configured output table 'path_summary' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (path summary); accepts CSV or parquet. Defaults to configured output table 'path_summary' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'path_bin_summary' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'path_bin_summary' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -5125,11 +5125,11 @@ svtk plot spatial pattern-similarity
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (pattern similarity station anomalies); accepts CSV or parquet. Defaults to configured output table 'pattern_similarity_station_anomalies' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (pattern similarity station anomalies); accepts CSV or parquet. Defaults to configured output table 'pattern_similarity_station_anomalies' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'pattern_similarity' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'pattern_similarity' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -5333,11 +5333,11 @@ svtk plot spatial pca-explained-variance
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (pca explained variance); accepts CSV or parquet. Defaults to configured output table 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (pca explained variance); accepts CSV or parquet. Defaults to configured output table 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -5540,11 +5540,11 @@ svtk plot spatial pca-feature-loadings
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (pca feature loadings); accepts CSV or parquet. Defaults to configured output table 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (pca feature loadings); accepts CSV or parquet. Defaults to configured output table 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -5743,11 +5743,11 @@ svtk plot spatial polar-residuals
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (event centered residuals); accepts CSV or parquet. Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event centered residuals); accepts CSV or parquet. Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'polar_residuals' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'polar_residuals' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -5950,11 +5950,11 @@ svtk plot spatial residual-correlation
    * - ``--input``, ``--input-table``
      - Yes
      -
-     - Value: ``PATH``. Primary figure input table (correlation); accepts CSV or parquet.
+     - Filesystem path. Primary figure input table (correlation); accepts CSV or parquet.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'residual_correlation' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'residual_correlation' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -6150,11 +6150,11 @@ svtk plot spatial semivariogram
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Primary figure input table (distance bin correlations); accepts CSV or parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'semivariogram' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'semivariogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
