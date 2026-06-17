@@ -1597,7 +1597,7 @@ def _cmd_registered_plot(args: argparse.Namespace) -> int:
     """Run one registry-backed plotting command."""
 
     spec: PlotCommand = args.plot_spec
-    function = _resolve_function(spec.function)
+    function = _resolve_registered_plot_function(spec.function)
     kwargs = _registered_plot_kwargs(args, spec)
     _drop_unsupported_auto_plot_kwargs(function, kwargs)
     _validate_supported_plot_kwargs(function, kwargs, USER_FIGURE_OPTION_KEYS)
@@ -1840,6 +1840,26 @@ def _resolve_function(path: str):
     if not callable(target):
         raise TypeError(f"Import path is not callable: {path}")
     return target
+
+
+def _resolve_registered_plot_function(path: str):
+    """Resolve registered plot functions through lazy exports when appropriate."""
+
+    module_name, _, attr_name = path.rpartition(".")
+    if not module_name or not attr_name:
+        return _resolve_function(path)
+    module = importlib.import_module(module_name)
+    export_modules = getattr(module, "_EXPORT_MODULES", None)
+    target_module = export_modules.get(attr_name) if isinstance(export_modules, dict) else None
+    public_value = module.__dict__.get(attr_name)
+    if callable(public_value):
+        if not isinstance(target_module, str) or getattr(public_value, "__module__", None) != target_module:
+            return public_value
+    if isinstance(target_module, str):
+        return _resolve_function(f"{target_module}.{attr_name}")
+    if callable(public_value):
+        return public_value
+    return _resolve_function(path)
 
 
 def _read_table(path: str | Path) -> pd.DataFrame:

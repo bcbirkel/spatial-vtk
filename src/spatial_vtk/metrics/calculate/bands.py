@@ -134,9 +134,9 @@ def bands_from_list(
         raise ValueError("At least two edges are required.")
     if any(value <= 0 for value in values):
         raise ValueError("All frequency edges must be positive.")
-    if any(high <= low for low, high in zip(values, values[1:], strict=False)):
+    if any(high <= low for low, high in zip(values, values[1:])):
         raise ValueError("Frequency edges must be strictly increasing.")
     return {
         label_format.format(low=low, high=high): (low, high)
-        for low, high in zip(values, values[1:], strict=False)
+        for low, high in zip(values, values[1:])
     }

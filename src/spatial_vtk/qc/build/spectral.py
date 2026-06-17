@@ -234,7 +234,7 @@ def _qc_frame(
     """Build a period-level spectral QC table."""
 
     rows = []
-    for period, amplitude, accepted in zip(periods, amplitudes, mask, strict=False):
+    for period, amplitude, accepted in zip(periods, amplitudes, mask):
         reason = ""
         if not bool(accepted):
             if not np.isfinite(period) or period <= 0.0:

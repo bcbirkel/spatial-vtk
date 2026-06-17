@@ -165,7 +165,7 @@ def test_spectral_qc_uses_relative_support_and_synthetic_max_frequency() -> None
         source="synthetic",
         disable_relative_amplitude_qc=True,
     )
-    status_by_period = dict(zip(qc["period_s"], qc["qc_status"], strict=False))
+    status_by_period = dict(zip(qc["period_s"], qc["qc_status"]))
     assert status_by_period[0.25] == "fail"
     assert status_by_period[10.0] == "pass"
 

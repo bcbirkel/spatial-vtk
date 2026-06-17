@@ -293,7 +293,7 @@ def plot_residuals_vs_distance_and_depth(
     selected_fit = fit_method if fit_method is not None else fit
     _draw_trend_axis(axes[0], plot_df, x_col=distance_col, y_col=residual_col, group_col=group_col, fit_method=selected_fit, lowess_frac=lowess_frac)
     _draw_trend_axis(axes[1], plot_df, x_col=depth_col, y_col=residual_col, group_col=group_col, fit_method=selected_fit, lowess_frac=lowess_frac)
-    for ax, x_col in zip(axes, (distance_col, depth_col), strict=True):
+    for ax, x_col in zip(axes, (distance_col, depth_col)):
         if x_col == distance_col:
             ax.set_xlabel("Distance (km)")
         elif x_col == depth_col:

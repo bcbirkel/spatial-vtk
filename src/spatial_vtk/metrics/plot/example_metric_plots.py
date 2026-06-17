@@ -71,7 +71,7 @@ def plot_example_metric_pairs(
     fig, axes = plt.subplots(len(pairs), 1, figsize=(8.0, 2.2 * len(pairs)), dpi=170, sharex=True)
     axes = np.atleast_1d(axes)
     sidecar_rows_data: list[dict[str, object]] = []
-    for ax, pair in zip(axes, pairs, strict=True):
+    for ax, pair in zip(axes, pairs):
         time = np.arange(pair.observed.size) * pair.dt
         metrics = compute_metrics_pair(pair.observed, pair.synthetic, pair.dt, which=["C5", "C10", "C12"])
         sidecar_rows_data.append(

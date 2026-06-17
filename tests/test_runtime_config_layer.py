@@ -717,8 +717,13 @@ outputs:
     paths = output_group_paths("step_04_spatial", cfg=cfg)
 
     assert paths["metrics_long_path"] == tmp_path / "run_outputs" / "tables" / "metrics_long.parquet"
+    assert paths["permutation_moran_path"] == tmp_path / "run_outputs" / "tables" / "permutation_moran.csv"
     assert paths["cluster_features_path"] == tmp_path / "run_outputs" / "tables" / "cluster_feature_summary.csv"
     assert paths["pca_scores_path"] == tmp_path / "run_outputs" / "tables" / "pca_station_scores.parquet"
+    assert paths["block_holdout_path"] == tmp_path / "run_outputs" / "tables" / "block_holdout_predictions.parquet"
+    assert paths["corridors_path"] == tmp_path / "run_outputs" / "tables" / "corridors.parquet"
+    assert paths["redcap_clusters_path"] == tmp_path / "run_outputs" / "tables" / "redcap_clusters.parquet"
+    assert paths["pattern_similarity_path"] == tmp_path / "run_outputs" / "tables" / "pattern_similarity_station_anomalies.csv"
 
     metric_paths = output_group_paths("step_03_metrics", cfg=cfg)
     assert metric_paths["prepared_events_path"] == tmp_path / "run_outputs" / "tables" / "prepared_events.csv"
