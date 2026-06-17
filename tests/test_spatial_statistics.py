@@ -742,8 +742,8 @@ def test_psa_period_sheet_existing_file_writes_panel_source_sidecars(tmp_path: P
         "station_metric_map",
         item,
         _should_not_render,
-        df_factory=lambda period_item: context.station_period_summary_for_map(period_item["df"], "log2_residual"),
-        source_df_factory=lambda period_item: period_item["df"],
+        df_factory=context.station_period_summary_for_item,
+        source_df_factory=context.item_source_rows,
         required=["sta_lon", "sta_lat", "log2_residual"],
         value_col="log2_residual",
     )

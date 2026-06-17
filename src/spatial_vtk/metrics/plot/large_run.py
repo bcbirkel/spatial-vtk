@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+import inspect
 import importlib
 import re
 from tempfile import TemporaryDirectory
@@ -447,6 +448,93 @@ class MetricFigureContext:
         )
         return summary
 
+    def item_source_rows(self, item: dict[str, Any]) -> pd.DataFrame:
+        """Return the metric rows represented by one figure item."""
+
+        return item["df"]
+
+    def station_summary_for_item(
+        self,
+        item: dict[str, Any],
+        value_col: str | None = None,
+        *,
+        extra_group_cols: Iterable[str | None] | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate one figure item's rows to one plotted value per station."""
+
+        return self.station_summary_for_map(
+            self.item_source_rows(item),
+            value_col=value_col,
+            extra_group_cols=extra_group_cols,
+        )
+
+    def station_period_summary_for_item(
+        self,
+        item: dict[str, Any],
+        value_col: str | None = None,
+        *,
+        extra_group_cols: Iterable[str | None] | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate one PSA figure item's rows to one plotted value per station and period."""
+
+        return self.station_period_summary_for_map(
+            self.item_source_rows(item),
+            value_col=value_col,
+            extra_group_cols=extra_group_cols,
+        )
+
+    def station_grid_for_item(
+        self,
+        item: dict[str, Any],
+        value_col: str | None = None,
+        *,
+        extra_group_cols: Iterable[str | None] | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate one figure item and expose station coordinates as lon/lat."""
+
+        return _station_summary_grid_columns(
+            self.station_summary_for_item(
+                item,
+                value_col=value_col,
+                extra_group_cols=extra_group_cols,
+            )
+        )
+
+    def station_period_grid_for_item(
+        self,
+        item: dict[str, Any],
+        value_col: str | None = None,
+        *,
+        extra_group_cols: Iterable[str | None] | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate one PSA figure item by station/period and expose lon/lat columns."""
+
+        return _station_summary_grid_columns(
+            self.station_period_summary_for_item(
+                item,
+                value_col=value_col,
+                extra_group_cols=extra_group_cols,
+            )
+        )
+
+    def station_model_summary_for_item(
+        self,
+        item: dict[str, Any],
+        value_col: str | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate one figure item by station and model."""
+
+        return self.station_summary_for_item(item, value_col=value_col, extra_group_cols=[self.model_col])
+
+    def station_model_grid_for_item(
+        self,
+        item: dict[str, Any],
+        value_col: str | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate one figure item by station/model and expose lon/lat columns."""
+
+        return self.station_grid_for_item(item, value_col=value_col, extra_group_cols=[self.model_col])
+
     def write_metric_plot(
         self,
         base: str,
@@ -508,7 +596,7 @@ class MetricFigureContext:
                 base,
                 item,
                 func,
-                df=df_factory(item) if df_factory else None,
+                df=_call_item_dataframe_factory(df_factory, item, value_col=resolved_value_col) if df_factory else None,
                 source_df=source_df_factory(item) if source_df_factory else None,
                 required=required,
                 value_col=resolved_value_col,
@@ -523,6 +611,7 @@ class MetricFigureContext:
                 item,
                 df_factory=df_factory,
                 source_df_factory=source_df_factory,
+                value_col=resolved_value_col,
             )
             self.write_figure_sidecar(
                 output,
@@ -537,7 +626,11 @@ class MetricFigureContext:
         with TemporaryDirectory() as tmpdir_raw:
             tmpdir = Path(tmpdir_raw)
             for ax, period_item in zip(axes_flat, period_items):
-                plot_df = self.plot_rows(df_factory(period_item) if df_factory else period_item["df"])
+                plot_df = self.plot_rows(
+                    _call_item_dataframe_factory(df_factory, period_item, value_col=resolved_value_col)
+                    if df_factory
+                    else period_item["df"]
+                )
                 missing = [column for column in required if column not in plot_df.columns]
                 if missing:
                     ax.text(0.5, 0.5, f"Missing columns: {missing}", ha="center", va="center", wrap=True)
@@ -567,6 +660,7 @@ class MetricFigureContext:
             item,
             df_factory=df_factory,
             source_df_factory=source_df_factory,
+            value_col=resolved_value_col,
         )
         self.write_figure_sidecar(output, sidecar_df, source_df=source_sidecar_df)
         if showfig:
@@ -716,19 +810,31 @@ class MetricFigureContext:
         *,
         df_factory: Callable[[dict[str, Any]], pd.DataFrame] | None = None,
         source_df_factory: Callable[[dict[str, Any]], pd.DataFrame | None] | None = None,
+        value_col: str | None = None,
     ) -> tuple[pd.DataFrame, pd.DataFrame | None]:
         """Return plotted/source rows represented by a PSA period sheet."""
 
+        resolved_value_col = self.value_col if value_col is None else value_col
         period_items = self.psa_period_items(item)
         if not period_items:
-            plot_df = self.plot_rows(df_factory(item) if df_factory else item["df"])
+            plot_df = self.plot_rows(
+                _call_item_dataframe_factory(df_factory, item, value_col=resolved_value_col)
+                if df_factory
+                else item["df"]
+            )
             source_df = source_df_factory(item) if source_df_factory else None
             return plot_df, source_df
         sidecar_frames: list[pd.DataFrame] = []
         source_sidecar_frames: list[pd.DataFrame] = []
         for period_item in period_items:
-            plot_df = self.plot_rows(df_factory(period_item) if df_factory else period_item["df"])
-            sidecar_frames.append(plot_df.assign(__svtk_panel_period_s=period_item.get("period_s")))
+            plot_df = self.plot_rows(
+                _call_item_dataframe_factory(df_factory, period_item, value_col=resolved_value_col)
+                if df_factory
+                else period_item["df"]
+            )
+            panel_df = plot_df.assign(__svtk_panel_period_s=period_item.get("period_s"))
+            panel_df.attrs.update(getattr(plot_df, "attrs", {}))
+            sidecar_frames.append(panel_df)
             if source_df_factory is not None:
                 source_rows = source_df_factory(period_item)
                 if source_rows is not None:
@@ -738,7 +844,7 @@ class MetricFigureContext:
         if any(getattr(frame, "attrs", {}).get("svtk_aggregation_kind") for frame in sidecar_frames):
             sidecar_df.attrs["svtk_aggregation_kind"] = "station_event_rows_to_station_summary_by_panel"
             sidecar_df.attrs["svtk_aggregation_panel_count"] = int(len(period_items))
-            sidecar_df.attrs["svtk_aggregation_value_col"] = self.value_col
+            sidecar_df.attrs["svtk_aggregation_value_col"] = resolved_value_col
             sidecar_df.attrs["svtk_aggregation_method"] = self.station_aggregation
             if source_sidecar_df is not None:
                 sidecar_df.attrs["svtk_aggregation_input_row_count"] = int(len(source_sidecar_df))
@@ -750,8 +856,11 @@ class MetricFigureContext:
         """Return the exact rows that will be handed to a plotting function."""
 
         if self.sample_rows <= 0 or len(df) <= self.sample_rows:
-            return df.copy()
-        return _sample_rows(df, n=self.sample_rows)
+            out = df.copy()
+        else:
+            out = _sample_rows(df, n=self.sample_rows)
+        out.attrs.update(getattr(df, "attrs", {}))
+        return out
 
     def write_figure_sidecar(
         self,
@@ -1121,6 +1230,33 @@ def _rename_station_coordinates(df: pd.DataFrame, *, lon_col: str, lat_col: str)
     if lat_col != "sta_lat":
         rename[lat_col] = "sta_lat"
     return df.rename(columns=rename) if rename else df
+
+
+def _station_summary_grid_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Return a station summary with generic lon/lat columns for grid plot helpers."""
+
+    return df.rename(columns={"sta_lon": "lon", "sta_lat": "lat"})
+
+
+def _call_item_dataframe_factory(
+    factory: Callable[[dict[str, Any]], pd.DataFrame],
+    item: dict[str, Any],
+    *,
+    value_col: str | None,
+) -> pd.DataFrame:
+    """Call an item dataframe factory, passing value_col when the factory supports it."""
+
+    try:
+        signature = inspect.signature(factory)
+    except (TypeError, ValueError):
+        return factory(item)
+    parameters = signature.parameters.values()
+    accepts_value_col = "value_col" in signature.parameters or any(
+        parameter.kind == inspect.Parameter.VAR_KEYWORD for parameter in parameters
+    )
+    if accepts_value_col:
+        return factory(item, value_col=value_col)  # type: ignore[call-arg]
+    return factory(item)
 
 
 def _rename_station_identifier(df: pd.DataFrame, *, station_col: str | None) -> pd.DataFrame:

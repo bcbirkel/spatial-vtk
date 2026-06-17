@@ -414,16 +414,40 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "write_psa_period_sheet = metric_plot_context.write_psa_period_sheet" in source
-    assert "station_summary_for_map = metric_plot_context.station_summary_for_map" in source
-    assert "station_period_summary_for_map = metric_plot_context.station_period_summary_for_map" in source
-    assert "source_df=item[\"df\"]" in source
-    assert "source_df_factory=lambda period_item: period_item[\"df\"]" in source
+    assert "station_summary_for_item = metric_plot_context.station_summary_for_item" in source
+    assert "station_period_summary_for_item = metric_plot_context.station_period_summary_for_item" in source
+    assert "station_grid_for_item = metric_plot_context.station_grid_for_item" in source
+    assert "station_model_summary_for_item = metric_plot_context.station_model_summary_for_item" in source
+    assert "item_source_rows = metric_plot_context.item_source_rows" in source
+    assert "source_df=item_source_rows(item)" in source
+    assert "source_df_factory=item_source_rows" in source
+    assert "source_df=item[\"df\"]" not in source
+    assert "source_df_factory=lambda period_item" not in source
     assert "raw event-level rows used for the station summaries" in source
     assert 'STATION_AGGREGATION = os.environ.get("SVTK_STATION_AGGREGATION", "mean")' in source
     for base in ("station_metric_map", "residual_grid", "metric_by_model_map"):
         assert f'"{base}"' in source
-    assert source.count("source_df=item[\"df\"]") >= 3
-    assert source.count("source_df_factory=lambda period_item: period_item[\"df\"]") >= 2
+    assert source.count("source_df=item_source_rows(item)") >= 3
+    assert source.count("source_df_factory=item_source_rows") >= 2
+
+
+def test_large_run_step04_uses_spatial_context_row_factories() -> None:
+    """Large-run spatial figures should use package row factories, not notebook lambdas."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_04_large_run_spatial_statistics.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "station_summary_for_item = spatial_figures.station_summary_for_item" in source
+    assert "station_period_summary_for_item = spatial_figures.station_period_summary_for_item" in source
+    assert "station_grid_for_item = spatial_figures.station_grid_for_item" in source
+    assert "station_model_summary_for_item = spatial_figures.station_model_summary_for_item" in source
+    assert "item_source_rows = spatial_figures.item_source_rows" in source
+    assert "source_df=item_source_rows(item)" in source
+    assert "source_df_factory=item_source_rows" in source
+    assert "source_df=item[\"df\"]" not in source
+    assert "source_df_factory=lambda period_item" not in source
 
 
 def test_large_run_notebooks_display_output_readiness_tables() -> None:

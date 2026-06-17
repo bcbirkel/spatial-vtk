@@ -142,6 +142,13 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert len(context.metrics_for_figures) == len(metrics)
     pga_item = next(context.iter_metric_frames(passband="1-2 sec", components=["Z"], model="m1", split_psa_period=False))
     station_summary = context.station_summary_for_map(pga_item["df"])
+    item_station_summary = context.station_summary_for_item(pga_item)
+    item_station_grid = context.station_grid_for_item(pga_item)
+    assert item_station_summary[["station", "log2_residual"]].to_dict("records") == station_summary[
+        ["station", "log2_residual"]
+    ].to_dict("records")
+    assert {"lon", "lat"}.issubset(item_station_grid.columns)
+    assert {"sta_lon", "sta_lat"}.isdisjoint(item_station_grid.columns)
     sta = station_summary.loc[station_summary["station"].eq("STA")].iloc[0]
     assert sta["log2_residual"] == pytest.approx(2.0)
     assert sta["sta_lon"] == pytest.approx(-118.02)
@@ -167,6 +174,11 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
         metrics.loc[metrics["metric"].eq("PGA")],
         extra_group_cols=["model"],
     )
+    pga_all_models = next(context.iter_metric_frames(passband="1-2 sec", components=["Z"], split_psa_period=False))
+    station_model_item_summary = context.station_model_summary_for_item(pga_all_models)
+    station_model_item_grid = context.station_model_grid_for_item(pga_all_models)
+    assert set(station_model_item_summary["model"]) == {"m1", "m2"}
+    assert {"lon", "lat", "model"}.issubset(station_model_item_grid.columns)
     assert station_model_summary.attrs["svtk_aggregation_group_columns"] == ["station", "model"]
     assert set(station_model_summary["model"]) == {"m1", "m2"}
     sta_m1 = station_model_summary.loc[
@@ -191,6 +203,10 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert "all-psa-periods" in context.figure_name("station_metric_map", psa_item)
     assert "1-2-sec" not in context.figure_name("station_metric_map", psa_item)
     station_period_summary = context.station_period_summary_for_map(psa_item["df"])
+    item_period_summary = context.station_period_summary_for_item(psa_item)
+    assert item_period_summary[["station", "period_s", "log2_residual"]].to_dict("records") == station_period_summary[
+        ["station", "period_s", "log2_residual"]
+    ].to_dict("records")
     assert station_period_summary.attrs["svtk_aggregation_group_columns"] == ["station", "period_s"]
     assert set(station_period_summary["period_s"]) == {1.0, 2.0}
     assert station_period_summary["source_row_count"].tolist() == [1, 1]
@@ -273,8 +289,8 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
         "station_metric_map",
         psa_item,
         _dummy_png_plot,
-        df_factory=lambda period_item: context.station_period_summary_for_map(period_item["df"]),
-        source_df_factory=lambda period_item: period_item["df"],
+        df_factory=context.station_period_summary_for_item,
+        source_df_factory=context.item_source_rows,
         required=("station", "sta_lon", "sta_lat", "period_s", "log2_residual"),
     )
     assert psa_output is not None
@@ -288,6 +304,22 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert set(psa_rows["__svtk_panel_period_s"]) == {1.0, 2.0}
     assert set(psa_rows["period_s"]) == {1.0, 2.0}
     assert set(psa_source_rows["__svtk_panel_period_s"]) == {1.0, 2.0}
+    custom_psa_output = context.write_psa_period_sheet(
+        "station_metric_map_custom",
+        psa_item,
+        _dummy_png_plot,
+        df_factory=context.station_period_summary_for_item,
+        source_df_factory=context.item_source_rows,
+        required=("station", "sta_lon", "sta_lat", "period_s", "distance_km"),
+        value_col="distance_km",
+    )
+    assert custom_psa_output is not None
+    custom_psa_sidecar = context.sidecar_output_dir / f"{custom_psa_output.stem}.csv"
+    custom_psa_metadata = json.loads(custom_psa_sidecar.with_suffix(".json").read_text(encoding="utf-8"))
+    custom_psa_rows = pd.read_csv(custom_psa_sidecar)
+    assert custom_psa_metadata["aggregation_value_col"] == "distance_km"
+    assert custom_psa_metadata["svtk_aggregation_value_col"] == "distance_km"
+    assert set(custom_psa_rows["distance_km"]) == {10.0}
     assert set(psa_source_rows["period_s"]) == {1.0, 2.0}
     assert psa_metadata["plot_row_count"] == 2
     assert psa_metadata["source_row_count"] == 3

@@ -393,6 +393,80 @@ class SpatialFigureContext:
         context = self._context_for(df) or self.metric_context
         return context.station_period_summary_for_map(df, value_col=value_col, extra_group_cols=extra_group_cols)
 
+    def item_source_rows(self, item: dict[str, Any]) -> pd.DataFrame:
+        """Return the spatial rows represented by one figure item."""
+
+        context = self._context_for(item.get("df")) or self.metric_context
+        return context.item_source_rows(item)
+
+    def station_summary_for_item(
+        self,
+        item: dict[str, Any],
+        value_col: str | None = None,
+        *,
+        extra_group_cols: Iterable[str | None] | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate one figure item's rows to one plotted value per station."""
+
+        context = self._context_for(item.get("df")) or self.metric_context
+        return context.station_summary_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
+
+    def station_period_summary_for_item(
+        self,
+        item: dict[str, Any],
+        value_col: str | None = None,
+        *,
+        extra_group_cols: Iterable[str | None] | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate one PSA figure item's rows to one plotted value per station and period."""
+
+        context = self._context_for(item.get("df")) or self.metric_context
+        return context.station_period_summary_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
+
+    def station_grid_for_item(
+        self,
+        item: dict[str, Any],
+        value_col: str | None = None,
+        *,
+        extra_group_cols: Iterable[str | None] | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate one figure item and expose station coordinates as lon/lat."""
+
+        context = self._context_for(item.get("df")) or self.metric_context
+        return context.station_grid_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
+
+    def station_period_grid_for_item(
+        self,
+        item: dict[str, Any],
+        value_col: str | None = None,
+        *,
+        extra_group_cols: Iterable[str | None] | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate one PSA figure item by station/period and expose lon/lat columns."""
+
+        context = self._context_for(item.get("df")) or self.metric_context
+        return context.station_period_grid_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
+
+    def station_model_summary_for_item(
+        self,
+        item: dict[str, Any],
+        value_col: str | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate one figure item by station and model."""
+
+        context = self._context_for(item.get("df")) or self.metric_context
+        return context.station_model_summary_for_item(item, value_col=value_col)
+
+    def station_model_grid_for_item(
+        self,
+        item: dict[str, Any],
+        value_col: str | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate one figure item by station/model and expose lon/lat columns."""
+
+        context = self._context_for(item.get("df")) or self.metric_context
+        return context.station_model_grid_for_item(item, value_col=value_col)
+
     def filter_like_item(
         self,
         df: pd.DataFrame | None,
