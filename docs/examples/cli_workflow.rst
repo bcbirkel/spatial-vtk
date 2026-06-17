@@ -185,18 +185,18 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
      --score-col log2_residual \
      --color-col metric
 
-   The band-score plot defaults to the configured ``metrics_long`` table and
-   ``band_score_distribution`` figure path. Pass ``--input`` or ``--output``
-   only when you want to override those paths.
+The band-score plot defaults to the configured ``metrics_long`` table and
+``band_score_distribution`` figure path. Pass ``--input`` or ``--output``
+only when you want to override those paths.
 
-   Add ``--write-sidecar`` to any ``svtk plot``, ``svtk map``, or
-   ``svtk visualize`` figure command to write CSV/JSON provenance next to the
-   figure. Use ``--sidecar-rows N`` to write a deterministic row sample or omit
-   it to write every plotted row. Use ``--sidecar-dir`` when sidecars should go
-   somewhere other than the figure directory's ``sidecars`` folder. The JSON
-   metadata records ``plot_rows_role`` and ``source_rows_role`` so aggregated
-   station maps can distinguish plotted station summaries from the event-level
-   rows used to build them.
+Add ``--write-sidecar`` to any ``svtk plot``, ``svtk map``, or
+``svtk visualize`` figure command to write CSV/JSON provenance next to the
+figure. Use ``--sidecar-rows N`` to write a deterministic row sample or omit
+it to write every plotted row. Use ``--sidecar-dir`` when sidecars should go
+somewhere other than the figure directory's ``sidecars`` folder. The JSON
+metadata records ``plot_rows_role`` and ``source_rows_role`` so aggregated
+station maps can distinguish plotted station summaries from the event-level
+rows used to build them.
 
 
 Step 4: Spatial Statistics

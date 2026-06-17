@@ -227,6 +227,22 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert "lowpass_hz=" not in text
 
 
+def test_cli_workflow_explanatory_text_is_not_in_bash_blocks():
+    """Prose near shell examples should not be indented into bash literal blocks."""
+
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "docs" / "examples" / "cli_workflow.rst").read_text(encoding="utf-8")
+    prose_starts = (
+        "The band-score plot defaults",
+        "Add ``--write-sidecar``",
+        "metadata records ``plot_rows_role``",
+    )
+    for line in text.splitlines():
+        stripped = line.strip()
+        if any(stripped.startswith(prefix) for prefix in prose_starts):
+            assert not line.startswith("   "), line
+
+
 def test_cli_config_show_section(tmp_path, capsys):
     config = tmp_path / "spatial-vtk.yaml"
     config.write_text(
