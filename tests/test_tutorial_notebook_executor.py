@@ -376,6 +376,40 @@ def test_tutorial_notebooks_use_table_helpers_for_file_reads() -> None:
             assert "pd.read_" not in source, f"{notebook_path.relative_to(repo_root)} cell {index}"
 
 
+def test_tutorial_notebook_code_uses_python_package_apis_not_cli_calls() -> None:
+    """Tutorial notebooks should drive workflows through package APIs, not shell commands."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    assert notebooks
+    forbidden_snippets = (
+        "import subprocess",
+        "from subprocess",
+        "subprocess.",
+        "os.system(",
+        "os.popen(",
+        "run_or_submit_notebook_cli_command(",
+        "write_notebook_cli_slurm_script(",
+    )
+    forbidden_line_patterns = (
+        re.compile(r"^\s*![^\n]*\bsvtk\b", re.MULTILINE),
+        re.compile(r"^\s*%%bash\b", re.MULTILINE),
+        re.compile(r"\[\s*['\"]svtk['\"]\s*,"),
+    )
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            if cell.get("cell_type") != "code":
+                continue
+            source = "".join(cell.get("source", []))
+            matches = [snippet for snippet in forbidden_snippets if snippet in source]
+            pattern_matches = [pattern.pattern for pattern in forbidden_line_patterns if pattern.search(source)]
+            assert not matches and not pattern_matches, (
+                f"{notebook_path.relative_to(repo_root)} cell {index} should use "
+                f"spatial_vtk package APIs, not CLI/shell calls: {matches + pattern_matches}"
+            )
+
+
 def test_large_run_notebooks_describe_configured_output_locations() -> None:
     """Large-run notebooks should not teach one machine-specific run layout."""
 

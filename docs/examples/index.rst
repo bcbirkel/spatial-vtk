@@ -5,6 +5,10 @@ The standard tutorial notebooks run end to end against the example data that
 ships with the repository. The large-run notebooks use the same workflow shape
 but keep heavy work in chunked helpers or SLURM-driven cells.
 
+Notebook cells use importable ``spatial_vtk`` package functions rather than
+shelling out to ``svtk``. The command-line workflow is documented separately for
+terminal-first use.
+
 Standard Tutorial Notebooks
 ---------------------------
 
