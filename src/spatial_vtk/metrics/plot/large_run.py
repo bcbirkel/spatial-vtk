@@ -323,6 +323,7 @@ class MetricFigureContext:
         input_counts = _input_group_counts(df, group_cols, event_col="event_id")
         if not input_counts.empty:
             summary = summary.merge(input_counts, on=group_cols, how="left")
+            summary = _add_station_aggregation_drop_counts(summary)
         for column in context_cols:
             summary[column] = dimension_value(df, column, self.context_multi_label(column))
         summary["aggregation"] = self.station_aggregation
@@ -382,6 +383,7 @@ class MetricFigureContext:
         input_counts = _input_group_counts(df, group_cols, event_col="event_id")
         if not input_counts.empty:
             summary = summary.merge(input_counts, on=group_cols, how="left")
+            summary = _add_station_aggregation_drop_counts(summary)
         for column in context_cols:
             summary[column] = dimension_value(df, column, self.context_multi_label(column))
         summary["aggregation"] = self.station_aggregation
@@ -948,6 +950,23 @@ def _input_group_counts(df: pd.DataFrame, group_cols: list[str], *, event_col: s
     return out
 
 
+def _add_station_aggregation_drop_counts(df: pd.DataFrame) -> pd.DataFrame:
+    """Add per-group finite-value drop counts to station summary rows."""
+
+    out = df.copy()
+    if {"input_row_count", "source_row_count"} <= set(out.columns):
+        out["dropped_nonfinite_row_count"] = (
+            pd.to_numeric(out["input_row_count"], errors="coerce").fillna(0)
+            - pd.to_numeric(out["source_row_count"], errors="coerce").fillna(0)
+        ).clip(lower=0).astype(int)
+    if {"input_event_count", "source_event_count"} <= set(out.columns):
+        out["dropped_nonfinite_event_count"] = (
+            pd.to_numeric(out["input_event_count"], errors="coerce").fillna(0)
+            - pd.to_numeric(out["source_event_count"], errors="coerce").fillna(0)
+        ).clip(lower=0).astype(int)
+    return out
+
+
 def _aggregate_grouped_values(grouped: Any, aggregation: str) -> pd.Series:
     """Aggregate one grouped numeric series using a supported statistic."""
 
@@ -987,6 +1006,7 @@ def _station_aggregation_attrs(
         "svtk_aggregation_coordinate_columns": [lon_col, lat_col],
         "svtk_aggregation_input_row_count": int(len(source_rows)),
         "svtk_aggregation_finite_row_count": int(len(finite_rows)),
+        "svtk_aggregation_dropped_nonfinite_row_count": int(len(source_rows) - len(finite_rows)),
     }
 
 

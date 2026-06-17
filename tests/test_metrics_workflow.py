@@ -150,6 +150,8 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert sta["source_event_count"] == 2
     assert sta["input_row_count"] == 3
     assert sta["input_event_count"] == 3
+    assert sta["dropped_nonfinite_row_count"] == 1
+    assert sta["dropped_nonfinite_event_count"] == 1
     assert sta["source_coordinate_count"] == 2
     assert sta["aggregation"] == "mean"
     assert station_summary.attrs["svtk_aggregation_kind"] == "station_event_rows_to_station_summary"
@@ -159,6 +161,7 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert station_summary.attrs["svtk_aggregation_coordinate_columns"] == ["sta_lon", "sta_lat"]
     assert station_summary.attrs["svtk_aggregation_input_row_count"] == 4
     assert station_summary.attrs["svtk_aggregation_finite_row_count"] == 3
+    assert station_summary.attrs["svtk_aggregation_dropped_nonfinite_row_count"] == 1
 
     station_model_summary = context.station_summary_for_map(
         metrics.loc[metrics["metric"].eq("PGA")],
@@ -176,7 +179,11 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert sta_m2["log2_residual"] == pytest.approx(7.0)
     assert sta_m1["source_event_count"] == 2
     assert sta_m1["input_event_count"] == 3
+    assert sta_m1["dropped_nonfinite_row_count"] == 1
+    assert sta_m1["dropped_nonfinite_event_count"] == 1
     assert sta_m2["source_event_count"] == 1
+    assert sta_m2["dropped_nonfinite_row_count"] == 0
+    assert sta_m2["dropped_nonfinite_event_count"] == 0
     assert sta_m1["source_coordinate_count"] == 2
     assert sta_m2["source_coordinate_count"] == 1
 
@@ -188,6 +195,8 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert set(station_period_summary["period_s"]) == {1.0, 2.0}
     assert station_period_summary["source_row_count"].tolist() == [1, 1]
     assert station_period_summary["input_row_count"].tolist() == [1, 2]
+    assert station_period_summary["dropped_nonfinite_row_count"].tolist() == [0, 1]
+    assert station_period_summary["dropped_nonfinite_event_count"].tolist() == [0, 1]
 
     def _dummy_plot(frame: pd.DataFrame, *, output_path, **kwargs) -> None:
         Path(output_path).write_text(str(len(frame)), encoding="utf-8")
@@ -224,6 +233,7 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert metadata["svtk_aggregation_coordinate_columns"] == ["sta_lon", "sta_lat"]
     assert metadata["svtk_aggregation_input_row_count"] == 4
     assert metadata["svtk_aggregation_finite_row_count"] == 3
+    assert metadata["svtk_aggregation_dropped_nonfinite_row_count"] == 1
 
     context.sample_rows = 0
     context.sidecar_rows = None

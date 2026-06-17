@@ -83,6 +83,10 @@ Changelog
    Extended the dashboard summary-table contract with map-coordinate
    requirements, so Step 7 notebooks show which station/event longitude and
    latitude columns feed the dashboard map tabs before launch.
+   Added per-station finite-value drop counts to large-run metric figure
+   aggregation outputs. Optional station-map sidecars now show, for each
+   plotted station summary, how many selected metric rows and events were
+   excluded because the plotted value was non-finite.
    Added a dashboard summary-table contract helper that maps each metrics
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file
