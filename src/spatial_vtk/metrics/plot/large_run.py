@@ -26,6 +26,7 @@ TARGET_METRIC_SPECS = (
     {"key": "traveltime_delay", "label": "Traveltime delay", "aliases": ("traveltime delay", "travel time delay", "travel-time delay", "TT delay", "traveltime")},
     {"key": "cav", "label": "CAV", "aliases": ("CAV", "Cumulative absolute velocity")},
 )
+DEFAULT_SCORE_TREND_COLUMNS = ("anderson_2004_gof", "olsen_mayhew_gof", "score")
 
 
 @dataclass
@@ -791,6 +792,62 @@ class MetricFigureContext:
                 outputs.append(output)
         return outputs
 
+    def write_score_trend_plots(
+        self,
+        score_trend_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        score_columns: Iterable[str] | None = None,
+        showfig: bool = False,
+    ) -> list[Path]:
+        """Write GOF/score trend figures for each target metric.
+
+        This mirrors the standard tutorial's score-trend figure while keeping
+        large-run notebooks on the same context-managed path as other metric
+        figures and sidecars.
+        """
+
+        if not self.ready:
+            print("Skipping score trend figures: metric figure context is not ready.")
+            return []
+        candidates = tuple(score_columns or DEFAULT_SCORE_TREND_COLUMNS)
+        available = [
+            column
+            for column in candidates
+            if column in self.metrics_for_figures.columns
+            and pd.to_numeric(self.metrics_for_figures[column], errors="coerce").notna().any()
+        ]
+        if not available:
+            print(f"Skipping score trend figures: no finite score column found from {list(candidates)}")
+            return []
+        outputs: list[Path] = []
+        for item in self.iter_metric_frames(
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            writer = self.write_psa_period_sheet if item["key"] == "psa" else self.write_metric_plot
+            for score_col in available:
+                output = writer(
+                    "score_trends",
+                    item,
+                    score_trend_func,
+                    required=[self.distance_col, score_col],
+                    score_col=score_col,
+                    group_col=self.component_col,
+                    fit="lowess",
+                    connect_points=False,
+                    robust_axis_percentile=self.robust_axis_percentile,
+                    value_col=score_col,
+                    showfig=showfig,
+                )
+                if output is not None:
+                    outputs.append(output)
+        return outputs
+
     def psa_period_items(self, item: dict[str, Any]) -> list[dict[str, Any]]:
         """Return PSA item variants, one per oscillator period."""
 
@@ -1157,6 +1214,9 @@ def _metric_figure_columns(available_columns: list[str], *, value_col: str) -> l
         "event_region",
         "event_geojson_region",
         "event_geojson_labels",
+        "anderson_2004_gof",
+        "olsen_mayhew_gof",
+        "score",
     }
     return [column for column in available_columns if column in wanted]
 

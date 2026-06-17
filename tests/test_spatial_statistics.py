@@ -18,6 +18,7 @@ from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.io import write_table
 from spatial_vtk.metrics.plot.large_run import MetricFigureContext
+from spatial_vtk.metrics.plot import plot_score_trends
 from spatial_vtk.spatial.calculate.clustering import assign_redcap_clusters, run_residual_feature_clustering
 from spatial_vtk.spatial.calculate.correlation import (
     build_distance_bin_summary,
@@ -978,6 +979,52 @@ def test_psa_period_sheet_render_writes_empty_panel_sidecar(tmp_path: Path) -> N
     assert metadata["plot_row_count"] == 0
     assert metadata["written_row_count"] == 0
     assert metadata["plot_rows_role"] == "figure_plot_rows"
+
+
+def test_large_run_score_trend_helper_writes_sidecar_rows(tmp_path: Path) -> None:
+    """Large-run score trend helper should preserve plotted/source row audits."""
+
+    rows = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3"],
+            "station": ["STA", "STA", "STB"],
+            "metric": ["PGA", "PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec"],
+            "component": ["R", "T", "R"],
+            "model": ["m1", "m1", "m1"],
+            "distance_km": [10.0, 20.0, 30.0],
+            "log2_residual": [0.1, -0.2, 0.3],
+            "anderson_2004_gof": [8.0, 7.0, 9.0],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        rows,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+        write_sidecars=True,
+        sidecar_rows=None,
+    )
+
+    outputs = context.write_score_trend_plots(
+        plot_score_trends,
+        score_columns=["anderson_2004_gof"],
+        showfig=False,
+    )
+
+    assert len(outputs) == 1
+    sidecar_path = context.sidecar_output_dir / f"{outputs[0].stem}.csv"
+    metadata = json.loads(sidecar_path.with_suffix(".json").read_text(encoding="utf-8"))
+    sidecar = pd.read_csv(sidecar_path)
+
+    assert len(sidecar) == len(rows)
+    assert set(sidecar["anderson_2004_gof"]) == {7.0, 8.0, 9.0}
+    assert set(sidecar["distance_km"]) == {10.0, 20.0, 30.0}
+    assert metadata["value_col"] == "log2_residual"
+    assert metadata["plot_rows_role"] == "figure_plot_rows"
+    assert metadata["plot_sidecar_exact"] is True
+    assert metadata["source_sidecar_exact"] is True
 
 
 def test_spatial_figure_context_accepts_shared_sidecar_settings(tmp_path: Path) -> None:

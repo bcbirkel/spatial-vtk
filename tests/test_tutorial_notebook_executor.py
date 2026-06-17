@@ -417,6 +417,7 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "write_psa_period_sheet = metric_plot_context.write_psa_period_sheet" in source
+    assert "write_score_trend_plots = metric_plot_context.write_score_trend_plots" in source
     assert "station_summary_for_item = metric_plot_context.station_summary_for_item" in source
     assert "station_period_summary_for_item = metric_plot_context.station_period_summary_for_item" in source
     assert "station_grid_for_item = metric_plot_context.station_grid_for_item" in source
@@ -426,6 +427,9 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     assert "source_df_factory=item_source_rows" in source
     assert "source_df=item[\"df\"]" not in source
     assert "source_df_factory=lambda period_item" not in source
+    assert "write_score_trend_plots(" in source
+    assert "plot_score_trends" in source
+    assert "SCORE_TREND_COLUMNS" in source
     assert "raw event-level rows used for the station summaries" in source
     assert 'STATION_AGGREGATION = os.environ.get("SVTK_STATION_AGGREGATION", "mean")' in source
     for base in ("station_metric_map", "residual_grid", "metric_by_model_map"):

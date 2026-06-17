@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Added large-run Step 3 score-trend parity with the standard tutorial. The
+   metric figure context now projects GOF score columns, exposes a
+   ``write_score_trend_plots()`` helper, and the large-run metric notebook
+   renders configurable score trend figures through that helper.
    Added a bounded startup preflight to the QC Streamlit dashboard. The app now
    checks the configured QC trace-summary table headers and row count before
    loading the full table, showing a readiness message for missing, empty, or
