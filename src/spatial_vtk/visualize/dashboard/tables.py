@@ -33,6 +33,7 @@ DASHBOARD_SUMMARY_GROUP_COLUMNS: tuple[str, ...] = (
     "model",
     "metric",
     "band",
+    "period_s",
     "component",
     "station",
     "event_id",
@@ -133,7 +134,7 @@ def build_dashboard_summaries(
     value_aggs = _value_aggregations(work)
     base_value_col = "_dashboard_value"
     summaries: dict[str, pd.DataFrame] = {}
-    model_groups = [column for column in ["model", "metric", "band", "component"] if column in work.columns]
+    model_groups = [column for column in ["model", "metric", "band", "period_s", "component"] if column in work.columns]
     summaries["model_metric_band"] = (
         work.groupby(model_groups, dropna=False)
         .agg(
@@ -145,7 +146,7 @@ def build_dashboard_summaries(
         .reset_index()
     )
 
-    station_groups = [column for column in ["station", "sta_lat", "sta_lon", "Vs30", "vs30", "geology_class", "model", "metric", "band", "component"] if column in work.columns]
+    station_groups = [column for column in ["station", "sta_lat", "sta_lon", "Vs30", "vs30", "geology_class", "model", "metric", "band", "period_s", "component"] if column in work.columns]
     summaries["station_rollup"] = (
         work.groupby(station_groups, dropna=False)
         .agg(
@@ -157,7 +158,7 @@ def build_dashboard_summaries(
         .reset_index()
     )
 
-    event_groups = [column for column in ["event_id", "event_lat", "event_lon", "magnitude", "event_magnitude", "model", "metric", "band", "component"] if column in work.columns]
+    event_groups = [column for column in ["event_id", "event_lat", "event_lon", "magnitude", "event_magnitude", "model", "metric", "band", "period_s", "component"] if column in work.columns]
     summaries["event_rollup"] = (
         work.groupby(event_groups, dropna=False)
         .agg(
@@ -174,7 +175,7 @@ def build_dashboard_summaries(
         binned["dist_bin_km"] = np.floor(pd.to_numeric(binned["distance_km"], errors="coerce") / float(hex_dist)) * float(hex_dist)
         binned["az_bin_deg"] = np.floor((pd.to_numeric(binned["azimuth_deg"], errors="coerce") % 360.0) / float(hex_az)) * float(hex_az)
         summaries["path_hex"] = (
-            binned.groupby([column for column in ["model", "metric", "band", "component", "dist_bin_km", "az_bin_deg"] if column in binned.columns], dropna=False)
+            binned.groupby([column for column in ["model", "metric", "band", "period_s", "component", "dist_bin_km", "az_bin_deg"] if column in binned.columns], dropna=False)
             .agg(
                 n=("_dashboard_row_count", "sum"),
                 **_unique_count_aggregations(binned, events=True, stations=True),
@@ -185,7 +186,7 @@ def build_dashboard_summaries(
     else:
         value_cols = list(_value_aggregations(work).keys())
         count_cols = list(_unique_count_aggregations(work, events=True, stations=True).keys())
-        summaries["path_hex"] = pd.DataFrame(columns=["model", "metric", "band", "dist_bin_km", "az_bin_deg", "n", *count_cols, *value_cols])
+        summaries["path_hex"] = pd.DataFrame(columns=["model", "metric", "band", "period_s", "dist_bin_km", "az_bin_deg", "n", *count_cols, *value_cols])
     return summaries
 
 

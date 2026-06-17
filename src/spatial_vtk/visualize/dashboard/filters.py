@@ -15,6 +15,7 @@ def filter_dashboard_metrics(
     models: Iterable[str] | None = None,
     metric: str | None = None,
     bands: Iterable[str] | None = None,
+    periods_s: Iterable[float | str] | None = None,
     value_column: str | None = None,
     vs30_range: tuple[float | None, float | None] | None = None,
     distance_range_km: tuple[float | None, float | None] | None = None,
@@ -35,7 +36,9 @@ def filter_dashboard_metrics(
         metric_values = out["metric"].map(normalize_metric_name)
         out = out[metric_values == public_metric]
     if bands and "band" in out.columns:
-        out = _filter_band_labels(out, bands, band_columns=("band",))
+        out = _filter_band_labels(out, bands, band_columns=("band",), preserve_unbanded=True)
+    if periods_s and "period_s" in out.columns:
+        out = _filter_period_values(out, periods_s, period_col="period_s")
     if value_column and value_column not in out.columns:
         raise ValueError(f"Selected dashboard value column is not available: {value_column}")
     out = _filter_range_any(out, ("Vs30", "vs30"), vs30_range)
@@ -230,7 +233,13 @@ def _filter_range_any(df: pd.DataFrame, columns: tuple[str, ...], bounds: tuple[
     return out
 
 
-def _filter_band_labels(df: pd.DataFrame, bands: Iterable[str], *, band_columns: tuple[str, ...]) -> pd.DataFrame:
+def _filter_band_labels(
+    df: pd.DataFrame,
+    bands: Iterable[str],
+    *,
+    band_columns: tuple[str, ...],
+    preserve_unbanded: bool = False,
+) -> pd.DataFrame:
     """Filter rows by raw band tokens or equivalent display labels."""
 
     requested_raw = {str(band).strip() for band in bands if str(band).strip()}
@@ -245,7 +254,30 @@ def _filter_band_labels(df: pd.DataFrame, bands: Iterable[str], *, band_columns:
         values = df[column].astype(str).str.strip()
         labels = values.map(band_display_label)
         mask = mask | values.isin(requested_raw) | labels.isin(requested_labels)
+        if preserve_unbanded:
+            mask = mask | values.map(_is_unbanded_metric_label)
     return df.loc[mask]
+
+
+def _is_unbanded_metric_label(value: object) -> bool:
+    """Return whether one dashboard metric band label means no passband."""
+
+    return str(value).strip().lower() in {"", "nan", "none", "all", "broadband"}
+
+
+def _filter_period_values(df: pd.DataFrame, periods_s: Iterable[float | str], *, period_col: str) -> pd.DataFrame:
+    """Filter finite oscillator periods while preserving non-period rows."""
+
+    requested = {
+        round(float(period), 9)
+        for period in periods_s
+        if pd.notna(pd.to_numeric(pd.Series([period]), errors="coerce").iloc[0])
+    }
+    if not requested:
+        return df
+    values = pd.to_numeric(df[period_col], errors="coerce")
+    rounded = values.round(9)
+    return df.loc[values.isna() | rounded.isin(requested)]
 
 
 __all__ = [

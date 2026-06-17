@@ -109,6 +109,41 @@ def test_dashboard_summaries_report_unique_event_and_station_counts() -> None:
     assert path_row["station_count"] == 1
 
 
+def test_dashboard_summaries_preserve_spectral_period_groups() -> None:
+    """Dashboard summaries should not collapse PSA oscillator periods into passbands."""
+
+    rows = pd.DataFrame(
+        {
+            "model": ["m1", "m1", "m1"],
+            "metric": ["PSA", "PSA", "PGA"],
+            "band": ["", "", "1-2 sec"],
+            "period_s": [1.0, 2.0, pd.NA],
+            "component": ["R", "R", "R"],
+            "station": ["STA", "STA", "STA"],
+            "event_id": ["ev1", "ev1", "ev1"],
+            "sta_lat": [34.0, 34.0, 34.0],
+            "sta_lon": [-118.0, -118.0, -118.0],
+            "event_lat": [33.9, 33.9, 33.9],
+            "event_lon": [-118.1, -118.1, -118.1],
+            "distance_km": [10.0, 10.0, 10.0],
+            "azimuth_deg": [45.0, 45.0, 45.0],
+            "log2_residual": [0.25, 0.75, -0.5],
+        }
+    )
+
+    summaries = validate_dashboard_tables(build_dashboard_summaries(rows, hex_dist=1000.0, hex_az=360.0))
+    model_summary = summaries["model_metric_band"]
+    station_summary = summaries["station_rollup"]
+    path_summary = summaries["path_hex"]
+
+    psa_rows = model_summary.loc[model_summary["metric"].eq("PSA")]
+    assert sorted(psa_rows["period_s"].dropna().astype(float).tolist()) == [1.0, 2.0]
+    assert psa_rows["n"].tolist() == [1, 1]
+    assert "period_s" in station_summary.columns
+    assert "period_s" in path_summary.columns
+    assert station_summary.loc[station_summary["metric"].eq("PSA"), "period_s"].nunique(dropna=True) == 2
+
+
 def test_dashboard_metric_dataset_loader_projects_requested_columns(tmp_path) -> None:
     """Dashboard metric loading should avoid materializing unused wide columns."""
 
@@ -190,6 +225,7 @@ def test_dashboard_summary_dataset_reads_only_summary_columns(tmp_path, monkeypa
     assert columns == dashboard_summary_input_columns()
     assert "model" in columns
     assert "metric" in columns
+    assert "period_s" in columns
     assert "log2_residual" in columns
     assert "distance_km" in columns
     assert "azimuth_deg" in columns

@@ -239,6 +239,25 @@ def test_dashboard_labels_and_filters_are_public_facing():
     assert set(filtered["station"]) == {"STA1", "STA2"}
     assert set(filtered["metric"]) == {"PGA"}
 
+    mixed_periods = pd.DataFrame(
+        {
+            "model": ["m1", "m1", "m1"],
+            "metric": ["PSA", "PSA", "PGA"],
+            "band": ["", "", "1-2 sec"],
+            "period_s": [1.0, 2.0, pd.NA],
+            "log2_residual": [0.1, 0.2, -0.3],
+        }
+    )
+    period_filtered = filter_dashboard_metrics(
+        mixed_periods,
+        bands=["1-2 sec"],
+        periods_s=[2.0],
+        value_column="log2_residual",
+    )
+    assert period_filtered["metric"].tolist() == ["PSA", "PGA"]
+    assert period_filtered["period_s"].iloc[0] == 2.0
+    assert pd.isna(period_filtered["period_s"].iloc[1])
+
     preview = display_table(
         filtered,
         columns=["event_id", "station", "component", "band", "metric", "value_obs", "value_syn", "log2_residual", "anderson_2004_gof"],

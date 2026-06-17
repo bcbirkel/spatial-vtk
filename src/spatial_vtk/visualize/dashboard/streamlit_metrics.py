@@ -89,12 +89,13 @@ def _render_metrics_dashboard(
 
     all_metrics = sorted({normalize_metric_name(value) for value in summaries["model_metric_band"]["metric"].dropna().astype(str)}, key=metric_display_name)
     all_models = sorted(summaries["model_metric_band"]["model"].dropna().astype(str).unique().tolist())
-    data_bands = sorted(summaries["model_metric_band"]["band"].dropna().astype(str).unique().tolist(), key=band_display_label)
+    data_bands = _band_options(summaries["model_metric_band"])
     configured_bands = configured_band_options(config, command="metrics.dashboard", fallback_df=summaries["model_metric_band"])
     all_bands = _merged_options(configured_bands, data_bands, key=band_display_label)
+    period_options = _period_options(summaries["model_metric_band"])
     component_options = _component_options(config, summaries, long_metrics)
-    if not all_metrics or not all_models or not all_bands:
-        st.info("The model/metric/passband summary is empty, so dashboard filters cannot be built yet.")
+    if not all_metrics or not all_models or (not all_bands and not period_options):
+        st.info("The model/metric summary is empty, so dashboard filters cannot be built yet.")
         st.dataframe(_display_table(summaries["model_metric_band"]), width="stretch")
         return
 
@@ -102,13 +103,28 @@ def _render_metrics_dashboard(
         st.header("Filters")
         selected_models = st.multiselect("Models", options=all_models, default=all_models)
         selected_metric = st.selectbox("Metric", options=all_metrics, format_func=metric_display_name)
-        selected_bands = st.multiselect("Passbands", options=all_bands, default=data_bands or all_bands, format_func=band_display_label)
+        selected_bands = (
+            st.multiselect("Passbands", options=all_bands, default=data_bands or all_bands, format_func=band_display_label)
+            if all_bands
+            else []
+        )
+        selected_periods = (
+            st.multiselect(
+                "Oscillator Periods",
+                options=period_options,
+                default=period_options,
+                format_func=_period_display_label,
+            )
+            if period_options
+            else []
+        )
         selected_component = st.selectbox("Component", options=component_options) if component_options else "all"
         value_source = filter_dashboard_metrics(
             summaries["model_metric_band"],
             models=selected_models,
             metric=selected_metric,
             bands=selected_bands,
+            periods_s=selected_periods,
             component=None if selected_component in {"", "all"} else selected_component,
         )
         value_columns, value_message = _value_columns_or_message(value_source)
@@ -124,7 +140,15 @@ def _render_metrics_dashboard(
         max_markers = st.number_input("Maximum map markers", min_value=100, max_value=50000, value=3000, step=100)
 
     component_filter = None if selected_component in {"", "all"} else selected_component
-    heat = filter_dashboard_metrics(summaries["model_metric_band"], models=selected_models, metric=selected_metric, bands=selected_bands, value_column=value_col, component=component_filter)
+    heat = filter_dashboard_metrics(
+        summaries["model_metric_band"],
+        models=selected_models,
+        metric=selected_metric,
+        bands=selected_bands,
+        periods_s=selected_periods,
+        value_column=value_col,
+        component=component_filter,
+    )
     stations, station_value_message = filter_optional_dashboard_summary(
         summaries["station_rollup"],
         table_label="station",
@@ -132,6 +156,7 @@ def _render_metrics_dashboard(
         models=selected_models,
         metric=selected_metric,
         bands=selected_bands,
+        periods_s=selected_periods,
         distance_range_km=distance_range,
         vs30_range=vs30_range,
         component=component_filter,
@@ -143,6 +168,7 @@ def _render_metrics_dashboard(
         models=selected_models,
         metric=selected_metric,
         bands=selected_bands,
+        periods_s=selected_periods,
         distance_range_km=distance_range,
         component=component_filter,
     )
@@ -153,6 +179,7 @@ def _render_metrics_dashboard(
         models=selected_models,
         metric=selected_metric,
         bands=selected_bands,
+        periods_s=selected_periods,
         component=component_filter,
     )
     rows = None
@@ -163,7 +190,17 @@ def _render_metrics_dashboard(
         if row_value is None:
             row_value_message = _missing_row_value_message(value_col)
         else:
-            rows = filter_dashboard_metrics(long_metrics, models=selected_models, metric=selected_metric, bands=selected_bands, value_column=row_value, distance_range_km=distance_range, vs30_range=vs30_range, component=component_filter)
+            rows = filter_dashboard_metrics(
+                long_metrics,
+                models=selected_models,
+                metric=selected_metric,
+                bands=selected_bands,
+                periods_s=selected_periods,
+                value_column=row_value,
+                distance_range_km=distance_range,
+                vs30_range=vs30_range,
+                component=component_filter,
+            )
 
     overview_tab, station_tab, event_tab, path_tab, distribution_tab, compare_tab = st.tabs(["Overview", "Stations", "Events", "Paths", "Distributions", "Compare Models"])
     with overview_tab:
@@ -172,6 +209,8 @@ def _render_metrics_dashboard(
         cols[1].metric("Models", f"{len(selected_models):,}")
         cols[2].metric("Metrics", f"{heat['metric'].nunique() if 'metric' in heat else 0:,}")
         cols[3].metric("Passbands", f"{len(selected_bands):,}")
+        if period_options:
+            st.caption(f"Oscillator periods selected: {len(selected_periods):,} of {len(period_options):,}")
         if heat.empty:
             st.info(_empty_rows_message("model/metric/passband"))
         else:
@@ -370,6 +409,34 @@ def _component_options(config: SpatialVTKConfig | None, summaries: dict[str, pd.
         detected.extend(frame["component"].dropna().astype(str).str.upper().unique().tolist())
     options = _merged_options(configured, detected, key=str)
     return ["all", *options] if options else []
+
+
+def _band_options(df: pd.DataFrame) -> list[str]:
+    """Return non-empty passband options available in a dashboard summary."""
+
+    if "band" not in df.columns:
+        return []
+    values = df["band"].dropna().astype(str).str.strip()
+    values = values.loc[~values.str.lower().isin({"", "nan", "none", "all", "broadband"})]
+    return sorted(values.unique().tolist(), key=band_display_label)
+
+
+def _period_options(df: pd.DataFrame) -> list[float]:
+    """Return finite oscillator periods available in a dashboard summary."""
+
+    if "period_s" not in df.columns:
+        return []
+    values = pd.to_numeric(df["period_s"], errors="coerce").dropna()
+    if values.empty:
+        return []
+    return sorted(float(value) for value in values.unique())
+
+
+def _period_display_label(period_s: float | str) -> str:
+    """Return a dashboard label for one oscillator period."""
+
+    period = float(period_s)
+    return f"T={period:g} s (f={1.0 / period:g} Hz)" if period > 0 else str(period_s)
 
 
 def _range_slider_from_columns(label: str, df: pd.DataFrame, columns: tuple[str, ...]) -> tuple[float | None, float | None] | None:
