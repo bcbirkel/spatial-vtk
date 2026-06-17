@@ -27,6 +27,10 @@ Changelog
    ``pattern_similarity`` figure path from config. The plot CLI also exposes
    ``--bin-label`` as a first-class option for helpers that require a named
    period/bin selection.
+   Added a standard ``qc_availability`` table to the QC summary workflow and
+   made ``svtk visualize qc data-synthetic-availability`` resolve it from the
+   active config. The availability table records post-QC observed/synthetic
+   availability by overlapping event-station pair.
    Added named status rows and pandas status frames to ``OutputReadiness`` so
    large-run notebook driver cells can display exactly which inputs, outputs,
    and source dependencies are missing, stale, current, or intentionally

@@ -207,6 +207,7 @@ def test_default_output_and_figure_paths_are_named(tmp_path):
             "qc_inventory_overlap",
             "manual_review_queue",
             "qc_metric_pair_retention",
+            "qc_availability",
             "post_qc_records",
             "qc_drop_causes_overlap",
         ],
@@ -217,6 +218,7 @@ def test_default_output_and_figure_paths_are_named(tmp_path):
     assert tables.qc_inventory_overlap == tmp_path / "tables" / "qc_inventory_overlap.parquet"
     assert tables.manual_review_queue == tmp_path / "tables" / "manual_review_queue.csv"
     assert tables.qc_metric_pair_retention == tmp_path / "tables" / "qc_metric_pair_retention.csv"
+    assert tables.qc_availability == tmp_path / "tables" / "qc_availability.csv"
     assert tables.post_qc_records == tmp_path / "tables" / "post_qc_records.csv"
     assert tables.qc_drop_causes_overlap == tmp_path / "tables" / "qc_drop_causes_overlap.csv"
     assert figures.retention_summary == tmp_path / "figures" / "retention_summary.png"
@@ -708,6 +710,7 @@ outputs:
     assert qc_paths["qc_inventory_path"] == tmp_path / "run_outputs" / "tables" / "qc_inventory.csv"
     assert qc_paths["qc_inventory_overlap_path"] == tmp_path / "run_outputs" / "tables" / "qc_inventory_overlap.parquet"
     assert qc_paths["comparison_eligible_path"] == tmp_path / "run_outputs" / "tables" / "comparison_eligible_records.csv"
+    assert qc_paths["availability_path"] == tmp_path / "run_outputs" / "tables" / "qc_availability.csv"
     assert qc_paths["drop_causes_overlap_figure_path"] == tmp_path / "run_outputs" / "figures" / "drop_cause_diagnostics_overlap.png"
     assert qc_paths["event_trace_comparison_path"] == tmp_path / "run_outputs" / "figures" / "event_trace_comparison.png"
 

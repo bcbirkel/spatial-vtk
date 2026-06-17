@@ -534,6 +534,51 @@ outputs:
     assert captured.out.strip() == str(expected_output)
 
 
+def test_cli_data_synthetic_availability_uses_qc_availability_default(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    availability = table_dir / "qc_availability.csv"
+    availability.write_text(
+        "event_id,station,observed_available,synthetic_available\n"
+        "e1,S1,True,True\n",
+        encoding="utf-8",
+    )
+    config.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.visualize.qc as qc_plot
+
+    def fake_plot_data_synthetic_availability(availability_df, output_path=None, **kwargs):
+        seen["rows"] = len(availability_df)
+        seen["output_path"] = Path(output_path)
+        seen["columns"] = list(availability_df.columns)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(qc_plot, "plot_data_synthetic_availability", fake_plot_data_synthetic_availability)
+
+    assert main(["visualize", "qc", "data-synthetic-availability", "--config", str(config)]) == 0
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "data_synthetic_availability.png"
+    assert seen["rows"] == 1
+    assert seen["output_path"] == expected_output
+    assert "observed_available" in seen["columns"]
+    assert "synthetic_available" in seen["columns"]
+    assert captured.out.strip() == str(expected_output)
+
+
 def test_cli_flexible_metric_plot_uses_first_class_dep_indep_flags(tmp_path, monkeypatch, capsys):
     config = tmp_path / "spatial-vtk.yaml"
     table_dir = tmp_path / "outputs" / "tables"

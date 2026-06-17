@@ -753,6 +753,7 @@ outputs:
     assert result.paths["comparison_eligible_records"].exists()
     assert result.paths["qc_metric_pair_retention"].exists()
     assert result.paths["qc_event_station_pair_retention"].exists()
+    assert result.paths["qc_availability"].exists()
     assert result.paths["post_qc_records"].exists()
     assert result.paths["qc_drop_causes"].exists()
     assert result.paths["qc_drop_causes_overlap"].exists()
@@ -765,6 +766,11 @@ outputs:
     assert post_qc.set_index(["event_id", "station"])["qc_status"].to_dict() == {
         ("e1", "S1"): "pass",
         ("e2", "S2"): "fail",
+    }
+    availability = pd.read_csv(result.paths["qc_availability"])
+    assert availability.set_index(["event_id", "station"])[["observed_available", "synthetic_available"]].to_dict("index") == {
+        ("e1", "S1"): {"observed_available": True, "synthetic_available": True},
+        ("e2", "S2"): {"observed_available": False, "synthetic_available": True},
     }
 
 

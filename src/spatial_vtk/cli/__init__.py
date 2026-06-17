@@ -310,6 +310,7 @@ QC_VISUALIZE_COMMANDS = _with_registered_plot_defaults(
     QC_VISUALIZE_COMMANDS,
     input_defaults={
         "retention-summary": "qc_metric_pair_retention",
+        "data-synthetic-availability": "qc_availability",
         "event-station-retention": "qc_event_station_pair_retention",
         "post-qc-station-event-map": "post_qc_records",
         "drop-cause-diagnostics": "qc_drop_causes",

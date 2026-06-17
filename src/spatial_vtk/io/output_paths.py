@@ -158,6 +158,7 @@ OUTPUT_GROUPS: dict[str, tuple[OutputArtifact, ...]] = {
         OutputArtifact("manual_queue_path", "manual_review_queue", required=False),
         OutputArtifact("retention_path", "qc_metric_pair_retention"),
         OutputArtifact("event_station_retention_path", "qc_event_station_pair_retention"),
+        OutputArtifact("availability_path", "qc_availability"),
         OutputArtifact("post_qc_records_path", "post_qc_records"),
         OutputArtifact("drop_causes_path", "qc_drop_causes"),
         OutputArtifact("drop_causes_overlap_path", "qc_drop_causes_overlap"),

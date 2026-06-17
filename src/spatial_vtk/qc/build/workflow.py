@@ -1068,11 +1068,14 @@ def run_qc_summary_workflow(
     rows["qc_event_station_pair_retention"] = len(event_station_retention)
 
     event_stations = load_output_table("event_station_records", cfg=config)
+    overlap_records = filter_event_station_records_for_source_overlap(event_stations, scope="event_station")
+    availability = build_qc_availability_table(overlap_records, qc_summary=qc_overlap, qc_aggregate="any_pass")
+    paths["qc_availability"] = write_output_table("qc_availability", availability, cfg=config)
+    rows["qc_availability"] = len(availability)
     try:
         events = load_output_table("prepared_events", cfg=config)
     except Exception:
         events = None
-    overlap_records = filter_event_station_records_for_source_overlap(event_stations, scope="event_station")
     post_qc = build_post_qc_record_table_from_qc_inventory(
         overlap_records,
         events=events,

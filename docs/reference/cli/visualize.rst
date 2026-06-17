@@ -96,7 +96,7 @@ svtk visualize qc data-synthetic-availability
 
 .. code-block:: bash
 
-   svtk visualize qc data-synthetic-availability [-h] --input INPUT
+   svtk visualize qc data-synthetic-availability [-h] [--input INPUT]
                                                      [--output OUTPUT]
                                                      [--config CONFIG]
                                                      [--run-scenario RUN_SCENARIO]
@@ -151,9 +151,9 @@ svtk visualize qc data-synthetic-availability
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'availability_df'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'availability_df'. Defaults to configured output table 'qc_availability' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
