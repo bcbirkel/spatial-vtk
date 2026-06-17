@@ -21,7 +21,12 @@ import numpy as np
 import pandas as pd
 
 from spatial_vtk.config.outputs import resolve_output_path
-from spatial_vtk.visualize.dashboard.tables import build_dashboard_summaries, prepare_dashboard_metric_table, write_dashboard_summaries
+from spatial_vtk.visualize.dashboard.tables import (
+    build_dashboard_summaries,
+    dashboard_summary_input_columns,
+    prepare_dashboard_metric_table,
+    write_dashboard_summaries,
+)
 
 
 def write_dashboard_metric_dataset(
@@ -200,7 +205,10 @@ def write_dashboard_summary_dataset(
 
     resolved_input_root = input_root or resolve_output_path("metrics_dashboard", kind="dashboard")
     resolved_output_root = output_root or resolve_output_path("dashboard_summaries", kind="dashboard", create_parent=True)
-    metrics = load_dashboard_metric_dataset(resolved_input_root)
+    metrics = load_dashboard_metric_dataset(
+        resolved_input_root,
+        columns=dashboard_summary_input_columns(),
+    )
     summaries = build_dashboard_summaries(metrics, hex_dist=hex_dist, hex_az=hex_az)
     return write_dashboard_summaries(summaries, resolved_output_root, format=format)
 

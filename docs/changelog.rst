@@ -1,6 +1,11 @@
 Changelog
 =========
 
+2026-06-17
+   Reduced dashboard summary generation memory use for large metric datasets.
+   Summary builds now project only the columns required for grouping, values,
+   and path geometry instead of reading every metrics-long payload column.
+
 2026-06-16
    Hardened metrics dashboard optional tabs so missing, empty, or value-less
    station/event/path summary tables show their dashboard-readiness message in

@@ -29,6 +29,51 @@ SUMMARY_VALUE_COLUMNS: tuple[str, ...] = (
     "value_obs",
     "value_syn",
 )
+DASHBOARD_SUMMARY_GROUP_COLUMNS: tuple[str, ...] = (
+    "model",
+    "metric",
+    "band",
+    "component",
+    "station",
+    "event_id",
+)
+DASHBOARD_SUMMARY_GEOMETRY_COLUMNS: tuple[str, ...] = (
+    "sta_lat",
+    "sta_lon",
+    "station_lat",
+    "station_lon",
+    "lat",
+    "lon",
+    "event_lat",
+    "event_lon",
+    "distance_km",
+    "azimuth_deg",
+    "Vs30",
+    "vs30",
+    "geology_class",
+    "magnitude",
+    "event_magnitude",
+)
+
+
+def dashboard_summary_input_columns() -> tuple[str, ...]:
+    """Return metric-dataset columns needed to build dashboard summaries.
+
+    The dashboard summary writer can use this as a column projection when it
+    reads large Parquet/CSV metric datasets. Missing columns remain optional at
+    load time, so older dashboard datasets still work.
+    """
+
+    return tuple(
+        dict.fromkeys(
+            [
+                *DASHBOARD_SUMMARY_GROUP_COLUMNS,
+                *DASHBOARD_SUMMARY_GEOMETRY_COLUMNS,
+                *DEFAULT_DASHBOARD_VALUE_COLUMNS,
+                *SUMMARY_VALUE_COLUMNS,
+            ]
+        )
+    )
 
 
 def prepare_dashboard_metric_table(df: pd.DataFrame, *, residual_mode: str = "logratio") -> pd.DataFrame:

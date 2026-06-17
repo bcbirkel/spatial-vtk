@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from spatial_vtk.visualize.dashboard import (
     build_dashboard_summaries,
+    dashboard_summary_input_columns,
     launch_metrics_dashboard,
     launch_qc_dashboard,
     load_dashboard_metric_dataset,
@@ -66,6 +67,7 @@ __all__ = [
     "build_dashboard_summaries",
     "build_trace_qc_overview_html",
     "context_value_label",
+    "dashboard_summary_input_columns",
     "default_figure_paths",
     "figure_context_lines",
     "figure_context_text",

@@ -64,6 +64,7 @@ from spatial_vtk.visualize.dashboard.launch import (
 from spatial_vtk.visualize.dashboard.maps import build_event_folium_map, build_station_folium_map, render_folium_html
 from spatial_vtk.visualize.dashboard.tables import (
     build_dashboard_summaries,
+    dashboard_summary_input_columns,
     prepare_dashboard_metric_table,
     write_dashboard_summaries,
 )
@@ -80,6 +81,7 @@ __all__ = [
     "dashboard_output_status_frame",
     "dashboard_row_level_columns",
     "dashboard_summary_readiness_frame",
+    "dashboard_summary_input_columns",
     "dashboard_summary_table_contracts",
     "dashboard_summary_table_paths",
     "display_table",

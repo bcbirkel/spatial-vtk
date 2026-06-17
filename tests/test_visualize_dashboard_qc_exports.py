@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from spatial_vtk.visualize.dashboard import (
+    dashboard_summary_input_columns,
     dashboard_row_level_columns,
     load_dashboard_metric_dataset,
     load_dashboard_summary_tables,
@@ -11,6 +12,7 @@ from spatial_vtk.visualize.dashboard import (
     write_dashboard_metric_dataset,
     write_dashboard_summary_dataset,
 )
+import spatial_vtk.visualize.dashboard.export as dashboard_export
 from spatial_vtk.visualize.qc import (
     build_trace_qc_overview_html,
     filter_trace_summary,
@@ -93,6 +95,52 @@ def test_dashboard_metric_dataset_loader_projects_requested_columns(tmp_path) ->
 
     assert loaded_partitioned.columns.tolist() == ["station", "event_id", "log2_residual"]
     assert loaded_partitioned["station"].tolist() == ["AAA", "BBB"]
+
+
+def test_dashboard_summary_dataset_reads_only_summary_columns(tmp_path, monkeypatch) -> None:
+    """Dashboard summaries should not materialize unused long-metric payloads."""
+
+    captured: dict[str, tuple[str, ...]] = {}
+
+    def fake_load_dashboard_metric_dataset(input_root, *, columns=None):  # noqa: ANN001
+        captured["input_root"] = (str(input_root),)
+        captured["columns"] = tuple(columns or ())
+        return pd.DataFrame(
+            {
+                "model": ["m1", "m1"],
+                "metric": ["PGA", "PGA"],
+                "band": ["1-3s", "1-3s"],
+                "component": ["Z", "Z"],
+                "station": ["AAA", "BBB"],
+                "event_id": ["e1", "e1"],
+                "log2_residual": [0.5, -0.25],
+                "distance_km": [10.0, 20.0],
+                "azimuth_deg": [45.0, 90.0],
+                "sta_lat": [34.1, 34.2],
+                "sta_lon": [-118.1, -118.2],
+                "event_lat": [34.0, 34.0],
+                "event_lon": [-118.0, -118.0],
+            }
+        )
+
+    monkeypatch.setattr(dashboard_export, "load_dashboard_metric_dataset", fake_load_dashboard_metric_dataset)
+
+    written = dashboard_export.write_dashboard_summary_dataset(
+        tmp_path / "dashboard_data",
+        tmp_path / "dashboard_summaries",
+        format="csv",
+    )
+
+    columns = captured["columns"]
+    assert columns == dashboard_summary_input_columns()
+    assert "model" in columns
+    assert "metric" in columns
+    assert "log2_residual" in columns
+    assert "distance_km" in columns
+    assert "azimuth_deg" in columns
+    assert "unused_payload" not in columns
+    assert written["model_metric_band"].exists()
+    assert written["path_hex"].exists()
 
 
 def test_dashboard_row_level_columns_are_bounded() -> None:
