@@ -46,6 +46,7 @@ OPTIONAL_METRICS_TABLE_COLUMNS: dict[str, tuple[str, ...]] = {
     "event_rollup": ("period_s", "component", "event_lat", "event_lon", "med_dist_km", "magnitude", "event_magnitude", "station_count"),
     "path_hex": ("period_s", "component", "event_count", "station_count"),
 }
+REQUIRED_TRACE_QC_TABLE_COLUMNS: tuple[str, ...] = ("event_id", "station")
 MAP_COORDINATE_CANDIDATES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "station_rollup": (("sta_lon", "station_lon", "lon", "longitude"), ("sta_lat", "station_lat", "lat", "latitude")),
     "event_rollup": (("event_lon", "lon", "longitude"), ("event_lat", "lat", "latitude")),
@@ -69,7 +70,7 @@ class QCDashboardPaths:
 
 @dataclass(frozen=True)
 class DashboardOutputReadiness:
-    """Notebook-friendly readiness decision for metrics dashboard outputs."""
+    """Notebook-friendly readiness decision for configured dashboard outputs."""
 
     should_run: bool
     reason: str
@@ -77,13 +78,14 @@ class DashboardOutputReadiness:
     metrics_status: pd.DataFrame
     summary_status: pd.DataFrame
     input_status: pd.DataFrame
+    qc_status: pd.DataFrame | None = None
 
     def status_frame(self) -> pd.DataFrame:
-        """Return combined input, metric-dataset, and summary-table status."""
+        """Return combined input, metric-dataset, summary-table, and QC status."""
 
         frames = [
             frame
-            for frame in (self.input_status, self.metrics_status, self.summary_status)
+            for frame in (self.input_status, self.metrics_status, self.summary_status, self.qc_status)
             if frame is not None and not frame.empty
         ]
         if not frames:
@@ -261,7 +263,7 @@ def dashboard_output_status_frame(
             )
         )
     )
-    return _attach_dashboard_readiness(_attach_dashboard_contract(status))
+    return _attach_qc_trace_readiness(_attach_dashboard_readiness(_attach_dashboard_contract(status)))
 
 
 def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.DataFrame:
@@ -329,6 +331,28 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
     return pd.DataFrame([row])
 
 
+def dashboard_qc_trace_readiness_frame(
+    trace_summary: str | Path | None = None,
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    create_parent: bool = True,
+) -> pd.DataFrame:
+    """Return bounded readiness details for the QC dashboard trace table.
+
+    The check reads only table headers and row counts, so it is safe for large
+    CSV or Parquet trace-summary tables. The QC dashboard can still render
+    optional charts with additional columns when they exist, but ``event_id``
+    and ``station`` are the minimum required columns for a useful dashboard.
+    """
+
+    path = (
+        Path(trace_summary).expanduser()
+        if trace_summary is not None
+        else resolve_output_path("qc_trace_summary", kind="table", cfg=cfg, create_parent=create_parent)
+    )
+    return _attach_qc_trace_readiness(pd.DataFrame(_status_rows({"qc_trace_summary_path": path})))
+
+
 def dashboard_output_readiness(
     *,
     cfg: SpatialVTKConfig | None = None,
@@ -354,6 +378,11 @@ def dashboard_output_readiness(
     metrics_root = paths["metrics_dashboard_root"]
     summary_root = paths["dashboard_summary_root"]
     input_status = pd.DataFrame(_status_rows({"metrics_long_path": metrics_long_path}))
+    qc_status = dashboard_qc_trace_readiness_frame(
+        paths["qc_trace_summary_path"],
+        cfg=cfg,
+        create_parent=create_parent,
+    )
     if not metrics_long_path.exists():
         return DashboardOutputReadiness(
             should_run=False,
@@ -367,6 +396,7 @@ def dashboard_output_readiness(
                 summary_format=summary_format,
             ),
             input_status=input_status,
+            qc_status=qc_status,
         )
     metrics_status = dashboard_metric_dataset_readiness_frame(metrics_root)
     summary_status = dashboard_summary_readiness_frame(
@@ -387,6 +417,7 @@ def dashboard_output_readiness(
             metrics_status=metrics_status,
             summary_status=summary_status,
             input_status=input_status,
+            qc_status=qc_status,
         )
     if not metrics_ready:
         return DashboardOutputReadiness(
@@ -396,6 +427,7 @@ def dashboard_output_readiness(
             metrics_status=metrics_status,
             summary_status=summary_status,
             input_status=input_status,
+            qc_status=qc_status,
         )
     if not summaries_ready:
         missing = summary_status.loc[~summary_ready_mask, ["dashboard_table", "message"]]
@@ -407,6 +439,7 @@ def dashboard_output_readiness(
             metrics_status=metrics_status,
             summary_status=summary_status,
             input_status=input_status,
+            qc_status=qc_status,
         )
     if stale:
         return DashboardOutputReadiness(
@@ -416,6 +449,7 @@ def dashboard_output_readiness(
             metrics_status=metrics_status,
             summary_status=summary_status,
             input_status=input_status,
+            qc_status=qc_status,
         )
     return DashboardOutputReadiness(
         should_run=False,
@@ -424,6 +458,7 @@ def dashboard_output_readiness(
         metrics_status=metrics_status,
         summary_status=summary_status,
         input_status=input_status,
+        qc_status=qc_status,
     )
 
 
@@ -523,6 +558,89 @@ def _attach_dashboard_readiness(status: pd.DataFrame) -> pd.DataFrame:
         for key, value in readiness.items():
             out.at[index, key] = value
     return out
+
+
+def _attach_qc_trace_readiness(status: pd.DataFrame) -> pd.DataFrame:
+    """Attach QC dashboard trace-summary readiness to matching status rows."""
+
+    if status.empty or "name" not in status.columns:
+        return status
+    out = status.copy()
+    defaults = {
+        "dashboard_table": "",
+        "dashboard_tabs": "",
+        "required_columns": "",
+        "purpose": "",
+        "ready": pd.NA,
+        "readiness": pd.NA,
+        "row_count": pd.NA,
+        "missing_columns": pd.NA,
+        "message": pd.NA,
+    }
+    for column, value in defaults.items():
+        if column not in out.columns:
+            out[column] = pd.Series([value] * len(out), index=out.index, dtype="object")
+    mask = out["name"].astype(str).eq("qc_trace_summary_path")
+    if not mask.any():
+        return out
+    out.loc[mask, "dashboard_table"] = "qc_trace_summary"
+    out.loc[mask, "dashboard_tabs"] = "QC Overview, Charts, Review Queue"
+    out.loc[mask, "required_columns"] = ", ".join(REQUIRED_TRACE_QC_TABLE_COLUMNS)
+    out.loc[mask, "purpose"] = "Trace-level QC decisions used by the QC dashboard and manual-review queue."
+    for index, row in out.loc[mask].iterrows():
+        readiness = _inspect_qc_trace_summary_table(Path(str(row["path"])))
+        for key, value in readiness.items():
+            out.at[index, key] = value
+    return out
+
+
+def _inspect_qc_trace_summary_table(path: Path) -> dict[str, object]:
+    """Return readiness details for one QC trace-summary table path."""
+
+    required = set(REQUIRED_TRACE_QC_TABLE_COLUMNS)
+    if not path.exists():
+        return {
+            "ready": False,
+            "readiness": "missing",
+            "row_count": "",
+            "missing_columns": ", ".join(REQUIRED_TRACE_QC_TABLE_COLUMNS),
+            "message": f"QC trace-summary table is missing: {path}",
+        }
+    try:
+        columns = _dashboard_table_columns(path)
+        row_count = _dashboard_table_row_count(path)
+    except Exception as exc:  # pragma: no cover - integration guardrail
+        return {
+            "ready": False,
+            "readiness": "read_error",
+            "row_count": "",
+            "missing_columns": "",
+            "message": f"QC trace-summary table could not be inspected: {exc}",
+        }
+    missing = sorted(column for column in required if column not in columns)
+    if missing:
+        return {
+            "ready": False,
+            "readiness": "missing_columns",
+            "row_count": row_count,
+            "missing_columns": ", ".join(missing),
+            "message": f"QC trace-summary table is missing required columns: {', '.join(missing)}.",
+        }
+    if row_count == 0:
+        return {
+            "ready": False,
+            "readiness": "empty",
+            "row_count": row_count,
+            "missing_columns": "",
+            "message": "QC trace-summary table has no rows.",
+        }
+    return {
+        "ready": True,
+        "readiness": "ready",
+        "row_count": row_count,
+        "missing_columns": "",
+        "message": "QC trace-summary table is ready.",
+    }
 
 
 def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, object]:
@@ -899,11 +1017,13 @@ __all__ = [
     "OPTIONAL_METRICS_TABLE_COLUMNS",
     "QCDashboardPaths",
     "REQUIRED_METRICS_TABLE_COLUMNS",
+    "REQUIRED_TRACE_QC_TABLE_COLUMNS",
     "dashboard_metric_dataset_readiness_frame",
     "dashboard_output_paths",
     "dashboard_output_namespace",
     "dashboard_output_readiness",
     "dashboard_output_status_frame",
+    "dashboard_qc_trace_readiness_frame",
     "dashboard_ready_value",
     "dashboard_row_level_columns",
     "dashboard_summary_readiness_frame",

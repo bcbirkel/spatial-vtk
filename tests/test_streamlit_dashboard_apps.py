@@ -22,6 +22,7 @@ from spatial_vtk.visualize.dashboard import (
     dashboard_output_namespace,
     dashboard_output_paths,
     dashboard_output_status_frame,
+    dashboard_qc_trace_readiness_frame,
     dashboard_ready_value,
     dashboard_summary_readiness_frame,
     dashboard_summary_table_contracts,
@@ -139,6 +140,7 @@ outputs:
     assert paths["dashboard_summary_root"] == tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
     assert namespace.dashboard_summary_root == paths["dashboard_summary_root"]
     assert paths["station_rollup_summary_path"] == tmp_path / "outputs" / "dashboards" / "dashboard_summaries" / "station_rollup.parquet"
+    assert paths["qc_trace_summary_path"] == tmp_path / "outputs" / "tables" / "qc_trace_summary.csv"
 
     existing = paths["dashboard_summary_root"] / "station_rollup.csv"
     existing.write_text("station,model,metric,band,n\nSTA,m1,PGA,1-2 sec,1\n", encoding="utf-8")
@@ -150,6 +152,7 @@ outputs:
     status = dashboard_output_status_frame(cfg=cfg)
     assert "name" in status.columns
     assert "metrics_dashboard_root" in set(status["name"])
+    assert "qc_trace_summary_path" in set(status["name"])
     assert "path_hex_summary_path" in set(status["name"])
     assert "dashboard_tabs" in status.columns
     station_status = status.loc[status["name"].eq("station_rollup_summary_path")].iloc[0]
@@ -172,6 +175,14 @@ outputs:
     assert missing_status["ready"] is False
     assert missing_status["readiness"] == "missing"
     assert "dist_bin_km" in missing_status["missing_columns"]
+
+    qc_status = status.loc[status["name"].eq("qc_trace_summary_path")].iloc[0]
+    assert qc_status["dashboard_table"] == "qc_trace_summary"
+    assert qc_status["dashboard_tabs"] == "QC Overview, Charts, Review Queue"
+    assert qc_status["ready"] is False
+    assert qc_status["readiness"] == "missing"
+    assert "event_id" in qc_status["required_columns"]
+    assert "QC trace-summary table is missing" in qc_status["message"]
 
     readiness = dashboard_summary_readiness_frame(paths["dashboard_summary_root"])
     assert set(readiness["dashboard_table"]) == {"model_metric_band", "station_rollup", "event_rollup", "path_hex"}
@@ -200,6 +211,28 @@ outputs:
     )
     assert station_map_status["ready"] is False
     assert "longitude" in station_map_status["missing_columns"]
+
+
+def test_dashboard_qc_trace_readiness_is_bounded_and_schema_aware(tmp_path):
+    ready_path = tmp_path / "qc_trace_summary.csv"
+    ready_path.write_text("event_id,station,component,qc_status\nev1,STA,R,pass\n", encoding="utf-8")
+
+    ready = dashboard_qc_trace_readiness_frame(ready_path)
+    ready_row = ready.iloc[0]
+    assert ready_row["ready"] is True
+    assert ready_row["readiness"] == "ready"
+    assert ready_row["row_count"] == 1
+    assert ready_row["dashboard_table"] == "qc_trace_summary"
+
+    missing_column_path = tmp_path / "bad_qc_trace_summary.csv"
+    missing_column_path.write_text("event_id,component\nev1,R\n", encoding="utf-8")
+
+    missing_column = dashboard_qc_trace_readiness_frame(missing_column_path)
+    missing_row = missing_column.iloc[0]
+    assert missing_row["ready"] is False
+    assert missing_row["readiness"] == "missing_columns"
+    assert missing_row["row_count"] == 1
+    assert missing_row["missing_columns"] == "station"
 
 
 def test_dashboard_summaries_do_not_require_residual_column():

@@ -2477,6 +2477,11 @@ outputs:
     assert "qc_trace_summary_path" in names
     assert "qc_inventory_overlap_path" in names
     assert "model_metric_band_summary_path" in names
+    qc_row = next(row for row in payload["status"] if row["name"] == "qc_trace_summary_path")
+    assert qc_row["dashboard_table"] == "qc_trace_summary"
+    assert qc_row["ready"] is False
+    assert qc_row["readiness"] == "missing"
+    assert "QC trace-summary table is missing" in qc_row["message"]
     assert not (tmp_path / "outputs" / "dashboards").exists()
 
 
@@ -2497,6 +2502,8 @@ outputs:
     captured = capsys.readouterr()
     assert "Dashboard outputs current: False" in captured.out
     assert "metrics_long_path" in captured.out
+    assert "qc_trace_summary_path" in captured.out
+    assert "QC trace-summary table is missing" in captured.out
     assert "model_metric_band_summary_path" in captured.out
 
 

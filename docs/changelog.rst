@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Added bounded QC dashboard trace-summary readiness diagnostics to
+   ``dashboard_output_status_frame()``, ``dashboard_output_readiness()``, and
+   ``svtk dashboard status``. Status output now reports whether the configured
+   QC trace table exists, has the required ``event_id``/``station`` columns,
+   and contains rows without loading the full table.
    Tightened large-run metric figure provenance for sampled station maps.
    When a station-level map samples aggregated station rows before plotting,
    the optional ``*.source.csv`` sidecar is now filtered to the raw metric rows
