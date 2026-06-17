@@ -127,6 +127,10 @@ Changelog
    pairs. Station coordinates are now summarized separately and optional
    figure sidecars record coordinate multiplicity, source row counts, and
    source event counts for auditing.
+   Figure row-provenance sidecar metadata now records ``plot_rows_role`` and
+   ``source_rows_role`` consistently, so users can tell whether each CSV
+   contains plotted rows, post-aggregation station summaries, or raw
+   pre-aggregation metric rows.
    Hardened ``tools/execute_tutorial_notebooks.py`` with an upfront notebook
    runtime dependency preflight. The tutorial execution gate now reports
    missing ``nbformat``, ``nbclient``, ``ipykernel``, or ``IPython`` modules

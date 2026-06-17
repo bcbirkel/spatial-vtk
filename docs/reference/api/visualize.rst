@@ -97,8 +97,11 @@ Figure sidecars provide optional row-provenance files for saved figures. Pass
 exact rows handed to the plot. Aggregated figures can also write a
 ``*.source.csv`` file containing the pre-aggregation rows, plus a JSON metadata
 file with event, station, component, metric, passband, model, and PSA-period
-counts. Use ``sidecar_rows=None`` to write all rows, or a positive integer to
-write a deterministic sample.
+counts. The JSON metadata includes ``plot_rows_role`` and
+``source_rows_role`` so station summaries, event-level metric rows, and other
+derived plotting tables can be audited without guessing what each CSV
+represents. Use ``sidecar_rows=None`` to write all rows, or a positive integer
+to write a deterministic sample.
 
 .. automodule:: spatial_vtk.visualize.figure_context
    :members:

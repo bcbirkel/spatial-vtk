@@ -749,6 +749,7 @@ class MetricFigureContext:
         metadata.update(aggregation_attrs)
         if aggregation_attrs:
             metadata["aggregation_contract"] = "station_event_rows_to_station_summary"
+            metadata["plot_rows_role"] = "post_aggregation_station_summary"
         if source_df is not None:
             metadata["source_rows_role"] = "pre_aggregation_metric_rows" if aggregation_attrs else "figure_source_rows"
         return metadata

@@ -31,6 +31,8 @@ def write_figure_row_sidecar(
     sidecar_dir: str | Path | None = None,
     source_rows: pd.DataFrame | None = None,
     metadata: dict[str, Any] | None = None,
+    plot_rows_role: str = "figure_plot_rows",
+    source_rows_role: str = "figure_source_rows",
     write_source_sidecar: bool = True,
     random_state: int = 42,
 ) -> FigureSidecarResult | None:
@@ -54,6 +56,10 @@ def write_figure_row_sidecar(
     metadata
         Additional metadata merged into the JSON sidecar. Values here override
         default keys when keys overlap.
+    plot_rows_role
+        Short label describing what the main sidecar rows represent.
+    source_rows_role
+        Short label describing what ``source_rows`` represent when provided.
     write_source_sidecar
         Whether to write ``*.source.csv`` when ``source_rows`` is provided.
     random_state
@@ -98,6 +104,7 @@ def write_figure_row_sidecar(
         "plot_row_count": int(len(rows)),
         "written_row_count": int(len(sampled_rows)),
         "sampled": bool(sampled),
+        "plot_rows_role": plot_rows_role,
     }
     result_metadata.update(figure_sidecar_dimension_counts(rows, prefix="plot"))
     if source_rows is not None:
@@ -106,6 +113,7 @@ def write_figure_row_sidecar(
                 "source_row_count": source_row_count,
                 "source_written_row_count": source_written_count,
                 "source_sampled": bool(source_sampled),
+                "source_rows_role": source_rows_role,
             }
         )
         if source_path is not None:
@@ -113,6 +121,7 @@ def write_figure_row_sidecar(
         result_metadata.update(figure_sidecar_dimension_counts(source_rows, prefix="source"))
     else:
         result_metadata["source_row_count"] = int(len(rows))
+        result_metadata["source_rows_role"] = plot_rows_role
         result_metadata.update(figure_sidecar_dimension_counts(rows, prefix="source"))
     if metadata:
         result_metadata.update(metadata)
@@ -139,6 +148,8 @@ def finish_figure_with_sidecar(
     sidecar_rows: int | None = None,
     sidecar_dir: str | Path | None = None,
     metadata: dict[str, Any] | None = None,
+    plot_rows_role: str = "figure_plot_rows",
+    source_rows_role: str = "figure_source_rows",
     **savefig_kwargs: Any,
 ) -> Any:
     """Finish a Matplotlib figure and optionally write row sidecars.
@@ -169,6 +180,8 @@ def finish_figure_with_sidecar(
             sidecar_dir=sidecar_dir,
             source_rows=source_rows,
             metadata=metadata,
+            plot_rows_role=plot_rows_role,
+            source_rows_role=source_rows_role,
         )
     return finished
 

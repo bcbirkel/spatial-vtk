@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import importlib.util
 import json
 from pathlib import Path
@@ -327,3 +328,32 @@ def test_tutorial_figure_sidecar_calls_do_not_hardcode_figure_sidecar_dirs() -> 
             source = "".join(cell.get("source", []))
             matches = [pattern for pattern in forbidden if pattern in source]
             assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} hardcodes {matches}"
+
+
+def test_public_saved_plot_functions_expose_sidecar_controls() -> None:
+    """Saved plotting helpers should let users write row-provenance sidecars."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    roots = (
+        repo_root / "src" / "spatial_vtk" / "metrics" / "plot",
+        repo_root / "src" / "spatial_vtk" / "spatial" / "plot",
+        repo_root / "src" / "spatial_vtk" / "spatial" / "map",
+        repo_root / "src" / "spatial_vtk" / "visualize" / "context",
+        repo_root / "src" / "spatial_vtk" / "visualize" / "qc",
+        repo_root / "src" / "spatial_vtk" / "visualize" / "waveforms",
+    )
+    missing: list[str] = []
+    for root in roots:
+        for path in sorted(root.rglob("*.py")):
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+            for node in tree.body:
+                if not isinstance(node, ast.FunctionDef) or not node.name.startswith("plot_"):
+                    continue
+                arguments = [arg.arg for arg in node.args.args + node.args.kwonlyargs]
+                if not {"savefig", "output_path", "outpath"} & set(arguments):
+                    continue
+                absent = [name for name in ("write_sidecar", "sidecar_rows", "sidecar_dir") if name not in arguments]
+                if absent:
+                    missing.append(f"{path.relative_to(repo_root)}:{node.lineno}:{node.name} missing {absent}")
+
+    assert missing == []

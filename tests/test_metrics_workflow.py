@@ -225,6 +225,7 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert metadata["source_event_count"] == 4
     assert metadata["source_model_count"] == 1
     assert metadata["aggregation_contract"] == "station_event_rows_to_station_summary"
+    assert metadata["plot_rows_role"] == "post_aggregation_station_summary"
     assert metadata["source_rows_role"] == "pre_aggregation_metric_rows"
     assert metadata["svtk_aggregation_kind"] == "station_event_rows_to_station_summary"
     assert metadata["svtk_aggregation_value_col"] == "log2_residual"

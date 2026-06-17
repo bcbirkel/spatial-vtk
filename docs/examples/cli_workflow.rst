@@ -193,7 +193,10 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
    ``svtk visualize`` figure command to write CSV/JSON provenance next to the
    figure. Use ``--sidecar-rows N`` to write a deterministic row sample or omit
    it to write every plotted row. Use ``--sidecar-dir`` when sidecars should go
-   somewhere other than the figure directory's ``sidecars`` folder.
+   somewhere other than the figure directory's ``sidecars`` folder. The JSON
+   metadata records ``plot_rows_role`` and ``source_rows_role`` so aggregated
+   station maps can distinguish plotted station summaries from the event-level
+   rows used to build them.
 
 
 Step 4: Spatial Statistics

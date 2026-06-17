@@ -512,6 +512,8 @@ def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -
     assert metadata["written_row_count"] == 2
     assert metadata["source_row_count"] == 4
     assert metadata["source_written_row_count"] == 2
+    assert metadata["plot_rows_role"] == "figure_plot_rows"
+    assert metadata["source_rows_role"] == "figure_source_rows"
     assert metadata["plot_station_count"] == 3
     assert metadata["source_station_count"] == 3
     assert metadata["source_model_count"] == 2
@@ -564,6 +566,7 @@ def test_metric_station_summary_aggregates_all_events_without_coordinate_splitti
 
     metadata = context.figure_sidecar_metadata(summary, source_df=rows)
     assert metadata["aggregation_contract"] == "station_event_rows_to_station_summary"
+    assert metadata["plot_rows_role"] == "post_aggregation_station_summary"
     assert metadata["svtk_aggregation_input_row_count"] == 5
     assert metadata["svtk_aggregation_finite_row_count"] == 4
     assert metadata["svtk_aggregation_input_station_count"] == 2
