@@ -568,8 +568,7 @@ class MetricFigureContext:
             df_factory=df_factory,
             source_df_factory=source_df_factory,
         )
-        if not sidecar_df.empty:
-            self.write_figure_sidecar(output, sidecar_df, source_df=source_sidecar_df)
+        self.write_figure_sidecar(output, sidecar_df, source_df=source_sidecar_df)
         if showfig:
             plt.show()
         plt.close(fig)

@@ -646,6 +646,62 @@ def test_psa_period_sheet_existing_file_writes_panel_source_sidecars(tmp_path: P
     assert metadata["source_row_count"] == 8
 
 
+def test_psa_period_sheet_render_writes_empty_panel_sidecar(tmp_path: Path) -> None:
+    """Fresh PSA sheet renders should document empty plotted-row selections."""
+
+    rows = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2"],
+            "station": ["STA", "STB"],
+            "sta_lon": [-118.0, -117.9],
+            "sta_lat": [34.0, 34.1],
+            "metric": ["PSA", "PSA"],
+            "band": ["", ""],
+            "component": ["R", "R"],
+            "model": ["m1", "m1"],
+            "period_s": [1.0, 2.0],
+            "log2_residual": [1.0, 2.0],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        rows,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+        write_sidecars=True,
+        sidecar_rows=None,
+    )
+    item = {"key": "psa", "label": "PSA", "metric": "PSA", "period_s": None, "df": rows}
+
+    def _write_panel(frame: pd.DataFrame, *, output_path, **kwargs) -> None:  # noqa: ANN001, ANN003
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots()
+        ax.text(0.5, 0.5, f"rows={len(frame)}", ha="center", va="center")
+        fig.savefig(output_path)
+        plt.close(fig)
+
+    result = context.write_psa_period_sheet(
+        "station_metric_map",
+        item,
+        _write_panel,
+        df_factory=lambda period_item: period_item["df"].iloc[0:0].copy(),
+        required=["sta_lon", "sta_lat", "log2_residual"],
+        value_col="log2_residual",
+    )
+
+    assert result is not None
+    sidecar_path = context.sidecar_output_dir / f"{result.stem}.csv"
+    metadata = json.loads(sidecar_path.with_suffix(".json").read_text(encoding="utf-8"))
+    sidecar = pd.read_csv(sidecar_path)
+    assert sidecar.empty
+    assert sidecar_path.exists()
+    assert metadata["plot_row_count"] == 0
+    assert metadata["written_row_count"] == 0
+    assert metadata["plot_rows_role"] == "figure_plot_rows"
+
+
 def test_spatial_figure_context_accepts_shared_sidecar_settings(tmp_path: Path) -> None:
     """Step 4 large-run notebooks should use the shared sidecar keyword shape."""
 
