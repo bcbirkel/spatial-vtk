@@ -123,6 +123,7 @@ METRICS_PLOT_COMMANDS: dict[str, PlotCommand] = {
 METRICS_PLOT_COMMANDS = _with_registered_plot_defaults(
     METRICS_PLOT_COMMANDS,
     input_defaults={
+        "model-metric-heatmap": "metrics_long",
         "band-score-distribution": "metrics_long",
         "psa-period-curve": "metrics_long",
         "vs30-scatter": "metrics_long",

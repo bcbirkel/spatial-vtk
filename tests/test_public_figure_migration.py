@@ -535,6 +535,16 @@ def test_metric_and_spatial_figure_families(tmp_path: Path) -> None:
         _assert_png(output)
 
 
+def test_model_metric_heatmap_accepts_raw_metrics_long_value_columns(tmp_path: Path) -> None:
+    """Model-metric heatmaps should work from metrics_long without a summary value column."""
+
+    metrics = _metric_rows()
+
+    output = plot_model_metric_heatmap(metrics, tmp_path / "model_heatmap_from_long.png")
+
+    _assert_png(output)
+
+
 def test_spatial_metric_maps_write_optional_row_sidecars(tmp_path: Path) -> None:
     """Spatial metric map figures should optionally write plotted/source rows."""
 

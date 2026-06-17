@@ -32,18 +32,19 @@ def plot_model_metric_heatmap(
 ) -> plt.Figure:
     """Plot model-by-metric summary values as a heatmap."""
 
-    _require(summary_df, [model_col, metric_col, value_col])
+    resolved_value_col = _resolve_model_metric_value_col(summary_df, value_col)
+    _require(summary_df, [model_col, metric_col, resolved_value_col])
     work = summary_df.copy()
     work["_metric_label"] = work[metric_col].map(metric_display_name)
     work["_model_label"] = work[model_col].map(model_display_name)
-    pivot = work.pivot_table(index="_metric_label", columns="_model_label", values=value_col, aggfunc="median")
+    pivot = work.pivot_table(index="_metric_label", columns="_model_label", values=resolved_value_col, aggfunc="median")
     return _heatmap(
         pivot,
         output_path,
         title=title,
-        cbar_label=value_column_display_name(value_col),
+        cbar_label=value_column_display_name(resolved_value_col),
         context_df=summary_df,
-        value_col=value_col,
+        value_col=resolved_value_col,
         showfig=showfig,
         savefig=savefig,
         outpath=outpath,
@@ -52,7 +53,7 @@ def plot_model_metric_heatmap(
         write_sidecar=write_sidecar,
         sidecar_rows=sidecar_rows,
         sidecar_dir=sidecar_dir,
-        metadata={"figure_type": "model_metric_heatmap", "model_col": model_col, "metric_col": metric_col, "value_col": value_col},
+        metadata={"figure_type": "model_metric_heatmap", "model_col": model_col, "metric_col": metric_col, "value_col": resolved_value_col},
     )
 
 
@@ -258,6 +259,27 @@ def _require(df: pd.DataFrame, columns: list[str]) -> None:
     missing = [column for column in columns if column not in df.columns]
     if missing:
         raise KeyError(f"Missing required columns: {missing}")
+
+
+def _resolve_model_metric_value_col(df: pd.DataFrame, requested: str) -> str:
+    """Resolve a model-metric heatmap value column from summary or long tables."""
+
+    if requested in df.columns:
+        return requested
+    fallback_columns = (
+        "med_resid",
+        "med_log2_residual",
+        "log2_residual",
+        "residual",
+        "ln_residual",
+        "med_score",
+        "score",
+        "value",
+    )
+    resolved = next((column for column in fallback_columns if column in df.columns), None)
+    if resolved is not None:
+        return resolved
+    return requested
 
 
 def _color_group_label(value: object, color_col: str | None) -> str:

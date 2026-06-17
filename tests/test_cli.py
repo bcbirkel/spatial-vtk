@@ -424,6 +424,55 @@ outputs:
     assert captured.out.strip() == str(expected_output)
 
 
+def test_cli_model_metric_heatmap_uses_metrics_long_config_default(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    metrics = table_dir / "metrics_long.csv"
+    metrics.write_text(
+        "metric,band,model,component,log2_residual\n"
+        "PGA,1-2 sec,m1,Z,0.5\n"
+        "PGA,1-2 sec,m2,Z,-0.2\n",
+        encoding="utf-8",
+    )
+    config.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+  artifacts:
+    metrics_long:
+      filename: metrics_long.csv
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.metrics.plot as metrics_plot
+
+    def fake_plot_model_metric_heatmap(summary_df, output_path=None, **kwargs):
+        seen["columns"] = list(summary_df.columns)
+        seen["rows"] = len(summary_df)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(metrics_plot, "plot_model_metric_heatmap", fake_plot_model_metric_heatmap)
+
+    assert main(["plot", "metrics", "model-metric-heatmap", "--config", str(config)]) == 0
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "model_metric_heatmap.png"
+    assert seen["rows"] == 2
+    assert "log2_residual" in seen["columns"]
+    assert seen["output_path"] == expected_output
+    assert "value_col" not in seen["kwargs"]
+    assert captured.out.strip() == str(expected_output)
+
+
 def test_cli_flexible_metric_plot_uses_first_class_dep_indep_flags(tmp_path, monkeypatch, capsys):
     config = tmp_path / "spatial-vtk.yaml"
     table_dir = tmp_path / "outputs" / "tables"
@@ -1376,5 +1425,7 @@ def test_cli_plot_list(capsys):
     captured = capsys.readouterr()
     assert "residuals-vs-distance" in captured.out
     assert "default input from config: metrics_long" in captured.out
+    assert "model-metric-heatmap" in captured.out
     assert "default output from config: band_score_distribution" in captured.out
+    assert "default output from config: model_metric_heatmap" in captured.out
     assert "from config from config" not in captured.out

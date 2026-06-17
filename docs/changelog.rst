@@ -18,6 +18,10 @@ Changelog
    counts, sidecar row limits, sampling seed, source-row availability, and
    source-sidecar write status. This makes it easier to audit whether a figure
    sidecar contains raw rows, transformed plot rows, or a sampled subset.
+   Made ``svtk plot metrics model-metric-heatmap`` config-backed for standard
+   metric workflows. The command now defaults its input to ``metrics_long`` and
+   the plotting function falls back from summary-only ``med_resid`` to common
+   long-table value columns such as ``log2_residual`` when needed.
    Added named status rows and pandas status frames to ``OutputReadiness`` so
    large-run notebook driver cells can display exactly which inputs, outputs,
    and source dependencies are missing, stale, current, or intentionally
