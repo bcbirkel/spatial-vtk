@@ -357,6 +357,53 @@ def test_tutorial_figure_sidecar_calls_do_not_hardcode_figure_sidecar_dirs() -> 
             assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} hardcodes {matches}"
 
 
+def test_tutorial_notebooks_use_sidecar_settings_kwargs() -> None:
+    """Notebook figure sidecar calls should not expand settings into local variables."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    assert notebooks
+    forbidden_patterns = (
+        "write_context_figure_sidecars",
+        "context_figure_sidecar_rows",
+        "context_figure_sidecar_dir",
+        "write_qc_figure_sidecars",
+        "qc_figure_sidecar_rows",
+        "qc_figure_sidecar_dir",
+        "write_metric_figure_sidecars",
+        "metric_figure_sidecar_rows",
+        "metric_figure_sidecar_dir",
+        "write_spatial_figure_sidecars",
+        "spatial_figure_sidecar_rows",
+        "spatial_figure_sidecar_dir",
+        "write_waveform_figure_sidecars",
+        "waveform_figure_sidecar_rows",
+        "waveform_figure_sidecar_dir",
+        "WRITE_CONTEXT_FIGURE_SIDECARS",
+        "CONTEXT_FIGURE_SIDECAR_ROWS",
+        "CONTEXT_FIGURE_SIDECAR_DIR",
+        "WRITE_QC_FIGURE_SIDECARS",
+        "QC_FIGURE_SIDECAR_ROWS",
+        "QC_FIGURE_SIDECAR_DIR",
+        "WRITE_FIGURE_SIDECARS",
+        "FIGURE_SIDECAR_ROWS",
+        "WRITE_SPATIAL_FIGURE_SIDECARS",
+        "SPATIAL_FIGURE_SIDECAR_ROWS",
+        "SPATIAL_FIGURE_SIDECAR_DIR",
+        "WRITE_REGION_FIGURE_SIDECARS",
+        "REGION_FIGURE_SIDECAR_ROWS",
+        "REGION_FIGURE_SIDECAR_DIR",
+        "WRITE_WAVEFORM_FIGURE_SIDECARS",
+        "WAVEFORM_FIGURE_SIDECAR_ROWS",
+        "WAVEFORM_FIGURE_SIDECAR_DIR",
+    )
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        matches = [pattern for pattern in forbidden_patterns if pattern in source]
+        assert not matches, f"{notebook_path.relative_to(repo_root)} expands sidecar settings: {matches}"
+
+
 def test_public_saved_plot_functions_expose_sidecar_controls() -> None:
     """Saved plotting helpers should let users write row-provenance sidecars."""
 

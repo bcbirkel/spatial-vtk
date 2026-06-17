@@ -88,11 +88,19 @@ class NotebookFigureSidecarSettings:
     rows: int | None = None
     directory: Path | None = None
 
-    def kwargs(self) -> dict[str, object]:
-        """Return keyword arguments accepted by Spatial-VTK plotting helpers."""
+    def kwargs(self, *, plural: bool = False) -> dict[str, object]:
+        """Return keyword arguments accepted by Spatial-VTK plotting helpers.
 
+        Parameters
+        ----------
+        plural
+            Return ``write_sidecars`` instead of ``write_sidecar`` for helper
+            contexts that manage several figure calls.
+        """
+
+        write_key = "write_sidecars" if plural else "write_sidecar"
         return {
-            "write_sidecar": self.enabled,
+            write_key: self.enabled,
             "sidecar_rows": self.rows,
             "sidecar_dir": self.directory,
         }

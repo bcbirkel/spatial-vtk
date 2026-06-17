@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-16
+   Simplified tutorial and large-run notebook sidecar plumbing. Figure cells
+   now pass ``**sidecar_settings.kwargs()`` or
+   ``**sidecar_settings.kwargs(plural=True)`` instead of expanding sidecar
+   settings into repeated ``write_sidecar``/``sidecar_rows``/``sidecar_dir``
+   variables, keeping notebooks task-focused while preserving optional plotted
+   row and source-row provenance files.
    Added ``notebook_dashboard_launch_commands()`` so tutorial and large-run
    dashboard notebooks print the same config-backed launch commands as the CLI
    defaults. Notebook dashboard commands now include ``--auto-port`` by default

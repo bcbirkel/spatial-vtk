@@ -317,6 +317,11 @@ def test_notebook_figure_sidecar_settings_parse_env(tmp_path, monkeypatch):
         "sidecar_rows": None,
         "sidecar_dir": tmp_path / "figures" / "sidecars",
     }
+    assert generic.kwargs(plural=True) == {
+        "write_sidecars": True,
+        "sidecar_rows": None,
+        "sidecar_dir": tmp_path / "figures" / "sidecars",
+    }
 
     monkeypatch.setenv("SVTK_METRIC_FIGURE_SIDECARS", "0")
     monkeypatch.setenv("SVTK_METRIC_FIGURE_SIDECAR_ROWS", "25")
