@@ -773,6 +773,7 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
 
     root = Path(__file__).resolve().parents[1]
     text = (root / "docs" / "reference" / "cli_api.rst").read_text(encoding="utf-8")
+    generator_text = (root / "tools" / "generate_cli_reference.py").read_text(encoding="utf-8")
     assert "resolve their standard input tables and figure paths from the active config" in text
     assert "first-class flags where they apply" in text
     assert "``--mode``" in text
@@ -794,6 +795,9 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
     assert "Prefer named table aliases such as ``--events`` or ``--stations``" in text
     assert "advanced ``--table function_argument=path``" in text
+    assert "Prefer named table aliases such as ``--events`` or ``--stations``" in generator_text
+    assert "advanced ``--table function_argument=path``" in generator_text
+    assert "argument_name=path" not in generator_text
 
 
 def test_configuration_map_override_example_uses_first_class_flags():

@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Fixed CLI reference generation so ``tools/generate_cli_reference.py`` keeps
+   the current plotting/mapping table guidance when regenerating
+   ``docs/reference/cli_api.rst`` instead of restoring stale
+   ``argument_name=path`` wording.
    Clarified metric workflow CLI path aliases. ``svtk metrics inventories``
    now exposes ``--observed-inventory-output`` and
    ``--synthetic-inventory-output``, ``svtk metrics plan`` exposes
