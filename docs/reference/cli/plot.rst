@@ -142,11 +142,11 @@ svtk plot metrics band-score-distribution
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'band_score_distribution'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'band_score_distribution' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -268,11 +268,11 @@ svtk plot metrics boxplot
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the data argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'data'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'boxplot'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'boxplot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -400,7 +400,7 @@ svtk plot metrics example-metric-pairs
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'example_metric_pairs'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'example_metric_pairs' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -527,11 +527,11 @@ svtk plot metrics geology-boxplot
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'geology_boxplot'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'geology_boxplot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -653,11 +653,11 @@ svtk plot metrics heatmap
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the data argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'data'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'heatmap'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -806,11 +806,11 @@ svtk plot metrics metric-trend
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'metric_trend'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'metric_trend' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -939,11 +939,11 @@ svtk plot metrics model-metric-heatmap
    * - ``--input``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for the summary_df argument.
+     - Value: ``input``. Input CSV/parquet table for function argument 'summary_df'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'model_metric_heatmap'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'model_metric_heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1070,11 +1070,11 @@ svtk plot metrics period-spectra
    * - ``--input``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for the spectra_df argument.
+     - Value: ``input``. Input CSV/parquet table for function argument 'spectra_df'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'period_spectra'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'period_spectra' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1203,11 +1203,11 @@ svtk plot metrics period-spectrogram
    * - ``--input``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for the spectrogram_df argument.
+     - Value: ``input``. Input CSV/parquet table for function argument 'spectrogram_df'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'period_spectrogram'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'period_spectrogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1337,11 +1337,11 @@ svtk plot metrics phase-delay-vs-distance
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'phase_delay_vs_distance'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'phase_delay_vs_distance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1468,11 +1468,11 @@ svtk plot metrics psa-period-curve
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'psa_period_curve'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'psa_period_curve' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1601,11 +1601,11 @@ svtk plot metrics residuals-vs-depth
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'residuals_vs_depth'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'residuals_vs_depth' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1734,11 +1734,11 @@ svtk plot metrics residuals-vs-distance
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'residuals_vs_distance'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'residuals_vs_distance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1861,11 +1861,11 @@ svtk plot metrics scatterplot
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the data argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'data'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'scatterplot'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'scatterplot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1988,11 +1988,11 @@ svtk plot metrics score-trends
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'score_trends'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'score_trends' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2115,11 +2115,11 @@ svtk plot metrics vs30-scatter
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'vs30_scatter'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'vs30_scatter' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2246,11 +2246,11 @@ svtk plot metrics winner-heatmap
    * - ``--input``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for the summary_df argument.
+     - Value: ``input``. Input CSV/parquet table for function argument 'summary_df'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'winner_heatmap'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'winner_heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2407,11 +2407,11 @@ svtk plot spatial azimuthal-residuals
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'event_centered_residuals'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'azimuthal_residuals'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'azimuthal_residuals' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2540,11 +2540,11 @@ svtk plot spatial block-holdout-scatter
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the prediction_df argument. Defaults to configured output table 'block_holdout_predictions'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'prediction_df'. Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'block_holdout_scatter'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'block_holdout_scatter' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2674,11 +2674,11 @@ svtk plot spatial cluster-feature-heatmap
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the feature_summary_df argument. Defaults to configured output table 'cluster_feature_summary'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'feature_summary_df'. Defaults to configured output table 'cluster_feature_summary' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'cluster_feature_heatmap'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'cluster_feature_heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2808,11 +2808,11 @@ svtk plot spatial cluster-solution-scores
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the score_df argument. Defaults to configured output table 'cluster_solution_scores'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'score_df'. Defaults to configured output table 'cluster_solution_scores' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'cluster_solution_scores_plot'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'cluster_solution_scores_plot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2935,11 +2935,11 @@ svtk plot spatial correlogram
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the distance_df argument. Defaults to configured output table 'distance_bin_correlations'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'distance_df'. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'correlogram'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'correlogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3070,11 +3070,11 @@ svtk plot spatial directional-correlogram
    * - ``--input``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for the directional_df argument.
+     - Value: ``input``. Input CSV/parquet table for function argument 'directional_df'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'directional_correlogram'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'directional_correlogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3154,7 +3154,7 @@ svtk plot spatial directional-correlogram
    * - ``--fit``
      - No
      -
-     - Value: ``fit``. Convenience table path for the fit_df argument.
+     - Value: ``fit``. Convenience CSV/parquet table path for function argument 'fit_df'.
 
 .. _cli-svtk-plot-spatial-list:
 
@@ -3227,11 +3227,11 @@ svtk plot spatial path-bin-summary
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the path_summary_df argument. Defaults to configured output table 'path_summary'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'path_summary_df'. Defaults to configured output table 'path_summary' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'path_bin_summary'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'path_bin_summary' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3360,11 +3360,11 @@ svtk plot spatial pattern-similarity
    * - ``--input``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for the stations argument.
+     - Value: ``input``. Input CSV/parquet table for function argument 'stations'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'pattern_similarity'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'pattern_similarity' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3494,11 +3494,11 @@ svtk plot spatial pca-explained-variance
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the explained_variance_df argument. Defaults to configured output table 'pca_explained_variance'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'explained_variance_df'. Defaults to configured output table 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'pca_explained_variance'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3627,11 +3627,11 @@ svtk plot spatial pca-feature-loadings
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the feature_loadings_df argument. Defaults to configured output table 'pca_feature_loadings'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'feature_loadings_df'. Defaults to configured output table 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'pca_feature_loadings'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3758,11 +3758,11 @@ svtk plot spatial polar-residuals
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'event_centered_residuals'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'polar_residuals'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'polar_residuals' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3891,11 +3891,11 @@ svtk plot spatial residual-correlation
    * - ``--input``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for the correlation_df argument.
+     - Value: ``input``. Input CSV/parquet table for function argument 'correlation_df'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'residual_correlation'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'residual_correlation' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4018,11 +4018,11 @@ svtk plot spatial semivariogram
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the distance_df argument. Defaults to configured output table 'distance_bin_correlations'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'distance_df'. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'semivariogram'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'semivariogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -

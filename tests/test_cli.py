@@ -134,6 +134,22 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
 
 
+def test_generated_cli_reference_names_plot_defaults():
+    """Generated CLI pages should match live parser help for config defaults."""
+
+    root = Path(__file__).resolve().parents[1]
+    plot_text = (root / "docs" / "reference" / "cli" / "plot.rst").read_text(encoding="utf-8")
+    map_text = (root / "docs" / "reference" / "cli" / "map.rst").read_text(encoding="utf-8")
+
+    assert "Input CSV/parquet table for function argument 'df'" in plot_text
+    assert "configured output table 'metrics_long' when --config is passed" in plot_text
+    assert "configured figure output 'band_score_distribution' when --config is passed" in plot_text
+    assert "default config is set with 'svtk config set'" in plot_text
+    assert "Input CSV/parquet table for function argument 'station_df'" in map_text
+    assert "configured output table 'station_bias' when --config is passed" in map_text
+    assert "configured figure output 'station_residual_map' when --config is passed" in map_text
+
+
 def test_cli_workflow_uses_curated_commands_for_standard_steps():
     """The shell workflow should not route routine tutorial steps through svtk call."""
 

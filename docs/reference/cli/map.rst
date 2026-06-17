@@ -123,11 +123,11 @@ svtk map spatial block-holdout-error
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the prediction_df argument. Defaults to configured output table 'block_holdout_predictions'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'prediction_df'. Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'block_holdout_error'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'block_holdout_error' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -263,11 +263,11 @@ svtk map spatial cluster
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the assignments_df argument. Defaults to configured output table 'clusters'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'assignments_df'. Defaults to configured output table 'clusters' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'cluster'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'cluster' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -404,11 +404,11 @@ svtk map spatial corridor
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the corridors_df argument. Defaults to configured output table 'corridors'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'corridors_df'. Defaults to configured output table 'corridors' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'corridor_map'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'corridor_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -492,15 +492,15 @@ svtk map spatial corridor
    * - ``--events``
      - No
      -
-     - Value: ``events``. Convenience table path for the events_df argument. Defaults to configured output table 'prepared_events'.
+     - Value: ``events``. Convenience CSV/parquet table path for function argument 'events_df'. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--records``
      - No
      -
-     - Value: ``records``. Convenience table path for the records_df argument. Defaults to configured output table 'event_station_records'.
+     - Value: ``records``. Convenience CSV/parquet table path for function argument 'records_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--stations``
      - No
      -
-     - Value: ``stations``. Convenience table path for the stations_df argument. Defaults to configured output table 'prepared_stations'.
+     - Value: ``stations``. Convenience CSV/parquet table path for function argument 'stations_df'. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--bounds``
      - No
      -
@@ -557,11 +557,11 @@ svtk map spatial event-residual
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'path_table'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'path_table' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'event_residual_map'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'event_residual_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -728,11 +728,11 @@ svtk map spatial metric-by-model
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'metric_map_by_model'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'metric_map_by_model' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -873,11 +873,11 @@ svtk map spatial model-improvement
    * - ``--input``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'model_improvement'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'model_improvement' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1013,11 +1013,11 @@ svtk map spatial pca-mode
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the station_scores_df argument. Defaults to configured output table 'pca_station_scores'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'station_scores_df'. Defaults to configured output table 'pca_station_scores' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'pca_mode_map'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'pca_mode_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1154,11 +1154,11 @@ svtk map spatial redcap-cluster
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the redcap_df argument. Defaults to configured output table 'redcap_clusters'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'redcap_df'. Defaults to configured output table 'redcap_clusters' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'redcap_cluster_map'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'redcap_cluster_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1295,11 +1295,11 @@ svtk map spatial residual-grid
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the grid_df argument. Defaults to configured output table 'metric_field'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'grid_df'. Defaults to configured output table 'metric_field' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'residual_grid'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'residual_grid' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1433,11 +1433,11 @@ svtk map spatial score
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'score'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'score' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1574,11 +1574,11 @@ svtk map spatial station-bias
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the station_df argument. Defaults to configured output table 'station_bias'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'station_df'. Defaults to configured output table 'station_bias' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_residual_map'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_residual_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1715,11 +1715,11 @@ svtk map spatial station-metric
    * - ``--input``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for the df argument. Defaults to configured output table 'metrics_long'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_metric_map'.
+     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_metric_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
