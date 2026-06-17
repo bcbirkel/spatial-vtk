@@ -251,6 +251,23 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "committed example data" in combined
 
 
+def test_public_docs_describe_committed_tutorial_waveforms() -> None:
+    """Fresh-checkout docs should not imply a separate tutorial waveform download."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    configuration = (repo_root / "docs" / "configuration.rst").read_text(encoding="utf-8")
+    data_formats = (repo_root / "docs" / "data_formats.rst").read_text(encoding="utf-8")
+    index = (repo_root / "docs" / "index.rst").read_text(encoding="utf-8")
+
+    combined = f"{configuration}\n{data_formats}\n{index}"
+    assert "observed/synthetic NPZ waveform subset" in combined
+    assert "No extra waveform download is needed" in combined
+    assert "companion waveform bundle" not in combined
+    assert "download or generate the larger observed" not in combined
+    assert "ValidationToolkit_Workflow.png" not in combined
+    assert "_static/spatial_vtk_workflow.png" in index
+
+
 def test_tutorial_notebook_executor_can_include_large_run_notebooks() -> None:
     """The clean notebook gate should be able to cover scalable large-run tutorials."""
 
@@ -550,6 +567,34 @@ def test_large_run_step02_uses_qc_availability_output() -> None:
     assert 'qc_availability = load_output_table("qc_availability")' in source
     assert "plot_data_synthetic_availability(" in source
     assert "Observed/Synthetic Availability (Post-QC Trace Overlap)" in source
+
+
+def test_large_run_optional_figure_cells_define_basemap_flag() -> None:
+    """Large-run optional figure cells should not fail when figures are enabled."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = [
+        repo_root / "docs" / "examples" / "large_run" / "step_01_large_run_ingest_and_prepare_data.ipynb",
+        repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb",
+    ]
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        assert 'ADD_BASEMAP = os.environ.get("SVTK_ADD_BASEMAP", "0") == "1"' in source
+        assert "add_basemap=ADD_BASEMAP" in source
+
+
+def test_large_run_step02_overlap_sidecar_has_separate_rebuild_gate() -> None:
+    """Missing overlap sidecars should not force a full QC rebuild."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, overwrite=OVERWRITE)" in source
+    assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, qc_inventory_overlap_path" not in source
+    assert "overlap_readiness = output_readiness(" in source
 
 
 def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:

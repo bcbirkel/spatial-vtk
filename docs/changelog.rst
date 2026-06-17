@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-17
+   Cleaned up public tutorial documentation and large-run notebook setup.
+   The docs now describe the committed NPZ tutorial waveform subset, the
+   workflow diagram lives under ``docs/_static/``, large-run Step 1 and Step 2
+   define ``SVTK_ADD_BASEMAP`` before optional figure rendering, and the Step 2
+   full-QC submission no longer reruns just because the overlap sidecar is
+   missing.
    Made metric batch merging tolerate output directories. ``svtk metrics
    merge-batches --output`` and ``merge_batch_outputs()`` now write
    ``metric_rows.parquet`` inside an existing or directory-style output path,

@@ -18,9 +18,10 @@ edit the paths and settings for your data. The comments in this example are
 meant to show what each section is for.
 
 The downloadable example includes a ``tutorial`` run scenario that points at
-the lightweight LA Basin metadata committed in ``data/examples/``. That
-scenario still expects you to download or generate the companion waveform
-bundle before you run the full notebooks.
+the lightweight LA Basin metadata and observed/synthetic NPZ waveform subset
+committed in ``data/examples/``. No extra waveform download is needed for the
+standard tutorial check; larger waveform products are only needed when you
+adapt the workflow to a full project dataset.
 
 :download:`Download example_spatial_vtk_config.yaml <../data/examples/configuration/example_spatial_vtk_config.yaml>`
 
@@ -73,10 +74,13 @@ dashboard, and figure steps at the saved processed files:
 
 .. code-block:: bash
 
+   svtk io prepare-event-stations \
+     --config spatial-vtk.yaml \
+     --run-scenario tutorial
+
    svtk io preprocess-waveforms \
      --config spatial-vtk.yaml \
-     --run-scenario tutorial \
-     --records data/metadata/event_station_records.csv
+     --run-scenario tutorial
 
 The command writes processed waveforms, a preprocessing manifest, trace
 metadata, and an updated event-station table under

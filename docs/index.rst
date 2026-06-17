@@ -5,7 +5,7 @@ Spatial-VTK provides spatial validation tools for ground-motion simulations,
 including data QC, metric calculations, geologic metadata integration, spatial
 statistics, mapping, and dashboard preparation.
 
-.. image:: ../ValidationToolkit_Workflow.png
+.. image:: _static/spatial_vtk_workflow.png
    :alt: Spatial-VTK workflow diagram
 
 .. toctree::

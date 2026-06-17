@@ -280,6 +280,7 @@ Work with region polygons and corridor selections, then make maps and waveform s
    svtk spatial geojson-summaries \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
+     --geojson "$REGIONS" \
      --metrics "$TABLES/metrics_long.parquet" \
      --chunksize 1000000 \
      --verbose

@@ -75,10 +75,10 @@ Here is the matching style for event metadata:
 
 The source checkout includes lightweight LA Basin example metadata under
 ``data/examples/example_five_event_subset/metadata/`` plus a dataset manifest
-that describes the companion five-event waveform bundle used by the tutorial
-notebooks. Keep the manifest in git; download or generate the larger observed
-waveform products and synthetic MiniSEED files separately before running the
-full tutorial workflow end to end.
+that describes the committed five-event waveform subset used by the tutorial
+notebooks. The standard tutorial uses the committed observed/synthetic NPZ
+waveform subset. Use larger observed waveform products or synthetic MiniSEED
+files only when adapting the workflow to a full project dataset.
 
 :download:`Download the example dataset manifest <../data/examples/example_five_event_subset/metadata/example_dataset_manifest.json>`
 
