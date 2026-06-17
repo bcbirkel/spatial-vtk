@@ -265,6 +265,18 @@ Work with region polygons and corridor selections, then make maps and waveform s
 
    export REGIONS=data/examples/example_five_event_subset/metadata/example_path_regions.geojson
 
+   svtk spatial geojson-summaries \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
+     --metrics "$TABLES/metrics_long.parquet" \
+     --chunksize 1000000 \
+     --verbose
+
+   svtk spatial corridors \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
+     --verbose
+
    svtk plot metrics boxplot \
      --input "$TABLES/metrics_long.parquet" \
      --output "$FIGURES/geojson_region_boxplot.png" \

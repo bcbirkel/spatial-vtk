@@ -806,6 +806,44 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     summaries.add_argument("--verbose", action="store_true", help="Print elapsed-time progress for Slurm logs.")
     summaries.set_defaults(handler=_cmd_spatial_summaries)
 
+    geojson_summaries = spatial_sub.add_parser(
+        "geojson-summaries",
+        help="Build GeoJSON region summary tables.",
+        description="Build configured GeoJSON region summary tables from metric outputs.",
+    )
+    geojson_summaries.add_argument(
+        "--metrics",
+        default=None,
+        help="Metric rows table. Defaults to configured output table 'metrics_long'.",
+    )
+    geojson_summaries.add_argument("--geojson", default=None, help="Region GeoJSON path. Defaults to paths.region_geojson.")
+    geojson_summaries.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    geojson_summaries.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    geojson_summaries.add_argument("--selector", default="all", help="GeoJSON polygon selector. Defaults to all polygons.")
+    geojson_summaries.add_argument("--chunksize", type=int, default=1_000_000, help="Rows per metric-table chunk.")
+    geojson_summaries.add_argument("--output-key", default="geojson_region_summaries", help="Registered output table key.")
+    geojson_summaries.add_argument("--verbose", action="store_true", help="Print elapsed-time progress for Slurm logs.")
+    geojson_summaries.set_defaults(handler=_cmd_spatial_geojson_summaries)
+
+    corridors = spatial_sub.add_parser(
+        "corridors",
+        help="Build configured boundary corridor tables.",
+        description="Build configured boundary corridor tables from region GeoJSON and prepared metadata.",
+    )
+    corridors.add_argument("--geojson", default=None, help="Region GeoJSON path. Defaults to paths.region_geojson.")
+    corridors.add_argument("--stations", default=None, help="Prepared station metadata table. Defaults to prepared_stations.")
+    corridors.add_argument("--events", default=None, help="Prepared event metadata table. Defaults to prepared_events.")
+    corridors.add_argument(
+        "--records",
+        default=None,
+        help="Event-station records used by max-records anchor strategies. Defaults to comparison_eligible_records when needed.",
+    )
+    corridors.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    corridors.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    corridors.add_argument("--output-key", default="corridors", help="Registered output table key.")
+    corridors.add_argument("--verbose", action="store_true", help="Print elapsed-time progress for Slurm logs.")
+    corridors.set_defaults(handler=_cmd_spatial_corridors)
+
 
 def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     """Register dashboard CLI commands."""
@@ -1850,6 +1888,49 @@ def _cmd_spatial_summaries(args: argparse.Namespace) -> int:
             print(f"- {failure['metric']} {failure['step']}: {failure['error']}: {failure['message']}")
         if len(result.failures) > 10:
             print(f"- ... {len(result.failures) - 10} more")
+    return 0
+
+
+def _cmd_spatial_geojson_summaries(args: argparse.Namespace) -> int:
+    """Run ``svtk spatial geojson-summaries``."""
+
+    from spatial_vtk.spatial.calculate import run_geojson_region_summary_workflow
+
+    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
+    result = run_geojson_region_summary_workflow(
+        args.metrics,
+        geojson_path=args.geojson,
+        output_key=args.output_key,
+        cfg=cfg,
+        selector=args.selector,
+        chunksize=args.chunksize,
+        verbose=args.verbose,
+    )
+    print(f"GeoJSON region summaries: {result.path}")
+    print(f"Rows: {result.rows}")
+    print(f"Source rows: {result.source_rows}")
+    print(f"Elapsed: {result.elapsed_s:.1f}s")
+    return 0
+
+
+def _cmd_spatial_corridors(args: argparse.Namespace) -> int:
+    """Run ``svtk spatial corridors``."""
+
+    from spatial_vtk.spatial.calculate import run_boundary_corridor_workflow
+
+    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
+    result = run_boundary_corridor_workflow(
+        geojson_path=args.geojson,
+        station_table=args.stations,
+        event_table=args.events,
+        records_table=args.records,
+        output_key=args.output_key,
+        cfg=cfg,
+        verbose=args.verbose,
+    )
+    print(f"Corridors: {result.path}")
+    print(f"Rows: {result.rows}")
+    print(f"Elapsed: {result.elapsed_s:.1f}s")
     return 0
 
 

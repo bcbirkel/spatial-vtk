@@ -152,6 +152,126 @@ outputs:
     assert "redcap_clusters_path" in captured.out
 
 
+def test_cli_spatial_geojson_and_corridor_help(capsys):
+    with pytest.raises(SystemExit) as excinfo:
+        main(["spatial", "geojson-summaries", "--help"])
+    assert excinfo.value.code == 0
+    geojson_help = capsys.readouterr().out
+    assert "Metric rows table" in geojson_help
+    assert "--chunksize" in geojson_help
+    assert "--selector" in geojson_help
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["spatial", "corridors", "--help"])
+    assert excinfo.value.code == 0
+    corridor_help = capsys.readouterr().out
+    assert "Region GeoJSON path" in corridor_help
+    assert "--records" in corridor_help
+    assert "--stations" in corridor_help
+
+
+def test_cli_spatial_geojson_and_corridors_dispatch_configured_workflows(tmp_path, monkeypatch, capsys):
+    from types import SimpleNamespace
+
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+paths:
+  region_geojson: regions.geojson
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    def fake_geojson(metrics_table=None, geojson_path=None, *, output_key=None, cfg=None, selector=None, chunksize=None, verbose=False):
+        seen["geojson"] = {
+            "metrics_table": metrics_table,
+            "geojson_path": geojson_path,
+            "output_key": output_key,
+            "cfg_root": cfg.root_dir,
+            "selector": selector,
+            "chunksize": chunksize,
+            "verbose": verbose,
+        }
+        return SimpleNamespace(path=tmp_path / "geojson_region_summaries.csv", rows=3, source_rows=100, elapsed_s=2.5)
+
+    def fake_corridors(geojson_path=None, *, station_table=None, event_table=None, records_table=None, output_key=None, cfg=None, verbose=False):
+        seen["corridors"] = {
+            "geojson_path": geojson_path,
+            "station_table": station_table,
+            "event_table": event_table,
+            "records_table": records_table,
+            "output_key": output_key,
+            "cfg_root": cfg.root_dir,
+            "verbose": verbose,
+        }
+        return SimpleNamespace(path=tmp_path / "corridors.parquet", rows=2, elapsed_s=1.5)
+
+    monkeypatch.setattr("spatial_vtk.spatial.calculate.run_geojson_region_summary_workflow", fake_geojson)
+    monkeypatch.setattr("spatial_vtk.spatial.calculate.run_boundary_corridor_workflow", fake_corridors)
+
+    assert (
+        main(
+            [
+                "spatial",
+                "geojson-summaries",
+                "--config",
+                str(config),
+                "--metrics",
+                "metrics.parquet",
+                "--geojson",
+                "regions.geojson",
+                "--selector",
+                "basin",
+                "--chunksize",
+                "123",
+                "--verbose",
+            ]
+        )
+        == 0
+    )
+    assert (
+        main(
+            [
+                "spatial",
+                "corridors",
+                "--config",
+                str(config),
+                "--geojson",
+                "regions.geojson",
+                "--stations",
+                "stations.csv",
+                "--events",
+                "events.csv",
+                "--records",
+                "records.csv",
+                "--verbose",
+            ]
+        )
+        == 0
+    )
+
+    assert seen["geojson"]["metrics_table"] == "metrics.parquet"
+    assert seen["geojson"]["geojson_path"] == "regions.geojson"
+    assert seen["geojson"]["output_key"] == "geojson_region_summaries"
+    assert seen["geojson"]["selector"] == "basin"
+    assert seen["geojson"]["chunksize"] == 123
+    assert seen["geojson"]["verbose"] is True
+    assert seen["corridors"]["station_table"] == "stations.csv"
+    assert seen["corridors"]["event_table"] == "events.csv"
+    assert seen["corridors"]["records_table"] == "records.csv"
+    assert seen["corridors"]["output_key"] == "corridors"
+    assert seen["corridors"]["verbose"] is True
+    captured = capsys.readouterr()
+    assert "GeoJSON region summaries:" in captured.out
+    assert "Corridors:" in captured.out
+
+
 def test_cli_qc_summaries_help(capsys):
     with pytest.raises(SystemExit) as excinfo:
         main(["qc", "summaries", "--help"])

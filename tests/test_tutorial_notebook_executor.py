@@ -453,6 +453,23 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "plot_correlogram" not in source
 
 
+def test_large_run_step05_uses_cli_workflow_commands() -> None:
+    """Large-run GeoJSON notebook should submit public CLI commands, not inline Python workflows."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_05_large_run_geojson_corridors.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert '"svtk", "spatial", "geojson-summaries"' in source
+    assert '"svtk", "spatial", "corridors"' in source
+    assert "run_or_submit_notebook_cli_command(" in source
+    assert "write_notebook_python_slurm_script" not in source
+    assert "submit_notebook_slurm_script" not in source
+    assert "run_geojson_region_summary_workflow" not in source
+    assert "run_boundary_corridor_workflow" not in source
+
+
 def test_large_run_notebooks_display_output_readiness_tables() -> None:
     """Large-run driver cells should show named readiness status tables."""
 

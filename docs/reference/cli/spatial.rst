@@ -11,6 +11,8 @@ Command Tree
 - :ref:`svtk spatial <cli-svtk-spatial>`
    - :ref:`svtk spatial status <cli-svtk-spatial-status>` - Inspect configured spatial-statistics inputs and outputs without running calculations.
    - :ref:`svtk spatial summaries <cli-svtk-spatial-summaries>` - Build standard spatial-statistics summary tables.
+   - :ref:`svtk spatial geojson-summaries <cli-svtk-spatial-geojson-summaries>` - Build configured GeoJSON region summary tables from metric outputs.
+   - :ref:`svtk spatial corridors <cli-svtk-spatial-corridors>` - Build configured boundary corridor tables from region GeoJSON and prepared metadata.
 
 Command Details
 ---------------
@@ -19,7 +21,7 @@ Command Details
 
 .. code-block:: bash
 
-   svtk spatial [-h] {status,summaries} ...
+   svtk spatial [-h] {status,summaries,geojson-summaries,corridors} ...
 
 .. rubric:: Parameters
 
@@ -141,6 +143,134 @@ Build standard spatial-statistics summary tables.
      - No
      - Flag
      - Do not reuse existing per-metric spatial summary checkpoints.
+   * - ``--verbose``
+     - No
+     - Flag
+     - Print elapsed-time progress for Slurm logs.
+
+.. _cli-svtk-spatial-geojson-summaries:
+
+svtk spatial geojson-summaries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Build configured GeoJSON region summary tables from metric outputs.
+
+.. rubric:: Usage
+
+.. code-block:: bash
+
+   svtk spatial geojson-summaries [-h] [--metrics METRICS]
+                                      [--geojson GEOJSON] [--config CONFIG]
+                                      [--run-scenario RUN_SCENARIO]
+                                      [--selector SELECTOR]
+                                      [--chunksize CHUNKSIZE]
+                                      [--output-key OUTPUT_KEY] [--verbose]
+
+.. rubric:: Parameters
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 13 14 47
+
+   * - Name
+     - Required
+     - Default / choices
+     - Description
+   * - ``-h``, ``--help``
+     - No
+     -
+     - show this help message and exit
+   * - ``--metrics``
+     - No
+     -
+     - Value: ``metrics``. Metric rows table. Defaults to configured output table 'metrics_long'.
+   * - ``--geojson``
+     - No
+     -
+     - Value: ``geojson``. Region GeoJSON path. Defaults to paths.region_geojson.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config file.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+   * - ``--selector``
+     - No
+     - ``all``
+     - Value: ``selector``. GeoJSON polygon selector.
+   * - ``--chunksize``
+     - No
+     - ``1000000``
+     - Value: ``chunksize``. Rows per metric-table chunk.
+   * - ``--output-key``
+     - No
+     - ``geojson_region_summaries``
+     - Value: ``output_key``. Registered output table key.
+   * - ``--verbose``
+     - No
+     - Flag
+     - Print elapsed-time progress for Slurm logs.
+
+.. _cli-svtk-spatial-corridors:
+
+svtk spatial corridors
+^^^^^^^^^^^^^^^^^^^^^^
+
+Build configured boundary corridor tables from region GeoJSON and prepared metadata.
+
+.. rubric:: Usage
+
+.. code-block:: bash
+
+   svtk spatial corridors [-h] [--geojson GEOJSON] [--stations STATIONS]
+                          [--events EVENTS] [--records RECORDS]
+                          [--config CONFIG] [--run-scenario RUN_SCENARIO]
+                          [--output-key OUTPUT_KEY] [--verbose]
+
+.. rubric:: Parameters
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 13 14 47
+
+   * - Name
+     - Required
+     - Default / choices
+     - Description
+   * - ``-h``, ``--help``
+     - No
+     -
+     - show this help message and exit
+   * - ``--geojson``
+     - No
+     -
+     - Value: ``geojson``. Region GeoJSON path. Defaults to paths.region_geojson.
+   * - ``--stations``
+     - No
+     -
+     - Value: ``stations``. Prepared station metadata table. Defaults to prepared_stations.
+   * - ``--events``
+     - No
+     -
+     - Value: ``events``. Prepared event metadata table. Defaults to prepared_events.
+   * - ``--records``
+     - No
+     -
+     - Value: ``records``. Event-station records used by max-records anchor strategies. Defaults to comparison_eligible_records when needed.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config file.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+   * - ``--output-key``
+     - No
+     - ``corridors``
+     - Value: ``output_key``. Registered output table key.
    * - ``--verbose``
      - No
      - Flag
