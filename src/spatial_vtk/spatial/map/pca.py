@@ -130,12 +130,12 @@ def plot_pca_mode_map(
         ax.text(0.5, 0.5, f"No station scores for {mode}", ha="center", va="center", transform=ax.transAxes)
         ax.set_axis_off()
     else:
-        lon_col, lat_col = _xy_columns(station_scores_df)
-        plot_df = station_scores_df.dropna(subset=[lon_col, lat_col, score_name]).copy()
+        plot_df = _pca_station_score_rows(station_scores_df, score_name=score_name)
         if plot_df.empty:
             ax.text(0.5, 0.5, f"No finite station scores for {mode}", ha="center", va="center", transform=ax.transAxes)
             ax.set_axis_off()
         else:
+            lon_col, lat_col = _xy_columns(plot_df)
             _set_bounds(ax, plot_df, lon_col, lat_col, bounds)
             _finish_map(ax, add_basemap=add_basemap, basemap_source=basemap_source, basemap_kwargs=basemap_kwargs)
             values = pd.to_numeric(plot_df[score_name], errors="coerce").to_numpy(dtype=float)
@@ -162,7 +162,7 @@ def plot_pca_mode_map(
         showfig=showfig,
         savefig=savefig,
         sidecar_df=sidecar_df,
-        source_rows=station_scores_df,
+        source_rows=sidecar_df,
         write_sidecar=write_sidecar,
         sidecar_rows=sidecar_rows,
         sidecar_dir=sidecar_dir,
@@ -241,12 +241,15 @@ def plot_pca_summary(
         table_ax.set_visible(False)
         _draw_feature_loading_axis(axes[2], feature_loadings_df, mode=mode, feature_label_map=feature_label_map)
     context = figure_context_text(station_scores_df, value_col=score_name, max_values=3, include_counts=False, include_value=False)
+    station_score_rows = _pca_station_score_rows(station_scores_df, score_name=score_name)
+    explained_rows = _pca_explained_variance_rows(explained_variance_df)
+    loading_rows = _pca_feature_loading_rows(feature_loadings_df, mode=mode)
     fig.suptitle(f"{title}\n{context}" if context else title)
     sidecar_df = layered_figure_rows(
         (
-            ("station_score", station_scores_df),
-            ("explained_variance", explained_variance_df),
-            ("feature_loading", feature_loadings_df),
+            ("station_score", station_score_rows),
+            ("explained_variance", explained_rows),
+            ("feature_loading", loading_rows),
             ("station_feature", station_feature_df),
             ("event", event_df),
         )
@@ -259,7 +262,7 @@ def plot_pca_summary(
         showfig=showfig,
         savefig=savefig,
         sidecar_df=sidecar_df,
-        source_rows=station_scores_df,
+        source_rows=sidecar_df,
         write_sidecar=write_sidecar,
         sidecar_rows=sidecar_rows,
         sidecar_dir=sidecar_dir,
@@ -289,13 +292,13 @@ def _draw_pca_map_axis(
         ax.set_axis_off()
         cbar_ax.set_axis_off()
         return
-    lon_col, lat_col = _xy_columns(station_scores_df)
-    plot_df = station_scores_df.dropna(subset=[lon_col, lat_col, score_name]).copy()
+    plot_df = _pca_station_score_rows(station_scores_df, score_name=score_name)
     if plot_df.empty:
         ax.text(0.5, 0.5, f"No finite station scores for {mode}", ha="center", va="center", transform=ax.transAxes)
         ax.set_axis_off()
         cbar_ax.set_axis_off()
         return
+    lon_col, lat_col = _xy_columns(plot_df)
     _set_bounds(ax, plot_df, lon_col, lat_col, bounds)
     _finish_map(ax, add_basemap=add_basemap, basemap_source=basemap_source, basemap_kwargs=basemap_kwargs)
     ax.set_anchor("N")
@@ -315,6 +318,35 @@ def _draw_pca_map_axis(
             ax.annotate(label.replace("Event ", ""), (getattr(row, event_lon), getattr(row, event_lat)), xytext=(4, 4), textcoords="offset points", fontsize=8, weight="bold", zorder=6)
         ax.legend(loc="lower left", frameon=True, fontsize=8)
     ax.set_title(f"{mode} station scores")
+
+
+def _pca_station_score_rows(station_scores_df: pd.DataFrame, *, score_name: str) -> pd.DataFrame:
+    """Return finite station-score rows used by PCA map panels."""
+
+    if station_scores_df.empty or score_name not in station_scores_df.columns:
+        return station_scores_df.iloc[0:0].copy()
+    lon_col, lat_col = _xy_columns(station_scores_df)
+    return station_scores_df.dropna(subset=[lon_col, lat_col, score_name]).copy()
+
+
+def _pca_explained_variance_rows(explained_variance_df: pd.DataFrame) -> pd.DataFrame:
+    """Return explained-variance rows in plotted order."""
+
+    if explained_variance_df.empty:
+        return explained_variance_df.iloc[0:0].copy()
+    return explained_variance_df.sort_values("mode_index").copy()
+
+
+def _pca_feature_loading_rows(feature_loadings_df: pd.DataFrame, *, mode: str, top_n: int = 10) -> pd.DataFrame:
+    """Return selected PCA feature-loading rows used by loading panels."""
+
+    if feature_loadings_df.empty:
+        return feature_loadings_df.iloc[0:0].copy()
+    subset = feature_loadings_df.loc[feature_loadings_df.get("mode", "").astype(str) == str(mode)].copy()
+    if subset.empty:
+        return subset
+    subset = subset.sort_values("absolute_loading", ascending=False).head(int(top_n)).copy()
+    return subset.sort_values("loading", ascending=True)
 
 
 def _event_xy_columns(df: pd.DataFrame) -> tuple[str, str]:

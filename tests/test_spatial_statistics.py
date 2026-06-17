@@ -594,6 +594,10 @@ def test_spatial_statistics_figures_write_optional_row_sidecars(tmp_path: Path) 
     station_bias = summarize_station_bias(centered, min_events_per_station=2)
     moran = moran_result_to_frame(compute_global_morans_i(station_bias, k=4, permutations=9, random_seed=7)).assign(metric="C5")
     distance = build_distance_bin_summary(centered, bin_width_km=20, max_distance_km=120, random_seed=7).assign(metric="C5")
+    zero_pair_bin = distance.iloc[[0]].copy()
+    zero_pair_bin["distance_center_km"] = 999.0
+    zero_pair_bin["pair_count"] = 0
+    distance = pd.concat([distance, zero_pair_bin], ignore_index=True)
     predictions = evaluate_spatial_block_holdouts(
         field,
         block_size_km=15,
@@ -613,6 +617,13 @@ def test_spatial_statistics_figures_write_optional_row_sidecars(tmp_path: Path) 
         random_seed=7,
     )
     pca_result = compute_pca_spatial_modes(fingerprint, n_components=2)
+    pca_station_scores = pd.concat(
+        [
+            pca_result.station_scores,
+            pca_result.station_scores.iloc[[0]].assign(station="NO_FINITE_PC1", PC1_score=np.nan),
+        ],
+        ignore_index=True,
+    )
     sidecar_dir = tmp_path / "sidecars"
 
     figures = [
@@ -621,7 +632,7 @@ def test_spatial_statistics_figures_write_optional_row_sidecars(tmp_path: Path) 
             tmp_path / "distance_correlation.png",
             significance_df=moran,
             write_sidecar=True,
-            sidecar_rows=3,
+            sidecar_rows=None,
             sidecar_dir=sidecar_dir,
         ),
         plot_station_bias_map(
@@ -629,14 +640,14 @@ def test_spatial_statistics_figures_write_optional_row_sidecars(tmp_path: Path) 
             tmp_path / "station_bias_map.png",
             add_basemap=False,
             write_sidecar=True,
-            sidecar_rows=3,
+            sidecar_rows=None,
             sidecar_dir=sidecar_dir,
         ),
         plot_block_holdout_scatter(
             predictions,
             tmp_path / "holdout_scatter.png",
             write_sidecar=True,
-            sidecar_rows=3,
+            sidecar_rows=None,
             sidecar_dir=sidecar_dir,
         ),
         plot_cluster_summary(
@@ -646,18 +657,18 @@ def test_spatial_statistics_figures_write_optional_row_sidecars(tmp_path: Path) 
             tmp_path / "cluster_summary.png",
             add_basemap=False,
             write_sidecar=True,
-            sidecar_rows=3,
+            sidecar_rows=None,
             sidecar_dir=sidecar_dir,
         ),
         plot_pca_summary(
-            pca_result.station_scores,
+            pca_station_scores,
             pca_result.explained_variance,
             pca_result.feature_loadings,
             tmp_path / "pca_summary.png",
             mode="PC1",
             add_basemap=False,
             write_sidecar=True,
-            sidecar_rows=3,
+            sidecar_rows=None,
             sidecar_dir=sidecar_dir,
         ),
     ]
@@ -668,6 +679,9 @@ def test_spatial_statistics_figures_write_optional_row_sidecars(tmp_path: Path) 
     assert distance_metadata["figure_type"] == "distance_correlation_by_metric"
     distance_rows = pd.read_csv(sidecar_dir / "distance_correlation.csv")
     assert set(distance_rows["_figure_layer"]).issubset({"distance_correlation", "significance"})
+    distance_source = pd.read_csv(sidecar_dir / "distance_correlation.source.csv")
+    distance_source_rows = distance_source.loc[distance_source["_figure_layer"].eq("distance_correlation")]
+    assert not (pd.to_numeric(distance_source_rows["pair_count"], errors="coerce") == 0).any()
 
     station_metadata = json.loads((sidecar_dir / "station_bias_map.json").read_text(encoding="utf-8"))
     assert station_metadata["figure_type"] == "station_bias_map"
@@ -677,6 +691,8 @@ def test_spatial_statistics_figures_write_optional_row_sidecars(tmp_path: Path) 
     assert set(cluster_rows["_figure_layer"]).issubset({"assignment", "score", "feature_summary"})
     pca_rows = pd.read_csv(sidecar_dir / "pca_summary.csv")
     assert set(pca_rows["_figure_layer"]).issubset({"station_score", "explained_variance", "feature_loading"})
+    pca_station_rows = pca_rows.loc[pca_rows["_figure_layer"].eq("station_score")]
+    assert "NO_FINITE_PC1" not in set(pca_station_rows["station"].astype(str))
 
 
 def test_residual_color_settings_use_seismic_diverging_scale() -> None:
