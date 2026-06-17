@@ -90,6 +90,9 @@ Changelog
    Improved notebook output-status tables so grouped output namespaces keep
    their artifact names and bare path lists use filename-derived labels instead
    of opaque ``path_0`` entries.
+   Improved ``output_readiness()`` messages so mapping and grouped-output
+   inputs retain names such as ``metrics_long`` or ``qc_inventory_overlap``
+   when notebooks explain missing, stale, current, or overwrite decisions.
    Added a dashboard summary-table contract helper that maps each metrics
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file

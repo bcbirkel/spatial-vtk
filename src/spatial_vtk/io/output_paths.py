@@ -464,9 +464,12 @@ def output_readiness(
         Structured decision with a stable reason and display message.
     """
 
-    output_paths = _coerce_path_tuple(outputs)
-    input_paths = _coerce_path_tuple(inputs)
-    source_paths = _coerce_path_tuple(sources)
+    output_items = _coerce_named_path_mapping(outputs)
+    input_items = _coerce_named_path_mapping(inputs)
+    source_items = _coerce_named_path_mapping(sources)
+    output_paths = tuple(output_items.values())
+    input_paths = tuple(input_items.values())
+    source_paths = tuple(source_items.values())
 
     missing_inputs = tuple(path for path in input_paths if not path.exists())
     missing_outputs = tuple(path for path in output_paths if not path.exists())
@@ -478,7 +481,10 @@ def output_readiness(
     )
 
     if missing_inputs:
-        message = missing_input_message or _paths_message("Required input is not ready yet", missing_inputs)
+        message = missing_input_message or _paths_message(
+            "Required input is not ready yet",
+            _filter_named_paths(input_items, missing_inputs),
+        )
         return OutputReadiness(
             should_run=False,
             reason="missing_inputs",
@@ -492,7 +498,7 @@ def output_readiness(
         )
 
     if overwrite:
-        message = rebuild_message or _paths_message("Overwrite requested; rebuilding", output_paths)
+        message = rebuild_message or _paths_message("Overwrite requested; rebuilding", output_items)
         return OutputReadiness(
             should_run=True,
             reason="overwrite",
@@ -505,7 +511,10 @@ def output_readiness(
         )
 
     if missing_outputs:
-        message = rebuild_message or _paths_message("Output is missing; building", missing_outputs)
+        message = rebuild_message or _paths_message(
+            "Output is missing; building",
+            _filter_named_paths(output_items, missing_outputs),
+        )
         return OutputReadiness(
             should_run=True,
             reason="missing_outputs",
@@ -518,7 +527,10 @@ def output_readiness(
         )
 
     if stale_outputs:
-        message = rebuild_message or _paths_message("Source dependency changed; rebuilding", stale_outputs)
+        message = rebuild_message or _paths_message(
+            "Source dependency changed; rebuilding",
+            _filter_named_paths(output_items, stale_outputs),
+        )
         return OutputReadiness(
             should_run=True,
             reason="stale_sources",
@@ -529,7 +541,7 @@ def output_readiness(
             stale_outputs=stale_outputs,
         )
 
-    message = current_message or _paths_message("Outputs are current; skipping", output_paths)
+    message = current_message or _paths_message("Outputs are current; skipping", output_items)
     return OutputReadiness(
         should_run=False,
         reason="current",
@@ -587,6 +599,10 @@ def _dedupe_artifacts(artifacts: Iterable[OutputArtifact]) -> list[OutputArtifac
 def _coerce_named_paths(paths) -> dict[str, str | Path]:
     """Coerce common path collections into a named mapping."""
 
+    if paths is None:
+        return {}
+    if _looks_like_path_value(paths):
+        return {_path_display_name(paths, fallback="path"): paths}
     if isinstance(paths, dict):
         return {str(name): path for name, path in paths.items()}
     if isinstance(paths, SimpleNamespace):
@@ -630,25 +646,40 @@ def _path_display_name(path: object, *, fallback: str) -> str:
 def _coerce_path_tuple(paths) -> tuple[Path, ...]:
     """Coerce a path, mapping, or sequence into a tuple of paths."""
 
-    if paths is None:
-        return ()
-    if isinstance(paths, dict):
-        values = paths.values()
-    elif isinstance(paths, (str, Path)):
-        values = (paths,)
-    else:
-        values = tuple(paths)
-    return tuple(Path(path) for path in values if path is not None)
+    return tuple(_coerce_named_path_mapping(paths).values())
 
 
-def _paths_message(prefix: str, paths: tuple[Path, ...]) -> str:
+def _coerce_named_path_mapping(paths) -> dict[str, Path]:
+    """Coerce path inputs to a named mapping with resolved ``Path`` values."""
+
+    return {
+        name: Path(path)
+        for name, path in _coerce_named_paths(paths).items()
+        if path is not None
+    }
+
+
+def _filter_named_paths(paths: dict[str, Path], selected: tuple[Path, ...]) -> dict[str, Path]:
+    """Return named paths whose value is in ``selected``."""
+
+    selected_set = set(selected)
+    return {name: path for name, path in paths.items() if path in selected_set}
+
+
+def _paths_message(prefix: str, paths: tuple[Path, ...] | dict[str, Path]) -> str:
     """Return a compact status message that includes affected paths."""
 
     if not paths:
         return f"{prefix}."
-    if len(paths) == 1:
-        return f"{prefix}: {paths[0]}"
-    return f"{prefix}: {len(paths)} path(s); first is {paths[0]}"
+    if isinstance(paths, dict):
+        items = list(paths.items())
+        first = f"{items[0][0]}={items[0][1]}"
+    else:
+        items = [(None, path) for path in paths]
+        first = str(items[0][1])
+    if len(items) == 1:
+        return f"{prefix}: {first}"
+    return f"{prefix}: {len(items)} path(s); first is {first}"
 
 
 OUTPUT_GROUPS["large_run_core"] = tuple(

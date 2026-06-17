@@ -736,6 +736,7 @@ def test_output_readiness_reports_notebook_step_decisions(tmp_path):
     assert missing_input.should_run is False
     assert missing_input.reason == "missing_inputs"
     assert missing_input.missing_inputs == (required_input,)
+    assert "metrics=" in output_readiness(output, inputs={"metrics": required_input}).message
 
     required_input.parent.mkdir()
     required_input.write_text("source\n", encoding="utf-8")
@@ -744,21 +745,35 @@ def test_output_readiness_reports_notebook_step_decisions(tmp_path):
     assert missing_output.should_run is True
     assert missing_output.reason == "missing_outputs"
     assert missing_output.missing_outputs == (output,)
+    named_missing_output = output_readiness({"summary": output}, inputs={"metrics": required_input})
+    assert named_missing_output.message.startswith("Output is missing; building: summary=")
 
     output.parent.mkdir()
     output.write_text("old\n", encoding="utf-8")
-    assert output_readiness(output, inputs=[required_input], sources=[required_input]).reason == "current"
+    current = output_readiness(
+        {"summary": output},
+        inputs={"metrics": required_input},
+        sources={"metrics": required_input},
+    )
+    assert current.reason == "current"
+    assert current.message.startswith("Outputs are current; skipping: summary=")
 
     newer_time = output.stat().st_mtime + 10
     os.utime(required_input, (newer_time, newer_time))
-    stale = output_readiness(output, inputs=[required_input], sources=[required_input])
+    stale = output_readiness(
+        {"summary": output},
+        inputs={"metrics": required_input},
+        sources={"metrics": required_input},
+    )
     assert stale.should_run is True
     assert stale.reason == "stale_sources"
     assert stale.stale_outputs == (output,)
+    assert stale.message.startswith("Source dependency changed; rebuilding: summary=")
 
     forced = output_readiness({"summary": output}, inputs={"metrics": required_input}, overwrite=True)
     assert forced.should_run is True
     assert forced.reason == "overwrite"
+    assert forced.message.startswith("Overwrite requested; rebuilding: summary=")
 
 
 def test_finish_figure_uses_rich_display_in_notebooks(monkeypatch):
