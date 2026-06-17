@@ -888,13 +888,26 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     metrics.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     metrics.add_argument(
         "--metrics-root",
+        "--metrics-dataset",
+        metavar="PATH",
+        dest="metrics_root",
         default=None,
-        help="Dashboard-ready long metric dataset directory or direct CSV/parquet table. Defaults to the configured metrics_dashboard_root output.",
+        help=(
+            "Dashboard-ready metric dataset directory or direct CSV/parquet table. "
+            "Defaults to the configured dashboard output key 'metrics_dashboard'."
+        ),
     )
     metrics.add_argument(
         "--summary-root",
+        "--dashboard-summary-dir",
+        metavar="DIR",
+        dest="summary_root",
         default=None,
-        help="Dashboard summary table directory. Defaults to the configured dashboard_summary_root output.",
+        help=(
+            "Directory containing dashboard summary tables "
+            "(model_metric_band, station_rollup, event_rollup, path_hex). "
+            "Defaults to the configured dashboard output key 'dashboard_summaries'."
+        ),
     )
     metrics.add_argument("--port", type=int, default=8501, help="Streamlit server port.")
     metrics.add_argument("--address", default="127.0.0.1", help="Streamlit server address.")
@@ -906,7 +919,14 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     qc = dashboard_sub.add_parser("qc", help="Launch the QC Streamlit dashboard.")
     qc.add_argument("--config", default=None, help="Spatial-VTK config used to find the default trace-summary output.")
     qc.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
-    qc.add_argument("--trace-summary", default=None, help="Trace-summary CSV/parquet path. Defaults from config.")
+    qc.add_argument(
+        "--trace-summary",
+        "--qc-trace-summary",
+        metavar="PATH",
+        dest="trace_summary",
+        default=None,
+        help="QC trace-summary CSV/parquet table. Defaults to the configured output table 'qc_trace_summary'.",
+    )
     qc.add_argument("--port", type=int, default=8502, help="Streamlit server port.")
     qc.add_argument("--address", default="127.0.0.1", help="Streamlit server address.")
     qc.add_argument("--auto-port", action="store_true", help="Use the first available port at or above --port.")
@@ -1294,7 +1314,8 @@ def _resolve_metrics_dashboard_paths(
     if config is None:
         raise ValueError(
             "No dashboard roots were provided and no Spatial-VTK config was found. "
-            "Pass --metrics-root/--summary-root, pass --config, or run 'svtk config set CONFIG_PATH'."
+            "Pass --metrics-dataset and --dashboard-summary-dir, pass --config, "
+            "or run 'svtk config set CONFIG_PATH'."
         )
     paths = dashboard_output_paths(cfg=config, include_summary_tables=False)
     resolved_metrics_root = Path(metrics_root).expanduser() if metrics_root else paths["metrics_dashboard_root"]
@@ -1320,7 +1341,7 @@ def _resolve_qc_dashboard_path(
     if config is None:
         raise ValueError(
             "No trace-summary path was provided and no Spatial-VTK config was found. "
-            "Pass --trace-summary, pass --config, or run 'svtk config set CONFIG_PATH'."
+            "Pass --qc-trace-summary, pass --config, or run 'svtk config set CONFIG_PATH'."
         )
     resolved_config_path = str(config.config_path) if config.config_path is not None else None
     return resolve_output_path("qc_trace_summary", kind="table", cfg=config), resolved_config_path

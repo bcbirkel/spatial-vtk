@@ -2449,6 +2449,65 @@ outputs:
     assert launched["proxy_mode"] is True
 
 
+def test_cli_dashboard_help_exposes_clear_path_aliases(capsys):
+    with pytest.raises(SystemExit) as excinfo:
+        main(["dashboard", "metrics", "--help"])
+    assert excinfo.value.code == 0
+    metrics_help = capsys.readouterr().out
+    assert "--metrics-dataset" in metrics_help
+    assert "--dashboard-summary-dir" in metrics_help
+    assert "metrics_dashboard" in metrics_help
+    assert "dashboard_summaries" in metrics_help
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["dashboard", "qc", "--help"])
+    assert excinfo.value.code == 0
+    qc_help = capsys.readouterr().out
+    assert "--qc-trace-summary" in qc_help
+    assert "qc_trace_summary" in qc_help
+
+
+def test_cli_dashboard_metrics_accepts_clear_path_aliases(tmp_path, monkeypatch, capsys):
+    metrics_path = tmp_path / "dashboard_metrics"
+    summary_path = tmp_path / "dashboard_summaries"
+    launched = {}
+
+    class FakeProcess:
+        pid = 12345
+
+    def fake_launch_metrics_dashboard(**kwargs):
+        launched.update(kwargs)
+        return FakeProcess()
+
+    monkeypatch.setattr(
+        "spatial_vtk.visualize.dashboard.launch_metrics_dashboard",
+        fake_launch_metrics_dashboard,
+    )
+
+    assert (
+        main(
+            [
+                "dashboard",
+                "metrics",
+                "--metrics-dataset",
+                str(metrics_path),
+                "--dashboard-summary-dir",
+                str(summary_path),
+                "--port",
+                "8555",
+            ]
+        )
+        == 0
+    )
+
+    captured = capsys.readouterr()
+    assert "Metrics dashboard data:" in captured.out
+    assert Path(launched["metrics_root"]) == metrics_path
+    assert Path(launched["summary_root"]) == summary_path
+    assert launched["config_path"] is None
+    assert launched["server_port"] == 8555
+
+
 def test_cli_dashboard_metrics_reports_auto_selected_port(tmp_path, monkeypatch, capsys):
     config = tmp_path / "spatial-vtk.yaml"
     config.write_text(
@@ -2515,6 +2574,31 @@ outputs:
     assert "QC dashboard trace summary:" in captured.out
     assert Path(launched["trace_summary"]) == tmp_path / "outputs" / "tables" / "qc_trace_summary.csv"
     assert Path(launched["config_path"]) == config.resolve()
+    assert launched["server_port"] == 8556
+
+
+def test_cli_dashboard_qc_accepts_clear_trace_summary_alias(tmp_path, monkeypatch, capsys):
+    trace_summary = tmp_path / "qc_trace_summary.parquet"
+    launched = {}
+
+    class FakeProcess:
+        pid = 12346
+
+    def fake_launch_qc_dashboard(**kwargs):
+        launched.update(kwargs)
+        return FakeProcess()
+
+    monkeypatch.setattr(
+        "spatial_vtk.visualize.dashboard.launch_qc_dashboard",
+        fake_launch_qc_dashboard,
+    )
+
+    assert main(["dashboard", "qc", "--qc-trace-summary", str(trace_summary), "--port", "8556"]) == 0
+
+    captured = capsys.readouterr()
+    assert "QC dashboard trace summary:" in captured.out
+    assert Path(launched["trace_summary"]) == trace_summary
+    assert launched["config_path"] is None
     assert launched["server_port"] == 8556
 
 

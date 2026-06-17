@@ -45,7 +45,7 @@ svtk dashboard qc
 .. code-block:: bash
 
    svtk dashboard qc [-h] [--config CONFIG] [--run-scenario RUN_SCENARIO]
-                         [--trace-summary TRACE_SUMMARY] [--port PORT]
+                         [--trace-summary PATH] [--port PORT]
                          [--address ADDRESS] [--auto-port] [--proxy-mode]
                          [--show]
 
@@ -71,10 +71,10 @@ svtk dashboard qc
      - No
      -
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
-   * - ``--trace-summary``
+   * - ``--trace-summary``, ``--qc-trace-summary``
      - No
      -
-     - Value: ``trace_summary``. Trace-summary CSV/parquet path. Defaults from config.
+     - Value: ``trace_summary``. QC trace-summary CSV/parquet table. Defaults to the configured output table ``qc_trace_summary``.
    * - ``--port``
      - No
      - Default: ``8502``
@@ -107,8 +107,8 @@ svtk dashboard metrics
 
    svtk dashboard metrics [-h] [--config CONFIG]
                               [--run-scenario RUN_SCENARIO]
-                              [--metrics-root METRICS_ROOT]
-                              [--summary-root SUMMARY_ROOT] [--port PORT]
+                              [--metrics-root PATH]
+                              [--summary-root DIR] [--port PORT]
                               [--address ADDRESS] [--auto-port] [--proxy-mode]
                               [--show]
 
@@ -134,14 +134,14 @@ svtk dashboard metrics
      - No
      -
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
-   * - ``--metrics-root``
+   * - ``--metrics-root``, ``--metrics-dataset``
      - No
      -
-     - Value: ``metrics_root``. Dashboard-ready long metric dataset directory or direct CSV/parquet table. Defaults to the configured metrics_dashboard_root output.
-   * - ``--summary-root``
+     - Value: ``metrics_root``. Dashboard-ready metric dataset directory or direct CSV/parquet table. Defaults to the configured dashboard output key ``metrics_dashboard``.
+   * - ``--summary-root``, ``--dashboard-summary-dir``
      - No
      -
-     - Value: ``summary_root``. Dashboard summary table directory. Defaults to the configured dashboard_summary_root output.
+     - Value: ``summary_root``. Directory containing dashboard summary tables (``model_metric_band``, ``station_rollup``, ``event_rollup``, ``path_hex``). Defaults to the configured dashboard output key ``dashboard_summaries``.
    * - ``--port``
      - No
      - Default: ``8501``

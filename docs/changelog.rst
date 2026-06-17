@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Clarified dashboard CLI path options. ``svtk dashboard metrics`` now accepts
+   ``--metrics-dataset`` and ``--dashboard-summary-dir`` aliases, and
+   ``svtk dashboard qc`` accepts ``--qc-trace-summary``, while preserving the
+   older root/path flags for compatibility.
    Hardened metrics-dashboard startup for large or partial dashboard outputs.
    The Streamlit app now runs bounded summary readiness before loading full
    summary tables and skips not-ready optional summaries with schema-correct
