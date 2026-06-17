@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Simplified the large-run Step 7 dashboard driver so the notebook uses
+   config-backed dashboard status, ``svtk metrics outputs --config ...``, and
+   ``preview_output_table("metrics_long")`` instead of expanding configured
+   dashboard paths in task cells.
    Added ``write_configured_dashboard_datasets()`` as a config-backed helper
    for writing the metrics dashboard dataset and dashboard summary tables in
    one call. The Step 7 dashboard notebook now uses this helper and the

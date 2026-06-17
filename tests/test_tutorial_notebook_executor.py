@@ -488,6 +488,26 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     assert '"--output-dir", str(Path(metrics_path).parent)' not in source
 
 
+def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
+    """Large-run dashboard driver should use config-backed status and commands."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_07_large_run_dashboards.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "dashboard_status = dashboard_output_status_frame(cfg=cfg)" in source
+    assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=OVERWRITE)" in source
+    assert "preview_output_table(\"metrics_long\", cfg=cfg" in source
+    assert "dashboard_output_namespace" not in source
+    assert "dashboard_paths" not in source
+    assert "metrics_long_path" not in source
+    assert "metrics_dashboard_root" not in source
+    assert "dashboard_summary_root" not in source
+    assert "qc_trace_summary_path" not in source
+    assert '"--metrics", str(' not in source
+
+
 def test_large_run_notebooks_display_output_readiness_tables() -> None:
     """Large-run driver cells should show named readiness status tables."""
 
