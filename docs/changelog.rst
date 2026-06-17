@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-16
+   Hardened metrics dashboard optional tabs so missing, empty, or value-less
+   station/event/path summary tables show their dashboard-readiness message in
+   the affected tab instead of a generic filtered-empty message.
    Hardened QC dashboard chart tabs so filtered-empty trace tables show an
    explicit empty-state message and do not attempt to render blank histogram or
    band-content charts.

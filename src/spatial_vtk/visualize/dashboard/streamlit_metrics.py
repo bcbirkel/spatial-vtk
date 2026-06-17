@@ -74,10 +74,16 @@ def main() -> None:
         return
     long_metrics = _try_load_long_metrics(metrics_root)
     config = _load_optional_config(config_path)
-    _render_metrics_dashboard(summaries, long_metrics, config)
+    _render_metrics_dashboard(summaries, long_metrics, config, readiness=readiness)
 
 
-def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: pd.DataFrame | None, config: SpatialVTKConfig | None = None) -> None:
+def _render_metrics_dashboard(
+    summaries: dict[str, pd.DataFrame],
+    long_metrics: pd.DataFrame | None,
+    config: SpatialVTKConfig | None = None,
+    *,
+    readiness: pd.DataFrame | None = None,
+) -> None:
     """Render the metrics dashboard body."""
 
     all_metrics = sorted({normalize_metric_name(value) for value in summaries["model_metric_band"]["metric"].dropna().astype(str)}, key=metric_display_name)
@@ -170,8 +176,11 @@ def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: 
             st.plotly_chart(build_metric_heatmap_figure(heat, value_col=value_col), width="stretch")
         st.dataframe(_display_table(heat), width="stretch")
     with station_tab:
+        station_ready_message = _summary_readiness_message(readiness, "station_rollup")
         station_map_status = dashboard_map_readiness(stations, "station_rollup")
-        if station_value_message:
+        if station_ready_message:
+            st.info(station_ready_message)
+        elif station_value_message:
             st.info(station_value_message)
         elif stations.empty:
             st.info(_empty_rows_message("station"))
@@ -183,8 +192,11 @@ def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: 
             st.download_button("Download station map HTML", render_folium_html(station_map), file_name="station_metric_map.html")
         st.dataframe(_display_table(stations), width="stretch")
     with event_tab:
+        event_ready_message = _summary_readiness_message(readiness, "event_rollup")
         event_map_status = dashboard_map_readiness(events, "event_rollup")
-        if event_value_message:
+        if event_ready_message:
+            st.info(event_ready_message)
+        elif event_value_message:
             st.info(event_value_message)
         elif events.empty:
             st.info(_empty_rows_message("event"))
@@ -194,7 +206,10 @@ def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: 
             st_folium(build_event_folium_map(events, value_col=value_col, basemap=basemap, marker_cluster=marker_cluster, max_markers=int(max_markers)), use_container_width=True, height=560)
         st.dataframe(_display_table(events), width="stretch")
     with path_tab:
-        if path_value_message:
+        path_ready_message = _summary_readiness_message(readiness, "path_hex")
+        if path_ready_message:
+            st.info(path_ready_message)
+        elif path_value_message:
             st.info(path_value_message)
         elif paths.empty:
             st.info(_empty_rows_message("path"))
@@ -286,6 +301,26 @@ def _metrics_dashboard_startup_blocker(readiness: pd.DataFrame) -> str | None:
         return None
     message = str(row.get("message") or "").strip()
     return message or "The model_metric_band dashboard summary is not ready."
+
+
+def _summary_readiness_message(readiness: pd.DataFrame | None, table_name: str) -> str | None:
+    """Return the tab-level readiness message for one optional summary table."""
+
+    if readiness is None or readiness.empty or "dashboard_table" not in readiness.columns:
+        return None
+    rows = readiness.loc[readiness["dashboard_table"].astype(str).eq(str(table_name))]
+    if rows.empty:
+        return None
+    row = rows.iloc[0]
+    ready = row.get("ready")
+    if pd.notna(ready) and bool(ready):
+        return None
+    message = str(row.get("message") or "").strip()
+    if message:
+        return message
+    tabs = str(row.get("dashboard_tabs") or "").strip()
+    tab_text = f" for {tabs}" if tabs else ""
+    return f"{table_name} summary is not ready{tab_text}. Rebuild dashboard summaries for this run."
 
 
 def _path_setting(query_key: str, env_key: str) -> str:

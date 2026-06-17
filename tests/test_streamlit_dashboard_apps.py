@@ -39,6 +39,7 @@ from spatial_vtk.visualize.dashboard.tables import build_dashboard_summaries
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _available_nonempty_value_columns
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _empty_rows_message as _metrics_empty_rows_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard_startup_blocker
+from spatial_vtk.visualize.dashboard.streamlit_metrics import _summary_readiness_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_chart_columns_or_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _empty_rows_message as _qc_empty_rows_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _missing_columns_message as _qc_missing_columns_message
@@ -351,6 +352,25 @@ def test_dashboard_empty_state_messages_are_explicit():
     assert _metrics_empty_rows_message("station") == "No station rows match the selected filters."
     assert _qc_empty_rows_message("trace QC") == "No trace QC rows match the selected filters."
     assert _qc_missing_columns_message("timing") == "No timing columns are available in the loaded trace-summary table."
+
+
+def test_metrics_tab_readiness_message_explains_optional_summary_gaps():
+    """Metrics tabs should show table-readiness causes before generic empty states."""
+
+    readiness = pd.DataFrame(
+        {
+            "dashboard_table": ["station_rollup", "event_rollup", "path_hex"],
+            "dashboard_tabs": ["Stations", "Events", "Paths"],
+            "ready": [False, True, pd.NA],
+            "message": ["station_rollup summary file is missing.", "event_rollup summary is ready.", ""],
+        }
+    )
+
+    assert _summary_readiness_message(readiness, "station_rollup") == "station_rollup summary file is missing."
+    assert _summary_readiness_message(readiness, "event_rollup") is None
+    assert _summary_readiness_message(readiness, "path_hex") == "path_hex summary is not ready for Paths. Rebuild dashboard summaries for this run."
+    assert _summary_readiness_message(readiness, "model_metric_band") is None
+    assert _summary_readiness_message(None, "station_rollup") is None
 
 
 def test_qc_chart_tab_state_prioritizes_empty_filtered_rows():
