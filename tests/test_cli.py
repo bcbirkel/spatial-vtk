@@ -85,6 +85,96 @@ def test_cli_metrics_estimate_writes_summary(tmp_path, capsys):
     assert "Wall time at 2 parallel tasks" in set(summary["Estimate"])
 
 
+def test_cli_metrics_estimate_reads_manifest(tmp_path, capsys):
+    """Metric estimates should work directly from resumable manifests."""
+
+    from spatial_vtk.metrics.workflow import MetricWorkflowTask, write_task_manifest
+
+    manifest = tmp_path / "metric_manifest.json"
+    write_task_manifest(
+        [
+            MetricWorkflowTask(
+                task_id="task-1",
+                event_id="e1",
+                station="S1",
+                component="R",
+                model="m1",
+                passband="1-2 sec",
+                metrics=("PGA", "PGV"),
+            )
+        ],
+        manifest,
+        output_dir=tmp_path / "batches",
+    )
+
+    assert (
+        main(
+            [
+                "metrics",
+                "estimate",
+                "--manifest",
+                str(manifest),
+                "--seconds-per-task",
+                "30",
+                "--parallel-tasks",
+                "2",
+            ]
+        )
+        == 0
+    )
+
+    captured = capsys.readouterr()
+    assert "Metric tasks" in captured.out
+    assert "Approximate metric evaluations" in captured.out
+    assert "Wall time at 2 parallel tasks" in captured.out
+
+
+def test_cli_metrics_estimate_uses_saved_config_defaults(tmp_path, monkeypatch, capsys):
+    """After svtk config set, metric estimate should not need repeated path flags."""
+
+    from spatial_vtk.metrics.workflow import MetricWorkflowTask, write_task_manifest
+
+    settings = tmp_path / "settings" / "svtk-config.json"
+    config = tmp_path / "spatial-vtk.yaml"
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    write_task_manifest(
+        [
+            MetricWorkflowTask(
+                task_id="task-1",
+                event_id="e1",
+                station="S1",
+                component="R",
+                model="m1",
+                passband="1-2 sec",
+                metrics=("PGA",),
+            )
+        ],
+        tables / "metric_manifest.json",
+        output_dir=tmp_path / "outputs" / "metric_batches",
+    )
+    monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(settings))
+
+    assert main(["config", "set", str(config)]) == 0
+    assert main(["metrics", "estimate", "--seconds-per-task", "30"]) == 0
+
+    captured = capsys.readouterr()
+    output = tables / "metric_task_estimate.csv"
+    assert str(output) in captured.out
+    assert "Saved default Spatial-VTK config" in captured.out
+    assert output.exists()
+
+
 def test_cli_registered_plot_help_shows_common_options(capsys):
     with pytest.raises(SystemExit) as excinfo:
         main(["plot", "metrics", "residuals-vs-distance", "--help"])
@@ -348,6 +438,54 @@ outputs:
     assert seen["kwargs"]["sidecar_rows"] == 5
     assert seen["kwargs"]["sidecar_dir"] == tmp_path / "sidecars"
     assert captured.out.strip() == str(expected_output)
+
+
+def test_cli_plot_uses_saved_config_defaults_without_path_flags(tmp_path, monkeypatch, capsys):
+    """Registered plot commands should honor a saved default config."""
+
+    settings = tmp_path / "settings" / "svtk-config.json"
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    metrics = table_dir / "metrics_long.csv"
+    metrics.write_text("band,log2_residual,metric\n1-2 sec,0.5,PGA\n", encoding="utf-8")
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+  artifacts:
+    metrics_long:
+      filename: metrics_long.csv
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    from spatial_vtk.metrics.plot import model_comparison
+
+    def fake_plot_band_score_distribution(df, output_path=None, **kwargs):
+        seen["rows"] = len(df)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(model_comparison, "plot_band_score_distribution", fake_plot_band_score_distribution)
+    monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(settings))
+
+    assert main(["config", "set", str(config)]) == 0
+    assert main(["plot", "metrics", "band-score-distribution", "--score-col", "log2_residual"]) == 0
+
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "band_score_distribution.png"
+    assert seen["rows"] == 1
+    assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["score_col"] == "log2_residual"
+    assert str(expected_output) in captured.out
 
 
 def test_cli_metric_long_plot_commands_use_config_defaults(tmp_path, monkeypatch, capsys):
@@ -1469,9 +1607,7 @@ metrics:
 
     assert main(["metrics", "cache-waveforms", "--config", str(config)]) == 0
     assert (tables / "metric_manifest_cached.json").exists()
-    cached_manifest = json.loads((tables / "metric_manifest_cached.json").read_text(encoding="utf-8"))
-    cached_batch = Path(cached_manifest["batches"][0]["output_path"])
-    pd.DataFrame({"event_id": ["e1"], "station": ["ABC"], "component": ["Z"], "metric": ["PGA"]}).to_csv(cached_batch, index=False)
+    assert main(["metrics", "run-batch", "--config", str(config), "--batch-index", "0"]) == 0
 
     assert main(["metrics", "merge-batches", "--config", str(config)]) == 0
     assert (tables / "metric_rows.parquet").exists()

@@ -649,8 +649,11 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     plan.set_defaults(handler=_cmd_metrics_plan)
 
     estimate = metrics_sub.add_parser("estimate", help="Summarize metric task counts and resource estimates.")
-    estimate.add_argument("--tasks", required=True, help="Metric task CSV/parquet path.")
-    estimate.add_argument("--output", default=None, help="Optional output CSV/parquet path for the estimate table.")
+    estimate.add_argument("--tasks", default=None, help="Metric task CSV/parquet path. Overrides --manifest.")
+    estimate.add_argument("--manifest", default=None, help="Metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'.")
+    estimate.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default manifest and output paths.")
+    estimate.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    estimate.add_argument("--output", default=None, help="Optional output CSV/parquet path for the estimate table. Defaults to configured output table 'metric_task_estimate' when a config is available.")
     estimate.add_argument("--seconds-per-task", type=float, default=60.0, help="Approximate runtime for one task in seconds.")
     estimate.add_argument("--memory-gb-per-task", type=float, default=2.0, help="Approximate memory needed by one task.")
     estimate.add_argument("--cpus-per-task", type=int, default=1, help="CPU cores requested per task.")
@@ -664,7 +667,9 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     run.set_defaults(handler=_cmd_metrics_run)
 
     batch = metrics_sub.add_parser("run-batch", help="Run one batch from a metric manifest.")
-    batch.add_argument("--manifest", required=True, help="Metric workflow manifest JSON.")
+    batch.add_argument("--manifest", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
+    batch.add_argument("--config", default=None, help="Spatial-VTK config used to resolve the default manifest path.")
+    batch.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     batch.add_argument("--batch-index", type=int, required=True, help="Batch index to run.")
     batch.add_argument("--overwrite", action="store_true", help="Replace an existing batch output.")
     batch.set_defaults(handler=_cmd_metrics_run_batch)
@@ -1442,17 +1447,25 @@ def _cmd_metrics_inventories(args: argparse.Namespace) -> int:
 def _cmd_metrics_estimate(args: argparse.Namespace) -> int:
     """Run ``svtk metrics estimate``."""
 
-    from spatial_vtk.metrics.workflow import summarize_metric_tasks
+    from spatial_vtk.metrics.workflow import read_task_manifest, summarize_metric_tasks
 
+    needs_config = args.tasks is None and args.manifest is None
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    if args.tasks:
+        tasks = Path(args.tasks).expanduser()
+    else:
+        manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config)
+        tasks = list(read_task_manifest(manifest).tasks)
     summary = summarize_metric_tasks(
-        args.tasks,
+        tasks,
         seconds_per_task=args.seconds_per_task,
         memory_gb_per_task=args.memory_gb_per_task,
         cpus_per_task=args.cpus_per_task,
         parallel_tasks=args.parallel_tasks,
     )
-    if args.output:
-        _write_table(summary, args.output)
+    output = Path(args.output).expanduser() if args.output else (_configured_output_path("metric_task_estimate", config=config) if config is not None else None)
+    if output is not None:
+        _write_table(summary, output)
     else:
         print(summary.to_string(index=False))
     return 0
@@ -1500,7 +1513,9 @@ def _cmd_metrics_run_batch(args: argparse.Namespace) -> int:
 
     from spatial_vtk.metrics.workflow import run_manifest_batch
 
-    path = run_manifest_batch(args.manifest, batch_index=args.batch_index, overwrite=args.overwrite)
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if args.manifest is None else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config, prefer_cached=True)
+    path = run_manifest_batch(manifest, batch_index=args.batch_index, overwrite=args.overwrite)
     print(path)
     return 0
 

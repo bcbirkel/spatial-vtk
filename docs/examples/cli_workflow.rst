@@ -116,24 +116,15 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
 
 .. code-block:: bash
 
-   export METRIC_TASKS="$TABLES/metric_tasks.csv"
-   export METRIC_ROWS="$TABLES/metric_rows.parquet"
-   export TRACE_METADATA="$PREPROCESSED/metadata/trace_metadata_preprocessed.csv"
-
    svtk metrics inventories \
-     --trace-metadata "$TRACE_METADATA" \
-     --observed-output "$TABLES/observed_metric_inventory.csv" \
-     --synthetic-output "$TABLES/synthetic_metric_inventory.csv" \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
+     --overwrite \
      --verbose
 
    svtk metrics plan \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
-     --observed-inventory "$TABLES/observed_metric_inventory.csv" \
-     --synthetic-inventory "$TABLES/synthetic_metric_inventory.csv" \
-     --qc-table "$QC_INVENTORY_OVERLAP" \
      --metric-group amplitude \
      --metric-group spectral \
      --component Z \
@@ -141,28 +132,48 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
      --component T \
      --passband 1-2 \
      --passband 2-3 \
-     --output "$METRIC_TASKS"
+     --manifest \
+     --batch-count 1
 
    svtk metrics estimate \
-     --tasks "$METRIC_TASKS" \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
      --seconds-per-task 60 \
      --memory-gb-per-task 2 \
-     --parallel-tasks 4 \
-     --output "$TABLES/metric_task_estimate.csv"
+     --parallel-tasks 4
 
-   svtk metrics run \
-     --tasks "$METRIC_TASKS" \
-     --qc-table "$QC_INVENTORY_OVERLAP" \
-     --output "$METRIC_ROWS"
+   svtk metrics cache-waveforms \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
+     --verbose
+
+   svtk metrics run-batch \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
+     --batch-index 0
+
+   svtk metrics merge-batches \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO"
 
    svtk metrics outputs \
-     --metrics "$METRIC_ROWS" \
      --events "$TABLES/prepared_events.csv" \
      --stations "$TABLES/prepared_stations.csv" \
-     --output-dir "$TABLES" \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
      --residual-column log2_residual \
      --score-column anderson_2004_gof \
      --format parquet
+
+For large datasets, replace the local ``run-batch`` command with a Slurm array
+submission after ``cache-waveforms``:
+
+.. code-block:: bash
+
+   svtk metrics slurm \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
+     --submit
 
    svtk plot metrics residuals-vs-distance \
      --config "$CONFIG" \
@@ -350,10 +361,10 @@ Write dashboard-ready Parquet datasets and launch the Streamlit dashboard apps.
 .. code-block:: bash
 
    svtk metrics outputs \
-     --metrics "$TABLES/metrics_long.parquet" \
      --events "$TABLES/prepared_events.csv" \
      --stations "$TABLES/prepared_stations.csv" \
-     --output-dir "$TABLES" \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
      --residual-column log2_residual \
      --score-column anderson_2004_gof \
      --format parquet \

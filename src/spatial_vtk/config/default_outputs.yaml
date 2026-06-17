@@ -32,6 +32,9 @@ tables:
   metric_tasks:
     filename: metric_tasks.csv
     description: Metric task preview
+  metric_task_estimate:
+    filename: metric_task_estimate.csv
+    description: Metric task count and resource estimate summary
   metric_manifest:
     filename: metric_manifest.json
     description: Resumable metric workflow manifest

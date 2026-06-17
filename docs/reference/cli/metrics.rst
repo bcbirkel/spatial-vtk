@@ -125,7 +125,9 @@ svtk metrics estimate
 
 .. code-block:: bash
 
-   svtk metrics estimate [-h] --tasks TASKS [--output OUTPUT]
+   svtk metrics estimate [-h] [--tasks TASKS] [--manifest MANIFEST]
+                             [--config CONFIG] [--run-scenario RUN_SCENARIO]
+                             [--output OUTPUT]
                              [--seconds-per-task SECONDS_PER_TASK]
                              [--memory-gb-per-task MEMORY_GB_PER_TASK]
                              [--cpus-per-task CPUS_PER_TASK]
@@ -146,13 +148,25 @@ svtk metrics estimate
      -
      - show this help message and exit
    * - ``--tasks``
-     - Yes
+     - No
      -
-     - Value: ``tasks``. Metric task CSV/parquet path.
+     - Value: ``tasks``. Metric task CSV/parquet path. Overrides --manifest.
+   * - ``--manifest``
+     - No
+     -
+     - Value: ``manifest``. Metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config used to resolve default manifest and output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Optional output CSV/parquet path for the estimate table.
+     - Value: ``output``. Optional output CSV/parquet path for the estimate table. Defaults to configured output table 'metric_task_estimate' when a config is available.
    * - ``--seconds-per-task``
      - No
      - Default: ``60.0``
@@ -535,7 +549,8 @@ svtk metrics run-batch
 
 .. code-block:: bash
 
-   svtk metrics run-batch [-h] --manifest MANIFEST --batch-index
+   svtk metrics run-batch [-h] [--manifest MANIFEST] [--config CONFIG]
+                              [--run-scenario RUN_SCENARIO] --batch-index
                               BATCH_INDEX [--overwrite]
 
 .. rubric:: Parameters
@@ -553,9 +568,17 @@ svtk metrics run-batch
      -
      - show this help message and exit
    * - ``--manifest``
-     - Yes
+     - No
      -
-     - Value: ``manifest``. Metric workflow manifest JSON.
+     - Value: ``manifest``. Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config used to resolve the default manifest path.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--batch-index``
      - Yes
      -
