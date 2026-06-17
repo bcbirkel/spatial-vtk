@@ -592,6 +592,12 @@ outputs:
     assert should_rebuild_paths(paths["metrics_long_path"], sources=[source]) is True
     status_frame = output_status_frame({"metrics_long_path": paths["metrics_long_path"]})
     assert list(status_frame["name"]) == ["metrics_long_path"]
+    namespace_status_frame = output_status_frame(
+        types.SimpleNamespace(metrics_long_path=paths["metrics_long_path"], ignored=object())
+    )
+    assert list(namespace_status_frame["name"]) == ["metrics_long_path"]
+    sequence_status_frame = output_status_frame([paths["metrics_long_path"]])
+    assert list(sequence_status_frame["name"]) == ["metrics_long"]
 
     clear_active_config()
 

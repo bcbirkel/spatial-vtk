@@ -14,7 +14,7 @@ Create explicit CSV paths:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, is_dataclass
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Iterable, Literal
@@ -325,8 +325,10 @@ def output_status_frame(paths):
     Parameters
     ----------
     paths
-        Mapping from display names to paths, a sequence of paths, or a sequence
-        of ``(name, path)`` pairs.
+        Mapping from display names to paths, a namespace/dataclass with path
+        attributes, a sequence of paths, or a sequence of ``(name, path)``
+        pairs. Bare path sequences are labeled by path stem instead of opaque
+        index names.
 
     Returns
     -------
@@ -587,13 +589,42 @@ def _coerce_named_paths(paths) -> dict[str, str | Path]:
 
     if isinstance(paths, dict):
         return {str(name): path for name, path in paths.items()}
+    if isinstance(paths, SimpleNamespace):
+        return {
+            str(name): path
+            for name, path in vars(paths).items()
+            if _looks_like_path_value(path)
+        }
+    if is_dataclass(paths) and not isinstance(paths, type):
+        return {
+            field.name: value
+            for field in fields(paths)
+            if _looks_like_path_value(value := getattr(paths, field.name))
+        }
     items = []
     for index, item in enumerate(paths):
         if isinstance(item, tuple) and len(item) == 2:
             items.append((str(item[0]), item[1]))
         else:
-            items.append((f"path_{index}", item))
+            items.append((_path_display_name(item, fallback=f"path_{index}"), item))
     return dict(items)
+
+
+def _looks_like_path_value(value: object) -> bool:
+    """Return whether a value is a path-like object for status displays."""
+
+    return isinstance(value, (str, Path))
+
+
+def _path_display_name(path: object, *, fallback: str) -> str:
+    """Return a readable display name for one path-like object."""
+
+    if not _looks_like_path_value(path):
+        return fallback
+    candidate = Path(path)
+    stem = candidate.stem if candidate.suffix else candidate.name
+    name = stem.strip().replace("-", "_").replace(" ", "_")
+    return name or fallback
 
 
 def _coerce_path_tuple(paths) -> tuple[Path, ...]:

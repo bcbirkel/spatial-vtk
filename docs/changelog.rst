@@ -87,6 +87,9 @@ Changelog
    aggregation outputs. Optional station-map sidecars now show, for each
    plotted station summary, how many selected metric rows and events were
    excluded because the plotted value was non-finite.
+   Improved notebook output-status tables so grouped output namespaces keep
+   their artifact names and bare path lists use filename-derived labels instead
+   of opaque ``path_0`` entries.
    Added a dashboard summary-table contract helper that maps each metrics
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file
