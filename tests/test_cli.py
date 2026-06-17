@@ -30,6 +30,8 @@ def test_cli_spatial_summaries_help(capsys):
     help_text = " ".join(captured.out.split())
     assert "Build standard spatial-statistics summary tables" in captured.out
     assert "--station-metadata" in captured.out
+    assert "--checkpoint-dir" in captured.out
+    assert "--no-resume" in captured.out
     assert "default config is set with 'svtk config set'" in help_text
 
 
@@ -54,11 +56,22 @@ spatial_statistics:
     )
     seen = {}
 
-    def fake_run_spatial_statistics_workflow(metrics=None, *, cfg=None, metric=None, station_metadata=None, verbose=False):
+    def fake_run_spatial_statistics_workflow(
+        metrics=None,
+        *,
+        cfg=None,
+        metric=None,
+        station_metadata=None,
+        resume=True,
+        checkpoint_dir=None,
+        verbose=False,
+    ):
         seen["metrics"] = metrics
         seen["cfg_root"] = cfg.root_dir
         seen["metric"] = metric
         seen["station_metadata"] = station_metadata
+        seen["resume"] = resume
+        seen["checkpoint_dir"] = checkpoint_dir
         seen["verbose"] = verbose
         return SimpleNamespace(
             metrics=("PGA",),
@@ -78,6 +91,8 @@ spatial_statistics:
     assert seen["cfg_root"] == tmp_path
     assert seen["metric"] is None
     assert seen["station_metadata"] is None
+    assert seen["resume"] is True
+    assert seen["checkpoint_dir"] is None
     assert seen["verbose"] is True
     assert "Spatial statistics metrics: PGA" in captured.out
     assert "metric_field:" in captured.out

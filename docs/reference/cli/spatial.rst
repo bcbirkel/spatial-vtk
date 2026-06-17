@@ -96,6 +96,7 @@ Build standard spatial-statistics summary tables.
    svtk spatial summaries [-h] [--metrics METRICS] [--config CONFIG]
                               [--run-scenario RUN_SCENARIO] [--metric METRIC]
                               [--station-metadata STATION_METADATA]
+                              [--checkpoint-dir CHECKPOINT_DIR] [--no-resume]
                               [--verbose]
 
 .. rubric:: Parameters
@@ -132,6 +133,14 @@ Build standard spatial-statistics summary tables.
      - No
      -
      - Value: ``station_metadata``. Prepared station metadata table for geology contrasts. Defaults to configured output table 'prepared_stations'.
+   * - ``--checkpoint-dir``
+     - No
+     -
+     - Value: ``checkpoint_dir``. Base directory for resumable per-metric checkpoints. Defaults to a hidden directory next to the configured spatial output tables.
+   * - ``--no-resume``
+     - No
+     - Flag
+     - Do not reuse existing per-metric spatial summary checkpoints.
    * - ``--verbose``
      - No
      - Flag

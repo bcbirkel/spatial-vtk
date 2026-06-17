@@ -14,8 +14,11 @@ Create standard paths for spatial outputs:
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+import hashlib
+import json
 from pathlib import Path
+import re
 import time
 from types import SimpleNamespace
 
@@ -23,7 +26,7 @@ import pandas as pd
 
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
-from spatial_vtk.io import default_output_paths, load_output_table, read_table, write_output_table
+from spatial_vtk.io import default_output_paths, load_output_table, read_table, write_output_table, write_table
 from spatial_vtk.spatial.calculate.clustering import run_residual_feature_clustering
 from spatial_vtk.spatial.calculate.correlation import (
     build_distance_bin_summary,
@@ -80,6 +83,23 @@ SPATIAL_SUMMARY_OUTPUT_KEYS: tuple[str, ...] = (
     "event_centered_residuals",
     "station_bias",
     "morans_i",
+    "distance_bin_correlations",
+    "clusters",
+    "cluster_scores",
+    "cluster_feature_summary",
+    "cluster_summary",
+    "pca_station_scores",
+    "pca_feature_loadings",
+    "pca_explained_variance",
+    "geology_contrasts",
+)
+
+SPATIAL_WORKFLOW_TABLE_KEYS: tuple[str, ...] = (
+    "metric_field",
+    "event_centered_residuals",
+    "station_bias",
+    "morans_i",
+    "permutation_moran",
     "distance_bin_correlations",
     "clusters",
     "cluster_scores",
@@ -201,6 +221,14 @@ class SpatialStatisticsWorkflowResult:
     elapsed_s: float
 
 
+@dataclass(frozen=True)
+class _SpatialMetricCheckpoint:
+    """Loaded checkpoint tables for one spatial metric."""
+
+    tables: dict[str, pd.DataFrame]
+    failures: tuple[dict[str, str], ...]
+
+
 def spatial_statistics_output_paths(output_dir: str | Path) -> SimpleNamespace:
     """Return standard Step 4 spatial-statistics output paths.
 
@@ -224,6 +252,8 @@ def run_spatial_statistics_workflow(
     cfg: SpatialVTKConfig | None = None,
     metric: str | Sequence[str] | None = None,
     station_metadata: pd.DataFrame | str | Path | None = None,
+    resume: bool = True,
+    checkpoint_dir: str | Path | None = None,
     verbose: bool = False,
 ) -> SpatialStatisticsWorkflowResult:
     """Build and write the standard spatial-statistics tables.
@@ -244,6 +274,13 @@ def run_spatial_statistics_workflow(
         Optional prepared station metadata table or path for geology contrasts.
         When omitted, the configured ``prepared_stations`` output is used if it
         exists.
+    resume
+        Reuse per-metric checkpoints for path-backed runs. In-memory dataframe
+        inputs only use checkpoints when ``checkpoint_dir`` is explicitly set.
+    checkpoint_dir
+        Optional base directory for internal per-metric checkpoints. The
+        workflow creates a hashed run subdirectory so checkpoints are reused
+        only when the metric input path and spatial settings match.
     verbose
         Print elapsed-time status updates suitable for Slurm logs.
 
@@ -280,6 +317,31 @@ def run_spatial_statistics_workflow(
     station_df = _load_station_metadata(station_metadata, cfg=config, progress=progress)
     failures: list[dict[str, str]] = []
 
+    checkpoint_run_dir: Path | None = None
+    if resume and (metrics_path is not None or checkpoint_dir is not None):
+        checkpoint_run_dir = _spatial_checkpoint_run_dir(
+            config,
+            checkpoint_dir=checkpoint_dir,
+            metrics_path=metrics_path,
+            metrics_df=metrics_df,
+            metrics_to_run=metrics_to_run,
+            settings=settings,
+        )
+        _write_checkpoint_manifest(
+            checkpoint_run_dir,
+            _spatial_checkpoint_signature(
+                metrics_path=metrics_path,
+                metrics_df=metrics_df,
+                metrics_to_run=metrics_to_run,
+                settings=settings,
+            ),
+        )
+        progress(f"checkpoint directory {checkpoint_run_dir}")
+    elif resume:
+        progress("checkpoint resume disabled for in-memory metrics; pass checkpoint_dir to enable it")
+    else:
+        progress("checkpoint resume disabled")
+
     field_tables: list[pd.DataFrame] = []
     centered_tables: list[pd.DataFrame] = []
     station_bias_tables: list[pd.DataFrame] = []
@@ -293,9 +355,35 @@ def run_spatial_statistics_workflow(
     pca_loading_tables: list[pd.DataFrame] = []
     pca_variance_tables: list[pd.DataFrame] = []
     geology_tables: list[pd.DataFrame] = []
+    table_lists = {
+        "metric_field": field_tables,
+        "event_centered_residuals": centered_tables,
+        "station_bias": station_bias_tables,
+        "morans_i": moran_tables,
+        "distance_bin_correlations": distance_tables,
+        "clusters": cluster_tables,
+        "cluster_scores": cluster_score_tables,
+        "cluster_feature_summary": cluster_feature_tables,
+        "cluster_summary": cluster_summary_tables,
+        "pca_station_scores": pca_score_tables,
+        "pca_feature_loadings": pca_loading_tables,
+        "pca_explained_variance": pca_variance_tables,
+        "geology_contrasts": geology_tables,
+    }
 
     for metric_index, metric_name in enumerate(metrics_to_run, start=1):
         prefix = f"metric {metric_index}/{len(metrics_to_run)} {metric_name}"
+        if checkpoint_run_dir is not None:
+            checkpoint = _load_metric_checkpoint(checkpoint_run_dir, metric_name)
+            if checkpoint is not None:
+                _append_checkpoint_tables(checkpoint.tables, table_lists)
+                failures.extend(checkpoint.failures)
+                progress(f"{prefix}: reusing checkpoint")
+                continue
+
+        table_start_indices = {key: len(frames) for key, frames in table_lists.items()}
+        failure_start = len(failures)
+
         progress(f"{prefix}: building metric field")
         try:
             field_value_column = _spatial_field_value_column(metrics_df, settings)
@@ -404,6 +492,20 @@ def run_spatial_statistics_workflow(
             except Exception as exc:
                 _record_failure(failures, metric_name, "geology_contrasts", exc, progress)
 
+        if checkpoint_run_dir is not None:
+            metric_tables = _metric_checkpoint_tables(
+                table_lists,
+                table_start_indices,
+                metrics_columns=tuple(metrics_df.columns),
+            )
+            _write_metric_checkpoint(
+                checkpoint_run_dir,
+                metric_name,
+                tables=metric_tables,
+                failures=tuple(failures[failure_start:]),
+            )
+            progress(f"{prefix}: wrote checkpoint")
+
     progress("writing combined spatial tables")
     tables = {
         "metric_field": _concat_or_empty(field_tables, tuple(metrics_df.columns)),
@@ -436,6 +538,174 @@ def run_spatial_statistics_workflow(
         failures=tuple(failures),
         elapsed_s=float(elapsed),
     )
+
+
+def _spatial_checkpoint_run_dir(
+    cfg: SpatialVTKConfig,
+    *,
+    checkpoint_dir: str | Path | None,
+    metrics_path: Path | None,
+    metrics_df: pd.DataFrame,
+    metrics_to_run: Sequence[str],
+    settings: SpatialStatisticsSettings,
+) -> Path:
+    """Return the hashed checkpoint directory for one spatial workflow run."""
+
+    if checkpoint_dir is None:
+        output_dir = resolve_output_path("metric_field", kind="table", cfg=cfg, create_parent=True).parent
+        base_dir = output_dir / ".spatial_statistics_checkpoints"
+    else:
+        base_dir = Path(checkpoint_dir).expanduser()
+    signature = _spatial_checkpoint_signature(
+        metrics_path=metrics_path,
+        metrics_df=metrics_df,
+        metrics_to_run=metrics_to_run,
+        settings=settings,
+    )
+    token = hashlib.sha256(json.dumps(signature, sort_keys=True).encode("utf-8")).hexdigest()[:16]
+    return base_dir / token
+
+
+def _spatial_checkpoint_signature(
+    *,
+    metrics_path: Path | None,
+    metrics_df: pd.DataFrame,
+    metrics_to_run: Sequence[str],
+    settings: SpatialStatisticsSettings,
+) -> dict[str, object]:
+    """Return a JSON-stable signature for spatial checkpoint reuse."""
+
+    if metrics_path is not None:
+        resolved = Path(metrics_path).expanduser().resolve()
+        stat = resolved.stat()
+        input_signature: dict[str, object] = {
+            "path": str(resolved),
+            "mtime_ns": int(stat.st_mtime_ns),
+            "size": int(stat.st_size),
+        }
+    else:
+        input_signature = {
+            "dataframe_rows": int(len(metrics_df)),
+            "columns": [str(column) for column in metrics_df.columns],
+            "metrics": sorted(metrics_df["metric"].dropna().astype(str).unique().tolist()) if "metric" in metrics_df.columns else [],
+        }
+    return {
+        "version": 1,
+        "metrics_input": input_signature,
+        "metrics_to_run": [str(item) for item in metrics_to_run],
+        "settings": _json_ready(asdict(settings)),
+    }
+
+
+def _write_checkpoint_manifest(run_dir: Path, signature: dict[str, object]) -> None:
+    """Write one checkpoint manifest for auditability."""
+
+    run_dir.mkdir(parents=True, exist_ok=True)
+    _write_json_atomic(run_dir / "manifest.json", signature)
+
+
+def _load_metric_checkpoint(run_dir: Path, metric_name: str) -> _SpatialMetricCheckpoint | None:
+    """Load one completed per-metric checkpoint if every table is present."""
+
+    metric_dir = _metric_checkpoint_dir(run_dir, metric_name)
+    failures_path = metric_dir / "failures.json"
+    if not failures_path.exists():
+        return None
+    table_paths = {key: metric_dir / f"{key}.parquet" for key in SPATIAL_WORKFLOW_TABLE_KEYS}
+    if any(not path.exists() for path in table_paths.values()):
+        return None
+    tables = {key: read_table(path) for key, path in table_paths.items()}
+    try:
+        failures_payload = json.loads(failures_path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    failures = tuple(dict(item) for item in failures_payload if isinstance(item, dict))
+    return _SpatialMetricCheckpoint(tables=tables, failures=failures)
+
+
+def _write_metric_checkpoint(
+    run_dir: Path,
+    metric_name: str,
+    *,
+    tables: dict[str, pd.DataFrame],
+    failures: tuple[dict[str, str], ...],
+) -> None:
+    """Write one complete per-metric checkpoint atomically table-by-table."""
+
+    metric_dir = _metric_checkpoint_dir(run_dir, metric_name)
+    metric_dir.mkdir(parents=True, exist_ok=True)
+    for key in SPATIAL_WORKFLOW_TABLE_KEYS:
+        write_table(tables[key], metric_dir / f"{key}.parquet")
+    _write_json_atomic(metric_dir / "failures.json", list(failures))
+
+
+def _metric_checkpoint_tables(
+    table_lists: dict[str, list[pd.DataFrame]],
+    start_indices: dict[str, int],
+    *,
+    metrics_columns: tuple[str, ...],
+) -> dict[str, pd.DataFrame]:
+    """Extract tables produced for one metric from the workflow accumulators."""
+
+    tables: dict[str, pd.DataFrame] = {}
+    for key in SPATIAL_WORKFLOW_TABLE_KEYS:
+        if key == "permutation_moran":
+            frames = table_lists["morans_i"][start_indices["morans_i"] :]
+        else:
+            frames = table_lists.get(key, [])[start_indices.get(key, 0) :]
+        tables[key] = _concat_or_empty(frames, _spatial_columns_for_key(key, metrics_columns))
+    return tables
+
+
+def _append_checkpoint_tables(tables: dict[str, pd.DataFrame], table_lists: dict[str, list[pd.DataFrame]]) -> None:
+    """Append loaded per-metric checkpoint tables to workflow accumulators."""
+
+    for key, frames in table_lists.items():
+        frame = tables.get(key)
+        if frame is not None and not frame.empty:
+            frames.append(frame)
+
+
+def _spatial_columns_for_key(key: str, metrics_columns: tuple[str, ...]) -> tuple[str, ...]:
+    """Return known output columns for one spatial workflow table key."""
+
+    if key == "metric_field":
+        return tuple(metrics_columns)
+    if key == "event_centered_residuals":
+        return ("model", "band", "component", "event_id", "station", "field_value", "field_centered", "metric")
+    if key == "permutation_moran":
+        return SPATIAL_SUMMARY_COLUMNS["morans_i"]
+    return SPATIAL_SUMMARY_COLUMNS.get(key, ())
+
+
+def _metric_checkpoint_dir(run_dir: Path, metric_name: str) -> Path:
+    """Return a collision-resistant directory for one metric name."""
+
+    text = str(metric_name)
+    slug = re.sub(r"[^A-Za-z0-9_.-]+", "_", text).strip("._") or "metric"
+    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:8]
+    return run_dir / f"{slug}-{digest}"
+
+
+def _write_json_atomic(path: Path, payload: object) -> None:
+    """Write a JSON file through a same-directory temporary path."""
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_name(f".{path.name}.tmp")
+    tmp_path.write_text(json.dumps(_json_ready(payload), indent=2, sort_keys=True), encoding="utf-8")
+    tmp_path.replace(path)
+
+
+def _json_ready(value: object) -> object:
+    """Coerce dataclass payload values to JSON-safe objects."""
+
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, dict):
+        return {str(key): _json_ready(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_ready(item) for item in value]
+    return value
 
 
 def _spatial_metric_list(metrics: pd.DataFrame, configured: str | Sequence[str]) -> list[str]:

@@ -790,6 +790,19 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         default=None,
         help="Prepared station metadata table for geology contrasts. Defaults to configured output table 'prepared_stations'.",
     )
+    summaries.add_argument(
+        "--checkpoint-dir",
+        default=None,
+        help=(
+            "Base directory for resumable per-metric checkpoints. Defaults to "
+            "a hidden directory next to the configured spatial output tables."
+        ),
+    )
+    summaries.add_argument(
+        "--no-resume",
+        action="store_true",
+        help="Do not reuse existing per-metric spatial summary checkpoints.",
+    )
     summaries.add_argument("--verbose", action="store_true", help="Print elapsed-time progress for Slurm logs.")
     summaries.set_defaults(handler=_cmd_spatial_summaries)
 
@@ -1824,6 +1837,8 @@ def _cmd_spatial_summaries(args: argparse.Namespace) -> int:
         cfg=cfg,
         metric=args.metric,
         station_metadata=args.station_metadata,
+        resume=not args.no_resume,
+        checkpoint_dir=args.checkpoint_dir,
         verbose=args.verbose,
     )
     print(f"Spatial statistics metrics: {', '.join(result.metrics)}")

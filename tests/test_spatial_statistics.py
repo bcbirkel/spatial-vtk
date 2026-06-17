@@ -339,6 +339,75 @@ spatial:
     assert metadata["source_written_row_count"] == 2
 
 
+def test_spatial_statistics_workflow_resumes_metric_checkpoints(tmp_path: Path, monkeypatch) -> None:
+    """Path-backed spatial workflows should rebuild final outputs from completed checkpoints."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+spatial:
+  metric: C5
+  value_column: log2_residual
+  min_stations_per_event: 3
+  min_events_per_station: 2
+  moran_neighbors: 2
+  moran_permutations: 3
+  cluster_min_k: 2
+  cluster_max_k: 3
+  pca_components: 2
+  geology_min_stations_per_group: 1
+  geology_bootstrap_samples: 3
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    metrics = normalize_metrics_table(_toy_metrics_table(), default_model="example")
+    metrics_path = tmp_path / "metrics.parquet"
+    write_table(metrics, metrics_path)
+    station_metadata = pd.DataFrame(
+        {
+            "station": metrics["station"].drop_duplicates().tolist(),
+            "mapped_region_type": (["Basin", "Mountains"] * 8)[: metrics["station"].nunique()],
+        }
+    )
+    checkpoint_dir = tmp_path / "spatial_checkpoints"
+
+    first = run_spatial_statistics_workflow(
+        metrics_path,
+        cfg=cfg,
+        metric=("C5",),
+        station_metadata=station_metadata,
+        checkpoint_dir=checkpoint_dir,
+    )
+    assert first.paths["metric_field"].exists()
+    assert any(checkpoint_dir.glob("*/C5-*/*.parquet"))
+
+    for path in first.paths.values():
+        path.unlink(missing_ok=True)
+
+    def _fail_build_metric_field(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        raise AssertionError("checkpointed run should not recompute metric fields")
+
+    monkeypatch.setattr("spatial_vtk.spatial.calculate.workflow.build_metric_field", _fail_build_metric_field)
+    resumed = run_spatial_statistics_workflow(
+        metrics_path,
+        cfg=cfg,
+        metric=("C5",),
+        station_metadata=station_metadata,
+        checkpoint_dir=checkpoint_dir,
+    )
+
+    assert resumed.metrics == ("C5",)
+    assert not resumed.tables["metric_field"].empty
+    assert resumed.paths["metric_field"].exists()
+    assert resumed.paths["station_bias"].exists()
+
+
 def test_spatial_figure_context_respects_config_and_projects_large_tables(tmp_path: Path) -> None:
     """Spatial figure context should use explicit config paths and avoid unused columns."""
 

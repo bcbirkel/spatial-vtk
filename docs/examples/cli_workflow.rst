@@ -222,6 +222,12 @@ Use the metric outputs to make spatial diagnostic maps and plots. The notebook v
      --run-scenario "$SCENARIO" \
      --metric PGA
 
+``svtk spatial summaries`` writes per-metric checkpoints for file-backed runs
+and reuses them by default when the same metric table and spatial settings are
+seen again. Use ``--no-resume`` only when you intentionally want to recompute
+each metric, or ``--checkpoint-dir`` to place the internal checkpoints outside
+the default hidden directory next to the spatial output tables.
+
    svtk map spatial station-bias \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
