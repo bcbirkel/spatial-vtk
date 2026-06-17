@@ -576,6 +576,40 @@ compute:
     clear_active_config()
 
 
+def test_notebook_cli_helper_rejects_non_svtk_commands(tmp_path, monkeypatch):
+    """Notebook command helpers should fail before writing misleading scripts."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(tmp_path / "cli-config.json"))
+    repo = tmp_path / "project"
+    (repo / "src" / "spatial_vtk").mkdir(parents=True)
+    (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
+    config_path = repo / "runs" / "spatial_vtk_config.yaml"
+    config_path.parent.mkdir()
+    config_path.write_text(
+        """
+project:
+  root_dir: ..
+outputs:
+  root: run_outputs
+""",
+        encoding="utf-8",
+    )
+    context = notebook_run_context(start=repo / "docs", create_dirs=True)
+
+    with pytest.raises(ValueError, match="only run Spatial-VTK CLI commands"):
+        run_or_submit_notebook_cli_command(
+            context,
+            ["python", "-m", "spatial_vtk.cli"],
+            script_name="bad.slurm",
+            job_name="bad",
+            run_local=False,
+        )
+
+    assert not (context.slurm_dir / "bad.slurm").exists()
+    clear_active_config()
+
+
 def test_register_svtk_cell_timer_prints_for_successful_cells(tmp_path, monkeypatch, capsys):
     """Automatic notebook timing should register one reusable IPython hook."""
 

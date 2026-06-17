@@ -800,6 +800,18 @@ class MetricFigureContext:
         if aggregation_attrs:
             metadata["aggregation_contract"] = "station_event_rows_to_station_summary"
             metadata["plot_rows_role"] = "post_aggregation_station_summary"
+            metadata["aggregation_kind"] = aggregation_attrs.get("svtk_aggregation_kind")
+            metadata["aggregation_value_col"] = aggregation_attrs.get("svtk_aggregation_value_col")
+            metadata["aggregation_method"] = aggregation_attrs.get("svtk_aggregation_method")
+            metadata["aggregation_group_columns"] = aggregation_attrs.get("svtk_aggregation_group_columns")
+            metadata["aggregation_coordinate_columns"] = aggregation_attrs.get("svtk_aggregation_coordinate_columns")
+            metadata["aggregation_input_row_count"] = aggregation_attrs.get("svtk_aggregation_input_row_count")
+            metadata["aggregation_finite_row_count"] = aggregation_attrs.get("svtk_aggregation_finite_row_count")
+            metadata["aggregation_dropped_nonfinite_row_count"] = aggregation_attrs.get("svtk_aggregation_dropped_nonfinite_row_count")
+            metadata["aggregation_audit"] = (
+                "Main sidecar rows are the station-level values handed to the plotting function; "
+                "source sidecar rows are the metric rows aggregated into those station values."
+            )
         if source_df is not None:
             metadata["source_rows_role"] = "pre_aggregation_metric_rows" if aggregation_attrs else "figure_source_rows"
         return metadata

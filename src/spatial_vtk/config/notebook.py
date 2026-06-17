@@ -487,7 +487,19 @@ def _spatial_vtk_cli_args(command: list[str]) -> list[str]:
     if not command:
         raise ValueError("CLI command cannot be empty.")
     executable = Path(command[0]).name
-    return command[1:] if executable == "svtk" else command
+    args = command[1:] if executable == "svtk" else command
+    if not args:
+        raise ValueError("Spatial-VTK CLI command must include a subcommand, for example: svtk qc summaries.")
+    if args[0] == "--version":
+        return args
+    commands = {"config", "io", "qc", "metrics", "spatial", "plot", "map", "visualize", "dashboard", "call"}
+    if args[0] not in commands:
+        displayed = shlex.join(command)
+        raise ValueError(
+            "Notebook CLI helpers only run Spatial-VTK CLI commands. "
+            f"Pass a command beginning with 'svtk' or a Spatial-VTK subcommand; got: {displayed}"
+        )
+    return args
 
 
 def _run_spatial_vtk_cli(args: list[str]) -> int:

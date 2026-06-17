@@ -225,6 +225,15 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert metadata["source_event_count"] == 4
     assert metadata["source_model_count"] == 1
     assert metadata["aggregation_contract"] == "station_event_rows_to_station_summary"
+    assert metadata["aggregation_kind"] == "station_event_rows_to_station_summary"
+    assert metadata["aggregation_value_col"] == "log2_residual"
+    assert metadata["aggregation_method"] == "mean"
+    assert metadata["aggregation_group_columns"] == ["station"]
+    assert metadata["aggregation_coordinate_columns"] == ["sta_lon", "sta_lat"]
+    assert metadata["aggregation_input_row_count"] == 4
+    assert metadata["aggregation_finite_row_count"] == 3
+    assert metadata["aggregation_dropped_nonfinite_row_count"] == 1
+    assert "source sidecar rows are the metric rows aggregated" in metadata["aggregation_audit"]
     assert metadata["plot_rows_role"] == "post_aggregation_station_summary"
     assert metadata["source_rows_role"] == "pre_aggregation_metric_rows"
     assert metadata["svtk_aggregation_kind"] == "station_event_rows_to_station_summary"
