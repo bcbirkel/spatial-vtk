@@ -27,6 +27,9 @@ Changelog
    ``lon``/``lat`` coordinates are now normalized to the canonical
    ``sta_lon``/``sta_lat`` plotting schema before station maps, residual
    grids, and model-faceted maps are rendered.
+   Tightened large-run notebook sidecar plumbing so optional figure row
+   sidecars use the shared ``notebook_figure_sidecar_settings`` directory
+   instead of hardcoded ``figures/sidecars`` paths.
    Clarified the metrics and spatial API reference so notebooks and scripts
    import plotting helpers from stable public package entry points such as
    ``spatial_vtk.metrics.plot`` and ``spatial_vtk.spatial.map``. Updated the

@@ -269,3 +269,23 @@ def test_tutorial_figure_sidecar_calls_include_directory_control() -> None:
             source = "".join(cell.get("source", []))
             if "write_sidecar=" in source:
                 assert "sidecar_dir=" in source, f"{notebook_path.relative_to(repo_root)} cell {index}"
+
+
+def test_tutorial_figure_sidecar_calls_do_not_hardcode_figure_sidecar_dirs() -> None:
+    """Notebook sidecar calls should use notebook_figure_sidecar_settings directories."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    assert notebooks
+    forbidden = (
+        'sidecar_dir=figures_dir / "sidecars"',
+        'sidecar_dir=figures_dir / "metrics" / "sidecars"',
+        "sidecar_dir=figures_dir / 'sidecars'",
+        "sidecar_dir=figures_dir / 'metrics' / 'sidecars'",
+    )
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            source = "".join(cell.get("source", []))
+            matches = [pattern for pattern in forbidden if pattern in source]
+            assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} hardcodes {matches}"
