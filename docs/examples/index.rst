@@ -30,6 +30,17 @@ notebook raises an error or emits warning-like cell output. It also checks the
 committed five-event metadata, snapshot tables, and observed/synthetic NPZ
 waveform subset before cleaning ``outputs/tutorials``.
 
+To verify the standard and large-run tutorial drivers together from a fresh
+source checkout, run:
+
+.. code-block:: bash
+
+   python tools/execute_tutorial_notebooks.py --clean --include-large-run
+
+The large-run notebooks still use the committed example data during this
+check, but their cells are structured for larger datasets: expensive work is
+chunked, submitted, or printed as a command, and notebook previews stay bounded.
+
 Large-Run Driver Notebooks
 --------------------------
 
@@ -44,6 +55,13 @@ inventories into notebook memory.
 5. :download:`Large Step 5: GeoJSON corridors <large_run/step_05_large_run_geojson_corridors.ipynb>`
 6. :download:`Large Step 6: additional plotting <large_run/step_06_large_run_additional_plotting.ipynb>`
 7. :download:`Large Step 7: dashboards <large_run/step_07_large_run_dashboards.ipynb>`
+
+Set ``SVTK_FIGURE_SIDECARS=1`` while rendering figures to write CSV/JSON
+row-provenance sidecars. Main sidecars contain the exact rows passed to the
+plotting function; aggregated station figures also write ``*.source.csv`` files
+with the pre-aggregation event-station metric rows. Use
+``SVTK_FIGURE_SIDECAR_ROWS=all`` to write all rows, or a positive integer to
+write a deterministic sample.
 
 Command-Line Workflow
 ---------------------

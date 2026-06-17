@@ -232,6 +232,22 @@ def test_ci_runs_clean_tutorial_notebooks_with_notebook_extras() -> None:
     assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in workflow
 
 
+def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() -> None:
+    """Public tutorial docs should expose the clean-run and figure-audit contract."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    examples_index = (repo_root / "docs" / "examples" / "index.rst").read_text(encoding="utf-8")
+    large_run_readme = (repo_root / "docs" / "examples" / "large_run" / "README.md").read_text(encoding="utf-8")
+    combined = f"{examples_index}\n{large_run_readme}"
+
+    assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in combined
+    assert "SVTK_FIGURE_SIDECARS=1" in combined
+    assert "SVTK_FIGURE_SIDECAR_ROWS=all" in combined
+    assert "*.source.csv" in combined
+    assert "pre-aggregation" in combined
+    assert "committed example data" in combined
+
+
 def test_tutorial_notebook_executor_can_include_large_run_notebooks() -> None:
     """The clean notebook gate should be able to cover scalable large-run tutorials."""
 
@@ -387,6 +403,22 @@ def test_step03_station_map_uses_package_aggregation_and_source_sidecar() -> Non
     assert "station_summary_for_map(" in source
     assert "source_df=station_pga_source" in source
     assert ".groupby([" not in source
+
+
+def test_large_run_step03_documents_metric_source_sidecars() -> None:
+    """Large-run metric figures should document plotted rows and source rows."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "write_psa_period_sheet = metric_plot_context.write_psa_period_sheet" in source
+    assert "station_summary_for_map = metric_plot_context.station_summary_for_map" in source
+    assert "station_period_summary_for_map = metric_plot_context.station_period_summary_for_map" in source
+    assert "source_df=item[\"df\"]" in source
+    assert "source_df_factory=lambda period_item: period_item[\"df\"]" in source
+    assert "raw event-level rows used for the station summaries" in source
 
 
 def test_step05_uses_geojson_preview_helper() -> None:
