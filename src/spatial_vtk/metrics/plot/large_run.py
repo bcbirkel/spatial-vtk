@@ -842,10 +842,20 @@ class MetricFigureContext:
         sidecar_df = pd.concat(sidecar_frames, ignore_index=True, sort=False) if sidecar_frames else item["df"].iloc[0:0].copy()
         source_sidecar_df = pd.concat(source_sidecar_frames, ignore_index=True, sort=False) if source_sidecar_frames else None
         if any(getattr(frame, "attrs", {}).get("svtk_aggregation_kind") for frame in sidecar_frames):
+            aggregation_frames = [frame for frame in sidecar_frames if getattr(frame, "attrs", {}).get("svtk_aggregation_kind")]
+            first_attrs = getattr(aggregation_frames[0], "attrs", {}) if aggregation_frames else {}
             sidecar_df.attrs["svtk_aggregation_kind"] = "station_event_rows_to_station_summary_by_panel"
             sidecar_df.attrs["svtk_aggregation_panel_count"] = int(len(period_items))
             sidecar_df.attrs["svtk_aggregation_value_col"] = resolved_value_col
             sidecar_df.attrs["svtk_aggregation_method"] = self.station_aggregation
+            sidecar_df.attrs["svtk_aggregation_group_columns"] = list(first_attrs.get("svtk_aggregation_group_columns", []))
+            sidecar_df.attrs["svtk_aggregation_coordinate_columns"] = list(first_attrs.get("svtk_aggregation_coordinate_columns", []))
+            sidecar_df.attrs["svtk_aggregation_finite_row_count"] = int(
+                sum(int(getattr(frame, "attrs", {}).get("svtk_aggregation_finite_row_count") or 0) for frame in aggregation_frames)
+            )
+            sidecar_df.attrs["svtk_aggregation_dropped_nonfinite_row_count"] = int(
+                sum(int(getattr(frame, "attrs", {}).get("svtk_aggregation_dropped_nonfinite_row_count") or 0) for frame in aggregation_frames)
+            )
             if source_sidecar_df is not None:
                 sidecar_df.attrs["svtk_aggregation_input_row_count"] = int(len(source_sidecar_df))
                 sidecar_df.attrs["svtk_aggregation_input_station_count"] = _unique_count(source_sidecar_df, ("station", "station_id", "station_code"))

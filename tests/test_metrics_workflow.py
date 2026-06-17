@@ -414,6 +414,67 @@ def test_metric_station_summary_uses_supported_station_and_event_aliases(tmp_pat
     assert metadata["source_event_count"] == 4
 
 
+def test_psa_period_sheet_source_sidecar_tracks_plotted_station_period_groups(tmp_path) -> None:
+    """PSA station sheets should filter source rows to the station/period groups plotted."""
+
+    rows = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3", "e4"],
+            "station": ["STA", "STB", "STA", "STB"],
+            "sta_lon": [-118.0, -117.9, -118.0, -117.9],
+            "sta_lat": [34.0, 34.1, 34.0, 34.1],
+            "metric": ["PSA", "PSA", "PSA", "PSA"],
+            "band": ["", "", "", ""],
+            "model": ["m1", "m1", "m1", "m1"],
+            "component": ["Z", "Z", "Z", "Z"],
+            "period_s": [1.0, 1.0, 2.0, 2.0],
+            "log2_residual": [0.5, 1.5, -0.25, 0.75],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        rows,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=1,
+        value_col="log2_residual",
+        station_aggregation="mean",
+        write_sidecars=True,
+        sidecar_rows=None,
+    )
+    item = next(context.iter_metric_frames(components=["Z"], model="m1", split_psa_period=False))
+
+    def _dummy_png_plot(frame: pd.DataFrame, *, output_path, **kwargs) -> None:
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots(figsize=(2, 1.5))
+        ax.text(0.5, 0.5, f"rows={len(frame)}", ha="center", va="center")
+        ax.set_axis_off()
+        fig.savefig(output_path)
+        plt.close(fig)
+
+    output = context.write_psa_period_sheet(
+        "sampled_station_metric_map",
+        item,
+        _dummy_png_plot,
+        df_factory=context.station_period_summary_for_item,
+        source_df_factory=context.item_source_rows,
+        required=("station", "sta_lon", "sta_lat", "period_s", "log2_residual"),
+    )
+
+    assert output is not None
+    sidecar = pd.read_csv(context.sidecar_output_dir / f"{output.stem}.csv")
+    source_sidecar = pd.read_csv(context.sidecar_output_dir / f"{output.stem}.source.csv")
+    metadata = json.loads((context.sidecar_output_dir / f"{output.stem}.json").read_text(encoding="utf-8"))
+    plotted_keys = set(zip(sidecar["station"].astype(str), sidecar["period_s"].astype(float)))
+    source_keys = set(zip(source_sidecar["station"].astype(str), source_sidecar["period_s"].astype(float)))
+
+    assert len(sidecar) == 2
+    assert len(source_sidecar) == 2
+    assert source_keys == plotted_keys
+    assert metadata["aggregation_group_columns"] == ["station", "period_s"]
+    assert metadata["source_rows_filter"] == "aggregation_groups_present_in_plot_rows"
+
+
 def test_metric_workflow_runs_tasks_and_applies_side_specific_spectral_qc(tmp_path) -> None:
     """The workflow should plan pair tasks, run rows, and preserve QC provenance."""
 
