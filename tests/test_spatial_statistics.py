@@ -1134,6 +1134,100 @@ def test_spatial_figure_context_writes_overview_plots_with_empty_missing_tables(
     assert not any(call["base"] == "spatial_geology_contrast" for call in calls)
 
 
+def test_spatial_figure_context_writes_pca_summary_with_layered_sidecar(tmp_path: Path) -> None:
+    """Large-run Step 4 should expose the standard combined PCA summary figure."""
+
+    metric_field = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3"],
+            "station": ["STA", "STB", "STC"],
+            "metric": ["PGA", "PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec"],
+            "component": ["R", "R", "R"],
+            "model": ["m1", "m1", "m1"],
+            "log2_residual": [0.1, -0.2, 0.3],
+            "lon": [-118.2, -118.0, -117.8],
+            "lat": [34.0, 34.1, 34.2],
+        }
+    )
+    pca_scores = pd.DataFrame(
+        {
+            "station": ["STA", "STB", "STC"],
+            "metric": ["PGA", "PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec"],
+            "component": ["R", "R", "R"],
+            "model": ["m1", "m1", "m1"],
+            "lon": [-118.2, -118.0, -117.8],
+            "lat": [34.0, 34.1, 34.2],
+            "PC1_score": [1.2, -0.6, 0.4],
+        }
+    )
+    explained = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "component": ["R", "R"],
+            "model": ["m1", "m1"],
+            "mode": ["PC1", "PC2"],
+            "mode_index": [1, 2],
+            "explained_variance_ratio": [0.75, 0.2],
+            "cumulative_explained_variance_ratio": [0.75, 0.95],
+        }
+    )
+    loadings = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "component": ["R", "R"],
+            "model": ["m1", "m1"],
+            "mode": ["PC1", "PC1"],
+            "feature": ["event_a", "event_b"],
+            "loading": [0.8, -0.35],
+            "absolute_loading": [0.8, 0.35],
+        }
+    )
+    figure_dir = tmp_path / "figures"
+    context = SpatialFigureContext(
+        figure_dir=figure_dir,
+        make_figures=True,
+        metric_context=MetricFigureContext.from_frame(
+            metric_field,
+            figure_dir,
+            make_figures=True,
+            write_sidecars=True,
+            sidecar_rows=None,
+            sidecar_dir=tmp_path / "sidecars",
+        ),
+        event_context=MetricFigureContext.from_frame(metric_field, figure_dir, make_figures=True),
+        tables={
+            "metric_field": metric_field,
+            "event_centered_residuals": metric_field,
+            "pca_station_scores": pca_scores,
+            "pca_explained_variance": explained,
+            "pca_feature_loadings": loadings,
+        },
+        paths={},
+    )
+
+    outputs = context.write_pca_summary_plots(
+        plot_pca_summary,
+        passband="1-2 sec",
+        components=["R"],
+        model="m1",
+        mode="PC1",
+        showfig=False,
+    )
+
+    assert len(outputs) == 1
+    assert outputs[0].exists()
+    assert "spatial_pca_summary__pga__1-2-sec__R__m1__PC1-score" in outputs[0].stem
+    sidecar = pd.read_csv(tmp_path / "sidecars" / f"{outputs[0].stem}.csv")
+    metadata = json.loads((tmp_path / "sidecars" / f"{outputs[0].stem}.json").read_text(encoding="utf-8"))
+    assert set(sidecar["_figure_layer"]) == {"station_score", "explained_variance", "feature_loading"}
+    assert metadata["figure_type"] == "pca_summary"
+    assert metadata["mode"] == "PC1"
+
+
 def test_metric_figure_context_reads_plot_columns_and_filters_defaults(tmp_path: Path) -> None:
     """Large-run figure context should avoid loading unused metric columns."""
 

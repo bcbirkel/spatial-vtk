@@ -451,6 +451,10 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "station_grid_for_item = spatial_figures.station_grid_for_item" in source
     assert "station_model_summary_for_item = spatial_figures.station_model_summary_for_item" in source
     assert "item_source_rows = spatial_figures.item_source_rows" in source
+    assert "write_pca_summary_plots = spatial_figures.write_pca_summary_plots" in source
+    assert "plot_pca_summary" in source
+    assert "write_pca_summary_plots(" in source
+    assert "PCA_MODE" in source
     assert "source_df=item_source_rows(item)" in source
     assert "source_df_factory=item_source_rows" in source
     assert "source_df=item[\"df\"]" not in source

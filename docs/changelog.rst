@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Added large-run Step 4 PCA-summary parity with the standard tutorial. The
+   spatial figure context now exposes ``write_pca_summary_plots()``, and the
+   large-run spatial notebook renders combined PCA station-score, explained
+   variance, and feature-loading sheets with layered row sidecars.
    Added large-run Step 3 score-trend parity with the standard tutorial. The
    metric figure context now projects GOF score columns, exposes a
    ``write_score_trend_plots()`` helper, and the large-run metric notebook

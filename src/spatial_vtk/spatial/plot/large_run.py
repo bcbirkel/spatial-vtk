@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
+import matplotlib.pyplot as plt
 import pandas as pd
 
 from spatial_vtk.config.outputs import resolve_output_path
@@ -615,6 +616,136 @@ class SpatialFigureContext:
         )
         return outputs
 
+    def write_pca_summary_plots(
+        self,
+        pca_summary_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        mode: str = "PC1",
+        score_col: str | None = None,
+        showfig: bool = False,
+        **kwargs: Any,
+    ) -> list[Path]:
+        """Write combined PCA mode summaries for each target metric.
+
+        The summary combines the station-score map, explained variance, and
+        feature-loading panel used by the standard tutorial while keeping the
+        large-run notebook on compact Step 4 summary tables.
+        """
+
+        metric_field = self.metric_field
+        station_scores = self.table("pca_station_scores")
+        explained_variance = self.table("pca_explained_variance")
+        feature_loadings = self.table("pca_feature_loadings")
+        if metric_field is None or metric_field.empty:
+            print("skip spatial_pca_summary: metric_field table missing or empty")
+            return []
+        if station_scores is None or station_scores.empty:
+            print("skip spatial_pca_summary: pca_station_scores table missing or empty")
+            return []
+        if explained_variance is None or explained_variance.empty:
+            print("skip spatial_pca_summary: pca_explained_variance table missing or empty")
+            return []
+        if feature_loadings is None or feature_loadings.empty:
+            print("skip spatial_pca_summary: pca_feature_loadings table missing or empty")
+            return []
+
+        resolved_score_col = score_col or f"{mode}_score"
+        outputs: list[Path] = []
+        for item in self.iter_metric_frames(
+            metric_field,
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            score_rows = self.filter_like_item(station_scores, item, include_period=False)
+            explained_rows = self.filter_like_item(explained_variance, item, include_period=False)
+            loading_rows = self.filter_like_item(feature_loadings, item, include_period=False)
+            if score_rows is None or score_rows.empty:
+                print(f"skip spatial_pca_summary {item['label']}: no PCA station score rows")
+                continue
+            if explained_rows is None or explained_rows.empty:
+                print(f"skip spatial_pca_summary {item['label']}: no PCA explained-variance rows")
+                continue
+            if loading_rows is None or loading_rows.empty:
+                print(f"skip spatial_pca_summary {item['label']}: no PCA feature-loading rows")
+                continue
+            if resolved_score_col not in score_rows.columns:
+                print(f"skip spatial_pca_summary {item['label']}: missing score column {resolved_score_col!r}")
+                continue
+
+            output = self.figure_dir / f"{self.metric_context.figure_name('spatial_pca_summary', item, resolved_score_col)}.png"
+            if output.exists() and not self.overwrite:
+                print(f"skip {output.name}: exists")
+                self._write_pca_summary_sidecar(
+                    output,
+                    station_scores=score_rows,
+                    explained_variance=explained_rows,
+                    feature_loadings=loading_rows,
+                    mode=mode,
+                    score_col=resolved_score_col,
+                )
+                outputs.append(output)
+                continue
+
+            try:
+                pca_summary_func(
+                    score_rows,
+                    explained_rows,
+                    loading_rows,
+                    output_path=output,
+                    mode=mode,
+                    score_col=resolved_score_col,
+                    add_basemap=self.add_basemap,
+                    showfig=showfig,
+                    savefig=True,
+                    write_sidecar=self.metric_context.write_sidecars,
+                    sidecar_rows=self.metric_context.sidecar_rows,
+                    sidecar_dir=self.metric_context.sidecar_output_dir,
+                    title=f"{item['label']} PCA Spatial Mode Summary",
+                    **kwargs,
+                )
+                plt.close("all")
+                print(f"wrote {output}")
+                outputs.append(output)
+            except Exception as exc:
+                plt.close("all")
+                print(f"skip {output.name}: {type(exc).__name__}: {exc}")
+        return outputs
+
+    def _write_pca_summary_sidecar(
+        self,
+        output: Path,
+        *,
+        station_scores: pd.DataFrame,
+        explained_variance: pd.DataFrame,
+        feature_loadings: pd.DataFrame,
+        mode: str,
+        score_col: str,
+    ) -> Path | None:
+        """Write a PCA summary sidecar when the figure already exists."""
+
+        if not self.metric_context.write_sidecars:
+            return None
+        sidecar_rows = _layer_pca_summary_rows(
+            station_scores=station_scores,
+            explained_variance=explained_variance,
+            feature_loadings=feature_loadings,
+            mode=mode,
+            score_col=score_col,
+        )
+        result = write_figure_row_sidecar(
+            output,
+            sidecar_rows,
+            sidecar_rows=self.metric_context.sidecar_rows,
+            sidecar_dir=self.metric_context.sidecar_output_dir,
+            metadata={"figure_type": "pca_summary", "mode": mode, "score_col": score_col},
+        )
+        return None if result is None else result.sidecar_path
+
     def _write_pattern_similarity_overview_plots(
         self,
         func: Callable[..., Any],
@@ -1102,6 +1233,49 @@ def _as_selection_list(value: object) -> list[str]:
     if isinstance(value, Sequence):
         return [str(item).strip() for item in value if str(item).strip()]
     return [str(value).strip()] if str(value).strip() else []
+
+
+def _layer_pca_summary_rows(
+    *,
+    station_scores: pd.DataFrame,
+    explained_variance: pd.DataFrame,
+    feature_loadings: pd.DataFrame,
+    mode: str,
+    score_col: str,
+    top_loadings: int = 10,
+) -> pd.DataFrame:
+    """Return layered source rows for an existing PCA summary figure."""
+
+    frames: list[pd.DataFrame] = []
+    if not station_scores.empty:
+        score_rows = station_scores.copy()
+        if score_col in score_rows.columns:
+            score_rows = score_rows.loc[pd.to_numeric(score_rows[score_col], errors="coerce").notna()].copy()
+        lon_col = _first_existing(score_rows, ["lon", "sta_lon", "station_lon", "station_longitude"])
+        lat_col = _first_existing(score_rows, ["lat", "sta_lat", "station_lat", "station_latitude"])
+        if lon_col and lat_col:
+            score_rows = score_rows.dropna(subset=[lon_col, lat_col])
+        if not score_rows.empty:
+            frames.append(score_rows.assign(_figure_layer="station_score"))
+    if not explained_variance.empty:
+        if "mode_index" in explained_variance.columns:
+            explained_rows = explained_variance.sort_values("mode_index").copy()
+        else:
+            explained_rows = explained_variance.copy()
+        frames.append(explained_rows.assign(_figure_layer="explained_variance"))
+    if not feature_loadings.empty:
+        loading_rows = feature_loadings.copy()
+        if "mode" in loading_rows.columns:
+            loading_rows = loading_rows.loc[loading_rows["mode"].astype(str).eq(str(mode))].copy()
+        if "absolute_loading" in loading_rows.columns:
+            loading_rows = loading_rows.sort_values("absolute_loading", ascending=False).head(int(top_loadings)).copy()
+        if "loading" in loading_rows.columns:
+            loading_rows = loading_rows.sort_values("loading", ascending=True).copy()
+        if not loading_rows.empty:
+            frames.append(loading_rows.assign(_figure_layer="feature_loading"))
+    if frames:
+        return pd.concat(frames, ignore_index=True, sort=False)
+    return station_scores.iloc[0:0].copy().assign(_figure_layer=pd.Series(dtype="object"))
 
 
 def _spatial_overview_plot_functions() -> dict[str, Callable[..., Any]]:
