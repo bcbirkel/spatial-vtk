@@ -510,7 +510,8 @@ svtk metrics run
 
 .. code-block:: bash
 
-   svtk metrics run [-h] --tasks TASKS --output OUTPUT
+   svtk metrics run [-h] [--tasks TASKS] [--output OUTPUT]
+                        [--config CONFIG] [--run-scenario RUN_SCENARIO]
                         [--qc-table QC_TABLE]
 
 .. rubric:: Parameters
@@ -528,13 +529,21 @@ svtk metrics run
      -
      - show this help message and exit
    * - ``--tasks``
-     - Yes
+     - No
      -
-     - Value: ``tasks``. Task CSV/parquet path.
+     - Value: ``tasks``. Task CSV/parquet path. Defaults to configured output table 'metric_tasks'.
    * - ``--output``
-     - Yes
+     - No
      -
-     - Value: ``output``. Output metric CSV/parquet path.
+     - Value: ``output``. Output metric CSV/parquet path. Defaults to configured output table 'metric_rows'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config used to resolve default task/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--qc-table``
      - No
      -

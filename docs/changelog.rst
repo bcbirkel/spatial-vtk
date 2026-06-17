@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Made ``svtk metrics run`` config-backed for small local metric runs. The
+   command now defaults ``--tasks`` to the configured ``metric_tasks`` table and
+   ``--output`` to ``metric_rows`` when a config is passed or set with
+   ``svtk config set``, matching the rest of the metric workflow commands.
    Added bounded QC dashboard trace-summary readiness diagnostics to
    ``dashboard_output_status_frame()``, ``dashboard_output_readiness()``, and
    ``svtk dashboard status``. Status output now reports whether the configured

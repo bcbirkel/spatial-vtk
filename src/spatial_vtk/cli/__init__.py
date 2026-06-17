@@ -691,8 +691,10 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     estimate.set_defaults(handler=_cmd_metrics_estimate)
 
     run = metrics_sub.add_parser("run", help="Run a task table locally.")
-    run.add_argument("--tasks", required=True, help="Task CSV/parquet path.")
-    run.add_argument("--output", required=True, help="Output metric CSV/parquet path.")
+    run.add_argument("--tasks", default=None, help="Task CSV/parquet path. Defaults to configured output table 'metric_tasks'.")
+    run.add_argument("--output", default=None, help="Output metric CSV/parquet path. Defaults to configured output table 'metric_rows'.")
+    run.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default task/output paths.")
+    run.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     run.add_argument("--qc-table", default=None, help="Optional QC inventory.")
     run.set_defaults(handler=_cmd_metrics_run)
 
@@ -1773,9 +1775,18 @@ def _cmd_metrics_run(args: argparse.Namespace) -> int:
 
     from spatial_vtk.metrics.workflow import run_metric_tasks, tasks_from_frame, write_metric_rows
 
-    tasks = tasks_from_frame(args.tasks)
-    rows = run_metric_tasks(tasks, qc_table=args.qc_table)
-    write_metric_rows(rows, args.output)
+    needs_config = args.tasks is None or args.output is None
+    config = (
+        _required_cli_config(args.config, run_scenario=args.run_scenario)
+        if needs_config
+        else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    )
+    tasks_path = Path(args.tasks).expanduser() if args.tasks else _configured_output_path("metric_tasks", config=config)
+    output = Path(args.output).expanduser() if args.output else _configured_output_path("metric_rows", config=config)
+    qc_table = Path(args.qc_table).expanduser() if args.qc_table else None
+    tasks = tasks_from_frame(tasks_path)
+    rows = run_metric_tasks(tasks, qc_table=qc_table)
+    write_metric_rows(rows, output)
     print(f"Wrote {len(rows)} metric rows.")
     return 0
 

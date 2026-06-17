@@ -629,6 +629,20 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "``--event-region``" in map_text
 
 
+def test_generated_cli_reference_names_metrics_run_defaults():
+    """Generated metric CLI docs should keep local run paths config-backed."""
+
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "docs" / "reference" / "cli" / "metrics.rst").read_text(encoding="utf-8")
+    section = text.split(".. _cli-svtk-metrics-run:", maxsplit=1)[1].split(".. _cli-svtk-metrics-run-batch:", maxsplit=1)[0]
+    assert "[--tasks TASKS]" in section
+    assert "[--output OUTPUT]" in section
+    assert "--tasks TASKS --output OUTPUT" not in section
+    assert "Defaults to configured output table 'metric_tasks'" in section
+    assert "Defaults to configured output table 'metric_rows'" in section
+    assert "Spatial-VTK config used to resolve default task/output paths" in section
+
+
 def test_cli_workflow_uses_curated_commands_for_standard_steps():
     """The shell workflow should not route routine tutorial steps through svtk call."""
 
@@ -2235,6 +2249,57 @@ metrics:
     assert main(["metrics", "run-batch", "--config", str(config), "--batch-index", "0"]) == 0
 
     assert main(["metrics", "merge-batches", "--config", str(config)]) == 0
+    assert (tables / "metric_rows.parquet").exists()
+
+
+def test_cli_metrics_run_uses_configured_defaults(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    tasks_path = tables / "metric_tasks.csv"
+    tasks_path.write_text("task_id,event_id,station,component,model,passband,metrics\n", encoding="utf-8")
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.metrics.workflow as workflow
+
+    def fake_tasks_from_frame(path):
+        seen["tasks_path"] = Path(path)
+        return ["task-1"]
+
+    def fake_run_metric_tasks(tasks, qc_table=None):
+        seen["tasks"] = tasks
+        seen["qc_table"] = qc_table
+        return pd.DataFrame({"metric": ["PGA"], "value": [1.0]})
+
+    def fake_write_metric_rows(rows, path):
+        seen["rows"] = rows
+        seen["output"] = Path(path)
+        seen["output"].parent.mkdir(parents=True, exist_ok=True)
+        rows.to_parquet(seen["output"], index=False)
+        return seen["output"]
+
+    monkeypatch.setattr(workflow, "tasks_from_frame", fake_tasks_from_frame)
+    monkeypatch.setattr(workflow, "run_metric_tasks", fake_run_metric_tasks)
+    monkeypatch.setattr(workflow, "write_metric_rows", fake_write_metric_rows)
+
+    assert main(["metrics", "run", "--config", str(config)]) == 0
+
+    captured = capsys.readouterr()
+    assert seen["tasks_path"] == tasks_path
+    assert seen["output"] == tables / "metric_rows.parquet"
+    assert seen["tasks"] == ["task-1"]
+    assert seen["qc_table"] is None
+    assert "Wrote 1 metric rows." in captured.out
     assert (tables / "metric_rows.parquet").exists()
 
 
