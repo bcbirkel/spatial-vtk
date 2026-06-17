@@ -39,6 +39,7 @@ from spatial_vtk.visualize.dashboard import (
 from spatial_vtk.visualize.dashboard.tables import build_dashboard_summaries
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _available_nonempty_value_columns
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _empty_rows_message as _metrics_empty_rows_message
+import spatial_vtk.visualize.dashboard.streamlit_metrics as streamlit_metrics
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard_startup_blocker
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _summary_readiness_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _value_columns_or_message
@@ -376,6 +377,55 @@ def test_metrics_value_selector_reports_why_no_value_can_be_selected():
     columns, message = _value_columns_or_message(ready)
     assert columns == ["med_log2_residual"]
     assert message is None
+
+
+def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
+    """Streamlit reruns should use the cached summary-table loader."""
+
+    summaries = {
+        "model_metric_band": pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["2-4"], "n": [1], "med_log2_residual": [0.5]}),
+        "station_rollup": pd.DataFrame({"station": ["STA"], "model": ["m1"], "metric": ["PGA"], "band": ["2-4"], "n": [1], "med_log2_residual": [0.5]}),
+        "event_rollup": pd.DataFrame({"event_id": ["ev1"], "model": ["m1"], "metric": ["PGA"], "band": ["2-4"], "n": [1], "med_log2_residual": [0.5]}),
+        "path_hex": pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["2-4"], "dist_bin_km": [10.0], "az_bin_deg": [45.0], "n": [1], "med_log2_residual": [0.5]}),
+    }
+    readiness = pd.DataFrame({"dashboard_table": ["model_metric_band"], "ready": [True], "message": ["ready"]})
+    calls: list[str] = []
+    rendered: dict[str, object] = {}
+
+    def fake_path_setting(query_key: str, env_key: str) -> str:  # noqa: ARG001
+        return {"metrics_root": "metrics-root", "summary_root": "summary-root", "config": ""}.get(query_key, "")
+
+    def fake_cached_loader(summary_root: str) -> dict[str, pd.DataFrame]:
+        calls.append(summary_root)
+        return summaries
+
+    def fail_uncached_loader(summary_root: str):  # noqa: ANN001, ARG001
+        raise AssertionError("main should use _load_summary_tables_cached")
+
+    def fake_render_dashboard(loaded, long_metrics, config, *, readiness):  # noqa: ANN001
+        rendered["summaries"] = loaded
+        rendered["long_metrics"] = long_metrics
+        rendered["config"] = config
+        rendered["readiness"] = readiness
+
+    monkeypatch.setattr(streamlit_metrics, "_path_setting", fake_path_setting)
+    monkeypatch.setattr(streamlit_metrics, "_load_summary_tables_cached", fake_cached_loader)
+    monkeypatch.setattr(streamlit_metrics, "load_dashboard_summary_tables", fail_uncached_loader)
+    monkeypatch.setattr(streamlit_metrics, "dashboard_summary_readiness_frame", lambda *args, **kwargs: readiness)
+    monkeypatch.setattr(streamlit_metrics, "_try_load_long_metrics", lambda metrics_root: pd.DataFrame({"metric": ["PGA"]}))
+    monkeypatch.setattr(streamlit_metrics, "_load_optional_config", lambda config_path: None)
+    monkeypatch.setattr(streamlit_metrics, "_render_dashboard_readiness", lambda frame: None)
+    monkeypatch.setattr(streamlit_metrics, "_metrics_dashboard_startup_blocker", lambda frame: None)
+    monkeypatch.setattr(streamlit_metrics, "_render_metrics_dashboard", fake_render_dashboard)
+    monkeypatch.setattr(streamlit_metrics.st, "set_page_config", lambda **kwargs: None)
+    monkeypatch.setattr(streamlit_metrics.st, "title", lambda *args, **kwargs: None)
+    monkeypatch.setattr(streamlit_metrics.st, "error", lambda message: (_ for _ in ()).throw(AssertionError(message)))
+
+    streamlit_metrics.main()
+
+    assert calls == ["summary-root"]
+    assert rendered["summaries"] is summaries
+    assert rendered["readiness"] is readiness
 
 
 def test_metrics_tab_readiness_message_explains_optional_summary_gaps():

@@ -63,7 +63,7 @@ def main() -> None:
         if not summary_root:
             return
     try:
-        summaries = validate_dashboard_tables(load_dashboard_summary_tables(summary_root))
+        summaries = _load_summary_tables_cached(summary_root)
         readiness = dashboard_summary_readiness_frame(summary_root, create_parent=False)
     except Exception as exc:
         st.error(str(exc))
