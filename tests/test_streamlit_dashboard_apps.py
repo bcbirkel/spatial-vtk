@@ -50,6 +50,8 @@ from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_chart_columns_or_me
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_dashboard_startup_blocker
 from spatial_vtk.visualize.dashboard.streamlit_qc import _empty_rows_message as _qc_empty_rows_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _missing_columns_message as _qc_missing_columns_message
+from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_loaded_row_summary
+from spatial_vtk.visualize.dashboard.streamlit_qc import _select_qc_readiness_columns
 import spatial_vtk.visualize.dashboard.streamlit_qc as streamlit_qc
 import spatial_vtk.visualize.dashboard.launch as dashboard_launch
 from spatial_vtk.visualize.dashboard.launch import _raise_if_port_in_use
@@ -327,6 +329,51 @@ def test_qc_dashboard_startup_blocker_uses_readiness_message(tmp_path):
 
     assert message is not None
     assert "station" in message
+
+
+def test_qc_dashboard_readiness_display_columns_are_bounded():
+    """QC status displays should not expose unrelated wide-table columns."""
+
+    readiness = pd.DataFrame(
+        {
+            "dashboard_table": ["qc_trace_summary"],
+            "ready": [True],
+            "readiness": ["ready"],
+            "row_count": [3],
+            "missing_columns": [""],
+            "message": ["QC trace-summary table is ready."],
+            "path": ["/example/run/outputs/qc_trace_summary.parquet"],
+            "unexpected_large_column": ["not displayed"],
+        }
+    )
+
+    display = _select_qc_readiness_columns(readiness)
+
+    assert list(display.columns) == [
+        "dashboard_table",
+        "ready",
+        "readiness",
+        "row_count",
+        "missing_columns",
+        "message",
+        "path",
+    ]
+    assert "unexpected_large_column" not in display.columns
+
+
+def test_qc_dashboard_loaded_row_summary_reports_filtered_scope():
+    """QC Data Status should show both loaded and filtered row counts."""
+
+    loaded = _qc_rows()
+    filtered = loaded.loc[loaded["station"].eq("STA1")].copy()
+
+    summary = _qc_loaded_row_summary(loaded, filtered).set_index("scope")
+
+    assert summary.loc["loaded", "trace_rows"] == 3
+    assert summary.loc["filtered", "trace_rows"] == 2
+    assert summary.loc["loaded", "events"] == 2
+    assert summary.loc["filtered", "events"] == 1
+    assert summary.loc["filtered", "stations"] == 1
 
 
 def test_dashboard_summaries_do_not_require_residual_column():

@@ -96,9 +96,10 @@ to ``dashboard_output_status_frame`` when a tab is empty, because the status
 table reports whether the issue is a missing file, missing required columns,
 missing map coordinates, or value columns that exist but contain no finite
 data. The metrics Streamlit dashboard also includes a Data Status tab with the
-same bounded summary-table and row-level dataset readiness tables, so a running
-dashboard can explain blank tabs without requiring users to return to the
-notebook.
+same bounded summary-table and row-level dataset readiness tables, while the QC
+dashboard includes a Data Status tab for trace-summary readiness plus loaded
+and filtered row counts. A running dashboard can therefore explain blank tabs
+without requiring users to return to the notebook.
 
 .. automodule:: spatial_vtk.visualize.dashboard
    :members:

@@ -17,6 +17,17 @@ from spatial_vtk.visualize.qc.overview import load_trace_qc_summary, queue_rows_
 from spatial_vtk.visualize.selection import FigureSelection, configured_band_options
 
 
+QC_READINESS_DISPLAY_COLUMNS = (
+    "dashboard_table",
+    "ready",
+    "readiness",
+    "row_count",
+    "missing_columns",
+    "message",
+    "path",
+)
+
+
 def main() -> None:
     """Run the Streamlit QC Explorer."""
 
@@ -41,10 +52,15 @@ def main() -> None:
         st.error(str(exc))
         return
     config = _load_optional_config(config_path)
-    _render_qc_dashboard(df, config)
+    _render_qc_dashboard(df, config, readiness=readiness)
 
 
-def _render_qc_dashboard(df: pd.DataFrame, config: SpatialVTKConfig | None = None) -> None:
+def _render_qc_dashboard(
+    df: pd.DataFrame,
+    config: SpatialVTKConfig | None = None,
+    *,
+    readiness: pd.DataFrame | None = None,
+) -> None:
     """Render the QC dashboard body."""
 
     with st.sidebar:
@@ -78,7 +94,9 @@ def _render_qc_dashboard(df: pd.DataFrame, config: SpatialVTKConfig | None = Non
         reject_reason=reject_reason,
         band=None if selected_band == "all" else selected_band,
     )
-    overview_tab, amp_tab, timing_tab, band_tab, table_tab, queue_tab = st.tabs(["Overview", "Amplitudes", "Timing", "Band Content", "Trace Table", "Manual Review Queue"])
+    overview_tab, amp_tab, timing_tab, band_tab, table_tab, queue_tab, status_tab = st.tabs(
+        ["Overview", "Amplitudes", "Timing", "Band Content", "Trace Table", "Manual Review Queue", "Data Status"]
+    )
     with overview_tab:
         if filtered.empty:
             st.info(_empty_rows_message("trace QC"))
@@ -131,6 +149,8 @@ def _render_qc_dashboard(df: pd.DataFrame, config: SpatialVTKConfig | None = Non
         st.dataframe(display_table(pd.DataFrame(queue_rows)), width="stretch")
         st.download_button("Download manual-review queue CSV", queue_to_csv_bytes(queue_rows), file_name="manual_review_queue.csv")
         st.caption("The exported queue is formatted for the manual QC picker and can be passed to the manual waveform-review workflow.")
+    with status_tab:
+        _render_qc_data_status_tab(readiness, df, filtered)
 
 
 @st.cache_data(show_spinner=False)
@@ -155,17 +175,59 @@ def _render_qc_readiness(readiness: pd.DataFrame) -> None:
     if bool(ready.all()):
         return
     st.warning("The QC trace-summary table is not ready. Rebuild QC outputs before using the QC dashboard.")
-    columns = [
-        "dashboard_table",
-        "ready",
-        "readiness",
-        "row_count",
-        "missing_columns",
-        "message",
-        "path",
+    shown = _select_qc_readiness_columns(readiness)
+    st.dataframe(display_table(shown), width="stretch")
+
+
+def _render_qc_data_status_tab(
+    readiness: pd.DataFrame | None,
+    loaded: pd.DataFrame,
+    filtered: pd.DataFrame,
+) -> None:
+    """Render QC input/readiness details in a persistent dashboard tab."""
+
+    st.subheader("Trace Summary Input")
+    status = _select_qc_readiness_columns(readiness)
+    if status.empty:
+        st.info("No QC trace-summary readiness row is available.")
+    else:
+        st.dataframe(display_table(status), width="stretch")
+
+    st.subheader("Loaded Rows")
+    st.dataframe(display_table(_qc_loaded_row_summary(loaded, filtered)), width="stretch")
+
+
+def _select_qc_readiness_columns(readiness: pd.DataFrame | None) -> pd.DataFrame:
+    """Return bounded QC readiness columns for dashboard display."""
+
+    if readiness is None or readiness.empty:
+        return pd.DataFrame()
+    shown = [column for column in QC_READINESS_DISPLAY_COLUMNS if column in readiness.columns]
+    return readiness.loc[:, shown].copy() if shown else pd.DataFrame()
+
+
+def _qc_loaded_row_summary(loaded: pd.DataFrame, filtered: pd.DataFrame) -> pd.DataFrame:
+    """Return compact counts for loaded and currently filtered QC rows."""
+
+    rows = [
+        {
+            "scope": "loaded",
+            "trace_rows": len(loaded),
+            "event_station_pairs": len(queue_rows_from_filtered_trace_df(loaded)),
+            "events": _nunique_if_present(loaded, "event_id"),
+            "stations": _nunique_if_present(loaded, "station"),
+            "components": _nunique_if_present(loaded, "component"),
+        },
+        {
+            "scope": "filtered",
+            "trace_rows": len(filtered),
+            "event_station_pairs": len(queue_rows_from_filtered_trace_df(filtered)),
+            "events": _nunique_if_present(filtered, "event_id"),
+            "stations": _nunique_if_present(filtered, "station"),
+            "components": _nunique_if_present(filtered, "component"),
+        },
     ]
-    shown = [column for column in columns if column in readiness.columns]
-    st.dataframe(display_table(readiness[shown]), width="stretch")
+    return pd.DataFrame(rows)
 
 
 def _qc_dashboard_startup_blocker(readiness: pd.DataFrame) -> str | None:
@@ -298,6 +360,12 @@ def _missing_columns_message(column_label: str) -> str:
     """Return a consistent missing-column dashboard message."""
 
     return f"No {column_label} columns are available in the loaded trace-summary table."
+
+
+def _nunique_if_present(df: pd.DataFrame, column: str) -> int:
+    """Return unique non-null values when a column exists."""
+
+    return int(df[column].nunique(dropna=True)) if column in df.columns else 0
 
 
 if __name__ == "__main__":
