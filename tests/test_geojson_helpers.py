@@ -23,6 +23,8 @@ from spatial_vtk.spatial.calculate import (
     build_station_edge_corridors,
     classify_records_by_corridors,
     classify_paths_with_geojson,
+    geojson_polygon_preview_table,
+    load_geojson_polygons,
     run_geojson_region_summary_workflow,
     select_events_in_corridors,
     select_records_by_corridors,
@@ -98,6 +100,19 @@ def test_geojson_point_and_path_controls_are_general(tmp_path):
     assert set(summary["geojson_label"]) == {"West Basin", "East Block"}
     assert summary["n"].sum() == 2
     assert summary_path.exists()
+
+    preview = geojson_polygon_preview_table(geojson, selector={"region_type": "basin"})
+    assert preview["feature_name"].tolist() == ["West Basin"]
+    assert preview.loc[0, "region"] == "West Basin"
+    assert preview.loc[0, "geometry_type"] == "Polygon"
+    assert preview.loc[0, "min_lon"] == pytest.approx(-118.4)
+    assert preview.loc[0, "max_lat"] == pytest.approx(34.4)
+    assert preview.loc[0, "properties"]["region_type"] == "basin"
+    assert int(preview.loc[0, "property_count"]) == 2
+
+    features = load_geojson_polygons(geojson)
+    feature_preview = geojson_polygon_preview_table(features, selector="East Block")
+    assert feature_preview["feature_name"].tolist() == ["East Block"]
 
     region_summary = build_geojson_region_summary(pd.concat([metrics, metrics], ignore_index=True), geojson, verbose=True)
     station_rows = region_summary.loc[region_summary["relation"] == "station_inside"]

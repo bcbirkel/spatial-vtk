@@ -232,6 +232,19 @@ def test_step03_station_map_uses_package_aggregation_and_source_sidecar() -> Non
     assert ".groupby([" not in source
 
 
+def test_step05_uses_geojson_preview_helper() -> None:
+    """The map tutorial should use package helpers for GeoJSON feature previews."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "step_05_maps_and_figures.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "geojson_polygon_preview_table(" in source
+    assert "load_geojson_polygons(" not in source
+    assert "region_preview = pd.DataFrame(" not in source
+
+
 def test_step06_uses_comparison_eligible_output_table() -> None:
     """The plotting tutorial should reuse QC outputs instead of re-filtering metrics."""
 

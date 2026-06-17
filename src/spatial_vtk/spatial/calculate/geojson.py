@@ -103,6 +103,66 @@ def load_geojson_polygons(geojson_path: str | Path) -> list[PolygonFeature]:
     return load_polygon_features(geojson_path)
 
 
+def geojson_polygon_preview_table(
+    geojson_path_or_features: str | Path | Sequence[PolygonFeature],
+    *,
+    selector: object = "all",
+) -> pd.DataFrame:
+    """Return a compact table describing selected GeoJSON polygon features.
+
+    Parameters
+    ----------
+    geojson_path_or_features
+        Path to a GeoJSON file or already-loaded polygon features.
+    selector
+        Polygon selector accepted by :func:`select_geojson_polygons`.
+
+    Returns
+    -------
+    pandas.DataFrame
+        One row per selected polygon with display labels, geometry type,
+        longitude/latitude bounds, and original feature properties.
+    """
+
+    features = (
+        load_geojson_polygons(geojson_path_or_features)
+        if isinstance(geojson_path_or_features, (str, Path))
+        else list(geojson_path_or_features)
+    )
+    selected = select_geojson_polygons(features, selector=selector)
+    rows: list[dict[str, object]] = []
+    for feature in selected:
+        geom = feature.geometry
+        min_lon, min_lat, max_lon, max_lat = geom.bounds
+        rows.append(
+            {
+                "region": feature.name.replace("_", " "),
+                "feature_name": feature.name,
+                "geometry_type": geom.geom_type,
+                "min_lon": float(min_lon),
+                "min_lat": float(min_lat),
+                "max_lon": float(max_lon),
+                "max_lat": float(max_lat),
+                "property_count": len(feature.properties),
+                "properties": dict(feature.properties),
+            }
+        )
+    return pd.DataFrame(
+        rows,
+        columns=[
+            "region",
+            "feature_name",
+            "geometry_type",
+            "min_lon",
+            "min_lat",
+            "max_lon",
+            "max_lat",
+            "property_count",
+            "properties",
+        ],
+    )
+
+
 def select_geojson_polygons(
     features: Sequence[PolygonFeature],
     selector: object = "all",
