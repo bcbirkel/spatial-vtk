@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-17
+   Clarified metric workflow CLI path aliases. ``svtk metrics inventories``
+   now exposes ``--observed-inventory-output`` and
+   ``--synthetic-inventory-output``, ``svtk metrics plan`` exposes
+   ``--observed-metric-inventory`` and ``--synthetic-metric-inventory``, and
+   ``svtk metrics run`` exposes ``--task-table`` and ``--metric-rows`` while
+   preserving the older flags.
    Clarified registered plotting CLI table help. Generated ``svtk plot``,
    ``svtk map``, and ``svtk visualize`` pages now describe primary and
    convenience tables by table role/config key instead of raw Python function

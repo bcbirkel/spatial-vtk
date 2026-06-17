@@ -220,15 +220,15 @@ svtk metrics inventories
    * - ``--trace-metadata``
      - No
      -
-     - Value: ``trace_metadata``. Preprocessed trace metadata CSV/parquet path. Defaults to the configured preprocessing metadata output.
-   * - ``--observed-output``
+     - Value: ``trace_metadata``. Preprocessed trace metadata CSV/parquet path. Defaults to the configured preprocessing trace_metadata output.
+   * - ``--observed-output``, ``--observed-inventory-output``
      - No
      -
-     - Value: ``observed_output``. Observed metric inventory CSV/parquet output path. Defaults to configured output table 'observed_metric_inventory'.
-   * - ``--synthetic-output``
+     - Value: ``observed_output``. Observed metric waveform inventory output CSV/parquet path. Defaults to configured output table 'observed_metric_inventory'.
+   * - ``--synthetic-output``, ``--synthetic-inventory-output``
      - No
      -
-     - Value: ``synthetic_output``. Synthetic metric inventory CSV/parquet output path. Defaults to configured output table 'synthetic_metric_inventory'.
+     - Value: ``synthetic_output``. Synthetic metric waveform inventory output CSV/parquet path. Defaults to configured output table 'synthetic_metric_inventory'.
    * - ``--config``
      - No
      -
@@ -416,14 +416,14 @@ svtk metrics plan
      - No
      -
      - show this help message and exit
-   * - ``--observed-inventory``
+   * - ``--observed-inventory``, ``--observed-metric-inventory``
      - No
      -
-     - Value: ``observed_inventory``. Observed metric waveform inventory.
-   * - ``--synthetic-inventory``
+     - Value: ``observed_inventory``. Observed metric waveform inventory CSV/parquet path. Defaults to configured output table 'observed_metric_inventory'.
+   * - ``--synthetic-inventory``, ``--synthetic-metric-inventory``
      - No
      -
-     - Value: ``synthetic_inventory``. Synthetic metric waveform inventory.
+     - Value: ``synthetic_inventory``. Synthetic metric waveform inventory CSV/parquet path. Defaults to configured output table 'synthetic_metric_inventory'.
    * - ``--config``
      - No
      -
@@ -528,14 +528,14 @@ svtk metrics run
      - No
      -
      - show this help message and exit
-   * - ``--tasks``
+   * - ``--tasks``, ``--task-table``
      - No
      -
-     - Value: ``tasks``. Task CSV/parquet path. Defaults to configured output table 'metric_tasks'.
-   * - ``--output``
+     - Value: ``tasks``. Metric task table CSV/parquet path. Defaults to configured output table 'metric_tasks'.
+   * - ``--output``, ``--metric-rows``
      - No
      -
-     - Value: ``output``. Output metric CSV/parquet path. Defaults to configured output table 'metric_rows'.
+     - Value: ``output``. Metric row output CSV/parquet path. Defaults to configured output table 'metric_rows'.
    * - ``--config``
      - No
      -

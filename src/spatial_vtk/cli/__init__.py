@@ -674,9 +674,21 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     metrics_sub = metrics.add_subparsers(dest="metrics_command", required=True)
 
     inventories = metrics_sub.add_parser("inventories", help="Build observed/synthetic metric waveform inventories from trace metadata.")
-    inventories.add_argument("--trace-metadata", default=None, help="Preprocessed trace metadata CSV/parquet path. Defaults to the configured preprocessing metadata output.")
-    inventories.add_argument("--observed-output", default=None, help="Observed metric inventory CSV/parquet output path. Defaults to configured output table 'observed_metric_inventory'.")
-    inventories.add_argument("--synthetic-output", default=None, help="Synthetic metric inventory CSV/parquet output path. Defaults to configured output table 'synthetic_metric_inventory'.")
+    inventories.add_argument("--trace-metadata", default=None, help="Preprocessed trace metadata CSV/parquet path. Defaults to the configured preprocessing trace_metadata output.")
+    inventories.add_argument(
+        "--observed-output",
+        "--observed-inventory-output",
+        dest="observed_output",
+        default=None,
+        help="Observed metric waveform inventory output CSV/parquet path. Defaults to configured output table 'observed_metric_inventory'.",
+    )
+    inventories.add_argument(
+        "--synthetic-output",
+        "--synthetic-inventory-output",
+        dest="synthetic_output",
+        default=None,
+        help="Synthetic metric waveform inventory output CSV/parquet path. Defaults to configured output table 'synthetic_metric_inventory'.",
+    )
     inventories.add_argument("--config", default=None, help="Optional Spatial-VTK config used to infer a single synthetic model.")
     inventories.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     inventories.add_argument("--synthetic-model", default=None, help="Synthetic model label override.")
@@ -687,8 +699,20 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     inventories.set_defaults(handler=_cmd_metrics_inventories)
 
     plan = metrics_sub.add_parser("plan", help="Plan metric tasks from inventories and config.")
-    plan.add_argument("--observed-inventory", default=None, help="Observed metric waveform inventory.")
-    plan.add_argument("--synthetic-inventory", default=None, help="Synthetic metric waveform inventory.")
+    plan.add_argument(
+        "--observed-inventory",
+        "--observed-metric-inventory",
+        dest="observed_inventory",
+        default=None,
+        help="Observed metric waveform inventory CSV/parquet path. Defaults to configured output table 'observed_metric_inventory'.",
+    )
+    plan.add_argument(
+        "--synthetic-inventory",
+        "--synthetic-metric-inventory",
+        dest="synthetic_inventory",
+        default=None,
+        help="Synthetic metric waveform inventory CSV/parquet path. Defaults to configured output table 'synthetic_metric_inventory'.",
+    )
     plan.add_argument("--config", default=None, help="Spatial-VTK config file.")
     plan.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     plan.add_argument("--metric", action="append", dest="metrics", default=None, help="Metric override. Repeat or use 'all'.")
@@ -727,8 +751,20 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     estimate.set_defaults(handler=_cmd_metrics_estimate)
 
     run = metrics_sub.add_parser("run", help="Run a task table locally.")
-    run.add_argument("--tasks", default=None, help="Task CSV/parquet path. Defaults to configured output table 'metric_tasks'.")
-    run.add_argument("--output", default=None, help="Output metric CSV/parquet path. Defaults to configured output table 'metric_rows'.")
+    run.add_argument(
+        "--tasks",
+        "--task-table",
+        dest="tasks",
+        default=None,
+        help="Metric task table CSV/parquet path. Defaults to configured output table 'metric_tasks'.",
+    )
+    run.add_argument(
+        "--output",
+        "--metric-rows",
+        dest="output",
+        default=None,
+        help="Metric row output CSV/parquet path. Defaults to configured output table 'metric_rows'.",
+    )
     run.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default task/output paths.")
     run.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     run.add_argument("--qc-table", default=None, help="Optional QC inventory.")

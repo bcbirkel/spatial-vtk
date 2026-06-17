@@ -865,6 +865,66 @@ def test_generated_cli_reference_names_metrics_run_defaults():
     assert "Spatial-VTK config used to resolve default task/output paths" in section
 
 
+def test_cli_metrics_workflow_help_exposes_artifact_aliases(capsys):
+    """Metric workflow path flags should name the artifacts they read/write."""
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["metrics", "inventories", "--help"])
+    assert excinfo.value.code == 0
+    inventory_help = " ".join(capsys.readouterr().out.split())
+    assert "--observed-inventory-output" in inventory_help
+    assert "--synthetic-inventory-output" in inventory_help
+    assert "Preprocessed trace metadata" in inventory_help
+    assert "observed_metric_inventory" in inventory_help
+    assert "synthetic_metric_inventory" in inventory_help
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["metrics", "plan", "--help"])
+    assert excinfo.value.code == 0
+    plan_help = " ".join(capsys.readouterr().out.split())
+    assert "--observed-metric-inventory" in plan_help
+    assert "--synthetic-metric-inventory" in plan_help
+    assert "Defaults to configured output table 'observed_metric_inventory'" in plan_help
+    assert "Defaults to configured output table 'synthetic_metric_inventory'" in plan_help
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["metrics", "run", "--help"])
+    assert excinfo.value.code == 0
+    run_help = " ".join(capsys.readouterr().out.split())
+    assert "--task-table" in run_help
+    assert "--metric-rows" in run_help
+    assert "Metric task table CSV/parquet path" in run_help
+    assert "Metric row output CSV/parquet path" in run_help
+
+
+def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
+    """Generated metric CLI docs should preserve artifact-named workflow aliases."""
+
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "docs" / "reference" / "cli" / "metrics.rst").read_text(encoding="utf-8")
+    inventories_section = text.split(".. _cli-svtk-metrics-inventories:", maxsplit=1)[1].split(
+        ".. _cli-svtk-metrics-merge-batches:", maxsplit=1
+    )[0]
+    plan_section = text.split(".. _cli-svtk-metrics-plan:", maxsplit=1)[1].split(
+        ".. _cli-svtk-metrics-run:", maxsplit=1
+    )[0]
+    run_section = text.split(".. _cli-svtk-metrics-run:", maxsplit=1)[1].split(
+        ".. _cli-svtk-metrics-run-batch:", maxsplit=1
+    )[0]
+
+    assert "``--observed-output``, ``--observed-inventory-output``" in inventories_section
+    assert "``--synthetic-output``, ``--synthetic-inventory-output``" in inventories_section
+    assert "Preprocessed trace metadata CSV/parquet path" in inventories_section
+    assert "``--observed-inventory``, ``--observed-metric-inventory``" in plan_section
+    assert "``--synthetic-inventory``, ``--synthetic-metric-inventory``" in plan_section
+    assert "Defaults to configured output table 'observed_metric_inventory'" in plan_section
+    assert "Defaults to configured output table 'synthetic_metric_inventory'" in plan_section
+    assert "``--tasks``, ``--task-table``" in run_section
+    assert "``--output``, ``--metric-rows``" in run_section
+    assert "Metric task table CSV/parquet path" in run_section
+    assert "Metric row output CSV/parquet path" in run_section
+
+
 def test_generated_cli_reference_names_metrics_outputs_aliases():
     """Generated metric CLI docs should expose clear downstream output aliases."""
 
