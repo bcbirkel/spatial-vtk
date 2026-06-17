@@ -111,9 +111,10 @@ def _render_metrics_dashboard(
             bands=selected_bands,
             component=None if selected_component in {"", "all"} else selected_component,
         )
-        value_columns = _available_nonempty_value_columns(value_source)
+        value_columns, value_message = _value_columns_or_message(value_source)
+        if value_message:
+            st.info(value_message)
         if not value_columns:
-            st.error("No observed, synthetic, residual, or score value columns are available for the selected filters.")
             return
         value_col = st.selectbox("Displayed Value", options=value_columns, format_func=value_column_display_name)
         distance_range = _range_slider_from_columns("Distance (km)", summaries["station_rollup"], ("med_dist_km", "distance_km"))
@@ -406,6 +407,27 @@ def _available_nonempty_value_columns(df: pd.DataFrame) -> list[str]:
         if column in df.columns and pd.to_numeric(df[column], errors="coerce").notna().any()
     ]
     return nonempty or columns
+
+
+def _value_columns_or_message(df: pd.DataFrame) -> tuple[list[str], str | None]:
+    """Return selectable value columns with a precise empty-state message."""
+
+    if df.empty:
+        return [], _empty_rows_message("model/metric/passband")
+    columns = available_dashboard_value_columns(df)
+    if not columns:
+        return [], "No observed, synthetic, residual, or score value columns are present in the model/metric/passband summary."
+    nonempty = [
+        column
+        for column in columns
+        if column in df.columns and pd.to_numeric(df[column], errors="coerce").notna().any()
+    ]
+    if nonempty:
+        return nonempty, None
+    return (
+        columns,
+        "The selected model/metric/passband rows have dashboard value columns, but all selected values are missing or non-finite.",
+    )
 
 
 def _display_table(df: pd.DataFrame) -> pd.DataFrame:

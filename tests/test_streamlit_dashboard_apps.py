@@ -41,6 +41,7 @@ from spatial_vtk.visualize.dashboard.streamlit_metrics import _available_nonempt
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _empty_rows_message as _metrics_empty_rows_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard_startup_blocker
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _summary_readiness_message
+from spatial_vtk.visualize.dashboard.streamlit_metrics import _value_columns_or_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_chart_columns_or_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _empty_rows_message as _qc_empty_rows_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _missing_columns_message as _qc_missing_columns_message
@@ -353,6 +354,28 @@ def test_dashboard_empty_state_messages_are_explicit():
     assert _metrics_empty_rows_message("station") == "No station rows match the selected filters."
     assert _qc_empty_rows_message("trace QC") == "No trace QC rows match the selected filters."
     assert _qc_missing_columns_message("timing") == "No timing columns are available in the loaded trace-summary table."
+
+
+def test_metrics_value_selector_reports_why_no_value_can_be_selected():
+    empty = pd.DataFrame(columns=["model", "metric", "band", "med_log2_residual"])
+    columns, message = _value_columns_or_message(empty)
+    assert columns == []
+    assert message == "No model/metric/passband rows match the selected filters."
+
+    missing_values = pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["2-4"]})
+    columns, message = _value_columns_or_message(missing_values)
+    assert columns == []
+    assert message == "No observed, synthetic, residual, or score value columns are present in the model/metric/passband summary."
+
+    all_missing = pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["2-4"], "med_log2_residual": [pd.NA]})
+    columns, message = _value_columns_or_message(all_missing)
+    assert columns == ["med_log2_residual"]
+    assert message == "The selected model/metric/passband rows have dashboard value columns, but all selected values are missing or non-finite."
+
+    ready = pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["2-4"], "med_log2_residual": [0.5]})
+    columns, message = _value_columns_or_message(ready)
+    assert columns == ["med_log2_residual"]
+    assert message is None
 
 
 def test_metrics_tab_readiness_message_explains_optional_summary_gaps():
