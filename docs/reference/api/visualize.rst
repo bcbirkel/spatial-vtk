@@ -80,21 +80,25 @@ by ``spatial_vtk.visualize.dashboard`` for readiness checks, summary filtering,
 dashboard dataset export, and dashboard launch commands. These helpers are safe
 to import without starting Streamlit.
 
-``dashboard_output_status_frame`` returns a notebook-friendly preflight table
-for the configured dashboard artifacts. It includes the row-level metric
-dataset root used by distribution/download tabs, the four metrics-dashboard
-summary tables used by the overview, station, event, path, and model-comparison
-tabs, and the trace-QC table used by the QC dashboard. ``ready`` and
-``readiness`` values are intentionally bounded checks: they inspect paths,
-schemas, row counts, map-coordinate availability, and recognized dashboard
-value columns without loading the full large-run metric inventory.
+``dashboard_readiness_summary_frame`` returns a compact preflight table for
+notebooks, while ``dashboard_output_status_frame`` returns the detailed
+artifact status. Together they cover the row-level metric dataset root used by
+distribution/download tabs, the four metrics-dashboard summary tables used by
+the overview, station, event, path, and model-comparison tabs, and the trace-QC
+table used by the QC dashboard. ``ready`` and ``readiness`` values are
+intentionally bounded checks: they inspect paths, schemas, row counts,
+map-coordinate availability, and recognized dashboard value columns without
+loading the full large-run metric inventory.
 
 ``dashboard_summary_table_contracts`` documents which summary table feeds each
 dashboard tab and the required columns for that table. Use it in notebooks next
 to ``dashboard_output_status_frame`` when a tab is empty, because the status
 table reports whether the issue is a missing file, missing required columns,
 missing map coordinates, or value columns that exist but contain no finite
-data.
+data. The metrics Streamlit dashboard also includes a Data Status tab with the
+same bounded summary-table and row-level dataset readiness tables, so a running
+dashboard can explain blank tabs without requiring users to return to the
+notebook.
 
 .. automodule:: spatial_vtk.visualize.dashboard
    :members:

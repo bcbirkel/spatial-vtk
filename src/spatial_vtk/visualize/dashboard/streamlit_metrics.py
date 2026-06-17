@@ -29,6 +29,7 @@ from spatial_vtk.visualize.dashboard.contracts import (
     dashboard_ready_value,
     dashboard_row_level_columns,
     dashboard_summary_readiness_frame,
+    dashboard_summary_table_contracts,
     load_dashboard_summary_tables,
     load_metric_long_table,
     validate_dashboard_tables,
@@ -48,6 +49,30 @@ from spatial_vtk.config.labels import (
 )
 from spatial_vtk.visualize.dashboard.maps import BASEMAPS, build_event_folium_map, build_station_folium_map, render_folium_html
 from spatial_vtk.visualize.selection import FigureSelection, configured_band_options
+
+
+SUMMARY_READINESS_DISPLAY_COLUMNS = (
+    "dashboard_table",
+    "dashboard_tabs",
+    "ready",
+    "readiness",
+    "row_count",
+    "missing_columns",
+    "map_ready",
+    "missing_map_columns",
+    "nonempty_value_columns",
+    "message",
+    "map_message",
+)
+METRIC_DATASET_READINESS_DISPLAY_COLUMNS = (
+    "name",
+    "ready",
+    "readiness",
+    "file_count",
+    "row_count",
+    "value_columns",
+    "message",
+)
 
 
 def main() -> None:
@@ -83,7 +108,13 @@ def main() -> None:
         return
     long_metrics = _try_load_long_metrics(metrics_root, readiness=metric_dataset_readiness)
     config = _load_optional_config(config_path)
-    _render_metrics_dashboard(summaries, long_metrics, config, readiness=readiness)
+    _render_metrics_dashboard(
+        summaries,
+        long_metrics,
+        config,
+        readiness=readiness,
+        metric_dataset_readiness=metric_dataset_readiness,
+    )
 
 
 def _render_metrics_dashboard(
@@ -92,6 +123,7 @@ def _render_metrics_dashboard(
     config: SpatialVTKConfig | None = None,
     *,
     readiness: pd.DataFrame | None = None,
+    metric_dataset_readiness: pd.DataFrame | None = None,
 ) -> None:
     """Render the metrics dashboard body."""
 
@@ -210,7 +242,9 @@ def _render_metrics_dashboard(
                 component=component_filter,
             )
 
-    overview_tab, station_tab, event_tab, path_tab, distribution_tab, compare_tab = st.tabs(["Overview", "Stations", "Events", "Paths", "Distributions", "Compare Models"])
+    overview_tab, station_tab, event_tab, path_tab, distribution_tab, compare_tab, status_tab = st.tabs(
+        ["Overview", "Stations", "Events", "Paths", "Distributions", "Compare Models", "Data Status"]
+    )
     with overview_tab:
         cols = st.columns(4)
         cols[0].metric("Rows", f"{len(rows) if rows is not None else len(heat):,}")
@@ -281,6 +315,8 @@ def _render_metrics_dashboard(
         else:
             st.plotly_chart(build_metric_heatmap_figure(heat, value_col=value_col, title="Model Comparison"), width="stretch")
         st.dataframe(_display_table(heat), width="stretch")
+    with status_tab:
+        _render_data_status_tab(readiness, metric_dataset_readiness)
 
 
 @st.cache_data(show_spinner=False)
@@ -319,10 +355,9 @@ def _render_metric_dataset_readiness(readiness: pd.DataFrame) -> None:
     if not message:
         return
     st.warning(message)
-    columns = ["name", "ready", "readiness", "file_count", "row_count", "value_columns", "message"]
-    shown = [column for column in columns if column in readiness.columns]
-    if shown:
-        st.dataframe(_display_table(readiness[shown]), width="stretch")
+    shown = _select_readiness_columns(readiness, METRIC_DATASET_READINESS_DISPLAY_COLUMNS)
+    if not shown.empty:
+        st.dataframe(_display_table(shown), width="stretch")
 
 
 def _metric_dataset_readiness_message(readiness: pd.DataFrame | None) -> str | None:
@@ -346,21 +381,38 @@ def _render_dashboard_readiness(readiness: pd.DataFrame) -> None:
     if bool(ready.all()):
         return
     st.warning("Some dashboard summary tables are not ready. Affected tabs may be empty until those files are rebuilt.")
-    columns = [
-        "dashboard_table",
-        "dashboard_tabs",
-        "ready",
-        "readiness",
-        "row_count",
-        "missing_columns",
-        "map_ready",
-        "missing_map_columns",
-        "nonempty_value_columns",
-        "message",
-        "map_message",
-    ]
+    shown = _select_readiness_columns(readiness, SUMMARY_READINESS_DISPLAY_COLUMNS)
+    st.dataframe(_display_table(shown), width="stretch")
+
+
+def _render_data_status_tab(readiness: pd.DataFrame | None, metric_dataset_readiness: pd.DataFrame | None) -> None:
+    """Render the data-readiness tab for already-started dashboards."""
+
+    st.subheader("Dashboard Summary Tables")
+    summary_status = _select_readiness_columns(readiness, SUMMARY_READINESS_DISPLAY_COLUMNS)
+    if summary_status.empty:
+        st.info("No dashboard summary readiness rows are available.")
+    else:
+        st.dataframe(_display_table(summary_status), width="stretch")
+
+    st.subheader("Row-Level Metrics Dataset")
+    metric_status = _select_readiness_columns(metric_dataset_readiness, METRIC_DATASET_READINESS_DISPLAY_COLUMNS)
+    if metric_status.empty:
+        st.info("No row-level metrics dataset was configured. Distribution tabs require the metrics dashboard dataset.")
+    else:
+        st.dataframe(_display_table(metric_status), width="stretch")
+
+    st.subheader("Dashboard Table Contracts")
+    st.dataframe(_display_table(dashboard_summary_table_contracts()), width="stretch")
+
+
+def _select_readiness_columns(readiness: pd.DataFrame | None, columns: tuple[str, ...]) -> pd.DataFrame:
+    """Return bounded readiness columns for dashboard display."""
+
+    if readiness is None or readiness.empty:
+        return pd.DataFrame()
     shown = [column for column in columns if column in readiness.columns]
-    st.dataframe(_display_table(readiness[shown]), width="stretch")
+    return readiness.loc[:, shown].copy() if shown else pd.DataFrame()
 
 
 def _metrics_dashboard_startup_blocker(readiness: pd.DataFrame) -> str | None:

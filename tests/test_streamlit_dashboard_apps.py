@@ -43,6 +43,7 @@ from spatial_vtk.visualize.dashboard.streamlit_metrics import _empty_rows_messag
 import spatial_vtk.visualize.dashboard.streamlit_metrics as streamlit_metrics
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard_startup_blocker
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metric_dataset_readiness_message
+from spatial_vtk.visualize.dashboard.streamlit_metrics import _select_readiness_columns
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _summary_readiness_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _value_columns_or_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_chart_columns_or_message
@@ -548,11 +549,12 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
     def fail_uncached_loader(summary_root: str):  # noqa: ANN001, ARG001
         raise AssertionError("main should use _load_summary_tables_cached")
 
-    def fake_render_dashboard(loaded, long_metrics, config, *, readiness):  # noqa: ANN001
+    def fake_render_dashboard(loaded, long_metrics, config, *, readiness, metric_dataset_readiness=None):  # noqa: ANN001
         rendered["summaries"] = loaded
         rendered["long_metrics"] = long_metrics
         rendered["config"] = config
         rendered["readiness"] = readiness
+        rendered["metric_dataset_readiness"] = metric_dataset_readiness
 
     monkeypatch.setattr(streamlit_metrics, "_path_setting", fake_path_setting)
     monkeypatch.setattr(streamlit_metrics, "_load_summary_tables_cached", fake_cached_loader)
@@ -574,6 +576,7 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
     assert calls == [("summary-root", ())]
     assert rendered["summaries"] is summaries
     assert rendered["readiness"] is readiness
+    assert list(rendered["metric_dataset_readiness"]["ready"]) == [True]
 
 
 def test_metrics_dashboard_main_preflights_before_summary_load(monkeypatch):
@@ -638,11 +641,12 @@ def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
         calls.append((summary_root, skip_tables))
         return summaries
 
-    def fake_render_dashboard(loaded, long_metrics, config, *, readiness):  # noqa: ANN001
+    def fake_render_dashboard(loaded, long_metrics, config, *, readiness, metric_dataset_readiness=None):  # noqa: ANN001
         rendered["summaries"] = loaded
         rendered["long_metrics"] = long_metrics
         rendered["config"] = config
         rendered["readiness"] = readiness
+        rendered["metric_dataset_readiness"] = metric_dataset_readiness
 
     monkeypatch.setattr(streamlit_metrics, "_path_setting", fake_path_setting)
     monkeypatch.setattr(streamlit_metrics, "dashboard_summary_readiness_frame", lambda *args, **kwargs: readiness)
@@ -660,6 +664,7 @@ def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
     assert rendered["summaries"] is summaries
     assert rendered["long_metrics"] is None
     assert rendered["readiness"] is readiness
+    assert rendered["metric_dataset_readiness"].empty
 
 
 def test_metrics_tab_readiness_message_explains_optional_summary_gaps():
@@ -699,6 +704,49 @@ def test_metrics_dashboard_row_dataset_readiness_message():
     assert _metric_dataset_readiness_message(None) is None
     assert _metric_dataset_readiness_message(missing) == "Dashboard metric dataset contains no recognized files."
     assert _metric_dataset_readiness_message(blank) == "The row-level metrics dashboard dataset is not ready."
+
+
+def test_metrics_dashboard_readiness_display_columns_are_bounded():
+    """Dashboard status displays should not expose unrelated wide-table columns."""
+
+    readiness = pd.DataFrame(
+        {
+            "dashboard_table": ["station_rollup"],
+            "dashboard_tabs": ["Stations"],
+            "ready": [False],
+            "readiness": ["missing_columns"],
+            "row_count": [10],
+            "missing_columns": ["sta_lat"],
+            "message": ["station_rollup is missing columns"],
+            "path": ["/large/private/path/station_rollup.parquet"],
+            "unexpected_large_column": ["not displayed"],
+        }
+    )
+
+    display = _select_readiness_columns(
+        readiness,
+        (
+            "dashboard_table",
+            "dashboard_tabs",
+            "ready",
+            "readiness",
+            "row_count",
+            "missing_columns",
+            "message",
+        ),
+    )
+
+    assert list(display.columns) == [
+        "dashboard_table",
+        "dashboard_tabs",
+        "ready",
+        "readiness",
+        "row_count",
+        "missing_columns",
+        "message",
+    ]
+    assert "unexpected_large_column" not in display.columns
+    assert "path" not in display.columns
 
 
 def test_qc_chart_tab_state_prioritizes_empty_filtered_rows():
