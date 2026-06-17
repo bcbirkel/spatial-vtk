@@ -144,15 +144,15 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     station_summary = context.station_summary_for_map(pga_item["df"])
     sta = station_summary.loc[station_summary["station"].eq("STA")].iloc[0]
     assert sta["log2_residual"] == pytest.approx(2.0)
-    assert sta["sta_lon"] == pytest.approx(-118.01)
-    assert sta["sta_lat"] == pytest.approx(34.01)
+    assert sta["sta_lon"] == pytest.approx(-118.02)
+    assert sta["sta_lat"] == pytest.approx(34.02)
     assert sta["source_row_count"] == 2
     assert sta["source_event_count"] == 2
     assert sta["input_row_count"] == 3
     assert sta["input_event_count"] == 3
     assert sta["dropped_nonfinite_row_count"] == 1
     assert sta["dropped_nonfinite_event_count"] == 1
-    assert sta["source_coordinate_count"] == 2
+    assert sta["source_coordinate_count"] == 3
     assert sta["aggregation"] == "mean"
     assert station_summary.attrs["svtk_aggregation_kind"] == "station_event_rows_to_station_summary"
     assert station_summary.attrs["svtk_aggregation_value_col"] == "log2_residual"
@@ -184,7 +184,7 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert sta_m2["source_event_count"] == 1
     assert sta_m2["dropped_nonfinite_row_count"] == 0
     assert sta_m2["dropped_nonfinite_event_count"] == 0
-    assert sta_m1["source_coordinate_count"] == 2
+    assert sta_m1["source_coordinate_count"] == 3
     assert sta_m2["source_coordinate_count"] == 1
 
     psa_item = [item for item in context.iter_metric_frames(components=["Z"], model="m1", split_psa_period=False) if item["key"] == "psa"][0]

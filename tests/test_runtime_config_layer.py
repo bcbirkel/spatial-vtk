@@ -649,6 +649,42 @@ def test_dashboard_summary_readiness_reports_missing_empty_and_value_states(tmp_
     assert contracts.loc["model_metric_band", "map_coordinate_columns"] == ""
 
 
+def test_dashboard_summary_readiness_uses_schema_and_selected_columns(tmp_path, monkeypatch):
+    """Dashboard preflight should not materialize whole large summary tables."""
+
+    import spatial_vtk.visualize.dashboard.contracts as contracts_module
+
+    summary_root = tmp_path / "dashboard_summaries"
+    summary_root.mkdir()
+    pd.DataFrame(
+        {
+            "station": ["STA", "STB"],
+            "model": ["m1", "m1"],
+            "metric": ["PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "n": [3, 4],
+            "sta_lon": [-118.1, -118.2],
+            "sta_lat": [34.1, 34.2],
+            "med_log2_residual": [0.2, -0.1],
+            "unused_payload": ["x" * 100, "y" * 100],
+        }
+    ).to_parquet(summary_root / "station_rollup.parquet", index=False)
+
+    def _fail_full_reader(*args, **kwargs):
+        raise AssertionError("readiness should not use the full dashboard table reader")
+
+    monkeypatch.setattr(contracts_module, "read_dashboard_table", _fail_full_reader)
+
+    readiness = dashboard_summary_readiness_frame(summary_root, create_parent=False)
+    row = readiness.set_index("dashboard_table").loc["station_rollup"]
+
+    assert row["readiness"] == "ready"
+    assert row["ready"] is True
+    assert row["row_count"] == 2
+    assert row["map_ready"] is True
+    assert row["nonempty_value_columns"] == "med_log2_residual"
+
+
 def test_optional_dashboard_summary_filter_reports_missing_value_columns():
     """Optional dashboard tabs should not crash when a selected value is absent."""
 
@@ -779,6 +815,7 @@ def test_output_readiness_reports_notebook_step_decisions(tmp_path):
 def test_finish_figure_uses_rich_display_in_notebooks(monkeypatch):
     """Notebook display should embed figures even when assigned to variables."""
 
+    pytest.importorskip("IPython")
     displayed = []
 
     def fake_display(fig):
@@ -800,6 +837,7 @@ def test_finish_figure_uses_rich_display_in_notebooks(monkeypatch):
 def test_finish_figure_can_keep_displayed_notebook_figures_open(monkeypatch):
     """Callers can opt out of notebook auto-close when they need the figure open."""
 
+    pytest.importorskip("IPython")
     monkeypatch.setattr(figure_io, "_in_notebook", lambda: True)
     monkeypatch.setattr("IPython.display.display", lambda fig: None)
 

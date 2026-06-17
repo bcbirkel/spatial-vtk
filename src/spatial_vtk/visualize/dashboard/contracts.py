@@ -345,7 +345,8 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
             "message": f"{table_name} summary file is missing.",
         }
     try:
-        table = read_dashboard_table(path)
+        columns = _dashboard_table_columns(path)
+        row_count = _dashboard_table_row_count(path)
     except Exception as exc:  # pragma: no cover - exercised by integration failures
         return {
             "ready": False,
@@ -356,16 +357,17 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
             "nonempty_value_columns": "",
             "message": f"{table_name} summary file could not be read: {exc}",
         }
-    missing = sorted(column for column in required if column not in table.columns)
-    value_columns = _dashboard_value_columns(table)
-    nonempty_value_columns = _nonempty_dashboard_value_columns(table, value_columns)
-    map_status = dashboard_map_readiness(table, table_name)
-    row_count = int(len(table))
+    missing = sorted(column for column in required if column not in columns)
+    schema_table = pd.DataFrame(columns=columns)
+    value_columns = _dashboard_value_columns(schema_table)
+    value_table = _read_dashboard_table_columns(path, value_columns)
+    nonempty_value_columns = _nonempty_dashboard_value_columns(value_table, value_columns)
+    map_status = _dashboard_map_readiness_from_path(path, table_name, columns)
     if missing:
         readiness = "missing_columns"
         ready = False
         message = f"{table_name} summary is missing required columns: {', '.join(missing)}."
-    elif table.empty:
+    elif row_count == 0:
         readiness = "empty"
         ready = False
         message = f"{table_name} summary has no rows."
@@ -389,6 +391,68 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
         "message": message,
         "map_message": map_status["message"],
     }
+
+
+def _dashboard_table_columns(path: Path) -> list[str]:
+    """Return dashboard summary columns without loading row data."""
+
+    suffix = path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        try:
+            import pyarrow.parquet as pq
+
+            return list(pq.ParquetFile(path).schema.names)
+        except Exception:
+            return list(pd.read_parquet(path).head(0).columns)
+    if suffix == ".csv":
+        return list(pd.read_csv(path, nrows=0).columns)
+    raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
+
+
+def _dashboard_table_row_count(path: Path) -> int:
+    """Return dashboard summary row count without materializing all columns."""
+
+    suffix = path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        try:
+            import pyarrow.parquet as pq
+
+            return int(pq.ParquetFile(path).metadata.num_rows)
+        except Exception:
+            return int(len(pd.read_parquet(path, columns=[])))
+    if suffix == ".csv":
+        with path.open("r", encoding="utf-8", errors="replace") as handle:
+            return max(sum(1 for _ in handle) - 1, 0)
+    raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
+
+
+def _read_dashboard_table_columns(path: Path, columns: list[str] | tuple[str, ...]) -> pd.DataFrame:
+    """Read only selected dashboard summary columns."""
+
+    selected = [column for column in columns if column]
+    if not selected:
+        return pd.DataFrame()
+    suffix = path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        return pd.read_parquet(path, columns=selected)
+    if suffix == ".csv":
+        wanted = set(selected)
+        return pd.read_csv(path, usecols=lambda column: column in wanted, low_memory=False)
+    raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
+
+
+def _dashboard_map_readiness_from_path(path: Path, table_name: str, columns: list[str]) -> dict[str, object]:
+    """Return map-readiness using only coordinate columns."""
+
+    candidates = MAP_COORDINATE_CANDIDATES.get(str(table_name))
+    if candidates is None:
+        return {"ready": "", "missing_columns": "", "message": ""}
+    lon_candidates, lat_candidates = candidates
+    lon_col = next((column for column in lon_candidates if column in columns), None)
+    lat_col = next((column for column in lat_candidates if column in columns), None)
+    if lon_col is None or lat_col is None:
+        return dashboard_map_readiness(pd.DataFrame(columns=columns), table_name)
+    return dashboard_map_readiness(_read_dashboard_table_columns(path, [lon_col, lat_col]), table_name)
 
 
 def dashboard_map_readiness(table: pd.DataFrame, table_name: str) -> dict[str, object]:
