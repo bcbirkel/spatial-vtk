@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Clarified registered plotting CLI table help. Generated ``svtk plot``,
+   ``svtk map``, and ``svtk visualize`` pages now describe primary and
+   convenience tables by table role/config key instead of raw Python function
+   argument names, and ``--table`` is documented as an advanced escape hatch
+   with named table flags preferred when available.
    Strengthened metric figure regression coverage for large-run provenance and
    outlier handling. Tests now assert exact source event/station/period rows
    behind aggregated station and PSA sidecars, and verify that robust axis and

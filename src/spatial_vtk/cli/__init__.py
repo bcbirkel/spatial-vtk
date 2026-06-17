@@ -1143,7 +1143,8 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
         const=FIGURE_TABLE_SENTINEL,
         default=None,
         help=(
-            "Extra table as argument_name=path. May be repeated. "
+            "Advanced extra table mapping as function_argument=path. May be repeated. "
+            "Prefer named table flags such as --events, --stations, or --records when this command lists them. "
             "For plotting functions with a boolean table option, omit the value to show the table."
         ),
     )
@@ -1169,7 +1170,8 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
 def _registered_input_help(argument_name: str, input_key: str | None) -> str:
     """Return clear help for a registered plotting input table."""
 
-    help_text = f"Input CSV/parquet table for function argument '{argument_name}' (primary figure input table)."
+    role = _registered_table_role(argument_name, input_key, fallback="figure input")
+    help_text = f"Primary figure input table ({role}); accepts CSV or parquet."
     if input_key:
         help_text += f" Defaults to configured output table '{input_key}' when --config is passed or a default config is set with 'svtk config set'."
     return help_text
@@ -1187,10 +1189,25 @@ def _registered_output_help(output_key: str | None) -> str:
 def _registered_alias_help(argument_name: str, table_key: str | None) -> str:
     """Return clear help for an extra table option."""
 
-    help_text = f"Convenience CSV/parquet table path for function argument '{argument_name}'."
+    role = _registered_table_role(argument_name, table_key, fallback="extra")
+    help_text = f"Convenience {role} table path; accepts CSV or parquet."
     if table_key:
         help_text += f" Defaults to configured output table '{table_key}' when --config is passed or a default config is set with 'svtk config set'."
     return help_text
+
+
+def _registered_table_role(argument_name: str | None, table_key: str | None, *, fallback: str) -> str:
+    """Return a user-facing table role from a registered CLI table binding."""
+
+    token = str(table_key or argument_name or "").strip()
+    for suffix in ("_df", "_table"):
+        if token.endswith(suffix):
+            token = token[: -len(suffix)]
+            break
+    token = token.strip("_")
+    if not token or token in {"data", "df", "input", "record", "records", "table"}:
+        return fallback
+    return token.replace("_", " ")
 
 
 def _add_common_figure_options(parser: argparse.ArgumentParser, *, exclude: set[str] | None = None) -> None:
@@ -2504,7 +2521,7 @@ def _parse_table_arguments(items: Iterable[str]) -> list[tuple[str, str]]:
     for item in items:
         key, separator, value = str(item).partition("=")
         if not separator or not key or not value:
-            raise ValueError(f"Expected --table argument_name=path, got: {item!r}")
+            raise ValueError(f"Expected advanced --table function_argument=path, got: {item!r}")
         parsed.append((key, value))
     return parsed
 

@@ -135,7 +135,7 @@ svtk map spatial block-holdout-error
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Input CSV/parquet table for function argument 'prediction_df' (primary figure input table). Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Primary figure input table (block holdout predictions); accepts CSV or parquet. Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
@@ -151,7 +151,7 @@ svtk map spatial block-holdout-error
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -346,7 +346,7 @@ svtk map spatial cluster
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Input CSV/parquet table for function argument 'assignments_df' (primary figure input table). Defaults to configured output table 'clusters' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Primary figure input table (clusters); accepts CSV or parquet. Defaults to configured output table 'clusters' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
@@ -362,7 +362,7 @@ svtk map spatial cluster
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -558,7 +558,7 @@ svtk map spatial corridor
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Input CSV/parquet table for function argument 'corridors_df' (primary figure input table). Defaults to configured output table 'corridors' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Primary figure input table (corridors); accepts CSV or parquet. Defaults to configured output table 'corridors' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
@@ -574,7 +574,7 @@ svtk map spatial corridor
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -706,15 +706,15 @@ svtk map spatial corridor
    * - ``--events``
      - No
      -
-     - Value: ``events``. Convenience CSV/parquet table path for function argument 'events_df'. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``events``. Convenience prepared events table path; accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--records``
      - No
      -
-     - Value: ``records``. Convenience CSV/parquet table path for function argument 'records_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``records``. Convenience event station records table path; accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--stations``
      - No
      -
-     - Value: ``stations``. Convenience CSV/parquet table path for function argument 'stations_df'. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``stations``. Convenience prepared stations table path; accepts CSV or parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--bounds``
      - No
      -
@@ -784,7 +784,7 @@ svtk map spatial event-residual
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'path_table' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Primary figure input table (path); accepts CSV or parquet. Defaults to configured output table 'path_table' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
@@ -800,7 +800,7 @@ svtk map spatial event-residual
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1027,7 +1027,7 @@ svtk map spatial metric-by-model
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
@@ -1043,7 +1043,7 @@ svtk map spatial metric-by-model
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1244,7 +1244,7 @@ svtk map spatial model-improvement
    * - ``--input``, ``--input-table``
      - Yes
      -
-     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table).
+     - Value: ``PATH``. Primary figure input table (figure input); accepts CSV or parquet.
    * - ``--output``, ``--figure-output``
      - No
      -
@@ -1260,7 +1260,7 @@ svtk map spatial model-improvement
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1455,7 +1455,7 @@ svtk map spatial pca-mode
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Input CSV/parquet table for function argument 'station_scores_df' (primary figure input table). Defaults to configured output table 'pca_station_scores' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Primary figure input table (pca station scores); accepts CSV or parquet. Defaults to configured output table 'pca_station_scores' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
@@ -1471,7 +1471,7 @@ svtk map spatial pca-mode
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1669,7 +1669,7 @@ svtk map spatial redcap-cluster
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Input CSV/parquet table for function argument 'redcap_df' (primary figure input table). Defaults to configured output table 'redcap_clusters' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Primary figure input table (redcap clusters); accepts CSV or parquet. Defaults to configured output table 'redcap_clusters' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
@@ -1685,7 +1685,7 @@ svtk map spatial redcap-cluster
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1883,7 +1883,7 @@ svtk map spatial residual-grid
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Input CSV/parquet table for function argument 'grid_df' (primary figure input table). Defaults to configured output table 'metric_field' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Primary figure input table (metric field); accepts CSV or parquet. Defaults to configured output table 'metric_field' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
@@ -1899,7 +1899,7 @@ svtk map spatial residual-grid
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2091,7 +2091,7 @@ svtk map spatial score
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
@@ -2107,7 +2107,7 @@ svtk map spatial score
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2305,7 +2305,7 @@ svtk map spatial station-bias
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Input CSV/parquet table for function argument 'station_df' (primary figure input table). Defaults to configured output table 'station_bias' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Primary figure input table (station bias); accepts CSV or parquet. Defaults to configured output table 'station_bias' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
@@ -2321,7 +2321,7 @@ svtk map spatial station-bias
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2519,7 +2519,7 @@ svtk map spatial station-metric
    * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
@@ -2535,7 +2535,7 @@ svtk map spatial station-metric
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -

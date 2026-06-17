@@ -741,8 +741,9 @@ def test_cli_registered_plot_help_names_config_defaults(capsys):
     assert excinfo.value.code == 0
     captured = capsys.readouterr()
     help_text = " ".join(captured.out.split())
-    assert "function argument 'df'" in help_text
-    assert "primary figure input table" in help_text
+    assert "Primary figure input table (metrics long); accepts CSV or parquet" in help_text
+    assert "function argument 'df'" not in help_text
+    assert "Advanced extra table mapping as function_argument=path" in help_text
     assert "--input-table" in help_text
     assert "--figure-output" in help_text
     assert "configured output table 'metrics_long'" in help_text
@@ -758,8 +759,9 @@ def test_cli_registered_map_help_names_config_defaults(capsys):
     assert excinfo.value.code == 0
     captured = capsys.readouterr()
     help_text = " ".join(captured.out.split())
-    assert "function argument 'station_df'" in help_text
-    assert "primary figure input table" in help_text
+    assert "Primary figure input table (station bias); accepts CSV or parquet" in help_text
+    assert "function argument 'station_df'" not in help_text
+    assert "Advanced extra table mapping as function_argument=path" in help_text
     assert "--input-table" in help_text
     assert "--figure-output" in help_text
     assert "configured output table 'station_bias'" in help_text
@@ -790,6 +792,8 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "``--max-traces``" in text
     assert "``--no-connect-points``" in text
     assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
+    assert "Prefer named table aliases such as ``--events`` or ``--stations``" in text
+    assert "advanced ``--table function_argument=path``" in text
 
 
 def test_configuration_map_override_example_uses_first_class_flags():
@@ -809,15 +813,17 @@ def test_generated_cli_reference_names_plot_defaults():
     plot_text = (root / "docs" / "reference" / "cli" / "plot.rst").read_text(encoding="utf-8")
     map_text = (root / "docs" / "reference" / "cli" / "map.rst").read_text(encoding="utf-8")
 
-    assert "Input CSV/parquet table for function argument 'df'" in plot_text
-    assert "primary figure input table" in plot_text
+    assert "Primary figure input table (metrics long); accepts CSV or parquet" in plot_text
+    assert "function argument 'df'" not in plot_text
     assert "``--input``, ``--input-table``" in plot_text
     assert "``--output``, ``--figure-output``" in plot_text
     assert "configured output table 'metrics_long' when --config is passed" in plot_text
     assert "configured figure output 'band_score_distribution' when --config is passed" in plot_text
     assert "default config is set with 'svtk config set'" in plot_text
-    assert "Input CSV/parquet table for function argument 'station_df'" in map_text
-    assert "primary figure input table" in map_text
+    assert "Advanced extra table mapping as function_argument=path" in plot_text
+    assert "Extra table as argument_name=path" not in plot_text
+    assert "Primary figure input table (station bias); accepts CSV or parquet" in map_text
+    assert "function argument 'station_df'" not in map_text
     assert "``--input``, ``--input-table``" in map_text
     assert "``--output``, ``--figure-output``" in map_text
     assert "configured output table 'station_bias' when --config is passed" in map_text
@@ -827,6 +833,22 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "``--compare-to``" in map_text
     assert "``--station-region``" in map_text
     assert "``--event-region``" in map_text
+
+
+def test_generated_cli_reference_uses_role_based_table_help():
+    """Generated plotting docs should present table roles, not raw Python argument names."""
+
+    root = Path(__file__).resolve().parents[1]
+    pages = [
+        root / "docs" / "reference" / "cli" / "plot.rst",
+        root / "docs" / "reference" / "cli" / "map.rst",
+        root / "docs" / "reference" / "cli" / "visualize.rst",
+    ]
+    for path in pages:
+        text = path.read_text(encoding="utf-8")
+        assert "function argument '" not in text, path.name
+        assert "Extra table as argument_name=path" not in text, path.name
+        assert "Advanced extra table mapping as function_argument=path" in text, path.name
 
 
 def test_generated_cli_reference_names_metrics_run_defaults():
