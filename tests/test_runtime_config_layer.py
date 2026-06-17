@@ -154,6 +154,9 @@ def test_public_dashboard_and_sidecar_helpers_import_without_streamlit():
 
     import sys
 
+    sys.modules.pop("spatial_vtk.visualize.dashboard.streamlit_metrics", None)
+    sys.modules.pop("spatial_vtk.visualize.dashboard.streamlit_qc", None)
+
     import spatial_vtk.visualize.dashboard as dashboard_helpers
     import spatial_vtk.visualize as visualize_helpers
 

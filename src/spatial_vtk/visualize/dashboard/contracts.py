@@ -270,7 +270,10 @@ def dashboard_output_status_frame(
             )
         )
     )
-    return _attach_qc_trace_readiness(_attach_dashboard_readiness(_attach_dashboard_contract(status)))
+    status = _attach_dashboard_contract(status)
+    status = _attach_dashboard_readiness(status)
+    status = _attach_metric_dataset_readiness(status)
+    return _attach_qc_trace_readiness(status)
 
 
 def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.DataFrame:
@@ -564,6 +567,41 @@ def _attach_dashboard_readiness(status: pd.DataFrame) -> pd.DataFrame:
         readiness = _inspect_dashboard_summary_table(Path(str(row["path"])), table_name)
         for key, value in readiness.items():
             out.at[index, key] = value
+    return out
+
+
+def _attach_metric_dataset_readiness(status: pd.DataFrame) -> pd.DataFrame:
+    """Attach metrics-dashboard dataset readiness to the dataset-root row."""
+
+    if status.empty or "name" not in status.columns:
+        return status
+    out = status.copy()
+    defaults = {
+        "ready": pd.NA,
+        "readiness": pd.NA,
+        "row_count": pd.NA,
+        "file_count": pd.NA,
+        "value_columns": pd.NA,
+        "message": pd.NA,
+        "dashboard_table": "",
+        "dashboard_tabs": "",
+        "required_columns": "",
+        "purpose": "",
+    }
+    for column, value in defaults.items():
+        if column not in out.columns:
+            out[column] = pd.Series([value] * len(out), index=out.index, dtype="object")
+    mask = out["name"].astype(str).eq("metrics_dashboard_root")
+    if not mask.any():
+        return out
+    out.loc[mask, "dashboard_table"] = "metrics_dashboard_dataset"
+    out.loc[mask, "dashboard_tabs"] = "Overview, Compare Models, Stations, Events, Paths"
+    out.loc[mask, "required_columns"] = "recognized residual/score/value column"
+    out.loc[mask, "purpose"] = "Partitioned or single-file long metric dataset used by all metrics dashboard tabs."
+    for index, row in out.loc[mask].iterrows():
+        readiness = dashboard_metric_dataset_readiness_frame(Path(str(row["path"]))).iloc[0].to_dict()
+        for key in ("ready", "readiness", "file_count", "row_count", "value_columns", "message"):
+            out.at[index, key] = readiness.get(key, pd.NA)
     return out
 
 

@@ -150,6 +150,7 @@ outputs:
     ready_summary.write_text("model,metric,band,n,med_log2_residual\nm1,PGA,1-2 sec,1,0.25\n", encoding="utf-8")
     summary_paths = dashboard_summary_table_paths(paths["dashboard_summary_root"])
     assert summary_paths["station_rollup_summary_path"] == existing
+    paths["metrics_dashboard_root"].mkdir(parents=True, exist_ok=True)
 
     status = dashboard_output_status_frame(cfg=cfg)
     assert "name" in status.columns
@@ -157,6 +158,14 @@ outputs:
     assert "qc_trace_summary_path" in set(status["name"])
     assert "path_hex_summary_path" in set(status["name"])
     assert "dashboard_tabs" in status.columns
+    metrics_dataset_status = status.loc[status["name"].eq("metrics_dashboard_root")].iloc[0]
+    assert metrics_dataset_status["dashboard_table"] == "metrics_dashboard_dataset"
+    assert metrics_dataset_status["dashboard_tabs"] == "Overview, Compare Models, Stations, Events, Paths"
+    assert metrics_dataset_status["ready"] is False
+    assert metrics_dataset_status["readiness"] == "missing_dataset_files"
+    assert metrics_dataset_status["file_count"] == 0
+    assert "recognized files" in metrics_dataset_status["message"]
+
     station_status = status.loc[status["name"].eq("station_rollup_summary_path")].iloc[0]
     assert station_status["dashboard_table"] == "station_rollup"
     assert station_status["dashboard_tabs"] == "Stations"
@@ -167,6 +176,22 @@ outputs:
     assert "finite dashboard value" in station_status["message"]
     assert station_status["map_ready"] is False
     assert "coordinate columns" in station_status["map_message"]
+
+    pd.DataFrame(
+        {
+            "model": ["m1"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "log2_residual": [0.25],
+        }
+    ).to_parquet(paths["metrics_dashboard_root"] / "metrics_long.parquet", index=False)
+    status_with_dataset = dashboard_output_status_frame(cfg=cfg)
+    ready_dataset_status = status_with_dataset.loc[status_with_dataset["name"].eq("metrics_dashboard_root")].iloc[0]
+    assert ready_dataset_status["ready"] is True
+    assert ready_dataset_status["readiness"] == "ready"
+    assert ready_dataset_status["file_count"] == 1
+    assert ready_dataset_status["row_count"] == 1
+    assert ready_dataset_status["value_columns"] == "log2_residual"
 
     model_status = status.loc[status["name"].eq("model_metric_band_summary_path")].iloc[0]
     assert model_status["ready"] is True
