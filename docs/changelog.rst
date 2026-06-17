@@ -71,6 +71,10 @@ Changelog
    aggregation method, grouping columns, coordinate columns, input row count,
    and finite row count; the JSON sidecar persists that contract alongside the
    sampled plotted/source rows.
+   Hardened the tutorial notebook executor's warning scan so clean diagnostic
+   text such as ``warnings=0`` does not fail fresh-checkout notebook runs,
+   while real warning signatures such as ``RuntimeWarning:`` and
+   ``WARNING:`` still fail unless explicitly allowed.
    Added a dashboard summary-table contract helper that maps each metrics
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file

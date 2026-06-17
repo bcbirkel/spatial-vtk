@@ -32,7 +32,13 @@ STANDARD_TUTORIAL_NOTEBOOKS = (
     "docs/examples/step_07_dashboards.ipynb",
 )
 
-WARNING_PATTERN = re.compile(r"warning|traceback", re.IGNORECASE)
+WARNING_PATTERN = re.compile(
+    r"traceback \(most recent call last\)|"
+    r"\b(?:runtime|user|future|deprecation|pendingdeprecation|syntax|resource|import|unicode|bytes|encoding|numpy|pandas|matplotlib)?warning\s*:|"
+    r"\bwarning\s+\[[^\]]+\]|"
+    r"\bWARNING\s*:",
+    re.IGNORECASE,
+)
 NOTEBOOK_RUNTIME_MODULES = {
     "nbformat": "nbformat",
     "nbclient": "nbclient",

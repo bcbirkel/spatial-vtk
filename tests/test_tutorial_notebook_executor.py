@@ -38,6 +38,24 @@ def test_tutorial_notebook_warning_scan_detects_warning_like_outputs() -> None:
     assert "RuntimeWarning" in warnings[0]["text"]
 
 
+def test_tutorial_notebook_warning_scan_ignores_plain_warning_words() -> None:
+    """Diagnostic text that names warnings should not fail clean notebooks."""
+
+    module = _load_executor_module()
+    notebook = SimpleNamespace(
+        cells=[
+            {"outputs": [{"output_type": "stream", "text": "warnings=0"}]},
+            {"outputs": [{"output_type": "display_data", "data": {"text/plain": "No warnings detected"}}]},
+            {"outputs": [{"output_type": "display_data", "data": {"text/plain": "Non-fatal workflow warnings"}}]},
+            {"outputs": [{"output_type": "stream", "text": "WARNING: real logger warning"}]},
+        ]
+    )
+
+    warnings = module.scan_notebook_outputs(notebook)
+
+    assert [item["cell"] for item in warnings] == [3]
+
+
 def test_tutorial_notebook_clean_guard_only_allows_tutorial_outputs(tmp_path: Path) -> None:
     """The clean helper should refuse paths outside outputs/tutorials."""
 
