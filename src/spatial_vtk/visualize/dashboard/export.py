@@ -236,6 +236,66 @@ def write_dashboard_summary_dataset(
     return write_dashboard_summaries(summaries, resolved_output_root, format=format)
 
 
+def write_configured_dashboard_datasets(
+    tables: pd.DataFrame | str | Path | Sequence[pd.DataFrame | str | Path] | None = None,
+    *,
+    cfg: Any | None = None,
+    residual_mode: str = "logratio",
+    partitioned: bool = False,
+    hex_dist: float = 10.0,
+    hex_az: float = 10.0,
+    format: str = "parquet",
+) -> dict[str, Path]:
+    """Write standard dashboard metric and summary datasets from config.
+
+    Parameters
+    ----------
+    tables
+        Metric rows to export. When omitted, the configured ``metrics_long``
+        output table is used.
+    cfg
+        Optional Spatial-VTK config used to resolve ``metrics_long``,
+        ``metrics_dashboard``, and ``dashboard_summaries``. When omitted, the
+        active config is used.
+    residual_mode
+        Residual mode used when converting wide metric tables.
+    partitioned
+        Whether to partition the dashboard metric dataset by model, passband,
+        and metric.
+    hex_dist, hex_az
+        Dashboard path-summary bin sizes.
+    format
+        Dashboard summary table format, ``"parquet"`` or ``"csv"``.
+
+    Returns
+    -------
+    dict[str, pathlib.Path]
+        Written dashboard roots and summary table paths.
+    """
+
+    metric_tables = tables if tables is not None else resolve_output_path("metrics_long", kind="table", cfg=cfg)
+    dashboard_root = resolve_output_path("metrics_dashboard", kind="dashboard", cfg=cfg, create_parent=True)
+    summary_root = resolve_output_path("dashboard_summaries", kind="dashboard", cfg=cfg, create_parent=True)
+    metric_root = write_dashboard_metric_dataset(
+        metric_tables,
+        dashboard_root,
+        residual_mode=residual_mode,
+        partitioned=partitioned,
+    )
+    summary_paths = write_dashboard_summary_dataset(
+        metric_root,
+        summary_root,
+        hex_dist=hex_dist,
+        hex_az=hex_az,
+        format=format,
+    )
+    return {
+        "metrics_dashboard_root": metric_root,
+        "dashboard_summary_root": Path(summary_root),
+        **{f"dashboard_summary_{name}": path for name, path in summary_paths.items()},
+    }
+
+
 def add_dashboard_path_geometry(df: pd.DataFrame) -> pd.DataFrame:
     """Add distance, azimuth, and backazimuth columns when coordinates exist.
 
@@ -367,4 +427,5 @@ __all__ = [
     "safe_path_token",
     "write_dashboard_metric_dataset",
     "write_dashboard_summary_dataset",
+    "write_configured_dashboard_datasets",
 ]

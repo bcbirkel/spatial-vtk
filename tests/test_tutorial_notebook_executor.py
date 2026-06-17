@@ -473,6 +473,21 @@ def test_large_run_step05_uses_cli_workflow_commands() -> None:
     assert "run_boundary_corridor_workflow" not in source
 
 
+def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
+    """Dashboard tutorial should keep dataset path plumbing inside package helpers."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "step_07_dashboards.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "write_configured_dashboard_datasets(" in source
+    assert "write_dashboard_metric_dataset(" not in source
+    assert "write_dashboard_summary_dataset(" not in source
+    assert '"--metrics", str(metrics_path)' not in source
+    assert '"--output-dir", str(Path(metrics_path).parent)' not in source
+
+
 def test_large_run_notebooks_display_output_readiness_tables() -> None:
     """Large-run driver cells should show named readiness status tables."""
 

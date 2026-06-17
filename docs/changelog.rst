@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Added ``write_configured_dashboard_datasets()`` as a config-backed helper
+   for writing the metrics dashboard dataset and dashboard summary tables in
+   one call. The Step 7 dashboard notebook now uses this helper and the
+   config-backed ``svtk metrics outputs`` command form instead of spelling out
+   dashboard dataset roots in the notebook.
    Made ``svtk metrics run`` config-backed for small local metric runs. The
    command now defaults ``--tasks`` to the configured ``metric_tasks`` table and
    ``--output`` to ``metric_rows`` when a config is passed or set with

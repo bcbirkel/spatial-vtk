@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
+from spatial_vtk.config import SpatialVTKConfig
 from spatial_vtk.visualize.dashboard import (
     build_dashboard_summaries,
     dashboard_summary_input_columns,
@@ -10,6 +11,7 @@ from spatial_vtk.visualize.dashboard import (
     load_dashboard_metric_dataset,
     load_dashboard_summary_tables,
     validate_dashboard_tables,
+    write_configured_dashboard_datasets,
     write_dashboard_metric_dataset,
     write_dashboard_summary_dataset,
 )
@@ -53,6 +55,52 @@ def test_dashboard_metric_dataset_export_and_summary_tables(tmp_path) -> None:
     written = write_dashboard_summary_dataset(root, tmp_path / "dashboard_summaries", format="csv")
     assert {"model_metric_band", "station_rollup", "event_rollup", "path_hex"} <= set(written)
     assert written["model_metric_band"].exists()
+
+
+def test_write_configured_dashboard_datasets_uses_registered_paths(tmp_path) -> None:
+    """Config-backed dashboard export should not require notebook path plumbing."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    metrics_path = tmp_path / "outputs" / "tables" / "metrics_long.parquet"
+    metrics_path.parent.mkdir(parents=True)
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    pd.DataFrame(
+        {
+            "model": ["m1", "m1"],
+            "metric": ["PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "event_id": ["ev1", "ev1"],
+            "station": ["STA1", "STA2"],
+            "component": ["Z", "Z"],
+            "event_lat": [34.0, 34.0],
+            "event_lon": [-118.0, -118.0],
+            "sta_lat": [34.1, 34.2],
+            "sta_lon": [-118.1, -118.2],
+            "log2_residual": [0.25, -0.5],
+        }
+    ).to_parquet(metrics_path, index=False)
+
+    written = write_configured_dashboard_datasets(
+        cfg=SpatialVTKConfig.from_file(config_path),
+        partitioned=True,
+        format="parquet",
+    )
+
+    assert written["metrics_dashboard_root"] == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    assert written["dashboard_summary_root"] == tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
+    assert (written["metrics_dashboard_root"] / "model=m1" / "band=1-2_sec" / "metric=PGA" / "part.parquet").exists()
+    assert written["dashboard_summary_model_metric_band"].exists()
+    summaries = load_dashboard_summary_tables(written["dashboard_summary_root"])
+    assert summaries["model_metric_band"]["n"].sum() == 2
 
 
 def test_dashboard_summaries_report_unique_event_and_station_counts() -> None:

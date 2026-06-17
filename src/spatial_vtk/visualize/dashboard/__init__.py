@@ -9,6 +9,7 @@ from spatial_vtk.visualize.dashboard.export import (
     haversine_km,
     load_dashboard_metric_dataset,
     safe_path_token,
+    write_configured_dashboard_datasets,
     write_dashboard_metric_dataset,
     write_dashboard_summary_dataset,
 )
@@ -128,6 +129,7 @@ __all__ = [
     "validate_trace_qc_dashboard_table",
     "value_column_display_name",
     "write_dashboard_filtered_export",
+    "write_configured_dashboard_datasets",
     "write_dashboard_metric_dataset",
     "write_dashboard_summaries",
     "write_dashboard_summary_dataset",
