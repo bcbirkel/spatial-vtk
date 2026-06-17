@@ -71,19 +71,19 @@ Build configured boundary corridor tables from region GeoJSON and prepared metad
      - No
      -
      - show this help message and exit
-   * - ``--geojson``
+   * - ``--geojson``, ``--region-geojson``
      - No
      -
      - Value: ``geojson``. Region GeoJSON path. Defaults to paths.region_geojson.
-   * - ``--stations``
+   * - ``--stations``, ``--station-table``
      - No
      -
-     - Value: ``stations``. Prepared station metadata table. Defaults to prepared_stations.
-   * - ``--events``
+     - Value: ``stations``. Prepared station metadata table. Defaults to configured output table 'prepared_stations'.
+   * - ``--events``, ``--event-table``
      - No
      -
-     - Value: ``events``. Prepared event metadata table. Defaults to prepared_events.
-   * - ``--records``
+     - Value: ``events``. Prepared event metadata table. Defaults to configured output table 'prepared_events'.
+   * - ``--records``, ``--records-table``
      - No
      -
      - Value: ``records``. Event-station records used by max-records anchor strategies. Defaults to comparison_eligible_records when needed.
@@ -95,10 +95,10 @@ Build configured boundary corridor tables from region GeoJSON and prepared metad
      - No
      -
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
-   * - ``--output-key``
+   * - ``--output-key``, ``--output-table-key``
      - No
      - Default: ``corridors``
-     - Value: ``output_key``. Registered output table key.
+     - Value: ``output_key``. Registered output table key, not a filesystem path.
    * - ``--verbose``
      - No
      - Flag
@@ -222,11 +222,11 @@ Build configured GeoJSON region summary tables from metric outputs.
      - No
      -
      - show this help message and exit
-   * - ``--metrics``
+   * - ``--metrics``, ``--metrics-table``
      - No
      -
      - Value: ``metrics``. Metric rows table. Defaults to configured output table 'metrics_long'.
-   * - ``--geojson``
+   * - ``--geojson``, ``--region-geojson``
      - No
      -
      - Value: ``geojson``. Region GeoJSON path. Defaults to paths.region_geojson.
@@ -246,10 +246,10 @@ Build configured GeoJSON region summary tables from metric outputs.
      - No
      - Default: ``1000000``
      - Value: ``chunksize``. Rows per metric-table chunk.
-   * - ``--output-key``
+   * - ``--output-key``, ``--output-table-key``
      - No
      - Default: ``geojson_region_summaries``
-     - Value: ``output_key``. Registered output table key.
+     - Value: ``output_key``. Registered output table key, not a filesystem path.
    * - ``--verbose``
      - No
      - Flag

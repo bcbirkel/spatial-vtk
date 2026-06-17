@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Clarified spatial GeoJSON/corridor CLI path roles. ``svtk spatial
+   geojson-summaries`` and ``svtk spatial corridors`` now accept aliases such
+   as ``--metrics-table``, ``--region-geojson``, ``--records-table``, and
+   ``--output-table-key`` so table keys are not confused with filesystem
+   paths.
    Clarified QC output path flags. ``svtk qc build`` and ``svtk qc slurm``
    now accept ``--qc-trace-summary-output``, ``--qc-inventory-output``, and
    ``--qc-overlap-inventory-output`` aliases, and generated QC Slurm scripts

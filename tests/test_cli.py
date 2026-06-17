@@ -233,6 +233,10 @@ def test_cli_spatial_geojson_and_corridor_help(capsys):
     assert excinfo.value.code == 0
     geojson_help = capsys.readouterr().out
     assert "Metric rows table" in geojson_help
+    assert "--metrics-table" in geojson_help
+    assert "--region-geojson" in geojson_help
+    assert "--output-table-key" in geojson_help
+    assert "not a filesystem path" in geojson_help
     assert "--chunksize" in geojson_help
     assert "--selector" in geojson_help
 
@@ -241,8 +245,13 @@ def test_cli_spatial_geojson_and_corridor_help(capsys):
     assert excinfo.value.code == 0
     corridor_help = capsys.readouterr().out
     assert "Region GeoJSON path" in corridor_help
+    assert "--region-geojson" in corridor_help
     assert "--records" in corridor_help
+    assert "--records-table" in corridor_help
     assert "--stations" in corridor_help
+    assert "--station-table" in corridor_help
+    assert "--event-table" in corridor_help
+    assert "--output-table-key" in corridor_help
 
 
 def test_cli_spatial_geojson_and_corridors_dispatch_configured_workflows(tmp_path, monkeypatch, capsys):
@@ -297,14 +306,16 @@ paths:
                 "geojson-summaries",
                 "--config",
                 str(config),
-                "--metrics",
+                "--metrics-table",
                 "metrics.parquet",
-                "--geojson",
+                "--region-geojson",
                 "regions.geojson",
                 "--selector",
                 "basin",
                 "--chunksize",
                 "123",
+                "--output-table-key",
+                "custom_geojson_summary",
                 "--verbose",
             ]
         )
@@ -317,14 +328,16 @@ paths:
                 "corridors",
                 "--config",
                 str(config),
-                "--geojson",
+                "--region-geojson",
                 "regions.geojson",
-                "--stations",
+                "--station-table",
                 "stations.csv",
-                "--events",
+                "--event-table",
                 "events.csv",
-                "--records",
+                "--records-table",
                 "records.csv",
+                "--output-table-key",
+                "custom_corridors",
                 "--verbose",
             ]
         )
@@ -333,14 +346,14 @@ paths:
 
     assert seen["geojson"]["metrics_table"] == "metrics.parquet"
     assert seen["geojson"]["geojson_path"] == "regions.geojson"
-    assert seen["geojson"]["output_key"] == "geojson_region_summaries"
+    assert seen["geojson"]["output_key"] == "custom_geojson_summary"
     assert seen["geojson"]["selector"] == "basin"
     assert seen["geojson"]["chunksize"] == 123
     assert seen["geojson"]["verbose"] is True
     assert seen["corridors"]["station_table"] == "stations.csv"
     assert seen["corridors"]["event_table"] == "events.csv"
     assert seen["corridors"]["records_table"] == "records.csv"
-    assert seen["corridors"]["output_key"] == "corridors"
+    assert seen["corridors"]["output_key"] == "custom_corridors"
     assert seen["corridors"]["verbose"] is True
     captured = capsys.readouterr()
     assert "GeoJSON region summaries:" in captured.out
@@ -760,6 +773,30 @@ def test_generated_cli_reference_names_qc_output_aliases():
         assert "qc_trace_summary" in section
         assert "qc_inventory" in section
         assert "qc_inventory_overlap" in section
+
+
+def test_generated_cli_reference_names_spatial_geojson_aliases():
+    """Generated spatial CLI docs should expose table/path role aliases."""
+
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "docs" / "reference" / "cli" / "spatial.rst").read_text(encoding="utf-8")
+    geojson_section = text.split(".. _cli-svtk-spatial-geojson-summaries:", maxsplit=1)[1].split(
+        ".. _cli-svtk-spatial-status:", maxsplit=1
+    )[0]
+    corridor_section = text.split(".. _cli-svtk-spatial-corridors:", maxsplit=1)[1].split(
+        ".. _cli-svtk-spatial-derived-outputs:", maxsplit=1
+    )[0]
+    assert "``--metrics``, ``--metrics-table``" in geojson_section
+    assert "``--geojson``, ``--region-geojson``" in geojson_section
+    assert "``--output-key``, ``--output-table-key``" in geojson_section
+    assert "Registered output table key, not a filesystem path" in geojson_section
+    assert "``--geojson``, ``--region-geojson``" in corridor_section
+    assert "``--stations``, ``--station-table``" in corridor_section
+    assert "``--events``, ``--event-table``" in corridor_section
+    assert "``--records``, ``--records-table``" in corridor_section
+    assert "``--output-key``, ``--output-table-key``" in corridor_section
+    assert "prepared_stations" in corridor_section
+    assert "prepared_events" in corridor_section
 
 
 def test_cli_workflow_uses_curated_commands_for_standard_steps():

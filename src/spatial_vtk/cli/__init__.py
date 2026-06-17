@@ -905,15 +905,29 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     )
     geojson_summaries.add_argument(
         "--metrics",
+        "--metrics-table",
+        dest="metrics",
         default=None,
         help="Metric rows table. Defaults to configured output table 'metrics_long'.",
     )
-    geojson_summaries.add_argument("--geojson", default=None, help="Region GeoJSON path. Defaults to paths.region_geojson.")
+    geojson_summaries.add_argument(
+        "--geojson",
+        "--region-geojson",
+        dest="geojson",
+        default=None,
+        help="Region GeoJSON path. Defaults to paths.region_geojson.",
+    )
     geojson_summaries.add_argument("--config", default=None, help="Spatial-VTK config file.")
     geojson_summaries.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     geojson_summaries.add_argument("--selector", default="all", help="GeoJSON polygon selector. Defaults to all polygons.")
     geojson_summaries.add_argument("--chunksize", type=int, default=1_000_000, help="Rows per metric-table chunk.")
-    geojson_summaries.add_argument("--output-key", default="geojson_region_summaries", help="Registered output table key.")
+    geojson_summaries.add_argument(
+        "--output-key",
+        "--output-table-key",
+        dest="output_key",
+        default="geojson_region_summaries",
+        help="Registered output table key, not a filesystem path.",
+    )
     geojson_summaries.add_argument("--verbose", action="store_true", help="Print elapsed-time progress for Slurm logs.")
     geojson_summaries.set_defaults(handler=_cmd_spatial_geojson_summaries)
 
@@ -922,17 +936,43 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         help="Build configured boundary corridor tables.",
         description="Build configured boundary corridor tables from region GeoJSON and prepared metadata.",
     )
-    corridors.add_argument("--geojson", default=None, help="Region GeoJSON path. Defaults to paths.region_geojson.")
-    corridors.add_argument("--stations", default=None, help="Prepared station metadata table. Defaults to prepared_stations.")
-    corridors.add_argument("--events", default=None, help="Prepared event metadata table. Defaults to prepared_events.")
+    corridors.add_argument(
+        "--geojson",
+        "--region-geojson",
+        dest="geojson",
+        default=None,
+        help="Region GeoJSON path. Defaults to paths.region_geojson.",
+    )
+    corridors.add_argument(
+        "--stations",
+        "--station-table",
+        dest="stations",
+        default=None,
+        help="Prepared station metadata table. Defaults to configured output table 'prepared_stations'.",
+    )
+    corridors.add_argument(
+        "--events",
+        "--event-table",
+        dest="events",
+        default=None,
+        help="Prepared event metadata table. Defaults to configured output table 'prepared_events'.",
+    )
     corridors.add_argument(
         "--records",
+        "--records-table",
+        dest="records",
         default=None,
         help="Event-station records used by max-records anchor strategies. Defaults to comparison_eligible_records when needed.",
     )
     corridors.add_argument("--config", default=None, help="Spatial-VTK config file.")
     corridors.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
-    corridors.add_argument("--output-key", default="corridors", help="Registered output table key.")
+    corridors.add_argument(
+        "--output-key",
+        "--output-table-key",
+        dest="output_key",
+        default="corridors",
+        help="Registered output table key, not a filesystem path.",
+    )
     corridors.add_argument("--verbose", action="store_true", help="Print elapsed-time progress for Slurm logs.")
     corridors.set_defaults(handler=_cmd_spatial_corridors)
 
