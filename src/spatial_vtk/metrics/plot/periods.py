@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from spatial_vtk.config.labels import metric_display_name, value_column_display_name
-from spatial_vtk.visualize.figure_context import apply_figure_context, apply_robust_axis_limits, value_color_settings
+from spatial_vtk.visualize.figure_context import apply_figure_context, apply_robust_axis_limits, context_value_label, value_color_settings
 from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure_spatial_selection
 
@@ -61,6 +61,7 @@ def plot_psa_period_curve(
 
     plot_df = _select_metric_rows(df, metric=metric, metric_col=metric_col)
     plot_df, subset_label = apply_figure_spatial_selection(plot_df, spatial_selection, **spatial_kwargs)
+    plot_df = _select_broadband_spectral_rows(plot_df, period_col=period_col, metric=metric, metric_col=metric_col)
     if period_col not in plot_df.columns or value_col not in plot_df.columns:
         raise KeyError(f"Dataframe must include {period_col!r} and {value_col!r}.")
     fig, ax = plt.subplots(figsize=(7.4, 5.0), dpi=180)
@@ -75,7 +76,7 @@ def plot_psa_period_curve(
     ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
     apply_robust_axis_limits(ax, pd.to_numeric(plot_df[value_col], errors="coerce"), value_col=value_col, df=plot_df, robust_percentile=robust_axis_percentile)
     ax.set_xlabel("Period (s)")
-    ax.set_ylabel(value_column_display_name(value_col))
+    ax.set_ylabel(context_value_label(value_col, plot_df))
     apply_figure_context(ax, plot_df, value_col=value_col, title=title, max_values=3, include_period=False, include_metric=False, include_value=False, extra=[subset_label] if subset_label else None)
     ax.grid(True, which="both", alpha=0.25)
     if group_col and group_col in plot_df.columns:
@@ -123,6 +124,7 @@ def plot_period_score_distribution(
     """
 
     plot_df = _select_metric_rows(df, metric=metric, metric_col=metric_col)
+    plot_df = _select_broadband_spectral_rows(plot_df, period_col=period_col, metric=metric, metric_col=metric_col)
     missing = [column for column in (period_col, score_col) if column not in plot_df.columns]
     if missing:
         raise KeyError(f"Missing required columns: {missing}")
@@ -172,7 +174,7 @@ def plot_period_score_distribution(
         if selected_color_col:
             ax.legend(title=_period_color_label(selected_color_col, None), frameon=True, fontsize=8, loc="upper left", bbox_to_anchor=(1.02, 1.0), borderaxespad=0.0)
             fig.subplots_adjust(right=0.76, bottom=0.18)
-    ax.set_ylabel(value_column_display_name(score_col))
+    ax.set_ylabel(context_value_label(score_col, plot_df))
     ax.set_xlabel("PSA oscillator period")
     apply_robust_axis_limits(ax, pd.to_numeric(work[score_col], errors="coerce"), value_col=score_col, df=work, robust_percentile=robust_axis_percentile)
     apply_figure_context(ax, plot_df, value_col=score_col, title=title, max_values=3, include_period=False, include_metric=False, include_value=False)
@@ -218,6 +220,57 @@ def _select_metric_rows(df: pd.DataFrame, *, metric: str | None, metric_col: str
     return selected
 
 
+def _select_broadband_spectral_rows(
+    df: pd.DataFrame,
+    *,
+    period_col: str,
+    metric: str | None,
+    metric_col: str,
+) -> pd.DataFrame:
+    """Prefer broadband spectral rows and reject passband-duplicated periods."""
+
+    if metric is None or period_col not in df.columns:
+        return df
+    band_col = next((column for column in ("passband", "band") if column in df.columns), None)
+    if band_col is None:
+        return df
+    labels = df[band_col].fillna("").astype(str).str.strip().str.lower()
+    broadband = labels.isin(["", "all", "broadband", "none", "nan"])
+    if broadband.any():
+        return df.loc[broadband].copy()
+    key_cols = [
+        column
+        for column in (
+            "event_id",
+            "event",
+            "event_title",
+            "station",
+            "station_id",
+            "station_code",
+            "network",
+            "model",
+            "component",
+            metric_col,
+            period_col,
+        )
+        if column in df.columns
+    ]
+    if not key_cols:
+        return df
+    work = df[key_cols].copy()
+    work["_spectral_passband"] = labels.to_numpy()
+    duplicate_passbands = work.groupby(key_cols, dropna=False)["_spectral_passband"].nunique(dropna=False)
+    offenders = duplicate_passbands[duplicate_passbands > 1]
+    if offenders.empty:
+        return df
+    raise ValueError(
+        "Spectral period rows include the same event/station/model/component/period "
+        "record repeated across passbands. PSA/FAS period figures require broadband "
+        "spectral rows calculated once per oscillator period; rebuild the metric "
+        "manifest/metrics with broadband spectral metrics or filter to broadband rows."
+    )
+
+
 def _period_tick_label(period: float) -> str:
     """Return a compact PSA period/frequency tick label."""
 
@@ -256,6 +309,7 @@ def plot_period_spectra(
     return plot_psa_period_curve(
         spectra_df,
         output_path,
+        metric=None,
         period_col=period_col,
         value_col=amplitude_col,
         group_col=group_col,

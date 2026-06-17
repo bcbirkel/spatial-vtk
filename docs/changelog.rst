@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-17
+   Hardened direct spectral metric plots. ``plot_period_spectra`` no longer
+   filters generic spectra tables as PSA, direct PSA/FAS period plots now
+   prefer broadband rows and reject passband-duplicated oscillator-period rows
+   with a clear error, and direct metric trend/distribution plots label
+   event-centered log2 residuals consistently when event-centering metadata is
+   present.
    Cleaned up public docs and API entry points. The README workflow image now
    points at the committed public asset, the configuration example loads
    ``record_coverage`` before plotting it, QC Slurm settings are exposed from

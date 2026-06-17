@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from spatial_vtk.config.labels import display_label, metric_display_name, model_display_name, value_column_display_name
-from spatial_vtk.visualize.figure_context import apply_figure_context, apply_robust_axis_limits, figure_context_text
+from spatial_vtk.visualize.figure_context import apply_figure_context, apply_robust_axis_limits, context_value_label, figure_context_text
 from spatial_vtk.visualize.fit import FitMethod, draw_scatter_fit
 from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 from spatial_vtk.visualize.selection import FigureSpatialSelection, apply_figure_spatial_selection
@@ -82,7 +82,7 @@ def plot_metric_trend(
         ax.text(
             0.5,
             0.5,
-            f"No finite {display_label(x_col)} / {value_column_display_name(y_col)} values to plot",
+            f"No finite {display_label(x_col)} / {context_value_label(y_col, plot_df)} values to plot",
             ha="center",
             va="center",
             transform=ax.transAxes,
@@ -109,12 +109,13 @@ def plot_metric_trend(
     if metric_col in plot_df.columns and plot_df[metric_col].nunique(dropna=True) == 1:
         metric_part = f" ({metric_display_name(plot_df[metric_col].dropna().iloc[0])})"
     ax.set_xlabel(display_label(x_col))
-    ax.set_ylabel(value_column_display_name(y_col))
+    y_label = context_value_label(y_col, plot_df)
+    ax.set_ylabel(y_label)
     apply_figure_context(
         ax,
         plot_df,
         value_col=y_col,
-        title=title or f"{value_column_display_name(y_col)} vs {display_label(x_col)}{metric_part}",
+        title=title or f"{y_label} vs {display_label(x_col)}{metric_part}",
         max_values=3,
         include_value=False,
         include_metric=not (group_col == metric_col),

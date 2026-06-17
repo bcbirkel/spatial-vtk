@@ -9,6 +9,7 @@ from pathlib import Path
 import matplotlib
 import numpy as np
 import pandas as pd
+import pytest
 
 matplotlib.use("Agg", force=True)
 
@@ -591,6 +592,116 @@ def test_model_metric_heatmap_accepts_raw_metrics_long_value_columns(tmp_path: P
     output = plot_model_metric_heatmap(metrics, tmp_path / "model_heatmap_from_long.png")
 
     _assert_png(output)
+
+
+def test_period_spectra_accepts_non_psa_metric_column(tmp_path: Path) -> None:
+    """Generic period spectra should not be filtered as PSA rows."""
+
+    spectra = pd.DataFrame(
+        {
+            "metric": ["FAS", "FAS", "FAS", "FAS"],
+            "period_s": [1.0, 2.0, 1.0, 2.0],
+            "amplitude": [0.4, 0.8, 0.3, 0.6],
+            "series": ["observed", "observed", "synthetic", "synthetic"],
+        }
+    )
+
+    output = plot_period_spectra(spectra, tmp_path / "fas_spectra.png")
+
+    _assert_png(output)
+
+
+def test_direct_psa_period_plots_reject_passband_duplicated_rows(tmp_path: Path) -> None:
+    """Direct PSA period plots should not silently count passbanded PSA duplicates."""
+
+    duplicated = pd.DataFrame(
+        {
+            "event_id": ["E1", "E1"],
+            "station": ["S1", "S1"],
+            "model": ["m1", "m1"],
+            "component": ["R", "R"],
+            "metric": ["PSA", "PSA"],
+            "band": ["1-2 sec", "2-3 sec"],
+            "period_s": [1.0, 1.0],
+            "log2_residual": [0.2, 0.4],
+        }
+    )
+
+    message = "repeated across passbands"
+    with pytest.raises(ValueError, match=message):
+        plot_psa_period_curve(duplicated, tmp_path / "psa_curve.png", value_col="log2_residual")
+    with pytest.raises(ValueError, match=message):
+        plot_period_score_distribution(duplicated, tmp_path / "psa_distribution.png", score_col="log2_residual")
+
+
+def test_direct_psa_period_plots_prefer_broadband_rows(tmp_path: Path) -> None:
+    """Direct PSA period plots should use broadband rows when passband rows are present."""
+
+    rows = pd.DataFrame(
+        {
+            "event_id": ["E1", "E1", "E1"],
+            "station": ["S1", "S1", "S1"],
+            "model": ["m1", "m1", "m1"],
+            "component": ["R", "R", "R"],
+            "metric": ["PSA", "PSA", "PSA"],
+            "band": ["", "1-2 sec", "2-3 sec"],
+            "period_s": [1.0, 1.0, 1.0],
+            "log2_residual": [0.2, 0.4, -0.2],
+        }
+    )
+    sidecar_dir = tmp_path / "sidecars"
+
+    output = plot_psa_period_curve(
+        rows,
+        tmp_path / "psa_curve.png",
+        value_col="log2_residual",
+        write_sidecar=True,
+        sidecar_dir=sidecar_dir,
+    )
+
+    _assert_png(output)
+    metadata = json.loads((sidecar_dir / "psa_curve.json").read_text(encoding="utf-8"))
+    source_rows = pd.read_csv(sidecar_dir / "psa_curve.source.csv")
+    assert metadata["source_row_count"] == 1
+    assert source_rows["band"].fillna("").tolist() == [""]
+    assert source_rows["log2_residual"].tolist() == [0.2]
+
+
+def test_direct_metric_plots_label_event_centered_residuals(tmp_path: Path) -> None:
+    """Direct metric plots should identify event-mean-centered log2 residuals."""
+
+    metrics = _metric_rows().assign(event_mean=[0.1, 0.1, 0.1, 0.1])
+
+    trend = plot_metric_trend(
+        metrics,
+        tmp_path / "trend.png",
+        x_col="distance_km",
+        y_col="log2_residual",
+        group_col=None,
+    )
+    band = plot_band_score_distribution(
+        metrics,
+        tmp_path / "band.png",
+        score_col="log2_residual",
+        color_col=None,
+    )
+    period = plot_psa_period_curve(
+        metrics.assign(band=""),
+        tmp_path / "period.png",
+        value_col="log2_residual",
+        group_col=None,
+    )
+    period_distribution = plot_period_score_distribution(
+        metrics.assign(band=""),
+        tmp_path / "period_distribution.png",
+        score_col="log2_residual",
+        color_col=None,
+    )
+
+    assert trend.axes[0].get_ylabel() == "Event-centered log2(observed / synthetic)"
+    assert band.axes[0].get_ylabel() == "Event-centered log2(observed / synthetic)"
+    assert period.axes[0].get_ylabel() == "Event-centered log2(observed / synthetic)"
+    assert period_distribution.axes[0].get_ylabel() == "Event-centered log2(observed / synthetic)"
 
 
 def test_spatial_metric_maps_write_optional_row_sidecars(tmp_path: Path) -> None:
