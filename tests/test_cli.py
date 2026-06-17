@@ -1143,6 +1143,7 @@ run_scenarios:
                 str(obs),
                 "--synthetic-inventory",
                 str(syn),
+                "--no-qc",
                 "--output",
                 str(out),
             ]
@@ -1193,6 +1194,7 @@ metrics:
                 str(obs),
                 "--synthetic-inventory",
                 str(syn),
+                "--no-qc",
                 "--manifest",
                 "--batch-count",
                 "2",
@@ -1208,6 +1210,63 @@ metrics:
     manifest = json.loads(out.read_text(encoding="utf-8"))
     assert len(manifest["tasks"]) == 3
     assert [len(batch["task_indices"]) for batch in manifest["batches"]] == [2, 1]
+
+
+def test_cli_metrics_plan_uses_configured_workflow_defaults(tmp_path):
+    config = tmp_path / "spatial-vtk.yaml"
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+metrics:
+  metrics: [PGA]
+  components: [Z]
+  passbands: [[1, 2]]
+  models: [m1]
+""",
+        encoding="utf-8",
+    )
+    inventory = {
+        "event_id": ["ev1", "ev2"],
+        "station": ["STA1", "STA2"],
+        "component": ["Z", "Z"],
+        "waveform_path": ["obs1.npz", "obs2.npz"],
+        "dt": [0.01, 0.01],
+    }
+    pd.DataFrame(inventory).to_parquet(tables / "observed_metric_inventory.parquet", index=False)
+    pd.DataFrame({**inventory, "model": ["m1", "m1"], "waveform_path": ["syn1.npz", "syn2.npz"]}).to_parquet(
+        tables / "synthetic_metric_inventory.parquet",
+        index=False,
+    )
+    pd.DataFrame(
+        [
+            {
+                "source": source,
+                "event_id": "ev1",
+                "station": "STA1",
+                "component": "Z",
+                "passband": "1-2 sec",
+                "metric_group": "amplitude",
+                "metric": "PGA",
+                "period_s": np.nan,
+                "qc_status": "pass",
+            }
+            for source in ("observed", "synthetic")
+        ]
+    ).to_parquet(tables / "qc_inventory_overlap.parquet", index=False)
+
+    assert main(["metrics", "plan", "--config", str(config), "--manifest", "--batch-count", "1"]) == 0
+
+    manifest_path = tables / "metric_manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert len(manifest["tasks"]) == 1
+    assert manifest["qc_table"].endswith("qc_inventory_overlap.parquet")
+    assert manifest["batches"][0]["output_path"].endswith("outputs/metric_batches/metrics_batch_0000.csv")
 
 
 def test_cli_metrics_inventories_builds_from_trace_metadata(tmp_path):
@@ -1260,6 +1319,42 @@ metrics:
     assert observed_rows.loc[0, "waveform_path"] == "processed_obs.npz"
     assert synthetic_rows.loc[0, "waveform_path"] == "synthetic_source.mseed"
     assert synthetic_rows.loc[0, "model"] == "model_a"
+
+
+def test_cli_metrics_inventories_use_configured_defaults(tmp_path):
+    config = tmp_path / "spatial-vtk.yaml"
+    trace_dir = tmp_path / "outputs" / "preprocessed_waveforms" / "metadata"
+    trace_dir.mkdir(parents=True)
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+metrics:
+  models: [model_a]
+""",
+        encoding="utf-8",
+    )
+    pd.DataFrame(
+        {
+            "source_type": ["observed", "synthetic"],
+            "event_id": ["e1", "e1"],
+            "station": ["abc", "abc"],
+            "component": ["z", "z"],
+            "input_file": ["raw_obs.mseed", "synthetic_source.mseed"],
+            "output_file": ["processed_obs.npz", "processed_syn.npz"],
+            "delta": [0.01, 0.02],
+        }
+    ).to_csv(trace_dir / "trace_metadata_preprocessed.csv", index=False)
+
+    assert main(["metrics", "inventories", "--config", str(config), "--overwrite"]) == 0
+
+    observed = pd.read_parquet(tmp_path / "outputs" / "tables" / "observed_metric_inventory.parquet")
+    synthetic = pd.read_parquet(tmp_path / "outputs" / "tables" / "synthetic_metric_inventory.parquet")
+    assert observed.loc[0, "waveform_path"] == "processed_obs.npz"
+    assert synthetic.loc[0, "waveform_path"] == "synthetic_source.mseed"
 
 
 def test_cli_metrics_cache_waveforms_writes_cached_manifest(tmp_path):
@@ -1324,6 +1419,64 @@ def test_cli_metrics_cache_waveforms_writes_cached_manifest(tmp_path):
     assert len(list(cache_root.rglob("*.npz"))) == 2
 
 
+def test_cli_metrics_cache_and_merge_use_configured_defaults(tmp_path):
+    obs = tmp_path / "obs.npz"
+    syn = tmp_path / "syn.npz"
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    config = tmp_path / "spatial-vtk.yaml"
+    _write_cli_npz(obs, [0.0, 1.0, 0.0], station="ABC", channel="HNZ")
+    _write_cli_npz(syn, [0.0, 0.5, 0.0], station="ABC", channel="HNZ")
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+metrics:
+  slurm:
+    python_command: python
+""",
+        encoding="utf-8",
+    )
+    (tables / "metric_manifest.json").write_text(
+        json.dumps(
+            {
+                "manifest_version": 1,
+                "qc_table": "",
+                "tasks": [
+                    {
+                        "task_id": "task-1",
+                        "event_id": "e1",
+                        "station": "ABC",
+                        "component": "Z",
+                        "model": "m1",
+                        "passband": "",
+                        "obs_waveform_path": str(obs),
+                        "syn_waveform_path": str(syn),
+                        "dt": 0.01,
+                        "metrics": "PGA",
+                        "transforms": "log2_residual",
+                        "output_mode": "full",
+                    }
+                ],
+                "batches": [{"batch_index": 0, "task_indices": [0], "output_path": str(tmp_path / "old_batch.csv")}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert main(["metrics", "cache-waveforms", "--config", str(config)]) == 0
+    assert (tables / "metric_manifest_cached.json").exists()
+    cached_manifest = json.loads((tables / "metric_manifest_cached.json").read_text(encoding="utf-8"))
+    cached_batch = Path(cached_manifest["batches"][0]["output_path"])
+    pd.DataFrame({"event_id": ["e1"], "station": ["ABC"], "component": ["Z"], "metric": ["PGA"]}).to_csv(cached_batch, index=False)
+
+    assert main(["metrics", "merge-batches", "--config", str(config)]) == 0
+    assert (tables / "metric_rows.parquet").exists()
+
+
 def test_cli_metrics_slurm_reports_script_without_submit(tmp_path, monkeypatch, capsys):
     config = tmp_path / "spatial-vtk.yaml"
     manifest = tmp_path / "manifest.json"
@@ -1360,6 +1513,43 @@ metrics:
     assert "Wrote metric Slurm script" in captured.out
     assert "No job was submitted" in captured.out
     assert script.exists()
+
+
+def test_cli_metrics_slurm_uses_configured_defaults(tmp_path, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+metrics:
+  slurm:
+    python_command: python
+    max_concurrent: 2
+""",
+        encoding="utf-8",
+    )
+    (tables / "metric_manifest_cached.json").write_text(
+        json.dumps(
+            {
+                "manifest_version": 1,
+                "qc_table": "",
+                "tasks": [],
+                "batches": [{"batch_index": 0, "task_indices": [], "output_path": str(tmp_path / "batch.csv")}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert main(["metrics", "slurm", "--config", str(config)]) == 0
+
+    captured = capsys.readouterr()
+    assert "Wrote metric Slurm script" in captured.out
+    assert (tmp_path / "outputs" / "slurm" / "step03_run_metrics.slurm").exists()
 
 
 def test_cli_dashboard_metrics_uses_configured_output_roots(tmp_path, monkeypatch, capsys):

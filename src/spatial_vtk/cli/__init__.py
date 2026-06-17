@@ -12,8 +12,8 @@ Usage examples
 Show active config:
   ``svtk config show --config spatial-vtk.yaml``
 
-Prepare downstream metric outputs:
-  ``svtk metrics outputs --metrics metrics.csv --output-dir outputs/metrics``
+Prepare downstream metric outputs from configured workflow paths:
+  ``svtk metrics outputs --config spatial-vtk.yaml``
 
 Run any public function with JSON/YAML arguments:
   ``svtk call spatial_vtk.config.labels.metric_display_name --args C5``
@@ -608,9 +608,9 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     metrics_sub = metrics.add_subparsers(dest="metrics_command", required=True)
 
     inventories = metrics_sub.add_parser("inventories", help="Build observed/synthetic metric waveform inventories from trace metadata.")
-    inventories.add_argument("--trace-metadata", required=True, help="Preprocessed trace metadata CSV/parquet path.")
-    inventories.add_argument("--observed-output", required=True, help="Observed metric inventory CSV/parquet output path.")
-    inventories.add_argument("--synthetic-output", required=True, help="Synthetic metric inventory CSV/parquet output path.")
+    inventories.add_argument("--trace-metadata", default=None, help="Preprocessed trace metadata CSV/parquet path. Defaults to the configured preprocessing metadata output.")
+    inventories.add_argument("--observed-output", default=None, help="Observed metric inventory CSV/parquet output path. Defaults to configured output table 'observed_metric_inventory'.")
+    inventories.add_argument("--synthetic-output", default=None, help="Synthetic metric inventory CSV/parquet output path. Defaults to configured output table 'synthetic_metric_inventory'.")
     inventories.add_argument("--config", default=None, help="Optional Spatial-VTK config used to infer a single synthetic model.")
     inventories.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     inventories.add_argument("--synthetic-model", default=None, help="Synthetic model label override.")
@@ -634,12 +634,12 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     plan.add_argument("--output-mode", default=None, help="Metric output mode override.")
     plan.add_argument("--require-source-overlap", action="store_true", help="Only plan metric tasks for events or event-station rows with both observed and synthetic data.")
     plan.add_argument("--source-overlap-scope", choices=("event", "event_station"), default=None, help="Overlap scope for --require-source-overlap.")
-    plan.add_argument("--output", required=True, help="Output task table or manifest path.")
+    plan.add_argument("--output", default=None, help="Output task table or manifest path. Defaults to configured output table 'metric_manifest' with --manifest, otherwise 'metric_tasks'.")
     plan.add_argument("--manifest", action="store_true", help="Write a JSON manifest instead of a task table.")
-    plan.add_argument("--batch-output-dir", default=None, help="Batch output directory when writing a manifest.")
+    plan.add_argument("--batch-output-dir", default=None, help="Batch output directory when writing a manifest. Defaults to outputs/metric_batches.")
     plan.add_argument("--batch-size", type=int, default=100, help="Tasks per batch when writing a manifest.")
     plan.add_argument("--batch-count", type=int, default=None, help="Target number of batches when writing a manifest. Overrides --batch-size.")
-    plan.add_argument("--qc-table", default=None, help="Optional QC inventory recorded in a manifest.")
+    plan.add_argument("--qc-table", default=None, help="Optional QC inventory recorded in a manifest. Defaults to configured output table 'qc_inventory_overlap' when QC is enabled.")
     plan.add_argument("--no-qc", action="store_true", help="Do not mark planned tasks as QC-filtered by default.")
     plan.add_argument(
         "--include-qc-failed-tasks",
@@ -670,10 +670,12 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     batch.set_defaults(handler=_cmd_metrics_run_batch)
 
     cache = metrics_sub.add_parser("cache-waveforms", help="Write a metric manifest backed by lightweight cached waveform traces.")
-    cache.add_argument("--manifest", required=True, help="Source metric workflow manifest JSON.")
-    cache.add_argument("--output", required=True, help="Cached metric workflow manifest JSON.")
-    cache.add_argument("--cache-root", required=True, help="Directory for cached metric-ready waveform .npz files.")
-    cache.add_argument("--batch-output-dir", default=None, help="Batch output directory for the cached manifest.")
+    cache.add_argument("--manifest", default=None, help="Source metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'.")
+    cache.add_argument("--output", default=None, help="Cached metric workflow manifest JSON. Defaults to configured output table 'metric_manifest_cached'.")
+    cache.add_argument("--cache-root", default=None, help="Directory for cached metric-ready waveform .npz files. Defaults to outputs/metric_ready_waveform_cache.")
+    cache.add_argument("--batch-output-dir", default=None, help="Batch output directory for the cached manifest. Defaults to outputs/metric_batches_cached.")
+    cache.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default paths.")
+    cache.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     cache.add_argument("--overwrite", action="store_true", help="Rewrite existing cached waveform files.")
     cache.add_argument("--compressed", action="store_true", help="Write compressed .npz files instead of faster uncompressed .npz files.")
     cache.add_argument("--verbose", action="store_true", help="Print progress while materializing waveform traces.")
@@ -681,13 +683,15 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     cache.set_defaults(handler=_cmd_metrics_cache_waveforms)
 
     merge = metrics_sub.add_parser("merge-batches", help="Merge metric manifest batch outputs.")
-    merge.add_argument("--manifest", required=True, help="Metric workflow manifest JSON.")
-    merge.add_argument("--output", required=True, help="Merged output CSV/parquet path.")
+    merge.add_argument("--manifest", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
+    merge.add_argument("--output", default=None, help="Merged output CSV/parquet path. Defaults to configured output table 'metric_rows'.")
+    merge.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default paths.")
+    merge.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     merge.add_argument("--allow-missing", action="store_true", help="Allow missing batch outputs.")
     merge.set_defaults(handler=_cmd_metrics_merge_batches)
 
     outputs = metrics_sub.add_parser("outputs", help="Write standard downstream metric outputs.")
-    outputs.add_argument("--metrics", required=True, help="Metric workflow rows CSV/parquet path.")
+    outputs.add_argument("--metrics", default=None, help="Metric workflow rows CSV/parquet path. Defaults to configured output table 'metric_rows'.")
     outputs.add_argument("--output-dir", default=None, help="Ad hoc output directory. Defaults to configured output paths.")
     outputs.add_argument("--config", default=None, help="Config file used to resolve standard output paths.")
     outputs.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
@@ -700,8 +704,8 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     outputs.set_defaults(handler=_cmd_metrics_outputs)
 
     slurm = metrics_sub.add_parser("slurm", help="Write a SLURM array script for a metric manifest.")
-    slurm.add_argument("--manifest", required=True, help="Metric workflow manifest JSON.")
-    slurm.add_argument("--output", required=True, help="Output SLURM script path.")
+    slurm.add_argument("--manifest", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
+    slurm.add_argument("--output", default=None, help="Output SLURM script path. Defaults to outputs/slurm/step03_run_metrics.slurm.")
     slurm.add_argument("--config", default=None, help="Config file containing metrics.slurm settings.")
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     slurm.add_argument("--submit", action="store_true", help="Submit the script with sbatch after writing it.")
@@ -1032,6 +1036,72 @@ def _optional_cli_config(config_path: str | None = None, *, run_scenario: str | 
     return SpatialVTKConfig.from_file(path, run_scenario=run_scenario)
 
 
+def _required_cli_config(config_path: str | None = None, *, run_scenario: str | None = None):
+    """Load a config or raise a clear CLI-oriented error."""
+
+    from spatial_vtk.config import SpatialVTKConfig
+
+    return SpatialVTKConfig.from_file(_required_config_path(config_path), run_scenario=run_scenario)
+
+
+def _configured_output_path(
+    key: str,
+    *,
+    kind: str = "table",
+    config: Any,
+    create_parent: bool = True,
+) -> Path:
+    """Resolve one configured output artifact path for CLI defaults."""
+
+    from spatial_vtk.config import resolve_output_path
+
+    return resolve_output_path(key, kind=kind, cfg=config, create_parent=create_parent)
+
+
+def _metric_workflow_dir(config: Any, name: str, *, create_parent: bool = True) -> Path:
+    """Return a standard metric workflow directory below the configured output root."""
+
+    root = config.path("outputs.root") or (config.root_dir / "outputs")
+    path = Path(root) / name
+    if create_parent:
+        path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _metric_slurm_script_path(config: Any, *, create_parent: bool = True) -> Path:
+    """Return the standard metric Slurm script path for CLI defaults."""
+
+    root = config.path("outputs.root") or (config.root_dir / "outputs")
+    path = Path(root) / "slurm" / "step03_run_metrics.slurm"
+    if create_parent:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _default_metric_manifest_path(config: Any, *, prefer_cached: bool = False) -> Path:
+    """Return the configured metric manifest path, optionally preferring the cached manifest."""
+
+    if prefer_cached:
+        cached = _configured_output_path("metric_manifest_cached", config=config)
+        if cached.exists():
+            return cached
+    return _configured_output_path("metric_manifest", config=config)
+
+
+def _default_metric_qc_table(config: Any, *, no_qc: bool) -> Path | None:
+    """Return the default metric QC table or raise when QC is enabled but missing."""
+
+    if no_qc:
+        return None
+    path = _configured_output_path("qc_inventory_overlap", config=config)
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Configured QC overlap inventory is not ready: {path}. "
+            "Run the QC workflow first, pass --qc-table, or pass --no-qc to plan metrics without QC filtering."
+        )
+    return path
+
+
 def _resolve_metrics_dashboard_paths(
     *,
     metrics_root: str | None,
@@ -1289,30 +1359,37 @@ def _cmd_qc_summaries(args: argparse.Namespace) -> int:
 def _cmd_metrics_plan(args: argparse.Namespace) -> int:
     """Run ``svtk metrics plan``."""
 
-    from spatial_vtk.config import SpatialVTKConfig
     from spatial_vtk.io import metric_plan_from_config
     from spatial_vtk.metrics.workflow import plan_metric_tasks, tasks_to_frame, write_task_manifest
 
-    config = SpatialVTKConfig.from_file(args.config, run_scenario=args.run_scenario)
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
+    observed_inventory = Path(args.observed_inventory).expanduser() if args.observed_inventory else _configured_output_path("observed_metric_inventory", config=config)
+    synthetic_inventory = Path(args.synthetic_inventory).expanduser() if args.synthetic_inventory else _configured_output_path("synthetic_metric_inventory", config=config)
+    output = (
+        Path(args.output).expanduser()
+        if args.output
+        else _configured_output_path("metric_manifest" if args.manifest else "metric_tasks", config=config)
+    )
+    qc_table = Path(args.qc_table).expanduser() if args.qc_table else _default_metric_qc_table(config, no_qc=args.no_qc)
     plan = metric_plan_from_config(config, command="metrics.calculate", overrides=_metric_plan_overrides(args))
     tasks = plan_metric_tasks(
-        args.observed_inventory,
-        args.synthetic_inventory,
+        observed_inventory,
+        synthetic_inventory,
         plan=plan,
         use_qc=not args.no_qc,
-        qc_table=args.qc_table,
+        qc_table=qc_table,
         require_passing_qc_pairs=not args.include_qc_failed_tasks,
     )
     if args.manifest:
-        batch_dir = args.batch_output_dir or str(Path(args.output).with_suffix("")) + "_batches"
+        batch_dir = Path(args.batch_output_dir).expanduser() if args.batch_output_dir else _metric_workflow_dir(config, "metric_batches")
         batch_size = args.batch_size
         if args.batch_count is not None:
             if args.batch_count <= 0:
                 raise ValueError("--batch-count must be positive.")
             batch_size = max(1, math.ceil(len(tasks) / args.batch_count))
-        write_task_manifest(tasks, args.output, output_dir=batch_dir, batch_size=batch_size, qc_table=args.qc_table)
+        write_task_manifest(tasks, output, output_dir=batch_dir, batch_size=batch_size, qc_table=qc_table)
     else:
-        _write_table(tasks_to_frame(tasks), args.output)
+        _write_table(tasks_to_frame(tasks), output)
     print(f"Planned {len(tasks)} metric tasks.")
     return 0
 
@@ -1321,12 +1398,29 @@ def _cmd_metrics_inventories(args: argparse.Namespace) -> int:
     """Run ``svtk metrics inventories``."""
 
     from spatial_vtk.metrics.workflow import build_metric_waveform_inventories_from_trace_metadata
+    from spatial_vtk.io.preprocessing import preprocessed_waveform_metadata_paths
 
-    config = _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    needs_config = not (args.trace_metadata and args.observed_output and args.synthetic_output)
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    trace_metadata = (
+        Path(args.trace_metadata).expanduser()
+        if args.trace_metadata
+        else preprocessed_waveform_metadata_paths(config=config).trace_metadata_path
+    )
+    observed_output = (
+        Path(args.observed_output).expanduser()
+        if args.observed_output
+        else _configured_output_path("observed_metric_inventory", config=config)
+    )
+    synthetic_output = (
+        Path(args.synthetic_output).expanduser()
+        if args.synthetic_output
+        else _configured_output_path("synthetic_metric_inventory", config=config)
+    )
     result = build_metric_waveform_inventories_from_trace_metadata(
-        args.trace_metadata,
-        args.observed_output,
-        args.synthetic_output,
+        trace_metadata,
+        observed_output,
+        synthetic_output,
         config=config,
         synthetic_model=args.synthetic_model,
         observed_path_column=args.observed_path_column,
@@ -1416,11 +1510,17 @@ def _cmd_metrics_cache_waveforms(args: argparse.Namespace) -> int:
 
     from spatial_vtk.metrics.workflow import cache_metric_manifest_waveforms
 
+    needs_config = not (args.manifest and args.output and args.cache_root)
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config)
+    output = Path(args.output).expanduser() if args.output else _configured_output_path("metric_manifest_cached", config=config)
+    cache_root = Path(args.cache_root).expanduser() if args.cache_root else _metric_workflow_dir(config, "metric_ready_waveform_cache")
+    batch_output_dir = Path(args.batch_output_dir).expanduser() if args.batch_output_dir else (_metric_workflow_dir(config, "metric_batches_cached") if config is not None else None)
     result = cache_metric_manifest_waveforms(
-        args.manifest,
-        args.output,
-        cache_root=args.cache_root,
-        batch_output_dir=args.batch_output_dir,
+        manifest,
+        output,
+        cache_root=cache_root,
+        batch_output_dir=batch_output_dir,
         overwrite=args.overwrite,
         compressed=args.compressed,
         progress_label="Metric waveform cache" if args.verbose else None,
@@ -1444,7 +1544,11 @@ def _cmd_metrics_merge_batches(args: argparse.Namespace) -> int:
 
     from spatial_vtk.metrics.workflow import merge_batch_outputs
 
-    path = merge_batch_outputs(args.manifest, args.output, require_all=not args.allow_missing)
+    needs_config = not (args.manifest and args.output)
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config, prefer_cached=True)
+    output = Path(args.output).expanduser() if args.output else _configured_output_path("metric_rows", config=config)
+    path = merge_batch_outputs(manifest, output, require_all=not args.allow_missing)
     print(path)
     return 0
 
@@ -1454,13 +1558,13 @@ def _cmd_metrics_outputs(args: argparse.Namespace) -> int:
 
     from spatial_vtk.metrics.workflow import write_metric_outputs
 
-    config = _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    needs_config = args.metrics is None or args.output_dir is None
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     if config is not None:
         config.activate()
-    elif args.output_dir is None:
-        _required_config_path(args.config)
+    metrics = Path(args.metrics).expanduser() if args.metrics else _configured_output_path("metric_rows", config=config)
     written = write_metric_outputs(
-        args.metrics,
+        metrics,
         args.output_dir,
         events=args.events,
         stations=args.stations,
@@ -1476,19 +1580,21 @@ def _cmd_metrics_outputs(args: argparse.Namespace) -> int:
 def _cmd_metrics_slurm(args: argparse.Namespace) -> int:
     """Run ``svtk metrics slurm``."""
 
-    from spatial_vtk.config import SpatialVTKConfig
     from spatial_vtk.metrics.workflow import (
         slurm_settings_from_config,
         submit_metrics_slurm_job,
         write_metrics_slurm_script,
     )
 
-    settings = slurm_settings_from_config(SpatialVTKConfig.from_file(_required_config_path(args.config), run_scenario=args.run_scenario))
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
+    manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config, prefer_cached=True)
+    output = Path(args.output).expanduser() if args.output else _metric_slurm_script_path(config)
+    settings = slurm_settings_from_config(config)
     if args.submit:
-        submission = submit_metrics_slurm_job(args.manifest, args.output, settings)
+        submission = submit_metrics_slurm_job(manifest, output, settings)
         print(submission.stdout or f"submitted {submission.script_path}")
         return int(submission.returncode)
-    path = write_metrics_slurm_script(args.manifest, args.output, settings)
+    path = write_metrics_slurm_script(manifest, output, settings)
     print(f"Wrote metric Slurm script: {path}")
     print("No job was submitted. Re-run with --submit or submit the script with sbatch.")
     return 0

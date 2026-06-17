@@ -23,9 +23,24 @@ tables:
   manual_review_queue:
     filename: manual_review_queue.csv
     description: Manual-review queue
+  observed_metric_inventory:
+    filename: observed_metric_inventory.parquet
+    description: Observed waveform inventory used by the metric workflow
+  synthetic_metric_inventory:
+    filename: synthetic_metric_inventory.parquet
+    description: Synthetic waveform inventory used by the metric workflow
   metric_tasks:
     filename: metric_tasks.csv
     description: Metric task preview
+  metric_manifest:
+    filename: metric_manifest.json
+    description: Resumable metric workflow manifest
+  metric_manifest_cached:
+    filename: metric_manifest_cached.json
+    description: Metric workflow manifest rewritten to use cached metric-ready waveforms
+  metric_rows:
+    filename: metric_rows.parquet
+    description: Raw merged metric workflow rows
   metrics_long:
     filename: metrics_long.parquet
     description: Long metrics table

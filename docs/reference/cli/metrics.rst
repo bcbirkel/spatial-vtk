@@ -52,9 +52,12 @@ svtk metrics cache-waveforms
 
 .. code-block:: bash
 
-   svtk metrics cache-waveforms [-h] --manifest MANIFEST --output OUTPUT
-                                    --cache-root CACHE_ROOT
+   svtk metrics cache-waveforms [-h] [--manifest MANIFEST]
+                                    [--output OUTPUT]
+                                    [--cache-root CACHE_ROOT]
                                     [--batch-output-dir BATCH_OUTPUT_DIR]
+                                    [--config CONFIG]
+                                    [--run-scenario RUN_SCENARIO]
                                     [--overwrite] [--compressed] [--verbose]
                                     [--progress-interval PROGRESS_INTERVAL]
 
@@ -73,21 +76,29 @@ svtk metrics cache-waveforms
      -
      - show this help message and exit
    * - ``--manifest``
-     - Yes
+     - No
      -
-     - Value: ``manifest``. Source metric workflow manifest JSON.
+     - Value: ``manifest``. Source metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'.
    * - ``--output``
-     - Yes
+     - No
      -
-     - Value: ``output``. Cached metric workflow manifest JSON.
+     - Value: ``output``. Cached metric workflow manifest JSON. Defaults to configured output table 'metric_manifest_cached'.
    * - ``--cache-root``
-     - Yes
+     - No
      -
-     - Value: ``cache_root``. Directory for cached metric-ready waveform .npz files.
+     - Value: ``cache_root``. Directory for cached metric-ready waveform .npz files. Defaults to outputs/metric_ready_waveform_cache.
    * - ``--batch-output-dir``
      - No
      -
-     - Value: ``batch_output_dir``. Batch output directory for the cached manifest.
+     - Value: ``batch_output_dir``. Batch output directory for the cached manifest. Defaults to outputs/metric_batches_cached.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config used to resolve default paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--overwrite``
      - No
      - Flag
@@ -168,9 +179,9 @@ svtk metrics inventories
 
 .. code-block:: bash
 
-   svtk metrics inventories [-h] --trace-metadata TRACE_METADATA
-                                --observed-output OBSERVED_OUTPUT
-                                --synthetic-output SYNTHETIC_OUTPUT
+   svtk metrics inventories [-h] [--trace-metadata TRACE_METADATA]
+                                [--observed-output OBSERVED_OUTPUT]
+                                [--synthetic-output SYNTHETIC_OUTPUT]
                                 [--config CONFIG]
                                 [--run-scenario RUN_SCENARIO]
                                 [--synthetic-model SYNTHETIC_MODEL]
@@ -193,17 +204,17 @@ svtk metrics inventories
      -
      - show this help message and exit
    * - ``--trace-metadata``
-     - Yes
+     - No
      -
-     - Value: ``trace_metadata``. Preprocessed trace metadata CSV/parquet path.
+     - Value: ``trace_metadata``. Preprocessed trace metadata CSV/parquet path. Defaults to the configured preprocessing metadata output.
    * - ``--observed-output``
-     - Yes
+     - No
      -
-     - Value: ``observed_output``. Observed metric inventory CSV/parquet output path.
+     - Value: ``observed_output``. Observed metric inventory CSV/parquet output path. Defaults to configured output table 'observed_metric_inventory'.
    * - ``--synthetic-output``
-     - Yes
+     - No
      -
-     - Value: ``synthetic_output``. Synthetic metric inventory CSV/parquet output path.
+     - Value: ``synthetic_output``. Synthetic metric inventory CSV/parquet output path. Defaults to configured output table 'synthetic_metric_inventory'.
    * - ``--config``
      - No
      -
@@ -242,7 +253,9 @@ svtk metrics merge-batches
 
 .. code-block:: bash
 
-   svtk metrics merge-batches [-h] --manifest MANIFEST --output OUTPUT
+   svtk metrics merge-batches [-h] [--manifest MANIFEST] [--output OUTPUT]
+                                  [--config CONFIG]
+                                  [--run-scenario RUN_SCENARIO]
                                   [--allow-missing]
 
 .. rubric:: Parameters
@@ -260,13 +273,21 @@ svtk metrics merge-batches
      -
      - show this help message and exit
    * - ``--manifest``
-     - Yes
+     - No
      -
-     - Value: ``manifest``. Metric workflow manifest JSON.
+     - Value: ``manifest``. Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.
    * - ``--output``
-     - Yes
+     - No
      -
-     - Value: ``output``. Merged output CSV/parquet path.
+     - Value: ``output``. Merged output CSV/parquet path. Defaults to configured output table 'metric_rows'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config used to resolve default paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--allow-missing``
      - No
      - Flag
@@ -281,7 +302,8 @@ svtk metrics outputs
 
 .. code-block:: bash
 
-   svtk metrics outputs [-h] --metrics METRICS --output-dir OUTPUT_DIR
+   svtk metrics outputs [-h] [--metrics METRICS] [--output-dir OUTPUT_DIR]
+                            [--config CONFIG] [--run-scenario RUN_SCENARIO]
                             [--events EVENTS] [--stations STATIONS]
                             [--residual-column RESIDUAL_COLUMN]
                             [--score-column SCORE_COLUMN]
@@ -302,13 +324,21 @@ svtk metrics outputs
      -
      - show this help message and exit
    * - ``--metrics``
-     - Yes
+     - No
      -
-     - Value: ``metrics``. Metric workflow rows CSV/parquet path.
+     - Value: ``metrics``. Metric workflow rows CSV/parquet path. Defaults to configured output table 'metric_rows'.
    * - ``--output-dir``
-     - Yes
+     - No
      -
-     - Value: ``output_dir``. Output directory.
+     - Value: ``output_dir``. Ad hoc output directory. Defaults to configured output paths.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Config file used to resolve standard output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--events``
      - No
      -
@@ -352,7 +382,7 @@ svtk metrics plan
                          [--output-mode OUTPUT_MODE]
                          [--require-source-overlap]
                          [--source-overlap-scope {event,event_station}]
-                         --output OUTPUT [--manifest]
+                         [--output OUTPUT] [--manifest]
                          [--batch-output-dir BATCH_OUTPUT_DIR]
                          [--batch-size BATCH_SIZE] [--batch-count BATCH_COUNT]
                          [--qc-table QC_TABLE] [--no-qc]
@@ -425,9 +455,9 @@ svtk metrics plan
      - Choices: ``event``, ``event_station``
      - Value: ``source_overlap_scope``. Overlap scope for --require-source-overlap.
    * - ``--output``
-     - Yes
+     - No
      -
-     - Value: ``output``. Output task table or manifest path.
+     - Value: ``output``. Output task table or manifest path. Defaults to configured output table 'metric_manifest' with --manifest, otherwise 'metric_tasks'.
    * - ``--manifest``
      - No
      - Flag
@@ -435,7 +465,7 @@ svtk metrics plan
    * - ``--batch-output-dir``
      - No
      -
-     - Value: ``batch_output_dir``. Batch output directory when writing a manifest.
+     - Value: ``batch_output_dir``. Batch output directory when writing a manifest. Defaults to outputs/metric_batches.
    * - ``--batch-size``
      - No
      - Default: ``100``
@@ -447,7 +477,7 @@ svtk metrics plan
    * - ``--qc-table``
      - No
      -
-     - Value: ``qc_table``. Optional QC inventory recorded in a manifest.
+     - Value: ``qc_table``. Optional QC inventory recorded in a manifest. Defaults to configured output table 'qc_inventory_overlap' when QC is enabled.
    * - ``--no-qc``
      - No
      - Flag
@@ -544,7 +574,7 @@ svtk metrics slurm
 
 .. code-block:: bash
 
-   svtk metrics slurm [-h] --manifest MANIFEST --output OUTPUT
+   svtk metrics slurm [-h] [--manifest MANIFEST] [--output OUTPUT]
                           [--config CONFIG] [--run-scenario RUN_SCENARIO]
                           [--submit]
 
@@ -563,13 +593,13 @@ svtk metrics slurm
      -
      - show this help message and exit
    * - ``--manifest``
-     - Yes
+     - No
      -
-     - Value: ``manifest``. Metric workflow manifest JSON.
+     - Value: ``manifest``. Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.
    * - ``--output``
-     - Yes
+     - No
      -
-     - Value: ``output``. Output SLURM script path.
+     - Value: ``output``. Output SLURM script path. Defaults to outputs/slurm/step03_run_metrics.slurm.
    * - ``--config``
      - No
      -

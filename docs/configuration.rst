@@ -170,14 +170,15 @@ the job also writes or refreshes ``qc_inventory_overlap`` for observed/synthetic
 comparison workflows.
 
 Metric Slurm jobs run as task arrays from a manifest produced by the metric
-workflow. After creating the manifest, write or submit the array script:
+workflow. After creating the manifest, write or submit the array script. When
+``--manifest`` and ``--output`` are omitted, Spatial-VTK uses the configured
+``metric_manifest_cached`` or ``metric_manifest`` table and writes
+``outputs/slurm/step03_run_metrics.slurm``:
 
 .. code-block:: bash
 
    svtk metrics slurm \
      --config spatial-vtk.yaml \
-     --manifest outputs/metrics/metric_manifest.json \
-     --output outputs/slurm/run_metrics.slurm \
      --submit
 
 Show Or Hide Notebook Run Times
@@ -212,7 +213,7 @@ For a one-time command, pass the file directly:
 .. code-block:: bash
 
    svtk config show --config spatial-vtk.yaml
-   svtk metrics plan --config spatial-vtk.yaml --observed-inventory observed.parquet --synthetic-inventory synthetic.parquet --output outputs/tasks.csv
+   svtk metrics plan --config spatial-vtk.yaml --manifest
 
 For a whole terminal session, set the environment variable:
 
@@ -342,7 +343,7 @@ Use a scenario from the CLI:
 .. code-block:: bash
 
    svtk config show --config spatial-vtk.yaml --run-scenario quick_amplitude_check --section metrics
-   svtk metrics plan --config spatial-vtk.yaml --run-scenario quick_amplitude_check --observed-inventory observed.parquet --synthetic-inventory synthetic.parquet --output outputs/quick_tasks.csv
+   svtk metrics plan --config spatial-vtk.yaml --run-scenario quick_amplitude_check --manifest
 
 Use the same scenario in Python:
 
@@ -366,7 +367,7 @@ the Z component for this run:
 
 .. code-block:: bash
 
-   svtk metrics plan --config spatial-vtk.yaml --metric PGA --component Z --observed-inventory observed.parquet --synthetic-inventory synthetic.parquet --output outputs/pga_z_tasks.csv
+   svtk metrics plan --config spatial-vtk.yaml --metric PGA --component Z --manifest
 
 And this map command uses a named bounds override from the config:
 
