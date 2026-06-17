@@ -20,14 +20,23 @@ for terminal-oriented workflows and generated batch scripts.
 4. Preview bounded tables after outputs exist; do not load full QC or metric
    inventories into the notebook just to check progress.
 
+Workflow functions return JSON-ready dictionaries that are safe to display in
+notebooks or Slurm logs. New notebook code should prefer explicit keys such as
+``metric_manifest_path``, ``observed_metric_inventory_path``,
+``record_coverage_path``, and ``geojson_region_summaries_path``. Shorter legacy
+keys such as ``path``, ``output``, or ``manifest`` are kept only as
+compatibility aliases.
+
 .. code-block:: python
 
    from spatial_vtk.config import SpatialVTKConfig
+   from spatial_vtk.config import configured_output_registry_frame
    from spatial_vtk.config.notebook import notebook_run_context, run_notebook_step_if_needed
    from spatial_vtk.io import output_readiness
 
    cfg = SpatialVTKConfig.from_file("runs/spatial_vtk_config.yaml").activate()
    context = notebook_run_context()
+   display(configured_output_registry_frame(cfg=cfg, kinds=("table",)).head())
    readiness = output_readiness(
        {"trace_qc_summary": "outputs/tables/qc_trace_summary.parquet"},
        inputs={"event_station_records": "outputs/tables/event_station_records.parquet"},

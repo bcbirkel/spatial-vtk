@@ -63,6 +63,9 @@ def preprocess_waveforms_from_config(
         verbose=verbose,
     )
     return {
+        "preprocessed_event_station_records_path": str(result.event_station_path),
+        "preprocessing_manifest_path": str(result.manifest_path),
+        "preprocessed_trace_metadata_path": str(result.trace_metadata_path),
         "event_station_records": str(result.event_station_path),
         "manifest": str(result.manifest_path),
         "trace_metadata": str(result.trace_metadata_path),
@@ -127,6 +130,9 @@ def build_record_coverage_from_config(
     )
     output_path = write_output_table("record_coverage", record_coverage, cfg=cfg)
     return {
+        "record_coverage_path": str(output_path),
+        "preprocessed_trace_metadata_path": str(preprocessing_paths.trace_metadata_path),
+        "event_station_records_path": str(event_station_records),
         "record_coverage": str(output_path),
         "trace_metadata": str(preprocessing_paths.trace_metadata_path),
         "event_stations": str(event_station_records),

@@ -466,6 +466,8 @@ def run_boundary_corridor_workflow_from_config(
         verbose=verbose,
     )
     return {
+        f"{output_key}_path": str(result.path),
+        "output_key": str(output_key),
         "path": str(result.path),
         "rows": int(result.rows),
         "elapsed_s": float(result.elapsed_s),

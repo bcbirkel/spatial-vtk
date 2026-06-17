@@ -698,6 +698,8 @@ def run_geojson_region_summary_workflow_from_config(
         verbose=verbose,
     )
     return {
+        f"{output_key}_path": str(result.path),
+        "output_key": str(output_key),
         "path": str(result.path),
         "rows": int(result.rows),
         "source_rows": int(result.source_rows),

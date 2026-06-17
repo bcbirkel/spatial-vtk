@@ -138,7 +138,9 @@ def run_qc_inventory_from_config(
         qc_inventory_overlap_output=qc_inventory_overlap_output,
         verbose=verbose,
     )
-    return {key: str(path) for key, path in written.items()}
+    payload = {f"{key}_path": str(path) for key, path in written.items()}
+    payload.update({key: str(path) for key, path in written.items()})
+    return payload
 
 
 def write_qc_slurm_script(

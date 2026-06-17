@@ -77,6 +77,8 @@ def build_metric_waveform_inventories_from_config(
         verbose=verbose,
     )
     return {
+        "observed_metric_inventory_path": str(result.observed_path),
+        "synthetic_metric_inventory_path": str(result.synthetic_path),
         "observed_path": str(result.observed_path),
         "synthetic_path": str(result.synthetic_path),
         "observed_rows": result.observed_rows,
@@ -131,7 +133,12 @@ def plan_metric_tasks_from_config(
     )
     payload: dict[str, object] = {
         "task_count": int(len(tasks)),
+        "metric_manifest_path" if manifest else "metric_tasks_path": str(output_path),
+        "planned_output_path": str(output_path),
         "output": str(output_path),
+        "observed_metric_inventory_path": str(observed_path),
+        "synthetic_metric_inventory_path": str(synthetic_path),
+        "metric_qc_table_path": str(qc_path) if qc_path is not None else "",
         "observed_inventory": str(observed_path),
         "synthetic_inventory": str(synthetic_path),
         "qc_table": str(qc_path) if qc_path is not None else "",
@@ -184,6 +191,7 @@ def write_metrics_slurm_script_from_config(
     batch_indices = status.missing_batches if incomplete_only else None
     if incomplete_only and status.all_complete and not overwrite_batches:
         return {
+            "metric_slurm_script_path": "",
             "script_path": "",
             "submitted": False,
             "all_complete": True,
@@ -200,6 +208,7 @@ def write_metrics_slurm_script_from_config(
             overwrite_batches=overwrite_batches,
         )
         return {
+            "metric_slurm_script_path": str(submission.script_path),
             "script_path": str(submission.script_path),
             "submitted": True,
             "returncode": int(submission.returncode),
@@ -216,6 +225,7 @@ def write_metrics_slurm_script_from_config(
         overwrite_batches=overwrite_batches,
     )
     return {
+        "metric_slurm_script_path": str(script),
         "script_path": str(script),
         "submitted": False,
         "total_batches": int(status.total_batches),
@@ -238,7 +248,12 @@ def merge_metric_batches_from_config(
     manifest_path = Path(manifest).expanduser() if manifest is not None else _default_metric_manifest_path(config, prefer_cached=True)
     output_path = Path(output).expanduser() if output is not None else resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
     path = merge_batch_outputs(manifest_path, output_path, require_all=require_all)
-    return {"metric_rows": str(path), "manifest": str(manifest_path)}
+    return {
+        "metric_rows_path": str(path),
+        "metric_manifest_path": str(manifest_path),
+        "metric_rows": str(path),
+        "manifest": str(manifest_path),
+    }
 
 
 def write_metric_outputs_from_config(

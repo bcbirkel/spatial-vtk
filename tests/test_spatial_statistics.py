@@ -519,6 +519,7 @@ spatial:
     assert summary["failure_count"] == 0
     assert summary["rows"]["metric_field"] > 0
     assert Path(summary["paths"]["metric_field"]) == tmp_path / "outputs" / "tables" / "metric_field.parquet"
+    assert summary["output_paths"]["metric_field"] == summary["paths"]["metric_field"]
     assert Path(summary["paths"]["station_bias"]).exists()
 
     metric_field = pd.read_parquet(summary["paths"]["metric_field"])
@@ -540,6 +541,7 @@ spatial:
     assert derived["rows"]["block_holdout_predictions"] > 0
     assert derived["rows"]["redcap_clusters"] > 0
     assert derived["rows"]["pattern_similarity_station_anomalies"] > 0
+    assert derived["output_paths"]["block_holdout_predictions"] == derived["paths"]["block_holdout_predictions"]
     assert Path(derived["paths"]["block_holdout_predictions"]).exists()
 
 

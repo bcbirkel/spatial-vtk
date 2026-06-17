@@ -227,6 +227,8 @@ outputs:
     )
 
     assert result["path"] == str(tmp_path / "outputs" / "tables" / "geojson_region_summaries.csv")
+    assert result["geojson_region_summaries_path"] == result["path"]
+    assert result["output_key"] == "geojson_region_summaries"
     assert result["rows"] == len(pd.read_csv(result["path"]))
     assert result["source_rows"] == len(metrics)
     assert geojson.exists()
@@ -374,6 +376,8 @@ spatial:
     result = run_boundary_corridor_workflow_from_config(config_path=config_path, verbose=True)
 
     assert result["path"] == str(tmp_path / "outputs" / "tables" / "corridors.parquet")
+    assert result["corridors_path"] == result["path"]
+    assert result["output_key"] == "corridors"
     assert result["rows"] == 1
     assert pd.read_parquet(result["path"])["corridor_geometry_wkt"].notna().all()
     assert geojson.exists()

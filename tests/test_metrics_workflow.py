@@ -130,6 +130,8 @@ metrics:
     synthetic = pd.read_parquet(result["synthetic_path"])
     assert Path(result["observed_path"]) == tmp_path / "outputs" / "tables" / "observed_metric_inventory.parquet"
     assert Path(result["synthetic_path"]) == tmp_path / "outputs" / "tables" / "synthetic_metric_inventory.parquet"
+    assert result["observed_metric_inventory_path"] == result["observed_path"]
+    assert result["synthetic_metric_inventory_path"] == result["synthetic_path"]
     assert observed.loc[0, "waveform_path"] == "processed_obs.npz"
     assert synthetic.loc[0, "model"] == "model_a"
 
@@ -975,12 +977,18 @@ metrics:
     manifest_path = Path(plan_result["manifest_path"])
     manifest = read_task_manifest(manifest_path)
     assert manifest_path == tables / "metric_manifest.json"
+    assert plan_result["metric_manifest_path"] == str(manifest_path)
+    assert plan_result["planned_output_path"] == str(manifest_path)
+    assert plan_result["observed_metric_inventory_path"] == str(tables / "observed_metric_inventory.parquet")
+    assert plan_result["synthetic_metric_inventory_path"] == str(tables / "synthetic_metric_inventory.parquet")
+    assert plan_result["metric_qc_table_path"] == str(tables / "qc_inventory_overlap.parquet")
     assert len(manifest.tasks) == 1
     assert manifest.batches[0]["output_path"].endswith("outputs/metric_batches/metrics_batch_0000.csv")
 
     slurm_result = write_metrics_slurm_script_from_config(config_path=config_path, incomplete_only=True)
     script = Path(slurm_result["script_path"])
     assert script == tmp_path / "outputs" / "slurm" / "step03_run_metrics.slurm"
+    assert slurm_result["metric_slurm_script_path"] == str(script)
     assert "#SBATCH --array=0" in script.read_text(encoding="utf-8")
 
     batch_output = Path(manifest.batches[0]["output_path"])
@@ -1003,11 +1011,14 @@ metrics:
 
     merged = pd.read_parquet(merge_result["metric_rows"])
     assert Path(merge_result["metric_rows"]) == tables / "metric_rows.parquet"
+    assert merge_result["metric_rows_path"] == merge_result["metric_rows"]
+    assert merge_result["metric_manifest_path"] == merge_result["manifest"]
     assert merged.loc[0, "station"] == "STA1"
 
     complete_slurm = write_metrics_slurm_script_from_config(config_path=config_path, incomplete_only=True)
     assert complete_slurm["all_complete"] is True
     assert complete_slurm["script_path"] == ""
+    assert complete_slurm["metric_slurm_script_path"] == ""
 
 
 def test_metric_merge_preserves_text_identifiers_for_parquet(tmp_path) -> None:

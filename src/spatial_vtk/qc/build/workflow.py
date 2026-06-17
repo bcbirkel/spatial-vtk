@@ -1176,6 +1176,7 @@ def run_qc_summary_workflow_from_config(
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
     result = run_qc_summary_workflow(cfg=config, chunksize=chunksize, overwrite=overwrite, verbose=verbose)
     return {
+        "output_paths": {key: str(path) for key, path in result.paths.items()},
         "paths": {key: str(path) for key, path in result.paths.items()},
         "rows": {key: int(value) for key, value in result.rows.items()},
         "elapsed_s": float(result.elapsed_s),

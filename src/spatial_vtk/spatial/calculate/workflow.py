@@ -348,6 +348,7 @@ def run_spatial_statistics_workflow_from_config(
     )
     return {
         "metrics": list(result.metrics),
+        "output_paths": {key: str(path) for key, path in result.paths.items()},
         "paths": {key: str(path) for key, path in result.paths.items()},
         "rows": {key: int(len(table)) for key, table in result.tables.items()},
         "failures": list(result.failures),
@@ -388,6 +389,7 @@ def run_spatial_derived_outputs_workflow_from_config(
         verbose=verbose,
     )
     return {
+        "output_paths": {key: str(path) for key, path in result.paths.items()},
         "paths": {key: str(path) for key, path in result.paths.items()},
         "rows": {key: int(count) for key, count in result.rows.items()},
         "reused": list(result.reused),

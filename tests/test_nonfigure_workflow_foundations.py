@@ -822,6 +822,7 @@ outputs:
         verbose=False,
     )
     assert Path(wrapper_result["paths"]["qc_availability"]).exists()
+    assert wrapper_result["output_paths"]["qc_availability"] == wrapper_result["paths"]["qc_availability"]
     assert wrapper_result["rows"]["post_qc_records"] == 2
 
 

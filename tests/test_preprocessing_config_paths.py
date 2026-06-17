@@ -111,6 +111,9 @@ outputs:
     assert result["manifest_rows"] == 1
     assert result["trace_metadata_rows"] == 2
     assert result["event_station_rows"] == 1
+    assert result["preprocessed_event_station_records_path"] == result["event_station_records"]
+    assert result["preprocessing_manifest_path"] == result["manifest"]
+    assert result["preprocessed_trace_metadata_path"] == result["trace_metadata"]
 
 
 def test_build_record_coverage_from_config_uses_preprocessed_metadata(tmp_path: Path) -> None:
@@ -153,6 +156,9 @@ outputs:
     output = tmp_path / "outputs" / "tables" / "record_coverage.csv"
     records = pd.read_csv(output)
     assert result["record_coverage"] == str(output)
+    assert result["record_coverage_path"] == str(output)
+    assert result["preprocessed_trace_metadata_path"].endswith("trace_metadata_preprocessed.csv")
+    assert result["event_station_records_path"].endswith("event_station_records_preprocessed.csv")
     assert result["rows"] == 1
     assert records.loc[0, "event_id"] == "E1"
     assert records.loc[0, "station"] == "STA1"

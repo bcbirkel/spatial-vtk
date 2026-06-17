@@ -166,6 +166,10 @@ def test_reference_docs_map_python_workflow_entry_points():
         assert helper in workflows
     assert "run_notebook_step_if_needed" in workflows
     assert "notebooks should use package functions" in workflows.lower()
+    assert "configured_output_registry_frame" in workflows
+    assert "metric_manifest_path" in workflows
+    assert "geojson_region_summaries_path" in workflows
+    assert "compatibility aliases" in workflows
     assert "svtk metrics plan" not in workflows
     assert "svtk qc" not in workflows
 
