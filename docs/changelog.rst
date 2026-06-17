@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-16
+   Hardened large-run station metric map aggregation so representative station
+   coordinates are computed from all selected source rows, not only finite
+   metric-value rows. Station-map sidecar metadata now also records input and
+   finite station/event counts for aggregation audits.
    Added first-class ``--table`` / ``--no-table``, ``--station-region``,
    and ``--event-region`` controls for registered plotting and mapping
    commands. The CLI workflow now uses named flags instead of routine

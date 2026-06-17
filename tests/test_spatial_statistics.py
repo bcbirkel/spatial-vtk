@@ -15,6 +15,7 @@ os.environ.setdefault("LOKY_MAX_CPU_COUNT", "1")
 matplotlib.use("Agg", force=True)
 
 from spatial_vtk.config import SpatialVTKConfig, clear_active_config
+from spatial_vtk.metrics.plot.large_run import MetricFigureContext
 from spatial_vtk.spatial.calculate.clustering import assign_redcap_clusters, run_residual_feature_clustering
 from spatial_vtk.spatial.calculate.correlation import (
     build_distance_bin_summary,
@@ -452,6 +453,59 @@ def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -
     assert metadata["plot_passband_count"] == 1
     assert metadata["source_passband_count"] == 2
     assert metadata["selection"] == ["PGA", "1-2 sec"]
+
+
+def test_metric_station_summary_aggregates_all_events_without_coordinate_splitting(tmp_path: Path) -> None:
+    """Station maps should summarize all selected event rows into one row per station."""
+
+    rows = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3", "e4", "e1"],
+            "station": ["STA", "STA", "STA", "STA", "STB"],
+            "sta_lon": [-118.00, -118.02, -118.00, -118.02, -117.9],
+            "sta_lat": [34.00, 34.02, 34.00, 34.02, 34.1],
+            "metric": ["PGA", "PGA", "PGA", "PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "2-3 sec", "2-3 sec", "1-2 sec"],
+            "component": ["R", "R", "T", "T", "R"],
+            "model": ["m1", "m1", "m1", "m1", "m1"],
+            "log2_residual": [1.0, 3.0, np.nan, 5.0, -2.0],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        rows,
+        tmp_path,
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+        station_aggregation="mean",
+        write_sidecars=True,
+        sidecar_rows=None,
+    )
+
+    summary = context.station_summary_for_map(rows, "log2_residual")
+    sta = summary.loc[summary["station"].eq("STA")].iloc[0]
+
+    assert summary["station"].tolist() == ["STA", "STB"]
+    assert sta["source_row_count"] == 3
+    assert sta["source_event_count"] == 3
+    assert sta["input_row_count"] == 4
+    assert sta["input_event_count"] == 4
+    assert sta["dropped_nonfinite_row_count"] == 1
+    assert sta["dropped_nonfinite_event_count"] == 1
+    assert sta["source_coordinate_count"] == 2
+    assert sta["log2_residual"] == 3.0
+    assert np.isclose(sta["sta_lon"], -118.01)
+    assert np.isclose(sta["sta_lat"], 34.01)
+
+    metadata = context.figure_sidecar_metadata(summary, source_df=rows)
+    assert metadata["aggregation_contract"] == "station_event_rows_to_station_summary"
+    assert metadata["svtk_aggregation_input_row_count"] == 5
+    assert metadata["svtk_aggregation_finite_row_count"] == 4
+    assert metadata["svtk_aggregation_input_station_count"] == 2
+    assert metadata["svtk_aggregation_finite_station_count"] == 2
+    assert metadata["svtk_aggregation_input_event_count"] == 4
+    assert metadata["svtk_aggregation_finite_event_count"] == 3
+    assert metadata["source_rows_role"] == "pre_aggregation_metric_rows"
 
 
 def test_redcap_clusters_use_spatial_constraints_and_scores() -> None:

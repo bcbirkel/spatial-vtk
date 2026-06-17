@@ -315,7 +315,8 @@ class MetricFigureContext:
         values = _aggregate_grouped_values(grouped[resolved_value_col], self.station_aggregation).reset_index(name=resolved_value_col)
         counts = grouped.size().reset_index(name="source_row_count")
         summary = values.merge(counts, on=group_cols, how="left")
-        coordinates = _station_coordinate_summary(grouped, lon_col=lon_col, lat_col=lat_col).reset_index()
+        source_grouped = df.groupby(group_cols, dropna=False)
+        coordinates = _station_coordinate_summary(source_grouped, lon_col=lon_col, lat_col=lat_col).reset_index()
         summary = summary.merge(coordinates, on=group_cols, how="left")
         if "event_id" in finite_df.columns:
             event_counts = grouped["event_id"].nunique(dropna=True).reset_index(name="source_event_count")
@@ -375,7 +376,8 @@ class MetricFigureContext:
         values = _aggregate_grouped_values(grouped[resolved_value_col], self.station_aggregation).reset_index(name=resolved_value_col)
         counts = grouped.size().reset_index(name="source_row_count")
         summary = values.merge(counts, on=group_cols, how="left")
-        coordinates = _station_coordinate_summary(grouped, lon_col=lon_col, lat_col=lat_col).reset_index()
+        source_grouped = df.groupby(group_cols, dropna=False)
+        coordinates = _station_coordinate_summary(source_grouped, lon_col=lon_col, lat_col=lat_col).reset_index()
         summary = summary.merge(coordinates, on=group_cols, how="left")
         if "event_id" in finite_df.columns:
             event_counts = grouped["event_id"].nunique(dropna=True).reset_index(name="source_event_count")
@@ -998,6 +1000,10 @@ def _station_aggregation_attrs(
     """Return dataframe metadata describing a station-summary aggregation."""
 
     lon_col, lat_col = coordinate_cols
+    input_stations = _unique_count(source_rows, ("station", "station_id", "station_code"))
+    finite_stations = _unique_count(finite_rows, ("station", "station_id", "station_code"))
+    input_events = _unique_count(source_rows, ("event_id", "event", "event_title"))
+    finite_events = _unique_count(finite_rows, ("event_id", "event", "event_title"))
     return {
         "svtk_aggregation_kind": "station_event_rows_to_station_summary",
         "svtk_aggregation_value_col": value_col,
@@ -1007,7 +1013,20 @@ def _station_aggregation_attrs(
         "svtk_aggregation_input_row_count": int(len(source_rows)),
         "svtk_aggregation_finite_row_count": int(len(finite_rows)),
         "svtk_aggregation_dropped_nonfinite_row_count": int(len(source_rows) - len(finite_rows)),
+        "svtk_aggregation_input_station_count": input_stations,
+        "svtk_aggregation_finite_station_count": finite_stations,
+        "svtk_aggregation_input_event_count": input_events,
+        "svtk_aggregation_finite_event_count": finite_events,
     }
+
+
+def _unique_count(df: pd.DataFrame, candidates: Iterable[str]) -> int | None:
+    """Return the unique count for the first present candidate column."""
+
+    column = next((candidate for candidate in candidates if candidate in df.columns), None)
+    if column is None:
+        return None
+    return int(df[column].nunique(dropna=True))
 
 
 __all__ = [
