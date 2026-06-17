@@ -100,8 +100,10 @@ file with event, station, component, metric, passband, model, and PSA-period
 counts. The JSON metadata includes ``plot_rows_role`` and
 ``source_rows_role`` so station summaries, event-level metric rows, and other
 derived plotting tables can be audited without guessing what each CSV
-represents. Use ``sidecar_rows=None`` to write all rows, or a positive integer
-to write a deterministic sample.
+represents. Use ``sidecar_rows=None`` or ``sidecar_rows=0`` to write all rows,
+or a positive integer to write a deterministic sample. The metadata records
+``sidecar_row_policy``, ``plot_sidecar_exact``, and ``source_sidecar_exact`` so
+callers can tell whether a sidecar contains every row or a sampled audit table.
 
 .. automodule:: spatial_vtk.visualize.figure_context
    :members:

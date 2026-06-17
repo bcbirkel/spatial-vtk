@@ -63,7 +63,9 @@ with the pre-aggregation event-station metric rows. If a station figure samples
 aggregated plot rows, the source sidecar is filtered to the raw rows behind
 those plotted station groups. Use
 ``SVTK_FIGURE_SIDECAR_ROWS=all`` to write all rows, or a positive integer to
-write a deterministic sample.
+write a deterministic sample. The JSON sidecar records ``sidecar_row_policy``,
+``plot_sidecar_exact``, and ``source_sidecar_exact`` so sampled audits are
+distinguishable from complete row exports.
 
 Command-Line Workflow
 ---------------------

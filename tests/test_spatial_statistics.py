@@ -519,6 +519,9 @@ def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -
     assert metadata["source_rows_provided"] is True
     assert metadata["source_sidecar_written"] is True
     assert metadata["sidecar_row_limit"] == 2
+    assert metadata["sidecar_row_policy"] == "deterministic_sample"
+    assert metadata["plot_sidecar_exact"] is False
+    assert metadata["source_sidecar_exact"] is False
     assert metadata["sidecar_random_state"] == 42
     assert metadata["plot_rows_role"] == "figure_plot_rows"
     assert metadata["source_rows_role"] == "figure_source_rows"
@@ -528,6 +531,21 @@ def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -
     assert metadata["plot_passband_count"] == 1
     assert metadata["source_passband_count"] == 2
     assert metadata["selection"] == ["PGA", "1-2 sec"]
+
+    all_rows_result = write_figure_row_sidecar(
+        tmp_path / "figures" / "station_map_all_rows.png",
+        plot_rows,
+        sidecar_rows=0,
+        source_rows=source_rows,
+    )
+    assert all_rows_result is not None
+    all_rows_metadata = json.loads(all_rows_result.metadata_path.read_text(encoding="utf-8"))
+    assert all_rows_metadata["sidecar_row_limit"] is None
+    assert all_rows_metadata["sidecar_row_policy"] == "all_rows"
+    assert all_rows_metadata["plot_sidecar_exact"] is True
+    assert all_rows_metadata["source_sidecar_exact"] is True
+    assert all_rows_metadata["written_row_count"] == len(plot_rows)
+    assert all_rows_metadata["source_written_row_count"] == len(source_rows)
 
 
 def test_write_figure_row_sidecar_makes_zero_column_frames_readable(tmp_path: Path) -> None:
@@ -557,6 +575,9 @@ def test_write_figure_row_sidecar_makes_zero_column_frames_readable(tmp_path: Pa
     assert metadata["source_written_row_count"] == 2
     assert metadata["source_rows_provided"] is True
     assert metadata["source_sidecar_written"] is True
+    assert metadata["sidecar_row_policy"] == "all_rows"
+    assert metadata["plot_sidecar_exact"] is True
+    assert metadata["source_sidecar_exact"] is True
 
 
 def test_metric_station_summary_aggregates_all_events_without_coordinate_splitting(tmp_path: Path) -> None:

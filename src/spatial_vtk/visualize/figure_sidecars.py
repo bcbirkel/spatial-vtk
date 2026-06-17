@@ -81,6 +81,7 @@ def write_figure_row_sidecar(
     sidecar_path = output_dir / f"{figure.stem}.csv"
     sampled_rows, sampled = sidecar_rows_for_write(rows, limit=sidecar_rows, random_state=random_state)
     _csv_sidecar_rows(sampled_rows).to_csv(sidecar_path, index=False)
+    row_limit = _normalized_sidecar_row_limit(sidecar_rows)
 
     source_path = None
     source_sampled = False
@@ -106,7 +107,9 @@ def write_figure_row_sidecar(
         "plot_columns": [str(column) for column in rows.columns],
         "written_row_count": int(len(sampled_rows)),
         "sampled": bool(sampled),
-        "sidecar_row_limit": None if sidecar_rows is None else int(sidecar_rows),
+        "sidecar_row_limit": row_limit,
+        "sidecar_row_policy": "all_rows" if row_limit is None else "deterministic_sample",
+        "plot_sidecar_exact": not bool(sampled),
         "sidecar_random_state": int(random_state),
         "plot_rows_role": plot_rows_role,
         "source_rows_provided": source_rows is not None,
@@ -121,6 +124,7 @@ def write_figure_row_sidecar(
                 "source_columns": [str(column) for column in source_rows.columns],
                 "source_written_row_count": source_written_count,
                 "source_sampled": bool(source_sampled),
+                "source_sidecar_exact": not bool(source_sampled),
                 "source_rows_role": source_rows_role,
             }
         )
@@ -133,6 +137,7 @@ def write_figure_row_sidecar(
         result_metadata["source_columns"] = [str(column) for column in rows.columns]
         result_metadata["source_written_row_count"] = int(len(sampled_rows))
         result_metadata["source_sampled"] = bool(sampled)
+        result_metadata["source_sidecar_exact"] = not bool(sampled)
         result_metadata["source_rows_role"] = plot_rows_role
         result_metadata.update(figure_sidecar_dimension_counts(rows, prefix="source"))
     if metadata:
@@ -209,6 +214,15 @@ def sidecar_rows_for_write(
     if limit is not None and limit > 0 and len(rows) > limit:
         return rows.sample(n=int(limit), random_state=random_state).copy(), True
     return rows.copy(), False
+
+
+def _normalized_sidecar_row_limit(limit: int | None) -> int | None:
+    """Return the positive sidecar row limit, or ``None`` when all rows are written."""
+
+    if limit is None:
+        return None
+    value = int(limit)
+    return value if value > 0 else None
 
 
 def _csv_sidecar_rows(rows: pd.DataFrame) -> pd.DataFrame:
