@@ -24,6 +24,7 @@ from spatial_vtk.visualize.dashboard.charts import (
     build_value_vs_distance_figure,
 )
 from spatial_vtk.visualize.dashboard.contracts import (
+    dashboard_map_readiness,
     dashboard_summary_readiness_frame,
     load_dashboard_summary_tables,
     load_metric_long_table,
@@ -168,20 +169,26 @@ def _render_metrics_dashboard(summaries: dict[str, pd.DataFrame], long_metrics: 
             st.plotly_chart(build_metric_heatmap_figure(heat, value_col=value_col), width="stretch")
         st.dataframe(_display_table(heat), width="stretch")
     with station_tab:
+        station_map_status = dashboard_map_readiness(stations, "station_rollup")
         if station_value_message:
             st.info(station_value_message)
         elif stations.empty:
             st.info(_empty_rows_message("station"))
+        elif station_map_status["ready"] is False:
+            st.info(str(station_map_status["message"]))
         else:
             station_map = build_station_folium_map(stations, value_col=value_col, basemap=basemap, marker_cluster=marker_cluster, max_markers=int(max_markers))
             st_folium(station_map, use_container_width=True, height=620)
             st.download_button("Download station map HTML", render_folium_html(station_map), file_name="station_metric_map.html")
         st.dataframe(_display_table(stations), width="stretch")
     with event_tab:
+        event_map_status = dashboard_map_readiness(events, "event_rollup")
         if event_value_message:
             st.info(event_value_message)
         elif events.empty:
             st.info(_empty_rows_message("event"))
+        elif event_map_status["ready"] is False:
+            st.info(str(event_map_status["message"]))
         else:
             st_folium(build_event_folium_map(events, value_col=value_col, basemap=basemap, marker_cluster=marker_cluster, max_markers=int(max_markers)), use_container_width=True, height=560)
         st.dataframe(_display_table(events), width="stretch")
@@ -253,8 +260,11 @@ def _render_dashboard_readiness(readiness: pd.DataFrame) -> None:
         "readiness",
         "row_count",
         "missing_columns",
+        "map_ready",
+        "missing_map_columns",
         "nonempty_value_columns",
         "message",
+        "map_message",
     ]
     shown = [column for column in columns if column in readiness.columns]
     st.dataframe(_display_table(readiness[shown]), width="stretch")

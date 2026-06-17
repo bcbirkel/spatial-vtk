@@ -59,6 +59,7 @@ from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize import default_figure_paths
 from spatial_vtk.visualize.figure_sidecars import FigureSidecarResult, write_figure_row_sidecar
 from spatial_vtk.visualize.dashboard import (
+    dashboard_map_readiness,
     dashboard_output_namespace,
     dashboard_summary_readiness_frame,
     filter_optional_dashboard_summary,
@@ -619,9 +620,19 @@ def test_dashboard_summary_readiness_reports_missing_empty_and_value_states(tmp_
     assert by_table.loc["model_metric_band", "ready"] is True
     assert by_table.loc["station_rollup", "readiness"] == "no_value_data"
     assert "finite dashboard value" in by_table.loc["station_rollup", "message"]
+    assert by_table.loc["station_rollup", "map_ready"] is False
+    assert "longitude" in by_table.loc["station_rollup", "missing_map_columns"]
     assert by_table.loc["event_rollup", "readiness"] == "empty"
+    assert by_table.loc["event_rollup", "map_ready"] is False
+    assert "coordinate columns" in by_table.loc["event_rollup", "map_message"]
     assert by_table.loc["path_hex", "readiness"] == "missing"
     assert "dist_bin_km" in by_table.loc["path_hex", "missing_columns"]
+
+    ready_map = dashboard_map_readiness(
+        pd.DataFrame({"station": ["STA"], "sta_lon": [-118.1], "sta_lat": [34.2]}),
+        "station_rollup",
+    )
+    assert ready_map["ready"] is True
 
 
 def test_optional_dashboard_summary_filter_reports_missing_value_columns():

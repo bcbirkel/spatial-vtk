@@ -18,6 +18,7 @@ from spatial_vtk.visualize.dashboard import (
     build_qc_histogram_figure,
     build_station_folium_map,
     build_streamlit_command,
+    dashboard_map_readiness,
     dashboard_output_namespace,
     dashboard_output_paths,
     dashboard_output_status_frame,
@@ -154,6 +155,8 @@ outputs:
     assert station_status["readiness"] == "no_value_data"
     assert station_status["row_count"] == 1
     assert "finite dashboard value" in station_status["message"]
+    assert station_status["map_ready"] is False
+    assert "coordinate columns" in station_status["map_message"]
 
     model_status = status.loc[status["name"].eq("model_metric_band_summary_path")].iloc[0]
     assert model_status["ready"] is True
@@ -178,6 +181,13 @@ outputs:
     contracts = dashboard_summary_table_contracts()
     assert set(contracts["table"]) == {"model_metric_band", "station_rollup", "event_rollup", "path_hex"}
     assert "Compare Models" in contracts.loc[contracts["table"].eq("model_metric_band"), "tabs"].iloc[0]
+
+    station_map_status = dashboard_map_readiness(
+        pd.DataFrame({"station": ["STA"], "model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "n": [1], "med_log2_residual": [0.1]}),
+        "station_rollup",
+    )
+    assert station_map_status["ready"] is False
+    assert "longitude" in station_map_status["missing_columns"]
 
 
 def test_dashboard_summaries_do_not_require_residual_column():

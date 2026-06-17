@@ -45,6 +45,10 @@ OPTIONAL_METRICS_TABLE_COLUMNS: dict[str, tuple[str, ...]] = {
     "event_rollup": ("component", "event_lat", "event_lon", "med_dist_km", "magnitude", "event_magnitude"),
     "path_hex": ("component",),
 }
+MAP_COORDINATE_CANDIDATES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
+    "station_rollup": (("sta_lon", "station_lon", "lon", "longitude"), ("sta_lat", "station_lat", "lat", "latitude")),
+    "event_rollup": (("event_lon", "lon", "longitude"), ("event_lat", "lat", "latitude")),
+}
 
 
 @dataclass(frozen=True)
@@ -297,9 +301,12 @@ def _attach_dashboard_readiness(status: pd.DataFrame) -> pd.DataFrame:
         "readiness",
         "row_count",
         "missing_columns",
+        "map_ready",
+        "missing_map_columns",
         "value_columns",
         "nonempty_value_columns",
         "message",
+        "map_message",
     ):
         out[column] = pd.Series([pd.NA] * len(out), index=out.index, dtype="object")
     for index, row in out.iterrows():
@@ -341,6 +348,7 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
     missing = sorted(column for column in required if column not in table.columns)
     value_columns = _dashboard_value_columns(table)
     nonempty_value_columns = _nonempty_dashboard_value_columns(table, value_columns)
+    map_status = dashboard_map_readiness(table, table_name)
     row_count = int(len(table))
     if missing:
         readiness = "missing_columns"
@@ -363,10 +371,55 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
         "readiness": readiness,
         "row_count": row_count,
         "missing_columns": ", ".join(missing),
+        "map_ready": map_status["ready"],
+        "missing_map_columns": map_status["missing_columns"],
         "value_columns": ", ".join(value_columns),
         "nonempty_value_columns": ", ".join(nonempty_value_columns),
         "message": message,
+        "map_message": map_status["message"],
     }
+
+
+def dashboard_map_readiness(table: pd.DataFrame, table_name: str) -> dict[str, object]:
+    """Return map-coordinate readiness for one dashboard summary table.
+
+    Tables without a map tab return blank map-readiness fields. Station and
+    event summaries are considered map-ready only when they contain one
+    supported longitude column, one supported latitude column, and at least one
+    finite coordinate pair.
+    """
+
+    candidates = MAP_COORDINATE_CANDIDATES.get(str(table_name))
+    if candidates is None:
+        return {"ready": "", "missing_columns": "", "message": ""}
+    lon_candidates, lat_candidates = candidates
+    lon_col = next((column for column in lon_candidates if column in table.columns), None)
+    lat_col = next((column for column in lat_candidates if column in table.columns), None)
+    missing_parts: list[str] = []
+    if lon_col is None:
+        missing_parts.append(f"longitude ({', '.join(lon_candidates)})")
+    if lat_col is None:
+        missing_parts.append(f"latitude ({', '.join(lat_candidates)})")
+    if missing_parts:
+        return {
+            "ready": False,
+            "missing_columns": "; ".join(missing_parts),
+            "message": f"{table_name} summary can populate its table, but its map needs coordinate columns: {'; '.join(missing_parts)}.",
+        }
+    coordinates = pd.DataFrame(
+        {
+            "lon": pd.to_numeric(table[lon_col], errors="coerce"),
+            "lat": pd.to_numeric(table[lat_col], errors="coerce"),
+        }
+    )
+    finite_pairs = coordinates.dropna(subset=["lon", "lat"])
+    if finite_pairs.empty:
+        return {
+            "ready": False,
+            "missing_columns": "",
+            "message": f"{table_name} summary has coordinate columns but no finite longitude/latitude pairs for the map.",
+        }
+    return {"ready": True, "missing_columns": "", "message": f"{table_name} map coordinates are ready."}
 
 
 def _dashboard_value_columns(table: pd.DataFrame) -> list[str]:
@@ -473,6 +526,7 @@ def _require_columns(df: pd.DataFrame, columns: set[str], *, table_name: str) ->
 
 __all__ = [
     "METRICS_TABLES",
+    "MAP_COORDINATE_CANDIDATES",
     "MetricsDashboardPaths",
     "OPTIONAL_METRICS_TABLE_COLUMNS",
     "QCDashboardPaths",
@@ -483,6 +537,7 @@ __all__ = [
     "dashboard_summary_readiness_frame",
     "dashboard_summary_table_contracts",
     "dashboard_summary_table_paths",
+    "dashboard_map_readiness",
     "load_dashboard_summary_tables",
     "load_metric_long_table",
     "read_dashboard_table",
