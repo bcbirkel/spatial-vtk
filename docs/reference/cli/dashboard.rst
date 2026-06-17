@@ -107,7 +107,8 @@ svtk dashboard metrics
 
    svtk dashboard metrics [-h] [--config CONFIG]
                               [--run-scenario RUN_SCENARIO]
-                              [--metrics-root PATH] [--summary-root DIR]
+                              [--metrics-dataset-dir PATH]
+                              [--dashboard-summary-table-dir DIR]
                               [--port PORT] [--address ADDRESS] [--auto-port]
                               [--proxy-mode] [--show]
 
@@ -133,11 +134,11 @@ svtk dashboard metrics
      - No
      -
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
-   * - ``--metrics-root``, ``--metrics-dataset``
+   * - ``--metrics-dataset-dir``, ``--metrics-root``, ``--metrics-dataset``
      - No
      -
-     - Value: ``PATH``. Dashboard-ready metric dataset directory or direct CSV/parquet table. Defaults to the configured dashboard output key 'metrics_dashboard'.
-   * - ``--summary-root``, ``--dashboard-summary-dir``
+     - Value: ``PATH``. Dashboard-ready metric row dataset directory or direct CSV/parquet table. Defaults to the configured dashboard output key 'metrics_dashboard'.
+   * - ``--dashboard-summary-table-dir``, ``--summary-root``, ``--dashboard-summary-dir``
      - No
      -
      - Value: ``DIR``. Directory containing dashboard summary tables (model_metric_band, station_rollup, event_rollup, path_hex). Defaults to the configured dashboard output key 'dashboard_summaries'.

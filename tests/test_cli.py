@@ -3075,8 +3075,13 @@ def test_cli_dashboard_help_exposes_clear_path_aliases(capsys):
         main(["dashboard", "metrics", "--help"])
     assert excinfo.value.code == 0
     metrics_help = capsys.readouterr().out
+    assert "--metrics-dataset-dir" in metrics_help
     assert "--metrics-dataset" in metrics_help
+    assert "--metrics-root" in metrics_help
+    assert "--dashboard-summary-table-dir" in metrics_help
     assert "--dashboard-summary-dir" in metrics_help
+    assert "--summary-root" in metrics_help
+    assert "metric row dataset directory" in metrics_help
     assert "metrics_dashboard" in metrics_help
     assert "dashboard_summaries" in metrics_help
 
@@ -3110,9 +3115,9 @@ def test_cli_dashboard_metrics_accepts_clear_path_aliases(tmp_path, monkeypatch,
             [
                 "dashboard",
                 "metrics",
-                "--metrics-dataset",
+                "--metrics-dataset-dir",
                 str(metrics_path),
-                "--dashboard-summary-dir",
+                "--dashboard-summary-table-dir",
                 str(summary_path),
                 "--port",
                 "8555",

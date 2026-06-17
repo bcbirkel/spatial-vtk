@@ -1072,17 +1072,19 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     metrics.add_argument("--config", default=None, help="Spatial-VTK config used to find default dashboard outputs.")
     metrics.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     metrics.add_argument(
+        "--metrics-dataset-dir",
         "--metrics-root",
         "--metrics-dataset",
         metavar="PATH",
         dest="metrics_root",
         default=None,
         help=(
-            "Dashboard-ready metric dataset directory or direct CSV/parquet table. "
+            "Dashboard-ready metric row dataset directory or direct CSV/parquet table. "
             "Defaults to the configured dashboard output key 'metrics_dashboard'."
         ),
     )
     metrics.add_argument(
+        "--dashboard-summary-table-dir",
         "--summary-root",
         "--dashboard-summary-dir",
         metavar="DIR",
@@ -1583,7 +1585,7 @@ def _resolve_metrics_dashboard_paths(
     if config is None:
         raise ValueError(
             "No dashboard roots were provided and no Spatial-VTK config was found. "
-            "Pass --metrics-dataset and --dashboard-summary-dir, pass --config, "
+            "Pass --metrics-dataset-dir and --dashboard-summary-table-dir, pass --config, "
             "or run 'svtk config set CONFIG_PATH'."
         )
     paths = dashboard_output_paths(cfg=config, include_summary_tables=False)
