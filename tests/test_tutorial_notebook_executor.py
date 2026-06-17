@@ -390,6 +390,21 @@ def test_large_run_notebooks_describe_configured_output_locations() -> None:
         assert not matches, f"{notebook_path.relative_to(repo_root)} contains fixed run paths: {matches}"
 
 
+def test_large_run_notebooks_use_output_group_helper() -> None:
+    """Large-run notebooks should use the consolidated output group helper."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
+    assert notebooks
+    for notebook_path in notebooks:
+        source = notebook_path.read_text(encoding="utf-8")
+        if notebook_path.name == "step_07_large_run_dashboards.ipynb":
+            continue
+        assert "output_group(" in source, notebook_path.relative_to(repo_root)
+        assert "output_group_namespace" not in source, notebook_path.relative_to(repo_root)
+        assert "output_group_status_frame" not in source, notebook_path.relative_to(repo_root)
+
+
 def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
     """Tutorial notebooks should teach stable public plotting imports."""
 

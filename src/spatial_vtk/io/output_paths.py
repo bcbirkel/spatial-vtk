@@ -62,6 +62,134 @@ class OutputArtifact:
 
 
 @dataclass(frozen=True)
+class OutputGroup:
+    """Resolved paths and status helpers for one workflow output group.
+
+    Parameters
+    ----------
+    name
+        Workflow group name, such as ``"step_03_metrics"``.
+    paths
+        Mapping from variable-style path names to resolved paths.
+
+    Notes
+    -----
+    ``OutputGroup`` supports attribute access for existing notebook code
+    (``outputs.metrics_long_path``), mapping-style access
+    (``outputs["metrics_long_path"]``), and display helpers such as
+    :meth:`status_frame` and :meth:`readiness`.
+    """
+
+    name: str
+    paths: dict[str, Path]
+
+    def __getattr__(self, name: str) -> Path:
+        """Return one resolved path by attribute name."""
+
+        try:
+            return self.paths[name]
+        except KeyError as exc:
+            raise AttributeError(name) from exc
+
+    def __getitem__(self, name: str) -> Path:
+        """Return one resolved path by mapping key."""
+
+        return self.paths[name]
+
+    def __contains__(self, name: object) -> bool:
+        """Return whether one path name is present."""
+
+        return name in self.paths
+
+    def keys(self):
+        """Return path names in display order."""
+
+        return self.paths.keys()
+
+    def items(self):
+        """Return ``(name, path)`` pairs in display order."""
+
+        return self.paths.items()
+
+    def values(self):
+        """Return resolved paths in display order."""
+
+        return self.paths.values()
+
+    def as_dict(self) -> dict[str, Path]:
+        """Return a shallow copy of the resolved path mapping."""
+
+        return dict(self.paths)
+
+    def status_frame(self, *, extra_paths=None):
+        """Return a display-ready status frame for the group."""
+
+        paths = self.as_dict()
+        if extra_paths is not None:
+            paths.update(_coerce_named_paths(extra_paths))
+        return output_status_frame(paths)
+
+    def completion(self, *, include_optional: bool = False) -> dict[str, object]:
+        """Return completion counts for this group's currently resolved paths."""
+
+        artifacts = output_group_artifacts(self.name)
+        required_names = {
+            artifact.name
+            for artifact in artifacts
+            if artifact.required or include_optional
+        }
+        rows = output_status_rows(
+            {
+                name: path
+                for name, path in self.paths.items()
+                if include_optional or name in required_names
+            }
+        )
+        existing = sum(1 for row in rows if row["exists"])
+        total = len(rows)
+        return {
+            "group": self.name,
+            "complete": existing == total,
+            "existing": existing,
+            "total": total,
+            "missing": [row["name"] for row in rows if not row["exists"]],
+        }
+
+    def readiness(
+        self,
+        outputs: Iterable[str] | None = None,
+        *,
+        inputs=(),
+        sources=(),
+        overwrite: bool = False,
+        missing_input_message: str | None = None,
+        current_message: str | None = None,
+        rebuild_message: str | None = None,
+    ) -> "OutputReadiness":
+        """Return a rebuild decision for selected group outputs.
+
+        Parameters
+        ----------
+        outputs
+            Optional path names from this group. When omitted, all resolved
+            group paths are considered outputs.
+        inputs, sources, overwrite, missing_input_message, current_message, rebuild_message
+            Passed through to :func:`output_readiness`.
+        """
+
+        selected = self.paths if outputs is None else {name: self.paths[name] for name in outputs}
+        return output_readiness(
+            selected,
+            inputs=inputs,
+            sources=sources,
+            overwrite=overwrite,
+            missing_input_message=missing_input_message,
+            current_message=current_message,
+            rebuild_message=rebuild_message,
+        )
+
+
+@dataclass(frozen=True)
 class OutputReadiness:
     """Decision record for one output-producing workflow step.
 
@@ -341,6 +469,27 @@ def output_group_namespace(
     """Resolve one output group as an attribute namespace."""
 
     return SimpleNamespace(**output_group_paths(group, cfg=cfg, create_parent=create_parent, include_optional=include_optional))
+
+
+def output_group(
+    group: str,
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    create_parent: bool = True,
+    include_optional: bool = True,
+) -> OutputGroup:
+    """Resolve one workflow output group with path and status helpers."""
+
+    normalized = str(group).strip().lower().replace("-", "_").replace(" ", "_")
+    return OutputGroup(
+        name=normalized,
+        paths=output_group_paths(
+            normalized,
+            cfg=cfg,
+            create_parent=create_parent,
+            include_optional=include_optional,
+        ),
+    )
 
 
 def output_status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
@@ -844,9 +993,11 @@ def _format_mtime(timestamp: float) -> str:
 __all__ = [
     "OUTPUT_GROUPS",
     "OutputArtifact",
+    "OutputGroup",
     "OutputGroupName",
     "OutputReadiness",
     "default_output_paths",
+    "output_group",
     "output_group_artifacts",
     "output_group_completion",
     "output_group_namespace",

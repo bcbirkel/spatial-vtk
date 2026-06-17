@@ -8,7 +8,7 @@ def test_public_imports():
     from spatial_vtk.config import abbreviate_model, configured_output_registry_frame, run_notebook_step_if_needed
     from spatial_vtk.metrics import METRIC_NAMES, amplitude_spectrum, calculate_metrics_for_pairs, compute_metrics_pair
     from spatial_vtk.metrics.plot import MetricFigureContext
-    from spatial_vtk.io import inspect_synthetic_format, prepare_station_metadata, resolve_model_aliases
+    from spatial_vtk.io import OutputGroup, inspect_synthetic_format, output_group, prepare_station_metadata, resolve_model_aliases
     from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
     from spatial_vtk.qc.build import slurm_settings_from_config as build_slurm_settings_from_config
     from spatial_vtk.spatial import (
@@ -33,6 +33,8 @@ def test_public_imports():
     assert callable(compute_metrics_pair)
     assert callable(MetricFigureContext.from_frame)
     assert callable(inspect_synthetic_format)
+    assert callable(output_group)
+    assert callable(OutputGroup)
     assert callable(prepare_station_metadata)
     assert callable(resolve_model_aliases)
     assert callable(load_trace_inventory_lookup)
@@ -146,6 +148,7 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert ":doc:`python_workflows`" in python_api
     required_helpers = [
         "spatial_vtk.config.run_notebook_step_if_needed",
+        "spatial_vtk.io.output_group",
         "spatial_vtk.io.preprocess_waveforms_from_config",
         "spatial_vtk.io.build_record_coverage_from_config",
         "spatial_vtk.qc.run_qc_inventory_from_config",

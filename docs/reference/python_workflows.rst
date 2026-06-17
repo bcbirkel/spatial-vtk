@@ -32,14 +32,16 @@ compatibility aliases.
    from spatial_vtk.config import SpatialVTKConfig
    from spatial_vtk.config import configured_output_registry_frame
    from spatial_vtk.config.notebook import notebook_run_context, run_notebook_step_if_needed
-   from spatial_vtk.io import output_readiness
+   from spatial_vtk.io import output_group, output_readiness
 
    cfg = SpatialVTKConfig.from_file("runs/spatial_vtk_config.yaml").activate()
    context = notebook_run_context()
+   step_outputs = output_group("step_02_qc", cfg=cfg)
    display(configured_output_registry_frame(cfg=cfg, kinds=("table",)).head())
+   display(step_outputs.status_frame())
    readiness = output_readiness(
-       {"trace_qc_summary": "outputs/tables/qc_trace_summary.parquet"},
-       inputs={"event_station_records": "outputs/tables/event_station_records.parquet"},
+       {"trace_qc_summary_path": step_outputs.trace_qc_path},
+       inputs={"event_station_records_path": step_outputs.event_station_path},
    )
 
    run_notebook_step_if_needed(
@@ -72,6 +74,10 @@ the large-run notebooks.
    * - ``spatial_vtk.io.output_readiness``
      - Report whether configured outputs are missing, stale relative to inputs,
        blocked by missing inputs, or ready to reuse.
+   * - ``spatial_vtk.io.output_group``
+     - Resolve a named workflow output group once, then use attribute access,
+       ``status_frame()``, ``completion()``, and ``readiness()`` instead of
+       cluttering notebooks with repeated path variables.
    * - ``spatial_vtk.config.run_notebook_step_if_needed``
      - Display the readiness table, then run or submit a Python package
        workflow function only when work is needed.

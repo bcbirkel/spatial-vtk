@@ -41,6 +41,7 @@ from spatial_vtk.io import (
     apply_waveform_preprocessing,
     artifact_path_for_spec,
     default_output_paths,
+    output_group,
     read_artifact_manifest,
     metric_plan_from_config,
     output_group_completion,
@@ -889,6 +890,40 @@ outputs:
     assert namespace.qc_trace_summary_path == tmp_path / "run_outputs" / "tables" / "qc_trace_summary.csv"
     assert namespace.metrics_dashboard_root == tmp_path / "run_outputs" / "dashboards" / "metrics_dashboard"
     assert namespace.dashboard_summary_root == tmp_path / "run_outputs" / "dashboards" / "dashboard_summaries"
+
+    group = output_group("step_03_metrics", cfg=cfg)
+    assert group.name == "step_03_metrics"
+    assert group.metrics_long_path == paths["metrics_long_path"]
+    assert group["metrics_long_path"] == paths["metrics_long_path"]
+    assert "metrics_long_path" in group
+    assert group.as_dict()["metric_rows_path"] == tmp_path / "run_outputs" / "tables" / "metric_rows.parquet"
+    group_status = group.status_frame()
+    assert "metrics_long_path" in set(group_status["name"])
+    group_completion = group.completion()
+    assert group_completion["complete"] is False
+    assert "metrics_enriched_path" in group_completion["missing"]
+
+    readiness = group.readiness(
+        ["metrics_long_path"],
+        inputs={"prepared_events_path": metric_paths["prepared_events_path"]},
+        sources={"prepared_events_path": metric_paths["prepared_events_path"]},
+        current_message="Metric outputs are current.",
+    )
+    assert readiness.reason == "missing_inputs"
+    prepared_events = metric_paths["prepared_events_path"]
+    prepared_events.parent.mkdir(parents=True, exist_ok=True)
+    prepared_events.write_text("event_id\nE1\n", encoding="utf-8")
+    group.metrics_long_path.parent.mkdir(parents=True, exist_ok=True)
+    group.metrics_long_path.write_text("metric\nPGA\n", encoding="utf-8")
+    readiness = group.readiness(
+        ["metrics_long_path"],
+        inputs={"prepared_events_path": prepared_events},
+        sources={"prepared_events_path": prepared_events},
+        current_message="Metric outputs are current.",
+    )
+    assert readiness.reason == "current"
+    assert readiness.message == "Metric outputs are current."
+
     dashboard_namespace = dashboard_output_namespace(cfg=cfg)
     assert dashboard_namespace.qc_trace_summary_path == namespace.qc_trace_summary_path
     assert dashboard_namespace.metrics_dashboard_root == namespace.metrics_dashboard_root
@@ -896,7 +931,7 @@ outputs:
 
     status = output_group_status("step_04_spatial", cfg=cfg)
     assert status[0]["name"] == "metrics_long_path"
-    assert status[0]["exists"] is False
+    assert status[0]["exists"] is True
     extra_input = tmp_path / "run_outputs" / "preprocessed_waveforms" / "metadata" / "trace_metadata.parquet"
     extra_input.parent.mkdir(parents=True, exist_ok=True)
     extra_input.write_text("placeholder\n", encoding="utf-8")
@@ -912,7 +947,7 @@ outputs:
     write_output_table("metrics_long", pd.DataFrame({"metric": ["PGA"]}), cfg=cfg)
     completion = output_group_completion("step_03_metrics", cfg=cfg)
     assert completion["complete"] is False
-    assert completion["existing"] == 1
+    assert completion["existing"] == 2
     assert "metrics_enriched_path" in completion["missing"]
 
     assert should_rebuild_outputs({"metrics_long_path": paths["metrics_long_path"]}) is False
