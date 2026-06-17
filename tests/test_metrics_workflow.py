@@ -311,6 +311,68 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
         assert metadata["source_row_count"] >= metadata["written_row_count"]
 
 
+def test_metric_station_summary_uses_supported_station_and_event_aliases(tmp_path) -> None:
+    """Station aggregation should not depend on already-canonical column names."""
+
+    rows = pd.DataFrame(
+        {
+            "event_title": ["e1", "e2", "e3", "e4"],
+            "station_id": ["STA", "STA", "STA", "STB"],
+            "station_lon": [-118.0, -118.04, -118.02, -117.9],
+            "station_lat": [34.0, 34.04, 34.02, 34.1],
+            "metric": ["PGA", "PGA", "PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec", "1-2 sec"],
+            "component": ["Z", "Z", "Z", "Z"],
+            "model": ["m1", "m1", "m1", "m1"],
+            "log2_residual": [1.0, 3.0, np.nan, -2.0],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        rows,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+        station_aggregation="mean",
+        write_sidecars=True,
+        sidecar_rows=None,
+    )
+
+    summary = context.station_summary_for_map(rows)
+    sta = summary.loc[summary["station"].eq("STA")].iloc[0]
+
+    assert "station" in summary.columns
+    assert "sta_lon" in summary.columns
+    assert "sta_lat" in summary.columns
+    assert sta["log2_residual"] == pytest.approx(2.0)
+    assert sta["source_row_count"] == 2
+    assert sta["source_event_count"] == 2
+    assert sta["input_row_count"] == 3
+    assert sta["input_event_count"] == 3
+    assert sta["dropped_nonfinite_row_count"] == 1
+    assert sta["dropped_nonfinite_event_count"] == 1
+    assert sta["source_coordinate_count"] == 3
+    assert sta["sta_lon"] == pytest.approx(-118.02)
+    assert sta["sta_lat"] == pytest.approx(34.02)
+    assert summary.attrs["svtk_aggregation_group_columns"] == ["station_id"]
+    assert summary.attrs["svtk_aggregation_coordinate_columns"] == ["station_lon", "station_lat"]
+    assert summary.attrs["svtk_aggregation_input_event_count"] == 4
+    assert summary.attrs["svtk_aggregation_finite_event_count"] == 3
+
+    def _dummy_plot(frame: pd.DataFrame, *, output_path, **kwargs) -> None:
+        Path(output_path).write_text(str(len(frame)), encoding="utf-8")
+
+    item = {"key": "pga", "label": "PGA", "metric": "PGA", "period_s": None, "df": rows}
+    output = context.write_metric_plot("alias_station_map", item, _dummy_plot, df=summary, source_df=rows)
+    assert output is not None
+    metadata = json.loads((context.sidecar_output_dir / f"{output.stem}.json").read_text(encoding="utf-8"))
+    assert metadata["plot_rows_role"] == "post_aggregation_station_summary"
+    assert metadata["source_rows_role"] == "pre_aggregation_metric_rows"
+    assert metadata["plot_station_count"] == 2
+    assert metadata["source_station_count"] == 2
+    assert metadata["source_event_count"] == 4
+
+
 def test_metric_workflow_runs_tasks_and_applies_side_specific_spectral_qc(tmp_path) -> None:
     """The workflow should plan pair tasks, run rows, and preserve QC provenance."""
 

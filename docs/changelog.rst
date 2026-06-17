@@ -2,6 +2,14 @@ Changelog
 =========
 
 2026-06-16
+   Hardened large-run station aggregation for metric and spatial maps against
+   non-canonical table schemas. Station-level map summaries now recognize
+   ``station_id`` and ``station_code`` as station identifiers, ``station_lon`` /
+   ``station_lat`` and ``station_longitude`` / ``station_latitude`` as station
+   coordinates, and ``event`` / ``event_title`` as event identifiers for audit
+   counts. Aggregated map rows are still normalized back to ``station``,
+   ``sta_lon``, and ``sta_lat`` for plotting, while sidecar metadata records
+   the original grouping and coordinate columns used for provenance.
    Hardened clean standard tutorial execution for source checkouts. The
    preprocessing workflow now prefers canonical config-generated waveform
    columns over legacy format-specific metadata columns when both exist, so
