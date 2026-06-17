@@ -538,7 +538,7 @@ def test_metric_and_spatial_figure_families(tmp_path: Path) -> None:
 def test_spatial_metric_maps_write_optional_row_sidecars(tmp_path: Path) -> None:
     """Spatial metric map figures should optionally write plotted/source rows."""
 
-    metrics = _metric_rows()
+    metrics = _metric_rows().assign(mapped_region_type=["keep", "drop", "keep", "drop"])
     path_overlay = pd.DataFrame(
         {
             "event_lon": [-118.5, -118.45],
@@ -557,6 +557,8 @@ def test_spatial_metric_maps_write_optional_row_sidecars(tmp_path: Path) -> None
             value_col="log2_residual",
             records_df=path_overlay,
             add_basemap=False,
+            station_region_col="mapped_region_type",
+            station_regions="keep",
             write_sidecar=True,
             sidecar_rows=3,
             sidecar_dir=sidecar_dir,
@@ -566,6 +568,8 @@ def test_spatial_metric_maps_write_optional_row_sidecars(tmp_path: Path) -> None
             tmp_path / "station_metric_map_by_period.png",
             value_col="log2_residual",
             add_basemap=False,
+            station_region_col="mapped_region_type",
+            station_regions="keep",
             write_sidecar=True,
             sidecar_rows=3,
             sidecar_dir=sidecar_dir,
@@ -583,6 +587,8 @@ def test_spatial_metric_maps_write_optional_row_sidecars(tmp_path: Path) -> None
             tmp_path / "map_by_model.png",
             value_col="value_obs",
             add_basemap=False,
+            station_region_col="mapped_region_type",
+            station_regions="keep",
             write_sidecar=True,
             sidecar_rows=3,
             sidecar_dir=sidecar_dir,
@@ -602,11 +608,19 @@ def test_spatial_metric_maps_write_optional_row_sidecars(tmp_path: Path) -> None
     station_sidecar = sidecar_dir / "station_metric_map.csv"
     station_metadata = json.loads((sidecar_dir / "station_metric_map.json").read_text(encoding="utf-8"))
     station_rows = pd.read_csv(station_sidecar)
-    assert station_metadata["plot_row_count"] == len(metrics) + len(path_overlay)
+    selected_metric_rows = int(metrics["mapped_region_type"].eq("keep").sum())
+    assert station_metadata["plot_row_count"] == selected_metric_rows + len(path_overlay)
     assert station_metadata["written_row_count"] == 3
-    assert station_metadata["source_row_count"] == len(metrics)
+    assert station_metadata["source_row_count"] == selected_metric_rows
     assert set(station_rows["_figure_layer"]).issubset({"metric", "record"})
-    assert (sidecar_dir / "station_metric_map.source.csv").exists()
+    station_source = pd.read_csv(sidecar_dir / "station_metric_map.source.csv")
+    assert set(station_source["mapped_region_type"]) == {"keep"}
+
+    for stem in ("station_metric_map_by_period", "map_by_model"):
+        source_rows = pd.read_csv(sidecar_dir / f"{stem}.source.csv")
+        metadata = json.loads((sidecar_dir / f"{stem}.json").read_text(encoding="utf-8"))
+        assert metadata["source_row_count"] == selected_metric_rows
+        assert set(source_rows["mapped_region_type"]) == {"keep"}
 
     residual_metadata = json.loads((sidecar_dir / "residual_grid.json").read_text(encoding="utf-8"))
     assert residual_metadata["figure_type"] == "residual_grid"
