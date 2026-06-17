@@ -279,16 +279,18 @@ spatial:
         }
     )
 
-    result = run_spatial_statistics_workflow(metrics, cfg=cfg, station_metadata=station_metadata, verbose=True)
+    result = run_spatial_statistics_workflow(metrics, cfg=cfg, metric=("C5",), station_metadata=station_metadata, verbose=True)
 
     assert result.metrics == ("C5",)
     assert not result.tables["metric_field"].empty
     assert not result.tables["event_centered_residuals"].empty
     assert not result.tables["station_bias"].empty
-    assert set(result.paths) >= {"metric_field", "station_bias", "geology_contrasts"}
+    assert set(result.paths) >= {"metric_field", "station_bias", "morans_i", "permutation_moran", "geology_contrasts"}
     assert result.paths["metric_field"] == tmp_path / "outputs" / "tables" / "metric_field.parquet"
     assert result.paths["metric_field"].exists()
     assert result.paths["station_bias"].exists()
+    assert result.paths["permutation_moran"].exists()
+    assert result.tables["permutation_moran"].equals(result.tables["morans_i"])
     assert result.tables["metric_field"]["metric"].eq("C5").all()
     assert result.tables["station_bias"]["metric"].eq("C5").all()
 

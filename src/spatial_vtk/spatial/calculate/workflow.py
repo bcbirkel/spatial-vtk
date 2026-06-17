@@ -13,6 +13,7 @@ Create standard paths for spatial outputs:
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 import time
@@ -221,7 +222,7 @@ def run_spatial_statistics_workflow(
     metrics: pd.DataFrame | str | Path | None = None,
     *,
     cfg: SpatialVTKConfig | None = None,
-    metric: str | None = None,
+    metric: str | Sequence[str] | None = None,
     station_metadata: pd.DataFrame | str | Path | None = None,
     verbose: bool = False,
 ) -> SpatialStatisticsWorkflowResult:
@@ -237,7 +238,8 @@ def run_spatial_statistics_workflow(
         because lower-level spatial helpers read active spatial settings.
     metric
         Optional metric override. Use ``"all"`` to process each available
-        metric in the input table.
+        metric in the input table, or pass a sequence such as
+        ``("PGA", "FAS")`` to process a curated subset.
     station_metadata
         Optional prepared station metadata table or path for geology contrasts.
         When omitted, the configured ``prepared_stations`` output is used if it
@@ -408,6 +410,7 @@ def run_spatial_statistics_workflow(
         "event_centered_residuals": _concat_or_empty(centered_tables, ("model", "band", "component", "event_id", "station", "field_value", "field_centered", "metric")),
         "station_bias": _concat_or_empty(station_bias_tables, SPATIAL_SUMMARY_COLUMNS["station_bias"]),
         "morans_i": _concat_or_empty(moran_tables, SPATIAL_SUMMARY_COLUMNS["morans_i"]),
+        "permutation_moran": _concat_or_empty(moran_tables, SPATIAL_SUMMARY_COLUMNS["morans_i"]),
         "distance_bin_correlations": _concat_or_empty(distance_tables, SPATIAL_SUMMARY_COLUMNS["distance_bin_correlations"]),
         "clusters": _concat_or_empty(cluster_tables, SPATIAL_SUMMARY_COLUMNS["clusters"]),
         "cluster_scores": _concat_or_empty(cluster_score_tables, SPATIAL_SUMMARY_COLUMNS["cluster_scores"]),
@@ -435,11 +438,19 @@ def run_spatial_statistics_workflow(
     )
 
 
-def _spatial_metric_list(metrics: pd.DataFrame, configured: str) -> list[str]:
+def _spatial_metric_list(metrics: pd.DataFrame, configured: str | Sequence[str]) -> list[str]:
     """Return metric names to process for a spatial workflow."""
 
-    token = str(configured).strip()
     available = sorted(metrics["metric"].dropna().astype(str).unique().tolist()) if "metric" in metrics.columns else []
+    if not isinstance(configured, str) and isinstance(configured, Sequence):
+        selected = [str(item).strip() for item in configured if str(item).strip()]
+        if not selected:
+            return available
+        missing = [item for item in selected if available and item not in available]
+        if missing:
+            raise KeyError(f"Configured spatial metrics {missing!r} are not present in metrics_long. Choices: {available}")
+        return selected
+    token = str(configured).strip()
     if token.lower() in {"all", "*", ""}:
         return available or [token or "all"]
     if available and token not in available:

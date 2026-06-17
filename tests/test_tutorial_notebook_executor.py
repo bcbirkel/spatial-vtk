@@ -183,6 +183,27 @@ def test_tutorial_notebooks_use_table_helpers_for_file_reads() -> None:
             assert "pd.read_" not in source, f"{notebook_path.relative_to(repo_root)} cell {index}"
 
 
+def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
+    """The spatial tutorial should use the package workflow for standard tables."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "step_04_spatial_statistics.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "run_spatial_statistics_workflow(" in source
+    for helper in (
+        "build_metric_field",
+        "center_field_by_event",
+        "compute_global_morans_i",
+        "run_residual_feature_clustering",
+        "compute_pca_spatial_modes",
+        "bootstrap_contrast_table",
+        "write_output_tables(",
+    ):
+        assert helper not in source
+
+
 def test_tutorial_figure_sidecar_calls_include_directory_control() -> None:
     """Notebook figure sidecar calls should honor configured sidecar directories."""
 
