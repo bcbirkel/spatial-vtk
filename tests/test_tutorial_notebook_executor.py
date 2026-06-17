@@ -549,6 +549,41 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     assert "comparison_qc_status" not in source
 
 
+def test_large_run_step03_metric_figures_are_auditable_station_aggregations() -> None:
+    """Large-run metric figures should expose provenance for station summaries."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert 'PLOT_VALUE_COL = "log2_residual"' in source
+    assert 'STATION_AGGREGATION = os.environ.get("SVTK_STATION_AGGREGATION", "mean")' in source
+    assert "**METRIC_FIGURE_SIDECARS.kwargs(plural=True)" in source
+    assert "station_aggregation=STATION_AGGREGATION" in source
+
+    station_cells = [
+        "".join(cell.get("source", []))
+        for cell in notebook.get("cells", [])
+        if any(
+            marker in "".join(cell.get("source", []))
+            for marker in (
+                '"station_metric_map"',
+                '"residual_grid"',
+                '"metric_by_model_map"',
+            )
+        )
+    ]
+    station_source = "\n".join(station_cells)
+
+    assert "station_summary_for_item(item, PLOT_VALUE_COL)" in station_source
+    assert "station_period_summary_for_item(item, PLOT_VALUE_COL)" in station_source
+    assert "station_grid_for_item(item, PLOT_VALUE_COL)" in station_source
+    assert "station_model_summary_for_item(item, PLOT_VALUE_COL)" in station_source
+    assert "source_df=item_source_rows(item)" in station_source
+    assert "source_df_factory=item_source_rows" in station_source
+
+
 def test_tutorial_figure_sidecar_calls_include_directory_control() -> None:
     """Notebook figure sidecar calls should honor configured sidecar directories."""
 
