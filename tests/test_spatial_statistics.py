@@ -508,6 +508,60 @@ def test_metric_station_summary_aggregates_all_events_without_coordinate_splitti
     assert metadata["source_rows_role"] == "pre_aggregation_metric_rows"
 
 
+def test_metric_figure_context_reads_plot_columns_and_filters_defaults(tmp_path: Path) -> None:
+    """Large-run figure context should avoid loading unused metric columns."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3", "e4"],
+            "station": ["STA", "STA", "STB", "STC"],
+            "sta_lon": [-118.0, -118.0, -117.9, -117.8],
+            "sta_lat": [34.0, 34.0, 34.1, 34.2],
+            "metric": ["PGA", "PGV", "not_a_target_metric", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec", "1-2 sec"],
+            "component": ["R", "T", "R", "R"],
+            "model": ["m1", "m1", "m1", "m2"],
+            "distance_km": [10.0, 11.0, 12.0, 13.0],
+            "period_s": [np.nan, np.nan, np.nan, np.nan],
+            "log2_residual": [0.1, 0.2, 99.0, 0.4],
+            "unused_large_payload": ["x" * 50, "y" * 50, "z" * 50, "q" * 50],
+        }
+    )
+    metrics_path = tmp_path / "metrics_long.parquet"
+    metrics.to_parquet(metrics_path, index=False)
+
+    context = MetricFigureContext.from_metrics_long(
+        metrics_path,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+        default_components=["R"],
+        default_model="m1",
+    )
+
+    assert context.ready
+    assert "unused_large_payload" in context.available_columns
+    assert "unused_large_payload" not in context.loaded_columns
+    assert "unused_large_payload" not in context.metrics_for_figures.columns
+    assert context.loaded_columns == [
+        "event_id",
+        "station",
+        "sta_lon",
+        "sta_lat",
+        "metric",
+        "band",
+        "component",
+        "model",
+        "distance_km",
+        "period_s",
+        "log2_residual",
+    ]
+    assert context.metrics_for_figures[["event_id", "metric", "component", "model"]].to_dict("records") == [
+        {"event_id": "e1", "metric": "PGA", "component": "R", "model": "m1"}
+    ]
+
+
 def test_redcap_clusters_use_spatial_constraints_and_scores() -> None:
     """REDCAP clustering should assign spatially constrained station regions."""
 

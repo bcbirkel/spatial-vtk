@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-16
+   Made large-run metric plotting context column-aware: Step 3 metric figures
+   now load only columns required by the registered diagnostic plots and apply
+   default component/model filters at context load time, reducing memory
+   pressure without truncating selected rows used for station-map aggregation.
    Hardened large-run station metric map aggregation so representative station
    coordinates are computed from all selected source rows, not only finite
    metric-value rows. Station-map sidecar metadata now also records input and

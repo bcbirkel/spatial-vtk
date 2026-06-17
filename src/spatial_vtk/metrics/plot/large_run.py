@@ -48,6 +48,8 @@ class MetricFigureContext:
     sidecar_dir: Path | None = None
     station_aggregation: str = "median"
     metrics_for_figures: pd.DataFrame = field(default_factory=pd.DataFrame)
+    loaded_columns: list[str] = field(default_factory=list)
+    available_columns: list[str] = field(default_factory=list)
     metric_col: str | None = None
     band_col: str | None = None
     model_col: str | None = None
@@ -108,7 +110,11 @@ class MetricFigureContext:
         if not path.exists():
             print(f"metrics_long.parquet is not ready yet: {path}")
             return context
-        metrics = pd.read_parquet(path)
+        available_columns = _table_columns(path)
+        columns = _metric_figure_columns(available_columns, value_col=context.value_col)
+        metrics = _read_metric_figure_table(path, columns=columns)
+        context.available_columns = available_columns
+        context.loaded_columns = list(metrics.columns)
         context.metrics_for_figures = metrics
         context.metric_col = first_existing(metrics, ["metric"])
         context.band_col = first_existing(metrics, ["band", "passband"])
@@ -116,14 +122,21 @@ class MetricFigureContext:
         context.component_col = first_existing(metrics, ["component"])
         context.period_col = first_existing(metrics, ["period_s"])
         context.distance_col = first_existing(metrics, ["distance_km"])
-        context.depth_col = first_existing(metrics, ["depth_km"])
+        context.depth_col = first_existing(metrics, ["depth_km", "event_depth_km"])
         context.vs30_col = first_existing(metrics, ["Vs30", "vs30", "VS30", "site_vs30", "station_vs30", "vs30_mps", "Vs30_mps"])
+        metrics = context._apply_load_filters(metrics)
+        context.metrics_for_figures = metrics
         if context.value_col not in metrics.columns:
             print(f"Cannot render metric figures: {context.value_col!r} is not present in metrics_long.")
             return context
         context.ready = True
         limit_text = "no per-figure row limit" if context.sample_rows <= 0 else f"up to {context.sample_rows:,} raw row(s) per figure"
-        print(f"Rendering metric figures from {len(metrics):,} metric row(s) into {output_dir}; {limit_text}")
+        column_text = (
+            f"{len(context.loaded_columns)}/{len(context.available_columns)} column(s)"
+            if context.available_columns
+            else f"{len(context.loaded_columns)} column(s)"
+        )
+        print(f"Rendering metric figures from {len(metrics):,} selected metric row(s) and {column_text} into {output_dir}; {limit_text}")
         print(
             f"value_col={context.value_col} "
             f"default_passband={context.default_passband} "
@@ -189,11 +202,14 @@ class MetricFigureContext:
         context.component_col = first_existing(metrics, ["component"])
         context.period_col = first_existing(metrics, ["period_s"])
         context.distance_col = first_existing(metrics, ["distance_km"])
-        context.depth_col = first_existing(metrics, ["depth_km"])
+        context.depth_col = first_existing(metrics, ["depth_km", "event_depth_km"])
         context.vs30_col = first_existing(
             metrics,
             ["Vs30", "vs30", "VS30", "site_vs30", "station_vs30", "vs30_mps", "Vs30_mps"],
         )
+        context.available_columns = list(metrics.columns)
+        context.loaded_columns = list(metrics.columns)
+        context.metrics_for_figures = context._apply_load_filters(context.metrics_for_figures)
         context.ready = context.value_col in metrics.columns
         return context
 
@@ -233,6 +249,22 @@ class MetricFigureContext:
             out = filter_optional(out, self.component_col, components)
         if model is not None:
             out = filter_optional(out, self.model_col, model)
+        return out
+
+    def _apply_load_filters(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Apply safe default filters immediately after loading metric rows."""
+
+        out = df
+        if self.component_col is not None and self.default_components is not None:
+            out = filter_optional(out, self.component_col, self.default_components)
+        if self.model_col is not None and self.default_model is not None:
+            out = filter_optional(out, self.model_col, self.default_model)
+        if self.metric_col is not None:
+            mask = pd.Series(False, index=out.index)
+            for spec in TARGET_METRIC_SPECS:
+                mask = mask | self.metric_mask(out, tuple(spec["aliases"]))
+            if mask.any():
+                out = out.loc[mask].copy()
         return out
 
     def iter_metric_frames(
@@ -706,6 +738,8 @@ class MetricFigureContext:
         metadata: dict[str, Any] = {
             "value_col": self.value_col,
             "station_aggregation": self.station_aggregation,
+            "metrics_long_path": str(self.metrics_long_path) if str(self.metrics_long_path) != "." else None,
+            "loaded_columns": list(self.loaded_columns),
         }
         aggregation_attrs = {
             str(key): value
@@ -851,6 +885,86 @@ def reload_metric_plot_modules() -> dict[str, Callable[..., Any]]:
         "heatmap": spatial_metric_plots.heatmap,
         "scatterplot": spatial_metric_plots.scatterplot,
     }
+
+
+def _table_columns(path: str | Path) -> list[str]:
+    """Return table columns without reading full row data when possible."""
+
+    input_path = Path(path).expanduser()
+    suffix = input_path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        try:
+            import pyarrow.parquet as pq
+
+            return list(pq.ParquetFile(input_path).schema.names)
+        except Exception:
+            return list(pd.read_parquet(input_path).head(0).columns)
+    return list(pd.read_csv(input_path, nrows=0).columns)
+
+
+def _read_metric_figure_table(path: str | Path, *, columns: list[str]) -> pd.DataFrame:
+    """Read only columns needed by large-run metric figures."""
+
+    input_path = Path(path).expanduser()
+    suffix = input_path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        try:
+            return pd.read_parquet(input_path, columns=columns)
+        except Exception:
+            frame = pd.read_parquet(input_path)
+            return frame.reindex(columns=[column for column in columns if column in frame.columns])
+    wanted = set(columns)
+    return pd.read_csv(input_path, usecols=lambda column: column in wanted, low_memory=False)
+
+
+def _metric_figure_columns(available_columns: list[str], *, value_col: str) -> list[str]:
+    """Return the metric columns needed by all large-run figure cells."""
+
+    wanted = {
+        value_col,
+        "metric",
+        "metric_name",
+        "band",
+        "passband",
+        "period_band",
+        "model",
+        "model_name",
+        "component",
+        "channel_component",
+        "period_s",
+        "distance_km",
+        "distance",
+        "depth_km",
+        "event_depth_km",
+        "event_id",
+        "event",
+        "event_title",
+        "station",
+        "station_id",
+        "station_code",
+        "sta_lon",
+        "sta_lat",
+        "lon",
+        "lat",
+        "station_lon",
+        "station_lat",
+        "station_longitude",
+        "station_latitude",
+        "Vs30",
+        "vs30",
+        "VS30",
+        "site_vs30",
+        "station_vs30",
+        "vs30_mps",
+        "Vs30_mps",
+        "station_region",
+        "station_geojson_region",
+        "station_geojson_labels",
+        "event_region",
+        "event_geojson_region",
+        "event_geojson_labels",
+    }
+    return [column for column in available_columns if column in wanted]
 
 
 def _sample_rows(df: pd.DataFrame, *, n: int) -> pd.DataFrame:
