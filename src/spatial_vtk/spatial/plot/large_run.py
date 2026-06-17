@@ -9,6 +9,7 @@ from typing import Any, Callable, Iterable, Sequence
 import pandas as pd
 
 from spatial_vtk.config.outputs import resolve_output_path
+from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.io import load_output_table, read_bounded_table, read_table, slugify
 from spatial_vtk.metrics.plot.large_run import (
     MetricFigureContext,
@@ -36,6 +37,59 @@ SPATIAL_FIGURE_TABLE_KEYS: tuple[str, ...] = (
     "redcap_clusters",
     "morans_i",
     "geology_contrasts",
+)
+
+SPATIAL_EVENT_ROW_TABLE_KEYS: frozenset[str] = frozenset(
+    {"metric_field", "event_centered_residuals"}
+)
+
+SPATIAL_EVENT_ROW_COLUMNS: tuple[str, ...] = (
+    "metric",
+    "metric_name",
+    "band",
+    "passband",
+    "period_band",
+    "model",
+    "model_name",
+    "component",
+    "channel_component",
+    "period_s",
+    "distance_km",
+    "depth_km",
+    "event_depth_km",
+    "event_id",
+    "event",
+    "event_title",
+    "station",
+    "station_id",
+    "station_code",
+    "sta_lon",
+    "sta_lat",
+    "lon",
+    "lat",
+    "station_lon",
+    "station_lat",
+    "station_longitude",
+    "station_latitude",
+    "event_lon",
+    "event_lat",
+    "event_longitude",
+    "event_latitude",
+    "field_value",
+    "field_centered",
+    "mean_centered",
+    "event_centered_residual",
+    "residual",
+    "log2_residual",
+    "ln_residual",
+    "value",
+    "score",
+    "station_region",
+    "station_geojson_region",
+    "station_geojson_labels",
+    "event_region",
+    "event_geojson_region",
+    "event_geojson_labels",
 )
 
 
@@ -73,6 +127,7 @@ class SpatialFigureContext:
         *,
         figure_dir: str | Path,
         make_figures: bool,
+        cfg: SpatialVTKConfig | None = None,
         overwrite: bool = False,
         add_basemap: bool = False,
         default_passband: str | None = None,
@@ -90,10 +145,13 @@ class SpatialFigureContext:
         output_dir = Path(figure_dir).expanduser()
         output_dir.mkdir(parents=True, exist_ok=True)
         paths = {
-            key: resolve_output_path(key, kind="table", create_parent=True)
+            key: resolve_output_path(key, kind="table", cfg=cfg, create_parent=True)
             for key in SPATIAL_FIGURE_TABLE_KEYS
         }
-        tables = {key: _read_if_exists(path) for key, path in paths.items()}
+        tables = {
+            key: _read_if_exists(path, columns=_columns_for_spatial_table(key))
+            for key, path in paths.items()
+        }
         metric_value_col = _first_existing(
             tables["metric_field"],
             ["log2_residual", "field_value", "mean_centered", "field_centered", "residual"],
@@ -137,7 +195,7 @@ class SpatialFigureContext:
             station_aggregation=station_aggregation,
         )
         try:
-            site_metadata = load_output_table("prepared_stations")
+            site_metadata = load_output_table("prepared_stations", cfg=cfg)
         except Exception as exc:
             site_metadata = None
             if make_figures:
@@ -547,7 +605,11 @@ def write_large_run_region_boxplot(
     return RegionBoxplotResult(output, sidecar_path, len(plot_rows), "wrote", message)
 
 
-def _read_if_exists(path: str | Path | None) -> pd.DataFrame | None:
+def _read_if_exists(
+    path: str | Path | None,
+    *,
+    columns: Sequence[str] | None = None,
+) -> pd.DataFrame | None:
     """Read one table path if it exists."""
 
     if path is None:
@@ -555,7 +617,49 @@ def _read_if_exists(path: str | Path | None) -> pd.DataFrame | None:
     input_path = Path(path)
     if not input_path.exists():
         return None
-    return read_table(input_path)
+    selected = _existing_columns(input_path, columns)
+    if selected is None:
+        return read_table(input_path)
+    if input_path.suffix.lower() in {".parquet", ".pq"}:
+        return read_table(input_path, columns=selected)
+    wanted = set(selected)
+    return read_table(input_path, usecols=lambda column: column in wanted)
+
+
+def _columns_for_spatial_table(key: str) -> tuple[str, ...] | None:
+    """Return column projection for large spatial event-row tables."""
+
+    if key in SPATIAL_EVENT_ROW_TABLE_KEYS:
+        return SPATIAL_EVENT_ROW_COLUMNS
+    return None
+
+
+def _existing_columns(path: Path, columns: Sequence[str] | None) -> list[str] | None:
+    """Return requested columns present in one table."""
+
+    if columns is None:
+        return None
+    requested = list(dict.fromkeys(str(column) for column in columns if str(column).strip()))
+    if not requested:
+        return []
+    available = set(_table_columns(path))
+    return [column for column in requested if column in available]
+
+
+def _table_columns(path: Path) -> list[str]:
+    """Return table columns without loading row data."""
+
+    suffix = path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        try:
+            import pyarrow.parquet as pq
+
+            return list(pq.ParquetFile(path).schema.names)
+        except Exception:
+            return list(pd.read_parquet(path).head(0).columns)
+    if suffix == ".csv":
+        return list(pd.read_csv(path, nrows=0).columns)
+    raise ValueError(f"Unsupported table format for {path}. Use Parquet or CSV.")
 
 
 def _first_existing(df: pd.DataFrame | None, candidates: list[str]) -> str | None:

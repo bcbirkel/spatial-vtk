@@ -15,6 +15,8 @@ os.environ.setdefault("LOKY_MAX_CPU_COUNT", "1")
 matplotlib.use("Agg", force=True)
 
 from spatial_vtk.config import SpatialVTKConfig, clear_active_config
+from spatial_vtk.config.outputs import resolve_output_path
+from spatial_vtk.io import write_table
 from spatial_vtk.metrics.plot.large_run import MetricFigureContext
 from spatial_vtk.spatial.calculate.clustering import assign_redcap_clusters, run_residual_feature_clustering
 from spatial_vtk.spatial.calculate.correlation import (
@@ -335,6 +337,69 @@ spatial:
     assert metadata["source_station_count"] == 16
     assert metadata["source_event_count"] == 4
     assert metadata["source_written_row_count"] == 2
+
+
+def test_spatial_figure_context_respects_config_and_projects_large_tables(tmp_path: Path) -> None:
+    """Spatial figure context should use explicit config paths and avoid unused columns."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    metric_field_path = resolve_output_path("metric_field", kind="table", cfg=cfg, create_parent=True)
+    event_centered_path = resolve_output_path("event_centered_residuals", kind="table", cfg=cfg, create_parent=True)
+    station_path = resolve_output_path("prepared_stations", kind="table", cfg=cfg, create_parent=True)
+
+    metric_field = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2"],
+            "station": ["STA", "STA"],
+            "sta_lon": [-118.0, -118.0],
+            "sta_lat": [34.0, 34.0],
+            "metric": ["PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "component": ["R", "R"],
+            "model": ["m1", "m1"],
+            "field_value": [0.2, 0.4],
+            "unused_large_payload": ["x" * 64, "y" * 64],
+        }
+    )
+    event_centered = metric_field.rename(columns={"field_value": "field_centered"}).assign(
+        unused_event_payload=["a" * 64, "b" * 64],
+    )
+    stations = pd.DataFrame({"station": ["STA"], "lat": [34.0], "lon": [-118.0]})
+    write_table(metric_field, metric_field_path)
+    write_table(event_centered, event_centered_path)
+    write_table(stations, station_path)
+
+    context = SpatialFigureContext.from_config(
+        figure_dir=tmp_path / "figures",
+        make_figures=False,
+        cfg=cfg,
+        sample_rows=0,
+    )
+
+    assert context.paths["metric_field"] == tmp_path / "outputs" / "tables" / "metric_field.parquet"
+    assert context.metric_field is not None
+    assert context.event_context.metrics_for_figures is not None
+    assert "unused_large_payload" not in context.metric_field.columns
+    assert "unused_event_payload" not in context.event_context.metrics_for_figures.columns
+    assert {"event_id", "station", "metric", "band", "component", "model", "field_value"} <= set(
+        context.metric_field.columns
+    )
+    assert {"event_id", "station", "field_centered"} <= set(context.event_context.metrics_for_figures.columns)
+    assert context.metric_value_col == "field_value"
+    assert context.event_value_col == "field_centered"
+    assert context.site_metadata is not None
+    assert context.site_metadata["station"].tolist() == ["STA"]
 
 
 def test_write_large_run_region_boxplot_from_bounded_table(tmp_path: Path) -> None:
