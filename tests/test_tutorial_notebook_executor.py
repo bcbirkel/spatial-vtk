@@ -403,6 +403,7 @@ def test_large_run_notebooks_use_output_group_helper() -> None:
         assert "output_group(" in source, notebook_path.relative_to(repo_root)
         assert "output_group_namespace" not in source, notebook_path.relative_to(repo_root)
         assert "output_group_status_frame" not in source, notebook_path.relative_to(repo_root)
+        assert "vars(step_outputs)" not in source, notebook_path.relative_to(repo_root)
 
 
 def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
