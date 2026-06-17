@@ -25,6 +25,7 @@ from spatial_vtk.spatial.calculate import (
     classify_paths_with_geojson,
     geojson_polygon_preview_table,
     load_geojson_polygons,
+    run_boundary_corridor_workflow,
     run_geojson_region_summary_workflow,
     select_events_in_corridors,
     select_records_by_corridors,
@@ -231,6 +232,55 @@ def test_polygon_edge_corridor_wrapper_selects_events(tmp_path):
     assert selected["event_id"].tolist() == ["inside_corridor"]
     counts = summarize_corridor_event_counts(selected)
     assert counts.loc[0, "event_count"] == 1
+
+
+def test_boundary_corridor_workflow_writes_wkt_and_map_reads_it(tmp_path):
+    geojson = _write_geojson(
+        tmp_path / "corridor_regions.geojson",
+        [_feature("West Basin", Polygon([(-118.4, 34.0), (-118.0, 34.0), (-118.0, 34.4), (-118.4, 34.4)]))],
+    )
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+paths:
+  region_geojson: corridor_regions.geojson
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    stations = pd.DataFrame({"station": ["S1"], "network": ["XX"], "sta_lon": [-118.2], "sta_lat": [34.2]})
+    events = pd.DataFrame({"event_id": ["E1"], "event_lon": [-118.25], "event_lat": [34.25]})
+    corridor_config = BoundaryCorridorConfig(
+        selector="West Basin",
+        mode="through_boundary",
+        along_boundary_width_km=20.0,
+        inside_length_km=10.0,
+        outside_length_km=10.0,
+        anchor=CorridorAnchorConfig(source="coordinate", lon=-118.2, lat=34.2),
+    )
+
+    result = run_boundary_corridor_workflow(
+        cfg=cfg,
+        station_table=stations,
+        event_table=events,
+        corridor_config=corridor_config,
+        verbose=True,
+    )
+
+    assert result.path == tmp_path / "outputs" / "tables" / "corridors.parquet"
+    stored = pd.read_parquet(result.path)
+    assert result.rows == len(stored) == 1
+    assert "corridor_geometry" not in stored.columns
+    assert "corridor_geometry_wkt" in stored.columns
+
+    figure = tmp_path / "corridor_map.png"
+    plot_corridor_map(stored, figure, stations_df=stations, events_df=events, add_basemap=False, savefig=True)
+    assert figure.exists()
 
 
 def test_boundary_corridors_support_keyword_modes_and_path_selection(tmp_path):

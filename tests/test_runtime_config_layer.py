@@ -725,6 +725,10 @@ outputs:
     assert paths["redcap_clusters_path"] == tmp_path / "run_outputs" / "tables" / "redcap_clusters.parquet"
     assert paths["pattern_similarity_path"] == tmp_path / "run_outputs" / "tables" / "pattern_similarity_station_anomalies.csv"
 
+    geojson_paths = output_group_paths("step_05_geojson", cfg=cfg)
+    assert geojson_paths["corridors_path"] == tmp_path / "run_outputs" / "tables" / "corridors.parquet"
+    assert geojson_paths["corridor_map_path"] == tmp_path / "run_outputs" / "figures" / "corridor_map.png"
+
     metric_paths = output_group_paths("step_03_metrics", cfg=cfg)
     assert metric_paths["prepared_events_path"] == tmp_path / "run_outputs" / "tables" / "prepared_events.csv"
     assert metric_paths["prepared_stations_path"] == tmp_path / "run_outputs" / "tables" / "prepared_stations.csv"

@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from collections.abc import Mapping
+from typing import Any
 import math
+import time
 
 import numpy as np
 import pandas as pd
@@ -180,6 +183,15 @@ class CorridorSelectionConfig:
     min_path_fraction: float = 0.0
 
 
+@dataclass(frozen=True)
+class BoundaryCorridorWorkflowResult:
+    """Result from writing configured boundary corridors."""
+
+    path: Path
+    rows: int
+    elapsed_s: float
+
+
 def build_station_edge_corridors(
     station_df: pd.DataFrame,
     geojson_path: str | Path,
@@ -303,6 +315,123 @@ def build_boundary_corridors(
             "Check polygon selector, anchor settings, and corridor dimensions."
         )
     return pd.DataFrame(rows)
+
+
+def boundary_corridor_config_from_config(cfg: object | None = None) -> BoundaryCorridorConfig:
+    """Build boundary-corridor settings from ``spatial.corridors`` config.
+
+    Missing sections use :class:`BoundaryCorridorConfig` defaults. This keeps
+    notebooks and CLI workflows config-backed without requiring every project
+    to define corridor settings up front.
+    """
+
+    from spatial_vtk.config.runtime import active_config
+
+    config = cfg or active_config()
+    values = config.section("spatial.corridors", {}) if hasattr(config, "section") else {}
+    if values is None:
+        values = {}
+    if not isinstance(values, Mapping):
+        raise ValueError("spatial.corridors must be a mapping/dictionary.")
+    anchor_values = values.get("anchor", {}) or {}
+    if not isinstance(anchor_values, Mapping):
+        raise ValueError("spatial.corridors.anchor must be a mapping/dictionary.")
+
+    anchor = CorridorAnchorConfig(
+        source=str(anchor_values.get("source", CorridorAnchorConfig.source)),
+        strategy=str(anchor_values.get("strategy", CorridorAnchorConfig.strategy)),
+        id_value=anchor_values.get("id_value"),
+        query=anchor_values.get("query"),
+        sort_column=anchor_values.get("sort_column"),
+        top_n=_optional_int(anchor_values.get("top_n")),
+        lon=_optional_float(anchor_values.get("lon")),
+        lat=_optional_float(anchor_values.get("lat")),
+        segment_spacing_km=_optional_float(anchor_values.get("segment_spacing_km")),
+    )
+    return BoundaryCorridorConfig(
+        selector=values.get("selector", BoundaryCorridorConfig.selector),
+        mode=str(values.get("mode", BoundaryCorridorConfig.mode)),
+        along_boundary_width_km=float(values.get("along_boundary_width_km", BoundaryCorridorConfig.along_boundary_width_km)),
+        inside_length_km=float(values.get("inside_length_km", BoundaryCorridorConfig.inside_length_km)),
+        outside_length_km=float(values.get("outside_length_km", BoundaryCorridorConfig.outside_length_km)),
+        edge_average_window_km=float(values.get("edge_average_window_km", BoundaryCorridorConfig.edge_average_window_km)),
+        anchor=anchor,
+        require_overlap=bool(values.get("require_overlap", BoundaryCorridorConfig.require_overlap)),
+    )
+
+
+def serialize_corridor_geometries(corridors_df: pd.DataFrame) -> pd.DataFrame:
+    """Return a storage-safe corridor table with geometry columns as WKT."""
+
+    out = corridors_df.copy()
+    for column in ("corridor_geometry", "polygon_geometry"):
+        if column in out.columns:
+            out[f"{column}_wkt"] = out[column].map(lambda geom: geom.wkt if geom is not None else None)
+            out = out.drop(columns=[column])
+    return out
+
+
+def run_boundary_corridor_workflow(
+    geojson_path: str | Path | None = None,
+    *,
+    station_table: pd.DataFrame | str | Path | None = None,
+    event_table: pd.DataFrame | str | Path | None = None,
+    records_table: pd.DataFrame | str | Path | None = None,
+    output_key: str = "corridors",
+    cfg: object | None = None,
+    corridor_config: BoundaryCorridorConfig | None = None,
+    verbose: bool = False,
+) -> BoundaryCorridorWorkflowResult:
+    """Build and write configured boundary corridors.
+
+    Parameters
+    ----------
+    geojson_path
+        Region GeoJSON path. Defaults to ``paths.region_geojson``.
+    station_table, event_table, records_table
+        Optional tables used by station/event anchor strategies. Omitted
+        station/event tables are loaded from standard prepared outputs when
+        needed. Event-station records are loaded only when explicitly provided
+        or when ``anchor.strategy`` is ``"max_records"``.
+    output_key
+        Output table registry key. Defaults to ``"corridors"``.
+    cfg
+        Optional active config.
+    corridor_config
+        Explicit corridor settings. Defaults from ``spatial.corridors``.
+    verbose
+        Print progress lines.
+    """
+
+    from spatial_vtk.config.runtime import active_config
+    from spatial_vtk.io import load_output_table, read_table, write_output_table
+
+    started = time.perf_counter()
+    config = cfg or active_config()
+    resolved_geojson = Path(geojson_path).expanduser() if geojson_path is not None else config.path("paths.region_geojson", must_exist=False)
+    settings = corridor_config or boundary_corridor_config_from_config(config)
+    if resolved_geojson is None:
+        corridors = pd.DataFrame()
+        _progress(verbose, "Boundary corridors: no paths.region_geojson configured; writing empty table")
+    else:
+        station_df = _load_corridor_table(station_table, "prepared_stations", load_output_table, read_table)
+        event_df = _load_corridor_table(event_table, "prepared_events", load_output_table, read_table)
+        records_df = None
+        if records_table is not None or str(settings.anchor.strategy).strip().lower() == "max_records":
+            records_df = _load_corridor_table(records_table, "comparison_eligible_records", load_output_table, read_table, fallback_key="event_station_records")
+        _progress(verbose, f"Boundary corridors: building corridors from {resolved_geojson}")
+        corridors = build_boundary_corridors(
+            resolved_geojson,
+            config=settings,
+            station_df=station_df,
+            event_df=event_df,
+            records_df=records_df,
+        )
+    stored = serialize_corridor_geometries(corridors)
+    output_path = write_output_table(output_key, stored, cfg=config)
+    elapsed = time.perf_counter() - started
+    _progress(verbose, f"Boundary corridors: wrote {len(stored)} row(s) to {output_path} in {elapsed:.1f}s")
+    return BoundaryCorridorWorkflowResult(path=output_path, rows=len(stored), elapsed_s=float(elapsed))
 
 
 def classify_records_by_corridors(
@@ -442,6 +571,54 @@ def select_records_by_corridors(
         event_lon_col=event_lon_col,
         event_lat_col=event_lat_col,
     )
+
+
+def _optional_float(value: object) -> float | None:
+    """Return ``value`` as float unless it is empty."""
+
+    if value is None or value == "":
+        return None
+    return float(value)
+
+
+def _optional_int(value: object) -> int | None:
+    """Return ``value`` as int unless it is empty."""
+
+    if value is None or value == "":
+        return None
+    return int(value)
+
+
+def _load_corridor_table(
+    table: pd.DataFrame | str | Path | None,
+    default_key: str,
+    load_output_table: Any,
+    read_table: Any,
+    *,
+    fallback_key: str | None = None,
+) -> pd.DataFrame | None:
+    """Load a corridor helper table from an explicit input or output key."""
+
+    if isinstance(table, pd.DataFrame):
+        return table.copy()
+    if table is not None:
+        return read_table(table)
+    try:
+        return load_output_table(default_key)
+    except Exception:
+        if fallback_key is None:
+            return None
+    try:
+        return load_output_table(fallback_key)
+    except Exception:
+        return None
+
+
+def _progress(verbose: bool, message: str) -> None:
+    """Print one progress line when requested."""
+
+    if verbose:
+        print(message, flush=True)
 
 
 def select_events_in_corridors(

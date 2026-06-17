@@ -237,6 +237,17 @@ run_scenarios:
       # The tutorial subset is small; use a larger value for full datasets.
       geology_min_stations_per_group: 1
       geology_bootstrap_samples: 100
+      corridors:
+        selector: all
+        mode: through_boundary
+        along_boundary_width_km: 20.0
+        inside_length_km: 15.0
+        outside_length_km: 15.0
+        edge_average_window_km: 10.0
+        require_overlap: true
+        anchor:
+          source: all_boundary_segments
+          segment_spacing_km: 20.0
       random_seed: 42
 
   quick_amplitude_check:

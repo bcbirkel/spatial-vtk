@@ -198,6 +198,8 @@ OUTPUT_GROUPS: dict[str, tuple[OutputArtifact, ...]] = {
     ),
     "step_05_geojson": (
         OutputArtifact("geojson_summaries_path", "geojson_region_summaries"),
+        OutputArtifact("corridors_path", "corridors"),
+        OutputArtifact("corridor_map_path", "corridor_map", kind="figure", required=False),
         OutputArtifact("metrics_long_path", "metrics_long"),
         OutputArtifact("path_table_path", "path_table"),
         OutputArtifact("metrics_enriched_path", "metrics_enriched"),

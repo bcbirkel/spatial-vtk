@@ -9,6 +9,7 @@ import math
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from shapely import wkt
 
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import apply_figure_context
@@ -69,6 +70,7 @@ def plot_corridor_map(
 
     if corridors_df.empty:
         raise ValueError("corridors_df is empty.")
+    corridors_df = _restore_corridor_geometries(corridors_df)
     fig, ax = plt.subplots(figsize=(7.2, 6.2), dpi=180)
 
     for idx, corridor in enumerate(corridors_df.itertuples(index=False)):
@@ -396,3 +398,14 @@ def _corridor_sidecar_rows(corridors_df: pd.DataFrame) -> pd.DataFrame:
             rows[f"{column}_wkt"] = rows[column].map(lambda geom: geom.wkt if geom is not None else None)
             rows = rows.drop(columns=[column])
     return rows
+
+
+def _restore_corridor_geometries(corridors_df: pd.DataFrame) -> pd.DataFrame:
+    """Restore Shapely geometries from WKT storage columns when needed."""
+
+    out = corridors_df.copy()
+    for column in ("corridor_geometry", "polygon_geometry"):
+        wkt_col = f"{column}_wkt"
+        if column not in out.columns and wkt_col in out.columns:
+            out[column] = out[wkt_col].map(lambda value: wkt.loads(value) if isinstance(value, str) and value else None)
+    return out
