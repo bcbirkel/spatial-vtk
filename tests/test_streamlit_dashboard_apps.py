@@ -39,6 +39,7 @@ from spatial_vtk.visualize.dashboard.tables import build_dashboard_summaries
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _available_nonempty_value_columns
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _empty_rows_message as _metrics_empty_rows_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard_startup_blocker
+from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_chart_columns_or_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _empty_rows_message as _qc_empty_rows_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _missing_columns_message as _qc_missing_columns_message
 import spatial_vtk.visualize.dashboard.launch as dashboard_launch
@@ -350,6 +351,25 @@ def test_dashboard_empty_state_messages_are_explicit():
     assert _metrics_empty_rows_message("station") == "No station rows match the selected filters."
     assert _qc_empty_rows_message("trace QC") == "No trace QC rows match the selected filters."
     assert _qc_missing_columns_message("timing") == "No timing columns are available in the loaded trace-summary table."
+
+
+def test_qc_chart_tab_state_prioritizes_empty_filtered_rows():
+    """QC chart tabs should not render blank charts when filters remove all rows."""
+
+    empty = pd.DataFrame(columns=["raw_peak_abs", "dominant_band_label"])
+    columns, message = _qc_chart_columns_or_message(empty, ["raw_peak_abs"], "amplitude")
+    assert columns == []
+    assert message == "No trace QC rows match the selected filters."
+
+    missing = pd.DataFrame({"event_id": ["ev1"]})
+    columns, message = _qc_chart_columns_or_message(missing, [], "timing")
+    assert columns == []
+    assert message == "No timing columns are available in the loaded trace-summary table."
+
+    ready = pd.DataFrame({"raw_peak_abs": [1.0]})
+    columns, message = _qc_chart_columns_or_message(ready, ["raw_peak_abs"], "amplitude")
+    assert columns == ["raw_peak_abs"]
+    assert message is None
 
 
 def test_qc_dashboard_launcher_defaults_to_trace_summary_output(tmp_path, monkeypatch):

@@ -81,32 +81,35 @@ def _render_qc_dashboard(df: pd.DataFrame, config: SpatialVTKConfig | None = Non
         cols[2].metric("Events", f"{filtered['event_id'].nunique() if 'event_id' in filtered else 0:,}")
         cols[3].metric("Stations", f"{filtered['station'].nunique() if 'station' in filtered else 0:,}")
         cols[4].metric("Components", f"{filtered['component'].nunique() if 'component' in filtered else 0:,}")
-        if "dominant_band_label" in filtered.columns:
+        if not filtered.empty and "dominant_band_label" in filtered.columns:
             st.plotly_chart(build_qc_bar_figure(filtered, column="dominant_band_label", title="Dominant Band Counts"), width="stretch", key="overview_dominant_band_counts")
     with amp_tab:
-        columns = _amplitude_columns(filtered)
-        if not columns:
-            st.info(_missing_columns_message("amplitude"))
-        elif filtered.empty:
-            st.info(_empty_rows_message("trace QC"))
+        columns, message = _qc_chart_columns_or_message(filtered, _amplitude_columns(filtered), "amplitude")
+        if message:
+            st.info(message)
         else:
             for column in columns:
                 st.plotly_chart(build_qc_histogram_figure(filtered, value_col=column, title=_qc_column_label(column), clip_iqr=clip_iqr), width="stretch", key=f"amp_{column}")
     with timing_tab:
-        columns = [item for item in ("start_rel_s", "end_rel_s", "duration_s") if item in filtered.columns]
-        if not columns:
-            st.info(_missing_columns_message("timing"))
-        elif filtered.empty:
-            st.info(_empty_rows_message("trace QC"))
+        columns, message = _qc_chart_columns_or_message(
+            filtered,
+            [item for item in ("start_rel_s", "end_rel_s", "duration_s") if item in filtered.columns],
+            "timing",
+        )
+        if message:
+            st.info(message)
         else:
             for column in columns:
                 st.plotly_chart(build_qc_histogram_figure(filtered, value_col=column, title=_qc_column_label(column), clip_iqr=clip_iqr), width="stretch", key=f"timing_{column}")
     with band_tab:
         content_columns = _band_content_columns(filtered)
-        if not content_columns and "dominant_band_label" not in filtered.columns:
-            st.info(_missing_columns_message("band-content"))
-        elif filtered.empty:
-            st.info(_empty_rows_message("trace QC"))
+        columns, message = _qc_chart_columns_or_message(
+            filtered,
+            (["dominant_band_label"] if "dominant_band_label" in filtered.columns else []) + content_columns,
+            "band-content",
+        )
+        if message:
+            st.info(message)
         else:
             if "dominant_band_label" in filtered.columns:
                 st.plotly_chart(build_qc_bar_figure(filtered, column="dominant_band_label", title="Dominant Band Counts"), width="stretch", key="band_dominant_band_counts")
@@ -216,6 +219,20 @@ def _band_content_columns(df: pd.DataFrame) -> list[str]:
     """Return configured band-specific content columns."""
 
     return [column for column in df.columns if column == "dominant_period_s" or column.startswith("energy_frac")]
+
+
+def _qc_chart_columns_or_message(
+    df: pd.DataFrame,
+    columns: list[str],
+    column_label: str,
+) -> tuple[list[str], str | None]:
+    """Return chart columns or the explicit empty-state message for one QC tab."""
+
+    if df.empty:
+        return [], _empty_rows_message("trace QC")
+    if not columns:
+        return [], _missing_columns_message(column_label)
+    return columns, None
 
 
 def _qc_column_label(column: str) -> str:

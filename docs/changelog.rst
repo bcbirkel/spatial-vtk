@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-16
+   Hardened QC dashboard chart tabs so filtered-empty trace tables show an
+   explicit empty-state message and do not attempt to render blank histogram or
+   band-content charts.
    Simplified tutorial and large-run notebook sidecar plumbing. Figure cells
    now pass ``**sidecar_settings.kwargs()`` or
    ``**sidecar_settings.kwargs(plural=True)`` instead of expanding sidecar
