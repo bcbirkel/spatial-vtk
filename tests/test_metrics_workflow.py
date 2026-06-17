@@ -152,11 +152,19 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert sta["input_event_count"] == 3
     assert sta["source_coordinate_count"] == 2
     assert sta["aggregation"] == "mean"
+    assert station_summary.attrs["svtk_aggregation_kind"] == "station_event_rows_to_station_summary"
+    assert station_summary.attrs["svtk_aggregation_value_col"] == "log2_residual"
+    assert station_summary.attrs["svtk_aggregation_method"] == "mean"
+    assert station_summary.attrs["svtk_aggregation_group_columns"] == ["station"]
+    assert station_summary.attrs["svtk_aggregation_coordinate_columns"] == ["sta_lon", "sta_lat"]
+    assert station_summary.attrs["svtk_aggregation_input_row_count"] == 4
+    assert station_summary.attrs["svtk_aggregation_finite_row_count"] == 3
 
     station_model_summary = context.station_summary_for_map(
         metrics.loc[metrics["metric"].eq("PGA")],
         extra_group_cols=["model"],
     )
+    assert station_model_summary.attrs["svtk_aggregation_group_columns"] == ["station", "model"]
     assert set(station_model_summary["model"]) == {"m1", "m2"}
     sta_m1 = station_model_summary.loc[
         station_model_summary["station"].eq("STA") & station_model_summary["model"].eq("m1")
@@ -176,6 +184,7 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert "all-psa-periods" in context.figure_name("station_metric_map", psa_item)
     assert "1-2-sec" not in context.figure_name("station_metric_map", psa_item)
     station_period_summary = context.station_period_summary_for_map(psa_item["df"])
+    assert station_period_summary.attrs["svtk_aggregation_group_columns"] == ["station", "period_s"]
     assert set(station_period_summary["period_s"]) == {1.0, 2.0}
     assert station_period_summary["source_row_count"].tolist() == [1, 1]
     assert station_period_summary["input_row_count"].tolist() == [1, 2]
@@ -206,6 +215,15 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert metadata["source_station_count"] == 2
     assert metadata["source_event_count"] == 4
     assert metadata["source_model_count"] == 1
+    assert metadata["aggregation_contract"] == "station_event_rows_to_station_summary"
+    assert metadata["source_rows_role"] == "pre_aggregation_metric_rows"
+    assert metadata["svtk_aggregation_kind"] == "station_event_rows_to_station_summary"
+    assert metadata["svtk_aggregation_value_col"] == "log2_residual"
+    assert metadata["svtk_aggregation_method"] == "mean"
+    assert metadata["svtk_aggregation_group_columns"] == ["station"]
+    assert metadata["svtk_aggregation_coordinate_columns"] == ["sta_lon", "sta_lat"]
+    assert metadata["svtk_aggregation_input_row_count"] == 4
+    assert metadata["svtk_aggregation_finite_row_count"] == 3
 
     context.sample_rows = 0
     context.sidecar_rows = None

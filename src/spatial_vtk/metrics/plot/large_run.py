@@ -327,6 +327,16 @@ class MetricFigureContext:
             summary[column] = dimension_value(df, column, self.context_multi_label(column))
         summary["aggregation"] = self.station_aggregation
         summary = _rename_station_coordinates(summary, lon_col=lon_col, lat_col=lat_col)
+        summary.attrs.update(
+            _station_aggregation_attrs(
+                value_col=resolved_value_col,
+                method=self.station_aggregation,
+                group_cols=group_cols,
+                coordinate_cols=(lon_col, lat_col),
+                source_rows=df,
+                finite_rows=finite_df,
+            )
+        )
         return summary
 
     def station_period_summary_for_map(
@@ -376,6 +386,16 @@ class MetricFigureContext:
             summary[column] = dimension_value(df, column, self.context_multi_label(column))
         summary["aggregation"] = self.station_aggregation
         summary = _rename_station_coordinates(summary, lon_col=lon_col, lat_col=lat_col)
+        summary.attrs.update(
+            _station_aggregation_attrs(
+                value_col=resolved_value_col,
+                method=self.station_aggregation,
+                group_cols=group_cols,
+                coordinate_cols=(lon_col, lat_col),
+                source_rows=df,
+                finite_rows=finite_df,
+            )
+        )
         return summary
 
     def write_metric_plot(
@@ -672,12 +692,28 @@ class MetricFigureContext:
             sidecar_rows=self.sidecar_rows,
             sidecar_dir=self.sidecar_output_dir,
             source_rows=source_df,
-            metadata={
-                "value_col": self.value_col,
-                "station_aggregation": self.station_aggregation,
-            },
+            metadata=self.figure_sidecar_metadata(df, source_df=source_df),
         )
         return None if result is None else result.sidecar_path
+
+    def figure_sidecar_metadata(self, df: pd.DataFrame, *, source_df: pd.DataFrame | None = None) -> dict[str, Any]:
+        """Return provenance metadata for a metric figure sidecar."""
+
+        metadata: dict[str, Any] = {
+            "value_col": self.value_col,
+            "station_aggregation": self.station_aggregation,
+        }
+        aggregation_attrs = {
+            str(key): value
+            for key, value in getattr(df, "attrs", {}).items()
+            if str(key).startswith("svtk_aggregation_")
+        }
+        metadata.update(aggregation_attrs)
+        if aggregation_attrs:
+            metadata["aggregation_contract"] = "station_event_rows_to_station_summary"
+        if source_df is not None:
+            metadata["source_rows_role"] = "pre_aggregation_metric_rows" if aggregation_attrs else "figure_source_rows"
+        return metadata
 
     def first_value(self, df: pd.DataFrame | None, column: str | None) -> str | None:
         """Return the first non-null value from one column."""
@@ -929,6 +965,29 @@ def _aggregate_grouped_values(grouped: Any, aggregation: str) -> pd.Series:
     raise ValueError(
         "station_aggregation must be one of: median, mean, min, max, sum, p05, p10, p90, p95"
     )
+
+
+def _station_aggregation_attrs(
+    *,
+    value_col: str,
+    method: str,
+    group_cols: list[str],
+    coordinate_cols: tuple[str, str],
+    source_rows: pd.DataFrame,
+    finite_rows: pd.DataFrame,
+) -> dict[str, Any]:
+    """Return dataframe metadata describing a station-summary aggregation."""
+
+    lon_col, lat_col = coordinate_cols
+    return {
+        "svtk_aggregation_kind": "station_event_rows_to_station_summary",
+        "svtk_aggregation_value_col": value_col,
+        "svtk_aggregation_method": str(method or "median").lower(),
+        "svtk_aggregation_group_columns": list(group_cols),
+        "svtk_aggregation_coordinate_columns": [lon_col, lat_col],
+        "svtk_aggregation_input_row_count": int(len(source_rows)),
+        "svtk_aggregation_finite_row_count": int(len(finite_rows)),
+    }
 
 
 __all__ = [

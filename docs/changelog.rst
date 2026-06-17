@@ -66,6 +66,11 @@ Changelog
    workflow examples now use these supported controls instead of stale
    ``--kwargs`` aliases such as ``gain``, ``xlim_s``, ``max_time_s``, and
    ``lowpass_hz``.
+   Added explicit aggregation provenance to large-run station metric figure
+   sidecars. Station summary dataframes now record the source value column,
+   aggregation method, grouping columns, coordinate columns, input row count,
+   and finite row count; the JSON sidecar persists that contract alongside the
+   sampled plotted/source rows.
    Added a dashboard summary-table contract helper that maps each metrics
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file
