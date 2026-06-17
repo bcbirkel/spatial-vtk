@@ -39,8 +39,8 @@ from spatial_vtk.io.waveforms import (
 
 
 DEFAULT_SOURCE_COLUMN_CANDIDATES: dict[str, tuple[str, ...]] = {
-    "observed": ("observed_mseed", "observed_waveform", "observed_pickle", "obs_waveform_path", "obs_path"),
-    "synthetic": ("synthetic_mseed", "synthetic_waveform", "synthetic_pickle", "syn_waveform_path", "syn_path"),
+    "observed": ("observed_waveform", "observed_mseed", "observed_pickle", "obs_waveform_path", "obs_path"),
+    "synthetic": ("synthetic_waveform", "synthetic_mseed", "synthetic_pickle", "syn_waveform_path", "syn_path"),
 }
 CONFIG_TEMPLATE_KEYS: dict[str, tuple[str, ...]] = {
     "observed": ("paths.observed_template", "paths.observed_root"),

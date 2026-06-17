@@ -45,6 +45,7 @@ NOTEBOOK_RUNTIME_MODULES = {
     "ipykernel": "ipykernel",
     "IPython": "IPython",
 }
+KERNEL_EXTRA_ARGUMENTS = ("--IPKernelApp.log_level=ERROR",)
 TUTORIAL_EXAMPLE_ROOT = Path("data/examples/example_five_event_subset")
 TUTORIAL_SYNTHETIC_MODEL = "cvmsi_20260506_material_0p6x1p2_asdf"
 TUTORIAL_REQUIRED_FILES = (
@@ -68,14 +69,13 @@ def main(argv: list[str] | None = None) -> int:
     report_path = (repo_root / args.report).resolve() if not Path(args.report).is_absolute() else Path(args.report)
     tutorial_output = repo_root / args.tutorial_output
 
+    configure_notebook_runtime_environment(tutorial_output)
     check_notebook_runtime()
     if not args.skip_example_data_check:
         check_tutorial_example_data(repo_root)
     if args.clean:
         _clean_path(tutorial_output)
     report_path.parent.mkdir(parents=True, exist_ok=True)
-    os.environ.setdefault("JUPYTER_PLATFORM_DIRS", "1")
-    os.environ.setdefault("MPLCONFIGDIR", str(tutorial_output / ".mplconfig"))
 
     report: list[dict[str, Any]] = []
     for notebook in notebooks:
@@ -124,6 +124,7 @@ def execute_notebook(notebook_path: Path, *, repo_root: Path, timeout: int) -> d
             timeout=timeout,
             kernel_name="python3",
             resources={"metadata": {"path": str(repo_root)}},
+            extra_arguments=list(KERNEL_EXTRA_ARGUMENTS),
             allow_errors=False,
             force_raise_errors=True,
         )
@@ -151,6 +152,17 @@ def check_notebook_runtime(required: dict[str, str] | None = None) -> None:
         f"{missing_text}. Install the tutorial extras with "
         'python -m pip install -e ".[notebooks,waveforms]".'
     )
+
+
+def configure_notebook_runtime_environment(tutorial_output: Path) -> None:
+    """Keep notebook runtime files under the ignored tutorial output tree."""
+
+    os.environ.setdefault("JUPYTER_PLATFORM_DIRS", "1")
+    os.environ.setdefault("MPLCONFIGDIR", str(tutorial_output / ".mplconfig"))
+    os.environ.setdefault("IPYTHONDIR", str(tutorial_output / ".ipython"))
+    os.environ.setdefault("JUPYTER_CONFIG_DIR", str(tutorial_output / ".jupyter_config"))
+    os.environ.setdefault("JUPYTER_DATA_DIR", str(tutorial_output / ".jupyter_data"))
+    os.environ.setdefault("JUPYTER_RUNTIME_DIR", str(tutorial_output / ".jupyter_runtime"))
 
 
 def missing_notebook_runtime_modules(required: dict[str, str] | None = None) -> list[str]:

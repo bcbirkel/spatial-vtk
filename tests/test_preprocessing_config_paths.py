@@ -373,6 +373,77 @@ def test_configured_templates_override_stale_nonexistent_metadata_paths(tmp_path
     assert row["synthetic_raw_waveform"] == str(synthetic_path)
 
 
+def test_configured_templates_override_existing_legacy_metadata_paths(tmp_path: Path, monkeypatch) -> None:
+    """Configured canonical waveform columns should win over legacy mseed columns."""
+
+    fixture_root = tmp_path / "fixtures"
+    observed_path = fixture_root / "observed" / "E01" / "STA01.pkl"
+    synthetic_path = fixture_root / "synthetic" / "model_a" / "E01" / "STA01.pkl"
+    legacy_observed_path = fixture_root / "legacy" / "observed" / "E01.mseed"
+    legacy_synthetic_path = fixture_root / "legacy" / "synthetic" / "model_a" / "E01.mseed"
+    for path in (observed_path, synthetic_path, legacy_observed_path, legacy_synthetic_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(path.name.encode("utf-8"))
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  root_dir: .",
+                "paths:",
+                "  observed_template: fixtures/observed/{event_id}/{station}.pkl",
+                "  synthetic_template: fixtures/synthetic/{model}/{event_id}/{station}.pkl",
+                "outputs:",
+                "  preprocessed_waveforms: processed",
+                "metrics:",
+                "  models: [model_a]",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    records = pd.DataFrame(
+        {
+            "event_id": ["E01"],
+            "station": ["STA01"],
+            "observed_mseed": [str(legacy_observed_path)],
+            "synthetic_mseed": [str(legacy_synthetic_path)],
+        }
+    )
+
+    def fake_preprocess_one_file(input_path, output_path, *, source, event_id, settings, overwrite, cached_metadata=None):
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_bytes(b"processed")
+        return (
+            {
+                "event_id": event_id,
+                "source": source,
+                "input_file": str(input_path),
+                "output_file": str(output_path),
+                "status": "written",
+                "message": "",
+                "processing": "none",
+                "lowpass_hz": settings.lowpass_hz,
+                "highpass_hz": settings.highpass_hz,
+                "bandpass_low_hz": settings.bandpass_low_hz,
+                "bandpass_high_hz": settings.bandpass_high_hz,
+                "resample_hz": settings.resample_hz,
+                "filter_order": settings.filter_order,
+                "trace_count": 0,
+            },
+            pd.DataFrame(),
+        )
+
+    monkeypatch.setattr(preprocessing_module, "_preprocess_one_file", fake_preprocess_one_file)
+
+    result = preprocess_waveform_files(records, config=cfg)
+
+    assert set(result.manifest["input_file"]) == {str(observed_path), str(synthetic_path)}
+    row = result.event_station_records.loc[0]
+    assert row["observed_raw_waveform"] == str(observed_path)
+    assert row["synthetic_raw_waveform"] == str(synthetic_path)
+
+
 def test_configured_missing_observed_paths_stop_before_partial_writes(tmp_path: Path, monkeypatch) -> None:
     """If observed is configured but unmatched, do not preprocess only synthetic."""
 

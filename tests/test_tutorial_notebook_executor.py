@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import importlib.util
 import json
+import os
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -81,6 +82,32 @@ def test_tutorial_notebook_runtime_preflight_reports_missing_modules() -> None:
     assert missing == ["demo"]
     with pytest.raises(SystemExit, match=r"demo.*\[notebooks,waveforms\]"):
         module.check_notebook_runtime({"demo": "definitely_missing_svtk_module"})
+
+
+def test_tutorial_notebook_executor_isolates_runtime_dirs_and_quiets_kernel(monkeypatch, tmp_path: Path) -> None:
+    """The notebook runner should avoid user-level runtime files and noisy kernel logs."""
+
+    module = _load_executor_module()
+    for key in (
+        "JUPYTER_PLATFORM_DIRS",
+        "MPLCONFIGDIR",
+        "IPYTHONDIR",
+        "JUPYTER_CONFIG_DIR",
+        "JUPYTER_DATA_DIR",
+        "JUPYTER_RUNTIME_DIR",
+    ):
+        monkeypatch.delenv(key, raising=False)
+
+    tutorial_output = tmp_path / "outputs" / "tutorials"
+    module.configure_notebook_runtime_environment(tutorial_output)
+
+    assert os.environ["JUPYTER_PLATFORM_DIRS"] == "1"
+    assert os.environ["MPLCONFIGDIR"] == str(tutorial_output / ".mplconfig")
+    assert os.environ["IPYTHONDIR"] == str(tutorial_output / ".ipython")
+    assert os.environ["JUPYTER_CONFIG_DIR"] == str(tutorial_output / ".jupyter_config")
+    assert os.environ["JUPYTER_DATA_DIR"] == str(tutorial_output / ".jupyter_data")
+    assert os.environ["JUPYTER_RUNTIME_DIR"] == str(tutorial_output / ".jupyter_runtime")
+    assert "--IPKernelApp.log_level=ERROR" in module.KERNEL_EXTRA_ARGUMENTS
 
 
 def test_tutorial_example_data_preflight_matches_committed_checkout() -> None:

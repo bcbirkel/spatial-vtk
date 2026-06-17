@@ -2,6 +2,16 @@ Changelog
 =========
 
 2026-06-16
+   Hardened clean standard tutorial execution for source checkouts. The
+   preprocessing workflow now prefers canonical config-generated waveform
+   columns over legacy format-specific metadata columns when both exist, so
+   ignored local MiniSEED files cannot mask the committed NPZ tutorial subset.
+   Standard metric and map tutorials now make external basemap fetching opt-in
+   with ``SVTK_ADD_BASEMAP=1``, avoiding warning output in fresh checkouts
+   without ``contextily`` or tile access. The tutorial notebook executor now
+   keeps Jupyter/IPython runtime files under ignored tutorial outputs and
+   starts kernels with quieter logging so clean runs do not emit TCP-kernel
+   warnings.
    Made large-run metric plotting context column-aware: Step 3 metric figures
    now load only columns required by the registered diagnostic plots and apply
    default component/model filters at context load time, reducing memory
