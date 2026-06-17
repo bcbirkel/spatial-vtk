@@ -213,6 +213,10 @@ Use the metric outputs to make spatial diagnostic maps and plots. The notebook v
 
 .. code-block:: bash
 
+   svtk spatial status \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO"
+
    svtk spatial summaries \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \

@@ -83,6 +83,60 @@ spatial_statistics:
     assert "metric_field:" in captured.out
 
 
+def test_cli_spatial_status_reports_named_missing_input(tmp_path, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+
+    assert main(["spatial", "status", "--config", str(config), "--json"]) == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    rows = payload["status"]
+    by_name = {row["name"]: row for row in rows}
+    assert payload["reason"] == "missing_inputs"
+    assert payload["should_run_spatial_summaries"] is False
+    assert by_name["metrics_long_path"]["role"] == "input"
+    assert by_name["metrics_long_path"]["state"] == "missing"
+    assert by_name["metric_field_path"]["role"] == "output"
+    assert by_name["morans_i_path"]["role"] == "output"
+    assert "metrics_long_path=" in payload["message"]
+    assert not (tmp_path / "outputs").exists()
+
+
+def test_cli_spatial_status_reports_missing_outputs_with_existing_metrics(tmp_path, capsys):
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    (tables / "metrics_long.parquet").write_bytes(b"placeholder")
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+
+    assert main(["spatial", "status", "--config", str(config), "--include-optional"]) == 0
+
+    captured = capsys.readouterr()
+    assert "Spatial outputs current: False" in captured.out
+    assert "Spatial summaries run recommended: True" in captured.out
+    assert "Reason: missing_outputs" in captured.out
+    assert "metric_field_path" in captured.out
+    assert "redcap_clusters_path" in captured.out
+
+
 def test_cli_qc_summaries_help(capsys):
     with pytest.raises(SystemExit) as excinfo:
         main(["qc", "summaries", "--help"])

@@ -9,6 +9,7 @@ Command Tree
 ------------
 
 - :ref:`svtk spatial <cli-svtk-spatial>`
+   - :ref:`svtk spatial status <cli-svtk-spatial-status>` - Inspect configured spatial-statistics inputs and outputs without running calculations.
    - :ref:`svtk spatial summaries <cli-svtk-spatial-summaries>` - Build standard spatial-statistics summary tables.
 
 Command Details
@@ -18,7 +19,7 @@ Command Details
 
 .. code-block:: bash
 
-   svtk spatial [-h] {summaries} ...
+   svtk spatial [-h] {status,summaries} ...
 
 .. rubric:: Parameters
 
@@ -34,6 +35,52 @@ Command Details
      - No
      -
      - show this help message and exit
+
+.. _cli-svtk-spatial-status:
+
+svtk spatial status
+^^^^^^^^^^^^^^^^^^^
+
+Inspect configured spatial-statistics inputs and outputs without running calculations.
+
+.. rubric:: Usage
+
+.. code-block:: bash
+
+   svtk spatial status [-h] [--config CONFIG]
+                           [--run-scenario RUN_SCENARIO] [--include-optional]
+                           [--json]
+
+.. rubric:: Parameters
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 13 14 47
+
+   * - Name
+     - Required
+     - Default / choices
+     - Description
+   * - ``-h``, ``--help``
+     - No
+     -
+     - show this help message and exit
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config file.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+   * - ``--include-optional``
+     - No
+     - Flag
+     - Include optional spatial output artifacts in the status table.
+   * - ``--json``
+     - No
+     - Flag
+     - Print machine-readable JSON.
 
 .. _cli-svtk-spatial-summaries:
 

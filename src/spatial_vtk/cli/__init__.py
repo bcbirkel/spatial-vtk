@@ -757,6 +757,17 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     )
     spatial_sub = spatial.add_subparsers(dest="spatial_command", required=True)
 
+    status = spatial_sub.add_parser(
+        "status",
+        help="Inspect configured spatial-statistics inputs and outputs.",
+        description="Inspect configured spatial-statistics inputs and outputs without running calculations.",
+    )
+    status.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    status.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    status.add_argument("--include-optional", action="store_true", help="Include optional spatial output artifacts in the status table.")
+    status.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
+    status.set_defaults(handler=_cmd_spatial_status)
+
     summaries = spatial_sub.add_parser(
         "summaries",
         help="Build standard spatial-statistics summary tables.",
@@ -1824,6 +1835,50 @@ def _cmd_spatial_summaries(args: argparse.Namespace) -> int:
             print(f"- {failure['metric']} {failure['step']}: {failure['error']}: {failure['message']}")
         if len(result.failures) > 10:
             print(f"- ... {len(result.failures) - 10} more")
+    return 0
+
+
+def _cmd_spatial_status(args: argparse.Namespace) -> int:
+    """Run ``svtk spatial status``."""
+
+    from spatial_vtk.io import output_group_paths, output_readiness
+
+    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
+    outputs = output_group_paths(
+        "step_04_spatial",
+        cfg=cfg,
+        create_parent=False,
+        include_optional=args.include_optional,
+    )
+    metrics_path = _configured_output_path("metrics_long", config=cfg, create_parent=False)
+    station_path = _configured_output_path("prepared_stations", config=cfg, create_parent=False)
+    readiness = output_readiness(
+        outputs,
+        inputs={"metrics_long_path": metrics_path},
+        sources={"metrics_long_source_path": metrics_path, "prepared_stations_path": station_path},
+    )
+    status = readiness.status_frame()
+    payload = {
+        "config": str(cfg.config_path) if cfg.config_path is not None else None,
+        "spatial_outputs_current": readiness.reason == "current",
+        "should_run_spatial_summaries": readiness.should_run,
+        "reason": readiness.reason,
+        "message": readiness.message,
+        "status": status,
+    }
+    if args.json:
+        _print_payload(payload, as_json=True)
+        return 0
+
+    print(f"Config: {payload['config']}")
+    print(f"Spatial outputs current: {payload['spatial_outputs_current']}")
+    print(f"Spatial summaries run recommended: {readiness.should_run}")
+    print(f"Reason: {readiness.reason}")
+    print(f"Message: {readiness.message}")
+    if status.empty:
+        print("No configured spatial paths were resolved.")
+    else:
+        print(status.to_string(index=False))
     return 0
 
 
