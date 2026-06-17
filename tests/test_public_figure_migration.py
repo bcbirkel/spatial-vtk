@@ -731,6 +731,11 @@ def test_metric_plot_functions_write_optional_row_sidecars(tmp_path: Path) -> No
         assert metadata["figure_type"] == figure_type
         assert metadata["plot_row_count"] >= metadata["written_row_count"]
         assert metadata["source_row_count"] >= metadata["source_written_row_count"]
+        if stem in {"psa_period_curve", "period_distribution"}:
+            source_rows = pd.read_csv(source_sidecar)
+            assert set(source_rows["metric"]) == {"PSA"}
+            assert metadata["source_row_count"] == int(metrics["metric"].eq("PSA").sum())
+            assert metadata["source_metric_count"] == 1
 
 
 def test_spatial_metric_plot_functions_write_optional_row_sidecars(tmp_path: Path) -> None:
