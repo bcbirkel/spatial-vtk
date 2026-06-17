@@ -249,7 +249,10 @@ Work with region polygons and corridor selections, then make maps and waveform s
      --value-col log2_residual \
      --passband "1-2 sec" \
      --model cvmsi_20260506_material_0p6x1p2_asdf \
-     --kwargs dep=PGA indep=station_geojson_labels compare_to="LA Basin" table=true
+     --dep PGA \
+     --indep station_geojson_labels \
+     --compare-to "LA Basin" \
+     --kwargs table=true
 
    svtk map spatial event-residual \
      --config "$CONFIG" \
@@ -297,7 +300,10 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
      --model cvmsi_20260506_material_0p6x1p2_asdf \
      --fit lowess \
      --title "PGA and PGV Residuals vs Distance" \
-     --kwargs dep='[PGA, PGV]' indep=distance colorby=dep
+     --dep PGA \
+     --dep PGV \
+     --indep distance \
+     --colorby dep
 
    svtk plot metrics boxplot \
      --input "$TABLES/metrics_long.parquet" \
@@ -305,7 +311,11 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
      --value-col log2_residual \
      --passband "1-2 sec" \
      --model cvmsi_20260506_material_0p6x1p2_asdf \
-     --kwargs dep='[PGA, PGV]' indep=station_geojson_labels compare_to="LA Basin" table=true
+     --dep PGA \
+     --dep PGV \
+     --indep station_geojson_labels \
+     --compare-to "LA Basin" \
+     --kwargs table=true
 
    svtk plot metrics heatmap \
      --input "$TABLES/metrics_long.parquet" \
@@ -314,7 +324,10 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
      --passband "1-2 sec" \
      --passband "2-3 sec" \
      --model cvmsi_20260506_material_0p6x1p2_asdf \
-     --kwargs dep='[PGA, PGV, PSA]' indep=station_geojson_labels
+     --dep PGA \
+     --dep PGV \
+     --dep PSA \
+     --indep station_geojson_labels
 
 
 Step 7: Dashboards

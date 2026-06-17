@@ -96,6 +96,10 @@ def test_cli_registered_plot_help_shows_common_options(capsys):
     assert "--y-col" in captured.out
     assert "--no-connect-points" in captured.out
     assert "--mode" in captured.out
+    assert "--dep" in captured.out
+    assert "--indep" in captured.out
+    assert "--colorby" in captured.out
+    assert "--compare-to" in captured.out
     assert "--write-sidecar" in captured.out
 
 
@@ -134,6 +138,10 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "resolve their standard input tables and figure paths from the active config" in text
     assert "first-class flags where they apply" in text
     assert "``--mode``" in text
+    assert "``--dep``" in text
+    assert "``--indep``" in text
+    assert "``--colorby``" in text
+    assert "``--compare-to``" in text
     assert "``--no-connect-points``" in text
     assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
 
@@ -163,6 +171,8 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "configured output table 'station_bias' when --config is passed" in map_text
     assert "configured figure output 'station_residual_map' when --config is passed" in map_text
     assert "``--mode``" in map_text
+    assert "``--dep``" in map_text
+    assert "``--compare-to``" in map_text
 
 
 def test_cli_workflow_uses_curated_commands_for_standard_steps():
@@ -175,6 +185,14 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert "--kwargs connect_points=false" not in text
     assert "--mode PC1" in text
     assert "--kwargs mode=PC1" not in text
+    assert "--dep PGA" in text
+    assert "--indep distance" in text
+    assert "--colorby dep" in text
+    assert '--compare-to "LA Basin"' in text
+    assert "--kwargs dep=" not in text
+    assert " indep=" not in text
+    assert " colorby=" not in text
+    assert " compare_to=" not in text
 
 
 def test_cli_config_show_section(tmp_path, capsys):
@@ -355,6 +373,72 @@ outputs:
     assert seen["kwargs"]["component"] == "Z"
     assert seen["kwargs"]["model"] == "m1"
     assert seen["kwargs"]["connect_points"] is False
+    assert captured.out.strip() == str(expected_output)
+
+
+def test_cli_flexible_metric_plot_uses_first_class_dep_indep_flags(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    metrics = table_dir / "metrics_long.csv"
+    metrics.write_text(
+        "metric,band,model,component,distance,log2_residual\nPGA,1-2 sec,m1,Z,10,0.5\n",
+        encoding="utf-8",
+    )
+    config.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+  artifacts:
+    metrics_long:
+      filename: metrics_long.csv
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.spatial.plot as spatial_plot
+
+    def fake_scatterplot(data, output_path=None, **kwargs):
+        seen["rows"] = len(data)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(spatial_plot, "scatterplot", fake_scatterplot)
+
+    assert (
+        main(
+            [
+                "plot",
+                "metrics",
+                "scatterplot",
+                "--config",
+                str(config),
+                "--dep",
+                "PGA",
+                "--dep",
+                "PGV",
+                "--indep",
+                "distance",
+                "--colorby",
+                "dep",
+            ]
+        )
+        == 0
+    )
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "scatterplot.png"
+    assert seen["rows"] == 1
+    assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["dep"] == ["PGA", "PGV"]
+    assert seen["kwargs"]["indep"] == "distance"
+    assert seen["kwargs"]["colorby"] == "dep"
     assert captured.out.strip() == str(expected_output)
 
 

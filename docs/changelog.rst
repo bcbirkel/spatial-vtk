@@ -58,6 +58,9 @@ Changelog
    named flag instead of ``--kwargs connect_points=false``.
    Added a first-class ``--mode`` plotting flag and updated the shell workflow
    PCA map example to use ``--mode PC1`` instead of ``--kwargs mode=PC1``.
+   Added first-class ``--dep``, ``--indep``, ``--colorby``, and
+   ``--compare-to`` plotting flags for flexible spatial plots, and updated
+   shell workflow scatterplot, boxplot, and heatmap examples to use them.
    Added a dashboard summary-table contract helper that maps each metrics
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file

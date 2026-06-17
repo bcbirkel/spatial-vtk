@@ -360,6 +360,10 @@ COMMON_FIGURE_OPTION_KEYS = frozenset(
         "fit",
         "connect_points",
         "mode",
+        "dep",
+        "indep",
+        "colorby",
+        "compare_to",
         "title",
     }
 )
@@ -892,6 +896,10 @@ def _add_common_figure_options(parser: argparse.ArgumentParser, *, exclude: set[
         help="Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.",
     )
     add("mode", default=None, help="Mode selector for figures that support named modes, such as PCA maps.")
+    add("dep", action="append", default=None, help="Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.")
+    add("indep", default=None, help="Independent column for flexible spatial plots.")
+    add("colorby", default=None, help="Column or alias used for flexible spatial plot color grouping.")
+    add("compare-to", action="append", default=None, help="Baseline category for categorical comparison plots. Repeat for multiple categories.")
     add("title", default=None, help="Figure title.")
 
 

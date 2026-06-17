@@ -101,8 +101,11 @@ svtk map spatial block-holdout-error
                                             [--color-col COLOR_COL]
                                             [--fit FIT]
                                             [--connect-points | --no-connect-points]
-                                            [--mode MODE] [--title TITLE]
-                                            [--write-sidecar]
+                                            [--mode MODE] [--dep DEP]
+                                            [--indep INDEP]
+                                            [--colorby COLORBY]
+                                            [--compare-to COMPARE_TO]
+                                            [--title TITLE] [--write-sidecar]
                                             [--sidecar-rows SIDECAR_ROWS]
                                             [--sidecar-dir SIDECAR_DIR]
                                             [--bounds BOUNDS] [--no-basemap]
@@ -202,6 +205,22 @@ svtk map spatial block-holdout-error
      - No
      -
      - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+   * - ``--dep``
+     - No
+     - Repeatable
+     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+   * - ``--indep``
+     - No
+     -
+     - Value: ``indep``. Independent column for flexible spatial plots.
+   * - ``--colorby``
+     - No
+     -
+     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+   * - ``--compare-to``
+     - No
+     - Repeatable
+     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--title``
      - No
      -
@@ -251,8 +270,9 @@ svtk map spatial cluster
                                 [--y-col Y_COL] [--group-col GROUP_COL]
                                 [--color-col COLOR_COL] [--fit FIT]
                                 [--connect-points | --no-connect-points]
-                                [--mode MODE] [--title TITLE]
-                                [--write-sidecar]
+                                [--mode MODE] [--dep DEP] [--indep INDEP]
+                                [--colorby COLORBY] [--compare-to COMPARE_TO]
+                                [--title TITLE] [--write-sidecar]
                                 [--sidecar-rows SIDECAR_ROWS]
                                 [--sidecar-dir SIDECAR_DIR] [--bounds BOUNDS]
                                 [--no-basemap]
@@ -352,6 +372,22 @@ svtk map spatial cluster
      - No
      -
      - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+   * - ``--dep``
+     - No
+     - Repeatable
+     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+   * - ``--indep``
+     - No
+     -
+     - Value: ``indep``. Independent column for flexible spatial plots.
+   * - ``--colorby``
+     - No
+     -
+     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+   * - ``--compare-to``
+     - No
+     - Repeatable
+     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--title``
      - No
      -
@@ -401,8 +437,9 @@ svtk map spatial corridor
                                  [--y-col Y_COL] [--group-col GROUP_COL]
                                  [--color-col COLOR_COL] [--fit FIT]
                                  [--connect-points | --no-connect-points]
-                                 [--mode MODE] [--title TITLE]
-                                 [--write-sidecar]
+                                 [--mode MODE] [--dep DEP] [--indep INDEP]
+                                 [--colorby COLORBY] [--compare-to COMPARE_TO]
+                                 [--title TITLE] [--write-sidecar]
                                  [--sidecar-rows SIDECAR_ROWS]
                                  [--sidecar-dir SIDECAR_DIR] [--events EVENTS]
                                  [--records RECORDS] [--stations STATIONS]
@@ -503,6 +540,22 @@ svtk map spatial corridor
      - No
      -
      - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+   * - ``--dep``
+     - No
+     - Repeatable
+     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+   * - ``--indep``
+     - No
+     -
+     - Value: ``indep``. Independent column for flexible spatial plots.
+   * - ``--colorby``
+     - No
+     -
+     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+   * - ``--compare-to``
+     - No
+     - Repeatable
+     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--title``
      - No
      -
@@ -565,8 +618,10 @@ svtk map spatial event-residual
                                        [--y-col Y_COL] [--group-col GROUP_COL]
                                        [--color-col COLOR_COL] [--fit FIT]
                                        [--connect-points | --no-connect-points]
-                                       [--mode MODE] [--title TITLE]
-                                       [--write-sidecar]
+                                       [--mode MODE] [--dep DEP]
+                                       [--indep INDEP] [--colorby COLORBY]
+                                       [--compare-to COMPARE_TO]
+                                       [--title TITLE] [--write-sidecar]
                                        [--sidecar-rows SIDECAR_ROWS]
                                        [--sidecar-dir SIDECAR_DIR]
                                        [--bounds BOUNDS] [--no-basemap]
@@ -666,6 +721,22 @@ svtk map spatial event-residual
      - No
      -
      - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+   * - ``--dep``
+     - No
+     - Repeatable
+     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+   * - ``--indep``
+     - No
+     -
+     - Value: ``indep``. Independent column for flexible spatial plots.
+   * - ``--colorby``
+     - No
+     -
+     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+   * - ``--compare-to``
+     - No
+     - Repeatable
+     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--title``
      - No
      -
@@ -746,8 +817,10 @@ svtk map spatial metric-by-model
                                         [--group-col GROUP_COL]
                                         [--color-col COLOR_COL] [--fit FIT]
                                         [--connect-points | --no-connect-points]
-                                        [--mode MODE] [--title TITLE]
-                                        [--write-sidecar]
+                                        [--mode MODE] [--dep DEP]
+                                        [--indep INDEP] [--colorby COLORBY]
+                                        [--compare-to COMPARE_TO]
+                                        [--title TITLE] [--write-sidecar]
                                         [--sidecar-rows SIDECAR_ROWS]
                                         [--sidecar-dir SIDECAR_DIR]
                                         [--bounds BOUNDS] [--no-basemap]
@@ -847,6 +920,22 @@ svtk map spatial metric-by-model
      - No
      -
      - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+   * - ``--dep``
+     - No
+     - Repeatable
+     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+   * - ``--indep``
+     - No
+     -
+     - Value: ``indep``. Independent column for flexible spatial plots.
+   * - ``--colorby``
+     - No
+     -
+     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+   * - ``--compare-to``
+     - No
+     - Repeatable
+     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--title``
      - No
      -
@@ -901,8 +990,10 @@ svtk map spatial model-improvement
                                           [--group-col GROUP_COL]
                                           [--color-col COLOR_COL] [--fit FIT]
                                           [--connect-points | --no-connect-points]
-                                          [--mode MODE] [--title TITLE]
-                                          [--write-sidecar]
+                                          [--mode MODE] [--dep DEP]
+                                          [--indep INDEP] [--colorby COLORBY]
+                                          [--compare-to COMPARE_TO]
+                                          [--title TITLE] [--write-sidecar]
                                           [--sidecar-rows SIDECAR_ROWS]
                                           [--sidecar-dir SIDECAR_DIR]
                                           [--bounds BOUNDS] [--no-basemap]
@@ -1002,6 +1093,22 @@ svtk map spatial model-improvement
      - No
      -
      - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+   * - ``--dep``
+     - No
+     - Repeatable
+     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+   * - ``--indep``
+     - No
+     -
+     - Value: ``indep``. Independent column for flexible spatial plots.
+   * - ``--colorby``
+     - No
+     -
+     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+   * - ``--compare-to``
+     - No
+     - Repeatable
+     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--title``
      - No
      -
@@ -1051,8 +1158,9 @@ svtk map spatial pca-mode
                                  [--y-col Y_COL] [--group-col GROUP_COL]
                                  [--color-col COLOR_COL] [--fit FIT]
                                  [--connect-points | --no-connect-points]
-                                 [--mode MODE] [--title TITLE]
-                                 [--write-sidecar]
+                                 [--mode MODE] [--dep DEP] [--indep INDEP]
+                                 [--colorby COLORBY] [--compare-to COMPARE_TO]
+                                 [--title TITLE] [--write-sidecar]
                                  [--sidecar-rows SIDECAR_ROWS]
                                  [--sidecar-dir SIDECAR_DIR] [--bounds BOUNDS]
                                  [--no-basemap]
@@ -1152,6 +1260,22 @@ svtk map spatial pca-mode
      - No
      -
      - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+   * - ``--dep``
+     - No
+     - Repeatable
+     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+   * - ``--indep``
+     - No
+     -
+     - Value: ``indep``. Independent column for flexible spatial plots.
+   * - ``--colorby``
+     - No
+     -
+     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+   * - ``--compare-to``
+     - No
+     - Repeatable
+     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--title``
      - No
      -
@@ -1202,8 +1326,10 @@ svtk map spatial redcap-cluster
                                        [--y-col Y_COL] [--group-col GROUP_COL]
                                        [--color-col COLOR_COL] [--fit FIT]
                                        [--connect-points | --no-connect-points]
-                                       [--mode MODE] [--title TITLE]
-                                       [--write-sidecar]
+                                       [--mode MODE] [--dep DEP]
+                                       [--indep INDEP] [--colorby COLORBY]
+                                       [--compare-to COMPARE_TO]
+                                       [--title TITLE] [--write-sidecar]
                                        [--sidecar-rows SIDECAR_ROWS]
                                        [--sidecar-dir SIDECAR_DIR]
                                        [--bounds BOUNDS] [--no-basemap]
@@ -1303,6 +1429,22 @@ svtk map spatial redcap-cluster
      - No
      -
      - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+   * - ``--dep``
+     - No
+     - Repeatable
+     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+   * - ``--indep``
+     - No
+     -
+     - Value: ``indep``. Independent column for flexible spatial plots.
+   * - ``--colorby``
+     - No
+     -
+     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+   * - ``--compare-to``
+     - No
+     - Repeatable
+     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--title``
      - No
      -
@@ -1353,8 +1495,10 @@ svtk map spatial residual-grid
                                       [--y-col Y_COL] [--group-col GROUP_COL]
                                       [--color-col COLOR_COL] [--fit FIT]
                                       [--connect-points | --no-connect-points]
-                                      [--mode MODE] [--title TITLE]
-                                      [--write-sidecar]
+                                      [--mode MODE] [--dep DEP]
+                                      [--indep INDEP] [--colorby COLORBY]
+                                      [--compare-to COMPARE_TO]
+                                      [--title TITLE] [--write-sidecar]
                                       [--sidecar-rows SIDECAR_ROWS]
                                       [--sidecar-dir SIDECAR_DIR]
                                       [--bounds BOUNDS] [--no-basemap]
@@ -1454,6 +1598,22 @@ svtk map spatial residual-grid
      - No
      -
      - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+   * - ``--dep``
+     - No
+     - Repeatable
+     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+   * - ``--indep``
+     - No
+     -
+     - Value: ``indep``. Independent column for flexible spatial plots.
+   * - ``--colorby``
+     - No
+     -
+     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+   * - ``--compare-to``
+     - No
+     - Repeatable
+     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--title``
      - No
      -
@@ -1502,7 +1662,9 @@ svtk map spatial score
                               [--y-col Y_COL] [--group-col GROUP_COL]
                               [--color-col COLOR_COL] [--fit FIT]
                               [--connect-points | --no-connect-points]
-                              [--mode MODE] [--title TITLE] [--write-sidecar]
+                              [--mode MODE] [--dep DEP] [--indep INDEP]
+                              [--colorby COLORBY] [--compare-to COMPARE_TO]
+                              [--title TITLE] [--write-sidecar]
                               [--sidecar-rows SIDECAR_ROWS]
                               [--sidecar-dir SIDECAR_DIR] [--bounds BOUNDS]
                               [--no-basemap] [--basemap-source BASEMAP_SOURCE]
@@ -1601,6 +1763,22 @@ svtk map spatial score
      - No
      -
      - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+   * - ``--dep``
+     - No
+     - Repeatable
+     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+   * - ``--indep``
+     - No
+     -
+     - Value: ``indep``. Independent column for flexible spatial plots.
+   * - ``--colorby``
+     - No
+     -
+     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+   * - ``--compare-to``
+     - No
+     - Repeatable
+     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--title``
      - No
      -
@@ -1651,7 +1829,9 @@ svtk map spatial station-bias
                                      [--y-col Y_COL] [--group-col GROUP_COL]
                                      [--color-col COLOR_COL] [--fit FIT]
                                      [--connect-points | --no-connect-points]
-                                     [--mode MODE] [--title TITLE]
+                                     [--mode MODE] [--dep DEP] [--indep INDEP]
+                                     [--colorby COLORBY]
+                                     [--compare-to COMPARE_TO] [--title TITLE]
                                      [--write-sidecar]
                                      [--sidecar-rows SIDECAR_ROWS]
                                      [--sidecar-dir SIDECAR_DIR]
@@ -1752,6 +1932,22 @@ svtk map spatial station-bias
      - No
      -
      - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+   * - ``--dep``
+     - No
+     - Repeatable
+     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+   * - ``--indep``
+     - No
+     -
+     - Value: ``indep``. Independent column for flexible spatial plots.
+   * - ``--colorby``
+     - No
+     -
+     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+   * - ``--compare-to``
+     - No
+     - Repeatable
+     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--title``
      - No
      -
@@ -1802,8 +1998,10 @@ svtk map spatial station-metric
                                        [--y-col Y_COL] [--group-col GROUP_COL]
                                        [--color-col COLOR_COL] [--fit FIT]
                                        [--connect-points | --no-connect-points]
-                                       [--mode MODE] [--title TITLE]
-                                       [--write-sidecar]
+                                       [--mode MODE] [--dep DEP]
+                                       [--indep INDEP] [--colorby COLORBY]
+                                       [--compare-to COMPARE_TO]
+                                       [--title TITLE] [--write-sidecar]
                                        [--sidecar-rows SIDECAR_ROWS]
                                        [--sidecar-dir SIDECAR_DIR]
                                        [--bounds BOUNDS] [--no-basemap]
@@ -1903,6 +2101,22 @@ svtk map spatial station-metric
      - No
      -
      - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+   * - ``--dep``
+     - No
+     - Repeatable
+     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+   * - ``--indep``
+     - No
+     -
+     - Value: ``indep``. Independent column for flexible spatial plots.
+   * - ``--colorby``
+     - No
+     -
+     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+   * - ``--compare-to``
+     - No
+     - Repeatable
+     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--title``
      - No
      -
