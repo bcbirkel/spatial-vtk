@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import json
 from pathlib import Path
 
@@ -513,6 +514,37 @@ def test_cli_registered_plot_help_shows_common_options(capsys):
     assert "--max-records" in captured.out
     assert "--max-traces" in captured.out
     assert "--write-sidecar" in captured.out
+
+
+@pytest.mark.parametrize(
+    ("command_prefix", "group_name"),
+    [
+        (("plot", "metrics"), "PLOT_COMMAND_GROUPS"),
+        (("plot", "spatial"), "PLOT_COMMAND_GROUPS"),
+        (("map", "spatial"), "MAP_COMMAND_GROUPS"),
+        (("visualize", "context"), "VISUALIZE_COMMAND_GROUPS"),
+        (("visualize", "qc"), "VISUALIZE_COMMAND_GROUPS"),
+        (("visualize", "waveforms"), "VISUALIZE_COMMAND_GROUPS"),
+    ],
+)
+def test_cli_registered_figure_commands_expose_sidecar_controls(command_prefix, group_name, capsys):
+    """Every registry-backed figure command should expose row-provenance sidecars."""
+
+    import spatial_vtk.cli as cli
+
+    registry = getattr(cli, group_name)[command_prefix[-1]]
+    for command_name, spec in sorted(registry.items()):
+        function = cli._resolve_registered_plot_function(spec.function)
+        parameters = set(inspect.signature(function).parameters)
+        assert {"write_sidecar", "sidecar_rows", "sidecar_dir"} <= parameters, spec.function
+
+        with pytest.raises(SystemExit) as excinfo:
+            main([*command_prefix, command_name, "--help"])
+        assert excinfo.value.code == 0
+        help_text = capsys.readouterr().out
+        assert "--write-sidecar" in help_text, command_name
+        assert "--sidecar-rows" in help_text, command_name
+        assert "--sidecar-dir" in help_text, command_name
 
 
 def test_cli_registered_plot_help_names_config_defaults(capsys):
