@@ -589,9 +589,27 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     )
     build.add_argument("--config", default=None, help="Spatial-VTK config file.")
     build.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
-    build.add_argument("--trace-output", default=None, help="Output waveform QC table path.")
-    build.add_argument("--inventory-output", default=None, help="Output metric QC inventory path.")
-    build.add_argument("--overlap-inventory-output", default=None, help="Output overlap-only metric QC inventory path.")
+    build.add_argument(
+        "--trace-output",
+        "--qc-trace-summary-output",
+        dest="trace_output",
+        default=None,
+        help="Output waveform QC table path. Defaults to configured output table 'qc_trace_summary'.",
+    )
+    build.add_argument(
+        "--inventory-output",
+        "--qc-inventory-output",
+        dest="inventory_output",
+        default=None,
+        help="Output metric QC inventory path. Defaults to configured output table 'qc_inventory'.",
+    )
+    build.add_argument(
+        "--overlap-inventory-output",
+        "--qc-overlap-inventory-output",
+        dest="overlap_inventory_output",
+        default=None,
+        help="Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'.",
+    )
     build.add_argument("--verbose", action="store_true", help="Print elapsed-time progress messages.")
     build.set_defaults(handler=_cmd_qc_build)
 
@@ -612,9 +630,27 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     slurm.add_argument("--output", default=None, help="Output SLURM script path. Defaults to outputs/slurm/build_qc_inventory.slurm.")
     slurm.add_argument("--config", default=None, help="Config file containing compute.slurm or qc.slurm settings.")
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
-    slurm.add_argument("--trace-output", default=None, help="Output waveform QC table path.")
-    slurm.add_argument("--inventory-output", default=None, help="Output metric QC inventory path.")
-    slurm.add_argument("--overlap-inventory-output", default=None, help="Output overlap-only metric QC inventory path.")
+    slurm.add_argument(
+        "--trace-output",
+        "--qc-trace-summary-output",
+        dest="trace_output",
+        default=None,
+        help="Output waveform QC table path. Defaults to configured output table 'qc_trace_summary'.",
+    )
+    slurm.add_argument(
+        "--inventory-output",
+        "--qc-inventory-output",
+        dest="inventory_output",
+        default=None,
+        help="Output metric QC inventory path. Defaults to configured output table 'qc_inventory'.",
+    )
+    slurm.add_argument(
+        "--overlap-inventory-output",
+        "--qc-overlap-inventory-output",
+        dest="overlap_inventory_output",
+        default=None,
+        help="Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'.",
+    )
     slurm.add_argument("--submit", action="store_true", help="Submit the script with sbatch after writing it.")
     slurm.set_defaults(handler=_cmd_qc_slurm)
 

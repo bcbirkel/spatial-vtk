@@ -80,18 +80,18 @@ Build standard QC trace, inventory, and overlap tables from the active config.
      - No
      -
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
-   * - ``--trace-output``
+   * - ``--trace-output``, ``--qc-trace-summary-output``
      - No
      -
-     - Value: ``trace_output``. Output waveform QC table path.
-   * - ``--inventory-output``
+     - Value: ``trace_output``. Output waveform QC table path. Defaults to configured output table 'qc_trace_summary'.
+   * - ``--inventory-output``, ``--qc-inventory-output``
      - No
      -
-     - Value: ``inventory_output``. Output metric QC inventory path.
-   * - ``--overlap-inventory-output``
+     - Value: ``inventory_output``. Output metric QC inventory path. Defaults to configured output table 'qc_inventory'.
+   * - ``--overlap-inventory-output``, ``--qc-overlap-inventory-output``
      - No
      -
-     - Value: ``overlap_inventory_output``. Output overlap-only metric QC inventory path.
+     - Value: ``overlap_inventory_output``. Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'.
    * - ``--verbose``
      - No
      - Flag
@@ -212,18 +212,18 @@ svtk qc slurm
      - No
      -
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
-   * - ``--trace-output``
+   * - ``--trace-output``, ``--qc-trace-summary-output``
      - No
      -
-     - Value: ``trace_output``. Output waveform QC table path.
-   * - ``--inventory-output``
+     - Value: ``trace_output``. Output waveform QC table path. Defaults to configured output table 'qc_trace_summary'.
+   * - ``--inventory-output``, ``--qc-inventory-output``
      - No
      -
-     - Value: ``inventory_output``. Output metric QC inventory path.
-   * - ``--overlap-inventory-output``
+     - Value: ``inventory_output``. Output metric QC inventory path. Defaults to configured output table 'qc_inventory'.
+   * - ``--overlap-inventory-output``, ``--qc-overlap-inventory-output``
      - No
      -
-     - Value: ``overlap_inventory_output``. Output overlap-only metric QC inventory path.
+     - Value: ``overlap_inventory_output``. Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'.
    * - ``--submit``
      - No
      - Flag

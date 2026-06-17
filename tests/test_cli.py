@@ -364,6 +364,71 @@ def test_cli_qc_build_help(capsys):
     assert "Build standard QC trace, inventory, and overlap tables" in captured.out
     assert "--event-stations" in captured.out
     assert "--overlap-inventory-output" in captured.out
+    assert "--qc-trace-summary-output" in captured.out
+    assert "--qc-inventory-output" in captured.out
+    assert "--qc-overlap-inventory-output" in captured.out
+    assert "qc_trace_summary" in captured.out
+    assert "qc_inventory_overlap" in captured.out
+
+
+def test_cli_qc_build_accepts_clear_output_aliases(tmp_path, monkeypatch, capsys):
+    """QC build should dispatch clearer artifact-named output aliases."""
+
+    config = tmp_path / "spatial-vtk.yaml"
+    records = tmp_path / "event_station_records.csv"
+    trace = tmp_path / "qc_trace.parquet"
+    inventory = tmp_path / "qc_inventory.parquet"
+    overlap = tmp_path / "qc_overlap.parquet"
+    records.write_text("event_id,station\nE1,STA1\n", encoding="utf-8")
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.qc.build.slurm as qc_slurm
+
+    def fake_run_qc_inventory_job(event_stations, **kwargs):
+        seen["event_stations"] = Path(event_stations)
+        seen.update(kwargs)
+        for path in (trace, inventory, overlap):
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("qc", encoding="utf-8")
+        return {"qc_trace_summary": trace, "qc_inventory": inventory, "qc_inventory_overlap": overlap}
+
+    monkeypatch.setattr(qc_slurm, "run_qc_inventory_job", fake_run_qc_inventory_job)
+
+    assert main(
+        [
+            "qc",
+            "build",
+            "--config",
+            str(config),
+            "--event-stations",
+            str(records),
+            "--qc-trace-summary-output",
+            str(trace),
+            "--qc-inventory-output",
+            str(inventory),
+            "--qc-overlap-inventory-output",
+            str(overlap),
+            "--verbose",
+        ]
+    ) == 0
+
+    captured = capsys.readouterr()
+    assert seen["event_stations"] == records
+    assert seen["trace_qc_output"] == str(trace)
+    assert seen["qc_inventory_output"] == str(inventory)
+    assert seen["qc_inventory_overlap_output"] == str(overlap)
+    assert seen["verbose"] is True
+    assert str(trace) in captured.out
 
 
 def test_cli_metrics_estimate_writes_summary(tmp_path, capsys):
@@ -675,6 +740,26 @@ def test_generated_cli_reference_names_metrics_outputs_aliases():
     assert "``--stations``, ``--station-table``" in section
     assert "prepared_events" in section
     assert "prepared_stations" in section
+
+
+def test_generated_cli_reference_names_qc_output_aliases():
+    """Generated QC CLI docs should expose artifact-named output aliases."""
+
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "docs" / "reference" / "cli" / "qc.rst").read_text(encoding="utf-8")
+    build_section = text.split(".. _cli-svtk-qc-build:", maxsplit=1)[1].split(
+        ".. _cli-svtk-qc-manual-queue:", maxsplit=1
+    )[0]
+    slurm_section = text.split(".. _cli-svtk-qc-slurm:", maxsplit=1)[1].split(
+        ".. _cli-svtk-qc-summaries:", maxsplit=1
+    )[0]
+    for section in (build_section, slurm_section):
+        assert "``--trace-output``, ``--qc-trace-summary-output``" in section
+        assert "``--inventory-output``, ``--qc-inventory-output``" in section
+        assert "``--overlap-inventory-output``, ``--qc-overlap-inventory-output``" in section
+        assert "qc_trace_summary" in section
+        assert "qc_inventory" in section
+        assert "qc_inventory_overlap" in section
 
 
 def test_cli_workflow_uses_curated_commands_for_standard_steps():
@@ -2490,6 +2575,9 @@ def test_cli_qc_slurm_uses_configured_defaults(tmp_path, capsys):
     tables = tmp_path / "outputs" / "tables"
     tables.mkdir(parents=True)
     event_stations = tables / "event_station_records.csv"
+    trace_output = tables / "qc_trace_summary.parquet"
+    inventory_output = tables / "qc_inventory.parquet"
+    overlap_output = tables / "qc_inventory_overlap.parquet"
     event_stations.write_text("event_id,station\nE1,STA1\n", encoding="utf-8")
     config.write_text(
         f"""
@@ -2508,14 +2596,33 @@ qc:
         encoding="utf-8",
     )
 
-    assert main(["qc", "slurm", "--config", str(config)]) == 0
+    assert main(
+        [
+            "qc",
+            "slurm",
+            "--config",
+            str(config),
+            "--qc-trace-summary-output",
+            str(trace_output),
+            "--qc-inventory-output",
+            str(inventory_output),
+            "--qc-overlap-inventory-output",
+            str(overlap_output),
+        ]
+    ) == 0
 
     captured = capsys.readouterr()
     script = tmp_path / "outputs" / "slurm" / "build_qc_inventory.slurm"
     assert str(script) in captured.out
     text = script.read_text(encoding="utf-8")
     assert "--event-stations" in text
+    assert "--qc-trace-summary-output" in text
+    assert "--qc-inventory-output" in text
+    assert "--qc-overlap-inventory-output" in text
     assert str(event_stations.resolve()) in text
+    assert str(trace_output.resolve()) in text
+    assert str(inventory_output.resolve()) in text
+    assert str(overlap_output.resolve()) in text
     assert "-m spatial_vtk.qc.build.slurm" in text
 
 

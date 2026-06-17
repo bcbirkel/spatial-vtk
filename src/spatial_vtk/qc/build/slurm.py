@@ -124,15 +124,15 @@ def write_qc_slurm_script(
         args.append(f"--run-scenario {shlex.quote(str(run_scenario))}")
     if trace_qc_output:
         args.append(
-            f"--trace-output {shlex.quote(str(Path(trace_qc_output).expanduser().resolve()))}"
+            f"--qc-trace-summary-output {shlex.quote(str(Path(trace_qc_output).expanduser().resolve()))}"
         )
     if qc_inventory_output:
         args.append(
-            f"--inventory-output {shlex.quote(str(Path(qc_inventory_output).expanduser().resolve()))}"
+            f"--qc-inventory-output {shlex.quote(str(Path(qc_inventory_output).expanduser().resolve()))}"
         )
     if qc_inventory_overlap_output:
         args.append(
-            f"--overlap-inventory-output {shlex.quote(str(Path(qc_inventory_overlap_output).expanduser().resolve()))}"
+            f"--qc-overlap-inventory-output {shlex.quote(str(Path(qc_inventory_overlap_output).expanduser().resolve()))}"
         )
     lines = slurm_header(settings)
     lines.extend(
@@ -179,9 +179,27 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--event-stations", required=True, help="Prepared event-station table.")
     parser.add_argument("--config", required=True, help="Spatial-VTK config YAML/JSON.")
     parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
-    parser.add_argument("--trace-output", default=None, help="Output waveform QC table path.")
-    parser.add_argument("--inventory-output", default=None, help="Output metric QC inventory path.")
-    parser.add_argument("--overlap-inventory-output", default=None, help="Output overlap-only metric QC inventory path.")
+    parser.add_argument(
+        "--trace-output",
+        "--qc-trace-summary-output",
+        dest="trace_output",
+        default=None,
+        help="Output waveform QC table path.",
+    )
+    parser.add_argument(
+        "--inventory-output",
+        "--qc-inventory-output",
+        dest="inventory_output",
+        default=None,
+        help="Output metric QC inventory path.",
+    )
+    parser.add_argument(
+        "--overlap-inventory-output",
+        "--qc-overlap-inventory-output",
+        dest="overlap_inventory_output",
+        default=None,
+        help="Output overlap-only metric QC inventory path.",
+    )
     parser.add_argument("--quiet", action="store_true", help="Disable progress messages.")
     return parser
 

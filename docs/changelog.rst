@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Clarified QC output path flags. ``svtk qc build`` and ``svtk qc slurm``
+   now accept ``--qc-trace-summary-output``, ``--qc-inventory-output``, and
+   ``--qc-overlap-inventory-output`` aliases, and generated QC Slurm scripts
+   use those artifact-named flags while preserving the older output flags.
    Clarified ``svtk metrics outputs`` path roles. The command now accepts
    ``--metric-rows``, ``--metrics-output-dir``, ``--event-table``, and
    ``--station-table`` aliases, and config-backed runs automatically use
