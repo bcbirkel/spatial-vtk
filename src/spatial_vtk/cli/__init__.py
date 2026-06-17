@@ -789,6 +789,13 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     dashboard = subparsers.add_parser("dashboard", help="Prepare and launch Streamlit dashboards.")
     dashboard_sub = dashboard.add_subparsers(dest="dashboard_command", required=True)
 
+    status = dashboard_sub.add_parser("status", help="Inspect configured dashboard inputs without launching Streamlit.")
+    status.add_argument("--config", default=None, help="Spatial-VTK config used to resolve dashboard inputs.")
+    status.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    status.add_argument("--summary-format", choices=("parquet", "csv"), default="parquet", help="Expected dashboard summary table format for missing files.")
+    status.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
+    status.set_defaults(handler=_cmd_dashboard_status)
+
     metrics = dashboard_sub.add_parser("metrics", help="Launch the metrics Streamlit dashboard.")
     metrics.add_argument("--config", default=None, help="Spatial-VTK config used to find default dashboard outputs.")
     metrics.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
@@ -1852,6 +1859,45 @@ def _cmd_dashboard_metrics(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_dashboard_status(args: argparse.Namespace) -> int:
+    """Run ``svtk dashboard status``."""
+
+    from spatial_vtk.visualize.dashboard import dashboard_output_readiness, dashboard_output_status_frame
+
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
+    readiness = dashboard_output_readiness(
+        cfg=config,
+        create_parent=False,
+        summary_format=args.summary_format,
+    )
+    status = dashboard_output_status_frame(
+        cfg=config,
+        create_parent=False,
+        summary_format=args.summary_format,
+    )
+    payload = {
+        "config": str(config.config_path) if config.config_path is not None else None,
+        "should_build_dashboard_outputs": readiness.should_run,
+        "reason": readiness.reason,
+        "message": readiness.message,
+        "status": status,
+    }
+    if args.json:
+        _print_payload(payload, as_json=True)
+        return 0
+
+    print(f"Config: {payload['config']}")
+    print(f"Dashboard outputs current: {readiness.reason == 'current'}")
+    print(f"Dashboard build recommended: {readiness.should_run}")
+    print(f"Reason: {readiness.reason}")
+    print(f"Message: {readiness.message}")
+    if status.empty:
+        print("No configured dashboard paths were resolved.")
+    else:
+        print(status.to_string(index=False))
+    return 0
+
+
 def _cmd_dashboard_qc(args: argparse.Namespace) -> int:
     """Run ``svtk dashboard qc``."""
 
@@ -2284,13 +2330,17 @@ def _jsonable(value: Any) -> Any:
     if isinstance(value, Path):
         return str(value)
     if isinstance(value, pd.DataFrame):
-        return value.to_dict(orient="records")
+        return [_jsonable(row) for row in value.astype(object).to_dict(orient="records")]
     if isinstance(value, pd.Series):
-        return value.to_dict()
+        return _jsonable(value.astype(object).to_dict())
     if isinstance(value, dict):
         return {str(key): _jsonable(item) for key, item in value.items()}
     if isinstance(value, (list, tuple, set)):
         return [_jsonable(item) for item in value]
+    if value is pd.NA or value is pd.NaT:
+        return None
+    if isinstance(value, float) and math.isnan(value):
+        return None
     if inspect.isclass(value) or inspect.isfunction(value):
         return f"{value.__module__}.{value.__name__}"
     if hasattr(value, "item"):

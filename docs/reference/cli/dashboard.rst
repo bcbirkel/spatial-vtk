@@ -9,6 +9,7 @@ Command Tree
 - :ref:`svtk dashboard <cli-svtk-dashboard>`
    - :ref:`svtk dashboard qc <cli-svtk-dashboard-qc>`
    - :ref:`svtk dashboard metrics <cli-svtk-dashboard-metrics>`
+   - :ref:`svtk dashboard status <cli-svtk-dashboard-status>`
 
 Command Details
 ---------------
@@ -17,7 +18,7 @@ Command Details
 
 .. code-block:: bash
 
-   svtk dashboard [-h] {metrics,qc} ...
+   svtk dashboard [-h] {status,metrics,qc} ...
 
 .. rubric:: Parameters
 
@@ -161,3 +162,47 @@ svtk dashboard metrics
      - No
      - Flag
      - Open Streamlit in a browser when supported.
+
+.. _cli-svtk-dashboard-status:
+
+svtk dashboard status
+^^^^^^^^^^^^^^^^^^^^^
+
+.. rubric:: Usage
+
+.. code-block:: bash
+
+   svtk dashboard status [-h] [--config CONFIG]
+                             [--run-scenario RUN_SCENARIO]
+                             [--summary-format {parquet,csv}] [--json]
+
+.. rubric:: Parameters
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 13 14 47
+
+   * - Name
+     - Required
+     - Default / choices
+     - Description
+   * - ``-h``, ``--help``
+     - No
+     -
+     - show this help message and exit
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config used to resolve dashboard inputs.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+   * - ``--summary-format``
+     - No
+     - Default: ``parquet``; Choices: ``parquet``, ``csv``
+     - Value: ``summary_format``. Expected dashboard summary table format for missing files.
+   * - ``--json``
+     - No
+     - Flag
+     - Print machine-readable JSON.

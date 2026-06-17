@@ -365,7 +365,13 @@ Write dashboard-ready Parquet datasets and launch the Streamlit dashboard apps.
      --format parquet \
      --dashboard-partitioned
 
+   svtk dashboard status \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO"
+
    svtk dashboard metrics \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
      --port 8501 \
      --auto-port \
      --proxy-mode

@@ -171,7 +171,7 @@ def resolve_output_path(
             raise ValueError(f"outputs.artifacts.{output_key}.path resolved to None.")
         return path
     filename = str(override.get("filename") if isinstance(override, dict) and override.get("filename") else spec.filename)
-    directory = _output_directory(config, spec.kind)
+    directory = _output_directory(config, spec.kind, create_parent=create_parent)
     path = directory / filename
     if create_parent:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -191,7 +191,7 @@ def _artifact_override(config: SpatialVTKConfig, key: str) -> dict[str, Any]:
     return dict(value) if isinstance(value, dict) else {}
 
 
-def _output_directory(config: SpatialVTKConfig, kind: OutputKind) -> Path:
+def _output_directory(config: SpatialVTKConfig, kind: OutputKind, *, create_parent: bool = False) -> Path:
     """Resolve the base output directory for one kind."""
 
     section_key = {"figure": "outputs.figures", "table": "outputs.tables", "dashboard": "outputs.dashboards"}[kind]
@@ -200,7 +200,8 @@ def _output_directory(config: SpatialVTKConfig, kind: OutputKind) -> Path:
         root = config.path("outputs.root") or (config.root_dir / "outputs")
         subdir = {"figure": "figures", "table": "tables", "dashboard": "dashboards"}[kind]
         directory = root / subdir
-    directory.mkdir(parents=True, exist_ok=True)
+    if create_parent:
+        directory.mkdir(parents=True, exist_ok=True)
     return directory
 
 

@@ -2158,6 +2158,53 @@ outputs:
     assert launched["server_port"] == 8556
 
 
+def test_cli_dashboard_status_reports_configured_paths_without_launching(tmp_path, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+
+    assert main(["dashboard", "status", "--config", str(config), "--json"]) == 0
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    names = {row["name"] for row in payload["status"]}
+    assert payload["reason"] == "missing_inputs"
+    assert payload["should_build_dashboard_outputs"] is False
+    assert "metrics_long.parquet is not ready yet" in payload["message"]
+    assert "metrics_long_path" in names
+    assert "qc_trace_summary_path" in names
+    assert "qc_inventory_overlap_path" in names
+    assert "model_metric_band_summary_path" in names
+    assert not (tmp_path / "outputs" / "dashboards").exists()
+
+
+def test_cli_dashboard_status_human_output_includes_readiness(tmp_path, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+
+    assert main(["dashboard", "status", "--config", str(config)]) == 0
+
+    captured = capsys.readouterr()
+    assert "Dashboard outputs current: False" in captured.out
+    assert "metrics_long_path" in captured.out
+    assert "model_metric_band_summary_path" in captured.out
+
+
 def test_cli_call_importable_function(capsys):
     assert main(["call", "spatial_vtk.config.labels.metric_display_name", "--args", "C5"]) == 0
     captured = capsys.readouterr()
