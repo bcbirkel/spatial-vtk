@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Updated the standard Step 7 dashboard notebook so dashboard dataset
+   preparation stays package-helper based for tutorial data and points full runs
+   to the large-run package-helper Slurm driver instead of printing a
+   ``svtk metrics outputs`` command from the notebook.
    Added config-backed GeoJSON and boundary-corridor workflow helpers for
    large-run Step 5. The notebook now calls importable ``spatial_vtk.spatial``
    functions through ``run_or_submit_notebook_function()`` and uses structured
@@ -144,9 +148,9 @@ Changelog
    dashboard paths or building metric-output CLI commands in task cells.
    Added ``write_configured_dashboard_datasets()`` as a config-backed helper
    for writing the metrics dashboard dataset and dashboard summary tables in
-   one call. The Step 7 dashboard notebook now uses this helper and the
-   config-backed ``svtk metrics outputs`` command form instead of spelling out
-   dashboard dataset roots in the notebook.
+   one call. The Step 7 dashboard notebooks now use this helper instead of
+   spelling out dashboard dataset roots or metric-output command arguments in
+   notebook cells.
    Made ``svtk metrics run`` config-backed for small local metric runs. The
    command now defaults ``--tasks`` to the configured ``metric_tasks`` table and
    ``--output`` to ``metric_rows`` when a config is passed or set with
@@ -283,11 +287,10 @@ Changelog
    files in one status table. The dashboard CLI now uses the configured
    ``outputs.dashboards`` roots by default, and Step 7 notebooks use the shared
    helper instead of spelling out each dashboard path.
-   Added a shared large-run notebook helper for ``svtk`` CLI commands that
-   prints the exact command, runs it through the Python CLI entrypoint when
-   ``SVTK_RUN_LOCAL=1``, or writes/submits a config-backed SLURM wrapper
-   otherwise. The large-run QC, metrics, spatial, and dashboard notebooks now
-   use this helper for repeated command-driver cells.
+   Added shared large-run notebook helpers for package-backed heavy work. The
+   older helper can still wrap Spatial-VTK CLI calls when needed, but the
+   large-run QC, metrics, spatial, GeoJSON, and dashboard drivers now use
+   importable package-function tasks for their repeated heavy-work cells.
    Extended large-run metric figure sidecars with event, station, component,
    model, metric, passband, and PSA-period counts for both plotted rows and
    source rows. Metric-by-model maps now aggregate rows by station and model

@@ -542,6 +542,8 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     assert "write_configured_dashboard_datasets(" in source
     assert "write_dashboard_metric_dataset(" not in source
     assert "write_dashboard_summary_dataset(" not in source
+    assert "metrics_outputs_command" not in source
+    assert '"svtk", "metrics", "outputs"' not in source
     assert '"--metrics", str(metrics_path)' not in source
     assert '"--output-dir", str(Path(metrics_path).parent)' not in source
 
