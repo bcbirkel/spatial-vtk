@@ -80,7 +80,7 @@ def write_figure_row_sidecar(
 
     sidecar_path = output_dir / f"{figure.stem}.csv"
     sampled_rows, sampled = sidecar_rows_for_write(rows, limit=sidecar_rows, random_state=random_state)
-    sampled_rows.to_csv(sidecar_path, index=False)
+    _csv_sidecar_rows(sampled_rows).to_csv(sidecar_path, index=False)
 
     source_path = None
     source_sampled = False
@@ -96,7 +96,7 @@ def write_figure_row_sidecar(
         source_written_count = int(len(source_sampled_rows))
         if write_source_sidecar:
             source_path = output_dir / f"{figure.stem}.source.csv"
-            source_sampled_rows.to_csv(source_path, index=False)
+            _csv_sidecar_rows(source_sampled_rows).to_csv(source_path, index=False)
 
     result_metadata: dict[str, Any] = {
         "figure": str(figure),
@@ -197,6 +197,15 @@ def sidecar_rows_for_write(
     if limit is not None and limit > 0 and len(rows) > limit:
         return rows.sample(n=int(limit), random_state=random_state).copy(), True
     return rows.copy(), False
+
+
+def _csv_sidecar_rows(rows: pd.DataFrame) -> pd.DataFrame:
+    """Return rows in a CSV-readable shape for sidecar files."""
+
+    if len(rows.columns) == 0:
+        marker = pd.Series([""] * len(rows), dtype="object")
+        return pd.DataFrame({"__svtk_empty_sidecar": marker})
+    return rows
 
 
 def layered_figure_rows(layers: list[tuple[str, pd.DataFrame | None]] | tuple[tuple[str, pd.DataFrame | None], ...]) -> pd.DataFrame:

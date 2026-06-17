@@ -522,6 +522,29 @@ def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -
     assert metadata["selection"] == ["PGA", "1-2 sec"]
 
 
+def test_write_figure_row_sidecar_makes_zero_column_frames_readable(tmp_path: Path) -> None:
+    """Empty no-column sidecars should still be valid CSV audit artifacts."""
+
+    result = write_figure_row_sidecar(
+        tmp_path / "figures" / "empty_plot.png",
+        pd.DataFrame(index=range(0)),
+        source_rows=pd.DataFrame(index=range(2)),
+    )
+
+    assert result is not None
+    written_rows = pd.read_csv(result.sidecar_path)
+    written_source_rows = pd.read_csv(result.source_sidecar_path)
+    metadata = json.loads(result.metadata_path.read_text(encoding="utf-8"))
+    assert written_rows.columns.tolist() == ["__svtk_empty_sidecar"]
+    assert written_rows.empty
+    assert written_source_rows.columns.tolist() == ["__svtk_empty_sidecar"]
+    assert len(written_source_rows) == 2
+    assert metadata["plot_row_count"] == 0
+    assert metadata["written_row_count"] == 0
+    assert metadata["source_row_count"] == 2
+    assert metadata["source_written_row_count"] == 2
+
+
 def test_metric_station_summary_aggregates_all_events_without_coordinate_splitting(tmp_path: Path) -> None:
     """Station maps should summarize all selected event rows into one row per station."""
 

@@ -8,6 +8,9 @@ Changelog
    station-aggregated sheets. Fresh PSA-sheet renders now also write sidecars
    for empty plotted-row selections so audit files can distinguish no data from
    no sidecar request.
+   Made zero-column figure sidecars CSV-readable by writing a marker column for
+   otherwise unrepresentable empty sidecar tables while keeping true row counts
+   in the JSON metadata.
    Reduced dashboard summary generation memory use for large metric datasets.
    Summary builds now project only the columns required for grouping, values,
    and path geometry instead of reading every metrics-long payload column.
