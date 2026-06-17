@@ -404,12 +404,35 @@ def output_group_status(
     cfg: SpatialVTKConfig | None = None,
     create_parent: bool = True,
     include_optional: bool = True,
+    extra_paths=None,
 ) -> list[dict[str, object]]:
-    """Return status rows for one named output group."""
+    """Return status rows for one named output group.
 
-    return output_status_rows(
-        output_group_paths(group, cfg=cfg, create_parent=create_parent, include_optional=include_optional)
-    )
+    Parameters
+    ----------
+    group
+        Group name such as ``"step_03_metrics"``.
+    cfg
+        Optional config object. When omitted, the active config is used.
+    create_parent
+        Whether to create output parent directories.
+    include_optional
+        Whether to include optional artifacts.
+    extra_paths
+        Optional additional named paths to append to the status table. This is
+        useful for step-specific inputs that are not registered workflow
+        outputs, such as preprocessing metadata files.
+
+    Returns
+    -------
+    list of dict
+        Display-ready status rows.
+    """
+
+    paths = output_group_paths(group, cfg=cfg, create_parent=create_parent, include_optional=include_optional)
+    if extra_paths is not None:
+        paths.update(_coerce_named_paths(extra_paths))
+    return output_status_rows(paths)
 
 
 def output_group_status_frame(
@@ -418,6 +441,7 @@ def output_group_status_frame(
     cfg: SpatialVTKConfig | None = None,
     create_parent: bool = True,
     include_optional: bool = True,
+    extra_paths=None,
 ):
     """Return output-group status as a pandas dataframe.
 
@@ -433,6 +457,7 @@ def output_group_status_frame(
             cfg=cfg,
             create_parent=create_parent,
             include_optional=include_optional,
+            extra_paths=extra_paths,
         )
     )
 

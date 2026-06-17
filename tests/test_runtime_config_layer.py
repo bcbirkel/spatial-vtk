@@ -45,6 +45,7 @@ from spatial_vtk.io import (
     output_group_namespace,
     output_group_paths,
     output_group_status,
+    output_group_status_frame,
     output_readiness,
     output_status_frame,
     should_rebuild_paths,
@@ -858,6 +859,17 @@ outputs:
     status = output_group_status("step_04_spatial", cfg=cfg)
     assert status[0]["name"] == "metrics_long_path"
     assert status[0]["exists"] is False
+    extra_input = tmp_path / "run_outputs" / "preprocessed_waveforms" / "metadata" / "trace_metadata.parquet"
+    extra_input.parent.mkdir(parents=True, exist_ok=True)
+    extra_input.write_text("placeholder\n", encoding="utf-8")
+    status_with_extra = output_group_status_frame(
+        "step_03_metrics",
+        cfg=cfg,
+        extra_paths={"trace_metadata_path": extra_input},
+    )
+    extra_row = status_with_extra.loc[status_with_extra["name"].eq("trace_metadata_path")].iloc[0]
+    assert extra_row["path"] == str(extra_input)
+    assert bool(extra_row["exists"]) is True
 
     write_output_table("metrics_long", pd.DataFrame({"metric": ["PGA"]}), cfg=cfg)
     completion = output_group_completion("step_03_metrics", cfg=cfg)
