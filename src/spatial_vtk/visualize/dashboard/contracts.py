@@ -8,7 +8,7 @@ keeps schema errors clear and independent from the dashboard UI.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -119,17 +119,24 @@ def load_dashboard_summary_tables(
     summary_root: str | Path,
     *,
     allow_missing_optional: bool = True,
+    skip_tables: Iterable[str] | None = None,
 ) -> dict[str, pd.DataFrame]:
     """Load standard metrics dashboard summary tables from one directory.
 
     Missing optional tab tables are returned as empty schema-correct tables by
     default. This lets the Streamlit dashboard open and show an empty-state tab
     when, for example, a large run has not written path summaries yet.
+    ``skip_tables`` can force known-not-ready optional tables to the same empty
+    schema without reading malformed or very large files.
     """
 
     root = Path(summary_root).expanduser()
+    skipped = {str(table) for table in skip_tables or ()}
     tables: dict[str, pd.DataFrame] = {}
     for name in METRICS_TABLES:
+        if name in skipped:
+            tables[name] = _empty_dashboard_table(name)
+            continue
         path = _find_table(root, name, required=not allow_missing_optional)
         tables[name] = _empty_dashboard_table(name) if path is None else read_dashboard_table(path)
     return tables

@@ -63,7 +63,6 @@ def main() -> None:
         if not summary_root:
             return
     try:
-        summaries = _load_summary_tables_cached(summary_root)
         readiness = dashboard_summary_readiness_frame(summary_root, create_parent=False)
     except Exception as exc:
         st.error(str(exc))
@@ -72,6 +71,12 @@ def main() -> None:
     blocker = _metrics_dashboard_startup_blocker(readiness)
     if blocker:
         st.warning(blocker)
+        return
+    skip_tables = _not_ready_optional_summary_tables(readiness)
+    try:
+        summaries = _load_summary_tables_cached(summary_root, tuple(skip_tables))
+    except Exception as exc:
+        st.error(str(exc))
         return
     long_metrics = _try_load_long_metrics(metrics_root)
     config = _load_optional_config(config_path)
@@ -276,10 +281,10 @@ def _render_metrics_dashboard(
 
 
 @st.cache_data(show_spinner=False)
-def _load_summary_tables_cached(summary_root: str) -> dict[str, pd.DataFrame]:
+def _load_summary_tables_cached(summary_root: str, skip_tables: tuple[str, ...] = ()) -> dict[str, pd.DataFrame]:
     """Load summary tables with Streamlit caching."""
 
-    return validate_dashboard_tables(load_dashboard_summary_tables(summary_root))
+    return validate_dashboard_tables(load_dashboard_summary_tables(summary_root, skip_tables=skip_tables))
 
 
 @st.cache_data(show_spinner=False)
@@ -342,6 +347,21 @@ def _metrics_dashboard_startup_blocker(readiness: pd.DataFrame) -> str | None:
         return None
     message = str(row.get("message") or "").strip()
     return message or "The model_metric_band dashboard summary is not ready."
+
+
+def _not_ready_optional_summary_tables(readiness: pd.DataFrame) -> list[str]:
+    """Return optional dashboard summary tables that should not be loaded."""
+
+    if readiness.empty or "dashboard_table" not in readiness.columns or "ready" not in readiness.columns:
+        return []
+    skip: list[str] = []
+    for _, row in readiness.iterrows():
+        table = str(row.get("dashboard_table") or "").strip()
+        if not table or table == "model_metric_band":
+            continue
+        if not dashboard_ready_value(row.get("ready"), default=False):
+            skip.append(table)
+    return sorted(dict.fromkeys(skip))
 
 
 def _summary_readiness_message(readiness: pd.DataFrame | None, table_name: str) -> str | None:

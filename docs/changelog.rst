@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Hardened metrics-dashboard startup for large or partial dashboard outputs.
+   The Streamlit app now runs bounded summary readiness before loading full
+   summary tables and skips not-ready optional summaries with schema-correct
+   empty frames so available tabs can still render.
    Added large-run Step 4 PCA-summary parity with the standard tutorial. The
    spatial figure context now exposes ``write_pca_summary_plots()``, and the
    large-run spatial notebook renders combined PCA station-score, explained

@@ -242,7 +242,7 @@ def test_qc_dashboard_preflights_trace_summary_before_full_load(tmp_path, monkey
 
     missing_column_path = tmp_path / "bad_qc_trace_summary.csv"
     missing_column_path.write_text("event_id,component\nev1,R\n", encoding="utf-8")
-    calls: list[str] = []
+    calls: list[tuple[str, tuple[str, ...]]] = []
 
     class FakeStreamlit:
         query_params: dict[str, str] = {}
@@ -515,8 +515,8 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
     def fake_path_setting(query_key: str, env_key: str) -> str:  # noqa: ARG001
         return {"metrics_root": "metrics-root", "summary_root": "summary-root", "config": ""}.get(query_key, "")
 
-    def fake_cached_loader(summary_root: str) -> dict[str, pd.DataFrame]:
-        calls.append(summary_root)
+    def fake_cached_loader(summary_root: str, skip_tables: tuple[str, ...] = ()) -> dict[str, pd.DataFrame]:
+        calls.append((summary_root, skip_tables))
         return summaries
 
     def fail_uncached_loader(summary_root: str):  # noqa: ANN001, ARG001
@@ -543,8 +543,94 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
 
     streamlit_metrics.main()
 
-    assert calls == ["summary-root"]
+    assert calls == [("summary-root", ())]
     assert rendered["summaries"] is summaries
+    assert rendered["readiness"] is readiness
+
+
+def test_metrics_dashboard_main_preflights_before_summary_load(monkeypatch):
+    """A missing primary summary should block before full summary tables load."""
+
+    readiness = pd.DataFrame(
+        {
+            "dashboard_table": ["model_metric_band"],
+            "ready": [False],
+            "message": ["model_metric_band summary file is missing."],
+        }
+    )
+    warnings: list[str] = []
+    rendered_readiness: list[pd.DataFrame] = []
+
+    def fake_path_setting(query_key: str, env_key: str) -> str:  # noqa: ARG001
+        return {"metrics_root": "metrics-root", "summary_root": "summary-root", "config": ""}.get(query_key, "")
+
+    def fail_cached_loader(*args, **kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("main should not load full summaries when readiness blocks startup")
+
+    monkeypatch.setattr(streamlit_metrics, "_path_setting", fake_path_setting)
+    monkeypatch.setattr(streamlit_metrics, "dashboard_summary_readiness_frame", lambda *args, **kwargs: readiness)
+    monkeypatch.setattr(streamlit_metrics, "_load_summary_tables_cached", fail_cached_loader)
+    monkeypatch.setattr(streamlit_metrics, "_render_dashboard_readiness", lambda frame: rendered_readiness.append(frame))
+    monkeypatch.setattr(streamlit_metrics, "_try_load_long_metrics", lambda metrics_root: (_ for _ in ()).throw(AssertionError("long metrics should not load")))
+    monkeypatch.setattr(streamlit_metrics, "_render_metrics_dashboard", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("dashboard should not render")))
+    monkeypatch.setattr(streamlit_metrics.st, "set_page_config", lambda **kwargs: None)
+    monkeypatch.setattr(streamlit_metrics.st, "title", lambda *args, **kwargs: None)
+    monkeypatch.setattr(streamlit_metrics.st, "warning", lambda message: warnings.append(str(message)))
+    monkeypatch.setattr(streamlit_metrics.st, "error", lambda message: (_ for _ in ()).throw(AssertionError(message)))
+
+    streamlit_metrics.main()
+
+    assert rendered_readiness == [readiness]
+    assert warnings == ["model_metric_band summary file is missing."]
+
+
+def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
+    """Optional summaries that fail readiness should not be loaded eagerly."""
+
+    summaries = {
+        "model_metric_band": pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["2-4"], "n": [1], "med_log2_residual": [0.5]}),
+        "station_rollup": pd.DataFrame(columns=["station", "model", "metric", "band", "n"]),
+        "event_rollup": pd.DataFrame({"event_id": ["ev1"], "model": ["m1"], "metric": ["PGA"], "band": ["2-4"], "n": [1], "med_log2_residual": [0.5]}),
+        "path_hex": pd.DataFrame(columns=["model", "metric", "band", "dist_bin_km", "az_bin_deg", "n"]),
+    }
+    readiness = pd.DataFrame(
+        {
+            "dashboard_table": ["model_metric_band", "station_rollup", "event_rollup", "path_hex"],
+            "ready": [True, False, True, pd.NA],
+            "message": ["ready", "station_rollup schema is not ready.", "ready", "path_hex summary file is missing."],
+        }
+    )
+    calls: list[tuple[str, tuple[str, ...]]] = []
+    rendered: dict[str, object] = {}
+
+    def fake_path_setting(query_key: str, env_key: str) -> str:  # noqa: ARG001
+        return {"metrics_root": "", "summary_root": "summary-root", "config": ""}.get(query_key, "")
+
+    def fake_cached_loader(summary_root: str, skip_tables: tuple[str, ...] = ()) -> dict[str, pd.DataFrame]:
+        calls.append((summary_root, skip_tables))
+        return summaries
+
+    def fake_render_dashboard(loaded, long_metrics, config, *, readiness):  # noqa: ANN001
+        rendered["summaries"] = loaded
+        rendered["long_metrics"] = long_metrics
+        rendered["config"] = config
+        rendered["readiness"] = readiness
+
+    monkeypatch.setattr(streamlit_metrics, "_path_setting", fake_path_setting)
+    monkeypatch.setattr(streamlit_metrics, "dashboard_summary_readiness_frame", lambda *args, **kwargs: readiness)
+    monkeypatch.setattr(streamlit_metrics, "_load_summary_tables_cached", fake_cached_loader)
+    monkeypatch.setattr(streamlit_metrics, "_load_optional_config", lambda config_path: None)
+    monkeypatch.setattr(streamlit_metrics, "_render_dashboard_readiness", lambda frame: None)
+    monkeypatch.setattr(streamlit_metrics, "_render_metrics_dashboard", fake_render_dashboard)
+    monkeypatch.setattr(streamlit_metrics.st, "set_page_config", lambda **kwargs: None)
+    monkeypatch.setattr(streamlit_metrics.st, "title", lambda *args, **kwargs: None)
+    monkeypatch.setattr(streamlit_metrics.st, "error", lambda message: (_ for _ in ()).throw(AssertionError(message)))
+
+    streamlit_metrics.main()
+
+    assert calls == [("summary-root", ("path_hex", "station_rollup"))]
+    assert rendered["summaries"] is summaries
+    assert rendered["long_metrics"] is None
     assert rendered["readiness"] is readiness
 
 
