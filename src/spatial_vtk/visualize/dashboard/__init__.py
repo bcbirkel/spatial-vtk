@@ -20,6 +20,7 @@ from spatial_vtk.visualize.dashboard.charts import (
     build_value_vs_distance_figure,
 )
 from spatial_vtk.visualize.dashboard.contracts import (
+    dashboard_output_namespace,
     dashboard_output_paths,
     dashboard_output_status_frame,
     dashboard_summary_readiness_frame,
@@ -71,6 +72,7 @@ __all__ = [
     "column_display_lookup",
     "column_display_name",
     "dashboard_output_paths",
+    "dashboard_output_namespace",
     "dashboard_output_status_frame",
     "dashboard_summary_readiness_frame",
     "dashboard_summary_table_contracts",

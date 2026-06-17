@@ -59,6 +59,7 @@ from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize import default_figure_paths
 from spatial_vtk.visualize.figure_sidecars import FigureSidecarResult, write_figure_row_sidecar
 from spatial_vtk.visualize.dashboard import (
+    dashboard_output_namespace,
     dashboard_summary_readiness_frame,
     filter_optional_dashboard_summary,
     row_value_column_for_summary,
@@ -566,6 +567,10 @@ outputs:
     assert namespace.qc_trace_summary_path == tmp_path / "run_outputs" / "tables" / "qc_trace_summary.csv"
     assert namespace.metrics_dashboard_root == tmp_path / "run_outputs" / "dashboards" / "metrics_dashboard"
     assert namespace.dashboard_summary_root == tmp_path / "run_outputs" / "dashboards" / "dashboard_summaries"
+    dashboard_namespace = dashboard_output_namespace(cfg=cfg)
+    assert dashboard_namespace.qc_trace_summary_path == namespace.qc_trace_summary_path
+    assert dashboard_namespace.metrics_dashboard_root == namespace.metrics_dashboard_root
+    assert dashboard_namespace.dashboard_summary_root == namespace.dashboard_summary_root
 
     status = output_group_status("step_04_spatial", cfg=cfg)
     assert status[0]["name"] == "metrics_long_path"

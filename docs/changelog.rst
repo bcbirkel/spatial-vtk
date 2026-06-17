@@ -30,6 +30,9 @@ Changelog
    Tightened large-run notebook sidecar plumbing so optional figure row
    sidecars use the shared ``notebook_figure_sidecar_settings`` directory
    instead of hardcoded ``figures/sidecars`` paths.
+   Replaced tutorial notebook output-path dictionary indexing with
+   namespace-style helpers for grouped workflow outputs and dashboard outputs,
+   keeping path resolution config-backed while reducing setup-cell plumbing.
    Clarified the metrics and spatial API reference so notebooks and scripts
    import plotting helpers from stable public package entry points such as
    ``spatial_vtk.metrics.plot`` and ``spatial_vtk.spatial.map``. Updated the

@@ -18,6 +18,7 @@ from spatial_vtk.visualize.dashboard import (
     build_qc_histogram_figure,
     build_station_folium_map,
     build_streamlit_command,
+    dashboard_output_namespace,
     dashboard_output_paths,
     dashboard_output_status_frame,
     dashboard_summary_readiness_frame,
@@ -124,9 +125,13 @@ outputs:
     cfg = SpatialVTKConfig.from_file(config_path)
 
     paths = dashboard_output_paths(cfg=cfg)
+    namespace = dashboard_output_namespace(cfg=cfg)
     assert paths["metrics_long_path"] == tmp_path / "outputs" / "tables" / "metrics_long.parquet"
+    assert namespace.metrics_long_path == paths["metrics_long_path"]
     assert paths["metrics_dashboard_root"] == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    assert namespace.metrics_dashboard_root == paths["metrics_dashboard_root"]
     assert paths["dashboard_summary_root"] == tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
+    assert namespace.dashboard_summary_root == paths["dashboard_summary_root"]
     assert paths["station_rollup_summary_path"] == tmp_path / "outputs" / "dashboards" / "dashboard_summaries" / "station_rollup.parquet"
 
     existing = paths["dashboard_summary_root"] / "station_rollup.csv"

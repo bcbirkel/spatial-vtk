@@ -170,6 +170,21 @@ def test_tutorial_notebooks_use_grouped_output_paths() -> None:
             assert "resolve_output_path(" not in source, f"{notebook_path.relative_to(repo_root)} cell {index}"
 
 
+def test_tutorial_notebooks_use_output_namespaces_instead_of_dict_path_lookups() -> None:
+    """Workflow notebooks should use attribute namespaces for grouped paths."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    assert notebooks
+    forbidden = ("step_outputs[", "dashboard_paths[")
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            source = "".join(cell.get("source", []))
+            matches = [pattern for pattern in forbidden if pattern in source]
+            assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} uses {matches}"
+
+
 def test_tutorial_notebooks_use_table_helpers_for_file_reads() -> None:
     """Tutorial notebooks should centralize table-format handling in package helpers."""
 

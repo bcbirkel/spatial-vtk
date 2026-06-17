@@ -11,6 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pandas as pd
@@ -173,6 +174,25 @@ def dashboard_output_paths(
             )
         )
     return paths
+
+
+def dashboard_output_namespace(
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    create_parent: bool = True,
+    include_summary_tables: bool = True,
+    summary_format: str = "parquet",
+) -> SimpleNamespace:
+    """Resolve standard dashboard inputs as an attribute namespace."""
+
+    return SimpleNamespace(
+        **dashboard_output_paths(
+            cfg=cfg,
+            create_parent=create_parent,
+            include_summary_tables=include_summary_tables,
+            summary_format=summary_format,
+        )
+    )
 
 
 def dashboard_output_status_frame(
@@ -458,6 +478,7 @@ __all__ = [
     "QCDashboardPaths",
     "REQUIRED_METRICS_TABLE_COLUMNS",
     "dashboard_output_paths",
+    "dashboard_output_namespace",
     "dashboard_output_status_frame",
     "dashboard_summary_readiness_frame",
     "dashboard_summary_table_contracts",
