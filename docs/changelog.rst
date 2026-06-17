@@ -80,6 +80,9 @@ Changelog
    columns separately from value-table readiness, and the Streamlit station and
    event tabs show an explanatory message instead of attempting to render a map
    from tables without usable longitude/latitude pairs.
+   Extended the dashboard summary-table contract with map-coordinate
+   requirements, so Step 7 notebooks show which station/event longitude and
+   latitude columns feed the dashboard map tabs before launch.
    Added a dashboard summary-table contract helper that maps each metrics
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file

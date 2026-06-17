@@ -62,6 +62,7 @@ from spatial_vtk.visualize.dashboard import (
     dashboard_map_readiness,
     dashboard_output_namespace,
     dashboard_summary_readiness_frame,
+    dashboard_summary_table_contracts,
     filter_optional_dashboard_summary,
     row_value_column_for_summary,
 )
@@ -633,6 +634,13 @@ def test_dashboard_summary_readiness_reports_missing_empty_and_value_states(tmp_
         "station_rollup",
     )
     assert ready_map["ready"] is True
+
+    contracts = dashboard_summary_table_contracts().set_index("table")
+    assert "sta_lon" in contracts.loc["station_rollup", "map_coordinate_columns"]
+    assert "sta_lat" in contracts.loc["station_rollup", "map_coordinate_columns"]
+    assert "event_lon" in contracts.loc["event_rollup", "map_coordinate_columns"]
+    assert "event_lat" in contracts.loc["event_rollup", "map_coordinate_columns"]
+    assert contracts.loc["model_metric_band", "map_coordinate_columns"] == ""
 
 
 def test_optional_dashboard_summary_filter_reports_missing_value_columns():

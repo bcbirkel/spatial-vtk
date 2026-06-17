@@ -181,6 +181,12 @@ outputs:
     contracts = dashboard_summary_table_contracts()
     assert set(contracts["table"]) == {"model_metric_band", "station_rollup", "event_rollup", "path_hex"}
     assert "Compare Models" in contracts.loc[contracts["table"].eq("model_metric_band"), "tabs"].iloc[0]
+    station_contract = contracts.loc[contracts["table"].eq("station_rollup")].iloc[0]
+    event_contract = contracts.loc[contracts["table"].eq("event_rollup")].iloc[0]
+    assert "sta_lon" in station_contract["map_coordinate_columns"]
+    assert "sta_lat" in station_contract["map_coordinate_columns"]
+    assert "event_lon" in event_contract["map_coordinate_columns"]
+    assert "event_lat" in event_contract["map_coordinate_columns"]
 
     station_map_status = dashboard_map_readiness(
         pd.DataFrame({"station": ["STA"], "model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "n": [1], "med_log2_residual": [0.1]}),

@@ -146,9 +146,20 @@ def dashboard_summary_table_contracts() -> pd.DataFrame:
                 "purpose": METRICS_TABLE_PURPOSES.get(name, ""),
                 "required_columns": ", ".join(REQUIRED_METRICS_TABLE_COLUMNS[name]),
                 "optional_columns": ", ".join(OPTIONAL_METRICS_TABLE_COLUMNS.get(name, ())),
+                "map_coordinate_columns": _map_coordinate_contract_text(name),
             }
         )
     return pd.DataFrame(rows)
+
+
+def _map_coordinate_contract_text(table_name: str) -> str:
+    """Return display text describing map-coordinate requirements."""
+
+    candidates = MAP_COORDINATE_CANDIDATES.get(str(table_name))
+    if candidates is None:
+        return ""
+    lon_candidates, lat_candidates = candidates
+    return f"lon: {' | '.join(lon_candidates)}; lat: {' | '.join(lat_candidates)}"
 
 
 def dashboard_output_paths(
