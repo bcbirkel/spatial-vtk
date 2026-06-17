@@ -41,10 +41,10 @@ REQUIRED_METRICS_TABLE_COLUMNS: dict[str, tuple[str, ...]] = {
     "path_hex": ("model", "metric", "band", "dist_bin_km", "az_bin_deg", "n"),
 }
 OPTIONAL_METRICS_TABLE_COLUMNS: dict[str, tuple[str, ...]] = {
-    "model_metric_band": ("component",),
-    "station_rollup": ("component", "sta_lat", "sta_lon", "med_dist_km", "Vs30", "vs30"),
-    "event_rollup": ("component", "event_lat", "event_lon", "med_dist_km", "magnitude", "event_magnitude"),
-    "path_hex": ("component",),
+    "model_metric_band": ("component", "event_count", "station_count"),
+    "station_rollup": ("component", "sta_lat", "sta_lon", "med_dist_km", "Vs30", "vs30", "event_count"),
+    "event_rollup": ("component", "event_lat", "event_lon", "med_dist_km", "magnitude", "event_magnitude", "station_count"),
+    "path_hex": ("component", "event_count", "station_count"),
 }
 MAP_COORDINATE_CANDIDATES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "station_rollup": (("sta_lon", "station_lon", "lon", "longitude"), ("sta_lat", "station_lat", "lat", "latitude")),

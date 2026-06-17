@@ -139,6 +139,7 @@ def build_dashboard_summaries(
         .agg(
             IQR=(base_value_col, _iqr),
             n=("_dashboard_row_count", "sum"),
+            **_unique_count_aggregations(work, events=True, stations=True),
             **value_aggs,
         )
         .reset_index()
@@ -150,6 +151,7 @@ def build_dashboard_summaries(
         .agg(
             med_dist_km=("distance_km", "median") if "distance_km" in work.columns else ("_dashboard_row_count", "sum"),
             n=("_dashboard_row_count", "sum"),
+            **_unique_count_aggregations(work, events=True),
             **value_aggs,
         )
         .reset_index()
@@ -161,6 +163,7 @@ def build_dashboard_summaries(
         .agg(
             med_dist_km=("distance_km", "median") if "distance_km" in work.columns else ("_dashboard_row_count", "sum"),
             n=("_dashboard_row_count", "sum"),
+            **_unique_count_aggregations(work, stations=True),
             **value_aggs,
         )
         .reset_index()
@@ -172,12 +175,17 @@ def build_dashboard_summaries(
         binned["az_bin_deg"] = np.floor((pd.to_numeric(binned["azimuth_deg"], errors="coerce") % 360.0) / float(hex_az)) * float(hex_az)
         summaries["path_hex"] = (
             binned.groupby([column for column in ["model", "metric", "band", "component", "dist_bin_km", "az_bin_deg"] if column in binned.columns], dropna=False)
-            .agg(n=("_dashboard_row_count", "sum"), **value_aggs)
+            .agg(
+                n=("_dashboard_row_count", "sum"),
+                **_unique_count_aggregations(binned, events=True, stations=True),
+                **value_aggs,
+            )
             .reset_index()
         )
     else:
         value_cols = list(_value_aggregations(work).keys())
-        summaries["path_hex"] = pd.DataFrame(columns=["model", "metric", "band", "dist_bin_km", "az_bin_deg", "n", *value_cols])
+        count_cols = list(_unique_count_aggregations(work, events=True, stations=True).keys())
+        summaries["path_hex"] = pd.DataFrame(columns=["model", "metric", "band", "dist_bin_km", "az_bin_deg", "n", *count_cols, *value_cols])
     return summaries
 
 
@@ -222,6 +230,22 @@ def _value_aggregations(df: pd.DataFrame) -> dict[str, tuple[str, str]]:
             aggregations["med_score"] = (column, "median")
         else:
             aggregations[f"med_{column}"] = (column, "median")
+    return aggregations
+
+
+def _unique_count_aggregations(
+    df: pd.DataFrame,
+    *,
+    events: bool = False,
+    stations: bool = False,
+) -> dict[str, tuple[str, str]]:
+    """Return optional unique-count aggregations for dashboard audit columns."""
+
+    aggregations: dict[str, tuple[str, str]] = {}
+    if events and "event_id" in df.columns:
+        aggregations["event_count"] = ("event_id", "nunique")
+    if stations and "station" in df.columns:
+        aggregations["station_count"] = ("station", "nunique")
     return aggregations
 
 

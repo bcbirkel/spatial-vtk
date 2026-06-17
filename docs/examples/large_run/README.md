@@ -36,6 +36,10 @@ Figure sidecars:
 - If a station figure samples aggregated plot rows, the source sidecar is filtered to the raw metric rows behind those plotted station groups.
 - The matching `*.json` sidecar records row counts, event/station/component/model/metric/passband/PSA-period counts, the value column, the station aggregation method, and exactness flags such as `plot_sidecar_exact` and `source_sidecar_exact`. This is the audit trail for checking that plots average or summarize all selected event-station rows rather than only preview rows.
 
+Dashboard summaries:
+
+- Dashboard rollup tables expose `n` for contributing row counts and, when the source data includes the needed identifiers, `event_count` and `station_count` for unique event/station coverage behind each displayed aggregate.
+
 Run order:
 
 1. `step_01_large_run_ingest_and_prepare_data.ipynb`

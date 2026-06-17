@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from spatial_vtk.visualize.dashboard import (
+    build_dashboard_summaries,
     dashboard_summary_input_columns,
     dashboard_row_level_columns,
     load_dashboard_metric_dataset,
@@ -52,6 +53,60 @@ def test_dashboard_metric_dataset_export_and_summary_tables(tmp_path) -> None:
     written = write_dashboard_summary_dataset(root, tmp_path / "dashboard_summaries", format="csv")
     assert {"model_metric_band", "station_rollup", "event_rollup", "path_hex"} <= set(written)
     assert written["model_metric_band"].exists()
+
+
+def test_dashboard_summaries_report_unique_event_and_station_counts() -> None:
+    """Dashboard rollups should expose unique counts behind each aggregate."""
+
+    base = pd.DataFrame(
+        {
+            "model": ["m1", "m1", "m1", "m1"],
+            "metric": ["PGA", "PGA", "PGA", "PGA"],
+            "band": ["2-4", "2-4", "2-4", "2-4"],
+            "component": ["R", "R", "T", "T"],
+            "station": ["STA1", "STA1", "STA1", "STA2"],
+            "event_id": ["ev1", "ev2", "ev1", "ev1"],
+            "sta_lat": [34.0, 34.0, 34.0, 34.1],
+            "sta_lon": [-118.1, -118.1, -118.1, -118.2],
+            "event_lat": [33.9, 34.2, 33.9, 33.9],
+            "event_lon": [-118.3, -117.9, -118.3, -118.3],
+            "distance_km": [10.0, 30.0, 12.0, 20.0],
+            "azimuth_deg": [45.0, 135.0, 50.0, 90.0],
+            "log2_residual": [1.0, 0.5, -0.25, 0.75],
+        }
+    )
+
+    summaries = validate_dashboard_tables(build_dashboard_summaries(base, hex_dist=1000.0, hex_az=360.0))
+
+    model_row = summaries["model_metric_band"].loc[
+        summaries["model_metric_band"]["model"].eq("m1") & summaries["model_metric_band"]["component"].eq("R")
+    ].iloc[0]
+    assert model_row["n"] == 2
+    assert model_row["event_count"] == 2
+    assert model_row["station_count"] == 1
+
+    station_row = summaries["station_rollup"].loc[
+        summaries["station_rollup"]["station"].eq("STA1")
+        & summaries["station_rollup"]["model"].eq("m1")
+        & summaries["station_rollup"]["component"].eq("R")
+    ].iloc[0]
+    assert station_row["n"] == 2
+    assert station_row["event_count"] == 2
+
+    event_row = summaries["event_rollup"].loc[
+        summaries["event_rollup"]["event_id"].eq("ev1")
+        & summaries["event_rollup"]["model"].eq("m1")
+        & summaries["event_rollup"]["component"].eq("T")
+    ].iloc[0]
+    assert event_row["n"] == 2
+    assert event_row["station_count"] == 2
+
+    path_row = summaries["path_hex"].loc[
+        summaries["path_hex"]["model"].eq("m1") & summaries["path_hex"]["component"].eq("R")
+    ].iloc[0]
+    assert path_row["n"] == 2
+    assert path_row["event_count"] == 2
+    assert path_row["station_count"] == 1
 
 
 def test_dashboard_metric_dataset_loader_projects_requested_columns(tmp_path) -> None:

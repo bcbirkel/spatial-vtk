@@ -356,6 +356,10 @@ Step 7: Dashboards
 ------------------
 
 Write dashboard-ready Parquet datasets and launch the Streamlit dashboard apps.
+The dashboard summary tables include explicit aggregation audit columns where
+the source data supports them: ``n`` is the row count behind each summary row,
+``event_count`` is the number of unique contributing events, and
+``station_count`` is the number of unique contributing stations.
 
 .. code-block:: bash
 
