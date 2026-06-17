@@ -64,6 +64,7 @@ from spatial_vtk.visualize.dashboard import (
     dashboard_map_readiness,
     dashboard_output_namespace,
     dashboard_output_readiness,
+    dashboard_ready_value,
     dashboard_summary_readiness_frame,
     dashboard_summary_table_contracts,
     find_available_port,
@@ -924,6 +925,19 @@ outputs:
     assert readiness.reason == "missing_outputs"
     assert "recognized files" in readiness.message
     assert "metrics_dashboard_root" in set(readiness.status_frame()["name"])
+
+
+def test_dashboard_ready_value_parses_status_table_values():
+    """Dashboard readiness parsing should not treat string False as truthy."""
+
+    assert dashboard_ready_value(True) is True
+    assert dashboard_ready_value("true") is True
+    assert dashboard_ready_value("ready") is True
+    assert dashboard_ready_value(False) is False
+    assert dashboard_ready_value("False") is False
+    assert dashboard_ready_value("missing") is False
+    assert dashboard_ready_value(pd.NA) is False
+    assert dashboard_ready_value("", default=True) is True
 
 
 def test_optional_dashboard_summary_filter_reports_missing_value_columns():

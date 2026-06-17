@@ -641,7 +641,41 @@ def _dashboard_outputs_stale(metrics_long_path: Path, metrics_root: Path, summar
 def _bool_status_series(series: pd.Series) -> pd.Series:
     """Return a bool series without pandas object downcast warnings."""
 
-    return series.map(lambda value: bool(value) if pd.notna(value) else False).astype(bool)
+    return series.map(dashboard_ready_value).astype(bool)
+
+
+def dashboard_ready_value(value: object, *, default: bool = False) -> bool:
+    """Coerce one dashboard readiness value to bool.
+
+    Parameters
+    ----------
+    value
+        Readiness value from a status table. Booleans, numeric flags, common
+        true/false strings, and missing values are supported.
+    default
+        Value returned for missing or blank inputs.
+
+    Returns
+    -------
+    bool
+        Parsed readiness flag.
+    """
+
+    try:
+        missing = bool(pd.isna(value))
+    except (TypeError, ValueError):
+        missing = False
+    if value is None or missing:
+        return bool(default)
+    if isinstance(value, str):
+        text = value.strip().lower()
+        if not text:
+            return bool(default)
+        if text in {"true", "1", "yes", "y", "ready", "pass"}:
+            return True
+        if text in {"false", "0", "no", "n", "missing", "empty", "fail", "failed"}:
+            return False
+    return bool(value)
 
 
 def _dashboard_table_row_count(path: Path) -> int:
@@ -869,6 +903,7 @@ __all__ = [
     "dashboard_output_namespace",
     "dashboard_output_readiness",
     "dashboard_output_status_frame",
+    "dashboard_ready_value",
     "dashboard_row_level_columns",
     "dashboard_summary_readiness_frame",
     "dashboard_summary_table_contracts",

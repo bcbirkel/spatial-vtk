@@ -22,6 +22,7 @@ from spatial_vtk.visualize.dashboard import (
     dashboard_output_namespace,
     dashboard_output_paths,
     dashboard_output_status_frame,
+    dashboard_ready_value,
     dashboard_summary_readiness_frame,
     dashboard_summary_table_contracts,
     dashboard_summary_table_paths,
@@ -361,11 +362,12 @@ def test_metrics_tab_readiness_message_explains_optional_summary_gaps():
         {
             "dashboard_table": ["station_rollup", "event_rollup", "path_hex"],
             "dashboard_tabs": ["Stations", "Events", "Paths"],
-            "ready": [False, True, pd.NA],
+            "ready": ["False", "True", pd.NA],
             "message": ["station_rollup summary file is missing.", "event_rollup summary is ready.", ""],
         }
     )
 
+    assert dashboard_ready_value("False") is False
     assert _summary_readiness_message(readiness, "station_rollup") == "station_rollup summary file is missing."
     assert _summary_readiness_message(readiness, "event_rollup") is None
     assert _summary_readiness_message(readiness, "path_hex") == "path_hex summary is not ready for Paths. Rebuild dashboard summaries for this run."

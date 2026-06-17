@@ -25,6 +25,7 @@ from spatial_vtk.visualize.dashboard.charts import (
 )
 from spatial_vtk.visualize.dashboard.contracts import (
     dashboard_map_readiness,
+    dashboard_ready_value,
     dashboard_row_level_columns,
     dashboard_summary_readiness_frame,
     load_dashboard_summary_tables,
@@ -265,7 +266,7 @@ def _render_dashboard_readiness(readiness: pd.DataFrame) -> None:
 
     if readiness.empty or "ready" not in readiness.columns:
         return
-    ready = readiness["ready"].map(lambda value: bool(value) if pd.notna(value) else True)
+    ready = readiness["ready"].map(lambda value: dashboard_ready_value(value, default=False))
     if bool(ready.all()):
         return
     st.warning("Some dashboard summary tables are not ready. Affected tabs may be empty until those files are rebuilt.")
@@ -296,7 +297,7 @@ def _metrics_dashboard_startup_blocker(readiness: pd.DataFrame) -> str | None:
         return "The model_metric_band dashboard summary is missing from the readiness table."
     row = primary.iloc[0]
     ready = row.get("ready")
-    is_ready = bool(ready) if pd.notna(ready) else False
+    is_ready = dashboard_ready_value(ready, default=False)
     if is_ready:
         return None
     message = str(row.get("message") or "").strip()
@@ -313,7 +314,7 @@ def _summary_readiness_message(readiness: pd.DataFrame | None, table_name: str) 
         return None
     row = rows.iloc[0]
     ready = row.get("ready")
-    if pd.notna(ready) and bool(ready):
+    if dashboard_ready_value(ready, default=False):
         return None
     message = str(row.get("message") or "").strip()
     if message:
