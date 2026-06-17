@@ -735,12 +735,36 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     merge.set_defaults(handler=_cmd_metrics_merge_batches)
 
     outputs = metrics_sub.add_parser("outputs", help="Write standard downstream metric outputs.")
-    outputs.add_argument("--metrics", default=None, help="Metric workflow rows CSV/parquet path. Defaults to configured output table 'metric_rows'.")
-    outputs.add_argument("--output-dir", default=None, help="Ad hoc output directory. Defaults to configured output paths.")
+    outputs.add_argument(
+        "--metrics",
+        "--metric-rows",
+        dest="metrics",
+        default=None,
+        help="Raw metric workflow rows CSV/parquet path. Defaults to configured output table 'metric_rows'.",
+    )
+    outputs.add_argument(
+        "--output-dir",
+        "--metrics-output-dir",
+        dest="output_dir",
+        default=None,
+        help="Ad hoc downstream metric output directory. When omitted, configured output paths are used.",
+    )
     outputs.add_argument("--config", default=None, help="Config file used to resolve standard output paths.")
     outputs.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
-    outputs.add_argument("--events", default=None, help="Optional event metadata CSV/parquet path.")
-    outputs.add_argument("--stations", default=None, help="Optional station metadata CSV/parquet path.")
+    outputs.add_argument(
+        "--events",
+        "--event-table",
+        dest="events",
+        default=None,
+        help="Optional prepared event metadata CSV/parquet path. Defaults to configured output table 'prepared_events' when it exists.",
+    )
+    outputs.add_argument(
+        "--stations",
+        "--station-table",
+        dest="stations",
+        default=None,
+        help="Optional prepared station metadata CSV/parquet path. Defaults to configured output table 'prepared_stations' when it exists.",
+    )
     outputs.add_argument("--residual-column", default=None, help="Column exposed as canonical residual.")
     outputs.add_argument("--score-column", default=None, help="Column exposed as canonical score.")
     outputs.add_argument("--format", choices=("parquet", "csv"), default="parquet", help="Table output format.")
@@ -1226,6 +1250,15 @@ def _configured_output_path(
     from spatial_vtk.config import resolve_output_path
 
     return resolve_output_path(key, kind=kind, cfg=config, create_parent=create_parent)
+
+
+def _existing_configured_output_path(key: str, *, config: Any, kind: str = "table") -> Path | None:
+    """Return one configured output path only when it already exists."""
+
+    if config is None:
+        return None
+    path = _configured_output_path(key, kind=kind, config=config, create_parent=False)
+    return path if path.exists() else None
 
 
 def _configured_project_path(dotted_key: str, *, config: Any, must_exist: bool = True) -> Path:
@@ -1903,11 +1936,13 @@ def _cmd_metrics_outputs(args: argparse.Namespace) -> int:
     if config is not None:
         config.activate()
     metrics = Path(args.metrics).expanduser() if args.metrics else _configured_output_path("metric_rows", config=config)
+    events = Path(args.events).expanduser() if args.events else _existing_configured_output_path("prepared_events", config=config)
+    stations = Path(args.stations).expanduser() if args.stations else _existing_configured_output_path("prepared_stations", config=config)
     written = write_metric_outputs(
         metrics,
         args.output_dir,
-        events=args.events,
-        stations=args.stations,
+        events=events,
+        stations=stations,
         residual_column=args.residual_column,
         score_column=args.score_column,
         table_format=args.format,

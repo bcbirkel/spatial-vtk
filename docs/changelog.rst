@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Clarified ``svtk metrics outputs`` path roles. The command now accepts
+   ``--metric-rows``, ``--metrics-output-dir``, ``--event-table``, and
+   ``--station-table`` aliases, and config-backed runs automatically use
+   existing ``prepared_events`` and ``prepared_stations`` tables when the user
+   does not pass metadata paths explicitly.
    Cleaned up public tutorial documentation and large-run notebook setup.
    The docs now describe the committed NPZ tutorial waveform subset, the
    workflow diagram lives under ``docs/_static/``, large-run Step 1 and Step 2

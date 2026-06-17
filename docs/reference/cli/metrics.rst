@@ -337,14 +337,14 @@ svtk metrics outputs
      - No
      -
      - show this help message and exit
-   * - ``--metrics``
+   * - ``--metrics``, ``--metric-rows``
      - No
      -
-     - Value: ``metrics``. Metric workflow rows CSV/parquet path. Defaults to configured output table 'metric_rows'.
-   * - ``--output-dir``
+     - Value: ``metrics``. Raw metric workflow rows CSV/parquet path. Defaults to configured output table 'metric_rows'.
+   * - ``--output-dir``, ``--metrics-output-dir``
      - No
      -
-     - Value: ``output_dir``. Ad hoc output directory. Defaults to configured output paths.
+     - Value: ``output_dir``. Ad hoc downstream metric output directory. When omitted, configured output paths are used.
    * - ``--config``
      - No
      -
@@ -353,14 +353,14 @@ svtk metrics outputs
      - No
      -
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
-   * - ``--events``
+   * - ``--events``, ``--event-table``
      - No
      -
-     - Value: ``events``. Optional event metadata CSV/parquet path.
-   * - ``--stations``
+     - Value: ``events``. Optional prepared event metadata CSV/parquet path. Defaults to configured output table 'prepared_events' when it exists.
+   * - ``--stations``, ``--station-table``
      - No
      -
-     - Value: ``stations``. Optional station metadata CSV/parquet path.
+     - Value: ``stations``. Optional prepared station metadata CSV/parquet path. Defaults to configured output table 'prepared_stations' when it exists.
    * - ``--residual-column``
      - No
      -

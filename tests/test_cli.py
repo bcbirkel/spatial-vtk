@@ -659,6 +659,24 @@ def test_generated_cli_reference_names_metrics_run_defaults():
     assert "Spatial-VTK config used to resolve default task/output paths" in section
 
 
+def test_generated_cli_reference_names_metrics_outputs_aliases():
+    """Generated metric CLI docs should expose clear downstream output aliases."""
+
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "docs" / "reference" / "cli" / "metrics.rst").read_text(encoding="utf-8")
+    section = text.split(".. _cli-svtk-metrics-outputs:", maxsplit=1)[1].split(
+        ".. _cli-svtk-metrics-plan:", maxsplit=1
+    )[0]
+    assert "``--metrics``, ``--metric-rows``" in section
+    assert "Raw metric workflow rows CSV/parquet path" in section
+    assert "``--output-dir``, ``--metrics-output-dir``" in section
+    assert "configured output paths are used" in section
+    assert "``--events``, ``--event-table``" in section
+    assert "``--stations``, ``--station-table``" in section
+    assert "prepared_events" in section
+    assert "prepared_stations" in section
+
+
 def test_cli_workflow_uses_curated_commands_for_standard_steps():
     """The shell workflow should not route routine tutorial steps through svtk call."""
 
@@ -1891,6 +1909,79 @@ def test_cli_metrics_outputs(tmp_path):
     assert main(["metrics", "outputs", "--metrics", str(metrics), "--events", str(events), "--stations", str(stations), "--output-dir", str(output_dir), "--format", "csv"]) == 0
     assert (output_dir / "metrics_long.csv").exists()
     assert (output_dir / "dashboard_summaries" / "model_metric_band.csv").exists()
+
+
+def test_cli_metrics_outputs_help_exposes_clear_aliases(capsys):
+    """Metric output help should name raw metric rows and prepared metadata roles."""
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["metrics", "outputs", "--help"])
+    assert excinfo.value.code == 0
+    captured = capsys.readouterr()
+    assert "--metric-rows" in captured.out
+    assert "--metrics-output-dir" in captured.out
+    assert "--event-table" in captured.out
+    assert "--station-table" in captured.out
+    assert "Raw metric workflow rows" in captured.out
+    assert "prepared_events" in captured.out
+    assert "prepared_stations" in captured.out
+
+
+def test_cli_metrics_outputs_uses_aliases_and_configured_metadata(tmp_path, monkeypatch):
+    """Metric outputs should use clearer aliases and prepared metadata defaults."""
+
+    config = tmp_path / "spatial-vtk.yaml"
+    tables = tmp_path / "outputs" / "tables"
+    output_dir = tmp_path / "downstream"
+    tables.mkdir(parents=True)
+    metric_rows = tables / "metric_rows.parquet"
+    prepared_events = tables / "prepared_events.csv"
+    prepared_stations = tables / "prepared_stations.csv"
+    pd.DataFrame({"event_id": ["ev1"], "station": ["STA1"], "metric": ["PGA"]}).to_parquet(metric_rows, index=False)
+    pd.DataFrame({"event_id": ["ev1"], "event_lat": [34.0], "event_lon": [-118.0]}).to_csv(prepared_events, index=False)
+    pd.DataFrame({"station": ["STA1"], "station_lat": [34.1], "station_lon": [-118.2]}).to_csv(prepared_stations, index=False)
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.metrics.workflow as workflow
+
+    def fake_write_metric_outputs(metric_rows_arg, output_dir_arg=None, **kwargs):
+        seen["metric_rows"] = Path(metric_rows_arg)
+        seen["output_dir"] = Path(output_dir_arg)
+        seen["kwargs"] = kwargs
+        seen["output_dir"].mkdir(parents=True, exist_ok=True)
+        path = seen["output_dir"] / "metrics_long.parquet"
+        path.write_text("metric rows", encoding="utf-8")
+        return {"metrics_long": path}
+
+    monkeypatch.setattr(workflow, "write_metric_outputs", fake_write_metric_outputs)
+
+    assert main(
+        [
+            "metrics",
+            "outputs",
+            "--config",
+            str(config),
+            "--metric-rows",
+            str(metric_rows),
+            "--metrics-output-dir",
+            str(output_dir),
+        ]
+    ) == 0
+
+    assert seen["metric_rows"] == metric_rows
+    assert seen["output_dir"] == output_dir
+    assert seen["kwargs"]["events"] == prepared_events
+    assert seen["kwargs"]["stations"] == prepared_stations
 
 
 def test_cli_metrics_plan_applies_scenario_and_overrides(tmp_path):
