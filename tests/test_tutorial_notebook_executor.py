@@ -448,6 +448,9 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "source_df_factory=item_source_rows" in source
     assert "source_df=item[\"df\"]" not in source
     assert "source_df_factory=lambda period_item" not in source
+    assert "spatial_figures.write_overview_plots(" in source
+    assert 'write_spatial_plot("spatial_correlogram"' not in source
+    assert "plot_correlogram" not in source
 
 
 def test_large_run_notebooks_display_output_readiness_tables() -> None:

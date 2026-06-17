@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Iterable, Sequence
+from typing import Any, Callable, Iterable, Mapping, Sequence
 
 import pandas as pd
 
@@ -467,6 +467,151 @@ class SpatialFigureContext:
         context = self._context_for(item.get("df")) or self.metric_context
         return context.station_model_grid_for_item(item, value_col=value_col)
 
+    def write_overview_plots(
+        self,
+        *,
+        value_col: str | None = None,
+        event_value_col: str | None = None,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        showfig: bool = False,
+        robust_axis_percentile: float | None = None,
+        plot_functions: Mapping[str, Callable[..., Any]] | None = None,
+    ) -> list[Path]:
+        """Write compact Step 4 overview figures from loaded spatial summary tables.
+
+        Missing optional tables are represented as empty frames so overview
+        figures skip with normal required-column messages instead of falling
+        back to unrelated metric-field rows.
+        """
+
+        functions = dict(_spatial_overview_plot_functions() if plot_functions is None else plot_functions)
+        overview_item = {
+            "key": "overview",
+            "label": "Overview",
+            "period_s": None,
+            "df": self.metric_field if self.metric_field is not None else pd.DataFrame(),
+        }
+        resolved_value_col = self.metric_value_col if value_col is None else value_col
+        resolved_event_value_col = self.event_value_col if event_value_col is None else event_value_col
+        resolved_robust = self.robust_axis_percentile if robust_axis_percentile is None else float(robust_axis_percentile)
+        outputs: list[Path] = []
+
+        specs: list[dict[str, Any]] = [
+            {
+                "base": "spatial_correlogram",
+                "table": "distance_bin_correlations",
+                "func": "plot_correlogram",
+                "required": ["distance_center_km", "mean_pair_correlation"],
+                "value_col": "mean_pair_correlation",
+            },
+            {
+                "base": "spatial_correlation_distance_by_metric",
+                "table": "distance_bin_correlations",
+                "func": "plot_distance_correlation_by_metric",
+                "required": ["distance_center_km", "mean_pair_correlation"],
+                "value_col": "mean_pair_correlation",
+                "kwargs": {"significance_df": self.table("morans_i"), "title": "Spatial Correlation by Distance"},
+            },
+            {
+                "base": "spatial_semivariogram",
+                "table": "distance_bin_correlations",
+                "func": "plot_semivariogram",
+                "required": ["distance_end_km", "semivariance"],
+                "value_col": "semivariance",
+            },
+            {
+                "base": "spatial_directional_correlogram",
+                "table": "distance_bin_correlations",
+                "func": "plot_directional_correlogram",
+                "required": ["direction_center_deg", "distance_center_km", "mean_pair_correlation"],
+                "value_col": "mean_pair_correlation",
+            },
+            {
+                "base": "spatial_block_holdout_scatter",
+                "table": "block_holdout_predictions",
+                "func": "plot_block_holdout_scatter",
+                "required": ["observed_mean_centered", "predicted_mean_centered"],
+                "value_col": "prediction_error",
+            },
+            {
+                "base": "spatial_cluster_solution_scores",
+                "table": "cluster_solution_scores",
+                "func": "plot_cluster_solution_scores",
+                "required": ["k", "score"],
+                "value_col": "score",
+            },
+            {
+                "base": "spatial_cluster_feature_heatmap",
+                "table": "cluster_feature_summary",
+                "func": "plot_cluster_feature_heatmap",
+                "value_col": resolved_value_col,
+            },
+            {
+                "base": "spatial_pattern_similarity",
+                "table": "station_bias",
+                "func": "plot_pattern_similarity",
+                "required": ["metric", "bin"],
+                "value_col": resolved_value_col,
+            },
+            {
+                "base": "spatial_path_bin_summary",
+                "table": "path_summary",
+                "func": "plot_path_bin_summary",
+                "required": ["path_bin", "median_residual"],
+                "value_col": "median_residual",
+                "forward_value_col": True,
+            },
+            {
+                "base": "spatial_residual_correlation",
+                "table": "distance_bin_correlations",
+                "func": "plot_residual_correlation",
+                "value_col": resolved_value_col,
+            },
+            {
+                "base": "spatial_pca_explained_variance",
+                "table": "pca_explained_variance",
+                "func": "plot_pca_explained_variance",
+                "required": ["mode_index", "explained_variance_ratio"],
+                "value_col": "explained_variance_ratio",
+            },
+            {
+                "base": "spatial_pca_feature_loadings",
+                "table": "pca_feature_loadings",
+                "func": "plot_pca_feature_loadings",
+                "value_col": resolved_value_col,
+            },
+        ]
+        for spec in specs:
+            output = self.write_spatial_plot(
+                spec["base"],
+                overview_item,
+                functions[spec["func"]],
+                df=self._table_or_empty(spec["table"]),
+                required=spec.get("required", []),
+                value_col=spec.get("value_col"),
+                forward_value_col=bool(spec.get("forward_value_col", False)),
+                showfig=showfig,
+                **spec.get("kwargs", {}),
+            )
+            if output is not None:
+                outputs.append(output)
+
+        outputs.extend(
+            self._write_geology_contrast_overview_plots(
+                functions["plot_geology_contrast"],
+                value_col=resolved_value_col,
+                event_value_col=resolved_event_value_col,
+                passband=passband,
+                components=components,
+                model=model,
+                showfig=showfig,
+                robust_axis_percentile=resolved_robust,
+            )
+        )
+        return outputs
+
     def filter_like_item(
         self,
         df: pd.DataFrame | None,
@@ -493,6 +638,64 @@ class SpatialFigureContext:
             if len(wanted):
                 out = out.loc[pd.to_numeric(out[period_col], errors="coerce").isin(wanted)].copy()
         return out
+
+    def _table_or_empty(self, key: str) -> pd.DataFrame:
+        """Return one loaded table or an explicit empty frame for optional outputs."""
+
+        table = self.table(key)
+        return table if table is not None else pd.DataFrame()
+
+    def _write_geology_contrast_overview_plots(
+        self,
+        func: Callable[..., Any],
+        *,
+        value_col: str | None,
+        event_value_col: str | None,
+        passband: str | None,
+        components: list[str] | str | None,
+        model: str | None,
+        showfig: bool,
+        robust_axis_percentile: float,
+    ) -> list[Path]:
+        """Write geology-contrast overview plots for each event-centered metric item."""
+
+        outputs: list[Path] = []
+        geology_value_col = event_value_col or value_col
+        event_centered = self.event_centered
+        geology_contrasts = self.table("geology_contrasts")
+        if event_centered is None or event_centered.empty:
+            print("skip spatial_geology_contrast: event-centered residual table missing or empty")
+            return outputs
+        if geology_value_col is None or geology_value_col not in event_centered.columns:
+            print(f"skip spatial_geology_contrast: value column unavailable ({geology_value_col!r})")
+            return outputs
+        if geology_contrasts is None or geology_contrasts.empty:
+            print("skip spatial_geology_contrast: geology_contrasts table missing or empty")
+            return outputs
+        for item in self.iter_metric_frames(
+            event_centered,
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            contrast_for_item = self.filter_like_item(geology_contrasts, item, include_period=False)
+            output = self.write_spatial_plot(
+                "spatial_geology_contrast",
+                item,
+                func,
+                required=["station", geology_value_col],
+                value_col=geology_value_col,
+                forward_value_col=True,
+                showfig=showfig,
+                station_metadata=self.site_metadata,
+                contrast_df=contrast_for_item,
+                title=f"{item['label']} Residuals by Geology Class",
+                robust_axis_percentile=robust_axis_percentile,
+            )
+            if output is not None:
+                outputs.append(output)
+        return outputs
 
     def _context_for(self, df: pd.DataFrame | None) -> MetricFigureContext | None:
         """Return the metric or event context that owns one dataframe."""
@@ -831,6 +1034,43 @@ def _label_for_slug(value: object) -> str | None:
         labels = [str(item) for item in value if str(item).strip()]
         return "_".join(labels) if labels else None
     return str(value)
+
+
+def _spatial_overview_plot_functions() -> dict[str, Callable[..., Any]]:
+    """Load plotting functions used by the large-run spatial overview helper."""
+
+    from spatial_vtk.spatial.plot.correlation import (
+        plot_block_holdout_scatter,
+        plot_cluster_feature_heatmap,
+        plot_cluster_solution_scores,
+        plot_correlogram,
+        plot_distance_correlation_by_metric,
+        plot_directional_correlogram,
+        plot_pattern_similarity,
+        plot_semivariogram,
+    )
+    from spatial_vtk.spatial.plot.metrics import (
+        plot_geology_contrast,
+        plot_path_bin_summary,
+        plot_residual_correlation,
+    )
+    from spatial_vtk.spatial.plot.pca import plot_pca_explained_variance, plot_pca_feature_loadings
+
+    return {
+        "plot_block_holdout_scatter": plot_block_holdout_scatter,
+        "plot_cluster_feature_heatmap": plot_cluster_feature_heatmap,
+        "plot_cluster_solution_scores": plot_cluster_solution_scores,
+        "plot_correlogram": plot_correlogram,
+        "plot_distance_correlation_by_metric": plot_distance_correlation_by_metric,
+        "plot_directional_correlogram": plot_directional_correlogram,
+        "plot_geology_contrast": plot_geology_contrast,
+        "plot_path_bin_summary": plot_path_bin_summary,
+        "plot_pattern_similarity": plot_pattern_similarity,
+        "plot_pca_explained_variance": plot_pca_explained_variance,
+        "plot_pca_feature_loadings": plot_pca_feature_loadings,
+        "plot_residual_correlation": plot_residual_correlation,
+        "plot_semivariogram": plot_semivariogram,
+    }
 
 
 __all__ = [

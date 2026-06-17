@@ -858,6 +858,77 @@ def test_spatial_figure_context_accepts_shared_sidecar_settings(tmp_path: Path) 
     assert context.event_context.sidecar_output_dir == sidecars
 
 
+def test_spatial_figure_context_writes_overview_plots_with_empty_missing_tables(tmp_path: Path) -> None:
+    """Overview orchestration should not fall back to metric rows for missing optional tables."""
+
+    metric_field = pd.DataFrame(
+        {
+            "event_id": ["e1"],
+            "station": ["STA"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "component": ["R"],
+            "model": ["m1"],
+            "log2_residual": [0.25],
+            "distance_center_km": [10.0],
+            "mean_pair_correlation": [0.9],
+        }
+    )
+    context = SpatialFigureContext(
+        figure_dir=tmp_path / "figures",
+        make_figures=True,
+        metric_context=MetricFigureContext.from_frame(metric_field, tmp_path / "figures", make_figures=True),
+        event_context=MetricFigureContext.from_frame(metric_field, tmp_path / "figures", make_figures=True),
+        tables={
+            "metric_field": metric_field,
+            "event_centered_residuals": metric_field,
+            "distance_bin_correlations": None,
+            "station_bias": None,
+            "geology_contrasts": None,
+        },
+        paths={},
+    )
+    calls: list[dict[str, object]] = []
+
+    def _fake_write_spatial_plot(base, item, func, df=None, **kwargs):  # noqa: ANN001, ANN202
+        calls.append({"base": base, "df": df, "kwargs": kwargs})
+        return tmp_path / f"{base}.png"
+
+    plot_functions = {
+        name: (lambda *args, **kwargs: None)
+        for name in (
+            "plot_block_holdout_scatter",
+            "plot_cluster_feature_heatmap",
+            "plot_cluster_solution_scores",
+            "plot_correlogram",
+            "plot_distance_correlation_by_metric",
+            "plot_directional_correlogram",
+            "plot_geology_contrast",
+            "plot_path_bin_summary",
+            "plot_pattern_similarity",
+            "plot_pca_explained_variance",
+            "plot_pca_feature_loadings",
+            "plot_residual_correlation",
+            "plot_semivariogram",
+        )
+    }
+
+    context.write_spatial_plot = _fake_write_spatial_plot  # type: ignore[method-assign]
+    outputs = context.write_overview_plots(
+        value_col="log2_residual",
+        event_value_col="log2_residual",
+        showfig=False,
+        plot_functions=plot_functions,
+    )
+
+    assert len(outputs) == 12
+    correlogram = next(call for call in calls if call["base"] == "spatial_correlogram")
+    assert isinstance(correlogram["df"], pd.DataFrame)
+    assert correlogram["df"].empty
+    assert "distance_center_km" not in correlogram["df"].columns
+    assert not any(call["base"] == "spatial_geology_contrast" for call in calls)
+
+
 def test_metric_figure_context_reads_plot_columns_and_filters_defaults(tmp_path: Path) -> None:
     """Large-run figure context should avoid loading unused metric columns."""
 
