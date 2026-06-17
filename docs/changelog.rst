@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-17
+   Added package-backed notebook task execution with
+   ``run_or_submit_notebook_function()`` and moved large-run Step 1
+   preprocessing/record-coverage execution behind importable
+   ``spatial_vtk.io`` workflow helpers. The notebook now calls Python package
+   functions directly while the helper handles local execution or Slurm
+   submission.
    Added metric manifest batch-status reporting and incomplete-only Slurm array
    generation, then updated large-run Step 3 to skip complete metric arrays and
    block batch merging until every expected batch output exists.

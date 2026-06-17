@@ -39,14 +39,15 @@ source checkout, run:
 
 The large-run notebooks still use the committed example data during this
 check, but their cells are structured for larger datasets: expensive work is
-chunked, submitted, or printed as a command, and notebook previews stay bounded.
+chunked or submitted through package helpers, and notebook previews stay
+bounded.
 
 Large-Run Driver Notebooks
 --------------------------
 
 These notebooks are lightweight drivers for larger datasets. They print or
-submit batch commands for compute-heavy work rather than loading full
-inventories into notebook memory.
+submit package-backed batch tasks for compute-heavy work rather than loading
+full inventories into notebook memory.
 
 1. :download:`Large Step 1: ingest and prepare data <large_run/step_01_large_run_ingest_and_prepare_data.ipynb>`
 2. :download:`Large Step 2: quality control <large_run/step_02_large_run_quality_control.ipynb>`

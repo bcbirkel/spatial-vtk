@@ -118,6 +118,10 @@ from spatial_vtk.io.waveforms import (
     waveform_preprocessing_label,
     write_trace_metadata_csv,
 )
+from spatial_vtk.io.workflows import (
+    build_record_coverage_from_config,
+    preprocess_waveforms_from_config,
+)
 
 __all__ = [
     "ArtifactRecord",
@@ -150,6 +154,7 @@ __all__ = [
     "build_master_station_list",
     "build_file_inventory",
     "build_observed_synthetic_inventory",
+    "build_record_coverage_from_config",
     "classify_model_folder",
     "compare_metric_plan_to_table",
     "comparison_qc_passed",
@@ -188,6 +193,7 @@ __all__ = [
     "preview_output_table",
     "preview_table",
     "preprocessed_waveform_metadata_paths",
+    "preprocess_waveforms_from_config",
     "preprocess_stream",
     "preprocess_waveform_files",
     "read_event_patch_table",

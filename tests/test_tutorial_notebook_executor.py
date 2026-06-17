@@ -558,6 +558,10 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
 
     repo_root = Path(__file__).resolve().parents[1]
     required = {
+        "large_run/step_01_large_run_ingest_and_prepare_data.ipynb": [
+            "preprocess_readiness.status_frame()",
+            "record_coverage_readiness.status_frame()",
+        ],
         "large_run/step_02_large_run_quality_control.ipynb": ["overlap_readiness.status_frame()"],
         "large_run/step_03_large_run_calculate_metrics.ipynb": [
             "inventory_readiness.status_frame()",
@@ -591,6 +595,24 @@ def test_large_run_step03_uses_metric_batch_status_before_submit_and_merge() -> 
     assert "if not batch_status.all_complete:" in source
     assert "Metric batches are incomplete:" in source
     assert "sources=[metric_manifest_path, *batch_status.completed_outputs]" in source
+
+
+def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
+    """Step 1 should call package workflow helpers instead of CLI or inline worker code."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_01_large_run_ingest_and_prepare_data.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "run_or_submit_notebook_function(" in source
+    assert "spatial_vtk.io.preprocess_waveforms_from_config" in source
+    assert "spatial_vtk.io.build_record_coverage_from_config" in source
+    assert "run_or_submit_notebook_cli_command(" not in source
+    assert "write_notebook_python_slurm_script" not in source
+    assert "submit_notebook_slurm_script" not in source
+    assert "preprocess_waveform_files(" not in source
+    assert "build_record_coverage_table_from_trace_metadata(" not in source
 
 
 def test_large_run_step02_uses_qc_availability_output() -> None:

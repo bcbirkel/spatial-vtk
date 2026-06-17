@@ -39,6 +39,15 @@ Waveforms and Preprocessing
 .. automodule:: spatial_vtk.io.preprocessing
    :members:
 
+Notebook Workflow Helpers
+-------------------------
+
+Use these config-backed helpers from notebooks or scripts when a workflow step
+should use the same Python package function locally and inside Slurm workers.
+
+.. automodule:: spatial_vtk.io.workflows
+   :members:
+
 Tables and Artifacts
 --------------------
 

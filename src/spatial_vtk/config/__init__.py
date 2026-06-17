@@ -56,6 +56,7 @@ from spatial_vtk.config.notebook import (
     register_svtk_cell_timer,
     register_svtk_time_magic,
     run_or_submit_notebook_cli_command,
+    run_or_submit_notebook_function,
     submit_notebook_slurm_script,
     write_notebook_python_slurm_script,
 )
@@ -166,6 +167,7 @@ __all__ = [
     "register_svtk_cell_timer",
     "register_svtk_time_magic",
     "run_or_submit_notebook_cli_command",
+    "run_or_submit_notebook_function",
     "resolve_output_path",
     "resolve_path",
     "resolve_named_bounds",

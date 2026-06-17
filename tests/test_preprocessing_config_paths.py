@@ -4,13 +4,16 @@ from __future__ import annotations
 
 from pathlib import Path
 import pickle
+from types import SimpleNamespace
 
 import pandas as pd
 import pytest
 
 from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.config.runtime import SVTK_CLI_CONFIG_ENV, SVTK_CONFIG_ENV
+from spatial_vtk.io import workflows as io_workflows
 from spatial_vtk.io import preprocessing as preprocessing_module
+from spatial_vtk.io.workflows import build_record_coverage_from_config, preprocess_waveforms_from_config
 from spatial_vtk.io.preprocessing import preprocessed_waveform_metadata_paths, preprocess_waveform_files
 
 
@@ -51,6 +54,109 @@ def test_preprocessed_waveform_metadata_paths_match_preprocessing_defaults(tmp_p
     assert paths.manifest_path == paths.metadata_dir / "waveform_preprocessing_manifest.csv"
     assert paths.trace_metadata_path == paths.metadata_dir / "trace_metadata_preprocessed.csv"
     assert paths.as_dict()["preprocessed_manifest_path"] == paths.manifest_path
+
+
+def test_preprocess_waveforms_from_config_uses_registered_event_station_table(tmp_path: Path, monkeypatch) -> None:
+    """Notebook/package workflow should resolve preprocessing inputs from config."""
+
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    records = tables / "event_station_records.csv"
+    records.write_text("event_id,station,observed_waveform\nE1,STA1,obs.mseed\n", encoding="utf-8")
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+  preprocessed_waveforms: outputs/preprocessed_waveforms
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    def fake_preprocess_waveform_files(event_station_records, output_root=None, **kwargs):
+        seen["event_station_records"] = Path(event_station_records)
+        seen["output_root"] = output_root
+        seen["overwrite"] = kwargs["overwrite"]
+        seen["continue_on_error"] = kwargs["continue_on_error"]
+        seen["verbose"] = kwargs["verbose"]
+        return SimpleNamespace(
+            event_station_path=tmp_path / "outputs" / "preprocessed_waveforms" / "metadata" / "event_station_records_preprocessed.csv",
+            manifest_path=tmp_path / "outputs" / "preprocessed_waveforms" / "metadata" / "waveform_preprocessing_manifest.csv",
+            trace_metadata_path=tmp_path / "outputs" / "preprocessed_waveforms" / "metadata" / "trace_metadata_preprocessed.csv",
+            manifest=pd.DataFrame({"event_id": ["E1"]}),
+            trace_metadata=pd.DataFrame({"event_id": ["E1", "E1"]}),
+            event_station_records=pd.DataFrame({"event_id": ["E1"]}),
+        )
+
+    monkeypatch.setattr(io_workflows, "preprocess_waveform_files", fake_preprocess_waveform_files)
+
+    result = preprocess_waveforms_from_config(
+        config_path=config_path,
+        overwrite=True,
+        continue_on_error=True,
+        verbose=False,
+    )
+
+    assert seen == {
+        "event_station_records": records,
+        "output_root": None,
+        "overwrite": True,
+        "continue_on_error": True,
+        "verbose": False,
+    }
+    assert result["manifest_rows"] == 1
+    assert result["trace_metadata_rows"] == 2
+    assert result["event_station_rows"] == 1
+
+
+def test_build_record_coverage_from_config_uses_preprocessed_metadata(tmp_path: Path) -> None:
+    """Record coverage workflow should read preprocessed metadata and write the registered output."""
+
+    preprocessing_metadata = tmp_path / "outputs" / "preprocessed_waveforms" / "metadata"
+    preprocessing_metadata.mkdir(parents=True)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+  preprocessed_waveforms: outputs/preprocessed_waveforms
+""",
+        encoding="utf-8",
+    )
+    pd.DataFrame(
+        {
+            "event_id": ["E1"],
+            "station": ["STA1"],
+            "start": ["2020-01-01T00:00:00Z"],
+            "distance_km": [12.5],
+        }
+    ).to_csv(preprocessing_metadata / "event_station_records_preprocessed.csv", index=False)
+    pd.DataFrame(
+        {
+            "event_id": ["E1", "E1"],
+            "station": ["STA1", "STA1"],
+            "source_type": ["observed", "synthetic"],
+            "starttime": ["2019-12-31T23:59:55Z", "2020-01-01T00:00:00Z"],
+            "endtime": ["2020-01-01T00:01:05Z", "2020-01-01T00:01:00Z"],
+        }
+    ).to_csv(preprocessing_metadata / "trace_metadata_preprocessed.csv", index=False)
+
+    result = build_record_coverage_from_config(config_path=config_path)
+
+    output = tmp_path / "outputs" / "tables" / "record_coverage.csv"
+    records = pd.read_csv(output)
+    assert result["record_coverage"] == str(output)
+    assert result["rows"] == 1
+    assert records.loc[0, "event_id"] == "E1"
+    assert records.loc[0, "station"] == "STA1"
+    assert records.loc[0, "observed_start_s"] == -5.0
 
 
 def test_preprocess_waveform_files_uses_configured_waveform_paths(tmp_path: Path, monkeypatch, capsys) -> None:

@@ -28,6 +28,7 @@ from spatial_vtk.config import (
     resolve_output_path,
     resolve_run_defaults,
     run_or_submit_notebook_cli_command,
+    run_or_submit_notebook_function,
     set_saved_config_path,
     submit_notebook_slurm_script,
     write_notebook_python_slurm_script,
@@ -649,6 +650,68 @@ outputs:
         )
 
     assert not (context.slurm_dir / "bad.slurm").exists()
+    clear_active_config()
+
+
+def test_notebook_function_helper_runs_or_writes_slurm_wrapper(tmp_path, monkeypatch, capsys):
+    """Large-run notebooks should submit package functions without CLI indirection."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(tmp_path / "cli-config.json"))
+    repo = tmp_path / "project"
+    (repo / "src" / "spatial_vtk").mkdir(parents=True)
+    (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
+    config_path = repo / "runs" / "spatial_vtk_config.yaml"
+    config_path.parent.mkdir()
+    config_path.write_text(
+        """
+project:
+  root_dir: ..
+outputs:
+  root: run_outputs
+compute:
+  slurm:
+    python_command: python
+    submit_command: sbatch --parsable
+""",
+        encoding="utf-8",
+    )
+    context = notebook_run_context(start=repo / "docs", create_dirs=True)
+
+    result = run_or_submit_notebook_function(
+        context,
+        "spatial_vtk.config.metric_display_name",
+        args=["PGA"],
+        script_name="metric_label.slurm",
+        job_name="svtk-metric-label",
+        run_local=True,
+    )
+
+    assert result == "Peak acceleration (PGA)"
+
+    result = run_or_submit_notebook_function(
+        context,
+        "spatial_vtk.config.metric_display_name",
+        args=["PGV"],
+        script_name="metric_label.slurm",
+        job_name="svtk-metric-label",
+        walltime="00:30:00",
+        memory="2G",
+        cpus=1,
+        run_local=False,
+    )
+
+    script = context.slurm_dir / "metric_label.slurm"
+    text = script.read_text(encoding="utf-8")
+    printed = capsys.readouterr().out
+    assert result is None
+    assert "spatial_vtk.config.metric_display_name" in printed
+    assert "#SBATCH --job-name=svtk-metric-label" in text
+    assert "#SBATCH --time=00:30:00" in text
+    assert "_run_notebook_function_worker" in text
+    assert "spatial_vtk.config.metric_display_name" in text
+    assert "PGV" in text
+    assert f"sbatch --parsable {script}" in printed
     clear_active_config()
 
 

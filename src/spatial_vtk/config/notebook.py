@@ -17,11 +17,13 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from dataclasses import dataclass
+import importlib
+import json
 import os
 from pathlib import Path
 import shlex
 from time import perf_counter
-from typing import Any, Iterator
+from typing import Any, Callable, Iterator
 
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config, get_saved_config_path
 from spatial_vtk.config.compute import (
@@ -486,6 +488,84 @@ def run_or_submit_notebook_cli_command(
     return submit_notebook_slurm_script(context, script, section=section)
 
 
+def run_or_submit_notebook_function(
+    context: NotebookRunContext,
+    function: str | Callable[..., Any],
+    *,
+    args: list[Any] | tuple[Any, ...] = (),
+    kwargs: dict[str, Any] | None = None,
+    script_name: str,
+    job_name: str,
+    walltime: str = "12:00:00",
+    memory: str = "32G",
+    cpus: int = 1,
+    run_local: bool | None = None,
+    section: str | None = "compute.slurm",
+) -> Any | SlurmSubmission | None:
+    """Run an importable package function locally or through Slurm.
+
+    Notebooks should use this helper for heavy package-backed workflow steps
+    instead of constructing shell/CLI commands. Local execution calls the
+    Python function directly. Slurm execution writes a small worker script that
+    imports the same function and calls it with JSON-serializable arguments.
+
+    Parameters
+    ----------
+    context
+        Active notebook run context.
+    function
+        Import path such as ``"spatial_vtk.io.preprocess_waveforms_from_config"``
+        or the top-level callable itself.
+    args, kwargs
+        JSON-serializable arguments passed to ``function``.
+    script_name, job_name, walltime, memory, cpus, run_local, section
+        Slurm/local execution controls matching
+        :func:`run_or_submit_notebook_cli_command`.
+
+    Returns
+    -------
+    object or SlurmSubmission or None
+        Function result when run locally, Slurm submission record when
+        submitted, or ``None`` when a script is only printed.
+    """
+
+    function_path = _notebook_function_import_path(function)
+    payload_args = _notebook_json_payload(list(args))
+    payload_kwargs = _notebook_json_payload(dict(kwargs or {}))
+    print(_notebook_function_display(function_path, payload_args, payload_kwargs))
+    should_run_local = context.run_local if run_local is None else bool(run_local)
+    if should_run_local:
+        resolved = _resolve_notebook_function(function)
+        result = resolved(*payload_args, **payload_kwargs)
+        _print_notebook_function_result(result)
+        return result
+    script = write_notebook_python_slurm_script(
+        context,
+        script_name,
+        f"""
+        from spatial_vtk.config.notebook import _run_notebook_function_worker
+        raise SystemExit(_run_notebook_function_worker({function_path!r}, {json.dumps(payload_args)!r}, {json.dumps(payload_kwargs)!r}))
+        """,
+        job_name=job_name,
+        walltime=walltime,
+        memory=memory,
+        cpus=cpus,
+        section=section,
+    )
+    return submit_notebook_slurm_script(context, script, section=section)
+
+
+def _run_notebook_function_worker(function_path: str, args_json: str, kwargs_json: str) -> int:
+    """Run one notebook function payload from a generated Slurm worker."""
+
+    function = _resolve_notebook_function(function_path)
+    args = json.loads(args_json)
+    kwargs = json.loads(kwargs_json)
+    result = function(*args, **kwargs)
+    _print_notebook_function_result(result)
+    return 0
+
+
 def _spatial_vtk_cli_args(command: list[str]) -> list[str]:
     """Return arguments suitable for ``spatial_vtk.cli.main``."""
 
@@ -513,6 +593,69 @@ def _run_spatial_vtk_cli(args: list[str]) -> int:
     from spatial_vtk.cli import main
 
     return int(main(args) or 0)
+
+
+def _notebook_function_import_path(function: str | Callable[..., Any]) -> str:
+    """Return an import path for a notebook workflow function."""
+
+    if isinstance(function, str):
+        if "." not in function:
+            raise ValueError(f"Notebook function must be an import path, got {function!r}.")
+        return function
+    module = getattr(function, "__module__", "")
+    qualname = getattr(function, "__qualname__", "")
+    if not module or not qualname or "<locals>" in qualname:
+        raise ValueError("Notebook function must be a top-level importable callable.")
+    return f"{module}.{qualname}"
+
+
+def _resolve_notebook_function(function: str | Callable[..., Any]) -> Callable[..., Any]:
+    """Resolve one importable notebook workflow function."""
+
+    if callable(function) and not isinstance(function, str):
+        return function
+    path = _notebook_function_import_path(str(function))
+    module_name, _, attr_path = path.rpartition(".")
+    if not module_name or not attr_path:
+        raise ValueError(f"Notebook function must be a fully qualified import path, got {path!r}.")
+    value: Any = importlib.import_module(module_name)
+    for part in attr_path.split("."):
+        value = getattr(value, part)
+    if not callable(value):
+        raise TypeError(f"Notebook function import path is not callable: {path}")
+    return value
+
+
+def _notebook_json_payload(value: Any) -> Any:
+    """Return a JSON-compatible payload, normalizing Paths to strings."""
+
+    def default(item: Any) -> Any:
+        if isinstance(item, Path):
+            return str(item)
+        raise TypeError(f"Object of type {type(item).__name__} is not JSON serializable.")
+
+    return json.loads(json.dumps(value, default=default))
+
+
+def _notebook_function_display(function_path: str, args: list[Any], kwargs: dict[str, Any]) -> str:
+    """Return one concise notebook task display line."""
+
+    if kwargs:
+        return f"{function_path}(**{json.dumps(kwargs, sort_keys=True)})"
+    if args:
+        return f"{function_path}(*{json.dumps(args)})"
+    return f"{function_path}()"
+
+
+def _print_notebook_function_result(result: Any) -> None:
+    """Print a compact, stable result summary for notebook/Slurm output."""
+
+    if result is None:
+        return
+    try:
+        print(json.dumps(result, indent=2, sort_keys=True, default=str))
+    except TypeError:
+        print(repr(result))
 
 
 def notebook_timing_enabled(config: SpatialVTKConfig | None = None, *, default: bool = True) -> bool:
@@ -841,6 +984,7 @@ __all__ = [
     "register_svtk_cell_timer",
     "register_svtk_time_magic",
     "run_or_submit_notebook_cli_command",
+    "run_or_submit_notebook_function",
     "submit_notebook_slurm_script",
     "write_notebook_python_slurm_script",
 ]
