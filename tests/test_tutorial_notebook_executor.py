@@ -286,6 +286,20 @@ def test_tutorial_notebooks_use_table_helpers_for_file_reads() -> None:
             assert "pd.read_" not in source, f"{notebook_path.relative_to(repo_root)} cell {index}"
 
 
+def test_large_run_notebooks_describe_configured_output_locations() -> None:
+    """Large-run notebooks should not teach one machine-specific run layout."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
+    assert notebooks
+    forbidden = ("runs/outputs", "runs/spatial_vtk_config.yaml")
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        matches = [pattern for pattern in forbidden if pattern in source]
+        assert not matches, f"{notebook_path.relative_to(repo_root)} contains fixed run paths: {matches}"
+
+
 def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
     """Tutorial notebooks should teach stable public plotting imports."""
 
