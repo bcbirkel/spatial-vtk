@@ -721,7 +721,14 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
 
     merge = metrics_sub.add_parser("merge-batches", help="Merge metric manifest batch outputs.")
     merge.add_argument("--manifest", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
-    merge.add_argument("--output", default=None, help="Merged output CSV/parquet path. Defaults to configured output table 'metric_rows'.")
+    merge.add_argument(
+        "--output",
+        default=None,
+        help=(
+            "Merged output CSV/parquet path. If an existing directory or directory-style path is passed, "
+            "writes metric_rows.parquet inside it. Defaults to configured output table 'metric_rows'."
+        ),
+    )
     merge.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default paths.")
     merge.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     merge.add_argument("--allow-missing", action="store_true", help="Allow missing batch outputs.")

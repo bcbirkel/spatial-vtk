@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Made metric batch merging tolerate output directories. ``svtk metrics
+   merge-batches --output`` and ``merge_batch_outputs()`` now write
+   ``metric_rows.parquet`` inside an existing or directory-style output path,
+   while explicit file paths keep their existing behavior.
    Clarified registry-backed figure CLI path flags. ``svtk plot``,
    ``svtk map``, and ``svtk visualize`` commands now accept
    ``--input-table`` and ``--figure-output`` as clearer aliases for

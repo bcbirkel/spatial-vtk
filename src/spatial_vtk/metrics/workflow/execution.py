@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
+import os
 from pathlib import Path
 import time
 from typing import Any
@@ -266,6 +267,7 @@ def merge_batch_outputs(
     """
 
     parsed = read_task_manifest(manifest) if not isinstance(manifest, MetricWorkflowManifest) else manifest
+    resolved_output = _resolve_merge_output_path(output_path)
     frames: list[pd.DataFrame] = []
     missing: list[str] = []
     for batch in parsed.batches:
@@ -277,7 +279,19 @@ def merge_batch_outputs(
     if missing and require_all:
         raise FileNotFoundError(f"Missing metric batch outputs: {missing}")
     merged = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
-    return write_metric_rows(merged, output_path)
+    return write_metric_rows(merged, resolved_output)
+
+
+def _resolve_merge_output_path(output_path: str | Path) -> Path:
+    """Return a concrete metric merge output file path."""
+
+    raw_path = os.fspath(output_path)
+    path = Path(raw_path).expanduser()
+    if path.exists() and path.is_dir():
+        return path / "metric_rows.parquet"
+    if raw_path.endswith(("/", os.sep)):
+        return path / "metric_rows.parquet"
+    return path
 
 
 def _batch_by_index(manifest: MetricWorkflowManifest, batch_index: int) -> dict[str, Any]:

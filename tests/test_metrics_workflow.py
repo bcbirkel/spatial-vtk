@@ -866,6 +866,42 @@ def test_metric_merge_preserves_text_identifiers_for_parquet(tmp_path) -> None:
     assert merged["station"].tolist() == ["00000", "637"]
 
 
+def test_metric_merge_accepts_output_directory(tmp_path) -> None:
+    """Directory-style metric merge outputs should write the standard table."""
+
+    batch = tmp_path / "batch.csv"
+    output_dir = tmp_path / "tables"
+    manifest_path = tmp_path / "manifest.json"
+    output_dir.mkdir()
+    pd.DataFrame(
+        {
+            "event_id": ["e1"],
+            "station": ["ABC"],
+            "component": ["Z"],
+            "metric_group": ["amplitude"],
+            "metric": ["PGA"],
+            "value_obs": [1.0],
+        }
+    ).to_csv(batch, index=False)
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "manifest_version": 1,
+                "qc_table": "",
+                "tasks": [],
+                "batches": [{"batch_index": 0, "task_indices": [], "output_path": str(batch)}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    merged_path = merge_batch_outputs(manifest_path, output_dir)
+    merged = pd.read_parquet(merged_path)
+
+    assert merged_path == output_dir / "metric_rows.parquet"
+    assert merged["metric"].tolist() == ["PGA"]
+
+
 def test_metric_row_parquet_write_normalizes_mixed_text_columns(tmp_path) -> None:
     """Metric parquet writes should not fail on mixed object identifier columns."""
 

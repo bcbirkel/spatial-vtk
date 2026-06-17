@@ -293,7 +293,7 @@ svtk metrics merge-batches
    * - ``--output``
      - No
      -
-     - Value: ``output``. Merged output CSV/parquet path. Defaults to configured output table 'metric_rows'.
+     - Value: ``output``. Merged output CSV/parquet path. If an existing directory or directory-style path is passed, writes metric_rows.parquet inside it. Defaults to configured output table 'metric_rows'.
    * - ``--config``
      - No
      -
