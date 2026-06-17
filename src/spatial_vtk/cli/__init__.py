@@ -1577,13 +1577,13 @@ def _cmd_list_registered_plots(args: argparse.Namespace) -> int:
         output_note = " --output <path>" if spec.output_key is None else ""
         default_notes = []
         if spec.input_key:
-            default_notes.append(f"input={spec.input_key}")
+            default_notes.append(f"default input from config: {spec.input_key}")
         if spec.output_key:
-            default_notes.append(f"output={spec.output_key}")
+            default_notes.append(f"default output from config: {spec.output_key}")
         for option, table_key in sorted((spec.table_alias_defaults or {}).items()):
             table_arg = (spec.table_aliases or {}).get(option, option)
-            default_notes.append(f"{table_arg}={table_key}")
-        default_note = f" ({', '.join(default_notes)} from config)" if default_notes else ""
+            default_notes.append(f"default --{option.replace('_', '-')} ({table_arg}) from config: {table_key}")
+        default_note = f" ({'; '.join(default_notes)})" if default_notes else ""
         print(f"{name}{input_note}{output_note}  # {spec.help}{default_note}")
     return 0
 

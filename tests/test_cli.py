@@ -1359,3 +1359,6 @@ def test_cli_plot_list(capsys):
     assert main(["plot", "metrics", "list"]) == 0
     captured = capsys.readouterr()
     assert "residuals-vs-distance" in captured.out
+    assert "default input from config: metrics_long" in captured.out
+    assert "default output from config: band_score_distribution" in captured.out
+    assert "from config from config" not in captured.out
