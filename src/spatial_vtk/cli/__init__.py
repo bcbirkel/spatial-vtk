@@ -291,6 +291,8 @@ CONTEXT_VISUALIZE_COMMANDS = _with_registered_plot_defaults(
         "station-coverage": "event_station_records",
         "event-coverage": "event_station_records",
         "record-coverage": "record_coverage",
+        "event-trace-comparison": "event_station_records",
+        "distance-amplitude-diagnostics": "event_station_records",
         "event-magnitude-map": "prepared_events",
         "station-event-network": "prepared_stations",
         "station-event-beachball": "prepared_events",
@@ -325,7 +327,16 @@ WAVEFORM_VISUALIZE_COMMANDS: dict[str, PlotCommand] = {
     "event-radial-trace-section": PlotCommand("spatial_vtk.visualize.waveforms.plot_event_radial_trace_section", "records_df", "Plot event radial trace section."),
     "station-event-waveform-map": PlotCommand("spatial_vtk.visualize.waveforms.plot_station_event_waveform_map", "records_df", "Map station/event waveforms."),
 }
-WAVEFORM_VISUALIZE_COMMANDS = _with_registered_plot_defaults(WAVEFORM_VISUALIZE_COMMANDS)
+WAVEFORM_VISUALIZE_COMMANDS = _with_registered_plot_defaults(
+    WAVEFORM_VISUALIZE_COMMANDS,
+    input_defaults={
+        "record-section": "event_station_records",
+        "observed-synthetic-record-section": "event_station_records",
+        "waveform-overlay-matrix": "event_station_records",
+        "event-radial-trace-section": "event_station_records",
+        "station-event-waveform-map": "event_station_records",
+    },
+)
 
 
 PLOT_COMMAND_GROUPS: dict[str, dict[str, PlotCommand]] = {

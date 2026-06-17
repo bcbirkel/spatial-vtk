@@ -1487,7 +1487,7 @@ svtk visualize context distance-amplitude-diagnostics
 .. code-block:: bash
 
    svtk visualize context distance-amplitude-diagnostics
-       [-h] --input INPUT [--output OUTPUT] [--config CONFIG]
+       [-h] [--input INPUT] [--output OUTPUT] [--config CONFIG]
        [--run-scenario RUN_SCENARIO] [--table [TABLE]] [--no-table]
        [--kwargs [KWARGS ...]] [--kwargs-json KWARGS_JSON] [--metric METRIC]
        [--passband PASSBAND] [--bin-label BIN_LABEL] [--component COMPONENT]
@@ -1518,9 +1518,9 @@ svtk visualize context distance-amplitude-diagnostics
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
@@ -2131,7 +2131,7 @@ svtk visualize context event-trace-comparison
 
 .. code-block:: bash
 
-   svtk visualize context event-trace-comparison [-h] --input INPUT
+   svtk visualize context event-trace-comparison [-h] [--input INPUT]
                                                      [--output OUTPUT]
                                                      [--config CONFIG]
                                                      [--run-scenario RUN_SCENARIO]
@@ -2186,9 +2186,9 @@ svtk visualize context event-trace-comparison
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
@@ -3762,7 +3762,8 @@ svtk visualize waveforms event-radial-trace-section
 
 .. code-block:: bash
 
-   svtk visualize waveforms event-radial-trace-section [-h] --input INPUT
+   svtk visualize waveforms event-radial-trace-section [-h]
+                                                           [--input INPUT]
                                                            [--output OUTPUT]
                                                            [--config CONFIG]
                                                            [--run-scenario RUN_SCENARIO]
@@ -3818,9 +3819,9 @@ svtk visualize waveforms event-radial-trace-section
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
@@ -4014,7 +4015,7 @@ svtk visualize waveforms observed-synthetic-record-section
 .. code-block:: bash
 
    svtk visualize waveforms observed-synthetic-record-section
-       [-h] --input INPUT [--output OUTPUT] [--config CONFIG]
+       [-h] [--input INPUT] [--output OUTPUT] [--config CONFIG]
        [--run-scenario RUN_SCENARIO] [--table [TABLE]] [--no-table]
        [--kwargs [KWARGS ...]] [--kwargs-json KWARGS_JSON] [--metric METRIC]
        [--passband PASSBAND] [--bin-label BIN_LABEL] [--component COMPONENT]
@@ -4045,9 +4046,9 @@ svtk visualize waveforms observed-synthetic-record-section
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
@@ -4214,7 +4215,7 @@ svtk visualize waveforms record-section
 
 .. code-block:: bash
 
-   svtk visualize waveforms record-section [-h] --input INPUT
+   svtk visualize waveforms record-section [-h] [--input INPUT]
                                                [--output OUTPUT]
                                                [--config CONFIG]
                                                [--run-scenario RUN_SCENARIO]
@@ -4267,9 +4268,9 @@ svtk visualize waveforms record-section
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'records'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
@@ -4436,7 +4437,8 @@ svtk visualize waveforms station-event-waveform-map
 
 .. code-block:: bash
 
-   svtk visualize waveforms station-event-waveform-map [-h] --input INPUT
+   svtk visualize waveforms station-event-waveform-map [-h]
+                                                           [--input INPUT]
                                                            [--output OUTPUT]
                                                            [--config CONFIG]
                                                            [--run-scenario RUN_SCENARIO]
@@ -4492,9 +4494,9 @@ svtk visualize waveforms station-event-waveform-map
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
@@ -4661,7 +4663,7 @@ svtk visualize waveforms waveform-overlay-matrix
 
 .. code-block:: bash
 
-   svtk visualize waveforms waveform-overlay-matrix [-h] --input INPUT
+   svtk visualize waveforms waveform-overlay-matrix [-h] [--input INPUT]
                                                         [--output OUTPUT]
                                                         [--config CONFIG]
                                                         [--run-scenario RUN_SCENARIO]
@@ -4717,9 +4719,9 @@ svtk visualize waveforms waveform-overlay-matrix
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -

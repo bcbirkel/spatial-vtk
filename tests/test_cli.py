@@ -953,6 +953,103 @@ def test_cli_waveform_record_section_uses_first_class_waveform_flags(tmp_path, m
     assert captured.out.strip() == str(output)
 
 
+def test_cli_waveform_plot_uses_configured_event_station_records(tmp_path, monkeypatch, capsys):
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    records = tables / "event_station_records.csv"
+    records.write_text(
+        "event_id,station,distance_km,component,observed,synthetic\n"
+        "ev1,STA,10,R,\"[0,1,0]\",\"[0,0.5,0]\"\n",
+        encoding="utf-8",
+    )
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.visualize.waveforms as waveforms
+
+    def fake_plot_observed_synthetic_record_section(records_df, output_path=None, **kwargs):
+        seen["rows"] = len(records_df)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(waveforms, "plot_observed_synthetic_record_section", fake_plot_observed_synthetic_record_section)
+
+    assert (
+        main(
+            [
+                "visualize",
+                "waveforms",
+                "observed-synthetic-record-section",
+                "--config",
+                str(config),
+                "--components",
+                "R",
+            ]
+        )
+        == 0
+    )
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "observed_synthetic_record_section.png"
+    assert seen["rows"] == 1
+    assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["components"] == "R"
+    assert captured.out.strip() == str(expected_output)
+
+
+def test_cli_context_trace_comparison_uses_configured_event_station_records(tmp_path, monkeypatch, capsys):
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    records = tables / "event_station_records.csv"
+    records.write_text(
+        "event_id,station,distance_km,component\n"
+        "ev1,STA,10,R\n",
+        encoding="utf-8",
+    )
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.visualize.context as context
+
+    def fake_plot_event_trace_comparison(records_df, output_path=None, **kwargs):
+        seen["rows"] = len(records_df)
+        seen["output_path"] = Path(output_path)
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(context, "plot_event_trace_comparison", fake_plot_event_trace_comparison)
+
+    assert main(["visualize", "context", "event-trace-comparison", "--config", str(config)]) == 0
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "event_trace_comparison.png"
+    assert seen["rows"] == 1
+    assert seen["output_path"] == expected_output
+    assert captured.out.strip() == str(expected_output)
+
+
 def test_registered_plot_commands_use_public_import_surfaces():
     """Registered figure commands should point users at stable public imports."""
 
