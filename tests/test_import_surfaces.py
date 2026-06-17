@@ -5,7 +5,7 @@ import pathlib
 
 def test_public_imports():
     import spatial_vtk
-    from spatial_vtk.config import abbreviate_model
+    from spatial_vtk.config import abbreviate_model, run_notebook_step_if_needed
     from spatial_vtk.metrics import METRIC_NAMES, amplitude_spectrum, calculate_metrics_for_pairs, compute_metrics_pair
     from spatial_vtk.metrics.plot import MetricFigureContext
     from spatial_vtk.io import inspect_synthetic_format, prepare_station_metadata, resolve_model_aliases
@@ -26,6 +26,7 @@ def test_public_imports():
     assert spatial_vtk.__version__
     assert "C1" in METRIC_NAMES
     assert callable(abbreviate_model)
+    assert callable(run_notebook_step_if_needed)
     assert callable(amplitude_spectrum)
     assert callable(calculate_metrics_for_pairs)
     assert callable(compute_metrics_pair)
@@ -130,6 +131,42 @@ def test_visualize_api_docs_use_public_entry_points():
     assert ".. automodule:: spatial_vtk.visualize.dashboard\n" in text
     assert ".. automodule:: spatial_vtk.visualize.qc\n" in text
     assert ".. automodule:: spatial_vtk.visualize.waveforms\n" in text
+
+
+def test_reference_docs_map_python_workflow_entry_points():
+    """Docs should expose task-oriented Python workflow helpers for notebooks."""
+
+    root = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference"
+    index = (root / "index.rst").read_text(encoding="utf-8")
+    python_api = (root / "python_api.rst").read_text(encoding="utf-8")
+    workflows = (root / "python_workflows.rst").read_text(encoding="utf-8")
+
+    assert "python_workflows" in index
+    assert ":doc:`python_workflows`" in python_api
+    required_helpers = [
+        "spatial_vtk.config.run_notebook_step_if_needed",
+        "spatial_vtk.io.preprocess_waveforms_from_config",
+        "spatial_vtk.io.build_record_coverage_from_config",
+        "spatial_vtk.qc.run_qc_inventory_from_config",
+        "spatial_vtk.qc.write_qc_inventory_overlap_from_config",
+        "spatial_vtk.qc.run_qc_summary_workflow_from_config",
+        "spatial_vtk.metrics.build_metric_waveform_inventories_from_config",
+        "spatial_vtk.metrics.plan_metric_tasks_from_config",
+        "spatial_vtk.metrics.write_metrics_slurm_script_from_config",
+        "spatial_vtk.metrics.merge_metric_batches_from_config",
+        "spatial_vtk.metrics.write_metric_outputs_from_config",
+        "spatial_vtk.spatial.run_spatial_statistics_workflow_from_config",
+        "spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config",
+        "spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config",
+        "spatial_vtk.spatial.run_boundary_corridor_workflow_from_config",
+        "spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets",
+    ]
+    for helper in required_helpers:
+        assert helper in workflows
+    assert "run_notebook_step_if_needed" in workflows
+    assert "notebooks should use package functions" in workflows.lower()
+    assert "svtk metrics plan" not in workflows
+    assert "svtk qc" not in workflows
 
 
 def test_spatial_plot_public_entry_point_is_lazy():
