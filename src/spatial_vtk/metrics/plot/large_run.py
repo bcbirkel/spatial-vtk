@@ -377,6 +377,7 @@ class MetricFigureContext:
                 method=self.station_aggregation,
                 group_cols=group_cols,
                 coordinate_cols=(lon_col, lat_col),
+                collapsed_cols=context_cols,
                 source_rows=df,
                 finite_rows=finite_df,
             )
@@ -442,6 +443,7 @@ class MetricFigureContext:
                 method=self.station_aggregation,
                 group_cols=group_cols,
                 coordinate_cols=(lon_col, lat_col),
+                collapsed_cols=context_cols,
                 source_rows=df,
                 finite_rows=finite_df,
             )
@@ -850,6 +852,7 @@ class MetricFigureContext:
             sidecar_df.attrs["svtk_aggregation_method"] = self.station_aggregation
             sidecar_df.attrs["svtk_aggregation_group_columns"] = list(first_attrs.get("svtk_aggregation_group_columns", []))
             sidecar_df.attrs["svtk_aggregation_coordinate_columns"] = list(first_attrs.get("svtk_aggregation_coordinate_columns", []))
+            sidecar_df.attrs["svtk_aggregation_collapsed_columns"] = list(first_attrs.get("svtk_aggregation_collapsed_columns", []))
             sidecar_df.attrs["svtk_aggregation_finite_row_count"] = int(
                 sum(int(getattr(frame, "attrs", {}).get("svtk_aggregation_finite_row_count") or 0) for frame in aggregation_frames)
             )
@@ -860,6 +863,12 @@ class MetricFigureContext:
                 sidecar_df.attrs["svtk_aggregation_input_row_count"] = int(len(source_sidecar_df))
                 sidecar_df.attrs["svtk_aggregation_input_station_count"] = _unique_count(source_sidecar_df, ("station", "station_id", "station_code"))
                 sidecar_df.attrs["svtk_aggregation_input_event_count"] = _unique_count(source_sidecar_df, ("event_id", "event", "event_title"))
+                collapsed = list(first_attrs.get("svtk_aggregation_collapsed_columns", []) or [])
+                sidecar_df.attrs["svtk_aggregation_collapsed_unique_counts"] = {
+                    str(column): int(source_sidecar_df[column].nunique(dropna=True))
+                    for column in collapsed
+                    if column in source_sidecar_df.columns
+                }
         return sidecar_df, source_sidecar_df
 
     def plot_rows(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -1341,22 +1350,31 @@ def _station_aggregation_attrs(
     method: str,
     group_cols: list[str],
     coordinate_cols: tuple[str, str],
+    collapsed_cols: Iterable[str | None] | None,
     source_rows: pd.DataFrame,
     finite_rows: pd.DataFrame,
 ) -> dict[str, Any]:
     """Return dataframe metadata describing a station-summary aggregation."""
 
     lon_col, lat_col = coordinate_cols
+    collapsed = _ordered_existing_columns(source_rows, collapsed_cols or [])
     input_stations = _unique_count(source_rows, ("station", "station_id", "station_code"))
     finite_stations = _unique_count(finite_rows, ("station", "station_id", "station_code"))
     input_events = _unique_count(source_rows, ("event_id", "event", "event_title"))
     finite_events = _unique_count(finite_rows, ("event_id", "event", "event_title"))
+    collapsed_counts = {
+        str(column): int(source_rows[column].nunique(dropna=True))
+        for column in collapsed
+        if column in source_rows.columns
+    }
     return {
         "svtk_aggregation_kind": "station_event_rows_to_station_summary",
         "svtk_aggregation_value_col": value_col,
         "svtk_aggregation_method": str(method or "median").lower(),
         "svtk_aggregation_group_columns": list(group_cols),
         "svtk_aggregation_coordinate_columns": [lon_col, lat_col],
+        "svtk_aggregation_collapsed_columns": collapsed,
+        "svtk_aggregation_collapsed_unique_counts": collapsed_counts,
         "svtk_aggregation_input_row_count": int(len(source_rows)),
         "svtk_aggregation_finite_row_count": int(len(finite_rows)),
         "svtk_aggregation_dropped_nonfinite_row_count": int(len(source_rows) - len(finite_rows)),

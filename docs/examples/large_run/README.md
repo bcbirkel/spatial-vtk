@@ -34,7 +34,7 @@ Figure sidecars:
 - Saved figure helpers can write a main `*.csv` sidecar containing the exact rows handed to the plotting function.
 - Aggregated station figures also write a `*.source.csv` sidecar with the pre-aggregation metric rows used to build station summaries.
 - If a station figure samples aggregated plot rows, the source sidecar is filtered to the raw metric rows behind those plotted station groups.
-- The matching `*.json` sidecar records row counts, event/station/component/model/metric/passband/PSA-period counts, the value column, the station aggregation method, and exactness flags such as `plot_sidecar_exact` and `source_sidecar_exact`. This is the audit trail for checking that plots average or summarize all selected event-station rows rather than only preview rows.
+- The matching `*.json` sidecar records row counts, event/station/component/model/metric/passband/PSA-period counts, the value column, the station aggregation method, the dimensions collapsed into each station summary, and exactness flags such as `plot_sidecar_exact` and `source_sidecar_exact`. This is the audit trail for checking that plots average or summarize all selected event-station rows rather than only preview rows.
 
 Dashboard summaries:
 

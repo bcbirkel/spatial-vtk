@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Added collapsed-dimension metadata to large-run station metric figure
+   sidecars. Station-summary JSON now records which metric dimensions were
+   averaged or otherwise collapsed into each plotted station value, plus unique
+   counts for those dimensions in the source rows.
    Simplified the large-run Step 7 dashboard driver so the notebook uses
    config-backed dashboard status, ``svtk metrics outputs --config ...``, and
    ``preview_output_table("metrics_long")`` instead of expanding configured

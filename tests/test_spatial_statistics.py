@@ -772,6 +772,14 @@ def test_metric_station_summary_aggregates_all_events_without_coordinate_splitti
     assert metadata["svtk_aggregation_finite_station_count"] == 2
     assert metadata["svtk_aggregation_input_event_count"] == 4
     assert metadata["svtk_aggregation_finite_event_count"] == 3
+    assert metadata["svtk_aggregation_group_columns"] == ["station"]
+    assert metadata["svtk_aggregation_collapsed_columns"] == ["metric", "band", "model", "component"]
+    assert metadata["svtk_aggregation_collapsed_unique_counts"] == {
+        "metric": 1,
+        "band": 2,
+        "model": 1,
+        "component": 2,
+    }
     assert metadata["source_rows_role"] == "pre_aggregation_metric_rows"
 
 
@@ -906,6 +914,13 @@ def test_psa_period_sheet_existing_file_writes_panel_source_sidecars(tmp_path: P
     assert metadata["svtk_aggregation_kind"] == "station_event_rows_to_station_summary_by_panel"
     assert metadata["svtk_aggregation_panel_count"] == 2
     assert metadata["svtk_aggregation_input_row_count"] == 8
+    assert metadata["svtk_aggregation_collapsed_columns"] == ["metric", "band", "model", "component"]
+    assert metadata["svtk_aggregation_collapsed_unique_counts"] == {
+        "metric": 1,
+        "band": 1,
+        "model": 1,
+        "component": 1,
+    }
     assert metadata["source_row_count"] == 8
 
 

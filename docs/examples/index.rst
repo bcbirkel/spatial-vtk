@@ -64,8 +64,10 @@ aggregated plot rows, the source sidecar is filtered to the raw rows behind
 those plotted station groups. Use
 ``SVTK_FIGURE_SIDECAR_ROWS=all`` to write all rows, or a positive integer to
 write a deterministic sample. The JSON sidecar records ``sidecar_row_policy``,
-``plot_sidecar_exact``, and ``source_sidecar_exact`` so sampled audits are
-distinguishable from complete row exports.
+``plot_sidecar_exact``, ``source_sidecar_exact``, and station-summary
+``svtk_aggregation_collapsed_columns``/``svtk_aggregation_collapsed_unique_counts``
+so sampled audits are distinguishable from complete row exports and users can
+see which dimensions were collapsed into station-level values.
 
 Command-Line Workflow
 ---------------------
