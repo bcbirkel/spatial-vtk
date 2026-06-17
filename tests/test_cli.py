@@ -100,6 +100,10 @@ def test_cli_registered_plot_help_shows_common_options(capsys):
     assert "--indep" in captured.out
     assert "--colorby" in captured.out
     assert "--compare-to" in captured.out
+    assert "--components" in captured.out
+    assert "--time-limit-s" in captured.out
+    assert "--max-records" in captured.out
+    assert "--max-traces" in captured.out
     assert "--write-sidecar" in captured.out
 
 
@@ -142,6 +146,10 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "``--indep``" in text
     assert "``--colorby``" in text
     assert "``--compare-to``" in text
+    assert "``--components``" in text
+    assert "``--time-limit-s``" in text
+    assert "``--max-records``" in text
+    assert "``--max-traces``" in text
     assert "``--no-connect-points``" in text
     assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
 
@@ -189,10 +197,18 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert "--indep distance" in text
     assert "--colorby dep" in text
     assert '--compare-to "LA Basin"' in text
+    assert "--components R" in text
+    assert "--time-limit-s 60" in text
+    assert "--max-records 80" in text
+    assert "--max-traces 12" in text
     assert "--kwargs dep=" not in text
     assert " indep=" not in text
     assert " colorby=" not in text
     assert " compare_to=" not in text
+    assert "gain=2.0" not in text
+    assert "xlim_s=" not in text
+    assert "max_time_s=" not in text
+    assert "lowpass_hz=" not in text
 
 
 def test_cli_config_show_section(tmp_path, capsys):
@@ -440,6 +456,60 @@ outputs:
     assert seen["kwargs"]["indep"] == "distance"
     assert seen["kwargs"]["colorby"] == "dep"
     assert captured.out.strip() == str(expected_output)
+
+
+def test_cli_waveform_record_section_uses_first_class_waveform_flags(tmp_path, monkeypatch, capsys):
+    records = tmp_path / "records.csv"
+    records.write_text(
+        "station,distance_km,component,observed,synthetic\n"
+        "STA,10,R,\"[0,1,0]\",\"[0,0.5,0]\"\n",
+        encoding="utf-8",
+    )
+    output = tmp_path / "figures" / "record_section.png"
+    seen = {}
+
+    import spatial_vtk.visualize.waveforms as waveforms
+
+    def fake_plot_observed_synthetic_record_section(records_df, output_path=None, **kwargs):
+        seen["rows"] = len(records_df)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(waveforms, "plot_observed_synthetic_record_section", fake_plot_observed_synthetic_record_section)
+
+    assert (
+        main(
+            [
+                "visualize",
+                "waveforms",
+                "observed-synthetic-record-section",
+                "--input",
+                str(records),
+                "--output",
+                str(output),
+                "--components",
+                "R",
+                "--scale",
+                "2.0",
+                "--time-limit-s",
+                "60",
+                "--max-records",
+                "80",
+            ]
+        )
+        == 0
+    )
+    captured = capsys.readouterr()
+    assert seen["rows"] == 1
+    assert seen["output_path"] == output
+    assert seen["kwargs"]["components"] == "R"
+    assert seen["kwargs"]["scale"] == 2.0
+    assert seen["kwargs"]["time_limit_s"] == 60.0
+    assert seen["kwargs"]["max_records"] == 80
+    assert captured.out.strip() == str(output)
 
 
 def test_registered_plot_commands_use_public_import_surfaces():

@@ -98,7 +98,10 @@ streamed sidecar restricted to events with both observed and synthetic data.
    svtk visualize waveforms observed-synthetic-record-section \
      --input "$EVENT_STATIONS" \
      --output "$FIGURES/event_trace_comparison.png" \
-     --kwargs component=R gain=2.0 max_distance_km=50.0 xlim_s='[0, 60]'
+     --components R \
+     --scale 2.0 \
+     --time-limit-s 60 \
+     --max-records 80
 
    svtk dashboard qc \
      --config "$CONFIG" \
@@ -270,7 +273,10 @@ Work with region polygons and corridor selections, then make maps and waveform s
    svtk visualize waveforms observed-synthetic-record-section \
      --input "$TABLES/corridor_waveform_records.csv" \
      --output "$FIGURES/corridor_record_section.png" \
-     --kwargs component=R gain=2.0 xlim_s='[0, 60]' sort_by=distance_km
+     --components R \
+     --scale 2.0 \
+     --time-limit-s 60 \
+     --max-records 80
 
 
 Step 6: Additional Plotting Options
@@ -286,7 +292,8 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
      --run-scenario "$SCENARIO" \
      --bounds study_area \
      --output "$FIGURES/station_event_waveform_map.png" \
-     --kwargs component=R sort_by=distance_km max_time_s=90 lowpass_hz=1.0
+     --time-limit-s 90 \
+     --max-traces 12
 
    svtk plot spatial pattern-similarity \
      --input "$TABLES/pattern_similarity_station_anomalies.csv" \

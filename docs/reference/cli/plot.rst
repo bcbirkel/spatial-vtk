@@ -113,6 +113,7 @@ svtk plot metrics band-score-distribution
                                                  [--metric METRIC]
                                                  [--passband PASSBAND]
                                                  [--component COMPONENT]
+                                                 [--components COMPONENTS]
                                                  [--model MODEL]
                                                  [--value-col VALUE_COL]
                                                  [--score-col SCORE_COL]
@@ -126,6 +127,10 @@ svtk plot metrics band-score-distribution
                                                  [--indep INDEP]
                                                  [--colorby COLORBY]
                                                  [--compare-to COMPARE_TO]
+                                                 [--scale SCALE]
+                                                 [--time-limit-s TIME_LIMIT_S]
+                                                 [--max-records MAX_RECORDS]
+                                                 [--max-traces MAX_TRACES]
                                                  [--title TITLE]
                                                  [--write-sidecar]
                                                  [--sidecar-rows SIDECAR_ROWS]
@@ -185,6 +190,10 @@ svtk plot metrics band-score-distribution
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -241,6 +250,22 @@ svtk plot metrics band-score-distribution
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -273,14 +298,18 @@ svtk plot metrics boxplot
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
                                  [--passband PASSBAND] [--component COMPONENT]
-                                 [--model MODEL] [--value-col VALUE_COL]
+                                 [--components COMPONENTS] [--model MODEL]
+                                 [--value-col VALUE_COL]
                                  [--score-col SCORE_COL] [--x-col X_COL]
                                  [--y-col Y_COL] [--group-col GROUP_COL]
                                  [--color-col COLOR_COL] [--fit FIT]
                                  [--connect-points | --no-connect-points]
                                  [--mode MODE] [--dep DEP] [--indep INDEP]
                                  [--colorby COLORBY] [--compare-to COMPARE_TO]
-                                 [--title TITLE] [--write-sidecar]
+                                 [--scale SCALE] [--time-limit-s TIME_LIMIT_S]
+                                 [--max-records MAX_RECORDS]
+                                 [--max-traces MAX_TRACES] [--title TITLE]
+                                 [--write-sidecar]
                                  [--sidecar-rows SIDECAR_ROWS]
                                  [--sidecar-dir SIDECAR_DIR]
 
@@ -338,6 +367,10 @@ svtk plot metrics boxplot
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -394,6 +427,22 @@ svtk plot metrics boxplot
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -429,6 +478,7 @@ svtk plot metrics example-metric-pairs
                                               [--metric METRIC]
                                               [--passband PASSBAND]
                                               [--component COMPONENT]
+                                              [--components COMPONENTS]
                                               [--model MODEL]
                                               [--value-col VALUE_COL]
                                               [--score-col SCORE_COL]
@@ -441,6 +491,10 @@ svtk plot metrics example-metric-pairs
                                               [--indep INDEP]
                                               [--colorby COLORBY]
                                               [--compare-to COMPARE_TO]
+                                              [--scale SCALE]
+                                              [--time-limit-s TIME_LIMIT_S]
+                                              [--max-records MAX_RECORDS]
+                                              [--max-traces MAX_TRACES]
                                               [--title TITLE]
                                               [--write-sidecar]
                                               [--sidecar-rows SIDECAR_ROWS]
@@ -496,6 +550,10 @@ svtk plot metrics example-metric-pairs
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -552,6 +610,22 @@ svtk plot metrics example-metric-pairs
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -587,6 +661,7 @@ svtk plot metrics geology-boxplot
                                          [--metric METRIC]
                                          [--passband PASSBAND]
                                          [--component COMPONENT]
+                                         [--components COMPONENTS]
                                          [--model MODEL]
                                          [--value-col VALUE_COL]
                                          [--score-col SCORE_COL]
@@ -597,6 +672,10 @@ svtk plot metrics geology-boxplot
                                          [--mode MODE] [--dep DEP]
                                          [--indep INDEP] [--colorby COLORBY]
                                          [--compare-to COMPARE_TO]
+                                         [--scale SCALE]
+                                         [--time-limit-s TIME_LIMIT_S]
+                                         [--max-records MAX_RECORDS]
+                                         [--max-traces MAX_TRACES]
                                          [--title TITLE] [--write-sidecar]
                                          [--sidecar-rows SIDECAR_ROWS]
                                          [--sidecar-dir SIDECAR_DIR]
@@ -655,6 +734,10 @@ svtk plot metrics geology-boxplot
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -711,6 +794,22 @@ svtk plot metrics geology-boxplot
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -743,14 +842,18 @@ svtk plot metrics heatmap
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
                                  [--passband PASSBAND] [--component COMPONENT]
-                                 [--model MODEL] [--value-col VALUE_COL]
+                                 [--components COMPONENTS] [--model MODEL]
+                                 [--value-col VALUE_COL]
                                  [--score-col SCORE_COL] [--x-col X_COL]
                                  [--y-col Y_COL] [--group-col GROUP_COL]
                                  [--color-col COLOR_COL] [--fit FIT]
                                  [--connect-points | --no-connect-points]
                                  [--mode MODE] [--dep DEP] [--indep INDEP]
                                  [--colorby COLORBY] [--compare-to COMPARE_TO]
-                                 [--title TITLE] [--write-sidecar]
+                                 [--scale SCALE] [--time-limit-s TIME_LIMIT_S]
+                                 [--max-records MAX_RECORDS]
+                                 [--max-traces MAX_TRACES] [--title TITLE]
+                                 [--write-sidecar]
                                  [--sidecar-rows SIDECAR_ROWS]
                                  [--sidecar-dir SIDECAR_DIR]
 
@@ -808,6 +911,10 @@ svtk plot metrics heatmap
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -864,6 +971,22 @@ svtk plot metrics heatmap
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -922,8 +1045,9 @@ svtk plot metrics metric-trend
                                       [--table TABLE] [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
                                       [--metric METRIC] [--passband PASSBAND]
-                                      [--component COMPONENT] [--model MODEL]
-                                      [--value-col VALUE_COL]
+                                      [--component COMPONENT]
+                                      [--components COMPONENTS]
+                                      [--model MODEL] [--value-col VALUE_COL]
                                       [--score-col SCORE_COL] [--x-col X_COL]
                                       [--y-col Y_COL] [--group-col GROUP_COL]
                                       [--color-col COLOR_COL] [--fit FIT]
@@ -931,6 +1055,10 @@ svtk plot metrics metric-trend
                                       [--mode MODE] [--dep DEP]
                                       [--indep INDEP] [--colorby COLORBY]
                                       [--compare-to COMPARE_TO]
+                                      [--scale SCALE]
+                                      [--time-limit-s TIME_LIMIT_S]
+                                      [--max-records MAX_RECORDS]
+                                      [--max-traces MAX_TRACES]
                                       [--title TITLE] [--write-sidecar]
                                       [--sidecar-rows SIDECAR_ROWS]
                                       [--sidecar-dir SIDECAR_DIR]
@@ -989,6 +1117,10 @@ svtk plot metrics metric-trend
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -1045,6 +1177,22 @@ svtk plot metrics metric-trend
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -1081,6 +1229,7 @@ svtk plot metrics model-metric-heatmap
                                               [--metric METRIC]
                                               [--passband PASSBAND]
                                               [--component COMPONENT]
+                                              [--components COMPONENTS]
                                               [--model MODEL]
                                               [--value-col VALUE_COL]
                                               [--score-col SCORE_COL]
@@ -1093,6 +1242,10 @@ svtk plot metrics model-metric-heatmap
                                               [--indep INDEP]
                                               [--colorby COLORBY]
                                               [--compare-to COMPARE_TO]
+                                              [--scale SCALE]
+                                              [--time-limit-s TIME_LIMIT_S]
+                                              [--max-records MAX_RECORDS]
+                                              [--max-traces MAX_TRACES]
                                               [--title TITLE]
                                               [--write-sidecar]
                                               [--sidecar-rows SIDECAR_ROWS]
@@ -1152,6 +1305,10 @@ svtk plot metrics model-metric-heatmap
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -1208,6 +1365,22 @@ svtk plot metrics model-metric-heatmap
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -1243,6 +1416,7 @@ svtk plot metrics period-spectra
                                         [--metric METRIC]
                                         [--passband PASSBAND]
                                         [--component COMPONENT]
+                                        [--components COMPONENTS]
                                         [--model MODEL]
                                         [--value-col VALUE_COL]
                                         [--score-col SCORE_COL]
@@ -1253,6 +1427,10 @@ svtk plot metrics period-spectra
                                         [--mode MODE] [--dep DEP]
                                         [--indep INDEP] [--colorby COLORBY]
                                         [--compare-to COMPARE_TO]
+                                        [--scale SCALE]
+                                        [--time-limit-s TIME_LIMIT_S]
+                                        [--max-records MAX_RECORDS]
+                                        [--max-traces MAX_TRACES]
                                         [--title TITLE] [--write-sidecar]
                                         [--sidecar-rows SIDECAR_ROWS]
                                         [--sidecar-dir SIDECAR_DIR]
@@ -1311,6 +1489,10 @@ svtk plot metrics period-spectra
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -1367,6 +1549,22 @@ svtk plot metrics period-spectra
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -1403,6 +1601,7 @@ svtk plot metrics period-spectrogram
                                             [--metric METRIC]
                                             [--passband PASSBAND]
                                             [--component COMPONENT]
+                                            [--components COMPONENTS]
                                             [--model MODEL]
                                             [--value-col VALUE_COL]
                                             [--score-col SCORE_COL]
@@ -1415,6 +1614,10 @@ svtk plot metrics period-spectrogram
                                             [--indep INDEP]
                                             [--colorby COLORBY]
                                             [--compare-to COMPARE_TO]
+                                            [--scale SCALE]
+                                            [--time-limit-s TIME_LIMIT_S]
+                                            [--max-records MAX_RECORDS]
+                                            [--max-traces MAX_TRACES]
                                             [--title TITLE] [--write-sidecar]
                                             [--sidecar-rows SIDECAR_ROWS]
                                             [--sidecar-dir SIDECAR_DIR]
@@ -1473,6 +1676,10 @@ svtk plot metrics period-spectrogram
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -1529,6 +1736,22 @@ svtk plot metrics period-spectrogram
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -1565,6 +1788,7 @@ svtk plot metrics phase-delay-vs-distance
                                                  [--metric METRIC]
                                                  [--passband PASSBAND]
                                                  [--component COMPONENT]
+                                                 [--components COMPONENTS]
                                                  [--model MODEL]
                                                  [--value-col VALUE_COL]
                                                  [--score-col SCORE_COL]
@@ -1578,6 +1802,10 @@ svtk plot metrics phase-delay-vs-distance
                                                  [--indep INDEP]
                                                  [--colorby COLORBY]
                                                  [--compare-to COMPARE_TO]
+                                                 [--scale SCALE]
+                                                 [--time-limit-s TIME_LIMIT_S]
+                                                 [--max-records MAX_RECORDS]
+                                                 [--max-traces MAX_TRACES]
                                                  [--title TITLE]
                                                  [--write-sidecar]
                                                  [--sidecar-rows SIDECAR_ROWS]
@@ -1637,6 +1865,10 @@ svtk plot metrics phase-delay-vs-distance
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -1693,6 +1925,22 @@ svtk plot metrics phase-delay-vs-distance
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -1728,6 +1976,7 @@ svtk plot metrics psa-period-curve
                                           [--metric METRIC]
                                           [--passband PASSBAND]
                                           [--component COMPONENT]
+                                          [--components COMPONENTS]
                                           [--model MODEL]
                                           [--value-col VALUE_COL]
                                           [--score-col SCORE_COL]
@@ -1738,6 +1987,10 @@ svtk plot metrics psa-period-curve
                                           [--mode MODE] [--dep DEP]
                                           [--indep INDEP] [--colorby COLORBY]
                                           [--compare-to COMPARE_TO]
+                                          [--scale SCALE]
+                                          [--time-limit-s TIME_LIMIT_S]
+                                          [--max-records MAX_RECORDS]
+                                          [--max-traces MAX_TRACES]
                                           [--title TITLE] [--write-sidecar]
                                           [--sidecar-rows SIDECAR_ROWS]
                                           [--sidecar-dir SIDECAR_DIR]
@@ -1796,6 +2049,10 @@ svtk plot metrics psa-period-curve
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -1852,6 +2109,22 @@ svtk plot metrics psa-period-curve
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -1888,6 +2161,7 @@ svtk plot metrics residuals-vs-depth
                                             [--metric METRIC]
                                             [--passband PASSBAND]
                                             [--component COMPONENT]
+                                            [--components COMPONENTS]
                                             [--model MODEL]
                                             [--value-col VALUE_COL]
                                             [--score-col SCORE_COL]
@@ -1900,6 +2174,10 @@ svtk plot metrics residuals-vs-depth
                                             [--indep INDEP]
                                             [--colorby COLORBY]
                                             [--compare-to COMPARE_TO]
+                                            [--scale SCALE]
+                                            [--time-limit-s TIME_LIMIT_S]
+                                            [--max-records MAX_RECORDS]
+                                            [--max-traces MAX_TRACES]
                                             [--title TITLE] [--write-sidecar]
                                             [--sidecar-rows SIDECAR_ROWS]
                                             [--sidecar-dir SIDECAR_DIR]
@@ -1958,6 +2236,10 @@ svtk plot metrics residuals-vs-depth
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -2014,6 +2296,22 @@ svtk plot metrics residuals-vs-depth
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -2050,6 +2348,7 @@ svtk plot metrics residuals-vs-distance
                                                [--metric METRIC]
                                                [--passband PASSBAND]
                                                [--component COMPONENT]
+                                               [--components COMPONENTS]
                                                [--model MODEL]
                                                [--value-col VALUE_COL]
                                                [--score-col SCORE_COL]
@@ -2062,6 +2361,10 @@ svtk plot metrics residuals-vs-distance
                                                [--indep INDEP]
                                                [--colorby COLORBY]
                                                [--compare-to COMPARE_TO]
+                                               [--scale SCALE]
+                                               [--time-limit-s TIME_LIMIT_S]
+                                               [--max-records MAX_RECORDS]
+                                               [--max-traces MAX_TRACES]
                                                [--title TITLE]
                                                [--write-sidecar]
                                                [--sidecar-rows SIDECAR_ROWS]
@@ -2121,6 +2424,10 @@ svtk plot metrics residuals-vs-distance
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -2177,6 +2484,22 @@ svtk plot metrics residuals-vs-distance
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -2209,7 +2532,8 @@ svtk plot metrics scatterplot
                                      [--table TABLE] [--kwargs [KWARGS ...]]
                                      [--kwargs-json KWARGS_JSON]
                                      [--metric METRIC] [--passband PASSBAND]
-                                     [--component COMPONENT] [--model MODEL]
+                                     [--component COMPONENT]
+                                     [--components COMPONENTS] [--model MODEL]
                                      [--value-col VALUE_COL]
                                      [--score-col SCORE_COL] [--x-col X_COL]
                                      [--y-col Y_COL] [--group-col GROUP_COL]
@@ -2217,7 +2541,10 @@ svtk plot metrics scatterplot
                                      [--connect-points | --no-connect-points]
                                      [--mode MODE] [--dep DEP] [--indep INDEP]
                                      [--colorby COLORBY]
-                                     [--compare-to COMPARE_TO] [--title TITLE]
+                                     [--compare-to COMPARE_TO] [--scale SCALE]
+                                     [--time-limit-s TIME_LIMIT_S]
+                                     [--max-records MAX_RECORDS]
+                                     [--max-traces MAX_TRACES] [--title TITLE]
                                      [--write-sidecar]
                                      [--sidecar-rows SIDECAR_ROWS]
                                      [--sidecar-dir SIDECAR_DIR]
@@ -2276,6 +2603,10 @@ svtk plot metrics scatterplot
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -2332,6 +2663,22 @@ svtk plot metrics scatterplot
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -2364,8 +2711,9 @@ svtk plot metrics score-trends
                                       [--table TABLE] [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
                                       [--metric METRIC] [--passband PASSBAND]
-                                      [--component COMPONENT] [--model MODEL]
-                                      [--value-col VALUE_COL]
+                                      [--component COMPONENT]
+                                      [--components COMPONENTS]
+                                      [--model MODEL] [--value-col VALUE_COL]
                                       [--score-col SCORE_COL] [--x-col X_COL]
                                       [--y-col Y_COL] [--group-col GROUP_COL]
                                       [--color-col COLOR_COL] [--fit FIT]
@@ -2373,6 +2721,10 @@ svtk plot metrics score-trends
                                       [--mode MODE] [--dep DEP]
                                       [--indep INDEP] [--colorby COLORBY]
                                       [--compare-to COMPARE_TO]
+                                      [--scale SCALE]
+                                      [--time-limit-s TIME_LIMIT_S]
+                                      [--max-records MAX_RECORDS]
+                                      [--max-traces MAX_TRACES]
                                       [--title TITLE] [--write-sidecar]
                                       [--sidecar-rows SIDECAR_ROWS]
                                       [--sidecar-dir SIDECAR_DIR]
@@ -2431,6 +2783,10 @@ svtk plot metrics score-trends
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -2487,6 +2843,22 @@ svtk plot metrics score-trends
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -2519,8 +2891,9 @@ svtk plot metrics vs30-scatter
                                       [--table TABLE] [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
                                       [--metric METRIC] [--passband PASSBAND]
-                                      [--component COMPONENT] [--model MODEL]
-                                      [--value-col VALUE_COL]
+                                      [--component COMPONENT]
+                                      [--components COMPONENTS]
+                                      [--model MODEL] [--value-col VALUE_COL]
                                       [--score-col SCORE_COL] [--x-col X_COL]
                                       [--y-col Y_COL] [--group-col GROUP_COL]
                                       [--color-col COLOR_COL] [--fit FIT]
@@ -2528,6 +2901,10 @@ svtk plot metrics vs30-scatter
                                       [--mode MODE] [--dep DEP]
                                       [--indep INDEP] [--colorby COLORBY]
                                       [--compare-to COMPARE_TO]
+                                      [--scale SCALE]
+                                      [--time-limit-s TIME_LIMIT_S]
+                                      [--max-records MAX_RECORDS]
+                                      [--max-traces MAX_TRACES]
                                       [--title TITLE] [--write-sidecar]
                                       [--sidecar-rows SIDECAR_ROWS]
                                       [--sidecar-dir SIDECAR_DIR]
@@ -2586,6 +2963,10 @@ svtk plot metrics vs30-scatter
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -2642,6 +3023,22 @@ svtk plot metrics vs30-scatter
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -2677,6 +3074,7 @@ svtk plot metrics winner-heatmap
                                         [--metric METRIC]
                                         [--passband PASSBAND]
                                         [--component COMPONENT]
+                                        [--components COMPONENTS]
                                         [--model MODEL]
                                         [--value-col VALUE_COL]
                                         [--score-col SCORE_COL]
@@ -2687,6 +3085,10 @@ svtk plot metrics winner-heatmap
                                         [--mode MODE] [--dep DEP]
                                         [--indep INDEP] [--colorby COLORBY]
                                         [--compare-to COMPARE_TO]
+                                        [--scale SCALE]
+                                        [--time-limit-s TIME_LIMIT_S]
+                                        [--max-records MAX_RECORDS]
+                                        [--max-traces MAX_TRACES]
                                         [--title TITLE] [--write-sidecar]
                                         [--sidecar-rows SIDECAR_ROWS]
                                         [--sidecar-dir SIDECAR_DIR]
@@ -2745,6 +3147,10 @@ svtk plot metrics winner-heatmap
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -2801,6 +3207,22 @@ svtk plot metrics winner-heatmap
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -2865,6 +3287,7 @@ svtk plot spatial azimuthal-residuals
                                              [--metric METRIC]
                                              [--passband PASSBAND]
                                              [--component COMPONENT]
+                                             [--components COMPONENTS]
                                              [--model MODEL]
                                              [--value-col VALUE_COL]
                                              [--score-col SCORE_COL]
@@ -2877,6 +3300,10 @@ svtk plot spatial azimuthal-residuals
                                              [--indep INDEP]
                                              [--colorby COLORBY]
                                              [--compare-to COMPARE_TO]
+                                             [--scale SCALE]
+                                             [--time-limit-s TIME_LIMIT_S]
+                                             [--max-records MAX_RECORDS]
+                                             [--max-traces MAX_TRACES]
                                              [--title TITLE] [--write-sidecar]
                                              [--sidecar-rows SIDECAR_ROWS]
                                              [--sidecar-dir SIDECAR_DIR]
@@ -2935,6 +3362,10 @@ svtk plot spatial azimuthal-residuals
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -2991,6 +3422,22 @@ svtk plot spatial azimuthal-residuals
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -3027,6 +3474,7 @@ svtk plot spatial block-holdout-scatter
                                                [--metric METRIC]
                                                [--passband PASSBAND]
                                                [--component COMPONENT]
+                                               [--components COMPONENTS]
                                                [--model MODEL]
                                                [--value-col VALUE_COL]
                                                [--score-col SCORE_COL]
@@ -3039,6 +3487,10 @@ svtk plot spatial block-holdout-scatter
                                                [--indep INDEP]
                                                [--colorby COLORBY]
                                                [--compare-to COMPARE_TO]
+                                               [--scale SCALE]
+                                               [--time-limit-s TIME_LIMIT_S]
+                                               [--max-records MAX_RECORDS]
+                                               [--max-traces MAX_TRACES]
                                                [--title TITLE]
                                                [--write-sidecar]
                                                [--sidecar-rows SIDECAR_ROWS]
@@ -3098,6 +3550,10 @@ svtk plot spatial block-holdout-scatter
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -3154,6 +3610,22 @@ svtk plot spatial block-holdout-scatter
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -3190,6 +3662,7 @@ svtk plot spatial cluster-feature-heatmap
                                                  [--metric METRIC]
                                                  [--passband PASSBAND]
                                                  [--component COMPONENT]
+                                                 [--components COMPONENTS]
                                                  [--model MODEL]
                                                  [--value-col VALUE_COL]
                                                  [--score-col SCORE_COL]
@@ -3203,6 +3676,10 @@ svtk plot spatial cluster-feature-heatmap
                                                  [--indep INDEP]
                                                  [--colorby COLORBY]
                                                  [--compare-to COMPARE_TO]
+                                                 [--scale SCALE]
+                                                 [--time-limit-s TIME_LIMIT_S]
+                                                 [--max-records MAX_RECORDS]
+                                                 [--max-traces MAX_TRACES]
                                                  [--title TITLE]
                                                  [--write-sidecar]
                                                  [--sidecar-rows SIDECAR_ROWS]
@@ -3262,6 +3739,10 @@ svtk plot spatial cluster-feature-heatmap
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -3318,6 +3799,22 @@ svtk plot spatial cluster-feature-heatmap
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -3354,6 +3851,7 @@ svtk plot spatial cluster-solution-scores
                                                  [--metric METRIC]
                                                  [--passband PASSBAND]
                                                  [--component COMPONENT]
+                                                 [--components COMPONENTS]
                                                  [--model MODEL]
                                                  [--value-col VALUE_COL]
                                                  [--score-col SCORE_COL]
@@ -3367,6 +3865,10 @@ svtk plot spatial cluster-solution-scores
                                                  [--indep INDEP]
                                                  [--colorby COLORBY]
                                                  [--compare-to COMPARE_TO]
+                                                 [--scale SCALE]
+                                                 [--time-limit-s TIME_LIMIT_S]
+                                                 [--max-records MAX_RECORDS]
+                                                 [--max-traces MAX_TRACES]
                                                  [--title TITLE]
                                                  [--write-sidecar]
                                                  [--sidecar-rows SIDECAR_ROWS]
@@ -3426,6 +3928,10 @@ svtk plot spatial cluster-solution-scores
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -3482,6 +3988,22 @@ svtk plot spatial cluster-solution-scores
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -3514,7 +4036,8 @@ svtk plot spatial correlogram
                                      [--table TABLE] [--kwargs [KWARGS ...]]
                                      [--kwargs-json KWARGS_JSON]
                                      [--metric METRIC] [--passband PASSBAND]
-                                     [--component COMPONENT] [--model MODEL]
+                                     [--component COMPONENT]
+                                     [--components COMPONENTS] [--model MODEL]
                                      [--value-col VALUE_COL]
                                      [--score-col SCORE_COL] [--x-col X_COL]
                                      [--y-col Y_COL] [--group-col GROUP_COL]
@@ -3522,7 +4045,10 @@ svtk plot spatial correlogram
                                      [--connect-points | --no-connect-points]
                                      [--mode MODE] [--dep DEP] [--indep INDEP]
                                      [--colorby COLORBY]
-                                     [--compare-to COMPARE_TO] [--title TITLE]
+                                     [--compare-to COMPARE_TO] [--scale SCALE]
+                                     [--time-limit-s TIME_LIMIT_S]
+                                     [--max-records MAX_RECORDS]
+                                     [--max-traces MAX_TRACES] [--title TITLE]
                                      [--write-sidecar]
                                      [--sidecar-rows SIDECAR_ROWS]
                                      [--sidecar-dir SIDECAR_DIR]
@@ -3581,6 +4107,10 @@ svtk plot spatial correlogram
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -3637,6 +4167,22 @@ svtk plot spatial correlogram
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -3673,6 +4219,7 @@ svtk plot spatial directional-correlogram
                                                  [--metric METRIC]
                                                  [--passband PASSBAND]
                                                  [--component COMPONENT]
+                                                 [--components COMPONENTS]
                                                  [--model MODEL]
                                                  [--value-col VALUE_COL]
                                                  [--score-col SCORE_COL]
@@ -3685,6 +4232,10 @@ svtk plot spatial directional-correlogram
                                                  [--indep INDEP]
                                                  [--colorby COLORBY]
                                                  [--compare-to COMPARE_TO]
+                                                 [--scale SCALE]
+                                                 [--time-limit-s TIME_LIMIT_S]
+                                                 [--max-records MAX_RECORDS]
+                                                 [--max-traces MAX_TRACES]
                                                  [--title TITLE]
                                                  [--write-sidecar]
                                                  [--sidecar-rows SIDECAR_ROWS]
@@ -3745,6 +4296,10 @@ svtk plot spatial directional-correlogram
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -3797,6 +4352,22 @@ svtk plot spatial directional-correlogram
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -3862,6 +4433,7 @@ svtk plot spatial path-bin-summary
                                           [--metric METRIC]
                                           [--passband PASSBAND]
                                           [--component COMPONENT]
+                                          [--components COMPONENTS]
                                           [--model MODEL]
                                           [--value-col VALUE_COL]
                                           [--score-col SCORE_COL]
@@ -3872,6 +4444,10 @@ svtk plot spatial path-bin-summary
                                           [--mode MODE] [--dep DEP]
                                           [--indep INDEP] [--colorby COLORBY]
                                           [--compare-to COMPARE_TO]
+                                          [--scale SCALE]
+                                          [--time-limit-s TIME_LIMIT_S]
+                                          [--max-records MAX_RECORDS]
+                                          [--max-traces MAX_TRACES]
                                           [--title TITLE] [--write-sidecar]
                                           [--sidecar-rows SIDECAR_ROWS]
                                           [--sidecar-dir SIDECAR_DIR]
@@ -3930,6 +4506,10 @@ svtk plot spatial path-bin-summary
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -3986,6 +4566,22 @@ svtk plot spatial path-bin-summary
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -4022,6 +4618,7 @@ svtk plot spatial pattern-similarity
                                             [--metric METRIC]
                                             [--passband PASSBAND]
                                             [--component COMPONENT]
+                                            [--components COMPONENTS]
                                             [--model MODEL]
                                             [--value-col VALUE_COL]
                                             [--score-col SCORE_COL]
@@ -4034,6 +4631,10 @@ svtk plot spatial pattern-similarity
                                             [--indep INDEP]
                                             [--colorby COLORBY]
                                             [--compare-to COMPARE_TO]
+                                            [--scale SCALE]
+                                            [--time-limit-s TIME_LIMIT_S]
+                                            [--max-records MAX_RECORDS]
+                                            [--max-traces MAX_TRACES]
                                             [--title TITLE] [--write-sidecar]
                                             [--sidecar-rows SIDECAR_ROWS]
                                             [--sidecar-dir SIDECAR_DIR]
@@ -4092,6 +4693,10 @@ svtk plot spatial pattern-similarity
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -4148,6 +4753,22 @@ svtk plot spatial pattern-similarity
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -4184,6 +4805,7 @@ svtk plot spatial pca-explained-variance
                                                 [--metric METRIC]
                                                 [--passband PASSBAND]
                                                 [--component COMPONENT]
+                                                [--components COMPONENTS]
                                                 [--model MODEL]
                                                 [--value-col VALUE_COL]
                                                 [--score-col SCORE_COL]
@@ -4197,6 +4819,10 @@ svtk plot spatial pca-explained-variance
                                                 [--indep INDEP]
                                                 [--colorby COLORBY]
                                                 [--compare-to COMPARE_TO]
+                                                [--scale SCALE]
+                                                [--time-limit-s TIME_LIMIT_S]
+                                                [--max-records MAX_RECORDS]
+                                                [--max-traces MAX_TRACES]
                                                 [--title TITLE]
                                                 [--write-sidecar]
                                                 [--sidecar-rows SIDECAR_ROWS]
@@ -4256,6 +4882,10 @@ svtk plot spatial pca-explained-variance
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -4312,6 +4942,22 @@ svtk plot spatial pca-explained-variance
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -4348,6 +4994,7 @@ svtk plot spatial pca-feature-loadings
                                               [--metric METRIC]
                                               [--passband PASSBAND]
                                               [--component COMPONENT]
+                                              [--components COMPONENTS]
                                               [--model MODEL]
                                               [--value-col VALUE_COL]
                                               [--score-col SCORE_COL]
@@ -4360,6 +5007,10 @@ svtk plot spatial pca-feature-loadings
                                               [--indep INDEP]
                                               [--colorby COLORBY]
                                               [--compare-to COMPARE_TO]
+                                              [--scale SCALE]
+                                              [--time-limit-s TIME_LIMIT_S]
+                                              [--max-records MAX_RECORDS]
+                                              [--max-traces MAX_TRACES]
                                               [--title TITLE]
                                               [--write-sidecar]
                                               [--sidecar-rows SIDECAR_ROWS]
@@ -4419,6 +5070,10 @@ svtk plot spatial pca-feature-loadings
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -4475,6 +5130,22 @@ svtk plot spatial pca-feature-loadings
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -4510,6 +5181,7 @@ svtk plot spatial polar-residuals
                                          [--metric METRIC]
                                          [--passband PASSBAND]
                                          [--component COMPONENT]
+                                         [--components COMPONENTS]
                                          [--model MODEL]
                                          [--value-col VALUE_COL]
                                          [--score-col SCORE_COL]
@@ -4520,6 +5192,10 @@ svtk plot spatial polar-residuals
                                          [--mode MODE] [--dep DEP]
                                          [--indep INDEP] [--colorby COLORBY]
                                          [--compare-to COMPARE_TO]
+                                         [--scale SCALE]
+                                         [--time-limit-s TIME_LIMIT_S]
+                                         [--max-records MAX_RECORDS]
+                                         [--max-traces MAX_TRACES]
                                          [--title TITLE] [--write-sidecar]
                                          [--sidecar-rows SIDECAR_ROWS]
                                          [--sidecar-dir SIDECAR_DIR]
@@ -4578,6 +5254,10 @@ svtk plot spatial polar-residuals
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -4634,6 +5314,22 @@ svtk plot spatial polar-residuals
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -4670,6 +5366,7 @@ svtk plot spatial residual-correlation
                                               [--metric METRIC]
                                               [--passband PASSBAND]
                                               [--component COMPONENT]
+                                              [--components COMPONENTS]
                                               [--model MODEL]
                                               [--value-col VALUE_COL]
                                               [--score-col SCORE_COL]
@@ -4682,6 +5379,10 @@ svtk plot spatial residual-correlation
                                               [--indep INDEP]
                                               [--colorby COLORBY]
                                               [--compare-to COMPARE_TO]
+                                              [--scale SCALE]
+                                              [--time-limit-s TIME_LIMIT_S]
+                                              [--max-records MAX_RECORDS]
+                                              [--max-traces MAX_TRACES]
                                               [--title TITLE]
                                               [--write-sidecar]
                                               [--sidecar-rows SIDECAR_ROWS]
@@ -4741,6 +5442,10 @@ svtk plot spatial residual-correlation
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -4797,6 +5502,22 @@ svtk plot spatial residual-correlation
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
@@ -4829,8 +5550,9 @@ svtk plot spatial semivariogram
                                        [--table TABLE] [--kwargs [KWARGS ...]]
                                        [--kwargs-json KWARGS_JSON]
                                        [--metric METRIC] [--passband PASSBAND]
-                                       [--component COMPONENT] [--model MODEL]
-                                       [--value-col VALUE_COL]
+                                       [--component COMPONENT]
+                                       [--components COMPONENTS]
+                                       [--model MODEL] [--value-col VALUE_COL]
                                        [--score-col SCORE_COL] [--x-col X_COL]
                                        [--y-col Y_COL] [--group-col GROUP_COL]
                                        [--color-col COLOR_COL] [--fit FIT]
@@ -4838,6 +5560,10 @@ svtk plot spatial semivariogram
                                        [--mode MODE] [--dep DEP]
                                        [--indep INDEP] [--colorby COLORBY]
                                        [--compare-to COMPARE_TO]
+                                       [--scale SCALE]
+                                       [--time-limit-s TIME_LIMIT_S]
+                                       [--max-records MAX_RECORDS]
+                                       [--max-traces MAX_TRACES]
                                        [--title TITLE] [--write-sidecar]
                                        [--sidecar-rows SIDECAR_ROWS]
                                        [--sidecar-dir SIDECAR_DIR]
@@ -4896,6 +5622,10 @@ svtk plot spatial semivariogram
      - No
      - Repeatable
      - Value: ``component``. Component filter/value. Repeat for multiple components.
+   * - ``--components``
+     - No
+     - Repeatable
+     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
@@ -4952,6 +5682,22 @@ svtk plot spatial semivariogram
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--scale``
+     - No
+     -
+     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+   * - ``--time-limit-s``
+     - No
+     -
+     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+   * - ``--max-records``
+     - No
+     -
+     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+   * - ``--max-traces``
+     - No
+     -
+     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -

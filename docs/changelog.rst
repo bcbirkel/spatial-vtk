@@ -61,6 +61,11 @@ Changelog
    Added first-class ``--dep``, ``--indep``, ``--colorby``, and
    ``--compare-to`` plotting flags for flexible spatial plots, and updated
    shell workflow scatterplot, boxplot, and heatmap examples to use them.
+   Added first-class waveform figure flags for ``--components``, ``--scale``,
+   ``--time-limit-s``, ``--max-records``, and ``--max-traces``. The CLI
+   workflow examples now use these supported controls instead of stale
+   ``--kwargs`` aliases such as ``gain``, ``xlim_s``, ``max_time_s``, and
+   ``lowpass_hz``.
    Added a dashboard summary-table contract helper that maps each metrics
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file

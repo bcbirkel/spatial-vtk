@@ -350,6 +350,7 @@ COMMON_FIGURE_OPTION_KEYS = frozenset(
         "metric",
         "passband",
         "component",
+        "components",
         "model",
         "value_col",
         "score_col",
@@ -364,6 +365,10 @@ COMMON_FIGURE_OPTION_KEYS = frozenset(
         "indep",
         "colorby",
         "compare_to",
+        "scale",
+        "time_limit_s",
+        "max_records",
+        "max_traces",
         "title",
     }
 )
@@ -881,6 +886,7 @@ def _add_common_figure_options(parser: argparse.ArgumentParser, *, exclude: set[
     add("metric", default=None, help="Metric name passed to plotting functions that support metric filtering.")
     add("passband", action="append", default=None, help="Passband filter/value. Repeat for multiple passbands.")
     add("component", action="append", default=None, help="Component filter/value. Repeat for multiple components.")
+    add("components", action="append", default=None, help="Component list for waveform plots that use a components argument. Repeat for multiple components.")
     add("model", action="append", default=None, help="Model filter/value. Repeat for multiple models.")
     add("value-col", default=None, help="Column containing the plotted value.")
     add("score-col", default=None, help="Column containing scores or residual values for score-style plots.")
@@ -900,6 +906,10 @@ def _add_common_figure_options(parser: argparse.ArgumentParser, *, exclude: set[
     add("indep", default=None, help="Independent column for flexible spatial plots.")
     add("colorby", default=None, help="Column or alias used for flexible spatial plot color grouping.")
     add("compare-to", action="append", default=None, help="Baseline category for categorical comparison plots. Repeat for multiple categories.")
+    add("scale", type=float, default=None, help="Waveform plotting scale for record-section style figures.")
+    add("time-limit-s", type=float, default=None, help="Upper time limit in seconds for waveform figures that support time_limit_s.")
+    add("max-records", type=int, default=None, help="Maximum number of records for record-section style waveform figures.")
+    add("max-traces", type=int, default=None, help="Maximum number of traces for waveform map figures.")
     add("title", default=None, help="Figure title.")
 
 
