@@ -613,6 +613,70 @@ def test_metric_station_summary_aggregates_all_events_without_coordinate_splitti
     assert metadata["source_rows_role"] == "pre_aggregation_metric_rows"
 
 
+def test_sampled_station_map_sidecar_filters_source_rows_to_plotted_groups(tmp_path: Path) -> None:
+    """Sampled station maps should write source rows only for plotted stations."""
+
+    rows = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3", "e4", "e1"],
+            "station": ["STA", "STA", "STA", "STA", "STB"],
+            "sta_lon": [-118.00, -118.02, -118.00, -118.02, -117.9],
+            "sta_lat": [34.00, 34.02, 34.00, 34.02, 34.1],
+            "metric": ["PGA"] * 5,
+            "band": ["1-2 sec"] * 5,
+            "component": ["R"] * 5,
+            "model": ["m1"] * 5,
+            "log2_residual": [1.0, 3.0, 2.0, 5.0, -2.0],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        rows,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=1,
+        value_col="log2_residual",
+        station_aggregation="mean",
+        write_sidecars=True,
+        sidecar_rows=None,
+    )
+    item = {"key": "pga", "label": "PGA", "metric": "PGA", "period_s": None, "df": rows}
+    station_df = context.station_summary_for_map(rows, "log2_residual")
+
+    def _write_panel(frame: pd.DataFrame, *, output_path, **kwargs) -> None:  # noqa: ANN001, ANN003
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots()
+        ax.scatter(frame["sta_lon"], frame["sta_lat"], c=frame["log2_residual"])
+        fig.savefig(output_path)
+        plt.close(fig)
+
+    output = context.write_metric_plot(
+        "station_metric_map",
+        item,
+        _write_panel,
+        df=station_df,
+        source_df=rows,
+        required=["sta_lon", "sta_lat", "log2_residual"],
+        value_col="log2_residual",
+    )
+
+    assert output is not None
+    sidecar_path = context.sidecar_output_dir / f"{output.stem}.csv"
+    source_path = context.sidecar_output_dir / f"{output.stem}.source.csv"
+    metadata = json.loads(sidecar_path.with_suffix(".json").read_text(encoding="utf-8"))
+    sidecar = pd.read_csv(sidecar_path)
+    source_sidecar = pd.read_csv(source_path)
+    plotted_stations = set(sidecar["station"].astype(str))
+
+    assert len(sidecar) == 1
+    assert set(source_sidecar["station"].astype(str)) == plotted_stations
+    assert len(source_sidecar) == len(rows.loc[rows["station"].astype(str).isin(plotted_stations)])
+    assert metadata["plot_row_count"] == 1
+    assert metadata["source_rows_filter"] == "aggregation_groups_present_in_plot_rows"
+    assert metadata["source_row_count"] == len(source_sidecar)
+    assert metadata["aggregation_input_row_count"] == len(rows)
+
+
 def test_psa_period_sheet_existing_file_writes_panel_source_sidecars(tmp_path: Path) -> None:
     """Existing PSA sheets should refresh sidecars for every oscillator panel."""
 

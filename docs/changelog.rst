@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-17
+   Tightened large-run metric figure provenance for sampled station maps.
+   When a station-level map samples aggregated station rows before plotting,
+   the optional ``*.source.csv`` sidecar is now filtered to the raw metric rows
+   behind those plotted station groups rather than the full unsampled metric
+   selection. Step 3 notebook text now describes the configurable station
+   aggregation method instead of saying station maps always use medians.
    Wired the large-run Step 2 QC notebook to the standard
    ``qc_availability`` table and availability figure so observed/synthetic
    post-QC overlap can be rendered without loading the full inventory. The

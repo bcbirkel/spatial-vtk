@@ -771,14 +771,15 @@ class MetricFigureContext:
         if not self.write_sidecars:
             return None
         figure = Path(figure_path)
+        source_for_plotted_rows = _source_rows_for_plotted_groups(df, source_df)
         result = write_figure_row_sidecar(
             figure,
             df,
             enabled=True,
             sidecar_rows=self.sidecar_rows,
             sidecar_dir=self.sidecar_output_dir,
-            source_rows=source_df,
-            metadata=self.figure_sidecar_metadata(df, source_df=source_df),
+            source_rows=source_for_plotted_rows,
+            metadata=self.figure_sidecar_metadata(df, source_df=source_for_plotted_rows),
         )
         return None if result is None else result.sidecar_path
 
@@ -814,6 +815,8 @@ class MetricFigureContext:
             )
         if source_df is not None:
             metadata["source_rows_role"] = "pre_aggregation_metric_rows" if aggregation_attrs else "figure_source_rows"
+            if aggregation_attrs:
+                metadata["source_rows_filter"] = "aggregation_groups_present_in_plot_rows"
         return metadata
 
     def first_value(self, df: pd.DataFrame | None, column: str | None) -> str | None:
@@ -1225,6 +1228,86 @@ def _unique_count(df: pd.DataFrame, candidates: Iterable[str]) -> int | None:
     if column is None:
         return None
     return int(df[column].nunique(dropna=True))
+
+
+def _source_rows_for_plotted_groups(plot_rows: pd.DataFrame, source_rows: pd.DataFrame | None) -> pd.DataFrame | None:
+    """Return source rows for the aggregation groups present in plotted rows."""
+
+    if source_rows is None:
+        return None
+    attrs = getattr(plot_rows, "attrs", {})
+    group_cols = [str(column) for column in attrs.get("svtk_aggregation_group_columns", [])]
+    if not group_cols or plot_rows.empty:
+        return source_rows.iloc[0:0].copy() if plot_rows.empty else source_rows
+    pairs = _source_plot_group_column_pairs(plot_rows, source_rows, group_cols, attrs)
+    if not pairs:
+        return source_rows
+    plot_keys = {
+        tuple(_group_key_value(row[plot_col]) for _, plot_col in pairs)
+        for _, row in plot_rows.iterrows()
+    }
+    if not plot_keys:
+        return source_rows.iloc[0:0].copy()
+    source_keys = source_rows.apply(
+        lambda row: tuple(_group_key_value(row[source_col]) for source_col, _ in pairs),
+        axis=1,
+    )
+    return source_rows.loc[source_keys.isin(plot_keys)].copy()
+
+
+def _source_plot_group_column_pairs(
+    plot_rows: pd.DataFrame,
+    source_rows: pd.DataFrame,
+    group_cols: Iterable[str],
+    attrs: dict[str, Any],
+) -> list[tuple[str, str]]:
+    """Return source/plot column pairs for aggregation group matching."""
+
+    pairs: list[tuple[str, str]] = []
+    coordinate_cols = list(attrs.get("svtk_aggregation_coordinate_columns", []) or [])
+    coordinate_map: dict[str, str] = {}
+    if len(coordinate_cols) >= 2:
+        coordinate_map[str(coordinate_cols[0])] = "sta_lon"
+        coordinate_map[str(coordinate_cols[1])] = "sta_lat"
+    for group_col in group_cols:
+        source_col = _resolve_group_column(source_rows, group_col)
+        plot_col = _resolve_group_column(plot_rows, group_col)
+        if plot_col is None and group_col in coordinate_map:
+            plot_col = _resolve_group_column(plot_rows, coordinate_map[group_col])
+        if source_col is not None and plot_col is not None:
+            pairs.append((source_col, plot_col))
+    return pairs
+
+
+def _resolve_group_column(df: pd.DataFrame, column: str) -> str | None:
+    """Resolve one aggregation group column against canonical aliases."""
+
+    if column in df.columns:
+        return column
+    aliases = {
+        "station": ("station", "station_id", "station_code"),
+        "station_id": ("station_id", "station", "station_code"),
+        "station_code": ("station_code", "station", "station_id"),
+        "sta_lon": ("sta_lon", "lon", "station_lon", "station_longitude"),
+        "lon": ("lon", "sta_lon", "station_lon", "station_longitude"),
+        "station_lon": ("station_lon", "sta_lon", "lon", "station_longitude"),
+        "station_longitude": ("station_longitude", "station_lon", "sta_lon", "lon"),
+        "sta_lat": ("sta_lat", "lat", "station_lat", "station_latitude"),
+        "lat": ("lat", "sta_lat", "station_lat", "station_latitude"),
+        "station_lat": ("station_lat", "sta_lat", "lat", "station_latitude"),
+        "station_latitude": ("station_latitude", "station_lat", "sta_lat", "lat"),
+    }
+    return next((candidate for candidate in aliases.get(column, ()) if candidate in df.columns), None)
+
+
+def _group_key_value(value: object) -> object:
+    """Normalize group key values so source and plot rows can be matched."""
+
+    if pd.isna(value):
+        return "<NA>"
+    if isinstance(value, (float, np.floating)):
+        return round(float(value), 12)
+    return str(value)
 
 
 __all__ = [

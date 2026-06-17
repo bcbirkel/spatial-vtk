@@ -59,7 +59,9 @@ inventories into notebook memory.
 Set ``SVTK_FIGURE_SIDECARS=1`` while rendering figures to write CSV/JSON
 row-provenance sidecars. Main sidecars contain the exact rows passed to the
 plotting function; aggregated station figures also write ``*.source.csv`` files
-with the pre-aggregation event-station metric rows. Use
+with the pre-aggregation event-station metric rows. If a station figure samples
+aggregated plot rows, the source sidecar is filtered to the raw rows behind
+those plotted station groups. Use
 ``SVTK_FIGURE_SIDECAR_ROWS=all`` to write all rows, or a positive integer to
 write a deterministic sample.
 
