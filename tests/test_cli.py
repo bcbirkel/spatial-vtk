@@ -507,6 +507,8 @@ def test_cli_registered_plot_help_shows_common_options(capsys):
     assert "--colorby" in captured.out
     assert "--compare-to" in captured.out
     assert "--table" in captured.out
+    assert "--input-table" in captured.out
+    assert "--figure-output" in captured.out
     assert "--station-region" in captured.out
     assert "--event-region" in captured.out
     assert "--components" in captured.out
@@ -556,6 +558,9 @@ def test_cli_registered_plot_help_names_config_defaults(capsys):
     captured = capsys.readouterr()
     help_text = " ".join(captured.out.split())
     assert "function argument 'df'" in help_text
+    assert "primary figure input table" in help_text
+    assert "--input-table" in help_text
+    assert "--figure-output" in help_text
     assert "configured output table 'metrics_long'" in help_text
     assert "configured figure output 'band_score_distribution'" in help_text
     assert "svtk config set" in help_text
@@ -570,6 +575,9 @@ def test_cli_registered_map_help_names_config_defaults(capsys):
     captured = capsys.readouterr()
     help_text = " ".join(captured.out.split())
     assert "function argument 'station_df'" in help_text
+    assert "primary figure input table" in help_text
+    assert "--input-table" in help_text
+    assert "--figure-output" in help_text
     assert "configured output table 'station_bias'" in help_text
     assert "configured figure output 'station_residual_map'" in help_text
 
@@ -588,6 +596,8 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "``--compare-to``" in text
     assert "``--bin-label``" in text
     assert "``--table``" in text
+    assert "``--input-table``" in text
+    assert "``--figure-output``" in text
     assert "``--station-region``" in text
     assert "``--event-region``" in text
     assert "``--components``" in text
@@ -616,10 +626,16 @@ def test_generated_cli_reference_names_plot_defaults():
     map_text = (root / "docs" / "reference" / "cli" / "map.rst").read_text(encoding="utf-8")
 
     assert "Input CSV/parquet table for function argument 'df'" in plot_text
+    assert "primary figure input table" in plot_text
+    assert "``--input``, ``--input-table``" in plot_text
+    assert "``--output``, ``--figure-output``" in plot_text
     assert "configured output table 'metrics_long' when --config is passed" in plot_text
     assert "configured figure output 'band_score_distribution' when --config is passed" in plot_text
     assert "default config is set with 'svtk config set'" in plot_text
     assert "Input CSV/parquet table for function argument 'station_df'" in map_text
+    assert "primary figure input table" in map_text
+    assert "``--input``, ``--input-table``" in map_text
+    assert "``--output``, ``--figure-output``" in map_text
     assert "configured output table 'station_bias' when --config is passed" in map_text
     assert "configured figure output 'station_residual_map' when --config is passed" in map_text
     assert "``--mode``" in map_text
@@ -2683,7 +2699,7 @@ def test_cli_plot_metrics_wrapper(tmp_path):
             "model": ["m1", "m1", "m1"],
         }
     ).to_csv(src, index=False)
-    assert main(["plot", "metrics", "residuals-vs-distance", "--input", str(src), "--output", str(out)]) == 0
+    assert main(["plot", "metrics", "residuals-vs-distance", "--input-table", str(src), "--figure-output", str(out)]) == 0
     assert out.exists()
 
 
@@ -2697,7 +2713,7 @@ def test_cli_map_spatial_wrapper(tmp_path):
             "residual": [-0.1, 0.2, 0.0],
         }
     ).to_csv(src, index=False)
-    assert main(["map", "spatial", "station-metric", "--input", str(src), "--output", str(out), "--no-basemap"]) == 0
+    assert main(["map", "spatial", "station-metric", "--input-table", str(src), "--figure-output", str(out), "--no-basemap"]) == 0
     assert out.exists()
 
 
@@ -2710,7 +2726,7 @@ def test_cli_visualize_context_wrapper(tmp_path):
             "station": ["STA1", "STA2", "STA1"],
         }
     ).to_csv(src, index=False)
-    assert main(["visualize", "context", "station-coverage", "--input", str(src), "--output", str(out)]) == 0
+    assert main(["visualize", "context", "station-coverage", "--input-table", str(src), "--figure-output", str(out)]) == 0
     assert out.exists()
 
 

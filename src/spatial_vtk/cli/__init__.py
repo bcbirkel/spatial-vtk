@@ -987,9 +987,23 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
 
     if spec.primary_arg is not None:
         input_help = _registered_input_help(spec.primary_arg, spec.input_key)
-        parser.add_argument("--input", required=spec.input_key is None, help=input_help)
+        parser.add_argument(
+            "--input",
+            "--input-table",
+            metavar="PATH",
+            dest="input",
+            required=spec.input_key is None,
+            help=input_help,
+        )
     output_help = _registered_output_help(spec.output_key)
-    parser.add_argument("--output", required=spec.output_key is None, help=output_help)
+    parser.add_argument(
+        "--output",
+        "--figure-output",
+        metavar="PATH",
+        dest="output",
+        required=spec.output_key is None,
+        help=output_help,
+    )
     if spec.input_key or spec.output_key or spec.table_alias_defaults:
         parser.add_argument("--config", default=None, help="Optional Spatial-VTK config for default input/output paths.")
         parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
@@ -1026,7 +1040,7 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
 def _registered_input_help(argument_name: str, input_key: str | None) -> str:
     """Return clear help for a registered plotting input table."""
 
-    help_text = f"Input CSV/parquet table for function argument '{argument_name}'."
+    help_text = f"Input CSV/parquet table for function argument '{argument_name}' (primary figure input table)."
     if input_key:
         help_text += f" Defaults to configured output table '{input_key}' when --config is passed or a default config is set with 'svtk config set'."
     return help_text
@@ -1035,7 +1049,7 @@ def _registered_input_help(argument_name: str, input_key: str | None) -> str:
 def _registered_output_help(output_key: str | None) -> str:
     """Return clear help for a registered plotting output figure."""
 
-    help_text = "Output figure path."
+    help_text = "Output figure path. The clearer alias --figure-output is equivalent to --output."
     if output_key:
         help_text += f" Defaults to configured figure output '{output_key}' when --config is passed or a default config is set with 'svtk config set'."
     return help_text

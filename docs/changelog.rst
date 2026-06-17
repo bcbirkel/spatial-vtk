@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Clarified registry-backed figure CLI path flags. ``svtk plot``,
+   ``svtk map``, and ``svtk visualize`` commands now accept
+   ``--input-table`` and ``--figure-output`` as clearer aliases for
+   ``--input`` and ``--output``, with help text that identifies the primary
+   input table while preserving existing command forms.
    Clarified dashboard CLI path options. ``svtk dashboard metrics`` now accepts
    ``--metrics-dataset`` and ``--dashboard-summary-dir`` aliases, and
    ``svtk dashboard qc`` accepts ``--qc-trace-summary``, while preserving the

@@ -2,7 +2,7 @@ Future Features
 ===============
 
 This page tracks planned package additions that are not part of the current
-public migration milestone.
+stable public workflow.
 
 Interactive GeoJSON and Corridor Drawing
 ----------------------------------------

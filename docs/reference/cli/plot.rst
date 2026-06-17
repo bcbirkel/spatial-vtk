@@ -103,8 +103,8 @@ svtk plot metrics band-score-distribution
 
 .. code-block:: bash
 
-   svtk plot metrics band-score-distribution [-h] [--input INPUT]
-                                                 [--output OUTPUT]
+   svtk plot metrics band-score-distribution [-h] [--input PATH]
+                                                 [--output PATH]
                                                  [--config CONFIG]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [TABLE]]
@@ -154,14 +154,14 @@ svtk plot metrics band-score-distribution
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'band_score_distribution' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'band_score_distribution' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -312,7 +312,7 @@ svtk plot metrics boxplot
 
 .. code-block:: bash
 
-   svtk plot metrics boxplot [-h] [--input INPUT] [--output OUTPUT]
+   svtk plot metrics boxplot [-h] [--input PATH] [--output PATH]
                                  [--config CONFIG]
                                  [--run-scenario RUN_SCENARIO]
                                  [--table [TABLE]] [--no-table]
@@ -351,14 +351,14 @@ svtk plot metrics boxplot
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'data'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'data' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'boxplot' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'boxplot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -509,7 +509,7 @@ svtk plot metrics example-metric-pairs
 
 .. code-block:: bash
 
-   svtk plot metrics example-metric-pairs [-h] [--output OUTPUT]
+   svtk plot metrics example-metric-pairs [-h] [--output PATH]
                                               [--config CONFIG]
                                               [--run-scenario RUN_SCENARIO]
                                               [--table [TABLE]] [--no-table]
@@ -557,10 +557,10 @@ svtk plot metrics example-metric-pairs
      - No
      -
      - show this help message and exit
-   * - ``--output``
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'example_metric_pairs' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'example_metric_pairs' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -711,8 +711,8 @@ svtk plot metrics geology-boxplot
 
 .. code-block:: bash
 
-   svtk plot metrics geology-boxplot [-h] [--input INPUT]
-                                         [--output OUTPUT] [--config CONFIG]
+   svtk plot metrics geology-boxplot [-h] [--input PATH] [--output PATH]
+                                         [--config CONFIG]
                                          [--run-scenario RUN_SCENARIO]
                                          [--table [TABLE]] [--no-table]
                                          [--kwargs [KWARGS ...]]
@@ -756,14 +756,14 @@ svtk plot metrics geology-boxplot
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'geology_boxplot' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'geology_boxplot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -914,7 +914,7 @@ svtk plot metrics heatmap
 
 .. code-block:: bash
 
-   svtk plot metrics heatmap [-h] [--input INPUT] [--output OUTPUT]
+   svtk plot metrics heatmap [-h] [--input PATH] [--output PATH]
                                  [--config CONFIG]
                                  [--run-scenario RUN_SCENARIO]
                                  [--table [TABLE]] [--no-table]
@@ -953,14 +953,14 @@ svtk plot metrics heatmap
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'data'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'data' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'heatmap' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1137,7 +1137,7 @@ svtk plot metrics metric-trend
 
 .. code-block:: bash
 
-   svtk plot metrics metric-trend [-h] [--input INPUT] [--output OUTPUT]
+   svtk plot metrics metric-trend [-h] [--input PATH] [--output PATH]
                                       [--config CONFIG]
                                       [--run-scenario RUN_SCENARIO]
                                       [--table [TABLE]] [--no-table]
@@ -1179,14 +1179,14 @@ svtk plot metrics metric-trend
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'metric_trend' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'metric_trend' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1337,8 +1337,8 @@ svtk plot metrics model-metric-heatmap
 
 .. code-block:: bash
 
-   svtk plot metrics model-metric-heatmap [-h] [--input INPUT]
-                                              [--output OUTPUT]
+   svtk plot metrics model-metric-heatmap [-h] [--input PATH]
+                                              [--output PATH]
                                               [--config CONFIG]
                                               [--run-scenario RUN_SCENARIO]
                                               [--table [TABLE]] [--no-table]
@@ -1386,14 +1386,14 @@ svtk plot metrics model-metric-heatmap
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'summary_df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'summary_df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'model_metric_heatmap' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'model_metric_heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1544,7 +1544,7 @@ svtk plot metrics period-spectra
 
 .. code-block:: bash
 
-   svtk plot metrics period-spectra [-h] --input INPUT [--output OUTPUT]
+   svtk plot metrics period-spectra [-h] --input PATH [--output PATH]
                                         [--config CONFIG]
                                         [--run-scenario RUN_SCENARIO]
                                         [--table [TABLE]] [--no-table]
@@ -1589,14 +1589,14 @@ svtk plot metrics period-spectra
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'spectra_df'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'spectra_df' (primary figure input table).
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'period_spectra' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'period_spectra' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1747,8 +1747,7 @@ svtk plot metrics period-spectrogram
 
 .. code-block:: bash
 
-   svtk plot metrics period-spectrogram [-h] --input INPUT
-                                            [--output OUTPUT]
+   svtk plot metrics period-spectrogram [-h] --input PATH [--output PATH]
                                             [--config CONFIG]
                                             [--run-scenario RUN_SCENARIO]
                                             [--table [TABLE]] [--no-table]
@@ -1795,14 +1794,14 @@ svtk plot metrics period-spectrogram
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'spectrogram_df'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'spectrogram_df' (primary figure input table).
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'period_spectrogram' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'period_spectrogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1953,8 +1952,8 @@ svtk plot metrics phase-delay-vs-distance
 
 .. code-block:: bash
 
-   svtk plot metrics phase-delay-vs-distance [-h] [--input INPUT]
-                                                 [--output OUTPUT]
+   svtk plot metrics phase-delay-vs-distance [-h] [--input PATH]
+                                                 [--output PATH]
                                                  [--config CONFIG]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [TABLE]]
@@ -2004,14 +2003,14 @@ svtk plot metrics phase-delay-vs-distance
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'phase_delay_vs_distance' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'phase_delay_vs_distance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2162,8 +2161,8 @@ svtk plot metrics psa-period-curve
 
 .. code-block:: bash
 
-   svtk plot metrics psa-period-curve [-h] [--input INPUT]
-                                          [--output OUTPUT] [--config CONFIG]
+   svtk plot metrics psa-period-curve [-h] [--input PATH] [--output PATH]
+                                          [--config CONFIG]
                                           [--run-scenario RUN_SCENARIO]
                                           [--table [TABLE]] [--no-table]
                                           [--kwargs [KWARGS ...]]
@@ -2207,14 +2206,14 @@ svtk plot metrics psa-period-curve
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'psa_period_curve' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'psa_period_curve' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2365,9 +2364,8 @@ svtk plot metrics residuals-vs-depth
 
 .. code-block:: bash
 
-   svtk plot metrics residuals-vs-depth [-h] [--input INPUT]
-                                            [--output OUTPUT]
-                                            [--config CONFIG]
+   svtk plot metrics residuals-vs-depth [-h] [--input PATH]
+                                            [--output PATH] [--config CONFIG]
                                             [--run-scenario RUN_SCENARIO]
                                             [--table [TABLE]] [--no-table]
                                             [--kwargs [KWARGS ...]]
@@ -2413,14 +2411,14 @@ svtk plot metrics residuals-vs-depth
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'residuals_vs_depth' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'residuals_vs_depth' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2571,8 +2569,8 @@ svtk plot metrics residuals-vs-distance
 
 .. code-block:: bash
 
-   svtk plot metrics residuals-vs-distance [-h] [--input INPUT]
-                                               [--output OUTPUT]
+   svtk plot metrics residuals-vs-distance [-h] [--input PATH]
+                                               [--output PATH]
                                                [--config CONFIG]
                                                [--run-scenario RUN_SCENARIO]
                                                [--table [TABLE]] [--no-table]
@@ -2620,14 +2618,14 @@ svtk plot metrics residuals-vs-distance
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'residuals_vs_distance' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'residuals_vs_distance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2778,7 +2776,7 @@ svtk plot metrics scatterplot
 
 .. code-block:: bash
 
-   svtk plot metrics scatterplot [-h] [--input INPUT] [--output OUTPUT]
+   svtk plot metrics scatterplot [-h] [--input PATH] [--output PATH]
                                      [--config CONFIG]
                                      [--run-scenario RUN_SCENARIO]
                                      [--table [TABLE]] [--no-table]
@@ -2820,14 +2818,14 @@ svtk plot metrics scatterplot
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'data'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'data' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'scatterplot' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'scatterplot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2978,7 +2976,7 @@ svtk plot metrics score-trends
 
 .. code-block:: bash
 
-   svtk plot metrics score-trends [-h] [--input INPUT] [--output OUTPUT]
+   svtk plot metrics score-trends [-h] [--input PATH] [--output PATH]
                                       [--config CONFIG]
                                       [--run-scenario RUN_SCENARIO]
                                       [--table [TABLE]] [--no-table]
@@ -3020,14 +3018,14 @@ svtk plot metrics score-trends
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'score_trends' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'score_trends' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3178,7 +3176,7 @@ svtk plot metrics vs30-scatter
 
 .. code-block:: bash
 
-   svtk plot metrics vs30-scatter [-h] [--input INPUT] [--output OUTPUT]
+   svtk plot metrics vs30-scatter [-h] [--input PATH] [--output PATH]
                                       [--config CONFIG]
                                       [--run-scenario RUN_SCENARIO]
                                       [--table [TABLE]] [--no-table]
@@ -3220,14 +3218,14 @@ svtk plot metrics vs30-scatter
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'vs30_scatter' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'vs30_scatter' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3378,7 +3376,7 @@ svtk plot metrics winner-heatmap
 
 .. code-block:: bash
 
-   svtk plot metrics winner-heatmap [-h] --input INPUT [--output OUTPUT]
+   svtk plot metrics winner-heatmap [-h] --input PATH [--output PATH]
                                         [--config CONFIG]
                                         [--run-scenario RUN_SCENARIO]
                                         [--table [TABLE]] [--no-table]
@@ -3423,14 +3421,14 @@ svtk plot metrics winner-heatmap
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'summary_df'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'summary_df' (primary figure input table).
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'winner_heatmap' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'winner_heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3609,9 +3607,8 @@ svtk plot spatial azimuthal-residuals
 
 .. code-block:: bash
 
-   svtk plot spatial azimuthal-residuals [-h] [--input INPUT]
-                                             [--output OUTPUT]
-                                             [--config CONFIG]
+   svtk plot spatial azimuthal-residuals [-h] [--input PATH]
+                                             [--output PATH] [--config CONFIG]
                                              [--run-scenario RUN_SCENARIO]
                                              [--table [TABLE]] [--no-table]
                                              [--kwargs [KWARGS ...]]
@@ -3657,14 +3654,14 @@ svtk plot spatial azimuthal-residuals
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'azimuthal_residuals' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'azimuthal_residuals' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3815,8 +3812,8 @@ svtk plot spatial block-holdout-scatter
 
 .. code-block:: bash
 
-   svtk plot spatial block-holdout-scatter [-h] [--input INPUT]
-                                               [--output OUTPUT]
+   svtk plot spatial block-holdout-scatter [-h] [--input PATH]
+                                               [--output PATH]
                                                [--config CONFIG]
                                                [--run-scenario RUN_SCENARIO]
                                                [--table [TABLE]] [--no-table]
@@ -3864,14 +3861,14 @@ svtk plot spatial block-holdout-scatter
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'prediction_df'. Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'prediction_df' (primary figure input table). Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'block_holdout_scatter' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'block_holdout_scatter' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4022,8 +4019,8 @@ svtk plot spatial cluster-feature-heatmap
 
 .. code-block:: bash
 
-   svtk plot spatial cluster-feature-heatmap [-h] [--input INPUT]
-                                                 [--output OUTPUT]
+   svtk plot spatial cluster-feature-heatmap [-h] [--input PATH]
+                                                 [--output PATH]
                                                  [--config CONFIG]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [TABLE]]
@@ -4073,14 +4070,14 @@ svtk plot spatial cluster-feature-heatmap
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'feature_summary_df'. Defaults to configured output table 'cluster_feature_summary' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'feature_summary_df' (primary figure input table). Defaults to configured output table 'cluster_feature_summary' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'cluster_feature_heatmap' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'cluster_feature_heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4231,8 +4228,8 @@ svtk plot spatial cluster-solution-scores
 
 .. code-block:: bash
 
-   svtk plot spatial cluster-solution-scores [-h] [--input INPUT]
-                                                 [--output OUTPUT]
+   svtk plot spatial cluster-solution-scores [-h] [--input PATH]
+                                                 [--output PATH]
                                                  [--config CONFIG]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [TABLE]]
@@ -4282,14 +4279,14 @@ svtk plot spatial cluster-solution-scores
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'score_df'. Defaults to configured output table 'cluster_solution_scores' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'score_df' (primary figure input table). Defaults to configured output table 'cluster_solution_scores' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'cluster_solution_scores_plot' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'cluster_solution_scores_plot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4440,7 +4437,7 @@ svtk plot spatial correlogram
 
 .. code-block:: bash
 
-   svtk plot spatial correlogram [-h] [--input INPUT] [--output OUTPUT]
+   svtk plot spatial correlogram [-h] [--input PATH] [--output PATH]
                                      [--config CONFIG]
                                      [--run-scenario RUN_SCENARIO]
                                      [--table [TABLE]] [--no-table]
@@ -4482,14 +4479,14 @@ svtk plot spatial correlogram
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'distance_df'. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'distance_df' (primary figure input table). Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'correlogram' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'correlogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4640,8 +4637,8 @@ svtk plot spatial directional-correlogram
 
 .. code-block:: bash
 
-   svtk plot spatial directional-correlogram [-h] --input INPUT
-                                                 [--output OUTPUT]
+   svtk plot spatial directional-correlogram [-h] --input PATH
+                                                 [--output PATH]
                                                  [--config CONFIG]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [TABLE]]
@@ -4691,14 +4688,14 @@ svtk plot spatial directional-correlogram
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'directional_df'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'directional_df' (primary figure input table).
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'directional_correlogram' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'directional_correlogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4875,8 +4872,8 @@ svtk plot spatial path-bin-summary
 
 .. code-block:: bash
 
-   svtk plot spatial path-bin-summary [-h] [--input INPUT]
-                                          [--output OUTPUT] [--config CONFIG]
+   svtk plot spatial path-bin-summary [-h] [--input PATH] [--output PATH]
+                                          [--config CONFIG]
                                           [--run-scenario RUN_SCENARIO]
                                           [--table [TABLE]] [--no-table]
                                           [--kwargs [KWARGS ...]]
@@ -4920,14 +4917,14 @@ svtk plot spatial path-bin-summary
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'path_summary_df'. Defaults to configured output table 'path_summary' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'path_summary_df' (primary figure input table). Defaults to configured output table 'path_summary' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'path_bin_summary' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'path_bin_summary' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -5078,9 +5075,8 @@ svtk plot spatial pattern-similarity
 
 .. code-block:: bash
 
-   svtk plot spatial pattern-similarity [-h] [--input INPUT]
-                                            [--output OUTPUT]
-                                            [--config CONFIG]
+   svtk plot spatial pattern-similarity [-h] [--input PATH]
+                                            [--output PATH] [--config CONFIG]
                                             [--run-scenario RUN_SCENARIO]
                                             [--table [TABLE]] [--no-table]
                                             [--kwargs [KWARGS ...]]
@@ -5126,14 +5122,14 @@ svtk plot spatial pattern-similarity
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'stations'. Defaults to configured output table 'pattern_similarity_station_anomalies' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'stations' (primary figure input table). Defaults to configured output table 'pattern_similarity_station_anomalies' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'pattern_similarity' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'pattern_similarity' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -5284,8 +5280,8 @@ svtk plot spatial pca-explained-variance
 
 .. code-block:: bash
 
-   svtk plot spatial pca-explained-variance [-h] [--input INPUT]
-                                                [--output OUTPUT]
+   svtk plot spatial pca-explained-variance [-h] [--input PATH]
+                                                [--output PATH]
                                                 [--config CONFIG]
                                                 [--run-scenario RUN_SCENARIO]
                                                 [--table [TABLE]] [--no-table]
@@ -5334,14 +5330,14 @@ svtk plot spatial pca-explained-variance
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'explained_variance_df'. Defaults to configured output table 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'explained_variance_df' (primary figure input table). Defaults to configured output table 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -5492,8 +5488,8 @@ svtk plot spatial pca-feature-loadings
 
 .. code-block:: bash
 
-   svtk plot spatial pca-feature-loadings [-h] [--input INPUT]
-                                              [--output OUTPUT]
+   svtk plot spatial pca-feature-loadings [-h] [--input PATH]
+                                              [--output PATH]
                                               [--config CONFIG]
                                               [--run-scenario RUN_SCENARIO]
                                               [--table [TABLE]] [--no-table]
@@ -5541,14 +5537,14 @@ svtk plot spatial pca-feature-loadings
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'feature_loadings_df'. Defaults to configured output table 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'feature_loadings_df' (primary figure input table). Defaults to configured output table 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -5699,8 +5695,8 @@ svtk plot spatial polar-residuals
 
 .. code-block:: bash
 
-   svtk plot spatial polar-residuals [-h] [--input INPUT]
-                                         [--output OUTPUT] [--config CONFIG]
+   svtk plot spatial polar-residuals [-h] [--input PATH] [--output PATH]
+                                         [--config CONFIG]
                                          [--run-scenario RUN_SCENARIO]
                                          [--table [TABLE]] [--no-table]
                                          [--kwargs [KWARGS ...]]
@@ -5744,14 +5740,14 @@ svtk plot spatial polar-residuals
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'polar_residuals' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'polar_residuals' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -5902,8 +5898,8 @@ svtk plot spatial residual-correlation
 
 .. code-block:: bash
 
-   svtk plot spatial residual-correlation [-h] --input INPUT
-                                              [--output OUTPUT]
+   svtk plot spatial residual-correlation [-h] --input PATH
+                                              [--output PATH]
                                               [--config CONFIG]
                                               [--run-scenario RUN_SCENARIO]
                                               [--table [TABLE]] [--no-table]
@@ -5951,14 +5947,14 @@ svtk plot spatial residual-correlation
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'correlation_df'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'correlation_df' (primary figure input table).
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'residual_correlation' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'residual_correlation' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -6109,7 +6105,7 @@ svtk plot spatial semivariogram
 
 .. code-block:: bash
 
-   svtk plot spatial semivariogram [-h] [--input INPUT] [--output OUTPUT]
+   svtk plot spatial semivariogram [-h] [--input PATH] [--output PATH]
                                        [--config CONFIG]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table [TABLE]] [--no-table]
@@ -6151,14 +6147,14 @@ svtk plot spatial semivariogram
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'distance_df'. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'distance_df' (primary figure input table). Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'semivariogram' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'semivariogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -

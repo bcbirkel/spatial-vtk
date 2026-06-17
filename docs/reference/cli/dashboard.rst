@@ -74,7 +74,7 @@ svtk dashboard qc
    * - ``--trace-summary``, ``--qc-trace-summary``
      - No
      -
-     - Value: ``trace_summary``. QC trace-summary CSV/parquet table. Defaults to the configured output table ``qc_trace_summary``.
+     - Value: ``PATH``. QC trace-summary CSV/parquet table. Defaults to the configured output table 'qc_trace_summary'.
    * - ``--port``
      - No
      - Default: ``8502``
@@ -107,10 +107,9 @@ svtk dashboard metrics
 
    svtk dashboard metrics [-h] [--config CONFIG]
                               [--run-scenario RUN_SCENARIO]
-                              [--metrics-root PATH]
-                              [--summary-root DIR] [--port PORT]
-                              [--address ADDRESS] [--auto-port] [--proxy-mode]
-                              [--show]
+                              [--metrics-root PATH] [--summary-root DIR]
+                              [--port PORT] [--address ADDRESS] [--auto-port]
+                              [--proxy-mode] [--show]
 
 .. rubric:: Parameters
 
@@ -137,11 +136,11 @@ svtk dashboard metrics
    * - ``--metrics-root``, ``--metrics-dataset``
      - No
      -
-     - Value: ``metrics_root``. Dashboard-ready metric dataset directory or direct CSV/parquet table. Defaults to the configured dashboard output key ``metrics_dashboard``.
+     - Value: ``PATH``. Dashboard-ready metric dataset directory or direct CSV/parquet table. Defaults to the configured dashboard output key 'metrics_dashboard'.
    * - ``--summary-root``, ``--dashboard-summary-dir``
      - No
      -
-     - Value: ``summary_root``. Directory containing dashboard summary tables (``model_metric_band``, ``station_rollup``, ``event_rollup``, ``path_hex``). Defaults to the configured dashboard output key ``dashboard_summaries``.
+     - Value: ``DIR``. Directory containing dashboard summary tables (model_metric_band, station_rollup, event_rollup, path_hex). Defaults to the configured dashboard output key 'dashboard_summaries'.
    * - ``--port``
      - No
      - Default: ``8501``

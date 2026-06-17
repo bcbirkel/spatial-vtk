@@ -83,9 +83,8 @@ svtk map spatial block-holdout-error
 
 .. code-block:: bash
 
-   svtk map spatial block-holdout-error [-h] [--input INPUT]
-                                            [--output OUTPUT]
-                                            [--config CONFIG]
+   svtk map spatial block-holdout-error [-h] [--input PATH]
+                                            [--output PATH] [--config CONFIG]
                                             [--run-scenario RUN_SCENARIO]
                                             [--table [TABLE]] [--no-table]
                                             [--kwargs [KWARGS ...]]
@@ -133,14 +132,14 @@ svtk map spatial block-holdout-error
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'prediction_df'. Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'prediction_df' (primary figure input table). Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'block_holdout_error' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'block_holdout_error' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -303,7 +302,7 @@ svtk map spatial cluster
 
 .. code-block:: bash
 
-   svtk map spatial cluster [-h] [--input INPUT] [--output OUTPUT]
+   svtk map spatial cluster [-h] [--input PATH] [--output PATH]
                                 [--config CONFIG]
                                 [--run-scenario RUN_SCENARIO]
                                 [--table [TABLE]] [--no-table]
@@ -344,14 +343,14 @@ svtk map spatial cluster
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'assignments_df'. Defaults to configured output table 'clusters' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'assignments_df' (primary figure input table). Defaults to configured output table 'clusters' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'cluster' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'cluster' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -514,7 +513,7 @@ svtk map spatial corridor
 
 .. code-block:: bash
 
-   svtk map spatial corridor [-h] [--input INPUT] [--output OUTPUT]
+   svtk map spatial corridor [-h] [--input PATH] [--output PATH]
                                  [--config CONFIG]
                                  [--run-scenario RUN_SCENARIO]
                                  [--table [TABLE]] [--no-table]
@@ -556,14 +555,14 @@ svtk map spatial corridor
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'corridors_df'. Defaults to configured output table 'corridors' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'corridors_df' (primary figure input table). Defaults to configured output table 'corridors' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'corridor_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'corridor_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -738,7 +737,7 @@ svtk map spatial event-residual
 
 .. code-block:: bash
 
-   svtk map spatial event-residual [-h] [--input INPUT] [--output OUTPUT]
+   svtk map spatial event-residual [-h] [--input PATH] [--output PATH]
                                        [--config CONFIG]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table [TABLE]] [--no-table]
@@ -782,14 +781,14 @@ svtk map spatial event-residual
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'path_table' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'path_table' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'event_residual_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_residual_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -978,7 +977,7 @@ svtk map spatial metric-by-model
 
 .. code-block:: bash
 
-   svtk map spatial metric-by-model [-h] [--input INPUT] [--output OUTPUT]
+   svtk map spatial metric-by-model [-h] [--input PATH] [--output PATH]
                                         [--config CONFIG]
                                         [--run-scenario RUN_SCENARIO]
                                         [--table [TABLE]] [--no-table]
@@ -1025,14 +1024,14 @@ svtk map spatial metric-by-model
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'metric_map_by_model' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'metric_map_by_model' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1195,7 +1194,7 @@ svtk map spatial model-improvement
 
 .. code-block:: bash
 
-   svtk map spatial model-improvement [-h] --input INPUT [--output OUTPUT]
+   svtk map spatial model-improvement [-h] --input PATH [--output PATH]
                                           [--config CONFIG]
                                           [--run-scenario RUN_SCENARIO]
                                           [--table [TABLE]] [--no-table]
@@ -1242,14 +1241,14 @@ svtk map spatial model-improvement
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table).
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'model_improvement' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'model_improvement' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1412,7 +1411,7 @@ svtk map spatial pca-mode
 
 .. code-block:: bash
 
-   svtk map spatial pca-mode [-h] [--input INPUT] [--output OUTPUT]
+   svtk map spatial pca-mode [-h] [--input PATH] [--output PATH]
                                  [--config CONFIG]
                                  [--run-scenario RUN_SCENARIO]
                                  [--table [TABLE]] [--no-table]
@@ -1453,14 +1452,14 @@ svtk map spatial pca-mode
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'station_scores_df'. Defaults to configured output table 'pca_station_scores' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'station_scores_df' (primary figure input table). Defaults to configured output table 'pca_station_scores' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'pca_mode_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'pca_mode_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1623,7 +1622,7 @@ svtk map spatial redcap-cluster
 
 .. code-block:: bash
 
-   svtk map spatial redcap-cluster [-h] [--input INPUT] [--output OUTPUT]
+   svtk map spatial redcap-cluster [-h] [--input PATH] [--output PATH]
                                        [--config CONFIG]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table [TABLE]] [--no-table]
@@ -1667,14 +1666,14 @@ svtk map spatial redcap-cluster
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'redcap_df'. Defaults to configured output table 'redcap_clusters' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'redcap_df' (primary figure input table). Defaults to configured output table 'redcap_clusters' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'redcap_cluster_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'redcap_cluster_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1837,7 +1836,7 @@ svtk map spatial residual-grid
 
 .. code-block:: bash
 
-   svtk map spatial residual-grid [-h] [--input INPUT] [--output OUTPUT]
+   svtk map spatial residual-grid [-h] [--input PATH] [--output PATH]
                                       [--config CONFIG]
                                       [--run-scenario RUN_SCENARIO]
                                       [--table [TABLE]] [--no-table]
@@ -1881,14 +1880,14 @@ svtk map spatial residual-grid
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'grid_df'. Defaults to configured output table 'metric_field' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'grid_df' (primary figure input table). Defaults to configured output table 'metric_field' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'residual_grid' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'residual_grid' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2051,7 +2050,7 @@ svtk map spatial score
 
 .. code-block:: bash
 
-   svtk map spatial score [-h] [--input INPUT] [--output OUTPUT]
+   svtk map spatial score [-h] [--input PATH] [--output PATH]
                               [--config CONFIG] [--run-scenario RUN_SCENARIO]
                               [--table [TABLE]] [--no-table]
                               [--kwargs [KWARGS ...]]
@@ -2089,14 +2088,14 @@ svtk map spatial score
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'score' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'score' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2259,7 +2258,7 @@ svtk map spatial station-bias
 
 .. code-block:: bash
 
-   svtk map spatial station-bias [-h] [--input INPUT] [--output OUTPUT]
+   svtk map spatial station-bias [-h] [--input PATH] [--output PATH]
                                      [--config CONFIG]
                                      [--run-scenario RUN_SCENARIO]
                                      [--table [TABLE]] [--no-table]
@@ -2303,14 +2302,14 @@ svtk map spatial station-bias
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'station_df'. Defaults to configured output table 'station_bias' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'station_df' (primary figure input table). Defaults to configured output table 'station_bias' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_residual_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_residual_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2473,7 +2472,7 @@ svtk map spatial station-metric
 
 .. code-block:: bash
 
-   svtk map spatial station-metric [-h] [--input INPUT] [--output OUTPUT]
+   svtk map spatial station-metric [-h] [--input PATH] [--output PATH]
                                        [--config CONFIG]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table [TABLE]] [--no-table]
@@ -2517,14 +2516,14 @@ svtk map spatial station-metric
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'df' (primary figure input table). Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_metric_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_metric_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -

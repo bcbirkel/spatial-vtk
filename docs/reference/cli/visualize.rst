@@ -96,8 +96,8 @@ svtk visualize qc data-synthetic-availability
 
 .. code-block:: bash
 
-   svtk visualize qc data-synthetic-availability [-h] [--input INPUT]
-                                                     [--output OUTPUT]
+   svtk visualize qc data-synthetic-availability [-h] [--input PATH]
+                                                     [--output PATH]
                                                      [--config CONFIG]
                                                      [--run-scenario RUN_SCENARIO]
                                                      [--table [TABLE]]
@@ -150,14 +150,14 @@ svtk visualize qc data-synthetic-availability
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'availability_df'. Defaults to configured output table 'qc_availability' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'availability_df' (primary figure input table). Defaults to configured output table 'qc_availability' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'data_synthetic_availability' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'data_synthetic_availability' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -320,8 +320,8 @@ svtk visualize qc drop-cause-diagnostics
 
 .. code-block:: bash
 
-   svtk visualize qc drop-cause-diagnostics [-h] [--input INPUT]
-                                                [--output OUTPUT]
+   svtk visualize qc drop-cause-diagnostics [-h] [--input PATH]
+                                                [--output PATH]
                                                 [--config CONFIG]
                                                 [--run-scenario RUN_SCENARIO]
                                                 [--table [TABLE]] [--no-table]
@@ -373,14 +373,14 @@ svtk visualize qc drop-cause-diagnostics
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'qc_df'. Defaults to configured output table 'qc_drop_causes' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'qc_df' (primary figure input table). Defaults to configured output table 'qc_drop_causes' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'drop_cause_diagnostics' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'drop_cause_diagnostics' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -543,8 +543,8 @@ svtk visualize qc event-station-retention
 
 .. code-block:: bash
 
-   svtk visualize qc event-station-retention [-h] [--input INPUT]
-                                                 [--output OUTPUT]
+   svtk visualize qc event-station-retention [-h] [--input PATH]
+                                                 [--output PATH]
                                                  [--config CONFIG]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [TABLE]]
@@ -597,14 +597,14 @@ svtk visualize qc event-station-retention
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'retention_df'. Defaults to configured output table 'qc_event_station_pair_retention' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'retention_df' (primary figure input table). Defaults to configured output table 'qc_event_station_pair_retention' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'event_station_retention' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_station_retention' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -793,8 +793,8 @@ svtk visualize qc post-qc-station-event-map
 
 .. code-block:: bash
 
-   svtk visualize qc post-qc-station-event-map [-h] [--input INPUT]
-                                                   [--output OUTPUT]
+   svtk visualize qc post-qc-station-event-map [-h] [--input PATH]
+                                                   [--output PATH]
                                                    [--config CONFIG]
                                                    [--run-scenario RUN_SCENARIO]
                                                    [--table [TABLE]]
@@ -847,14 +847,14 @@ svtk visualize qc post-qc-station-event-map
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'. Defaults to configured output table 'post_qc_records' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'records_df' (primary figure input table). Defaults to configured output table 'post_qc_records' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'post_qc_station_event_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'post_qc_station_event_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1017,8 +1017,8 @@ svtk visualize qc retention-summary
 
 .. code-block:: bash
 
-   svtk visualize qc retention-summary [-h] [--input INPUT]
-                                           [--output OUTPUT] [--config CONFIG]
+   svtk visualize qc retention-summary [-h] [--input PATH] [--output PATH]
+                                           [--config CONFIG]
                                            [--run-scenario RUN_SCENARIO]
                                            [--table [TABLE]] [--no-table]
                                            [--kwargs [KWARGS ...]]
@@ -1064,14 +1064,14 @@ svtk visualize qc retention-summary
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'qc_df'. Defaults to configured output table 'qc_metric_pair_retention' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'qc_df' (primary figure input table). Defaults to configured output table 'qc_metric_pair_retention' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'retention_summary' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'retention_summary' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1234,8 +1234,8 @@ svtk visualize qc trace-inventory-samples
 
 .. code-block:: bash
 
-   svtk visualize qc trace-inventory-samples [-h] --input INPUT
-                                                 [--output OUTPUT]
+   svtk visualize qc trace-inventory-samples [-h] --input PATH
+                                                 [--output PATH]
                                                  [--config CONFIG]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [TABLE]]
@@ -1288,14 +1288,14 @@ svtk visualize qc trace-inventory-samples
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - Yes
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'sample_df'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'sample_df' (primary figure input table).
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'trace_inventory_samples' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'trace_inventory_samples' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1487,7 +1487,7 @@ svtk visualize context distance-amplitude-diagnostics
 .. code-block:: bash
 
    svtk visualize context distance-amplitude-diagnostics
-       [-h] [--input INPUT] [--output OUTPUT] [--config CONFIG]
+       [-h] [--input PATH] [--output PATH] [--config CONFIG]
        [--run-scenario RUN_SCENARIO] [--table [TABLE]] [--no-table]
        [--kwargs [KWARGS ...]] [--kwargs-json KWARGS_JSON] [--metric METRIC]
        [--passband PASSBAND] [--bin-label BIN_LABEL] [--component COMPONENT]
@@ -1517,14 +1517,14 @@ svtk visualize context distance-amplitude-diagnostics
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'records_df' (primary figure input table). Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'distance_amplitude_diagnostics' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'distance_amplitude_diagnostics' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1687,9 +1687,8 @@ svtk visualize context event-coverage
 
 .. code-block:: bash
 
-   svtk visualize context event-coverage [-h] [--input INPUT]
-                                             [--output OUTPUT]
-                                             [--config CONFIG]
+   svtk visualize context event-coverage [-h] [--input PATH]
+                                             [--output PATH] [--config CONFIG]
                                              [--run-scenario RUN_SCENARIO]
                                              [--table [TABLE]] [--no-table]
                                              [--kwargs [KWARGS ...]]
@@ -1737,14 +1736,14 @@ svtk visualize context event-coverage
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'event_station_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'event_station_df' (primary figure input table). Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'event_coverage' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_coverage' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1907,8 +1906,8 @@ svtk visualize context event-magnitude-map
 
 .. code-block:: bash
 
-   svtk visualize context event-magnitude-map [-h] [--input INPUT]
-                                                  [--output OUTPUT]
+   svtk visualize context event-magnitude-map [-h] [--input PATH]
+                                                  [--output PATH]
                                                   [--config CONFIG]
                                                   [--run-scenario RUN_SCENARIO]
                                                   [--table [TABLE]]
@@ -1961,14 +1960,14 @@ svtk visualize context event-magnitude-map
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'events_df'. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'events_df' (primary figure input table). Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'event_magnitude_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_magnitude_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2131,8 +2130,8 @@ svtk visualize context event-trace-comparison
 
 .. code-block:: bash
 
-   svtk visualize context event-trace-comparison [-h] [--input INPUT]
-                                                     [--output OUTPUT]
+   svtk visualize context event-trace-comparison [-h] [--input PATH]
+                                                     [--output PATH]
                                                      [--config CONFIG]
                                                      [--run-scenario RUN_SCENARIO]
                                                      [--table [TABLE]]
@@ -2185,14 +2184,14 @@ svtk visualize context event-trace-comparison
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'records_df' (primary figure input table). Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'event_trace_comparison' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_trace_comparison' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2381,8 +2380,8 @@ svtk visualize context record-coverage
 
 .. code-block:: bash
 
-   svtk visualize context record-coverage [-h] [--input INPUT]
-                                              [--output OUTPUT]
+   svtk visualize context record-coverage [-h] [--input PATH]
+                                              [--output PATH]
                                               [--config CONFIG]
                                               [--run-scenario RUN_SCENARIO]
                                               [--table [TABLE]] [--no-table]
@@ -2432,14 +2431,14 @@ svtk visualize context record-coverage
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'. Defaults to configured output table 'record_coverage' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'records_df' (primary figure input table). Defaults to configured output table 'record_coverage' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'record_coverage' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'record_coverage' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2602,8 +2601,8 @@ svtk visualize context station-coverage
 
 .. code-block:: bash
 
-   svtk visualize context station-coverage [-h] [--input INPUT]
-                                               [--output OUTPUT]
+   svtk visualize context station-coverage [-h] [--input PATH]
+                                               [--output PATH]
                                                [--config CONFIG]
                                                [--run-scenario RUN_SCENARIO]
                                                [--table [TABLE]] [--no-table]
@@ -2654,14 +2653,14 @@ svtk visualize context station-coverage
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'event_station_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'event_station_df' (primary figure input table). Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_coverage' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_coverage' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2824,8 +2823,8 @@ svtk visualize context station-event-beachball
 
 .. code-block:: bash
 
-   svtk visualize context station-event-beachball [-h] [--input INPUT]
-                                                      [--output OUTPUT]
+   svtk visualize context station-event-beachball [-h] [--input PATH]
+                                                      [--output PATH]
                                                       [--config CONFIG]
                                                       [--run-scenario RUN_SCENARIO]
                                                       [--table [TABLE]]
@@ -2880,14 +2879,14 @@ svtk visualize context station-event-beachball
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'events_df'. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'events_df' (primary figure input table). Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_event_beachball' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_event_beachball' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3054,8 +3053,8 @@ svtk visualize context station-event-context
 
 .. code-block:: bash
 
-   svtk visualize context station-event-context [-h] [--input INPUT]
-                                                    [--output OUTPUT]
+   svtk visualize context station-event-context [-h] [--input PATH]
+                                                    [--output PATH]
                                                     [--config CONFIG]
                                                     [--run-scenario RUN_SCENARIO]
                                                     [--table [TABLE]]
@@ -3109,14 +3108,14 @@ svtk visualize context station-event-context
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'stations_df'. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'stations_df' (primary figure input table). Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_event_context' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_event_context' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3283,8 +3282,8 @@ svtk visualize context station-event-network
 
 .. code-block:: bash
 
-   svtk visualize context station-event-network [-h] [--input INPUT]
-                                                    [--output OUTPUT]
+   svtk visualize context station-event-network [-h] [--input PATH]
+                                                    [--output PATH]
                                                     [--config CONFIG]
                                                     [--run-scenario RUN_SCENARIO]
                                                     [--table [TABLE]]
@@ -3338,14 +3337,14 @@ svtk visualize context station-event-network
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'stations_df'. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'stations_df' (primary figure input table). Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_event_network' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_event_network' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3512,8 +3511,8 @@ svtk visualize context study-domain
 
 .. code-block:: bash
 
-   svtk visualize context study-domain [-h] [--input INPUT]
-                                           [--output OUTPUT] [--config CONFIG]
+   svtk visualize context study-domain [-h] [--input PATH] [--output PATH]
+                                           [--config CONFIG]
                                            [--run-scenario RUN_SCENARIO]
                                            [--table [TABLE]] [--no-table]
                                            [--kwargs [KWARGS ...]]
@@ -3560,14 +3559,14 @@ svtk visualize context study-domain
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'stations_df'. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'stations_df' (primary figure input table). Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'study_domain' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'study_domain' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3762,9 +3761,8 @@ svtk visualize waveforms event-radial-trace-section
 
 .. code-block:: bash
 
-   svtk visualize waveforms event-radial-trace-section [-h]
-                                                           [--input INPUT]
-                                                           [--output OUTPUT]
+   svtk visualize waveforms event-radial-trace-section [-h] [--input PATH]
+                                                           [--output PATH]
                                                            [--config CONFIG]
                                                            [--run-scenario RUN_SCENARIO]
                                                            [--table [TABLE]]
@@ -3818,14 +3816,14 @@ svtk visualize waveforms event-radial-trace-section
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'records_df' (primary figure input table). Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'event_radial_trace_section' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_radial_trace_section' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4015,7 +4013,7 @@ svtk visualize waveforms observed-synthetic-record-section
 .. code-block:: bash
 
    svtk visualize waveforms observed-synthetic-record-section
-       [-h] [--input INPUT] [--output OUTPUT] [--config CONFIG]
+       [-h] [--input PATH] [--output PATH] [--config CONFIG]
        [--run-scenario RUN_SCENARIO] [--table [TABLE]] [--no-table]
        [--kwargs [KWARGS ...]] [--kwargs-json KWARGS_JSON] [--metric METRIC]
        [--passband PASSBAND] [--bin-label BIN_LABEL] [--component COMPONENT]
@@ -4045,14 +4043,14 @@ svtk visualize waveforms observed-synthetic-record-section
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'records_df' (primary figure input table). Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'observed_synthetic_record_section' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'observed_synthetic_record_section' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4215,8 +4213,8 @@ svtk visualize waveforms record-section
 
 .. code-block:: bash
 
-   svtk visualize waveforms record-section [-h] [--input INPUT]
-                                               [--output OUTPUT]
+   svtk visualize waveforms record-section [-h] [--input PATH]
+                                               [--output PATH]
                                                [--config CONFIG]
                                                [--run-scenario RUN_SCENARIO]
                                                [--table [TABLE]] [--no-table]
@@ -4267,14 +4265,14 @@ svtk visualize waveforms record-section
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'records' (primary figure input table). Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'record_section' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'record_section' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4437,9 +4435,8 @@ svtk visualize waveforms station-event-waveform-map
 
 .. code-block:: bash
 
-   svtk visualize waveforms station-event-waveform-map [-h]
-                                                           [--input INPUT]
-                                                           [--output OUTPUT]
+   svtk visualize waveforms station-event-waveform-map [-h] [--input PATH]
+                                                           [--output PATH]
                                                            [--config CONFIG]
                                                            [--run-scenario RUN_SCENARIO]
                                                            [--table [TABLE]]
@@ -4493,14 +4490,14 @@ svtk visualize waveforms station-event-waveform-map
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'records_df' (primary figure input table). Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'station_event_waveform_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_event_waveform_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4663,8 +4660,8 @@ svtk visualize waveforms waveform-overlay-matrix
 
 .. code-block:: bash
 
-   svtk visualize waveforms waveform-overlay-matrix [-h] [--input INPUT]
-                                                        [--output OUTPUT]
+   svtk visualize waveforms waveform-overlay-matrix [-h] [--input PATH]
+                                                        [--output PATH]
                                                         [--config CONFIG]
                                                         [--run-scenario RUN_SCENARIO]
                                                         [--table [TABLE]]
@@ -4718,14 +4715,14 @@ svtk visualize waveforms waveform-overlay-matrix
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--input``, ``--input-table``
      - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'records_df'. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``
+     - Value: ``PATH``. Input CSV/parquet table for function argument 'records_df' (primary figure input table). Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+   * - ``--output``, ``--figure-output``
      - No
      -
-     - Value: ``output``. Output figure path. Defaults to configured figure output 'waveform_overlay_matrix' when --config is passed or a default config is set with 'svtk config set'.
+     - Value: ``PATH``. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'waveform_overlay_matrix' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
