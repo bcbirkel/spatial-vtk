@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from spatial_vtk.visualize.dashboard import (
+    dashboard_row_level_columns,
     load_dashboard_metric_dataset,
     load_dashboard_summary_tables,
     validate_dashboard_tables,
@@ -49,6 +50,64 @@ def test_dashboard_metric_dataset_export_and_summary_tables(tmp_path) -> None:
     written = write_dashboard_summary_dataset(root, tmp_path / "dashboard_summaries", format="csv")
     assert {"model_metric_band", "station_rollup", "event_rollup", "path_hex"} <= set(written)
     assert written["model_metric_band"].exists()
+
+
+def test_dashboard_metric_dataset_loader_projects_requested_columns(tmp_path) -> None:
+    """Dashboard metric loading should avoid materializing unused wide columns."""
+
+    metrics = pd.DataFrame(
+        {
+            "model": ["m1", "m1"],
+            "band": ["1-3s", "1-3s"],
+            "metric": ["PGA", "PGV"],
+            "station": ["AAA", "BBB"],
+            "event_id": ["e1", "e1"],
+            "log2_residual": [0.5, -0.25],
+            "unused_payload": ["x" * 100, "y" * 100],
+        }
+    )
+    direct = tmp_path / "metrics_long.parquet"
+    metrics.to_parquet(direct, index=False)
+
+    loaded_direct = load_dashboard_metric_dataset(
+        direct,
+        columns=["model", "metric", "log2_residual", "missing_optional", "model"],
+    )
+
+    assert loaded_direct.columns.tolist() == ["model", "metric", "log2_residual"]
+    assert "unused_payload" not in loaded_direct.columns
+    assert len(loaded_direct) == 2
+
+    root = tmp_path / "dashboard_partitioned"
+    part_a = root / "model=m1" / "band=1-3s" / "metric=PGA" / "part.parquet"
+    part_b = root / "model=m1" / "band=1-3s" / "metric=PGV" / "part.parquet"
+    part_a.parent.mkdir(parents=True)
+    part_b.parent.mkdir(parents=True)
+    metrics.iloc[[0]].to_parquet(part_a, index=False)
+    metrics.iloc[[1]].to_parquet(part_b, index=False)
+
+    loaded_partitioned = load_dashboard_metric_dataset(
+        root,
+        columns=["station", "event_id", "log2_residual"],
+    )
+
+    assert loaded_partitioned.columns.tolist() == ["station", "event_id", "log2_residual"]
+    assert loaded_partitioned["station"].tolist() == ["AAA", "BBB"]
+
+
+def test_dashboard_row_level_columns_are_bounded() -> None:
+    """Dashboard row-level tabs should request only needed long-metric columns."""
+
+    columns = dashboard_row_level_columns()
+
+    assert "model" in columns
+    assert "metric" in columns
+    assert "station" in columns
+    assert "event_id" in columns
+    assert "log2_residual" in columns
+    assert "anderson_2004_gof" in columns
+    assert len(columns) == len(set(columns))
+    assert "unused_payload" not in columns
 
 
 def test_dashboard_metric_dataset_loader_ignores_unrelated_parquet(tmp_path) -> None:

@@ -25,6 +25,7 @@ from spatial_vtk.visualize.dashboard.charts import (
 )
 from spatial_vtk.visualize.dashboard.contracts import (
     dashboard_map_readiness,
+    dashboard_row_level_columns,
     dashboard_summary_readiness_frame,
     load_dashboard_summary_tables,
     load_metric_long_table,
@@ -226,10 +227,10 @@ def _load_summary_tables_cached(summary_root: str) -> dict[str, pd.DataFrame]:
 
 
 @st.cache_data(show_spinner=False)
-def _load_long_metrics_cached(metrics_root: str) -> pd.DataFrame:
+def _load_long_metrics_cached(metrics_root: str, columns: tuple[str, ...]) -> pd.DataFrame:
     """Load long metrics with Streamlit caching."""
 
-    return load_metric_long_table(metrics_root)
+    return load_metric_long_table(metrics_root, columns=columns)
 
 
 def _try_load_long_metrics(metrics_root: str) -> pd.DataFrame | None:
@@ -238,7 +239,7 @@ def _try_load_long_metrics(metrics_root: str) -> pd.DataFrame | None:
     if not metrics_root:
         return None
     try:
-        return _load_long_metrics_cached(metrics_root)
+        return _load_long_metrics_cached(metrics_root, dashboard_row_level_columns())
     except Exception as exc:
         st.warning(f"Long metric table was not loaded: {exc}")
         return None

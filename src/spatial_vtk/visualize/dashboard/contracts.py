@@ -8,6 +8,7 @@ keeps schema errors clear and independent from the dashboard UI.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -548,12 +549,34 @@ def validate_map_columns(df: pd.DataFrame, *, table_name: str, lon_candidates: t
     return lon_col, lat_col
 
 
-def load_metric_long_table(metrics_root: str | Path) -> pd.DataFrame:
+def dashboard_row_level_columns() -> tuple[str, ...]:
+    """Return long-metric columns needed by dashboard row-level tabs."""
+
+    from spatial_vtk.visualize.dashboard.tables import DEFAULT_DASHBOARD_VALUE_COLUMNS
+
+    columns = (
+        "model",
+        "metric",
+        "band",
+        "passband",
+        "component",
+        "station",
+        "event_id",
+        "distance_km",
+        "med_dist_km",
+        "Vs30",
+        "vs30",
+        *DEFAULT_DASHBOARD_VALUE_COLUMNS,
+    )
+    return tuple(dict.fromkeys(columns))
+
+
+def load_metric_long_table(metrics_root: str | Path, *, columns: Sequence[str] | None = None) -> pd.DataFrame:
     """Load the dashboard long metric table from a dataset root."""
 
     from spatial_vtk.visualize.dashboard.export import load_dashboard_metric_dataset
 
-    return load_dashboard_metric_dataset(metrics_root)
+    return load_dashboard_metric_dataset(metrics_root, columns=columns)
 
 
 def _find_table(root: Path, name: str, *, required: bool = True) -> Path | None:
@@ -609,6 +632,7 @@ __all__ = [
     "dashboard_output_paths",
     "dashboard_output_namespace",
     "dashboard_output_status_frame",
+    "dashboard_row_level_columns",
     "dashboard_summary_readiness_frame",
     "dashboard_summary_table_contracts",
     "dashboard_summary_table_paths",

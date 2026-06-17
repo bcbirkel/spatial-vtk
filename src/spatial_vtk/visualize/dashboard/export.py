@@ -75,7 +75,11 @@ def write_dashboard_metric_dataset(
     return root
 
 
-def load_dashboard_metric_dataset(input_root: str | Path) -> pd.DataFrame:
+def load_dashboard_metric_dataset(
+    input_root: str | Path,
+    *,
+    columns: Sequence[str] | None = None,
+) -> pd.DataFrame:
     """Load dashboard metric rows from a dataset directory or table file.
 
     Parameters
@@ -83,6 +87,9 @@ def load_dashboard_metric_dataset(input_root: str | Path) -> pd.DataFrame:
     input_root
         Directory containing ``metrics_long.parquet`` or partitioned parquet
         files, or a direct ``.parquet``/``.csv`` long metric table path.
+    columns
+        Optional column subset to load. Missing requested columns are ignored
+        so dashboard previews can run against older metric datasets.
 
     Returns
     -------
@@ -92,11 +99,7 @@ def load_dashboard_metric_dataset(input_root: str | Path) -> pd.DataFrame:
 
     root = Path(input_root).expanduser()
     if root.is_file():
-        if root.suffix.lower() in {".parquet", ".pq"}:
-            return pd.read_parquet(root)
-        if root.suffix.lower() == ".csv":
-            return pd.read_csv(root)
-        raise ValueError(f"Unsupported dashboard metric table format for {root}. Use Parquet or CSV.")
+        return _read_dashboard_metric_table(root, columns=columns)
     if not root.exists():
         raise FileNotFoundError(f"Dashboard metric dataset path does not exist: {root}")
     paths = _dashboard_metric_parquet_paths(root)
@@ -105,7 +108,11 @@ def load_dashboard_metric_dataset(input_root: str | Path) -> pd.DataFrame:
             f"No dashboard metric parquet files found under {root}. "
             "Expected metrics_long.parquet or model=*/band=*/metric=*/part.parquet."
         )
-    return pd.concat([pd.read_parquet(path) for path in paths], ignore_index=True)
+    return pd.concat(
+        [_read_dashboard_metric_table(path, columns=columns) for path in paths],
+        ignore_index=True,
+        sort=False,
+    )
 
 
 def _dashboard_metric_parquet_paths(root: Path) -> list[Path]:
@@ -115,6 +122,49 @@ def _dashboard_metric_parquet_paths(root: Path) -> list[Path]:
     if direct.exists():
         return [direct]
     return sorted(path for path in root.glob("model=*/band=*/metric=*/part.parquet") if path.is_file())
+
+
+def _read_dashboard_metric_table(path: Path, *, columns: Sequence[str] | None = None) -> pd.DataFrame:
+    """Read one dashboard metric table with optional column projection."""
+
+    suffix = path.suffix.lower()
+    selected = _selected_existing_columns(path, columns)
+    if suffix in {".parquet", ".pq"}:
+        return pd.read_parquet(path, columns=selected)
+    if suffix == ".csv":
+        if selected is None:
+            return pd.read_csv(path)
+        wanted = set(selected)
+        return pd.read_csv(path, usecols=lambda column: column in wanted, low_memory=False)
+    raise ValueError(f"Unsupported dashboard metric table format for {path}. Use Parquet or CSV.")
+
+
+def _selected_existing_columns(path: Path, columns: Sequence[str] | None) -> list[str] | None:
+    """Return requested columns that exist in one table."""
+
+    if columns is None:
+        return None
+    requested = list(dict.fromkeys(str(column) for column in columns if str(column).strip()))
+    if not requested:
+        return []
+    available = set(_dashboard_metric_table_columns(path))
+    return [column for column in requested if column in available]
+
+
+def _dashboard_metric_table_columns(path: Path) -> list[str]:
+    """Return dashboard metric table columns without materializing row data."""
+
+    suffix = path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        try:
+            import pyarrow.parquet as pq
+
+            return list(pq.ParquetFile(path).schema.names)
+        except Exception:
+            return list(pd.read_parquet(path).head(0).columns)
+    if suffix == ".csv":
+        return list(pd.read_csv(path, nrows=0).columns)
+    raise ValueError(f"Unsupported dashboard metric table format for {path}. Use Parquet or CSV.")
 
 
 def write_dashboard_summary_dataset(
