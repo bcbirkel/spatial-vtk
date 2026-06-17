@@ -519,27 +519,25 @@ class MetricFigureContext:
         output = self.figure_dir / f"{self.figure_name(base, item, resolved_value_col)}.png"
         if output.exists() and not self.overwrite:
             print(f"skip {output.name}: exists")
+            sidecar_df, source_sidecar_df = self.psa_period_sheet_sidecar_rows(
+                item,
+                df_factory=df_factory,
+                source_df_factory=source_df_factory,
+            )
             self.write_figure_sidecar(
                 output,
-                self.plot_rows(df_factory(item) if df_factory else item["df"]),
-                source_df=source_df_factory(item) if source_df_factory else None,
+                sidecar_df,
+                source_df=source_sidecar_df,
             )
             return output
         ncols = min(3, max(1, len(period_items)))
         nrows = int(np.ceil(len(period_items) / ncols))
         fig, axes = plt.subplots(nrows, ncols, figsize=(5.8 * ncols, 4.7 * nrows), dpi=160, squeeze=False)
         axes_flat = axes.ravel()
-        sidecar_frames: list[pd.DataFrame] = []
-        source_sidecar_frames: list[pd.DataFrame] = []
         with TemporaryDirectory() as tmpdir_raw:
             tmpdir = Path(tmpdir_raw)
             for ax, period_item in zip(axes_flat, period_items):
                 plot_df = self.plot_rows(df_factory(period_item) if df_factory else period_item["df"])
-                sidecar_frames.append(plot_df.assign(__svtk_panel_period_s=period_item.get("period_s")))
-                if source_df_factory is not None:
-                    source_rows = source_df_factory(period_item)
-                    if source_rows is not None:
-                        source_sidecar_frames.append(source_rows.copy().assign(__svtk_panel_period_s=period_item.get("period_s")))
                 missing = [column for column in required if column not in plot_df.columns]
                 if missing:
                     ax.text(0.5, 0.5, f"Missing columns: {missing}", ha="center", va="center", wrap=True)
@@ -565,9 +563,13 @@ class MetricFigureContext:
         fig.suptitle(f"{base.replace('_', ' ').title()} - PSA by oscillator period", fontsize=12, y=0.99)
         fig.tight_layout(rect=[0.01, 0.01, 0.99, 0.96])
         fig.savefig(output, bbox_inches="tight")
-        if sidecar_frames:
-            source_rows = pd.concat(source_sidecar_frames, ignore_index=True, sort=False) if source_sidecar_frames else None
-            self.write_figure_sidecar(output, pd.concat(sidecar_frames, ignore_index=True, sort=False), source_df=source_rows)
+        sidecar_df, source_sidecar_df = self.psa_period_sheet_sidecar_rows(
+            item,
+            df_factory=df_factory,
+            source_df_factory=source_df_factory,
+        )
+        if not sidecar_df.empty:
+            self.write_figure_sidecar(output, sidecar_df, source_df=source_sidecar_df)
         if showfig:
             plt.show()
         plt.close(fig)
@@ -708,6 +710,42 @@ class MetricFigureContext:
             if not subset.empty:
                 out.append({"key": item["key"], "label": f"{item['label']} {period:g}s", "metric": item.get("metric", item["label"]), "period_s": period, "df": subset})
         return out
+
+    def psa_period_sheet_sidecar_rows(
+        self,
+        item: dict[str, Any],
+        *,
+        df_factory: Callable[[dict[str, Any]], pd.DataFrame] | None = None,
+        source_df_factory: Callable[[dict[str, Any]], pd.DataFrame | None] | None = None,
+    ) -> tuple[pd.DataFrame, pd.DataFrame | None]:
+        """Return plotted/source rows represented by a PSA period sheet."""
+
+        period_items = self.psa_period_items(item)
+        if not period_items:
+            plot_df = self.plot_rows(df_factory(item) if df_factory else item["df"])
+            source_df = source_df_factory(item) if source_df_factory else None
+            return plot_df, source_df
+        sidecar_frames: list[pd.DataFrame] = []
+        source_sidecar_frames: list[pd.DataFrame] = []
+        for period_item in period_items:
+            plot_df = self.plot_rows(df_factory(period_item) if df_factory else period_item["df"])
+            sidecar_frames.append(plot_df.assign(__svtk_panel_period_s=period_item.get("period_s")))
+            if source_df_factory is not None:
+                source_rows = source_df_factory(period_item)
+                if source_rows is not None:
+                    source_sidecar_frames.append(source_rows.copy().assign(__svtk_panel_period_s=period_item.get("period_s")))
+        sidecar_df = pd.concat(sidecar_frames, ignore_index=True, sort=False) if sidecar_frames else item["df"].iloc[0:0].copy()
+        source_sidecar_df = pd.concat(source_sidecar_frames, ignore_index=True, sort=False) if source_sidecar_frames else None
+        if any(getattr(frame, "attrs", {}).get("svtk_aggregation_kind") for frame in sidecar_frames):
+            sidecar_df.attrs["svtk_aggregation_kind"] = "station_event_rows_to_station_summary_by_panel"
+            sidecar_df.attrs["svtk_aggregation_panel_count"] = int(len(period_items))
+            sidecar_df.attrs["svtk_aggregation_value_col"] = self.value_col
+            sidecar_df.attrs["svtk_aggregation_method"] = self.station_aggregation
+            if source_sidecar_df is not None:
+                sidecar_df.attrs["svtk_aggregation_input_row_count"] = int(len(source_sidecar_df))
+                sidecar_df.attrs["svtk_aggregation_input_station_count"] = _unique_count(source_sidecar_df, ("station", "station_id", "station_code"))
+                sidecar_df.attrs["svtk_aggregation_input_event_count"] = _unique_count(source_sidecar_df, ("event_id", "event", "event_title"))
+        return sidecar_df, source_sidecar_df
 
     def plot_rows(self, df: pd.DataFrame) -> pd.DataFrame:
         """Return the exact rows that will be handed to a plotting function."""

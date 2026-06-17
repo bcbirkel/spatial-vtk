@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Hardened PSA contact-sheet figure sidecars in large-run metric notebooks.
+   Re-running a PSA sheet cell now refreshes sidecars from the same per-period
+   panel rows used during rendering, including raw source-row sidecars for
+   station-aggregated sheets.
    Reduced dashboard summary generation memory use for large metric datasets.
    Summary builds now project only the columns required for grouping, values,
    and path geometry instead of reading every metrics-long payload column.

@@ -576,6 +576,76 @@ def test_metric_station_summary_aggregates_all_events_without_coordinate_splitti
     assert metadata["source_rows_role"] == "pre_aggregation_metric_rows"
 
 
+def test_psa_period_sheet_existing_file_writes_panel_source_sidecars(tmp_path: Path) -> None:
+    """Existing PSA sheets should refresh sidecars for every oscillator panel."""
+
+    rows = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e1", "e2", "e1", "e2", "e1", "e2"],
+            "station": ["STA", "STA", "STB", "STB", "STA", "STA", "STB", "STB"],
+            "sta_lon": [-118.0, -118.0, -117.9, -117.9, -118.0, -118.0, -117.9, -117.9],
+            "sta_lat": [34.0, 34.0, 34.1, 34.1, 34.0, 34.0, 34.1, 34.1],
+            "metric": ["PSA"] * 8,
+            "band": [""] * 8,
+            "component": ["R"] * 8,
+            "model": ["m1"] * 8,
+            "period_s": [1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0],
+            "log2_residual": [1.0, 3.0, -1.0, 1.0, 2.0, 4.0, -2.0, 2.0],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        rows,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+        station_aggregation="mean",
+        write_sidecars=True,
+        sidecar_rows=None,
+    )
+    item = {
+        "key": "psa",
+        "label": "PSA",
+        "metric": "PSA",
+        "period_s": None,
+        "df": rows,
+    }
+    output = context.figure_dir / f"{context.figure_name('station_metric_map', item)}.png"
+    output.write_bytes(b"existing")
+
+    def _should_not_render(*args, **kwargs) -> None:  # noqa: ANN002, ANN003
+        raise AssertionError("existing PSA sheet should not be rendered")
+
+    result = context.write_psa_period_sheet(
+        "station_metric_map",
+        item,
+        _should_not_render,
+        df_factory=lambda period_item: context.station_period_summary_for_map(period_item["df"], "log2_residual"),
+        source_df_factory=lambda period_item: period_item["df"],
+        required=["sta_lon", "sta_lat", "log2_residual"],
+        value_col="log2_residual",
+    )
+
+    assert result == output
+    sidecar_path = context.sidecar_output_dir / f"{output.stem}.csv"
+    source_path = context.sidecar_output_dir / f"{output.stem}.source.csv"
+    metadata = json.loads(sidecar_path.with_suffix(".json").read_text(encoding="utf-8"))
+    sidecar = pd.read_csv(sidecar_path)
+    source_sidecar = pd.read_csv(source_path)
+
+    assert set(sidecar["__svtk_panel_period_s"]) == {1.0, 2.0}
+    assert len(sidecar) == 4
+    assert len(source_sidecar) == 8
+    assert set(source_sidecar["__svtk_panel_period_s"]) == {1.0, 2.0}
+    assert metadata["aggregation_contract"] == "station_event_rows_to_station_summary"
+    assert metadata["plot_rows_role"] == "post_aggregation_station_summary"
+    assert metadata["source_rows_role"] == "pre_aggregation_metric_rows"
+    assert metadata["svtk_aggregation_kind"] == "station_event_rows_to_station_summary_by_panel"
+    assert metadata["svtk_aggregation_panel_count"] == 2
+    assert metadata["svtk_aggregation_input_row_count"] == 8
+    assert metadata["source_row_count"] == 8
+
+
 def test_spatial_figure_context_accepts_shared_sidecar_settings(tmp_path: Path) -> None:
     """Step 4 large-run notebooks should use the shared sidecar keyword shape."""
 
