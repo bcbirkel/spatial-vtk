@@ -95,6 +95,7 @@ def test_cli_registered_plot_help_shows_common_options(capsys):
     assert "--value-col" in captured.out
     assert "--y-col" in captured.out
     assert "--no-connect-points" in captured.out
+    assert "--mode" in captured.out
     assert "--write-sidecar" in captured.out
 
 
@@ -132,6 +133,7 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     text = (root / "docs" / "reference" / "cli_api.rst").read_text(encoding="utf-8")
     assert "resolve their standard input tables and figure paths from the active config" in text
     assert "first-class flags where they apply" in text
+    assert "``--mode``" in text
     assert "``--no-connect-points``" in text
     assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
 
@@ -160,6 +162,7 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Input CSV/parquet table for function argument 'station_df'" in map_text
     assert "configured output table 'station_bias' when --config is passed" in map_text
     assert "configured figure output 'station_residual_map' when --config is passed" in map_text
+    assert "``--mode``" in map_text
 
 
 def test_cli_workflow_uses_curated_commands_for_standard_steps():
@@ -170,6 +173,8 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert "svtk call" not in text
     assert "--no-connect-points" in text
     assert "--kwargs connect_points=false" not in text
+    assert "--mode PC1" in text
+    assert "--kwargs mode=PC1" not in text
 
 
 def test_cli_config_show_section(tmp_path, capsys):
@@ -463,6 +468,51 @@ outputs:
     expected_output = tmp_path / "outputs" / "figures" / "station_residual_map.png"
     assert seen["rows"] == 1
     assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["add_basemap"] is False
+    assert captured.out.strip() == str(expected_output)
+
+
+def test_cli_pca_mode_map_uses_first_class_mode_flag(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    pca_scores = table_dir / "pca_station_scores.csv"
+    pca_scores.write_text("station,lon,lat,PC1_score\nSTA,-118,34,0.2\n", encoding="utf-8")
+    config.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+  artifacts:
+    pca_station_scores:
+      filename: pca_station_scores.csv
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.spatial.map as spatial_map
+    import spatial_vtk.spatial.map.pca as pca_maps
+
+    def fake_plot_pca_mode_map(station_scores_df, output_path=None, **kwargs):
+        seen["rows"] = len(station_scores_df)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(pca_maps, "plot_pca_mode_map", fake_plot_pca_mode_map)
+    monkeypatch.setattr(spatial_map, "plot_pca_mode_map", fake_plot_pca_mode_map)
+
+    assert main(["map", "spatial", "pca-mode", "--config", str(config), "--mode", "PC1", "--no-basemap"]) == 0
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "pca_mode_map.png"
+    assert seen["rows"] == 1
+    assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["mode"] == "PC1"
     assert seen["kwargs"]["add_basemap"] is False
     assert captured.out.strip() == str(expected_output)
 

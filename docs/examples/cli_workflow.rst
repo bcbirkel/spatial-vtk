@@ -231,7 +231,7 @@ Use the metric outputs to make spatial diagnostic maps and plots. The notebook v
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --bounds study_area \
-     --kwargs mode=PC1
+     --mode PC1
 
 
 Step 5: GeoJSON Regions and Corridors

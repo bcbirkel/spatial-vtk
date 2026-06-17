@@ -56,6 +56,8 @@ Changelog
    Added first-class ``--connect-points`` / ``--no-connect-points`` plotting
    flags and updated the shell workflow residual-distance example to use the
    named flag instead of ``--kwargs connect_points=false``.
+   Added a first-class ``--mode`` plotting flag and updated the shell workflow
+   PCA map example to use ``--mode PC1`` instead of ``--kwargs mode=PC1``.
    Added a dashboard summary-table contract helper that maps each metrics
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file

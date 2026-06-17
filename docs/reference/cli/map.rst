@@ -99,7 +99,9 @@ svtk map spatial block-holdout-error
                                             [--x-col X_COL] [--y-col Y_COL]
                                             [--group-col GROUP_COL]
                                             [--color-col COLOR_COL]
-                                            [--fit FIT] [--title TITLE]
+                                            [--fit FIT]
+                                            [--connect-points | --no-connect-points]
+                                            [--mode MODE] [--title TITLE]
                                             [--write-sidecar]
                                             [--sidecar-rows SIDECAR_ROWS]
                                             [--sidecar-dir SIDECAR_DIR]
@@ -192,6 +194,14 @@ svtk map spatial block-holdout-error
      - No
      -
      - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--connect-points``, ``--no-connect-points``
+     - No
+     -
+     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+   * - ``--mode``
+     - No
+     -
+     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
    * - ``--title``
      - No
      -
@@ -240,7 +250,9 @@ svtk map spatial cluster
                                 [--score-col SCORE_COL] [--x-col X_COL]
                                 [--y-col Y_COL] [--group-col GROUP_COL]
                                 [--color-col COLOR_COL] [--fit FIT]
-                                [--title TITLE] [--write-sidecar]
+                                [--connect-points | --no-connect-points]
+                                [--mode MODE] [--title TITLE]
+                                [--write-sidecar]
                                 [--sidecar-rows SIDECAR_ROWS]
                                 [--sidecar-dir SIDECAR_DIR] [--bounds BOUNDS]
                                 [--no-basemap]
@@ -332,6 +344,14 @@ svtk map spatial cluster
      - No
      -
      - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--connect-points``, ``--no-connect-points``
+     - No
+     -
+     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+   * - ``--mode``
+     - No
+     -
+     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
    * - ``--title``
      - No
      -
@@ -380,7 +400,9 @@ svtk map spatial corridor
                                  [--score-col SCORE_COL] [--x-col X_COL]
                                  [--y-col Y_COL] [--group-col GROUP_COL]
                                  [--color-col COLOR_COL] [--fit FIT]
-                                 [--title TITLE] [--write-sidecar]
+                                 [--connect-points | --no-connect-points]
+                                 [--mode MODE] [--title TITLE]
+                                 [--write-sidecar]
                                  [--sidecar-rows SIDECAR_ROWS]
                                  [--sidecar-dir SIDECAR_DIR] [--events EVENTS]
                                  [--records RECORDS] [--stations STATIONS]
@@ -473,6 +495,14 @@ svtk map spatial corridor
      - No
      -
      - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--connect-points``, ``--no-connect-points``
+     - No
+     -
+     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+   * - ``--mode``
+     - No
+     -
+     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
    * - ``--title``
      - No
      -
@@ -534,7 +564,9 @@ svtk map spatial event-residual
                                        [--score-col SCORE_COL] [--x-col X_COL]
                                        [--y-col Y_COL] [--group-col GROUP_COL]
                                        [--color-col COLOR_COL] [--fit FIT]
-                                       [--title TITLE] [--write-sidecar]
+                                       [--connect-points | --no-connect-points]
+                                       [--mode MODE] [--title TITLE]
+                                       [--write-sidecar]
                                        [--sidecar-rows SIDECAR_ROWS]
                                        [--sidecar-dir SIDECAR_DIR]
                                        [--bounds BOUNDS] [--no-basemap]
@@ -626,6 +658,14 @@ svtk map spatial event-residual
      - No
      -
      - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--connect-points``, ``--no-connect-points``
+     - No
+     -
+     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+   * - ``--mode``
+     - No
+     -
+     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
    * - ``--title``
      - No
      -
@@ -705,7 +745,9 @@ svtk map spatial metric-by-model
                                         [--x-col X_COL] [--y-col Y_COL]
                                         [--group-col GROUP_COL]
                                         [--color-col COLOR_COL] [--fit FIT]
-                                        [--title TITLE] [--write-sidecar]
+                                        [--connect-points | --no-connect-points]
+                                        [--mode MODE] [--title TITLE]
+                                        [--write-sidecar]
                                         [--sidecar-rows SIDECAR_ROWS]
                                         [--sidecar-dir SIDECAR_DIR]
                                         [--bounds BOUNDS] [--no-basemap]
@@ -797,6 +839,14 @@ svtk map spatial metric-by-model
      - No
      -
      - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--connect-points``, ``--no-connect-points``
+     - No
+     -
+     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+   * - ``--mode``
+     - No
+     -
+     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
    * - ``--title``
      - No
      -
@@ -850,7 +900,9 @@ svtk map spatial model-improvement
                                           [--x-col X_COL] [--y-col Y_COL]
                                           [--group-col GROUP_COL]
                                           [--color-col COLOR_COL] [--fit FIT]
-                                          [--title TITLE] [--write-sidecar]
+                                          [--connect-points | --no-connect-points]
+                                          [--mode MODE] [--title TITLE]
+                                          [--write-sidecar]
                                           [--sidecar-rows SIDECAR_ROWS]
                                           [--sidecar-dir SIDECAR_DIR]
                                           [--bounds BOUNDS] [--no-basemap]
@@ -942,6 +994,14 @@ svtk map spatial model-improvement
      - No
      -
      - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--connect-points``, ``--no-connect-points``
+     - No
+     -
+     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+   * - ``--mode``
+     - No
+     -
+     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
    * - ``--title``
      - No
      -
@@ -990,7 +1050,9 @@ svtk map spatial pca-mode
                                  [--score-col SCORE_COL] [--x-col X_COL]
                                  [--y-col Y_COL] [--group-col GROUP_COL]
                                  [--color-col COLOR_COL] [--fit FIT]
-                                 [--title TITLE] [--write-sidecar]
+                                 [--connect-points | --no-connect-points]
+                                 [--mode MODE] [--title TITLE]
+                                 [--write-sidecar]
                                  [--sidecar-rows SIDECAR_ROWS]
                                  [--sidecar-dir SIDECAR_DIR] [--bounds BOUNDS]
                                  [--no-basemap]
@@ -1082,6 +1144,14 @@ svtk map spatial pca-mode
      - No
      -
      - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--connect-points``, ``--no-connect-points``
+     - No
+     -
+     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+   * - ``--mode``
+     - No
+     -
+     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
    * - ``--title``
      - No
      -
@@ -1131,7 +1201,9 @@ svtk map spatial redcap-cluster
                                        [--score-col SCORE_COL] [--x-col X_COL]
                                        [--y-col Y_COL] [--group-col GROUP_COL]
                                        [--color-col COLOR_COL] [--fit FIT]
-                                       [--title TITLE] [--write-sidecar]
+                                       [--connect-points | --no-connect-points]
+                                       [--mode MODE] [--title TITLE]
+                                       [--write-sidecar]
                                        [--sidecar-rows SIDECAR_ROWS]
                                        [--sidecar-dir SIDECAR_DIR]
                                        [--bounds BOUNDS] [--no-basemap]
@@ -1223,6 +1295,14 @@ svtk map spatial redcap-cluster
      - No
      -
      - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--connect-points``, ``--no-connect-points``
+     - No
+     -
+     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+   * - ``--mode``
+     - No
+     -
+     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
    * - ``--title``
      - No
      -
@@ -1272,7 +1352,9 @@ svtk map spatial residual-grid
                                       [--score-col SCORE_COL] [--x-col X_COL]
                                       [--y-col Y_COL] [--group-col GROUP_COL]
                                       [--color-col COLOR_COL] [--fit FIT]
-                                      [--title TITLE] [--write-sidecar]
+                                      [--connect-points | --no-connect-points]
+                                      [--mode MODE] [--title TITLE]
+                                      [--write-sidecar]
                                       [--sidecar-rows SIDECAR_ROWS]
                                       [--sidecar-dir SIDECAR_DIR]
                                       [--bounds BOUNDS] [--no-basemap]
@@ -1364,6 +1446,14 @@ svtk map spatial residual-grid
      - No
      -
      - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--connect-points``, ``--no-connect-points``
+     - No
+     -
+     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+   * - ``--mode``
+     - No
+     -
+     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
    * - ``--title``
      - No
      -
@@ -1411,7 +1501,8 @@ svtk map spatial score
                               [--score-col SCORE_COL] [--x-col X_COL]
                               [--y-col Y_COL] [--group-col GROUP_COL]
                               [--color-col COLOR_COL] [--fit FIT]
-                              [--title TITLE] [--write-sidecar]
+                              [--connect-points | --no-connect-points]
+                              [--mode MODE] [--title TITLE] [--write-sidecar]
                               [--sidecar-rows SIDECAR_ROWS]
                               [--sidecar-dir SIDECAR_DIR] [--bounds BOUNDS]
                               [--no-basemap] [--basemap-source BASEMAP_SOURCE]
@@ -1502,6 +1593,14 @@ svtk map spatial score
      - No
      -
      - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--connect-points``, ``--no-connect-points``
+     - No
+     -
+     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+   * - ``--mode``
+     - No
+     -
+     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
    * - ``--title``
      - No
      -
@@ -1551,7 +1650,9 @@ svtk map spatial station-bias
                                      [--score-col SCORE_COL] [--x-col X_COL]
                                      [--y-col Y_COL] [--group-col GROUP_COL]
                                      [--color-col COLOR_COL] [--fit FIT]
-                                     [--title TITLE] [--write-sidecar]
+                                     [--connect-points | --no-connect-points]
+                                     [--mode MODE] [--title TITLE]
+                                     [--write-sidecar]
                                      [--sidecar-rows SIDECAR_ROWS]
                                      [--sidecar-dir SIDECAR_DIR]
                                      [--bounds BOUNDS] [--no-basemap]
@@ -1643,6 +1744,14 @@ svtk map spatial station-bias
      - No
      -
      - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--connect-points``, ``--no-connect-points``
+     - No
+     -
+     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+   * - ``--mode``
+     - No
+     -
+     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
    * - ``--title``
      - No
      -
@@ -1692,7 +1801,9 @@ svtk map spatial station-metric
                                        [--score-col SCORE_COL] [--x-col X_COL]
                                        [--y-col Y_COL] [--group-col GROUP_COL]
                                        [--color-col COLOR_COL] [--fit FIT]
-                                       [--title TITLE] [--write-sidecar]
+                                       [--connect-points | --no-connect-points]
+                                       [--mode MODE] [--title TITLE]
+                                       [--write-sidecar]
                                        [--sidecar-rows SIDECAR_ROWS]
                                        [--sidecar-dir SIDECAR_DIR]
                                        [--bounds BOUNDS] [--no-basemap]
@@ -1784,6 +1895,14 @@ svtk map spatial station-metric
      - No
      -
      - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+   * - ``--connect-points``, ``--no-connect-points``
+     - No
+     -
+     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+   * - ``--mode``
+     - No
+     -
+     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
    * - ``--title``
      - No
      -

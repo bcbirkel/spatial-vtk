@@ -359,6 +359,7 @@ COMMON_FIGURE_OPTION_KEYS = frozenset(
         "color_col",
         "fit",
         "connect_points",
+        "mode",
         "title",
     }
 )
@@ -890,6 +891,7 @@ def _add_common_figure_options(parser: argparse.ArgumentParser, *, exclude: set[
         default=None,
         help="Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.",
     )
+    add("mode", default=None, help="Mode selector for figures that support named modes, such as PCA maps.")
     add("title", default=None, help="Figure title.")
 
 
