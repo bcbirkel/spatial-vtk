@@ -76,9 +76,9 @@ Workflow
 Plotting
 --------
 
-Use ``spatial_vtk.metrics.plot`` for public plotting imports in notebooks and
-scripts. The submodules below remain documented for implementation-level
-reference, but user-facing examples should prefer the package entry point:
+Import plotting helpers from the stable ``spatial_vtk.metrics.plot`` package
+entry point in notebooks and scripts. The implementation submodules are not
+part of the tutorial-facing API.
 
 .. code-block:: python
 
@@ -89,22 +89,4 @@ reference, but user-facing examples should prefer the package entry point:
    )
 
 .. automodule:: spatial_vtk.metrics.plot
-   :members:
-
-.. automodule:: spatial_vtk.metrics.plot.example_metric_plots
-   :members:
-
-.. automodule:: spatial_vtk.metrics.plot.model_comparison
-   :members:
-
-.. automodule:: spatial_vtk.metrics.plot.periods
-   :members:
-
-.. automodule:: spatial_vtk.metrics.plot.site_terms
-   :members:
-
-.. automodule:: spatial_vtk.metrics.plot.trends
-   :members:
-
-.. automodule:: spatial_vtk.metrics.plot.large_run
    :members:

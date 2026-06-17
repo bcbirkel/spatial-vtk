@@ -57,3 +57,20 @@ def test_waveform_extra_includes_pickle_runtime_dependencies():
     assert 'requires-python = ">=3.10,<3.14"' in text
     assert '"ipykernel>=' in text
     assert '"gmprocess>=' in text
+
+
+def test_metrics_api_docs_use_public_plot_entry_point():
+    docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "metrics.rst"
+    text = docs.read_text(encoding="utf-8")
+    assert "from spatial_vtk.metrics.plot import (" in text
+    assert ".. automodule:: spatial_vtk.metrics.plot\n" in text
+    forbidden = (
+        "spatial_vtk.metrics.plot.example_metric_plots",
+        "spatial_vtk.metrics.plot.model_comparison",
+        "spatial_vtk.metrics.plot.periods",
+        "spatial_vtk.metrics.plot.site_terms",
+        "spatial_vtk.metrics.plot.trends",
+        "spatial_vtk.metrics.plot.large_run",
+    )
+    for token in forbidden:
+        assert token not in text

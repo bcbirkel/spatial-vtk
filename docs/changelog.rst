@@ -38,6 +38,10 @@ Changelog
    ``spatial_vtk.metrics.plot`` and ``spatial_vtk.spatial.map``. Updated the
    metrics-dashboard CLI help to describe config-backed dashboard output roots
    rather than stale table-directory examples.
+   Trimmed the metrics API plotting reference to the stable
+   ``spatial_vtk.metrics.plot`` entry point so docs no longer direct notebook
+   users to implementation modules such as
+   ``spatial_vtk.metrics.plot.periods``.
    Added a dashboard summary-table contract helper that maps each metrics
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file
