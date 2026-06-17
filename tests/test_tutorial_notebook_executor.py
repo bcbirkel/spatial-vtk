@@ -419,6 +419,11 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     assert "source_df=item[\"df\"]" in source
     assert "source_df_factory=lambda period_item: period_item[\"df\"]" in source
     assert "raw event-level rows used for the station summaries" in source
+    assert 'STATION_AGGREGATION = os.environ.get("SVTK_STATION_AGGREGATION", "mean")' in source
+    for base in ("station_metric_map", "residual_grid", "metric_by_model_map"):
+        assert f'"{base}"' in source
+    assert source.count("source_df=item[\"df\"]") >= 3
+    assert source.count("source_df_factory=lambda period_item: period_item[\"df\"]") >= 2
 
 
 def test_large_run_notebooks_display_output_readiness_tables() -> None:

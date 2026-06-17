@@ -8,6 +8,12 @@ Changelog
    use that helper instead of rebuilding ``preprocessed_waveforms/metadata``
    paths by hand, and the Step 1 readiness table now checks the actual
    ``waveform_preprocessing_manifest.csv`` filename written by preprocessing.
+   Aligned the large-run Step 3 station-map default with the standard tutorial:
+   station-level metric maps now average selected event rows by default via
+   ``SVTK_STATION_AGGREGATION=mean`` while keeping the environment override for
+   median or percentile summaries. Notebook regression coverage now also
+   requires source-row sidecar wiring for station, residual-grid, and
+   metric-by-model map cells.
    Added named status rows and pandas status frames to ``OutputReadiness`` so
    large-run notebook driver cells can display exactly which inputs, outputs,
    and source dependencies are missing, stale, current, or intentionally

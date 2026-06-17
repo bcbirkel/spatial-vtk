@@ -27,7 +27,7 @@ Environment switches:
 - `SVTK_QC_CHUNKSIZE=1000000`: chunk size for disk-backed QC readers.
 - `SVTK_FIGURE_SIDECARS=1`: write CSV/JSON row-provenance sidecars for saved figures.
 - `SVTK_FIGURE_SIDECAR_ROWS=all`: write every plotted/source row to each sidecar. Use a positive integer to write a deterministic sample of that many rows.
-- `SVTK_STATION_AGGREGATION=median`: choose how metric rows are collapsed to station summaries for station-level maps. Supported values include `median`, `mean`, `min`, and `max`.
+- `SVTK_STATION_AGGREGATION=mean`: choose how metric rows are collapsed to station summaries for station-level maps. Supported values include `mean`, `median`, `min`, and `max`.
 
 Figure sidecars:
 
