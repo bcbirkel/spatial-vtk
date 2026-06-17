@@ -421,6 +421,27 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     assert "raw event-level rows used for the station summaries" in source
 
 
+def test_large_run_notebooks_display_output_readiness_tables() -> None:
+    """Large-run driver cells should show named readiness status tables."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    required = {
+        "large_run/step_02_large_run_quality_control.ipynb": ["overlap_readiness.status_frame()"],
+        "large_run/step_03_large_run_calculate_metrics.ipynb": [
+            "inventory_readiness.status_frame()",
+            "manifest_readiness.status_frame()",
+            "merge_readiness.status_frame()",
+        ],
+        "large_run/step_07_large_run_dashboards.ipynb": ["dashboard_readiness.status_frame()"],
+    }
+    for relative, snippets in required.items():
+        notebook_path = repo_root / "docs" / "examples" / relative
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        missing = [snippet for snippet in snippets if snippet not in source]
+        assert not missing, f"{notebook_path.relative_to(repo_root)} missing readiness displays: {missing}"
+
+
 def test_step05_uses_geojson_preview_helper() -> None:
     """The map tutorial should use package helpers for GeoJSON feature previews."""
 

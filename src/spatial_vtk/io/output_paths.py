@@ -87,6 +87,8 @@ class OutputReadiness:
     stale_outputs
         Existing target outputs that are older than at least one existing
         source dependency.
+    output_items, input_items, source_items
+        Named path items used to build status tables for the decision.
     """
 
     should_run: bool
@@ -98,6 +100,46 @@ class OutputReadiness:
     missing_inputs: tuple[Path, ...] = ()
     missing_outputs: tuple[Path, ...] = ()
     stale_outputs: tuple[Path, ...] = ()
+    output_items: tuple[tuple[str, Path], ...] = ()
+    input_items: tuple[tuple[str, Path], ...] = ()
+    source_items: tuple[tuple[str, Path], ...] = ()
+
+    def status_rows(self) -> list[dict[str, object]]:
+        """Return named input/output/source status rows for this decision."""
+
+        rows: list[dict[str, object]] = []
+        rows.extend(
+            _readiness_status_rows(
+                "output",
+                self.output_items,
+                missing=self.missing_outputs,
+                stale=self.stale_outputs,
+                reason=self.reason,
+            )
+        )
+        rows.extend(
+            _readiness_status_rows(
+                "input",
+                self.input_items,
+                missing=self.missing_inputs,
+                reason=self.reason,
+            )
+        )
+        rows.extend(
+            _readiness_status_rows(
+                "source",
+                self.source_items,
+                reason=self.reason,
+            )
+        )
+        return rows
+
+    def status_frame(self):
+        """Return named input/output/source status as a pandas dataframe."""
+
+        import pandas as pd
+
+        return pd.DataFrame(self.status_rows())
 
 
 OUTPUT_GROUPS: dict[str, tuple[OutputArtifact, ...]] = {
@@ -470,6 +512,9 @@ def output_readiness(
     output_paths = tuple(output_items.values())
     input_paths = tuple(input_items.values())
     source_paths = tuple(source_items.values())
+    named_outputs = tuple(output_items.items())
+    named_inputs = tuple(input_items.items())
+    named_sources = tuple(source_items.items())
 
     missing_inputs = tuple(path for path in input_paths if not path.exists())
     missing_outputs = tuple(path for path in output_paths if not path.exists())
@@ -495,6 +540,9 @@ def output_readiness(
             missing_inputs=missing_inputs,
             missing_outputs=missing_outputs,
             stale_outputs=stale_outputs,
+            output_items=named_outputs,
+            input_items=named_inputs,
+            source_items=named_sources,
         )
 
     if overwrite:
@@ -508,6 +556,9 @@ def output_readiness(
             sources=source_paths,
             missing_outputs=missing_outputs,
             stale_outputs=stale_outputs,
+            output_items=named_outputs,
+            input_items=named_inputs,
+            source_items=named_sources,
         )
 
     if missing_outputs:
@@ -524,6 +575,9 @@ def output_readiness(
             sources=source_paths,
             missing_outputs=missing_outputs,
             stale_outputs=stale_outputs,
+            output_items=named_outputs,
+            input_items=named_inputs,
+            source_items=named_sources,
         )
 
     if stale_outputs:
@@ -539,6 +593,9 @@ def output_readiness(
             inputs=input_paths,
             sources=source_paths,
             stale_outputs=stale_outputs,
+            output_items=named_outputs,
+            input_items=named_inputs,
+            source_items=named_sources,
         )
 
     message = current_message or _paths_message("Outputs are current; skipping", output_items)
@@ -549,6 +606,9 @@ def output_readiness(
         outputs=output_paths,
         inputs=input_paths,
         sources=source_paths,
+        output_items=named_outputs,
+        input_items=named_inputs,
+        source_items=named_sources,
     )
 
 
@@ -664,6 +724,43 @@ def _filter_named_paths(paths: dict[str, Path], selected: tuple[Path, ...]) -> d
 
     selected_set = set(selected)
     return {name: path for name, path in paths.items() if path in selected_set}
+
+
+def _readiness_status_rows(
+    role: str,
+    items: tuple[tuple[str, Path], ...],
+    *,
+    missing: tuple[Path, ...] = (),
+    stale: tuple[Path, ...] = (),
+    reason: str,
+) -> list[dict[str, object]]:
+    """Return display rows for one role in an output-readiness decision."""
+
+    rows: list[dict[str, object]] = []
+    missing_paths = set(missing)
+    stale_paths = set(stale)
+    for name, path in items:
+        row = output_status_rows({name: path})[0]
+        row["role"] = role
+        row["reason"] = reason
+        if role == "output":
+            if path in missing_paths:
+                state = "missing"
+            elif path in stale_paths:
+                state = "stale"
+            elif reason == "overwrite":
+                state = "overwrite"
+            else:
+                state = "current"
+        elif role == "input":
+            state = "missing" if path in missing_paths else "ready"
+        elif role == "source":
+            state = "ready" if path.exists() else "missing_ignored"
+        else:
+            state = "unknown"
+        row["state"] = state
+        rows.append(row)
+    return rows
 
 
 def _paths_message(prefix: str, paths: tuple[Path, ...] | dict[str, Path]) -> str:

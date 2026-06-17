@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Added named status rows and pandas status frames to ``OutputReadiness`` so
+   large-run notebook driver cells can display exactly which inputs, outputs,
+   and source dependencies are missing, stale, current, or intentionally
+   ignored without rebuilding path tables by hand.
    Hardened PSA contact-sheet figure sidecars in large-run metric notebooks.
    Re-running a PSA sheet cell now refreshes sidecars from the same per-period
    panel rows used during rendering, including raw source-row sidecars for

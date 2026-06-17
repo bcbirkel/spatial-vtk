@@ -928,7 +928,16 @@ def test_output_readiness_reports_notebook_step_decisions(tmp_path):
     assert missing_input.should_run is False
     assert missing_input.reason == "missing_inputs"
     assert missing_input.missing_inputs == (required_input,)
-    assert "metrics=" in output_readiness(output, inputs={"metrics": required_input}).message
+    named_missing_input = output_readiness({"summary": output}, inputs={"metrics": required_input})
+    assert "metrics=" in named_missing_input.message
+    missing_rows = named_missing_input.status_rows()
+    assert [(row["role"], row["name"], row["state"]) for row in missing_rows] == [
+        ("output", "summary", "missing"),
+        ("input", "metrics", "missing"),
+    ]
+    missing_frame = named_missing_input.status_frame()
+    assert list(missing_frame["name"]) == ["summary", "metrics"]
+    assert list(missing_frame["state"]) == ["missing", "missing"]
 
     required_input.parent.mkdir()
     required_input.write_text("source\n", encoding="utf-8")
@@ -961,11 +970,24 @@ def test_output_readiness_reports_notebook_step_decisions(tmp_path):
     assert stale.reason == "stale_sources"
     assert stale.stale_outputs == (output,)
     assert stale.message.startswith("Source dependency changed; rebuilding: summary=")
+    assert [(row["role"], row["name"], row["state"]) for row in stale.status_rows()] == [
+        ("output", "summary", "stale"),
+        ("input", "metrics", "ready"),
+        ("source", "metrics", "ready"),
+    ]
 
     forced = output_readiness({"summary": output}, inputs={"metrics": required_input}, overwrite=True)
     assert forced.should_run is True
     assert forced.reason == "overwrite"
     assert forced.message.startswith("Overwrite requested; rebuilding: summary=")
+    assert forced.status_rows()[0]["state"] == "overwrite"
+
+    ignored_source = tmp_path / "inputs" / "optional.parquet"
+    current_with_missing_source = output_readiness({"summary": output}, sources={"optional": ignored_source})
+    source_rows = current_with_missing_source.status_rows()
+    assert source_rows[-1]["role"] == "source"
+    assert source_rows[-1]["name"] == "optional"
+    assert source_rows[-1]["state"] == "missing_ignored"
 
 
 def test_finish_figure_uses_rich_display_in_notebooks(monkeypatch):
