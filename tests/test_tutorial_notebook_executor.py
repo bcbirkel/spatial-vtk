@@ -198,18 +198,23 @@ def test_tutorial_notebooks_use_table_helpers_for_file_reads() -> None:
             assert "pd.read_" not in source, f"{notebook_path.relative_to(repo_root)} cell {index}"
 
 
-def test_tutorial_notebooks_use_public_map_imports() -> None:
-    """Tutorial notebooks should teach stable public map imports."""
+def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
+    """Tutorial notebooks should teach stable public plotting imports."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
-    forbidden = "from spatial_vtk.spatial.map."
+    forbidden = (
+        "from spatial_vtk.metrics.plot.",
+        "from spatial_vtk.spatial.map.",
+        "from spatial_vtk.spatial.plot.",
+    )
     assert notebooks
     for notebook_path in notebooks:
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
         for index, cell in enumerate(notebook.get("cells", []), start=1):
             source = "".join(cell.get("source", []))
-            assert forbidden not in source, f"{notebook_path.relative_to(repo_root)} cell {index}"
+            matches = [pattern for pattern in forbidden if pattern in source]
+            assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} uses {matches}"
 
 
 def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:

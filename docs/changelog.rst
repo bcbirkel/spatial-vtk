@@ -46,6 +46,10 @@ Changelog
    ``spatial_vtk.spatial.plot`` and ``spatial_vtk.spatial.map`` entry points,
    including path-map helpers, so public docs no longer point users at
    implementation modules.
+   Updated the large-run spatial statistics notebook to import
+   ``prepare_spatial_figure_context`` from the public
+   ``spatial_vtk.spatial.plot`` entry point and expanded notebook regression
+   coverage to reject internal plotting module imports.
    Added a dashboard summary-table contract helper that maps each metrics
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file
