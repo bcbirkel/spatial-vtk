@@ -204,6 +204,18 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
         assert helper not in source
 
 
+def test_step06_uses_comparison_eligible_output_table() -> None:
+    """The plotting tutorial should reuse QC outputs instead of re-filtering metrics."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "step_06_additional_plotting_options.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert 'load_output_table("comparison_eligible_records")' in source
+    assert "comparison_qc_status" not in source
+
+
 def test_tutorial_figure_sidecar_calls_include_directory_control() -> None:
     """Notebook figure sidecar calls should honor configured sidecar directories."""
 
