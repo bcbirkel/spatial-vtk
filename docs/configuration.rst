@@ -372,7 +372,7 @@ And this map command uses a named bounds override from the config:
 
 .. code-block:: bash
 
-   svtk map spatial station-metric --config spatial-vtk.yaml --bounds specific_area_of_interest --kwargs value_col=log2_residual metric=PGA
+   svtk map spatial station-metric --config spatial-vtk.yaml --bounds specific_area_of_interest --value-col log2_residual --metric PGA
 
 In a notebook, pass an override dictionary to the metric-plan helper:
 

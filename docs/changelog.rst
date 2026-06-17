@@ -50,6 +50,9 @@ Changelog
    ``prepare_spatial_figure_context`` from the public
    ``spatial_vtk.spatial.plot`` entry point and expanded notebook regression
    coverage to reject internal plotting module imports.
+   Updated the configuration guide's station-metric map override example to
+   use first-class ``--value-col`` and ``--metric`` flags instead of routing
+   routine plotting controls through ``--kwargs``.
    Added a dashboard summary-table contract helper that maps each metrics
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file

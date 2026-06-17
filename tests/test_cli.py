@@ -134,6 +134,16 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
 
 
+def test_configuration_map_override_example_uses_first_class_flags():
+    """Configuration docs should not teach routine plot controls through kwargs."""
+
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "docs" / "configuration.rst").read_text(encoding="utf-8")
+    assert "svtk map spatial station-metric --config spatial-vtk.yaml" in text
+    assert "--value-col log2_residual --metric PGA" in text
+    assert "--kwargs value_col=log2_residual metric=PGA" not in text
+
+
 def test_generated_cli_reference_names_plot_defaults():
     """Generated CLI pages should match live parser help for config defaults."""
 
