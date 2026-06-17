@@ -1727,7 +1727,7 @@ def _cmd_qc_manual_queue(args: argparse.Namespace) -> int:
 def _cmd_qc_build(args: argparse.Namespace) -> int:
     """Run ``svtk qc build``."""
 
-    from spatial_vtk.qc.build.slurm import run_qc_inventory_job
+    from spatial_vtk.qc import run_qc_inventory_job
 
     config = _required_cli_config(args.config, run_scenario=args.run_scenario)
     event_stations = (
@@ -1750,7 +1750,7 @@ def _cmd_qc_build(args: argparse.Namespace) -> int:
 def _cmd_qc_slurm(args: argparse.Namespace) -> int:
     """Run ``svtk qc slurm``."""
 
-    from spatial_vtk.qc.build.slurm import (
+    from spatial_vtk.qc import (
         slurm_settings_from_config,
         submit_qc_slurm_job,
         write_qc_slurm_script,

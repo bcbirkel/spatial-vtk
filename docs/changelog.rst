@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-17
+   Cleaned up public docs and API entry points. The README workflow image now
+   points at the committed public asset, the configuration example loads
+   ``record_coverage`` before plotting it, QC Slurm settings are exposed from
+   the public ``spatial_vtk.qc`` entry point, tutorial notebooks use that
+   public import, and the API reference documents notebook-facing workflow,
+   spatial, and visualization package entry points.
    Clarified spatial summary and derived-output table flags. ``svtk spatial
    summaries`` and ``svtk spatial derived-outputs`` now accept aliases such as
    ``--metrics-table``, ``--station-metadata-table``,
@@ -521,10 +527,10 @@ Changelog
    spatial-correlation-by-distance figure that compares PGA and FAS
    distance-bin correlations and marks metrics with significant Moran
    permutation-test results.
-   Replaced the Step 5 tutorial GeoJSON regions with real LA Basin, East LA,
-   and Santa Monica Mountains polygons from the private geospatial inputs,
-   regenerated the Step 5 notebook output, and updated corridor maps so they
-   draw the selected event-station paths for each corridor definition. The
+   Replaced the Step 5 tutorial GeoJSON regions with public example polygons
+   for LA Basin, East LA, and Santa Monica Mountains, regenerated the Step 5
+   notebook output, and updated corridor maps so they draw the selected
+   event-station paths for each corridor definition. The
    outward-corridor residual map now overlays the highlighted corridor,
    selected events, selected paths, and station residuals together.
    Cleaned the Step 6 waveform-map tutorial so it no longer displays internal

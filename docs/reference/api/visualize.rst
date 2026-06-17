@@ -17,6 +17,12 @@ Package Entry Point
 Context Figures
 ---------------
 
+Use ``spatial_vtk.visualize.context`` as the public entry point for station,
+event, record-coverage, and study-domain context figures.
+
+.. automodule:: spatial_vtk.visualize.context
+   :members:
+
 .. automodule:: spatial_vtk.visualize.context.figures
    :members:
 
@@ -25,6 +31,12 @@ Context Figures
 
 Quality Control Figures
 -----------------------
+
+Use ``spatial_vtk.visualize.qc`` as the public entry point for QC retention,
+drop-cause, waveform-sample, and post-QC map figures.
+
+.. automodule:: spatial_vtk.visualize.qc
+   :members:
 
 .. automodule:: spatial_vtk.visualize.qc.overview
    :members:
@@ -37,6 +49,12 @@ Quality Control Figures
 
 Waveform Figures
 ----------------
+
+Use ``spatial_vtk.visualize.waveforms`` as the public entry point for waveform
+comparison, overlay, record-section, and station-event waveform figures.
+
+.. automodule:: spatial_vtk.visualize.waveforms
+   :members:
 
 .. automodule:: spatial_vtk.visualize.waveforms.comparison
    :members:
@@ -61,6 +79,9 @@ entry points. Scripts and notebooks should prefer the public functions exposed
 by ``spatial_vtk.visualize.dashboard`` for readiness checks, summary filtering,
 dashboard dataset export, and dashboard launch commands. These helpers are safe
 to import without starting Streamlit.
+
+.. automodule:: spatial_vtk.visualize.dashboard
+   :members:
 
 .. automodule:: spatial_vtk.visualize.dashboard.charts
    :members:

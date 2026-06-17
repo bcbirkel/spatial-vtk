@@ -38,7 +38,12 @@ from spatial_vtk.qc.build import (
 from spatial_vtk.qc.review import filter_trace_summary, queue_rows_from_filtered_trace_df
 from spatial_vtk.qc.summary import classify_station_family, global_trace_reject_reasons, reject_passband
 
-_SLURM_EXPORTS = {"run_qc_inventory_job", "submit_qc_slurm_job", "write_qc_slurm_script"}
+_SLURM_EXPORTS = {
+    "run_qc_inventory_job",
+    "slurm_settings_from_config",
+    "submit_qc_slurm_job",
+    "write_qc_slurm_script",
+}
 
 
 def __getattr__(name: str):
@@ -83,6 +88,7 @@ __all__ = [
     "reject_passband",
     "run_qc_inventory_job",
     "run_qc_summary_workflow",
+    "slurm_settings_from_config",
     "submit_qc_slurm_job",
     "trace_passband_is_accepted",
     "write_comparison_eligibility_from_qc_inventory",

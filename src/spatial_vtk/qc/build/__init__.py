@@ -58,7 +58,12 @@ from spatial_vtk.qc.build.workflow import (
     write_comparison_eligibility_from_qc_inventory,
     write_qc_inventory_overlap_from_full,
 )
-_SLURM_EXPORTS = {"run_qc_inventory_job", "submit_qc_slurm_job", "write_qc_slurm_script"}
+_SLURM_EXPORTS = {
+    "run_qc_inventory_job",
+    "slurm_settings_from_config",
+    "submit_qc_slurm_job",
+    "write_qc_slurm_script",
+}
 
 
 def __getattr__(name: str):
@@ -109,6 +114,7 @@ __all__ = [
     "run_qc_summary_workflow",
     "spectral_relative_amplitude_mask",
     "spectral_valid_period_bounds",
+    "slurm_settings_from_config",
     "submit_qc_slurm_job",
     "export_manual_review_queue",
     "export_manual_review_queue_from_qc_inventory",

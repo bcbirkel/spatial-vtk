@@ -255,17 +255,34 @@ def test_public_docs_describe_committed_tutorial_waveforms() -> None:
     """Fresh-checkout docs should not imply a separate tutorial waveform download."""
 
     repo_root = Path(__file__).resolve().parents[1]
+    readme = (repo_root / "README.md").read_text(encoding="utf-8")
     configuration = (repo_root / "docs" / "configuration.rst").read_text(encoding="utf-8")
     data_formats = (repo_root / "docs" / "data_formats.rst").read_text(encoding="utf-8")
     index = (repo_root / "docs" / "index.rst").read_text(encoding="utf-8")
 
-    combined = f"{configuration}\n{data_formats}\n{index}"
+    combined = f"{readme}\n{configuration}\n{data_formats}\n{index}"
     assert "observed/synthetic NPZ waveform subset" in combined
     assert "No extra waveform download is needed" in combined
     assert "companion waveform bundle" not in combined
     assert "download or generate the larger observed" not in combined
     assert "ValidationToolkit_Workflow.png" not in combined
+    assert "docs/_static/spatial_vtk_workflow.png" in readme
     assert "_static/spatial_vtk_workflow.png" in index
+    assert 'record_coverage = load_output_table("record_coverage")' in configuration
+
+
+def test_qc_notebooks_use_public_slurm_imports() -> None:
+    """Tutorial notebooks should import QC Slurm helpers from the public package."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = [
+        repo_root / "docs" / "examples" / "step_02_quality_control.ipynb",
+        repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb",
+    ]
+    for notebook in notebooks:
+        text = notebook.read_text(encoding="utf-8")
+        assert "from spatial_vtk.qc import slurm_settings_from_config" in text
+        assert "from spatial_vtk.qc.build.slurm import" not in text
 
 
 def test_tutorial_notebook_executor_can_include_large_run_notebooks() -> None:

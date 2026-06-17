@@ -57,6 +57,14 @@ Calculate
 Workflow
 --------
 
+Notebook and CLI workflows should import metric planning, execution, summary,
+and output helpers from the stable ``spatial_vtk.metrics.workflow`` package
+entry point.
+
+.. automodule:: spatial_vtk.metrics.workflow
+   :members:
+   :exclude-members: MetricWorkflowTask, SlurmSettings
+
 .. automodule:: spatial_vtk.metrics.workflow.execution
    :members:
 

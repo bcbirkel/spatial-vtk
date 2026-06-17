@@ -9,7 +9,8 @@ def test_public_imports():
     from spatial_vtk.metrics import METRIC_NAMES, amplitude_spectrum, calculate_metrics_for_pairs, compute_metrics_pair
     from spatial_vtk.metrics.plot import MetricFigureContext
     from spatial_vtk.io import inspect_synthetic_format, prepare_station_metadata, resolve_model_aliases
-    from spatial_vtk.qc import load_trace_inventory_lookup
+    from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
+    from spatial_vtk.qc.build import slurm_settings_from_config as build_slurm_settings_from_config
     from spatial_vtk.spatial.calculate import annotate_points_with_geojson, build_station_edge_corridors, classify_paths_with_geojson, geojson_polygon_preview_table
     from spatial_vtk.visualize.dashboard import build_dashboard_summaries
     from spatial_vtk.spatial.map import add_contextily_basemap, plot_corridor_map, plot_event_residual_map
@@ -27,6 +28,8 @@ def test_public_imports():
     assert callable(prepare_station_metadata)
     assert callable(resolve_model_aliases)
     assert callable(load_trace_inventory_lookup)
+    assert callable(slurm_settings_from_config)
+    assert callable(build_slurm_settings_from_config)
     assert callable(annotate_points_with_geojson)
     assert callable(build_station_edge_corridors)
     assert callable(classify_paths_with_geojson)
@@ -62,6 +65,7 @@ def test_waveform_extra_includes_pickle_runtime_dependencies():
 def test_metrics_api_docs_use_public_plot_entry_point():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "metrics.rst"
     text = docs.read_text(encoding="utf-8")
+    assert ".. automodule:: spatial_vtk.metrics.workflow\n" in text
     assert "from spatial_vtk.metrics.plot import (" in text
     assert ".. automodule:: spatial_vtk.metrics.plot\n" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext" in text
@@ -83,6 +87,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
 def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "spatial.rst"
     text = docs.read_text(encoding="utf-8")
+    assert ".. automodule:: spatial_vtk.spatial.calculate\n" in text
     assert "from spatial_vtk.spatial.plot import (" in text
     assert "from spatial_vtk.spatial.map import (" in text
     assert ".. automodule:: spatial_vtk.spatial.plot\n" in text
@@ -106,6 +111,15 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     )
     for token in forbidden:
         assert token not in text
+
+
+def test_visualize_api_docs_use_public_entry_points():
+    docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "visualize.rst"
+    text = docs.read_text(encoding="utf-8")
+    assert ".. automodule:: spatial_vtk.visualize.context\n" in text
+    assert ".. automodule:: spatial_vtk.visualize.dashboard\n" in text
+    assert ".. automodule:: spatial_vtk.visualize.qc\n" in text
+    assert ".. automodule:: spatial_vtk.visualize.waveforms\n" in text
 
 
 def test_spatial_plot_public_entry_point_is_lazy():

@@ -17,6 +17,14 @@ Package Entry Point
 Calculate
 ---------
 
+Notebook and CLI workflows should import spatial statistics, GeoJSON, corridor,
+and geometry helpers from the stable ``spatial_vtk.spatial.calculate`` package
+entry point. The implementation modules below document the lower-level
+organization.
+
+.. automodule:: spatial_vtk.spatial.calculate
+   :members:
+
 .. automodule:: spatial_vtk.spatial.calculate.prepare_stats
    :members:
 

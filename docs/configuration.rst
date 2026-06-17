@@ -270,6 +270,7 @@ will use that active config when you do not pass paths or config objects.
 
    stations = prepare_station_metadata()
    metrics = load_output_table("metrics_enriched")
+   record_coverage = load_output_table("record_coverage")
    metric_settings = metrics_settings_from_config()
    plot_record_coverage(record_coverage, showfig=True, savefig=True)
 
