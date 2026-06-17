@@ -80,7 +80,9 @@ from spatial_vtk.io.plans import (
 )
 from spatial_vtk.io.preprocessing import (
     DEFAULT_SOURCE_COLUMN_CANDIDATES,
+    PreprocessedWaveformMetadataPaths,
     WaveformPreprocessingWorkflowResult,
+    preprocessed_waveform_metadata_paths,
     preprocess_waveform_files,
 )
 from spatial_vtk.io.synthetic_formats import SyntheticFormatInfo, inspect_synthetic_format, synthetic_reader_for
@@ -132,6 +134,7 @@ __all__ = [
     "OUTPUT_GROUPS",
     "OutputArtifact",
     "OutputReadiness",
+    "PreprocessedWaveformMetadataPaths",
     "PreprocessedWaveform",
     "SyntheticFormatInfo",
     "WaveformPreprocessing",
@@ -184,6 +187,7 @@ __all__ = [
     "prepare_station_metadata",
     "preview_output_table",
     "preview_table",
+    "preprocessed_waveform_metadata_paths",
     "preprocess_stream",
     "preprocess_waveform_files",
     "read_event_patch_table",

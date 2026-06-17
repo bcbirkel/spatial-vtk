@@ -11,7 +11,7 @@ import pytest
 from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.config.runtime import SVTK_CLI_CONFIG_ENV, SVTK_CONFIG_ENV
 from spatial_vtk.io import preprocessing as preprocessing_module
-from spatial_vtk.io.preprocessing import preprocess_waveform_files
+from spatial_vtk.io.preprocessing import preprocessed_waveform_metadata_paths, preprocess_waveform_files
 
 
 @pytest.fixture(autouse=True)
@@ -23,6 +23,34 @@ def _isolate_config_discovery(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(tmp_path / "missing-cli-config.json"))
     yield
     clear_active_config()
+
+
+def test_preprocessed_waveform_metadata_paths_match_preprocessing_defaults(tmp_path: Path) -> None:
+    """Notebook readiness checks should use the same metadata paths as preprocessing."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  root_dir: .",
+                "outputs:",
+                "  preprocessed_waveforms: processed",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+
+    paths = preprocessed_waveform_metadata_paths(config=cfg, create_parent=True)
+
+    assert paths.root == tmp_path / "processed"
+    assert paths.metadata_dir == tmp_path / "processed" / "metadata"
+    assert paths.metadata_dir.is_dir()
+    assert paths.event_station_path == paths.metadata_dir / "event_station_records_preprocessed.csv"
+    assert paths.manifest_path == paths.metadata_dir / "waveform_preprocessing_manifest.csv"
+    assert paths.trace_metadata_path == paths.metadata_dir / "trace_metadata_preprocessed.csv"
+    assert paths.as_dict()["preprocessed_manifest_path"] == paths.manifest_path
 
 
 def test_preprocess_waveform_files_uses_configured_waveform_paths(tmp_path: Path, monkeypatch, capsys) -> None:

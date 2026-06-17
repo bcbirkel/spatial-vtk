@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-17
+   Added a public ``preprocessed_waveform_metadata_paths()`` helper so
+   notebooks and scripts use the same config-backed preprocessing metadata
+   paths as ``preprocess_waveform_files()``. Large-run Step 1 and Step 3 now
+   use that helper instead of rebuilding ``preprocessed_waveforms/metadata``
+   paths by hand, and the Step 1 readiness table now checks the actual
+   ``waveform_preprocessing_manifest.csv`` filename written by preprocessing.
    Added named status rows and pandas status frames to ``OutputReadiness`` so
    large-run notebook driver cells can display exactly which inputs, outputs,
    and source dependencies are missing, stale, current, or intentionally

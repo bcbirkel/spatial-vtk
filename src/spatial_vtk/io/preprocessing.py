@@ -110,6 +110,85 @@ class WaveformPreprocessingWorkflowResult:
     trace_metadata_path: Path
 
 
+@dataclass(frozen=True)
+class PreprocessedWaveformMetadataPaths:
+    """Standard metadata paths written by waveform preprocessing.
+
+    Parameters
+    ----------
+    root
+        Preprocessed waveform output root.
+    metadata_dir
+        Metadata directory under ``root``.
+    event_station_path
+        Updated event-station table with processed waveform paths.
+    manifest_path
+        Waveform preprocessing manifest table.
+    trace_metadata_path
+        Trace metadata table for processed waveforms.
+    """
+
+    root: Path
+    metadata_dir: Path
+    event_station_path: Path
+    manifest_path: Path
+    trace_metadata_path: Path
+
+    def as_dict(self) -> dict[str, Path]:
+        """Return a display-friendly mapping of path names to paths."""
+
+        return {
+            "preprocessed_root": self.root,
+            "preprocessed_metadata_dir": self.metadata_dir,
+            "preprocessed_event_station_path": self.event_station_path,
+            "preprocessed_manifest_path": self.manifest_path,
+            "preprocessed_trace_metadata_path": self.trace_metadata_path,
+        }
+
+
+def preprocessed_waveform_metadata_paths(
+    output_root: str | Path | None = None,
+    *,
+    config: Any | None = None,
+    event_station_name: str = "event_station_records_preprocessed.csv",
+    manifest_name: str = "waveform_preprocessing_manifest.csv",
+    trace_metadata_name: str = "trace_metadata_preprocessed.csv",
+    create_parent: bool = False,
+) -> PreprocessedWaveformMetadataPaths:
+    """Return standard metadata paths written by waveform preprocessing.
+
+    Parameters
+    ----------
+    output_root
+        Optional preprocessing output root. When omitted,
+        ``outputs.preprocessed_waveforms`` is read from ``config`` or the
+        active Spatial-VTK config, matching :func:`preprocess_waveform_files`.
+    config
+        Optional Spatial-VTK config object.
+    event_station_name, manifest_name, trace_metadata_name
+        Metadata filenames under ``output_root/metadata``.
+    create_parent
+        Whether to create the metadata directory.
+
+    Returns
+    -------
+    PreprocessedWaveformMetadataPaths
+        Resolved preprocessing metadata paths.
+    """
+
+    root = _resolve_output_root(output_root, config)
+    metadata_dir = root / "metadata"
+    if create_parent:
+        metadata_dir.mkdir(parents=True, exist_ok=True)
+    return PreprocessedWaveformMetadataPaths(
+        root=root,
+        metadata_dir=metadata_dir,
+        event_station_path=metadata_dir / event_station_name,
+        manifest_path=metadata_dir / manifest_name,
+        trace_metadata_path=metadata_dir / trace_metadata_name,
+    )
+
+
 def preprocess_waveform_files(
     event_station_records: pd.DataFrame | str | Path,
     output_root: str | Path | None = None,
@@ -195,11 +274,16 @@ def preprocess_waveform_files(
     root = _resolve_output_root(output_root, config)
     _progress(verbose, f"Preprocessing waveforms into {root}")
     _progress(verbose, f"Resolved waveform sources: {', '.join(sorted(columns))}")
-    metadata_dir = root / "metadata"
-    event_station_path = metadata_dir / event_station_name
-    manifest_path = metadata_dir / manifest_name
-    trace_metadata_path = metadata_dir / trace_metadata_name
-    metadata_dir.mkdir(parents=True, exist_ok=True)
+    metadata_paths = preprocessed_waveform_metadata_paths(
+        root,
+        event_station_name=event_station_name,
+        manifest_name=manifest_name,
+        trace_metadata_name=trace_metadata_name,
+        create_parent=True,
+    )
+    event_station_path = metadata_paths.event_station_path
+    manifest_path = metadata_paths.manifest_path
+    trace_metadata_path = metadata_paths.trace_metadata_path
     cached_trace_metadata = _index_cached_trace_metadata(trace_metadata_path)
     updated = records.copy()
     manifest_rows: list[dict[str, Any]] = []
@@ -764,6 +848,8 @@ def _safe_token(value: Any) -> str:
 
 __all__ = [
     "DEFAULT_SOURCE_COLUMN_CANDIDATES",
+    "PreprocessedWaveformMetadataPaths",
     "WaveformPreprocessingWorkflowResult",
+    "preprocessed_waveform_metadata_paths",
     "preprocess_waveform_files",
 ]

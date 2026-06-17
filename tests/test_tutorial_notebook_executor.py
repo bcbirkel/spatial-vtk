@@ -442,6 +442,21 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
         assert not missing, f"{notebook_path.relative_to(repo_root)} missing readiness displays: {missing}"
 
 
+def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:
+    """Large-run notebooks should use preprocessing's public path helper."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    step_01 = repo_root / "docs" / "examples" / "large_run" / "step_01_large_run_ingest_and_prepare_data.ipynb"
+    step_03 = repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb"
+
+    for notebook_path in (step_01, step_03):
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        assert "preprocessed_waveform_metadata_paths(config=cfg)" in source
+        assert re.search(r"(?<!waveform_)preprocessing_manifest\.csv", source) is None
+        assert 'outputs_root / "preprocessed_waveforms"' not in source
+
+
 def test_step05_uses_geojson_preview_helper() -> None:
     """The map tutorial should use package helpers for GeoJSON feature previews."""
 
