@@ -27,6 +27,7 @@ from spatial_vtk.config import (
     register_svtk_cell_timer,
     resolve_output_path,
     resolve_run_defaults,
+    run_notebook_step_if_needed,
     run_or_submit_notebook_cli_command,
     run_or_submit_notebook_function,
     set_saved_config_path,
@@ -1172,6 +1173,65 @@ def test_output_readiness_reports_notebook_step_decisions(tmp_path):
     assert source_rows[-1]["role"] == "source"
     assert source_rows[-1]["name"] == "optional"
     assert source_rows[-1]["state"] == "missing_ignored"
+
+
+def test_run_notebook_step_if_needed_displays_and_delegates(tmp_path, monkeypatch, capsys):
+    """Notebook step helper should display readiness and run only when needed."""
+
+    assert run_notebook_step_if_needed is notebook_helpers.run_notebook_step_if_needed
+    context = types.SimpleNamespace(run_local=True)
+    output = tmp_path / "outputs" / "summary.csv"
+    missing_input = tmp_path / "inputs" / "metrics.parquet"
+    displayed = []
+
+    missing_input_readiness = output_readiness({"summary": output}, inputs={"metrics": missing_input})
+    result = notebook_helpers.run_notebook_step_if_needed(
+        context,
+        missing_input_readiness,
+        "spatial_vtk.fake.workflow",
+        script_name="workflow.slurm",
+        job_name="svtk-workflow",
+        display_fn=displayed.append,
+    )
+
+    assert result is None
+    assert "Required input is not ready yet" in capsys.readouterr().out
+    assert list(displayed[0]["name"]) == ["summary", "metrics"]
+
+    missing_input.parent.mkdir()
+    missing_input.write_text("metric\n", encoding="utf-8")
+    run_readiness = output_readiness({"summary": output}, inputs={"metrics": missing_input})
+    calls = []
+
+    def fake_run_or_submit(context_arg, function, **kwargs):
+        calls.append((context_arg, function, kwargs))
+        return "submitted"
+
+    monkeypatch.setattr(notebook_helpers, "run_or_submit_notebook_function", fake_run_or_submit)
+    displayed.clear()
+    result = notebook_helpers.run_notebook_step_if_needed(
+        context,
+        run_readiness,
+        "spatial_vtk.fake.workflow",
+        kwargs={"config_path": "run.yaml"},
+        script_name="workflow.slurm",
+        job_name="svtk-workflow",
+        walltime="02:00:00",
+        memory="8G",
+        cpus=2,
+        display_fn=displayed.append,
+    )
+
+    assert result == "submitted"
+    assert len(calls) == 1
+    assert calls[0][0] is context
+    assert calls[0][1] == "spatial_vtk.fake.workflow"
+    assert calls[0][2]["kwargs"] == {"config_path": "run.yaml"}
+    assert calls[0][2]["script_name"] == "workflow.slurm"
+    assert calls[0][2]["walltime"] == "02:00:00"
+    assert calls[0][2]["memory"] == "8G"
+    assert calls[0][2]["cpus"] == 2
+    assert list(displayed[0]["state"]) == ["missing", "ready"]
 
 
 def test_finish_figure_uses_rich_display_in_notebooks(monkeypatch):

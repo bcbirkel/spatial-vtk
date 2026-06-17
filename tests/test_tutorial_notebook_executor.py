@@ -281,7 +281,7 @@ def test_qc_notebooks_use_public_slurm_imports() -> None:
     ).read_text(encoding="utf-8")
 
     assert "from spatial_vtk.qc import slurm_settings_from_config" in standard_text
-    assert "run_or_submit_notebook_function(" in large_run_text
+    assert "run_notebook_step_if_needed(" in large_run_text
     assert "spatial_vtk.qc.run_qc_inventory_from_config" in large_run_text
     assert "from spatial_vtk.qc.build.slurm import" not in standard_text
     assert "from spatial_vtk.qc.build.slurm import" not in large_run_text
@@ -485,9 +485,10 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "run_or_submit_notebook_function(" in source
+    assert "run_notebook_step_if_needed(" in source
     assert "spatial_vtk.spatial.run_spatial_statistics_workflow_from_config" in source
     assert "spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config" in source
+    assert "run_or_submit_notebook_function(" not in source
     assert "run_or_submit_notebook_cli_command(" not in source
     assert '"svtk", "spatial"' not in source
     assert "should_rebuild_paths(" not in source
@@ -517,7 +518,7 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "run_or_submit_notebook_function(" in source
+    assert "run_notebook_step_if_needed(" in source
     assert "spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config" in source
     assert "spatial_vtk.spatial.run_boundary_corridor_workflow_from_config" in source
     assert "geojson_readiness = output_readiness(" in source
@@ -558,7 +559,7 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
 
     assert "dashboard_status = dashboard_output_status_frame(cfg=cfg)" in source
     assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=OVERWRITE)" in source
-    assert "run_or_submit_notebook_function(" in source
+    assert "run_notebook_step_if_needed(" in source
     assert "spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets" in source
     assert '"cfg": str(config_path)' in source
     assert "preview_output_table(\"metrics_long\", cfg=cfg" in source
@@ -579,17 +580,14 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     required = {
         "large_run/step_01_large_run_ingest_and_prepare_data.ipynb": [
-            "preprocess_readiness.status_frame()",
-            "record_coverage_readiness.status_frame()",
+            "run_notebook_step_if_needed(",
         ],
-        "large_run/step_02_large_run_quality_control.ipynb": ["overlap_readiness.status_frame()"],
+        "large_run/step_02_large_run_quality_control.ipynb": ["run_notebook_step_if_needed("],
         "large_run/step_03_large_run_calculate_metrics.ipynb": [
-            "inventory_readiness.status_frame()",
-            "manifest_readiness.status_frame()",
-            "merge_readiness.status_frame()",
+            "run_notebook_step_if_needed(",
             "batch_status.status_frame()",
         ],
-        "large_run/step_07_large_run_dashboards.ipynb": ["dashboard_readiness.status_frame()"],
+        "large_run/step_07_large_run_dashboards.ipynb": ["run_notebook_step_if_needed("],
     }
     for relative, snippets in required.items():
         notebook_path = repo_root / "docs" / "examples" / relative
@@ -625,6 +623,7 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
+    assert "run_notebook_step_if_needed(" in source
     assert "run_or_submit_notebook_function(" in source
     assert "spatial_vtk.metrics.build_metric_waveform_inventories_from_config" in source
     assert "spatial_vtk.metrics.plan_metric_tasks_from_config" in source
@@ -645,7 +644,8 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "run_or_submit_notebook_function(" in source
+    assert "run_notebook_step_if_needed(" in source
+    assert "run_or_submit_notebook_function(" not in source
     assert "spatial_vtk.io.preprocess_waveforms_from_config" in source
     assert "spatial_vtk.io.build_record_coverage_from_config" in source
     assert "run_or_submit_notebook_cli_command(" not in source
@@ -678,7 +678,8 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "run_or_submit_notebook_function(" in source
+    assert "run_notebook_step_if_needed(" in source
+    assert "run_or_submit_notebook_function(" not in source
     assert "spatial_vtk.qc.run_qc_inventory_from_config" in source
     assert "spatial_vtk.qc.write_qc_inventory_overlap_from_config" in source
     assert "spatial_vtk.qc.run_qc_summary_workflow_from_config" in source
@@ -715,7 +716,7 @@ def test_large_run_step02_overlap_sidecar_has_separate_rebuild_gate() -> None:
     assert '{"trace_qc_path": trace_qc_path, "qc_inventory_path": qc_inventory_path}' in source
     assert 'inputs={"event_station_path": event_station_path}' in source
     assert 'sources={"event_station_path": event_station_path}' in source
-    assert "display(qc_readiness.status_frame())" in source
+    assert "run_notebook_step_if_needed(" in source
     assert "Full QC outputs are current; skipping QC Slurm submission." in source
     assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, overwrite=OVERWRITE)" not in source
     assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, qc_inventory_overlap_path" not in source

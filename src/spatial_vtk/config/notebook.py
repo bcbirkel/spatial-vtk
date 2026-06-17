@@ -555,6 +555,98 @@ def run_or_submit_notebook_function(
     return submit_notebook_slurm_script(context, script, section=section)
 
 
+def run_notebook_step_if_needed(
+    context: NotebookRunContext,
+    readiness: Any,
+    function: str | Callable[..., Any],
+    *,
+    args: list[Any] | tuple[Any, ...] = (),
+    kwargs: dict[str, Any] | None = None,
+    script_name: str,
+    job_name: str,
+    walltime: str = "12:00:00",
+    memory: str = "32G",
+    cpus: int = 1,
+    run_local: bool | None = None,
+    section: str | None = "compute.slurm",
+    display_fn: Callable[[Any], Any] | None = None,
+) -> Any | SlurmSubmission | None:
+    """Display readiness status and run a package workflow step when needed.
+
+    Large-run notebooks frequently need the same pattern: show a readiness
+    table, submit or run a package helper when outputs are missing/stale, and
+    otherwise print the skip message while still showing the status table. This
+    helper keeps that control flow in the package while preserving explicit
+    function names and resource settings in notebook cells.
+
+    Parameters
+    ----------
+    context
+        Active notebook run context.
+    readiness
+        Object with ``should_run``, ``message``, and ``status_frame()``
+        attributes, such as ``OutputReadiness`` or dashboard readiness objects.
+    function
+        Import path or callable passed to
+        :func:`run_or_submit_notebook_function` when
+        ``readiness.should_run`` is true.
+    args, kwargs
+        Positional and keyword arguments passed to ``function``.
+    script_name, job_name, walltime, memory, cpus, run_local, section
+        Passed through to :func:`run_or_submit_notebook_function` when
+        ``readiness.should_run`` is true.
+    display_fn
+        Optional display function used for status frames. When omitted,
+        ``IPython.display.display`` is used if available, otherwise the status
+        frame is printed.
+
+    Returns
+    -------
+    object or SlurmSubmission or None
+        The underlying run/submission result when work runs, otherwise ``None``.
+    """
+
+    _display_notebook_readiness_status(readiness, display_fn=display_fn)
+    if bool(getattr(readiness, "should_run", False)):
+        return run_or_submit_notebook_function(
+            context,
+            function,
+            args=args,
+            kwargs=kwargs,
+            script_name=script_name,
+            job_name=job_name,
+            walltime=walltime,
+            memory=memory,
+            cpus=cpus,
+            run_local=run_local,
+            section=section,
+        )
+    message = getattr(readiness, "message", None)
+    if message:
+        print(message)
+    return None
+
+
+def _display_notebook_readiness_status(readiness: Any, *, display_fn: Callable[[Any], Any] | None = None) -> None:
+    """Display one readiness status frame in notebooks or plain Python."""
+
+    status_frame = readiness.status_frame() if hasattr(readiness, "status_frame") else readiness
+    display = display_fn
+    if display is None:
+        try:
+            from IPython.display import display as ipython_display
+
+            display = ipython_display
+        except Exception:
+            display = None
+    if display is not None:
+        display(status_frame)
+    elif hasattr(status_frame, "to_string"):
+        print(status_frame.to_string(index=False))
+    else:
+        print(status_frame)
+
+
 def _run_notebook_function_worker(function_path: str, args_json: str, kwargs_json: str) -> int:
     """Run one notebook function payload from a generated Slurm worker."""
 
@@ -983,6 +1075,7 @@ __all__ = [
     "print_notebook_context",
     "register_svtk_cell_timer",
     "register_svtk_time_magic",
+    "run_notebook_step_if_needed",
     "run_or_submit_notebook_cli_command",
     "run_or_submit_notebook_function",
     "submit_notebook_slurm_script",
