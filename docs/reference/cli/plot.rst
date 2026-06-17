@@ -113,6 +113,7 @@ svtk plot metrics band-score-distribution
                                                  [--kwargs-json KWARGS_JSON]
                                                  [--metric METRIC]
                                                  [--passband PASSBAND]
+                                                 [--bin-label BIN_LABEL]
                                                  [--component COMPONENT]
                                                  [--components COMPONENTS]
                                                  [--model MODEL]
@@ -193,6 +194,10 @@ svtk plot metrics band-score-distribution
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -313,7 +318,8 @@ svtk plot metrics boxplot
                                  [--table [TABLE]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
-                                 [--passband PASSBAND] [--component COMPONENT]
+                                 [--passband PASSBAND] [--bin-label BIN_LABEL]
+                                 [--component COMPONENT]
                                  [--components COMPONENTS] [--model MODEL]
                                  [--value-col VALUE_COL]
                                  [--score-col SCORE_COL] [--x-col X_COL]
@@ -385,6 +391,10 @@ svtk plot metrics boxplot
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -507,6 +517,7 @@ svtk plot metrics example-metric-pairs
                                               [--kwargs-json KWARGS_JSON]
                                               [--metric METRIC]
                                               [--passband PASSBAND]
+                                              [--bin-label BIN_LABEL]
                                               [--component COMPONENT]
                                               [--components COMPONENTS]
                                               [--model MODEL]
@@ -582,6 +593,10 @@ svtk plot metrics example-metric-pairs
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -704,6 +719,7 @@ svtk plot metrics geology-boxplot
                                          [--kwargs-json KWARGS_JSON]
                                          [--metric METRIC]
                                          [--passband PASSBAND]
+                                         [--bin-label BIN_LABEL]
                                          [--component COMPONENT]
                                          [--components COMPONENTS]
                                          [--model MODEL]
@@ -780,6 +796,10 @@ svtk plot metrics geology-boxplot
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -900,7 +920,8 @@ svtk plot metrics heatmap
                                  [--table [TABLE]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
-                                 [--passband PASSBAND] [--component COMPONENT]
+                                 [--passband PASSBAND] [--bin-label BIN_LABEL]
+                                 [--component COMPONENT]
                                  [--components COMPONENTS] [--model MODEL]
                                  [--value-col VALUE_COL]
                                  [--score-col SCORE_COL] [--x-col X_COL]
@@ -972,6 +993,10 @@ svtk plot metrics heatmap
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -1119,6 +1144,7 @@ svtk plot metrics metric-trend
                                       [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
                                       [--metric METRIC] [--passband PASSBAND]
+                                      [--bin-label BIN_LABEL]
                                       [--component COMPONENT]
                                       [--components COMPONENTS]
                                       [--model MODEL] [--value-col VALUE_COL]
@@ -1193,6 +1219,10 @@ svtk plot metrics metric-trend
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -1307,7 +1337,7 @@ svtk plot metrics model-metric-heatmap
 
 .. code-block:: bash
 
-   svtk plot metrics model-metric-heatmap [-h] --input INPUT
+   svtk plot metrics model-metric-heatmap [-h] [--input INPUT]
                                               [--output OUTPUT]
                                               [--config CONFIG]
                                               [--run-scenario RUN_SCENARIO]
@@ -1316,6 +1346,7 @@ svtk plot metrics model-metric-heatmap
                                               [--kwargs-json KWARGS_JSON]
                                               [--metric METRIC]
                                               [--passband PASSBAND]
+                                              [--bin-label BIN_LABEL]
                                               [--component COMPONENT]
                                               [--components COMPONENTS]
                                               [--model MODEL]
@@ -1356,9 +1387,9 @@ svtk plot metrics model-metric-heatmap
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'summary_df'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'summary_df'. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
@@ -1395,6 +1426,10 @@ svtk plot metrics model-metric-heatmap
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -1517,6 +1552,7 @@ svtk plot metrics period-spectra
                                         [--kwargs-json KWARGS_JSON]
                                         [--metric METRIC]
                                         [--passband PASSBAND]
+                                        [--bin-label BIN_LABEL]
                                         [--component COMPONENT]
                                         [--components COMPONENTS]
                                         [--model MODEL]
@@ -1593,6 +1629,10 @@ svtk plot metrics period-spectra
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -1716,6 +1756,7 @@ svtk plot metrics period-spectrogram
                                             [--kwargs-json KWARGS_JSON]
                                             [--metric METRIC]
                                             [--passband PASSBAND]
+                                            [--bin-label BIN_LABEL]
                                             [--component COMPONENT]
                                             [--components COMPONENTS]
                                             [--model MODEL]
@@ -1794,6 +1835,10 @@ svtk plot metrics period-spectrogram
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -1918,6 +1963,7 @@ svtk plot metrics phase-delay-vs-distance
                                                  [--kwargs-json KWARGS_JSON]
                                                  [--metric METRIC]
                                                  [--passband PASSBAND]
+                                                 [--bin-label BIN_LABEL]
                                                  [--component COMPONENT]
                                                  [--components COMPONENTS]
                                                  [--model MODEL]
@@ -1998,6 +2044,10 @@ svtk plot metrics phase-delay-vs-distance
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -2120,6 +2170,7 @@ svtk plot metrics psa-period-curve
                                           [--kwargs-json KWARGS_JSON]
                                           [--metric METRIC]
                                           [--passband PASSBAND]
+                                          [--bin-label BIN_LABEL]
                                           [--component COMPONENT]
                                           [--components COMPONENTS]
                                           [--model MODEL]
@@ -2196,6 +2247,10 @@ svtk plot metrics psa-period-curve
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -2319,6 +2374,7 @@ svtk plot metrics residuals-vs-depth
                                             [--kwargs-json KWARGS_JSON]
                                             [--metric METRIC]
                                             [--passband PASSBAND]
+                                            [--bin-label BIN_LABEL]
                                             [--component COMPONENT]
                                             [--components COMPONENTS]
                                             [--model MODEL]
@@ -2397,6 +2453,10 @@ svtk plot metrics residuals-vs-depth
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -2520,6 +2580,7 @@ svtk plot metrics residuals-vs-distance
                                                [--kwargs-json KWARGS_JSON]
                                                [--metric METRIC]
                                                [--passband PASSBAND]
+                                               [--bin-label BIN_LABEL]
                                                [--component COMPONENT]
                                                [--components COMPONENTS]
                                                [--model MODEL]
@@ -2599,6 +2660,10 @@ svtk plot metrics residuals-vs-distance
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -2720,6 +2785,7 @@ svtk plot metrics scatterplot
                                      [--kwargs [KWARGS ...]]
                                      [--kwargs-json KWARGS_JSON]
                                      [--metric METRIC] [--passband PASSBAND]
+                                     [--bin-label BIN_LABEL]
                                      [--component COMPONENT]
                                      [--components COMPONENTS] [--model MODEL]
                                      [--value-col VALUE_COL]
@@ -2794,6 +2860,10 @@ svtk plot metrics scatterplot
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -2915,6 +2985,7 @@ svtk plot metrics score-trends
                                       [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
                                       [--metric METRIC] [--passband PASSBAND]
+                                      [--bin-label BIN_LABEL]
                                       [--component COMPONENT]
                                       [--components COMPONENTS]
                                       [--model MODEL] [--value-col VALUE_COL]
@@ -2989,6 +3060,10 @@ svtk plot metrics score-trends
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -3110,6 +3185,7 @@ svtk plot metrics vs30-scatter
                                       [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
                                       [--metric METRIC] [--passband PASSBAND]
+                                      [--bin-label BIN_LABEL]
                                       [--component COMPONENT]
                                       [--components COMPONENTS]
                                       [--model MODEL] [--value-col VALUE_COL]
@@ -3184,6 +3260,10 @@ svtk plot metrics vs30-scatter
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -3306,6 +3386,7 @@ svtk plot metrics winner-heatmap
                                         [--kwargs-json KWARGS_JSON]
                                         [--metric METRIC]
                                         [--passband PASSBAND]
+                                        [--bin-label BIN_LABEL]
                                         [--component COMPONENT]
                                         [--components COMPONENTS]
                                         [--model MODEL]
@@ -3382,6 +3463,10 @@ svtk plot metrics winner-heatmap
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -3533,6 +3618,7 @@ svtk plot spatial azimuthal-residuals
                                              [--kwargs-json KWARGS_JSON]
                                              [--metric METRIC]
                                              [--passband PASSBAND]
+                                             [--bin-label BIN_LABEL]
                                              [--component COMPONENT]
                                              [--components COMPONENTS]
                                              [--model MODEL]
@@ -3611,6 +3697,10 @@ svtk plot spatial azimuthal-residuals
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -3734,6 +3824,7 @@ svtk plot spatial block-holdout-scatter
                                                [--kwargs-json KWARGS_JSON]
                                                [--metric METRIC]
                                                [--passband PASSBAND]
+                                               [--bin-label BIN_LABEL]
                                                [--component COMPONENT]
                                                [--components COMPONENTS]
                                                [--model MODEL]
@@ -3813,6 +3904,10 @@ svtk plot spatial block-holdout-scatter
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -3937,6 +4032,7 @@ svtk plot spatial cluster-feature-heatmap
                                                  [--kwargs-json KWARGS_JSON]
                                                  [--metric METRIC]
                                                  [--passband PASSBAND]
+                                                 [--bin-label BIN_LABEL]
                                                  [--component COMPONENT]
                                                  [--components COMPONENTS]
                                                  [--model MODEL]
@@ -4017,6 +4113,10 @@ svtk plot spatial cluster-feature-heatmap
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -4141,6 +4241,7 @@ svtk plot spatial cluster-solution-scores
                                                  [--kwargs-json KWARGS_JSON]
                                                  [--metric METRIC]
                                                  [--passband PASSBAND]
+                                                 [--bin-label BIN_LABEL]
                                                  [--component COMPONENT]
                                                  [--components COMPONENTS]
                                                  [--model MODEL]
@@ -4221,6 +4322,10 @@ svtk plot spatial cluster-solution-scores
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -4342,6 +4447,7 @@ svtk plot spatial correlogram
                                      [--kwargs [KWARGS ...]]
                                      [--kwargs-json KWARGS_JSON]
                                      [--metric METRIC] [--passband PASSBAND]
+                                     [--bin-label BIN_LABEL]
                                      [--component COMPONENT]
                                      [--components COMPONENTS] [--model MODEL]
                                      [--value-col VALUE_COL]
@@ -4416,6 +4522,10 @@ svtk plot spatial correlogram
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -4540,6 +4650,7 @@ svtk plot spatial directional-correlogram
                                                  [--kwargs-json KWARGS_JSON]
                                                  [--metric METRIC]
                                                  [--passband PASSBAND]
+                                                 [--bin-label BIN_LABEL]
                                                  [--component COMPONENT]
                                                  [--components COMPONENTS]
                                                  [--model MODEL]
@@ -4620,6 +4731,10 @@ svtk plot spatial directional-correlogram
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -4768,6 +4883,7 @@ svtk plot spatial path-bin-summary
                                           [--kwargs-json KWARGS_JSON]
                                           [--metric METRIC]
                                           [--passband PASSBAND]
+                                          [--bin-label BIN_LABEL]
                                           [--component COMPONENT]
                                           [--components COMPONENTS]
                                           [--model MODEL]
@@ -4844,6 +4960,10 @@ svtk plot spatial path-bin-summary
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -4958,7 +5078,7 @@ svtk plot spatial pattern-similarity
 
 .. code-block:: bash
 
-   svtk plot spatial pattern-similarity [-h] --input INPUT
+   svtk plot spatial pattern-similarity [-h] [--input INPUT]
                                             [--output OUTPUT]
                                             [--config CONFIG]
                                             [--run-scenario RUN_SCENARIO]
@@ -4967,6 +5087,7 @@ svtk plot spatial pattern-similarity
                                             [--kwargs-json KWARGS_JSON]
                                             [--metric METRIC]
                                             [--passband PASSBAND]
+                                            [--bin-label BIN_LABEL]
                                             [--component COMPONENT]
                                             [--components COMPONENTS]
                                             [--model MODEL]
@@ -5006,9 +5127,9 @@ svtk plot spatial pattern-similarity
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Input CSV/parquet table for function argument 'stations'.
+     - Value: ``input``. Input CSV/parquet table for function argument 'stations'. Defaults to configured output table 'pattern_similarity_station_anomalies' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``
      - No
      -
@@ -5045,6 +5166,10 @@ svtk plot spatial pattern-similarity
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -5168,6 +5293,7 @@ svtk plot spatial pca-explained-variance
                                                 [--kwargs-json KWARGS_JSON]
                                                 [--metric METRIC]
                                                 [--passband PASSBAND]
+                                                [--bin-label BIN_LABEL]
                                                 [--component COMPONENT]
                                                 [--components COMPONENTS]
                                                 [--model MODEL]
@@ -5248,6 +5374,10 @@ svtk plot spatial pca-explained-variance
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -5371,6 +5501,7 @@ svtk plot spatial pca-feature-loadings
                                               [--kwargs-json KWARGS_JSON]
                                               [--metric METRIC]
                                               [--passband PASSBAND]
+                                              [--bin-label BIN_LABEL]
                                               [--component COMPONENT]
                                               [--components COMPONENTS]
                                               [--model MODEL]
@@ -5450,6 +5581,10 @@ svtk plot spatial pca-feature-loadings
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -5572,6 +5707,7 @@ svtk plot spatial polar-residuals
                                          [--kwargs-json KWARGS_JSON]
                                          [--metric METRIC]
                                          [--passband PASSBAND]
+                                         [--bin-label BIN_LABEL]
                                          [--component COMPONENT]
                                          [--components COMPONENTS]
                                          [--model MODEL]
@@ -5648,6 +5784,10 @@ svtk plot spatial polar-residuals
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -5771,6 +5911,7 @@ svtk plot spatial residual-correlation
                                               [--kwargs-json KWARGS_JSON]
                                               [--metric METRIC]
                                               [--passband PASSBAND]
+                                              [--bin-label BIN_LABEL]
                                               [--component COMPONENT]
                                               [--components COMPONENTS]
                                               [--model MODEL]
@@ -5850,6 +5991,10 @@ svtk plot spatial residual-correlation
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -5971,6 +6116,7 @@ svtk plot spatial semivariogram
                                        [--kwargs [KWARGS ...]]
                                        [--kwargs-json KWARGS_JSON]
                                        [--metric METRIC] [--passband PASSBAND]
+                                       [--bin-label BIN_LABEL]
                                        [--component COMPONENT]
                                        [--components COMPONENTS]
                                        [--model MODEL] [--value-col VALUE_COL]
@@ -6045,6 +6191,10 @@ svtk plot spatial semivariogram
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable

@@ -106,6 +106,7 @@ svtk visualize qc data-synthetic-availability
                                                      [--kwargs-json KWARGS_JSON]
                                                      [--metric METRIC]
                                                      [--passband PASSBAND]
+                                                     [--bin-label BIN_LABEL]
                                                      [--component COMPONENT]
                                                      [--components COMPONENTS]
                                                      [--model MODEL]
@@ -189,6 +190,10 @@ svtk visualize qc data-synthetic-availability
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -324,6 +329,7 @@ svtk visualize qc drop-cause-diagnostics
                                                 [--kwargs-json KWARGS_JSON]
                                                 [--metric METRIC]
                                                 [--passband PASSBAND]
+                                                [--bin-label BIN_LABEL]
                                                 [--component COMPONENT]
                                                 [--components COMPONENTS]
                                                 [--model MODEL]
@@ -407,6 +413,10 @@ svtk visualize qc drop-cause-diagnostics
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -543,6 +553,7 @@ svtk visualize qc event-station-retention
                                                  [--kwargs-json KWARGS_JSON]
                                                  [--metric METRIC]
                                                  [--passband PASSBAND]
+                                                 [--bin-label BIN_LABEL]
                                                  [--component COMPONENT]
                                                  [--components COMPONENTS]
                                                  [--model MODEL]
@@ -626,6 +637,10 @@ svtk visualize qc event-station-retention
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -788,6 +803,7 @@ svtk visualize qc post-qc-station-event-map
                                                    [--kwargs-json KWARGS_JSON]
                                                    [--metric METRIC]
                                                    [--passband PASSBAND]
+                                                   [--bin-label BIN_LABEL]
                                                    [--component COMPONENT]
                                                    [--components COMPONENTS]
                                                    [--model MODEL]
@@ -871,6 +887,10 @@ svtk visualize qc post-qc-station-event-map
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -1005,6 +1025,7 @@ svtk visualize qc retention-summary
                                            [--kwargs-json KWARGS_JSON]
                                            [--metric METRIC]
                                            [--passband PASSBAND]
+                                           [--bin-label BIN_LABEL]
                                            [--component COMPONENT]
                                            [--components COMPONENTS]
                                            [--model MODEL]
@@ -1083,6 +1104,10 @@ svtk visualize qc retention-summary
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -1219,6 +1244,7 @@ svtk visualize qc trace-inventory-samples
                                                  [--kwargs-json KWARGS_JSON]
                                                  [--metric METRIC]
                                                  [--passband PASSBAND]
+                                                 [--bin-label BIN_LABEL]
                                                  [--component COMPONENT]
                                                  [--components COMPONENTS]
                                                  [--model MODEL]
@@ -1302,6 +1328,10 @@ svtk visualize qc trace-inventory-samples
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -1460,10 +1490,10 @@ svtk visualize context distance-amplitude-diagnostics
        [-h] --input INPUT [--output OUTPUT] [--config CONFIG]
        [--run-scenario RUN_SCENARIO] [--table [TABLE]] [--no-table]
        [--kwargs [KWARGS ...]] [--kwargs-json KWARGS_JSON] [--metric METRIC]
-       [--passband PASSBAND] [--component COMPONENT] [--components COMPONENTS]
-       [--model MODEL] [--value-col VALUE_COL] [--score-col SCORE_COL]
-       [--x-col X_COL] [--y-col Y_COL] [--group-col GROUP_COL]
-       [--color-col COLOR_COL] [--fit FIT]
+       [--passband PASSBAND] [--bin-label BIN_LABEL] [--component COMPONENT]
+       [--components COMPONENTS] [--model MODEL] [--value-col VALUE_COL]
+       [--score-col SCORE_COL] [--x-col X_COL] [--y-col Y_COL]
+       [--group-col GROUP_COL] [--color-col COLOR_COL] [--fit FIT]
        [--connect-points | --no-connect-points] [--mode MODE] [--dep DEP]
        [--indep INDEP] [--colorby COLORBY] [--compare-to COMPARE_TO]
        [--station-region STATION_REGIONS] [--event-region EVENT_REGIONS]
@@ -1527,6 +1557,10 @@ svtk visualize context distance-amplitude-diagnostics
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -1662,6 +1696,7 @@ svtk visualize context event-coverage
                                              [--kwargs-json KWARGS_JSON]
                                              [--metric METRIC]
                                              [--passband PASSBAND]
+                                             [--bin-label BIN_LABEL]
                                              [--component COMPONENT]
                                              [--components COMPONENTS]
                                              [--model MODEL]
@@ -1742,6 +1777,10 @@ svtk visualize context event-coverage
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -1878,6 +1917,7 @@ svtk visualize context event-magnitude-map
                                                   [--kwargs-json KWARGS_JSON]
                                                   [--metric METRIC]
                                                   [--passband PASSBAND]
+                                                  [--bin-label BIN_LABEL]
                                                   [--component COMPONENT]
                                                   [--components COMPONENTS]
                                                   [--model MODEL]
@@ -1961,6 +2001,10 @@ svtk visualize context event-magnitude-map
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -2097,6 +2141,7 @@ svtk visualize context event-trace-comparison
                                                      [--kwargs-json KWARGS_JSON]
                                                      [--metric METRIC]
                                                      [--passband PASSBAND]
+                                                     [--bin-label BIN_LABEL]
                                                      [--component COMPONENT]
                                                      [--components COMPONENTS]
                                                      [--model MODEL]
@@ -2180,6 +2225,10 @@ svtk visualize context event-trace-comparison
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -2341,6 +2390,7 @@ svtk visualize context record-coverage
                                               [--kwargs-json KWARGS_JSON]
                                               [--metric METRIC]
                                               [--passband PASSBAND]
+                                              [--bin-label BIN_LABEL]
                                               [--component COMPONENT]
                                               [--components COMPONENTS]
                                               [--model MODEL]
@@ -2422,6 +2472,10 @@ svtk visualize context record-coverage
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -2557,6 +2611,7 @@ svtk visualize context station-coverage
                                                [--kwargs-json KWARGS_JSON]
                                                [--metric METRIC]
                                                [--passband PASSBAND]
+                                               [--bin-label BIN_LABEL]
                                                [--component COMPONENT]
                                                [--components COMPONENTS]
                                                [--model MODEL]
@@ -2639,6 +2694,10 @@ svtk visualize context station-coverage
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -2775,6 +2834,7 @@ svtk visualize context station-event-beachball
                                                       [--kwargs-json KWARGS_JSON]
                                                       [--metric METRIC]
                                                       [--passband PASSBAND]
+                                                      [--bin-label BIN_LABEL]
                                                       [--component COMPONENT]
                                                       [--components COMPONENTS]
                                                       [--model MODEL]
@@ -2860,6 +2920,10 @@ svtk visualize context station-event-beachball
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -3000,6 +3064,7 @@ svtk visualize context station-event-context
                                                     [--kwargs-json KWARGS_JSON]
                                                     [--metric METRIC]
                                                     [--passband PASSBAND]
+                                                    [--bin-label BIN_LABEL]
                                                     [--component COMPONENT]
                                                     [--components COMPONENTS]
                                                     [--model MODEL]
@@ -3084,6 +3149,10 @@ svtk visualize context station-event-context
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -3224,6 +3293,7 @@ svtk visualize context station-event-network
                                                     [--kwargs-json KWARGS_JSON]
                                                     [--metric METRIC]
                                                     [--passband PASSBAND]
+                                                    [--bin-label BIN_LABEL]
                                                     [--component COMPONENT]
                                                     [--components COMPONENTS]
                                                     [--model MODEL]
@@ -3308,6 +3378,10 @@ svtk visualize context station-event-network
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -3446,6 +3520,7 @@ svtk visualize context study-domain
                                            [--kwargs-json KWARGS_JSON]
                                            [--metric METRIC]
                                            [--passband PASSBAND]
+                                           [--bin-label BIN_LABEL]
                                            [--component COMPONENT]
                                            [--components COMPONENTS]
                                            [--model MODEL]
@@ -3525,6 +3600,10 @@ svtk visualize context study-domain
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -3693,6 +3772,7 @@ svtk visualize waveforms event-radial-trace-section
                                                            [--kwargs-json KWARGS_JSON]
                                                            [--metric METRIC]
                                                            [--passband PASSBAND]
+                                                           [--bin-label BIN_LABEL]
                                                            [--component COMPONENT]
                                                            [--components COMPONENTS]
                                                            [--model MODEL]
@@ -3777,6 +3857,10 @@ svtk visualize waveforms event-radial-trace-section
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -3933,10 +4017,10 @@ svtk visualize waveforms observed-synthetic-record-section
        [-h] --input INPUT [--output OUTPUT] [--config CONFIG]
        [--run-scenario RUN_SCENARIO] [--table [TABLE]] [--no-table]
        [--kwargs [KWARGS ...]] [--kwargs-json KWARGS_JSON] [--metric METRIC]
-       [--passband PASSBAND] [--component COMPONENT] [--components COMPONENTS]
-       [--model MODEL] [--value-col VALUE_COL] [--score-col SCORE_COL]
-       [--x-col X_COL] [--y-col Y_COL] [--group-col GROUP_COL]
-       [--color-col COLOR_COL] [--fit FIT]
+       [--passband PASSBAND] [--bin-label BIN_LABEL] [--component COMPONENT]
+       [--components COMPONENTS] [--model MODEL] [--value-col VALUE_COL]
+       [--score-col SCORE_COL] [--x-col X_COL] [--y-col Y_COL]
+       [--group-col GROUP_COL] [--color-col COLOR_COL] [--fit FIT]
        [--connect-points | --no-connect-points] [--mode MODE] [--dep DEP]
        [--indep INDEP] [--colorby COLORBY] [--compare-to COMPARE_TO]
        [--station-region STATION_REGIONS] [--event-region EVENT_REGIONS]
@@ -4000,6 +4084,10 @@ svtk visualize waveforms observed-synthetic-record-section
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -4135,6 +4223,7 @@ svtk visualize waveforms record-section
                                                [--kwargs-json KWARGS_JSON]
                                                [--metric METRIC]
                                                [--passband PASSBAND]
+                                               [--bin-label BIN_LABEL]
                                                [--component COMPONENT]
                                                [--components COMPONENTS]
                                                [--model MODEL]
@@ -4217,6 +4306,10 @@ svtk visualize waveforms record-section
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -4353,6 +4446,7 @@ svtk visualize waveforms station-event-waveform-map
                                                            [--kwargs-json KWARGS_JSON]
                                                            [--metric METRIC]
                                                            [--passband PASSBAND]
+                                                           [--bin-label BIN_LABEL]
                                                            [--component COMPONENT]
                                                            [--components COMPONENTS]
                                                            [--model MODEL]
@@ -4437,6 +4531,10 @@ svtk visualize waveforms station-event-waveform-map
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
@@ -4573,6 +4671,7 @@ svtk visualize waveforms waveform-overlay-matrix
                                                         [--kwargs-json KWARGS_JSON]
                                                         [--metric METRIC]
                                                         [--passband PASSBAND]
+                                                        [--bin-label BIN_LABEL]
                                                         [--component COMPONENT]
                                                         [--components COMPONENTS]
                                                         [--model MODEL]
@@ -4657,6 +4756,10 @@ svtk visualize waveforms waveform-overlay-matrix
      - No
      - Repeatable
      - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+   * - ``--bin-label``
+     - No
+     -
+     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable

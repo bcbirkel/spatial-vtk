@@ -38,6 +38,9 @@ tables:
   path_summary:
     filename: path_summary.parquet
     description: Distance and azimuth path summary
+  pattern_similarity_station_anomalies:
+    filename: pattern_similarity_station_anomalies.csv
+    description: Observed/synthetic station-anomaly rows for pattern-similarity plots
   metric_field:
     filename: metric_field.parquet
     description: Metric field table

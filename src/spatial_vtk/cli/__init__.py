@@ -168,6 +168,7 @@ SPATIAL_PLOT_COMMANDS = _with_registered_plot_defaults(
         "block-holdout-scatter": "block_holdout_predictions",
         "cluster-solution-scores": "cluster_solution_scores",
         "cluster-feature-heatmap": "cluster_feature_summary",
+        "pattern-similarity": "pattern_similarity_station_anomalies",
         "azimuthal-residuals": "event_centered_residuals",
         "path-bin-summary": "path_summary",
         "polar-residuals": "event_centered_residuals",
@@ -352,6 +353,7 @@ COMMON_FIGURE_OPTION_KEYS = frozenset(
     {
         "metric",
         "passband",
+        "bin_label",
         "component",
         "components",
         "model",
@@ -903,6 +905,7 @@ def _add_common_figure_options(parser: argparse.ArgumentParser, *, exclude: set[
 
     add("metric", default=None, help="Metric name passed to plotting functions that support metric filtering.")
     add("passband", action="append", default=None, help="Passband filter/value. Repeat for multiple passbands.")
+    add("bin-label", default=None, help="Pattern or period-bin label passed to plotting functions that require one.")
     add("component", action="append", default=None, help="Component filter/value. Repeat for multiple components.")
     add("components", action="append", default=None, help="Component list for waveform plots that use a components argument. Repeat for multiple components.")
     add("model", action="append", default=None, help="Model filter/value. Repeat for multiple models.")

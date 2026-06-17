@@ -22,6 +22,11 @@ Changelog
    metric workflows. The command now defaults its input to ``metrics_long`` and
    the plotting function falls back from summary-only ``med_resid`` to common
    long-table value columns such as ``log2_residual`` when needed.
+   Registered the standard ``pattern_similarity_station_anomalies`` table and
+   made ``svtk plot spatial pattern-similarity`` resolve that input and the
+   ``pattern_similarity`` figure path from config. The plot CLI also exposes
+   ``--bin-label`` as a first-class option for helpers that require a named
+   period/bin selection.
    Added named status rows and pandas status frames to ``OutputReadiness`` so
    large-run notebook driver cells can display exactly which inputs, outputs,
    and source dependencies are missing, stale, current, or intentionally

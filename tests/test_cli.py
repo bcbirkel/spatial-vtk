@@ -149,6 +149,7 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "``--indep``" in text
     assert "``--colorby``" in text
     assert "``--compare-to``" in text
+    assert "``--bin-label``" in text
     assert "``--table``" in text
     assert "``--station-region``" in text
     assert "``--event-region``" in text
@@ -470,6 +471,66 @@ outputs:
     assert "log2_residual" in seen["columns"]
     assert seen["output_path"] == expected_output
     assert "value_col" not in seen["kwargs"]
+    assert captured.out.strip() == str(expected_output)
+
+
+def test_cli_pattern_similarity_uses_registered_table_and_bin_label(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    pattern_rows = table_dir / "pattern_similarity_station_anomalies.csv"
+    pattern_rows.write_text(
+        "station_name,dataset,metric,bin,value\n"
+        "S1,observed,PGA,1-2 sec,0.2\n"
+        "S1,synthetic,PGA,1-2 sec,0.1\n",
+        encoding="utf-8",
+    )
+    config.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.spatial.plot as spatial_plot
+
+    def fake_plot_pattern_similarity(stations, output_path=None, **kwargs):
+        seen["rows"] = len(stations)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(spatial_plot, "plot_pattern_similarity", fake_plot_pattern_similarity)
+
+    assert (
+        main(
+            [
+                "plot",
+                "spatial",
+                "pattern-similarity",
+                "--config",
+                str(config),
+                "--metric",
+                "PGA",
+                "--bin-label",
+                "1-2 sec",
+            ]
+        )
+        == 0
+    )
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "pattern_similarity.png"
+    assert seen["rows"] == 2
+    assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["metric"] == "PGA"
+    assert seen["kwargs"]["bin_label"] == "1-2 sec"
     assert captured.out.strip() == str(expected_output)
 
 
@@ -1429,3 +1490,11 @@ def test_cli_plot_list(capsys):
     assert "default output from config: band_score_distribution" in captured.out
     assert "default output from config: model_metric_heatmap" in captured.out
     assert "from config from config" not in captured.out
+
+
+def test_cli_spatial_plot_list_includes_pattern_similarity_defaults(capsys):
+    assert main(["plot", "spatial", "list"]) == 0
+    captured = capsys.readouterr()
+    assert "pattern-similarity" in captured.out
+    assert "default input from config: pattern_similarity_station_anomalies" in captured.out
+    assert "default output from config: pattern_similarity" in captured.out

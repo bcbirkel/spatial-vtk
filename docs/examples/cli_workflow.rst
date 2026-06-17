@@ -300,8 +300,9 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
      --max-traces 12
 
    svtk plot spatial pattern-similarity \
-     --input "$TABLES/pattern_similarity_station_anomalies.csv" \
-     --output "$FIGURES/pattern_similarity.png"
+     --config "$CONFIG" \
+     --metric PGA \
+     --bin-label "1-2 sec"
 
    svtk plot metrics scatterplot \
      --input "$TABLES/metrics_long.parquet" \
