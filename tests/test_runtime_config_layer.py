@@ -60,8 +60,10 @@ from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize import default_figure_paths
 from spatial_vtk.visualize.figure_sidecars import FigureSidecarResult, write_figure_row_sidecar
 from spatial_vtk.visualize.dashboard import (
+    dashboard_metric_dataset_readiness_frame,
     dashboard_map_readiness,
     dashboard_output_namespace,
+    dashboard_output_readiness,
     dashboard_summary_readiness_frame,
     dashboard_summary_table_contracts,
     find_available_port,
@@ -332,6 +334,43 @@ outputs:
 
     assert context.config_path == config_path.resolve()
     assert context.cfg.root_dir == repo.resolve()
+    clear_active_config()
+
+
+def test_notebook_run_context_applies_requested_run_scenario(tmp_path, monkeypatch):
+    """Large-run notebook setup should be able to apply the tutorial overlay."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(tmp_path / "cli-config.json"))
+    repo = tmp_path / "project"
+    (repo / "src" / "spatial_vtk").mkdir(parents=True)
+    (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
+    config_path = repo / "data" / "examples" / "configuration" / "example_spatial_vtk_config.yaml"
+    config_path.parent.mkdir(parents=True)
+    config_path.write_text(
+        f"""
+project:
+  name: base
+  root_dir: {repo}
+paths:
+  station_metadata: data/metadata/stations.csv
+outputs:
+  root: outputs/base
+run_scenarios:
+  tutorial:
+    paths:
+      station_metadata: data/examples/example_five_event_subset/metadata/selected_stations.csv
+    outputs:
+      root: "{{root_dir}}/outputs/tutorials"
+""",
+        encoding="utf-8",
+    )
+
+    context = notebook_run_context(start=repo / "docs" / "examples", run_scenario="tutorial", create_dirs=False)
+
+    assert context.cfg.run_scenario == "tutorial"
+    assert context.outputs_root == repo / "outputs" / "tutorials"
+    assert context.cfg.section("paths.station_metadata") == "data/examples/example_five_event_subset/metadata/selected_stations.csv"
     clear_active_config()
 
 
@@ -851,6 +890,40 @@ def test_dashboard_summary_readiness_uses_schema_and_selected_columns(tmp_path, 
     assert row["row_count"] == 2
     assert row["map_ready"] is True
     assert row["nonempty_value_columns"] == "med_log2_residual"
+
+
+def test_dashboard_output_readiness_requires_metric_dataset_files(tmp_path):
+    """Dashboard preflight should not treat empty output directories as complete."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    paths = dashboard_output_namespace(cfg=cfg)
+    paths.metrics_long_path.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "value": [0.5]}).to_parquet(
+        paths.metrics_long_path,
+        index=False,
+    )
+    paths.metrics_dashboard_root.mkdir(parents=True, exist_ok=True)
+    paths.dashboard_summary_root.mkdir(parents=True, exist_ok=True)
+
+    metric_status = dashboard_metric_dataset_readiness_frame(paths.metrics_dashboard_root)
+    readiness = dashboard_output_readiness(cfg=cfg)
+
+    assert metric_status["readiness"].iloc[0] == "missing_dataset_files"
+    assert readiness.should_run is True
+    assert readiness.reason == "missing_outputs"
+    assert "recognized files" in readiness.message
+    assert "metrics_dashboard_root" in set(readiness.status_frame()["name"])
 
 
 def test_optional_dashboard_summary_filter_reports_missing_value_columns():

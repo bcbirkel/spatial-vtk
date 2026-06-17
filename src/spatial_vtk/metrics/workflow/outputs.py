@@ -21,6 +21,7 @@ from typing import Any
 
 import pandas as pd
 
+from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import active_config
 from spatial_vtk.metrics.calculate.enrich import enrich_metric_table
 from spatial_vtk.metrics.workflow.run import write_metric_rows
@@ -150,8 +151,9 @@ def write_metric_outputs(
     fmt = str(table_format).strip().lower()
     if fmt not in {"parquet", "csv"}:
         raise ValueError("table_format must be 'parquet' or 'csv'.")
-    root = Path(output_dir).expanduser() if output_dir is not None else (active_config().path("outputs.tables") or (active_config().root_dir / "outputs" / "tables"))
-    root.mkdir(parents=True, exist_ok=True)
+    root = Path(output_dir).expanduser() if output_dir is not None else None
+    if root is not None:
+        root.mkdir(parents=True, exist_ok=True)
     suffix = ".parquet" if fmt == "parquet" else ".csv"
     tables = prepare_metric_workflow_outputs(
         metric_rows,
@@ -164,17 +166,18 @@ def write_metric_outputs(
         dashboard_distance_bin_km=dashboard_distance_bin_km,
         dashboard_azimuth_bin_deg=dashboard_azimuth_bin_deg,
     )
-    metrics_path = write_metric_rows(tables["metrics_long"], root / f"metrics_long{suffix}")
-    path_table_path = write_metric_rows(tables["path_table"], root / f"path_table{suffix}")
-    path_summary_path = write_metric_rows(tables["path_summary"], root / f"path_summary{suffix}")
+    output_paths = _metric_output_paths(root, suffix=suffix)
+    metrics_path = write_metric_rows(tables["metrics_long"], output_paths["metrics_long"])
+    path_table_path = write_metric_rows(tables["path_table"], output_paths["path_table"])
+    path_summary_path = write_metric_rows(tables["path_summary"], output_paths["path_summary"])
     dashboard_root = write_dashboard_metric_dataset(
         tables["dashboard_metrics"],
-        root / "dashboard_metrics",
+        output_paths["dashboard_metrics"],
         partitioned=dashboard_partitioned,
     )
     dashboard_summary_paths = write_dashboard_summaries(
         tables["dashboard_summaries"],
-        root / "dashboard_summaries",
+        output_paths["dashboard_summaries"],
         format=fmt,
     )
     written: dict[str, Path] = {
@@ -185,6 +188,27 @@ def write_metric_outputs(
     }
     written.update({f"dashboard_summary_{name}": path for name, path in dashboard_summary_paths.items()})
     return written
+
+
+def _metric_output_paths(root: Path | None, *, suffix: str) -> dict[str, Path]:
+    """Return metric downstream output paths for explicit or config-backed roots."""
+
+    if root is not None:
+        return {
+            "metrics_long": root / f"metrics_long{suffix}",
+            "path_table": root / f"path_table{suffix}",
+            "path_summary": root / f"path_summary{suffix}",
+            "dashboard_metrics": root / "dashboard_metrics",
+            "dashboard_summaries": root / "dashboard_summaries",
+        }
+    active_config()
+    return {
+        "metrics_long": resolve_output_path("metrics_long", kind="table", create_parent=True),
+        "path_table": resolve_output_path("path_table", kind="table", create_parent=True),
+        "path_summary": resolve_output_path("path_summary", kind="table", create_parent=True),
+        "dashboard_metrics": resolve_output_path("metrics_dashboard", kind="dashboard", create_parent=True),
+        "dashboard_summaries": resolve_output_path("dashboard_summaries", kind="dashboard", create_parent=True),
+    }
 
 
 def _read_metric_table(value: pd.DataFrame | str | Path) -> pd.DataFrame:

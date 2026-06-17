@@ -197,6 +197,7 @@ def prepare_notebook_geospatial_environment(
 def notebook_run_context(
     config_path: str | Path | None = None,
     *,
+    run_scenario: str | None = None,
     start: str | Path | None = None,
     activate: bool = True,
     create_dirs: bool = True,
@@ -208,6 +209,9 @@ def notebook_run_context(
     config_path
         Explicit config path. When omitted, common project-relative locations
         and ``SVTK_CONFIG`` discovery are used.
+    run_scenario
+        Optional ``run_scenarios`` overlay to apply before activating the
+        config. When omitted, ``SVTK_RUN_SCENARIO`` is honored if set.
     start
         Directory used to find the repository root.
     activate
@@ -223,7 +227,8 @@ def notebook_run_context(
 
     repo_root = find_repo_root(start)
     resolved_config = _resolve_notebook_config_path(repo_root, config_path)
-    cfg = SpatialVTKConfig.from_file(resolved_config)
+    scenario = run_scenario if run_scenario is not None else os.environ.get("SVTK_RUN_SCENARIO")
+    cfg = SpatialVTKConfig.from_file(resolved_config, run_scenario=scenario)
     if activate:
         cfg.activate()
 

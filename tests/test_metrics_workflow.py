@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from spatial_vtk.config.runtime import SpatialVTKConfig
+from spatial_vtk.config.runtime import SpatialVTKConfig, clear_active_config
 from spatial_vtk.io.plans import MetricPlan
 from spatial_vtk.metrics.workflow import (
     SlurmSettings,
@@ -1150,6 +1150,48 @@ def test_metric_workflow_outputs_feed_downstream_modules(tmp_path) -> None:
     figure = plot_event_residual_map(enriched, tmp_path / "workflow_residual_map.png", event_id="e1", metric="PGA", add_basemap=False)
     assert figure.exists()
     assert figure.stat().st_size > 0
+
+
+def test_write_metric_outputs_uses_registered_dashboard_paths_when_configured(tmp_path) -> None:
+    """Config-backed metric output writing should not put dashboards under tables."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    metric_rows = pd.DataFrame(
+        {
+            "event_id": ["e1"],
+            "station": ["STA"],
+            "model": ["m1"],
+            "component": ["Z"],
+            "band": ["1-2 sec"],
+            "metric": ["PGA"],
+            "value_obs": [4.0],
+            "value_syn": [2.0],
+            "log2_residual": [1.0],
+            "residual": [1.0],
+        }
+    )
+    try:
+        written = write_metric_outputs(metric_rows)
+    finally:
+        clear_active_config()
+
+    assert written["metrics_long"] == tmp_path / "outputs" / "tables" / "metrics_long.parquet"
+    assert written["dashboard_metrics"] == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    assert (tmp_path / "outputs" / "dashboards" / "metrics_dashboard" / "metrics_long.parquet").exists()
+    assert (tmp_path / "outputs" / "dashboards" / "dashboard_summaries" / "model_metric_band.parquet").exists()
+    assert not (tmp_path / "outputs" / "tables" / "dashboard_metrics").exists()
+    assert cfg.root_dir == tmp_path
 
 
 def _write_npz_waveform(path, samples, *, station: str, channel: str, sampling_rate: float) -> None:

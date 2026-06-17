@@ -120,6 +120,29 @@ def load_dashboard_metric_dataset(
     )
 
 
+def dashboard_metric_dataset_paths(input_root: str | Path) -> list[Path]:
+    """Return recognized dashboard metric files without reading row data.
+
+    Parameters
+    ----------
+    input_root
+        Dashboard dataset directory or direct dashboard metric table path.
+
+    Returns
+    -------
+    list[pathlib.Path]
+        Existing direct or partitioned metric table files. The list is empty
+        when the root is missing or contains no recognized dashboard files.
+    """
+
+    root = Path(input_root).expanduser()
+    if root.is_file():
+        return [root] if root.suffix.lower() in {".parquet", ".pq", ".csv"} else []
+    if not root.exists():
+        return []
+    return _dashboard_metric_parquet_paths(root)
+
+
 def _dashboard_metric_parquet_paths(root: Path) -> list[Path]:
     """Return recognized dashboard metric parquet files under ``root``."""
 
@@ -337,6 +360,7 @@ def _as_sequence(value: pd.DataFrame | str | Path | Sequence[pd.DataFrame | str 
 
 __all__ = [
     "add_dashboard_path_geometry",
+    "dashboard_metric_dataset_paths",
     "forward_azimuth_deg",
     "haversine_km",
     "load_dashboard_metric_dataset",

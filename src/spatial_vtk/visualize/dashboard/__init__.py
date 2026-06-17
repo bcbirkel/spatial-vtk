@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from spatial_vtk.visualize.dashboard.export import (
     add_dashboard_path_geometry,
+    dashboard_metric_dataset_paths,
     forward_azimuth_deg,
     haversine_km,
     load_dashboard_metric_dataset,
@@ -21,8 +22,10 @@ from spatial_vtk.visualize.dashboard.charts import (
 )
 from spatial_vtk.visualize.dashboard.contracts import (
     dashboard_map_readiness,
+    dashboard_metric_dataset_readiness_frame,
     dashboard_output_namespace,
     dashboard_output_paths,
+    dashboard_output_readiness,
     dashboard_output_status_frame,
     dashboard_row_level_columns,
     dashboard_summary_readiness_frame,
@@ -76,8 +79,11 @@ __all__ = [
     "column_display_lookup",
     "column_display_name",
     "dashboard_map_readiness",
+    "dashboard_metric_dataset_paths",
+    "dashboard_metric_dataset_readiness_frame",
     "dashboard_output_paths",
     "dashboard_output_namespace",
+    "dashboard_output_readiness",
     "dashboard_output_status_frame",
     "dashboard_row_level_columns",
     "dashboard_summary_readiness_frame",

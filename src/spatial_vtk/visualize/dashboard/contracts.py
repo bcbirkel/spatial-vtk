@@ -67,6 +67,37 @@ class QCDashboardPaths:
     trace_summary: Path
 
 
+@dataclass(frozen=True)
+class DashboardOutputReadiness:
+    """Notebook-friendly readiness decision for metrics dashboard outputs."""
+
+    should_run: bool
+    reason: str
+    message: str
+    metrics_status: pd.DataFrame
+    summary_status: pd.DataFrame
+    input_status: pd.DataFrame
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return combined input, metric-dataset, and summary-table status."""
+
+        frames = [
+            frame
+            for frame in (self.input_status, self.metrics_status, self.summary_status)
+            if frame is not None and not frame.empty
+        ]
+        if not frames:
+            return pd.DataFrame()
+        columns: list[str] = []
+        rows: list[dict[str, object]] = []
+        for frame in frames:
+            for column in frame.columns:
+                if column not in columns:
+                    columns.append(str(column))
+            rows.extend(frame.astype(object).to_dict("records"))
+        return pd.DataFrame(rows, columns=columns)
+
+
 def read_dashboard_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
     """Read a dashboard table from a DataFrame, Parquet, or CSV input."""
 
@@ -231,6 +262,169 @@ def dashboard_output_status_frame(
         )
     )
     return _attach_dashboard_readiness(_attach_dashboard_contract(status))
+
+
+def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.DataFrame:
+    """Return bounded readiness details for one dashboard metric dataset.
+
+    This checks only the dataset directory, recognized table paths, parquet
+    metadata, CSV line counts, and table schemas. It does not materialize the
+    full metric rows, so it is safe to call from large-run notebooks.
+    """
+
+    path = Path(metrics_root).expanduser()
+    row: dict[str, object] = {
+        "kind": "dashboard_metrics",
+        "name": "metrics_dashboard_root",
+        "path": str(path),
+        "exists": path.exists(),
+        "ready": False,
+        "readiness": "missing",
+        "file_count": 0,
+        "row_count": "",
+        "value_columns": "",
+        "message": f"Dashboard metric dataset root is missing: {path}",
+    }
+    if not path.exists():
+        return pd.DataFrame([row])
+    files = _dashboard_metric_files(path)
+    row["file_count"] = len(files)
+    if not files:
+        row.update(
+            {
+                "readiness": "missing_dataset_files",
+                "message": (
+                    "Dashboard metric dataset contains no recognized files. "
+                    "Expected metrics_long.parquet or model=*/band=*/metric=*/part.parquet."
+                ),
+            }
+        )
+        return pd.DataFrame([row])
+    try:
+        row_count = sum(_dashboard_metric_row_count(file_path) for file_path in files)
+        columns = _dashboard_metric_columns(files[0])
+    except Exception as exc:  # pragma: no cover - integration guardrail
+        row.update(
+            {
+                "readiness": "read_error",
+                "row_count": "",
+                "message": f"Dashboard metric dataset could not be inspected: {exc}",
+            }
+        )
+        return pd.DataFrame([row])
+    value_columns = _dashboard_value_columns(pd.DataFrame(columns=columns))
+    row["row_count"] = row_count
+    row["value_columns"] = ", ".join(value_columns)
+    if row_count <= 0:
+        row.update({"readiness": "empty", "message": "Dashboard metric dataset has no rows."})
+    elif not value_columns:
+        row.update(
+            {
+                "readiness": "no_value_columns",
+                "message": "Dashboard metric dataset has rows but no recognized residual/score/value columns.",
+            }
+        )
+    else:
+        row.update({"ready": True, "readiness": "ready", "message": "Dashboard metric dataset is ready."})
+    return pd.DataFrame([row])
+
+
+def dashboard_output_readiness(
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    overwrite: bool = False,
+    create_parent: bool = True,
+    summary_format: str = "parquet",
+) -> DashboardOutputReadiness:
+    """Return the rebuild decision for dashboard metric and summary outputs.
+
+    The decision checks the configured ``metrics_long`` input, verifies that
+    the dashboard metric dataset contains recognized row files, and validates
+    each summary table needed by the Streamlit metrics dashboard. Existing
+    output directories alone are not treated as complete outputs.
+    """
+
+    paths = dashboard_output_paths(
+        cfg=cfg,
+        create_parent=create_parent,
+        include_summary_tables=True,
+        summary_format=summary_format,
+    )
+    metrics_long_path = paths["metrics_long_path"]
+    metrics_root = paths["metrics_dashboard_root"]
+    summary_root = paths["dashboard_summary_root"]
+    input_status = pd.DataFrame(_status_rows({"metrics_long_path": metrics_long_path}))
+    if not metrics_long_path.exists():
+        return DashboardOutputReadiness(
+            should_run=False,
+            reason="missing_inputs",
+            message="metrics_long.parquet is not ready yet; finish Step 3 first.",
+            metrics_status=dashboard_metric_dataset_readiness_frame(metrics_root),
+            summary_status=dashboard_summary_readiness_frame(
+                summary_root,
+                cfg=cfg,
+                create_parent=create_parent,
+                summary_format=summary_format,
+            ),
+            input_status=input_status,
+        )
+    metrics_status = dashboard_metric_dataset_readiness_frame(metrics_root)
+    summary_status = dashboard_summary_readiness_frame(
+        summary_root,
+        cfg=cfg,
+        create_parent=create_parent,
+        summary_format=summary_format,
+    )
+    metrics_ready = bool(metrics_status["ready"].iloc[0]) if "ready" in metrics_status.columns else False
+    summary_ready_mask = _bool_status_series(summary_status["ready"]) if "ready" in summary_status.columns else pd.Series(dtype=bool)
+    summaries_ready = bool(summary_ready_mask.all()) if not summary_ready_mask.empty else False
+    stale = _dashboard_outputs_stale(metrics_long_path, metrics_root, summary_status)
+    if overwrite:
+        return DashboardOutputReadiness(
+            should_run=True,
+            reason="overwrite",
+            message="Overwrite requested; rebuilding dashboard datasets.",
+            metrics_status=metrics_status,
+            summary_status=summary_status,
+            input_status=input_status,
+        )
+    if not metrics_ready:
+        return DashboardOutputReadiness(
+            should_run=True,
+            reason="missing_outputs",
+            message=str(metrics_status["message"].iloc[0]),
+            metrics_status=metrics_status,
+            summary_status=summary_status,
+            input_status=input_status,
+        )
+    if not summaries_ready:
+        missing = summary_status.loc[~summary_ready_mask, ["dashboard_table", "message"]]
+        first_message = str(missing["message"].iloc[0]) if not missing.empty else "Dashboard summary tables are not ready."
+        return DashboardOutputReadiness(
+            should_run=True,
+            reason="missing_outputs",
+            message=first_message,
+            metrics_status=metrics_status,
+            summary_status=summary_status,
+            input_status=input_status,
+        )
+    if stale:
+        return DashboardOutputReadiness(
+            should_run=True,
+            reason="stale_sources",
+            message="metrics_long.parquet is newer than one or more dashboard outputs; rebuilding.",
+            metrics_status=metrics_status,
+            summary_status=summary_status,
+            input_status=input_status,
+        )
+    return DashboardOutputReadiness(
+        should_run=False,
+        reason="current",
+        message="Dashboard datasets are current; skipping.",
+        metrics_status=metrics_status,
+        summary_status=summary_status,
+        input_status=input_status,
+    )
 
 
 def dashboard_summary_readiness_frame(
@@ -408,6 +602,46 @@ def _dashboard_table_columns(path: Path) -> list[str]:
     if suffix == ".csv":
         return list(pd.read_csv(path, nrows=0).columns)
     raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
+
+
+def _dashboard_metric_files(metrics_root: Path) -> list[Path]:
+    """Return recognized metric dataset files under a dashboard root."""
+
+    from spatial_vtk.visualize.dashboard.export import dashboard_metric_dataset_paths
+
+    return dashboard_metric_dataset_paths(metrics_root)
+
+
+def _dashboard_metric_columns(path: Path) -> list[str]:
+    """Return one dashboard metric file's columns without loading rows."""
+
+    return _dashboard_table_columns(path)
+
+
+def _dashboard_metric_row_count(path: Path) -> int:
+    """Return one dashboard metric file row count without loading all data."""
+
+    return _dashboard_table_row_count(path)
+
+
+def _dashboard_outputs_stale(metrics_long_path: Path, metrics_root: Path, summary_status: pd.DataFrame) -> bool:
+    """Return whether dashboard outputs are older than the metric source."""
+
+    if not metrics_long_path.exists():
+        return False
+    source_mtime = metrics_long_path.stat().st_mtime
+    output_paths = [path for path in _dashboard_metric_files(metrics_root) if path.exists()]
+    if not summary_status.empty and "path" in summary_status.columns:
+        output_paths.extend(Path(str(path)) for path in summary_status["path"] if Path(str(path)).exists())
+    if not output_paths:
+        return False
+    return any(path.stat().st_mtime < source_mtime for path in output_paths)
+
+
+def _bool_status_series(series: pd.Series) -> pd.Series:
+    """Return a bool series without pandas object downcast warnings."""
+
+    return series.map(lambda value: bool(value) if pd.notna(value) else False).astype(bool)
 
 
 def _dashboard_table_row_count(path: Path) -> int:
@@ -624,13 +858,16 @@ def _require_columns(df: pd.DataFrame, columns: set[str], *, table_name: str) ->
 
 __all__ = [
     "METRICS_TABLES",
+    "DashboardOutputReadiness",
     "MAP_COORDINATE_CANDIDATES",
     "MetricsDashboardPaths",
     "OPTIONAL_METRICS_TABLE_COLUMNS",
     "QCDashboardPaths",
     "REQUIRED_METRICS_TABLE_COLUMNS",
+    "dashboard_metric_dataset_readiness_frame",
     "dashboard_output_paths",
     "dashboard_output_namespace",
+    "dashboard_output_readiness",
     "dashboard_output_status_frame",
     "dashboard_row_level_columns",
     "dashboard_summary_readiness_frame",

@@ -688,7 +688,9 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
 
     outputs = metrics_sub.add_parser("outputs", help="Write standard downstream metric outputs.")
     outputs.add_argument("--metrics", required=True, help="Metric workflow rows CSV/parquet path.")
-    outputs.add_argument("--output-dir", required=True, help="Output directory.")
+    outputs.add_argument("--output-dir", default=None, help="Ad hoc output directory. Defaults to configured output paths.")
+    outputs.add_argument("--config", default=None, help="Config file used to resolve standard output paths.")
+    outputs.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     outputs.add_argument("--events", default=None, help="Optional event metadata CSV/parquet path.")
     outputs.add_argument("--stations", default=None, help="Optional station metadata CSV/parquet path.")
     outputs.add_argument("--residual-column", default=None, help="Column exposed as canonical residual.")
@@ -1452,6 +1454,11 @@ def _cmd_metrics_outputs(args: argparse.Namespace) -> int:
 
     from spatial_vtk.metrics.workflow import write_metric_outputs
 
+    config = _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    if config is not None:
+        config.activate()
+    elif args.output_dir is None:
+        _required_config_path(args.config)
     written = write_metric_outputs(
         args.metrics,
         args.output_dir,
