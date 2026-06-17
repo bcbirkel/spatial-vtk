@@ -2,6 +2,16 @@ Changelog
 =========
 
 2026-06-17
+   Wired the large-run Step 2 QC notebook to the standard
+   ``qc_availability`` table and availability figure so observed/synthetic
+   post-QC overlap can be rendered without loading the full inventory. The
+   availability heatmap now uses sparse labels and capped figure dimensions
+   for large datasets, and the event-station retention heatmap now writes to
+   the distinct ``event_station_retention`` figure output instead of sharing
+   the availability filename.
+   Hardened metric plotting compatibility for older pandas and Matplotlib
+   environments by avoiding pandas 2-only ``DataFrame.map`` calls and falling
+   back to Matplotlib's legacy boxplot label keyword when needed.
    Added a public ``preprocessed_waveform_metadata_paths()`` helper so
    notebooks and scripts use the same config-backed preprocessing metadata
    paths as ``preprocess_waveform_files()``. Large-run Step 1 and Step 3 now

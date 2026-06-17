@@ -218,6 +218,8 @@ def plot_data_synthetic_availability(
     observed_col: str = "observed_available",
     synthetic_col: str = "synthetic_available",
     title: str = "Observed and Synthetic Availability",
+    max_tick_labels: int = 80,
+    max_figsize: tuple[float, float] = (18.0, 12.0),
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
@@ -239,6 +241,12 @@ def plot_data_synthetic_availability(
         Boolean availability columns.
     title
         Figure title.
+    max_tick_labels
+        Maximum event/station tick labels to draw on each axis before labels
+        are thinned.
+    max_figsize
+        Maximum figure size in inches. Large datasets are drawn as a dense
+        raster instead of creating one huge Matplotlib canvas.
 
     Returns
     -------
@@ -250,14 +258,20 @@ def plot_data_synthetic_availability(
     df = availability_df.copy()
     df["_availability_code"] = df[observed_col].astype(bool).astype(int) + 2 * df[synthetic_col].astype(bool).astype(int)
     matrix = df.pivot_table(index=station_col, columns=event_col, values="_availability_code", aggfunc="max", fill_value=0)
-    fig, ax = plt.subplots(figsize=(max(6.5, 0.38 * matrix.shape[1] + 3.0), max(4.8, 0.24 * matrix.shape[0] + 2.0)), dpi=180)
+    width = min(float(max_figsize[0]), max(6.8, 0.42 * matrix.shape[1] + 3.2))
+    height = min(float(max_figsize[1]), max(4.8, 0.24 * matrix.shape[0] + 2.0))
+    fig, ax = plt.subplots(figsize=(width, height), dpi=180)
     image = ax.imshow(matrix.to_numpy(dtype=float), aspect="auto", cmap="viridis", vmin=0, vmax=3)
-    ax.set_xticks(np.arange(matrix.shape[1]))
-    ax.set_xticklabels(matrix.columns.astype(str), rotation=45, ha="right", fontsize=8)
-    ax.set_yticks(np.arange(matrix.shape[0]))
-    ax.set_yticklabels(matrix.index.astype(str), fontsize=8)
-    ax.set_xlabel("Event")
-    ax.set_ylabel("Station")
+    _set_sparse_tick_labels(ax, axis="x", labels=matrix.columns.astype(str), max_labels=max_tick_labels)
+    _set_sparse_tick_labels(ax, axis="y", labels=matrix.index.astype(str), max_labels=max_tick_labels)
+    event_label = "Event"
+    station_label = "Station"
+    if matrix.shape[1] > int(max_tick_labels):
+        event_label = f"Event ({matrix.shape[1]} total; labels sampled)"
+    if matrix.shape[0] > int(max_tick_labels):
+        station_label = f"Station ({matrix.shape[0]} total; labels sampled)"
+    ax.set_xlabel(event_label)
+    ax.set_ylabel(station_label)
     ax.set_title(title)
     cbar = fig.colorbar(image, ax=ax, ticks=[0, 1, 2, 3])
     cbar.ax.set_yticklabels(["None", "Observed", "Synthetic", "Both"])
@@ -265,6 +279,7 @@ def plot_data_synthetic_availability(
         fig,
         output_path,
         outpath=outpath,
+        output_key="data_synthetic_availability",
         showfig=showfig,
         savefig=savefig,
         sidecar_df=df,
@@ -389,7 +404,7 @@ def plot_event_station_retention_heatmap(
         fig,
         output_path,
         outpath=outpath,
-        output_key="data_synthetic_availability",
+        output_key="event_station_retention",
         showfig=showfig,
         savefig=savefig,
         sidecar_df=df,

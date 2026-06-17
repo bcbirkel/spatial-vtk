@@ -447,6 +447,21 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
         assert not missing, f"{notebook_path.relative_to(repo_root)} missing readiness displays: {missing}"
 
 
+def test_large_run_step02_uses_qc_availability_output() -> None:
+    """The large-run QC notebook should render the standard availability sidecar."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "availability_path = step_outputs.availability_path" in source
+    assert "availability_path," in source
+    assert 'qc_availability = load_output_table("qc_availability")' in source
+    assert "plot_data_synthetic_availability(" in source
+    assert "Observed/Synthetic Availability (Post-QC Trace Overlap)" in source
+
+
 def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:
     """Large-run notebooks should use preprocessing's public path helper."""
 

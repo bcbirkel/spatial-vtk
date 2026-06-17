@@ -14,6 +14,7 @@ matplotlib.use("Agg", force=True)
 
 import matplotlib.pyplot as plt
 
+from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.metrics.plot import (
     plot_band_score_distribution,
     plot_geology_boxplot,
@@ -483,6 +484,53 @@ def test_qc_figures_write_optional_row_sidecars(tmp_path: Path) -> None:
     assert trace_metadata["figure_type"] == "trace_inventory_samples"
     assert trace_metadata["plot_row_count"] == 3
     assert trace_metadata["written_row_count"] == 2
+
+
+def test_qc_availability_and_retention_heatmaps_have_distinct_default_outputs(tmp_path: Path) -> None:
+    """Config-backed QC heatmaps should not overwrite each other."""
+
+    cfg = SpatialVTKConfig(
+        tmp_path / "config.yaml",
+        tmp_path,
+        {
+            "outputs": {
+                "root": str(tmp_path / "outputs"),
+                "figures": str(tmp_path / "outputs" / "figures"),
+            }
+        },
+    ).activate()
+    availability = pd.DataFrame(
+        {
+            "event_id": ["E1", "E1", "E2"],
+            "station": ["S1", "S2", "S1"],
+            "observed_available": [True, False, True],
+            "synthetic_available": [True, True, False],
+        }
+    )
+    event_station_retention = pd.DataFrame(
+        {
+            "event_id": ["E1", "E1", "E2"],
+            "station": ["S1", "S2", "S1"],
+            "total_pairs": [12, 12, 12],
+            "retained_pairs": [12, 6, 9],
+            "retention_percent": [100.0, 50.0, 75.0],
+        }
+    )
+
+    try:
+        availability_fig = plot_data_synthetic_availability(availability, showfig=False, savefig=True)
+        retention_fig = plot_event_station_retention_heatmap(event_station_retention, showfig=False, savefig=True)
+        availability_path = Path(availability_fig.spatial_vtk_saved_path)
+        retention_path = Path(retention_fig.spatial_vtk_saved_path)
+    finally:
+        clear_active_config()
+
+    assert cfg.root_dir == tmp_path
+    assert availability_path.name == "data_synthetic_availability.png"
+    assert retention_path.name == "event_station_retention.png"
+    assert availability_path != retention_path
+    _assert_png(availability_path)
+    _assert_png(retention_path)
 
 
 def test_metric_and_spatial_figure_families(tmp_path: Path) -> None:

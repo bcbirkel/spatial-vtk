@@ -67,7 +67,10 @@ def plot_geology_boxplot(
     work = plot_df[[geology_col, value_col]].dropna()
     labels = sorted(work[geology_col].astype(str).unique())
     values = [pd.to_numeric(work.loc[work[geology_col].astype(str) == label, value_col], errors="coerce").dropna().to_numpy() for label in labels]
-    ax.boxplot(values, tick_labels=labels, patch_artist=True)
+    try:
+        ax.boxplot(values, tick_labels=labels, patch_artist=True)
+    except TypeError:
+        ax.boxplot(values, labels=labels, patch_artist=True)
     if any(token in value_col.lower() for token in ("resid", "delay", "error", "centered")):
         ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
     ax.set_xlabel(display_label(geology_col))

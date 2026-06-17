@@ -85,7 +85,7 @@ def plot_winner_heatmap(
     pivot = work.pivot_table(index=row_col, columns=col_col, values=winner_col, aggfunc=lambda values: str(values.iloc[0]))
     labels = sorted({str(value) for value in pivot.stack().dropna().unique()})
     lookup = {label: index for index, label in enumerate(labels)}
-    numeric = pivot.map(lambda value: lookup.get(str(value), np.nan))
+    numeric = pivot.apply(lambda column: column.map(lambda value: lookup.get(str(value), np.nan)))
     fig, ax = plt.subplots(figsize=(max(6.0, 0.55 * numeric.shape[1] + 3.5), max(4.2, 0.35 * numeric.shape[0] + 2.2)), dpi=180, constrained_layout=True)
     base = plt.get_cmap("tab20")
     cmap = ListedColormap([base(index % base.N) for index in range(max(len(labels), 1))])
