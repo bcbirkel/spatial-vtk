@@ -40,10 +40,12 @@ from spatial_vtk.config.metric_catalog import (
 )
 from spatial_vtk.config.naming import abbreviate_model
 from spatial_vtk.config.notebook import (
+    NotebookDashboardCommands,
     NotebookFigureSidecarSettings,
     NotebookRunContext,
     find_repo_root,
     format_run_time,
+    notebook_dashboard_launch_commands,
     notebook_figure_sidecar_settings,
     notebook_timer,
     notebook_timing_enabled,
@@ -112,6 +114,7 @@ __all__ = [
     "OutputSpec",
     "SpectralSettings",
     "NotebookFigureSidecarSettings",
+    "NotebookDashboardCommands",
     "NotebookRunContext",
     "SVTK_CLI_CONFIG_ENV",
     "SVTK_CONFIG_ENV",
@@ -148,6 +151,7 @@ __all__ = [
     "metric_settings_summary",
     "metrics_settings_from_config",
     "notebook_timer",
+    "notebook_dashboard_launch_commands",
     "notebook_figure_sidecar_settings",
     "notebook_timing_enabled",
     "notebook_run_context",

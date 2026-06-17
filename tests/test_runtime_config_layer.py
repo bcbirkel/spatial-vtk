@@ -17,6 +17,7 @@ from spatial_vtk.config import (
     clear_active_config,
     find_config_file,
     format_run_time,
+    notebook_dashboard_launch_commands,
     notebook_figure_sidecar_settings,
     notebook_run_context,
     get_saved_config_path,
@@ -339,6 +340,48 @@ def test_notebook_figure_sidecar_settings_parse_env(tmp_path, monkeypatch):
     assert explicit.enabled is True
     assert explicit.rows == 10
     assert explicit.directory == tmp_path / "custom_sidecars"
+
+
+def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monkeypatch):
+    """Notebook dashboard commands should be config-backed and collision tolerant."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text("project:\n  root_dir: .\n", encoding="utf-8")
+    monkeypatch.delenv("SVTK_METRICS_DASHBOARD_PORT", raising=False)
+    monkeypatch.delenv("SVTK_QC_DASHBOARD_PORT", raising=False)
+    monkeypatch.delenv("SVTK_DASHBOARD_AUTO_PORT", raising=False)
+    monkeypatch.delenv("SVTK_DASHBOARD_PROXY_MODE", raising=False)
+
+    commands = notebook_dashboard_launch_commands(config_path)
+
+    assert commands.metrics_port == 8501
+    assert commands.qc_port == 8502
+    assert commands.auto_port is True
+    assert commands.proxy_mode is False
+    assert commands.metrics_command == f"svtk dashboard metrics --config {config_path} --port 8501 --auto-port"
+    assert commands.qc_command == f"svtk dashboard qc --config {config_path} --port 8502 --auto-port"
+
+
+def test_notebook_dashboard_launch_commands_parse_env_and_scenario(tmp_path, monkeypatch):
+    """Notebook dashboard commands should expose proxy and scenario options clearly."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text("project:\n  root_dir: .\n", encoding="utf-8")
+    monkeypatch.setenv("SVTK_METRICS_DASHBOARD_PORT", "8601")
+    monkeypatch.setenv("SVTK_QC_DASHBOARD_PORT", "8602")
+    monkeypatch.setenv("SVTK_DASHBOARD_AUTO_PORT", "0")
+    monkeypatch.setenv("SVTK_DASHBOARD_PROXY_MODE", "1")
+
+    commands = notebook_dashboard_launch_commands(config_path, run_scenario="large-run")
+
+    assert commands.metrics_port == 8601
+    assert commands.qc_port == 8602
+    assert commands.auto_port is False
+    assert commands.proxy_mode is True
+    assert "--auto-port" not in commands.metrics_command
+    assert "--proxy-mode" in commands.metrics_command
+    assert "--run-scenario large-run" in commands.metrics_command
+    assert "--proxy-mode" in commands.qc_command
 
 
 def test_notebook_slurm_script_uses_configured_environment(tmp_path, capsys):

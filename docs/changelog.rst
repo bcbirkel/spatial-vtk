@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-16
+   Added ``notebook_dashboard_launch_commands()`` so tutorial and large-run
+   dashboard notebooks print the same config-backed launch commands as the CLI
+   defaults. Notebook dashboard commands now include ``--auto-port`` by default
+   and expose port/proxy options through environment variables instead of
+   notebook-local command assembly.
    Added ``--auto-port`` to metrics and QC dashboard launch commands. The
    dashboard launcher can now select the first available Streamlit port at or
    above the requested ``--port`` and prints the actual URL, which makes

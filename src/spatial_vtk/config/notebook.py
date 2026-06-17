@@ -23,7 +23,7 @@ import shlex
 from time import perf_counter
 from typing import Any, Iterator
 
-from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
+from spatial_vtk.config.runtime import SpatialVTKConfig, active_config, get_saved_config_path
 from spatial_vtk.config.compute import (
     SlurmSubmission,
     slurm_settings_from_config,
@@ -96,6 +96,31 @@ class NotebookFigureSidecarSettings:
             "sidecar_rows": self.rows,
             "sidecar_dir": self.directory,
         }
+
+
+@dataclass(frozen=True)
+class NotebookDashboardCommands:
+    """Config-backed dashboard launch commands for workflow notebooks.
+
+    Parameters
+    ----------
+    metrics_command, qc_command
+        Shell-safe commands for launching the metrics and QC dashboards.
+    metrics_port, qc_port
+        Requested ports before any CLI ``--auto-port`` fallback.
+    auto_port
+        Whether commands include ``--auto-port``.
+    proxy_mode
+        Whether commands include ``--proxy-mode`` for reverse-proxy notebook
+        environments.
+    """
+
+    metrics_command: str
+    qc_command: str
+    metrics_port: int
+    qc_port: int
+    auto_port: bool
+    proxy_mode: bool
 
 
 def find_repo_root(start: str | Path | None = None) -> Path:
@@ -285,6 +310,70 @@ def notebook_figure_sidecar_settings(
     if directory is None and figure_dir is not None:
         directory = Path(figure_dir).expanduser() / "sidecars"
     return NotebookFigureSidecarSettings(enabled=enabled, rows=rows, directory=directory)
+
+
+def notebook_dashboard_launch_commands(
+    config_path: str | Path | None = None,
+    *,
+    metrics_port: int | None = None,
+    qc_port: int | None = None,
+    auto_port: bool | None = None,
+    proxy_mode: bool | None = None,
+    run_scenario: str | None = None,
+) -> NotebookDashboardCommands:
+    """Return shell-safe dashboard launch commands for notebooks.
+
+    Parameters
+    ----------
+    config_path
+        Config file passed to ``svtk dashboard``. When omitted, the active
+        config path or ``SVTK_CONFIG`` is used when available.
+    metrics_port, qc_port
+        Optional dashboard ports. Defaults come from
+        ``SVTK_METRICS_DASHBOARD_PORT`` and ``SVTK_QC_DASHBOARD_PORT``.
+    auto_port
+        Whether to include ``--auto-port``. The notebook default is ``True`` so
+        a stale dashboard does not make the cell fail.
+    proxy_mode
+        Whether to include ``--proxy-mode`` for reverse-proxy notebook
+        sessions. Defaults to ``SVTK_DASHBOARD_PROXY_MODE``.
+    run_scenario
+        Optional run scenario forwarded to dashboard commands.
+
+    Returns
+    -------
+    NotebookDashboardCommands
+        Commands and resolved options suitable for printing in a notebook.
+    """
+
+    resolved_config_path = _resolve_dashboard_config_path(config_path)
+    resolved_metrics_port = int(
+        metrics_port if metrics_port is not None else _env_int("SVTK_METRICS_DASHBOARD_PORT", default=8501)
+    )
+    resolved_qc_port = int(
+        qc_port if qc_port is not None else _env_int("SVTK_QC_DASHBOARD_PORT", default=8502)
+    )
+    resolved_auto_port = _env_bool("SVTK_DASHBOARD_AUTO_PORT", default=True) if auto_port is None else bool(auto_port)
+    resolved_proxy_mode = _env_bool("SVTK_DASHBOARD_PROXY_MODE", default=False) if proxy_mode is None else bool(proxy_mode)
+
+    def command(kind: str, port: int) -> str:
+        parts = ["svtk", "dashboard", kind, "--config", str(resolved_config_path), "--port", str(port)]
+        if run_scenario:
+            parts.extend(["--run-scenario", str(run_scenario)])
+        if resolved_auto_port:
+            parts.append("--auto-port")
+        if resolved_proxy_mode:
+            parts.append("--proxy-mode")
+        return shlex.join(parts)
+
+    return NotebookDashboardCommands(
+        metrics_command=command("metrics", resolved_metrics_port),
+        qc_command=command("qc", resolved_qc_port),
+        metrics_port=resolved_metrics_port,
+        qc_port=resolved_qc_port,
+        auto_port=resolved_auto_port,
+        proxy_mode=resolved_proxy_mode,
+    )
 
 
 def write_notebook_python_slurm_script(
@@ -628,6 +717,27 @@ def _resolve_notebook_config_path(repo_root: Path, config_path: str | Path | Non
     return next((path.resolve() for path in candidates if path.exists()), candidates[0].resolve())
 
 
+def _resolve_dashboard_config_path(config_path: str | Path | None) -> Path:
+    """Resolve a config path for dashboard commands without loading tables."""
+
+    if config_path is not None:
+        return Path(config_path).expanduser().resolve()
+    try:
+        active = active_config()
+        active_path = getattr(active, "config_path", None)
+        if active_path:
+            return Path(active_path).expanduser().resolve()
+    except Exception:
+        pass
+    saved = get_saved_config_path()
+    if saved:
+        return Path(saved).expanduser().resolve()
+    env_path = os.environ.get("SVTK_CONFIG")
+    if env_path:
+        return Path(env_path).expanduser().resolve()
+    return _resolve_notebook_config_path(find_repo_root(), None)
+
+
 def _env_bool(name: str, *, default: bool) -> bool:
     """Read one boolean environment variable."""
 
@@ -686,10 +796,12 @@ def _figure_env_prefix(figure_kind: str | None) -> str:
 
 
 __all__ = [
+    "NotebookDashboardCommands",
     "NotebookFigureSidecarSettings",
     "NotebookRunContext",
     "find_repo_root",
     "format_run_time",
+    "notebook_dashboard_launch_commands",
     "notebook_figure_sidecar_settings",
     "notebook_timer",
     "notebook_timing_enabled",
