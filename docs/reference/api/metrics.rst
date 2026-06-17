@@ -65,6 +65,9 @@ entry point.
    :members:
    :exclude-members: MetricWorkflowTask, SlurmSettings
 
+.. automodule:: spatial_vtk.metrics.workflow.configured
+   :members:
+
 .. automodule:: spatial_vtk.metrics.workflow.execution
    :members:
 

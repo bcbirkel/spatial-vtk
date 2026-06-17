@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-17
+   Added config-backed metric workflow helpers for waveform-inventory
+   generation, task-manifest planning, metric Slurm script writing, batch
+   merging, and downstream metric/dashboard output writing. The large-run Step
+   3 notebook now calls importable ``spatial_vtk.metrics`` functions through
+   ``run_or_submit_notebook_function()`` instead of constructing metric CLI
+   commands in notebook cells.
    Added config-backed QC notebook workflow helpers for full QC inventory
    builds, overlap sidecar creation, and compact QC summaries. The large-run
    Step 2 notebook now calls importable ``spatial_vtk.qc`` functions through

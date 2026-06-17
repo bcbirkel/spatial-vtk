@@ -11,11 +11,14 @@ from spatial_vtk.config.runtime import SpatialVTKConfig, clear_active_config
 from spatial_vtk.io.plans import MetricPlan
 from spatial_vtk.metrics.workflow import (
     SlurmSettings,
+    build_metric_waveform_inventories_from_config,
     build_metric_waveform_inventories_from_trace_metadata,
     cache_metric_manifest_waveforms,
+    merge_metric_batches_from_config,
     merge_batch_outputs,
     metric_manifest_batch_status,
     plan_metric_tasks,
+    plan_metric_tasks_from_config,
     prepare_metric_workflow_outputs,
     read_task_manifest,
     run_manifest_batch,
@@ -23,7 +26,9 @@ from spatial_vtk.metrics.workflow import (
     slurm_settings_from_config,
     summarize_metric_tasks,
     write_metric_outputs,
+    write_metric_outputs_from_config,
     write_metric_rows,
+    write_metrics_slurm_script_from_config,
     write_metrics_slurm_script,
     write_task_manifest,
     MetricWorkflowTask,
@@ -85,6 +90,48 @@ def test_metric_inventories_from_trace_metadata_use_explicit_path_columns(tmp_pa
     assert reused.reused
     assert reused.observed_rows is None
     assert reused.synthetic_rows is None
+
+
+def test_metric_inventories_from_config_resolve_standard_paths(tmp_path) -> None:
+    """Config-backed inventory helper should use preprocessing and output defaults."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+  preprocessed_waveforms: outputs/preprocessed_waveforms
+metrics:
+  models: [model_a]
+""",
+        encoding="utf-8",
+    )
+    metadata_dir = tmp_path / "outputs" / "preprocessed_waveforms" / "metadata"
+    metadata_dir.mkdir(parents=True)
+    pd.DataFrame(
+        {
+            "source_type": ["observed", "synthetic"],
+            "event_id": ["e1", "e1"],
+            "station": ["abc", "abc"],
+            "component": ["z", "z"],
+            "input_file": ["raw_obs.mseed", "synthetic_source.mseed"],
+            "output_file": ["processed_obs.npz", "processed_syn.npz"],
+            "delta": [0.01, 0.02],
+        }
+    ).to_csv(metadata_dir / "trace_metadata_preprocessed.csv", index=False)
+
+    result = build_metric_waveform_inventories_from_config(config_path=config_path, overwrite=True)
+
+    observed = pd.read_parquet(result["observed_path"])
+    synthetic = pd.read_parquet(result["synthetic_path"])
+    assert Path(result["observed_path"]) == tmp_path / "outputs" / "tables" / "observed_metric_inventory.parquet"
+    assert Path(result["synthetic_path"]) == tmp_path / "outputs" / "tables" / "synthetic_metric_inventory.parquet"
+    assert observed.loc[0, "waveform_path"] == "processed_obs.npz"
+    assert synthetic.loc[0, "model"] == "model_a"
 
 
 def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(tmp_path) -> None:
@@ -869,6 +916,100 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     assert "--batch-index $SLURM_ARRAY_TASK_ID --overwrite" in incomplete_text
 
 
+def test_configured_metric_plan_slurm_and_merge_helpers_use_registered_paths(tmp_path) -> None:
+    """Config-backed metric helpers should mirror CLI workflow defaults."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+compute:
+  slurm:
+    python_command: python
+metrics:
+  metrics: [PGA]
+  components: [Z]
+  passbands: [[1, 2]]
+  models: [m1]
+""",
+        encoding="utf-8",
+    )
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    inventory = {
+        "event_id": ["ev1", "ev2"],
+        "station": ["STA1", "STA2"],
+        "component": ["Z", "Z"],
+        "waveform_path": ["obs1.npz", "obs2.npz"],
+        "dt": [0.01, 0.01],
+    }
+    pd.DataFrame(inventory).to_parquet(tables / "observed_metric_inventory.parquet", index=False)
+    pd.DataFrame({**inventory, "model": ["m1", "m1"], "waveform_path": ["syn1.npz", "syn2.npz"]}).to_parquet(
+        tables / "synthetic_metric_inventory.parquet",
+        index=False,
+    )
+    pd.DataFrame(
+        [
+            {
+                "source": source,
+                "event_id": "ev1",
+                "station": "STA1",
+                "component": "Z",
+                "passband": "1-2 sec",
+                "metric_group": "amplitude",
+                "metric": "PGA",
+                "period_s": np.nan,
+                "qc_status": "pass",
+            }
+            for source in ("observed", "synthetic")
+        ]
+    ).to_parquet(tables / "qc_inventory_overlap.parquet", index=False)
+
+    plan_result = plan_metric_tasks_from_config(config_path=config_path, manifest=True, batch_count=1)
+
+    manifest_path = Path(plan_result["manifest_path"])
+    manifest = read_task_manifest(manifest_path)
+    assert manifest_path == tables / "metric_manifest.json"
+    assert len(manifest.tasks) == 1
+    assert manifest.batches[0]["output_path"].endswith("outputs/metric_batches/metrics_batch_0000.csv")
+
+    slurm_result = write_metrics_slurm_script_from_config(config_path=config_path, incomplete_only=True)
+    script = Path(slurm_result["script_path"])
+    assert script == tmp_path / "outputs" / "slurm" / "step03_run_metrics.slurm"
+    assert "#SBATCH --array=0" in script.read_text(encoding="utf-8")
+
+    batch_output = Path(manifest.batches[0]["output_path"])
+    batch_output.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(
+        {
+            "event_id": ["ev1"],
+            "station": ["STA1"],
+            "component": ["Z"],
+            "model": ["m1"],
+            "band": ["1-2 sec"],
+            "metric": ["PGA"],
+            "value_obs": [2.0],
+            "value_syn": [1.0],
+            "log2_residual": [1.0],
+        }
+    ).to_csv(batch_output, index=False)
+
+    merge_result = merge_metric_batches_from_config(config_path=config_path)
+
+    merged = pd.read_parquet(merge_result["metric_rows"])
+    assert Path(merge_result["metric_rows"]) == tables / "metric_rows.parquet"
+    assert merged.loc[0, "station"] == "STA1"
+
+    complete_slurm = write_metrics_slurm_script_from_config(config_path=config_path, incomplete_only=True)
+    assert complete_slurm["all_complete"] is True
+    assert complete_slurm["script_path"] == ""
+
+
 def test_metric_merge_preserves_text_identifiers_for_parquet(tmp_path) -> None:
     """Merging CSV batches should keep station IDs textual for parquet output."""
 
@@ -1371,6 +1512,59 @@ outputs:
     assert (tmp_path / "outputs" / "dashboards" / "dashboard_summaries" / "model_metric_band.parquet").exists()
     assert not (tmp_path / "outputs" / "tables" / "dashboard_metrics").exists()
     assert cfg.root_dir == tmp_path
+
+
+def test_write_metric_outputs_from_config_uses_registered_inputs_and_outputs(tmp_path) -> None:
+    """Config-backed metric output helper should resolve standard tables."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    pd.DataFrame(
+        {
+            "event_id": ["e1"],
+            "event_lat": [34.0],
+            "event_lon": [-118.0],
+        }
+    ).to_csv(tables / "prepared_events.csv", index=False)
+    pd.DataFrame(
+        {
+            "station": ["STA"],
+            "lat": [34.1],
+            "lon": [-118.1],
+        }
+    ).to_csv(tables / "prepared_stations.csv", index=False)
+    pd.DataFrame(
+        {
+            "event_id": ["e1"],
+            "station": ["STA"],
+            "model": ["m1"],
+            "component": ["Z"],
+            "band": ["1-2 sec"],
+            "metric": ["PGA"],
+            "value_obs": [4.0],
+            "value_syn": [2.0],
+            "log2_residual": [1.0],
+        }
+    ).to_parquet(tables / "metric_rows.parquet", index=False)
+
+    written = write_metric_outputs_from_config(config_path=config_path)
+
+    assert Path(written["metrics_long"]) == tables / "metrics_long.parquet"
+    assert Path(written["path_table"]) == tables / "path_table.parquet"
+    assert Path(written["dashboard_metrics"]) == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    assert (tmp_path / "outputs" / "dashboards" / "dashboard_summaries" / "model_metric_band.parquet").exists()
 
 
 def _write_npz_waveform(path, samples, *, station: str, channel: str, sampling_rate: float) -> None:

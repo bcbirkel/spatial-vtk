@@ -74,10 +74,13 @@ _WORKFLOW_EXPORTS = {
     "MetricWorkflowManifest",
     "MetricWorkflowTask",
     "SlurmSettings",
+    "build_metric_waveform_inventories_from_config",
     "calculate_task_rows",
     "chunk_tasks",
+    "merge_metric_batches_from_config",
     "merge_batch_outputs",
     "plan_metric_tasks",
+    "plan_metric_tasks_from_config",
     "read_task_manifest",
     "run_manifest_batch",
     "run_metric_tasks",
@@ -87,7 +90,9 @@ _WORKFLOW_EXPORTS = {
     "tasks_from_frame",
     "tasks_to_frame",
     "write_metric_rows",
+    "write_metric_outputs_from_config",
     "write_metrics_slurm_script",
+    "write_metrics_slurm_script_from_config",
     "write_task_manifest",
 }
 

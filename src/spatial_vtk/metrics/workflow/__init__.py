@@ -22,6 +22,13 @@ from spatial_vtk.metrics.workflow.outputs import (
     prepare_metric_workflow_outputs,
     write_metric_outputs,
 )
+from spatial_vtk.metrics.workflow.configured import (
+    build_metric_waveform_inventories_from_config,
+    merge_metric_batches_from_config,
+    plan_metric_tasks_from_config,
+    write_metric_outputs_from_config,
+    write_metrics_slurm_script_from_config,
+)
 from spatial_vtk.metrics.workflow.inventory import (
     MetricWaveformInventoryResult,
     build_metric_waveform_inventories_from_trace_metadata,
@@ -70,14 +77,17 @@ __all__ = [
     "MetricWorkflowManifest",
     "MetricWorkflowTask",
     "SlurmSettings",
+    "build_metric_waveform_inventories_from_config",
     "calculate_task_rows",
     "cache_metric_manifest_waveforms",
     "build_metric_waveform_inventories_from_trace_metadata",
     "chunk_tasks",
+    "merge_metric_batches_from_config",
     "merge_batch_outputs",
     "metric_manifest_batch_status",
     "metric_group_for",
     "plan_metric_tasks",
+    "plan_metric_tasks_from_config",
     "prepare_metric_workflow_outputs",
     "read_task_manifest",
     "resolve_metric_names",
@@ -90,7 +100,9 @@ __all__ = [
     "tasks_to_frame",
     "write_metric_rows",
     "write_metric_outputs",
+    "write_metric_outputs_from_config",
     "write_metrics_slurm_script",
+    "write_metrics_slurm_script_from_config",
     "write_task_manifest",
 ]
 

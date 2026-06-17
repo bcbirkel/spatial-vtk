@@ -590,11 +590,31 @@ def test_large_run_step03_uses_metric_batch_status_before_submit_and_merge() -> 
     assert "from spatial_vtk.metrics.workflow import metric_manifest_batch_status" in source
     assert "batch_status = metric_manifest_batch_status(metric_manifest_path)" in source
     assert "All metric batch outputs already exist; skipping metric Slurm submission." in source
-    assert 'cmd.append("--incomplete-only")' in source
-    assert 'cmd.append("--overwrite-batches")' in source
+    assert '"incomplete_only": not OVERWRITE' in source
+    assert '"overwrite_batches": OVERWRITE' in source
     assert "if not batch_status.all_complete:" in source
     assert "Metric batches are incomplete:" in source
     assert "sources=[metric_manifest_path, *batch_status.completed_outputs]" in source
+
+
+def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
+    """Step 3 should call metric workflow helpers instead of CLI command cells."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "run_or_submit_notebook_function(" in source
+    assert "spatial_vtk.metrics.build_metric_waveform_inventories_from_config" in source
+    assert "spatial_vtk.metrics.plan_metric_tasks_from_config" in source
+    assert "spatial_vtk.metrics.write_metrics_slurm_script_from_config" in source
+    assert "spatial_vtk.metrics.merge_metric_batches_from_config" in source
+    assert "spatial_vtk.metrics.write_metric_outputs_from_config" in source
+    assert "run_or_submit_notebook_cli_command(" not in source
+    assert "submit_notebook_slurm_script" not in source
+    assert "write_notebook_python_slurm_script" not in source
+    assert '"svtk", "metrics"' not in source
 
 
 def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
