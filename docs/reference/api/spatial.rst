@@ -77,6 +77,32 @@ tutorial-facing API.
 .. automodule:: spatial_vtk.spatial.plot
    :members:
 
+Large-Run Spatial Figure Context
+--------------------------------
+
+Use ``SpatialFigureContext`` for Step 4-style spatial diagnostics that should
+reuse the same filtering, PSA period-sheet handling, station aggregation, and
+sidecar metadata conventions as the metric figure workflow. The context
+delegates metric-field and event-centered residual tables to the appropriate
+metric figure context, so station maps, residual grids, and model maps use the
+same row factories and aggregation audit metadata across Step 3 and Step 4.
+
+``item_source_rows``
+   Return the spatial rows represented by a figure item for source sidecars.
+
+``station_summary_for_item`` and ``station_period_summary_for_item``
+   Collapse selected event-station rows to station summaries, including
+   PSA-period summaries.
+
+``station_grid_for_item`` and ``station_model_summary_for_item``
+   Prepare station summaries for grid and model-map plotting without putting
+   dataframe manipulation logic in notebooks.
+
+.. autoclass:: spatial_vtk.spatial.plot.SpatialFigureContext
+   :members:
+
+.. autofunction:: spatial_vtk.spatial.plot.prepare_spatial_figure_context
+
 Maps
 ----
 

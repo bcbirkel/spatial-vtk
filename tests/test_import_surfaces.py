@@ -64,6 +64,10 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     text = docs.read_text(encoding="utf-8")
     assert "from spatial_vtk.metrics.plot import (" in text
     assert ".. automodule:: spatial_vtk.metrics.plot\n" in text
+    assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext" in text
+    assert ".. autofunction:: spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context" in text
+    assert "station_summary_for_item" in text
+    assert "item_source_rows" in text
     forbidden = (
         "spatial_vtk.metrics.plot.example_metric_plots",
         "spatial_vtk.metrics.plot.model_comparison",
@@ -83,6 +87,10 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "from spatial_vtk.spatial.map import (" in text
     assert ".. automodule:: spatial_vtk.spatial.plot\n" in text
     assert ".. automodule:: spatial_vtk.spatial.map\n" in text
+    assert ".. autoclass:: spatial_vtk.spatial.plot.SpatialFigureContext" in text
+    assert ".. autofunction:: spatial_vtk.spatial.plot.prepare_spatial_figure_context" in text
+    assert "station_summary_for_item" in text
+    assert "item_source_rows" in text
     forbidden = (
         "spatial_vtk.spatial.plot.correlation",
         "spatial_vtk.spatial.plot.large_run",

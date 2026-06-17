@@ -90,3 +90,28 @@ part of the tutorial-facing API.
 
 .. automodule:: spatial_vtk.metrics.plot
    :members:
+
+Large-Run Figure Context
+------------------------
+
+Use ``MetricFigureContext`` when a notebook or script needs to render many
+metric figures from a large ``metrics_long`` table without loading unnecessary
+columns or truncating station-map aggregation inputs. The context owns the
+standard row factories used by the large-run notebooks:
+
+``item_source_rows``
+   Return the selected metric rows for a figure item. These rows are written to
+   ``*.source.csv`` sidecars for aggregated station figures.
+
+``station_summary_for_item`` and ``station_period_summary_for_item``
+   Collapse all selected event-station metric rows to station summaries before
+   plotting. PSA period sheets use the period-aware variant.
+
+``station_grid_for_item`` and ``station_model_summary_for_item``
+   Prepare station summaries for grid and model-map plotting while preserving
+   aggregation metadata for sidecar JSON files.
+
+.. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext
+   :members:
+
+.. autofunction:: spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context
