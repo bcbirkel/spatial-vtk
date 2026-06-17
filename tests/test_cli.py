@@ -733,6 +733,42 @@ def test_cli_registered_figure_commands_expose_sidecar_controls(command_prefix, 
         assert "--sidecar-dir" in help_text, command_name
 
 
+def test_cli_visualize_sidecars_status_reports_metadata_without_csv_loads(tmp_path, capsys):
+    """The sidecar status command should summarize JSON metadata for notebook audits."""
+
+    from spatial_vtk.visualize.figure_sidecars import write_figure_row_sidecar
+
+    rows = pd.DataFrame(
+        {
+            "event_id": ["E1", "E2", "E3"],
+            "station": ["STA", "STA", "STB"],
+            "metric": ["PGA", "PGA", "PGA"],
+            "log2_residual": [0.1, 0.2, -0.4],
+        }
+    )
+    result = write_figure_row_sidecar(
+        tmp_path / "figures" / "station_metric_map.png",
+        rows,
+        sidecar_rows=2,
+        sidecar_dir=tmp_path / "sidecars",
+        metadata={"svtk_aggregation_kind": "station_summary"},
+    )
+    assert result is not None
+
+    assert main(["visualize", "sidecars", "status", "--sidecar-dir", str(result.sidecar_path.parent)]) == 0
+    text_output = capsys.readouterr().out
+    assert "Figure sidecars found: 1" in text_output
+    assert "station_metric_map.png" in text_output
+    assert "deterministic_sample" in text_output
+
+    assert main(["visualize", "sidecars", "status", "--sidecar-dir", str(result.sidecar_path.parent), "--json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["sidecar_count"] == 1
+    assert payload["status"][0]["figure"] == "station_metric_map.png"
+    assert payload["status"][0]["plot_row_count"] == 3
+    assert payload["status"][0]["plot_sidecar_exact"] is False
+
+
 def test_cli_registered_plot_help_names_config_defaults(capsys):
     """Registered figure help should explain config-backed table and figure defaults."""
 

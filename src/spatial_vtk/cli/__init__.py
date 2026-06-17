@@ -1140,11 +1140,26 @@ def _add_map_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPa
 def _add_visualize_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     """Register higher-level visualization CLI commands."""
 
-    visualize = subparsers.add_parser("visualize", help="Create context, QC, and waveform figures.")
+    visualize = subparsers.add_parser("visualize", help="Create context, QC, waveform figures, and inspect figure sidecars.")
     visualize_sub = visualize.add_subparsers(dest="visualize_group", required=True)
     _add_registered_command_group(visualize_sub, "context", CONTEXT_VISUALIZE_COMMANDS, "Context figures and maps.", include_map_options=True)
     _add_registered_command_group(visualize_sub, "qc", QC_VISUALIZE_COMMANDS, "QC and retention figures.", include_map_options=True)
     _add_registered_command_group(visualize_sub, "waveforms", WAVEFORM_VISUALIZE_COMMANDS, "Waveform figures and maps.", include_map_options=True)
+    sidecars = visualize_sub.add_parser("sidecars", help="Inspect CSV/JSON row-provenance sidecars written by saved figures.")
+    sidecar_sub = sidecars.add_subparsers(dest="sidecar_command", required=True)
+    status = sidecar_sub.add_parser(
+        "status",
+        help="Summarize figure sidecar JSON metadata without loading sidecar CSV rows.",
+    )
+    status.add_argument(
+        "--sidecar-dir",
+        "--sidecars-dir",
+        metavar="DIR",
+        required=True,
+        help="Directory containing figure sidecar JSON files.",
+    )
+    status.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
+    status.set_defaults(handler=_cmd_visualize_sidecars_status)
 
 
 def _add_registered_command_group(
@@ -2470,6 +2485,31 @@ def _cmd_dashboard_qc(args: argparse.Namespace) -> int:
     if args.auto_port and int(resolved_port) != int(args.port):
         print(f"QC dashboard auto-port: requested {args.port}, using {resolved_port}")
     print(f"QC dashboard running at http://{args.address}:{resolved_port} (pid {process.pid})")
+    return 0
+
+
+def _cmd_visualize_sidecars_status(args: argparse.Namespace) -> int:
+    """Run ``svtk visualize sidecars status``."""
+
+    from spatial_vtk.visualize import figure_sidecar_status_frame
+
+    sidecar_dir = Path(args.sidecar_dir).expanduser()
+    status = figure_sidecar_status_frame(sidecar_dir)
+    payload = {
+        "sidecar_dir": sidecar_dir,
+        "sidecar_count": len(status),
+        "status": status,
+    }
+    if args.json:
+        _print_payload(payload, as_json=True)
+        return 0
+
+    print(f"Figure sidecar directory: {sidecar_dir}")
+    print(f"Figure sidecars found: {len(status)}")
+    if status.empty:
+        print("No figure sidecar JSON files found.")
+    else:
+        print(status.to_string(index=False))
     return 0
 
 

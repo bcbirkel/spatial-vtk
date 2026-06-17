@@ -27,6 +27,8 @@ Command Tree
       - :ref:`svtk visualize context station-event-context <cli-svtk-visualize-context-station-event-context>`
       - :ref:`svtk visualize context station-event-network <cli-svtk-visualize-context-station-event-network>`
       - :ref:`svtk visualize context study-domain <cli-svtk-visualize-context-study-domain>`
+   - :ref:`svtk visualize sidecars <cli-svtk-visualize-sidecars>`
+      - :ref:`svtk visualize sidecars status <cli-svtk-visualize-sidecars-status>`
    - :ref:`svtk visualize waveforms <cli-svtk-visualize-waveforms>`
       - :ref:`svtk visualize waveforms event-radial-trace-section <cli-svtk-visualize-waveforms-event-radial-trace-section>`
       - :ref:`svtk visualize waveforms list <cli-svtk-visualize-waveforms-list>`
@@ -42,7 +44,7 @@ Command Details
 
 .. code-block:: bash
 
-   svtk visualize [-h] {context,qc,waveforms} ...
+   svtk visualize [-h] {context,qc,waveforms,sidecars} ...
 
 .. rubric:: Parameters
 
@@ -3723,6 +3725,66 @@ svtk visualize context study-domain
      - No
      -
      - Value: ``basemap_source``. Optional contextily basemap source.
+
+.. _cli-svtk-visualize-sidecars:
+
+svtk visualize sidecars
+^^^^^^^^^^^^^^^^^^^^^^^
+
+.. rubric:: Usage
+
+.. code-block:: bash
+
+   svtk visualize sidecars [-h] {status} ...
+
+.. rubric:: Parameters
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 13 14 47
+
+   * - Name
+     - Required
+     - Default / choices
+     - Description
+   * - ``-h``, ``--help``
+     - No
+     -
+     - show this help message and exit
+
+.. _cli-svtk-visualize-sidecars-status:
+
+svtk visualize sidecars status
+""""""""""""""""""""""""""""""
+
+.. rubric:: Usage
+
+.. code-block:: bash
+
+   svtk visualize sidecars status [-h] --sidecar-dir DIR [--json]
+
+.. rubric:: Parameters
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 13 14 47
+
+   * - Name
+     - Required
+     - Default / choices
+     - Description
+   * - ``-h``, ``--help``
+     - No
+     -
+     - show this help message and exit
+   * - ``--sidecar-dir``, ``--sidecars-dir``
+     - Yes
+     -
+     - Value: ``DIR``. Directory containing figure sidecar JSON files.
+   * - ``--json``
+     - No
+     - Flag
+     - Print machine-readable JSON.
 
 .. _cli-svtk-visualize-waveforms:
 

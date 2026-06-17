@@ -34,7 +34,7 @@ Command Groups
    * - :doc:`svtk map <cli/map>`
      - Create static map figures.
    * - :doc:`svtk visualize <cli/visualize>`
-     - Create context, QC, and waveform figures.
+     - Create context, QC, waveform figures, and inspect figure sidecars.
    * - :doc:`svtk dashboard <cli/dashboard>`
      - Prepare and launch Streamlit dashboards.
    * - :doc:`svtk call <cli/call>`
