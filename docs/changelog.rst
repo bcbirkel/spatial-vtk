@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-17
+   Updated the large-run Step 2 full-QC driver to use structured readiness
+   checks with ``event_station_records`` as both a required input and freshness
+   source, preventing stale QC reuse after metadata regeneration.
    Preserved PSA oscillator periods, path geometry, and public value columns in
    compact spatial ``metric_field`` and ``event_centered_residuals`` outputs so
    large-run Step 4 can split PSA figures by ``period_s`` and render

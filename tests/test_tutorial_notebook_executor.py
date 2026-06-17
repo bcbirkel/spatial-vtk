@@ -605,14 +605,20 @@ def test_large_run_optional_figure_cells_define_basemap_flag() -> None:
 
 
 def test_large_run_step02_overlap_sidecar_has_separate_rebuild_gate() -> None:
-    """Missing overlap sidecars should not force a full QC rebuild."""
+    """Step 2 should rebuild full QC only from full-QC readiness inputs."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb"
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, overwrite=OVERWRITE)" in source
+    assert "qc_readiness = output_readiness(" in source
+    assert '{"trace_qc_path": trace_qc_path, "qc_inventory_path": qc_inventory_path}' in source
+    assert 'inputs={"event_station_path": event_station_path}' in source
+    assert 'sources={"event_station_path": event_station_path}' in source
+    assert "display(qc_readiness.status_frame())" in source
+    assert "Full QC outputs are current; skipping QC Slurm submission." in source
+    assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, overwrite=OVERWRITE)" not in source
     assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, qc_inventory_overlap_path" not in source
     assert "overlap_readiness = output_readiness(" in source
 
