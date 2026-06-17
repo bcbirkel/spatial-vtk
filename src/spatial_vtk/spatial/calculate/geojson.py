@@ -668,6 +668,60 @@ def run_geojson_region_summary_workflow(
     )
 
 
+def run_geojson_region_summary_workflow_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    metrics_table: pd.DataFrame | str | Path | None = None,
+    geojson_path: str | Path | None = None,
+    output_key: str = "geojson_region_summaries",
+    selector: object = "all",
+    chunksize: int | None = 1_000_000,
+    verbose: bool = False,
+) -> dict[str, object]:
+    """Run the configured GeoJSON region summary workflow.
+
+    This wrapper is intended for notebooks and generated Slurm workers. It
+    activates the requested config, delegates all heavy work to
+    :func:`run_geojson_region_summary_workflow`, and returns a JSON-ready
+    summary for notebook output and Slurm logs.
+    """
+
+    config = _geojson_workflow_config(config_path=config_path, run_scenario=run_scenario)
+    result = run_geojson_region_summary_workflow(
+        metrics_table,
+        geojson_path=geojson_path,
+        output_key=output_key,
+        cfg=config,
+        selector=selector,
+        chunksize=chunksize,
+        verbose=verbose,
+    )
+    return {
+        "path": str(result.path),
+        "rows": int(result.rows),
+        "source_rows": int(result.source_rows),
+        "elapsed_s": float(result.elapsed_s),
+    }
+
+
+def _geojson_workflow_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+):
+    """Resolve and activate config for GeoJSON notebook/Slurm helpers."""
+
+    from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
+
+    if config_path is not None:
+        return SpatialVTKConfig.from_file(config_path, run_scenario=run_scenario).activate()
+    config = active_config()
+    if run_scenario is not None and config.config_path is not None:
+        return SpatialVTKConfig.from_file(config.config_path, run_scenario=run_scenario).activate()
+    return config.activate()
+
+
 def summarize_metrics_by_geojson(
     df: pd.DataFrame,
     *,

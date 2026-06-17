@@ -11,7 +11,12 @@ def test_public_imports():
     from spatial_vtk.io import inspect_synthetic_format, prepare_station_metadata, resolve_model_aliases
     from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
     from spatial_vtk.qc.build import slurm_settings_from_config as build_slurm_settings_from_config
-    from spatial_vtk.spatial import run_spatial_derived_outputs_workflow_from_config, run_spatial_statistics_workflow_from_config
+    from spatial_vtk.spatial import (
+        run_boundary_corridor_workflow_from_config,
+        run_geojson_region_summary_workflow_from_config,
+        run_spatial_derived_outputs_workflow_from_config,
+        run_spatial_statistics_workflow_from_config,
+    )
     from spatial_vtk.spatial.calculate import annotate_points_with_geojson, build_station_edge_corridors, classify_paths_with_geojson, geojson_polygon_preview_table
     from spatial_vtk.visualize.dashboard import build_dashboard_summaries
     from spatial_vtk.spatial.map import add_contextily_basemap, plot_corridor_map, plot_event_residual_map
@@ -31,6 +36,8 @@ def test_public_imports():
     assert callable(load_trace_inventory_lookup)
     assert callable(slurm_settings_from_config)
     assert callable(build_slurm_settings_from_config)
+    assert callable(run_boundary_corridor_workflow_from_config)
+    assert callable(run_geojson_region_summary_workflow_from_config)
     assert callable(run_spatial_derived_outputs_workflow_from_config)
     assert callable(run_spatial_statistics_workflow_from_config)
     assert callable(annotate_points_with_geojson)

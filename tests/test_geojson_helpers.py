@@ -26,7 +26,9 @@ from spatial_vtk.spatial.calculate import (
     geojson_polygon_preview_table,
     load_geojson_polygons,
     run_boundary_corridor_workflow,
+    run_boundary_corridor_workflow_from_config,
     run_geojson_region_summary_workflow,
+    run_geojson_region_summary_workflow_from_config,
     select_events_in_corridors,
     select_records_by_corridors,
     summarize_corridor_event_counts,
@@ -185,6 +187,51 @@ outputs:
     assert int(parquet_summary["source_rows"].max()) == len(metrics)
 
 
+def test_geojson_region_summary_from_config_returns_json_ready_payload(tmp_path):
+    """Notebook Step 5 GeoJSON helper should run from a config path."""
+
+    geojson = _write_geojson(
+        tmp_path / "regions.geojson",
+        [_feature("West Basin", Polygon([(-118.4, 34.0), (-118.0, 34.0), (-118.0, 34.4), (-118.4, 34.4)]))],
+    )
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2"],
+            "station": ["S1", "S2"],
+            "event_lon": [-118.2, -118.6],
+            "event_lat": [34.2, 34.2],
+            "sta_lon": [-118.6, -118.2],
+            "sta_lat": [34.2, 34.2],
+        }
+    )
+    metrics_path = tmp_path / "outputs" / "tables" / "metrics_long.parquet"
+    metrics_path.parent.mkdir(parents=True)
+    metrics.to_parquet(metrics_path, index=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+paths:
+  region_geojson: regions.geojson
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+
+    result = run_geojson_region_summary_workflow_from_config(
+        config_path=config_path,
+        chunksize=1,
+        verbose=True,
+    )
+
+    assert result["path"] == str(tmp_path / "outputs" / "tables" / "geojson_region_summaries.csv")
+    assert result["rows"] == len(pd.read_csv(result["path"]))
+    assert result["source_rows"] == len(metrics)
+    assert geojson.exists()
+
+
 def test_geojson_no_overlap_error_is_clear(tmp_path):
     geojson = _write_geojson(
         tmp_path / "far.geojson",
@@ -281,6 +328,55 @@ outputs:
     figure = tmp_path / "corridor_map.png"
     plot_corridor_map(stored, figure, stations_df=stations, events_df=events, add_basemap=False, savefig=True)
     assert figure.exists()
+
+
+def test_boundary_corridor_from_config_returns_json_ready_payload(tmp_path):
+    """Notebook Step 5 corridor helper should run from a config path."""
+
+    geojson = _write_geojson(
+        tmp_path / "corridor_regions.geojson",
+        [_feature("West Basin", Polygon([(-118.4, 34.0), (-118.0, 34.0), (-118.0, 34.4), (-118.4, 34.4)]))],
+    )
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+paths:
+  region_geojson: corridor_regions.geojson
+outputs:
+  tables: outputs/tables
+spatial:
+  corridors:
+    selector: West Basin
+    mode: through_boundary
+    along_boundary_width_km: 20.0
+    inside_length_km: 10.0
+    outside_length_km: 10.0
+    anchor:
+      source: coordinate
+      lon: -118.2
+      lat: 34.2
+""",
+        encoding="utf-8",
+    )
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    pd.DataFrame({"station": ["S1"], "network": ["XX"], "sta_lon": [-118.2], "sta_lat": [34.2]}).to_csv(
+        tables / "prepared_stations.csv",
+        index=False,
+    )
+    pd.DataFrame({"event_id": ["E1"], "event_lon": [-118.25], "event_lat": [34.25]}).to_csv(
+        tables / "prepared_events.csv",
+        index=False,
+    )
+
+    result = run_boundary_corridor_workflow_from_config(config_path=config_path, verbose=True)
+
+    assert result["path"] == str(tmp_path / "outputs" / "tables" / "corridors.parquet")
+    assert result["rows"] == 1
+    assert pd.read_parquet(result["path"])["corridor_geometry_wkt"].notna().all()
+    assert geojson.exists()
 
 
 def test_boundary_corridors_support_keyword_modes_and_path_selection(tmp_path):

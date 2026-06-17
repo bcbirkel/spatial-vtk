@@ -507,21 +507,26 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "plot_correlogram" not in source
 
 
-def test_large_run_step05_uses_cli_workflow_commands() -> None:
-    """Large-run GeoJSON notebook should submit public CLI commands, not inline Python workflows."""
+def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
+    """Large-run GeoJSON notebook should call package helpers, not CLI command cells."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_05_large_run_geojson_corridors.ipynb"
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert '"svtk", "spatial", "geojson-summaries"' in source
-    assert '"svtk", "spatial", "corridors"' in source
-    assert "run_or_submit_notebook_cli_command(" in source
+    assert "run_or_submit_notebook_function(" in source
+    assert "spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config" in source
+    assert "spatial_vtk.spatial.run_boundary_corridor_workflow_from_config" in source
+    assert "geojson_readiness = output_readiness(" in source
+    assert "corridor_readiness = output_readiness(" in source
+    assert "run_or_submit_notebook_cli_command(" not in source
+    assert '"svtk", "spatial"' not in source
+    assert "should_rebuild_paths(" not in source
     assert "write_notebook_python_slurm_script" not in source
     assert "submit_notebook_slurm_script" not in source
-    assert "run_geojson_region_summary_workflow" not in source
-    assert "run_boundary_corridor_workflow" not in source
+    assert "run_geojson_region_summary_workflow(" not in source
+    assert "run_boundary_corridor_workflow(" not in source
 
 
 def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:

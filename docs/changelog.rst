@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Added config-backed GeoJSON and boundary-corridor workflow helpers for
+   large-run Step 5. The notebook now calls importable ``spatial_vtk.spatial``
+   functions through ``run_or_submit_notebook_function()`` and uses structured
+   readiness checks that include GeoJSON and upstream table freshness.
    Added config-backed spatial workflow helpers for Step 4 spatial summaries
    and optional spatial plot-input tables. The large-run Step 4 notebook now
    calls importable ``spatial_vtk.spatial`` functions through

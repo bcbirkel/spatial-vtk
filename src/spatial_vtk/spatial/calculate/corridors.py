@@ -434,6 +434,61 @@ def run_boundary_corridor_workflow(
     return BoundaryCorridorWorkflowResult(path=output_path, rows=len(stored), elapsed_s=float(elapsed))
 
 
+def run_boundary_corridor_workflow_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    geojson_path: str | Path | None = None,
+    station_table: pd.DataFrame | str | Path | None = None,
+    event_table: pd.DataFrame | str | Path | None = None,
+    records_table: pd.DataFrame | str | Path | None = None,
+    output_key: str = "corridors",
+    corridor_config: BoundaryCorridorConfig | None = None,
+    verbose: bool = False,
+) -> dict[str, object]:
+    """Run the configured boundary-corridor workflow.
+
+    This wrapper is intended for notebooks and generated Slurm workers. It
+    activates the requested config, delegates corridor construction to
+    :func:`run_boundary_corridor_workflow`, and returns a JSON-ready summary
+    for notebook output and Slurm logs.
+    """
+
+    config = _corridor_workflow_config(config_path=config_path, run_scenario=run_scenario)
+    result = run_boundary_corridor_workflow(
+        geojson_path=geojson_path,
+        station_table=station_table,
+        event_table=event_table,
+        records_table=records_table,
+        output_key=output_key,
+        cfg=config,
+        corridor_config=corridor_config,
+        verbose=verbose,
+    )
+    return {
+        "path": str(result.path),
+        "rows": int(result.rows),
+        "elapsed_s": float(result.elapsed_s),
+    }
+
+
+def _corridor_workflow_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+):
+    """Resolve and activate config for corridor notebook/Slurm helpers."""
+
+    from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
+
+    if config_path is not None:
+        return SpatialVTKConfig.from_file(config_path, run_scenario=run_scenario).activate()
+    config = active_config()
+    if run_scenario is not None and config.config_path is not None:
+        return SpatialVTKConfig.from_file(config.config_path, run_scenario=run_scenario).activate()
+    return config.activate()
+
+
 def classify_records_by_corridors(
     records_df: pd.DataFrame,
     corridors_df: pd.DataFrame,
