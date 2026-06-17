@@ -1373,6 +1373,70 @@ outputs:
     assert prepared_events.loc[0, "event_id"] == "ev1"
 
 
+def test_cli_prepare_event_stations_uses_configured_defaults(tmp_path):
+    inputs = tmp_path / "inputs"
+    inputs.mkdir()
+    tables = tmp_path / "outputs" / "tables"
+    stations = inputs / "stations.csv"
+    events = inputs / "events.csv"
+    pairs = inputs / "event_stations.csv"
+    config = tmp_path / "spatial-vtk.yaml"
+    pd.DataFrame({"stationcode": ["sta1"], "station_latitude": [34.0], "station_longitude": [-118.0]}).to_csv(stations, index=False)
+    pd.DataFrame({"event_title": ["ev1"], "event_latitude": [33.9], "event_longitude": [-118.2]}).to_csv(events, index=False)
+    pd.DataFrame({"event": ["ev1"], "site": ["sta1"]}).to_csv(pairs, index=False)
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+paths:
+  station_metadata: inputs/stations.csv
+  event_metadata: inputs/events.csv
+  event_station_table: inputs/event_stations.csv
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+
+    assert main(["io", "prepare-event-stations", "--config", str(config)]) == 0
+
+    prepared = pd.read_csv(tables / "event_station_records.csv")
+    assert len(prepared) == 1
+    assert prepared.loc[0, "event_id"] == "ev1"
+    assert prepared.loc[0, "station"] == "STA1"
+    assert {"lat", "lon", "event_lat", "event_lon"} <= set(prepared.columns)
+
+
+def test_cli_prepare_event_stations_builds_all_pairs_without_input_table(tmp_path):
+    inputs = tmp_path / "inputs"
+    inputs.mkdir()
+    tables = tmp_path / "outputs" / "tables"
+    stations = inputs / "stations.csv"
+    events = inputs / "events.csv"
+    config = tmp_path / "spatial-vtk.yaml"
+    pd.DataFrame({"station": ["STA1", "STA2"], "lat": [34.0, 34.1], "lon": [-118.0, -118.1]}).to_csv(stations, index=False)
+    pd.DataFrame({"event_id": ["ev1", "ev2"], "event_lat": [33.9, 34.2], "event_lon": [-118.2, -118.3]}).to_csv(events, index=False)
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+paths:
+  station_metadata: inputs/stations.csv
+  event_metadata: inputs/events.csv
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+
+    assert main(["io", "prepare-event-stations", "--config", str(config)]) == 0
+
+    prepared = pd.read_csv(tables / "event_station_records.csv")
+    assert len(prepared) == 4
+    assert set(prepared["event_id"]) == {"ev1", "ev2"}
+    assert set(prepared["station"]) == {"STA1", "STA2"}
+
+
 def test_cli_preprocess_waveforms_uses_configured_records_default(tmp_path, monkeypatch, capsys):
     from types import SimpleNamespace
 

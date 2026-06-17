@@ -155,6 +155,20 @@ def test_prepare_event_station_table_normalizes_supplied_event_metadata_aliases(
     assert "distance_km" in pairs.columns
 
 
+def test_prepare_event_station_table_normalizes_station_ids_before_join() -> None:
+    """Event-station station aliases should match prepared station metadata."""
+
+    stations = pd.DataFrame({"station": ["STA01"], "lat": [34.1], "lon": [-118.2]})
+    events = pd.DataFrame({"event_id": ["E01"], "event_lat": [34.0], "event_lon": [-118.4]})
+    raw_pairs = pd.DataFrame({"event": ["E01"], "site": ["sta01"]})
+
+    pairs = prepare_event_station_table(raw_pairs, station_metadata=stations, event_metadata=events)
+
+    assert pairs.loc[0, "station"] == "STA01"
+    assert pairs.loc[0, "lat"] == 34.1
+    assert pairs.loc[0, "lon"] == -118.2
+
+
 def test_read_config_table_normalizes_event_metadata_aliases(tmp_path: Path) -> None:
     """Configured event metadata reads should not expose raw event_title IDs."""
 

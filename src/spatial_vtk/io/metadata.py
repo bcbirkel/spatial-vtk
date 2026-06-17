@@ -318,7 +318,7 @@ def prepare_event_station_table(
             mapping[source] = target
     out = df.rename(columns=mapping).copy()
     out["event_id"] = out["event_id"].astype(str).str.strip()
-    out["station"] = out["station"].astype(str).str.strip()
+    out["station"] = out["station"].astype(str).str.strip().str.upper()
     out = out.dropna(subset=["event_id", "station"]).drop_duplicates(subset=["event_id", "station"])
     if prepared_station_metadata is not None and not prepared_station_metadata.empty:
         out = out.merge(prepared_station_metadata, on="station", how="left", validate="many_to_one")
@@ -339,7 +339,7 @@ def _build_event_station_pairs(*, station_metadata: pd.DataFrame, event_metadata
     events = event_metadata[[event_col]].rename(columns={event_col: "event_id"}).copy()
     stations = stations.dropna(subset=["station"])
     events = events.dropna(subset=["event_id"])
-    stations["station"] = stations["station"].astype(str).str.strip()
+    stations["station"] = stations["station"].astype(str).str.strip().str.upper()
     events["event_id"] = events["event_id"].astype(str).str.strip()
     stations = stations[stations["station"] != ""].drop_duplicates(subset=["station"])
     events = events[events["event_id"] != ""].drop_duplicates(subset=["event_id"])

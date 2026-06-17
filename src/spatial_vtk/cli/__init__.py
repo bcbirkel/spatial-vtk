@@ -515,6 +515,19 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     events.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     events.set_defaults(handler=_cmd_io_prepare_events)
 
+    event_stations = io_sub.add_parser("prepare-event-stations", help="Normalize or build event-station records.")
+    event_stations.add_argument(
+        "--input",
+        default=None,
+        help="Event-station CSV/parquet path. Defaults to config paths.event_station_table when that file exists; otherwise all station/event pairs are built.",
+    )
+    event_stations.add_argument("--stations", default=None, help="Station metadata table. Defaults to prepared_stations, then config paths.station_metadata.")
+    event_stations.add_argument("--events", default=None, help="Event metadata table. Defaults to prepared_events, then config paths.event_metadata.")
+    event_stations.add_argument("--output", default=None, help="Output CSV/parquet path. Defaults to configured output table 'event_station_records'.")
+    event_stations.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
+    event_stations.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    event_stations.set_defaults(handler=_cmd_io_prepare_event_stations)
+
     master_stations = io_sub.add_parser("master-stations", help="Build a master station list from one or more tables.")
     master_stations.add_argument("--input", nargs="+", required=True, help="Station CSV/parquet paths.")
     master_stations.add_argument("--output", required=True, help="Output CSV path.")
@@ -1089,6 +1102,25 @@ def _configured_project_path(dotted_key: str, *, config: Any, must_exist: bool =
     return Path(path)
 
 
+def _default_metadata_table_path(*, prepared_key: str, raw_key: str, config: Any) -> Path:
+    """Return a prepared metadata output when present, otherwise configured raw input."""
+
+    prepared = _configured_output_path(prepared_key, config=config, create_parent=False)
+    if prepared.exists():
+        return prepared
+    return _configured_project_path(raw_key, config=config)
+
+
+def _default_event_station_input_path(config: Any) -> Path | None:
+    """Return a configured raw event-station table only when it exists."""
+
+    path = config.path("paths.event_station_table", must_exist=False)
+    if path is None:
+        return None
+    resolved = Path(path)
+    return resolved if resolved.exists() else None
+
+
 def _metric_workflow_dir(config: Any, name: str, *, create_parent: bool = True) -> Path:
     """Return a standard metric workflow directory below the configured output root."""
 
@@ -1249,6 +1281,58 @@ def _cmd_io_prepare_events(args: argparse.Namespace) -> int:
     )
     event_metadata = _read_table(input_path)
     _write_table(prepare_event_metadata(event_metadata), output)
+    return 0
+
+
+def _cmd_io_prepare_event_stations(args: argparse.Namespace) -> int:
+    """Run ``svtk io prepare-event-stations``."""
+
+    from spatial_vtk.io import prepare_event_station_table
+
+    needs_config = any(
+        value is None
+        for value in (args.input, args.stations, args.events, args.output)
+    )
+    config = (
+        _required_cli_config(args.config, run_scenario=args.run_scenario)
+        if needs_config
+        else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    )
+    input_path = (
+        Path(args.input).expanduser()
+        if args.input is not None
+        else _default_event_station_input_path(config)
+    )
+    station_path = (
+        Path(args.stations).expanduser()
+        if args.stations is not None
+        else _default_metadata_table_path(
+            prepared_key="prepared_stations",
+            raw_key="paths.station_metadata",
+            config=config,
+        )
+    )
+    event_path = (
+        Path(args.events).expanduser()
+        if args.events is not None
+        else _default_metadata_table_path(
+            prepared_key="prepared_events",
+            raw_key="paths.event_metadata",
+            config=config,
+        )
+    )
+    output = (
+        Path(args.output).expanduser()
+        if args.output is not None
+        else _configured_output_path("event_station_records", config=config)
+    )
+    event_station_metadata = _read_table(input_path) if input_path is not None else None
+    event_stations = prepare_event_station_table(
+        event_station_metadata=event_station_metadata,
+        station_metadata=_read_table(station_path),
+        event_metadata=_read_table(event_path),
+    )
+    _write_table(event_stations, output)
     return 0
 
 

@@ -34,11 +34,13 @@ Prepare station and event metadata, preprocess the waveform files once, and make
      --config "$CONFIG" \
      --run-scenario "$SCENARIO"
 
+   svtk io prepare-event-stations \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO"
+
    svtk io preprocess-waveforms \
-     --records data/examples/example_five_event_subset/metadata/selected_event_stations.csv \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
-     --output-root "$PREPROCESSED" \
      --overwrite
 
    svtk visualize context station-event-context \

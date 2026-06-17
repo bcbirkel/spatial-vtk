@@ -10,6 +10,7 @@ Command Tree
    - :ref:`svtk io inventory <cli-svtk-io-inventory>`
    - :ref:`svtk io master-events <cli-svtk-io-master-events>`
    - :ref:`svtk io master-stations <cli-svtk-io-master-stations>`
+   - :ref:`svtk io prepare-event-stations <cli-svtk-io-prepare-event-stations>`
    - :ref:`svtk io prepare-events <cli-svtk-io-prepare-events>`
    - :ref:`svtk io prepare-stations <cli-svtk-io-prepare-stations>`
    - :ref:`svtk io preprocess-waveforms <cli-svtk-io-preprocess-waveforms>`
@@ -22,7 +23,7 @@ Command Details
 .. code-block:: bash
 
    svtk io [-h]
-               {prepare-stations,prepare-events,master-stations,master-events,inventory,preprocess-waveforms}
+               {prepare-stations,prepare-events,prepare-event-stations,master-stations,master-events,inventory,preprocess-waveforms}
                ...
 
 .. rubric:: Parameters
@@ -159,6 +160,59 @@ svtk io master-stations
      - Yes
      -
      - Value: ``output``. Output CSV path.
+
+.. _cli-svtk-io-prepare-event-stations:
+
+svtk io prepare-event-stations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. rubric:: Usage
+
+.. code-block:: bash
+
+   svtk io prepare-event-stations [-h] [--input INPUT]
+                                      [--stations STATIONS] [--events EVENTS]
+                                      [--output OUTPUT] [--config CONFIG]
+                                      [--run-scenario RUN_SCENARIO]
+
+.. rubric:: Parameters
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 13 14 47
+
+   * - Name
+     - Required
+     - Default / choices
+     - Description
+   * - ``-h``, ``--help``
+     - No
+     -
+     - show this help message and exit
+   * - ``--input``
+     - No
+     -
+     - Value: ``input``. Event-station CSV/parquet path. Defaults to config paths.event_station_table when that file exists; otherwise all station/event pairs are built.
+   * - ``--stations``
+     - No
+     -
+     - Value: ``stations``. Station metadata table. Defaults to prepared_stations, then config paths.station_metadata.
+   * - ``--events``
+     - No
+     -
+     - Value: ``events``. Event metadata table. Defaults to prepared_events, then config paths.event_metadata.
+   * - ``--output``
+     - No
+     -
+     - Value: ``output``. Output CSV/parquet path. Defaults to configured output table 'event_station_records'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config file used to resolve default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
 
 .. _cli-svtk-io-prepare-events:
 
