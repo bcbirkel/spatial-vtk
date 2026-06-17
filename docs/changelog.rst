@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Added a bounded startup preflight to the QC Streamlit dashboard. The app now
+   checks the configured QC trace-summary table headers and row count before
+   loading the full table, showing a readiness message for missing, empty, or
+   schema-bad inputs.
    Added collapsed-dimension metadata to large-run station metric figure
    sidecars. Station-summary JSON now records which metric dimensions were
    averaged or otherwise collapsed into each plotted station value, plus unique

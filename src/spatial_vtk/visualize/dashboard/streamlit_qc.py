@@ -9,6 +9,7 @@ import streamlit as st
 
 from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.visualize.dashboard.charts import build_qc_bar_figure, build_qc_histogram_figure
+from spatial_vtk.visualize.dashboard.contracts import dashboard_qc_trace_readiness_frame, dashboard_ready_value
 from spatial_vtk.visualize.dashboard.exports import normalize_manual_review_queue, queue_to_csv_bytes
 from spatial_vtk.visualize.dashboard.filters import filter_qc_dashboard_rows
 from spatial_vtk.config.labels import band_display_label, display_table
@@ -28,6 +29,12 @@ def main() -> None:
         if not trace_summary:
             st.info("Choose a trace-summary Parquet or CSV file to begin.")
             return
+    readiness = _qc_trace_readiness(trace_summary)
+    _render_qc_readiness(readiness)
+    blocker = _qc_dashboard_startup_blocker(readiness)
+    if blocker:
+        st.warning(blocker)
+        return
     try:
         df = _load_trace_summary_cached(trace_summary)
     except Exception as exc:
@@ -131,6 +138,46 @@ def _load_trace_summary_cached(path: str) -> pd.DataFrame:
     """Load trace summary with Streamlit caching."""
 
     return load_trace_qc_summary(path)
+
+
+def _qc_trace_readiness(trace_summary: str) -> pd.DataFrame:
+    """Return bounded readiness for one configured QC trace summary."""
+
+    return dashboard_qc_trace_readiness_frame(trace_summary, create_parent=False)
+
+
+def _render_qc_readiness(readiness: pd.DataFrame) -> None:
+    """Render QC trace-summary readiness when the dashboard cannot start."""
+
+    if readiness.empty or "ready" not in readiness.columns:
+        return
+    ready = readiness["ready"].map(lambda value: dashboard_ready_value(value, default=False))
+    if bool(ready.all()):
+        return
+    st.warning("The QC trace-summary table is not ready. Rebuild QC outputs before using the QC dashboard.")
+    columns = [
+        "dashboard_table",
+        "ready",
+        "readiness",
+        "row_count",
+        "missing_columns",
+        "message",
+        "path",
+    ]
+    shown = [column for column in columns if column in readiness.columns]
+    st.dataframe(display_table(readiness[shown]), width="stretch")
+
+
+def _qc_dashboard_startup_blocker(readiness: pd.DataFrame) -> str | None:
+    """Return a startup-blocking message when the QC trace summary is not ready."""
+
+    if readiness.empty:
+        return "The QC trace-summary readiness check did not return a status row."
+    row = readiness.iloc[0]
+    if dashboard_ready_value(row.get("ready"), default=False):
+        return None
+    message = str(row.get("message") or "").strip()
+    return message or "The QC trace-summary table is not ready."
 
 
 def _path_setting(query_key: str, env_key: str) -> str:

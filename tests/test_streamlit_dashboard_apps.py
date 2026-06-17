@@ -45,8 +45,10 @@ from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _summary_readiness_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _value_columns_or_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_chart_columns_or_message
+from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_dashboard_startup_blocker
 from spatial_vtk.visualize.dashboard.streamlit_qc import _empty_rows_message as _qc_empty_rows_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _missing_columns_message as _qc_missing_columns_message
+import spatial_vtk.visualize.dashboard.streamlit_qc as streamlit_qc
 import spatial_vtk.visualize.dashboard.launch as dashboard_launch
 from spatial_vtk.visualize.dashboard.launch import _raise_if_port_in_use
 from spatial_vtk.visualize.selection import FigureSelection, configured_band_options
@@ -233,6 +235,71 @@ def test_dashboard_qc_trace_readiness_is_bounded_and_schema_aware(tmp_path):
     assert missing_row["readiness"] == "missing_columns"
     assert missing_row["row_count"] == 1
     assert missing_row["missing_columns"] == "station"
+
+
+def test_qc_dashboard_preflights_trace_summary_before_full_load(tmp_path, monkeypatch):
+    """QC dashboard startup should block schema-bad inputs before full table reads."""
+
+    missing_column_path = tmp_path / "bad_qc_trace_summary.csv"
+    missing_column_path.write_text("event_id,component\nev1,R\n", encoding="utf-8")
+    calls: list[str] = []
+
+    class FakeStreamlit:
+        query_params: dict[str, str] = {}
+
+        def __init__(self) -> None:
+            self.warnings: list[str] = []
+            self.frames: list[pd.DataFrame] = []
+
+        def set_page_config(self, **kwargs):  # noqa: ANN001, ANN003
+            return None
+
+        def title(self, text):  # noqa: ANN001
+            return None
+
+        def info(self, text):  # noqa: ANN001
+            return None
+
+        def warning(self, text):  # noqa: ANN001
+            self.warnings.append(str(text))
+
+        def error(self, text):  # noqa: ANN001
+            raise AssertionError(f"unexpected Streamlit error: {text}")
+
+        def dataframe(self, frame, **kwargs):  # noqa: ANN001, ANN003
+            self.frames.append(frame)
+
+    fake_st = FakeStreamlit()
+
+    def fail_if_loaded(path: str) -> pd.DataFrame:
+        calls.append(path)
+        raise AssertionError("full trace summary loader should not run for schema-bad input")
+
+    monkeypatch.setenv("SVTK_TRACE_SUMMARY", str(missing_column_path))
+    monkeypatch.delenv("SVTK_CONFIG_FILE", raising=False)
+    monkeypatch.setattr(streamlit_qc, "st", fake_st)
+    monkeypatch.setattr(streamlit_qc, "_load_trace_summary_cached", fail_if_loaded)
+
+    streamlit_qc.main()
+
+    assert calls == []
+    assert any("not ready" in message for message in fake_st.warnings)
+    assert fake_st.frames
+    assert fake_st.frames[0].loc[0, "Readiness"] == "missing_columns"
+    assert fake_st.frames[0].loc[0, "Missing Columns"] == "station"
+
+
+def test_qc_dashboard_startup_blocker_uses_readiness_message(tmp_path):
+    """QC dashboard blocker should expose the bounded readiness message."""
+
+    missing_column_path = tmp_path / "bad_qc_trace_summary.csv"
+    missing_column_path.write_text("event_id,component\nev1,R\n", encoding="utf-8")
+    readiness = dashboard_qc_trace_readiness_frame(missing_column_path)
+
+    message = _qc_dashboard_startup_blocker(readiness)
+
+    assert message is not None
+    assert "station" in message
 
 
 def test_dashboard_summaries_do_not_require_residual_column():
