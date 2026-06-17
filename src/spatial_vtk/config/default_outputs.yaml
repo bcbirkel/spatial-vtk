@@ -11,6 +11,9 @@ tables:
   record_coverage:
     filename: record_coverage.csv
     description: Record coverage table
+  waveform_inventory:
+    filename: waveform_inventory.csv
+    description: Lightweight observed/synthetic input file inventory
   qc_inventory:
     filename: qc_inventory.csv
     description: QC inventory

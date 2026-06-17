@@ -869,6 +869,24 @@ def test_generated_cli_reference_names_metrics_run_defaults():
     assert "Spatial-VTK config used to resolve default task/output paths" in section
 
 
+def test_generated_cli_reference_names_io_inventory_defaults():
+    """Generated IO CLI docs should describe config-backed inventory defaults."""
+
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "docs" / "reference" / "cli" / "io.rst").read_text(encoding="utf-8")
+    section = text.split(".. _cli-svtk-io-inventory:", maxsplit=1)[1].split(
+        ".. _cli-svtk-io-master-events:", maxsplit=1
+    )[0]
+    assert "[--observed-root OBSERVED_ROOT]" in section
+    assert "[--synthetic-root SYNTHETIC_ROOT]" in section
+    assert "[--output OUTPUT]" in section
+    assert "Defaults to paths.observed_root or paths.observed_template from config" in section
+    assert "Defaults to paths.synthetic_root or paths.synthetic_template from config" in section
+    assert "Defaults to configured output table 'waveform_inventory'" in section
+    assert "``--config``" in section
+    assert "``--run-scenario``" in section
+
+
 def test_cli_metrics_workflow_help_exposes_artifact_aliases(capsys):
     """Metric workflow path flags should name the artifacts they read/write."""
 
@@ -2047,6 +2065,35 @@ outputs:
     prepared_events = pd.read_csv(tables / "prepared_events.csv")
     assert prepared_stations.loc[0, "station"] == "STA1"
     assert prepared_events.loc[0, "event_id"] == "ev1"
+
+
+def test_cli_inventory_uses_configured_template_roots_and_output(tmp_path):
+    observed = tmp_path / "raw" / "observed"
+    synthetic = tmp_path / "raw" / "synthetic" / "model_a"
+    observed.mkdir(parents=True)
+    synthetic.mkdir(parents=True)
+    (observed / "ev1.pkl").write_bytes(b"observed")
+    (synthetic / "ev1.mseed").write_bytes(b"synthetic")
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+paths:
+  observed_root: raw/observed/{{event_id}}.pkl
+  synthetic_template: raw/synthetic/{{model}}/{{event_id}}.mseed
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+
+    assert main(["io", "inventory", "--config", str(config), "--no-sha256"]) == 0
+
+    inventory = pd.read_csv(tmp_path / "outputs" / "tables" / "waveform_inventory.csv")
+    assert set(inventory["dataset"]) == {"observed", "synthetic"}
+    assert set(inventory["filename"]) == {"ev1.pkl", "ev1.mseed"}
+    assert "sha256" not in inventory.columns
 
 
 def test_cli_prepare_event_stations_uses_configured_defaults(tmp_path):

@@ -50,9 +50,11 @@ svtk io inventory
 
 .. code-block:: bash
 
-   svtk io inventory [-h] --observed-root OBSERVED_ROOT --synthetic-root
-                         SYNTHETIC_ROOT --output OUTPUT [--suffix SUFFIX]
-                         [--relative-to RELATIVE_TO] [--no-sha256]
+   svtk io inventory [-h] [--observed-root OBSERVED_ROOT]
+                         [--synthetic-root SYNTHETIC_ROOT] [--output OUTPUT]
+                         [--config CONFIG] [--run-scenario RUN_SCENARIO]
+                         [--suffix SUFFIX] [--relative-to RELATIVE_TO]
+                         [--no-sha256]
 
 .. rubric:: Parameters
 
@@ -69,17 +71,25 @@ svtk io inventory
      -
      - show this help message and exit
    * - ``--observed-root``
-     - Yes
+     - No
      -
-     - Value: ``observed_root``. Observed waveform root directory.
+     - Value: ``observed_root``. Observed waveform directory or path template. Defaults to paths.observed_root or paths.observed_template from config.
    * - ``--synthetic-root``
-     - Yes
+     - No
      -
-     - Value: ``synthetic_root``. Synthetic waveform root directory.
+     - Value: ``synthetic_root``. Synthetic waveform directory or path template. Defaults to paths.synthetic_root or paths.synthetic_template from config.
    * - ``--output``
-     - Yes
+     - No
      -
-     - Value: ``output``. Output CSV/parquet path.
+     - Value: ``output``. Output CSV/parquet path. Defaults to configured output table 'waveform_inventory'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config file used to resolve default roots and output path.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--suffix``
      - No
      - Repeatable

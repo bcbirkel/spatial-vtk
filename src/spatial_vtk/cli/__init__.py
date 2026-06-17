@@ -539,9 +539,19 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     master_events.set_defaults(handler=_cmd_io_master_events)
 
     inventory = io_sub.add_parser("inventory", help="Build a lightweight observed/synthetic file inventory.")
-    inventory.add_argument("--observed-root", required=True, help="Observed waveform root directory.")
-    inventory.add_argument("--synthetic-root", required=True, help="Synthetic waveform root directory.")
-    inventory.add_argument("--output", required=True, help="Output CSV/parquet path.")
+    inventory.add_argument(
+        "--observed-root",
+        default=None,
+        help="Observed waveform directory or path template. Defaults to paths.observed_root or paths.observed_template from config.",
+    )
+    inventory.add_argument(
+        "--synthetic-root",
+        default=None,
+        help="Synthetic waveform directory or path template. Defaults to paths.synthetic_root or paths.synthetic_template from config.",
+    )
+    inventory.add_argument("--output", default=None, help="Output CSV/parquet path. Defaults to configured output table 'waveform_inventory'.")
+    inventory.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default roots and output path.")
+    inventory.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     inventory.add_argument("--suffix", action="append", default=None, help="Waveform suffix to include. May be repeated.")
     inventory.add_argument("--relative-to", default=None, help="Base path used for relative inventory paths.")
     inventory.add_argument("--no-sha256", action="store_true", help="Skip SHA-256 hashing.")
@@ -1403,6 +1413,35 @@ def _configured_output_path(
     return resolve_output_path(key, kind=kind, cfg=config, create_parent=create_parent)
 
 
+def _configured_inventory_scan_root(config: Any, keys: Iterable[str], *, label: str) -> Path:
+    """Resolve a waveform inventory scan root from config path/template keys."""
+
+    for key in keys:
+        value = config.path(key)
+        if value is not None:
+            return _inventory_scan_root(value)
+    choices = ", ".join(keys)
+    raise ValueError(f"No {label} waveform root is configured. Pass --{label}-root or set one of: {choices}.")
+
+
+def _inventory_scan_root(path: str | Path) -> Path:
+    """Return the static directory prefix for a directory, file, glob, or template path."""
+
+    raw = Path(path).expanduser()
+    static_parts: list[str] = []
+    for part in raw.parts:
+        if any(token in part for token in ("{", "}", "*", "?", "[")):
+            break
+        static_parts.append(part)
+    if static_parts and len(static_parts) < len(raw.parts):
+        return Path(*static_parts)
+    if raw.exists() and raw.is_file():
+        return raw.parent
+    if raw.suffix:
+        return raw.parent
+    return raw
+
+
 def _existing_configured_output_path(key: str, *, config: Any, kind: str = "table") -> Path | None:
     """Return one configured output path only when it already exists."""
 
@@ -1679,15 +1718,32 @@ def _cmd_io_inventory(args: argparse.Namespace) -> int:
 
     from spatial_vtk.io import DEFAULT_WAVEFORM_SUFFIXES, build_observed_synthetic_inventory
 
+    needs_config = args.observed_root is None or args.synthetic_root is None or args.output is None
+    config = (
+        _required_cli_config(args.config, run_scenario=args.run_scenario)
+        if needs_config
+        else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    )
+    observed_root = (
+        Path(args.observed_root).expanduser()
+        if args.observed_root is not None
+        else _configured_inventory_scan_root(config, ("paths.observed_root", "paths.observed_template"), label="observed")
+    )
+    synthetic_root = (
+        Path(args.synthetic_root).expanduser()
+        if args.synthetic_root is not None
+        else _configured_inventory_scan_root(config, ("paths.synthetic_root", "paths.synthetic_template"), label="synthetic")
+    )
+    output = Path(args.output).expanduser() if args.output is not None else _configured_output_path("waveform_inventory", config=config)
     suffixes = args.suffix or sorted(DEFAULT_WAVEFORM_SUFFIXES)
     df = build_observed_synthetic_inventory(
-        args.observed_root,
-        args.synthetic_root,
+        observed_root,
+        synthetic_root,
         suffixes=suffixes,
         relative_to=args.relative_to,
         include_sha256=not args.no_sha256,
     )
-    _write_table(df, args.output)
+    _write_table(df, output)
     return 0
 
 

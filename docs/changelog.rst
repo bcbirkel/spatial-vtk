@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Made ``svtk io inventory`` config-backed. Observed and synthetic roots now
+   default from ``paths.observed_root``/``paths.observed_template`` and
+   ``paths.synthetic_root``/``paths.synthetic_template``, output defaults to
+   the registered ``waveform_inventory`` table, and template/glob paths are
+   reduced to their static scan directory.
    Fixed CLI reference generation so ``tools/generate_cli_reference.py`` keeps
    the current plotting/mapping table guidance when regenerating
    ``docs/reference/cli_api.rst`` instead of restoring stale
