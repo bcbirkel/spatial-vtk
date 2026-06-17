@@ -14,6 +14,10 @@ Changelog
    median or percentile summaries. Notebook regression coverage now also
    requires source-row sidecar wiring for station, residual-grid, and
    metric-by-model map cells.
+   Expanded figure sidecar JSON metadata with plot/source column lists and
+   counts, sidecar row limits, sampling seed, source-row availability, and
+   source-sidecar write status. This makes it easier to audit whether a figure
+   sidecar contains raw rows, transformed plot rows, or a sampled subset.
    Added named status rows and pandas status frames to ``OutputReadiness`` so
    large-run notebook driver cells can display exactly which inputs, outputs,
    and source dependencies are missing, stale, current, or intentionally

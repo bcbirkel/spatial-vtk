@@ -102,15 +102,23 @@ def write_figure_row_sidecar(
         "figure": str(figure),
         "sidecar": str(sidecar_path),
         "plot_row_count": int(len(rows)),
+        "plot_column_count": int(len(rows.columns)),
+        "plot_columns": [str(column) for column in rows.columns],
         "written_row_count": int(len(sampled_rows)),
         "sampled": bool(sampled),
+        "sidecar_row_limit": None if sidecar_rows is None else int(sidecar_rows),
+        "sidecar_random_state": int(random_state),
         "plot_rows_role": plot_rows_role,
+        "source_rows_provided": source_rows is not None,
+        "source_sidecar_written": source_path is not None,
     }
     result_metadata.update(figure_sidecar_dimension_counts(rows, prefix="plot"))
     if source_rows is not None:
         result_metadata.update(
             {
                 "source_row_count": source_row_count,
+                "source_column_count": int(len(source_rows.columns)),
+                "source_columns": [str(column) for column in source_rows.columns],
                 "source_written_row_count": source_written_count,
                 "source_sampled": bool(source_sampled),
                 "source_rows_role": source_rows_role,
@@ -121,6 +129,10 @@ def write_figure_row_sidecar(
         result_metadata.update(figure_sidecar_dimension_counts(source_rows, prefix="source"))
     else:
         result_metadata["source_row_count"] = int(len(rows))
+        result_metadata["source_column_count"] = int(len(rows.columns))
+        result_metadata["source_columns"] = [str(column) for column in rows.columns]
+        result_metadata["source_written_row_count"] = int(len(sampled_rows))
+        result_metadata["source_sampled"] = bool(sampled)
         result_metadata["source_rows_role"] = plot_rows_role
         result_metadata.update(figure_sidecar_dimension_counts(rows, prefix="source"))
     if metadata:

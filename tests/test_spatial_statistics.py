@@ -509,9 +509,17 @@ def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -
     assert len(written_rows) == 2
     assert len(written_source_rows) == 2
     assert metadata["plot_row_count"] == 3
+    assert metadata["plot_column_count"] == len(plot_rows.columns)
+    assert metadata["plot_columns"] == list(plot_rows.columns)
     assert metadata["written_row_count"] == 2
     assert metadata["source_row_count"] == 4
+    assert metadata["source_column_count"] == len(source_rows.columns)
+    assert metadata["source_columns"] == list(source_rows.columns)
     assert metadata["source_written_row_count"] == 2
+    assert metadata["source_rows_provided"] is True
+    assert metadata["source_sidecar_written"] is True
+    assert metadata["sidecar_row_limit"] == 2
+    assert metadata["sidecar_random_state"] == 42
     assert metadata["plot_rows_role"] == "figure_plot_rows"
     assert metadata["source_rows_role"] == "figure_source_rows"
     assert metadata["plot_station_count"] == 3
@@ -540,9 +548,15 @@ def test_write_figure_row_sidecar_makes_zero_column_frames_readable(tmp_path: Pa
     assert written_source_rows.columns.tolist() == ["__svtk_empty_sidecar"]
     assert len(written_source_rows) == 2
     assert metadata["plot_row_count"] == 0
+    assert metadata["plot_column_count"] == 0
+    assert metadata["plot_columns"] == []
     assert metadata["written_row_count"] == 0
     assert metadata["source_row_count"] == 2
+    assert metadata["source_column_count"] == 0
+    assert metadata["source_columns"] == []
     assert metadata["source_written_row_count"] == 2
+    assert metadata["source_rows_provided"] is True
+    assert metadata["source_sidecar_written"] is True
 
 
 def test_metric_station_summary_aggregates_all_events_without_coordinate_splitting(tmp_path: Path) -> None:
