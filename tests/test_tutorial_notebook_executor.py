@@ -182,6 +182,22 @@ def test_tutorial_notebooks_use_shared_source_bootstrap() -> None:
         assert not matches, f"{notebook_path.relative_to(repo_root)} embeds bootstrap plumbing: {matches}"
 
 
+def test_tutorial_notebooks_have_stable_cell_ids() -> None:
+    """Committed notebooks should not trigger nbformat cell-id warnings."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    assert notebooks
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        missing = [
+            index
+            for index, cell in enumerate(notebook.get("cells", []), start=1)
+            if not str(cell.get("id", "")).strip()
+        ]
+        assert missing == [], f"{notebook_path.relative_to(repo_root)} missing cell ids: {missing}"
+
+
 def test_tutorial_notebook_preflight_runs_before_clean(tmp_path: Path, monkeypatch) -> None:
     """A missing notebook runtime should not erase existing tutorial outputs."""
 

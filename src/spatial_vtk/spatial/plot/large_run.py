@@ -138,12 +138,14 @@ class SpatialFigureContext:
         sample_rows: int = 200_000,
         write_sidecars: bool = False,
         sidecar_rows: int | None = None,
+        sidecar_dir: str | Path | None = None,
         station_aggregation: str = "median",
     ) -> "SpatialFigureContext":
         """Load compact spatial output tables and return a plotting context."""
 
         output_dir = Path(figure_dir).expanduser()
         output_dir.mkdir(parents=True, exist_ok=True)
+        sidecar_output_dir = None if sidecar_dir is None else Path(sidecar_dir).expanduser()
         paths = {
             key: resolve_output_path(key, kind="table", cfg=cfg, create_parent=True)
             for key in SPATIAL_FIGURE_TABLE_KEYS
@@ -175,6 +177,7 @@ class SpatialFigureContext:
             robust_axis_percentile=robust_axis_percentile,
             write_sidecars=write_sidecars,
             sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_output_dir,
             station_aggregation=station_aggregation,
         )
         event_context = MetricFigureContext.from_frame(
@@ -192,6 +195,7 @@ class SpatialFigureContext:
             robust_axis_percentile=robust_axis_percentile,
             write_sidecars=write_sidecars,
             sidecar_rows=sidecar_rows,
+            sidecar_dir=sidecar_output_dir,
             station_aggregation=station_aggregation,
         )
         try:

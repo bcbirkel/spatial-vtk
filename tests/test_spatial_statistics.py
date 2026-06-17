@@ -576,6 +576,40 @@ def test_metric_station_summary_aggregates_all_events_without_coordinate_splitti
     assert metadata["source_rows_role"] == "pre_aggregation_metric_rows"
 
 
+def test_spatial_figure_context_accepts_shared_sidecar_settings(tmp_path: Path) -> None:
+    """Step 4 large-run notebooks should use the shared sidecar keyword shape."""
+
+    tables = tmp_path / "tables"
+    cfg = SpatialVTKConfig(
+        tmp_path / "config.yaml",
+        tmp_path,
+        {
+            "outputs": {
+                "root": str(tmp_path),
+                "tables": str(tables),
+                "figures": str(tmp_path / "figures"),
+            }
+        },
+    )
+    sidecars = tmp_path / "custom_sidecars"
+
+    context = SpatialFigureContext.from_config(
+        cfg=cfg,
+        figure_dir=tmp_path / "figures",
+        make_figures=False,
+        write_sidecars=True,
+        sidecar_rows=10,
+        sidecar_dir=sidecars,
+    )
+
+    assert context.metric_context.write_sidecars is True
+    assert context.event_context.write_sidecars is True
+    assert context.metric_context.sidecar_rows == 10
+    assert context.event_context.sidecar_rows == 10
+    assert context.metric_context.sidecar_output_dir == sidecars
+    assert context.event_context.sidecar_output_dir == sidecars
+
+
 def test_metric_figure_context_reads_plot_columns_and_filters_defaults(tmp_path: Path) -> None:
     """Large-run figure context should avoid loading unused metric columns."""
 
