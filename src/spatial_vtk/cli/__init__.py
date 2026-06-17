@@ -502,13 +502,17 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     io_sub = io.add_subparsers(dest="io_command", required=True)
 
     stations = io_sub.add_parser("prepare-stations", help="Normalize station metadata column names.")
-    stations.add_argument("--input", required=True, help="Station CSV/parquet path.")
-    stations.add_argument("--output", required=True, help="Output CSV/parquet path.")
+    stations.add_argument("--input", default=None, help="Station CSV/parquet path. Defaults to config paths.station_metadata.")
+    stations.add_argument("--output", default=None, help="Output CSV/parquet path. Defaults to configured output table 'prepared_stations'.")
+    stations.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
+    stations.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     stations.set_defaults(handler=_cmd_io_prepare_stations)
 
     events = io_sub.add_parser("prepare-events", help="Normalize event metadata column names.")
-    events.add_argument("--input", required=True, help="Event CSV/parquet path.")
-    events.add_argument("--output", required=True, help="Output CSV/parquet path.")
+    events.add_argument("--input", default=None, help="Event CSV/parquet path. Defaults to config paths.event_metadata.")
+    events.add_argument("--output", default=None, help="Output CSV/parquet path. Defaults to configured output table 'prepared_events'.")
+    events.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
+    events.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     events.set_defaults(handler=_cmd_io_prepare_events)
 
     master_stations = io_sub.add_parser("master-stations", help="Build a master station list from one or more tables.")
@@ -531,7 +535,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     inventory.set_defaults(handler=_cmd_io_inventory)
 
     preprocess = io_sub.add_parser("preprocess-waveforms", help="Filter/resample waveform files and write reusable processed copies.")
-    preprocess.add_argument("--records", required=True, help="Event-station CSV/parquet with waveform path columns.")
+    preprocess.add_argument("--records", default=None, help="Event-station CSV/parquet with waveform path columns. Defaults to configured output table 'event_station_records'.")
     preprocess.add_argument(
         "--output-root",
         default=None,
@@ -1076,6 +1080,15 @@ def _configured_output_path(
     return resolve_output_path(key, kind=kind, cfg=config, create_parent=create_parent)
 
 
+def _configured_project_path(dotted_key: str, *, config: Any, must_exist: bool = True) -> Path:
+    """Resolve one configured project path for CLI defaults."""
+
+    path = config.path(dotted_key, must_exist=must_exist)
+    if path is None:
+        raise ValueError(f"No path is configured for {dotted_key!r}.")
+    return Path(path)
+
+
 def _metric_workflow_dir(config: Any, name: str, *, create_parent: bool = True) -> Path:
     """Return a standard metric workflow directory below the configured output root."""
 
@@ -1192,7 +1205,24 @@ def _cmd_io_prepare_stations(args: argparse.Namespace) -> int:
 
     from spatial_vtk.io import prepare_station_metadata
 
-    _write_table(prepare_station_metadata(_read_table(args.input)), args.output)
+    needs_config = args.input is None or args.output is None
+    config = (
+        _required_cli_config(args.config, run_scenario=args.run_scenario)
+        if needs_config
+        else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    )
+    input_path = (
+        Path(args.input).expanduser()
+        if args.input is not None
+        else _configured_project_path("paths.station_metadata", config=config)
+    )
+    output = (
+        Path(args.output).expanduser()
+        if args.output is not None
+        else _configured_output_path("prepared_stations", config=config)
+    )
+    station_metadata = _read_table(input_path)
+    _write_table(prepare_station_metadata(station_metadata), output)
     return 0
 
 
@@ -1201,7 +1231,24 @@ def _cmd_io_prepare_events(args: argparse.Namespace) -> int:
 
     from spatial_vtk.io import prepare_event_metadata
 
-    _write_table(prepare_event_metadata(_read_table(args.input)), args.output)
+    needs_config = args.input is None or args.output is None
+    config = (
+        _required_cli_config(args.config, run_scenario=args.run_scenario)
+        if needs_config
+        else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    )
+    input_path = (
+        Path(args.input).expanduser()
+        if args.input is not None
+        else _configured_project_path("paths.event_metadata", config=config)
+    )
+    output = (
+        Path(args.output).expanduser()
+        if args.output is not None
+        else _configured_output_path("prepared_events", config=config)
+    )
+    event_metadata = _read_table(input_path)
+    _write_table(prepare_event_metadata(event_metadata), output)
     return 0
 
 
@@ -1245,7 +1292,11 @@ def _cmd_io_preprocess_waveforms(args: argparse.Namespace) -> int:
 
     from spatial_vtk.io import preprocess_waveform_files, waveform_preprocessing_from_config
 
-    config = _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    config = (
+        _required_cli_config(args.config, run_scenario=args.run_scenario)
+        if args.records is None
+        else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    )
     settings = waveform_preprocessing_from_config(config)
     overrides = {
         "lowpass_hz": args.lowpass_hz,
@@ -1263,8 +1314,13 @@ def _cmd_io_preprocess_waveforms(args: argparse.Namespace) -> int:
         source_columns["observed"] = args.observed_column
     if args.synthetic_column:
         source_columns["synthetic"] = args.synthetic_column
+    records = (
+        Path(args.records).expanduser()
+        if args.records is not None
+        else _default_event_station_records_path(config)
+    )
     result = preprocess_waveform_files(
-        args.records,
+        records,
         args.output_root,
         source_columns=source_columns or None,
         preprocessing=settings,

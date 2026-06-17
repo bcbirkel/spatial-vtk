@@ -27,12 +27,12 @@ Prepare station and event metadata, preprocess the waveform files once, and make
      --section paths
 
    svtk io prepare-stations \
-     --input data/examples/example_five_event_subset/metadata/selected_stations.csv \
-     --output "$TABLES/prepared_stations.csv"
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO"
 
    svtk io prepare-events \
-     --input data/examples/example_five_event_subset/metadata/events.csv \
-     --output "$TABLES/prepared_events.csv"
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO"
 
    svtk io preprocess-waveforms \
      --records data/examples/example_five_event_subset/metadata/selected_event_stations.csv \

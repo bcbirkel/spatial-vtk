@@ -169,7 +169,8 @@ svtk io prepare-events
 
 .. code-block:: bash
 
-   svtk io prepare-events [-h] --input INPUT --output OUTPUT
+   svtk io prepare-events [-h] [--input INPUT] [--output OUTPUT]
+                              [--config CONFIG] [--run-scenario RUN_SCENARIO]
 
 .. rubric:: Parameters
 
@@ -186,13 +187,21 @@ svtk io prepare-events
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Event CSV/parquet path.
+     - Value: ``input``. Event CSV/parquet path. Defaults to config paths.event_metadata.
    * - ``--output``
-     - Yes
+     - No
      -
-     - Value: ``output``. Output CSV/parquet path.
+     - Value: ``output``. Output CSV/parquet path. Defaults to configured output table 'prepared_events'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config file used to resolve default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
 
 .. _cli-svtk-io-prepare-stations:
 
@@ -203,7 +212,9 @@ svtk io prepare-stations
 
 .. code-block:: bash
 
-   svtk io prepare-stations [-h] --input INPUT --output OUTPUT
+   svtk io prepare-stations [-h] [--input INPUT] [--output OUTPUT]
+                                [--config CONFIG]
+                                [--run-scenario RUN_SCENARIO]
 
 .. rubric:: Parameters
 
@@ -220,13 +231,21 @@ svtk io prepare-stations
      -
      - show this help message and exit
    * - ``--input``
-     - Yes
+     - No
      -
-     - Value: ``input``. Station CSV/parquet path.
+     - Value: ``input``. Station CSV/parquet path. Defaults to config paths.station_metadata.
    * - ``--output``
-     - Yes
+     - No
      -
-     - Value: ``output``. Output CSV/parquet path.
+     - Value: ``output``. Output CSV/parquet path. Defaults to configured output table 'prepared_stations'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config file used to resolve default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
 
 .. _cli-svtk-io-preprocess-waveforms:
 
@@ -237,7 +256,7 @@ svtk io preprocess-waveforms
 
 .. code-block:: bash
 
-   svtk io preprocess-waveforms [-h] --records RECORDS
+   svtk io preprocess-waveforms [-h] [--records RECORDS]
                                     [--output-root OUTPUT_ROOT]
                                     [--config CONFIG]
                                     [--run-scenario RUN_SCENARIO]
@@ -268,9 +287,9 @@ svtk io preprocess-waveforms
      -
      - show this help message and exit
    * - ``--records``
-     - Yes
+     - No
      -
-     - Value: ``records``. Event-station CSV/parquet with waveform path columns.
+     - Value: ``records``. Event-station CSV/parquet with waveform path columns. Defaults to configured output table 'event_station_records'.
    * - ``--output-root``
      - No
      -

@@ -1342,6 +1342,84 @@ def test_cli_prepare_station_metadata(tmp_path):
     assert prepared.loc[0, "station"] == "STA1"
 
 
+def test_cli_prepare_metadata_uses_configured_defaults(tmp_path):
+    inputs = tmp_path / "inputs"
+    inputs.mkdir()
+    tables = tmp_path / "outputs" / "tables"
+    stations = inputs / "stations.csv"
+    events = inputs / "events.csv"
+    config = tmp_path / "spatial-vtk.yaml"
+    pd.DataFrame({"stationcode": ["sta1"], "station_latitude": [34.0], "station_longitude": [-118.0]}).to_csv(stations, index=False)
+    pd.DataFrame({"event_title": ["ev1"], "event_latitude": [33.9], "event_longitude": [-118.2]}).to_csv(events, index=False)
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+paths:
+  station_metadata: inputs/stations.csv
+  event_metadata: inputs/events.csv
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+
+    assert main(["io", "prepare-stations", "--config", str(config)]) == 0
+    assert main(["io", "prepare-events", "--config", str(config)]) == 0
+
+    prepared_stations = pd.read_csv(tables / "prepared_stations.csv")
+    prepared_events = pd.read_csv(tables / "prepared_events.csv")
+    assert prepared_stations.loc[0, "station"] == "STA1"
+    assert prepared_events.loc[0, "event_id"] == "ev1"
+
+
+def test_cli_preprocess_waveforms_uses_configured_records_default(tmp_path, monkeypatch, capsys):
+    from types import SimpleNamespace
+
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    records = tables / "event_station_records.csv"
+    records.write_text("event_id,station,observed_waveform\nE1,STA1,obs.mseed\n", encoding="utf-8")
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+  preprocessed_waveforms: outputs/preprocessed_waveforms
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.io as io
+
+    def fake_preprocess_waveform_files(event_station_records, output_root=None, **kwargs):
+        seen["records"] = Path(event_station_records)
+        seen["output_root"] = output_root
+        seen["config_root"] = kwargs["config"].root_dir
+        seen["continue_on_error"] = kwargs["continue_on_error"]
+        return SimpleNamespace(
+            event_station_path=tmp_path / "outputs" / "preprocessed_waveforms" / "metadata" / "event_station_records_preprocessed.csv",
+            manifest_path=tmp_path / "outputs" / "preprocessed_waveforms" / "metadata" / "preprocessing_manifest.csv",
+            trace_metadata_path=tmp_path / "outputs" / "preprocessed_waveforms" / "metadata" / "trace_metadata_preprocessed.csv",
+            manifest=pd.DataFrame({"event_id": ["E1"]}),
+        )
+
+    monkeypatch.setattr(io, "preprocess_waveform_files", fake_preprocess_waveform_files)
+
+    assert main(["io", "preprocess-waveforms", "--config", str(config), "--continue-on-error"]) == 0
+    captured = capsys.readouterr()
+    assert seen["records"] == records
+    assert seen["output_root"] is None
+    assert seen["config_root"] == tmp_path
+    assert seen["continue_on_error"] is True
+    assert "event_station_records:" in captured.out
+    assert "files: 1" in captured.out
+
+
 def test_cli_qc_manual_queue(tmp_path):
     src = tmp_path / "trace_summary.csv"
     out = tmp_path / "queue.csv"
