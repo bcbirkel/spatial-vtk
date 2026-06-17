@@ -98,3 +98,13 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     )
     for token in forbidden:
         assert token not in text
+
+
+def test_spatial_plot_public_entry_point_is_lazy():
+    import spatial_vtk.spatial.plot as spatial_plot
+
+    assert "plot_correlogram" in spatial_plot.__all__
+    assert "prepare_spatial_figure_context" in spatial_plot.__all__
+    assert callable(spatial_plot.plot_correlogram)
+    assert callable(spatial_plot.prepare_spatial_figure_context)
+    assert spatial_plot.plot_correlogram is spatial_plot.plot_correlogram
