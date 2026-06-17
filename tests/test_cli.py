@@ -94,6 +94,7 @@ def test_cli_registered_plot_help_shows_common_options(capsys):
     assert "--passband" in captured.out
     assert "--value-col" in captured.out
     assert "--y-col" in captured.out
+    assert "--no-connect-points" in captured.out
     assert "--write-sidecar" in captured.out
 
 
@@ -131,6 +132,7 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     text = (root / "docs" / "reference" / "cli_api.rst").read_text(encoding="utf-8")
     assert "resolve their standard input tables and figure paths from the active config" in text
     assert "first-class flags where they apply" in text
+    assert "``--no-connect-points``" in text
     assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
 
 
@@ -166,6 +168,8 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     root = Path(__file__).resolve().parents[1]
     text = (root / "docs" / "examples" / "cli_workflow.rst").read_text(encoding="utf-8")
     assert "svtk call" not in text
+    assert "--no-connect-points" in text
+    assert "--kwargs connect_points=false" not in text
 
 
 def test_cli_config_show_section(tmp_path, capsys):
@@ -329,6 +333,7 @@ outputs:
                 "Z",
                 "--model",
                 "m1",
+                "--no-connect-points",
             ]
         )
         == 0
@@ -344,6 +349,7 @@ outputs:
     assert seen["kwargs"]["passband"] == "1-2 sec"
     assert seen["kwargs"]["component"] == "Z"
     assert seen["kwargs"]["model"] == "m1"
+    assert seen["kwargs"]["connect_points"] is False
     assert captured.out.strip() == str(expected_output)
 
 

@@ -53,6 +53,9 @@ Changelog
    Updated the configuration guide's station-metric map override example to
    use first-class ``--value-col`` and ``--metric`` flags instead of routing
    routine plotting controls through ``--kwargs``.
+   Added first-class ``--connect-points`` / ``--no-connect-points`` plotting
+   flags and updated the shell workflow residual-distance example to use the
+   named flag instead of ``--kwargs connect_points=false``.
    Added a dashboard summary-table contract helper that maps each metrics
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file

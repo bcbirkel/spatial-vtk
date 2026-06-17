@@ -358,6 +358,7 @@ COMMON_FIGURE_OPTION_KEYS = frozenset(
         "group_col",
         "color_col",
         "fit",
+        "connect_points",
         "title",
     }
 )
@@ -883,6 +884,12 @@ def _add_common_figure_options(parser: argparse.ArgumentParser, *, exclude: set[
     add("group-col", default=None, help="Column used for grouping, coloring, or trend groups.")
     add("color-col", default=None, help="Column used to color plot groups.")
     add("fit", default=None, help="Optional fit/trend method, such as 'linear' or 'lowess'.")
+    add(
+        "connect-points",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.",
+    )
     add("title", default=None, help="Figure title.")
 
 

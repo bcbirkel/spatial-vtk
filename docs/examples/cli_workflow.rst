@@ -167,7 +167,7 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
      --y-col log2_residual \
      --group-col metric \
      --fit lowess \
-     --kwargs connect_points=false
+     --no-connect-points
 
    svtk map spatial station-metric \
      --config "$CONFIG" \
