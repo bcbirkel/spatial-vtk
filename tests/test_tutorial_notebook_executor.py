@@ -483,6 +483,12 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
+    assert "run_or_submit_notebook_function(" in source
+    assert "spatial_vtk.spatial.run_spatial_statistics_workflow_from_config" in source
+    assert "spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config" in source
+    assert "run_or_submit_notebook_cli_command(" not in source
+    assert '"svtk", "spatial"' not in source
+    assert "should_rebuild_paths(" not in source
     assert "station_summary_for_item = spatial_figures.station_summary_for_item" in source
     assert "station_period_summary_for_item = spatial_figures.station_period_summary_for_item" in source
     assert "station_grid_for_item = spatial_figures.station_grid_for_item" in source

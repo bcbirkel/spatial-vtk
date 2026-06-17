@@ -47,7 +47,12 @@ from spatial_vtk.spatial.calculate.prepare_stats import (
     summarize_station_bias,
 )
 from spatial_vtk.spatial.calculate.workflow import spatial_statistics_output_paths
-from spatial_vtk.spatial.calculate.workflow import run_spatial_derived_outputs_workflow, run_spatial_statistics_workflow
+from spatial_vtk.spatial.calculate.workflow import (
+    run_spatial_derived_outputs_workflow,
+    run_spatial_derived_outputs_workflow_from_config,
+    run_spatial_statistics_workflow,
+    run_spatial_statistics_workflow_from_config,
+)
 from spatial_vtk.spatial.map.correlation import (
     plot_block_holdout_error_map,
     plot_cluster_map,
@@ -455,6 +460,82 @@ spatial:
         "redcap_clusters",
         "pattern_similarity_station_anomalies",
     }
+
+
+def test_spatial_statistics_config_wrappers_return_json_ready_payloads(tmp_path: Path) -> None:
+    """Notebook Step 4 helpers should run from a config path and summarize outputs."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+spatial:
+  metric: C5
+  value_column: log2_residual
+  min_stations_per_event: 3
+  min_events_per_station: 2
+  moran_neighbors: 2
+  moran_permutations: 3
+  cluster_min_k: 2
+  cluster_max_k: 3
+  pca_components: 2
+  geology_min_stations_per_group: 1
+  geology_bootstrap_samples: 3
+  block_size_km: 5
+  block_min_block_stations: 1
+  block_max_folds: 2
+  pattern_metric: C5
+  pattern_passband: 1-2s
+  pattern_component: Z
+  pattern_model: example_model
+""",
+        encoding="utf-8",
+    )
+    metrics = normalize_metrics_table(_toy_metrics_table(), default_model="example_model")
+    metrics_path = tmp_path / "outputs" / "tables" / "metrics_long.parquet"
+    metrics_path.parent.mkdir(parents=True)
+    write_table(metrics, metrics_path)
+    station_path = tmp_path / "outputs" / "tables" / "prepared_stations.csv"
+    station_metadata = pd.DataFrame(
+        {
+            "station": metrics["station"].drop_duplicates().tolist(),
+            "mapped_region_type": (["Basin", "Mountains"] * 8)[: metrics["station"].nunique()],
+        }
+    )
+    write_table(station_metadata, station_path)
+
+    summary = run_spatial_statistics_workflow_from_config(config_path=config_path, verbose=True)
+
+    assert summary["metrics"] == ["C5"]
+    assert summary["failure_count"] == 0
+    assert summary["rows"]["metric_field"] > 0
+    assert Path(summary["paths"]["metric_field"]) == tmp_path / "outputs" / "tables" / "metric_field.parquet"
+    assert Path(summary["paths"]["station_bias"]).exists()
+
+    metric_field = pd.read_parquet(summary["paths"]["metric_field"])
+    pattern_metrics = metric_field[["station", "metric", "band", "component", "model", "field_value"]].copy()
+    pattern_metrics.rename(columns={"band": "passband"}, inplace=True)
+    pattern_metrics["value_syn"] = 1.0
+    pattern_metrics["value_obs"] = np.power(2.0, pd.to_numeric(pattern_metrics["field_value"], errors="coerce"))
+    pattern_metrics_path = tmp_path / "outputs" / "tables" / "pattern_metrics.parquet"
+    write_table(pattern_metrics, pattern_metrics_path)
+
+    derived = run_spatial_derived_outputs_workflow_from_config(
+        config_path=config_path,
+        metrics=pattern_metrics_path,
+        overwrite=True,
+        verbose=True,
+    )
+
+    assert derived["failure_count"] == 0
+    assert derived["rows"]["block_holdout_predictions"] > 0
+    assert derived["rows"]["redcap_clusters"] > 0
+    assert derived["rows"]["pattern_similarity_station_anomalies"] > 0
+    assert Path(derived["paths"]["block_holdout_predictions"]).exists()
 
 
 def test_spatial_statistics_workflow_resumes_metric_checkpoints(tmp_path: Path, monkeypatch) -> None:

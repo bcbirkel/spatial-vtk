@@ -323,6 +323,80 @@ def spatial_statistics_output_paths(output_dir: str | Path) -> SimpleNamespace:
     return default_output_paths(output_dir, SPATIAL_STATISTICS_OUTPUT_NAMES)
 
 
+def run_spatial_statistics_workflow_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    metrics: pd.DataFrame | str | Path | None = None,
+    metric: str | Sequence[str] | None = None,
+    station_metadata: pd.DataFrame | str | Path | None = None,
+    resume: bool = True,
+    checkpoint_dir: str | Path | None = None,
+    verbose: bool = False,
+) -> dict[str, object]:
+    """Run configured spatial summary tables and return a JSON-ready summary."""
+
+    config = _spatial_workflow_config(config_path=config_path, run_scenario=run_scenario)
+    result = run_spatial_statistics_workflow(
+        metrics,
+        cfg=config,
+        metric=metric,
+        station_metadata=station_metadata,
+        resume=resume,
+        checkpoint_dir=checkpoint_dir,
+        verbose=verbose,
+    )
+    return {
+        "metrics": list(result.metrics),
+        "paths": {key: str(path) for key, path in result.paths.items()},
+        "rows": {key: int(len(table)) for key, table in result.tables.items()},
+        "failures": list(result.failures),
+        "failure_count": int(len(result.failures)),
+        "elapsed_s": float(result.elapsed_s),
+    }
+
+
+def run_spatial_derived_outputs_workflow_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    metrics: pd.DataFrame | str | Path | None = None,
+    metric_field: pd.DataFrame | str | Path | None = None,
+    station_bias: pd.DataFrame | str | Path | None = None,
+    metric: str | Sequence[str] | None = None,
+    pattern_passband: str | Sequence[str] | None = None,
+    pattern_component: str | Sequence[str] | None = None,
+    pattern_model: str | Sequence[str] | None = None,
+    outputs: Sequence[str] | str = "all",
+    overwrite: bool = False,
+    verbose: bool = False,
+) -> dict[str, object]:
+    """Run configured optional spatial plot-input tables and summarize results."""
+
+    config = _spatial_workflow_config(config_path=config_path, run_scenario=run_scenario)
+    result = run_spatial_derived_outputs_workflow(
+        metrics,
+        metric_field=metric_field,
+        station_bias=station_bias,
+        cfg=config,
+        metric=metric,
+        pattern_passband=pattern_passband,
+        pattern_component=pattern_component,
+        pattern_model=pattern_model,
+        outputs=outputs,
+        overwrite=overwrite,
+        verbose=verbose,
+    )
+    return {
+        "paths": {key: str(path) for key, path in result.paths.items()},
+        "rows": {key: int(count) for key, count in result.rows.items()},
+        "reused": list(result.reused),
+        "failures": list(result.failures),
+        "failure_count": int(len(result.failures)),
+        "elapsed_s": float(result.elapsed_s),
+    }
+
+
 def run_spatial_statistics_workflow(
     metrics: pd.DataFrame | str | Path | None = None,
     *,
@@ -716,6 +790,21 @@ def run_spatial_derived_outputs_workflow(
         failures=tuple(failures),
         elapsed_s=float(time.monotonic() - start),
     )
+
+
+def _spatial_workflow_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+) -> SpatialVTKConfig:
+    """Resolve and activate a workflow config for notebook/Slurm helpers."""
+
+    if config_path is not None:
+        return SpatialVTKConfig.from_file(config_path, run_scenario=run_scenario).activate()
+    config = active_config()
+    if run_scenario is not None and config.config_path is not None:
+        return SpatialVTKConfig.from_file(config.config_path, run_scenario=run_scenario).activate()
+    return config.activate()
 
 
 def _requested_derived_outputs(outputs: Sequence[str] | str) -> tuple[str, ...]:
@@ -1199,6 +1288,8 @@ __all__ = [
     "SpatialDerivedOutputsWorkflowResult",
     "SpatialStatisticsWorkflowResult",
     "run_spatial_derived_outputs_workflow",
+    "run_spatial_derived_outputs_workflow_from_config",
     "run_spatial_statistics_workflow",
+    "run_spatial_statistics_workflow_from_config",
     "spatial_statistics_output_paths",
 ]

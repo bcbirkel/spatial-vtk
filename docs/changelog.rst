@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Added config-backed spatial workflow helpers for Step 4 spatial summaries
+   and optional spatial plot-input tables. The large-run Step 4 notebook now
+   calls importable ``spatial_vtk.spatial`` functions through
+   ``run_or_submit_notebook_function()`` instead of constructing spatial CLI
+   commands in notebook cells.
    Added config-backed metric workflow helpers for waveform-inventory
    generation, task-manifest planning, metric Slurm script writing, batch
    merging, and downstream metric/dashboard output writing. The large-run Step

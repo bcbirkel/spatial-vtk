@@ -65,7 +65,9 @@ from spatial_vtk.spatial.calculate.workflow import (
     SpatialDerivedOutputsWorkflowResult,
     SpatialStatisticsWorkflowResult,
     run_spatial_derived_outputs_workflow,
+    run_spatial_derived_outputs_workflow_from_config,
     run_spatial_statistics_workflow,
+    run_spatial_statistics_workflow_from_config,
     spatial_statistics_output_paths,
 )
 
@@ -128,7 +130,9 @@ __all__ = [
     "SpatialStatisticsWorkflowResult",
     "SpatialStatisticsSettings",
     "run_spatial_derived_outputs_workflow",
+    "run_spatial_derived_outputs_workflow_from_config",
     "run_spatial_statistics_workflow",
+    "run_spatial_statistics_workflow_from_config",
     "spatial_statistics_output_paths",
     "spatial_statistics_settings_from_config",
     "summarize_corridor_event_counts",
