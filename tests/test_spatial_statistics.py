@@ -75,7 +75,12 @@ from spatial_vtk.spatial.plot.large_run import SpatialFigureContext, write_large
 from spatial_vtk.spatial.plot.metrics import plot_geology_contrast
 from spatial_vtk.spatial.plot.pca import plot_pca_explained_variance, plot_pca_feature_loadings
 from spatial_vtk.visualize.figure_context import value_color_settings
-from spatial_vtk.visualize.figure_sidecars import write_figure_row_sidecar
+from spatial_vtk.visualize.figure_sidecars import (
+    figure_sidecar_metadata_path,
+    figure_sidecar_status_frame,
+    read_figure_sidecar_metadata,
+    write_figure_row_sidecar,
+)
 
 
 def _toy_metrics_table() -> pd.DataFrame:
@@ -800,6 +805,13 @@ def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -
     assert metadata["source_passband_count"] == 2
     assert metadata["selection"] == ["PGA", "1-2 sec"]
 
+    assert figure_sidecar_metadata_path(figure_path) == result.metadata_path
+    assert figure_sidecar_metadata_path(result.sidecar_path) == result.metadata_path
+    assert figure_sidecar_metadata_path(result.source_sidecar_path) == result.metadata_path
+    assert read_figure_sidecar_metadata(figure_path)["plot_row_count"] == 3
+    assert read_figure_sidecar_metadata(result.sidecar_path)["source_row_count"] == 4
+    assert read_figure_sidecar_metadata(result.source_sidecar_path)["source_sidecar_written"] is True
+
     all_rows_result = write_figure_row_sidecar(
         tmp_path / "figures" / "station_map_all_rows.png",
         plot_rows,
@@ -814,6 +826,20 @@ def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -
     assert all_rows_metadata["source_sidecar_exact"] is True
     assert all_rows_metadata["written_row_count"] == len(plot_rows)
     assert all_rows_metadata["source_written_row_count"] == len(source_rows)
+
+    status = figure_sidecar_status_frame(result.sidecar_path.parent).set_index("figure")
+    row = status.loc["station_map.png"]
+    assert row["plot_row_count"] == 3
+    assert row["written_row_count"] == 2
+    assert bool(row["plot_sidecar_exact"]) is False
+    assert row["source_row_count"] == 4
+    assert row["source_written_row_count"] == 2
+    assert bool(row["source_sidecar_exact"]) is False
+    assert bool(row["source_sidecar_written"]) is True
+    assert row["sidecar_row_policy"] == "deterministic_sample"
+    all_row = status.loc["station_map_all_rows.png"]
+    assert bool(all_row["plot_sidecar_exact"]) is True
+    assert bool(all_row["source_sidecar_exact"]) is True
 
 
 def test_write_figure_row_sidecar_makes_zero_column_frames_readable(tmp_path: Path) -> None:

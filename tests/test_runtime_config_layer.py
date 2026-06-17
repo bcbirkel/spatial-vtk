@@ -59,7 +59,12 @@ import spatial_vtk.visualize.figure_io as figure_io
 import spatial_vtk.config.notebook as notebook_helpers
 from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize import default_figure_paths
-from spatial_vtk.visualize.figure_sidecars import FigureSidecarResult, write_figure_row_sidecar
+from spatial_vtk.visualize.figure_sidecars import (
+    FigureSidecarResult,
+    figure_sidecar_status_frame,
+    read_figure_sidecar_metadata,
+    write_figure_row_sidecar,
+)
 from spatial_vtk.visualize.dashboard import (
     dashboard_metric_dataset_readiness_frame,
     dashboard_map_readiness,
@@ -164,6 +169,8 @@ def test_public_dashboard_and_sidecar_helpers_import_without_streamlit():
     assert dashboard_helpers.filter_optional_dashboard_summary is filter_optional_dashboard_summary
     assert dashboard_helpers.row_value_column_for_summary is row_value_column_for_summary
     assert visualize_helpers.write_figure_row_sidecar is write_figure_row_sidecar
+    assert visualize_helpers.figure_sidecar_status_frame is figure_sidecar_status_frame
+    assert visualize_helpers.read_figure_sidecar_metadata is read_figure_sidecar_metadata
     assert visualize_helpers.FigureSidecarResult is FigureSidecarResult
     assert "spatial_vtk.visualize.dashboard.streamlit_metrics" not in sys.modules
     assert "spatial_vtk.visualize.dashboard.streamlit_qc" not in sys.modules

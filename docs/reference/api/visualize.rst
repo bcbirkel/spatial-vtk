@@ -141,6 +141,12 @@ represents. Use ``sidecar_rows=None`` or ``sidecar_rows=0`` to write all rows,
 or a positive integer to write a deterministic sample. The metadata records
 ``sidecar_row_policy``, ``plot_sidecar_exact``, and ``source_sidecar_exact`` so
 callers can tell whether a sidecar contains every row or a sampled audit table.
+Use ``figure_sidecar_status_frame(sidecar_dir)`` to inspect a directory of
+JSON sidecars without loading the CSV row files. The status table reports
+exactness flags, plot/source row counts, source-sidecar availability, and
+station-aggregation metadata when a figure was created from station summaries.
+``read_figure_sidecar_metadata`` reads one JSON sidecar from a figure path,
+main sidecar CSV path, source sidecar CSV path, or JSON metadata path.
 
 .. automodule:: spatial_vtk.visualize.figure_context
    :members:

@@ -18,8 +18,11 @@ from spatial_vtk.visualize.figure_io import DEFAULT_FIGURE_NAMES, default_figure
 from spatial_vtk.visualize.figure_sidecars import (
     FigureSidecarResult,
     figure_sidecar_dimension_counts,
+    figure_sidecar_metadata_path,
+    figure_sidecar_status_frame,
     finish_figure_with_sidecar,
     layered_figure_rows,
+    read_figure_sidecar_metadata,
     sidecar_rows_for_write,
     write_figure_row_sidecar,
 )
@@ -73,6 +76,8 @@ __all__ = [
     "figure_context_lines",
     "figure_context_text",
     "figure_sidecar_dimension_counts",
+    "figure_sidecar_metadata_path",
+    "figure_sidecar_status_frame",
     "filter_trace_summary",
     "finish_figure",
     "finish_figure_with_sidecar",
@@ -99,6 +104,7 @@ __all__ = [
     "plot_waveform_overlay_matrix",
     "prepare_dashboard_metric_table",
     "queue_rows_from_filtered_trace_df",
+    "read_figure_sidecar_metadata",
     "savefig",
     "sidecar_rows_for_write",
     "write_dashboard_metric_dataset",

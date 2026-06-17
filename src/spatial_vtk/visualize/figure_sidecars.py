@@ -260,6 +260,96 @@ def layered_figure_rows(layers: list[tuple[str, pd.DataFrame | None]] | tuple[tu
     return pd.concat(frames, ignore_index=True, sort=False)
 
 
+def read_figure_sidecar_metadata(path: str | Path) -> dict[str, Any]:
+    """Read one figure sidecar JSON metadata file.
+
+    Parameters
+    ----------
+    path
+        Figure path, main sidecar CSV path, source sidecar CSV path, or JSON
+        metadata path. Figure paths resolve through the default ``sidecars``
+        directory next to the figure. For custom sidecar directories, pass the
+        sidecar CSV or JSON path directly.
+
+    Returns
+    -------
+    dict
+        Parsed sidecar metadata.
+    """
+
+    metadata_path = figure_sidecar_metadata_path(path)
+    if not metadata_path.exists():
+        raise FileNotFoundError(f"Figure sidecar metadata does not exist: {metadata_path}")
+    return json.loads(metadata_path.read_text(encoding="utf-8"))
+
+
+def figure_sidecar_metadata_path(path: str | Path) -> Path:
+    """Resolve the JSON metadata path for a figure or sidecar path."""
+
+    source = Path(path).expanduser()
+    if source.suffix.lower() == ".json":
+        return source
+    if source.name.endswith(".source.csv"):
+        return source.with_name(source.name.removesuffix(".source.csv") + ".json")
+    if source.suffix.lower() == ".csv":
+        return source.with_suffix(".json")
+    default_sidecar_path = source.parent / "sidecars" / f"{source.stem}.json"
+    if default_sidecar_path.exists():
+        return default_sidecar_path
+    return source.with_suffix(".json")
+
+
+def figure_sidecar_status_frame(sidecar_dir: str | Path) -> pd.DataFrame:
+    """Return a compact audit table for all figure sidecar metadata files.
+
+    The returned frame is intended for notebooks: each row is one saved figure
+    sidecar and includes exactness flags, plot/source row counts, source-sidecar
+    availability, and station-aggregation metadata when present. The helper
+    reads only the small JSON sidecars, not the potentially large CSV row
+    sidecars.
+    """
+
+    root = Path(sidecar_dir).expanduser()
+    rows: list[dict[str, Any]] = []
+    for metadata_path in sorted(root.glob("*.json")):
+        metadata = read_figure_sidecar_metadata(metadata_path)
+        rows.append(_figure_sidecar_status_row(metadata_path, metadata))
+    return pd.DataFrame(rows)
+
+
+def _figure_sidecar_status_row(metadata_path: Path, metadata: dict[str, Any]) -> dict[str, Any]:
+    """Return one display-ready sidecar audit row."""
+
+    figure = Path(str(metadata.get("figure") or metadata_path.stem))
+    return {
+        "figure": figure.name,
+        "metadata_path": str(metadata_path),
+        "sidecar": metadata.get("sidecar", ""),
+        "source_sidecar": metadata.get("source_sidecar", ""),
+        "plot_row_count": metadata.get("plot_row_count", ""),
+        "written_row_count": metadata.get("written_row_count", ""),
+        "plot_sidecar_exact": metadata.get("plot_sidecar_exact", ""),
+        "source_row_count": metadata.get("source_row_count", ""),
+        "source_written_row_count": metadata.get("source_written_row_count", ""),
+        "source_sidecar_exact": metadata.get("source_sidecar_exact", ""),
+        "source_sidecar_written": metadata.get("source_sidecar_written", ""),
+        "sidecar_row_policy": metadata.get("sidecar_row_policy", ""),
+        "sidecar_row_limit": metadata.get("sidecar_row_limit", ""),
+        "plot_rows_role": metadata.get("plot_rows_role", ""),
+        "source_rows_role": metadata.get("source_rows_role", ""),
+        "aggregation_contract": metadata.get("aggregation_contract", ""),
+        "aggregation_kind": metadata.get("aggregation_kind", metadata.get("svtk_aggregation_kind", "")),
+        "aggregation_method": metadata.get("aggregation_method", metadata.get("svtk_aggregation_method", "")),
+        "aggregation_value_col": metadata.get("aggregation_value_col", metadata.get("svtk_aggregation_value_col", "")),
+        "aggregation_input_row_count": metadata.get("aggregation_input_row_count", metadata.get("svtk_aggregation_input_row_count", "")),
+        "aggregation_finite_row_count": metadata.get("aggregation_finite_row_count", metadata.get("svtk_aggregation_finite_row_count", "")),
+        "aggregation_dropped_nonfinite_row_count": metadata.get(
+            "aggregation_dropped_nonfinite_row_count",
+            metadata.get("svtk_aggregation_dropped_nonfinite_row_count", ""),
+        ),
+    }
+
+
 def figure_sidecar_dimension_counts(df: pd.DataFrame | None, *, prefix: str) -> dict[str, int]:
     """Return cheap dimension counts for figure sidecar metadata."""
 
@@ -299,8 +389,11 @@ def _json_ready(value: Any) -> Any:
 __all__ = [
     "FigureSidecarResult",
     "figure_sidecar_dimension_counts",
+    "figure_sidecar_metadata_path",
+    "figure_sidecar_status_frame",
     "finish_figure_with_sidecar",
     "layered_figure_rows",
+    "read_figure_sidecar_metadata",
     "sidecar_rows_for_write",
     "write_figure_row_sidecar",
 ]
