@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Clarified spatial summary and derived-output table flags. ``svtk spatial
+   summaries`` and ``svtk spatial derived-outputs`` now accept aliases such as
+   ``--metrics-table``, ``--station-metadata-table``,
+   ``--metric-field-table``, and ``--station-bias-table`` while preserving the
+   older flags.
    Clarified spatial GeoJSON/corridor CLI path roles. ``svtk spatial
    geojson-summaries`` and ``svtk spatial corridors`` now accept aliases such
    as ``--metrics-table``, ``--region-geojson``, ``--records-table``, and

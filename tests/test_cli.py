@@ -31,6 +31,8 @@ def test_cli_spatial_summaries_help(capsys):
     help_text = " ".join(captured.out.split())
     assert "Build standard spatial-statistics summary tables" in captured.out
     assert "--station-metadata" in captured.out
+    assert "--station-metadata-table" in captured.out
+    assert "--metrics-table" in captured.out
     assert "--checkpoint-dir" in captured.out
     assert "--no-resume" in captured.out
     assert "default config is set with 'svtk config set'" in help_text
@@ -97,6 +99,57 @@ spatial_statistics:
     assert seen["verbose"] is True
     assert "Spatial statistics metrics: PGA" in captured.out
     assert "metric_field:" in captured.out
+
+
+def test_cli_spatial_summaries_accepts_clear_table_aliases(tmp_path, monkeypatch):
+    """Spatial summaries should accept explicit table-named input aliases."""
+
+    from types import SimpleNamespace
+
+    config = tmp_path / "spatial-vtk.yaml"
+    metrics = tmp_path / "metrics_long.parquet"
+    stations = tmp_path / "prepared_stations.csv"
+    metrics.write_bytes(b"metrics")
+    stations.write_text("station,lon,lat\nSTA,-118,34\n", encoding="utf-8")
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    def fake_run_spatial_statistics_workflow(metrics=None, **kwargs):
+        seen["metrics"] = metrics
+        seen.update(kwargs)
+        return SimpleNamespace(metrics=("PGA",), elapsed_s=0.5, paths={}, failures=())
+
+    monkeypatch.setattr("spatial_vtk.spatial.calculate.run_spatial_statistics_workflow", fake_run_spatial_statistics_workflow)
+
+    assert (
+        main(
+            [
+                "spatial",
+                "summaries",
+                "--config",
+                str(config),
+                "--metrics-table",
+                str(metrics),
+                "--station-metadata-table",
+                str(stations),
+                "--no-resume",
+            ]
+        )
+        == 0
+    )
+
+    assert seen["metrics"] == str(metrics)
+    assert seen["station_metadata"] == str(stations)
+    assert seen["resume"] is False
 
 
 def test_cli_spatial_derived_outputs_use_saved_config_defaults(tmp_path, monkeypatch, capsys):
@@ -171,6 +224,59 @@ outputs:
     assert seen["verbose"] is True
     assert "Spatial derived outputs elapsed: 2.5s" in captured.out
     assert "redcap_clusters_rows: 4" in captured.out
+
+
+def test_cli_spatial_derived_outputs_accepts_clear_table_aliases(tmp_path, monkeypatch):
+    """Spatial derived outputs should accept explicit table-named input aliases."""
+
+    from types import SimpleNamespace
+
+    config = tmp_path / "spatial-vtk.yaml"
+    metrics = tmp_path / "metrics_long.parquet"
+    metric_field = tmp_path / "metric_field.parquet"
+    station_bias = tmp_path / "station_bias.parquet"
+    for path in (metrics, metric_field, station_bias):
+        path.write_bytes(b"table")
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    def fake_run_spatial_derived_outputs_workflow(metrics=None, **kwargs):
+        seen["metrics"] = metrics
+        seen.update(kwargs)
+        return SimpleNamespace(elapsed_s=0.75, paths={}, rows={}, reused=(), failures=())
+
+    monkeypatch.setattr("spatial_vtk.spatial.calculate.run_spatial_derived_outputs_workflow", fake_run_spatial_derived_outputs_workflow)
+
+    assert (
+        main(
+            [
+                "spatial",
+                "derived-outputs",
+                "--config",
+                str(config),
+                "--metrics-table",
+                str(metrics),
+                "--metric-field-table",
+                str(metric_field),
+                "--station-bias-table",
+                str(station_bias),
+            ]
+        )
+        == 0
+    )
+
+    assert seen["metrics"] == str(metrics)
+    assert seen["metric_field"] == str(metric_field)
+    assert seen["station_bias"] == str(station_bias)
 
 
 def test_cli_spatial_status_reports_named_missing_input(tmp_path, capsys):
@@ -797,6 +903,25 @@ def test_generated_cli_reference_names_spatial_geojson_aliases():
     assert "``--output-key``, ``--output-table-key``" in corridor_section
     assert "prepared_stations" in corridor_section
     assert "prepared_events" in corridor_section
+
+
+def test_generated_cli_reference_names_spatial_summary_aliases():
+    """Generated spatial CLI docs should expose table-named summary aliases."""
+
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "docs" / "reference" / "cli" / "spatial.rst").read_text(encoding="utf-8")
+    derived_section = text.split(".. _cli-svtk-spatial-derived-outputs:", maxsplit=1)[1].split(
+        ".. _cli-svtk-spatial-geojson-summaries:", maxsplit=1
+    )[0]
+    summaries_section = text.split(".. _cli-svtk-spatial-summaries:", maxsplit=1)[1]
+
+    assert "``--metrics``, ``--metrics-table``" in derived_section
+    assert "``--metric-field``, ``--metric-field-table``" in derived_section
+    assert "``--station-bias``, ``--station-bias-table``" in derived_section
+    assert "``--metrics``, ``--metrics-table``" in summaries_section
+    assert "``--station-metadata``, ``--station-metadata-table``" in summaries_section
+    assert "metrics_long" in summaries_section
+    assert "prepared_stations" in summaries_section
 
 
 def test_cli_workflow_uses_curated_commands_for_standard_steps():

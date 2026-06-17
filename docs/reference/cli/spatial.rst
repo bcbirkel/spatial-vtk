@@ -141,15 +141,15 @@ Build optional Step 4 spatial tables used by overview plots: block_holdout_predi
      - No
      -
      - show this help message and exit
-   * - ``--metrics``
+   * - ``--metrics``, ``--metrics-table``
      - No
      -
      - Value: ``metrics``. Long metric rows table. Defaults to configured output table 'metrics_long'.
-   * - ``--metric-field``
+   * - ``--metric-field``, ``--metric-field-table``
      - No
      -
      - Value: ``metric_field``. Metric-field table. Defaults to configured output table 'metric_field'.
-   * - ``--station-bias``
+   * - ``--station-bias``, ``--station-bias-table``
      - No
      -
      - Value: ``station_bias``. Station-bias table. Defaults to configured output table 'station_bias'.
@@ -332,7 +332,7 @@ Build standard spatial-statistics summary tables.
      - No
      -
      - show this help message and exit
-   * - ``--metrics``
+   * - ``--metrics``, ``--metrics-table``
      - No
      -
      - Value: ``metrics``. Metric rows table. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
@@ -348,7 +348,7 @@ Build standard spatial-statistics summary tables.
      - No
      -
      - Value: ``metric``. Metric override. Use 'all' to process each metric in the input table.
-   * - ``--station-metadata``
+   * - ``--station-metadata``, ``--station-metadata-table``
      - No
      -
      - Value: ``station_metadata``. Prepared station metadata table for geology contrasts. Defaults to configured output table 'prepared_stations'.

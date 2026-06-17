@@ -844,6 +844,8 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     )
     summaries.add_argument(
         "--metrics",
+        "--metrics-table",
+        dest="metrics",
         default=None,
         help="Metric rows table. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.",
     )
@@ -856,6 +858,8 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     )
     summaries.add_argument(
         "--station-metadata",
+        "--station-metadata-table",
+        dest="station_metadata",
         default=None,
         help="Prepared station metadata table for geology contrasts. Defaults to configured output table 'prepared_stations'.",
     )
@@ -884,9 +888,27 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
             "pattern_similarity_station_anomalies."
         ),
     )
-    derived.add_argument("--metrics", default=None, help="Long metric rows table. Defaults to configured output table 'metrics_long'.")
-    derived.add_argument("--metric-field", default=None, help="Metric-field table. Defaults to configured output table 'metric_field'.")
-    derived.add_argument("--station-bias", default=None, help="Station-bias table. Defaults to configured output table 'station_bias'.")
+    derived.add_argument(
+        "--metrics",
+        "--metrics-table",
+        dest="metrics",
+        default=None,
+        help="Long metric rows table. Defaults to configured output table 'metrics_long'.",
+    )
+    derived.add_argument(
+        "--metric-field",
+        "--metric-field-table",
+        dest="metric_field",
+        default=None,
+        help="Metric-field table. Defaults to configured output table 'metric_field'.",
+    )
+    derived.add_argument(
+        "--station-bias",
+        "--station-bias-table",
+        dest="station_bias",
+        default=None,
+        help="Station-bias table. Defaults to configured output table 'station_bias'.",
+    )
     derived.add_argument("--config", default=None, help="Spatial-VTK config file.")
     derived.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     derived.add_argument("--metric", default=None, help="Metric filter. Defaults to spatial.pattern_metric/spatial.metric; use 'all' for all available metrics.")
