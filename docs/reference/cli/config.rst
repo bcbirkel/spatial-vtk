@@ -9,6 +9,7 @@ Command Tree
 - :ref:`svtk config <cli-svtk-config>`
    - :ref:`svtk config bounds <cli-svtk-config-bounds>`
    - :ref:`svtk config find <cli-svtk-config-find>`
+   - :ref:`svtk config outputs <cli-svtk-config-outputs>`
    - :ref:`svtk config set <cli-svtk-config-set>`
    - :ref:`svtk config show <cli-svtk-config-show>`
    - :ref:`svtk config unset <cli-svtk-config-unset>`
@@ -20,7 +21,7 @@ Command Details
 
 .. code-block:: bash
 
-   svtk config [-h] {find,set,unset,show,bounds} ...
+   svtk config [-h] {find,set,unset,show,outputs,bounds} ...
 
 .. rubric:: Parameters
 
@@ -109,6 +110,55 @@ svtk config find
      - No
      -
      - Value: ``start_dir``. Directory used for config discovery.
+
+.. _cli-svtk-config-outputs:
+
+svtk config outputs
+^^^^^^^^^^^^^^^^^^^
+
+.. rubric:: Usage
+
+.. code-block:: bash
+
+   svtk config outputs [-h] [--config CONFIG]
+                           [--run-scenario RUN_SCENARIO]
+                           [--kind {all,table,figure,dashboard}] [--no-paths]
+                           [--json]
+
+.. rubric:: Parameters
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 13 14 47
+
+   * - Name
+     - Required
+     - Default / choices
+     - Description
+   * - ``-h``, ``--help``
+     - No
+     -
+     - show this help message and exit
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Explicit config file used to resolve output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay before resolving paths.
+   * - ``--kind``
+     - No
+     - Default: ``all``; Choices: ``all``, ``table``, ``figure``, ``dashboard``
+     - Value: ``kind``. Limit output registry rows by artifact kind.
+   * - ``--no-paths``
+     - No
+     - Flag
+     - List keys and filenames without resolving filesystem paths.
+   * - ``--json``
+     - No
+     - Flag
+     - Write JSON instead of a text table.
 
 .. _cli-svtk-config-set:
 

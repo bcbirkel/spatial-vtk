@@ -5,7 +5,7 @@ import pathlib
 
 def test_public_imports():
     import spatial_vtk
-    from spatial_vtk.config import abbreviate_model, run_notebook_step_if_needed
+    from spatial_vtk.config import abbreviate_model, configured_output_registry_frame, run_notebook_step_if_needed
     from spatial_vtk.metrics import METRIC_NAMES, amplitude_spectrum, calculate_metrics_for_pairs, compute_metrics_pair
     from spatial_vtk.metrics.plot import MetricFigureContext
     from spatial_vtk.io import inspect_synthetic_format, prepare_station_metadata, resolve_model_aliases
@@ -26,6 +26,7 @@ def test_public_imports():
     assert spatial_vtk.__version__
     assert "C1" in METRIC_NAMES
     assert callable(abbreviate_model)
+    assert callable(configured_output_registry_frame)
     assert callable(run_notebook_step_if_needed)
     assert callable(amplitude_spectrum)
     assert callable(calculate_metrics_for_pairs)

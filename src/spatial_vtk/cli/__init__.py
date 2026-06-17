@@ -488,6 +488,19 @@ def _add_config_commands(subparsers: argparse._SubParsersAction[argparse.Argumen
     show.add_argument("--json", action="store_true", help="Write JSON instead of YAML.")
     show.set_defaults(handler=_cmd_config_show)
 
+    outputs = config_sub.add_parser("outputs", help="List registered output keys, filenames, and resolved paths.")
+    outputs.add_argument("--config", default=None, help="Explicit config file used to resolve output paths.")
+    outputs.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay before resolving paths.")
+    outputs.add_argument(
+        "--kind",
+        choices=("all", "table", "figure", "dashboard"),
+        default="all",
+        help="Limit output registry rows by artifact kind.",
+    )
+    outputs.add_argument("--no-paths", action="store_true", help="List keys and filenames without resolving filesystem paths.")
+    outputs.add_argument("--json", action="store_true", help="Write JSON instead of a text table.")
+    outputs.set_defaults(handler=_cmd_config_outputs)
+
     bounds = config_sub.add_parser("bounds", help="List configured named bounds presets.")
     bounds.add_argument("--config", default=None, help="Explicit config file.")
     bounds.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay before listing bounds.")
@@ -1386,6 +1399,32 @@ def _cmd_config_bounds(args: argparse.Namespace) -> int:
 
     config = SpatialVTKConfig.from_file(args.config, run_scenario=args.run_scenario)
     _print_payload(config.bounds_presets(), as_json=args.json)
+    return 0
+
+
+def _cmd_config_outputs(args: argparse.Namespace) -> int:
+    """Run ``svtk config outputs``."""
+
+    from spatial_vtk.config import SpatialVTKConfig, configured_output_registry_frame
+
+    config = None
+    include_paths = not args.no_paths
+    if include_paths:
+        path = _effective_config_path(args.config)
+        if path is not None:
+            config = SpatialVTKConfig.from_file(path, run_scenario=args.run_scenario)
+        elif args.config:
+            config = SpatialVTKConfig.from_file(args.config, run_scenario=args.run_scenario)
+        else:
+            include_paths = False
+    kinds = None if args.kind == "all" else (args.kind,)
+    frame = configured_output_registry_frame(cfg=config, include_paths=include_paths, kinds=kinds)
+    if args.json:
+        _print_payload({"outputs": frame}, as_json=True)
+    elif frame.empty:
+        print("No registered Spatial-VTK outputs matched the requested filters.")
+    else:
+        print(frame.to_string(index=False))
     return 0
 
 

@@ -23,6 +23,37 @@ def test_cli_version(capsys):
     assert captured.out.strip()
 
 
+def test_cli_config_outputs_lists_registry_with_resolved_paths(tmp_path, capsys):
+    """CLI users should be able to discover registered output keys."""
+
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+  figures: outputs/figures
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+
+    assert main(["config", "outputs", "--config", str(config), "--kind", "table"]) == 0
+    text = capsys.readouterr().out
+    assert "metrics_long" in text
+    assert "metrics_long.parquet" in text
+    assert str(tmp_path / "outputs" / "tables" / "metrics_long.parquet") in text
+    assert "station_metric_map" not in text
+
+    assert main(["config", "outputs", "--kind", "dashboard", "--no-paths", "--json"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    keys = {row["key"] for row in payload["outputs"]}
+    assert {"metrics_dashboard", "dashboard_summaries"} <= keys
+    assert "path" not in payload["outputs"][0]
+
+
 def test_cli_spatial_summaries_help(capsys):
     with pytest.raises(SystemExit) as excinfo:
         main(["spatial", "summaries", "--help"])

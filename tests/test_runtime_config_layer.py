@@ -15,6 +15,7 @@ from spatial_vtk.config import (
     active_config,
     clear_saved_config_path,
     clear_active_config,
+    configured_output_registry_frame,
     find_config_file,
     format_run_time,
     notebook_dashboard_launch_commands,
@@ -799,6 +800,42 @@ outputs:
     explicit = resolve_output_path("record_coverage", kind="figure", outpath="override/custom.png")
     assert explicit == tmp_path / "override" / "custom.png"
     clear_active_config()
+
+
+def test_configured_output_registry_frame_lists_keys_and_resolved_paths(tmp_path, monkeypatch):
+    """Users should be able to discover output keys, filenames, and paths."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+  figures: run_outputs/figures
+  dashboards: run_outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+
+    table_registry = configured_output_registry_frame(cfg=cfg, kinds=("table",))
+    by_key = table_registry.set_index("key")
+    assert {"kind", "filename", "description", "path"} <= set(table_registry.columns)
+    assert by_key.loc["metrics_long", "kind"] == "table"
+    assert by_key.loc["metrics_long", "filename"] == "metrics_long.parquet"
+    assert by_key.loc["metrics_long", "path"] == str(tmp_path / "run_outputs" / "tables" / "metrics_long.parquet")
+    assert "Long metrics table" in by_key.loc["metrics_long", "description"]
+
+    figure_registry = configured_output_registry_frame(cfg=cfg, kinds=("figure",))
+    assert "station_metric_map" in set(figure_registry["key"])
+    assert "metrics_long" not in set(figure_registry["key"])
+
+    compact = configured_output_registry_frame(include_paths=False, kinds=("dashboard",))
+    assert list(compact.columns) == ["kind", "key", "filename", "description"]
+    assert "dashboard_summaries" in set(compact["key"])
 
 
 def test_output_groups_resolve_configured_paths(tmp_path, monkeypatch):

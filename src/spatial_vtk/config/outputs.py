@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from importlib import resources
 import inspect
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Iterable, Literal
 
 import yaml
 
@@ -64,6 +64,63 @@ def default_output_registry() -> dict[str, dict[str, OutputSpec]]:
                 description=str(item.get("description") or ""),
             )
     return registry
+
+
+def configured_output_registry_frame(
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    include_paths: bool = True,
+    kinds: Iterable[OutputKind] | None = None,
+    create_parent: bool = False,
+):
+    """Return registered output artifacts as a notebook-friendly dataframe.
+
+    Parameters
+    ----------
+    cfg
+        Optional config used to resolve artifact paths. When omitted and
+        ``include_paths`` is true, the active/discoverable config is used.
+    include_paths
+        Whether to include a resolved ``path`` column.
+    kinds
+        Optional artifact kinds to include. When omitted, all registered tables,
+        figures, and dashboard roots are returned.
+    create_parent
+        Whether path resolution should create parent directories.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Columns include ``kind``, ``key``, ``filename``, ``description``, and
+        optionally ``path``.
+    """
+
+    import pandas as pd
+
+    requested = None if kinds is None else {str(kind).strip().lower() for kind in kinds}
+    rows: list[dict[str, object]] = []
+    registry = default_output_registry()
+    for group_name, group_kind in (("tables", "table"), ("figures", "figure"), ("dashboards", "dashboard")):
+        if requested is not None and group_kind not in requested:
+            continue
+        for spec in registry.get(group_name, {}).values():
+            row: dict[str, object] = {
+                "kind": spec.kind,
+                "key": spec.key,
+                "filename": spec.filename,
+                "description": spec.description,
+            }
+            if include_paths:
+                row["path"] = str(
+                    resolve_output_path(
+                        spec.key,
+                        kind=spec.kind,
+                        cfg=cfg,
+                        create_parent=create_parent,
+                    )
+                )
+            rows.append(row)
+    return pd.DataFrame(rows, columns=["kind", "key", "filename", "description", "path"] if include_paths else ["kind", "key", "filename", "description"])
 
 
 def output_spec(key: str, *, kind: OutputKind | None = None) -> OutputSpec:
@@ -231,6 +288,7 @@ def _clean_key(key: str) -> str:
 __all__ = [
     "OutputKind",
     "OutputSpec",
+    "configured_output_registry_frame",
     "default_output_registry",
     "infer_output_key",
     "output_description",
