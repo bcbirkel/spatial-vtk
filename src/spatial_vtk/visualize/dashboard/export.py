@@ -99,11 +99,22 @@ def load_dashboard_metric_dataset(input_root: str | Path) -> pd.DataFrame:
         raise ValueError(f"Unsupported dashboard metric table format for {root}. Use Parquet or CSV.")
     if not root.exists():
         raise FileNotFoundError(f"Dashboard metric dataset path does not exist: {root}")
-    direct = root / "metrics_long.parquet"
-    paths = [direct] if direct.exists() else sorted(root.rglob("*.parquet"))
+    paths = _dashboard_metric_parquet_paths(root)
     if not paths:
-        raise FileNotFoundError(f"No dashboard parquet files found under {root}.")
+        raise FileNotFoundError(
+            f"No dashboard metric parquet files found under {root}. "
+            "Expected metrics_long.parquet or model=*/band=*/metric=*/part.parquet."
+        )
     return pd.concat([pd.read_parquet(path) for path in paths], ignore_index=True)
+
+
+def _dashboard_metric_parquet_paths(root: Path) -> list[Path]:
+    """Return recognized dashboard metric parquet files under ``root``."""
+
+    direct = root / "metrics_long.parquet"
+    if direct.exists():
+        return [direct]
+    return sorted(path for path in root.glob("model=*/band=*/metric=*/part.parquet") if path.is_file())
 
 
 def write_dashboard_summary_dataset(

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pandas as pd
+import pytest
 
 from spatial_vtk.visualize.dashboard import (
     load_dashboard_metric_dataset,
@@ -48,6 +49,24 @@ def test_dashboard_metric_dataset_export_and_summary_tables(tmp_path) -> None:
     written = write_dashboard_summary_dataset(root, tmp_path / "dashboard_summaries", format="csv")
     assert {"model_metric_band", "station_rollup", "event_rollup", "path_hex"} <= set(written)
     assert written["model_metric_band"].exists()
+
+
+def test_dashboard_metric_dataset_loader_ignores_unrelated_parquet(tmp_path) -> None:
+    """Dashboard metric loading should not consume unrelated parquet artifacts."""
+
+    root = tmp_path / "dashboard_data"
+    unrelated_summary = root / "dashboard_summaries"
+    unrelated_summary.mkdir(parents=True)
+    pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "n": [1]}).to_parquet(
+        unrelated_summary / "model_metric_band.parquet",
+        index=False,
+    )
+    unrelated_model_dir = root / "model=m1"
+    unrelated_model_dir.mkdir()
+    pd.DataFrame({"not_metric_rows": [1]}).to_parquet(unrelated_model_dir / "notes.parquet", index=False)
+
+    with pytest.raises(FileNotFoundError, match=r"metrics_long\.parquet|model=\*/band=\*/metric=\*/part\.parquet"):
+        load_dashboard_metric_dataset(root)
 
 
 def test_dashboard_summary_loader_tolerates_missing_optional_tables(tmp_path) -> None:
