@@ -18,7 +18,7 @@ def test_public_imports():
         run_spatial_statistics_workflow_from_config,
     )
     from spatial_vtk.spatial.calculate import annotate_points_with_geojson, build_station_edge_corridors, classify_paths_with_geojson, geojson_polygon_preview_table
-    from spatial_vtk.visualize.dashboard import build_dashboard_summaries
+    from spatial_vtk.visualize.dashboard import build_dashboard_summaries, dashboard_readiness_summary_frame
     from spatial_vtk.spatial.map import add_contextily_basemap, plot_corridor_map, plot_event_residual_map
     from spatial_vtk.visualize.context import plot_distance_amplitude_diagnostics, plot_station_event_context, plot_study_domain_map
     from spatial_vtk.visualize.record_sections import plot_observed_synthetic_record_section, plot_record_section
@@ -49,6 +49,7 @@ def test_public_imports():
     assert callable(classify_paths_with_geojson)
     assert callable(geojson_polygon_preview_table)
     assert callable(build_dashboard_summaries)
+    assert callable(dashboard_readiness_summary_frame)
     assert callable(add_contextily_basemap)
     assert callable(plot_corridor_map)
     assert callable(plot_event_residual_map)
@@ -163,6 +164,7 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config",
         "spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config",
         "spatial_vtk.spatial.run_boundary_corridor_workflow_from_config",
+        "spatial_vtk.visualize.dashboard.dashboard_readiness_summary_frame",
         "spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets",
     ]
     for helper in required_helpers:

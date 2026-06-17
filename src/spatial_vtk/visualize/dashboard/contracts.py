@@ -99,6 +99,11 @@ class DashboardOutputReadiness:
             rows.extend(frame.astype(object).to_dict("records"))
         return pd.DataFrame(rows, columns=columns)
 
+    def summary_frame(self) -> pd.DataFrame:
+        """Return a compact dashboard/tab readiness summary."""
+
+        return dashboard_readiness_summary_frame(readiness=self)
+
 
 def read_dashboard_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
     """Read a dashboard table from a DataFrame, Parquet, or CSV input."""
@@ -274,6 +279,75 @@ def dashboard_output_status_frame(
     status = _attach_dashboard_readiness(status)
     status = _attach_metric_dataset_readiness(status)
     return _attach_qc_trace_readiness(status)
+
+
+def dashboard_readiness_summary_frame(
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    readiness: DashboardOutputReadiness | None = None,
+    overwrite: bool = False,
+    create_parent: bool = True,
+    summary_format: str = "parquet",
+) -> pd.DataFrame:
+    """Return a compact dashboard/tab readiness summary.
+
+    This is intended for notebooks and preflight displays where users need to
+    know which dashboard tabs are ready and why a tab may be blank. The helper
+    reuses :func:`dashboard_output_readiness`, so it inspects only paths,
+    table metadata, schemas, row counts, and selected value/coordinate columns.
+    It does not materialize full large-run metric datasets.
+    """
+
+    decision = readiness or dashboard_output_readiness(
+        cfg=cfg,
+        overwrite=overwrite,
+        create_parent=create_parent,
+        summary_format=summary_format,
+    )
+    rows: list[dict[str, object]] = []
+
+    for row in decision.input_status.astype(object).to_dict("records"):
+        name = str(row.get("name", ""))
+        exists = bool(row.get("exists", False))
+        rows.append(
+            {
+                "item_type": "input",
+                "item": name,
+                "dashboard_tabs": "Dashboard preparation",
+                "ready": exists,
+                "readiness": "ready" if exists else "missing",
+                "row_count": "",
+                "file_count": "",
+                "map_ready": "",
+                "message": f"{name} is ready." if exists else f"{name} is missing.",
+                "path": row.get("path", ""),
+            }
+        )
+
+    for row in decision.metrics_status.astype(object).to_dict("records"):
+        rows.append(_dashboard_summary_row(row, item_type="dataset"))
+
+    for row in decision.summary_status.astype(object).to_dict("records"):
+        rows.append(_dashboard_summary_row(row, item_type="summary_table"))
+
+    if decision.qc_status is not None and not decision.qc_status.empty:
+        for row in decision.qc_status.astype(object).to_dict("records"):
+            rows.append(_dashboard_summary_row(row, item_type="qc_table"))
+
+    columns = [
+        "item_type",
+        "item",
+        "dashboard_tabs",
+        "ready",
+        "readiness",
+        "row_count",
+        "file_count",
+        "map_ready",
+        "message",
+        "map_message",
+        "path",
+    ]
+    return pd.DataFrame(rows, columns=columns)
 
 
 def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.DataFrame:
@@ -519,6 +593,45 @@ def _status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
             row["modified"] = _format_mtime(stat.st_mtime)
         rows.append(row)
     return rows
+
+
+def _dashboard_summary_row(row: dict[str, object], *, item_type: str) -> dict[str, object]:
+    """Return one compact dashboard readiness summary row."""
+
+    item = str(row.get("dashboard_table") or row.get("name") or "")
+    if item_type == "dataset" and item == "metrics_dashboard_root":
+        item = "metrics_dashboard_dataset"
+    tabs = str(row.get("dashboard_tabs") or "")
+    if item_type == "dataset" and not tabs:
+        tabs = "Overview, Compare Models, Stations, Events, Paths"
+    message = str(row.get("message") or "")
+    map_message = str(row.get("map_message") or "")
+    ready = dashboard_ready_value(row.get("ready"), default=False)
+    return {
+        "item_type": item_type,
+        "item": item,
+        "dashboard_tabs": tabs,
+        "ready": ready,
+        "readiness": _blank_if_missing(row.get("readiness")),
+        "row_count": _blank_if_missing(row.get("row_count")),
+        "file_count": _blank_if_missing(row.get("file_count")),
+        "map_ready": _blank_if_missing(row.get("map_ready")),
+        "message": message,
+        "map_message": map_message,
+        "path": _blank_if_missing(row.get("path")),
+    }
+
+
+def _blank_if_missing(value: object) -> object:
+    """Return a display blank for missing scalar values."""
+
+    try:
+        missing = bool(pd.isna(value))
+    except (TypeError, ValueError):
+        missing = False
+    if value is None or missing:
+        return ""
+    return value
 
 
 def _attach_dashboard_contract(status: pd.DataFrame) -> pd.DataFrame:
@@ -1070,6 +1183,7 @@ __all__ = [
     "dashboard_output_status_frame",
     "dashboard_qc_trace_readiness_frame",
     "dashboard_ready_value",
+    "dashboard_readiness_summary_frame",
     "dashboard_row_level_columns",
     "dashboard_summary_readiness_frame",
     "dashboard_summary_table_contracts",

@@ -207,9 +207,10 @@ Step 7: Dashboard Datasets
      - Python entry point
      - Standard outputs
    * - Check dashboard dataset readiness without loading full inventories
-     - ``spatial_vtk.visualize.dashboard.dashboard_output_status_frame`` and
+     - ``spatial_vtk.visualize.dashboard.dashboard_readiness_summary_frame``,
+       ``spatial_vtk.visualize.dashboard.dashboard_output_status_frame``, and
        ``spatial_vtk.visualize.dashboard.dashboard_output_readiness``
-     - notebook-friendly readiness/status frames
+     - compact tab-level readiness plus detailed status frames
    * - Write dashboard-ready row and summary datasets
      - ``spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets``
      - dashboard metric dataset root and dashboard summary table root

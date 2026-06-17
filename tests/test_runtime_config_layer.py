@@ -75,6 +75,7 @@ from spatial_vtk.visualize.dashboard import (
     dashboard_output_namespace,
     dashboard_output_readiness,
     dashboard_ready_value,
+    dashboard_readiness_summary_frame,
     dashboard_summary_readiness_frame,
     dashboard_summary_table_contracts,
     find_available_port,
@@ -1077,12 +1078,18 @@ outputs:
 
     metric_status = dashboard_metric_dataset_readiness_frame(paths.metrics_dashboard_root)
     readiness = dashboard_output_readiness(cfg=cfg)
+    summary = dashboard_readiness_summary_frame(readiness=readiness)
+    by_item = summary.set_index("item")
 
     assert metric_status["readiness"].iloc[0] == "missing_dataset_files"
     assert readiness.should_run is True
     assert readiness.reason == "missing_outputs"
     assert "recognized files" in readiness.message
     assert "metrics_dashboard_root" in set(readiness.status_frame()["name"])
+    assert by_item.loc["metrics_dashboard_dataset", "readiness"] == "missing_dataset_files"
+    assert by_item.loc["model_metric_band", "readiness"] == "missing"
+    assert by_item.loc["qc_trace_summary", "readiness"] == "missing"
+    assert readiness.summary_frame().equals(summary)
 
 
 def test_dashboard_ready_value_parses_status_table_values():

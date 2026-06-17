@@ -573,6 +573,8 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "dashboard_status = dashboard_output_status_frame(cfg=cfg)" in source
+    assert "dashboard_readiness_summary = dashboard_readiness_summary_frame(cfg=cfg, overwrite=OVERWRITE)" in source
+    assert "display(dashboard_readiness_summary)" in source
     assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=OVERWRITE)" in source
     assert "run_notebook_step_if_needed(" in source
     assert "spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets" in source
