@@ -810,13 +810,9 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
     """Add shared file-backed plotting arguments."""
 
     if spec.primary_arg is not None:
-        input_help = f"Input CSV/parquet table for the {spec.primary_arg} argument."
-        if spec.input_key:
-            input_help += f" Defaults to configured output table '{spec.input_key}'."
+        input_help = _registered_input_help(spec.primary_arg, spec.input_key)
         parser.add_argument("--input", required=spec.input_key is None, help=input_help)
-    output_help = "Output figure path."
-    if spec.output_key:
-        output_help += f" Defaults to configured figure output '{spec.output_key}'."
+    output_help = _registered_output_help(spec.output_key)
     parser.add_argument("--output", required=spec.output_key is None, help=output_help)
     if spec.input_key or spec.output_key or spec.table_alias_defaults:
         parser.add_argument("--config", default=None, help="Optional Spatial-VTK config for default input/output paths.")
@@ -829,9 +825,7 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
     parser.add_argument("--sidecar-rows", type=int, default=None, help="Maximum rows to write to each sidecar. Omit to write all rows.")
     parser.add_argument("--sidecar-dir", default=None, help="Directory for figure sidecars. Defaults next to the output figure.")
     for option in sorted((spec.table_aliases or {}).keys()):
-        alias_help = f"Convenience table path for the {spec.table_aliases[option]} argument."
-        if option in (spec.table_alias_defaults or {}):
-            alias_help += f" Defaults to configured output table '{spec.table_alias_defaults[option]}'."
+        alias_help = _registered_alias_help(spec.table_aliases[option], (spec.table_alias_defaults or {}).get(option))
         parser.add_argument(f"--{option.replace('_', '-')}", default=None, help=alias_help)
     if include_map_options:
         if not (spec.input_key or spec.output_key or spec.table_alias_defaults):
@@ -840,6 +834,33 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
         parser.add_argument("--bounds", default=None, help="Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.")
         parser.add_argument("--no-basemap", action="store_true", help="Disable basemap rendering for map figures.")
         parser.add_argument("--basemap-source", default=None, help="Optional contextily basemap source.")
+
+
+def _registered_input_help(argument_name: str, input_key: str | None) -> str:
+    """Return clear help for a registered plotting input table."""
+
+    help_text = f"Input CSV/parquet table for function argument '{argument_name}'."
+    if input_key:
+        help_text += f" Defaults to configured output table '{input_key}' when --config is passed or a default config is set with 'svtk config set'."
+    return help_text
+
+
+def _registered_output_help(output_key: str | None) -> str:
+    """Return clear help for a registered plotting output figure."""
+
+    help_text = "Output figure path."
+    if output_key:
+        help_text += f" Defaults to configured figure output '{output_key}' when --config is passed or a default config is set with 'svtk config set'."
+    return help_text
+
+
+def _registered_alias_help(argument_name: str, table_key: str | None) -> str:
+    """Return clear help for an extra table option."""
+
+    help_text = f"Convenience CSV/parquet table path for function argument '{argument_name}'."
+    if table_key:
+        help_text += f" Defaults to configured output table '{table_key}' when --config is passed or a default config is set with 'svtk config set'."
+    return help_text
 
 
 def _add_common_figure_options(parser: argparse.ArgumentParser, *, exclude: set[str] | None = None) -> None:

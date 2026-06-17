@@ -97,6 +97,33 @@ def test_cli_registered_plot_help_shows_common_options(capsys):
     assert "--write-sidecar" in captured.out
 
 
+def test_cli_registered_plot_help_names_config_defaults(capsys):
+    """Registered figure help should explain config-backed table and figure defaults."""
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["plot", "metrics", "band-score-distribution", "--help"])
+    assert excinfo.value.code == 0
+    captured = capsys.readouterr()
+    help_text = " ".join(captured.out.split())
+    assert "function argument 'df'" in help_text
+    assert "configured output table 'metrics_long'" in help_text
+    assert "configured figure output 'band_score_distribution'" in help_text
+    assert "svtk config set" in help_text
+
+
+def test_cli_registered_map_help_names_config_defaults(capsys):
+    """Registered map help should make default figure artifacts discoverable."""
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["map", "spatial", "station-bias", "--help"])
+    assert excinfo.value.code == 0
+    captured = capsys.readouterr()
+    help_text = " ".join(captured.out.split())
+    assert "function argument 'station_df'" in help_text
+    assert "configured output table 'station_bias'" in help_text
+    assert "configured figure output 'station_residual_map'" in help_text
+
+
 def test_cli_reference_describes_config_defaults_before_kwargs():
     """CLI docs should not present kwargs as the primary plotting interface."""
 
