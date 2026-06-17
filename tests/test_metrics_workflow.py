@@ -104,6 +104,27 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
             "log2_residual": [1.0, 3.0, 5.0, 7.0, 0.5, 0.75],
         }
     )
+    metrics = pd.concat(
+        [
+            metrics,
+            pd.DataFrame(
+                {
+                    "event_id": ["e5", "e3"],
+                    "station": ["STA", "STA"],
+                    "sta_lon": [-118.03, -118.02],
+                    "sta_lat": [34.03, 34.02],
+                    "metric": ["PGA", "PSA"],
+                    "band": ["1-2 sec", ""],
+                    "model": ["m1", "m1"],
+                    "component": ["Z", "Z"],
+                    "period_s": [np.nan, 2.0],
+                    "distance_km": [50.0, 10.0],
+                    "log2_residual": [np.nan, np.inf],
+                }
+            ),
+        ],
+        ignore_index=True,
+    )
     metrics_path = tmp_path / "metrics_long.parquet"
     metrics.to_parquet(metrics_path, index=False)
     context = MetricFigureContext.from_metrics_long(
@@ -127,6 +148,8 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert sta["sta_lat"] == pytest.approx(34.01)
     assert sta["source_row_count"] == 2
     assert sta["source_event_count"] == 2
+    assert sta["input_row_count"] == 3
+    assert sta["input_event_count"] == 3
     assert sta["source_coordinate_count"] == 2
     assert sta["aggregation"] == "mean"
 
@@ -144,6 +167,7 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert sta_m1["log2_residual"] == pytest.approx(2.0)
     assert sta_m2["log2_residual"] == pytest.approx(7.0)
     assert sta_m1["source_event_count"] == 2
+    assert sta_m1["input_event_count"] == 3
     assert sta_m2["source_event_count"] == 1
     assert sta_m1["source_coordinate_count"] == 2
     assert sta_m2["source_coordinate_count"] == 1
@@ -154,6 +178,7 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     station_period_summary = context.station_period_summary_for_map(psa_item["df"])
     assert set(station_period_summary["period_s"]) == {1.0, 2.0}
     assert station_period_summary["source_row_count"].tolist() == [1, 1]
+    assert station_period_summary["input_row_count"].tolist() == [1, 2]
 
     def _dummy_plot(frame: pd.DataFrame, *, output_path, **kwargs) -> None:
         Path(output_path).write_text(str(len(frame)), encoding="utf-8")
@@ -172,14 +197,14 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert len(sidecar_rows) == 1
     assert len(source_sidecar_rows) == 1
     assert metadata["plot_row_count"] == 2
-    assert metadata["source_row_count"] == 3
+    assert metadata["source_row_count"] == 4
     assert metadata["source_written_row_count"] == 1
     assert metadata["source_sampled"] is True
     assert metadata["written_row_count"] == 1
     assert metadata["sampled"] is True
     assert metadata["plot_station_count"] == 2
     assert metadata["source_station_count"] == 2
-    assert metadata["source_event_count"] == 3
+    assert metadata["source_event_count"] == 4
     assert metadata["source_model_count"] == 1
 
     context.sample_rows = 0
@@ -191,10 +216,10 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     all_source_sidecar = pd.read_csv(context.sidecar_output_dir / f"{output_all.stem}.source.csv")
     all_metadata = json.loads((context.sidecar_output_dir / f"{output_all.stem}.json").read_text(encoding="utf-8"))
     assert len(all_sidecar) == 2
-    assert len(all_source_sidecar) == 3
+    assert len(all_source_sidecar) == 4
     assert all_metadata["plot_row_count"] == 2
-    assert all_metadata["source_row_count"] == 3
-    assert all_metadata["source_written_row_count"] == 3
+    assert all_metadata["source_row_count"] == 4
+    assert all_metadata["source_written_row_count"] == 4
     assert all_metadata["source_sampled"] is False
 
     def _dummy_png_plot(frame: pd.DataFrame, *, output_path, **kwargs) -> None:
@@ -227,8 +252,8 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert set(psa_source_rows["__svtk_panel_period_s"]) == {1.0, 2.0}
     assert set(psa_source_rows["period_s"]) == {1.0, 2.0}
     assert psa_metadata["plot_row_count"] == 2
-    assert psa_metadata["source_row_count"] == 2
-    assert psa_metadata["source_written_row_count"] == 2
+    assert psa_metadata["source_row_count"] == 3
+    assert psa_metadata["source_written_row_count"] == 3
     assert psa_metadata["written_row_count"] == 2
     assert psa_metadata["sampled"] is False
 

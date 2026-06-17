@@ -302,21 +302,27 @@ class MetricFigureContext:
             return df
         if not all(column in df.columns for column in ["station", resolved_value_col]):
             return df
-        group_cols = _station_group_columns(df, lon_col=lon_col, lat_col=lat_col, extra_group_cols=extra_group_cols)
+        finite_df = _finite_value_rows(df, resolved_value_col)
+        if finite_df.empty:
+            return finite_df
+        group_cols = _station_group_columns(finite_df, lon_col=lon_col, lat_col=lat_col, extra_group_cols=extra_group_cols)
         context_cols = [
             column
             for column in [self.metric_col, self.band_col, self.model_col, self.component_col, self.period_col]
-            if column and column in df.columns and column not in group_cols
+            if column and column in finite_df.columns and column not in group_cols
         ]
-        grouped = df.groupby(group_cols, dropna=False)
+        grouped = finite_df.groupby(group_cols, dropna=False)
         values = _aggregate_grouped_values(grouped[resolved_value_col], self.station_aggregation).reset_index(name=resolved_value_col)
         counts = grouped.size().reset_index(name="source_row_count")
         summary = values.merge(counts, on=group_cols, how="left")
         coordinates = _station_coordinate_summary(grouped, lon_col=lon_col, lat_col=lat_col).reset_index()
         summary = summary.merge(coordinates, on=group_cols, how="left")
-        if "event_id" in df.columns:
+        if "event_id" in finite_df.columns:
             event_counts = grouped["event_id"].nunique(dropna=True).reset_index(name="source_event_count")
             summary = summary.merge(event_counts, on=group_cols, how="left")
+        input_counts = _input_group_counts(df, group_cols, event_col="event_id")
+        if not input_counts.empty:
+            summary = summary.merge(input_counts, on=group_cols, how="left")
         for column in context_cols:
             summary[column] = dimension_value(df, column, self.context_multi_label(column))
         summary["aggregation"] = self.station_aggregation
@@ -340,8 +346,11 @@ class MetricFigureContext:
             return df
         if not all(column in df.columns for column in ["station", self.period_col, resolved_value_col]):
             return df
+        finite_df = _finite_value_rows(df, resolved_value_col)
+        if finite_df.empty:
+            return finite_df
         group_cols = _station_group_columns(
-            df,
+            finite_df,
             lon_col=lon_col,
             lat_col=lat_col,
             extra_group_cols=[self.period_col, *(extra_group_cols or [])],
@@ -349,17 +358,20 @@ class MetricFigureContext:
         context_cols = [
             column
             for column in [self.metric_col, self.band_col, self.model_col, self.component_col]
-            if column and column in df.columns and column not in group_cols
+            if column and column in finite_df.columns and column not in group_cols
         ]
-        grouped = df.groupby(group_cols, dropna=False)
+        grouped = finite_df.groupby(group_cols, dropna=False)
         values = _aggregate_grouped_values(grouped[resolved_value_col], self.station_aggregation).reset_index(name=resolved_value_col)
         counts = grouped.size().reset_index(name="source_row_count")
         summary = values.merge(counts, on=group_cols, how="left")
         coordinates = _station_coordinate_summary(grouped, lon_col=lon_col, lat_col=lat_col).reset_index()
         summary = summary.merge(coordinates, on=group_cols, how="left")
-        if "event_id" in df.columns:
+        if "event_id" in finite_df.columns:
             event_counts = grouped["event_id"].nunique(dropna=True).reset_index(name="source_event_count")
             summary = summary.merge(event_counts, on=group_cols, how="left")
+        input_counts = _input_group_counts(df, group_cols, event_col="event_id")
+        if not input_counts.empty:
+            summary = summary.merge(input_counts, on=group_cols, how="left")
         for column in context_cols:
             summary[column] = dimension_value(df, column, self.context_multi_label(column))
         summary["aggregation"] = self.station_aggregation
@@ -876,6 +888,28 @@ def _rename_station_coordinates(df: pd.DataFrame, *, lon_col: str, lat_col: str)
     if lat_col != "sta_lat":
         rename[lat_col] = "sta_lat"
     return df.rename(columns=rename) if rename else df
+
+
+def _finite_value_rows(df: pd.DataFrame, value_col: str) -> pd.DataFrame:
+    """Return rows with finite numeric values in ``value_col``."""
+
+    out = df.copy()
+    values = pd.to_numeric(out[value_col], errors="coerce")
+    out[value_col] = values
+    return out.loc[np.isfinite(values)].copy()
+
+
+def _input_group_counts(df: pd.DataFrame, group_cols: list[str], *, event_col: str) -> pd.DataFrame:
+    """Count selected rows before finite-value filtering for aggregation audit."""
+
+    if not group_cols or not set(group_cols) <= set(df.columns):
+        return pd.DataFrame()
+    grouped = df.groupby(group_cols, dropna=False)
+    out = grouped.size().reset_index(name="input_row_count")
+    if event_col in df.columns:
+        event_counts = grouped[event_col].nunique(dropna=True).reset_index(name="input_event_count")
+        out = out.merge(event_counts, on=group_cols, how="left")
+    return out
 
 
 def _aggregate_grouped_values(grouped: Any, aggregation: str) -> pd.Series:
