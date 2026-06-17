@@ -103,7 +103,7 @@ jobs:
 
       - name: Execute tutorial notebooks
         run: |
-          MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --clean
+          MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --clean --include-large-run
 
       - name: Build source distribution and wheel
         run: |

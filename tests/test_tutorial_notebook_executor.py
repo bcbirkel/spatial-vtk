@@ -213,7 +213,26 @@ def test_ci_runs_clean_tutorial_notebooks_with_notebook_extras() -> None:
     install = 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
     assert install in workflow
     assert install in docs_workflow
-    assert "python tools/execute_tutorial_notebooks.py --clean" in workflow
+    assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in workflow
+
+
+def test_tutorial_notebook_executor_can_include_large_run_notebooks() -> None:
+    """The clean notebook gate should be able to cover scalable large-run tutorials."""
+
+    module = _load_executor_module()
+    repo_root = Path(__file__).resolve().parents[1]
+
+    standard = module._resolve_notebooks(repo_root, None)
+    all_tutorials = module._resolve_notebooks(repo_root, None, include_large_run=True)
+    large_only = module._resolve_notebooks(repo_root, None, large_run_only=True)
+
+    assert len(standard) == len(module.STANDARD_TUTORIAL_NOTEBOOKS)
+    assert len(large_only) == len(module.LARGE_RUN_TUTORIAL_NOTEBOOKS)
+    assert len(all_tutorials) == len(module.STANDARD_TUTORIAL_NOTEBOOKS) + len(module.LARGE_RUN_TUTORIAL_NOTEBOOKS)
+    assert all("large_run" not in str(path) for path in standard)
+    assert all("large_run" in str(path) for path in large_only)
+    assert all_tutorials[: len(standard)] == standard
+    assert all_tutorials[len(standard) :] == large_only
 
 
 def test_committed_tutorial_notebooks_do_not_embed_private_paths() -> None:

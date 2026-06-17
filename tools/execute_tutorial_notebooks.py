@@ -31,6 +31,15 @@ STANDARD_TUTORIAL_NOTEBOOKS = (
     "docs/examples/step_06_additional_plotting_options.ipynb",
     "docs/examples/step_07_dashboards.ipynb",
 )
+LARGE_RUN_TUTORIAL_NOTEBOOKS = (
+    "docs/examples/large_run/step_01_large_run_ingest_and_prepare_data.ipynb",
+    "docs/examples/large_run/step_02_large_run_quality_control.ipynb",
+    "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb",
+    "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb",
+    "docs/examples/large_run/step_05_large_run_geojson_corridors.ipynb",
+    "docs/examples/large_run/step_06_large_run_additional_plotting.ipynb",
+    "docs/examples/large_run/step_07_large_run_dashboards.ipynb",
+)
 
 WARNING_PATTERN = re.compile(
     r"traceback \(most recent call last\)|"
@@ -65,7 +74,12 @@ def main(argv: list[str] | None = None) -> int:
 
     args = _parse_args(argv)
     repo_root = _find_repo_root(Path(args.repo_root).resolve() if args.repo_root else Path.cwd().resolve())
-    notebooks = _resolve_notebooks(repo_root, args.notebooks)
+    notebooks = _resolve_notebooks(
+        repo_root,
+        args.notebooks,
+        include_large_run=args.include_large_run,
+        large_run_only=args.large_run_only,
+    )
     report_path = (repo_root / args.report).resolve() if not Path(args.report).is_absolute() else Path(args.report)
     tutorial_output = repo_root / args.tutorial_output
 
@@ -270,10 +284,23 @@ def _find_repo_root(start: Path) -> Path:
     raise SystemExit(f"Could not find the spatial-vtk repository root from {start}.")
 
 
-def _resolve_notebooks(repo_root: Path, notebooks: list[str] | None) -> list[Path]:
+def _resolve_notebooks(
+    repo_root: Path,
+    notebooks: list[str] | None,
+    *,
+    include_large_run: bool = False,
+    large_run_only: bool = False,
+) -> list[Path]:
     """Resolve requested notebook paths relative to the repository root."""
 
-    names = notebooks or list(STANDARD_TUTORIAL_NOTEBOOKS)
+    if notebooks:
+        names = list(notebooks)
+    elif large_run_only:
+        names = list(LARGE_RUN_TUTORIAL_NOTEBOOKS)
+    else:
+        names = list(STANDARD_TUTORIAL_NOTEBOOKS)
+        if include_large_run:
+            names.extend(LARGE_RUN_TUTORIAL_NOTEBOOKS)
     paths = [(repo_root / name).resolve() if not Path(name).is_absolute() else Path(name) for name in names]
     missing = [path for path in paths if not path.exists()]
     if missing:
@@ -301,7 +328,25 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         "--notebook",
         dest="notebooks",
         action="append",
-        help="Notebook path to execute. Repeat to run a subset. Defaults to all standard tutorial notebooks.",
+        help=(
+            "Notebook path to execute. Repeat to run a subset. Defaults to all "
+            "standard tutorial notebooks unless --include-large-run or "
+            "--large-run-only is passed."
+        ),
+    )
+    parser.add_argument(
+        "--include-large-run",
+        action="store_true",
+        help=(
+            "After the standard tutorial notebooks, also execute the "
+            "docs/examples/large_run notebooks against the committed example "
+            "data and outputs."
+        ),
+    )
+    parser.add_argument(
+        "--large-run-only",
+        action="store_true",
+        help="Execute only the docs/examples/large_run notebooks.",
     )
     parser.add_argument("--timeout", type=int, default=900, help="Per-notebook timeout in seconds.")
     parser.add_argument(
