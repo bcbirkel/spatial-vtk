@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-16
+   Added ``--auto-port`` to metrics and QC dashboard launch commands. The
+   dashboard launcher can now select the first available Streamlit port at or
+   above the requested ``--port`` and prints the actual URL, which makes
+   dashboard startup less brittle on shared systems where default ports are
+   already occupied. Dashboard proxy-mode examples now recommend using
+   ``--auto-port`` together with ``--proxy-mode``.
    Hardened large-run station aggregation for metric and spatial maps against
    non-canonical table schemas. Station-level map summaries now recognize
    ``station_id`` and ``station_code`` as station identifiers, ``station_lon`` /

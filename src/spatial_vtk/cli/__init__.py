@@ -759,6 +759,7 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     )
     metrics.add_argument("--port", type=int, default=8501, help="Streamlit server port.")
     metrics.add_argument("--address", default="127.0.0.1", help="Streamlit server address.")
+    metrics.add_argument("--auto-port", action="store_true", help="Use the first available port at or above --port.")
     metrics.add_argument("--proxy-mode", action="store_true", help="Allow access through reverse proxies.")
     metrics.add_argument("--show", action="store_true", help="Open Streamlit in a browser when supported.")
     metrics.set_defaults(handler=_cmd_dashboard_metrics)
@@ -769,6 +770,7 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     qc.add_argument("--trace-summary", default=None, help="Trace-summary CSV/parquet path. Defaults from config.")
     qc.add_argument("--port", type=int, default=8502, help="Streamlit server port.")
     qc.add_argument("--address", default="127.0.0.1", help="Streamlit server address.")
+    qc.add_argument("--auto-port", action="store_true", help="Use the first available port at or above --port.")
     qc.add_argument("--proxy-mode", action="store_true", help="Allow access through reverse proxies.")
     qc.add_argument("--show", action="store_true", help="Open Streamlit in a browser when supported.")
     qc.set_defaults(handler=_cmd_dashboard_qc)
@@ -1523,14 +1525,18 @@ def _cmd_dashboard_metrics(args: argparse.Namespace) -> int:
         config_path=config_path,
         server_address=args.address,
         server_port=args.port,
+        auto_port=args.auto_port,
         proxy_mode=args.proxy_mode,
         show=args.show,
     )
+    resolved_port = getattr(process, "spatial_vtk_server_port", args.port)
     print(f"Metrics dashboard data: {metrics_root}")
     print(f"Metrics dashboard summaries: {summary_root}")
     if args.proxy_mode:
         print("Metrics dashboard proxy mode: enabled")
-    print(f"Metrics dashboard running at http://{args.address}:{args.port} (pid {process.pid})")
+    if args.auto_port and int(resolved_port) != int(args.port):
+        print(f"Metrics dashboard auto-port: requested {args.port}, using {resolved_port}")
+    print(f"Metrics dashboard running at http://{args.address}:{resolved_port} (pid {process.pid})")
     return 0
 
 
@@ -1549,13 +1555,17 @@ def _cmd_dashboard_qc(args: argparse.Namespace) -> int:
         config_path=config_path,
         server_address=args.address,
         server_port=args.port,
+        auto_port=args.auto_port,
         proxy_mode=args.proxy_mode,
         show=args.show,
     )
+    resolved_port = getattr(process, "spatial_vtk_server_port", args.port)
     print(f"QC dashboard trace summary: {trace_summary}")
     if args.proxy_mode:
         print("QC dashboard proxy mode: enabled")
-    print(f"QC dashboard running at http://{args.address}:{args.port} (pid {process.pid})")
+    if args.auto_port and int(resolved_port) != int(args.port):
+        print(f"QC dashboard auto-port: requested {args.port}, using {resolved_port}")
+    print(f"QC dashboard running at http://{args.address}:{resolved_port} (pid {process.pid})")
     return 0
 
 

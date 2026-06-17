@@ -58,6 +58,7 @@ def launch_metrics_dashboard(
     config_path: str | Path | None = None,
     server_address: str = "127.0.0.1",
     server_port: int = 8501,
+    auto_port: bool = False,
     show: bool = True,
     proxy_mode: bool = False,
     extra_args: list[str] | None = None,
@@ -73,6 +74,7 @@ def launch_metrics_dashboard(
         _entrypoint("streamlit_metrics.py"),
         server_address=server_address,
         server_port=server_port,
+        auto_port=auto_port,
         show=show,
         proxy_mode=proxy_mode,
         extra_args=extra_args,
@@ -86,6 +88,7 @@ def launch_qc_dashboard(
     config_path: str | Path | None = None,
     server_address: str = "127.0.0.1",
     server_port: int = 8502,
+    auto_port: bool = False,
     show: bool = True,
     proxy_mode: bool = False,
     extra_args: list[str] | None = None,
@@ -113,6 +116,7 @@ def launch_qc_dashboard(
         _entrypoint("streamlit_qc.py"),
         server_address=server_address,
         server_port=server_port,
+        auto_port=auto_port,
         show=show,
         proxy_mode=proxy_mode,
         extra_args=extra_args,
@@ -125,6 +129,7 @@ def launch_streamlit_dashboard(
     *,
     server_address: str = "127.0.0.1",
     server_port: int = 8501,
+    auto_port: bool = False,
     show: bool = True,
     proxy_mode: bool = False,
     extra_args: list[str] | None = None,
@@ -133,37 +138,62 @@ def launch_streamlit_dashboard(
     """Start one Streamlit dashboard process."""
 
     _require_streamlit()
-    _raise_if_port_in_use(server_address, server_port)
+    resolved_port = find_available_port(server_address=server_address, start_port=server_port) if auto_port else int(server_port)
+    _raise_if_port_in_use(server_address, resolved_port)
     command = build_streamlit_command(
         entrypoint,
         server_address=server_address,
-        server_port=server_port,
+        server_port=resolved_port,
         show=show,
         proxy_mode=proxy_mode,
         extra_args=extra_args,
     )
     process = subprocess.Popen(command, env=env or os.environ.copy())
+    setattr(process, "spatial_vtk_server_port", resolved_port)
     time.sleep(0.75)
     if process.poll() is not None:
         raise RuntimeError(
             f"Streamlit dashboard exited immediately with status {process.returncode}. "
-            f"Check the Streamlit output above, or try another port with --port {int(server_port) + 1}."
+            f"Check the Streamlit output above, or try another port with --port {resolved_port + 1}."
         )
     return process
+
+
+def find_available_port(*, server_address: str = "127.0.0.1", start_port: int = 8501, max_tries: int = 100) -> int:
+    """Return the first available dashboard port at or above ``start_port``."""
+
+    port = int(start_port)
+    for candidate in range(port, port + int(max_tries)):
+        if _port_is_available(server_address, candidate):
+            return candidate
+    raise RuntimeError(
+        f"No available dashboard port found on {server_address} from {port} to {port + int(max_tries) - 1}."
+    )
 
 
 def _raise_if_port_in_use(server_address: str, server_port: int) -> None:
     """Raise a clear error when the requested dashboard port is occupied."""
 
-    host = "127.0.0.1" if str(server_address) in {"", "0.0.0.0", "::"} else str(server_address)
-    try:
-        with socket.create_connection((host, int(server_port)), timeout=0.25):
-            raise RuntimeError(
-                f"Port {server_port} is already in use on {server_address}. "
-                "Stop the existing Streamlit dashboard or launch this one with a different --port."
-            )
-    except OSError:
+    if _port_is_available(server_address, server_port):
         return
+    raise RuntimeError(
+        f"Port {server_port} is already in use on {server_address}. "
+        "Stop the existing Streamlit dashboard, launch this one with a different --port, "
+        "or pass --auto-port."
+    )
+
+
+def _port_is_available(server_address: str, server_port: int) -> bool:
+    """Return whether a server can bind to one dashboard port."""
+
+    host = "127.0.0.1" if str(server_address) in {"", "::"} else str(server_address)
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            sock.bind((host, int(server_port)))
+    except OSError:
+        return False
+    return True
 
 
 def _entrypoint(name: str) -> Path:
@@ -179,4 +209,10 @@ def _require_streamlit() -> None:
         raise ImportError("Streamlit dashboards require the optional dashboard dependencies. Install spatial-vtk[dashboard] or use svtk_environment.yaml.")
 
 
-__all__ = ["build_streamlit_command", "launch_metrics_dashboard", "launch_qc_dashboard", "launch_streamlit_dashboard"]
+__all__ = [
+    "build_streamlit_command",
+    "find_available_port",
+    "launch_metrics_dashboard",
+    "launch_qc_dashboard",
+    "launch_streamlit_dashboard",
+]

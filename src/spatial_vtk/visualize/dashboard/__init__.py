@@ -56,6 +56,7 @@ from spatial_vtk.visualize.dashboard.labels import (
 )
 from spatial_vtk.visualize.dashboard.launch import (
     build_streamlit_command,
+    find_available_port,
     launch_metrics_dashboard,
     launch_qc_dashboard,
     launch_streamlit_dashboard,
@@ -95,6 +96,7 @@ __all__ = [
     "filter_dashboard_metrics",
     "filter_optional_dashboard_summary",
     "filter_qc_dashboard_rows",
+    "find_available_port",
     "forward_azimuth_deg",
     "haversine_km",
     "launch_metrics_dashboard",

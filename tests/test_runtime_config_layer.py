@@ -63,6 +63,7 @@ from spatial_vtk.visualize.dashboard import (
     dashboard_output_namespace,
     dashboard_summary_readiness_frame,
     dashboard_summary_table_contracts,
+    find_available_port,
     filter_optional_dashboard_summary,
     row_value_column_for_summary,
 )
@@ -158,6 +159,16 @@ def test_public_dashboard_and_sidecar_helpers_import_without_streamlit():
     assert visualize_helpers.FigureSidecarResult is FigureSidecarResult
     assert "spatial_vtk.visualize.dashboard.streamlit_metrics" not in sys.modules
     assert "spatial_vtk.visualize.dashboard.streamlit_qc" not in sys.modules
+
+
+def test_dashboard_find_available_port_skips_occupied_port(monkeypatch):
+    """Dashboard auto-port selection should avoid an occupied local port."""
+
+    import spatial_vtk.visualize.dashboard.launch as dashboard_launch
+
+    monkeypatch.setattr(dashboard_launch, "_port_is_available", lambda _address, port: int(port) >= 8503)
+
+    assert find_available_port(server_address="127.0.0.1", start_port=8501, max_tries=3) == 8503
 
 
 def test_saved_cli_config_path_is_used_after_env(tmp_path, monkeypatch):

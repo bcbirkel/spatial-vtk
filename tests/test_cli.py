@@ -212,6 +212,7 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert "--time-limit-s 60" in text
     assert "--max-records 80" in text
     assert "--max-traces 12" in text
+    assert "--auto-port" in text
     assert "--kwargs dep=" not in text
     assert " indep=" not in text
     assert " colorby=" not in text
@@ -1223,7 +1224,43 @@ outputs:
     assert Path(launched["summary_root"]) == tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
     assert Path(launched["config_path"]) == config.resolve()
     assert launched["server_port"] == 8555
+    assert launched["auto_port"] is False
     assert launched["proxy_mode"] is True
+
+
+def test_cli_dashboard_metrics_reports_auto_selected_port(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    launched = {}
+
+    class FakeProcess:
+        pid = 12345
+        spatial_vtk_server_port = 8556
+
+    def fake_launch_metrics_dashboard(**kwargs):
+        launched.update(kwargs)
+        return FakeProcess()
+
+    monkeypatch.setattr(
+        "spatial_vtk.visualize.dashboard.launch_metrics_dashboard",
+        fake_launch_metrics_dashboard,
+    )
+
+    assert main(["dashboard", "metrics", "--config", str(config), "--port", "8555", "--auto-port"]) == 0
+
+    captured = capsys.readouterr()
+    assert launched["server_port"] == 8555
+    assert launched["auto_port"] is True
+    assert "Metrics dashboard auto-port: requested 8555, using 8556" in captured.out
+    assert "http://127.0.0.1:8556" in captured.out
 
 
 def test_cli_dashboard_qc_uses_configured_trace_summary(tmp_path, monkeypatch, capsys):

@@ -360,14 +360,18 @@ Write dashboard-ready Parquet datasets and launch the Streamlit dashboard apps.
 
    svtk dashboard metrics \
      --port 8501 \
+     --auto-port \
      --proxy-mode
 
    svtk dashboard qc \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --port 8502 \
+     --auto-port \
      --proxy-mode
 
 Use ``--proxy-mode`` when opening dashboards through a reverse proxy. It
 disables Streamlit's local origin checks for the dashboard process so the
 proxied browser connection can attach to the app.
+Use ``--auto-port`` on shared systems so Spatial-VTK can select the next open
+port if the default Streamlit port is already occupied.

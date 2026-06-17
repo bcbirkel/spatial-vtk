@@ -45,7 +45,8 @@ svtk dashboard qc
 
    svtk dashboard qc [-h] [--config CONFIG] [--run-scenario RUN_SCENARIO]
                          [--trace-summary TRACE_SUMMARY] [--port PORT]
-                         [--address ADDRESS] [--proxy-mode] [--show]
+                         [--address ADDRESS] [--auto-port] [--proxy-mode]
+                         [--show]
 
 .. rubric:: Parameters
 
@@ -81,6 +82,10 @@ svtk dashboard qc
      - No
      - Default: ``127.0.0.1``
      - Value: ``address``. Streamlit server address.
+   * - ``--auto-port``
+     - No
+     - Flag
+     - Use the first available port at or above --port.
    * - ``--proxy-mode``
      - No
      - Flag
@@ -103,7 +108,8 @@ svtk dashboard metrics
                               [--run-scenario RUN_SCENARIO]
                               [--metrics-root METRICS_ROOT]
                               [--summary-root SUMMARY_ROOT] [--port PORT]
-                              [--address ADDRESS] [--proxy-mode] [--show]
+                              [--address ADDRESS] [--auto-port] [--proxy-mode]
+                              [--show]
 
 .. rubric:: Parameters
 
@@ -143,6 +149,10 @@ svtk dashboard metrics
      - No
      - Default: ``127.0.0.1``
      - Value: ``address``. Streamlit server address.
+   * - ``--auto-port``
+     - No
+     - Flag
+     - Use the first available port at or above --port.
    * - ``--proxy-mode``
      - No
      - Flag
