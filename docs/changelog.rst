@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Added config-backed QC notebook workflow helpers for full QC inventory
+   builds, overlap sidecar creation, and compact QC summaries. The large-run
+   Step 2 notebook now calls importable ``spatial_vtk.qc`` functions through
+   ``run_or_submit_notebook_function()`` instead of constructing CLI commands
+   or inline Slurm worker code.
    Added package-backed notebook task execution with
    ``run_or_submit_notebook_function()`` and moved large-run Step 1
    preprocessing/record-coverage execution behind importable

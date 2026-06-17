@@ -31,14 +31,17 @@ from spatial_vtk.qc.build import (
     load_trace_inventory_lookup,
     QCSummaryWorkflowResult,
     run_qc_summary_workflow,
+    run_qc_summary_workflow_from_config,
     trace_passband_is_accepted,
     write_comparison_eligibility_from_qc_inventory,
+    write_qc_inventory_overlap_from_config,
     write_qc_inventory_overlap_from_full,
 )
 from spatial_vtk.qc.review import filter_trace_summary, queue_rows_from_filtered_trace_df
 from spatial_vtk.qc.summary import classify_station_family, global_trace_reject_reasons, reject_passband
 
 _SLURM_EXPORTS = {
+    "run_qc_inventory_from_config",
     "run_qc_inventory_job",
     "slurm_settings_from_config",
     "submit_qc_slurm_job",
@@ -86,12 +89,15 @@ __all__ = [
     "queue_rows_from_filtered_trace_df",
     "QCSummaryWorkflowResult",
     "reject_passband",
+    "run_qc_inventory_from_config",
     "run_qc_inventory_job",
     "run_qc_summary_workflow",
+    "run_qc_summary_workflow_from_config",
     "slurm_settings_from_config",
     "submit_qc_slurm_job",
     "trace_passband_is_accepted",
     "write_comparison_eligibility_from_qc_inventory",
+    "write_qc_inventory_overlap_from_config",
     "write_qc_inventory_overlap_from_full",
     "write_qc_slurm_script",
 ]

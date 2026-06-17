@@ -15,7 +15,7 @@ from spatial_vtk.config.compute import (
 )
 from spatial_vtk.config.metrics import metrics_settings_from_config
 from spatial_vtk.config.outputs import resolve_output_path
-from spatial_vtk.config.runtime import SpatialVTKConfig
+from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io.tables import read_table
 from spatial_vtk.qc.build.workflow import (
     build_metric_qc_summary,
@@ -99,6 +99,46 @@ def run_qc_inventory_job(
         "qc_inventory": inventory_path,
         "qc_inventory_overlap": overlap_inventory_path,
     }
+
+
+def run_qc_inventory_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    event_station_records: str | Path | None = None,
+    trace_qc_output: str | Path | None = None,
+    qc_inventory_output: str | Path | None = None,
+    qc_inventory_overlap_output: str | Path | None = None,
+    verbose: bool = True,
+) -> dict[str, str]:
+    """Run the configured QC inventory workflow and return written paths.
+
+    This wrapper gives notebooks and generated workers a JSON-serializable entry
+    point. All paths default to the active config/output registry, so notebooks
+    do not need to duplicate QC path plumbing.
+    """
+
+    config = (
+        SpatialVTKConfig.from_file(config_path, run_scenario=run_scenario).activate()
+        if config_path is not None
+        else active_config()
+    )
+    if config_path is None and run_scenario:
+        config = SpatialVTKConfig.from_file(config.config_path, run_scenario=run_scenario).activate()
+    event_station_path = (
+        Path(event_station_records).expanduser()
+        if event_station_records is not None
+        else resolve_output_path("event_station_records", kind="table", cfg=config, create_parent=True)
+    )
+    written = run_qc_inventory_job(
+        event_station_path,
+        config=config,
+        trace_qc_output=trace_qc_output,
+        qc_inventory_output=qc_inventory_output,
+        qc_inventory_overlap_output=qc_inventory_overlap_output,
+        verbose=verbose,
+    )
+    return {key: str(path) for key, path in written.items()}
 
 
 def write_qc_slurm_script(
@@ -225,6 +265,7 @@ def main(argv: list[str] | None = None) -> int:
 __all__ = [
     "build_arg_parser",
     "main",
+    "run_qc_inventory_from_config",
     "run_qc_inventory_job",
     "slurm_settings_from_config",
     "submit_qc_slurm_job",

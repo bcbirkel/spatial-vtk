@@ -55,10 +55,13 @@ from spatial_vtk.qc.build.workflow import (
     load_comparison_eligible_records,
     QCSummaryWorkflowResult,
     run_qc_summary_workflow,
+    run_qc_summary_workflow_from_config,
     write_comparison_eligibility_from_qc_inventory,
+    write_qc_inventory_overlap_from_config,
     write_qc_inventory_overlap_from_full,
 )
 _SLURM_EXPORTS = {
+    "run_qc_inventory_from_config",
     "run_qc_inventory_job",
     "slurm_settings_from_config",
     "submit_qc_slurm_job",
@@ -110,8 +113,10 @@ __all__ = [
     "qc_fas_periods",
     "qc_psa_periods",
     "relevant_inventory_bands",
+    "run_qc_inventory_from_config",
     "run_qc_inventory_job",
     "run_qc_summary_workflow",
+    "run_qc_summary_workflow_from_config",
     "spectral_relative_amplitude_mask",
     "spectral_valid_period_bounds",
     "slurm_settings_from_config",
@@ -123,6 +128,7 @@ __all__ = [
     "trace_has_any_accepted_passband",
     "trace_passband_is_accepted",
     "write_comparison_eligibility_from_qc_inventory",
+    "write_qc_inventory_overlap_from_config",
     "write_qc_inventory_overlap_from_full",
     "write_qc_slurm_script",
 ]

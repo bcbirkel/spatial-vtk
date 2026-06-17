@@ -630,6 +630,24 @@ def test_large_run_step02_uses_qc_availability_output() -> None:
     assert "Observed/Synthetic Availability (Post-QC Trace Overlap)" in source
 
 
+def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
+    """Step 2 should call package workflow helpers instead of CLI or inline worker code."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "run_or_submit_notebook_function(" in source
+    assert "spatial_vtk.qc.run_qc_inventory_from_config" in source
+    assert "spatial_vtk.qc.write_qc_inventory_overlap_from_config" in source
+    assert "spatial_vtk.qc.run_qc_summary_workflow_from_config" in source
+    assert "run_or_submit_notebook_cli_command(" not in source
+    assert "write_notebook_python_slurm_script" not in source
+    assert "submit_notebook_slurm_script" not in source
+    assert "write_qc_slurm_script(" not in source
+
+
 def test_large_run_optional_figure_cells_define_basemap_flag() -> None:
     """Large-run optional figure cells should not fail when figures are enabled."""
 

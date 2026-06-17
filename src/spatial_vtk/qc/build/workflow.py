@@ -93,6 +93,17 @@ class QCSummaryWorkflowResult:
     elapsed_s: float
 
 
+def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None) -> SpatialVTKConfig:
+    """Return an activated config for a config-backed QC workflow."""
+
+    if config_path is not None:
+        return SpatialVTKConfig.from_file(config_path, run_scenario=run_scenario).activate()
+    cfg = active_config()
+    if run_scenario:
+        return SpatialVTKConfig.from_file(cfg.config_path, run_scenario=run_scenario).activate()
+    return cfg
+
+
 def _progress(verbose: bool, message: str) -> None:
     """Print one flushed progress message when verbose mode is enabled."""
 
@@ -1108,6 +1119,67 @@ def run_qc_summary_workflow(
     elapsed = time.monotonic() - start
     _progress(verbose, f"QC summaries: complete in {_format_duration(elapsed)}")
     return QCSummaryWorkflowResult(paths=paths, rows=rows, elapsed_s=float(elapsed))
+
+
+def write_qc_inventory_overlap_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    chunksize: int = 1_000_000,
+    overwrite: bool = True,
+    verbose: bool = True,
+    scope: str | None = None,
+    require_trace_overlap: bool = True,
+) -> dict[str, object]:
+    """Write the configured observed/synthetic-overlap QC inventory sidecar.
+
+    This helper is intended for notebooks and batch scripts. It resolves the
+    full QC inventory, event-station records, and overlap sidecar from the
+    active config/output registry, then delegates the chunked filtering to
+    :func:`write_qc_inventory_overlap_from_full`.
+    """
+
+    config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    metric_settings = metrics_settings_from_config(config)
+    qc_inventory = resolve_output_path("qc_inventory", kind="table", cfg=config, create_parent=True)
+    event_stations = resolve_output_path("event_station_records", kind="table", cfg=config, create_parent=True)
+    output = resolve_output_path("qc_inventory_overlap", kind="table", cfg=config, create_parent=True)
+    selected_scope = scope or metric_settings.source_overlap_scope
+    path = write_qc_inventory_overlap_from_full(
+        qc_inventory,
+        event_stations,
+        output,
+        scope=selected_scope,
+        chunksize=chunksize,
+        overwrite=overwrite,
+        verbose=verbose,
+        require_trace_overlap=require_trace_overlap,
+    )
+    return {
+        "qc_inventory_overlap": str(path),
+        "qc_inventory": str(qc_inventory),
+        "event_station_records": str(event_stations),
+        "scope": selected_scope,
+    }
+
+
+def run_qc_summary_workflow_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    chunksize: int = 1_000_000,
+    overwrite: bool = True,
+    verbose: bool = False,
+) -> dict[str, object]:
+    """Build compact QC summary tables from config-resolved inventories."""
+
+    config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    result = run_qc_summary_workflow(cfg=config, chunksize=chunksize, overwrite=overwrite, verbose=verbose)
+    return {
+        "paths": {key: str(path) for key, path in result.paths.items()},
+        "rows": {key: int(value) for key, value in result.rows.items()},
+        "elapsed_s": float(result.elapsed_s),
+    }
 
 
 def build_qc_availability_table(
@@ -2497,6 +2569,8 @@ __all__ = [
     "load_comparison_eligible_records",
     "QCSummaryWorkflowResult",
     "run_qc_summary_workflow",
+    "run_qc_summary_workflow_from_config",
     "write_comparison_eligibility_from_qc_inventory",
+    "write_qc_inventory_overlap_from_config",
     "write_qc_inventory_overlap_from_full",
 ]
