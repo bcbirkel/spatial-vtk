@@ -190,12 +190,15 @@ def test_tutorial_notebooks_have_stable_cell_ids() -> None:
     assert notebooks
     for notebook_path in notebooks:
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        ids = [str(cell.get("id", "")).strip() for cell in notebook.get("cells", [])]
         missing = [
             index
-            for index, cell in enumerate(notebook.get("cells", []), start=1)
-            if not str(cell.get("id", "")).strip()
+            for index, cell_id in enumerate(ids, start=1)
+            if not cell_id
         ]
+        duplicated = sorted({cell_id for cell_id in ids if cell_id and ids.count(cell_id) > 1})
         assert missing == [], f"{notebook_path.relative_to(repo_root)} missing cell ids: {missing}"
+        assert duplicated == [], f"{notebook_path.relative_to(repo_root)} duplicate cell ids: {duplicated}"
 
 
 def test_tutorial_notebook_preflight_runs_before_clean(tmp_path: Path, monkeypatch) -> None:
