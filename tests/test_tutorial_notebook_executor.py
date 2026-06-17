@@ -272,17 +272,19 @@ def test_public_docs_describe_committed_tutorial_waveforms() -> None:
 
 
 def test_qc_notebooks_use_public_slurm_imports() -> None:
-    """Tutorial notebooks should import QC Slurm helpers from the public package."""
+    """Tutorial notebooks should not import QC Slurm implementation modules."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebooks = [
-        repo_root / "docs" / "examples" / "step_02_quality_control.ipynb",
-        repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb",
-    ]
-    for notebook in notebooks:
-        text = notebook.read_text(encoding="utf-8")
-        assert "from spatial_vtk.qc import slurm_settings_from_config" in text
-        assert "from spatial_vtk.qc.build.slurm import" not in text
+    standard_text = (repo_root / "docs" / "examples" / "step_02_quality_control.ipynb").read_text(encoding="utf-8")
+    large_run_text = (
+        repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb"
+    ).read_text(encoding="utf-8")
+
+    assert "from spatial_vtk.qc import slurm_settings_from_config" in standard_text
+    assert "run_or_submit_notebook_function(" in large_run_text
+    assert "spatial_vtk.qc.run_qc_inventory_from_config" in large_run_text
+    assert "from spatial_vtk.qc.build.slurm import" not in standard_text
+    assert "from spatial_vtk.qc.build.slurm import" not in large_run_text
 
 
 def test_tutorial_notebook_executor_can_include_large_run_notebooks() -> None:
@@ -545,7 +547,7 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
 
 
 def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
-    """Large-run dashboard driver should use config-backed status and commands."""
+    """Large-run dashboard driver should use config-backed package helpers."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_07_large_run_dashboards.ipynb"
@@ -554,6 +556,9 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
 
     assert "dashboard_status = dashboard_output_status_frame(cfg=cfg)" in source
     assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=OVERWRITE)" in source
+    assert "run_or_submit_notebook_function(" in source
+    assert "spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets" in source
+    assert '"cfg": str(config_path)' in source
     assert "preview_output_table(\"metrics_long\", cfg=cfg" in source
     assert "dashboard_output_namespace" not in source
     assert "dashboard_paths" not in source
@@ -561,6 +566,8 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "metrics_dashboard_root" not in source
     assert "dashboard_summary_root" not in source
     assert "qc_trace_summary_path" not in source
+    assert "run_or_submit_notebook_cli_command(" not in source
+    assert '"svtk", "metrics"' not in source
     assert '"--metrics", str(' not in source
 
 

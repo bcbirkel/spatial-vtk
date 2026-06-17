@@ -2,7 +2,8 @@
 
 These notebooks mirror the seven tutorial steps, but they are designed for full
 large-dataset runs. They default to skipping existing outputs and submitting
-heavy work to Slurm or printing the exact command to run. The same notebooks
+heavy package-helper work to Slurm or printing the generated submission script.
+The same notebooks
 also run against the committed example data from a fresh source checkout; they
 must not require private paths, pre-existing outputs, or user-specific shell
 state.
@@ -21,7 +22,7 @@ error or emits warning-like output.
 Environment switches:
 
 - `SVTK_SUBMIT_SLURM=1`: submit generated Slurm scripts from notebook cells. Otherwise cells print `sbatch ...` commands.
-- `SVTK_RUN_LOCAL=1`: run lightweight CLI commands directly from the notebook. Otherwise cells print commands.
+- `SVTK_RUN_LOCAL=1`: run lightweight package helper calls directly from the notebook. Otherwise heavy cells write Slurm scripts and print or submit them.
 - `SVTK_OVERWRITE=1`: rebuild outputs even when they already exist.
 - `SVTK_MAKE_FIGURES=1`: render figure cells after compact input tables exist.
 - `SVTK_MAKE_SCORE_TRENDS=1`: render optional GOF score-trend diagnostics in Step 3. The main metric figure suite uses log2 residuals and does not render GOF score figures unless this is set.
@@ -53,5 +54,5 @@ Run order:
 7. `step_07_large_run_dashboards.ipynb`
 
 Each notebook is a driver: it should show paths, skip completed outputs, submit
-or print heavy commands, and preview only small bounded tables. Reusable logic
-belongs in the package, not in notebook-local helper functions.
+or print heavy package-helper jobs, and preview only small bounded tables.
+Reusable logic belongs in the package, not in notebook-local helper functions.

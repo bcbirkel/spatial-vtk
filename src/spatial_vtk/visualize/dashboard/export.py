@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 
 from spatial_vtk.config.outputs import resolve_output_path
+from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.visualize.dashboard.tables import (
     build_dashboard_summaries,
     dashboard_summary_input_columns,
@@ -239,7 +240,7 @@ def write_dashboard_summary_dataset(
 def write_configured_dashboard_datasets(
     tables: pd.DataFrame | str | Path | Sequence[pd.DataFrame | str | Path] | None = None,
     *,
-    cfg: Any | None = None,
+    cfg: SpatialVTKConfig | str | Path | None = None,
     residual_mode: str = "logratio",
     partitioned: bool = False,
     hex_dist: float = 10.0,
@@ -254,9 +255,9 @@ def write_configured_dashboard_datasets(
         Metric rows to export. When omitted, the configured ``metrics_long``
         output table is used.
     cfg
-        Optional Spatial-VTK config used to resolve ``metrics_long``,
-        ``metrics_dashboard``, and ``dashboard_summaries``. When omitted, the
-        active config is used.
+        Optional Spatial-VTK config or config file path used to resolve
+        ``metrics_long``, ``metrics_dashboard``, and ``dashboard_summaries``.
+        When omitted, the active config is used.
     residual_mode
         Residual mode used when converting wide metric tables.
     partitioned
@@ -273,9 +274,10 @@ def write_configured_dashboard_datasets(
         Written dashboard roots and summary table paths.
     """
 
-    metric_tables = tables if tables is not None else resolve_output_path("metrics_long", kind="table", cfg=cfg)
-    dashboard_root = resolve_output_path("metrics_dashboard", kind="dashboard", cfg=cfg, create_parent=True)
-    summary_root = resolve_output_path("dashboard_summaries", kind="dashboard", cfg=cfg, create_parent=True)
+    config = _coerce_dashboard_config(cfg)
+    metric_tables = tables if tables is not None else resolve_output_path("metrics_long", kind="table", cfg=config)
+    dashboard_root = resolve_output_path("metrics_dashboard", kind="dashboard", cfg=config, create_parent=True)
+    summary_root = resolve_output_path("dashboard_summaries", kind="dashboard", cfg=config, create_parent=True)
     metric_root = write_dashboard_metric_dataset(
         metric_tables,
         dashboard_root,
@@ -294,6 +296,14 @@ def write_configured_dashboard_datasets(
         "dashboard_summary_root": Path(summary_root),
         **{f"dashboard_summary_{name}": path for name, path in summary_paths.items()},
     }
+
+
+def _coerce_dashboard_config(cfg: SpatialVTKConfig | str | Path | None) -> SpatialVTKConfig | None:
+    """Return a config object for dashboard output resolution."""
+
+    if cfg is None or isinstance(cfg, SpatialVTKConfig):
+        return cfg
+    return SpatialVTKConfig.from_file(cfg)
 
 
 def add_dashboard_path_geometry(df: pd.DataFrame) -> pd.DataFrame:

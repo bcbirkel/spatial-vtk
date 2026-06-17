@@ -103,6 +103,40 @@ outputs:
     assert summaries["model_metric_band"]["n"].sum() == 2
 
 
+def test_write_configured_dashboard_datasets_accepts_config_path(tmp_path) -> None:
+    """Notebook Slurm workers should be able to pass a JSON-safe config path."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    metrics_path = tmp_path / "outputs" / "tables" / "metrics_long.parquet"
+    metrics_path.parent.mkdir(parents=True)
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    pd.DataFrame(
+        {
+            "model": ["m1"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "event_id": ["ev1"],
+            "station": ["STA1"],
+            "component": ["Z"],
+            "log2_residual": [0.25],
+        }
+    ).to_parquet(metrics_path, index=False)
+
+    written = write_configured_dashboard_datasets(cfg=config_path, partitioned=True)
+
+    assert written["metrics_dashboard_root"] == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    assert written["dashboard_summary_model_metric_band"].exists()
+
+
 def test_dashboard_summaries_report_unique_event_and_station_counts() -> None:
     """Dashboard rollups should expose unique counts behind each aggregate."""
 

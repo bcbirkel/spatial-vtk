@@ -137,9 +137,11 @@ Changelog
    averaged or otherwise collapsed into each plotted station value, plus unique
    counts for those dimensions in the source rows.
    Simplified the large-run Step 7 dashboard driver so the notebook uses
-   config-backed dashboard status, ``svtk metrics outputs --config ...``, and
+   config-backed dashboard status, submits
+   ``write_configured_dashboard_datasets()`` through the package-function
+   notebook helper, and previews ``metrics_long`` through
    ``preview_output_table("metrics_long")`` instead of expanding configured
-   dashboard paths in task cells.
+   dashboard paths or building metric-output CLI commands in task cells.
    Added ``write_configured_dashboard_datasets()`` as a config-backed helper
    for writing the metrics dashboard dataset and dashboard summary tables in
    one call. The Step 7 dashboard notebook now uses this helper and the

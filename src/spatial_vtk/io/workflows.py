@@ -19,7 +19,6 @@ from spatial_vtk.io.preprocessing import (
     preprocess_waveform_files,
 )
 from spatial_vtk.io.tables import write_output_table
-from spatial_vtk.visualize.context.figures import build_record_coverage_table_from_trace_metadata
 
 
 def preprocess_waveforms_from_config(
@@ -108,6 +107,8 @@ def build_record_coverage_from_config(
     """
 
     cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    from spatial_vtk.visualize.context.figures import build_record_coverage_table_from_trace_metadata
+
     preprocessing_paths = preprocessed_waveform_metadata_paths(config=cfg)
     event_station_records = (
         preprocessing_paths.event_station_path
