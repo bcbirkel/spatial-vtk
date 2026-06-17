@@ -717,10 +717,14 @@ def _resolve_notebook_config_path(repo_root: Path, config_path: str | Path | Non
     env_path = os.environ.get("SVTK_CONFIG")
     if env_path:
         return Path(env_path).expanduser().resolve()
+    saved = get_saved_config_path()
+    if saved:
+        return Path(saved).expanduser().resolve()
     candidates = [
         repo_root / "runs" / "spatial_vtk_config.yaml",
         Path.cwd() / "spatial_vtk_config.yaml",
         Path.cwd() / "runs" / "spatial_vtk_config.yaml",
+        repo_root / "data" / "examples" / "configuration" / "example_spatial_vtk_config.yaml",
     ]
     return next((path.resolve() for path in candidates if path.exists()), candidates[0].resolve())
 

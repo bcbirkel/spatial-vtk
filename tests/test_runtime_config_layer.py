@@ -264,6 +264,8 @@ def test_prepare_notebook_geospatial_environment_can_keep_proj_overrides(monkeyp
 def test_notebook_run_context_resolves_config_dirs_and_flags(tmp_path, monkeypatch):
     """Notebook setup should be reusable instead of redefined in each notebook."""
 
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(tmp_path / "cli-config.json"))
     repo = tmp_path / "project"
     (repo / "src" / "spatial_vtk").mkdir(parents=True)
     (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
@@ -300,6 +302,63 @@ outputs:
     assert context.preview_rows == 12
     assert context.tables_dir.exists()
 
+    clear_active_config()
+
+
+def test_notebook_run_context_uses_committed_example_config_when_no_run_config_exists(tmp_path, monkeypatch):
+    """Fresh-checkout large-run notebooks should fall back to the example config."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(tmp_path / "cli-config.json"))
+    repo = tmp_path / "project"
+    (repo / "src" / "spatial_vtk").mkdir(parents=True)
+    (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
+    config_path = repo / "data" / "examples" / "configuration" / "example_spatial_vtk_config.yaml"
+    config_path.parent.mkdir(parents=True)
+    config_path.write_text(
+        f"""
+project:
+  name: tutorial
+  root_dir: {repo}
+outputs:
+  root: outputs/tutorials
+""",
+        encoding="utf-8",
+    )
+
+    context = notebook_run_context(start=repo / "docs" / "examples", create_dirs=False)
+
+    assert context.config_path == config_path.resolve()
+    assert context.cfg.root_dir == repo.resolve()
+    clear_active_config()
+
+
+def test_notebook_run_context_honors_saved_cli_config(tmp_path, monkeypatch):
+    """Large-run notebooks should work after users run ``svtk config set``."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(tmp_path / "cli-config.json"))
+    repo = tmp_path / "project"
+    (repo / "src" / "spatial_vtk").mkdir(parents=True)
+    (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
+    example_config = repo / "data" / "examples" / "configuration" / "example_spatial_vtk_config.yaml"
+    example_config.parent.mkdir(parents=True)
+    example_config.write_text("project:\n  name: example\n  root_dir: .\n", encoding="utf-8")
+    saved_config = tmp_path / "saved.yaml"
+    saved_config.write_text(
+        f"""
+project:
+  name: saved
+  root_dir: {repo}
+""",
+        encoding="utf-8",
+    )
+    set_saved_config_path(saved_config)
+
+    context = notebook_run_context(start=repo / "docs" / "examples", create_dirs=False)
+
+    assert context.config_path == saved_config.resolve()
+    assert context.cfg.section("project.name") == "saved"
     clear_active_config()
 
 
@@ -389,9 +448,11 @@ def test_notebook_dashboard_launch_commands_parse_env_and_scenario(tmp_path, mon
     assert "--proxy-mode" in commands.qc_command
 
 
-def test_notebook_slurm_script_uses_configured_environment(tmp_path, capsys):
+def test_notebook_slurm_script_uses_configured_environment(tmp_path, monkeypatch, capsys):
     """Notebook SLURM scripts should inherit setup from config, not notebooks."""
 
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(tmp_path / "cli-config.json"))
     repo = tmp_path / "project"
     (repo / "src" / "spatial_vtk").mkdir(parents=True)
     (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
@@ -451,6 +512,8 @@ compute:
 def test_notebook_cli_helper_runs_or_writes_slurm_wrapper(tmp_path, monkeypatch, capsys):
     """Large-run notebooks should share one CLI run/submit helper."""
 
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(tmp_path / "cli-config.json"))
     repo = tmp_path / "project"
     (repo / "src" / "spatial_vtk").mkdir(parents=True)
     (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
