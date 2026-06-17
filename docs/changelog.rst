@@ -42,6 +42,10 @@ Changelog
    ``spatial_vtk.metrics.plot`` entry point so docs no longer direct notebook
    users to implementation modules such as
    ``spatial_vtk.metrics.plot.periods``.
+   Trimmed the spatial API plotting and map references to the stable
+   ``spatial_vtk.spatial.plot`` and ``spatial_vtk.spatial.map`` entry points,
+   including path-map helpers, so public docs no longer point users at
+   implementation modules.
    Added a dashboard summary-table contract helper that maps each metrics
    dashboard tab to its required summary file and columns. Dashboard output
    status tables and Step 7 notebooks now show this contract alongside file

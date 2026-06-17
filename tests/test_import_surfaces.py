@@ -74,3 +74,27 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     )
     for token in forbidden:
         assert token not in text
+
+
+def test_spatial_api_docs_use_public_plot_and_map_entry_points():
+    docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "spatial.rst"
+    text = docs.read_text(encoding="utf-8")
+    assert "from spatial_vtk.spatial.plot import (" in text
+    assert "from spatial_vtk.spatial.map import (" in text
+    assert ".. automodule:: spatial_vtk.spatial.plot\n" in text
+    assert ".. automodule:: spatial_vtk.spatial.map\n" in text
+    forbidden = (
+        "spatial_vtk.spatial.plot.correlation",
+        "spatial_vtk.spatial.plot.large_run",
+        "spatial_vtk.spatial.plot.metrics",
+        "spatial_vtk.spatial.plot.pca",
+        "spatial_vtk.spatial.map.basemaps",
+        "spatial_vtk.spatial.map.correlation",
+        "spatial_vtk.spatial.map.geojson",
+        "spatial_vtk.spatial.map.metrics",
+        "spatial_vtk.spatial.map.pca",
+        "spatial_vtk.spatial.map.path.corridors",
+        "spatial_vtk.spatial.map.path.residuals",
+    )
+    for token in forbidden:
+        assert token not in text

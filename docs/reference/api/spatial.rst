@@ -63,7 +63,8 @@ Plots
 -----
 
 Use ``spatial_vtk.spatial.plot`` for public non-map plotting imports in
-notebooks and scripts:
+notebooks and scripts. The implementation submodules are not part of the
+tutorial-facing API.
 
 .. code-block:: python
 
@@ -76,54 +77,21 @@ notebooks and scripts:
 .. automodule:: spatial_vtk.spatial.plot
    :members:
 
-.. automodule:: spatial_vtk.spatial.plot.correlation
-   :members:
-
-.. automodule:: spatial_vtk.spatial.plot.large_run
-   :members:
-
-.. automodule:: spatial_vtk.spatial.plot.metrics
-   :members:
-
-.. automodule:: spatial_vtk.spatial.plot.pca
-   :members:
-
 Maps
 ----
 
-Use ``spatial_vtk.spatial.map`` for public map imports:
+Use ``spatial_vtk.spatial.map`` for public map imports. This entry point also
+contains the path and corridor map helpers used by the tutorials.
 
 .. code-block:: python
 
    from spatial_vtk.spatial.map import (
        plot_metric_map_by_model,
        plot_residual_grid,
+       plot_corridor_map,
+       plot_event_residual_map,
        plot_station_metric_map,
    )
 
 .. automodule:: spatial_vtk.spatial.map
-   :members:
-
-.. automodule:: spatial_vtk.spatial.map.basemaps
-   :members:
-
-.. automodule:: spatial_vtk.spatial.map.correlation
-   :members:
-
-.. automodule:: spatial_vtk.spatial.map.geojson
-   :members:
-
-.. automodule:: spatial_vtk.spatial.map.metrics
-   :members:
-
-.. automodule:: spatial_vtk.spatial.map.pca
-   :members:
-
-Path Maps
----------
-
-.. automodule:: spatial_vtk.spatial.map.path.corridors
-   :members:
-
-.. automodule:: spatial_vtk.spatial.map.path.residuals
    :members:
