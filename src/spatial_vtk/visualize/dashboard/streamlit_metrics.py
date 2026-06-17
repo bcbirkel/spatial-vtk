@@ -208,11 +208,11 @@ def _render_metrics_dashboard(
         cols[0].metric("Rows", f"{len(rows) if rows is not None else len(heat):,}")
         cols[1].metric("Models", f"{len(selected_models):,}")
         cols[2].metric("Metrics", f"{heat['metric'].nunique() if 'metric' in heat else 0:,}")
-        cols[3].metric("Passbands", f"{len(selected_bands):,}")
+        cols[3].metric("Passbands / Periods", f"{len(selected_bands):,} / {len(selected_periods):,}")
         if period_options:
             st.caption(f"Oscillator periods selected: {len(selected_periods):,} of {len(period_options):,}")
         if heat.empty:
-            st.info(_empty_rows_message("model/metric/passband"))
+            st.info(_empty_rows_message("model/metric/passband-or-period"))
         else:
             st.plotly_chart(build_metric_heatmap_figure(heat, value_col=value_col), width="stretch")
         st.dataframe(_display_table(heat), width="stretch")
@@ -480,10 +480,10 @@ def _value_columns_or_message(df: pd.DataFrame) -> tuple[list[str], str | None]:
     """Return selectable value columns with a precise empty-state message."""
 
     if df.empty:
-        return [], _empty_rows_message("model/metric/passband")
+        return [], _empty_rows_message("model/metric/passband-or-period")
     columns = available_dashboard_value_columns(df)
     if not columns:
-        return [], "No observed, synthetic, residual, or score value columns are present in the model/metric/passband summary."
+        return [], "No observed, synthetic, residual, or score value columns are present in the model/metric/passband-or-period summary."
     nonempty = [
         column
         for column in columns
@@ -493,7 +493,7 @@ def _value_columns_or_message(df: pd.DataFrame) -> tuple[list[str], str | None]:
         return nonempty, None
     return (
         columns,
-        "The selected model/metric/passband rows have dashboard value columns, but all selected values are missing or non-finite.",
+        "The selected model/metric/passband-or-period rows have dashboard value columns, but all selected values are missing or non-finite.",
     )
 
 

@@ -186,6 +186,7 @@ outputs:
     contracts = dashboard_summary_table_contracts()
     assert set(contracts["table"]) == {"model_metric_band", "station_rollup", "event_rollup", "path_hex"}
     assert "Compare Models" in contracts.loc[contracts["table"].eq("model_metric_band"), "tabs"].iloc[0]
+    assert "oscillator-period" in contracts.loc[contracts["table"].eq("model_metric_band"), "purpose"].iloc[0]
     station_contract = contracts.loc[contracts["table"].eq("station_rollup")].iloc[0]
     event_contract = contracts.loc[contracts["table"].eq("event_rollup")].iloc[0]
     assert "sta_lon" in station_contract["map_coordinate_columns"]
@@ -380,17 +381,17 @@ def test_metrics_value_selector_reports_why_no_value_can_be_selected():
     empty = pd.DataFrame(columns=["model", "metric", "band", "med_log2_residual"])
     columns, message = _value_columns_or_message(empty)
     assert columns == []
-    assert message == "No model/metric/passband rows match the selected filters."
+    assert message == "No model/metric/passband-or-period rows match the selected filters."
 
     missing_values = pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["2-4"]})
     columns, message = _value_columns_or_message(missing_values)
     assert columns == []
-    assert message == "No observed, synthetic, residual, or score value columns are present in the model/metric/passband summary."
+    assert message == "No observed, synthetic, residual, or score value columns are present in the model/metric/passband-or-period summary."
 
     all_missing = pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["2-4"], "med_log2_residual": [pd.NA]})
     columns, message = _value_columns_or_message(all_missing)
     assert columns == ["med_log2_residual"]
-    assert message == "The selected model/metric/passband rows have dashboard value columns, but all selected values are missing or non-finite."
+    assert message == "The selected model/metric/passband-or-period rows have dashboard value columns, but all selected values are missing or non-finite."
 
     ready = pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["2-4"], "med_log2_residual": [0.5]})
     columns, message = _value_columns_or_message(ready)

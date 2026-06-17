@@ -39,6 +39,7 @@ Figure sidecars:
 Dashboard summaries:
 
 - Dashboard rollup tables expose `n` for contributing row counts and, when the source data includes the needed identifiers, `event_count` and `station_count` for unique event/station coverage behind each displayed aggregate.
+- PSA summaries preserve `period_s`, so dashboard filters and rollups can separate oscillator periods even when PSA rows are not tied to one waveform passband.
 
 Run order:
 

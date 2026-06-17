@@ -29,10 +29,10 @@ METRICS_TABLE_TAB_LABELS: dict[str, tuple[str, ...]] = {
     "path_hex": ("Paths",),
 }
 METRICS_TABLE_PURPOSES: dict[str, str] = {
-    "model_metric_band": "Model, metric, passband, and component summaries for overview and model-comparison tabs.",
-    "station_rollup": "Station-level rollups used by the station map, station table, and station filters.",
-    "event_rollup": "Event-level rollups used by the event map and event table.",
-    "path_hex": "Distance/azimuth path-bin summaries used by the paths heatmap.",
+    "model_metric_band": "Model, metric, passband, oscillator-period, and component summaries for overview and model-comparison tabs.",
+    "station_rollup": "Station-level metric rollups, including PSA oscillator periods when present, used by the station map, station table, and station filters.",
+    "event_rollup": "Event-level metric rollups, including PSA oscillator periods when present, used by the event map and event table.",
+    "path_hex": "Distance/azimuth path-bin summaries, including PSA oscillator periods when present, used by the paths heatmap.",
 }
 REQUIRED_METRICS_TABLE_COLUMNS: dict[str, tuple[str, ...]] = {
     "model_metric_band": ("model", "metric", "band", "n"),
