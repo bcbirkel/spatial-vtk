@@ -704,6 +704,50 @@ def test_direct_metric_plots_label_event_centered_residuals(tmp_path: Path) -> N
     assert period_distribution.axes[0].get_ylabel() == "Event-centered log2(observed / synthetic)"
 
 
+def test_public_metric_plots_apply_robust_outlier_limits(tmp_path: Path) -> None:
+    """Extreme rows should not dominate plot axes or color scales by default."""
+
+    count = 21
+    rows = pd.DataFrame(
+        {
+            "event_id": [f"E{index:02d}" for index in range(count)],
+            "station": [f"S{index:02d}" for index in range(count)],
+            "metric": ["PGA"] * count,
+            "band": ["1-2 sec"] * count,
+            "model": ["m1"] * count,
+            "component": ["Z"] * count,
+            "distance_km": np.linspace(5.0, 105.0, count),
+            "sta_lon": np.linspace(-118.5, -117.5, count),
+            "sta_lat": np.linspace(33.6, 34.3, count),
+            "log2_residual": [*np.linspace(-1.0, 1.0, count - 1), 100.0],
+        }
+    )
+
+    trend = plot_metric_trend(
+        rows,
+        tmp_path / "trend_outlier.png",
+        x_col="distance_km",
+        y_col="log2_residual",
+        group_col=None,
+    )
+    band = plot_band_score_distribution(
+        rows,
+        tmp_path / "band_outlier.png",
+        score_col="log2_residual",
+        color_col=None,
+    )
+    station_map = plot_station_metric_map(
+        rows,
+        tmp_path / "map_outlier.png",
+        value_col="log2_residual",
+        add_basemap=False,
+    )
+
+    assert max(abs(value) for value in trend.axes[0].get_ylim()) < 5.0
+    assert max(abs(value) for value in band.axes[0].get_ylim()) < 5.0
+    assert max(abs(value) for value in station_map.axes[0].collections[-1].get_clim()) < 5.0
+
+
 def test_spatial_metric_maps_write_optional_row_sidecars(tmp_path: Path) -> None:
     """Spatial metric map figures should optionally write plotted/source rows."""
 

@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Strengthened metric figure regression coverage for large-run provenance and
+   outlier handling. Tests now assert exact source event/station/period rows
+   behind aggregated station and PSA sidecars, and verify that robust axis and
+   color limits keep extreme outliers from dominating direct trend,
+   distribution, and station-map figures.
    Hardened direct spectral metric plots. ``plot_period_spectra`` no longer
    filters generic spectra tables as PSA, direct PSA/FAS period plots now
    prefer broadband rows and reject passband-duplicated oscillator-period rows

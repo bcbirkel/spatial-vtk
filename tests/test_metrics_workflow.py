@@ -269,8 +269,10 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     all_sidecar = pd.read_csv(context.sidecar_output_dir / f"{output_all.stem}.csv")
     all_source_sidecar = pd.read_csv(context.sidecar_output_dir / f"{output_all.stem}.source.csv")
     all_metadata = json.loads((context.sidecar_output_dir / f"{output_all.stem}.json").read_text(encoding="utf-8"))
+    all_source_keys = set(zip(all_source_sidecar["event_id"].astype(str), all_source_sidecar["station"].astype(str)))
     assert len(all_sidecar) == 2
     assert len(all_source_sidecar) == 4
+    assert all_source_keys == {("e1", "STA"), ("e2", "STA"), ("e3", "STB"), ("e5", "STA")}
     assert all_metadata["plot_row_count"] == 2
     assert all_metadata["source_row_count"] == 4
     assert all_metadata["source_written_row_count"] == 4
@@ -304,6 +306,11 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert set(psa_rows["__svtk_panel_period_s"]) == {1.0, 2.0}
     assert set(psa_rows["period_s"]) == {1.0, 2.0}
     assert set(psa_source_rows["__svtk_panel_period_s"]) == {1.0, 2.0}
+    assert set(zip(psa_source_rows["event_id"].astype(str), psa_source_rows["station"].astype(str), psa_source_rows["period_s"].astype(float))) == {
+        ("e1", "STA", 1.0),
+        ("e2", "STA", 2.0),
+        ("e3", "STA", 2.0),
+    }
     custom_psa_output = context.write_psa_period_sheet(
         "station_metric_map_custom",
         psa_item,
