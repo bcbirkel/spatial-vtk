@@ -15,7 +15,7 @@ from spatial_vtk.metrics.calculate import (
 )
 from spatial_vtk.metrics.plot import build_example_metric_summary, plot_example_metric_pairs
 from spatial_vtk.spatial.calculate import build_path_table, rotate_ne_to_rt, rotate_rt_to_ne, summarize_residuals_by_path_bin
-from spatial_vtk.spatial.map.path import plot_event_residual_map
+from spatial_vtk.spatial.map import plot_event_residual_map
 from spatial_vtk.visualize.dashboard import build_dashboard_summaries
 
 

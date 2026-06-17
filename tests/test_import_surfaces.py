@@ -11,8 +11,7 @@ def test_public_imports():
     from spatial_vtk.qc import load_trace_inventory_lookup
     from spatial_vtk.spatial.calculate import annotate_points_with_geojson, build_station_edge_corridors, classify_paths_with_geojson
     from spatial_vtk.visualize.dashboard import build_dashboard_summaries
-    from spatial_vtk.spatial.map import add_contextily_basemap
-    from spatial_vtk.spatial.map.path import plot_event_residual_map
+    from spatial_vtk.spatial.map import add_contextily_basemap, plot_corridor_map, plot_event_residual_map
     from spatial_vtk.visualize.context import plot_distance_amplitude_diagnostics, plot_station_event_context, plot_study_domain_map
     from spatial_vtk.visualize.record_sections import plot_observed_synthetic_record_section, plot_record_section
 
@@ -31,6 +30,7 @@ def test_public_imports():
     assert callable(classify_paths_with_geojson)
     assert callable(build_dashboard_summaries)
     assert callable(add_contextily_basemap)
+    assert callable(plot_corridor_map)
     assert callable(plot_event_residual_map)
     assert callable(plot_distance_amplitude_diagnostics)
     assert callable(plot_observed_synthetic_record_section)

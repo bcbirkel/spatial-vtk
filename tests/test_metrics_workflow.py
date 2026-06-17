@@ -28,7 +28,7 @@ from spatial_vtk.metrics.workflow import (
     MetricWorkflowTask,
 )
 from spatial_vtk.metrics.plot import MetricFigureContext
-from spatial_vtk.spatial.map.path import plot_event_residual_map
+from spatial_vtk.spatial.map import plot_event_residual_map
 from spatial_vtk.visualize.dashboard import available_dashboard_value_columns, build_dashboard_summaries, load_dashboard_metric_dataset
 
 

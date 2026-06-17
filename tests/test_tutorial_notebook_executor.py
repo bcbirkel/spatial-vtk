@@ -183,6 +183,20 @@ def test_tutorial_notebooks_use_table_helpers_for_file_reads() -> None:
             assert "pd.read_" not in source, f"{notebook_path.relative_to(repo_root)} cell {index}"
 
 
+def test_tutorial_notebooks_use_public_map_imports() -> None:
+    """Tutorial notebooks should teach stable public map imports."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    forbidden = "from spatial_vtk.spatial.map."
+    assert notebooks
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            source = "".join(cell.get("source", []))
+            assert forbidden not in source, f"{notebook_path.relative_to(repo_root)} cell {index}"
+
+
 def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     """The spatial tutorial should use the package workflow for standard tables."""
 

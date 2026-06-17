@@ -29,8 +29,7 @@ from spatial_vtk.spatial.calculate import (
     summarize_corridor_event_counts,
     summarize_metrics_by_geojson,
 )
-from spatial_vtk.spatial.map.geojson import plot_geojson_polygons_map
-from spatial_vtk.spatial.map.path import plot_corridor_map
+from spatial_vtk.spatial.map import plot_corridor_map, plot_geojson_polygons_map
 
 
 def _write_geojson(path, features):
