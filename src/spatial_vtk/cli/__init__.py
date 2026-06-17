@@ -345,6 +345,8 @@ VISUALIZE_COMMAND_GROUPS: dict[str, dict[str, PlotCommand]] = {
 
 AUTO_PLOT_OPTION_KEYS = frozenset({"add_basemap", "basemap_source", "bounds"})
 FIGURE_SIDECAR_OPTION_KEYS = frozenset({"write_sidecar", "sidecar_rows", "sidecar_dir"})
+FIGURE_BOOLEAN_OPTION_KEYS = frozenset({"table"})
+FIGURE_TABLE_SENTINEL = "__svtk_figure_table__"
 COMMON_FIGURE_OPTION_KEYS = frozenset(
     {
         "metric",
@@ -365,6 +367,8 @@ COMMON_FIGURE_OPTION_KEYS = frozenset(
         "indep",
         "colorby",
         "compare_to",
+        "station_regions",
+        "event_regions",
         "scale",
         "time_limit_s",
         "max_records",
@@ -372,7 +376,7 @@ COMMON_FIGURE_OPTION_KEYS = frozenset(
         "title",
     }
 )
-USER_FIGURE_OPTION_KEYS = FIGURE_SIDECAR_OPTION_KEYS | COMMON_FIGURE_OPTION_KEYS
+USER_FIGURE_OPTION_KEYS = FIGURE_SIDECAR_OPTION_KEYS | COMMON_FIGURE_OPTION_KEYS | FIGURE_BOOLEAN_OPTION_KEYS
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -828,7 +832,18 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
     if spec.input_key or spec.output_key or spec.table_alias_defaults:
         parser.add_argument("--config", default=None, help="Optional Spatial-VTK config for default input/output paths.")
         parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
-    parser.add_argument("--table", action="append", default=(), help="Extra table as argument_name=path. May be repeated.")
+    parser.add_argument(
+        "--table",
+        nargs="?",
+        action="append",
+        const=FIGURE_TABLE_SENTINEL,
+        default=None,
+        help=(
+            "Extra table as argument_name=path. May be repeated. "
+            "For plotting functions with a boolean table option, omit the value to show the table."
+        ),
+    )
+    parser.add_argument("--no-table", action="store_false", default=None, dest="figure_table", help="Disable a function-specific comparison/statistical table when supported.")
     parser.add_argument("--kwargs", nargs="*", default=(), help="Extra function keyword arguments as key=value.")
     parser.add_argument("--kwargs-json", default=None, help="Extra function keyword arguments as a JSON/YAML mapping.")
     _add_common_figure_options(parser, exclude=set((spec.table_aliases or {}).keys()))
@@ -906,6 +921,8 @@ def _add_common_figure_options(parser: argparse.ArgumentParser, *, exclude: set[
     add("indep", default=None, help="Independent column for flexible spatial plots.")
     add("colorby", default=None, help="Column or alias used for flexible spatial plot color grouping.")
     add("compare-to", action="append", default=None, help="Baseline category for categorical comparison plots. Repeat for multiple categories.")
+    add("station-region", dest="station_regions", action="append", default=None, help="Station region filter. Repeat for multiple regions.")
+    add("event-region", dest="event_regions", action="append", default=None, help="Event region filter. Repeat for multiple regions.")
     add("scale", type=float, default=None, help="Waveform plotting scale for record-section style figures.")
     add("time-limit-s", type=float, default=None, help="Upper time limit in seconds for waveform figures that support time_limit_s.")
     add("max-records", type=int, default=None, help="Maximum number of records for record-section style waveform figures.")
@@ -1601,7 +1618,10 @@ def _registered_plot_kwargs(args: argparse.Namespace, spec: PlotCommand) -> dict
     if spec.primary_arg is not None:
         input_path = _registered_plot_input_path(args, spec, config)
         kwargs[spec.primary_arg] = _read_table(input_path)
-    for table_arg, table_path in _parse_table_arguments(getattr(args, "table", ())):
+    table_items = list(getattr(args, "table", ()) or ())
+    figure_table_requested = FIGURE_TABLE_SENTINEL in table_items
+    extra_table_items = [item for item in table_items if item != FIGURE_TABLE_SENTINEL]
+    for table_arg, table_path in _parse_table_arguments(extra_table_items):
         kwargs[table_arg] = _read_table(table_path)
     for option, table_arg in (spec.table_aliases or {}).items():
         value = getattr(args, option.replace("-", "_"), None)
@@ -1620,6 +1640,10 @@ def _registered_plot_kwargs(args: argparse.Namespace, spec: PlotCommand) -> dict
         kwargs.update(_parse_mapping(args.kwargs_json))
     kwargs.update(_parse_key_values(getattr(args, "kwargs", ())))
     _apply_common_figure_options(args, kwargs, exclude=set((spec.table_aliases or {}).keys()))
+    if getattr(args, "figure_table", None) is not None:
+        kwargs["table"] = args.figure_table
+    elif figure_table_requested:
+        kwargs["table"] = True
     if getattr(args, "write_sidecar", False):
         kwargs["write_sidecar"] = True
     if getattr(args, "sidecar_rows", None) is not None:

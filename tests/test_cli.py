@@ -100,6 +100,9 @@ def test_cli_registered_plot_help_shows_common_options(capsys):
     assert "--indep" in captured.out
     assert "--colorby" in captured.out
     assert "--compare-to" in captured.out
+    assert "--table" in captured.out
+    assert "--station-region" in captured.out
+    assert "--event-region" in captured.out
     assert "--components" in captured.out
     assert "--time-limit-s" in captured.out
     assert "--max-records" in captured.out
@@ -146,6 +149,9 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "``--indep``" in text
     assert "``--colorby``" in text
     assert "``--compare-to``" in text
+    assert "``--table``" in text
+    assert "``--station-region``" in text
+    assert "``--event-region``" in text
     assert "``--components``" in text
     assert "``--time-limit-s``" in text
     assert "``--max-records``" in text
@@ -181,6 +187,8 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "``--mode``" in map_text
     assert "``--dep``" in map_text
     assert "``--compare-to``" in map_text
+    assert "``--station-region``" in map_text
+    assert "``--event-region``" in map_text
 
 
 def test_cli_workflow_uses_curated_commands_for_standard_steps():
@@ -197,6 +205,9 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert "--indep distance" in text
     assert "--colorby dep" in text
     assert '--compare-to "LA Basin"' in text
+    assert "--table" in text
+    assert '--station-region "LA Basin"' in text
+    assert '--event-region "Santa Monica Mountains"' in text
     assert "--components R" in text
     assert "--time-limit-s 60" in text
     assert "--max-records 80" in text
@@ -205,6 +216,10 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert " indep=" not in text
     assert " colorby=" not in text
     assert " compare_to=" not in text
+    assert "--kwargs" not in text
+    assert "station_region=" not in text
+    assert "event_region=" not in text
+    assert "table=true" not in text
     assert "gain=2.0" not in text
     assert "xlim_s=" not in text
     assert "max_time_s=" not in text
@@ -458,6 +473,70 @@ outputs:
     assert captured.out.strip() == str(expected_output)
 
 
+def test_cli_metric_boxplot_uses_first_class_table_flag(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    metrics = table_dir / "metrics_long.csv"
+    metrics.write_text(
+        "metric,band,model,station_geojson_labels,log2_residual\nPGA,1-2 sec,m1,LA Basin,0.5\n",
+        encoding="utf-8",
+    )
+    config.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+  artifacts:
+    metrics_long:
+      filename: metrics_long.csv
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.spatial.plot as spatial_plot
+
+    def fake_boxplot(data, output_path=None, **kwargs):
+        seen["rows"] = len(data)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(spatial_plot, "boxplot", fake_boxplot)
+
+    assert (
+        main(
+            [
+                "plot",
+                "metrics",
+                "boxplot",
+                "--config",
+                str(config),
+                "--dep",
+                "PGA",
+                "--indep",
+                "station_geojson_labels",
+                "--compare-to",
+                "LA Basin",
+                "--table",
+            ]
+        )
+        == 0
+    )
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "boxplot.png"
+    assert seen["rows"] == 1
+    assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["compare_to"] == "LA Basin"
+    assert seen["kwargs"]["table"] is True
+    assert captured.out.strip() == str(expected_output)
+
+
 def test_cli_waveform_record_section_uses_first_class_waveform_flags(tmp_path, monkeypatch, capsys):
     records = tmp_path / "records.csv"
     records.write_text(
@@ -622,6 +701,78 @@ outputs:
     expected_output = tmp_path / "outputs" / "figures" / "station_residual_map.png"
     assert seen["rows"] == 1
     assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["add_basemap"] is False
+    assert captured.out.strip() == str(expected_output)
+
+
+def test_cli_event_residual_map_uses_first_class_region_flags(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    path_table = table_dir / "path_table.csv"
+    path_table.write_text(
+        "event_id,station,sta_lon,sta_lat,metric,residual,station_geojson_labels,event_geojson_labels\n"
+        "EV,STA,-118,34,PGA,0.2,LA Basin,Santa Monica Mountains\n",
+        encoding="utf-8",
+    )
+    config.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+  artifacts:
+    path_table:
+      filename: path_table.csv
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.spatial.map as spatial_map
+    import spatial_vtk.spatial.map.path.residuals as residual_maps
+
+    def fake_plot_event_residual_map(df, output_path=None, **kwargs):
+        seen["rows"] = len(df)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(residual_maps, "plot_event_residual_map", fake_plot_event_residual_map)
+    monkeypatch.setattr(spatial_map, "plot_event_residual_map", fake_plot_event_residual_map)
+
+    assert (
+        main(
+            [
+                "map",
+                "spatial",
+                "event-residual",
+                "--config",
+                str(config),
+                "--metric",
+                "PGA",
+                "--value-col",
+                "residual",
+                "--station-region",
+                "LA Basin",
+                "--event-region",
+                "Santa Monica Mountains",
+                "--no-basemap",
+            ]
+        )
+        == 0
+    )
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "event_residual_map.png"
+    assert seen["rows"] == 1
+    assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["metric"] == "PGA"
+    assert seen["kwargs"]["value_col"] == "residual"
+    assert seen["kwargs"]["station_regions"] == "LA Basin"
+    assert seen["kwargs"]["event_regions"] == "Santa Monica Mountains"
     assert seen["kwargs"]["add_basemap"] is False
     assert captured.out.strip() == str(expected_output)
 

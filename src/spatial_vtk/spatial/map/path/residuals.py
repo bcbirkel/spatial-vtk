@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 import math
 
 import numpy as np
@@ -24,6 +24,10 @@ def plot_event_residual_map(
     event_id: str | None = None,
     metric: str | None = None,
     value_col: str = "residual",
+    station_region_col: str | None = None,
+    station_regions: Sequence[str] | str | None = None,
+    event_region_col: str | None = None,
+    event_regions: Sequence[str] | str | None = None,
     add_basemap: bool = True,
     basemap_source: str = "Esri.WorldImagery",
     basemap_kwargs: dict[str, Any] | None = None,
@@ -39,8 +43,10 @@ def plot_event_residual_map(
 
     Map figures add a basemap by default, following the repository figure rule.
     Tests may pass ``add_basemap=False`` for fully offline rendering. Set
-    ``write_sidecar=True`` to write the filtered event/metric rows and the
-    unfiltered source rows next to the saved figure.
+    ``station_regions`` or ``event_regions`` to restrict the mapped rows to
+    region labels that were joined onto the residual table, and set
+    ``write_sidecar=True`` to write the filtered event/metric/region rows and
+    the unfiltered source rows next to the saved figure.
     """
 
     work = prepare_metric_residual_table(df)
@@ -48,6 +54,13 @@ def plot_event_residual_map(
         work = work.loc[work["event_id"].astype(str) == str(event_id)].copy()
     if metric is not None:
         work = work.loc[work["metric"].astype(str) == str(metric)].copy()
+    work = _filter_region_rows(
+        work,
+        station_region_col=station_region_col,
+        station_regions=station_regions,
+        event_region_col=event_region_col,
+        event_regions=event_regions,
+    )
     if work.empty:
         raise ValueError("No rows remain after event/metric filtering.")
     lon_col, lat_col = _xy_columns(work)
@@ -98,8 +111,75 @@ def plot_event_residual_map(
         write_sidecar=write_sidecar,
         sidecar_rows=sidecar_rows,
         sidecar_dir=sidecar_dir,
-        metadata={"figure_type": "event_residual_map", "event_id": event_id, "metric": metric, "value_col": value_col},
+        metadata={
+            "figure_type": "event_residual_map",
+            "event_id": event_id,
+            "metric": metric,
+            "value_col": value_col,
+            "station_region_col": station_region_col,
+            "station_regions": _region_metadata_value(station_regions),
+            "event_region_col": event_region_col,
+            "event_regions": _region_metadata_value(event_regions),
+        },
     )
+
+
+def _filter_region_rows(
+    df: pd.DataFrame,
+    *,
+    station_region_col: str | None,
+    station_regions: Sequence[str] | str | None,
+    event_region_col: str | None,
+    event_regions: Sequence[str] | str | None,
+) -> pd.DataFrame:
+    """Filter station/event rows by optional region labels."""
+
+    out = df
+    if station_regions is not None:
+        column = station_region_col or _first_existing_column(
+            out,
+            ("station_region", "station_geojson_region", "station_geojson_labels", "station_region_type"),
+        )
+        out = _filter_region_column(out, column, station_regions, label="station")
+    if event_regions is not None:
+        column = event_region_col or _first_existing_column(
+            out,
+            ("event_region", "event_geojson_region", "event_geojson_labels", "event_region_type"),
+        )
+        out = _filter_region_column(out, column, event_regions, label="event")
+    return out
+
+
+def _filter_region_column(df: pd.DataFrame, column: str | None, values: Sequence[str] | str, *, label: str) -> pd.DataFrame:
+    """Return rows matching a station/event region column."""
+
+    if column is None or column not in df.columns:
+        raise KeyError(f"No {label} region column was found for filtering.")
+    wanted = {str(value) for value in _as_list(values)}
+    return df.loc[df[column].astype(str).isin(wanted)].copy()
+
+
+def _first_existing_column(df: pd.DataFrame, candidates: Sequence[str]) -> str | None:
+    """Return the first existing column from ``candidates``."""
+
+    return next((column for column in candidates if column in df.columns), None)
+
+
+def _as_list(values: Sequence[str] | str) -> list[str]:
+    """Normalize a scalar or sequence of region labels."""
+
+    if isinstance(values, str):
+        return [values]
+    return [str(value) for value in values]
+
+
+def _region_metadata_value(values: Sequence[str] | str | None) -> str | list[str] | None:
+    """Return JSON-friendly region metadata."""
+
+    if values is None:
+        return None
+    out = _as_list(values)
+    return out[0] if len(out) == 1 else out
 
 
 def _xy_columns(df: pd.DataFrame) -> tuple[str, str]:

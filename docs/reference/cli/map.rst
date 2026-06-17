@@ -87,7 +87,7 @@ svtk map spatial block-holdout-error
                                             [--output OUTPUT]
                                             [--config CONFIG]
                                             [--run-scenario RUN_SCENARIO]
-                                            [--table TABLE]
+                                            [--table [TABLE]] [--no-table]
                                             [--kwargs [KWARGS ...]]
                                             [--kwargs-json KWARGS_JSON]
                                             [--metric METRIC]
@@ -106,6 +106,8 @@ svtk map spatial block-holdout-error
                                             [--indep INDEP]
                                             [--colorby COLORBY]
                                             [--compare-to COMPARE_TO]
+                                            [--station-region STATION_REGIONS]
+                                            [--event-region EVENT_REGIONS]
                                             [--scale SCALE]
                                             [--time-limit-s TIME_LIMIT_S]
                                             [--max-records MAX_RECORDS]
@@ -148,8 +150,12 @@ svtk map spatial block-holdout-error
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
-     - Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated.
+     - Nargs: ``?``; Repeatable
+     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+   * - ``--no-table``
+     - No
+     -
+     - Disable a function-specific comparison/statistical table when supported.
    * - ``--kwargs``
      - No
      - Nargs: ``*``
@@ -230,6 +236,14 @@ svtk map spatial block-holdout-error
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--station-region``
+     - No
+     - Repeatable
+     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+   * - ``--event-region``
+     - No
+     - Repeatable
+     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
@@ -286,7 +300,8 @@ svtk map spatial cluster
 
    svtk map spatial cluster [-h] [--input INPUT] [--output OUTPUT]
                                 [--config CONFIG]
-                                [--run-scenario RUN_SCENARIO] [--table TABLE]
+                                [--run-scenario RUN_SCENARIO]
+                                [--table [TABLE]] [--no-table]
                                 [--kwargs [KWARGS ...]]
                                 [--kwargs-json KWARGS_JSON] [--metric METRIC]
                                 [--passband PASSBAND] [--component COMPONENT]
@@ -298,7 +313,9 @@ svtk map spatial cluster
                                 [--connect-points | --no-connect-points]
                                 [--mode MODE] [--dep DEP] [--indep INDEP]
                                 [--colorby COLORBY] [--compare-to COMPARE_TO]
-                                [--scale SCALE] [--time-limit-s TIME_LIMIT_S]
+                                [--station-region STATION_REGIONS]
+                                [--event-region EVENT_REGIONS] [--scale SCALE]
+                                [--time-limit-s TIME_LIMIT_S]
                                 [--max-records MAX_RECORDS]
                                 [--max-traces MAX_TRACES] [--title TITLE]
                                 [--write-sidecar]
@@ -339,8 +356,12 @@ svtk map spatial cluster
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
-     - Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated.
+     - Nargs: ``?``; Repeatable
+     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+   * - ``--no-table``
+     - No
+     -
+     - Disable a function-specific comparison/statistical table when supported.
    * - ``--kwargs``
      - No
      - Nargs: ``*``
@@ -421,6 +442,14 @@ svtk map spatial cluster
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--station-region``
+     - No
+     - Repeatable
+     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+   * - ``--event-region``
+     - No
+     - Repeatable
+     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
@@ -477,7 +506,8 @@ svtk map spatial corridor
 
    svtk map spatial corridor [-h] [--input INPUT] [--output OUTPUT]
                                  [--config CONFIG]
-                                 [--run-scenario RUN_SCENARIO] [--table TABLE]
+                                 [--run-scenario RUN_SCENARIO]
+                                 [--table [TABLE]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
                                  [--passband PASSBAND] [--component COMPONENT]
@@ -489,6 +519,8 @@ svtk map spatial corridor
                                  [--connect-points | --no-connect-points]
                                  [--mode MODE] [--dep DEP] [--indep INDEP]
                                  [--colorby COLORBY] [--compare-to COMPARE_TO]
+                                 [--station-region STATION_REGIONS]
+                                 [--event-region EVENT_REGIONS]
                                  [--scale SCALE] [--time-limit-s TIME_LIMIT_S]
                                  [--max-records MAX_RECORDS]
                                  [--max-traces MAX_TRACES] [--title TITLE]
@@ -531,8 +563,12 @@ svtk map spatial corridor
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
-     - Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated.
+     - Nargs: ``?``; Repeatable
+     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+   * - ``--no-table``
+     - No
+     -
+     - Disable a function-specific comparison/statistical table when supported.
    * - ``--kwargs``
      - No
      - Nargs: ``*``
@@ -613,6 +649,14 @@ svtk map spatial corridor
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--station-region``
+     - No
+     - Repeatable
+     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+   * - ``--event-region``
+     - No
+     - Repeatable
+     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
@@ -682,7 +726,8 @@ svtk map spatial event-residual
    svtk map spatial event-residual [-h] [--input INPUT] [--output OUTPUT]
                                        [--config CONFIG]
                                        [--run-scenario RUN_SCENARIO]
-                                       [--table TABLE] [--kwargs [KWARGS ...]]
+                                       [--table [TABLE]] [--no-table]
+                                       [--kwargs [KWARGS ...]]
                                        [--kwargs-json KWARGS_JSON]
                                        [--metric METRIC] [--passband PASSBAND]
                                        [--component COMPONENT]
@@ -695,6 +740,8 @@ svtk map spatial event-residual
                                        [--mode MODE] [--dep DEP]
                                        [--indep INDEP] [--colorby COLORBY]
                                        [--compare-to COMPARE_TO]
+                                       [--station-region STATION_REGIONS]
+                                       [--event-region EVENT_REGIONS]
                                        [--scale SCALE]
                                        [--time-limit-s TIME_LIMIT_S]
                                        [--max-records MAX_RECORDS]
@@ -737,8 +784,12 @@ svtk map spatial event-residual
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
-     - Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated.
+     - Nargs: ``?``; Repeatable
+     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+   * - ``--no-table``
+     - No
+     -
+     - Disable a function-specific comparison/statistical table when supported.
    * - ``--kwargs``
      - No
      - Nargs: ``*``
@@ -819,6 +870,14 @@ svtk map spatial event-residual
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--station-region``
+     - No
+     - Repeatable
+     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+   * - ``--event-region``
+     - No
+     - Repeatable
+     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
@@ -902,7 +961,7 @@ svtk map spatial metric-by-model
    svtk map spatial metric-by-model [-h] [--input INPUT] [--output OUTPUT]
                                         [--config CONFIG]
                                         [--run-scenario RUN_SCENARIO]
-                                        [--table TABLE]
+                                        [--table [TABLE]] [--no-table]
                                         [--kwargs [KWARGS ...]]
                                         [--kwargs-json KWARGS_JSON]
                                         [--metric METRIC]
@@ -919,6 +978,8 @@ svtk map spatial metric-by-model
                                         [--mode MODE] [--dep DEP]
                                         [--indep INDEP] [--colorby COLORBY]
                                         [--compare-to COMPARE_TO]
+                                        [--station-region STATION_REGIONS]
+                                        [--event-region EVENT_REGIONS]
                                         [--scale SCALE]
                                         [--time-limit-s TIME_LIMIT_S]
                                         [--max-records MAX_RECORDS]
@@ -961,8 +1022,12 @@ svtk map spatial metric-by-model
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
-     - Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated.
+     - Nargs: ``?``; Repeatable
+     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+   * - ``--no-table``
+     - No
+     -
+     - Disable a function-specific comparison/statistical table when supported.
    * - ``--kwargs``
      - No
      - Nargs: ``*``
@@ -1043,6 +1108,14 @@ svtk map spatial metric-by-model
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--station-region``
+     - No
+     - Repeatable
+     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+   * - ``--event-region``
+     - No
+     - Repeatable
+     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
@@ -1100,7 +1173,7 @@ svtk map spatial model-improvement
    svtk map spatial model-improvement [-h] --input INPUT [--output OUTPUT]
                                           [--config CONFIG]
                                           [--run-scenario RUN_SCENARIO]
-                                          [--table TABLE]
+                                          [--table [TABLE]] [--no-table]
                                           [--kwargs [KWARGS ...]]
                                           [--kwargs-json KWARGS_JSON]
                                           [--metric METRIC]
@@ -1117,6 +1190,8 @@ svtk map spatial model-improvement
                                           [--mode MODE] [--dep DEP]
                                           [--indep INDEP] [--colorby COLORBY]
                                           [--compare-to COMPARE_TO]
+                                          [--station-region STATION_REGIONS]
+                                          [--event-region EVENT_REGIONS]
                                           [--scale SCALE]
                                           [--time-limit-s TIME_LIMIT_S]
                                           [--max-records MAX_RECORDS]
@@ -1159,8 +1234,12 @@ svtk map spatial model-improvement
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
-     - Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated.
+     - Nargs: ``?``; Repeatable
+     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+   * - ``--no-table``
+     - No
+     -
+     - Disable a function-specific comparison/statistical table when supported.
    * - ``--kwargs``
      - No
      - Nargs: ``*``
@@ -1241,6 +1320,14 @@ svtk map spatial model-improvement
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--station-region``
+     - No
+     - Repeatable
+     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+   * - ``--event-region``
+     - No
+     - Repeatable
+     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
@@ -1297,7 +1384,8 @@ svtk map spatial pca-mode
 
    svtk map spatial pca-mode [-h] [--input INPUT] [--output OUTPUT]
                                  [--config CONFIG]
-                                 [--run-scenario RUN_SCENARIO] [--table TABLE]
+                                 [--run-scenario RUN_SCENARIO]
+                                 [--table [TABLE]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
                                  [--passband PASSBAND] [--component COMPONENT]
@@ -1309,6 +1397,8 @@ svtk map spatial pca-mode
                                  [--connect-points | --no-connect-points]
                                  [--mode MODE] [--dep DEP] [--indep INDEP]
                                  [--colorby COLORBY] [--compare-to COMPARE_TO]
+                                 [--station-region STATION_REGIONS]
+                                 [--event-region EVENT_REGIONS]
                                  [--scale SCALE] [--time-limit-s TIME_LIMIT_S]
                                  [--max-records MAX_RECORDS]
                                  [--max-traces MAX_TRACES] [--title TITLE]
@@ -1350,8 +1440,12 @@ svtk map spatial pca-mode
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
-     - Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated.
+     - Nargs: ``?``; Repeatable
+     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+   * - ``--no-table``
+     - No
+     -
+     - Disable a function-specific comparison/statistical table when supported.
    * - ``--kwargs``
      - No
      - Nargs: ``*``
@@ -1432,6 +1526,14 @@ svtk map spatial pca-mode
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--station-region``
+     - No
+     - Repeatable
+     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+   * - ``--event-region``
+     - No
+     - Repeatable
+     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
@@ -1489,7 +1591,8 @@ svtk map spatial redcap-cluster
    svtk map spatial redcap-cluster [-h] [--input INPUT] [--output OUTPUT]
                                        [--config CONFIG]
                                        [--run-scenario RUN_SCENARIO]
-                                       [--table TABLE] [--kwargs [KWARGS ...]]
+                                       [--table [TABLE]] [--no-table]
+                                       [--kwargs [KWARGS ...]]
                                        [--kwargs-json KWARGS_JSON]
                                        [--metric METRIC] [--passband PASSBAND]
                                        [--component COMPONENT]
@@ -1502,6 +1605,8 @@ svtk map spatial redcap-cluster
                                        [--mode MODE] [--dep DEP]
                                        [--indep INDEP] [--colorby COLORBY]
                                        [--compare-to COMPARE_TO]
+                                       [--station-region STATION_REGIONS]
+                                       [--event-region EVENT_REGIONS]
                                        [--scale SCALE]
                                        [--time-limit-s TIME_LIMIT_S]
                                        [--max-records MAX_RECORDS]
@@ -1544,8 +1649,12 @@ svtk map spatial redcap-cluster
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
-     - Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated.
+     - Nargs: ``?``; Repeatable
+     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+   * - ``--no-table``
+     - No
+     -
+     - Disable a function-specific comparison/statistical table when supported.
    * - ``--kwargs``
      - No
      - Nargs: ``*``
@@ -1626,6 +1735,14 @@ svtk map spatial redcap-cluster
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--station-region``
+     - No
+     - Repeatable
+     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+   * - ``--event-region``
+     - No
+     - Repeatable
+     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
@@ -1683,7 +1800,8 @@ svtk map spatial residual-grid
    svtk map spatial residual-grid [-h] [--input INPUT] [--output OUTPUT]
                                       [--config CONFIG]
                                       [--run-scenario RUN_SCENARIO]
-                                      [--table TABLE] [--kwargs [KWARGS ...]]
+                                      [--table [TABLE]] [--no-table]
+                                      [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
                                       [--metric METRIC] [--passband PASSBAND]
                                       [--component COMPONENT]
@@ -1696,6 +1814,8 @@ svtk map spatial residual-grid
                                       [--mode MODE] [--dep DEP]
                                       [--indep INDEP] [--colorby COLORBY]
                                       [--compare-to COMPARE_TO]
+                                      [--station-region STATION_REGIONS]
+                                      [--event-region EVENT_REGIONS]
                                       [--scale SCALE]
                                       [--time-limit-s TIME_LIMIT_S]
                                       [--max-records MAX_RECORDS]
@@ -1738,8 +1858,12 @@ svtk map spatial residual-grid
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
-     - Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated.
+     - Nargs: ``?``; Repeatable
+     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+   * - ``--no-table``
+     - No
+     -
+     - Disable a function-specific comparison/statistical table when supported.
    * - ``--kwargs``
      - No
      - Nargs: ``*``
@@ -1820,6 +1944,14 @@ svtk map spatial residual-grid
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--station-region``
+     - No
+     - Repeatable
+     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+   * - ``--event-region``
+     - No
+     - Repeatable
+     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
@@ -1876,7 +2008,8 @@ svtk map spatial score
 
    svtk map spatial score [-h] [--input INPUT] [--output OUTPUT]
                               [--config CONFIG] [--run-scenario RUN_SCENARIO]
-                              [--table TABLE] [--kwargs [KWARGS ...]]
+                              [--table [TABLE]] [--no-table]
+                              [--kwargs [KWARGS ...]]
                               [--kwargs-json KWARGS_JSON] [--metric METRIC]
                               [--passband PASSBAND] [--component COMPONENT]
                               [--components COMPONENTS] [--model MODEL]
@@ -1887,7 +2020,9 @@ svtk map spatial score
                               [--connect-points | --no-connect-points]
                               [--mode MODE] [--dep DEP] [--indep INDEP]
                               [--colorby COLORBY] [--compare-to COMPARE_TO]
-                              [--scale SCALE] [--time-limit-s TIME_LIMIT_S]
+                              [--station-region STATION_REGIONS]
+                              [--event-region EVENT_REGIONS] [--scale SCALE]
+                              [--time-limit-s TIME_LIMIT_S]
                               [--max-records MAX_RECORDS]
                               [--max-traces MAX_TRACES] [--title TITLE]
                               [--write-sidecar] [--sidecar-rows SIDECAR_ROWS]
@@ -1926,8 +2061,12 @@ svtk map spatial score
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
-     - Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated.
+     - Nargs: ``?``; Repeatable
+     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+   * - ``--no-table``
+     - No
+     -
+     - Disable a function-specific comparison/statistical table when supported.
    * - ``--kwargs``
      - No
      - Nargs: ``*``
@@ -2008,6 +2147,14 @@ svtk map spatial score
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--station-region``
+     - No
+     - Repeatable
+     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+   * - ``--event-region``
+     - No
+     - Repeatable
+     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
@@ -2065,7 +2212,8 @@ svtk map spatial station-bias
    svtk map spatial station-bias [-h] [--input INPUT] [--output OUTPUT]
                                      [--config CONFIG]
                                      [--run-scenario RUN_SCENARIO]
-                                     [--table TABLE] [--kwargs [KWARGS ...]]
+                                     [--table [TABLE]] [--no-table]
+                                     [--kwargs [KWARGS ...]]
                                      [--kwargs-json KWARGS_JSON]
                                      [--metric METRIC] [--passband PASSBAND]
                                      [--component COMPONENT]
@@ -2077,7 +2225,10 @@ svtk map spatial station-bias
                                      [--connect-points | --no-connect-points]
                                      [--mode MODE] [--dep DEP] [--indep INDEP]
                                      [--colorby COLORBY]
-                                     [--compare-to COMPARE_TO] [--scale SCALE]
+                                     [--compare-to COMPARE_TO]
+                                     [--station-region STATION_REGIONS]
+                                     [--event-region EVENT_REGIONS]
+                                     [--scale SCALE]
                                      [--time-limit-s TIME_LIMIT_S]
                                      [--max-records MAX_RECORDS]
                                      [--max-traces MAX_TRACES] [--title TITLE]
@@ -2119,8 +2270,12 @@ svtk map spatial station-bias
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
-     - Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated.
+     - Nargs: ``?``; Repeatable
+     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+   * - ``--no-table``
+     - No
+     -
+     - Disable a function-specific comparison/statistical table when supported.
    * - ``--kwargs``
      - No
      - Nargs: ``*``
@@ -2201,6 +2356,14 @@ svtk map spatial station-bias
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--station-region``
+     - No
+     - Repeatable
+     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+   * - ``--event-region``
+     - No
+     - Repeatable
+     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
@@ -2258,7 +2421,8 @@ svtk map spatial station-metric
    svtk map spatial station-metric [-h] [--input INPUT] [--output OUTPUT]
                                        [--config CONFIG]
                                        [--run-scenario RUN_SCENARIO]
-                                       [--table TABLE] [--kwargs [KWARGS ...]]
+                                       [--table [TABLE]] [--no-table]
+                                       [--kwargs [KWARGS ...]]
                                        [--kwargs-json KWARGS_JSON]
                                        [--metric METRIC] [--passband PASSBAND]
                                        [--component COMPONENT]
@@ -2271,6 +2435,8 @@ svtk map spatial station-metric
                                        [--mode MODE] [--dep DEP]
                                        [--indep INDEP] [--colorby COLORBY]
                                        [--compare-to COMPARE_TO]
+                                       [--station-region STATION_REGIONS]
+                                       [--event-region EVENT_REGIONS]
                                        [--scale SCALE]
                                        [--time-limit-s TIME_LIMIT_S]
                                        [--max-records MAX_RECORDS]
@@ -2313,8 +2479,12 @@ svtk map spatial station-metric
      - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--table``
      - No
-     - Repeatable
-     - Value: ``table``. Extra table as argument_name=path. May be repeated.
+     - Nargs: ``?``; Repeatable
+     - Value: ``table``. Extra table as argument_name=path. May be repeated. For plotting functions with a boolean table option, omit the value to show the table.
+   * - ``--no-table``
+     - No
+     -
+     - Disable a function-specific comparison/statistical table when supported.
    * - ``--kwargs``
      - No
      - Nargs: ``*``
@@ -2395,6 +2565,14 @@ svtk map spatial station-metric
      - No
      - Repeatable
      - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+   * - ``--station-region``
+     - No
+     - Repeatable
+     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+   * - ``--event-region``
+     - No
+     - Repeatable
+     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -

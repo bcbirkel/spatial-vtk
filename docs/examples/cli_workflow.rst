@@ -255,7 +255,7 @@ Work with region polygons and corridor selections, then make maps and waveform s
      --dep PGA \
      --indep station_geojson_labels \
      --compare-to "LA Basin" \
-     --kwargs table=true
+     --table
 
    svtk map spatial event-residual \
      --config "$CONFIG" \
@@ -263,7 +263,8 @@ Work with region polygons and corridor selections, then make maps and waveform s
      --bounds study_area \
      --value-col log2_residual \
      --metric PGA \
-     --kwargs station_region="LA Basin" event_region="Santa Monica Mountains"
+     --station-region "LA Basin" \
+     --event-region "Santa Monica Mountains"
 
    svtk map spatial corridor \
      --config "$CONFIG" \
@@ -322,7 +323,7 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
      --dep PGV \
      --indep station_geojson_labels \
      --compare-to "LA Basin" \
-     --kwargs table=true
+     --table
 
    svtk plot metrics heatmap \
      --input "$TABLES/metrics_long.parquet" \

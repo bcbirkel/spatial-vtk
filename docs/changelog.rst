@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-16
+   Added first-class ``--table`` / ``--no-table``, ``--station-region``,
+   and ``--event-region`` controls for registered plotting and mapping
+   commands. The CLI workflow now uses named flags instead of routine
+   ``--kwargs`` plumbing, while ``--table argument_name=path`` remains
+   available for extra input tables.
    Added ``tools/execute_tutorial_notebooks.py`` so source checkouts and CI can
    execute the standard tutorial notebooks from a clean
    ``outputs/tutorials`` directory and fail on notebook errors or warning-like
