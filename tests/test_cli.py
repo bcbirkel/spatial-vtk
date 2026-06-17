@@ -1266,6 +1266,45 @@ def test_cli_qc_manual_queue(tmp_path):
     assert queue.loc[0, "station"] == "STA1"
 
 
+def test_cli_qc_manual_queue_uses_saved_config_defaults(tmp_path, monkeypatch):
+    """Manual QC queue export should use configured trace and output tables."""
+
+    settings = tmp_path / "settings" / "svtk-config.json"
+    config = tmp_path / "spatial-vtk.yaml"
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    pd.DataFrame(
+        {
+            "event_id": ["ev1", "ev1"],
+            "station": ["STA1", "STA2"],
+            "component": ["R", "T"],
+            "dominant_band_label": ["2-4", "4-8"],
+            "event_lat": [34.0, 34.0],
+            "event_lon": [-118.0, -118.0],
+            "station_lat": [34.1, 34.2],
+            "station_lon": [-118.1, -118.2],
+        }
+    ).to_csv(tables / "qc_trace_summary.csv", index=False)
+    monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(settings))
+
+    assert main(["config", "set", str(config)]) == 0
+    assert main(["qc", "manual-queue", "--component", "R"]) == 0
+
+    queue = pd.read_csv(tables / "manual_review_queue.csv")
+    assert len(queue) == 1
+    assert queue.loc[0, "station"] == "STA1"
+
+
 def test_cli_metrics_outputs(tmp_path):
     metrics = tmp_path / "metrics.csv"
     events = tmp_path / "events.csv"
@@ -1738,6 +1777,40 @@ metrics:
     captured = capsys.readouterr()
     assert "Wrote metric Slurm script" in captured.out
     assert (tmp_path / "outputs" / "slurm" / "step03_run_metrics.slurm").exists()
+
+
+def test_cli_qc_slurm_uses_configured_defaults(tmp_path, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    event_stations = tables / "event_station_records.csv"
+    event_stations.write_text("event_id,station\nE1,STA1\n", encoding="utf-8")
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+compute:
+  slurm:
+    python_command: python
+qc:
+  slurm:
+    max_concurrent: 1
+""",
+        encoding="utf-8",
+    )
+
+    assert main(["qc", "slurm", "--config", str(config)]) == 0
+
+    captured = capsys.readouterr()
+    script = tmp_path / "outputs" / "slurm" / "build_qc_inventory.slurm"
+    assert str(script) in captured.out
+    text = script.read_text(encoding="utf-8")
+    assert "--event-stations" in text
+    assert str(event_stations.resolve()) in text
+    assert "-m spatial_vtk.qc.build.slurm" in text
 
 
 def test_cli_dashboard_metrics_uses_configured_output_roots(tmp_path, monkeypatch, capsys):

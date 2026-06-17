@@ -63,17 +63,11 @@ streamed sidecar restricted to events with both observed and synthetic data.
 .. code-block:: bash
 
    export EVENT_STATIONS="$PREPROCESSED/metadata/event_station_records_preprocessed.csv"
-   export TRACE_QC="$TABLES/qc_trace_summary.csv"
-   export QC_INVENTORY="$TABLES/qc_inventory.csv"
-   export QC_INVENTORY_OVERLAP="$TABLES/qc_inventory_overlap.parquet"
 
    svtk qc build \
      --event-stations "$EVENT_STATIONS" \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
-     --trace-output "$TRACE_QC" \
-     --inventory-output "$QC_INVENTORY" \
-     --overlap-inventory-output "$QC_INVENTORY_OVERLAP" \
      --verbose
 
    svtk qc summaries \
@@ -83,8 +77,8 @@ streamed sidecar restricted to events with both observed and synthetic data.
      --verbose
 
    svtk qc manual-queue \
-     --trace-summary "$TRACE_QC" \
-     --output "$TABLES/manual_review_queue.csv" \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
      --component R
 
    svtk visualize qc retention-summary \

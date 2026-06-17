@@ -106,7 +106,9 @@ svtk qc manual-queue
 
 .. code-block:: bash
 
-   svtk qc manual-queue [-h] --trace-summary TRACE_SUMMARY --output OUTPUT
+   svtk qc manual-queue [-h] [--trace-summary TRACE_SUMMARY]
+                            [--output OUTPUT] [--config CONFIG]
+                            [--run-scenario RUN_SCENARIO]
                             [--event-id EVENT_ID]
                             [--station-family STATION_FAMILY]
                             [--component COMPONENT]
@@ -128,13 +130,21 @@ svtk qc manual-queue
      -
      - show this help message and exit
    * - ``--trace-summary``
-     - Yes
+     - No
      -
-     - Value: ``trace_summary``. Trace-summary CSV/parquet path.
+     - Value: ``trace_summary``. Trace-summary CSV/parquet path. Defaults to configured output table 'qc_trace_summary'.
    * - ``--output``
-     - Yes
+     - No
      -
-     - Value: ``output``. Output manual-review queue CSV.
+     - Value: ``output``. Output manual-review queue CSV. Defaults to configured output table 'manual_review_queue'.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config used to resolve default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
    * - ``--event-id``
      - No
      - Default: empty string
@@ -165,7 +175,7 @@ svtk qc slurm
 
 .. code-block:: bash
 
-   svtk qc slurm [-h] --event-stations EVENT_STATIONS --output OUTPUT
+   svtk qc slurm [-h] [--event-stations EVENT_STATIONS] [--output OUTPUT]
                      [--config CONFIG] [--run-scenario RUN_SCENARIO]
                      [--trace-output TRACE_OUTPUT]
                      [--inventory-output INVENTORY_OUTPUT]
@@ -187,13 +197,13 @@ svtk qc slurm
      -
      - show this help message and exit
    * - ``--event-stations``
-     - Yes
+     - No
      -
-     - Value: ``event_stations``. Prepared event-station table.
+     - Value: ``event_stations``. Prepared event-station table. Defaults to configured output table 'event_station_records'.
    * - ``--output``
-     - Yes
+     - No
      -
-     - Value: ``output``. Output SLURM script path.
+     - Value: ``output``. Output SLURM script path. Defaults to outputs/slurm/build_qc_inventory.slurm.
    * - ``--config``
      - No
      -

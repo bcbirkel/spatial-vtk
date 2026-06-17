@@ -568,8 +568,10 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     build.set_defaults(handler=_cmd_qc_build)
 
     queue = qc_sub.add_parser("manual-queue", help="Export a manual-QC review queue from trace summary rows.")
-    queue.add_argument("--trace-summary", required=True, help="Trace-summary CSV/parquet path.")
-    queue.add_argument("--output", required=True, help="Output manual-review queue CSV.")
+    queue.add_argument("--trace-summary", default=None, help="Trace-summary CSV/parquet path. Defaults to configured output table 'qc_trace_summary'.")
+    queue.add_argument("--output", default=None, help="Output manual-review queue CSV. Defaults to configured output table 'manual_review_queue'.")
+    queue.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default input/output paths.")
+    queue.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     queue.add_argument("--event-id", default="", help="Optional event id filter.")
     queue.add_argument("--station-family", default="all", help="Optional station-family filter.")
     queue.add_argument("--component", default="all", help="Optional component filter.")
@@ -578,8 +580,8 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     queue.set_defaults(handler=_cmd_qc_manual_queue)
 
     slurm = qc_sub.add_parser("slurm", help="Write a SLURM script for QC inventory generation.")
-    slurm.add_argument("--event-stations", required=True, help="Prepared event-station table.")
-    slurm.add_argument("--output", required=True, help="Output SLURM script path.")
+    slurm.add_argument("--event-stations", default=None, help="Prepared event-station table. Defaults to configured output table 'event_station_records'.")
+    slurm.add_argument("--output", default=None, help="Output SLURM script path. Defaults to outputs/slurm/build_qc_inventory.slurm.")
     slurm.add_argument("--config", default=None, help="Config file containing compute.slurm or qc.slurm settings.")
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     slurm.add_argument("--trace-output", default=None, help="Output waveform QC table path.")
@@ -1083,6 +1085,22 @@ def _metric_slurm_script_path(config: Any, *, create_parent: bool = True) -> Pat
     return path
 
 
+def _qc_slurm_script_path(config: Any, *, create_parent: bool = True) -> Path:
+    """Return the standard QC Slurm script path for CLI defaults."""
+
+    root = config.path("outputs.root") or (config.root_dir / "outputs")
+    path = Path(root) / "slurm" / "build_qc_inventory.slurm"
+    if create_parent:
+        path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _default_event_station_records_path(config: Any) -> Path:
+    """Return the configured event-station records path."""
+
+    return _configured_output_path("event_station_records", config=config)
+
+
 def _default_metric_manifest_path(config: Any, *, prefer_cached: bool = False) -> Path:
     """Return the configured metric manifest path, optionally preferring the cached manifest."""
 
@@ -1263,7 +1281,19 @@ def _cmd_qc_manual_queue(args: argparse.Namespace) -> int:
     from spatial_vtk.visualize.dashboard import filter_qc_dashboard_rows, write_manual_review_queue
     from spatial_vtk.visualize.qc import load_trace_qc_summary
 
-    df = load_trace_qc_summary(args.trace_summary)
+    needs_config = args.trace_summary is None or args.output is None
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    trace_summary = (
+        Path(args.trace_summary).expanduser()
+        if args.trace_summary
+        else _configured_output_path("qc_trace_summary", config=config)
+    )
+    output = (
+        Path(args.output).expanduser()
+        if args.output
+        else _configured_output_path("manual_review_queue", config=config)
+    )
+    df = load_trace_qc_summary(trace_summary)
     filtered = filter_qc_dashboard_rows(
         df,
         event_filter=args.event_id,
@@ -1272,22 +1302,20 @@ def _cmd_qc_manual_queue(args: argparse.Namespace) -> int:
         station_query=args.station_contains,
         band=args.band,
     )
-    write_manual_review_queue(filtered, args.output)
+    write_manual_review_queue(filtered, output)
     return 0
 
 
 def _cmd_qc_build(args: argparse.Namespace) -> int:
     """Run ``svtk qc build``."""
 
-    from spatial_vtk.config import SpatialVTKConfig
-    from spatial_vtk.config.outputs import resolve_output_path
     from spatial_vtk.qc.build.slurm import run_qc_inventory_job
 
-    config = SpatialVTKConfig.from_file(_required_config_path(args.config), run_scenario=args.run_scenario)
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
     event_stations = (
         Path(args.event_stations).expanduser()
         if args.event_stations is not None
-        else resolve_output_path("event_station_records", kind="table", cfg=config, create_parent=True)
+        else _default_event_station_records_path(config)
     )
     written = run_qc_inventory_job(
         event_stations,
@@ -1304,7 +1332,6 @@ def _cmd_qc_build(args: argparse.Namespace) -> int:
 def _cmd_qc_slurm(args: argparse.Namespace) -> int:
     """Run ``svtk qc slurm``."""
 
-    from spatial_vtk.config import SpatialVTKConfig
     from spatial_vtk.qc.build.slurm import (
         slurm_settings_from_config,
         submit_qc_slurm_job,
@@ -1312,12 +1339,14 @@ def _cmd_qc_slurm(args: argparse.Namespace) -> int:
     )
 
     config_path = _required_config_path(args.config)
-    config = SpatialVTKConfig.from_file(config_path, run_scenario=args.run_scenario)
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
+    event_stations = Path(args.event_stations).expanduser() if args.event_stations else _default_event_station_records_path(config)
+    output = Path(args.output).expanduser() if args.output else _qc_slurm_script_path(config)
     settings = slurm_settings_from_config(config)
     if args.submit:
         submission = submit_qc_slurm_job(
-            args.event_stations,
-            args.output,
+            event_stations,
+            output,
             settings,
             config_path=config_path,
             run_scenario=args.run_scenario,
@@ -1328,8 +1357,8 @@ def _cmd_qc_slurm(args: argparse.Namespace) -> int:
         print(submission.stdout or f"submitted {submission.script_path}")
         return int(submission.returncode)
     path = write_qc_slurm_script(
-        args.event_stations,
-        args.output,
+        event_stations,
+        output,
         settings,
         config_path=config_path,
         run_scenario=args.run_scenario,
