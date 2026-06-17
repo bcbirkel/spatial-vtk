@@ -788,6 +788,14 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     batch.add_argument("--overwrite", action="store_true", help="Replace an existing batch output.")
     batch.set_defaults(handler=_cmd_metrics_run_batch)
 
+    batch_status = metrics_sub.add_parser("batch-status", help="Summarize metric manifest batch output completion.")
+    batch_status.add_argument("--manifest", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
+    batch_status.add_argument("--config", default=None, help="Spatial-VTK config used to resolve the default manifest path.")
+    batch_status.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    batch_status.add_argument("--missing-limit", type=int, default=20, help="Maximum missing batch outputs to list. Use -1 for all.")
+    batch_status.add_argument("--json", action="store_true", help="Print JSON instead of YAML.")
+    batch_status.set_defaults(handler=_cmd_metrics_batch_status)
+
     cache = metrics_sub.add_parser("cache-waveforms", help="Write a metric manifest backed by lightweight cached waveform traces.")
     cache.add_argument("--manifest", default=None, help="Source metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'.")
     cache.add_argument("--output", default=None, help="Cached metric workflow manifest JSON. Defaults to configured output table 'metric_manifest_cached'.")
@@ -859,6 +867,8 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     slurm.add_argument("--config", default=None, help="Config file containing metrics.slurm settings.")
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     slurm.add_argument("--submit", action="store_true", help="Submit the script with sbatch after writing it.")
+    slurm.add_argument("--incomplete-only", action="store_true", help="Only include manifest batches whose output files are missing.")
+    slurm.add_argument("--overwrite-batches", action="store_true", help="Pass --overwrite to each metric batch task in the Slurm array.")
     slurm.set_defaults(handler=_cmd_metrics_slurm)
 
 
@@ -2085,6 +2095,18 @@ def _cmd_metrics_run_batch(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_metrics_batch_status(args: argparse.Namespace) -> int:
+    """Run ``svtk metrics batch-status``."""
+
+    from spatial_vtk.metrics.workflow import metric_manifest_batch_status
+
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if args.manifest is None else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config, prefer_cached=True)
+    status = metric_manifest_batch_status(manifest)
+    _print_payload(status.to_dict(missing_limit=args.missing_limit), as_json=args.json)
+    return 0
+
+
 def _cmd_metrics_cache_waveforms(args: argparse.Namespace) -> int:
     """Run ``svtk metrics cache-waveforms``."""
 
@@ -2163,6 +2185,7 @@ def _cmd_metrics_slurm(args: argparse.Namespace) -> int:
     """Run ``svtk metrics slurm``."""
 
     from spatial_vtk.metrics.workflow import (
+        metric_manifest_batch_status,
         slurm_settings_from_config,
         submit_metrics_slurm_job,
         write_metrics_slurm_script,
@@ -2172,11 +2195,31 @@ def _cmd_metrics_slurm(args: argparse.Namespace) -> int:
     manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config, prefer_cached=True)
     output = Path(args.output).expanduser() if args.output else _metric_slurm_script_path(config)
     settings = slurm_settings_from_config(config)
+    batch_indices = None
+    if args.incomplete_only:
+        status = metric_manifest_batch_status(manifest)
+        if status.all_complete:
+            print("All metric batch outputs already exist; no Slurm script was written.")
+            print(status.status_frame().to_string(index=False))
+            return 0
+        batch_indices = status.missing_batches
     if args.submit:
-        submission = submit_metrics_slurm_job(manifest, output, settings)
+        submission = submit_metrics_slurm_job(
+            manifest,
+            output,
+            settings,
+            batch_indices=batch_indices,
+            overwrite_batches=args.overwrite_batches,
+        )
         print(submission.stdout or f"submitted {submission.script_path}")
         return int(submission.returncode)
-    path = write_metrics_slurm_script(manifest, output, settings)
+    path = write_metrics_slurm_script(
+        manifest,
+        output,
+        settings,
+        batch_indices=batch_indices,
+        overwrite_batches=args.overwrite_batches,
+    )
     print(f"Wrote metric Slurm script: {path}")
     print("No job was submitted. Re-run with --submit or submit the script with sbatch.")
     return 0

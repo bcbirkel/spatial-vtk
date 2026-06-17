@@ -54,6 +54,9 @@ def write_metrics_slurm_script(
     manifest_path: str | Path,
     script_path: str | Path,
     settings: SlurmSettings,
+    *,
+    batch_indices: list[int] | tuple[int, ...] | None = None,
+    overwrite_batches: bool = False,
 ) -> Path:
     """Write a SLURM array script for a metric workflow manifest.
 
@@ -65,6 +68,11 @@ def write_metrics_slurm_script(
         Destination shell script.
     settings
         User-provided SLURM settings.
+    batch_indices
+        Optional manifest batch indices to include in the array. When omitted,
+        the script includes every planned batch.
+    overwrite_batches
+        Whether array tasks should replace existing batch outputs.
 
     Returns
     -------
@@ -77,17 +85,22 @@ def write_metrics_slurm_script(
     manifest = read_task_manifest(manifest_path)
     if not manifest.batches:
         raise ValueError("Cannot write a SLURM script for a manifest with no batches.")
+    selected_indices = _selected_batch_indices(manifest, batch_indices=batch_indices)
+    if not selected_indices:
+        raise ValueError("Cannot write a SLURM script because no metric batches were selected.")
     target = Path(script_path).expanduser()
     target.parent.mkdir(parents=True, exist_ok=True)
     manifest_abs = Path(manifest_path).expanduser().resolve()
-    last_index = len(manifest.batches) - 1
-    lines = slurm_header(settings, array=f"0-{last_index}%{max(1, int(settings.max_concurrent))}")
+    array_spec = _slurm_array_spec(selected_indices, max_concurrent=max(1, int(settings.max_concurrent)))
+    overwrite_flag = " --overwrite" if overwrite_batches else ""
+    lines = slurm_header(settings, array=array_spec)
     lines.extend(
         [
             f'echo "Metric Slurm array: task $SLURM_ARRAY_TASK_ID of {len(manifest.batches)} batch(es)"',
+            f'echo "Metric selected batches: {len(selected_indices)} of {len(manifest.batches)}"',
             f'echo "Metric manifest: {manifest_abs}"',
             f'echo "Metric max concurrent batches: {max(1, int(settings.max_concurrent))}"',
-            f"{settings.python_command} -m spatial_vtk.metrics.workflow.execution --manifest {manifest_abs} --batch-index $SLURM_ARRAY_TASK_ID",
+            f"{settings.python_command} -m spatial_vtk.metrics.workflow.execution --manifest {manifest_abs} --batch-index $SLURM_ARRAY_TASK_ID{overwrite_flag}",
             "",
         ]
     )
@@ -100,11 +113,51 @@ def submit_metrics_slurm_job(
     manifest_path: str | Path,
     script_path: str | Path,
     settings: SlurmSettings,
+    *,
+    batch_indices: list[int] | tuple[int, ...] | None = None,
+    overwrite_batches: bool = False,
 ):
     """Write and submit a SLURM array script for a metric workflow manifest."""
 
-    script = write_metrics_slurm_script(manifest_path, script_path, settings)
+    script = write_metrics_slurm_script(
+        manifest_path,
+        script_path,
+        settings,
+        batch_indices=batch_indices,
+        overwrite_batches=overwrite_batches,
+    )
     return submit_slurm_script(script, settings)
+
+
+def _selected_batch_indices(manifest, *, batch_indices: list[int] | tuple[int, ...] | None) -> tuple[int, ...]:
+    """Return validated batch indices for one Slurm array."""
+
+    available = {int(batch["batch_index"]) for batch in manifest.batches}
+    if batch_indices is None:
+        return tuple(sorted(available))
+    selected = tuple(dict.fromkeys(int(index) for index in batch_indices))
+    missing = [index for index in selected if index not in available]
+    if missing:
+        raise ValueError(f"Metric manifest does not contain batch indices: {missing}")
+    return tuple(sorted(selected))
+
+
+def _slurm_array_spec(indices: tuple[int, ...], *, max_concurrent: int) -> str:
+    """Return a compact Slurm array expression for selected indices."""
+
+    if not indices:
+        raise ValueError("At least one batch index is required.")
+    ranges: list[str] = []
+    start = previous = int(indices[0])
+    for raw_index in indices[1:]:
+        index = int(raw_index)
+        if index == previous + 1:
+            previous = index
+            continue
+        ranges.append(str(start) if start == previous else f"{start}-{previous}")
+        start = previous = index
+    ranges.append(str(start) if start == previous else f"{start}-{previous}")
+    return f"{','.join(ranges)}%{max(1, int(max_concurrent))}"
 
 
 def build_arg_parser() -> argparse.ArgumentParser:

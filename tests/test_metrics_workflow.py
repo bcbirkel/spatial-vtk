@@ -14,6 +14,7 @@ from spatial_vtk.metrics.workflow import (
     build_metric_waveform_inventories_from_trace_metadata,
     cache_metric_manifest_waveforms,
     merge_batch_outputs,
+    metric_manifest_batch_status,
     plan_metric_tasks,
     prepare_metric_workflow_outputs,
     read_task_manifest,
@@ -808,9 +809,18 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     manifest = write_task_manifest(tasks, tmp_path / "manifest.json", output_dir=tmp_path / "batches", batch_size=1)
     parsed = read_task_manifest(manifest.manifest_path)
     assert len(parsed.batches) == 1
+    initial_status = metric_manifest_batch_status(parsed)
+    assert initial_status.total_batches == 1
+    assert initial_status.completed_count == 0
+    assert initial_status.missing_batches == (0,)
+    assert bool(initial_status.status_frame().loc[0, "all_complete"]) is False
 
     batch_output = run_manifest_batch(parsed, batch_index=0)
     assert batch_output.exists()
+    completed_status = metric_manifest_batch_status(parsed)
+    assert completed_status.completed_batches == (0,)
+    assert completed_status.missing_count == 0
+    assert completed_status.all_complete
     merged_output = merge_batch_outputs(parsed, tmp_path / "merged.csv")
     merged = pd.read_csv(merged_output)
     assert merged.loc[0, "metric"] == "PGA"
@@ -821,9 +831,42 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
         SlurmSettings(python_command="python", environment_setup=("source activate spatial-vtk",), max_concurrent=2),
     )
     text = script.read_text(encoding="utf-8")
-    assert "#SBATCH --array=0-0%2" in text
+    assert "#SBATCH --array=0%2" in text
     assert "python -m spatial_vtk.metrics.workflow.execution" in text
     assert "source activate spatial-vtk" in text
+
+    partial_manifest = tmp_path / "partial_manifest.json"
+    partial_manifest.write_text(
+        json.dumps(
+            {
+                "manifest_version": 1,
+                "qc_table": "",
+                "tasks": [],
+                "batches": [
+                    {"batch_index": 0, "task_indices": [], "output_path": str(tmp_path / "done_0.csv")},
+                    {"batch_index": 1, "task_indices": [], "output_path": str(tmp_path / "missing_1.csv")},
+                    {"batch_index": 2, "task_indices": [], "output_path": str(tmp_path / "missing_2.csv")},
+                    {"batch_index": 4, "task_indices": [], "output_path": str(tmp_path / "missing_4.csv")},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "done_0.csv").write_text("metric\nPGA\n", encoding="utf-8")
+    partial_status = metric_manifest_batch_status(partial_manifest)
+    assert partial_status.completed_batches == (0,)
+    assert partial_status.missing_batches == (1, 2, 4)
+    incomplete_script = write_metrics_slurm_script(
+        partial_manifest,
+        tmp_path / "run_incomplete_metrics.slurm",
+        SlurmSettings(python_command="python", max_concurrent=3),
+        batch_indices=partial_status.missing_batches,
+        overwrite_batches=True,
+    )
+    incomplete_text = incomplete_script.read_text(encoding="utf-8")
+    assert "#SBATCH --array=1-2,4%3" in incomplete_text
+    assert "Metric selected batches: 3 of 4" in incomplete_text
+    assert "--batch-index $SLURM_ARRAY_TASK_ID --overwrite" in incomplete_text
 
 
 def test_metric_merge_preserves_text_identifiers_for_parquet(tmp_path) -> None:

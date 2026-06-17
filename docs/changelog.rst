@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-17
+   Added metric manifest batch-status reporting and incomplete-only Slurm array
+   generation, then updated large-run Step 3 to skip complete metric arrays and
+   block batch merging until every expected batch output exists.
    Updated the large-run Step 2 full-QC driver to use structured readiness
    checks with ``event_station_records`` as both a required input and freshness
    source, preventing stale QC reuse after metadata regeneration.

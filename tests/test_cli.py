@@ -918,6 +918,20 @@ def test_cli_metrics_workflow_help_exposes_artifact_aliases(capsys):
     assert "Metric task table CSV/parquet path" in run_help
     assert "Metric row output CSV/parquet path" in run_help
 
+    with pytest.raises(SystemExit) as excinfo:
+        main(["metrics", "batch-status", "--help"])
+    assert excinfo.value.code == 0
+    batch_status_help = " ".join(capsys.readouterr().out.split())
+    assert "Metric workflow manifest JSON" in batch_status_help
+    assert "--missing-limit" in batch_status_help
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["metrics", "slurm", "--help"])
+    assert excinfo.value.code == 0
+    slurm_help = " ".join(capsys.readouterr().out.split())
+    assert "--incomplete-only" in slurm_help
+    assert "--overwrite-batches" in slurm_help
+
 
 def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     """Generated metric CLI docs should preserve artifact-named workflow aliases."""
@@ -933,6 +947,10 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     run_section = text.split(".. _cli-svtk-metrics-run:", maxsplit=1)[1].split(
         ".. _cli-svtk-metrics-run-batch:", maxsplit=1
     )[0]
+    batch_status_section = text.split(".. _cli-svtk-metrics-batch-status:", maxsplit=1)[1].split(
+        ".. _cli-svtk-metrics-cache-waveforms:", maxsplit=1
+    )[0]
+    slurm_section = text.split(".. _cli-svtk-metrics-slurm:", maxsplit=1)[1]
 
     assert "``--observed-output``, ``--observed-inventory-output``" in inventories_section
     assert "``--synthetic-output``, ``--synthetic-inventory-output``" in inventories_section
@@ -945,6 +963,10 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     assert "``--output``, ``--metric-rows``" in run_section
     assert "Metric task table CSV/parquet path" in run_section
     assert "Metric row output CSV/parquet path" in run_section
+    assert "``--missing-limit``" in batch_status_section
+    assert "Metric workflow manifest JSON" in batch_status_section
+    assert "``--incomplete-only``" in slurm_section
+    assert "``--overwrite-batches``" in slurm_section
 
 
 def test_generated_cli_reference_names_metrics_outputs_aliases():
@@ -2826,6 +2848,60 @@ metrics:
     assert "Wrote metric Slurm script" in captured.out
     assert "No job was submitted" in captured.out
     assert script.exists()
+
+
+def test_cli_metrics_batch_status_and_incomplete_slurm(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    manifest = tmp_path / "manifest.json"
+    script = tmp_path / "run_metrics.slurm"
+    settings = tmp_path / "svtk-cli-config.json"
+    completed = tmp_path / "batch_0.csv"
+    completed.write_text("metric\nPGA\n", encoding="utf-8")
+    config.write_text(
+        """
+project:
+  root_dir: .
+metrics:
+  slurm:
+    python_command: python
+    max_concurrent: 2
+""",
+        encoding="utf-8",
+    )
+    manifest.write_text(
+        json.dumps(
+            {
+                "manifest_version": 1,
+                "qc_table": "",
+                "tasks": [],
+                "batches": [
+                    {"batch_index": 0, "task_indices": [], "output_path": str(completed)},
+                    {"batch_index": 1, "task_indices": [], "output_path": str(tmp_path / "batch_1.csv")},
+                    {"batch_index": 2, "task_indices": [], "output_path": str(tmp_path / "batch_2.csv")},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(settings))
+    assert main(["config", "set", str(config)]) == 0
+
+    assert main(["metrics", "batch-status", "--manifest", str(manifest), "--missing-limit", "1"]) == 0
+
+    status_output = capsys.readouterr().out
+    assert "total_batches: 3" in status_output
+    assert "completed_batches: 1" in status_output
+    assert "missing_batches: 2" in status_output
+    assert "missing_outputs_truncated: true" in status_output
+
+    assert main(["metrics", "slurm", "--manifest", str(manifest), "--output", str(script), "--incomplete-only", "--overwrite-batches"]) == 0
+
+    slurm_output = capsys.readouterr().out
+    assert "Wrote metric Slurm script" in slurm_output
+    text = script.read_text(encoding="utf-8")
+    assert "#SBATCH --array=1-2%2" in text
+    assert "Metric selected batches: 2 of 3" in text
+    assert "--batch-index $SLURM_ARRAY_TASK_ID --overwrite" in text
 
 
 def test_cli_metrics_slurm_uses_configured_defaults(tmp_path, capsys):

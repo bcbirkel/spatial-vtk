@@ -7,6 +7,7 @@ Command Tree
 ------------
 
 - :ref:`svtk metrics <cli-svtk-metrics>`
+   - :ref:`svtk metrics batch-status <cli-svtk-metrics-batch-status>`
    - :ref:`svtk metrics cache-waveforms <cli-svtk-metrics-cache-waveforms>`
    - :ref:`svtk metrics estimate <cli-svtk-metrics-estimate>`
    - :ref:`svtk metrics inventories <cli-svtk-metrics-inventories>`
@@ -25,7 +26,7 @@ Command Details
 .. code-block:: bash
 
    svtk metrics [-h]
-                    {inventories,plan,estimate,run,run-batch,cache-waveforms,merge-batches,outputs,slurm}
+                    {inventories,plan,estimate,run,run-batch,batch-status,cache-waveforms,merge-batches,outputs,slurm}
                     ...
 
 .. rubric:: Parameters
@@ -42,6 +43,54 @@ Command Details
      - No
      -
      - show this help message and exit
+
+.. _cli-svtk-metrics-batch-status:
+
+svtk metrics batch-status
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. rubric:: Usage
+
+.. code-block:: bash
+
+   svtk metrics batch-status [-h] [--manifest MANIFEST] [--config CONFIG]
+                                 [--run-scenario RUN_SCENARIO]
+                                 [--missing-limit MISSING_LIMIT] [--json]
+
+.. rubric:: Parameters
+
+.. list-table::
+   :header-rows: 1
+   :widths: 26 13 14 47
+
+   * - Name
+     - Required
+     - Default / choices
+     - Description
+   * - ``-h``, ``--help``
+     - No
+     -
+     - show this help message and exit
+   * - ``--manifest``
+     - No
+     -
+     - Value: ``manifest``. Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.
+   * - ``--config``
+     - No
+     -
+     - Value: ``config``. Spatial-VTK config used to resolve the default manifest path.
+   * - ``--run-scenario``
+     - No
+     -
+     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+   * - ``--missing-limit``
+     - No
+     - Default: ``20``
+     - Value: ``missing_limit``. Maximum missing batch outputs to list. Use -1 for all.
+   * - ``--json``
+     - No
+     - Flag
+     - Print JSON instead of YAML.
 
 .. _cli-svtk-metrics-cache-waveforms:
 
@@ -608,7 +657,7 @@ svtk metrics slurm
 
    svtk metrics slurm [-h] [--manifest MANIFEST] [--output OUTPUT]
                           [--config CONFIG] [--run-scenario RUN_SCENARIO]
-                          [--submit]
+                          [--submit] [--incomplete-only] [--overwrite-batches]
 
 .. rubric:: Parameters
 
@@ -644,3 +693,11 @@ svtk metrics slurm
      - No
      - Flag
      - Submit the script with sbatch after writing it.
+   * - ``--incomplete-only``
+     - No
+     - Flag
+     - Only include manifest batches whose output files are missing.
+   * - ``--overwrite-batches``
+     - No
+     - Flag
+     - Pass --overwrite to each metric batch task in the Slurm array.

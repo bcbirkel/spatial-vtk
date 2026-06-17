@@ -58,6 +58,82 @@ class MetricWorkflowManifest:
     qc_table: str = ""
 
 
+@dataclass(frozen=True)
+class MetricManifestBatchStatus:
+    """Completion status for the batch outputs listed in one metric manifest."""
+
+    manifest_path: Path
+    total_batches: int
+    completed_batches: tuple[int, ...]
+    missing_batches: tuple[int, ...]
+    completed_outputs: tuple[Path, ...]
+    missing_outputs: tuple[Path, ...]
+
+    @property
+    def completed_count(self) -> int:
+        """Return the number of completed batch outputs."""
+
+        return len(self.completed_batches)
+
+    @property
+    def missing_count(self) -> int:
+        """Return the number of missing batch outputs."""
+
+        return len(self.missing_batches)
+
+    @property
+    def all_complete(self) -> bool:
+        """Return whether every manifest batch output exists."""
+
+        return self.missing_count == 0
+
+    @property
+    def completion_fraction(self) -> float:
+        """Return completed batch fraction in the closed interval [0, 1]."""
+
+        if self.total_batches <= 0:
+            return 1.0
+        return float(self.completed_count) / float(self.total_batches)
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a one-row dataframe suitable for notebook display."""
+
+        return pd.DataFrame(
+            [
+                {
+                    "manifest": str(self.manifest_path),
+                    "total_batches": int(self.total_batches),
+                    "completed_batches": int(self.completed_count),
+                    "missing_batches": int(self.missing_count),
+                    "completion_percent": round(100.0 * self.completion_fraction, 3),
+                    "all_complete": bool(self.all_complete),
+                }
+            ]
+        )
+
+    def to_dict(self, *, missing_limit: int | None = 20) -> dict[str, Any]:
+        """Return JSON/YAML-friendly status details."""
+
+        limit = None if missing_limit is None or int(missing_limit) < 0 else int(missing_limit)
+        missing_outputs = [str(path) for path in self.missing_outputs]
+        if limit is not None:
+            missing_outputs = missing_outputs[:limit]
+        missing_batch_indices = list(self.missing_batches)
+        if limit is not None:
+            missing_batch_indices = missing_batch_indices[:limit]
+        return {
+            "manifest": str(self.manifest_path),
+            "total_batches": int(self.total_batches),
+            "completed_batches": int(self.completed_count),
+            "missing_batches": int(self.missing_count),
+            "completion_percent": round(100.0 * self.completion_fraction, 3),
+            "all_complete": bool(self.all_complete),
+            "missing_batch_indices": missing_batch_indices,
+            "missing_outputs": missing_outputs,
+            "missing_outputs_truncated": bool(limit is not None and len(self.missing_outputs) > limit),
+        }
+
+
 def chunk_tasks(tasks: list[MetricWorkflowTask], *, chunk_size: int) -> list[list[MetricWorkflowTask]]:
     """Split tasks into fixed-size chunks.
 
@@ -163,6 +239,33 @@ def read_task_manifest(path: str | Path) -> MetricWorkflowManifest:
         tasks=tasks,
         batches=batches,
         qc_table=str(payload.get("qc_table", "")),
+    )
+
+
+def metric_manifest_batch_status(manifest: MetricWorkflowManifest | str | Path) -> MetricManifestBatchStatus:
+    """Return completion status for all batch outputs listed in a manifest."""
+
+    parsed = read_task_manifest(manifest) if not isinstance(manifest, MetricWorkflowManifest) else manifest
+    completed_batches: list[int] = []
+    missing_batches: list[int] = []
+    completed_outputs: list[Path] = []
+    missing_outputs: list[Path] = []
+    for batch in parsed.batches:
+        batch_index = int(batch["batch_index"])
+        output_path = Path(batch["output_path"]).expanduser()
+        if output_path.exists():
+            completed_batches.append(batch_index)
+            completed_outputs.append(output_path)
+        else:
+            missing_batches.append(batch_index)
+            missing_outputs.append(output_path)
+    return MetricManifestBatchStatus(
+        manifest_path=parsed.manifest_path,
+        total_batches=len(parsed.batches),
+        completed_batches=tuple(completed_batches),
+        missing_batches=tuple(missing_batches),
+        completed_outputs=tuple(completed_outputs),
+        missing_outputs=tuple(missing_outputs),
     )
 
 
@@ -380,7 +483,7 @@ def _csv_text_columns(path: Path) -> list[str]:
 def _completed_batch_count(manifest: MetricWorkflowManifest) -> int:
     """Count manifest batch outputs that already exist."""
 
-    return sum(1 for batch in manifest.batches if Path(batch["output_path"]).expanduser().exists())
+    return metric_manifest_batch_status(manifest).completed_count
 
 
 def _workflow_elapsed_seconds(manifest: MetricWorkflowManifest) -> float:
@@ -448,9 +551,11 @@ def main(argv: list[str] | None = None) -> int:
 
 __all__ = [
     "MANIFEST_VERSION",
+    "MetricManifestBatchStatus",
     "MetricWorkflowManifest",
     "chunk_tasks",
     "merge_batch_outputs",
+    "metric_manifest_batch_status",
     "read_task_manifest",
     "run_manifest_batch",
     "write_task_manifest",

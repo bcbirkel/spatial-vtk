@@ -563,6 +563,7 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
             "inventory_readiness.status_frame()",
             "manifest_readiness.status_frame()",
             "merge_readiness.status_frame()",
+            "batch_status.status_frame()",
         ],
         "large_run/step_07_large_run_dashboards.ipynb": ["dashboard_readiness.status_frame()"],
     }
@@ -572,6 +573,24 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
         missing = [snippet for snippet in snippets if snippet not in source]
         assert not missing, f"{notebook_path.relative_to(repo_root)} missing readiness displays: {missing}"
+
+
+def test_large_run_step03_uses_metric_batch_status_before_submit_and_merge() -> None:
+    """Metric Slurm and merge cells should be gated by manifest batch completion."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "from spatial_vtk.metrics.workflow import metric_manifest_batch_status" in source
+    assert "batch_status = metric_manifest_batch_status(metric_manifest_path)" in source
+    assert "All metric batch outputs already exist; skipping metric Slurm submission." in source
+    assert 'cmd.append("--incomplete-only")' in source
+    assert 'cmd.append("--overwrite-batches")' in source
+    assert "if not batch_status.all_complete:" in source
+    assert "Metric batches are incomplete:" in source
+    assert "sources=[metric_manifest_path, *batch_status.completed_outputs]" in source
 
 
 def test_large_run_step02_uses_qc_availability_output() -> None:
