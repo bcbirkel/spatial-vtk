@@ -96,6 +96,7 @@ def prepare_dashboard_metric_table(df: pd.DataFrame, *, residual_mode: str = "lo
     from spatial_vtk.metrics.calculate.enrich import prepare_metric_residual_table
 
     out = prepare_metric_residual_table(df, residual_mode=residual_mode)
+    out = _normalize_dashboard_coordinate_aliases(out)
     for column in ["model", "metric", "band", "station", "event_id"]:
         if column not in out.columns:
             out[column] = "unknown"
@@ -276,3 +277,23 @@ def _summary_value_series(df: pd.DataFrame) -> pd.Series:
     if numeric:
         return pd.to_numeric(df[numeric[0]], errors="coerce")
     return pd.Series(np.nan, index=df.index, dtype=float)
+
+
+def _normalize_dashboard_coordinate_aliases(df: pd.DataFrame) -> pd.DataFrame:
+    """Copy accepted dashboard coordinate aliases into canonical summary columns."""
+
+    out = df.copy()
+    aliases = {
+        "sta_lat": ("station_lat", "station_latitude"),
+        "sta_lon": ("station_lon", "station_longitude"),
+        "event_lat": ("event_latitude",),
+        "event_lon": ("event_longitude",),
+    }
+    for target, candidates in aliases.items():
+        if target in out.columns and pd.to_numeric(out[target], errors="coerce").notna().any():
+            continue
+        for candidate in candidates:
+            if candidate in out.columns:
+                out[target] = out[candidate]
+                break
+    return out

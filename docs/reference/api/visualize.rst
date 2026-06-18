@@ -232,6 +232,10 @@ missing map coordinates, or value columns that exist but contain no finite
 data. Use ``preview_dashboard_summary_tables`` for small, bounded samples of
 the configured summary tables after readiness checks pass; it keeps large-run
 notebooks from loading whole dashboard inputs just to inspect the first rows.
+Dashboard summary writing normalizes accepted station/event coordinate aliases
+such as ``station_lat`` / ``station_lon`` and ``event_latitude`` /
+``event_longitude`` into the canonical map columns used by station and event
+dashboard tabs.
 Dashboard summary tables use ``n`` for contributing metric row counts and
 include ``event_count`` / ``station_count`` where those identifiers are
 available, so notebook previews and dashboard tables can show how much data is

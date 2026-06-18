@@ -307,6 +307,37 @@ def test_dashboard_summaries_preserve_spectral_period_groups() -> None:
     assert station_summary.loc[station_summary["metric"].eq("PSA"), "period_s"].nunique(dropna=True) == 2
 
 
+def test_dashboard_summaries_normalize_coordinate_aliases_for_maps() -> None:
+    """Dashboard summaries should preserve accepted coordinate aliases for map tabs."""
+
+    rows = pd.DataFrame(
+        {
+            "model": ["m1"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "component": ["R"],
+            "station": ["STA"],
+            "event_id": ["ev1"],
+            "station_lat": [34.1],
+            "station_lon": [-118.2],
+            "event_latitude": [33.9],
+            "event_longitude": [-118.0],
+            "distance_km": [25.0],
+            "azimuth_deg": [90.0],
+            "log2_residual": [0.5],
+        }
+    )
+
+    summaries = validate_dashboard_tables(build_dashboard_summaries(rows))
+    station_summary = summaries["station_rollup"]
+    event_summary = summaries["event_rollup"]
+
+    assert station_summary["sta_lat"].tolist() == [34.1]
+    assert station_summary["sta_lon"].tolist() == [-118.2]
+    assert event_summary["event_lat"].tolist() == [33.9]
+    assert event_summary["event_lon"].tolist() == [-118.0]
+
+
 def test_dashboard_metric_dataset_loader_projects_requested_columns(tmp_path) -> None:
     """Dashboard metric loading should avoid materializing unused wide columns."""
 
