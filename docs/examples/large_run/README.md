@@ -28,6 +28,11 @@ checks that tutorial notebooks have no saved execution state, private absolute
 paths, shell/CLI workflow cells, implementation plotting imports, fixed run
 layout paths, raw output-path/table reads, or notebook-local dataframe
 filtering and joins that should live in package helpers.
+Use public plotting imports such as `from spatial_vtk.metrics.plot import ...`,
+`from spatial_vtk.spatial.map import ...`, and
+`from spatial_vtk.spatial.plot import ...`; implementation imports such as
+`from spatial_vtk.metrics.plot.periods import ...` or
+`import spatial_vtk.spatial.map.metrics as ...` are rejected by preflight.
 Run `python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run`
 for the same source-contract and example-data checks without notebook runtime
 dependencies.

@@ -100,6 +100,14 @@ NOTEBOOK_CONTRACT_FORBIDDEN_LINE_PATTERNS = (
     re.compile(r"^\s*%%bash\b", re.MULTILINE),
     re.compile(r"\[\s*['\"]svtk['\"]\s*,"),
 )
+NOTEBOOK_CONTRACT_FORBIDDEN_IMPORT_PATTERNS = (
+    re.compile(r"^\s*from\s+spatial_vtk\.metrics\.plot\.[\w.]+\s+import\b", re.MULTILINE),
+    re.compile(r"^\s*import\s+spatial_vtk\.metrics\.plot\.[\w.]+(?:\s+as\s+\w+)?", re.MULTILINE),
+    re.compile(r"^\s*from\s+spatial_vtk\.spatial\.map\.[\w.]+\s+import\b", re.MULTILINE),
+    re.compile(r"^\s*import\s+spatial_vtk\.spatial\.map\.[\w.]+(?:\s+as\s+\w+)?", re.MULTILINE),
+    re.compile(r"^\s*from\s+spatial_vtk\.spatial\.plot\.[\w.]+\s+import\b", re.MULTILINE),
+    re.compile(r"^\s*import\s+spatial_vtk\.spatial\.plot\.[\w.]+(?:\s+as\s+\w+)?", re.MULTILINE),
+)
 NOTEBOOK_CONTRACT_PRIVATE_PATH_PATTERNS = (
     re.compile(r"(?<![\w.-])/(?:Users|home|home\d*|project\d*|scratch|work|lustre)/[^\s'\"),\]]+"),
     re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
@@ -333,6 +341,9 @@ def tutorial_notebook_contract_violations(notebooks: list[Path], *, repo_root: P
             for pattern in NOTEBOOK_CONTRACT_FORBIDDEN_LINE_PATTERNS:
                 if pattern.search(source):
                     violations.append(f"{cell_label}: forbidden shell/CLI workflow pattern {pattern.pattern!r}")
+            for pattern in NOTEBOOK_CONTRACT_FORBIDDEN_IMPORT_PATTERNS:
+                if pattern.search(source):
+                    violations.append(f"{cell_label}: forbidden implementation import pattern {pattern.pattern!r}")
             for pattern in NOTEBOOK_CONTRACT_PRIVATE_PATH_PATTERNS:
                 match = pattern.search(source)
                 if match:

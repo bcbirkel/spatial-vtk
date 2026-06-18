@@ -294,6 +294,7 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
                             "import subprocess\n",
                             "!svtk metrics plan\n",
                             "from spatial_vtk.metrics.plot.periods import plot_period_spectra\n",
+                            "import spatial_vtk.spatial.map.metrics as metric_maps\n",
                             "metrics = pd.read_csv('/Users/example/project/metrics.csv')\n",
                             "path = resolve_output_path('metrics_long')\n",
                             "outputs = output_group_namespace('step_03_metrics')\n",
@@ -339,6 +340,8 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert "pd.read_" in combined
     assert "resolve_output_path(" in combined
     assert "from spatial_vtk.metrics.plot." in combined
+    assert "forbidden implementation import pattern" in combined
+    assert "spatial_vtk\\.spatial\\.map\\." in combined
     assert "output_group_namespace" in combined
     assert "step_outputs[" in combined
     assert ".loc[" in combined
@@ -974,8 +977,11 @@ def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
     notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
     forbidden = (
         "from spatial_vtk.metrics.plot.",
+        "import spatial_vtk.metrics.plot.",
         "from spatial_vtk.spatial.map.",
+        "import spatial_vtk.spatial.map.",
         "from spatial_vtk.spatial.plot.",
+        "import spatial_vtk.spatial.plot.",
     )
     assert notebooks
     for notebook_path in notebooks:
