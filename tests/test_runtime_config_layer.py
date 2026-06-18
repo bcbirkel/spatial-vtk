@@ -250,6 +250,8 @@ def test_default_output_and_figure_paths_are_named(tmp_path):
     assert figures.retention_summary == tmp_path / "figures" / "retention_summary.png"
     assert figures.qc_drop_cause_diagnostics_overlap == tmp_path / "figures" / "qc_drop_cause_diagnostics_overlap.png"
     assert figures.station_event_context == tmp_path / "figures" / "station_event_context.png"
+    assert figures.observed_synthetic_record_section == tmp_path / "figures" / "observed_synthetic_record_section.png"
+    assert figures.waveform_overlay_matrix == tmp_path / "figures" / "waveform_overlay_matrix.png"
 
 
 def test_notebook_timing_config_and_formatter(tmp_path):
@@ -1280,7 +1282,17 @@ outputs:
 
     geojson_paths = output_group_paths("step_05_geojson", cfg=cfg)
     assert geojson_paths["corridors_path"] == tmp_path / "run_outputs" / "tables" / "corridors.parquet"
+    assert geojson_paths["geojson_polygons_map_path"] == tmp_path / "run_outputs" / "figures" / "geojson_polygons_map.png"
     assert geojson_paths["corridor_map_path"] == tmp_path / "run_outputs" / "figures" / "corridor_map.png"
+    assert geojson_paths["region_boxplot_figure_path"] == tmp_path / "run_outputs" / "figures" / "boxplot.png"
+    assert geojson_paths["station_metric_map_path"] == tmp_path / "run_outputs" / "figures" / "station_residual_map.png"
+    assert geojson_paths["record_section_figure_path"] == tmp_path / "run_outputs" / "figures" / "observed_synthetic_record_section.png"
+
+    geojson_group = output_group("step_05_geojson", cfg=cfg)
+    assert geojson_group.figure_path(
+        "corridor_map_path",
+        stem_parts=("step 05", "corridor", "through boundary"),
+    ) == tmp_path / "run_outputs" / "figures" / "step_05_corridor_through_boundary.png"
 
     plotting_paths = output_group_paths("step_06_plotting", cfg=cfg)
     assert plotting_paths["station_event_waveform_map_path"] == tmp_path / "run_outputs" / "figures" / "station_event_waveform_map.png"

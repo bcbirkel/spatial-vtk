@@ -1652,13 +1652,21 @@ def test_step05_uses_geojson_preview_helper() -> None:
     assert "from spatial_vtk.spatial import (" in source
     assert "from spatial_vtk.spatial.map import" in source
     assert "from spatial_vtk.spatial.plot import" in source
+    assert "step_outputs = output_group(\"step_05_geojson\", cfg=cfg)" in source
+    assert "plotting_tables = step_outputs.load_tables(" in source
+    assert "step_outputs.figure_path(" in source
+    assert "geojson_polygons_map_path" in source
+    assert "region_boxplot_figure_path" in source
+    assert "station_metric_map_path" in source
+    assert "corridor_map_path" in source
+    assert "record_section_figure_path" in source
     assert "from spatial_vtk.spatial.calculate import" not in source
     assert "from spatial_vtk.spatial.map." not in source
     assert "from spatial_vtk.spatial.plot." not in source
     assert "geojson_polygon_preview_table(" in source
     assert "load_configured_input_paths(" in source
     assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" in source
-    assert "output_group(\"step_05_geojson\", cfg=cfg).load_tables(" in source
+    assert "figure_dir /" not in source
     assert "load_output_table(" not in source
     assert "load_geojson_polygons(" not in source
     assert "region_preview = pd.DataFrame(" not in source

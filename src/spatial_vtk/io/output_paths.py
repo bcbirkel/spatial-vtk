@@ -808,7 +808,11 @@ OUTPUT_GROUPS: dict[str, tuple[OutputArtifact, ...]] = {
     "step_05_geojson": (
         OutputArtifact("geojson_summaries_path", "geojson_region_summaries"),
         OutputArtifact("corridors_path", "corridors"),
+        OutputArtifact("geojson_polygons_map_path", "geojson_polygons_map", kind="figure", required=False),
         OutputArtifact("corridor_map_path", "corridor_map", kind="figure", required=False),
+        OutputArtifact("region_boxplot_figure_path", "boxplot", kind="figure", required=False),
+        OutputArtifact("station_metric_map_path", "station_metric_map", kind="figure", required=False),
+        OutputArtifact("record_section_figure_path", "observed_synthetic_record_section", kind="figure", required=False),
         OutputArtifact("metrics_long_path", "metrics_long"),
         OutputArtifact("path_table_path", "path_table"),
         OutputArtifact("metrics_enriched_path", "metrics_enriched"),

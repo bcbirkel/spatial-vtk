@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-18
+   Registered missing waveform visualization figure defaults for record
+   sections, observed/synthetic record sections, waveform overlay matrices,
+   and event radial trace sections. Rewired the standard Step 5 GeoJSON and
+   corridor notebook to use ``OutputGroup.figure_path()`` for GeoJSON maps,
+   regional boxplots, station residual maps, corridor maps, and boundary
+   record-section outputs instead of hand-joining ``figure_dir`` paths.
    Registered the standard Step 6 plotting figures on the ``step_06_plotting``
    output group and rewired the Step 6 additional plotting notebook to use
    ``OutputGroup.figure_path()`` for waveform maps, pattern similarity,

@@ -172,6 +172,18 @@ figures:
   event_trace_comparison:
     filename: event_trace_comparison.png
     description: Observed/synthetic event trace comparison
+  record_section:
+    filename: record_section.png
+    description: Waveform record section
+  observed_synthetic_record_section:
+    filename: observed_synthetic_record_section.png
+    description: Observed/synthetic waveform record section
+  waveform_overlay_matrix:
+    filename: waveform_overlay_matrix.png
+    description: Waveform overlay matrix
+  event_radial_trace_section:
+    filename: event_radial_trace_section.png
+    description: Event radial trace section
   drop_cause_diagnostics:
     filename: drop_cause_diagnostics.png
     description: QC drop-cause diagnostics
