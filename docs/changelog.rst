@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-18
+   Simplified the large-run Step 2 QC notebook so
+   ``run_qc_inventory_from_config`` resolves configured event-station and QC
+   output paths itself, rather than passing registry paths back through
+   notebook-local keyword arguments.
    Made ``SpatialFigureContext`` route Step 4 metric-field and event-centered
    figure items by explicit owner tags instead of dataframe column-subset
    inference. This prevents large-run spatial figures from using the wrong

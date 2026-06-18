@@ -1669,6 +1669,10 @@ def test_large_run_step02_overlap_sidecar_has_separate_rebuild_gate() -> None:
     assert 'sources=("event_station_path",)' in source
     assert "run_notebook_step_if_needed(" in source
     assert "Full QC outputs are current; skipping QC Slurm submission." in source
+    assert '"event_station_records": str(step_outputs.event_station_path)' not in source
+    assert '"trace_qc_output": str(step_outputs.trace_qc_path)' not in source
+    assert '"qc_inventory_output": str(step_outputs.qc_inventory_path)' not in source
+    assert '"qc_inventory_overlap_output": str(step_outputs.qc_inventory_overlap_path)' not in source
     assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, overwrite=OVERWRITE)" not in source
     assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, qc_inventory_overlap_path" not in source
     assert "overlap_readiness = step_outputs.readiness(" in source
