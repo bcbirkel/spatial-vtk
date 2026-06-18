@@ -65,6 +65,7 @@ docs = [
 dashboard = []
 notebooks = [
   "ipykernel>=6.29",
+  "ipython>=8.24",
   "nbclient>=0.10",
   "nbformat>=5.10",
 ]
