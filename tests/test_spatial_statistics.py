@@ -1196,6 +1196,47 @@ def test_sampled_station_map_sidecar_filters_source_rows_to_plotted_groups(tmp_p
     assert metadata["aggregation_input_row_count"] == len(rows)
 
 
+def test_metric_figure_context_status_flags_legacy_psa_passband_rows(tmp_path: Path) -> None:
+    """Notebook status should expose legacy passband-scoped PSA rows before plotting."""
+
+    rows = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1", "e2"],
+            "station": ["STA", "STA", "STB"],
+            "sta_lon": [-118.0, -118.0, -117.9],
+            "sta_lat": [34.0, 34.0, 34.1],
+            "metric": ["PSA", "PSA", "PSA"],
+            "band": ["", "1-2 sec", "2-3 sec"],
+            "component": ["R", "R", "R"],
+            "model": ["m1", "m1", "m1"],
+            "period_s": [1.0, 1.0, 2.0],
+            "log2_residual": [0.1, 0.2, 0.3],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        rows,
+        tmp_path / "figures",
+        make_figures=True,
+        value_col="log2_residual",
+    )
+
+    spectral = context.spectral_metric_contract_status().set_index("metric")
+    assert spectral.loc["PSA", "row_count"] == 3
+    assert spectral.loc["PSA", "broadband_row_count"] == 1
+    assert spectral.loc["PSA", "legacy_passband_row_count"] == 2
+    assert spectral.loc["PSA", "period_count"] == 2
+    assert spectral.loc["PSA", "status"] == "mixed_passband_rows"
+    assert "Rebuild metric rows" in spectral.loc["PSA", "message"]
+
+    status = context.status_frame().set_index("name")["value"]
+    assert status.loc["spectral_contract_status"] == "needs_rebuild"
+    assert "passband-scoped spectral records" in status.loc["spectral_contract_message"]
+    assert status.loc["psa_metric_rows"] == 3
+    assert status.loc["psa_broadband_rows"] == 1
+    assert status.loc["psa_legacy_passband_rows"] == 2
+    assert status.loc["psa_period_count"] == 2
+
+
 def test_psa_period_sheet_existing_file_writes_panel_source_sidecars(tmp_path: Path) -> None:
     """Existing PSA sheets should refresh sidecars for every oscillator panel."""
 

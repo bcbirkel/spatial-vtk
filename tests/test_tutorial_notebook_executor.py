@@ -1660,6 +1660,7 @@ def test_large_run_step03_metric_figures_are_auditable_station_aggregations() ->
     assert "METRIC_FIGURE_SETTINGS = notebook_figure_settings(" in source
     assert "STATION_AGGREGATION = METRIC_FIGURE_SETTINGS.station_aggregation" in source
     assert "**METRIC_FIGURE_SETTINGS.context_kwargs(include_station_aggregation=True)" in source
+    assert "display(metric_plot_context.spectral_metric_contract_status())" in source
     assert "if metric_plot_context.ready:" in source
     assert "MAKE_METRIC_FIGURES and step_outputs.metrics_long_path.exists()" not in source
     assert "PLOT_VALUE_COL in metrics_for_figures.columns" not in source

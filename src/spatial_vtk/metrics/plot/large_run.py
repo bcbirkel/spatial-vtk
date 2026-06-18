@@ -28,6 +28,11 @@ TARGET_METRIC_SPECS = (
     {"key": "cav", "label": "CAV", "aliases": ("CAV", "Cumulative absolute velocity")},
 )
 DEFAULT_SCORE_TREND_COLUMNS = ("anderson_2004_gof", "olsen_mayhew_gof", "score")
+BROADBAND_PASSBAND_LABELS = frozenset({"", "all", "broadband", "none", "nan"})
+SPECTRAL_CONTRACT_METRICS = (
+    ("PSA", ("PSA", "Pseudo-spectral acceleration", "Pseudo spectral acceleration")),
+    ("FAS", ("FAS", "Fourier amplitude spectrum", "Fourier amplitude spectra")),
+)
 
 
 @dataclass
@@ -251,7 +256,113 @@ class MetricFigureContext:
             ("sidecar_dir", str(self.sidecar_output_dir) if self.write_sidecars else None),
             ("sidecar_rows", "all" if self.sidecar_rows is None or self.sidecar_rows <= 0 else int(self.sidecar_rows)),
         ]
+        spectral_status = self.spectral_metric_contract_status()
+        if not spectral_status.empty:
+            aggregate = _aggregate_spectral_contract_status(spectral_status)
+            rows.extend(
+                [
+                    ("spectral_contract_status", aggregate["status"]),
+                    ("spectral_contract_message", aggregate["message"]),
+                ]
+            )
+            for _, spectral_row in spectral_status.iterrows():
+                metric_key = slug(str(spectral_row["metric"]))
+                rows.extend(
+                    [
+                        (f"{metric_key}_metric_rows", int(spectral_row["row_count"])),
+                        (f"{metric_key}_broadband_rows", int(spectral_row["broadband_row_count"])),
+                        (f"{metric_key}_legacy_passband_rows", int(spectral_row["legacy_passband_row_count"])),
+                        (f"{metric_key}_period_count", int(spectral_row["period_count"])),
+                    ]
+                )
         return pd.DataFrame(rows, columns=["name", "value"])
+
+    def spectral_metric_contract_status(self) -> pd.DataFrame:
+        """Return PSA/FAS broadband-passband contract status for notebook audits.
+
+        Spectral metrics should be calculated once per event/station/component
+        and model with a blank passband, then split by oscillator period in
+        ``period_s``. This status frame lets notebooks surface legacy
+        passband-scoped PSA/FAS rows before plotting silently skips them.
+        """
+
+        df = self.metrics_for_figures
+        columns = [
+            "metric",
+            "row_count",
+            "broadband_row_count",
+            "legacy_passband_row_count",
+            "period_count",
+            "status",
+            "message",
+        ]
+        if df.empty or self.metric_col is None or self.metric_col not in df.columns:
+            return pd.DataFrame(columns=columns)
+        rows: list[dict[str, Any]] = []
+        for metric, aliases in SPECTRAL_CONTRACT_METRICS:
+            metric_rows = df.loc[self.metric_mask(df, aliases)].copy()
+            row_count = int(len(metric_rows))
+            if row_count == 0:
+                rows.append(
+                    {
+                        "metric": metric,
+                        "row_count": 0,
+                        "broadband_row_count": 0,
+                        "legacy_passband_row_count": 0,
+                        "period_count": 0,
+                        "status": "not_present",
+                        "message": f"{metric} rows are not present in the selected metric figure rows.",
+                    }
+                )
+                continue
+            period_count = (
+                int(pd.to_numeric(metric_rows[self.period_col], errors="coerce").dropna().nunique())
+                if self.period_col is not None and self.period_col in metric_rows.columns
+                else 0
+            )
+            if self.band_col is None or self.band_col not in metric_rows.columns:
+                rows.append(
+                    {
+                        "metric": metric,
+                        "row_count": row_count,
+                        "broadband_row_count": 0,
+                        "legacy_passband_row_count": 0,
+                        "period_count": period_count,
+                        "status": "missing_passband_column",
+                        "message": f"{metric} rows cannot be checked because no passband/band column is loaded.",
+                    }
+                )
+                continue
+            broadband = _broadband_passband_mask(metric_rows[self.band_col])
+            broadband_count = int(broadband.sum())
+            legacy_count = int(row_count - broadband_count)
+            if legacy_count == 0:
+                status = "ok"
+                message = f"{metric} rows use blank/broadband passbands and oscillator periods in period_s."
+            elif broadband_count == 0:
+                status = "legacy_passband_rows"
+                message = (
+                    f"{metric} rows are passband-scoped. Rebuild the metric manifest and metric rows so "
+                    f"{metric} is calculated once with a blank passband and split by period_s."
+                )
+            else:
+                status = "mixed_passband_rows"
+                message = (
+                    f"{metric} rows mix broadband and passband-scoped records. Rebuild metric rows before "
+                    "using large-run spectral plots."
+                )
+            rows.append(
+                {
+                    "metric": metric,
+                    "row_count": row_count,
+                    "broadband_row_count": broadband_count,
+                    "legacy_passband_row_count": legacy_count,
+                    "period_count": period_count,
+                    "status": status,
+                    "message": message,
+                }
+            )
+        return pd.DataFrame(rows, columns=columns)
 
     def dimension_summary_frame(self, *, value_col: str | None = None) -> pd.DataFrame:
         """Summarize selected metric rows by common plotting dimensions.
@@ -1625,8 +1736,7 @@ class MetricFigureContext:
 
         if self.band_col is None or self.band_col not in df.columns:
             return df
-        labels = df[self.band_col].fillna("").astype(str).str.strip().str.lower()
-        broadband = labels.isin(["", "all", "broadband", "none", "nan"])
+        broadband = _broadband_passband_mask(df[self.band_col])
         if broadband.any():
             return df.loc[broadband].copy()
         print("skip PSA: no broadband PSA rows found. Rebuild the metric manifest/metrics so spectral metrics are calculated once with blank passband instead of once per passband.")
@@ -2000,6 +2110,35 @@ def _aggregate_grouped_values(grouped: Any, aggregation: str) -> pd.Series:
     raise ValueError(
         "station_aggregation must be one of: median, mean, min, max, sum, p05, p10, p90, p95"
     )
+
+
+def _broadband_passband_mask(values: pd.Series) -> pd.Series:
+    """Return rows whose passband label represents a broadband spectral row."""
+
+    labels = values.fillna("").astype(str).str.strip().str.lower()
+    return labels.isin(BROADBAND_PASSBAND_LABELS)
+
+
+def _aggregate_spectral_contract_status(status: pd.DataFrame) -> dict[str, str]:
+    """Return one compact status/message for PSA/FAS contract rows."""
+
+    if status.empty:
+        return {"status": "not_checked", "message": "No spectral metric rows were available to check."}
+    work = status.loc[~status["status"].eq("not_present")]
+    if work.empty:
+        return {"status": "not_present", "message": "No PSA/FAS rows are present in the selected metric figure rows."}
+    problem = work.loc[work["status"].isin(["legacy_passband_rows", "mixed_passband_rows"])]
+    if not problem.empty:
+        metrics = ", ".join(problem["metric"].astype(str).tolist())
+        return {
+            "status": "needs_rebuild",
+            "message": f"{metrics} rows include passband-scoped spectral records; rebuild metric manifest and metric rows.",
+        }
+    unchecked = work.loc[work["status"].eq("missing_passband_column")]
+    if not unchecked.empty:
+        metrics = ", ".join(unchecked["metric"].astype(str).tolist())
+        return {"status": "not_checked", "message": f"{metrics} rows could not be checked because no passband column is loaded."}
+    return {"status": "ok", "message": "Spectral metric rows use blank/broadband passbands with oscillator periods in period_s."}
 
 
 def _station_aggregation_attrs(

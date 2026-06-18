@@ -244,6 +244,9 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "writes blank\n``passband`` values for spectral tasks" in text
     assert "older output table contains PSA rows repeated under passband labels" in text
     assert "For PSA, large-run figure helpers compare oscillator periods instead of\nwaveform passbands" in text
+    assert "``status_frame``\n   also includes ``spectral_contract_status``" in text
+    assert "``spectral_metric_contract_status``" in text
+    assert "legacy passband-scoped row counts" in text
     for helper in (
         "plot_band_score_distribution",
         "plot_period_score_distribution",

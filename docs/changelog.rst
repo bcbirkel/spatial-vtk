@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Added PSA/FAS spectral-contract status to ``MetricFigureContext``.
+   ``status_frame()`` now reports aggregate spectral contract status and
+   PSA/FAS broadband versus legacy passband row counts, while
+   ``spectral_metric_contract_status()`` returns a detailed audit table for
+   notebook diagnostics before large-run PSA figures are rendered.
    Documented the broadband spectral-metric contract for large runs. The
    large-run README, Python workflow reference, and metrics API now state that
    ``PSA`` and ``FAS`` are planned as blank-passband spectral tasks with
