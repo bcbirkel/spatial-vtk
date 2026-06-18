@@ -7,6 +7,9 @@ Changelog
    those Python package helpers directly instead of notebook-local manifest and
    metric-row path checks, keeping the notebook focused on workflow steps while
    package code owns the large-run readiness logic.
+   Large-run Step 3 metric figure cells now gate plotting through
+   ``metric_plot_context.ready`` instead of repeating metric-table existence,
+   figure-enable, and value-column checks in every cell.
    Added ``OutputGroup.first_existing_path()`` and
    ``OutputGroup.preview_first_existing_table()`` for ordered fallback table
    previews. Large-run Steps 3, 6, and 7 now preview metric tables through

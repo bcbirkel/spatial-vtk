@@ -174,6 +174,10 @@ the large-run notebooks.
        by package code rather than notebook cells. Use ``render_gate()`` before
        figure blocks that depend on generated tables; it reports disabled
        figures and missing input paths without loading large tables.
+       For large-run metric figures, use
+       ``spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context`` and
+       gate plotting cells on ``metric_plot_context.ready`` rather than
+       repeating metric-table existence and value-column checks in each cell.
    * - ``spatial_vtk.config.notebook_dashboard_launch_commands``
      - Return config-backed dashboard launch settings. Use
        ``metrics_launch_kwargs()`` and ``qc_launch_kwargs()`` with the package
