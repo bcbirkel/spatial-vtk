@@ -21,6 +21,9 @@ Changelog
    dashboard row dataset and dashboard summary tables, matching the clearer
    ``--metrics-dataset-dir`` and ``--dashboard-summary-table-dir`` option
    names.
+   ``dashboard_output_status_frame()`` now includes ``artifact_role`` and
+   ``artifact_label`` columns so notebook status tables can show human-readable
+   dashboard artifact names alongside configured path keys.
    Tutorial docs now show the editable source-checkout install command with
    ``notebooks`` and ``waveforms`` extras immediately before the clean
    notebook execution commands, so fresh-checkout verification does not depend

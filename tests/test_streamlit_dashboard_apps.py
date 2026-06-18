@@ -164,11 +164,15 @@ outputs:
 
     status = dashboard_output_status_frame(cfg=cfg)
     assert "name" in status.columns
+    assert "artifact_role" in status.columns
+    assert "artifact_label" in status.columns
     assert "metrics_dashboard_root" in set(status["name"])
     assert "qc_trace_summary_path" in set(status["name"])
     assert "path_hex_summary_path" in set(status["name"])
     assert "dashboard_tabs" in status.columns
     metrics_dataset_status = status.loc[status["name"].eq("metrics_dashboard_root")].iloc[0]
+    assert metrics_dataset_status["artifact_role"] == "dashboard_dataset"
+    assert metrics_dataset_status["artifact_label"] == "metrics dashboard row dataset"
     assert metrics_dataset_status["dashboard_table"] == "metrics_dashboard_dataset"
     assert metrics_dataset_status["dashboard_tabs"] == "Overview, Compare Models, Stations, Events, Paths"
     assert metrics_dataset_status["ready"] is False
@@ -177,6 +181,8 @@ outputs:
     assert "recognized files" in metrics_dataset_status["message"]
 
     station_status = status.loc[status["name"].eq("station_rollup_summary_path")].iloc[0]
+    assert station_status["artifact_role"] == "dashboard_summary_table"
+    assert station_status["artifact_label"] == "station_rollup dashboard summary table"
     assert station_status["dashboard_table"] == "station_rollup"
     assert station_status["dashboard_tabs"] == "Stations"
     assert "station" in station_status["required_columns"]
@@ -215,6 +221,8 @@ outputs:
     assert "dist_bin_km" in missing_status["missing_columns"]
 
     qc_status = status.loc[status["name"].eq("qc_trace_summary_path")].iloc[0]
+    assert qc_status["artifact_role"] == "qc_table"
+    assert qc_status["artifact_label"] == "QC trace-summary table"
     assert qc_status["dashboard_table"] == "qc_trace_summary"
     assert qc_status["dashboard_tabs"] == "QC Overview, Charts, Review Queue"
     assert qc_status["ready"] is False

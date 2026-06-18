@@ -622,8 +622,11 @@ def _status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
     for name, raw_path in paths.items():
         path = Path(raw_path)
+        artifact_role, artifact_label = _dashboard_artifact_role_and_label(str(name))
         row: dict[str, object] = {
             "name": str(name),
+            "artifact_role": artifact_role,
+            "artifact_label": artifact_label,
             "path": str(path),
             "exists": path.exists(),
             "size_gb": None,
@@ -635,6 +638,28 @@ def _status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
             row["modified"] = _format_mtime(stat.st_mtime)
         rows.append(row)
     return rows
+
+
+def _dashboard_artifact_role_and_label(name: str) -> tuple[str, str]:
+    """Return a human-readable role and label for one dashboard artifact name."""
+
+    summary_suffix = "_summary_path"
+    if name == "metrics_long_path":
+        return "input_table", "metrics_long source table"
+    if name == "qc_trace_summary_path":
+        return "qc_table", "QC trace-summary table"
+    if name == "qc_inventory_path":
+        return "qc_table", "full QC inventory"
+    if name == "qc_inventory_overlap_path":
+        return "qc_table", "observed/synthetic overlap QC inventory"
+    if name == "metrics_dashboard_root":
+        return "dashboard_dataset", "metrics dashboard row dataset"
+    if name == "dashboard_summary_root":
+        return "dashboard_summary_dir", "dashboard summary table directory"
+    if name.endswith(summary_suffix):
+        table_name = name[: -len(summary_suffix)]
+        return "dashboard_summary_table", f"{table_name} dashboard summary table"
+    return "artifact", name
 
 
 def _dashboard_summary_row(row: dict[str, object], *, item_type: str) -> dict[str, object]:

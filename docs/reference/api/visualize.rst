@@ -89,6 +89,11 @@ table used by the QC dashboard. ``ready`` and ``readiness`` values are
 intentionally bounded checks: they inspect paths, schemas, row counts,
 map-coordinate availability, and recognized dashboard value columns without
 loading the full large-run metric inventory.
+The detailed status table includes both the configured path key in ``name``
+and user-facing ``artifact_role`` / ``artifact_label`` columns, so notebooks
+can display "metrics dashboard row dataset" or "station_rollup dashboard
+summary table" instead of relying on internal key names such as
+``metrics_dashboard_root``.
 
 ``write_configured_dashboard_datasets`` replaces the standard dashboard metric
 dataset files and summary tables for the current run. It removes only
