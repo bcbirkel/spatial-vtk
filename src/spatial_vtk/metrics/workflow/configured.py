@@ -18,7 +18,7 @@ from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io import metric_plan_from_config
 from spatial_vtk.io.preprocessing import preprocessed_waveform_metadata_paths
-from spatial_vtk.io.tables import write_table
+from spatial_vtk.io.tables import read_table, write_table
 from spatial_vtk.metrics.workflow.execution import (
     merge_batch_outputs,
     metric_manifest_batch_status,
@@ -32,6 +32,7 @@ from spatial_vtk.metrics.workflow.slurm import (
     write_metrics_slurm_script,
 )
 from spatial_vtk.metrics.workflow.tasks import plan_metric_tasks, tasks_to_frame
+from spatial_vtk.metrics.workflow.tasks import summarize_metric_tasks
 
 
 def build_metric_waveform_inventories_from_config(
@@ -171,6 +172,63 @@ def plan_metric_tasks_from_config(
     return payload
 
 
+def summarize_metric_snapshot_tasks_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    metric_snapshot: str | Path | None = None,
+    task_output: str | Path | None = None,
+    estimate_output: str | Path | None = None,
+    seconds_per_task: float = 60.0,
+    memory_gb_per_task: float = 2.0,
+    cpus_per_task: int = 1,
+    parallel_tasks: int | None = 4,
+) -> dict[str, object]:
+    """Write a task preview and resource estimate from a configured metric snapshot.
+
+    This helper is for tutorial and review workflows that start from an
+    already-calculated metric table rather than waveform inventories. It
+    deduplicates event/station/component/model/passband combinations, writes the
+    standard ``metric_tasks`` and ``metric_task_estimate`` tables, and returns a
+    compact JSON-ready summary.
+    """
+
+    config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    snapshot_path = (
+        Path(metric_snapshot).expanduser()
+        if metric_snapshot is not None
+        else _configured_metric_snapshot(config)
+    )
+    task_path = (
+        Path(task_output).expanduser()
+        if task_output is not None
+        else resolve_output_path("metric_tasks", kind="table", cfg=config, create_parent=True)
+    )
+    estimate_path = (
+        Path(estimate_output).expanduser()
+        if estimate_output is not None
+        else resolve_output_path("metric_task_estimate", kind="table", cfg=config, create_parent=True)
+    )
+    snapshot = read_table(snapshot_path)
+    tasks = _metric_snapshot_task_table(snapshot, config)
+    estimate = summarize_metric_tasks(
+        tasks,
+        seconds_per_task=seconds_per_task,
+        memory_gb_per_task=memory_gb_per_task,
+        cpus_per_task=cpus_per_task,
+        parallel_tasks=parallel_tasks,
+    )
+    write_table(tasks, task_path)
+    write_table(estimate, estimate_path)
+    return {
+        "metric_tasks_path": str(task_path),
+        "metric_task_estimate_path": str(estimate_path),
+        "metric_snapshot_path": str(snapshot_path),
+        "task_count": int(len(tasks)),
+        "estimate_rows": int(len(estimate)),
+    }
+
+
 def write_metrics_slurm_script_from_config(
     *,
     config_path: str | Path | None = None,
@@ -271,7 +329,7 @@ def write_metric_outputs_from_config(
     """Write configured downstream metric tables and dashboard datasets."""
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
-    metric_rows_path = Path(metric_rows).expanduser() if metric_rows is not None else resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
+    metric_rows_path = Path(metric_rows).expanduser() if metric_rows is not None else _configured_metric_rows_or_snapshot(config)
     events_path = Path(events).expanduser() if events is not None else _existing_output_path("prepared_events", config=config)
     stations_path = Path(stations).expanduser() if stations is not None else _existing_output_path("prepared_stations", config=config)
     written = write_metric_outputs(
@@ -335,6 +393,30 @@ def _default_metric_qc_table(config: SpatialVTKConfig, *, no_qc: bool) -> Path |
     return overlap if overlap.exists() else resolve_output_path("qc_inventory", kind="table", cfg=config, create_parent=True)
 
 
+def _configured_metric_snapshot(config: SpatialVTKConfig) -> Path:
+    """Return the configured metric snapshot path."""
+
+    value = config.section("paths.metric_snapshot")
+    if value in (None, ""):
+        raise ValueError(
+            "No metric row table is available and paths.metric_snapshot is not configured. "
+            "Provide metric_rows or configure paths.metric_snapshot."
+        )
+    path = config.path("paths.metric_snapshot", must_exist=True)
+    if path is None:
+        raise ValueError("paths.metric_snapshot did not resolve to a path.")
+    return path
+
+
+def _configured_metric_rows_or_snapshot(config: SpatialVTKConfig) -> Path:
+    """Return configured metric rows, falling back to the tutorial snapshot."""
+
+    metric_rows = resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
+    if metric_rows.exists():
+        return metric_rows
+    return _configured_metric_snapshot(config)
+
+
 def _existing_output_path(key: str, *, config: SpatialVTKConfig) -> Path | None:
     """Return one configured output path only when it already exists."""
 
@@ -342,10 +424,33 @@ def _existing_output_path(key: str, *, config: SpatialVTKConfig) -> Path | None:
     return path if path.exists() else None
 
 
+def _metric_snapshot_task_table(snapshot: Any, config: SpatialVTKConfig) -> Any:
+    """Return deduplicated metric tasks from a metric snapshot dataframe."""
+
+    import pandas as pd
+
+    settings = metrics_settings_from_config(config)
+    df = pd.DataFrame(snapshot).copy()
+    rename = {"passband": "band", "simulation_band": "band", "simulation_model": "model", "station_name": "station"}
+    df = df.rename(columns={key: value for key, value in rename.items() if key in df.columns and value not in df.columns})
+    key_columns = ["event_id", "station", "component", "model", "band"]
+    missing = [column for column in key_columns if column not in df.columns]
+    if missing:
+        raise ValueError(f"Metric snapshot is missing task columns: {missing}")
+    tasks = df.loc[:, key_columns].drop_duplicates().copy()
+    tasks["passband"] = tasks["band"]
+    tasks["metrics"] = ", ".join(settings.metrics)
+    tasks["transforms"] = ", ".join(settings.transforms)
+    tasks["output_mode"] = settings.output_mode
+    tasks["use_qc"] = True
+    return tasks
+
+
 __all__ = [
     "build_metric_waveform_inventories_from_config",
     "merge_metric_batches_from_config",
     "plan_metric_tasks_from_config",
+    "summarize_metric_snapshot_tasks_from_config",
     "write_metric_outputs_from_config",
     "write_metrics_slurm_script_from_config",
 ]

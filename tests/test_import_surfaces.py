@@ -157,6 +157,7 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.qc.run_qc_summary_workflow_from_config",
         "spatial_vtk.metrics.build_metric_waveform_inventories_from_config",
         "spatial_vtk.metrics.plan_metric_tasks_from_config",
+        "spatial_vtk.metrics.summarize_metric_snapshot_tasks_from_config",
         "spatial_vtk.metrics.write_metrics_slurm_script_from_config",
         "spatial_vtk.metrics.merge_metric_batches_from_config",
         "spatial_vtk.metrics.write_metric_outputs_from_config",
@@ -193,6 +194,7 @@ def test_package_overview_points_to_public_workflow_helpers():
         "``write_qc_inventory_overlap_from_config``",
         "Start with public helpers from ``spatial_vtk.metrics``",
         "``plan_metric_tasks_from_config``",
+        "``summarize_metric_snapshot_tasks_from_config``",
         "``write_metric_outputs_from_config``",
     ]
     for snippet in required:

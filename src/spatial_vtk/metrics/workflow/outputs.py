@@ -168,6 +168,7 @@ def write_metric_outputs(
     )
     output_paths = _metric_output_paths(root, suffix=suffix)
     metrics_path = write_metric_rows(tables["metrics_long"], output_paths["metrics_long"])
+    metrics_enriched_path = write_metric_rows(tables["metrics_long"], output_paths["metrics_enriched"])
     path_table_path = write_metric_rows(tables["path_table"], output_paths["path_table"])
     path_summary_path = write_metric_rows(tables["path_summary"], output_paths["path_summary"])
     dashboard_root = write_dashboard_metric_dataset(
@@ -182,6 +183,7 @@ def write_metric_outputs(
     )
     written: dict[str, Path] = {
         "metrics_long": metrics_path,
+        "metrics_enriched": metrics_enriched_path,
         "path_table": path_table_path,
         "path_summary": path_summary_path,
         "dashboard_metrics": dashboard_root,
@@ -196,6 +198,7 @@ def _metric_output_paths(root: Path | None, *, suffix: str) -> dict[str, Path]:
     if root is not None:
         return {
             "metrics_long": root / f"metrics_long{suffix}",
+            "metrics_enriched": root / f"metrics_enriched{suffix}",
             "path_table": root / f"path_table{suffix}",
             "path_summary": root / f"path_summary{suffix}",
             "dashboard_metrics": root / "dashboard_metrics",
@@ -204,6 +207,7 @@ def _metric_output_paths(root: Path | None, *, suffix: str) -> dict[str, Path]:
     active_config()
     return {
         "metrics_long": resolve_output_path("metrics_long", kind="table", create_parent=True),
+        "metrics_enriched": resolve_output_path("metrics_enriched", kind="table", create_parent=True),
         "path_table": resolve_output_path("path_table", kind="table", create_parent=True),
         "path_summary": resolve_output_path("path_summary", kind="table", create_parent=True),
         "dashboard_metrics": resolve_output_path("metrics_dashboard", kind="dashboard", create_parent=True),

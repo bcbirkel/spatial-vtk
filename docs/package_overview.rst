@@ -118,6 +118,8 @@ Start with public helpers from ``spatial_vtk.metrics``:
 
 - ``build_metric_waveform_inventories_from_config`` and
   ``plan_metric_tasks_from_config`` for large-run planning
+- ``summarize_metric_snapshot_tasks_from_config`` for tutorial and review
+  task previews from already-calculated metric snapshots
 - ``write_metrics_slurm_script_from_config`` and
   ``merge_metric_batches_from_config`` for batch execution handoffs
 - ``write_metric_outputs_from_config`` for downstream metric, dashboard, and

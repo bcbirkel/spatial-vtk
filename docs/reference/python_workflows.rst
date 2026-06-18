@@ -146,6 +146,9 @@ Step 3: Metric Calculation and Metric Figures
    * - Plan metric tasks and write a manifest
      - ``spatial_vtk.metrics.plan_metric_tasks_from_config``
      - ``metric_manifest`` plus per-batch output paths
+   * - Preview task counts from a configured metric snapshot
+     - ``spatial_vtk.metrics.summarize_metric_snapshot_tasks_from_config``
+     - ``metric_tasks`` and ``metric_task_estimate``
    * - Write or submit a metric Slurm array script
      - ``spatial_vtk.metrics.write_metrics_slurm_script_from_config``
      - metric Slurm script; optionally submitted job metadata
@@ -154,8 +157,8 @@ Step 3: Metric Calculation and Metric Figures
      - ``metric_rows``
    * - Write downstream long, enriched, summary, and dashboard metric tables
      - ``spatial_vtk.metrics.write_metric_outputs_from_config``
-     - ``metrics_long``, path tables, dashboard metric datasets, dashboard
-       summary tables
+     - ``metrics_long``, ``metrics_enriched``, path tables, dashboard metric
+       datasets, dashboard summary tables
    * - Render many large-run metric figures with auditable row sidecars
      - ``spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context``
      - saved metric figures and optional ``*.csv``/``*.source.csv``/``*.json``

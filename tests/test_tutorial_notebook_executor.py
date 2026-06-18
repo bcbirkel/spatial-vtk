@@ -706,6 +706,23 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert '"svtk", "metrics"' not in source
 
 
+def test_standard_step03_uses_configured_metric_helpers() -> None:
+    """The standard metric tutorial should use package helpers, not hand-rolled workflow code."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "step_03_calculate_metrics.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "summarize_metric_snapshot_tasks_from_config(" in source
+    assert "write_metric_outputs_from_config(" in source
+    assert 'load_output_table("metrics_long")' in source
+    assert "summarize_metric_tasks(" not in source
+    assert "write_metric_outputs(" not in source
+    assert "drop_duplicates().copy()" not in source
+    assert 'read_config_table("paths.metric_figure_snapshot")' not in source
+
+
 def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     """Step 1 should call package workflow helpers instead of CLI or inline worker code."""
 

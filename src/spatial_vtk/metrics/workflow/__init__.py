@@ -26,6 +26,7 @@ from spatial_vtk.metrics.workflow.configured import (
     build_metric_waveform_inventories_from_config,
     merge_metric_batches_from_config,
     plan_metric_tasks_from_config,
+    summarize_metric_snapshot_tasks_from_config,
     write_metric_outputs_from_config,
     write_metrics_slurm_script_from_config,
 )
@@ -95,6 +96,7 @@ __all__ = [
     "run_metric_tasks",
     "slurm_settings_from_config",
     "submit_metrics_slurm_job",
+    "summarize_metric_snapshot_tasks_from_config",
     "summarize_metric_tasks",
     "tasks_from_frame",
     "tasks_to_frame",

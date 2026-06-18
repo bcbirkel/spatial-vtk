@@ -24,6 +24,7 @@ from spatial_vtk.metrics.workflow import (
     run_manifest_batch,
     run_metric_tasks,
     slurm_settings_from_config,
+    summarize_metric_snapshot_tasks_from_config,
     summarize_metric_tasks,
     write_metric_outputs,
     write_metric_outputs_from_config,
@@ -1518,7 +1519,9 @@ outputs:
         clear_active_config()
 
     assert written["metrics_long"] == tmp_path / "outputs" / "tables" / "metrics_long.parquet"
+    assert written["metrics_enriched"] == tmp_path / "outputs" / "tables" / "metrics_enriched.parquet"
     assert written["dashboard_metrics"] == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    assert (tmp_path / "outputs" / "tables" / "metrics_enriched.parquet").exists()
     assert (tmp_path / "outputs" / "dashboards" / "metrics_dashboard" / "metrics_long.parquet").exists()
     assert (tmp_path / "outputs" / "dashboards" / "dashboard_summaries" / "model_metric_band.parquet").exists()
     assert not (tmp_path / "outputs" / "tables" / "dashboard_metrics").exists()
@@ -1573,9 +1576,116 @@ outputs:
     written = write_metric_outputs_from_config(config_path=config_path)
 
     assert Path(written["metrics_long"]) == tables / "metrics_long.parquet"
+    assert Path(written["metrics_enriched"]) == tables / "metrics_enriched.parquet"
     assert Path(written["path_table"]) == tables / "path_table.parquet"
     assert Path(written["dashboard_metrics"]) == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    assert (tables / "metrics_enriched.parquet").exists()
     assert (tmp_path / "outputs" / "dashboards" / "dashboard_summaries" / "model_metric_band.parquet").exists()
+
+
+def test_summarize_metric_snapshot_tasks_from_config_writes_standard_tables(tmp_path) -> None:
+    """Snapshot-backed tutorials should get task previews from a package helper."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    snapshot_path = tmp_path / "inputs" / "metrics_snapshot.parquet"
+    snapshot_path.parent.mkdir(parents=True)
+    pd.DataFrame(
+        {
+            "event_id": ["e1", "e1", "e1"],
+            "station": ["STA", "STA", "STB"],
+            "component": ["Z", "Z", "R"],
+            "model": ["m1", "m1", "m1"],
+            "band": ["1-2 sec", "1-2 sec", "2-3 sec"],
+            "metric": ["PGA", "PGV", "PGA"],
+            "value_obs": [4.0, 3.0, 5.0],
+            "value_syn": [2.0, 2.0, 2.5],
+            "log2_residual": [1.0, 0.5, 1.0],
+        }
+    ).to_parquet(snapshot_path, index=False)
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+paths:
+  metric_snapshot: {snapshot_path}
+outputs:
+  tables: outputs/tables
+metrics:
+  metrics: [PGA, PGV]
+  transforms: [log2_residual]
+  output_mode: full
+""",
+        encoding="utf-8",
+    )
+
+    result = summarize_metric_snapshot_tasks_from_config(config_path=config_path)
+
+    tasks = pd.read_csv(result["metric_tasks_path"])
+    estimate = pd.read_csv(result["metric_task_estimate_path"])
+    assert result["task_count"] == 2
+    assert set(tasks["station"]) == {"STA", "STB"}
+    assert set(tasks["passband"]) == {"1-2 sec", "2-3 sec"}
+    assert set(tasks["metrics"]) == {"PGA, PGV"}
+    assert "Metric tasks" in set(estimate["Estimate"])
+
+
+def test_write_metric_outputs_from_config_can_use_configured_snapshot(tmp_path) -> None:
+    """Metric output helper should support tutorial snapshots without notebook path plumbing."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    snapshot_path = tmp_path / "inputs" / "metrics_snapshot.parquet"
+    snapshot_path.parent.mkdir(parents=True)
+    pd.DataFrame(
+        {
+            "event_id": ["e1"],
+            "station": ["STA"],
+            "model": ["m1"],
+            "component": ["Z"],
+            "band": ["1-2 sec"],
+            "metric": ["PGA"],
+            "value_obs": [4.0],
+            "value_syn": [2.0],
+            "log2_residual": [1.0],
+        }
+    ).to_parquet(snapshot_path, index=False)
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+paths:
+  metric_snapshot: {snapshot_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    pd.DataFrame(
+        {
+            "event_id": ["e1"],
+            "event_lat": [34.0],
+            "event_lon": [-118.0],
+        }
+    ).to_csv(tables / "prepared_events.csv", index=False)
+    pd.DataFrame(
+        {
+            "station": ["STA"],
+            "lat": [34.1],
+            "lon": [-118.1],
+        }
+    ).to_csv(tables / "prepared_stations.csv", index=False)
+
+    written = write_metric_outputs_from_config(config_path=config_path)
+
+    assert Path(written["metrics_long"]) == tables / "metrics_long.parquet"
+    assert Path(written["metrics_enriched"]) == tables / "metrics_enriched.parquet"
+    assert Path(written["dashboard_metrics"]) == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    assert (tables / "metrics_long.parquet").exists()
+    assert (tables / "metrics_enriched.parquet").exists()
 
 
 def _write_npz_waveform(path, samples, *, station: str, channel: str, sampling_rate: float) -> None:
