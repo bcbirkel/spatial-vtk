@@ -11,6 +11,26 @@ GeoJSON regions and corridors, and create maps and spatial diagnostic plots.
 Package Entry Point
 -------------------
 
+Start with ``spatial_vtk.spatial`` for spatial-statistics, GeoJSON, corridor,
+geometry, PCA, clustering, path, and pattern helpers. Use
+``spatial_vtk.spatial.plot`` for non-map diagnostic figures and
+``spatial_vtk.spatial.map`` for geographic maps; those plotting subpackages are
+stable public entry points and avoid exposing notebook users to implementation
+module names.
+
+.. code-block:: python
+
+   from spatial_vtk.spatial import (
+       run_spatial_statistics_workflow_from_config,
+       run_geojson_region_summary_workflow_from_config,
+       run_boundary_corridor_workflow_from_config,
+       build_path_table,
+       summarize_residuals_by_path_bin,
+   )
+
+   from spatial_vtk.spatial.plot import plot_correlogram
+   from spatial_vtk.spatial.map import plot_station_metric_map
+
 .. automodule:: spatial_vtk.spatial
    :members:
 

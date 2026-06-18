@@ -238,6 +238,11 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     text = docs.read_text(encoding="utf-8")
     assert ".. automodule:: spatial_vtk.spatial.calculate\n" in text
     assert "helpers from the stable ``spatial_vtk.spatial`` package entry" in text
+    assert "Start with ``spatial_vtk.spatial`` for spatial-statistics" in text
+    assert "from spatial_vtk.spatial import (" in text
+    assert "run_spatial_statistics_workflow_from_config" in text
+    assert "run_geojson_region_summary_workflow_from_config" in text
+    assert "run_boundary_corridor_workflow_from_config" in text
     assert "from spatial_vtk.spatial.plot import (" in text
     assert "from spatial_vtk.spatial.map import (" in text
     assert ".. automodule:: spatial_vtk.spatial.plot\n" in text
@@ -261,6 +266,56 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     )
     for token in forbidden:
         assert token not in text
+
+
+def test_core_api_docs_show_stable_start_here_imports():
+    """Major API pages should name the routine package-level import surfaces."""
+
+    docs_root = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api"
+    expectations = {
+        "io.rst": [
+            "Start with ``spatial_vtk.io``",
+            "from spatial_vtk.io import (",
+            "output_group",
+            "prepare_event_station_table",
+            "preprocess_waveform_files",
+        ],
+        "metrics.rst": [
+            "Start with ``spatial_vtk.metrics``",
+            "from spatial_vtk.metrics import (",
+            "plan_metric_tasks_from_config",
+            "metric_manifest_batch_status",
+            "write_metric_outputs_from_config",
+        ],
+        "qc.rst": [
+            "Start with ``spatial_vtk.qc``",
+            "from spatial_vtk.qc import (",
+            "run_qc_inventory_from_config",
+            "write_qc_inventory_overlap_from_config",
+            "run_qc_summary_workflow_from_config",
+        ],
+        "spatial.rst": [
+            "Start with ``spatial_vtk.spatial``",
+            "from spatial_vtk.spatial import (",
+            "from spatial_vtk.spatial.plot import",
+            "from spatial_vtk.spatial.map import",
+        ],
+    }
+    for filename, snippets in expectations.items():
+        text = (docs_root / filename).read_text(encoding="utf-8")
+        for snippet in snippets:
+            assert snippet in text, f"{filename} does not document {snippet!r}"
+
+
+def test_spatial_package_docstring_describes_namespace_boundary():
+    """The top-level spatial package should explain where plotting imports live."""
+
+    source = (
+        pathlib.Path(__file__).resolve().parents[1] / "src" / "spatial_vtk" / "spatial" / "__init__.py"
+    ).read_text(encoding="utf-8")
+    assert "stable import surface for spatial calculations" in source
+    assert "spatial_vtk.spatial.plot" in source
+    assert "spatial_vtk.spatial.map" in source
 
 
 def test_visualize_api_docs_use_public_entry_points():

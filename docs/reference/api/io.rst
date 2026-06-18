@@ -12,6 +12,24 @@ rest of the workflow.
 Package Entry Point
 -------------------
 
+Start with ``spatial_vtk.io`` in notebooks and scripts. These helpers cover the
+routine workflow surface: metadata normalization, event-station table creation,
+preprocessing products, table I/O, output groups, readiness checks, and bounded
+table previews. Prefer these imports before reaching into implementation
+modules.
+
+.. code-block:: python
+
+   from spatial_vtk.io import (
+       output_group,
+       prepare_event_metadata,
+       prepare_event_station_table,
+       prepare_station_metadata,
+       preprocess_waveform_files,
+       read_config_table,
+       write_output_table,
+   )
+
 .. automodule:: spatial_vtk.io
    :members:
 

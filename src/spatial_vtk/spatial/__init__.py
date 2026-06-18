@@ -1,4 +1,11 @@
-"""Spatial calculations, plots, and map helpers."""
+"""Spatial-statistics workflow helpers.
+
+``spatial_vtk.spatial`` is the stable import surface for spatial calculations,
+GeoJSON summaries, corridors, geometry, PCA, clustering, path summaries, and
+pattern-comparison helpers. Plotting and mapping helpers live in the public
+``spatial_vtk.spatial.plot`` and ``spatial_vtk.spatial.map`` subpackages so
+users can import figure code without mixing it into the calculation namespace.
+"""
 
 from __future__ import annotations
 

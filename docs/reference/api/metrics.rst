@@ -12,6 +12,24 @@ metric diagnostics.
 Package Entry Point
 -------------------
 
+Start with ``spatial_vtk.metrics`` for metric workflow helpers and calculation
+utilities that are used by notebooks, scripts, and generated Slurm workers.
+These imports keep large-run planning, waveform inventory creation, metric
+batch execution, merge steps, dashboard exports, and metric-output writes on one
+stable package surface.
+
+.. code-block:: python
+
+   from spatial_vtk.metrics import (
+       build_metric_waveform_inventories_from_config,
+       cache_metric_manifest_waveforms,
+       merge_metric_batches_from_config,
+       metric_manifest_batch_status,
+       plan_metric_tasks_from_config,
+       submit_metrics_slurm_job,
+       write_metric_outputs_from_config,
+   )
+
 .. automodule:: spatial_vtk.metrics
    :members:
 

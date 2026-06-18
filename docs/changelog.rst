@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-17
+   Clarified the API reference start points for ``spatial_vtk.io``,
+   ``spatial_vtk.qc``, ``spatial_vtk.metrics``, and ``spatial_vtk.spatial`` so
+   workflow users see package-level imports before lower-level implementation
+   modules. The spatial package docstring now also states that plotting helpers
+   live under ``spatial_vtk.spatial.plot`` and maps under
+   ``spatial_vtk.spatial.map``.
    Added ``notebook_figure_settings()`` for package-native notebook figure
    controls and updated the large-run plotting notebooks to use it instead of
    parsing repeated ``SVTK_FIGURE_*`` environment variables in cells. The helper
