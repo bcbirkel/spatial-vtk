@@ -55,6 +55,10 @@ Changelog
    Standard Step 2 now lets the QC inventory helper resolve configured output
    paths directly and reuses the manual-review queue written by the compact QC
    summary workflow, avoiding a redundant notebook-local export call.
+   Standard Step 2 now also uses ``OutputGroup.readiness()`` with
+   ``run_notebook_step_if_needed(..., run_local=True)`` for the full QC,
+   overlap sidecar, and compact summary table steps, matching the large-run
+   package-runner pattern while keeping the small tutorial local.
    Standard Step 7 now uses ``dashboard_outputs`` attributes directly in
    dashboard status and preview cells instead of assigning throwaway local path
    aliases.

@@ -530,10 +530,17 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "run_qc_inventory_from_config(" in standard_text
     assert "write_qc_inventory_overlap_from_config(" in standard_text
     assert "run_qc_summary_workflow_from_config(" in standard_text
+    assert "run_notebook_step_if_needed(" in standard_text
+    assert "qc_readiness = qc_outputs.readiness(" in standard_text
+    assert "overlap_readiness = qc_outputs.readiness(" in standard_text
+    assert "summary_readiness = qc_outputs.readiness(" in standard_text
+    assert "run_local=True" in standard_text
     assert "ingest_outputs.load_tables(" in standard_text
     assert "qc_figure_tables = qc_outputs.load_tables(" in standard_text
     assert "qc_outputs.preview_table(" in standard_text
     assert "qc_outputs.manual_queue_path" in standard_text
+    assert "qc_outputs.qc_inventory_path.exists()" not in standard_text
+    assert "qc_outputs.qc_inventory_overlap_path.exists()" not in standard_text
     assert "export_manual_review_queue_from_qc_inventory(" not in standard_text
     assert "trace_qc_output=trace_qc_path" not in standard_text
     assert "qc_inventory_output=qc_inventory_path" not in standard_text
