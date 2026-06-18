@@ -900,6 +900,15 @@ outputs:
     assert group["metrics_long_path"] == paths["metrics_long_path"]
     assert "metrics_long_path" in group
     assert group.as_dict()["metric_rows_path"] == tmp_path / "run_outputs" / "tables" / "metric_rows.parquet"
+    bound: dict[str, object] = {}
+    returned = group.bind(bound, names=("metrics_long_path", "metric_rows_path"))
+    assert returned == {
+        "metrics_long_path": paths["metrics_long_path"],
+        "metric_rows_path": tmp_path / "run_outputs" / "tables" / "metric_rows.parquet",
+    }
+    assert bound == returned
+    with pytest.raises(KeyError):
+        group.bind(names=("missing_path",))
     group_status = group.status_frame()
     assert "metrics_long_path" in set(group_status["name"])
     group_completion = group.completion()

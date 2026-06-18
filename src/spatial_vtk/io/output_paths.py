@@ -121,6 +121,45 @@ class OutputGroup:
 
         return dict(self.paths)
 
+    def bind(
+        self,
+        namespace: dict[str, object] | None = None,
+        *,
+        names: Iterable[str] | None = None,
+    ) -> dict[str, Path]:
+        """Bind resolved path names into a mutable namespace.
+
+        This is mainly for notebooks, where conventional variables such as
+        ``metrics_long_path`` are easier to read than repeated
+        ``step_outputs.metrics_long_path`` expressions. Pass ``globals()`` to
+        expose all group paths in the current notebook scope, or pass ``names``
+        to bind only a subset.
+
+        Parameters
+        ----------
+        namespace
+            Mutable mapping to update, usually ``globals()`` in a notebook.
+            When omitted, no external namespace is updated and the selected
+            mapping is returned.
+        names
+            Optional path names to bind. Missing names raise ``KeyError`` so
+            notebook setup cells fail close to the typo.
+
+        Returns
+        -------
+        dict
+            The selected path mapping.
+        """
+
+        selected = (
+            self.as_dict()
+            if names is None
+            else {str(name): self.paths[str(name)] for name in names}
+        )
+        if namespace is not None:
+            namespace.update(selected)
+        return selected
+
     def status_frame(self, *, extra_paths=None):
         """Return a display-ready status frame for the group."""
 

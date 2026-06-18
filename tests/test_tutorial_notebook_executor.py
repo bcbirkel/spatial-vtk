@@ -408,6 +408,22 @@ def test_tutorial_notebooks_use_output_group_objects_for_paths() -> None:
             assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} uses {matches}"
 
 
+def test_large_run_notebooks_bind_grouped_output_paths() -> None:
+    """Large-run notebooks should avoid repeated ``x_path = step_outputs.x_path`` blocks."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
+    assert notebooks
+    alias_pattern = re.compile(r"^\s*\w+_path\s*=\s*step_outputs\.\w+_path\b", re.MULTILINE)
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        if "output_group(" in source:
+            assert "step_outputs.bind(globals())" in source, notebook_path.relative_to(repo_root)
+        matches = alias_pattern.findall(source)
+        assert not matches, f"{notebook_path.relative_to(repo_root)} repeats grouped path aliases: {matches}"
+
+
 def test_tutorial_notebooks_use_table_helpers_for_file_reads() -> None:
     """Tutorial notebooks should centralize table-format handling in package helpers."""
 
@@ -830,7 +846,7 @@ def test_large_run_step02_uses_qc_availability_output() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "availability_path = step_outputs.availability_path" in source
+    assert "step_outputs.bind(globals())" in source
     assert "availability_path," in source
     assert 'qc_availability = load_output_table("qc_availability")' in source
     assert "plot_data_synthetic_availability(" in source

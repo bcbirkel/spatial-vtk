@@ -230,6 +230,7 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "metric_manifest_path" in workflows
     assert "geojson_region_summaries_path" in workflows
     assert "compatibility aliases" in workflows
+    assert "``bind(globals())`` exposes conventional names" in workflows
     assert "svtk metrics plan" not in workflows
     assert "svtk qc" not in workflows
 
