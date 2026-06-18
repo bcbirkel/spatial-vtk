@@ -430,20 +430,71 @@ def test_tutorial_notebooks_use_output_group_objects_for_paths() -> None:
             assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} uses {matches}"
 
 
-def test_large_run_notebooks_bind_grouped_output_paths() -> None:
-    """Large-run notebooks should avoid repeated ``x_path = step_outputs.x_path`` blocks."""
+def test_large_run_notebooks_use_direct_grouped_output_attributes() -> None:
+    """Large-run notebooks should keep grouped path ownership visible."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
     assert notebooks
-    alias_pattern = re.compile(r"^\s*\w+_path\s*=\s*step_outputs\.\w+_path\b", re.MULTILINE)
+
+    output_paths_tree = ast.parse((repo_root / "src" / "spatial_vtk" / "io" / "output_paths.py").read_text(encoding="utf-8"))
+    output_group_names: dict[str, set[str]] = {}
+    for node in output_paths_tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(isinstance(target, ast.Name) and target.id == "OUTPUT_GROUPS" for target in node.targets):
+            continue
+        if not isinstance(node.value, ast.Dict):
+            continue
+        for key_node, value_node in zip(node.value.keys, node.value.values):
+            if not isinstance(key_node, ast.Constant) or not isinstance(key_node.value, str):
+                continue
+            names: set[str] = set()
+            if isinstance(value_node, ast.Tuple):
+                for item in value_node.elts:
+                    if (
+                        isinstance(item, ast.Call)
+                        and isinstance(item.func, ast.Name)
+                        and item.func.id == "OutputArtifact"
+                        and item.args
+                        and isinstance(item.args[0], ast.Constant)
+                        and isinstance(item.args[0].value, str)
+                    ):
+                        names.add(item.args[0].value)
+            output_group_names[key_node.value] = names
+
+    assert output_group_names
+    alias_pattern = re.compile(r"^\s*\w+_path\s*=\s*\w+_outputs\.\w+_path\b", re.MULTILINE)
+    assignment_pattern = re.compile(r"(\w+_outputs)\s*=\s*output_group\(\"([^\"]+)\"")
     for notebook_path in notebooks:
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-        if "output_group(" in source:
-            assert "step_outputs.bind(globals())" in source, notebook_path.relative_to(repo_root)
+        assert ".bind(globals())" not in source, notebook_path.relative_to(repo_root)
         matches = alias_pattern.findall(source)
         assert not matches, f"{notebook_path.relative_to(repo_root)} repeats grouped path aliases: {matches}"
+        owners = {owner: group for owner, group in assignment_pattern.findall(source)}
+        grouped_path_names = set().union(*(output_group_names.get(group, set()) for group in owners.values()))
+        if "preprocessed_waveform_output_group(" in source:
+            grouped_path_names.update(
+                {
+                    "preprocessed_event_station_path",
+                    "preprocessed_manifest_path",
+                    "preprocessed_trace_metadata_path",
+                }
+            )
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            if cell.get("cell_type") != "code":
+                continue
+            cell_source = "".join(cell.get("source", []))
+            tree = ast.parse(cell_source)
+            bare = sorted(
+                {
+                    node.id
+                    for node in ast.walk(tree)
+                    if isinstance(node, ast.Name) and node.id in grouped_path_names
+                }
+            )
+            assert not bare, f"{notebook_path.relative_to(repo_root)} cell {index} uses bare grouped paths: {bare}"
 
 
 def test_tutorial_notebooks_use_table_helpers_for_file_reads() -> None:
@@ -989,7 +1040,8 @@ def test_large_run_step02_uses_qc_availability_output() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "step_outputs.bind(globals())" in source
+    assert "step_outputs.bind(globals())" not in source
+    assert "step_outputs.availability_path" in source
     assert "availability_path," in source
     assert '"qc_availability": "availability_path"' in source
     assert 'qc_availability = qc_figure_tables["qc_availability"]' in source
