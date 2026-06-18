@@ -15,6 +15,7 @@ from spatial_vtk.io import workflows as io_workflows
 from spatial_vtk.io import preprocessing as preprocessing_module
 from spatial_vtk.io.workflows import (
     build_record_coverage_from_config,
+    load_configured_input_tables,
     prepare_metadata_tables_from_config,
     preprocess_waveforms_from_config,
 )
@@ -158,6 +159,55 @@ outputs:
     assert Path(result["prepared_stations_path"]).exists()
     assert Path(result["prepared_events_path"]).exists()
     assert Path(result["event_station_records_path"]).exists()
+
+
+def test_load_configured_input_tables_reads_named_config_paths(tmp_path: Path) -> None:
+    """Notebook helpers should load configured input tables with descriptive labels."""
+
+    inputs = tmp_path / "inputs"
+    inputs.mkdir()
+    metric_snapshot = inputs / "metric_snapshot.csv"
+    site_metadata = inputs / "site_metadata.csv"
+    pd.DataFrame({"metric": ["PGA"], "station": ["STA1"]}).to_csv(metric_snapshot, index=False)
+    pd.DataFrame({"station": ["STA1"], "Vs30": [760.0]}).to_csv(site_metadata, index=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+paths:
+  metric_figure_snapshot: inputs/metric_snapshot.csv
+  site_metadata: inputs/site_metadata.csv
+""",
+        encoding="utf-8",
+    )
+
+    tables = load_configured_input_tables(
+        {
+            "metrics": "paths.metric_figure_snapshot",
+            "site_metadata": "paths.site_metadata",
+        },
+        config_path=config_path,
+    )
+
+    assert list(tables) == ["metrics", "site_metadata"]
+    assert tables["metrics"]["metric"].tolist() == ["PGA"]
+    assert tables["site_metadata"]["Vs30"].tolist() == [760.0]
+
+
+def test_load_configured_input_tables_rejects_ambiguous_arguments(tmp_path: Path) -> None:
+    """Callers should not mix active config objects with config file arguments."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text("project:\n  root_dir: .\n", encoding="utf-8")
+    cfg = SpatialVTKConfig.from_file(config_path)
+
+    with pytest.raises(ValueError, match="either cfg or config_path"):
+        load_configured_input_tables({"demo": "paths.demo"}, cfg=cfg, config_path=config_path)
+    with pytest.raises(TypeError, match="not a string"):
+        load_configured_input_tables("paths.demo", cfg=cfg)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="dotted config path"):
+        load_configured_input_tables({"demo": "demo"}, cfg=cfg)
 
 
 def test_build_record_coverage_from_config_uses_preprocessed_metadata(tmp_path: Path) -> None:

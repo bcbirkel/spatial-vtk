@@ -21,6 +21,7 @@ modules.
 .. code-block:: python
 
    from spatial_vtk.io import (
+       load_configured_input_tables,
        output_group,
        prepare_event_metadata,
        prepare_event_station_table,

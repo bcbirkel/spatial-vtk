@@ -28,6 +28,7 @@ def test_public_imports():
     )
     from spatial_vtk.metrics.plot import MetricFigureContext
     from spatial_vtk.io import (
+        load_configured_input_tables,
         OutputGroup,
         inspect_synthetic_format,
         output_group,
@@ -70,6 +71,7 @@ def test_public_imports():
     assert callable(metric_slurm_submission_readiness)
     assert callable(MetricFigureContext.from_frame)
     assert callable(inspect_synthetic_format)
+    assert callable(load_configured_input_tables)
     assert callable(output_group)
     assert callable(OutputGroup)
     assert callable(prepare_metadata_tables_from_config)
@@ -340,6 +342,7 @@ def test_reference_docs_map_python_workflow_entry_points():
     required_helpers = [
         "spatial_vtk.config.run_notebook_step_if_needed",
         "spatial_vtk.config.display_output_table_previews",
+        "spatial_vtk.io.load_configured_input_tables",
         "spatial_vtk.io.output_group",
         "spatial_vtk.io.prepare_metadata_tables_from_config",
         "spatial_vtk.io.preprocess_waveforms_from_config",

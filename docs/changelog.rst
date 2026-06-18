@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Added ``spatial_vtk.io.load_configured_input_tables`` so notebooks can load
+   labeled non-output input tables from dotted config keys such as
+   ``paths.metric_figure_snapshot`` and ``paths.site_metadata`` without
+   repeating direct ``read_config_table`` calls in workflow cells.
    Clarified Python workflow helper return-value guidance so notebooks treat
    descriptive keys such as ``metric_manifest_path`` and
    ``geojson_region_summaries_path`` as the public contract, while generic

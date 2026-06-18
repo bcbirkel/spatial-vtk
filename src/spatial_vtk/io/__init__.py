@@ -122,6 +122,7 @@ from spatial_vtk.io.waveforms import (
 )
 from spatial_vtk.io.workflows import (
     build_record_coverage_from_config,
+    load_configured_input_tables,
     prepare_metadata_tables_from_config,
     preprocess_waveforms_from_config,
 )
@@ -171,6 +172,7 @@ __all__ = [
     "inspect_synthetic_format",
     "inspect_station_event_layouts",
     "load_csv_bundle",
+    "load_configured_input_tables",
     "load_or_build_output_table",
     "load_output_table",
     "metric_plan_from_config",

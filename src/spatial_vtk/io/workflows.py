@@ -10,6 +10,7 @@ of embedding task-specific Python in notebook cells.
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +19,7 @@ from spatial_vtk.io.preprocessing import (
     preprocessed_waveform_metadata_paths,
     preprocess_waveform_files,
 )
-from spatial_vtk.io.tables import load_output_table, write_output_table
+from spatial_vtk.io.tables import load_output_table, read_config_table, write_output_table
 from spatial_vtk.io.metadata import (
     prepare_event_metadata,
     prepare_event_station_table,
@@ -205,6 +206,49 @@ def build_record_coverage_from_config(
     }
 
 
+def load_configured_input_tables(
+    tables: Mapping[str, str] | Sequence[str],
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    **read_kwargs: Any,
+) -> dict[str, Any]:
+    """Load named input tables from configured dotted path keys.
+
+    This helper is intended for notebooks that need configured input tables
+    that are not standard workflow outputs, such as ``paths.metric_figure_snapshot``
+    or ``paths.site_metadata``. It keeps cells focused on the task by replacing
+    repeated direct ``read_config_table("paths...")`` calls with a small,
+    labeled table bundle.
+
+    Parameters
+    ----------
+    tables
+        Mapping of user-facing table labels to dotted config path keys, or a
+        sequence of dotted config path keys. For sequences, labels are derived
+        from the final dotted-key segment.
+    cfg
+        Optional active config object. When omitted, ``config_path`` or the
+        active config is used.
+    config_path, run_scenario
+        Optional config file and run scenario used when ``cfg`` is omitted.
+    **read_kwargs
+        Additional keyword arguments passed through to :func:`read_config_table`.
+
+    Returns
+    -------
+    dict
+        Mapping of labels to loaded pandas dataframes.
+    """
+
+    if cfg is not None and (config_path is not None or run_scenario is not None):
+        raise ValueError("Pass either cfg or config_path/run_scenario, not both.")
+    config = cfg if cfg is not None else _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    table_map = _configured_input_table_map(tables)
+    return {label: read_config_table(dotted_key, cfg=config, **read_kwargs) for label, dotted_key in table_map.items()}
+
+
 def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None) -> SpatialVTKConfig:
     """Return an activated config for a package workflow helper."""
 
@@ -216,8 +260,28 @@ def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None
     return cfg
 
 
+def _configured_input_table_map(tables: Mapping[str, str] | Sequence[str]) -> dict[str, str]:
+    """Normalize configured input table labels and dotted keys."""
+
+    if isinstance(tables, Mapping):
+        table_map = {str(label): str(dotted_key) for label, dotted_key in tables.items()}
+    else:
+        if isinstance(tables, (str, bytes)):
+            raise TypeError("tables must be a mapping or a sequence of dotted config keys, not a string.")
+        table_map = {str(dotted_key).rsplit(".", 1)[-1]: str(dotted_key) for dotted_key in tables}
+    if not table_map:
+        raise ValueError("At least one configured input table must be requested.")
+    for label, dotted_key in table_map.items():
+        if not label:
+            raise ValueError("Configured input table labels must be non-empty.")
+        if "." not in dotted_key:
+            raise ValueError(f"Configured input table key {dotted_key!r} must be a dotted config path key.")
+    return table_map
+
+
 __all__ = [
     "build_record_coverage_from_config",
+    "load_configured_input_tables",
     "prepare_metadata_tables_from_config",
     "preprocess_waveforms_from_config",
 ]

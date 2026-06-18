@@ -45,7 +45,7 @@ paths in cells.
    from spatial_vtk.config import SpatialVTKConfig
    from spatial_vtk.config import configured_output_registry_frame
    from spatial_vtk.config.notebook import notebook_figure_settings, notebook_run_context, run_notebook_step_if_needed
-   from spatial_vtk.io import output_group
+   from spatial_vtk.io import load_configured_input_tables, output_group
    from spatial_vtk.qc import run_qc_inventory_from_config
 
    cfg = SpatialVTKConfig.from_file("runs/spatial_vtk_config.yaml").activate()
@@ -75,6 +75,7 @@ paths in cells.
    metric_figure_settings = notebook_figure_settings("metric", figure_dir=context.figures_dir / "metrics")
    # Pass metric_figure_settings.context_kwargs(...) into package plotting
    # contexts instead of parsing SVTK_FIGURE_* variables in notebook cells.
+   configured_inputs = load_configured_input_tables({"metrics": "paths.metric_figure_snapshot"}, cfg=cfg)
 
 Core Driver Helpers
 -------------------
@@ -106,6 +107,12 @@ the large-run notebooks.
        read selected table artifacts by group path name, output key, or a
        display-label mapping, which keeps notebook cells focused on workflow
        tasks rather than repeated ``load_output_table`` calls.
+   * - ``spatial_vtk.io.load_configured_input_tables``
+     - Load non-output input tables from dotted config path keys such as
+       ``"paths.metric_figure_snapshot"`` or ``"paths.site_metadata"`` into a
+       labeled dictionary. Use this for tutorial figure inputs and optional
+       spatial metadata instead of repeating direct ``read_config_table`` calls
+       in notebook cells.
    * - ``spatial_vtk.config.run_notebook_step_if_needed``
      - Display the readiness table, then run or submit a Python package
        workflow function only when work is needed. Pass the imported package

@@ -543,6 +543,8 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     assert 'step_outputs = output_group("step_04_spatial", cfg=cfg)' in source
     assert "spatial_tables = step_outputs.load_tables(" in source
     assert 'metric_field = spatial_tables["metric_field"]' in source
+    assert "load_configured_input_tables(" in source
+    assert 'read_config_table("paths.site_metadata")' not in source
     assert 'load_output_table("metric_field")' not in source
     assert "run_spatial_statistics_workflow(" not in source
     assert 'cfg.path("paths.metric_figure_snapshot")' not in source
@@ -568,7 +570,8 @@ def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
 
     assert "run_geojson_region_summary_workflow_from_config(" in source
     assert "from spatial_vtk.spatial import (" in source
-    assert "read_config_table(\"paths.metric_figure_snapshot\")" in source
+    assert "load_configured_input_tables(" in source
+    assert "read_config_table(\"paths.metric_figure_snapshot\")" not in source
     assert 'metrics_table="paths.metric_figure_snapshot"' in source
     assert 'geojson_path="paths.region_geojson"' in source
     assert "from spatial_vtk.spatial.calculate import" not in source
@@ -1042,7 +1045,8 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     assert "load_output_table(" not in source
     assert "from spatial_vtk.spatial import add_geojson_metadata_to_metrics" in source
     assert "from spatial_vtk.spatial.calculate import" not in source
-    assert 'read_config_table("paths.metric_figure_snapshot")' in source
+    assert "load_configured_input_tables(" in source
+    assert 'read_config_table("paths.metric_figure_snapshot")' not in source
     assert 'cfg.path("paths.metric_figure_snapshot")' not in source
     assert "read_table(metric_source_path)" not in source
     assert "comparison_qc_status" not in source
