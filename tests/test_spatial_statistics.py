@@ -1397,6 +1397,93 @@ def test_spatial_figure_context_writes_overview_plots_with_empty_missing_tables(
     assert not any(call["base"] == "spatial_geology_contrast" for call in calls)
 
 
+def test_spatial_figure_context_orchestrates_large_run_plot_families(tmp_path: Path) -> None:
+    """Step 4 notebook plot families should be package methods with PSA branching."""
+
+    metric_field = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1"],
+            "station": ["STA", "STA"],
+            "metric": ["PGA", "PSA"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "component": ["R", "R"],
+            "model": ["m1", "m1"],
+            "period_s": [np.nan, 1.0],
+            "log2_residual": [0.25, 0.5],
+            "sta_lon": [-118.0, -118.0],
+            "sta_lat": [34.0, 34.0],
+            "lon": [-118.0, -118.0],
+            "lat": [34.0, 34.0],
+            "azimuth_deg": [45.0, 45.0],
+            "distance_km": [10.0, 10.0],
+        }
+    )
+    figure_dir = tmp_path / "figures"
+    context = SpatialFigureContext(
+        figure_dir=figure_dir,
+        make_figures=True,
+        add_basemap=True,
+        metric_context=MetricFigureContext.from_frame(metric_field, figure_dir, make_figures=True),
+        event_context=MetricFigureContext.from_frame(metric_field, figure_dir, make_figures=True),
+        tables={
+            "metric_field": metric_field,
+            "event_centered_residuals": metric_field,
+        },
+        paths={},
+    )
+    calls: list[dict[str, object]] = []
+
+    def _fake_plot(base, item, func, df=None, source_df=None, **kwargs):  # noqa: ANN001, ANN202
+        calls.append(
+            {
+                "writer": "plot",
+                "base": base,
+                "key": item["key"],
+                "df": df,
+                "source_df": source_df,
+                "kwargs": kwargs,
+            }
+        )
+        return figure_dir / f"{base}_{len(calls)}.png"
+
+    def _fake_sheet(base, item, func, df_factory=None, source_df_factory=None, **kwargs):  # noqa: ANN001, ANN202
+        calls.append(
+            {
+                "writer": "sheet",
+                "base": base,
+                "key": item["key"],
+                "df_factory": df_factory,
+                "source_df_factory": source_df_factory,
+                "kwargs": kwargs,
+            }
+        )
+        return figure_dir / f"{base}_{len(calls)}.png"
+
+    context.write_spatial_plot = _fake_plot  # type: ignore[method-assign]
+    context.write_spatial_period_sheet = _fake_sheet  # type: ignore[method-assign]
+    plot_func = lambda *args, **kwargs: None
+
+    context.write_station_metric_maps(plot_func, plot_func, value_col="log2_residual")
+    context.write_residual_grid_maps(plot_func, value_col="log2_residual")
+    context.write_metric_by_model_maps(plot_func, value_col="log2_residual")
+    context.write_event_residual_maps(plot_func, value_col="log2_residual")
+    context.write_event_centered_azimuthal_plots(plot_func, value_col="log2_residual")
+    context.write_event_centered_polar_plots(plot_func, value_col="log2_residual")
+
+    assert [call["base"] for call in calls].count("spatial_station_metric_map") == 2
+    assert any(call["base"] == "spatial_residual_grid" and call["writer"] == "sheet" for call in calls)
+    assert any(call["base"] == "spatial_metric_by_model_map" and call["writer"] == "sheet" for call in calls)
+    assert any(call["base"] == "spatial_event_residual_map" and call["writer"] == "sheet" for call in calls)
+    assert any(call["base"] == "spatial_azimuthal_residuals" and call["writer"] == "sheet" for call in calls)
+    assert any(call["base"] == "spatial_polar_residuals" and call["writer"] == "sheet" for call in calls)
+    assert any(call["source_df"] is not None for call in calls if call["writer"] == "plot")
+    assert any(
+        getattr(call["source_df_factory"], "__name__", "") == "item_source_rows"
+        for call in calls
+        if call["writer"] == "sheet"
+    )
+
+
 def test_spatial_figure_context_labels_event_centered_path_plots(tmp_path: Path) -> None:
     """Large-run event-centered path plots should state that event means are removed."""
 

@@ -1042,19 +1042,22 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "run_or_submit_notebook_cli_command(" not in source
     assert '"svtk", "spatial"' not in source
     assert "should_rebuild_paths(" not in source
-    assert "station_summary_for_item = spatial_figures.station_summary_for_item" in source
-    assert "station_period_summary_for_item = spatial_figures.station_period_summary_for_item" in source
-    assert "station_grid_for_item = spatial_figures.station_grid_for_item" in source
-    assert "station_model_summary_for_item = spatial_figures.station_model_summary_for_item" in source
-    assert "item_source_rows = spatial_figures.item_source_rows" in source
-    assert "write_pca_summary_plots = spatial_figures.write_pca_summary_plots" in source
+    assert "spatial_figures.write_station_metric_maps(" in source
+    assert "spatial_figures.write_residual_grid_maps(" in source
+    assert "spatial_figures.write_metric_by_model_maps(" in source
+    assert "spatial_figures.write_event_residual_maps(" in source
+    assert "spatial_figures.write_event_centered_azimuthal_plots(" in source
+    assert "spatial_figures.write_event_centered_polar_plots(" in source
+    assert "station_summary_for_item = spatial_figures.station_summary_for_item" not in source
+    assert "item_source_rows = spatial_figures.item_source_rows" not in source
+    assert "for item in iter_metric_frames(" not in source
     assert "plot_pca_summary" in source
-    assert "write_pca_summary_plots(" in source
+    assert "spatial_figures.write_pca_summary_plots(" in source
     assert "DEFAULT_PCA_MODE = SPATIAL_FIGURE_SETTINGS.pca_mode" in source
     assert "PCA_MODE = DEFAULT_PCA_MODE" in source
     assert 'os.environ.get("SVTK_PCA_MODE"' not in source
-    assert "source_df=item_source_rows(item)" in source
-    assert "source_df_factory=item_source_rows" in source
+    assert "source_df=item_source_rows(item)" not in source
+    assert "source_df_factory=item_source_rows" not in source
     assert "source_df=item[\"df\"]" not in source
     assert "source_df_factory=lambda period_item" not in source
     assert "spatial_figures.write_overview_plots(" in source
@@ -1738,6 +1741,9 @@ def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> 
     """Large-run station aggregation figures should keep raw-row provenance."""
 
     repo_root = Path(__file__).resolve().parents[1]
+    spatial_context_source = (
+        repo_root / "src" / "spatial_vtk" / "spatial" / "plot" / "large_run.py"
+    ).read_text(encoding="utf-8")
     requirements = {
         "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": (
             'write_metric_plot(\n                "station_metric_map"',
@@ -1747,11 +1753,9 @@ def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> 
             "source_df_factory=item_source_rows",
         ),
         "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": (
-            'write_spatial_plot(\n                "spatial_station_metric_map"',
-            'write_spatial_plot(\n            "spatial_residual_grid"',
-            'write_spatial_plot(\n            "spatial_metric_by_model_map"',
-            "source_df=item_source_rows(item)",
-            "source_df_factory=item_source_rows",
+            "spatial_figures.write_station_metric_maps(",
+            "spatial_figures.write_residual_grid_maps(",
+            "spatial_figures.write_metric_by_model_maps(",
         ),
     }
     for relative_path, snippets in requirements.items():
@@ -1759,6 +1763,8 @@ def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> 
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
         for snippet in snippets:
             assert snippet in source, f"{relative_path} is missing provenance snippet {snippet!r}"
+    assert "source_df=self.item_source_rows(item)" in spatial_context_source
+    assert "source_df_factory=self.item_source_rows" in spatial_context_source
 
 
 def test_public_saved_plot_functions_expose_sidecar_controls() -> None:

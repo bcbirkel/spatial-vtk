@@ -446,6 +446,330 @@ class SpatialFigureContext:
             **kwargs,
         )
 
+    def write_station_metric_maps(
+        self,
+        station_metric_map_func: Callable[..., Any],
+        station_metric_map_by_period_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        add_basemap: bool | None = None,
+        showfig: bool | None = None,
+    ) -> list[Path]:
+        """Write station-level spatial metric maps for configured target metrics."""
+
+        resolved_value_col = value_col or self.metric_value_col
+        outputs: list[Path] = []
+        if not self._can_render_metric_figures("spatial_station_metric_map", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            self.metric_field,
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            if item["key"] == "psa" and self.period_col in item["df"].columns:
+                station_period_df = self.station_period_summary_for_item(item, resolved_value_col)
+                output = self.write_spatial_plot(
+                    "spatial_station_metric_map",
+                    item,
+                    station_metric_map_by_period_func,
+                    df=station_period_df,
+                    source_df=self.item_source_rows(item),
+                    required=["sta_lon", "sta_lat", self.period_col, resolved_value_col],
+                    value_col=resolved_value_col,
+                    forward_value_col=True,
+                    period_col=self.period_col,
+                    add_basemap=self._resolved_add_basemap(add_basemap),
+                    showfig=self._resolved_showfig(showfig),
+                )
+            else:
+                station_df = self.station_summary_for_item(item, resolved_value_col)
+                output = self.write_spatial_plot(
+                    "spatial_station_metric_map",
+                    item,
+                    station_metric_map_func,
+                    df=station_df,
+                    source_df=self.item_source_rows(item),
+                    required=["sta_lon", "sta_lat", resolved_value_col],
+                    value_col=resolved_value_col,
+                    forward_value_col=True,
+                    add_basemap=self._resolved_add_basemap(add_basemap),
+                    showfig=self._resolved_showfig(showfig),
+                )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
+    def write_residual_grid_maps(
+        self,
+        residual_grid_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        add_basemap: bool | None = None,
+        showfig: bool | None = None,
+    ) -> list[Path]:
+        """Write station-interpolated residual grid maps for target metrics."""
+
+        resolved_value_col = value_col or self.metric_value_col
+        outputs: list[Path] = []
+        if not self._can_render_metric_figures("spatial_residual_grid", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            self.metric_field,
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            if item["key"] == "psa":
+                output = self.write_spatial_period_sheet(
+                    "spatial_residual_grid",
+                    item,
+                    residual_grid_func,
+                    df_factory=self.station_grid_for_item,
+                    source_df_factory=self.item_source_rows,
+                    required=["lon", "lat", resolved_value_col],
+                    value_col=resolved_value_col,
+                    forward_value_col=True,
+                    add_basemap=self._resolved_add_basemap(add_basemap),
+                    showfig=self._resolved_showfig(showfig),
+                )
+            else:
+                grid_df = self.station_grid_for_item(item, resolved_value_col)
+                output = self.write_spatial_plot(
+                    "spatial_residual_grid",
+                    item,
+                    residual_grid_func,
+                    df=grid_df,
+                    source_df=self.item_source_rows(item),
+                    required=["lon", "lat", resolved_value_col],
+                    value_col=resolved_value_col,
+                    forward_value_col=True,
+                    add_basemap=self._resolved_add_basemap(add_basemap),
+                    showfig=self._resolved_showfig(showfig),
+                )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
+    def write_metric_by_model_maps(
+        self,
+        metric_by_model_map_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        add_basemap: bool | None = None,
+        showfig: bool | None = None,
+    ) -> list[Path]:
+        """Write faceted station maps split by model for target metrics."""
+
+        resolved_value_col = value_col or self.metric_value_col
+        outputs: list[Path] = []
+        if not self._can_render_metric_figures("spatial_metric_by_model_map", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            self.metric_field,
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            if item["key"] == "psa":
+                output = self.write_spatial_period_sheet(
+                    "spatial_metric_by_model_map",
+                    item,
+                    metric_by_model_map_func,
+                    df_factory=self.station_model_summary_for_item,
+                    source_df_factory=self.item_source_rows,
+                    required=[self.model_col, "sta_lon", "sta_lat", resolved_value_col],
+                    value_col=resolved_value_col,
+                    forward_value_col=True,
+                    add_basemap=self._resolved_add_basemap(add_basemap),
+                    showfig=self._resolved_showfig(showfig),
+                )
+            else:
+                station_model_df = self.station_model_summary_for_item(item, resolved_value_col)
+                output = self.write_spatial_plot(
+                    "spatial_metric_by_model_map",
+                    item,
+                    metric_by_model_map_func,
+                    df=station_model_df,
+                    source_df=self.item_source_rows(item),
+                    required=[self.model_col, "sta_lon", "sta_lat", resolved_value_col],
+                    value_col=resolved_value_col,
+                    forward_value_col=True,
+                    add_basemap=self._resolved_add_basemap(add_basemap),
+                    showfig=self._resolved_showfig(showfig),
+                )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
+    def write_event_residual_maps(
+        self,
+        event_residual_map_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        add_basemap: bool | None = None,
+        showfig: bool | None = None,
+    ) -> list[Path]:
+        """Write event residual maps for target metric rows."""
+
+        resolved_value_col = value_col or self.metric_value_col
+        outputs: list[Path] = []
+        if not self._can_render_metric_figures("spatial_event_residual_map", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            self.metric_field,
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            writer = self.write_spatial_period_sheet if item["key"] == "psa" else self.write_spatial_plot
+            output = writer(
+                "spatial_event_residual_map",
+                item,
+                event_residual_map_func,
+                required=["event_id", "sta_lon", "sta_lat", resolved_value_col],
+                value_col=resolved_value_col,
+                forward_value_col=True,
+                metric=None,
+                add_basemap=self._resolved_add_basemap(add_basemap),
+                showfig=self._resolved_showfig(showfig),
+            )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
+    def write_event_centered_azimuthal_plots(
+        self,
+        azimuthal_residuals_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        showfig: bool | None = None,
+        robust_axis_percentile: float | None = None,
+    ) -> list[Path]:
+        """Write event-centered azimuthal residual plots for target metrics."""
+
+        resolved_value_col = value_col or self.event_value_col
+        outputs: list[Path] = []
+        if not self._can_render_event_figures("spatial_azimuthal_residuals", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            self.event_centered,
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            writer = self.write_spatial_period_sheet if item["key"] == "psa" else self.write_spatial_plot
+            output = writer(
+                "spatial_azimuthal_residuals",
+                item,
+                azimuthal_residuals_func,
+                required=["azimuth_deg", resolved_value_col],
+                value_col=resolved_value_col,
+                forward_value_col=True,
+                group_col=self.component_col,
+                fit="lowess",
+                robust_axis_percentile=self.robust_axis_percentile if robust_axis_percentile is None else robust_axis_percentile,
+                showfig=self._resolved_showfig(showfig),
+            )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
+    def write_event_centered_polar_plots(
+        self,
+        polar_residuals_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        showfig: bool | None = None,
+    ) -> list[Path]:
+        """Write event-centered polar residual plots for target metrics."""
+
+        resolved_value_col = value_col or self.event_value_col
+        outputs: list[Path] = []
+        if not self._can_render_event_figures("spatial_polar_residuals", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            self.event_centered,
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            writer = self.write_spatial_period_sheet if item["key"] == "psa" else self.write_spatial_plot
+            output = writer(
+                "spatial_polar_residuals",
+                item,
+                polar_residuals_func,
+                required=["azimuth_deg", "distance_km", resolved_value_col],
+                value_col=resolved_value_col,
+                forward_value_col=True,
+                showfig=self._resolved_showfig(showfig),
+            )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
+    def _resolved_add_basemap(self, add_basemap: bool | None) -> bool:
+        """Return explicit or context-level basemap setting."""
+
+        return self.add_basemap if add_basemap is None else bool(add_basemap)
+
+    def _resolved_showfig(self, showfig: bool | None) -> bool:
+        """Return explicit or context-level notebook display setting."""
+
+        return self.default_showfig if showfig is None else bool(showfig)
+
+    def _can_render_metric_figures(self, label: str, value_col: str | None) -> bool:
+        """Return whether metric-field figures can render, printing a bounded reason."""
+
+        if not self.make_figures:
+            print(f"Skipping {label}. Enable spatial figures to render it.")
+            return False
+        if self.metric_field is None or self.metric_field.empty:
+            print(f"Skipping {label}: metric_field table missing or empty.")
+            return False
+        if not value_col:
+            print(f"Skipping {label}: no metric value column is available.")
+            return False
+        return True
+
+    def _can_render_event_figures(self, label: str, value_col: str | None) -> bool:
+        """Return whether event-centered figures can render, printing a bounded reason."""
+
+        if not self.make_figures:
+            print(f"Skipping {label}. Enable spatial figures to render it.")
+            return False
+        if self.event_centered is None or self.event_centered.empty:
+            print(f"Skipping {label}: event_centered_residuals table missing or empty.")
+            return False
+        if not value_col:
+            print(f"Skipping {label}: no event-centered value column is available.")
+            return False
+        return True
+
     def station_summary_for_map(
         self,
         df: pd.DataFrame,

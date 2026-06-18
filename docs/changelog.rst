@@ -1,6 +1,14 @@
 Changelog
 =========
 
+2026-06-18
+   Added package-level ``SpatialFigureContext`` helpers for large-run Step 4
+   spatial figure families, including station metric maps, residual grids,
+   model-faceted maps, event residual maps, and event-centered azimuthal/polar
+   plots. The large-run spatial notebook now keeps only the per-cell plotting
+   overrides and calls those package helpers, while source-row sidecar
+   provenance and PSA period-sheet branching stay in package code.
+
 2026-06-17
    Standard tutorial notebooks now use ``notebook_run_context()`` for config
    loading, activation, and output-directory discovery, matching the large-run
