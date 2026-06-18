@@ -7,6 +7,8 @@ Changelog
    previews. Large-run Steps 3, 6, and 7 now preview metric tables through
    output groups instead of direct ``preview_table`` or ``preview_output_table``
    calls in notebook cells.
+   Large-run Steps 1 and 5 now also avoid stale direct preview imports and
+   direct metric-source fallback expressions in favor of output-group helpers.
    Added ``spatial_vtk.io.preprocessed_waveform_output_group`` so Step 1 can
    use ``OutputGroup``-style ``bind()``, ``status_frame()``, and
    ``readiness()`` for preprocessing metadata under

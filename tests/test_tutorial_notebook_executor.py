@@ -704,6 +704,8 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "display_output_table_previews(" in source
     assert "ingest_outputs.load_tables(" in source
     assert "step_outputs.load_tables(" in source
+    assert "step_outputs.first_existing_path(" in source
+    assert "metrics_enriched_path if metrics_enriched_path.exists() else metrics_long_path" not in source
     assert "load_output_table(" not in source
     assert '"spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config"' not in source
     assert '"spatial_vtk.spatial.run_boundary_corridor_workflow_from_config"' not in source
@@ -719,6 +721,7 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "run_geojson_region_summary_workflow(" not in source
     assert "run_boundary_corridor_workflow(" not in source
     assert "preview_output_table(" not in source
+    assert "preview_table(" not in source
 
 
 def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
@@ -1059,6 +1062,8 @@ def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:
             assert "preprocessed_outputs.readiness(" in source
             assert "preprocess_readiness = output_readiness(" not in source
             assert "record_coverage_readiness = output_readiness(" not in source
+            assert "preview_output_table" not in source
+            assert "preview_table" not in source
         else:
             assert "preprocessed_waveform_metadata_paths(config=cfg)" in source
         assert re.search(r"(?<!waveform_)preprocessing_manifest\.csv", source) is None
