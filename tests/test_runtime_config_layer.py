@@ -172,6 +172,8 @@ def test_public_dashboard_and_sidecar_helpers_import_without_streamlit():
 
     assert dashboard_helpers.dashboard_summary_readiness_frame is dashboard_summary_readiness_frame
     assert dashboard_helpers.filter_optional_dashboard_summary is filter_optional_dashboard_summary
+    assert callable(dashboard_helpers.launch_configured_metrics_dashboard)
+    assert callable(dashboard_helpers.launch_configured_qc_dashboard)
     assert dashboard_helpers.row_value_column_for_summary is row_value_column_for_summary
     assert visualize_helpers.write_figure_row_sidecar is write_figure_row_sidecar
     assert visualize_helpers.figure_sidecar_status_frame is figure_sidecar_status_frame

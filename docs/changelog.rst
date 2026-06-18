@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-17
+   Added config-backed Python dashboard launch helpers,
+   ``launch_configured_metrics_dashboard()`` and
+   ``launch_configured_qc_dashboard()``, so notebooks can launch Streamlit
+   dashboards through package functions that resolve output registry paths
+   directly. The Step 7 notebooks now use those helpers when launch flags are
+   enabled and keep CLI commands only as optional terminal handoff text.
    Updated the standard Step 7 dashboard notebook so dashboard dataset
    preparation stays package-helper based for tutorial data and points full runs
    to the large-run package-helper Slurm driver instead of printing a

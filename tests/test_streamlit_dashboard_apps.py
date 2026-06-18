@@ -849,6 +849,87 @@ outputs:
     assert Path(env["SVTK_CONFIG_FILE"]) == config_path.resolve()
 
 
+def test_qc_dashboard_launcher_uses_explicit_config_path(tmp_path, monkeypatch):
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    clear_active_config()
+    launched = {}
+
+    class FakeProcess:
+        pid = 223
+
+    def fake_launch_streamlit_dashboard(entrypoint, **kwargs):
+        launched["entrypoint"] = entrypoint
+        launched.update(kwargs)
+        return FakeProcess()
+
+    monkeypatch.setattr(dashboard_launch, "launch_streamlit_dashboard", fake_launch_streamlit_dashboard)
+    process = dashboard_launch.launch_qc_dashboard(config_path=config_path, show=False)
+
+    assert process.pid == 223
+    env = launched["env"]
+    assert Path(env["SVTK_TRACE_SUMMARY"]) == tmp_path / "outputs" / "tables" / "qc_trace_summary.csv"
+    assert Path(env["SVTK_CONFIG_FILE"]) == config_path.resolve()
+
+
+def test_configured_dashboard_launchers_resolve_output_registry_paths(tmp_path, monkeypatch):
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    launched = []
+
+    class FakeProcess:
+        pid = 224
+
+    def fake_launch_streamlit_dashboard(entrypoint, **kwargs):
+        launched.append({"entrypoint": entrypoint, **kwargs})
+        return FakeProcess()
+
+    monkeypatch.setattr(dashboard_launch, "launch_streamlit_dashboard", fake_launch_streamlit_dashboard)
+    metrics_process = dashboard_launch.launch_configured_metrics_dashboard(
+        config_path=config_path,
+        server_port=8701,
+        auto_port=True,
+        show=False,
+    )
+    qc_process = dashboard_launch.launch_configured_qc_dashboard(
+        config_path=config_path,
+        server_port=8702,
+        auto_port=True,
+        show=False,
+    )
+
+    assert metrics_process.pid == 224
+    assert qc_process.pid == 224
+    metrics_env = launched[0]["env"]
+    qc_env = launched[1]["env"]
+    assert Path(metrics_env["SVTK_METRICS_ROOT"]) == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    assert Path(metrics_env["SVTK_SUMMARY_ROOT"]) == tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
+    assert Path(metrics_env["SVTK_CONFIG_FILE"]) == config_path.resolve()
+    assert launched[0]["server_port"] == 8701
+    assert launched[0]["auto_port"] is True
+    assert Path(qc_env["SVTK_TRACE_SUMMARY"]) == tmp_path / "outputs" / "tables" / "qc_trace_summary.csv"
+    assert Path(qc_env["SVTK_CONFIG_FILE"]) == config_path.resolve()
+    assert launched[1]["server_port"] == 8702
+    assert launched[1]["auto_port"] is True
+
+
 def test_dashboard_launch_detects_busy_port():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
         server.bind(("127.0.0.1", 0))

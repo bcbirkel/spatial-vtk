@@ -232,7 +232,9 @@ Step 7: Dashboard Datasets
      - ``spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets``
      - dashboard metric dataset root and dashboard summary table root
    * - Launch dashboards from Python
-     - ``spatial_vtk.visualize.dashboard.launch_metrics_dashboard`` and
+     - ``spatial_vtk.visualize.dashboard.launch_configured_metrics_dashboard``,
+       ``spatial_vtk.visualize.dashboard.launch_configured_qc_dashboard``,
+       ``spatial_vtk.visualize.dashboard.launch_metrics_dashboard``, and
        ``spatial_vtk.visualize.dashboard.launch_qc_dashboard``
      - local Streamlit processes configured from the same output registry
 

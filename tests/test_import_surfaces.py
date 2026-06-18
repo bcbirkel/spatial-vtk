@@ -22,7 +22,12 @@ def test_public_imports():
         run_spatial_derived_outputs_workflow_from_config,
         run_spatial_statistics_workflow_from_config,
     )
-    from spatial_vtk.visualize.dashboard import build_dashboard_summaries, dashboard_readiness_summary_frame
+    from spatial_vtk.visualize.dashboard import (
+        build_dashboard_summaries,
+        dashboard_readiness_summary_frame,
+        launch_configured_metrics_dashboard,
+        launch_configured_qc_dashboard,
+    )
     from spatial_vtk.spatial.map import add_contextily_basemap, plot_corridor_map, plot_event_residual_map
     from spatial_vtk.visualize.context import plot_distance_amplitude_diagnostics, plot_station_event_context, plot_study_domain_map
     from spatial_vtk.visualize.record_sections import plot_observed_synthetic_record_section, plot_record_section
@@ -55,6 +60,8 @@ def test_public_imports():
     assert callable(geojson_polygon_preview_table)
     assert callable(build_dashboard_summaries)
     assert callable(dashboard_readiness_summary_frame)
+    assert callable(launch_configured_metrics_dashboard)
+    assert callable(launch_configured_qc_dashboard)
     assert callable(add_contextily_basemap)
     assert callable(plot_corridor_map)
     assert callable(plot_event_residual_map)

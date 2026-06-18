@@ -5,6 +5,8 @@ from __future__ import annotations
 from spatial_vtk.visualize.dashboard import (
     build_dashboard_summaries,
     dashboard_summary_input_columns,
+    launch_configured_metrics_dashboard,
+    launch_configured_qc_dashboard,
     launch_metrics_dashboard,
     launch_qc_dashboard,
     load_dashboard_metric_dataset,
@@ -83,6 +85,8 @@ __all__ = [
     "finish_figure_with_sidecar",
     "is_log2_ratio_field",
     "layered_figure_rows",
+    "launch_configured_metrics_dashboard",
+    "launch_configured_qc_dashboard",
     "launch_metrics_dashboard",
     "launch_qc_dashboard",
     "load_dashboard_metric_dataset",

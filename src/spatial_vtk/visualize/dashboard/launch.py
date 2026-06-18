@@ -11,7 +11,7 @@ import sys
 import time
 from typing import Any
 
-from spatial_vtk.config import active_config, resolve_output_path
+from spatial_vtk.config import SpatialVTKConfig, active_config, resolve_output_path
 
 
 def build_streamlit_command(
@@ -82,6 +82,47 @@ def launch_metrics_dashboard(
     )
 
 
+def launch_configured_metrics_dashboard(
+    *,
+    cfg: Any | None = None,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    server_address: str = "127.0.0.1",
+    server_port: int = 8501,
+    auto_port: bool = False,
+    show: bool = True,
+    proxy_mode: bool = False,
+    extra_args: list[str] | None = None,
+) -> subprocess.Popen[Any]:
+    """Launch the Metrics Explorer from configured dashboard output paths.
+
+    Parameters
+    ----------
+    cfg, config_path, run_scenario
+        Configuration object or config file used to resolve the
+        ``metrics_dashboard`` and ``dashboard_summaries`` output registry keys.
+        When omitted, the active Spatial-VTK config is used.
+    server_address, server_port, auto_port, show, proxy_mode, extra_args
+        Passed through to :func:`launch_metrics_dashboard`.
+    """
+
+    from spatial_vtk.visualize.dashboard.contracts import dashboard_output_paths
+
+    config = _resolve_dashboard_config(cfg=cfg, config_path=config_path, run_scenario=run_scenario)
+    paths = dashboard_output_paths(cfg=config, include_summary_tables=False)
+    return launch_metrics_dashboard(
+        metrics_root=paths["metrics_dashboard_root"],
+        summary_root=paths["dashboard_summary_root"],
+        config_path=config.config_path,
+        server_address=server_address,
+        server_port=server_port,
+        auto_port=auto_port,
+        show=show,
+        proxy_mode=proxy_mode,
+        extra_args=extra_args,
+    )
+
+
 def launch_qc_dashboard(
     *,
     trace_summary: str | Path | None = None,
@@ -98,7 +139,7 @@ def launch_qc_dashboard(
     config = None
     if trace_summary is None or config_path is None:
         try:
-            config = active_config()
+            config = _resolve_dashboard_config(config_path=config_path)
         except Exception:
             config = None
     if trace_summary is None:
@@ -121,6 +162,33 @@ def launch_qc_dashboard(
         proxy_mode=proxy_mode,
         extra_args=extra_args,
         env=env,
+    )
+
+
+def launch_configured_qc_dashboard(
+    *,
+    cfg: Any | None = None,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    server_address: str = "127.0.0.1",
+    server_port: int = 8502,
+    auto_port: bool = False,
+    show: bool = True,
+    proxy_mode: bool = False,
+    extra_args: list[str] | None = None,
+) -> subprocess.Popen[Any]:
+    """Launch the QC Explorer from the configured ``qc_trace_summary`` output."""
+
+    config = _resolve_dashboard_config(cfg=cfg, config_path=config_path, run_scenario=run_scenario)
+    return launch_qc_dashboard(
+        trace_summary=resolve_output_path("qc_trace_summary", kind="table", cfg=config),
+        config_path=config.config_path,
+        server_address=server_address,
+        server_port=server_port,
+        auto_port=auto_port,
+        show=show,
+        proxy_mode=proxy_mode,
+        extra_args=extra_args,
     )
 
 
@@ -209,9 +277,27 @@ def _require_streamlit() -> None:
         raise ImportError("Streamlit dashboards require the optional dashboard dependencies. Install spatial-vtk[dashboard] or use svtk_environment.yaml.")
 
 
+def _resolve_dashboard_config(
+    *,
+    cfg: Any | None = None,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+) -> Any:
+    """Resolve a dashboard config from an object, config path, or active config."""
+
+    if cfg is not None:
+        return cfg.with_run_scenario(run_scenario) if run_scenario and hasattr(cfg, "with_run_scenario") else cfg
+    if config_path is not None:
+        return SpatialVTKConfig.from_file(config_path, run_scenario=run_scenario)
+    config = active_config()
+    return config.with_run_scenario(run_scenario) if run_scenario and hasattr(config, "with_run_scenario") else config
+
+
 __all__ = [
     "build_streamlit_command",
     "find_available_port",
+    "launch_configured_metrics_dashboard",
+    "launch_configured_qc_dashboard",
     "launch_metrics_dashboard",
     "launch_qc_dashboard",
     "launch_streamlit_dashboard",

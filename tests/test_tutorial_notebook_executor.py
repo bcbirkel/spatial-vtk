@@ -634,6 +634,9 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "write_configured_dashboard_datasets(" in source
+    assert "launch_configured_metrics_dashboard(" in source
+    assert "launch_configured_qc_dashboard(" in source
+    assert "notebook_dashboard_launch_commands(" in source
     assert "write_dashboard_metric_dataset(" not in source
     assert "write_dashboard_summary_dataset(" not in source
     assert "metrics_outputs_command" not in source
@@ -656,6 +659,9 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=OVERWRITE)" in source
     assert "run_notebook_step_if_needed(" in source
     assert "spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets" in source
+    assert "launch_configured_metrics_dashboard(" in source
+    assert "launch_configured_qc_dashboard(" in source
+    assert "notebook_dashboard_launch_commands(config_path)" in source
     assert '"cfg": str(config_path)' in source
     assert "preview_output_table(\"metrics_long\", cfg=cfg" in source
     assert "dashboard_output_namespace" not in source
