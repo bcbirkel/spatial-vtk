@@ -146,7 +146,10 @@ the large-run notebooks.
      - Return config-backed dashboard launch settings. Use
        ``metrics_launch_kwargs()`` and ``qc_launch_kwargs()`` with the package
        dashboard launch helpers; the shell-safe command strings are retained as
-       a terminal fallback for long-lived dashboard sessions.
+       a terminal fallback for long-lived dashboard sessions. The returned
+       settings also parse ``SVTK_LAUNCH_METRICS_DASHBOARD`` and
+       ``SVTK_LAUNCH_QC_DASHBOARD`` so notebooks do not repeat dashboard
+       launch environment parsing in cells.
 
 Step 1: Metadata, Waveforms, and Record Coverage
 ------------------------------------------------

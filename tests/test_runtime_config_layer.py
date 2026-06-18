@@ -622,6 +622,8 @@ def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monke
     config_path.write_text("project:\n  root_dir: .\n", encoding="utf-8")
     monkeypatch.delenv("SVTK_METRICS_DASHBOARD_PORT", raising=False)
     monkeypatch.delenv("SVTK_QC_DASHBOARD_PORT", raising=False)
+    monkeypatch.delenv("SVTK_LAUNCH_METRICS_DASHBOARD", raising=False)
+    monkeypatch.delenv("SVTK_LAUNCH_QC_DASHBOARD", raising=False)
     monkeypatch.delenv("SVTK_DASHBOARD_AUTO_PORT", raising=False)
     monkeypatch.delenv("SVTK_DASHBOARD_PROXY_MODE", raising=False)
 
@@ -629,6 +631,8 @@ def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monke
 
     assert commands.metrics_port == 8501
     assert commands.qc_port == 8502
+    assert commands.launch_metrics_dashboard is False
+    assert commands.launch_qc_dashboard is False
     assert commands.auto_port is True
     assert commands.proxy_mode is False
     assert commands.config_path == config_path.resolve()
@@ -650,6 +654,7 @@ def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monke
     }
     status = commands.status_frame().set_index("dashboard")
     assert status.loc["metrics", "requested_port"] == 8501
+    assert bool(status.loc["metrics", "launch_requested"]) is False
     assert status.loc["metrics", "metrics_dataset_dir"] == str(
         tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
     )
@@ -657,6 +662,7 @@ def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monke
         tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
     )
     assert status.loc["qc", "requested_port"] == 8502
+    assert bool(status.loc["qc", "launch_requested"]) is False
     assert status.loc["qc", "trace_summary_table"] == str(tmp_path / "outputs" / "tables" / "qc_trace_summary.csv")
     assert "svtk dashboard metrics" in status.loc["metrics", "terminal_command"]
 
@@ -676,6 +682,8 @@ run_scenarios:
     )
     monkeypatch.setenv("SVTK_METRICS_DASHBOARD_PORT", "8601")
     monkeypatch.setenv("SVTK_QC_DASHBOARD_PORT", "8602")
+    monkeypatch.setenv("SVTK_LAUNCH_METRICS_DASHBOARD", "1")
+    monkeypatch.setenv("SVTK_LAUNCH_QC_DASHBOARD", "1")
     monkeypatch.setenv("SVTK_DASHBOARD_AUTO_PORT", "0")
     monkeypatch.setenv("SVTK_DASHBOARD_PROXY_MODE", "1")
 
@@ -683,6 +691,8 @@ run_scenarios:
 
     assert commands.metrics_port == 8601
     assert commands.qc_port == 8602
+    assert commands.launch_metrics_dashboard is True
+    assert commands.launch_qc_dashboard is True
     assert commands.auto_port is False
     assert commands.proxy_mode is True
     assert commands.run_scenario == "large-run"
@@ -692,6 +702,8 @@ run_scenarios:
     assert "--proxy-mode" in commands.qc_command
     status = commands.status_frame().set_index("dashboard")
     assert status.loc["metrics", "run_scenario"] == "large-run"
+    assert bool(status.loc["metrics", "launch_requested"]) is True
+    assert bool(status.loc["qc", "launch_requested"]) is True
     assert "--run-scenario large-run" in status.loc["metrics", "terminal_command"]
     assert commands.metrics_launch_kwargs(show=False) == {
         "config_path": config_path.resolve(),

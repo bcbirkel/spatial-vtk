@@ -194,6 +194,9 @@ class NotebookDashboardCommands:
         dashboards from a terminal.
     metrics_port, qc_port
         Requested ports before any ``auto_port`` fallback.
+    launch_metrics_dashboard, launch_qc_dashboard
+        Whether notebooks should launch dashboards from the kernel. When false,
+        notebooks can display or print the terminal command instead.
     auto_port
         Whether dashboard launch helpers may move to the next available port.
     proxy_mode
@@ -209,6 +212,8 @@ class NotebookDashboardCommands:
     qc_command: str
     metrics_port: int
     qc_port: int
+    launch_metrics_dashboard: bool
+    launch_qc_dashboard: bool
     auto_port: bool
     proxy_mode: bool
     config_path: Path
@@ -267,6 +272,7 @@ class NotebookDashboardCommands:
             {
                 "dashboard": "metrics",
                 "requested_port": self.metrics_port,
+                "launch_requested": self.launch_metrics_dashboard,
                 "metrics_dataset_dir": str(paths["metrics_dashboard_root"]),
                 "dashboard_summary_table_dir": str(paths["dashboard_summary_root"]),
                 "trace_summary_table": "",
@@ -276,6 +282,7 @@ class NotebookDashboardCommands:
             {
                 "dashboard": "qc",
                 "requested_port": self.qc_port,
+                "launch_requested": self.launch_qc_dashboard,
                 "metrics_dataset_dir": "",
                 "dashboard_summary_table_dir": "",
                 "trace_summary_table": str(paths["qc_trace_summary_path"]),
@@ -687,6 +694,8 @@ def notebook_dashboard_launch_commands(
     *,
     metrics_port: int | None = None,
     qc_port: int | None = None,
+    launch_metrics_dashboard: bool | None = None,
+    launch_qc_dashboard: bool | None = None,
     auto_port: bool | None = None,
     proxy_mode: bool | None = None,
     run_scenario: str | None = None,
@@ -701,6 +710,9 @@ def notebook_dashboard_launch_commands(
     metrics_port, qc_port
         Optional dashboard ports. Defaults come from
         ``SVTK_METRICS_DASHBOARD_PORT`` and ``SVTK_QC_DASHBOARD_PORT``.
+    launch_metrics_dashboard, launch_qc_dashboard
+        Optional launch flags. Defaults come from
+        ``SVTK_LAUNCH_METRICS_DASHBOARD`` and ``SVTK_LAUNCH_QC_DASHBOARD``.
     auto_port
         Whether to include ``--auto-port``. The notebook default is ``True`` so
         a stale dashboard does not make the cell fail.
@@ -725,6 +737,16 @@ def notebook_dashboard_launch_commands(
     resolved_qc_port = int(
         qc_port if qc_port is not None else _env_int("SVTK_QC_DASHBOARD_PORT", default=8502)
     )
+    resolved_launch_metrics = (
+        _env_bool("SVTK_LAUNCH_METRICS_DASHBOARD", default=False)
+        if launch_metrics_dashboard is None
+        else bool(launch_metrics_dashboard)
+    )
+    resolved_launch_qc = (
+        _env_bool("SVTK_LAUNCH_QC_DASHBOARD", default=False)
+        if launch_qc_dashboard is None
+        else bool(launch_qc_dashboard)
+    )
     resolved_auto_port = _env_bool("SVTK_DASHBOARD_AUTO_PORT", default=True) if auto_port is None else bool(auto_port)
     resolved_proxy_mode = _env_bool("SVTK_DASHBOARD_PROXY_MODE", default=False) if proxy_mode is None else bool(proxy_mode)
 
@@ -743,6 +765,8 @@ def notebook_dashboard_launch_commands(
         qc_command=command("qc", resolved_qc_port),
         metrics_port=resolved_metrics_port,
         qc_port=resolved_qc_port,
+        launch_metrics_dashboard=resolved_launch_metrics,
+        launch_qc_dashboard=resolved_launch_qc,
         auto_port=resolved_auto_port,
         proxy_mode=resolved_proxy_mode,
         config_path=resolved_config_path,

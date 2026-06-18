@@ -304,7 +304,10 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     """Tutorial notebooks should use public QC workflow helpers."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    standard_text = (repo_root / "docs" / "examples" / "step_02_quality_control.ipynb").read_text(encoding="utf-8")
+    standard_notebook = json.loads(
+        (repo_root / "docs" / "examples" / "step_02_quality_control.ipynb").read_text(encoding="utf-8")
+    )
+    standard_text = "\n".join("".join(cell.get("source", [])) for cell in standard_notebook.get("cells", []))
     large_run_text = (
         repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb"
     ).read_text(encoding="utf-8")
@@ -314,6 +317,12 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "run_qc_summary_workflow_from_config(" in standard_text
     assert "ingest_outputs.load_tables(" in standard_text
     assert "qc_figure_tables = qc_outputs.load_tables(" in standard_text
+    assert "notebook_dashboard_launch_commands(" in standard_text
+    assert "launch_configured_qc_dashboard(" in standard_text
+    assert "dashboard_launch.qc_launch_kwargs(show=True)" in standard_text
+    assert "launch_qc_dashboard(" not in standard_text
+    assert 'os.environ.get("SVTK_QC_DASHBOARD_PORT"' not in standard_text
+    assert 'os.environ.get("SVTK_LAUNCH_QC_DASHBOARD"' not in standard_text
     assert "run_notebook_step_if_needed(" in large_run_text
     assert "from spatial_vtk.qc import (" in large_run_text
     assert "run_qc_inventory_from_config," in large_run_text
