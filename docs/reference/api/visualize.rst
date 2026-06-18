@@ -33,6 +33,9 @@ Public helpers exposed by ``spatial_vtk.visualize``:
      - Render post-QC maps and rejection-reason diagnostics.
    * - ``plot_observed_synthetic_record_section`` and ``plot_record_section``
      - Render record-section waveform figures from prepared waveform tables.
+   * - ``station_event_waveform_order_frame``
+     - Preview the bounded station/component order used by station-event
+       waveform map panels without notebook-local sorting and slicing.
    * - ``write_waveform_comparison_from_outputs``
      - Render observed/synthetic trace-comparison figures
        from configured event-station and comparison-eligible outputs without

@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-18
+   Added ``station_event_waveform_order_frame()`` to the public waveform
+   visualization API and rewired the standard Step 6 plotting notebook to use
+   it for station-order previews instead of inline sort/head dataframe code.
    Added ``spatial_correlation_preview_frame()`` to the public spatial API and
    rewired the standard Step 4 spatial notebook to use it for Moran's I and
    distance-bin diagnostic previews instead of notebook-local filtered

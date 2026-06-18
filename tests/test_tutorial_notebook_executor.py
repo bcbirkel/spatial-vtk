@@ -1725,6 +1725,8 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     assert "from spatial_vtk.spatial import add_geojson_metadata_to_metrics" in source
     assert "metric_plot_input_summary_frame(" in source
     assert "event_display_label(events, waveform_event_id)" in source
+    assert "station_event_waveform_order_frame(waveform_records, max_traces=12)" in source
+    assert 'waveform_records[["station", "distance_km"]].sort_values("distance_km").head(12)' not in source
     assert '.eq(waveform_event_id), "event_name"' not in source
     assert "pd.DataFrame(" not in source
     assert "from spatial_vtk.spatial.calculate import" not in source

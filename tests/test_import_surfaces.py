@@ -807,7 +807,10 @@ def test_waveform_large_run_helper_is_public():
     assert "write_waveform_comparison_from_outputs" in waveforms.__all__
     assert "write_large_run_waveform_comparison_from_outputs" in visualize.__all__
     assert "write_large_run_waveform_comparison_from_outputs" in waveforms.__all__
+    assert "station_event_waveform_order_frame" in visualize.__all__
+    assert "station_event_waveform_order_frame" in waveforms.__all__
     assert callable(waveforms.write_waveform_comparison_from_outputs)
+    assert callable(waveforms.station_event_waveform_order_frame)
     assert callable(waveforms.write_large_run_waveform_comparison_from_outputs)
     assert visualize.write_waveform_comparison_from_outputs is waveforms.write_waveform_comparison_from_outputs
     assert visualize.write_large_run_waveform_comparison_from_outputs is waveforms.write_large_run_waveform_comparison_from_outputs

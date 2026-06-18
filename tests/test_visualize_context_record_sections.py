@@ -32,6 +32,7 @@ from spatial_vtk.visualize.waveforms import (
     plot_event_radial_trace_section,
     plot_station_event_waveform_map,
     plot_waveform_overlay_matrix,
+    station_event_waveform_order_frame,
     write_large_run_waveform_comparison_from_outputs,
     write_waveform_comparison_from_outputs,
 )
@@ -536,6 +537,11 @@ def test_station_event_waveform_map_aligns_to_event_time_and_sorts_distance() ->
     labels = [text.get_text() for text in trace_ax.texts]
     assert labels[0].startswith("NEAR")
     plt.close(fig)
+
+    order = station_event_waveform_order_frame(records, max_traces=1)
+    assert order.loc[0, "station"] == "NEAR"
+    assert order.loc[0, "distance_km"] == pytest.approx(10.0)
+    assert list(order.columns) == ["station", "distance_km", "component"]
 
     low_gain = plot_event_trace_comparison(
         records,

@@ -23,6 +23,52 @@ from spatial_vtk.visualize.record_sections import normalize_trace, trace_to_arra
 from spatial_vtk.visualize.selection import FigureSelection
 
 
+def station_event_waveform_order_frame(
+    records_df: pd.DataFrame,
+    *,
+    station_col: str = "station",
+    distance_col: str = "distance_km",
+    component_col: str | None = "component",
+    max_traces: int = 12,
+    sort_by_distance: bool = True,
+) -> pd.DataFrame:
+    """Return the station order used by a station-event waveform panel.
+
+    Parameters
+    ----------
+    records_df
+        Waveform records passed to :func:`plot_station_event_waveform_map`.
+    station_col
+        Station label column.
+    distance_col
+        Distance column used for sorting when available.
+    component_col
+        Optional component label column to include in the preview.
+    max_traces
+        Maximum number of rows to return.
+    sort_by_distance
+        Whether to sort by distance and station before applying ``max_traces``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Bounded preview table with available station, distance, and component
+        columns in plotted order.
+    """
+
+    _require_columns(records_df, [station_col])
+    work = records_df.copy()
+    columns = [station_col]
+    if distance_col in work.columns:
+        work[distance_col] = pd.to_numeric(work[distance_col], errors="coerce")
+        columns.append(distance_col)
+    if component_col and component_col in work.columns:
+        columns.append(component_col)
+    if sort_by_distance and distance_col in work.columns:
+        work = work.sort_values([distance_col, station_col], kind="stable")
+    return work.loc[:, columns].head(max(int(max_traces), 0)).reset_index(drop=True)
+
+
 def plot_station_event_waveform_map(
     records_df: pd.DataFrame,
     output_path: str | Path | None = None,
@@ -271,4 +317,4 @@ def _require_columns(df: pd.DataFrame, columns: list[str]) -> None:
         raise KeyError(f"Missing required columns: {missing}")
 
 
-__all__ = ["plot_station_event_waveform_map"]
+__all__ = ["plot_station_event_waveform_map", "station_event_waveform_order_frame"]

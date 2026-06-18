@@ -62,6 +62,7 @@ _EXPORT_MODULES = {
     "plot_event_trace_comparison": "spatial_vtk.visualize.waveforms",
     "plot_station_event_waveform_map": "spatial_vtk.visualize.waveforms",
     "plot_waveform_overlay_matrix": "spatial_vtk.visualize.waveforms",
+    "station_event_waveform_order_frame": "spatial_vtk.visualize.waveforms",
     "WaveformComparisonFigureResult": "spatial_vtk.visualize.waveforms",
     "write_large_run_waveform_comparison_from_outputs": "spatial_vtk.visualize.waveforms",
     "write_waveform_comparison_from_outputs": "spatial_vtk.visualize.waveforms",
