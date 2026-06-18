@@ -415,6 +415,33 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
     return pd.DataFrame([row])
 
 
+def _rebuildable_dashboard_map_tables(summary_status: pd.DataFrame, metrics_long_path: Path) -> list[str]:
+    """Return summary tables whose missing map columns can be rebuilt from source metrics."""
+
+    if summary_status.empty or not metrics_long_path.exists():
+        return []
+    required = {"dashboard_table", "map_ready"}
+    if not required <= set(summary_status.columns):
+        return []
+    try:
+        source_columns = set(_dashboard_table_columns(metrics_long_path))
+    except Exception:
+        return []
+    tables: list[str] = []
+    for _, row in summary_status.iterrows():
+        table_name = str(row.get("dashboard_table") or "")
+        if table_name not in MAP_COORDINATE_CANDIDATES:
+            continue
+        if dashboard_ready_value(row.get("map_ready"), default=True):
+            continue
+        lon_candidates, lat_candidates = MAP_COORDINATE_CANDIDATES[table_name]
+        has_lon = any(column in source_columns for column in lon_candidates)
+        has_lat = any(column in source_columns for column in lat_candidates)
+        if has_lon and has_lat:
+            tables.append(table_name)
+    return sorted(dict.fromkeys(tables))
+
+
 def dashboard_qc_trace_readiness_frame(
     trace_summary: str | Path | None = None,
     *,
@@ -520,6 +547,21 @@ def dashboard_output_readiness(
             should_run=True,
             reason="missing_outputs",
             message=first_message,
+            metrics_status=metrics_status,
+            summary_status=summary_status,
+            input_status=input_status,
+            qc_status=qc_status,
+        )
+    incomplete_maps = _rebuildable_dashboard_map_tables(summary_status, metrics_long_path)
+    if incomplete_maps:
+        table_text = ", ".join(incomplete_maps)
+        return DashboardOutputReadiness(
+            should_run=True,
+            reason="map_incomplete",
+            message=(
+                f"Dashboard summary maps are missing coordinate columns for {table_text}, "
+                "but metrics_long contains the coordinates needed to rebuild them."
+            ),
             metrics_status=metrics_status,
             summary_status=summary_status,
             input_status=input_status,

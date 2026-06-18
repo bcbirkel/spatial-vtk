@@ -1145,6 +1145,80 @@ outputs:
     assert readiness.summary_frame().equals(summary)
 
 
+def test_dashboard_output_readiness_rebuilds_map_summaries_when_source_has_coordinates(tmp_path):
+    """Dashboard preflight should rerun stale map summaries that dropped coordinates."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    paths = dashboard_output_namespace(cfg=cfg)
+    paths.metrics_long_path.parent.mkdir(parents=True, exist_ok=True)
+    paths.metrics_dashboard_root.mkdir(parents=True, exist_ok=True)
+    paths.dashboard_summary_root.mkdir(parents=True, exist_ok=True)
+
+    pd.DataFrame(
+        {
+            "model": ["m1"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "component": ["Z"],
+            "station": ["STA"],
+            "event_id": ["E1"],
+            "log2_residual": [0.25],
+            "sta_lon": [-118.1],
+            "sta_lat": [34.2],
+            "event_lon": [-118.0],
+            "event_lat": [34.0],
+        }
+    ).to_parquet(paths.metrics_long_path, index=False)
+    pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "log2_residual": [0.25]}).to_parquet(
+        paths.metrics_dashboard_root / "metrics_long.parquet",
+        index=False,
+    )
+    pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "n": [1], "med_log2_residual": [0.25]}).to_parquet(
+        paths.dashboard_summary_root / "model_metric_band.parquet",
+        index=False,
+    )
+    pd.DataFrame({"station": ["STA"], "model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "n": [1], "med_log2_residual": [0.25]}).to_parquet(
+        paths.dashboard_summary_root / "station_rollup.parquet",
+        index=False,
+    )
+    pd.DataFrame({"event_id": ["E1"], "model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "n": [1], "med_log2_residual": [0.25]}).to_parquet(
+        paths.dashboard_summary_root / "event_rollup.parquet",
+        index=False,
+    )
+    pd.DataFrame(
+        {
+            "model": ["m1"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "dist_bin_km": [0.0],
+            "az_bin_deg": [0.0],
+            "n": [1],
+            "med_log2_residual": [0.25],
+        }
+    ).to_parquet(paths.dashboard_summary_root / "path_hex.parquet", index=False)
+
+    readiness = dashboard_output_readiness(cfg=cfg)
+    summary = dashboard_readiness_summary_frame(readiness=readiness).set_index("item")
+
+    assert readiness.should_run is True
+    assert readiness.reason == "map_incomplete"
+    assert "station_rollup" in readiness.message
+    assert "event_rollup" in readiness.message
+    assert summary.loc["station_rollup", "readiness"] == "ready"
+    assert summary.loc["station_rollup", "map_ready"] is False
+
+
 def test_dashboard_ready_value_parses_status_table_values():
     """Dashboard readiness parsing should not treat string False as truthy."""
 
