@@ -92,6 +92,8 @@ NOTEBOOK_CONTRACT_FORBIDDEN_SNIPPETS = (
     "runs/outputs",
     "runs/spatial_vtk_config.yaml",
     "pd.read_",
+    ".loc[",
+    ".merge(",
 )
 NOTEBOOK_CONTRACT_FORBIDDEN_LINE_PATTERNS = (
     re.compile(r"^\s*![^\n]*\bsvtk\b", re.MULTILINE),
@@ -287,7 +289,7 @@ def check_tutorial_notebook_contracts(notebooks: list[Path], *, repo_root: Path)
     raise SystemExit(
         "Tutorial notebook source contract failed. Notebooks should run from a "
         "fresh public checkout, use importable spatial_vtk package APIs instead "
-        "of shell/CLI workflow cells, and avoid raw output-path/table plumbing.\n"
+        "of shell/CLI workflow cells, and avoid raw output-path/table/dataframe plumbing.\n"
         f"{preview}{suffix}"
     )
 

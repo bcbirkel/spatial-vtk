@@ -50,8 +50,8 @@ notebook source contract, committed five-event metadata, snapshot tables, and
 observed/synthetic NPZ waveform subset before cleaning ``outputs/tutorials``.
 The source contract catches saved execution state, private absolute paths,
 shell/CLI workflow cells, implementation plotting imports, fixed run-layout
-paths, and raw output-path/table reads so public tutorials stay package-first
-and source-checkout safe.
+paths, raw output-path/table reads, and notebook-local dataframe filtering or
+joins so public tutorials stay package-first and source-checkout safe.
 
 To verify the standard and large-run tutorial drivers together from a fresh
 source checkout, run:

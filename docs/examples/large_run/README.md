@@ -26,7 +26,8 @@ drivers, using only committed example data. It fails if any notebook raises an
 error or emits warning-like output. Before execution or output cleanup, it also
 checks that tutorial notebooks have no saved execution state, private absolute
 paths, shell/CLI workflow cells, implementation plotting imports, fixed run
-layout paths, or raw output-path/table reads.
+layout paths, raw output-path/table reads, or notebook-local dataframe
+filtering and joins that should live in package helpers.
 Run `python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run`
 for the same source-contract and example-data checks without notebook runtime
 dependencies.

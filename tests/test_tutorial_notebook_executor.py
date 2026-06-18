@@ -298,6 +298,8 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
                             "path = resolve_output_path('metrics_long')\n",
                             "outputs = output_group_namespace('step_03_metrics')\n",
                             "step_outputs['metrics_long_path']\n",
+                            "subset = metrics.loc[metrics['metric'].eq('PGA')]\n",
+                            "joined = subset.merge(metrics, on='event_id')\n",
                             "layout = 'runs/outputs/tables'\n",
                         ],
                     },
@@ -339,6 +341,8 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert "from spatial_vtk.metrics.plot." in combined
     assert "output_group_namespace" in combined
     assert "step_outputs[" in combined
+    assert ".loc[" in combined
+    assert ".merge(" in combined
     assert "runs/outputs" in combined
     assert "should receive an imported package callable" in combined
     assert "spatial_vtk.qc.run_qc_inventory_from_config" in combined
@@ -543,6 +547,7 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "implementation plotting imports" in combined
     assert "fixed run" in combined
     assert "raw output-path/table reads" in combined
+    assert "notebook-local dataframe filtering" in combined
     assert "Notebook cells use importable ``spatial_vtk`` package functions" in examples_index
     assert "Notebook cells call importable `spatial_vtk` package functions directly" in large_run_readme
     assert "do not shell out to `svtk` CLI commands for workflow work" in large_run_readme
