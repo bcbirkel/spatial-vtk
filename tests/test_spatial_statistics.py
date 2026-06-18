@@ -1342,6 +1342,62 @@ def test_spatial_figure_context_writes_overview_plots_with_empty_missing_tables(
     assert not any(call["base"] == "spatial_geology_contrast" for call in calls)
 
 
+def test_spatial_figure_context_labels_event_centered_path_plots(tmp_path: Path) -> None:
+    """Large-run event-centered path plots should state that event means are removed."""
+
+    metric_field = pd.DataFrame(
+        {
+            "event_id": ["e1"],
+            "station": ["STA"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "component": ["R"],
+            "model": ["m1"],
+            "log2_residual": [0.25],
+            "distance_km": [10.0],
+            "azimuth_deg": [45.0],
+        }
+    )
+    event_centered = metric_field.assign(event_mean=[0.1])
+    figure_dir = tmp_path / "figures"
+    context = SpatialFigureContext(
+        figure_dir=figure_dir,
+        make_figures=True,
+        metric_context=MetricFigureContext.from_frame(metric_field, figure_dir, make_figures=True),
+        event_context=MetricFigureContext.from_frame(event_centered, figure_dir, make_figures=True),
+        tables={
+            "metric_field": metric_field,
+            "event_centered_residuals": event_centered,
+        },
+        paths={},
+    )
+    item = {
+        "key": "pga",
+        "label": "PGA",
+        "metric": "PGA",
+        "period_s": None,
+        "df": event_centered,
+    }
+    calls: list[dict[str, object]] = []
+
+    def _fake_metric_plot(base, item, func, **kwargs):  # noqa: ANN001, ANN202
+        calls.append({"method": "plot", "base": base, "kwargs": kwargs})
+        return figure_dir / f"{base}.png"
+
+    def _fake_period_sheet(base, item, func, **kwargs):  # noqa: ANN001, ANN202
+        calls.append({"method": "period", "base": base, "kwargs": kwargs})
+        return figure_dir / f"{base}_period.png"
+
+    context.event_context.write_metric_plot = _fake_metric_plot  # type: ignore[method-assign]
+    context.event_context.write_psa_period_sheet = _fake_period_sheet  # type: ignore[method-assign]
+
+    context.write_spatial_plot("spatial_azimuthal_residuals", item, lambda *args, **kwargs: None)
+    context.write_spatial_period_sheet("spatial_polar_residuals", item, lambda *args, **kwargs: None)
+
+    assert calls[0]["kwargs"]["title"] == "Event-Centered Azimuthal Residuals"
+    assert calls[1]["kwargs"]["title"] == "Event-Centered Polar Residuals"
+
+
 def test_spatial_figure_context_writes_pca_summary_with_layered_sidecar(tmp_path: Path) -> None:
     """Large-run Step 4 should expose the standard combined PCA summary figure."""
 

@@ -333,6 +333,7 @@ class SpatialFigureContext:
         """Write one spatial plot using the matching figure context."""
 
         context = self._context_for(item.get("df")) or self.metric_context
+        self._apply_event_centered_plot_defaults(base, context, kwargs)
         return context.write_metric_plot(
             base,
             item,
@@ -345,6 +346,23 @@ class SpatialFigureContext:
             showfig=showfig,
             **kwargs,
         )
+
+    def _apply_event_centered_plot_defaults(
+        self,
+        base: str,
+        context: MetricFigureContext,
+        kwargs: dict[str, Any],
+    ) -> None:
+        """Set clearer default labels for plots drawn from event-centered rows."""
+
+        if context is not self.event_context or "title" in kwargs:
+            return
+        title = {
+            "spatial_azimuthal_residuals": "Event-Centered Azimuthal Residuals",
+            "spatial_polar_residuals": "Event-Centered Polar Residuals",
+        }.get(base)
+        if title:
+            kwargs["title"] = title
 
     def write_spatial_period_sheet(
         self,
@@ -362,6 +380,7 @@ class SpatialFigureContext:
         """Write a PSA period contact sheet using the matching context."""
 
         context = self._context_for(item.get("df")) or self.metric_context
+        self._apply_event_centered_plot_defaults(base, context, kwargs)
         return context.write_psa_period_sheet(
             base,
             item,

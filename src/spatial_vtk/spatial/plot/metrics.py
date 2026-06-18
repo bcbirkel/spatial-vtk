@@ -725,7 +725,7 @@ def plot_azimuthal_residuals(
         ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
     ax.set_xlim(0.0, 360.0)
     ax.set_xlabel("Azimuth (deg)")
-    ax.set_ylabel(value_column_display_name(value_col))
+    ax.set_ylabel(context_value_label(value_col, plot_df))
     apply_robust_axis_limits(ax, pd.to_numeric(plot_df[value_col], errors="coerce"), value_col=value_col, df=plot_df, robust_percentile=robust_axis_percentile)
     apply_figure_context(
         ax,
@@ -789,7 +789,7 @@ def plot_path_bin_summary(
         pivot,
         output_path,
         title=title,
-        cbar_label=value_column_display_name(value_col),
+        cbar_label=context_value_label(value_col, path_summary_df),
         x_label="Distance bin (km)",
         y_label="Azimuth bin (deg)",
         context_df=work,
@@ -1020,12 +1020,12 @@ def plot_polar_residuals(
         fig.suptitle(f"{title}\n{context}" if context else title)
         fig.subplots_adjust(left=0.06, right=0.82, bottom=0.06, top=0.86, wspace=0.48, hspace=0.48)
         if scatter is not None:
-            fig.colorbar(scatter, ax=axes.ravel().tolist(), pad=0.08, label=value_column_display_name(value_col))
+            fig.colorbar(scatter, ax=axes.ravel().tolist(), pad=0.08, label=context_value_label(value_col, plot_df))
     else:
         fig, ax = plt.subplots(figsize=(6.4, 6.0), dpi=180, subplot_kw={"projection": "polar"})
         scatter = _draw_polar_residual_axis(ax, plot_df, azimuth_col=azimuth_col, radius_col=radius_col, value_col=value_col, cmap=cmap, vmin=vmin, vmax=vmax, radius_max=radius_max)
         apply_figure_context(ax, plot_df, value_col=value_col, title=title, max_values=3, include_value=False, extra=[subset_label] if subset_label else None)
-        fig.colorbar(scatter, ax=ax, pad=0.12, label=value_column_display_name(value_col))
+        fig.colorbar(scatter, ax=ax, pad=0.12, label=context_value_label(value_col, plot_df))
     return _finish_spatial_figure(
         fig,
         output_path,

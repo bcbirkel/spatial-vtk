@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Clarified event-centered residual figures in the large-run spatial plotting
+   flow. Azimuthal, polar, and path-bin plot labels now use dataframe-aware
+   value labels, and the large-run spatial context gives event-centered path
+   plots explicit event-centered titles.
    Exposed tutorial-style comparison tables in the large-run generic metric
    diagnostic helper. Step 3 now forwards ``SVTK_FIGURE_COMPARE_TO`` and
    ``SVTK_FIGURE_COMPARISON_TABLE=1`` through the package plotting context

@@ -697,11 +697,24 @@ def test_direct_metric_plots_label_event_centered_residuals(tmp_path: Path) -> N
         score_col="log2_residual",
         color_col=None,
     )
+    azimuthal = plot_azimuthal_residuals(
+        metrics,
+        tmp_path / "azimuthal.png",
+        value_col="log2_residual",
+        group_col=None,
+    )
+    polar = plot_polar_residuals(
+        metrics,
+        tmp_path / "polar.png",
+        value_col="log2_residual",
+    )
 
     assert trend.axes[0].get_ylabel() == "Event-centered log2(observed / synthetic)"
     assert band.axes[0].get_ylabel() == "Event-centered log2(observed / synthetic)"
     assert period.axes[0].get_ylabel() == "Event-centered log2(observed / synthetic)"
     assert period_distribution.axes[0].get_ylabel() == "Event-centered log2(observed / synthetic)"
+    assert azimuthal.axes[0].get_ylabel() == "Event-centered log2(observed / synthetic)"
+    assert polar.axes[-1].get_ylabel() == "Event-centered log2(observed / synthetic)"
 
 
 def test_public_metric_plots_apply_robust_outlier_limits(tmp_path: Path) -> None:
