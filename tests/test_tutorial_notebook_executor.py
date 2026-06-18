@@ -1138,12 +1138,16 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     assert "display(display_table(dashboard_readiness.summary_frame(), max_rows=20))" in source
     assert "display(display_table(dashboard_readiness.status_frame(), max_rows=30))" in source
     assert "display(dashboard_output_status_frame(cfg=cfg))" in source
-    assert "launch_configured_metrics_dashboard(" in source
-    assert "launch_configured_qc_dashboard(" in source
+    assert "launch_configured_dashboards_from_notebook_settings(" in source
+    assert "launch_configured_metrics_dashboard(" not in source
+    assert "launch_configured_qc_dashboard(" not in source
     assert "notebook_dashboard_launch_commands(" in source
-    assert "dashboard_launch.metrics_launch_kwargs(show=True)" in source
-    assert "dashboard_launch.qc_launch_kwargs(show=True)" in source
+    assert 'launch_metrics_dashboard=notebook_overrides["launch_metrics_dashboard"]' in source
+    assert 'launch_qc_dashboard=notebook_overrides["launch_qc_dashboard"]' in source
+    assert "dashboard_launch.metrics_launch_kwargs(show=True)" not in source
+    assert "dashboard_launch.qc_launch_kwargs(show=True)" not in source
     assert "display(dashboard_launch.status_frame())" in source
+    assert "display(dashboard_launch_result.status_frame())" in source
     assert "Launch options:" not in source
     assert "server_port=notebook_overrides" not in source
     assert "dashboard_outputs = output_group(\"step_07_dashboards\", cfg=cfg)" in source
@@ -1179,19 +1183,21 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "write_configured_dashboard_datasets," in source
     assert "preview_dashboard_summary_tables," in source
     assert '"spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets"' not in source
-    assert "launch_configured_metrics_dashboard(" in source
-    assert "launch_configured_qc_dashboard(" in source
+    assert "launch_configured_dashboards_from_notebook_settings(" in source
+    assert "launch_configured_metrics_dashboard(" not in source
+    assert "launch_configured_qc_dashboard(" not in source
     assert "notebook_dashboard_launch_commands(" in source
     assert "run_scenario=context.run_scenario" in source
     assert 'run_scenario=os.environ.get("SVTK_RUN_SCENARIO", "tutorial")' not in source
     assert 'os.environ.get("SVTK_RUN_SCENARIO"' not in source
-    assert "if dashboard_launch.launch_metrics_dashboard:" in source
-    assert "if dashboard_launch.launch_qc_dashboard:" in source
+    assert "if dashboard_launch.launch_metrics_dashboard:" not in source
+    assert "if dashboard_launch.launch_qc_dashboard:" not in source
     assert 'os.environ.get("SVTK_LAUNCH_METRICS_DASHBOARD"' not in source
     assert 'os.environ.get("SVTK_LAUNCH_QC_DASHBOARD"' not in source
-    assert "dashboard_launch.metrics_launch_kwargs(show=True)" in source
-    assert "dashboard_launch.qc_launch_kwargs(show=True)" in source
+    assert "dashboard_launch.metrics_launch_kwargs(show=True)" not in source
+    assert "dashboard_launch.qc_launch_kwargs(show=True)" not in source
     assert "display(dashboard_launch.status_frame())" in source
+    assert "display(dashboard_launch_result.status_frame())" in source
     assert "Launch options:" not in source
     assert "server_port=dashboard_" not in source
     assert '"cfg": str(config_path)' in source

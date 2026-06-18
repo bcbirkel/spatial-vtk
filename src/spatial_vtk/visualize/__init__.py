@@ -12,6 +12,7 @@ from typing import Any
 _EXPORT_MODULES = {
     "build_dashboard_summaries": "spatial_vtk.visualize.dashboard",
     "dashboard_summary_input_columns": "spatial_vtk.visualize.dashboard",
+    "launch_configured_dashboards_from_notebook_settings": "spatial_vtk.visualize.dashboard",
     "launch_configured_metrics_dashboard": "spatial_vtk.visualize.dashboard",
     "launch_configured_qc_dashboard": "spatial_vtk.visualize.dashboard",
     "launch_metrics_dashboard": "spatial_vtk.visualize.dashboard",

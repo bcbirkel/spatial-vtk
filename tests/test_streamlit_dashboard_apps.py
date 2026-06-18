@@ -1152,6 +1152,75 @@ outputs:
     assert launched[1]["auto_port"] is True
 
 
+def test_notebook_dashboard_launch_helper_returns_running_and_command_rows(monkeypatch):
+    """Notebook launch orchestration should hide per-dashboard branching."""
+
+    class FakeProcess:
+        pid = 225
+        spatial_vtk_server_port = 8751
+
+    class FakeLaunchSettings:
+        launch_metrics_dashboard = True
+        launch_qc_dashboard = False
+        metrics_port = 8750
+        qc_port = 8752
+        metrics_command = "svtk dashboard metrics --port 8750"
+        qc_command = "svtk dashboard qc --port 8752"
+
+        def metrics_launch_kwargs(self, *, show=True):
+            return {"config_path": "config.yaml", "server_port": self.metrics_port, "show": show}
+
+        def qc_launch_kwargs(self, *, show=True):
+            return {"config_path": "config.yaml", "server_port": self.qc_port, "show": show}
+
+    called = {}
+
+    def fake_launch_metrics_dashboard(**kwargs):
+        called["metrics"] = kwargs
+        return FakeProcess()
+
+    monkeypatch.setattr(dashboard_launch, "launch_configured_metrics_dashboard", fake_launch_metrics_dashboard)
+    result = dashboard_launch.launch_configured_dashboards_from_notebook_settings(FakeLaunchSettings(), show=False)
+    status = result.status_frame()
+
+    assert result.metrics_process is not None
+    assert result.qc_process is None
+    assert called["metrics"]["show"] is False
+    assert status.loc[status["dashboard"].eq("metrics"), "status"].item() == "running"
+    assert status.loc[status["dashboard"].eq("metrics"), "resolved_port"].item() == 8751
+    assert status.loc[status["dashboard"].eq("qc"), "status"].item() == "command"
+    assert "svtk dashboard qc" in status.loc[status["dashboard"].eq("qc"), "terminal_command"].item()
+
+
+def test_notebook_dashboard_launch_helper_reports_launch_errors(monkeypatch):
+    """Launch failures should be displayable in notebooks when requested."""
+
+    class FakeLaunchSettings:
+        launch_metrics_dashboard = True
+        launch_qc_dashboard = False
+        metrics_port = 8750
+        qc_port = 8752
+        metrics_command = "svtk dashboard metrics --port 8750"
+        qc_command = "svtk dashboard qc --port 8752"
+
+        def metrics_launch_kwargs(self, *, show=True):
+            return {"show": show}
+
+        def qc_launch_kwargs(self, *, show=True):
+            return {"show": show}
+
+    def fake_launch_metrics_dashboard(**_kwargs):
+        raise RuntimeError("port busy")
+
+    monkeypatch.setattr(dashboard_launch, "launch_configured_metrics_dashboard", fake_launch_metrics_dashboard)
+    result = dashboard_launch.launch_configured_dashboards_from_notebook_settings(FakeLaunchSettings())
+    status = result.status_frame()
+
+    assert result.metrics_process is None
+    assert status.loc[status["dashboard"].eq("metrics"), "status"].item() == "error"
+    assert "port busy" in status.loc[status["dashboard"].eq("metrics"), "message"].item()
+
+
 def test_dashboard_launch_detects_busy_port():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
         server.bind(("127.0.0.1", 0))

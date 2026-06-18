@@ -375,14 +375,16 @@ Step 7: Dashboard Datasets
        CSV/Parquet summary files do not mix with the current run
    * - Launch dashboards from Python
      - ``spatial_vtk.config.notebook_dashboard_launch_commands``,
+       ``spatial_vtk.visualize.dashboard.launch_configured_dashboards_from_notebook_settings``,
        ``spatial_vtk.visualize.dashboard.launch_configured_metrics_dashboard``,
        ``spatial_vtk.visualize.dashboard.launch_configured_qc_dashboard``,
        ``spatial_vtk.visualize.dashboard.launch_metrics_dashboard``, and
        ``spatial_vtk.visualize.dashboard.launch_qc_dashboard``
      - local Streamlit processes configured from the same output registry,
        optional terminal fallback commands, and a bounded
-       ``dashboard_launch.status_frame()`` preview showing ports, commands, and
-       configured dashboard inputs
+       launch-settings status frame plus launch-result status frame showing
+       ports, process IDs, commands, launch errors, and configured dashboard
+       inputs
 
 Related API Pages
 -----------------

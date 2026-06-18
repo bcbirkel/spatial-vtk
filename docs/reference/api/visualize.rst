@@ -52,6 +52,9 @@ Public helpers exposed by ``spatial_vtk.visualize``:
    * - ``launch_configured_metrics_dashboard`` and
        ``launch_configured_qc_dashboard``
      - Launch dashboards from config-backed inputs.
+   * - ``launch_configured_dashboards_from_notebook_settings``
+     - Launch requested dashboards or show terminal fallback commands from
+       config-backed notebook settings.
 
 Context Figures
 ---------------
@@ -196,6 +199,10 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
    * - ``launch_configured_metrics_dashboard`` and
        ``launch_configured_qc_dashboard``
      - Launch Streamlit dashboards from config-backed paths and launch options.
+   * - ``launch_configured_dashboards_from_notebook_settings``
+     - Use notebook launch settings to launch requested dashboards or return
+       terminal fallback commands and launch errors in one compact status
+       frame.
    * - ``filter_dashboard_metrics`` and ``filter_qc_dashboard_rows``
      - Apply dashboard filters consistently in apps, tests, and exported tables.
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import importlib.util
 import os
 from pathlib import Path
@@ -12,6 +13,22 @@ import time
 from typing import Any
 
 from spatial_vtk.config import SpatialVTKConfig, active_config, resolve_output_path
+
+
+@dataclass(frozen=True)
+class DashboardLaunchResult:
+    """Result returned by notebook dashboard launch orchestration helpers."""
+
+    metrics_process: subprocess.Popen[Any] | None
+    qc_process: subprocess.Popen[Any] | None
+    rows: tuple[dict[str, Any], ...]
+
+    def status_frame(self) -> Any:
+        """Return a compact notebook-friendly dashboard launch table."""
+
+        import pandas as pd
+
+        return pd.DataFrame(list(self.rows))
 
 
 def build_streamlit_command(
@@ -192,6 +209,125 @@ def launch_configured_qc_dashboard(
     )
 
 
+def launch_configured_dashboards_from_notebook_settings(
+    dashboard_launch: Any,
+    *,
+    show: bool = True,
+    catch_errors: bool = True,
+) -> DashboardLaunchResult:
+    """Launch or report configured Metrics and QC dashboards for notebooks.
+
+    Parameters
+    ----------
+    dashboard_launch
+        Result from :func:`spatial_vtk.config.notebook_dashboard_launch_commands`.
+        The object supplies launch flags, requested ports, terminal fallback
+        commands, and config-backed keyword arguments for each dashboard.
+    show
+        Passed through to configured dashboard launch helpers.
+    catch_errors
+        When true, launch failures are returned as ``"error"`` rows in the
+        status frame instead of raising immediately. This keeps tutorial
+        notebooks readable when optional dashboard dependencies are not
+        installed or a requested port is busy.
+
+    Returns
+    -------
+    DashboardLaunchResult
+        Process handles for dashboards that launched, plus a bounded status
+        frame describing running dashboards, fallback terminal commands, or
+        launch errors.
+    """
+
+    rows: list[dict[str, Any]] = []
+    metrics_process = _launch_one_dashboard_from_notebook_settings(
+        dashboard_name="metrics",
+        launch_requested=bool(getattr(dashboard_launch, "launch_metrics_dashboard", False)),
+        requested_port=int(getattr(dashboard_launch, "metrics_port", 8501)),
+        terminal_command=str(getattr(dashboard_launch, "metrics_command", "")),
+        launch_callable=launch_configured_metrics_dashboard,
+        launch_kwargs=dashboard_launch.metrics_launch_kwargs(show=show),
+        rows=rows,
+        catch_errors=catch_errors,
+    )
+    qc_process = _launch_one_dashboard_from_notebook_settings(
+        dashboard_name="qc",
+        launch_requested=bool(getattr(dashboard_launch, "launch_qc_dashboard", False)),
+        requested_port=int(getattr(dashboard_launch, "qc_port", 8502)),
+        terminal_command=str(getattr(dashboard_launch, "qc_command", "")),
+        launch_callable=launch_configured_qc_dashboard,
+        launch_kwargs=dashboard_launch.qc_launch_kwargs(show=show),
+        rows=rows,
+        catch_errors=catch_errors,
+    )
+    return DashboardLaunchResult(
+        metrics_process=metrics_process,
+        qc_process=qc_process,
+        rows=tuple(rows),
+    )
+
+
+def _launch_one_dashboard_from_notebook_settings(
+    *,
+    dashboard_name: str,
+    launch_requested: bool,
+    requested_port: int,
+    terminal_command: str,
+    launch_callable: Any,
+    launch_kwargs: dict[str, Any],
+    rows: list[dict[str, Any]],
+    catch_errors: bool,
+) -> subprocess.Popen[Any] | None:
+    """Append one dashboard launch status row and return the process if any."""
+
+    common = {
+        "dashboard": dashboard_name,
+        "launch_requested": launch_requested,
+        "requested_port": requested_port,
+        "terminal_command": terminal_command,
+    }
+    if not launch_requested:
+        rows.append(
+            {
+                **common,
+                "status": "command",
+                "pid": "",
+                "resolved_port": "",
+                "url": "",
+                "message": "Launch disabled; run the terminal command in a separate session when needed.",
+            }
+        )
+        return None
+    try:
+        process = launch_callable(**launch_kwargs)
+    except Exception as exc:
+        if not catch_errors:
+            raise
+        rows.append(
+            {
+                **common,
+                "status": "error",
+                "pid": "",
+                "resolved_port": "",
+                "url": "",
+                "message": f"Failed to launch {dashboard_name} dashboard: {exc}",
+            }
+        )
+        return None
+    resolved_port = int(getattr(process, "spatial_vtk_server_port", requested_port))
+    rows.append(
+        {
+            **common,
+            "status": "running",
+            "pid": getattr(process, "pid", ""),
+            "resolved_port": resolved_port,
+            "url": f"http://127.0.0.1:{resolved_port}",
+            "message": f"{dashboard_name.capitalize()} dashboard running.",
+        }
+    )
+    return process
+
+
 def launch_streamlit_dashboard(
     entrypoint: str | Path,
     *,
@@ -294,8 +430,10 @@ def _resolve_dashboard_config(
 
 
 __all__ = [
+    "DashboardLaunchResult",
     "build_streamlit_command",
     "find_available_port",
+    "launch_configured_dashboards_from_notebook_settings",
     "launch_configured_metrics_dashboard",
     "launch_configured_qc_dashboard",
     "launch_metrics_dashboard",

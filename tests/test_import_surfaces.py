@@ -57,6 +57,7 @@ def test_public_imports():
     from spatial_vtk.visualize.dashboard import (
         build_dashboard_summaries,
         dashboard_readiness_summary_frame,
+        launch_configured_dashboards_from_notebook_settings,
         launch_configured_metrics_dashboard,
         launch_configured_qc_dashboard,
         preview_dashboard_summary_tables,
@@ -103,6 +104,7 @@ def test_public_imports():
     assert callable(geojson_polygon_preview_table)
     assert callable(build_dashboard_summaries)
     assert callable(dashboard_readiness_summary_frame)
+    assert callable(launch_configured_dashboards_from_notebook_settings)
     assert callable(launch_configured_metrics_dashboard)
     assert callable(launch_configured_qc_dashboard)
     assert callable(preview_dashboard_summary_tables)
@@ -495,6 +497,7 @@ def test_visualize_api_docs_use_public_entry_points():
         "dashboard_readiness_summary_frame",
         "dashboard_output_status_frame",
         "preview_dashboard_summary_tables",
+        "launch_configured_dashboards_from_notebook_settings",
         "launch_configured_metrics_dashboard",
         "launch_configured_qc_dashboard",
     ):

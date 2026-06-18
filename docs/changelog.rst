@@ -61,6 +61,11 @@ Changelog
    so large-run Step 6 can render the observed/synthetic trace comparison from
    configured Step 6 outputs without inline QC sample loading or waveform-record
    construction in the notebook.
+   Added
+   ``spatial_vtk.visualize.dashboard.launch_configured_dashboards_from_notebook_settings()``
+   so Step 7 notebooks can launch requested Metrics/QC dashboards or display
+   terminal fallback commands through one package helper instead of duplicating
+   per-dashboard launch branches.
    Added ``spatial_vtk.io.load_configured_input_paths()`` for configured
    non-table inputs such as ``paths.region_geojson``. Standard and large-run
    Step 5 now use this helper instead of resolving GeoJSON paths with direct
