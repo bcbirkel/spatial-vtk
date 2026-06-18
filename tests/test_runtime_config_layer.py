@@ -32,12 +32,12 @@ from spatial_vtk.config import (
     resolve_output_path,
     resolve_run_defaults,
     run_notebook_step_if_needed,
-    run_or_submit_notebook_cli_command,
     run_or_submit_notebook_function,
     set_saved_config_path,
     submit_notebook_slurm_script,
     write_notebook_python_slurm_script,
 )
+from spatial_vtk.config.notebook import run_or_submit_notebook_cli_command
 from spatial_vtk.io import (
     ArtifactSpec,
     apply_waveform_preprocessing_with_metadata,
@@ -870,27 +870,29 @@ compute:
         return 0
 
     monkeypatch.setattr(notebook_helpers, "_run_spatial_vtk_cli", fake_cli)
-    result = run_or_submit_notebook_cli_command(
-        context,
-        ["svtk", "metrics", "outputs", "--config", str(config_path)],
-        script_name="metrics_outputs.slurm",
-        job_name="svtk-metrics-outputs",
-        run_local=True,
-    )
+    with pytest.warns(DeprecationWarning, match="run_notebook_step_if_needed"):
+        result = run_or_submit_notebook_cli_command(
+            context,
+            ["svtk", "metrics", "outputs", "--config", str(config_path)],
+            script_name="metrics_outputs.slurm",
+            job_name="svtk-metrics-outputs",
+            run_local=True,
+        )
 
     assert result is None
     assert captured_args["args"] == ["metrics", "outputs", "--config", str(config_path)]
 
-    result = run_or_submit_notebook_cli_command(
-        context,
-        ["svtk", "qc", "summaries", "--verbose"],
-        script_name="qc_summaries.slurm",
-        job_name="svtk-qc-summaries",
-        walltime="02:00:00",
-        memory="8G",
-        cpus=2,
-        run_local=False,
-    )
+    with pytest.warns(DeprecationWarning, match="run_notebook_step_if_needed"):
+        result = run_or_submit_notebook_cli_command(
+            context,
+            ["svtk", "qc", "summaries", "--verbose"],
+            script_name="qc_summaries.slurm",
+            job_name="svtk-qc-summaries",
+            walltime="02:00:00",
+            memory="8G",
+            cpus=2,
+            run_local=False,
+        )
 
     script = context.slurm_dir / "qc_summaries.slurm"
     text = script.read_text(encoding="utf-8")
@@ -927,14 +929,15 @@ outputs:
     )
     context = notebook_run_context(start=repo / "docs", create_dirs=True)
 
-    with pytest.raises(ValueError, match="only run Spatial-VTK CLI commands"):
-        run_or_submit_notebook_cli_command(
-            context,
-            ["python", "-m", "spatial_vtk.cli"],
-            script_name="bad.slurm",
-            job_name="bad",
-            run_local=False,
-        )
+    with pytest.warns(DeprecationWarning, match="run_notebook_step_if_needed"):
+        with pytest.raises(ValueError, match="only run Spatial-VTK CLI commands"):
+            run_or_submit_notebook_cli_command(
+                context,
+                ["python", "-m", "spatial_vtk.cli"],
+                script_name="bad.slurm",
+                job_name="bad",
+                run_local=False,
+            )
 
     assert not (context.slurm_dir / "bad.slurm").exists()
     clear_active_config()

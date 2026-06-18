@@ -409,6 +409,19 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "svtk qc" not in workflows
 
 
+def test_notebook_cli_compat_helper_is_not_top_level_config_api():
+    """Notebook CLI wrappers should not be advertised as the standard config API."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    config_init = (root / "src" / "spatial_vtk" / "config" / "__init__.py").read_text(encoding="utf-8")
+    notebook_helpers = (root / "src" / "spatial_vtk" / "config" / "notebook.py").read_text(encoding="utf-8")
+
+    assert "run_or_submit_notebook_cli_command" not in config_init
+    assert '"run_or_submit_notebook_cli_command"' not in notebook_helpers
+    assert "run_or_submit_notebook_cli_command is deprecated for notebooks" in notebook_helpers
+    assert "use run_notebook_step_if_needed with an importable package function" in notebook_helpers
+
+
 def test_python_workflow_docs_reference_importable_entry_points():
     """Every documented workflow helper should resolve through its public module."""
 

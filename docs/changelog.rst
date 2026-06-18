@@ -445,8 +445,8 @@ Changelog
    ``outputs.dashboards`` roots by default, and Step 7 notebooks use the shared
    helper instead of spelling out each dashboard path.
    Added shared large-run notebook helpers for package-backed heavy work. The
-   older helper can still wrap Spatial-VTK CLI calls when needed, but the
-   large-run QC, metrics, spatial, GeoJSON, and dashboard drivers now use
+   older CLI-wrapper helper is now a deprecated compatibility fallback, and the
+   large-run QC, metrics, spatial, GeoJSON, and dashboard drivers use
    importable package-function tasks for their repeated heavy-work cells.
    Extended large-run metric figure sidecars with event, station, component,
    model, metric, passband, and PSA-period counts for both plotted rows and

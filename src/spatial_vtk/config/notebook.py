@@ -24,6 +24,7 @@ from pathlib import Path
 import shlex
 from time import perf_counter
 from typing import Any, Callable, Iterator
+import warnings
 
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config, get_saved_config_path
 from spatial_vtk.config.compute import (
@@ -865,16 +866,21 @@ def run_or_submit_notebook_cli_command(
 ) -> SlurmSubmission | None:
     """Run a Spatial-VTK CLI command locally or wrap it in a SLURM script.
 
-    This is a lower-level compatibility helper for terminal-oriented commands
-    that do not yet have a Python workflow function. New notebooks should
-    prefer :func:`run_notebook_step_if_needed` with an importable package
-    function so workflow work stays on the public Python API surface. When
-    running locally, the command is dispatched through
+    Deprecated compatibility helper for older notebooks. New notebooks should
+    use :func:`run_notebook_step_if_needed` with an importable package function
+    so workflow work stays on the public Python API surface. When running
+    locally, the command is dispatched through
     :func:`spatial_vtk.cli.main` so callers do not depend on a shell ``svtk``
     executable. When not running locally, an inline-Python SLURM script is
     written and then submitted or printed according to ``context.submit_slurm``.
     """
 
+    warnings.warn(
+        "run_or_submit_notebook_cli_command is deprecated for notebooks; use "
+        "run_notebook_step_if_needed with an importable package function instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     cmd = [str(part) for part in command]
     print(shlex.join(cmd))
     should_run_local = context.run_local if run_local is None else bool(run_local)
@@ -937,8 +943,8 @@ def run_or_submit_notebook_function(
     args, kwargs
         JSON-serializable arguments passed to ``function``.
     script_name, job_name, walltime, memory, cpus, run_local, section
-        Slurm/local execution controls matching
-        :func:`run_or_submit_notebook_cli_command`.
+        Slurm/local execution controls matching the lower-level notebook Slurm
+        helpers.
 
     Returns
     -------
@@ -1554,7 +1560,6 @@ __all__ = [
     "register_svtk_cell_timer",
     "register_svtk_time_magic",
     "run_notebook_step_if_needed",
-    "run_or_submit_notebook_cli_command",
     "run_or_submit_notebook_function",
     "submit_notebook_slurm_script",
     "write_notebook_python_slurm_script",
