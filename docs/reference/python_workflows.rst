@@ -27,6 +27,11 @@ notebooks or Slurm logs. New notebook code should prefer explicit keys such as
 keys such as ``path``, ``output``, or ``manifest`` are kept only as
 compatibility aliases.
 
+Config-backed spatial helpers also accept dotted path keys such as
+``"paths.metric_figure_snapshot"`` or ``"paths.site_metadata"`` for optional
+table inputs, so notebooks can select configured inputs without resolving
+filesystem paths in cells.
+
 .. code-block:: python
 
    from spatial_vtk.config import SpatialVTKConfig

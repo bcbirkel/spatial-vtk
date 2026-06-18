@@ -338,10 +338,10 @@ def run_spatial_statistics_workflow_from_config(
 
     config = _spatial_workflow_config(config_path=config_path, run_scenario=run_scenario)
     result = run_spatial_statistics_workflow(
-        metrics,
+        _resolve_config_path_argument(metrics, config),
         cfg=config,
         metric=metric,
-        station_metadata=station_metadata,
+        station_metadata=_resolve_config_path_argument(station_metadata, config),
         resume=resume,
         checkpoint_dir=checkpoint_dir,
         verbose=verbose,
@@ -376,9 +376,9 @@ def run_spatial_derived_outputs_workflow_from_config(
 
     config = _spatial_workflow_config(config_path=config_path, run_scenario=run_scenario)
     result = run_spatial_derived_outputs_workflow(
-        metrics,
-        metric_field=metric_field,
-        station_bias=station_bias,
+        _resolve_config_path_argument(metrics, config),
+        metric_field=_resolve_config_path_argument(metric_field, config),
+        station_bias=_resolve_config_path_argument(station_bias, config),
         cfg=config,
         metric=metric,
         pattern_passband=pattern_passband,
@@ -807,6 +807,18 @@ def _spatial_workflow_config(
     if run_scenario is not None and config.config_path is not None:
         return SpatialVTKConfig.from_file(config.config_path, run_scenario=run_scenario).activate()
     return config.activate()
+
+
+def _resolve_config_path_argument(value, config: SpatialVTKConfig):
+    """Resolve dotted config path keys passed to config-backed wrappers."""
+
+    if isinstance(value, str) and "." in value:
+        try:
+            path = config.path(value, must_exist=True)
+        except Exception:
+            return value
+        return path if path is not None else value
+    return value
 
 
 def _requested_derived_outputs(outputs: Sequence[str] | str) -> tuple[str, ...]:

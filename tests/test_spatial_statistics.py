@@ -545,6 +545,60 @@ spatial:
     assert Path(derived["paths"]["block_holdout_predictions"]).exists()
 
 
+def test_spatial_statistics_config_wrapper_resolves_dotted_path_arguments(tmp_path: Path) -> None:
+    """Config-backed spatial helpers should accept dotted config path keys."""
+
+    clear_active_config()
+    metrics = normalize_metrics_table(_toy_metrics_table(), default_model="example_model")
+    metrics_path = tmp_path / "inputs" / "metric_snapshot.parquet"
+    metrics_path.parent.mkdir(parents=True)
+    write_table(metrics, metrics_path)
+    station_metadata = pd.DataFrame(
+        {
+            "station": metrics["station"].drop_duplicates().tolist(),
+            "mapped_region_type": (["Basin", "Mountains"] * 8)[: metrics["station"].nunique()],
+        }
+    )
+    site_path = tmp_path / "inputs" / "site_metadata.csv"
+    write_table(station_metadata, site_path)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+paths:
+  metric_figure_snapshot: {metrics_path}
+  site_metadata: {site_path}
+outputs:
+  tables: outputs/tables
+spatial:
+  metric: C5
+  value_column: log2_residual
+  min_stations_per_event: 3
+  min_events_per_station: 2
+  moran_neighbors: 2
+  moran_permutations: 3
+  cluster_min_k: 2
+  cluster_max_k: 3
+  pca_components: 2
+  geology_min_stations_per_group: 1
+  geology_bootstrap_samples: 3
+""",
+        encoding="utf-8",
+    )
+
+    summary = run_spatial_statistics_workflow_from_config(
+        config_path=config_path,
+        metrics="paths.metric_figure_snapshot",
+        station_metadata="paths.site_metadata",
+        verbose=True,
+    )
+
+    assert summary["failure_count"] == 0
+    assert summary["metrics"] == ["C5"]
+    assert Path(summary["paths"]["metric_field"]).exists()
+
+
 def test_spatial_statistics_workflow_resumes_metric_checkpoints(tmp_path: Path, monkeypatch) -> None:
     """Path-backed spatial workflows should rebuild final outputs from completed checkpoints."""
 

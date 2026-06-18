@@ -485,7 +485,12 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "run_spatial_statistics_workflow(" in source
+    assert "run_spatial_statistics_workflow_from_config(" in source
+    assert 'metrics="paths.metric_figure_snapshot"' in source
+    assert 'station_metadata="paths.site_metadata"' in source
+    assert 'metric_field = load_output_table("metric_field")' in source
+    assert "run_spatial_statistics_workflow(" not in source
+    assert 'cfg.path("paths.metric_figure_snapshot")' not in source
     for helper in (
         "build_metric_field",
         "center_field_by_event",
