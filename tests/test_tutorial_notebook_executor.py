@@ -624,7 +624,8 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "run_local=True" in standard_text
     assert "ingest_outputs.load_tables(" in standard_text
     assert "qc_figure_tables = qc_outputs.load_tables(" in standard_text
-    assert "qc_outputs.preview_table(" in standard_text
+    assert "qc_outputs.display_table_previews(" in standard_text
+    assert "qc_outputs.preview_table(" not in standard_text
     assert "qc_outputs.preview_path_table(" in standard_text
     assert "qc_outputs.manual_queue_path" in standard_text
     assert "write_waveform_comparison_from_outputs(" in standard_text
@@ -1455,7 +1456,10 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert "write_metrics_slurm_script_from_config," in source
     assert "merge_metric_batches_from_config," in source
     assert "write_metric_outputs_from_config," in source
-    assert "step_outputs.preview_table(" in source
+    assert "step_outputs.display_table_previews(" in source
+    assert "step_outputs.preview_table(" not in source
+    assert "metrics_preview =" not in source
+    assert "Metric output is not ready yet" not in source
     assert "preview_output_table(" not in source
     assert '"batch_count": context.metric_batch_count' in source
     assert 'os.environ.get("SVTK_METRIC_BATCH_COUNT"' not in source

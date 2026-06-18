@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-18
+   Rewired Step 2 QC and large-run Step 3 metric preview cells to use
+   ``OutputGroup.display_table_previews()`` instead of notebook-local
+   ``preview_table()`` branches.
    Added ``display_dashboard_output_previews()`` to the public dashboard API
    and rewired Step 7 notebooks to use it for bounded dashboard summary and
    ``metrics_long`` previews instead of notebook-local path checks.
