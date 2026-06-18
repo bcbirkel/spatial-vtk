@@ -317,6 +317,8 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "run_qc_summary_workflow_from_config(" in standard_text
     assert "ingest_outputs.load_tables(" in standard_text
     assert "qc_figure_tables = qc_outputs.load_tables(" in standard_text
+    assert "qc_inventory_preview = qc_outputs.preview_tables(" in standard_text
+    assert "preview_output_table(" not in standard_text
     assert "notebook_dashboard_launch_commands(" in standard_text
     assert "launch_configured_qc_dashboard(" in standard_text
     assert "dashboard_launch.qc_launch_kwargs(show=True)" in standard_text
@@ -538,6 +540,24 @@ def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
             assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} uses {matches}"
 
 
+def test_standard_tutorial_notebooks_avoid_raw_table_preview_helpers() -> None:
+    """Standard tutorials should preview/load workflow tables through package helpers."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").glob("*.ipynb"))
+    assert notebooks
+    raw_preview = re.compile(r"(?<!geojson_polygon_)preview_table\(")
+    forbidden = ("preview_output_table(", "load_output_table(")
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            source = "".join(cell.get("source", []))
+            matches = [pattern for pattern in forbidden if pattern in source]
+            if raw_preview.search(source):
+                matches.append("preview_table(")
+            assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} uses {matches}"
+
+
 def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     """The spatial tutorial should use the package workflow for standard tables."""
 
@@ -741,6 +761,11 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     assert "display(dashboard_launch.status_frame())" in source
     assert "Launch options:" not in source
     assert "server_port=notebook_overrides" not in source
+    assert "dashboard_outputs = output_group(\"step_07_dashboards\", cfg=cfg)" in source
+    assert "dashboard_outputs.preview_tables(" in source
+    assert "dashboard_output_namespace" not in source
+    assert "preview_table(" not in source
+    assert "preview_output_table(" not in source
     assert "write_dashboard_metric_dataset(" not in source
     assert "write_dashboard_summary_dataset(" not in source
     assert "metrics_outputs_command" not in source

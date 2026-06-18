@@ -9,6 +9,9 @@ Changelog
    calls in notebook cells.
    Large-run Steps 1 and 5 now also avoid stale direct preview imports and
    direct metric-source fallback expressions in favor of output-group helpers.
+   Standard tutorial Steps 2 and 7 now preview configured QC and dashboard
+   tables through ``OutputGroup.preview_tables()`` instead of raw table-preview
+   helpers.
    Added ``spatial_vtk.io.preprocessed_waveform_output_group`` so Step 1 can
    use ``OutputGroup``-style ``bind()``, ``status_frame()``, and
    ``readiness()`` for preprocessing metadata under
