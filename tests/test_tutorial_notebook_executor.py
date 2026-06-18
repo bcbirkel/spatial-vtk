@@ -285,6 +285,9 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "*.source.csv" in combined
     assert "pre-aggregation" in combined
     assert "committed example data" in combined
+    assert "Notebook cells use importable ``spatial_vtk`` package functions" in examples_index
+    assert "Notebook cells call importable `spatial_vtk` package functions directly" in large_run_readme
+    assert "do not shell out to `svtk` CLI commands for workflow work" in large_run_readme
 
 
 def test_public_docs_describe_committed_tutorial_waveforms() -> None:

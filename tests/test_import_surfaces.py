@@ -326,6 +326,8 @@ def test_core_api_docs_show_stable_start_here_imports():
             "from spatial_vtk.metrics import (",
             "plan_metric_tasks_from_config",
             "metric_manifest_batch_status",
+            "metric_slurm_submission_readiness",
+            "metric_slurm_submission_readiness_from_config",
             "write_metric_outputs_from_config",
         ],
         "qc.rst": [
@@ -392,7 +394,7 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.metrics.build_metric_waveform_inventories_from_config",
         "spatial_vtk.metrics.plan_metric_tasks_from_config",
         "spatial_vtk.metrics.summarize_metric_snapshot_tasks_from_config",
-        "spatial_vtk.metrics.metric_slurm_submission_readiness",
+        "spatial_vtk.metrics.metric_slurm_submission_readiness_from_config",
         "spatial_vtk.metrics.write_metrics_slurm_script_from_config",
         "spatial_vtk.metrics.merge_metric_batches_from_config",
         "spatial_vtk.metrics.write_metric_outputs_from_config",

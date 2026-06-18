@@ -8,6 +8,11 @@ also run against the committed example data from a fresh source checkout; they
 must not require private paths, pre-existing outputs, or user-specific shell
 state.
 
+Notebook cells call importable `spatial_vtk` package functions directly. They
+do not shell out to `svtk` CLI commands for workflow work; the CLI remains a
+terminal-oriented interface and an implementation detail of generated batch
+scripts.
+
 To verify the public notebooks from a clean checkout, install the tutorial
 extras and run:
 

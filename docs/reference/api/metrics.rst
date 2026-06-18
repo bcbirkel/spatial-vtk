@@ -25,6 +25,8 @@ stable package surface.
        cache_metric_manifest_waveforms,
        merge_metric_batches_from_config,
        metric_manifest_batch_status,
+       metric_slurm_submission_readiness,
+       metric_slurm_submission_readiness_from_config,
        plan_metric_tasks_from_config,
        submit_metrics_slurm_job,
        write_metric_outputs_from_config,
