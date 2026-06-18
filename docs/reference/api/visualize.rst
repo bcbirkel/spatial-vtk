@@ -14,6 +14,41 @@ Package Entry Point
 .. automodule:: spatial_vtk.visualize
    :members:
 
+Public helpers exposed by ``spatial_vtk.visualize``:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Helper
+     - Use
+   * - ``plot_station_event_beachball_map`` and
+       ``plot_station_event_network_map``
+     - Render station/event context maps from prepared metadata.
+   * - ``plot_retention_summary`` and
+       ``plot_event_station_retention_heatmap``
+     - Render compact QC retention figures from summary tables instead of full
+       QC inventories.
+   * - ``plot_post_qc_station_event_map`` and
+       ``plot_qc_drop_cause_diagnostics``
+     - Render post-QC maps and rejection-reason diagnostics.
+   * - ``plot_observed_synthetic_record_section`` and ``plot_record_section``
+     - Render record-section waveform figures from prepared waveform tables.
+   * - ``finish_figure_with_sidecar`` and ``write_figure_row_sidecar``
+     - Save figures with optional row-provenance CSV/JSON sidecars.
+   * - ``figure_sidecar_status_frame`` and
+       ``read_figure_sidecar_metadata``
+     - Inspect saved figure provenance without loading large sidecar CSV files.
+   * - ``write_configured_dashboard_datasets``
+     - Write dashboard-ready row and summary datasets from configured metric
+       outputs.
+   * - ``dashboard_readiness_summary_frame`` and
+       ``dashboard_output_status_frame``
+     - Inspect dashboard readiness with bounded schema, row-count, and map-data
+       checks.
+   * - ``launch_configured_metrics_dashboard`` and
+       ``launch_configured_qc_dashboard``
+     - Launch dashboards from config-backed inputs.
+
 Context Figures
 ---------------
 
@@ -126,6 +161,36 @@ uses it, ``readiness`` / ``message`` to identify the failure, and
 the dashboard inputs need to be rebuilt because of missing schema or map
 coordinate data.
 
+Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Helper
+     - Use
+   * - ``dashboard_readiness_summary_frame`` and
+       ``dashboard_output_status_frame``
+     - Build bounded dashboard-readiness tables for notebooks and Data Status
+       tabs.
+   * - ``dashboard_summary_table_contracts`` and
+       ``dashboard_summary_table_paths``
+     - Explain which summary tables feed dashboard tabs and which columns they
+       require.
+   * - ``dashboard_metric_dataset_readiness_frame`` and
+       ``dashboard_qc_trace_readiness_frame``
+     - Inspect row-level metric dataset and QC trace-summary readiness without
+       loading full inventories.
+   * - ``write_configured_dashboard_datasets``
+     - Rebuild dashboard row datasets and summary tables from the active config.
+   * - ``load_dashboard_metric_dataset`` and
+       ``load_dashboard_summary_tables``
+     - Load dashboard-ready datasets after readiness checks pass.
+   * - ``launch_configured_metrics_dashboard`` and
+       ``launch_configured_qc_dashboard``
+     - Launch Streamlit dashboards from config-backed paths and launch options.
+   * - ``filter_dashboard_metrics`` and ``filter_qc_dashboard_rows``
+     - Apply dashboard filters consistently in apps, tests, and exported tables.
+
 ``write_configured_dashboard_datasets`` replaces the standard dashboard metric
 dataset files and summary tables for the current run. It removes only
 recognized dashboard artifacts, so reruns cannot accidentally mix old metric
@@ -198,6 +263,31 @@ exactness flags, plot/source row counts, source-sidecar availability, and
 station-aggregation metadata when a figure was created from station summaries.
 ``read_figure_sidecar_metadata`` reads one JSON sidecar from a figure path,
 main sidecar CSV path, source sidecar CSV path, or JSON metadata path.
+
+Public sidecar helpers exposed by ``spatial_vtk.visualize``:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Helper
+     - Use
+   * - ``finish_figure_with_sidecar``
+     - Save a Matplotlib figure and optional row-provenance sidecars through one
+       helper.
+   * - ``write_figure_row_sidecar``
+     - Write the plotted rows, optional source rows, and JSON metadata next to a
+       figure.
+   * - ``layered_figure_rows`` and ``sidecar_rows_for_write``
+     - Build deterministic row samples for large figures while preserving
+       exactness metadata.
+   * - ``figure_sidecar_status_frame``
+     - Summarize a directory of JSON sidecars without opening large CSV row
+       files.
+   * - ``read_figure_sidecar_metadata``
+     - Read one sidecar metadata JSON from any related figure or sidecar path.
+   * - ``figure_sidecar_dimension_counts``
+     - Record compact event, station, model, metric, passband, component, and
+       PSA-period counts for figure audits.
 
 .. automodule:: spatial_vtk.visualize.figure_context
    :members:

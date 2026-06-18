@@ -470,6 +470,22 @@ def test_spatial_package_docstring_describes_namespace_boundary():
 def test_visualize_api_docs_use_public_entry_points():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "visualize.rst"
     text = docs.read_text(encoding="utf-8")
+    assert "Public helpers exposed by ``spatial_vtk.visualize``" in text
+    for helper in (
+        "plot_station_event_beachball_map",
+        "plot_retention_summary",
+        "plot_event_station_retention_heatmap",
+        "plot_observed_synthetic_record_section",
+        "finish_figure_with_sidecar",
+        "write_figure_row_sidecar",
+        "figure_sidecar_status_frame",
+        "write_configured_dashboard_datasets",
+        "dashboard_readiness_summary_frame",
+        "dashboard_output_status_frame",
+        "launch_configured_metrics_dashboard",
+        "launch_configured_qc_dashboard",
+    ):
+        assert helper in text
     assert ".. automodule:: spatial_vtk.visualize.context\n" in text
     assert ".. automodule:: spatial_vtk.visualize.dashboard\n" in text
     assert ".. automodule:: spatial_vtk.visualize.qc\n" in text
@@ -484,6 +500,26 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "``dashboard_tabs``" in text
     assert "``suggested_action``" in text
     assert "``required_columns`` / ``missing_columns`` / ``map_message``" in text
+    assert "Public helpers exposed by ``spatial_vtk.visualize.dashboard``" in text
+    for helper in (
+        "dashboard_summary_table_contracts",
+        "dashboard_summary_table_paths",
+        "dashboard_metric_dataset_readiness_frame",
+        "dashboard_qc_trace_readiness_frame",
+        "load_dashboard_metric_dataset",
+        "load_dashboard_summary_tables",
+        "filter_dashboard_metrics",
+        "filter_qc_dashboard_rows",
+    ):
+        assert helper in text
+    assert "Public sidecar helpers exposed by ``spatial_vtk.visualize``" in text
+    for helper in (
+        "layered_figure_rows",
+        "sidecar_rows_for_write",
+        "read_figure_sidecar_metadata",
+        "figure_sidecar_dimension_counts",
+    ):
+        assert helper in text
 
 
 def test_reference_docs_map_python_workflow_entry_points():
