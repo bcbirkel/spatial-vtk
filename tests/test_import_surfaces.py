@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import ast
+import os
 import pathlib
+import subprocess
+import sys
+import textwrap
 
 
 def test_public_imports():
@@ -87,6 +91,61 @@ def test_public_package_discovery_excludes_legacy_namespace():
     assert 'include = ["spatial_vtk*"]' in text
     assert legacy_namespace not in text
     assert not (pyproject.parent / "src" / legacy_namespace).exists()
+
+
+def test_public_package_entry_points_keep_optional_imports_lazy():
+    """Package entry points should not import heavy plotting/QC modules on inspection."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    env = dict(os.environ)
+    src_path = str(root / "src")
+    env["PYTHONPATH"] = src_path if not env.get("PYTHONPATH") else f"{src_path}{os.pathsep}{env['PYTHONPATH']}"
+    code = textwrap.dedent(
+        """
+        import sys
+
+        import spatial_vtk.qc
+        import spatial_vtk.qc.build
+        import spatial_vtk.visualize
+        import spatial_vtk.visualize.dashboard
+
+        forbidden_after_package_import = {
+            "spatial_vtk.qc.build.inventory",
+            "spatial_vtk.visualize.figure_io",
+            "spatial_vtk.visualize.dashboard.charts",
+            "spatial_vtk.visualize.dashboard.maps",
+            "spatial_vtk.visualize.dashboard.streamlit_metrics",
+            "spatial_vtk.visualize.dashboard.streamlit_qc",
+        }
+        loaded = forbidden_after_package_import & set(sys.modules)
+        if loaded:
+            raise SystemExit(f"unexpected eager imports: {sorted(loaded)}")
+
+        from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
+        from spatial_vtk.visualize import read_figure_sidecar_metadata, write_figure_row_sidecar
+        from spatial_vtk.visualize.dashboard import dashboard_readiness_summary_frame, launch_configured_metrics_dashboard
+
+        assert load_trace_inventory_lookup.__module__ == "spatial_vtk.qc.build.filtering"
+        assert slurm_settings_from_config.__module__ == "spatial_vtk.qc.build.slurm"
+        assert read_figure_sidecar_metadata.__module__ == "spatial_vtk.visualize.figure_sidecars"
+        assert write_figure_row_sidecar.__module__ == "spatial_vtk.visualize.figure_sidecars"
+        assert dashboard_readiness_summary_frame.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert launch_configured_metrics_dashboard.__module__ == "spatial_vtk.visualize.dashboard.launch"
+
+        forbidden_after_light_import = {
+            "spatial_vtk.qc.build.inventory",
+            "spatial_vtk.visualize.figure_io",
+            "spatial_vtk.visualize.dashboard.charts",
+            "spatial_vtk.visualize.dashboard.maps",
+            "spatial_vtk.visualize.dashboard.streamlit_metrics",
+            "spatial_vtk.visualize.dashboard.streamlit_qc",
+        }
+        loaded = forbidden_after_light_import & set(sys.modules)
+        if loaded:
+            raise SystemExit(f"unexpected eager imports after light helpers: {sorted(loaded)}")
+        """
+    )
+    subprocess.run([sys.executable, "-c", code], cwd=root, env=env, check=True)
 
 
 def test_waveform_extra_includes_pickle_runtime_dependencies():

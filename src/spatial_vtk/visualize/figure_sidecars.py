@@ -9,8 +9,6 @@ from typing import Any
 
 import pandas as pd
 
-from spatial_vtk.visualize.figure_io import finish_figure
-
 
 @dataclass(frozen=True)
 class FigureSidecarResult:
@@ -175,6 +173,8 @@ def finish_figure_with_sidecar(
     exact rows handed to Matplotlib. Sidecars are written only when the figure
     is saved, because the figure path is used as the stable sidecar basename.
     """
+
+    from spatial_vtk.visualize.figure_io import finish_figure
 
     finished = finish_figure(
         fig,

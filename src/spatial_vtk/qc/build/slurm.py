@@ -17,12 +17,6 @@ from spatial_vtk.config.metrics import metrics_settings_from_config
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io.tables import read_table
-from spatial_vtk.qc.build.workflow import (
-    build_metric_qc_summary,
-    build_waveform_qc_summary,
-    write_qc_inventory_overlap_from_full,
-)
-
 
 def slurm_settings_from_config(config: SpatialVTKConfig, *, section: str = "qc.slurm") -> SlurmSettings:
     """Read QC SLURM settings from ``compute.slurm`` plus ``qc.slurm`` overrides."""
@@ -43,6 +37,12 @@ def run_qc_inventory_job(
     verbose: bool = True,
 ) -> dict[str, Path]:
     """Run the standard waveform and metric QC inventory workflow."""
+
+    from spatial_vtk.qc.build.workflow import (
+        build_metric_qc_summary,
+        build_waveform_qc_summary,
+        write_qc_inventory_overlap_from_full,
+    )
 
     config.activate()
     event_stations = read_table(event_station_records)

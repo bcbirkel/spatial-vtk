@@ -1,120 +1,77 @@
-"""Visualization and dashboard preparation modules."""
+"""Visualization and dashboard preparation modules.
+
+The public visualization package is lazy so dashboard/config helpers can be
+imported without importing Matplotlib-backed plotting modules.
+"""
 
 from __future__ import annotations
 
-from spatial_vtk.visualize.dashboard import (
-    build_dashboard_summaries,
-    dashboard_summary_input_columns,
-    launch_configured_metrics_dashboard,
-    launch_configured_qc_dashboard,
-    launch_metrics_dashboard,
-    launch_qc_dashboard,
-    load_dashboard_metric_dataset,
-    prepare_dashboard_metric_table,
-    write_configured_dashboard_datasets,
-    write_dashboard_metric_dataset,
-    write_dashboard_summaries,
-    write_dashboard_summary_dataset,
-)
-from spatial_vtk.visualize.figure_io import DEFAULT_FIGURE_NAMES, default_figure_paths, finish_figure, savefig
-from spatial_vtk.visualize.figure_sidecars import (
-    FigureSidecarResult,
-    figure_sidecar_dimension_counts,
-    figure_sidecar_metadata_path,
-    figure_sidecar_status_frame,
-    finish_figure_with_sidecar,
-    layered_figure_rows,
-    read_figure_sidecar_metadata,
-    sidecar_rows_for_write,
-    write_figure_row_sidecar,
-)
-from spatial_vtk.visualize.figure_context import (
-    apply_figure_context,
-    context_value_label,
-    figure_context_lines,
-    figure_context_text,
-    is_log2_ratio_field,
-    log2_effect_to_percent,
-)
-from spatial_vtk.visualize.context import (
-    plot_event_magnitude_map,
-    plot_station_event_beachball_map,
-    plot_station_event_network_map,
-)
-from spatial_vtk.visualize.record_sections import (
-    build_record_section_rows,
-    plot_observed_synthetic_record_section,
-    plot_record_section,
-)
-from spatial_vtk.visualize.qc import (
-    build_trace_qc_overview_html,
-    filter_trace_summary,
-    plot_data_synthetic_availability,
-    plot_event_station_retention_heatmap,
-    plot_post_qc_station_event_map,
-    plot_qc_drop_cause_diagnostics,
-    plot_retention_summary,
-    plot_trace_inventory_samples,
-    queue_rows_from_filtered_trace_df,
-    write_trace_qc_overview_html,
-)
-from spatial_vtk.visualize.waveforms import (
-    plot_event_radial_trace_section,
-    plot_event_trace_comparison,
-    plot_station_event_waveform_map,
-    plot_waveform_overlay_matrix,
-)
+from importlib import import_module
+from typing import Any
 
-__all__ = [
-    "DEFAULT_FIGURE_NAMES",
-    "FigureSidecarResult",
-    "apply_figure_context",
-    "build_record_section_rows",
-    "build_dashboard_summaries",
-    "build_trace_qc_overview_html",
-    "context_value_label",
-    "dashboard_summary_input_columns",
-    "default_figure_paths",
-    "figure_context_lines",
-    "figure_context_text",
-    "figure_sidecar_dimension_counts",
-    "figure_sidecar_metadata_path",
-    "figure_sidecar_status_frame",
-    "filter_trace_summary",
-    "finish_figure",
-    "finish_figure_with_sidecar",
-    "is_log2_ratio_field",
-    "layered_figure_rows",
-    "launch_configured_metrics_dashboard",
-    "launch_configured_qc_dashboard",
-    "launch_metrics_dashboard",
-    "launch_qc_dashboard",
-    "load_dashboard_metric_dataset",
-    "log2_effect_to_percent",
-    "plot_data_synthetic_availability",
-    "plot_event_station_retention_heatmap",
-    "plot_event_magnitude_map",
-    "plot_event_trace_comparison",
-    "plot_observed_synthetic_record_section",
-    "plot_event_radial_trace_section",
-    "plot_post_qc_station_event_map",
-    "plot_qc_drop_cause_diagnostics",
-    "plot_record_section",
-    "plot_retention_summary",
-    "plot_station_event_beachball_map",
-    "plot_station_event_network_map",
-    "plot_station_event_waveform_map",
-    "plot_trace_inventory_samples",
-    "plot_waveform_overlay_matrix",
-    "prepare_dashboard_metric_table",
-    "queue_rows_from_filtered_trace_df",
-    "read_figure_sidecar_metadata",
-    "savefig",
-    "sidecar_rows_for_write",
-    "write_dashboard_metric_dataset",
-    "write_configured_dashboard_datasets",
-    "write_dashboard_summaries",
-    "write_dashboard_summary_dataset",
-    "write_figure_row_sidecar",
-    "write_trace_qc_overview_html",
-]
+_EXPORT_MODULES = {
+    "build_dashboard_summaries": "spatial_vtk.visualize.dashboard",
+    "dashboard_summary_input_columns": "spatial_vtk.visualize.dashboard",
+    "launch_configured_metrics_dashboard": "spatial_vtk.visualize.dashboard",
+    "launch_configured_qc_dashboard": "spatial_vtk.visualize.dashboard",
+    "launch_metrics_dashboard": "spatial_vtk.visualize.dashboard",
+    "launch_qc_dashboard": "spatial_vtk.visualize.dashboard",
+    "load_dashboard_metric_dataset": "spatial_vtk.visualize.dashboard",
+    "prepare_dashboard_metric_table": "spatial_vtk.visualize.dashboard",
+    "write_configured_dashboard_datasets": "spatial_vtk.visualize.dashboard",
+    "write_dashboard_metric_dataset": "spatial_vtk.visualize.dashboard",
+    "write_dashboard_summaries": "spatial_vtk.visualize.dashboard",
+    "write_dashboard_summary_dataset": "spatial_vtk.visualize.dashboard",
+    "DEFAULT_FIGURE_NAMES": "spatial_vtk.visualize.figure_io",
+    "default_figure_paths": "spatial_vtk.visualize.figure_io",
+    "finish_figure": "spatial_vtk.visualize.figure_io",
+    "savefig": "spatial_vtk.visualize.figure_io",
+    "FigureSidecarResult": "spatial_vtk.visualize.figure_sidecars",
+    "figure_sidecar_dimension_counts": "spatial_vtk.visualize.figure_sidecars",
+    "figure_sidecar_metadata_path": "spatial_vtk.visualize.figure_sidecars",
+    "figure_sidecar_status_frame": "spatial_vtk.visualize.figure_sidecars",
+    "finish_figure_with_sidecar": "spatial_vtk.visualize.figure_sidecars",
+    "layered_figure_rows": "spatial_vtk.visualize.figure_sidecars",
+    "read_figure_sidecar_metadata": "spatial_vtk.visualize.figure_sidecars",
+    "sidecar_rows_for_write": "spatial_vtk.visualize.figure_sidecars",
+    "write_figure_row_sidecar": "spatial_vtk.visualize.figure_sidecars",
+    "apply_figure_context": "spatial_vtk.visualize.figure_context",
+    "context_value_label": "spatial_vtk.visualize.figure_context",
+    "figure_context_lines": "spatial_vtk.visualize.figure_context",
+    "figure_context_text": "spatial_vtk.visualize.figure_context",
+    "is_log2_ratio_field": "spatial_vtk.visualize.figure_context",
+    "log2_effect_to_percent": "spatial_vtk.visualize.figure_context",
+    "plot_event_magnitude_map": "spatial_vtk.visualize.context",
+    "plot_station_event_beachball_map": "spatial_vtk.visualize.context",
+    "plot_station_event_network_map": "spatial_vtk.visualize.context",
+    "build_record_section_rows": "spatial_vtk.visualize.record_sections",
+    "plot_observed_synthetic_record_section": "spatial_vtk.visualize.record_sections",
+    "plot_record_section": "spatial_vtk.visualize.record_sections",
+    "build_trace_qc_overview_html": "spatial_vtk.visualize.qc",
+    "filter_trace_summary": "spatial_vtk.visualize.qc",
+    "plot_data_synthetic_availability": "spatial_vtk.visualize.qc",
+    "plot_event_station_retention_heatmap": "spatial_vtk.visualize.qc",
+    "plot_post_qc_station_event_map": "spatial_vtk.visualize.qc",
+    "plot_qc_drop_cause_diagnostics": "spatial_vtk.visualize.qc",
+    "plot_retention_summary": "spatial_vtk.visualize.qc",
+    "plot_trace_inventory_samples": "spatial_vtk.visualize.qc",
+    "queue_rows_from_filtered_trace_df": "spatial_vtk.visualize.qc",
+    "write_trace_qc_overview_html": "spatial_vtk.visualize.qc",
+    "plot_event_radial_trace_section": "spatial_vtk.visualize.waveforms",
+    "plot_event_trace_comparison": "spatial_vtk.visualize.waveforms",
+    "plot_station_event_waveform_map": "spatial_vtk.visualize.waveforms",
+    "plot_waveform_overlay_matrix": "spatial_vtk.visualize.waveforms",
+}
+
+__all__ = sorted(_EXPORT_MODULES)
+
+
+def __getattr__(name: str) -> Any:
+    """Load one visualization helper on demand."""
+
+    module_name = _EXPORT_MODULES.get(name)
+    if module_name is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    value = getattr(import_module(module_name), name)
+    globals()[name] = value
+    return value

@@ -24,7 +24,6 @@ from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io.inventory import build_file_inventory
 from spatial_vtk.io.tables import load_output_table, write_output_table, write_table
 from spatial_vtk.io.waveforms import WaveformPreprocessing, read_waveform_file, select_waveform_trace
-from spatial_vtk.qc.build.inventory import build_waveform_trace_qc_summary
 from spatial_vtk.visualize.dashboard import write_manual_review_queue
 from spatial_vtk.visualize.dashboard.exports import QUEUE_COLUMNS
 
@@ -793,6 +792,8 @@ def build_waveform_qc_summary(
         Side-specific waveform QC rows that can be passed to
         ``build_metric_qc_summary(trace_qc_summary=...)``.
     """
+
+    from spatial_vtk.qc.build.inventory import build_waveform_trace_qc_summary
 
     records = _read_table(event_station_records)
     try:
