@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   ``OutputReadiness`` and output status tables now handle unconfigured
+   optional input paths explicitly. Passing a named input value of ``None``
+   reports ``<not configured>`` in notebook status tables, blocks dependent
+   work with ``missing_inputs``, and avoids fake placeholder paths in public
+   large-run examples.
    Added ``MetricFigureContext.status_frame()`` and
    ``MetricFigureContext.dimension_summary_frame()`` so large-run metric
    plotting notebooks can display the selected row count, loaded column count,

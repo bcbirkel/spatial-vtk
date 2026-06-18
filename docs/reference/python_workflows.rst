@@ -115,6 +115,10 @@ the large-run notebooks.
        ``display_table_previews()`` handle multiple tables or display-label
        mappings. Pass ``missing="skip"`` when a figure can use an optional
        output if present but should continue without it.
+       When a required input comes from an optional config value, pass the
+       named mapping value as ``None``. The readiness/status table displays
+       ``<not configured>`` and blocks the step cleanly instead of using a
+       fake placeholder path.
        ``first_existing_path()`` and ``preview_first_existing_table()`` cover
        common fallback cases such as
        preferring ``metrics_enriched`` when it exists and otherwise using

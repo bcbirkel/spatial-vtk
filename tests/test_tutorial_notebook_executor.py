@@ -799,6 +799,17 @@ def test_large_run_notebooks_use_output_group_helper() -> None:
         assert "vars(step_outputs)" not in source, notebook_path.relative_to(repo_root)
 
 
+def test_large_run_notebooks_do_not_use_fake_missing_config_paths() -> None:
+    """Large-run notebooks should pass unconfigured optional paths through readiness helpers."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_05_large_run_geojson_corridors.ipynb"
+    source = notebook_path.read_text(encoding="utf-8")
+
+    assert ("__missing_" + "region_geojson__") not in source
+    assert 'geojson_input = {"region_geojson_path": geojson_path}' in source
+
+
 def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
     """Tutorial notebooks should teach stable public plotting imports."""
 

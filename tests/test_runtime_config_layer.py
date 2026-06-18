@@ -1403,6 +1403,36 @@ outputs:
     assert set(named_frame["name"]) == {"metrics_long_path", "prepared_events_path"}
     assert set(named_frame["role"]) == {"output", "input", "source"}
 
+    unconfigured_readiness = group.readiness(
+        "metrics_long_path",
+        inputs={"region_geojson_path": None},
+        sources={"region_geojson_path": None},
+    )
+    assert unconfigured_readiness.reason == "missing_inputs"
+    assert unconfigured_readiness.should_run is False
+    assert unconfigured_readiness.unconfigured_inputs == ("region_geojson_path",)
+    assert "region_geojson_path=<not configured>" in unconfigured_readiness.message
+    unconfigured_rows = unconfigured_readiness.status_frame()
+    input_row = unconfigured_rows.loc[
+        unconfigured_rows["name"].eq("region_geojson_path") & unconfigured_rows["role"].eq("input")
+    ].iloc[0]
+    assert input_row["path"] == "<not configured>"
+    assert input_row["state"] == "unconfigured"
+    source_row = unconfigured_rows.loc[
+        unconfigured_rows["name"].eq("region_geojson_path") & unconfigured_rows["role"].eq("source")
+    ].iloc[0]
+    assert source_row["state"] == "unconfigured_ignored"
+    unconfigured_status = output_status_frame({"region_geojson_path": None})
+    assert unconfigured_status.to_dict("records") == [
+        {
+            "name": "region_geojson_path",
+            "path": "<not configured>",
+            "exists": False,
+            "size_gb": None,
+            "modified": None,
+        }
+    ]
+
     dashboard_namespace = dashboard_output_namespace(cfg=cfg)
     assert dashboard_namespace.qc_trace_summary_path == namespace.qc_trace_summary_path
     assert dashboard_namespace.metrics_dashboard_root == namespace.metrics_dashboard_root

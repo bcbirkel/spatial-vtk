@@ -58,7 +58,10 @@ Public helpers exposed by ``spatial_vtk.io``:
        preprocessed-waveform metadata directory.
    * - ``output_readiness`` and ``OutputReadiness``
      - Gate local or Slurm-backed work on missing, stale, blocked, or reusable
-       outputs.
+       outputs. Required input mappings may use ``None`` for an optional
+       config path that is not set; readiness reports the input as
+       ``<not configured>`` and blocks dependent work with the
+       ``missing_inputs`` reason instead of fabricating a filesystem path.
    * - ``load_configured_input_tables``
      - Load optional input tables from dotted config path keys such as
        ``paths.metric_figure_snapshot`` or ``paths.site_metadata``.

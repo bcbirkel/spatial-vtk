@@ -547,6 +547,8 @@ class OutputReadiness:
         Dependency paths used for freshness checks.
     missing_inputs
         Required input paths that do not exist.
+    unconfigured_inputs
+        Required input names that are not configured.
     missing_outputs
         Target output paths that do not exist.
     stale_outputs
@@ -563,11 +565,12 @@ class OutputReadiness:
     inputs: tuple[Path, ...] = ()
     sources: tuple[Path, ...] = ()
     missing_inputs: tuple[Path, ...] = ()
+    unconfigured_inputs: tuple[str, ...] = ()
     missing_outputs: tuple[Path, ...] = ()
     stale_outputs: tuple[Path, ...] = ()
     output_items: tuple[tuple[str, Path], ...] = ()
-    input_items: tuple[tuple[str, Path], ...] = ()
-    source_items: tuple[tuple[str, Path], ...] = ()
+    input_items: tuple[tuple[str, Path | None], ...] = ()
+    source_items: tuple[tuple[str, Path | None], ...] = ()
 
     def status_rows(self) -> list[dict[str, object]]:
         """Return named input/output/source status rows for this decision."""
@@ -587,6 +590,7 @@ class OutputReadiness:
                 "input",
                 self.input_items,
                 missing=self.missing_inputs,
+                unconfigured=self.unconfigured_inputs,
                 reason=self.reason,
             )
         )
@@ -871,7 +875,10 @@ def _validate_missing_policy(missing: str) -> None:
         raise ValueError("missing must be 'raise' or 'skip'.")
 
 
-def output_status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
+UNCONFIGURED_PATH_LABEL = "<not configured>"
+
+
+def output_status_rows(paths: dict[str, str | Path | None]) -> list[dict[str, object]]:
     """Return display-ready file status rows for named paths.
 
     Parameters
@@ -888,6 +895,17 @@ def output_status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
 
     rows: list[dict[str, object]] = []
     for name, raw_path in paths.items():
+        if raw_path is None:
+            rows.append(
+                {
+                    "name": str(name),
+                    "path": UNCONFIGURED_PATH_LABEL,
+                    "exists": False,
+                    "size_gb": None,
+                    "modified": None,
+                }
+            )
+            continue
         path = Path(raw_path)
         row: dict[str, object] = {
             "name": str(name),
@@ -1075,15 +1093,16 @@ def output_readiness(
     """
 
     output_items = _coerce_named_path_mapping(outputs)
-    input_items = _coerce_named_path_mapping(inputs)
-    source_items = _coerce_named_path_mapping(sources)
+    input_items = _coerce_named_optional_path_mapping(inputs)
+    source_items = _coerce_named_optional_path_mapping(sources)
     output_paths = tuple(output_items.values())
-    input_paths = tuple(input_items.values())
-    source_paths = tuple(source_items.values())
+    input_paths = tuple(path for path in input_items.values() if path is not None)
+    source_paths = tuple(path for path in source_items.values() if path is not None)
     named_outputs = tuple(output_items.items())
     named_inputs = tuple(input_items.items())
     named_sources = tuple(source_items.items())
 
+    unconfigured_inputs = tuple(name for name, path in input_items.items() if path is None)
     missing_inputs = tuple(path for path in input_paths if not path.exists())
     missing_outputs = tuple(path for path in output_paths if not path.exists())
     existing_sources = tuple(path for path in source_paths if path.exists())
@@ -1093,10 +1112,10 @@ def output_readiness(
         if output.exists() and any(source.stat().st_mtime > output.stat().st_mtime for source in existing_sources)
     )
 
-    if missing_inputs:
+    if unconfigured_inputs or missing_inputs:
         message = missing_input_message or _paths_message(
             "Required input is not ready yet",
-            _filter_named_paths(input_items, missing_inputs),
+            _filter_named_optional_paths(input_items, missing_inputs, unconfigured_inputs),
         )
         return OutputReadiness(
             should_run=False,
@@ -1106,6 +1125,7 @@ def output_readiness(
             inputs=input_paths,
             sources=source_paths,
             missing_inputs=missing_inputs,
+            unconfigured_inputs=unconfigured_inputs,
             missing_outputs=missing_outputs,
             stale_outputs=stale_outputs,
             output_items=named_outputs,
@@ -1122,6 +1142,7 @@ def output_readiness(
             outputs=output_paths,
             inputs=input_paths,
             sources=source_paths,
+            unconfigured_inputs=unconfigured_inputs,
             missing_outputs=missing_outputs,
             stale_outputs=stale_outputs,
             output_items=named_outputs,
@@ -1141,6 +1162,7 @@ def output_readiness(
             outputs=output_paths,
             inputs=input_paths,
             sources=source_paths,
+            unconfigured_inputs=unconfigured_inputs,
             missing_outputs=missing_outputs,
             stale_outputs=stale_outputs,
             output_items=named_outputs,
@@ -1160,6 +1182,7 @@ def output_readiness(
             outputs=output_paths,
             inputs=input_paths,
             sources=source_paths,
+            unconfigured_inputs=unconfigured_inputs,
             stale_outputs=stale_outputs,
             output_items=named_outputs,
             input_items=named_inputs,
@@ -1174,6 +1197,7 @@ def output_readiness(
         outputs=output_paths,
         inputs=input_paths,
         sources=source_paths,
+        unconfigured_inputs=unconfigured_inputs,
         output_items=named_outputs,
         input_items=named_inputs,
         source_items=named_sources,
@@ -1287,6 +1311,15 @@ def _coerce_named_path_mapping(paths) -> dict[str, Path]:
     }
 
 
+def _coerce_named_optional_path_mapping(paths) -> dict[str, Path | None]:
+    """Coerce path inputs to a named mapping while preserving unconfigured values."""
+
+    return {
+        name: None if path is None else Path(path)
+        for name, path in _coerce_named_paths(paths).items()
+    }
+
+
 def _filter_named_paths(paths: dict[str, Path], selected: tuple[Path, ...]) -> dict[str, Path]:
     """Return named paths whose value is in ``selected``."""
 
@@ -1294,12 +1327,29 @@ def _filter_named_paths(paths: dict[str, Path], selected: tuple[Path, ...]) -> d
     return {name: path for name, path in paths.items() if path in selected_set}
 
 
+def _filter_named_optional_paths(
+    paths: dict[str, Path | None],
+    selected: tuple[Path, ...],
+    unconfigured: tuple[str, ...],
+) -> dict[str, Path | None]:
+    """Return selected named paths, including paths not configured in the active config."""
+
+    selected_set = set(selected)
+    unconfigured_set = set(unconfigured)
+    return {
+        name: path
+        for name, path in paths.items()
+        if name in unconfigured_set or path in selected_set
+    }
+
+
 def _readiness_status_rows(
     role: str,
-    items: tuple[tuple[str, Path], ...],
+    items: tuple[tuple[str, Path | None], ...],
     *,
     missing: tuple[Path, ...] = (),
     stale: tuple[Path, ...] = (),
+    unconfigured: tuple[str, ...] = (),
     reason: str,
 ) -> list[dict[str, object]]:
     """Return display rows for one role in an output-readiness decision."""
@@ -1307,12 +1357,15 @@ def _readiness_status_rows(
     rows: list[dict[str, object]] = []
     missing_paths = set(missing)
     stale_paths = set(stale)
+    unconfigured_names = set(unconfigured)
     for name, path in items:
         row = output_status_rows({name: path})[0]
         row["role"] = role
         row["reason"] = reason
         if role == "output":
-            if path in missing_paths:
+            if path is None:
+                state = "unconfigured"
+            elif path in missing_paths:
                 state = "missing"
             elif path in stale_paths:
                 state = "stale"
@@ -1321,9 +1374,17 @@ def _readiness_status_rows(
             else:
                 state = "current"
         elif role == "input":
-            state = "missing" if path in missing_paths else "ready"
+            if path is None or name in unconfigured_names:
+                state = "unconfigured"
+            elif path in missing_paths:
+                state = "missing"
+            else:
+                state = "ready"
         elif role == "source":
-            state = "ready" if path.exists() else "missing_ignored"
+            if path is None:
+                state = "unconfigured_ignored"
+            else:
+                state = "ready" if path.exists() else "missing_ignored"
         else:
             state = "unknown"
         row["state"] = state
@@ -1331,14 +1392,15 @@ def _readiness_status_rows(
     return rows
 
 
-def _paths_message(prefix: str, paths: tuple[Path, ...] | dict[str, Path]) -> str:
+def _paths_message(prefix: str, paths: tuple[Path, ...] | dict[str, Path | None]) -> str:
     """Return a compact status message that includes affected paths."""
 
     if not paths:
         return f"{prefix}."
     if isinstance(paths, dict):
         items = list(paths.items())
-        first = f"{items[0][0]}={items[0][1]}"
+        value = UNCONFIGURED_PATH_LABEL if items[0][1] is None else items[0][1]
+        first = f"{items[0][0]}={value}"
     else:
         items = [(None, path) for path in paths]
         first = str(items[0][1])
