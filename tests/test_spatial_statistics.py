@@ -90,6 +90,7 @@ from spatial_vtk.spatial.plot.large_run import (
     write_large_run_geojson_region_figures_from_outputs,
     write_large_run_region_boxplot,
     write_large_run_region_boxplot_from_outputs,
+    write_large_run_spatial_summary_figures_from_outputs,
 )
 from spatial_vtk.spatial.plot.metrics import plot_geology_contrast
 from spatial_vtk.spatial.plot.pca import plot_pca_explained_variance, plot_pca_feature_loadings
@@ -1055,6 +1056,146 @@ def test_prepare_spatial_figure_context_from_notebook_settings_delegates(
         "default_model": "override-model",
         "station_aggregation": "median",
     }
+
+
+def test_write_large_run_spatial_summary_figures_from_outputs(tmp_path: Path) -> None:
+    """Compact Step 4 figure helper should own loading and output routing."""
+
+    station_bias_path = tmp_path / "station_bias.parquet"
+    figure_path = tmp_path / "station_bias.png"
+    station_bias = pd.DataFrame(
+        {
+            "station": ["STA"],
+            "lat": [34.0],
+            "lon": [-118.0],
+            "mean_centered": [0.2],
+        }
+    )
+    calls: dict[str, object] = {}
+
+    class Outputs:
+        def __init__(self) -> None:
+            self.station_bias_path = station_bias_path
+            self.station_bias_figure_path = figure_path
+
+        def load_table(self, name: str, *, cfg=None) -> pd.DataFrame:  # noqa: ANN001
+            calls["load_name"] = name
+            calls["cfg"] = cfg
+            return station_bias
+
+    class Settings:
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            calls["gate_paths"] = paths
+            return type("Gate", (), {"ready": True, "figures_enabled": True, "message": missing_message})()
+
+        def plot_kwargs(self) -> dict[str, object]:
+            return {"showfig": False, "write_sidecar": True}
+
+    def _fake_plot(frame: pd.DataFrame, *, outpath: Path, savefig: bool, **kwargs) -> None:  # noqa: ANN003
+        calls["plot_rows"] = len(frame)
+        calls["outpath"] = outpath
+        calls["savefig"] = savefig
+        calls["plot_kwargs"] = kwargs
+        Path(outpath).write_text("figure", encoding="utf-8")
+
+    station_bias_path.write_text("ready", encoding="utf-8")
+    result = write_large_run_spatial_summary_figures_from_outputs(
+        Outputs(),
+        Settings(),
+        cfg="config",
+        plot_station_bias_map_func=_fake_plot,
+    )
+
+    assert result.status == "wrote"
+    assert result.row_count == 1
+    assert result.station_bias_path == station_bias_path
+    assert result.station_bias_figure_path == figure_path
+    assert calls["gate_paths"] == [station_bias_path]
+    assert calls["load_name"] == "station_bias"
+    assert calls["cfg"] == "config"
+    assert calls["plot_rows"] == 1
+    assert calls["outpath"] == figure_path
+    assert calls["savefig"] is True
+    assert calls["plot_kwargs"] == {"showfig": False, "write_sidecar": True}
+    assert figure_path.read_text(encoding="utf-8") == "figure"
+    assert result.status_frame().loc[0, "status"] == "wrote"
+
+
+def test_write_large_run_spatial_summary_figures_skips_existing(tmp_path: Path) -> None:
+    """Compact Step 4 figure helper should not rewrite current figures by default."""
+
+    station_bias_path = tmp_path / "station_bias.parquet"
+    figure_path = tmp_path / "station_bias.png"
+    station_bias_path.write_text("ready", encoding="utf-8")
+    figure_path.write_text("old", encoding="utf-8")
+
+    class Outputs:
+        def __init__(self) -> None:
+            self.station_bias_path = station_bias_path
+            self.station_bias_figure_path = figure_path
+
+        def load_table(self, name: str, *, cfg=None) -> pd.DataFrame:  # noqa: ANN001
+            raise AssertionError("existing figure should skip table loading")
+
+    class Settings:
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            return type("Gate", (), {"ready": True, "figures_enabled": True, "message": missing_message})()
+
+    result = write_large_run_spatial_summary_figures_from_outputs(Outputs(), Settings())
+
+    assert result.status == "exists"
+    assert result.station_bias_figure_path == figure_path
+    assert figure_path.read_text(encoding="utf-8") == "old"
+
+
+def test_write_large_run_spatial_summary_figures_reports_missing_input(tmp_path: Path) -> None:
+    """Compact Step 4 figure helper should return a status table for missing inputs."""
+
+    station_bias_path = tmp_path / "missing.parquet"
+
+    class Outputs:
+        def __init__(self) -> None:
+            self.station_bias_path = station_bias_path
+            self.station_bias_figure_path = tmp_path / "station_bias.png"
+
+        def load_table(self, name: str, *, cfg=None) -> pd.DataFrame:  # noqa: ANN001
+            raise AssertionError("missing input should skip table loading")
+
+    class Settings:
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            return type("Gate", (), {"ready": False, "figures_enabled": True, "message": missing_message})()
+
+    result = write_large_run_spatial_summary_figures_from_outputs(Outputs(), Settings())
+
+    assert result.status == "missing_input"
+    assert result.station_bias_path == station_bias_path
+    assert result.row_count == 0
+    assert "station_bias table is not ready yet" in result.status_frame().loc[0, "message"]
+
+
+def test_write_large_run_spatial_summary_figures_reports_missing_output(tmp_path: Path) -> None:
+    """Compact Step 4 figure helper should require a configured figure output."""
+
+    station_bias_path = tmp_path / "station_bias.parquet"
+    station_bias_path.write_text("ready", encoding="utf-8")
+
+    class Outputs:
+        def __init__(self) -> None:
+            self.station_bias_path = station_bias_path
+
+        def load_table(self, name: str, *, cfg=None) -> pd.DataFrame:  # noqa: ANN001
+            raise AssertionError("missing figure output should skip table loading")
+
+    class Settings:
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            return type("Gate", (), {"ready": True, "figures_enabled": True, "message": missing_message})()
+
+    result = write_large_run_spatial_summary_figures_from_outputs(Outputs(), Settings())
+
+    assert result.status == "missing_output"
+    assert result.station_bias_path == station_bias_path
+    assert result.station_bias_figure_path is None
+    assert "station_bias_figure_path is not configured" in result.message
 
 
 def test_write_large_run_region_boxplot_from_bounded_table(tmp_path: Path) -> None:

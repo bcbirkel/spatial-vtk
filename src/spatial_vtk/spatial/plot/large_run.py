@@ -1406,6 +1406,33 @@ class RegionFigureResult:
         return None
 
 
+@dataclass(frozen=True)
+class SpatialSummaryFigureResult:
+    """Result from writing compact large-run spatial summary figures."""
+
+    station_bias_path: Path | None
+    station_bias_figure_path: Path | None
+    status: str
+    row_count: int = 0
+    message: str = ""
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact notebook status table for summary figures."""
+
+        return pd.DataFrame(
+            [
+                {
+                    "artifact": "station_bias_map",
+                    "status": self.status,
+                    "row_count": self.row_count,
+                    "input_path": None if self.station_bias_path is None else str(self.station_bias_path),
+                    "figure_path": None if self.station_bias_figure_path is None else str(self.station_bias_figure_path),
+                    "message": self.message,
+                }
+            ]
+        )
+
+
 def prepare_spatial_figure_context(**kwargs: Any) -> SpatialFigureContext:
     """Return a reusable spatial figure context for large-run notebooks."""
 
@@ -1433,6 +1460,89 @@ def prepare_spatial_figure_context_from_notebook_settings(
         figure_dir=settings.figure_dir,
         overwrite=overwrite,
         **context_kwargs,
+    )
+
+
+def write_large_run_spatial_summary_figures_from_outputs(
+    outputs: Any,
+    settings: Any,
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    overwrite: bool = False,
+    plot_station_bias_map_func: Callable[..., Any] | None = None,
+) -> SpatialSummaryFigureResult:
+    """Write compact Step 4 spatial figures from configured output groups.
+
+    The helper keeps large-run notebooks from repeating readiness checks,
+    table loading, output-path lookup, and figure keyword plumbing for summary
+    figures that are backed by compact Step 4 outputs.
+    """
+
+    station_bias_path = _group_path(outputs, "station_bias_path")
+    figure_path = _group_path(outputs, "station_bias_figure_path")
+    gate = settings.render_gate(
+        [station_bias_path],
+        missing_message="station_bias table is not ready yet.",
+    )
+    if not gate.ready:
+        return SpatialSummaryFigureResult(
+            station_bias_path,
+            figure_path,
+            "missing_input" if gate.figures_enabled else "disabled",
+            message=gate.message,
+        )
+    if figure_path is None:
+        return SpatialSummaryFigureResult(
+            station_bias_path,
+            None,
+            "missing_output",
+            message="skip station bias map: station_bias_figure_path is not configured",
+        )
+    if figure_path.exists() and not overwrite:
+        return SpatialSummaryFigureResult(
+            station_bias_path,
+            figure_path,
+            "exists",
+            message=f"skip {figure_path.name}: exists",
+        )
+
+    plot_func = plot_station_bias_map_func
+    if plot_func is None:
+        from spatial_vtk.spatial.map import plot_station_bias_map as plot_func
+
+    try:
+        station_bias = outputs.load_table("station_bias", cfg=cfg)
+    except Exception as exc:
+        return SpatialSummaryFigureResult(
+            station_bias_path,
+            figure_path,
+            "load_failed",
+            message=f"skip station bias map: {type(exc).__name__}: {exc}",
+        )
+    row_count = len(station_bias)
+    try:
+        plot_func(
+            station_bias,
+            outpath=figure_path,
+            savefig=True,
+            **settings.plot_kwargs(),
+        )
+        plt.close("all")
+    except Exception as exc:
+        plt.close("all")
+        return SpatialSummaryFigureResult(
+            station_bias_path,
+            figure_path,
+            "plot_failed",
+            row_count=row_count,
+            message=f"skip station bias map: {type(exc).__name__}: {exc}",
+        )
+    return SpatialSummaryFigureResult(
+        station_bias_path,
+        figure_path,
+        "wrote",
+        row_count=row_count,
+        message=f"wrote {figure_path}" if figure_path is not None else "wrote station bias map",
     )
 
 
@@ -1811,6 +1921,19 @@ def write_large_run_region_boxplot_from_outputs(
     )
 
 
+def _group_path(outputs: Any, name: str) -> Path | None:
+    """Return one path from an output group-like object."""
+
+    if hasattr(outputs, name):
+        value = getattr(outputs, name)
+        return None if value is None else Path(value)
+    paths = getattr(outputs, "paths", None)
+    if isinstance(paths, Mapping) and name in paths:
+        value = paths[name]
+        return None if value is None else Path(value)
+    return None
+
+
 def _resolve_region_figure_output(
     outputs: Any,
     path_name: str,
@@ -2158,10 +2281,12 @@ __all__ = [
     "RegionBoxplotResult",
     "RegionFigureResult",
     "SPATIAL_FIGURE_TABLE_KEYS",
+    "SpatialSummaryFigureResult",
     "SpatialFigureContext",
     "prepare_spatial_figure_context",
     "prepare_spatial_figure_context_from_notebook_settings",
     "write_large_run_geojson_region_figures_from_outputs",
     "write_large_run_region_boxplot",
     "write_large_run_region_boxplot_from_outputs",
+    "write_large_run_spatial_summary_figures_from_outputs",
 ]

@@ -1253,13 +1253,15 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "source_df=item[\"df\"]" not in source
     assert "source_df_factory=lambda period_item" not in source
     assert "spatial_figures.write_overview_plots(" in source
+    assert "write_large_run_spatial_summary_figures_from_outputs(" in source
+    assert "quick_spatial_result.status_frame()" in source
     assert "### Spatial Event-Centered Azimuthal Residuals" in source
     assert "### Spatial Event-Centered Polar Residuals" in source
     assert 'write_spatial_plot("spatial_correlogram"' not in source
     assert "plot_correlogram" not in source
     assert "preview_output_table(" not in source
     assert "for name, key in [" not in source
-    assert "step_outputs.load_table(" in source
+    assert "step_outputs.load_table(" not in source
     assert "load_output_table(" not in source
 
 

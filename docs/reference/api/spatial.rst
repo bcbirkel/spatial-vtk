@@ -208,6 +208,10 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
        ``notebook_figure_settings(...)`` so tutorial notebooks do not repeat
        figure-directory, sidecar, basemap, filter, and sampling keyword
        plumbing.
+   * - ``write_large_run_spatial_summary_figures_from_outputs``
+     - Write compact Step 4 spatial summary figures from an ``OutputGroup``
+       without notebook-local input gating, table loading, output-path lookup,
+       or plotting keyword expansion.
    * - ``write_large_run_geojson_region_figures_from_outputs``
      - Write the Step 5 GeoJSON overview map, corridor map, and region boxplot
        from configured output groups without notebook-local table loading or
@@ -279,6 +283,11 @@ schemas.
 .. autofunction:: spatial_vtk.spatial.plot.prepare_spatial_figure_context
 
 .. autofunction:: spatial_vtk.spatial.plot.prepare_spatial_figure_context_from_notebook_settings
+
+.. autoclass:: spatial_vtk.spatial.plot.SpatialSummaryFigureResult
+   :members:
+
+.. autofunction:: spatial_vtk.spatial.plot.write_large_run_spatial_summary_figures_from_outputs
 
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_outputs
 

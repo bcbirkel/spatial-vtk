@@ -3,6 +3,11 @@ Changelog
 
 2026-06-18
    Added
+   ``spatial_vtk.spatial.plot.write_large_run_spatial_summary_figures_from_outputs()``
+   and rewired the large-run Step 4 quick spatial-figure cell to use it. The
+   notebook no longer performs station-bias input gating, table loading, or
+   map-path plumbing inline.
+   Added
    ``spatial_vtk.spatial.plot.prepare_spatial_figure_context_from_notebook_settings()``
    and rewired the large-run Step 4 spatial notebook to use it. The notebook
    now keeps figure controls visible without repeating the context keyword,
