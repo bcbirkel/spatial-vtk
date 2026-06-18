@@ -155,6 +155,7 @@ class NotebookFigureSettings:
     compare_to: str | None = None
     comparison_table: bool = False
     score_columns: list[str] | None = None
+    pca_mode: str = "PC1"
     sidecars: NotebookFigureSidecarSettings = field(default_factory=NotebookFigureSidecarSettings)
 
     def context_kwargs(self, *, include_station_aggregation: bool = False) -> dict[str, object]:
@@ -602,6 +603,7 @@ def notebook_figure_settings(
     default_robust_axis_percentile: float = 95.0,
     default_station_aggregation: str = "mean",
     default_score_columns: list[str] | tuple[str, ...] | None = None,
+    default_pca_mode: str = "PC1",
     default_sidecar_rows: int | None = None,
 ) -> NotebookFigureSettings:
     """Return standard notebook figure settings from environment variables.
@@ -629,6 +631,8 @@ def notebook_figure_settings(
         Fallback station aggregation method for station-summary figures.
     default_score_columns
         Fallback score columns for optional GOF/score trend diagnostics.
+    default_pca_mode
+        Fallback PCA mode name for spatial PCA summary figures.
     default_sidecar_rows
         Fallback sidecar row count.
 
@@ -658,6 +662,7 @@ def notebook_figure_settings(
     compare_to_names = _figure_setting_names(prefix, "COMPARE_TO")
     comparison_table_names = _figure_setting_names(prefix, "COMPARISON_TABLE")
     score_column_names = _figure_setting_names(prefix, "SCORE_COLUMNS")
+    pca_mode_names = _figure_setting_names(prefix, "PCA_MODE")
 
     aggregation_names = []
     if prefix:
@@ -674,6 +679,8 @@ def notebook_figure_settings(
         value_col_names.insert(0, "SVTK_REGION_VALUE_COL")
         compare_to_names.insert(0, "SVTK_REGION_COMPARE_TO")
         sample_row_names.insert(0, "SVTK_REGION_FIGURE_ROWS")
+    if prefix == "SPATIAL":
+        pca_mode_names.insert(0, "SVTK_PCA_MODE")
 
     component = _env_text_first(component_names, default=default_component)
     components = _env_list_first(component_names)
@@ -699,6 +706,7 @@ def notebook_figure_settings(
         compare_to=_env_text_first(compare_to_names),
         comparison_table=_env_bool_first(comparison_table_names, default=False),
         score_columns=_env_list_first(score_column_names) or default_scores,
+        pca_mode=_env_text_first(pca_mode_names, default=default_pca_mode) or default_pca_mode,
         sidecars=notebook_figure_sidecar_settings(
             figure_kind,
             figure_dir=figure_dir,

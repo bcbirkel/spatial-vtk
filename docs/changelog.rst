@@ -6,6 +6,9 @@ Changelog
    ``NotebookRunContext``. Large-run Step 1 and Step 3 now use those context
    fields instead of parsing ``SVTK_PREPROCESS_CONTINUE_ON_ERROR`` and
    ``SVTK_METRIC_BATCH_COUNT`` directly in notebook cells.
+   Added ``pca_mode`` to ``NotebookFigureSettings`` and updated large-run Step
+   4 to use ``notebook_figure_settings("spatial")`` for ``SVTK_PCA_MODE``
+   instead of parsing it in the notebook.
    Added ``run_scenario`` to ``NotebookRunContext`` and updated the large-run
    notebooks to call ``notebook_run_context()`` directly instead of parsing
    ``SVTK_RUN_SCENARIO`` in setup cells. Downstream helpers that need the

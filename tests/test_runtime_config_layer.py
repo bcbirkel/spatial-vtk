@@ -550,6 +550,7 @@ def test_notebook_figure_settings_parse_common_controls(tmp_path, monkeypatch):
     monkeypatch.setenv("SVTK_STATION_AGGREGATION", "median")
     monkeypatch.setenv("SVTK_FIGURE_COMPARE_TO", "LA Basin")
     monkeypatch.setenv("SVTK_FIGURE_COMPARISON_TABLE", "1")
+    monkeypatch.setenv("SVTK_METRIC_FIGURE_PCA_MODE", "PC2")
     monkeypatch.setenv("SVTK_FIGURE_SIDECARS", "1")
     monkeypatch.setenv("SVTK_FIGURE_SIDECAR_ROWS", "25")
 
@@ -567,6 +568,7 @@ def test_notebook_figure_settings_parse_common_controls(tmp_path, monkeypatch):
     assert settings.station_aggregation == "median"
     assert settings.compare_to == "LA Basin"
     assert settings.comparison_table is True
+    assert settings.pca_mode == "PC2"
     assert settings.sidecars.enabled is True
     assert settings.sidecars.rows == 25
 
@@ -627,6 +629,16 @@ def test_notebook_figure_settings_parse_region_legacy_controls(tmp_path, monkeyp
     assert settings.compare_to == "basin"
     assert settings.showfig is True
     assert settings.sidecars.rows == 1000
+
+
+def test_notebook_figure_settings_parse_spatial_pca_mode(monkeypatch):
+    """Spatial PCA figure mode should be owned by package settings."""
+
+    monkeypatch.setenv("SVTK_PCA_MODE", "PC3")
+
+    settings = notebook_figure_settings("spatial")
+
+    assert settings.pca_mode == "PC3"
 
 
 def test_notebook_figure_settings_parse_score_trend_controls(tmp_path, monkeypatch):

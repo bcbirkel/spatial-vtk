@@ -671,7 +671,9 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "write_pca_summary_plots = spatial_figures.write_pca_summary_plots" in source
     assert "plot_pca_summary" in source
     assert "write_pca_summary_plots(" in source
-    assert "PCA_MODE" in source
+    assert "DEFAULT_PCA_MODE = SPATIAL_FIGURE_SETTINGS.pca_mode" in source
+    assert "PCA_MODE = DEFAULT_PCA_MODE" in source
+    assert 'os.environ.get("SVTK_PCA_MODE"' not in source
     assert "source_df=item_source_rows(item)" in source
     assert "source_df_factory=item_source_rows" in source
     assert "source_df=item[\"df\"]" not in source

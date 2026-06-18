@@ -34,6 +34,7 @@ Environment switches:
 - `SVTK_FIGURE_SIDECARS=1`: write CSV/JSON row-provenance sidecars for saved figures.
 - `SVTK_FIGURE_SIDECAR_ROWS=all`: write every plotted/source row to each sidecar. Use a positive integer to write a deterministic sample of that many rows. The matching JSON metadata records whether each CSV is exact or sampled.
 - `SVTK_STATION_AGGREGATION=mean`: choose how metric rows are collapsed to station summaries for station-level maps. Supported values include `mean`, `median`, `min`, and `max`.
+- `SVTK_PCA_MODE=PC1`: choose which PCA mode the Step 4 spatial PCA summary figures render.
 
 Figure sidecars:
 
