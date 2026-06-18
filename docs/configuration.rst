@@ -312,6 +312,27 @@ so notebooks do not need long filename lists. For example,
 Likewise, ``write_output_table("prepared_stations", stations)`` writes
 ``outputs/tables/prepared_stations.csv``.
 
+Registered table outputs also carry their default file format in the filename.
+Small metadata and summary handoff tables default to CSV because they are easy
+to inspect and share. Large or repeatedly-read workflow tables default to
+Parquet, including ``qc_inventory_overlap``, ``observed_metric_inventory``,
+``synthetic_metric_inventory``, ``metric_rows``, ``metrics_long``,
+``metrics_enriched``, ``path_table``, ``path_summary``, ``metric_field``,
+``event_centered_residuals``, ``station_bias``, ``clusters``,
+``pca_station_scores``, ``block_holdout_predictions``, ``corridors``, and
+``redcap_clusters``. Prefer these registered names in notebooks and package
+calls; ``load_output_table`` and ``write_output_table`` choose CSV or Parquet
+from the configured suffix.
+
+You can inspect the registered output keys, descriptions, default suffixes, and
+resolved paths from Python:
+
+.. code-block:: python
+
+   from spatial_vtk.config import configured_output_registry_frame
+
+   configured_output_registry_frame(kinds=("table",), include_paths=True)
+
 When a workflow step creates several standard tables, write them by output key
 and let the next step read them the same way:
 

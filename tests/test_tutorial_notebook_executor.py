@@ -271,6 +271,33 @@ def test_public_docs_describe_committed_tutorial_waveforms() -> None:
     assert 'record_coverage = load_output_table("record_coverage")' in configuration
 
 
+def test_public_docs_describe_registered_table_formats() -> None:
+    """Docs should explain CSV/Parquet defaults through registered output names."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    configuration = (repo_root / "docs" / "configuration.rst").read_text(encoding="utf-8")
+    data_formats = (repo_root / "docs" / "data_formats.rst").read_text(encoding="utf-8")
+    combined = f"{configuration}\n{data_formats}"
+
+    assert "Registered table outputs also carry their default file format" in configuration
+    assert "configured_output_registry_frame(kinds=(\"table\",), include_paths=True)" in configuration
+    assert "Registered output names" in data_formats
+    assert "default table format" in data_formats
+    assert "load_output_table" in data_formats
+    assert "write_output_table" in data_formats
+    for key in (
+        "qc_inventory_overlap",
+        "observed_metric_inventory",
+        "synthetic_metric_inventory",
+        "metric_rows",
+        "metrics_long",
+        "metric_field",
+        "station_bias",
+        "corridors",
+    ):
+        assert key in combined
+
+
 def test_qc_notebooks_use_public_workflow_helpers() -> None:
     """Tutorial notebooks should use public QC workflow helpers."""
 

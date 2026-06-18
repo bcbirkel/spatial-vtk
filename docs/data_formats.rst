@@ -175,9 +175,15 @@ Expected Outputs
 ----------------
 
 Spatial-VTK writes ordinary files so you can inspect them, reuse them in later
-notebooks, or open them in other tools. Most tabular outputs can be written as
-CSV or Parquet. Parquet is usually better for large metric tables and dashboard
-datasets; CSV is easier to preview and share in small examples.
+notebooks, or open them in other tools. Registered output names determine the
+default table format through their filename suffix. Small metadata, QC summary,
+and diagnostic handoff tables usually default to CSV. Large or repeatedly-read
+workflow tables usually default to Parquet, especially metric inventories,
+merged metric rows, long/enriched metrics, path tables, spatial metric fields,
+station summaries, clusters, PCA station scores, block holdout predictions,
+and corridor tables. Use ``load_output_table`` and ``write_output_table`` with
+registered output keys so later workflow steps read the configured file format
+without extra path or parser code.
 
 Prepared inputs
    The first workflow steps write cleaned station tables, event tables,
