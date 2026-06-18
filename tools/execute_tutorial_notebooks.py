@@ -127,6 +127,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Notebook preflight clean for {len(notebooks)} notebook(s).")
         return 0
     check_notebook_runtime()
+    if args.runtime_check_only:
+        print(f"Notebook runtime dependencies available for {len(notebooks)} notebook(s).")
+        return 0
     if args.clean:
         _clean_path(tutorial_output)
     report_path.parent.mkdir(parents=True, exist_ok=True)
@@ -544,6 +547,14 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
             "Run notebook source-contract and example-data preflights, then "
             "exit before checking notebook runtime dependencies, cleaning "
             "outputs, or executing notebooks."
+        ),
+    )
+    parser.add_argument(
+        "--runtime-check-only",
+        action="store_true",
+        help=(
+            "Run source-contract, example-data, and notebook-runtime dependency "
+            "checks, then exit before cleaning outputs or executing notebooks."
         ),
     )
     parser.set_defaults(stop_on_failure=True)

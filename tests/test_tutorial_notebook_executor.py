@@ -440,6 +440,73 @@ def test_tutorial_notebook_preflight_only_skips_runtime_and_clean(tmp_path: Path
     assert marker.exists()
 
 
+def test_tutorial_notebook_runtime_check_only_skips_clean_and_execution(tmp_path: Path, monkeypatch, capsys) -> None:
+    """The CLI should let users verify execution dependencies without running notebooks."""
+
+    module = _load_executor_module()
+    repo = tmp_path / "repo"
+    examples = repo / "docs" / "examples"
+    examples.mkdir(parents=True)
+    (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
+    notebook = examples / "step_01.ipynb"
+    notebook.write_text(
+        json.dumps(
+            {
+                "cells": [
+                    {
+                        "cell_type": "code",
+                        "id": "bootstrap",
+                        "execution_count": None,
+                        "metadata": {},
+                        "outputs": [],
+                        "source": [
+                            "import runpy\n",
+                            "_bootstrap = 'docs/examples/_source_bootstrap.py'\n",
+                            "runpy.run_path(str(_bootstrap))\n",
+                        ],
+                    }
+                ],
+                "metadata": {},
+                "nbformat": 4,
+                "nbformat_minor": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+    marker = repo / "outputs" / "tutorials" / "keep.txt"
+    marker.parent.mkdir(parents=True)
+    marker.write_text("do not delete", encoding="utf-8")
+    checks = {"runtime": 0}
+
+    def fake_check_runtime() -> None:
+        checks["runtime"] += 1
+
+    monkeypatch.setattr(module, "check_notebook_runtime", fake_check_runtime)
+    monkeypatch.setattr(
+        module,
+        "execute_notebook",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("executed")),
+    )
+
+    result = module.main(
+        [
+            "--repo-root",
+            str(repo),
+            "--notebook",
+            str(notebook),
+            "--clean",
+            "--skip-example-data-check",
+            "--runtime-check-only",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert result == 0
+    assert checks["runtime"] == 1
+    assert "Notebook runtime dependencies available for 1 notebook(s)." in captured.out
+    assert marker.exists()
+
+
 def test_ci_runs_clean_tutorial_notebooks_with_notebook_extras() -> None:
     """CI should prove source-checkout tutorial notebooks run from example data."""
 
@@ -465,6 +532,7 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert 'python -m pip install -e ".[notebooks,waveforms]"' in large_run_readme
     assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in combined
     assert "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run" in combined
+    assert "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run" in combined
     assert "SVTK_FIGURE_SIDECARS=1" in combined
     assert "SVTK_FIGURE_SIDECAR_ROWS=all" in combined
     assert "*.source.csv" in combined

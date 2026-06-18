@@ -36,6 +36,13 @@ runtime dependencies or output cleanup:
 
    python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run
 
+To verify that the current environment also has the notebook execution runtime
+installed, without cleaning outputs or starting the notebooks:
+
+.. code-block:: bash
+
+   python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run
+
 The command executes the seven notebooks against the committed example data,
 writes ``outputs/tutorials/notebook_execution_report.json``, and fails if a
 notebook raises an error or emits warning-like cell output. It also checks the

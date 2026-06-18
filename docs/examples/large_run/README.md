@@ -30,6 +30,9 @@ layout paths, or raw output-path/table reads.
 Run `python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run`
 for the same source-contract and example-data checks without notebook runtime
 dependencies.
+Run `python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run`
+to also verify that the current environment has the notebook execution runtime
+installed, without cleaning outputs or starting the notebooks.
 
 Environment switches:
 
