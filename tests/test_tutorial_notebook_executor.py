@@ -782,12 +782,15 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "run_notebook_step_if_needed(" in source
+    assert "metadata_readiness = step_outputs.readiness(" in source
+    assert "display(metadata_readiness.status_frame())" in source
     assert "run_or_submit_notebook_function(" not in source
     assert "spatial_vtk.io.preprocess_waveforms_from_config" in source
     assert "spatial_vtk.io.build_record_coverage_from_config" in source
     assert "run_or_submit_notebook_cli_command(" not in source
     assert "write_notebook_python_slurm_script" not in source
     assert "submit_notebook_slurm_script" not in source
+    assert "should_rebuild_paths(" not in source
     assert "preprocess_waveform_files(" not in source
     assert "build_record_coverage_table_from_trace_metadata(" not in source
 
