@@ -18,8 +18,7 @@ matplotlib.use("Agg", force=True)
 from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.io import OutputGroup, write_table
-from spatial_vtk.metrics.plot.large_run import MetricFigureContext
-from spatial_vtk.metrics.plot import plot_score_trends
+from spatial_vtk.metrics.plot import MetricFigureContext, plot_score_trends
 from spatial_vtk.spatial.calculate.clustering import assign_redcap_clusters, run_residual_feature_clustering
 from spatial_vtk.spatial.calculate.correlation import (
     build_distance_bin_summary,
