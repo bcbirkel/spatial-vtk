@@ -21,6 +21,7 @@ modules.
 .. code-block:: python
 
    from spatial_vtk.io import (
+       load_configured_input_paths,
        load_configured_input_tables,
        output_group,
        prepare_event_metadata,
@@ -61,6 +62,10 @@ Public helpers exposed by ``spatial_vtk.io``:
    * - ``load_configured_input_tables``
      - Load optional input tables from dotted config path keys such as
        ``paths.metric_figure_snapshot`` or ``paths.site_metadata``.
+   * - ``load_configured_input_paths``
+     - Resolve optional non-table inputs from dotted config path keys, such as
+       ``paths.region_geojson``, without putting direct ``cfg.path`` calls in
+       notebook cells.
    * - ``prepare_metadata_tables_from_config``
      - Normalize station, event, and event-station metadata and write the
        standard Step 1 tables.

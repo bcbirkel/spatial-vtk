@@ -25,6 +25,10 @@ Changelog
    and 6 can render region boxplots through a package-owned
    ``metrics_enriched``/``metrics_long`` fallback instead of selecting metric
    source paths in notebook cells.
+   Added ``spatial_vtk.io.load_configured_input_paths()`` for configured
+   non-table inputs such as ``paths.region_geojson``. Standard and large-run
+   Step 5 now use this helper instead of resolving GeoJSON paths with direct
+   ``cfg.path`` calls in notebook cells.
    Added config-backed metric readiness helpers for Slurm submission, batch
    merging, and downstream metric output tables. Large-run Step 3 now uses
    those Python package helpers directly instead of notebook-local manifest and

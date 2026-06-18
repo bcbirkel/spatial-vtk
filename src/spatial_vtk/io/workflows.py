@@ -288,9 +288,63 @@ def load_configured_input_tables(
 
     if cfg is not None and (config_path is not None or run_scenario is not None):
         raise ValueError("Pass either cfg or config_path/run_scenario, not both.")
-    config = cfg if cfg is not None else _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    config = (
+        cfg
+        if cfg is not None
+        else _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    )
     table_map = _configured_input_table_map(tables)
     return {label: read_config_table(dotted_key, cfg=config, **read_kwargs) for label, dotted_key in table_map.items()}
+
+
+def load_configured_input_paths(
+    paths: Mapping[str, str] | Sequence[str],
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    must_exist: bool = True,
+    create_parent: bool = False,
+) -> dict[str, Path | None]:
+    """Resolve named input paths from configured dotted path keys.
+
+    This helper is intended for notebooks that need configured non-table inputs
+    such as ``paths.region_geojson``. It keeps cells from calling ``cfg.path``
+    directly while still returning explicit, descriptive ``label -> Path``
+    mappings that plotting and spatial helper calls can use.
+
+    Parameters
+    ----------
+    paths
+        Mapping of user-facing labels to dotted config path keys, or a sequence
+        of dotted config path keys. For sequences, labels are derived from the
+        final dotted-key segment.
+    cfg
+        Optional active config object. When omitted, ``config_path`` or the
+        active config is used.
+    config_path, run_scenario
+        Optional config file and run scenario used when ``cfg`` is omitted.
+    must_exist
+        Whether each configured path must exist. Set ``False`` for optional
+        inputs that should be reported by a later render/readiness gate.
+    create_parent
+        Whether to create each path's parent directory while resolving it.
+
+    Returns
+    -------
+    dict
+        Mapping of labels to resolved paths, or ``None`` for empty optional
+        config values when ``must_exist`` is ``False``.
+    """
+
+    if cfg is not None and (config_path is not None or run_scenario is not None):
+        raise ValueError("Pass either cfg or config_path/run_scenario, not both.")
+    config = cfg if cfg is not None else _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    path_map = _configured_input_key_map(paths, kind="path")
+    return {
+        label: config.path(dotted_key, must_exist=must_exist, create_parent=create_parent)
+        for label, dotted_key in path_map.items()
+    }
 
 
 def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None) -> SpatialVTKConfig:
@@ -307,24 +361,37 @@ def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None
 def _configured_input_table_map(tables: Mapping[str, str] | Sequence[str]) -> dict[str, str]:
     """Normalize configured input table labels and dotted keys."""
 
-    if isinstance(tables, Mapping):
-        table_map = {str(label): str(dotted_key) for label, dotted_key in tables.items()}
+    return _configured_input_key_map(tables, kind="table")
+
+
+def _configured_input_key_map(
+    values: Mapping[str, str] | Sequence[str],
+    *,
+    kind: str,
+) -> dict[str, str]:
+    """Normalize configured input labels and dotted keys."""
+
+    if isinstance(values, Mapping):
+        value_map = {str(label): str(dotted_key) for label, dotted_key in values.items()}
     else:
-        if isinstance(tables, (str, bytes)):
-            raise TypeError("tables must be a mapping or a sequence of dotted config keys, not a string.")
-        table_map = {str(dotted_key).rsplit(".", 1)[-1]: str(dotted_key) for dotted_key in tables}
-    if not table_map:
-        raise ValueError("At least one configured input table must be requested.")
-    for label, dotted_key in table_map.items():
+        if isinstance(values, (str, bytes)):
+            raise TypeError(
+                f"{kind}s must be a mapping or a sequence of dotted config keys, not a string."
+            )
+        value_map = {str(dotted_key).rsplit(".", 1)[-1]: str(dotted_key) for dotted_key in values}
+    if not value_map:
+        raise ValueError(f"At least one configured input {kind} must be requested.")
+    for label, dotted_key in value_map.items():
         if not label:
-            raise ValueError("Configured input table labels must be non-empty.")
+            raise ValueError(f"Configured input {kind} labels must be non-empty.")
         if "." not in dotted_key:
-            raise ValueError(f"Configured input table key {dotted_key!r} must be a dotted config path key.")
-    return table_map
+            raise ValueError(f"Configured input {kind} key {dotted_key!r} must be a dotted config path key.")
+    return value_map
 
 
 __all__ = [
     "build_record_coverage_from_config",
+    "load_configured_input_paths",
     "load_configured_input_tables",
     "prepare_metadata_tables_from_config",
     "preprocess_waveforms_from_config",

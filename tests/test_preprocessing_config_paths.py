@@ -15,6 +15,7 @@ from spatial_vtk.io import workflows as io_workflows
 from spatial_vtk.io import preprocessing as preprocessing_module
 from spatial_vtk.io.workflows import (
     build_record_coverage_from_config,
+    load_configured_input_paths,
     load_configured_input_tables,
     prepare_metadata_tables_from_config,
     preprocess_waveforms_from_config,
@@ -195,6 +196,39 @@ paths:
     assert tables["site_metadata"]["Vs30"].tolist() == [760.0]
 
 
+def test_load_configured_input_paths_resolves_named_config_paths(tmp_path: Path) -> None:
+    """Notebook helpers should resolve configured non-table inputs with labels."""
+
+    inputs = tmp_path / "inputs"
+    inputs.mkdir()
+    geojson = inputs / "regions.geojson"
+    geojson.write_text('{"type": "FeatureCollection", "features": []}', encoding="utf-8")
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+paths:
+  region_geojson: inputs/regions.geojson
+  optional_geojson:
+""",
+        encoding="utf-8",
+    )
+
+    paths = load_configured_input_paths(
+        {"region_geojson": "paths.region_geojson"},
+        config_path=config_path,
+    )
+    optional = load_configured_input_paths(
+        ["paths.optional_geojson"],
+        config_path=config_path,
+        must_exist=False,
+    )
+
+    assert paths == {"region_geojson": geojson.resolve()}
+    assert optional == {"optional_geojson": None}
+
+
 def test_load_configured_input_tables_rejects_ambiguous_arguments(tmp_path: Path) -> None:
     """Callers should not mix active config objects with config file arguments."""
 
@@ -208,6 +242,13 @@ def test_load_configured_input_tables_rejects_ambiguous_arguments(tmp_path: Path
         load_configured_input_tables("paths.demo", cfg=cfg)  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="dotted config path"):
         load_configured_input_tables({"demo": "demo"}, cfg=cfg)
+
+    with pytest.raises(ValueError, match="either cfg or config_path"):
+        load_configured_input_paths({"demo": "paths.demo"}, cfg=cfg, config_path=config_path)
+    with pytest.raises(TypeError, match="not a string"):
+        load_configured_input_paths("paths.demo", cfg=cfg)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="dotted config path"):
+        load_configured_input_paths({"demo": "demo"}, cfg=cfg)
 
 
 def test_build_record_coverage_from_config_uses_preprocessed_metadata(tmp_path: Path) -> None:

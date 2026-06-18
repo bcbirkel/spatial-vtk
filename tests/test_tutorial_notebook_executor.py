@@ -877,11 +877,13 @@ def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
 
     assert "run_geojson_region_summary_workflow_from_config(" in source
     assert "from spatial_vtk.spatial import (" in source
+    assert "load_configured_input_paths(" in source
     assert "load_configured_input_tables(" in source
     assert "read_config_table(\"paths.metric_figure_snapshot\")" not in source
     assert 'metrics_table="paths.metric_figure_snapshot"' in source
     assert 'geojson_path="paths.region_geojson"' in source
     assert "from spatial_vtk.spatial.calculate import" not in source
+    assert 'cfg.path("paths.region_geojson"' not in source
     assert 'cfg.path("paths.metric_figure_snapshot")' not in source
     assert "read_table(metric_source_path)" not in source
 
@@ -998,6 +1000,7 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
 
     assert "run_notebook_step_if_needed(" in source
     assert "from spatial_vtk.spatial import (" in source
+    assert "load_configured_input_paths(" in source
     assert "run_geojson_region_summary_workflow_from_config," in source
     assert "run_boundary_corridor_workflow_from_config," in source
     assert "step_outputs.display_table_previews(" in source
@@ -1009,6 +1012,7 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "step_outputs.first_existing_path(" not in source
     assert "step_outputs.corridors_path.exists()" not in source
     assert "metrics_enriched_path if metrics_enriched_path.exists() else metrics_long_path" not in source
+    assert 'cfg.path("paths.region_geojson"' not in source
     assert "load_output_table(" not in source
     assert '"spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config"' not in source
     assert '"spatial_vtk.spatial.run_boundary_corridor_workflow_from_config"' not in source
@@ -1421,6 +1425,7 @@ def test_step05_uses_geojson_preview_helper() -> None:
     assert "from spatial_vtk.spatial.map." not in source
     assert "from spatial_vtk.spatial.plot." not in source
     assert "geojson_polygon_preview_table(" in source
+    assert "load_configured_input_paths(" in source
     assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" in source
     assert "output_group(\"step_05_geojson\", cfg=cfg).load_tables(" in source
     assert "load_output_table(" not in source

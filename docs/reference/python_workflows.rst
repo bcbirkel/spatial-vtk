@@ -45,7 +45,7 @@ paths in cells.
    from spatial_vtk.config import SpatialVTKConfig
    from spatial_vtk.config import configured_output_registry_frame
    from spatial_vtk.config import notebook_figure_settings, notebook_run_context, run_notebook_step_if_needed
-   from spatial_vtk.io import load_configured_input_tables, output_group
+   from spatial_vtk.io import load_configured_input_paths, load_configured_input_tables, output_group
    from spatial_vtk.qc import run_qc_inventory_from_config
 
    cfg = SpatialVTKConfig.from_file("runs/spatial_vtk_config.yaml").activate()
@@ -134,6 +134,11 @@ the large-run notebooks.
        labeled dictionary. Use this for tutorial figure inputs and optional
        spatial metadata instead of repeating direct ``read_config_table`` calls
        in notebook cells.
+   * - ``spatial_vtk.io.load_configured_input_paths``
+     - Resolve non-table configured inputs such as ``"paths.region_geojson"``
+       into a labeled path dictionary. Use this when plotting or spatial helper
+       calls need a configured file path but should not own config path
+       resolution in the notebook cell.
    * - ``spatial_vtk.config.run_notebook_step_if_needed``
      - Display the readiness table, then run or submit a Python package
        workflow function only when work is needed. Pass the imported package
