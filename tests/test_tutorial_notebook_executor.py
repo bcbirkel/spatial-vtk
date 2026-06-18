@@ -503,6 +503,22 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
         assert helper not in source
 
 
+def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
+    """The GeoJSON tutorial should use config-backed package helpers for standard inputs."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "step_05_maps_and_figures.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "run_geojson_region_summary_workflow_from_config(" in source
+    assert "read_config_table(\"paths.metric_figure_snapshot\")" in source
+    assert 'metrics_table="paths.metric_figure_snapshot"' in source
+    assert 'geojson_path="paths.region_geojson"' in source
+    assert 'cfg.path("paths.metric_figure_snapshot")' not in source
+    assert "read_table(metric_source_path)" not in source
+
+
 def test_step03_station_map_uses_package_aggregation_and_source_sidecar() -> None:
     """The metric tutorial should not hand-roll station aggregation in notebook code."""
 
