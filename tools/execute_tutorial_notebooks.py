@@ -109,9 +109,12 @@ def main(argv: list[str] | None = None) -> int:
     configure_notebook_runtime_environment(tutorial_output)
     if not args.skip_notebook_contract_check:
         check_tutorial_notebook_contracts(notebooks, repo_root=repo_root)
-    check_notebook_runtime()
     if not args.skip_example_data_check:
         check_tutorial_example_data(repo_root)
+    if args.preflight_only:
+        print(f"Notebook preflight clean for {len(notebooks)} notebook(s).")
+        return 0
+    check_notebook_runtime()
     if args.clean:
         _clean_path(tutorial_output)
     report_path.parent.mkdir(parents=True, exist_ok=True)
@@ -480,6 +483,15 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
             "Skip source-level tutorial notebook contract checks for custom "
             "notebook subsets. The default protects public tutorials from "
             "private paths, saved outputs, and shell/CLI workflow cells."
+        ),
+    )
+    parser.add_argument(
+        "--preflight-only",
+        action="store_true",
+        help=(
+            "Run notebook source-contract and example-data preflights, then "
+            "exit before checking notebook runtime dependencies, cleaning "
+            "outputs, or executing notebooks."
         ),
     )
     parser.set_defaults(stop_on_failure=True)

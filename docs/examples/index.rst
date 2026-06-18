@@ -29,6 +29,13 @@ To verify the full standard tutorial from a clean output directory, run:
    python -m pip install -e ".[notebooks,waveforms]"
    python tools/execute_tutorial_notebooks.py --clean
 
+To run only the source-contract and example-data checks without notebook
+runtime dependencies or output cleanup:
+
+.. code-block:: bash
+
+   python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run
+
 The command executes the seven notebooks against the committed example data,
 writes ``outputs/tutorials/notebook_execution_report.json``, and fails if a
 notebook raises an error or emits warning-like cell output. It also checks the

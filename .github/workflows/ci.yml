@@ -31,6 +31,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"
 
+      - name: Preflight tutorial notebook sources
+        run: |
+          python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run
+
       - name: Run tests
         run: |
           MPLCONFIGDIR=/tmp/mplconfig_svtk python -m pytest -q
