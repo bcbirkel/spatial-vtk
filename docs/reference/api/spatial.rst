@@ -58,6 +58,10 @@ Public helpers exposed by ``spatial_vtk.spatial``:
      - Summarize per-metric Step 4 products such as metric-field,
        event-centered residual, and station-bias rows with row, event, and
        station counts.
+   * - ``spatial_metric_table_frame``, ``spatial_metric_product_frames``, and
+       ``spatial_pca_product_frames``
+     - Select metric-specific rows from Step 4 output tables without repeating
+       dataframe filters in notebooks.
    * - ``station_bias_preview_frame``
      - Display bounded station-bias rows for one metric without notebook-local
        ``head()`` calls or repeated preview-column selection.
@@ -96,6 +100,12 @@ for users who need narrower module references.
 .. autofunction:: spatial_vtk.spatial.spatial_correlation_preview_frame
 
 .. autofunction:: spatial_vtk.spatial.spatial_metric_product_summary_frame
+
+.. autofunction:: spatial_vtk.spatial.spatial_metric_table_frame
+
+.. autofunction:: spatial_vtk.spatial.spatial_metric_product_frames
+
+.. autofunction:: spatial_vtk.spatial.spatial_pca_product_frames
 
 .. autofunction:: spatial_vtk.spatial.station_bias_preview_frame
 

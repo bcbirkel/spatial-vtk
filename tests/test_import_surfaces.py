@@ -58,7 +58,10 @@ def test_public_imports():
         run_spatial_derived_outputs_workflow_from_config,
         run_spatial_statistics_workflow_from_config,
         spatial_correlation_preview_frame,
+        spatial_metric_product_frames,
         spatial_metric_product_summary_frame,
+        spatial_metric_table_frame,
+        spatial_pca_product_frames,
         spatial_workflow_failure_frame,
         station_bias_preview_frame,
     )
@@ -111,7 +114,10 @@ def test_public_imports():
     assert callable(run_spatial_statistics_workflow_from_config)
     assert callable(corridor_record_preview_frame)
     assert callable(spatial_correlation_preview_frame)
+    assert callable(spatial_metric_product_frames)
     assert callable(spatial_metric_product_summary_frame)
+    assert callable(spatial_metric_table_frame)
+    assert callable(spatial_pca_product_frames)
     assert callable(spatial_workflow_failure_frame)
     assert callable(station_bias_preview_frame)
     assert callable(annotate_points_with_geojson)
@@ -423,7 +429,10 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
         "run_spatial_derived_outputs_workflow_from_config",
         "spatial_workflow_failure_frame",
         "spatial_correlation_preview_frame",
+        "spatial_metric_table_frame",
+        "spatial_metric_product_frames",
         "spatial_metric_product_summary_frame",
+        "spatial_pca_product_frames",
         "station_bias_preview_frame",
         "spatial_statistics_settings_from_config",
         "build_path_table",

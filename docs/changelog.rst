@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Added ``spatial_metric_table_frame()``,
+   ``spatial_metric_product_frames()``, and ``spatial_pca_product_frames()`` to
+   the public spatial API. The standard Step 4 notebook now uses these helpers
+   for metric-specific spatial, PCA, and geology tables instead of repeating
+   dataframe metric filters in cells.
    Added ``station_bias_preview_frame()`` and
    ``corridor_record_preview_frame()`` to the public spatial API. Rewired the
    standard Step 4 and Step 5 notebooks to use those package helpers instead of

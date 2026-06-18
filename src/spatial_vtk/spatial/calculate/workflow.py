@@ -507,6 +507,98 @@ def station_bias_preview_frame(
     return preview.head(max(int(nrows), 0)).reset_index(drop=True)
 
 
+def spatial_metric_table_frame(
+    table: pd.DataFrame | None,
+    metric: str | None = None,
+    *,
+    metric_col: str = "metric",
+) -> pd.DataFrame:
+    """Return rows for one metric from a spatial workflow output table.
+
+    Parameters
+    ----------
+    table
+        Spatial workflow output table.
+    metric
+        Metric name to select. When omitted, the table is copied unchanged.
+    metric_col
+        Column that stores the metric name.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Metric-specific copy of ``table``. Empty or missing tables return an
+        empty dataframe. Tables without ``metric_col`` are copied unchanged so
+        already-filtered workflow tables can use the same helper.
+    """
+
+    if table is None or table.empty:
+        return pd.DataFrame()
+    frame = table.copy()
+    if metric is None or metric_col not in frame.columns:
+        return frame.reset_index(drop=True)
+    return frame.loc[frame[metric_col].astype(str).eq(str(metric))].copy().reset_index(drop=True)
+
+
+def spatial_metric_product_frames(
+    metric: str,
+    *,
+    metric_field: pd.DataFrame | None = None,
+    event_centered: pd.DataFrame | None = None,
+    station_bias: pd.DataFrame | None = None,
+) -> dict[str, pd.DataFrame]:
+    """Return metric-specific Step 4 spatial product frames.
+
+    Parameters
+    ----------
+    metric
+        Metric name to select.
+    metric_field, event_centered, station_bias
+        Standard spatial workflow output tables.
+
+    Returns
+    -------
+    dict
+        Frames keyed as ``field``, ``centered``, and ``station_bias``.
+    """
+
+    return {
+        "field": spatial_metric_table_frame(metric_field, metric),
+        "centered": spatial_metric_table_frame(event_centered, metric),
+        "station_bias": spatial_metric_table_frame(station_bias, metric),
+    }
+
+
+def spatial_pca_product_frames(
+    metric: str,
+    *,
+    station_scores: pd.DataFrame | None = None,
+    explained_variance: pd.DataFrame | None = None,
+    feature_loadings: pd.DataFrame | None = None,
+) -> dict[str, pd.DataFrame]:
+    """Return metric-specific PCA product frames from Step 4 outputs.
+
+    Parameters
+    ----------
+    metric
+        Metric name to select.
+    station_scores, explained_variance, feature_loadings
+        Standard PCA output tables from the spatial workflow.
+
+    Returns
+    -------
+    dict
+        Frames keyed as ``station_scores``, ``explained_variance``, and
+        ``feature_loadings``.
+    """
+
+    return {
+        "station_scores": spatial_metric_table_frame(station_scores, metric),
+        "explained_variance": spatial_metric_table_frame(explained_variance, metric),
+        "feature_loadings": spatial_metric_table_frame(feature_loadings, metric),
+    }
+
+
 def spatial_correlation_preview_frame(
     *,
     morans_i: pd.DataFrame | None = None,

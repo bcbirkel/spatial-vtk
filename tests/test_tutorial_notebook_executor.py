@@ -1046,9 +1046,17 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     assert "step_outputs.figure_path(" in source
     assert "spatial_workflow_failure_frame(" in source
     assert "spatial_correlation_preview_frame(" in source
+    assert "spatial_metric_product_frames(" in source
     assert "spatial_metric_product_summary_frame(" in source
+    assert "spatial_metric_table_frame(" in source
+    assert "spatial_pca_product_frames(" in source
     assert "station_bias_preview_frame(" in source
     assert "display(bias.head())" not in source
+    assert 'metric_field.loc[metric_field["metric"].astype(str).eq(metric_name)]' not in source
+    assert 'event_centered_residuals.loc[event_centered_residuals["metric"].astype(str).eq(metric_name)]' not in source
+    assert 'station_bias.loc[station_bias["metric"].astype(str).eq(metric_name)]' not in source
+    assert 'pca_station_scores.loc[pca_station_scores["metric"].astype(str).eq(metric_name)]' not in source
+    assert 'geology_contrasts.loc[geology_contrasts["metric"].astype(str).eq(metric_name)]' not in source
     assert 'distance_bins.loc[distance_bins["metric"].astype(str).eq(metric_name)].head()' not in source
     assert 'morans_i.loc[morans_i["metric"].astype(str).eq(metric_name)]' not in source
     assert "figure_dir /" not in source

@@ -54,7 +54,10 @@ from spatial_vtk.spatial.calculate.workflow import (
     run_spatial_statistics_workflow_from_config,
     station_bias_preview_frame,
     spatial_correlation_preview_frame,
+    spatial_metric_product_frames,
     spatial_metric_product_summary_frame,
+    spatial_metric_table_frame,
+    spatial_pca_product_frames,
     spatial_workflow_failure_frame,
 )
 from spatial_vtk.spatial.calculate.corridors import corridor_record_preview_frame
@@ -166,6 +169,59 @@ def test_spatial_metric_product_summary_frame_counts_rows_events_and_stations() 
     assert summary.loc["Station bias", "Rows"] == 2
     assert pd.isna(summary.loc["Station bias", "Events"])
     assert summary.loc["Station bias", "Stations"] == 2
+
+
+def test_spatial_metric_table_frame_filters_metric_and_handles_single_metric_tables() -> None:
+    """Metric-specific table selection should be package-owned for notebooks."""
+
+    table = pd.DataFrame({"metric": ["PGA", "PGV"], "value": [1, 2]})
+    filtered = spatial_metric_table_frame(table, "PGA")
+
+    assert filtered.to_dict("records") == [{"metric": "PGA", "value": 1}]
+    assert spatial_metric_table_frame(pd.DataFrame()).empty
+    assert spatial_metric_table_frame(pd.DataFrame({"value": [3]}), "PGA").to_dict("records") == [
+        {"value": 3}
+    ]
+
+
+def test_spatial_metric_product_frames_selects_all_standard_products() -> None:
+    """Step 4 product frames should not require repeated notebook filters."""
+
+    metric_field = pd.DataFrame({"metric": ["PGA", "PGV"], "field_value": [0.1, 0.2]})
+    event_centered = pd.DataFrame({"metric": ["PGA", "PGV"], "field_centered": [0.0, 0.1]})
+    station_bias = pd.DataFrame({"metric": ["PGA", "PGV"], "mean_centered": [0.3, 0.4]})
+
+    products = spatial_metric_product_frames(
+        "PGA",
+        metric_field=metric_field,
+        event_centered=event_centered,
+        station_bias=station_bias,
+    )
+
+    assert set(products) == {"field", "centered", "station_bias"}
+    assert products["field"]["field_value"].tolist() == [0.1]
+    assert products["centered"]["field_centered"].tolist() == [0.0]
+    assert products["station_bias"]["mean_centered"].tolist() == [0.3]
+
+
+def test_spatial_pca_product_frames_selects_all_pca_products() -> None:
+    """PCA product selection should be package-owned for Step 4 notebooks."""
+
+    scores = pd.DataFrame({"metric": ["PGA", "PGV"], "PC1": [1.0, 2.0]})
+    explained = pd.DataFrame({"metric": ["PGA", "PGV"], "variance_ratio": [0.7, 0.5]})
+    loadings = pd.DataFrame({"metric": ["PGA", "PGV"], "loading": [0.2, 0.3]})
+
+    products = spatial_pca_product_frames(
+        "PGA",
+        station_scores=scores,
+        explained_variance=explained,
+        feature_loadings=loadings,
+    )
+
+    assert set(products) == {"station_scores", "explained_variance", "feature_loadings"}
+    assert products["station_scores"]["PC1"].tolist() == [1.0]
+    assert products["explained_variance"]["variance_ratio"].tolist() == [0.7]
+    assert products["feature_loadings"]["loading"].tolist() == [0.2]
 
 
 def test_station_bias_preview_frame_filters_metric_and_bounds_columns() -> None:
