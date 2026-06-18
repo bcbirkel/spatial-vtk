@@ -39,6 +39,7 @@ from spatial_vtk.metrics.workflow import (
     MetricWorkflowTask,
 )
 from spatial_vtk.metrics.plot import MetricFigureContext, plot_period_score_distribution
+from spatial_vtk.visualize import figure_sidecar_status_frame
 from spatial_vtk.spatial.map import plot_event_residual_map
 from spatial_vtk.spatial.plot import boxplot, heatmap, scatterplot
 from spatial_vtk.visualize.dashboard import available_dashboard_value_columns, build_dashboard_summaries, load_dashboard_metric_dataset
@@ -316,6 +317,13 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert metadata["svtk_aggregation_input_row_count"] == 4
     assert metadata["svtk_aggregation_finite_row_count"] == 3
     assert metadata["svtk_aggregation_dropped_nonfinite_row_count"] == 1
+    status = figure_sidecar_status_frame(context.sidecar_output_dir).set_index("figure")
+    status_row = status.loc[f"{output.stem}.png"]
+    assert status_row["aggregation_group_columns"] == ["station"]
+    assert status_row["aggregation_coordinate_columns"] == ["sta_lon", "sta_lat"]
+    assert status_row["aggregation_input_row_count"] == 4
+    assert status_row["aggregation_finite_row_count"] == 3
+    assert status_row["aggregation_dropped_nonfinite_row_count"] == 1
 
     context.sample_rows = 0
     context.sidecar_rows = None

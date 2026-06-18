@@ -344,6 +344,19 @@ def _figure_sidecar_status_row(metadata_path: Path, metadata: dict[str, Any]) ->
         "aggregation_kind": metadata.get("aggregation_kind", metadata.get("svtk_aggregation_kind", "")),
         "aggregation_method": metadata.get("aggregation_method", metadata.get("svtk_aggregation_method", "")),
         "aggregation_value_col": metadata.get("aggregation_value_col", metadata.get("svtk_aggregation_value_col", "")),
+        "aggregation_group_columns": metadata.get("aggregation_group_columns", metadata.get("svtk_aggregation_group_columns", "")),
+        "aggregation_coordinate_columns": metadata.get(
+            "aggregation_coordinate_columns",
+            metadata.get("svtk_aggregation_coordinate_columns", ""),
+        ),
+        "aggregation_collapsed_columns": metadata.get(
+            "aggregation_collapsed_columns",
+            metadata.get("svtk_aggregation_collapsed_columns", ""),
+        ),
+        "aggregation_collapsed_unique_counts": metadata.get(
+            "aggregation_collapsed_unique_counts",
+            metadata.get("svtk_aggregation_collapsed_unique_counts", ""),
+        ),
         "aggregation_input_row_count": metadata.get("aggregation_input_row_count", metadata.get("svtk_aggregation_input_row_count", "")),
         "aggregation_finite_row_count": metadata.get("aggregation_finite_row_count", metadata.get("svtk_aggregation_finite_row_count", "")),
         "aggregation_dropped_nonfinite_row_count": metadata.get(

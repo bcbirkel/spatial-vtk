@@ -306,7 +306,9 @@ events and stations rather than a preview or sampled dataframe.
 Use ``figure_sidecar_status_frame(sidecar_dir)`` to inspect a directory of
 JSON sidecars without loading the CSV row files. The status table reports
 exactness flags, plot/source row counts, source-sidecar availability, and
-station-aggregation metadata when a figure was created from station summaries.
+station-aggregation metadata when a figure was created from station summaries,
+including grouping columns, coordinate columns, collapsed dimensions, and
+aggregation row counts.
 ``read_figure_sidecar_metadata`` reads one JSON sidecar from a figure path,
 main sidecar CSV path, source sidecar CSV path, or JSON metadata path.
 
