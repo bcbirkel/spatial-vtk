@@ -1933,6 +1933,58 @@ def test_spatial_figure_context_orchestrates_large_run_plot_families(tmp_path: P
     )
 
 
+def test_spatial_figure_context_uses_explicit_table_owner_for_overlapping_schemas(tmp_path: Path) -> None:
+    """Metric/event-centered routing should not depend on ambiguous column subsets."""
+
+    metric_field = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2"],
+            "station": ["STA", "STB"],
+            "metric": ["PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "component": ["R", "R"],
+            "model": ["m1", "m1"],
+            "field_value": [0.25, 0.5],
+            "sta_lon": [-118.0, -117.9],
+            "sta_lat": [34.0, 34.1],
+        }
+    )
+    event_centered = metric_field.assign(event_centered_residual=[0.1, -0.1])
+    metric_field.attrs["svtk_spatial_context"] = "metric"
+    event_centered.attrs["svtk_spatial_context"] = "event"
+    figure_dir = tmp_path / "figures"
+    context = SpatialFigureContext(
+        figure_dir=figure_dir,
+        make_figures=True,
+        metric_context=MetricFigureContext.from_frame(
+            metric_field,
+            figure_dir,
+            make_figures=True,
+            value_col="field_value",
+        ),
+        event_context=MetricFigureContext.from_frame(
+            event_centered,
+            figure_dir,
+            make_figures=True,
+            value_col="event_centered_residual",
+        ),
+        tables={
+            "metric_field": metric_field,
+            "event_centered_residuals": event_centered,
+        },
+        paths={},
+    )
+
+    metric_item = next(context.iter_metric_frames(metric_field, split_psa_period=False))
+    event_item = next(context.iter_metric_frames(event_centered, split_psa_period=False))
+
+    assert metric_item["svtk_spatial_context"] == "metric"
+    assert event_item["svtk_spatial_context"] == "event"
+    assert context._context_for_item(metric_item) is context.metric_context
+    assert context._context_for_item(event_item) is context.event_context
+    assert context.station_summary_for_item(metric_item, "field_value")["field_value"].tolist() == [0.25, 0.5]
+
+
 def test_spatial_figure_context_labels_event_centered_path_plots(tmp_path: Path) -> None:
     """Large-run event-centered path plots should state that event means are removed."""
 

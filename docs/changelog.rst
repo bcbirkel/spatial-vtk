@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-18
+   Made ``SpatialFigureContext`` route Step 4 metric-field and event-centered
+   figure items by explicit owner tags instead of dataframe column-subset
+   inference. This prevents large-run spatial figures from using the wrong
+   plotting context when compact Step 4 tables share similar schemas.
    Expanded ``figure_sidecar_status_frame()`` so notebook sidecar audits expose
    source-row filters, plot/source dimension counts, station/event aggregation
    counts, and PSA/multi-panel counts without loading large CSV sidecars.

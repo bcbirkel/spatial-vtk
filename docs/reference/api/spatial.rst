@@ -236,6 +236,9 @@ sidecar metadata conventions as the metric figure workflow. The context
 delegates metric-field and event-centered residual tables to the appropriate
 metric figure context, so station maps, residual grids, and model maps use the
 same row factories and aggregation audit metadata across Step 3 and Step 4.
+Metric-field and event-centered figure items carry an internal owner tag so
+writer methods do not have to infer ownership from overlapping dataframe
+schemas.
 
 ``item_source_rows``
    Return the spatial rows represented by a figure item for source sidecars.

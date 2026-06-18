@@ -45,6 +45,9 @@ SPATIAL_EVENT_ROW_TABLE_KEYS: frozenset[str] = frozenset(
     {"metric_field", "event_centered_residuals"}
 )
 
+SPATIAL_TABLE_KEY_ATTR = "svtk_spatial_table_key"
+SPATIAL_CONTEXT_ATTR = "svtk_spatial_context"
+
 SPATIAL_EVENT_ROW_COLUMNS: tuple[str, ...] = (
     "metric",
     "metric_name",
@@ -157,7 +160,10 @@ class SpatialFigureContext:
             for key in SPATIAL_FIGURE_TABLE_KEYS
         }
         tables = {
-            key: _read_if_exists(path, columns=_columns_for_spatial_table(key))
+            key: _tag_spatial_table(
+                _read_if_exists(path, columns=_columns_for_spatial_table(key)),
+                key=key,
+            )
             for key, path in paths.items()
         }
         metric_value_col = _first_existing(
@@ -380,12 +386,19 @@ class SpatialFigureContext:
         context = self._context_for(df)
         if context is None:
             return
-        yield from context.iter_metric_frames(
+        context_name = "event" if context is self.event_context else "metric"
+        for item in context.iter_metric_frames(
             passband=passband,
             components=components,
             model=model,
             split_psa_period=split_psa_period,
-        )
+        ):
+            tagged = dict(item)
+            tagged[SPATIAL_CONTEXT_ATTR] = context_name
+            frame = tagged.get("df")
+            if isinstance(frame, pd.DataFrame):
+                frame.attrs[SPATIAL_CONTEXT_ATTR] = context_name
+            yield tagged
 
     def write_spatial_plot(
         self,
@@ -402,7 +415,7 @@ class SpatialFigureContext:
     ) -> Path | None:
         """Write one spatial plot using the matching figure context."""
 
-        context = self._context_for(item.get("df")) or self.metric_context
+        context = self._context_for_item(item) or self.metric_context
         self._apply_event_centered_plot_defaults(base, context, kwargs)
         return context.write_metric_plot(
             base,
@@ -449,7 +462,7 @@ class SpatialFigureContext:
     ) -> Path | None:
         """Write a PSA period contact sheet using the matching context."""
 
-        context = self._context_for(item.get("df")) or self.metric_context
+        context = self._context_for_item(item) or self.metric_context
         self._apply_event_centered_plot_defaults(base, context, kwargs)
         return context.write_psa_period_sheet(
             base,
@@ -815,7 +828,7 @@ class SpatialFigureContext:
     def item_source_rows(self, item: dict[str, Any]) -> pd.DataFrame:
         """Return the spatial rows represented by one figure item."""
 
-        context = self._context_for(item.get("df")) or self.metric_context
+        context = self._context_for_item(item) or self.metric_context
         return context.item_source_rows(item)
 
     def station_summary_for_item(
@@ -827,7 +840,7 @@ class SpatialFigureContext:
     ) -> pd.DataFrame:
         """Aggregate one figure item's rows to one plotted value per station."""
 
-        context = self._context_for(item.get("df")) or self.metric_context
+        context = self._context_for_item(item) or self.metric_context
         return context.station_summary_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
 
     def station_period_summary_for_item(
@@ -839,7 +852,7 @@ class SpatialFigureContext:
     ) -> pd.DataFrame:
         """Aggregate one PSA figure item's rows to one plotted value per station and period."""
 
-        context = self._context_for(item.get("df")) or self.metric_context
+        context = self._context_for_item(item) or self.metric_context
         return context.station_period_summary_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
 
     def station_grid_for_item(
@@ -851,7 +864,7 @@ class SpatialFigureContext:
     ) -> pd.DataFrame:
         """Aggregate one figure item and expose station coordinates as lon/lat."""
 
-        context = self._context_for(item.get("df")) or self.metric_context
+        context = self._context_for_item(item) or self.metric_context
         return context.station_grid_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
 
     def station_period_grid_for_item(
@@ -863,7 +876,7 @@ class SpatialFigureContext:
     ) -> pd.DataFrame:
         """Aggregate one PSA figure item by station/period and expose lon/lat columns."""
 
-        context = self._context_for(item.get("df")) or self.metric_context
+        context = self._context_for_item(item) or self.metric_context
         return context.station_period_grid_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
 
     def station_model_summary_for_item(
@@ -873,7 +886,7 @@ class SpatialFigureContext:
     ) -> pd.DataFrame:
         """Aggregate one figure item by station and model."""
 
-        context = self._context_for(item.get("df")) or self.metric_context
+        context = self._context_for_item(item) or self.metric_context
         return context.station_model_summary_for_item(item, value_col=value_col)
 
     def station_model_grid_for_item(
@@ -883,7 +896,7 @@ class SpatialFigureContext:
     ) -> pd.DataFrame:
         """Aggregate one figure item by station/model and expose lon/lat columns."""
 
-        context = self._context_for(item.get("df")) or self.metric_context
+        context = self._context_for_item(item) or self.metric_context
         return context.station_model_grid_for_item(item, value_col=value_col)
 
     def write_overview_plots(
@@ -1306,10 +1319,34 @@ class SpatialFigureContext:
 
         if df is None or df.empty:
             return None
+        owner = getattr(df, "attrs", {}).get(SPATIAL_CONTEXT_ATTR)
+        if owner == "event":
+            return self.event_context
+        if owner == "metric":
+            return self.metric_context
+        table_key = getattr(df, "attrs", {}).get(SPATIAL_TABLE_KEY_ATTR)
+        if table_key == "event_centered_residuals":
+            return self.event_context
+        if table_key == "metric_field":
+            return self.metric_context
+        if df is self.event_centered:
+            return self.event_context
+        if df is self.metric_field:
+            return self.metric_context
         event = self.event_centered
         if event is not None and set(df.columns).issubset(set(event.columns)):
             return self.event_context
         return self.metric_context
+
+    def _context_for_item(self, item: dict[str, Any]) -> MetricFigureContext | None:
+        """Return the context explicitly assigned to a spatial figure item."""
+
+        owner = item.get(SPATIAL_CONTEXT_ATTR)
+        if owner == "event":
+            return self.event_context
+        if owner == "metric":
+            return self.metric_context
+        return self._context_for(item.get("df"))
 
 
 @dataclass(frozen=True)
@@ -1803,6 +1840,18 @@ def _read_if_exists(
         return read_table(input_path, columns=selected)
     wanted = set(selected)
     return read_table(input_path, usecols=lambda column: column in wanted)
+
+
+def _tag_spatial_table(df: pd.DataFrame | None, *, key: str) -> pd.DataFrame | None:
+    """Attach a stable table-owner hint to a loaded Step 4 dataframe."""
+
+    if df is not None:
+        df.attrs[SPATIAL_TABLE_KEY_ATTR] = str(key)
+        if key == "event_centered_residuals":
+            df.attrs[SPATIAL_CONTEXT_ATTR] = "event"
+        elif key == "metric_field":
+            df.attrs[SPATIAL_CONTEXT_ATTR] = "metric"
+    return df
 
 
 def _columns_for_spatial_table(key: str) -> tuple[str, ...] | None:

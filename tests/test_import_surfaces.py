@@ -518,6 +518,8 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs" in text
     assert "station_summary_for_item" in text
     assert "item_source_rows" in text
+    assert "internal owner tag" in text
+    assert "overlapping dataframe" in text
     assert "``spectral_metric_contract_status``" in text
     assert "legacy passband-scoped spectral rows" in text
     forbidden = (
