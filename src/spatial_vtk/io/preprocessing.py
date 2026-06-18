@@ -21,7 +21,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import glob
 from pathlib import Path
-from typing import Any, Mapping
+from typing import TYPE_CHECKING, Any, Mapping
 import pickle
 import warnings
 
@@ -36,6 +36,9 @@ from spatial_vtk.io.waveforms import (
     waveform_preprocessing_from_config,
     waveform_preprocessing_label,
 )
+
+if TYPE_CHECKING:
+    from spatial_vtk.io.output_paths import OutputGroup
 
 
 DEFAULT_SOURCE_COLUMN_CANDIDATES: dict[str, tuple[str, ...]] = {
@@ -187,6 +190,38 @@ def preprocessed_waveform_metadata_paths(
         manifest_path=metadata_dir / manifest_name,
         trace_metadata_path=metadata_dir / trace_metadata_name,
     )
+
+
+def preprocessed_waveform_output_group(
+    output_root: str | Path | None = None,
+    *,
+    config: Any | None = None,
+    event_station_name: str = "event_station_records_preprocessed.csv",
+    manifest_name: str = "waveform_preprocessing_manifest.csv",
+    trace_metadata_name: str = "trace_metadata_preprocessed.csv",
+    create_parent: bool = False,
+) -> OutputGroup:
+    """Return preprocessing metadata paths as an ``OutputGroup``.
+
+    Waveform preprocessing writes metadata under
+    ``outputs.preprocessed_waveforms/metadata`` rather than the standard table
+    directory. This helper gives notebooks and scripts the same
+    ``bind()``, ``status_frame()``, and ``readiness()`` interface used by
+    registry-backed workflow output groups without duplicating those path names
+    in cells.
+    """
+
+    from spatial_vtk.io.output_paths import OutputGroup
+
+    paths = preprocessed_waveform_metadata_paths(
+        output_root=output_root,
+        config=config,
+        event_station_name=event_station_name,
+        manifest_name=manifest_name,
+        trace_metadata_name=trace_metadata_name,
+        create_parent=create_parent,
+    )
+    return OutputGroup(name="preprocessed_waveforms", paths=paths.as_dict())
 
 
 def preprocess_waveform_files(
@@ -851,5 +886,6 @@ __all__ = [
     "PreprocessedWaveformMetadataPaths",
     "WaveformPreprocessingWorkflowResult",
     "preprocessed_waveform_metadata_paths",
+    "preprocessed_waveform_output_group",
     "preprocess_waveform_files",
 ]

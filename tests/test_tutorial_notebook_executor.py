@@ -830,6 +830,7 @@ def test_large_run_grouped_steps_use_output_group_readiness() -> None:
 
     repo_root = Path(__file__).resolve().parents[1]
     for relative in (
+        "large_run/step_01_large_run_ingest_and_prepare_data.ipynb",
         "large_run/step_02_large_run_quality_control.ipynb",
         "large_run/step_03_large_run_calculate_metrics.ipynb",
         "large_run/step_04_large_run_spatial_statistics.ipynb",
@@ -1049,7 +1050,13 @@ def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:
     for notebook_path in (step_01, step_03):
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-        assert "preprocessed_waveform_metadata_paths(config=cfg)" in source
+        if notebook_path == step_01:
+            assert "preprocessed_waveform_output_group(config=cfg)" in source
+            assert "preprocessed_outputs.readiness(" in source
+            assert "preprocess_readiness = output_readiness(" not in source
+            assert "record_coverage_readiness = output_readiness(" not in source
+        else:
+            assert "preprocessed_waveform_metadata_paths(config=cfg)" in source
         assert re.search(r"(?<!waveform_)preprocessing_manifest\.csv", source) is None
         assert 'outputs_root / "preprocessed_waveforms"' not in source
 

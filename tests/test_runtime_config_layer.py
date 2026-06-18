@@ -54,6 +54,7 @@ from spatial_vtk.io import (
     output_group_status_frame,
     output_readiness,
     output_status_frame,
+    preprocessed_waveform_output_group,
     should_rebuild_paths,
     should_rebuild_outputs,
     stable_hash,
@@ -1185,6 +1186,9 @@ outputs:
     )
     cfg = SpatialVTKConfig.from_file(config_path).activate()
 
+    ingest_paths = output_group_paths("step_01_ingest", cfg=cfg)
+    assert ingest_paths["event_station_path"] == tmp_path / "run_outputs" / "tables" / "event_station_records.csv"
+
     qc_paths = output_group_paths("step_02_qc", cfg=cfg)
     assert qc_paths["trace_qc_path"] == tmp_path / "run_outputs" / "tables" / "qc_trace_summary.csv"
     assert qc_paths["qc_inventory_path"] == tmp_path / "run_outputs" / "tables" / "qc_inventory.csv"
@@ -1218,6 +1222,32 @@ outputs:
     assert namespace.qc_trace_summary_path == tmp_path / "run_outputs" / "tables" / "qc_trace_summary.csv"
     assert namespace.metrics_dashboard_root == tmp_path / "run_outputs" / "dashboards" / "metrics_dashboard"
     assert namespace.dashboard_summary_root == tmp_path / "run_outputs" / "dashboards" / "dashboard_summaries"
+
+    preprocessed_group = preprocessed_waveform_output_group(config=cfg)
+    assert preprocessed_group.name == "preprocessed_waveforms"
+    assert (
+        preprocessed_group.preprocessed_event_station_path
+        == tmp_path / "run_outputs" / "preprocessed_waveforms" / "metadata" / "event_station_records_preprocessed.csv"
+    )
+    assert (
+        preprocessed_group.preprocessed_manifest_path
+        == tmp_path / "run_outputs" / "preprocessed_waveforms" / "metadata" / "waveform_preprocessing_manifest.csv"
+    )
+    assert (
+        preprocessed_group.preprocessed_trace_metadata_path
+        == tmp_path / "run_outputs" / "preprocessed_waveforms" / "metadata" / "trace_metadata_preprocessed.csv"
+    )
+    preprocessed_readiness = preprocessed_group.readiness(
+        ("preprocessed_event_station_path", "preprocessed_trace_metadata_path", "preprocessed_manifest_path"),
+        inputs={"event_station_path": ingest_paths["event_station_path"]},
+        sources={"event_station_path": ingest_paths["event_station_path"]},
+    )
+    assert preprocessed_readiness.reason == "missing_inputs"
+    assert {item.name for item in preprocessed_readiness.output_items} == {
+        "preprocessed_event_station_path",
+        "preprocessed_trace_metadata_path",
+        "preprocessed_manifest_path",
+    }
 
     group = output_group("step_03_metrics", cfg=cfg)
     assert group.name == "step_03_metrics"

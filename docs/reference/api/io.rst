@@ -26,6 +26,7 @@ modules.
        prepare_event_metadata,
        prepare_event_station_table,
        prepare_station_metadata,
+       preprocessed_waveform_output_group,
        preprocess_waveform_files,
        read_config_table,
        write_output_table,

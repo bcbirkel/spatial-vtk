@@ -85,6 +85,7 @@ from spatial_vtk.io.preprocessing import (
     PreprocessedWaveformMetadataPaths,
     WaveformPreprocessingWorkflowResult,
     preprocessed_waveform_metadata_paths,
+    preprocessed_waveform_output_group,
     preprocess_waveform_files,
 )
 from spatial_vtk.io.synthetic_formats import SyntheticFormatInfo, inspect_synthetic_format, synthetic_reader_for
@@ -200,6 +201,7 @@ __all__ = [
     "preview_output_table",
     "preview_table",
     "preprocessed_waveform_metadata_paths",
+    "preprocessed_waveform_output_group",
     "prepare_metadata_tables_from_config",
     "preprocess_waveforms_from_config",
     "preprocess_stream",

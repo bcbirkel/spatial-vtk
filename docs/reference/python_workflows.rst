@@ -113,6 +113,12 @@ the large-run notebooks.
        read selected table artifacts by group path name, output key, or a
        display-label mapping, which keeps notebook cells focused on workflow
        tasks rather than repeated ``load_output_table`` calls.
+   * - ``spatial_vtk.io.preprocessed_waveform_output_group``
+     - Resolve the preprocessing metadata directory as an ``OutputGroup``.
+       Use this for Step 1 preprocessed event-station records, preprocessing
+       manifests, and trace metadata because those artifacts live under
+       ``outputs.preprocessed_waveforms/metadata`` rather than the standard
+       table registry.
    * - ``spatial_vtk.io.load_configured_input_tables``
      - Load non-output input tables from dotted config path keys such as
        ``"paths.metric_figure_snapshot"`` or ``"paths.site_metadata"`` into a

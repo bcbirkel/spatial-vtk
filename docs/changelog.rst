@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Added ``spatial_vtk.io.preprocessed_waveform_output_group`` so Step 1 can
+   use ``OutputGroup``-style ``bind()``, ``status_frame()``, and
+   ``readiness()`` for preprocessing metadata under
+   ``outputs.preprocessed_waveforms/metadata``. The large-run Step 1 notebook
+   now uses this helper instead of direct ``output_readiness`` calls.
    Added ``metric_batch_count`` and ``preprocess_continue_on_error`` to
    ``NotebookRunContext``. Large-run Step 1 and Step 3 now use those context
    fields instead of parsing ``SVTK_PREPROCESS_CONTINUE_ON_ERROR`` and
