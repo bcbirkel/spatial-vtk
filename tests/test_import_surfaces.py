@@ -190,14 +190,19 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
 
 
 def test_notebook_and_waveform_extras_include_runtime_dependencies():
-    pyproject = pathlib.Path(__file__).resolve().parents[1] / "pyproject.toml"
+    root = pathlib.Path(__file__).resolve().parents[1]
+    pyproject = root / "pyproject.toml"
+    environment = root / "svtk_environment.yaml"
     text = pyproject.read_text(encoding="utf-8")
+    environment_text = environment.read_text(encoding="utf-8")
     assert 'requires-python = ">=3.10,<3.14"' in text
     assert '"ipykernel>=' in text
     assert '"ipython>=' in text
     assert '"nbclient>=' in text
     assert '"nbformat>=' in text
     assert '"gmprocess>=' in text
+    for dependency in ("ipykernel", "ipython", "nbclient", "nbformat"):
+        assert f"  - {dependency}" in environment_text
 
 
 def test_metrics_api_docs_use_public_plot_entry_point():
