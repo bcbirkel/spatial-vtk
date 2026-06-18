@@ -405,6 +405,8 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "descriptive keys are the public notebook contract" in workflows
     assert "docs should not depend on generic" in workflows
     assert "compatibility aliases" not in workflows
+    assert "from spatial_vtk.config import notebook_figure_settings" in workflows
+    assert "from spatial_vtk.config.notebook import" not in workflows
     assert "Prefer direct attributes such as ``step_outputs.metrics_long_path``" in workflows
     assert "``bind()`` remains available for older notebooks" in workflows
     assert "bind(globals())" not in workflows

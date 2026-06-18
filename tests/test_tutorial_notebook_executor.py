@@ -182,6 +182,18 @@ def test_tutorial_notebooks_use_shared_source_bootstrap() -> None:
         assert not matches, f"{notebook_path.relative_to(repo_root)} embeds bootstrap plumbing: {matches}"
 
 
+def test_tutorial_notebooks_use_stable_config_import_surface() -> None:
+    """Tutorial notebooks should import notebook helpers from spatial_vtk.config."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    assert notebooks
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        assert "from spatial_vtk.config.notebook import" not in source, f"{notebook_path.relative_to(repo_root)}"
+
+
 def test_tutorial_notebooks_have_stable_cell_ids() -> None:
     """Committed notebooks should not trigger nbformat cell-id warnings."""
 

@@ -44,7 +44,7 @@ paths in cells.
 
    from spatial_vtk.config import SpatialVTKConfig
    from spatial_vtk.config import configured_output_registry_frame
-   from spatial_vtk.config.notebook import notebook_figure_settings, notebook_run_context, run_notebook_step_if_needed
+   from spatial_vtk.config import notebook_figure_settings, notebook_run_context, run_notebook_step_if_needed
    from spatial_vtk.io import load_configured_input_tables, output_group
    from spatial_vtk.qc import run_qc_inventory_from_config
 
