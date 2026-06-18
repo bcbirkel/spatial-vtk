@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-18
+   Added ``event_ids_from_records()``, ``event_rows_for_records()``, and
+   ``event_label_preview_frame()`` to the public ``spatial_vtk.io`` API.
+   Rewired the standard Step 5 maps notebook to use these helpers for regional
+   and corridor event subsets instead of notebook-local
+   ``events.loc[...isin(...)]`` filtering and event-name ``drop_duplicates()``
+   previews.
    Added ``geojson_metric_region_frame()`` and
    ``geojson_metric_subset_frame()`` to the public spatial API. Rewired
    standard Step 5 and Step 6 GeoJSON metric plots to use these helpers instead

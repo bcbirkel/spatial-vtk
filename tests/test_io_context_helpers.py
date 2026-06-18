@@ -15,6 +15,9 @@ from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.io import (
     build_observed_synthetic_inventory,
     event_display_label,
+    event_ids_from_records,
+    event_label_preview_frame,
+    event_rows_for_records,
     first_nonempty_table_value,
     load_or_build_output_table,
     prepare_event_metadata,
@@ -155,6 +158,45 @@ def test_event_display_label_uses_names_and_stable_fallbacks() -> None:
     assert event_display_label(events, "E03") == "E03"
     assert event_display_label(events, "missing") == "missing"
     assert event_display_label(events, "missing", fallback="Unknown event") == "Unknown event"
+
+
+def test_event_record_preview_helpers_use_stable_event_aliases() -> None:
+    """Notebook event previews should not hand-roll event-id filtering."""
+
+    events = pd.DataFrame(
+        {
+            "event_id": ["E02", "E01", "E03"],
+            "event_name": ["Second event", "First event", ""],
+            "event_place": ["", "Fallback first", "Third place"],
+        }
+    )
+    records = pd.DataFrame({"event_title": ["E01", "E02", None, "E01", ""]})
+
+    assert event_ids_from_records(records) == ["E01", "E02"]
+
+    selected = event_rows_for_records(events, records)
+
+    assert selected["event_id"].tolist() == ["E02", "E01"]
+    assert "E03" not in selected["event_id"].tolist()
+
+    preview = event_label_preview_frame(selected)
+
+    assert preview.to_dict("records") == [
+        {"event_id": "E02", "event_label": "Second event"},
+        {"event_id": "E01", "event_label": "First event"},
+    ]
+
+
+def test_event_record_preview_helpers_return_empty_frames_for_missing_inputs() -> None:
+    """Event preview helpers should be safe in optional notebook branches."""
+
+    events = pd.DataFrame({"event_id": ["E01"], "event_name": ["Name"]})
+
+    assert event_ids_from_records(None) == []
+    assert event_rows_for_records(events, pd.DataFrame({"station": ["STA"]})).empty
+    assert event_rows_for_records(events, event_ids=[None, ""]).empty
+    assert event_rows_for_records(None, pd.DataFrame({"event_id": ["E01"]})).empty
+    assert event_label_preview_frame(None).columns.tolist() == ["event_id", "event_label"]
 
 
 def test_first_nonempty_table_value_uses_stable_fallbacks() -> None:

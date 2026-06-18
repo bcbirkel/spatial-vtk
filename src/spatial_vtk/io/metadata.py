@@ -122,6 +122,19 @@ def _resolve_column(df: pd.DataFrame, target: str, candidates: Sequence[str], *,
     return None
 
 
+def _first_present_column(df: pd.DataFrame | None, candidates: Sequence[str]) -> str | None:
+    """Return the first present column matching one of several aliases."""
+
+    if df is None or df.empty:
+        return None
+    lookup = {_normalize_column_name(column): str(column) for column in df.columns}
+    for candidate in candidates:
+        match = lookup.get(_normalize_column_name(candidate))
+        if match is not None:
+            return match
+    return None
+
+
 def _coerce_numeric(out: pd.DataFrame, columns: Sequence[str]) -> pd.DataFrame:
     """Coerce selected columns to numeric values.
 
@@ -324,6 +337,164 @@ def event_display_label(
         if not values.empty:
             return str(values.iloc[0])
     return fallback_label
+
+
+def event_ids_from_records(
+    records: pd.DataFrame | None,
+    *,
+    event_id_col: str | None = None,
+) -> list[str]:
+    """Return sorted unique event identifiers from a record table.
+
+    Parameters
+    ----------
+    records
+        Table with an event identifier column.
+    event_id_col
+        Optional event-id column override. When omitted, common event-id
+        aliases are resolved from ``records``.
+
+    Returns
+    -------
+    list of str
+        Sorted, unique, non-empty event identifiers. Missing or empty inputs
+        return an empty list.
+    """
+
+    if records is None or records.empty:
+        return []
+    id_column = (
+        event_id_col
+        if event_id_col in records.columns
+        else _first_present_column(records, EVENT_COLUMN_CANDIDATES["event_id"])
+    )
+    if id_column is None:
+        return []
+    values = records[id_column].dropna().astype(str).str.strip()
+    values = values.loc[values.ne("")]
+    return sorted(values.drop_duplicates().tolist())
+
+
+def _normalize_event_id_values(values: Sequence[object] | None) -> list[str]:
+    """Normalize optional event ID values for metadata selection."""
+
+    if values is None:
+        return []
+    out: list[str] = []
+    for value in values:
+        if pd.isna(value):
+            continue
+        text = str(value).strip()
+        if text:
+            out.append(text)
+    return out
+
+
+def event_rows_for_records(
+    events: pd.DataFrame | None,
+    records: pd.DataFrame | None = None,
+    *,
+    event_ids: Sequence[object] | None = None,
+    event_id_col: str | None = None,
+    records_event_id_col: str | None = None,
+) -> pd.DataFrame:
+    """Return event metadata rows referenced by records or explicit IDs.
+
+    Parameters
+    ----------
+    events
+        Event metadata table.
+    records
+        Optional record table used to extract event IDs when ``event_ids`` is
+        not supplied.
+    event_ids
+        Optional explicit event identifiers to select.
+    event_id_col
+        Optional event-id column override for ``events``.
+    records_event_id_col
+        Optional event-id column override for ``records``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Event metadata rows whose event IDs are referenced by the records or
+        explicit IDs. Empty or missing inputs return an empty frame with the
+        same columns as ``events`` when possible.
+    """
+
+    if events is None:
+        return pd.DataFrame()
+    if events.empty:
+        return events.copy()
+    id_column = (
+        event_id_col
+        if event_id_col in events.columns
+        else _first_present_column(events, EVENT_COLUMN_CANDIDATES["event_id"])
+    )
+    if id_column is None:
+        return events.iloc[0:0].copy()
+    selected_ids = (
+        _normalize_event_id_values(event_ids)
+        if event_ids is not None
+        else event_ids_from_records(records, event_id_col=records_event_id_col)
+    )
+    if not selected_ids:
+        return events.iloc[0:0].copy()
+    selected = set(selected_ids)
+    mask = events[id_column].astype(str).str.strip().isin(selected)
+    return events.loc[mask].drop_duplicates(subset=[id_column]).copy().reset_index(drop=True)
+
+
+def event_label_preview_frame(
+    events: pd.DataFrame | None,
+    *,
+    event_id_col: str | None = None,
+    label_columns: Sequence[str] = ("event_name", "event_place", "event_title"),
+    label_col: str = "event_label",
+    nrows: int | None = None,
+) -> pd.DataFrame:
+    """Return a compact event ID/label preview table for notebooks.
+
+    Parameters
+    ----------
+    events
+        Event metadata table to preview.
+    event_id_col
+        Optional event-id column override. When omitted, common event-id
+        aliases are resolved from ``events``.
+    label_columns
+        Candidate label columns to try in order.
+    label_col
+        Output column name for the human-readable label.
+    nrows
+        Optional maximum number of preview rows.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Table with ``event_id`` and ``label_col``. Missing label columns fall
+        back to the event ID.
+    """
+
+    if events is None or events.empty:
+        return pd.DataFrame(columns=["event_id", label_col])
+    id_column = (
+        event_id_col
+        if event_id_col in events.columns
+        else _first_present_column(events, EVENT_COLUMN_CANDIDATES["event_id"])
+    )
+    if id_column is None:
+        return pd.DataFrame(columns=["event_id", label_col])
+    rows = events.dropna(subset=[id_column]).drop_duplicates(subset=[id_column]).copy()
+    rows[id_column] = rows[id_column].astype(str).str.strip()
+    rows = rows.loc[rows[id_column].ne("")]
+    if nrows is not None:
+        rows = rows.head(int(nrows))
+    labels = [
+        event_display_label(rows, event_id, event_id_col=id_column, label_columns=label_columns)
+        for event_id in rows[id_column].tolist()
+    ]
+    return pd.DataFrame({"event_id": rows[id_column].tolist(), label_col: labels})
 
 
 def prepare_event_station_table(

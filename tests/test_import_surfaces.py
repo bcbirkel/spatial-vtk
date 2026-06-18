@@ -37,6 +37,9 @@ def test_public_imports():
         load_configured_input_tables,
         OutputGroup,
         event_display_label,
+        event_ids_from_records,
+        event_label_preview_frame,
+        event_rows_for_records,
         first_nonempty_table_value,
         inspect_synthetic_format,
         output_group,
@@ -101,6 +104,9 @@ def test_public_imports():
     assert callable(load_configured_input_paths)
     assert callable(load_configured_input_tables)
     assert callable(event_display_label)
+    assert callable(event_ids_from_records)
+    assert callable(event_label_preview_frame)
+    assert callable(event_rows_for_records)
     assert callable(first_nonempty_table_value)
     assert callable(output_group)
     assert callable(OutputGroup)
@@ -384,6 +390,9 @@ def test_io_api_docs_use_public_workflow_helpers():
         "load_configured_input_paths",
         "load_configured_input_tables",
         "event_display_label",
+        "event_ids_from_records",
+        "event_label_preview_frame",
+        "event_rows_for_records",
         "first_nonempty_table_value",
         "prepare_metadata_tables_from_config",
         "preprocess_waveforms_from_config",
@@ -657,6 +666,9 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.config.display_output_table_previews",
         "spatial_vtk.io.load_configured_input_paths",
         "spatial_vtk.io.load_configured_input_tables",
+        "spatial_vtk.io.event_ids_from_records",
+        "spatial_vtk.io.event_rows_for_records",
+        "spatial_vtk.io.event_label_preview_frame",
         "spatial_vtk.io.output_group",
         "spatial_vtk.io.prepare_metadata_tables_from_config",
         "spatial_vtk.io.preprocess_waveforms_from_config",

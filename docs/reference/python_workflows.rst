@@ -44,7 +44,7 @@ paths in cells.
 
    from spatial_vtk.config import configured_output_registry_frame
    from spatial_vtk.config import notebook_figure_settings, notebook_run_context, run_notebook_step_if_needed
-   from spatial_vtk.io import load_configured_input_paths, load_configured_input_tables, output_group
+   from spatial_vtk.io import event_rows_for_records, load_configured_input_paths, load_configured_input_tables, output_group
    from spatial_vtk.qc import run_qc_inventory_from_config
 
    context = notebook_run_context()
@@ -149,6 +149,14 @@ the large-run notebooks.
        into a labeled path dictionary. Use this when plotting or spatial helper
        calls need a configured file path but should not own config path
        resolution in the notebook cell.
+   * - ``spatial_vtk.io.event_ids_from_records``,
+       ``spatial_vtk.io.event_rows_for_records``, and
+       ``spatial_vtk.io.event_label_preview_frame``
+     - Build event-id lists, matching event metadata subsets, and compact
+       event label previews from record tables. Use these helpers in plotting
+       and corridor notebooks instead of repeating
+       ``events.loc[events["event_id"].isin(...)]`` or first-row label
+       lookups in cells.
    * - ``spatial_vtk.config.run_notebook_step_if_needed``
      - Display the readiness table, then run or submit a Python package
        workflow function only when work is needed. Pass the imported package

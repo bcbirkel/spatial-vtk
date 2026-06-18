@@ -74,6 +74,11 @@ Public helpers exposed by ``spatial_vtk.io``:
    * - ``event_display_label``
      - Return a human-readable event label for notebook titles and displays,
        falling back to the event id instead of raising when a label is missing.
+   * - ``event_ids_from_records``, ``event_rows_for_records``, and
+       ``event_label_preview_frame``
+     - Extract event IDs, select matching event metadata rows, and build
+       compact event-label preview tables without notebook-local dataframe
+       filtering or fragile ``iloc`` lookups.
    * - ``first_nonempty_table_value``
      - Return a safe first non-empty value from an optional table column for
        notebook titles, labels, and summaries, with a fallback when the column

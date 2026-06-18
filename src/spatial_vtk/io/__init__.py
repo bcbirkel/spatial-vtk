@@ -21,6 +21,9 @@ from spatial_vtk.io.kml import write_station_event_kml
 from spatial_vtk.io.layouts import inspect_station_event_layouts
 from spatial_vtk.io.metadata import (
     event_display_label,
+    event_ids_from_records,
+    event_label_preview_frame,
+    event_rows_for_records,
     prepare_event_metadata,
     prepare_event_station_table,
     prepare_station_metadata,
@@ -174,6 +177,9 @@ __all__ = [
     "default_output_paths",
     "ensure_run_dir",
     "event_display_label",
+    "event_ids_from_records",
+    "event_label_preview_frame",
+    "event_rows_for_records",
     "expected_metric_rows_from_inventory",
     "first_nonempty_table_value",
     "inspect_synthetic_format",
