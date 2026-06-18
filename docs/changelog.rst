@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Updated the standard and large-run Step 2 QC notebooks to read Step 1
+   metadata tables and compact QC plotting summaries through
+   ``OutputGroup.load_tables()`` instead of repeated ``load_output_table``
+   calls.
    Added ``OutputGroup.load_tables()`` and ``OutputGroup.preview_tables()``
    for config-backed table reads from named workflow output groups. The
    standard and large-run Step 4 notebooks now use grouped table loading for

@@ -310,11 +310,14 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "run_qc_inventory_from_config(" in standard_text
     assert "write_qc_inventory_overlap_from_config(" in standard_text
     assert "run_qc_summary_workflow_from_config(" in standard_text
+    assert "ingest_outputs.load_tables(" in standard_text
+    assert "qc_figure_tables = qc_outputs.load_tables(" in standard_text
     assert "run_notebook_step_if_needed(" in large_run_text
     assert "from spatial_vtk.qc import (" in large_run_text
     assert "run_qc_inventory_from_config," in large_run_text
     assert "write_qc_inventory_overlap_from_config," in large_run_text
     assert "run_qc_summary_workflow_from_config," in large_run_text
+    assert "qc_figure_tables = step_outputs.load_tables(" in large_run_text
     assert '"spatial_vtk.qc.run_qc_inventory_from_config"' not in large_run_text
     assert '"spatial_vtk.qc.write_qc_inventory_overlap_from_config"' not in large_run_text
     assert '"spatial_vtk.qc.run_qc_summary_workflow_from_config"' not in large_run_text
@@ -900,7 +903,9 @@ def test_large_run_step02_uses_qc_availability_output() -> None:
 
     assert "step_outputs.bind(globals())" in source
     assert "availability_path," in source
-    assert 'qc_availability = load_output_table("qc_availability")' in source
+    assert '"qc_availability": "availability_path"' in source
+    assert 'qc_availability = qc_figure_tables["qc_availability"]' in source
+    assert 'load_output_table("qc_availability")' not in source
     assert "plot_data_synthetic_availability(" in source
     assert "Observed/Synthetic Availability (Post-QC Trace Overlap)" in source
 
