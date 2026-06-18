@@ -101,6 +101,8 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "metrics.rst"
     text = docs.read_text(encoding="utf-8")
     assert ".. automodule:: spatial_vtk.metrics.workflow\n" in text
+    assert ".. automodule:: spatial_vtk.metrics.workflow.inventory\n" in text
+    assert ".. automodule:: spatial_vtk.metrics.workflow.cache\n" in text
     assert "helpers from the stable ``spatial_vtk.metrics`` package entry" in text
     assert "from spatial_vtk.metrics.plot import (" in text
     assert ".. automodule:: spatial_vtk.metrics.plot\n" in text
@@ -118,6 +120,14 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     )
     for token in forbidden:
         assert token not in text
+
+
+def test_config_api_docs_include_compute_helpers():
+    docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "config.rst"
+    text = docs.read_text(encoding="utf-8")
+
+    assert "Compute and Slurm" in text
+    assert ".. automodule:: spatial_vtk.config.compute\n" in text
 
 
 def test_metrics_package_reexports_workflow_surface():

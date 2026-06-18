@@ -69,6 +69,12 @@ for users who need narrower module references.
 .. automodule:: spatial_vtk.metrics.workflow.configured
    :members:
 
+.. automodule:: spatial_vtk.metrics.workflow.inventory
+   :members:
+
+.. automodule:: spatial_vtk.metrics.workflow.cache
+   :members:
+
 .. automodule:: spatial_vtk.metrics.workflow.execution
    :members:
 

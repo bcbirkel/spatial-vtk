@@ -44,6 +44,12 @@ Metrics
 .. automodule:: spatial_vtk.config.metric_catalog
    :members:
 
+Compute and Slurm
+-----------------
+
+.. automodule:: spatial_vtk.config.compute
+   :members:
+
 Labels and Naming
 -----------------
 
