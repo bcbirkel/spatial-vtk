@@ -289,6 +289,22 @@ def test_prepare_notebook_geospatial_environment_can_keep_proj_overrides(monkeyp
     assert os.environ["PROJ_LIB"] == "/external/proj"
 
 
+def test_prepare_notebook_geospatial_environment_sets_loky_cpu_count(monkeypatch):
+    """Notebook bootstrap should own optional loky CPU-count setup."""
+
+    monkeypatch.delenv("LOKY_MAX_CPU_COUNT", raising=False)
+
+    removed = prepare_notebook_geospatial_environment(clear_proj_env=False, loky_max_cpu_count=1)
+
+    assert removed == {}
+    assert os.environ["LOKY_MAX_CPU_COUNT"] == "1"
+    monkeypatch.setenv("LOKY_MAX_CPU_COUNT", "4")
+
+    prepare_notebook_geospatial_environment(clear_proj_env=False, loky_max_cpu_count=1)
+
+    assert os.environ["LOKY_MAX_CPU_COUNT"] == "4"
+
+
 def test_notebook_run_context_resolves_config_dirs_and_flags(tmp_path, monkeypatch):
     """Notebook setup should be reusable instead of redefined in each notebook."""
 

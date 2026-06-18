@@ -27,6 +27,9 @@ Changelog
    Updated standard tutorial notebooks and Python workflow examples to import
    notebook helpers from the stable ``spatial_vtk.config`` package surface
    instead of the implementation module ``spatial_vtk.config.notebook``.
+   Extended ``prepare_notebook_geospatial_environment()`` with optional
+   ``LOKY_MAX_CPU_COUNT`` setup and moved the Step 4 tutorial notebook's direct
+   environment write into that shared helper.
    Added ``spatial_vtk.io.record_coverage_readiness_from_config`` so Step 1
    notebooks can display the record-coverage rebuild decision without
    duplicating the preprocessed/base event-station fallback used by the build

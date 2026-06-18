@@ -330,8 +330,9 @@ def find_repo_root(start: str | Path | None = None) -> Path:
 def prepare_notebook_geospatial_environment(
     *,
     clear_proj_env: bool | None = None,
+    loky_max_cpu_count: int | str | None = None,
 ) -> dict[str, str]:
-    """Clear inherited PROJ overrides that can break tutorial geospatial plots.
+    """Prepare environment variables that affect notebook geospatial workflows.
 
     Some shell environments export ``PROJ_LIB`` or ``PROJ_DATA`` for a separate
     GIS installation. Rasterio, pyproj, and contextily may then read an
@@ -339,12 +340,20 @@ def prepare_notebook_geospatial_environment(
     database. Tutorial notebooks call this during bootstrap so a fresh checkout
     can run without relying on the user's shell-specific GIS settings.
 
+    Spatial-statistics notebooks can also request ``LOKY_MAX_CPU_COUNT`` to keep
+    joblib/loky CPU detection quiet and bounded in containerized notebook
+    environments.
+
     Parameters
     ----------
     clear_proj_env
         Whether to remove ``PROJ_LIB`` and ``PROJ_DATA`` from ``os.environ``.
         When omitted, the default is ``True`` unless
         ``SVTK_KEEP_PROJ_ENV=1`` is set.
+    loky_max_cpu_count
+        Optional value to set as ``LOKY_MAX_CPU_COUNT`` when the variable is not
+        already defined. Pass ``1`` for small tutorial notebooks that use
+        spatial-statistics helpers with joblib-backed dependencies.
 
     Returns
     -------
@@ -357,13 +366,16 @@ def prepare_notebook_geospatial_environment(
     if clear_proj_env is None:
         clear_proj_env = not _env_bool("SVTK_KEEP_PROJ_ENV", default=False)
     if not clear_proj_env:
-        return {}
+        removed: dict[str, str] = {}
+    else:
+        removed = {}
+        for name in ("PROJ_LIB", "PROJ_DATA"):
+            value = os.environ.pop(name, None)
+            if value:
+                removed[name] = value
 
-    removed: dict[str, str] = {}
-    for name in ("PROJ_LIB", "PROJ_DATA"):
-        value = os.environ.pop(name, None)
-        if value:
-            removed[name] = value
+    if loky_max_cpu_count is not None:
+        os.environ.setdefault("LOKY_MAX_CPU_COUNT", str(loky_max_cpu_count))
     return removed
 
 

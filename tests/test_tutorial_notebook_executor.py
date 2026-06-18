@@ -192,6 +192,7 @@ def test_tutorial_notebooks_use_stable_config_import_surface() -> None:
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
         assert "from spatial_vtk.config.notebook import" not in source, f"{notebook_path.relative_to(repo_root)}"
+        assert 'os.environ.setdefault("LOKY_MAX_CPU_COUNT"' not in source, f"{notebook_path.relative_to(repo_root)}"
 
 
 def test_tutorial_notebooks_have_stable_cell_ids() -> None:
