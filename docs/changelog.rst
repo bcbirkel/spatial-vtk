@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Exposed tutorial-style comparison tables in the large-run generic metric
+   diagnostic helper. Step 3 now forwards ``SVTK_FIGURE_COMPARE_TO`` and
+   ``SVTK_FIGURE_COMPARISON_TABLE=1`` through the package plotting context
+   instead of requiring notebook-local plotting logic.
    Added ``metric_slurm_submission_readiness()`` so the large-run Step 3 metric
    array submission cell uses the same ``run_notebook_step_if_needed()``
    readiness pattern as the other package-backed heavy workflow steps instead

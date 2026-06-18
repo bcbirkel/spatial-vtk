@@ -685,6 +685,8 @@ class MetricFigureContext:
         model: str | None = None,
         value_col: str | None = None,
         showfig: bool = False,
+        compare_to: str | Sequence[str] | None = None,
+        table: bool = False,
     ) -> list[Path]:
         """Write generic scatter, box, and heatmap diagnostics for target metrics.
 
@@ -717,6 +719,8 @@ class MetricFigureContext:
                         model=item_model,
                         value_col=resolved_value_col,
                         showfig=showfig,
+                        compare_to=compare_to,
+                        table=table,
                     )
                 )
         return outputs
@@ -759,6 +763,8 @@ class MetricFigureContext:
         model: str | None,
         value_col: str,
         showfig: bool,
+        compare_to: str | Sequence[str] | None,
+        table: bool,
     ) -> list[Path]:
         """Write generic diagnostic figures for one already filtered metric item."""
 
@@ -829,6 +835,8 @@ class MetricFigureContext:
             model=model,
             colorby=self.model_col if self.model_col in item["df"].columns else None,
             robust_axis_percentile=self.robust_axis_percentile,
+            compare_to=compare_to,
+            table=table,
             showfig=showfig,
         )
         if output is not None:

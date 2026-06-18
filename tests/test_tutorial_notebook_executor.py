@@ -606,6 +606,10 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     assert 'MAKE_SCORE_TRENDS = os.environ.get("SVTK_MAKE_SCORE_TRENDS", "0") == "1"' in source
     assert "Skipping optional GOF score trends. Set SVTK_MAKE_SCORE_TRENDS=1" in source
     assert "The main large-run figure suite uses `log2_residual`" in source
+    assert 'PLOT_COMPARE_TO = os.environ.get("SVTK_FIGURE_COMPARE_TO") or None' in source
+    assert 'PLOT_COMPARISON_TABLE = os.environ.get("SVTK_FIGURE_COMPARISON_TABLE", "0") == "1"' in source
+    assert "compare_to=PLOT_COMPARE_TO" in source
+    assert "table=PLOT_COMPARISON_TABLE" in source
     assert "SCORE_TREND_COLUMNS" in source
     assert "raw event-level rows used for the station summaries" in source
     assert 'STATION_AGGREGATION = os.environ.get("SVTK_STATION_AGGREGATION", "mean")' in source

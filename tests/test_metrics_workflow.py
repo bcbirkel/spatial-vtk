@@ -458,6 +458,58 @@ def test_generic_metric_diagnostics_split_residuals_by_model(tmp_path) -> None:
     assert all(path.exists() for path in outputs)
 
 
+def test_generic_metric_diagnostics_forward_boxplot_comparison_options(tmp_path) -> None:
+    """Large-run generic diagnostics should expose tutorial comparison tables."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3", "e4"],
+            "station": ["STA", "STB", "STC", "STD"],
+            "metric": ["PGA", "PGA", "PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec", "1-2 sec"],
+            "model": ["m1", "m1", "m1", "m1"],
+            "component": ["Z", "R", "Z", "R"],
+            "distance_km": [10.0, 20.0, 30.0, 40.0],
+            "log2_residual": [0.2, -0.1, 0.3, -0.2],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        metrics,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+    )
+    seen: dict[str, list[dict[str, object]]] = {"scatter": [], "box": [], "heat": [], "period": []}
+
+    def _spy_plot(label: str):
+        def _plot(_df, *, output_path, **kwargs):
+            seen[label].append(dict(kwargs))
+            Path(output_path).write_text("plot", encoding="utf-8")
+
+        return _plot
+
+    outputs = context.write_generic_metric_diagnostic_plots(
+        _spy_plot("scatter"),
+        _spy_plot("box"),
+        _spy_plot("heat"),
+        _spy_plot("period"),
+        passband="1-2 sec",
+        components=["Z", "R"],
+        model="m1",
+        value_col="log2_residual",
+        compare_to="Z",
+        table=True,
+    )
+
+    assert outputs
+    assert seen["box"]
+    assert any(call.get("compare_to") == "Z" and call.get("table") is True for call in seen["box"])
+    assert all("compare_to" not in call and "table" not in call for call in seen["scatter"])
+    assert all("compare_to" not in call and "table" not in call for call in seen["heat"])
+    assert not seen["period"]
+
+
 def test_metric_station_summary_uses_supported_station_and_event_aliases(tmp_path) -> None:
     """Station aggregation should not depend on already-canonical column names."""
 
