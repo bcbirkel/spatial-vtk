@@ -203,6 +203,24 @@ def _command_page_notes(command_name: str) -> list[str]:
             "These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk plot metrics list`` or ``svtk plot spatial list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:--input`` entries.",
             "",
         ]
+    if command_name == "map":
+        return [
+            "Config-Backed Mapping",
+            "----------------------",
+            "",
+            "If a config is active with ``svtk config set`` or passed with ``--config``, registered map commands resolve their standard input tables, figure outputs, and named map bounds automatically. For routine workflow maps, prefer the curated flags shown below instead of passing raw ``--input`` and ``--output`` paths.",
+            "",
+            ".. code-block:: bash",
+            "",
+            "   svtk config set runs/spatial_vtk_config.yaml",
+            "   svtk map spatial station-metric --value-col log2_residual --metric PGA --passband \"2-3 sec\"",
+            "   svtk map spatial event-residual --value-col log2_residual --metric PGA --bounds study_area",
+            "",
+            "These commands use configured outputs such as ``metrics_long`` and ``path_table`` plus the registered figure keys for the selected map unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk map spatial list`` to print a table showing each map command's input and output source, including ``config:<key>`` defaults and ``required:--input`` entries.",
+            "",
+            "Basemaps are enabled by default for map figures; use ``--no-basemap`` only when you explicitly want a data-only map.",
+            "",
+        ]
     if command_name == "dashboard":
         return [
             "Config-Backed Dashboards",

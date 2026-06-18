@@ -874,6 +874,7 @@ def test_generated_cli_reference_includes_config_backed_examples():
 
     root = Path(__file__).resolve().parents[1]
     plot_text = (root / "docs" / "reference" / "cli" / "plot.rst").read_text(encoding="utf-8")
+    map_text = (root / "docs" / "reference" / "cli" / "map.rst").read_text(encoding="utf-8")
     dashboard_text = (root / "docs" / "reference" / "cli" / "dashboard.rst").read_text(encoding="utf-8")
     generator_text = (root / "tools" / "generate_cli_reference.py").read_text(encoding="utf-8")
 
@@ -883,6 +884,11 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "svtk plot metrics list" in plot_text
     assert "config:<key>" in plot_text
     assert "required:--input" in plot_text
+    assert "Config-Backed Mapping" in map_text
+    assert "svtk map spatial station-metric --value-col log2_residual --metric PGA" in map_text
+    assert "svtk map spatial list" in map_text
+    assert "named map bounds" in map_text
+    assert "Basemaps are enabled by default" in map_text
     assert "Config-Backed Dashboards" in dashboard_text
     assert "svtk dashboard metrics --config runs/spatial_vtk_config.yaml --auto-port --proxy-mode" in dashboard_text
     assert "--metrics-dataset-dir" in dashboard_text
@@ -893,6 +899,7 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "Prefer ``--metrics-dataset-dir`` and ``--dashboard-summary-table-dir``" in dashboard_text
     assert "are legacy aliases" in dashboard_text
     assert "Config-Backed Plotting" in generator_text
+    assert "Config-Backed Mapping" in generator_text
     assert "Config-Backed Dashboards" in generator_text
 
 
