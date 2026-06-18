@@ -945,19 +945,36 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     assert "write_qc_slurm_script(" not in source
 
 
-def test_large_run_optional_figure_cells_define_basemap_flag() -> None:
-    """Large-run optional figure cells should not fail when figures are enabled."""
+def test_large_run_optional_figure_cells_use_package_settings() -> None:
+    """Large-run optional figure cells should centralize figure settings."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = [
         repo_root / "docs" / "examples" / "large_run" / "step_01_large_run_ingest_and_prepare_data.ipynb",
         repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb",
+        repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb",
+        repo_root / "docs" / "examples" / "large_run" / "step_04_large_run_spatial_statistics.ipynb",
+        repo_root / "docs" / "examples" / "large_run" / "step_05_large_run_geojson_corridors.ipynb",
+        repo_root / "docs" / "examples" / "large_run" / "step_06_large_run_additional_plotting.ipynb",
     ]
     for notebook_path in notebooks:
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-        assert 'ADD_BASEMAP = os.environ.get("SVTK_ADD_BASEMAP", "0") == "1"' in source
-        assert "add_basemap=ADD_BASEMAP" in source
+        assert "notebook_figure_settings(" in source
+        assert 'os.environ.get("SVTK_MAKE_FIGURES"' not in source
+        assert 'os.environ.get("SVTK_ADD_BASEMAP"' not in source
+        assert 'notebook_figure_sidecar_settings(' not in source
+
+    step_01_source = "\n".join(
+        "".join(cell.get("source", []))
+        for cell in json.loads(notebooks[0].read_text(encoding="utf-8")).get("cells", [])
+    )
+    assert "CONTEXT_FIGURE_SETTINGS.plot_kwargs(include_basemap=True)" in step_01_source
+    step_02_source = "\n".join(
+        "".join(cell.get("source", []))
+        for cell in json.loads(notebooks[1].read_text(encoding="utf-8")).get("cells", [])
+    )
+    assert "QC_FIGURE_SETTINGS.plot_kwargs(include_basemap=True)" in step_02_source
 
 
 def test_large_run_step02_overlap_sidecar_has_separate_rebuild_gate() -> None:

@@ -134,9 +134,12 @@ class NotebookFigureSettings:
     make_figures: bool = False
     add_basemap: bool = False
     showfig: bool = False
+    metric: str | None = None
     passband: str | None = None
+    component: str | None = None
     components: list[str] | None = None
     model: str | None = None
+    value_col: str = "log2_residual"
     sample_rows: int = 200_000
     robust_axis_percentile: float = 95.0
     station_aggregation: str = "mean"
@@ -563,6 +566,11 @@ def notebook_figure_settings(
     default_make_figures: bool = False,
     default_add_basemap: bool = False,
     default_showfig: bool = False,
+    default_metric: str | None = None,
+    default_passband: str | None = None,
+    default_component: str | None = None,
+    default_model: str | None = None,
+    default_value_col: str = "log2_residual",
     default_sample_rows: int = 200_000,
     default_robust_axis_percentile: float = 95.0,
     default_station_aggregation: str = "mean",
@@ -584,6 +592,9 @@ def notebook_figure_settings(
         :func:`notebook_figure_sidecar_settings`.
     default_make_figures, default_add_basemap, default_showfig
         Fallback booleans when no corresponding environment variable is set.
+    default_metric, default_passband, default_component, default_model,
+    default_value_col
+        Fallback single-figure filters and value column.
     default_sample_rows, default_robust_axis_percentile
         Fallback dense-plot controls.
     default_station_aggregation
@@ -606,8 +617,11 @@ def notebook_figure_settings(
     make_names.append("SVTK_MAKE_FIGURES")
 
     passband_names = _figure_setting_names(prefix, "PASSBAND")
+    metric_names = _figure_setting_names(prefix, "METRIC")
     component_names = _figure_setting_names(prefix, "COMPONENTS")
+    component_names.extend(_figure_setting_names(prefix, "COMPONENT"))
     model_names = _figure_setting_names(prefix, "MODEL")
+    value_col_names = _figure_setting_names(prefix, "VALUE_COL")
     showfig_names = _figure_setting_names(prefix, "SHOWFIG")
     sample_row_names = _figure_setting_names(prefix, "SAMPLE_ROWS")
     robust_names = _figure_setting_names(prefix, "ROBUST_PERCENTILE")
@@ -618,15 +632,31 @@ def notebook_figure_settings(
     if prefix:
         aggregation_names.append(f"SVTK_{prefix}_STATION_AGGREGATION")
     aggregation_names.append("SVTK_STATION_AGGREGATION")
+    if prefix == "REGION":
+        metric_names.insert(0, "SVTK_REGION_BOX_METRIC")
+        passband_names.insert(0, "SVTK_REGION_BOX_PASSBAND")
+        component_names.insert(0, "SVTK_REGION_BOX_COMPONENT")
+        model_names.insert(0, "SVTK_REGION_BOX_MODEL")
+        value_col_names.insert(0, "SVTK_REGION_VALUE_COL")
+        compare_to_names.insert(0, "SVTK_REGION_COMPARE_TO")
+        sample_row_names.insert(0, "SVTK_REGION_FIGURE_ROWS")
+
+    component = _env_text_first(component_names, default=default_component)
+    components = _env_list_first(component_names)
+    if components is None and component:
+        components = [component]
 
     return NotebookFigureSettings(
         figure_kind=figure_kind,
         make_figures=_env_bool_first(make_names, default=default_make_figures),
         add_basemap=_env_bool("SVTK_ADD_BASEMAP", default=default_add_basemap),
         showfig=_env_bool_first(showfig_names, default=default_showfig),
-        passband=_env_text_first(passband_names),
-        components=_env_list_first(component_names),
-        model=_env_text_first(model_names),
+        metric=_env_text_first(metric_names, default=default_metric),
+        passband=_env_text_first(passband_names, default=default_passband),
+        component=component,
+        components=components,
+        model=_env_text_first(model_names, default=default_model),
+        value_col=_env_text_first(value_col_names, default=default_value_col) or default_value_col,
         sample_rows=_env_int_first(sample_row_names, default=default_sample_rows),
         robust_axis_percentile=_env_float_first(robust_names, default=default_robust_axis_percentile),
         station_aggregation=_env_text_first(aggregation_names, default=default_station_aggregation)

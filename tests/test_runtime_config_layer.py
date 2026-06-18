@@ -551,6 +551,42 @@ def test_notebook_figure_settings_parse_common_controls(tmp_path, monkeypatch):
     }
 
 
+def test_notebook_figure_settings_parse_region_legacy_controls(tmp_path, monkeypatch):
+    """Region notebooks should keep their existing SVTK_REGION_* controls."""
+
+    monkeypatch.setenv("SVTK_MAKE_FIGURES", "1")
+    monkeypatch.setenv("SVTK_ADD_BASEMAP", "1")
+    monkeypatch.setenv("SVTK_REGION_FIGURE_ROWS", "4321")
+    monkeypatch.setenv("SVTK_REGION_BOX_METRIC", "PGV")
+    monkeypatch.setenv("SVTK_REGION_BOX_PASSBAND", "3-5 sec")
+    monkeypatch.setenv("SVTK_REGION_BOX_COMPONENT", "R")
+    monkeypatch.setenv("SVTK_REGION_BOX_MODEL", "model-a")
+    monkeypatch.setenv("SVTK_REGION_VALUE_COL", "log2_residual")
+    monkeypatch.setenv("SVTK_REGION_COMPARE_TO", "basin")
+    monkeypatch.setenv("SVTK_FIGURE_SHOWFIG", "1")
+
+    settings = notebook_figure_settings(
+        "region",
+        figure_dir=tmp_path / "figures",
+        default_metric="PGA",
+        default_passband="2-3 sec",
+        default_sidecar_rows=1000,
+    )
+
+    assert settings.make_figures is True
+    assert settings.add_basemap is True
+    assert settings.sample_rows == 4321
+    assert settings.metric == "PGV"
+    assert settings.passband == "3-5 sec"
+    assert settings.component == "R"
+    assert settings.components == ["R"]
+    assert settings.model == "model-a"
+    assert settings.value_col == "log2_residual"
+    assert settings.compare_to == "basin"
+    assert settings.showfig is True
+    assert settings.sidecars.rows == 1000
+
+
 def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monkeypatch):
     """Notebook dashboard commands should be config-backed and collision tolerant."""
 

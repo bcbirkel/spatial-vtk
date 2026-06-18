@@ -122,7 +122,8 @@ the large-run notebooks.
        ``SVTK_FIGURE_SHOWFIG``, ``SVTK_FIGURE_ROBUST_PERCENTILE``, and sidecar
        settings once. Use ``context_kwargs()`` for large-run plotting contexts
        and ``plot_kwargs()`` for single plotting calls so notebook cells stay
-       focused on the figure being rendered.
+       focused on the figure being rendered. Region/corridor notebooks also
+       retain the existing ``SVTK_REGION_*`` controls through this helper.
    * - ``spatial_vtk.config.notebook_dashboard_launch_commands``
      - Return config-backed dashboard launch settings. Use
        ``metrics_launch_kwargs()`` and ``qc_launch_kwargs()`` with the package
