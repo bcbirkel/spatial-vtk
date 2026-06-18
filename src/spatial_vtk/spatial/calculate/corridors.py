@@ -239,6 +239,41 @@ def corridor_record_preview_frame(
     return preview.head(max(int(nrows), 0)).reset_index(drop=True)
 
 
+def corridor_record_pair_frame(
+    records: pd.DataFrame | None,
+    *,
+    event_col: str = "event_id",
+    station_col: str = "station",
+    keep_columns: bool = True,
+) -> pd.DataFrame:
+    """Return one row per selected corridor event-station pair.
+
+    Parameters
+    ----------
+    records
+        Corridor-selected event-station rows.
+    event_col, station_col
+        Event and station identifier columns.
+    keep_columns
+        Whether to keep all columns from the first row for each pair. Set to
+        ``False`` when only the pair keys are needed for joins.
+
+    Returns
+    -------
+    pandas.DataFrame
+        De-duplicated event-station rows. Missing or empty inputs return an
+        empty dataframe.
+    """
+
+    if records is None or records.empty:
+        return pd.DataFrame(columns=[event_col, station_col])
+    missing = [column for column in (event_col, station_col) if column not in records.columns]
+    if missing:
+        raise KeyError(f"Corridor records are missing required pair column(s): {missing}")
+    columns = list(records.columns) if keep_columns else [event_col, station_col]
+    return records.loc[:, columns].drop_duplicates([event_col, station_col]).reset_index(drop=True)
+
+
 def build_station_edge_corridors(
     station_df: pd.DataFrame,
     geojson_path: str | Path,

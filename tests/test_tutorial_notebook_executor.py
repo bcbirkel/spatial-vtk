@@ -1100,7 +1100,10 @@ def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
     assert "from spatial_vtk.spatial import (" in source
     assert "load_configured_input_paths(" in source
     assert "load_configured_input_tables(" in source
+    assert "corridor_record_pair_frame(" in source
     assert "corridor_record_preview_frame(" in source
+    assert 'drop_duplicates(["event_id", "station"])' not in source
+    assert '[[\"event_id\", \"station\"]].drop_duplicates()' not in source
     assert "drop_duplicates().head()" not in source
     assert "read_config_table(\"paths.metric_figure_snapshot\")" not in source
     assert 'metrics_table="paths.metric_figure_snapshot"' in source

@@ -60,7 +60,7 @@ from spatial_vtk.spatial.calculate.workflow import (
     spatial_pca_product_frames,
     spatial_workflow_failure_frame,
 )
-from spatial_vtk.spatial.calculate.corridors import corridor_record_preview_frame
+from spatial_vtk.spatial.calculate.corridors import corridor_record_pair_frame, corridor_record_preview_frame
 from spatial_vtk.spatial.map.correlation import (
     plot_block_holdout_error_map,
     plot_cluster_map,
@@ -282,6 +282,33 @@ def test_corridor_record_preview_frame_deduplicates_and_bounds_rows() -> None:
         },
     ]
     assert corridor_record_preview_frame(None).empty
+
+
+def test_corridor_record_pair_frame_returns_unique_event_station_rows() -> None:
+    """Corridor pair selection should be reusable outside notebooks."""
+
+    records = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1", "e2"],
+            "station": ["STA1", "STA1", "STA2"],
+            "distance_km": [10.0, 11.0, 20.0],
+        }
+    )
+
+    full = corridor_record_pair_frame(records)
+    keys = corridor_record_pair_frame(records, keep_columns=False)
+
+    assert full.to_dict("records") == [
+        {"event_id": "e1", "station": "STA1", "distance_km": 10.0},
+        {"event_id": "e2", "station": "STA2", "distance_km": 20.0},
+    ]
+    assert keys.to_dict("records") == [
+        {"event_id": "e1", "station": "STA1"},
+        {"event_id": "e2", "station": "STA2"},
+    ]
+    assert list(corridor_record_pair_frame(None).columns) == ["event_id", "station"]
+    with pytest.raises(KeyError, match="missing required pair"):
+        corridor_record_pair_frame(pd.DataFrame({"event_id": ["e1"]}))
 
 
 def test_spatial_correlation_preview_frame_filters_metric_and_bounds_distance_rows() -> None:

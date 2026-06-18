@@ -80,9 +80,12 @@ Public helpers exposed by ``spatial_vtk.spatial``:
      - Add region and path-control metadata from configured GeoJSON polygons.
    * - ``build_station_edge_corridors`` and ``select_records_by_corridors``
      - Prepare corridor records for path-focused diagnostics.
+   * - ``corridor_record_pair_frame``
+     - Return one row per selected corridor event-station pair for maps,
+       waveform joins, and downstream subset tables.
    * - ``corridor_record_preview_frame``
      - Display bounded selected corridor event-station rows without repeating
-       preview-column and duplicate-removal logic in notebooks.
+      preview-column and duplicate-removal logic in notebooks.
 
 Calculate
 ---------
@@ -110,6 +113,8 @@ for users who need narrower module references.
 .. autofunction:: spatial_vtk.spatial.station_bias_preview_frame
 
 .. autofunction:: spatial_vtk.spatial.corridor_record_preview_frame
+
+.. autofunction:: spatial_vtk.spatial.corridor_record_pair_frame
 
 .. automodule:: spatial_vtk.spatial.calculate.prepare_stats
    :members:

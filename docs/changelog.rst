@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-18
+   Added ``corridor_record_pair_frame()`` to the public spatial API and rewired
+   standard Step 5 corridor maps, waveform joins, and selected-path maps to use
+   it instead of repeated event-station ``drop_duplicates`` snippets in the
+   notebook.
    Added ``spatial_metric_table_frame()``,
    ``spatial_metric_product_frames()``, and ``spatial_pca_product_frames()`` to
    the public spatial API. The standard Step 4 notebook now uses these helpers

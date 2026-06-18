@@ -51,6 +51,7 @@ def test_public_imports():
         annotate_points_with_geojson,
         build_station_edge_corridors,
         classify_paths_with_geojson,
+        corridor_record_pair_frame,
         corridor_record_preview_frame,
         geojson_polygon_preview_table,
         run_boundary_corridor_workflow_from_config,
@@ -113,6 +114,7 @@ def test_public_imports():
     assert callable(run_spatial_derived_outputs_workflow_from_config)
     assert callable(run_spatial_statistics_workflow_from_config)
     assert callable(corridor_record_preview_frame)
+    assert callable(corridor_record_pair_frame)
     assert callable(spatial_correlation_preview_frame)
     assert callable(spatial_metric_product_frames)
     assert callable(spatial_metric_product_summary_frame)
@@ -440,6 +442,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
         "annotate_points_with_geojson",
         "classify_paths_with_geojson",
         "build_station_edge_corridors",
+        "corridor_record_pair_frame",
         "corridor_record_preview_frame",
         "select_records_by_corridors",
     ):
