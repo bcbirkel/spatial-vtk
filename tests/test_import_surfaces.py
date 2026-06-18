@@ -201,6 +201,7 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.metrics.build_metric_waveform_inventories_from_config",
         "spatial_vtk.metrics.plan_metric_tasks_from_config",
         "spatial_vtk.metrics.summarize_metric_snapshot_tasks_from_config",
+        "spatial_vtk.metrics.metric_slurm_submission_readiness",
         "spatial_vtk.metrics.write_metrics_slurm_script_from_config",
         "spatial_vtk.metrics.merge_metric_batches_from_config",
         "spatial_vtk.metrics.write_metric_outputs_from_config",
@@ -238,6 +239,7 @@ def test_package_overview_points_to_public_workflow_helpers():
         "Start with public helpers from ``spatial_vtk.metrics``",
         "``plan_metric_tasks_from_config``",
         "``summarize_metric_snapshot_tasks_from_config``",
+        "``metric_manifest_batch_status`` and ``metric_slurm_submission_readiness``",
         "``write_metric_outputs_from_config``",
         "Start with public helpers from ``spatial_vtk.spatial``",
         "``run_spatial_statistics_workflow_from_config``",
@@ -263,6 +265,24 @@ def test_package_overview_points_to_public_workflow_helpers():
     assert "helpers." in future
     assert "``spatial_vtk.spatial.calculate.geojson``" not in future
     assert "``spatial_vtk.spatial.calculate.corridors``" not in future
+
+
+def test_notebook_helper_docs_prefer_readiness_wrapper():
+    """API-facing docstrings should not steer notebooks to lower-level wrappers."""
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    notebook_helpers = (repo_root / "src" / "spatial_vtk" / "config" / "notebook.py").read_text(encoding="utf-8")
+    metric_configured = (
+        repo_root / "src" / "spatial_vtk" / "metrics" / "workflow" / "configured.py"
+    ).read_text(encoding="utf-8")
+
+    assert "New notebooks should" in notebook_helpers
+    assert "prefer :func:`run_notebook_step_if_needed`" in notebook_helpers
+    assert "This lower-level helper powers :func:`run_notebook_step_if_needed`" in notebook_helpers
+    assert "Large-run notebooks use this helper" not in notebook_helpers
+    assert "Large-run notebooks should pass these helpers to" in metric_configured
+    assert "``run_notebook_step_if_needed()``" in metric_configured
+    assert "through\n``run_or_submit_notebook_function()``" not in metric_configured
 
 
 def test_spatial_plot_public_entry_point_is_lazy():

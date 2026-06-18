@@ -455,10 +455,12 @@ def run_or_submit_notebook_cli_command(
 ) -> SlurmSubmission | None:
     """Run a Spatial-VTK CLI command locally or wrap it in a SLURM script.
 
-    Large-run notebooks use this helper for medium-to-heavy CLI steps so the
-    cell stays focused on readiness checks. The helper prints the exact command
-    either way. When running locally, the command is dispatched through
-    :func:`spatial_vtk.cli.main` so notebooks do not depend on a shell ``svtk``
+    This is a lower-level compatibility helper for terminal-oriented commands
+    that do not yet have a Python workflow function. New notebooks should
+    prefer :func:`run_notebook_step_if_needed` with an importable package
+    function so workflow work stays on the public Python API surface. When
+    running locally, the command is dispatched through
+    :func:`spatial_vtk.cli.main` so callers do not depend on a shell ``svtk``
     executable. When not running locally, an inline-Python SLURM script is
     written and then submitted or printed according to ``context.submit_slurm``.
     """
@@ -504,10 +506,14 @@ def run_or_submit_notebook_function(
 ) -> Any | SlurmSubmission | None:
     """Run an importable package function locally or through Slurm.
 
-    Notebooks should use this helper for heavy package-backed workflow steps
-    instead of constructing shell/CLI commands. Local execution calls the
-    Python function directly. Slurm execution writes a small worker script that
-    imports the same function and calls it with JSON-serializable arguments.
+    This lower-level helper powers :func:`run_notebook_step_if_needed`. New
+    notebooks should usually call that readiness-aware wrapper so each heavy
+    step displays its status table, skips current outputs, and then calls the
+    package function only when work is needed. Use this helper directly only
+    when a caller has already handled readiness and skip logic. Local execution
+    calls the Python function directly. Slurm execution writes a small worker
+    script that imports the same function and calls it with JSON-serializable
+    arguments.
 
     Parameters
     ----------

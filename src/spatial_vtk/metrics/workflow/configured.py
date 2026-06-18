@@ -3,9 +3,9 @@
 Purpose
 -------
 This module mirrors the public metric CLI defaults as importable Python
-functions. Large-run notebooks can call these helpers directly through
-``run_or_submit_notebook_function()`` while keeping path resolution and Slurm
-script writing inside the package.
+functions. Large-run notebooks should pass these helpers to
+``run_notebook_step_if_needed()`` so readiness display, skip logic, local
+execution, and Slurm script writing stay inside the package.
 """
 
 from __future__ import annotations
