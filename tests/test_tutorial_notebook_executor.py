@@ -868,6 +868,9 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert 'load_output_table("comparison_eligible_records")' in source
+    assert 'read_config_table("paths.metric_figure_snapshot")' in source
+    assert 'cfg.path("paths.metric_figure_snapshot")' not in source
+    assert "read_table(metric_source_path)" not in source
     assert "comparison_qc_status" not in source
 
 
