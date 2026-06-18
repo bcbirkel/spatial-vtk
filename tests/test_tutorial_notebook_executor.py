@@ -1097,6 +1097,8 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     assert "metric_plot_context.write_event_residual_maps(" in source
     assert "write_psa_period_sheet = metric_plot_context.write_psa_period_sheet" not in source
     assert "write_metric_plot = metric_plot_context.write_metric_plot" not in source
+    assert "reload_metric_plot_modules" not in source
+    assert "globals().update(" not in source
     assert "station_summary_for_item = metric_plot_context.station_summary_for_item" not in source
     assert "item_source_rows = metric_plot_context.item_source_rows" not in source
     assert "source_df=item_source_rows(item)" not in source

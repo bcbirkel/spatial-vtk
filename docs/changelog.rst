@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Removed the development-only ``reload_metric_plot_modules()``/
+   ``globals().update(...)`` hook from the large-run Step 3 notebook. Metric
+   figure cells now rely only on the package ``MetricFigureContext`` methods,
+   and notebook source-contract coverage prevents hidden global namespace
+   mutation from returning to the tutorial.
    Rewired the standard Step 1 ingest notebook to use config-backed
    ``spatial_vtk.io`` workflow helpers for metadata preparation, waveform
    preprocessing, and record-coverage writing. The notebook now reads the
