@@ -641,6 +641,12 @@ outputs:
     assert settings.figure_dir.exists()
     assert settings.sidecars.directory == tmp_path / "run_outputs" / "custom_figures" / "sidecars"
 
+    metric_settings = notebook_figure_settings("metric", figure_subdir="metrics")
+
+    assert metric_settings.figure_dir == tmp_path / "run_outputs" / "custom_figures" / "metrics"
+    assert metric_settings.figure_dir.exists()
+    assert metric_settings.sidecars.directory == tmp_path / "run_outputs" / "custom_figures" / "metrics" / "sidecars"
+
 
 def test_notebook_figure_settings_render_gate_reports_disabled_and_missing_inputs(tmp_path, monkeypatch):
     """Figure blocks should use package-owned gating instead of repeated path checks."""

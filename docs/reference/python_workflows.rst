@@ -70,7 +70,7 @@ paths in cells.
        cpus=1,
    )
 
-   metric_figure_settings = notebook_figure_settings("metric", figure_dir=context.figures_dir / "metrics")
+   metric_figure_settings = notebook_figure_settings("metric", figure_subdir="metrics")
    # Pass metric_figure_settings.context_kwargs(...) into package plotting
    # contexts instead of parsing SVTK_FIGURE_* variables in notebook cells.
    configured_inputs = load_configured_input_tables({"metrics": "paths.metric_figure_snapshot"}, cfg=cfg)
@@ -202,7 +202,10 @@ the large-run notebooks.
        active config's ``outputs.figures`` directory and uses
        ``outputs.figures/sidecars`` for row-provenance sidecars, so standard
        notebooks do not need a separate ``figure_dir = context.figures_dir``
-       setup line.
+       setup line. Pass ``figure_subdir="metrics"`` for large-run metric and
+       spatial figure suites that should write under
+       ``outputs.figures/metrics`` without hard-coding
+       ``context.figures_dir / "metrics"`` in notebook cells.
        For large-run metric figures, use
        ``spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context`` and
        gate plotting cells on ``metric_plot_context.ready`` rather than

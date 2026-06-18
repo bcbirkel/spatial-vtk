@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-18
+   Added ``figure_subdir`` support to ``notebook_figure_settings()`` and
+   rewired the large-run notebooks to use ``figure_subdir="metrics"`` for
+   metric, spatial, and region figure suites. The large-run notebooks no
+   longer bind ``figures_dir = context.figures_dir``, build
+   ``figures_dir / "metrics"`` paths, or maintain separate
+   ``METRICS_FIGURE_DIR`` aliases.
    Updated ``notebook_figure_settings()`` so it resolves and creates the
    active config's ``outputs.figures`` directory when no explicit
    ``figure_dir`` is supplied. Standard tutorial notebooks now rely on that

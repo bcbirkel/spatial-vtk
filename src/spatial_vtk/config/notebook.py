@@ -692,6 +692,7 @@ def notebook_figure_settings(
     figure_kind: str | None = None,
     *,
     figure_dir: str | Path | None = None,
+    figure_subdir: str | Path | None = None,
     sidecar_dir: str | Path | None = None,
     default_make_figures: bool = False,
     default_add_basemap: bool = False,
@@ -719,11 +720,12 @@ def notebook_figure_settings(
         example, ``figure_kind="metric"`` checks
         ``SVTK_MAKE_METRIC_FIGURES`` before ``SVTK_MAKE_FIGURES`` and
         ``SVTK_METRIC_FIGURE_PASSBAND`` before ``SVTK_FIGURE_PASSBAND``.
-    figure_dir, sidecar_dir
+    figure_dir, figure_subdir, sidecar_dir
         Figure and sidecar directories passed through to
         :func:`notebook_figure_sidecar_settings`. When ``figure_dir`` is
         omitted, the active config's ``outputs.figures`` directory is used
-        when available.
+        when available. ``figure_subdir`` appends a family-specific
+        subdirectory such as ``"metrics"`` to that configured root.
     default_make_figures, default_add_basemap, default_showfig
         Fallback booleans when no corresponding environment variable is set.
     default_metric, default_passband, default_component, default_model,
@@ -792,7 +794,7 @@ def notebook_figure_settings(
         components = [component]
     default_scores = list(default_score_columns) if default_score_columns is not None else None
 
-    resolved_figure_dir = _resolve_notebook_figure_dir(figure_dir)
+    resolved_figure_dir = _resolve_notebook_figure_dir(figure_dir, figure_subdir=figure_subdir)
 
     return NotebookFigureSettings(
         figure_kind=figure_kind,
@@ -823,21 +825,27 @@ def notebook_figure_settings(
     )
 
 
-def _resolve_notebook_figure_dir(figure_dir: str | Path | None) -> Path | None:
+def _resolve_notebook_figure_dir(
+    figure_dir: str | Path | None,
+    *,
+    figure_subdir: str | Path | None = None,
+) -> Path | None:
     """Resolve the figure directory used by notebook figure settings."""
 
     if figure_dir is not None:
         resolved = Path(figure_dir).expanduser()
-        resolved.mkdir(parents=True, exist_ok=True)
-        return resolved
-    try:
-        cfg = active_config()
-        resolved = cfg.path("outputs.figures", create_parent=True)
-    except Exception:
-        return None
-    if resolved is None:
-        return None
+    else:
+        try:
+            cfg = active_config()
+            resolved = cfg.path("outputs.figures", create_parent=True)
+        except Exception:
+            return None
+        if resolved is None:
+            return None
+        resolved = Path(resolved)
     path = Path(resolved)
+    if figure_subdir is not None:
+        path = path / Path(figure_subdir)
     path.mkdir(parents=True, exist_ok=True)
     return path
 

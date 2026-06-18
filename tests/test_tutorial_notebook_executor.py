@@ -916,9 +916,12 @@ def test_large_run_notebooks_do_not_bind_unused_context_aliases() -> None:
         "repo_root = context.repo_" + "root",
         "outputs_root = context.outputs_" + "root",
         "tables_dir = context.tables_" + "dir",
+        "figures_dir = context.figures_" + "dir",
         "slurm_dir = context.slurm_" + "dir",
         "logs_dir = context.logs_" + "dir",
         "RUN_LOCAL = context.run_" + "local",
+        "METRICS_FIGURE_" + "DIR",
+        'figures_dir / "metrics"',
     )
     for notebook_path in notebooks:
         source = notebook_path.read_text(encoding="utf-8")
@@ -1734,6 +1737,10 @@ def test_large_run_step03_metric_figures_are_auditable_station_aggregations() ->
 
     assert 'PLOT_VALUE_COL = "log2_residual"' in source
     assert "METRIC_FIGURE_SETTINGS = notebook_figure_settings(" in source
+    assert 'figure_subdir="metrics"' in source
+    assert "METRIC_FIGURE_SETTINGS.figure_dir" in source
+    assert "METRICS_FIGURE_DIR" not in source
+    assert 'figures_dir / "metrics"' not in source
     assert "STATION_AGGREGATION = METRIC_FIGURE_SETTINGS.station_aggregation" in source
     assert "**METRIC_FIGURE_SETTINGS.context_kwargs(include_station_aggregation=True)" in source
     assert "display(metric_plot_context.spectral_metric_contract_status())" in source
@@ -1762,6 +1769,10 @@ def test_large_run_step04_spatial_figures_show_spectral_contract_status() -> Non
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "spatial_figures = prepare_spatial_figure_context(" in source
+    assert 'figure_subdir="metrics"' in source
+    assert "SPATIAL_FIGURE_SETTINGS.figure_dir" in source
+    assert "METRICS_FIGURE_DIR" not in source
+    assert 'figures_dir / "metrics"' not in source
     assert "display(spatial_figures.status_frame())" in source
     assert "display(spatial_figures.dimension_summary_frame())" in source
     assert "display(spatial_figures.spectral_metric_contract_status())" in source
