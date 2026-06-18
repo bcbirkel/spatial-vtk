@@ -1315,6 +1315,33 @@ def test_metric_and_spatial_notebooks_show_sidecar_status_frames() -> None:
         assert call in source
 
 
+def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> None:
+    """Large-run station aggregation figures should keep raw-row provenance."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    requirements = {
+        "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": (
+            'write_metric_plot(\n                "station_metric_map"',
+            'write_metric_plot(\n            "residual_grid"',
+            'write_metric_plot(\n            "metric_by_model_map"',
+            "source_df=item_source_rows(item)",
+            "source_df_factory=item_source_rows",
+        ),
+        "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": (
+            'write_spatial_plot(\n                "spatial_station_metric_map"',
+            'write_spatial_plot(\n            "spatial_residual_grid"',
+            'write_spatial_plot(\n            "spatial_metric_by_model_map"',
+            "source_df=item_source_rows(item)",
+            "source_df_factory=item_source_rows",
+        ),
+    }
+    for relative_path, snippets in requirements.items():
+        notebook = json.loads((repo_root / relative_path).read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        for snippet in snippets:
+            assert snippet in source, f"{relative_path} is missing provenance snippet {snippet!r}"
+
+
 def test_public_saved_plot_functions_expose_sidecar_controls() -> None:
     """Saved plotting helpers should let users write row-provenance sidecars."""
 
