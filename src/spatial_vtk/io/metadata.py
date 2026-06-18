@@ -271,6 +271,61 @@ def read_event_metadata(path: str | Path, **kwargs) -> pd.DataFrame:
     return prepare_event_metadata(pd.read_csv(path), **kwargs)
 
 
+def event_display_label(
+    events: pd.DataFrame | None,
+    event_id: object,
+    *,
+    event_id_col: str | None = None,
+    label_columns: Sequence[str] = ("event_name", "event_place", "event_title"),
+    fallback: str | None = None,
+) -> str:
+    """Return a human-readable event label for notebook titles and displays.
+
+    Parameters
+    ----------
+    events
+        Prepared event metadata table.
+    event_id
+        Event identifier to look up.
+    event_id_col
+        Optional identifier column override. When omitted, common event-id
+        aliases are resolved from ``events``.
+    label_columns
+        Candidate label columns to try in order.
+    fallback
+        Optional fallback label. When omitted, ``event_id`` is used.
+
+    Returns
+    -------
+    str
+        First non-empty event label, or a stable fallback when the event or
+        label columns are missing.
+    """
+
+    fallback_label = str(event_id) if fallback is None else str(fallback)
+    if events is None or events.empty:
+        return fallback_label
+    id_column = (
+        event_id_col
+        if event_id_col in events.columns
+        else _first_present_column(events, ("event_id", "event", "event_title", "id"))
+    )
+    if id_column is None:
+        return fallback_label
+    event_text = str(event_id)
+    matches = events.loc[events[id_column].astype(str).eq(event_text)]
+    if matches.empty:
+        return fallback_label
+    for column in label_columns:
+        if column not in matches.columns:
+            continue
+        values = matches[column].dropna().astype(str).str.strip()
+        values = values.loc[values.ne("")]
+        if not values.empty:
+            return str(values.iloc[0])
+    return fallback_label
+
+
 def prepare_event_station_table(
     event_station_metadata: pd.DataFrame | None = None,
     *,

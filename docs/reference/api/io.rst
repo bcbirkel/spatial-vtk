@@ -71,6 +71,9 @@ Public helpers exposed by ``spatial_vtk.io``:
      - Resolve optional non-table inputs from dotted config path keys, such as
        ``paths.region_geojson``, without putting direct ``cfg.path`` calls in
        notebook cells.
+   * - ``event_display_label``
+     - Return a human-readable event label for notebook titles and displays,
+       falling back to the event id instead of raising when a label is missing.
    * - ``prepare_metadata_tables_from_config``
      - Normalize station, event, and event-station metadata and write the
        standard Step 1 tables.

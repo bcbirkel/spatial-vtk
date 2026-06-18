@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-18
+   Added ``event_display_label()`` to the public ``spatial_vtk.io`` API and
+   rewired the standard Step 6 plotting notebook to use it for waveform figure
+   titles. Missing event-name rows now fall back to the event id instead of
+   raising from a notebook-local ``iloc[0]`` lookup.
    Added ``spatial_workflow_failure_frame()`` and
    ``spatial_metric_product_summary_frame()`` to the public spatial API. The
    standard Step 4 spatial notebook now uses these helpers for workflow

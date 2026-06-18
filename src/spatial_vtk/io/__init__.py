@@ -20,6 +20,7 @@ from spatial_vtk.io.inventory import DEFAULT_WAVEFORM_SUFFIXES, build_file_inven
 from spatial_vtk.io.kml import write_station_event_kml
 from spatial_vtk.io.layouts import inspect_station_event_layouts
 from spatial_vtk.io.metadata import (
+    event_display_label,
     prepare_event_metadata,
     prepare_event_station_table,
     prepare_station_metadata,
@@ -171,6 +172,7 @@ __all__ = [
     "context_dataset_paths",
     "default_output_paths",
     "ensure_run_dir",
+    "event_display_label",
     "expected_metric_rows_from_inventory",
     "inspect_synthetic_format",
     "inspect_station_event_layouts",

@@ -14,6 +14,7 @@ matplotlib.use("Agg", force=True)
 from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.io import (
     build_observed_synthetic_inventory,
+    event_display_label,
     load_or_build_output_table,
     prepare_event_metadata,
     prepare_event_station_table,
@@ -135,6 +136,24 @@ def test_prepare_event_station_table_builds_pairs_when_config_path_is_missing(tm
         ("E02", "STA02"),
     }
     assert {"event_lat", "event_lon", "lat", "lon", "distance_km"} <= set(pairs.columns)
+
+
+def test_event_display_label_uses_names_and_stable_fallbacks() -> None:
+    """Notebook title helpers should not depend on fragile iloc lookups."""
+
+    events = pd.DataFrame(
+        {
+            "event_id": ["E01", "E02", "E03"],
+            "event_name": ["Named event", "", None],
+            "event_place": ["Fallback place", "Second place", ""],
+        }
+    )
+
+    assert event_display_label(events, "E01") == "Named event"
+    assert event_display_label(events, "E02") == "Second place"
+    assert event_display_label(events, "E03") == "E03"
+    assert event_display_label(events, "missing") == "missing"
+    assert event_display_label(events, "missing", fallback="Unknown event") == "Unknown event"
 
 
 def test_prepare_event_station_table_normalizes_supplied_event_metadata_aliases() -> None:
