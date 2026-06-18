@@ -34,6 +34,7 @@ from spatial_vtk.visualize.waveforms import (
     plot_waveform_overlay_matrix,
     station_event_waveform_order_frame,
     write_large_run_waveform_comparison_from_outputs,
+    write_waveform_comparison_from_notebook_settings,
     write_waveform_comparison_from_outputs,
 )
 
@@ -181,6 +182,102 @@ def test_waveform_comparison_helper_uses_configured_outputs(tmp_path: Path, monk
     assert calls["component"] == "Z"
     assert calls["comparison_eligible"]["component"].tolist() == ["Z"]
     _assert_png(figure_path)
+
+
+def test_waveform_comparison_notebook_settings_gate_disables_without_loading(tmp_path: Path, monkeypatch) -> None:
+    """Notebook wrapper should return a status row when figure rendering is disabled."""
+
+    import spatial_vtk.visualize.waveforms.comparison as comparison_helpers
+    from spatial_vtk.io.output_paths import OutputGroup
+
+    event_station_path = tmp_path / "event_station_records.csv"
+    comparison_eligible_path = tmp_path / "comparison_eligible.csv"
+    figure_path = tmp_path / "figures" / "event_trace_comparison.png"
+    outputs = OutputGroup(
+        "step_06_plotting",
+        {
+            "event_station_path": event_station_path,
+            "comparison_eligible_path": comparison_eligible_path,
+            "event_trace_comparison_path": figure_path,
+        },
+    )
+
+    class Settings:
+        component = "R"
+        passband = "2-3 sec"
+
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            return type("Gate", (), {"ready": False, "figures_enabled": False, "message": "figures disabled"})()
+
+        def plot_kwargs(self) -> dict[str, object]:
+            return {"showfig": False}
+
+    def fail_if_called(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        raise AssertionError("disabled figure block should not load waveform records")
+
+    monkeypatch.setattr(comparison_helpers, "write_waveform_comparison_from_outputs", fail_if_called)
+
+    result = write_waveform_comparison_from_notebook_settings(outputs, Settings())
+
+    assert result.status == "disabled"
+    assert result.message == "figures disabled"
+    assert result.status_frame().loc[0, "record_count"] == 0
+
+
+def test_waveform_comparison_notebook_settings_delegates_options(tmp_path: Path, monkeypatch) -> None:
+    """Notebook wrapper should translate settings into the reusable waveform helper."""
+
+    import spatial_vtk.visualize.waveforms.comparison as comparison_helpers
+    from spatial_vtk.io.output_paths import OutputGroup
+
+    event_station_path = tmp_path / "event_station_records.csv"
+    comparison_eligible_path = tmp_path / "comparison_eligible.csv"
+    figure_path = tmp_path / "figures" / "event_trace_comparison.png"
+    event_station_path.write_text("ready", encoding="utf-8")
+    comparison_eligible_path.write_text("ready", encoding="utf-8")
+    outputs = OutputGroup(
+        "step_06_plotting",
+        {
+            "event_station_path": event_station_path,
+            "comparison_eligible_path": comparison_eligible_path,
+            "event_trace_comparison_path": figure_path,
+        },
+    )
+    calls: dict[str, object] = {}
+
+    class Settings:
+        component = "R"
+        passband = "2-3 sec"
+
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            calls["gate_paths"] = list(paths)
+            return type("Gate", (), {"ready": True, "figures_enabled": True, "message": "ready"})()
+
+        def plot_kwargs(self) -> dict[str, object]:
+            return {"showfig": False, "write_sidecar": True}
+
+    def fake_write(step_outputs, **kwargs):  # noqa: ANN001, ANN202
+        calls["kwargs"] = kwargs
+        return comparison_helpers.WaveformComparisonFigureResult(
+            figure_path=figure_path,
+            event_station_path=event_station_path,
+            comparison_eligible_path=comparison_eligible_path,
+            records=_records().head(1),
+            status="written",
+            message="ok",
+        )
+
+    monkeypatch.setattr(comparison_helpers, "write_waveform_comparison_from_outputs", fake_write)
+
+    result = write_waveform_comparison_from_notebook_settings(outputs, Settings(), chunksize=25, overwrite=True)
+
+    assert result.status == "written"
+    assert calls["gate_paths"] == [comparison_eligible_path, event_station_path]
+    assert calls["kwargs"]["component"] == "R"
+    assert calls["kwargs"]["passband"] == "2-3 sec"
+    assert calls["kwargs"]["chunksize"] == 25
+    assert calls["kwargs"]["overwrite"] is True
+    assert calls["kwargs"]["write_sidecar"] is True
 
 
 def test_record_coverage_table_from_waveform_qc(tmp_path: Path) -> None:

@@ -188,6 +188,53 @@ def write_waveform_comparison_from_outputs(
     )
 
 
+def write_waveform_comparison_from_notebook_settings(
+    step_outputs: Any,
+    settings: Any,
+    *,
+    max_records: int | None = 12,
+    max_distance_km: float | None = 50.0,
+    chunksize: int = 1_000_000,
+    overwrite: bool = False,
+    event_id: str | list[str] | tuple[str, ...] | None = None,
+) -> WaveformComparisonFigureResult:
+    """Write a bounded waveform comparison figure using notebook settings.
+
+    This wrapper owns the notebook-facing render gate and settings-to-keyword
+    translation so tutorial cells do not need to repeat input checks or
+    environment-backed figure options.
+    """
+
+    event_station = Path(getattr(step_outputs, "event_station_path"))
+    comparison_eligible = Path(getattr(step_outputs, "comparison_eligible_path"))
+    figure_path = Path(getattr(step_outputs, "event_trace_comparison_path"))
+    gate = settings.render_gate(
+        [comparison_eligible, event_station],
+        missing_message="Comparison-eligible records or event-station records are not ready yet.",
+    )
+    if not gate.ready:
+        status = "disabled" if not gate.figures_enabled else "missing_inputs"
+        return WaveformComparisonFigureResult(
+            figure_path=figure_path,
+            event_station_path=event_station,
+            comparison_eligible_path=comparison_eligible,
+            records=pd.DataFrame(),
+            status=status,
+            message=gate.message,
+        )
+    return write_waveform_comparison_from_outputs(
+        step_outputs,
+        component=settings.component or "Z",
+        passband=settings.passband,
+        event_id=event_id,
+        max_records=max_records,
+        max_distance_km=max_distance_km,
+        chunksize=chunksize,
+        overwrite=overwrite,
+        **settings.plot_kwargs(),
+    )
+
+
 def write_large_run_waveform_comparison_from_outputs(
     step_outputs: Any,
     **kwargs: Any,
@@ -206,5 +253,6 @@ __all__ = [
     "WaveformComparisonFigureResult",
     "plot_event_trace_comparison",
     "write_large_run_waveform_comparison_from_outputs",
+    "write_waveform_comparison_from_notebook_settings",
     "write_waveform_comparison_from_outputs",
 ]

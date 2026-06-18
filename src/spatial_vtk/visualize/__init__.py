@@ -69,6 +69,7 @@ _EXPORT_MODULES = {
     "WaveformComparisonFigureResult": "spatial_vtk.visualize.waveforms",
     "write_large_run_waveform_comparison_from_outputs": "spatial_vtk.visualize.waveforms",
     "write_large_run_qc_figures_from_outputs": "spatial_vtk.visualize.qc",
+    "write_waveform_comparison_from_notebook_settings": "spatial_vtk.visualize.waveforms",
     "write_waveform_comparison_from_outputs": "spatial_vtk.visualize.waveforms",
 }
 

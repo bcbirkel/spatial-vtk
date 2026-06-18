@@ -46,6 +46,10 @@ Public helpers exposed by ``spatial_vtk.visualize``:
      - Render observed/synthetic trace-comparison figures
        from configured event-station and comparison-eligible outputs without
        loading full QC inventories in the notebook.
+   * - ``write_waveform_comparison_from_notebook_settings``
+     - Render the Step 6 waveform-comparison figure using
+       ``notebook_figure_settings(...)`` for the render gate, sidecar controls,
+       component, passband, and display settings.
    * - ``write_large_run_waveform_comparison_from_outputs``
      - Compatibility alias for older large-run notebooks that used the
        original helper name.

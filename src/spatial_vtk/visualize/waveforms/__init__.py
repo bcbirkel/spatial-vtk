@@ -6,6 +6,7 @@ from spatial_vtk.visualize.waveforms.comparison import (
     WaveformComparisonFigureResult,
     plot_event_trace_comparison,
     write_large_run_waveform_comparison_from_outputs,
+    write_waveform_comparison_from_notebook_settings,
     write_waveform_comparison_from_outputs,
 )
 from spatial_vtk.visualize.waveforms.overlays import plot_waveform_overlay_matrix
@@ -28,5 +29,6 @@ __all__ = [
     "plot_waveform_overlay_matrix",
     "station_event_waveform_order_frame",
     "write_large_run_waveform_comparison_from_outputs",
+    "write_waveform_comparison_from_notebook_settings",
     "write_waveform_comparison_from_outputs",
 ]

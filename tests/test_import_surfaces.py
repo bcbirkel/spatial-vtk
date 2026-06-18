@@ -615,6 +615,7 @@ def test_visualize_api_docs_use_public_entry_points():
         "write_large_run_qc_figures_from_outputs",
         "plot_observed_synthetic_record_section",
         "write_waveform_comparison_from_outputs",
+        "write_waveform_comparison_from_notebook_settings",
         "write_large_run_waveform_comparison_from_outputs",
         "finish_figure_with_sidecar",
         "write_figure_row_sidecar",
@@ -874,12 +875,16 @@ def test_waveform_large_run_helper_is_public():
 
     assert "write_waveform_comparison_from_outputs" in visualize.__all__
     assert "write_waveform_comparison_from_outputs" in waveforms.__all__
+    assert "write_waveform_comparison_from_notebook_settings" in visualize.__all__
+    assert "write_waveform_comparison_from_notebook_settings" in waveforms.__all__
     assert "write_large_run_waveform_comparison_from_outputs" in visualize.__all__
     assert "write_large_run_waveform_comparison_from_outputs" in waveforms.__all__
     assert "station_event_waveform_order_frame" in visualize.__all__
     assert "station_event_waveform_order_frame" in waveforms.__all__
     assert callable(waveforms.write_waveform_comparison_from_outputs)
+    assert callable(waveforms.write_waveform_comparison_from_notebook_settings)
     assert callable(waveforms.station_event_waveform_order_frame)
     assert callable(waveforms.write_large_run_waveform_comparison_from_outputs)
     assert visualize.write_waveform_comparison_from_outputs is waveforms.write_waveform_comparison_from_outputs
+    assert visualize.write_waveform_comparison_from_notebook_settings is waveforms.write_waveform_comparison_from_notebook_settings
     assert visualize.write_large_run_waveform_comparison_from_outputs is waveforms.write_large_run_waveform_comparison_from_outputs

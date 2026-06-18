@@ -3,6 +3,11 @@ Changelog
 
 2026-06-18
    Added
+   ``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings()``
+   and rewired the large-run Step 6 waveform comparison cell to use it. The
+   notebook no longer performs the waveform figure render gate or
+   settings-to-plot-keyword translation inline.
+   Added
    ``spatial_vtk.visualize.context.write_large_run_context_figures_from_outputs()``
    and rewired the large-run Step 1 context figure cell to use it. The
    notebook no longer performs context-table readiness checks, table loading,

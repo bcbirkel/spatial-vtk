@@ -1810,7 +1810,10 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "step_outputs = output_group(\"step_06_plotting\")" in source
-    assert "write_waveform_comparison_from_outputs(" in source
+    assert "write_waveform_comparison_from_notebook_settings(" in source
+    assert "waveform_result.status_frame()" in source
+    assert "waveform_figure_gate = WAVEFORM_FIGURE_SETTINGS.render_gate(" not in source
+    assert "write_waveform_comparison_from_outputs(" not in source
     assert "write_large_run_waveform_comparison_from_outputs(" not in source
     assert "build_qc_waveform_comparison_records(" not in source
     assert "load_comparison_eligible_records(" not in source
