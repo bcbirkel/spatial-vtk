@@ -614,13 +614,14 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     assert 'MAKE_SCORE_TRENDS = os.environ.get("SVTK_MAKE_SCORE_TRENDS", "0") == "1"' in source
     assert "Skipping optional GOF score trends. Set SVTK_MAKE_SCORE_TRENDS=1" in source
     assert "The main large-run figure suite uses `log2_residual`" in source
-    assert 'PLOT_COMPARE_TO = os.environ.get("SVTK_FIGURE_COMPARE_TO") or None' in source
-    assert 'PLOT_COMPARISON_TABLE = os.environ.get("SVTK_FIGURE_COMPARISON_TABLE", "0") == "1"' in source
+    assert "METRIC_FIGURE_SETTINGS = notebook_figure_settings(" in source
+    assert "PLOT_COMPARE_TO = METRIC_FIGURE_SETTINGS.compare_to" in source
+    assert "PLOT_COMPARISON_TABLE = METRIC_FIGURE_SETTINGS.comparison_table" in source
     assert "compare_to=PLOT_COMPARE_TO" in source
     assert "table=PLOT_COMPARISON_TABLE" in source
     assert "SCORE_TREND_COLUMNS" in source
     assert "raw event-level rows used for the station summaries" in source
-    assert 'STATION_AGGREGATION = os.environ.get("SVTK_STATION_AGGREGATION", "mean")' in source
+    assert "STATION_AGGREGATION = METRIC_FIGURE_SETTINGS.station_aggregation" in source
     for base in ("station_metric_map", "residual_grid", "metric_by_model_map"):
         assert f'"{base}"' in source
     assert source.count("source_df=item_source_rows(item)") >= 3
@@ -1052,9 +1053,9 @@ def test_large_run_step03_metric_figures_are_auditable_station_aggregations() ->
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert 'PLOT_VALUE_COL = "log2_residual"' in source
-    assert 'STATION_AGGREGATION = os.environ.get("SVTK_STATION_AGGREGATION", "mean")' in source
-    assert "**METRIC_FIGURE_SIDECARS.kwargs(plural=True)" in source
-    assert "station_aggregation=STATION_AGGREGATION" in source
+    assert "METRIC_FIGURE_SETTINGS = notebook_figure_settings(" in source
+    assert "STATION_AGGREGATION = METRIC_FIGURE_SETTINGS.station_aggregation" in source
+    assert "**METRIC_FIGURE_SETTINGS.context_kwargs(include_station_aggregation=True)" in source
 
     station_cells = [
         "".join(cell.get("source", []))

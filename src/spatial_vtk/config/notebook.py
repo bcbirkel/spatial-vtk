@@ -16,7 +16,7 @@ Register automatic timing for later notebook cells:
 from __future__ import annotations
 
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import importlib
 import json
 import os
@@ -118,6 +118,65 @@ class NotebookFigureSidecarSettings:
         from spatial_vtk.visualize.figure_sidecars import figure_sidecar_status_frame
 
         return figure_sidecar_status_frame(self.directory)
+
+
+@dataclass(frozen=True)
+class NotebookFigureSettings:
+    """Environment-backed figure controls for workflow notebooks.
+
+    The settings object keeps notebook cells from repeating ``os.environ``
+    parsing for common figure switches. Family-specific variables such as
+    ``SVTK_METRIC_FIGURE_PASSBAND`` are checked before generic variables such
+    as ``SVTK_FIGURE_PASSBAND``.
+    """
+
+    figure_kind: str | None = None
+    make_figures: bool = False
+    add_basemap: bool = False
+    showfig: bool = False
+    passband: str | None = None
+    components: list[str] | None = None
+    model: str | None = None
+    sample_rows: int = 200_000
+    robust_axis_percentile: float = 95.0
+    station_aggregation: str = "mean"
+    compare_to: str | None = None
+    comparison_table: bool = False
+    sidecars: NotebookFigureSidecarSettings = field(default_factory=NotebookFigureSidecarSettings)
+
+    def context_kwargs(self, *, include_station_aggregation: bool = False) -> dict[str, object]:
+        """Return keyword arguments accepted by large-run figure contexts."""
+
+        kwargs: dict[str, object] = {
+            "make_figures": self.make_figures,
+            "sample_rows": self.sample_rows,
+            "default_passband": self.passband,
+            "default_components": self.components,
+            "default_showfig": self.showfig,
+            "default_model": self.model,
+            "add_basemap": self.add_basemap,
+            "robust_axis_percentile": self.robust_axis_percentile,
+            **self.sidecars.kwargs(plural=True),
+        }
+        if include_station_aggregation:
+            kwargs["station_aggregation"] = self.station_aggregation
+        return kwargs
+
+    def plot_kwargs(self, *, include_basemap: bool = False, plural_sidecars: bool = False) -> dict[str, object]:
+        """Return keyword arguments accepted by individual plotting helpers."""
+
+        kwargs: dict[str, object] = {
+            "showfig": self.showfig,
+            **self.sidecars.kwargs(plural=plural_sidecars),
+        }
+        if include_basemap:
+            kwargs["add_basemap"] = self.add_basemap
+        return kwargs
+
+    def status_frame(self) -> Any:
+        """Return a compact sidecar status table for this figure family."""
+
+        return self.sidecars.status_frame()
 
 
 @dataclass(frozen=True)
@@ -494,6 +553,93 @@ def notebook_figure_sidecar_settings(
     if directory is None and figure_dir is not None:
         directory = Path(figure_dir).expanduser() / "sidecars"
     return NotebookFigureSidecarSettings(enabled=enabled, rows=rows, directory=directory)
+
+
+def notebook_figure_settings(
+    figure_kind: str | None = None,
+    *,
+    figure_dir: str | Path | None = None,
+    sidecar_dir: str | Path | None = None,
+    default_make_figures: bool = False,
+    default_add_basemap: bool = False,
+    default_showfig: bool = False,
+    default_sample_rows: int = 200_000,
+    default_robust_axis_percentile: float = 95.0,
+    default_station_aggregation: str = "mean",
+    default_sidecar_rows: int | None = None,
+) -> NotebookFigureSettings:
+    """Return standard notebook figure settings from environment variables.
+
+    Parameters
+    ----------
+    figure_kind
+        Optional figure family token such as ``"metric"``, ``"spatial"``,
+        ``"context"``, ``"qc"``, ``"region"``, or ``"waveform"``.
+        Family-specific variables are checked before generic variables. For
+        example, ``figure_kind="metric"`` checks
+        ``SVTK_MAKE_METRIC_FIGURES`` before ``SVTK_MAKE_FIGURES`` and
+        ``SVTK_METRIC_FIGURE_PASSBAND`` before ``SVTK_FIGURE_PASSBAND``.
+    figure_dir, sidecar_dir
+        Figure and sidecar directories passed through to
+        :func:`notebook_figure_sidecar_settings`.
+    default_make_figures, default_add_basemap, default_showfig
+        Fallback booleans when no corresponding environment variable is set.
+    default_sample_rows, default_robust_axis_percentile
+        Fallback dense-plot controls.
+    default_station_aggregation
+        Fallback station aggregation method for station-summary figures.
+    default_sidecar_rows
+        Fallback sidecar row count.
+
+    Returns
+    -------
+    NotebookFigureSettings
+        Parsed settings suitable for large-run figure contexts and individual
+        plotting helpers.
+    """
+
+    prefix = _figure_env_prefix(figure_kind)
+
+    make_names: list[str] = []
+    if prefix:
+        make_names.append(f"SVTK_MAKE_{prefix}_FIGURES")
+    make_names.append("SVTK_MAKE_FIGURES")
+
+    passband_names = _figure_setting_names(prefix, "PASSBAND")
+    component_names = _figure_setting_names(prefix, "COMPONENTS")
+    model_names = _figure_setting_names(prefix, "MODEL")
+    showfig_names = _figure_setting_names(prefix, "SHOWFIG")
+    sample_row_names = _figure_setting_names(prefix, "SAMPLE_ROWS")
+    robust_names = _figure_setting_names(prefix, "ROBUST_PERCENTILE")
+    compare_to_names = _figure_setting_names(prefix, "COMPARE_TO")
+    comparison_table_names = _figure_setting_names(prefix, "COMPARISON_TABLE")
+
+    aggregation_names = []
+    if prefix:
+        aggregation_names.append(f"SVTK_{prefix}_STATION_AGGREGATION")
+    aggregation_names.append("SVTK_STATION_AGGREGATION")
+
+    return NotebookFigureSettings(
+        figure_kind=figure_kind,
+        make_figures=_env_bool_first(make_names, default=default_make_figures),
+        add_basemap=_env_bool("SVTK_ADD_BASEMAP", default=default_add_basemap),
+        showfig=_env_bool_first(showfig_names, default=default_showfig),
+        passband=_env_text_first(passband_names),
+        components=_env_list_first(component_names),
+        model=_env_text_first(model_names),
+        sample_rows=_env_int_first(sample_row_names, default=default_sample_rows),
+        robust_axis_percentile=_env_float_first(robust_names, default=default_robust_axis_percentile),
+        station_aggregation=_env_text_first(aggregation_names, default=default_station_aggregation)
+        or default_station_aggregation,
+        compare_to=_env_text_first(compare_to_names),
+        comparison_table=_env_bool_first(comparison_table_names, default=False),
+        sidecars=notebook_figure_sidecar_settings(
+            figure_kind,
+            figure_dir=figure_dir,
+            sidecar_dir=sidecar_dir,
+            default_rows=default_sidecar_rows,
+        ),
+    )
 
 
 def notebook_dashboard_launch_commands(
@@ -1232,6 +1378,63 @@ def _env_optional_int_first(names: list[str] | tuple[str, ...], *, default: int 
     return default
 
 
+def _env_int_first(names: list[str] | tuple[str, ...], *, default: int) -> int:
+    """Read the first set integer environment variable from ``names``."""
+
+    for name in names:
+        if name in os.environ:
+            return _env_int(name, default=default)
+    return int(default)
+
+
+def _env_float_first(names: list[str] | tuple[str, ...], *, default: float) -> float:
+    """Read the first set float environment variable from ``names``."""
+
+    for name in names:
+        if name not in os.environ:
+            continue
+        try:
+            return float(os.environ.get(name, default))
+        except (TypeError, ValueError):
+            return float(default)
+    return float(default)
+
+
+def _env_text_first(names: list[str] | tuple[str, ...], *, default: str | None = None) -> str | None:
+    """Read the first non-empty text environment variable from ``names``."""
+
+    for name in names:
+        if name not in os.environ:
+            continue
+        value = os.environ.get(name)
+        if value is None:
+            continue
+        text = str(value).strip()
+        if text:
+            return text
+    return default
+
+
+def _env_list_first(names: list[str] | tuple[str, ...]) -> list[str] | None:
+    """Read the first comma-separated list environment variable from ``names``."""
+
+    text = _env_text_first(names)
+    if text is None:
+        return None
+    items = [item.strip() for item in text.split(",") if item.strip()]
+    return items or None
+
+
+def _figure_setting_names(prefix: str, setting: str) -> list[str]:
+    """Return family-specific and generic environment names for a figure setting."""
+
+    names: list[str] = []
+    if prefix:
+        names.append(f"SVTK_{prefix}_FIGURE_{setting}")
+    names.append(f"SVTK_FIGURE_{setting}")
+    return names
+
+
 def _figure_env_prefix(figure_kind: str | None) -> str:
     """Return the environment-variable prefix for one figure family."""
 
@@ -1242,12 +1445,14 @@ def _figure_env_prefix(figure_kind: str | None) -> str:
 
 __all__ = [
     "NotebookDashboardCommands",
+    "NotebookFigureSettings",
     "NotebookFigureSidecarSettings",
     "NotebookRunContext",
     "display_output_table_previews",
     "find_repo_root",
     "format_run_time",
     "notebook_dashboard_launch_commands",
+    "notebook_figure_settings",
     "notebook_figure_sidecar_settings",
     "notebook_timer",
     "notebook_timing_enabled",

@@ -37,7 +37,7 @@ paths in cells.
 
    from spatial_vtk.config import SpatialVTKConfig
    from spatial_vtk.config import configured_output_registry_frame
-   from spatial_vtk.config.notebook import notebook_run_context, run_notebook_step_if_needed
+   from spatial_vtk.config.notebook import notebook_figure_settings, notebook_run_context, run_notebook_step_if_needed
    from spatial_vtk.io import output_group
    from spatial_vtk.qc import run_qc_inventory_from_config
 
@@ -64,6 +64,10 @@ paths in cells.
        memory="64G",
        cpus=1,
    )
+
+   metric_figure_settings = notebook_figure_settings("metric", figure_dir=context.figures_dir / "metrics")
+   # Pass metric_figure_settings.context_kwargs(...) into package plotting
+   # contexts instead of parsing SVTK_FIGURE_* variables in notebook cells.
 
 Core Driver Helpers
 -------------------
@@ -111,6 +115,14 @@ the large-run notebooks.
        JSON files and shows which figures were written, whether row sidecars
        are exact or sampled, and which aggregated figures include source-row
        provenance.
+   * - ``spatial_vtk.config.notebook_figure_settings``
+     - Read common notebook figure controls such as ``SVTK_MAKE_FIGURES``,
+       ``SVTK_MAKE_METRIC_FIGURES``, ``SVTK_ADD_BASEMAP``,
+       ``SVTK_FIGURE_PASSBAND``, ``SVTK_FIGURE_COMPONENTS``,
+       ``SVTK_FIGURE_SHOWFIG``, ``SVTK_FIGURE_ROBUST_PERCENTILE``, and sidecar
+       settings once. Use ``context_kwargs()`` for large-run plotting contexts
+       and ``plot_kwargs()`` for single plotting calls so notebook cells stay
+       focused on the figure being rendered.
    * - ``spatial_vtk.config.notebook_dashboard_launch_commands``
      - Return config-backed dashboard launch settings. Use
        ``metrics_launch_kwargs()`` and ``qc_launch_kwargs()`` with the package

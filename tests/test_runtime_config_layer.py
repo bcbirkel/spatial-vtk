@@ -20,6 +20,7 @@ from spatial_vtk.config import (
     format_run_time,
     metric_display_name,
     notebook_dashboard_launch_commands,
+    notebook_figure_settings,
     notebook_figure_sidecar_settings,
     notebook_run_context,
     display_output_table_previews,
@@ -490,6 +491,64 @@ def test_notebook_figure_sidecar_settings_parse_env(tmp_path, monkeypatch):
 
     no_directory = notebook_figure_sidecar_settings("metric")
     assert no_directory.status_frame().empty
+
+
+def test_notebook_figure_settings_parse_common_controls(tmp_path, monkeypatch):
+    """Notebook figure controls should be centralized and family-aware."""
+
+    monkeypatch.setenv("SVTK_MAKE_FIGURES", "1")
+    monkeypatch.setenv("SVTK_MAKE_METRIC_FIGURES", "0")
+    monkeypatch.setenv("SVTK_ADD_BASEMAP", "1")
+    monkeypatch.setenv("SVTK_FIGURE_SHOWFIG", "1")
+    monkeypatch.setenv("SVTK_METRIC_FIGURE_PASSBAND", "2-3 sec")
+    monkeypatch.setenv("SVTK_FIGURE_COMPONENTS", "R, T, Z")
+    monkeypatch.setenv("SVTK_FIGURE_MODEL", "cvmsi")
+    monkeypatch.setenv("SVTK_METRIC_FIGURE_SAMPLE_ROWS", "1234")
+    monkeypatch.setenv("SVTK_FIGURE_ROBUST_PERCENTILE", "97.5")
+    monkeypatch.setenv("SVTK_STATION_AGGREGATION", "median")
+    monkeypatch.setenv("SVTK_FIGURE_COMPARE_TO", "LA Basin")
+    monkeypatch.setenv("SVTK_FIGURE_COMPARISON_TABLE", "1")
+    monkeypatch.setenv("SVTK_FIGURE_SIDECARS", "1")
+    monkeypatch.setenv("SVTK_FIGURE_SIDECAR_ROWS", "25")
+
+    settings = notebook_figure_settings("metric", figure_dir=tmp_path / "figures")
+
+    assert settings.figure_kind == "metric"
+    assert settings.make_figures is False
+    assert settings.add_basemap is True
+    assert settings.showfig is True
+    assert settings.passband == "2-3 sec"
+    assert settings.components == ["R", "T", "Z"]
+    assert settings.model == "cvmsi"
+    assert settings.sample_rows == 1234
+    assert settings.robust_axis_percentile == 97.5
+    assert settings.station_aggregation == "median"
+    assert settings.compare_to == "LA Basin"
+    assert settings.comparison_table is True
+    assert settings.sidecars.enabled is True
+    assert settings.sidecars.rows == 25
+
+    context_kwargs = settings.context_kwargs(include_station_aggregation=True)
+    assert context_kwargs["make_figures"] is False
+    assert context_kwargs["sample_rows"] == 1234
+    assert context_kwargs["default_passband"] == "2-3 sec"
+    assert context_kwargs["default_components"] == ["R", "T", "Z"]
+    assert context_kwargs["default_showfig"] is True
+    assert context_kwargs["default_model"] == "cvmsi"
+    assert context_kwargs["add_basemap"] is True
+    assert context_kwargs["robust_axis_percentile"] == 97.5
+    assert context_kwargs["station_aggregation"] == "median"
+    assert context_kwargs["write_sidecars"] is True
+    assert context_kwargs["sidecar_rows"] == 25
+    assert context_kwargs["sidecar_dir"] == tmp_path / "figures" / "sidecars"
+
+    assert settings.plot_kwargs(include_basemap=True) == {
+        "showfig": True,
+        "write_sidecar": True,
+        "sidecar_rows": 25,
+        "sidecar_dir": tmp_path / "figures" / "sidecars",
+        "add_basemap": True,
+    }
 
 
 def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monkeypatch):
