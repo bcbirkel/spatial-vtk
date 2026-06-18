@@ -107,11 +107,14 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         import spatial_vtk.qc
         import spatial_vtk.qc.build
         import spatial_vtk.visualize
+        import spatial_vtk.visualize.qc
         import spatial_vtk.visualize.dashboard
 
         forbidden_after_package_import = {
             "spatial_vtk.qc.build.inventory",
             "spatial_vtk.visualize.figure_io",
+            "spatial_vtk.visualize.qc.retention",
+            "spatial_vtk.visualize.qc.samples",
             "spatial_vtk.visualize.dashboard.charts",
             "spatial_vtk.visualize.dashboard.maps",
             "spatial_vtk.visualize.dashboard.streamlit_metrics",
@@ -123,18 +126,22 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
 
         from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
         from spatial_vtk.visualize import read_figure_sidecar_metadata, write_figure_row_sidecar
+        from spatial_vtk.visualize.qc import load_trace_qc_summary
         from spatial_vtk.visualize.dashboard import dashboard_readiness_summary_frame, launch_configured_metrics_dashboard
 
         assert load_trace_inventory_lookup.__module__ == "spatial_vtk.qc.build.filtering"
         assert slurm_settings_from_config.__module__ == "spatial_vtk.qc.build.slurm"
         assert read_figure_sidecar_metadata.__module__ == "spatial_vtk.visualize.figure_sidecars"
         assert write_figure_row_sidecar.__module__ == "spatial_vtk.visualize.figure_sidecars"
+        assert load_trace_qc_summary.__module__ == "spatial_vtk.visualize.qc.overview"
         assert dashboard_readiness_summary_frame.__module__ == "spatial_vtk.visualize.dashboard.contracts"
         assert launch_configured_metrics_dashboard.__module__ == "spatial_vtk.visualize.dashboard.launch"
 
         forbidden_after_light_import = {
             "spatial_vtk.qc.build.inventory",
             "spatial_vtk.visualize.figure_io",
+            "spatial_vtk.visualize.qc.retention",
+            "spatial_vtk.visualize.qc.samples",
             "spatial_vtk.visualize.dashboard.charts",
             "spatial_vtk.visualize.dashboard.maps",
             "spatial_vtk.visualize.dashboard.streamlit_metrics",

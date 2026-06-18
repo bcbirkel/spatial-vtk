@@ -39,6 +39,7 @@ paths in cells.
    from spatial_vtk.config import configured_output_registry_frame
    from spatial_vtk.config.notebook import notebook_run_context, run_notebook_step_if_needed
    from spatial_vtk.io import output_group
+   from spatial_vtk.qc import run_qc_inventory_from_config
 
    cfg = SpatialVTKConfig.from_file("runs/spatial_vtk_config.yaml").activate()
    context = notebook_run_context()
@@ -55,7 +56,7 @@ paths in cells.
    run_notebook_step_if_needed(
        context,
        readiness,
-       "spatial_vtk.qc.run_qc_inventory_from_config",
+       run_qc_inventory_from_config,
        kwargs={"config_path": str(cfg.config_path), "overwrite": False, "verbose": True},
        script_name="build_qc_inventory.slurm",
        job_name="svtk-qc",

@@ -48,6 +48,10 @@ from spatial_vtk.visualize.dashboard.streamlit_metrics import _summary_readiness
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _value_columns_or_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_chart_columns_or_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_dashboard_startup_blocker
+from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_download_limit_message
+from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_row_limit_message
+from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_dashboard_download_limit
+from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_dashboard_row_limit
 from spatial_vtk.visualize.dashboard.streamlit_qc import _empty_rows_message as _qc_empty_rows_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _missing_columns_message as _qc_missing_columns_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_loaded_row_summary
@@ -55,6 +59,7 @@ from spatial_vtk.visualize.dashboard.streamlit_qc import _select_qc_readiness_co
 import spatial_vtk.visualize.dashboard.streamlit_qc as streamlit_qc
 import spatial_vtk.visualize.dashboard.launch as dashboard_launch
 from spatial_vtk.visualize.dashboard.launch import _raise_if_port_in_use
+from spatial_vtk.visualize.qc.overview import load_trace_qc_summary
 from spatial_vtk.visualize.selection import FigureSelection, configured_band_options
 
 
@@ -409,6 +414,46 @@ def test_qc_dashboard_loaded_row_summary_reports_filtered_scope():
     assert summary.loc["loaded", "events"] == 2
     assert summary.loc["filtered", "events"] == 1
     assert summary.loc["filtered", "stations"] == 1
+
+
+def test_load_trace_qc_summary_respects_csv_row_limit(tmp_path):
+    """QC overview reads should support bounded previews of large CSV tables."""
+
+    path = tmp_path / "qc_trace_summary.csv"
+    _qc_rows().to_csv(path, index=False)
+
+    loaded = load_trace_qc_summary(path, max_rows=2)
+
+    assert len(loaded) == 2
+    assert loaded["event_id"].tolist() == ["ev1", "ev1"]
+
+
+def test_qc_dashboard_row_and_download_limits_from_environment(monkeypatch):
+    """QC dashboard limits should be configurable and support explicit full loads."""
+
+    monkeypatch.setenv("SVTK_QC_DASHBOARD_MAX_ROWS", "123")
+    monkeypatch.setenv("SVTK_QC_DASHBOARD_DOWNLOAD_ROWS", "all")
+
+    assert _qc_dashboard_row_limit() == 123
+    assert _qc_dashboard_download_limit() is None
+    assert "all currently filtered" in _qc_download_limit_message(None)
+
+
+def test_qc_dashboard_status_reports_loaded_subset():
+    """QC Data Status should say when filters/charts use a bounded table prefix."""
+
+    loaded = _qc_rows().head(2)
+    filtered = loaded.head(1)
+    readiness = pd.DataFrame({"row_count": [3]})
+
+    summary = _qc_loaded_row_summary(loaded, filtered, readiness=readiness, row_limit=2).set_index("scope")
+    message = _qc_row_limit_message(readiness, loaded, row_limit=2)
+
+    assert summary.loc["loaded", "table_rows"] == 3
+    assert summary.loc["loaded", "row_limit"] == 2
+    assert bool(summary.loc["loaded", "loaded_subset"]) is True
+    assert message is not None
+    assert "Loaded 2 of 3" in message
 
 
 def test_dashboard_summaries_do_not_require_residual_column():

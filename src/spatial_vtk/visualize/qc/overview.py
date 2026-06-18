@@ -22,6 +22,7 @@ from typing import Any
 import pandas as pd
 
 from spatial_vtk.config.labels import display_table
+from spatial_vtk.io.tables import read_bounded_table
 
 
 NUMERIC_COLUMNS: tuple[str, ...] = (
@@ -57,13 +58,17 @@ QUEUE_COLUMNS: tuple[str, ...] = (
 )
 
 
-def load_trace_qc_summary(table: pd.DataFrame | str | Path) -> pd.DataFrame:
+def load_trace_qc_summary(table: pd.DataFrame | str | Path, *, max_rows: int | None = None) -> pd.DataFrame:
     """Load a trace QC summary table.
 
     Parameters
     ----------
     table
         DataFrame, CSV path, or parquet path.
+    max_rows
+        Optional maximum number of rows to load from a path. This is intended
+        for dashboard previews and notebook status checks against very large QC
+        tables. ``None`` loads the full table.
 
     Returns
     -------
@@ -71,7 +76,7 @@ def load_trace_qc_summary(table: pd.DataFrame | str | Path) -> pd.DataFrame:
         Normalized summary table.
     """
 
-    df = _read_table(table)
+    df = _read_table(table, max_rows=max_rows)
     return normalize_trace_qc_summary(df)
 
 
@@ -362,12 +367,15 @@ def _json_value(value: object) -> object:
     return value
 
 
-def _read_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
+def _read_table(table: pd.DataFrame | str | Path, *, max_rows: int | None = None) -> pd.DataFrame:
     """Read a dataframe, CSV, or parquet path."""
 
     if isinstance(table, pd.DataFrame):
-        return table.copy()
+        copied = table.copy()
+        return copied.head(int(max_rows)) if max_rows is not None else copied
     path = Path(table).expanduser()
+    if max_rows is not None:
+        return read_bounded_table(path, int(max_rows))
     if path.suffix.lower() in {".parquet", ".pq"}:
         return pd.read_parquet(path)
     return pd.read_csv(path)

@@ -26,6 +26,8 @@ QC_READINESS_DISPLAY_COLUMNS = (
     "message",
     "path",
 )
+DEFAULT_QC_DASHBOARD_MAX_ROWS = 250_000
+DEFAULT_QC_DASHBOARD_DOWNLOAD_ROWS = 100_000
 
 
 def main() -> None:
@@ -47,12 +49,13 @@ def main() -> None:
         st.warning(blocker)
         return
     try:
-        df = _load_trace_summary_cached(trace_summary)
+        row_limit = _qc_dashboard_row_limit()
+        df = _load_trace_summary_cached(trace_summary, max_rows=row_limit)
     except Exception as exc:
         st.error(str(exc))
         return
     config = _load_optional_config(config_path)
-    _render_qc_dashboard(df, config, readiness=readiness)
+    _render_qc_dashboard(df, config, readiness=readiness, row_limit=row_limit)
 
 
 def _render_qc_dashboard(
@@ -60,6 +63,7 @@ def _render_qc_dashboard(
     config: SpatialVTKConfig | None = None,
     *,
     readiness: pd.DataFrame | None = None,
+    row_limit: int | None = None,
 ) -> None:
     """Render the QC dashboard body."""
 
@@ -94,6 +98,10 @@ def _render_qc_dashboard(
         reject_reason=reject_reason,
         band=None if selected_band == "all" else selected_band,
     )
+    limit_message = _qc_row_limit_message(readiness, df, row_limit)
+    if limit_message:
+        st.info(limit_message)
+    download_limit = _qc_dashboard_download_limit()
     overview_tab, amp_tab, timing_tab, band_tab, table_tab, queue_tab, status_tab = st.tabs(
         ["Overview", "Amplitudes", "Timing", "Band Content", "Trace Table", "Manual Review Queue", "Data Status"]
     )
@@ -142,22 +150,36 @@ def _render_qc_dashboard(
                 st.plotly_chart(build_qc_histogram_figure(filtered, value_col=column, title=_qc_column_label(column), clip_iqr=clip_iqr), width="stretch", key=f"band_{column}")
     with table_tab:
         st.dataframe(display_table(filtered, max_rows=5000), width="stretch")
-        st.download_button("Download filtered trace rows", filtered.to_csv(index=False).encode("utf-8"), file_name="filtered_trace_qc_rows.csv")
+        download_rows, download_message = _bounded_download_frame(filtered, download_limit)
+        if download_message:
+            st.caption(download_message)
+        st.download_button(
+            "Download filtered trace rows",
+            download_rows.to_csv(index=False).encode("utf-8"),
+            file_name="filtered_trace_qc_rows.csv",
+        )
     with queue_tab:
         queue_rows = normalize_manual_review_queue(queue_rows_from_filtered_trace_df(filtered))
         st.metric("Event/Station Pairs in Queue", f"{len(queue_rows):,}")
         st.dataframe(display_table(pd.DataFrame(queue_rows)), width="stretch")
-        st.download_button("Download manual-review queue CSV", queue_to_csv_bytes(queue_rows), file_name="manual_review_queue.csv")
+        queue_download_rows, queue_download_message = _bounded_queue_rows(queue_rows, download_limit)
+        if queue_download_message:
+            st.caption(queue_download_message)
+        st.download_button(
+            "Download manual-review queue CSV",
+            queue_to_csv_bytes(queue_download_rows),
+            file_name="manual_review_queue.csv",
+        )
         st.caption("The exported queue is formatted for the manual QC picker and can be passed to the manual waveform-review workflow.")
     with status_tab:
-        _render_qc_data_status_tab(readiness, df, filtered)
+        _render_qc_data_status_tab(readiness, df, filtered, row_limit=row_limit, download_limit=download_limit)
 
 
 @st.cache_data(show_spinner=False)
-def _load_trace_summary_cached(path: str) -> pd.DataFrame:
+def _load_trace_summary_cached(path: str, *, max_rows: int | None = DEFAULT_QC_DASHBOARD_MAX_ROWS) -> pd.DataFrame:
     """Load trace summary with Streamlit caching."""
 
-    return load_trace_qc_summary(path)
+    return load_trace_qc_summary(path, max_rows=max_rows)
 
 
 def _qc_trace_readiness(trace_summary: str) -> pd.DataFrame:
@@ -183,6 +205,9 @@ def _render_qc_data_status_tab(
     readiness: pd.DataFrame | None,
     loaded: pd.DataFrame,
     filtered: pd.DataFrame,
+    *,
+    row_limit: int | None = None,
+    download_limit: int | None = DEFAULT_QC_DASHBOARD_DOWNLOAD_ROWS,
 ) -> None:
     """Render QC input/readiness details in a persistent dashboard tab."""
 
@@ -194,7 +219,17 @@ def _render_qc_data_status_tab(
         st.dataframe(display_table(status), width="stretch")
 
     st.subheader("Loaded Rows")
-    st.dataframe(display_table(_qc_loaded_row_summary(loaded, filtered)), width="stretch")
+    loaded_summary = _qc_loaded_row_summary(
+        loaded,
+        filtered,
+        readiness=readiness,
+        row_limit=row_limit,
+    )
+    st.dataframe(display_table(loaded_summary), width="stretch")
+    limit_message = _qc_row_limit_message(readiness, loaded, row_limit)
+    if limit_message:
+        st.info(limit_message)
+    st.caption(_qc_download_limit_message(download_limit))
 
 
 def _select_qc_readiness_columns(readiness: pd.DataFrame | None) -> pd.DataFrame:
@@ -206,12 +241,24 @@ def _select_qc_readiness_columns(readiness: pd.DataFrame | None) -> pd.DataFrame
     return readiness.loc[:, shown].copy() if shown else pd.DataFrame()
 
 
-def _qc_loaded_row_summary(loaded: pd.DataFrame, filtered: pd.DataFrame) -> pd.DataFrame:
+def _qc_loaded_row_summary(
+    loaded: pd.DataFrame,
+    filtered: pd.DataFrame,
+    *,
+    readiness: pd.DataFrame | None = None,
+    row_limit: int | None = None,
+) -> pd.DataFrame:
     """Return compact counts for loaded and currently filtered QC rows."""
 
+    table_rows = _qc_readiness_row_count(readiness)
+    row_limit_text = "all" if row_limit is None else int(row_limit)
+    loaded_subset = bool(table_rows is not None and len(loaded) < table_rows)
     rows = [
         {
             "scope": "loaded",
+            "table_rows": table_rows if table_rows is not None else len(loaded),
+            "row_limit": row_limit_text,
+            "loaded_subset": loaded_subset,
             "trace_rows": len(loaded),
             "event_station_pairs": len(queue_rows_from_filtered_trace_df(loaded)),
             "events": _nunique_if_present(loaded, "event_id"),
@@ -220,6 +267,9 @@ def _qc_loaded_row_summary(loaded: pd.DataFrame, filtered: pd.DataFrame) -> pd.D
         },
         {
             "scope": "filtered",
+            "table_rows": table_rows if table_rows is not None else len(loaded),
+            "row_limit": row_limit_text,
+            "loaded_subset": loaded_subset,
             "trace_rows": len(filtered),
             "event_station_pairs": len(queue_rows_from_filtered_trace_df(filtered)),
             "events": _nunique_if_present(filtered, "event_id"),
@@ -228,6 +278,93 @@ def _qc_loaded_row_summary(loaded: pd.DataFrame, filtered: pd.DataFrame) -> pd.D
         },
     ]
     return pd.DataFrame(rows)
+
+
+def _qc_dashboard_row_limit() -> int | None:
+    """Return the maximum QC rows loaded into the Streamlit process."""
+
+    return _env_optional_positive_int(
+        ("SVTK_QC_DASHBOARD_MAX_ROWS", "SVTK_DASHBOARD_MAX_ROWS"),
+        default=DEFAULT_QC_DASHBOARD_MAX_ROWS,
+    )
+
+
+def _qc_dashboard_download_limit() -> int | None:
+    """Return the maximum rows serialized by dashboard download buttons."""
+
+    return _env_optional_positive_int(
+        ("SVTK_QC_DASHBOARD_DOWNLOAD_ROWS", "SVTK_DASHBOARD_DOWNLOAD_ROWS"),
+        default=DEFAULT_QC_DASHBOARD_DOWNLOAD_ROWS,
+    )
+
+
+def _env_optional_positive_int(names: tuple[str, ...], *, default: int | None) -> int | None:
+    """Read the first configured positive integer, or ``None`` for all rows."""
+
+    for name in names:
+        raw = os.environ.get(name)
+        if raw is None or str(raw).strip() == "":
+            continue
+        value = str(raw).strip().lower()
+        if value in {"all", "none", "unlimited", "full"}:
+            return None
+        try:
+            parsed = int(value)
+        except ValueError as exc:
+            raise ValueError(f"{name} must be a positive integer or 'all', got {raw!r}.") from exc
+        return parsed if parsed > 0 else None
+    return default
+
+
+def _qc_readiness_row_count(readiness: pd.DataFrame | None) -> int | None:
+    """Return the row count reported by QC readiness, when available."""
+
+    if readiness is None or readiness.empty or "row_count" not in readiness.columns:
+        return None
+    value = pd.to_numeric(pd.Series([readiness.iloc[0].get("row_count")]), errors="coerce").iloc[0]
+    return None if pd.isna(value) else int(value)
+
+
+def _qc_row_limit_message(readiness: pd.DataFrame | None, loaded: pd.DataFrame, row_limit: int | None) -> str | None:
+    """Return a dashboard message when only a bounded table prefix is loaded."""
+
+    table_rows = _qc_readiness_row_count(readiness)
+    if table_rows is None or row_limit is None or len(loaded) >= table_rows:
+        return None
+    return (
+        f"Loaded {len(loaded):,} of {table_rows:,} trace-summary row(s). "
+        "Filters, charts, manual-review queues, and downloads apply to the loaded subset. "
+        "Set SVTK_QC_DASHBOARD_MAX_ROWS=all to load the full table."
+    )
+
+
+def _qc_download_limit_message(download_limit: int | None) -> str:
+    """Return a concise explanation of dashboard download row limits."""
+
+    if download_limit is None:
+        return "Download buttons include all currently filtered loaded rows."
+    return f"Download buttons include at most {download_limit:,} currently filtered loaded row(s)."
+
+
+def _bounded_download_frame(df: pd.DataFrame, limit: int | None) -> tuple[pd.DataFrame, str | None]:
+    """Return bounded dataframe rows and a caption when rows are truncated."""
+
+    if limit is None or len(df) <= limit:
+        return df, None
+    message = f"Download is limited to the first {int(limit):,} of {len(df):,} filtered loaded row(s)."
+    return df.head(int(limit)).copy(), message
+
+
+def _bounded_queue_rows(queue_rows: list[dict[str, str]], limit: int | None) -> tuple[list[dict[str, str]], str | None]:
+    """Return bounded queue rows and a caption when rows are truncated."""
+
+    if limit is None or len(queue_rows) <= limit:
+        return queue_rows, None
+    message = (
+        f"Manual-review queue download is limited to the first {int(limit):,} "
+        f"of {len(queue_rows):,} queue row(s)."
+    )
+    return queue_rows[: int(limit)], message
 
 
 def _qc_dashboard_startup_blocker(readiness: pd.DataFrame) -> str | None:
