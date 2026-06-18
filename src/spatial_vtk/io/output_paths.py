@@ -129,11 +129,12 @@ class OutputGroup:
     ) -> dict[str, Path]:
         """Bind resolved path names into a mutable namespace.
 
-        This is mainly for notebooks, where conventional variables such as
-        ``metrics_long_path`` are easier to read than repeated
-        ``step_outputs.metrics_long_path`` expressions. Pass ``globals()`` to
-        expose all group paths in the current notebook scope, or pass ``names``
-        to bind only a subset.
+        Direct attribute access, such as ``step_outputs.metrics_long_path``, is
+        preferred in new notebooks because it keeps path ownership visible. This
+        helper remains available for older notebooks or compact interactive
+        sessions that intentionally want conventional variables such as
+        ``metrics_long_path`` in a mutable namespace. Pass ``names`` to bind
+        only a subset.
 
         Parameters
         ----------

@@ -51,7 +51,6 @@ paths in cells.
    cfg = SpatialVTKConfig.from_file("runs/spatial_vtk_config.yaml").activate()
    context = notebook_run_context()
    step_outputs = output_group("step_02_qc", cfg=cfg)
-   step_outputs.bind(globals(), names=("trace_qc_path", "event_station_path"))
    display(configured_output_registry_frame(cfg=cfg, kinds=("table",)).head())
    display(step_outputs.status_frame())
    readiness = step_outputs.readiness(
@@ -105,13 +104,14 @@ the large-run notebooks.
      - Resolve a named workflow output group once, then use attribute access,
        ``bind()``, ``status_frame()``, ``completion()``, and ``readiness()``
        instead of cluttering notebooks with repeated path variables.
-       ``bind(globals())`` exposes conventional names such as
-       ``metrics_long_path`` in a notebook setup cell. ``readiness()`` can
-       receive registered output, input, and source path names such as
-       ``"metrics_long_path"`` and resolves them to configured paths before
-       building the status table. ``load_tables()`` and ``preview_tables()``
-       read selected table artifacts by group path name, output key, or a
-       display-label mapping. ``first_existing_path()`` and
+       Prefer direct attributes such as ``step_outputs.metrics_long_path`` when
+       a cell needs a resolved path; ``bind()`` remains available for older
+       notebooks but should not be the default pattern for new tutorial cells.
+       ``readiness()`` can receive registered output, input, and source path
+       names such as ``"metrics_long_path"`` and resolves them to configured
+       paths before building the status table. ``load_tables()`` and
+       ``preview_tables()`` read selected table artifacts by group path name,
+       output key, or a display-label mapping. ``first_existing_path()`` and
        ``preview_first_existing_table()`` cover common fallback cases such as
        preferring ``metrics_enriched`` when it exists and otherwise using
        ``metrics_long``. These helpers keep notebook cells focused on workflow
