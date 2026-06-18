@@ -763,6 +763,10 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "launch_configured_qc_dashboard(" in source
     assert "notebook_dashboard_launch_commands(" in source
     assert 'run_scenario=os.environ.get("SVTK_RUN_SCENARIO", "tutorial")' in source
+    assert "if dashboard_launch.launch_metrics_dashboard:" in source
+    assert "if dashboard_launch.launch_qc_dashboard:" in source
+    assert 'os.environ.get("SVTK_LAUNCH_METRICS_DASHBOARD"' not in source
+    assert 'os.environ.get("SVTK_LAUNCH_QC_DASHBOARD"' not in source
     assert "dashboard_launch.metrics_launch_kwargs(show=True)" in source
     assert "dashboard_launch.qc_launch_kwargs(show=True)" in source
     assert "display(dashboard_launch.status_frame())" in source

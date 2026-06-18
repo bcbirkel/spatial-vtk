@@ -6,7 +6,8 @@ Changelog
    request flags from ``SVTK_LAUNCH_METRICS_DASHBOARD`` and
    ``SVTK_LAUNCH_QC_DASHBOARD``. Standard Step 2 now uses the config-backed
    launch helper instead of parsing QC dashboard port and launch variables in
-   the notebook.
+   the notebook, and large-run Step 7 now uses the same helper-owned launch
+   flags for metrics and QC dashboards.
    Extended ``notebook_figure_settings()`` to cover optional score-trend
    diagnostics through ``notebook_figure_settings("score_trend")``. Large-run
    Step 3 now keeps ``SVTK_MAKE_SCORE_TRENDS`` and
