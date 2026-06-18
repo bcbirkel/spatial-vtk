@@ -35,8 +35,9 @@ from spatial_vtk.metrics.workflow import (
     write_task_manifest,
     MetricWorkflowTask,
 )
-from spatial_vtk.metrics.plot import MetricFigureContext
+from spatial_vtk.metrics.plot import MetricFigureContext, plot_period_score_distribution
 from spatial_vtk.spatial.map import plot_event_residual_map
+from spatial_vtk.spatial.plot import boxplot, heatmap, scatterplot
 from spatial_vtk.visualize.dashboard import available_dashboard_value_columns, build_dashboard_summaries, load_dashboard_metric_dataset
 
 
@@ -409,6 +410,52 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
         metadata = json.loads(generic_metadata.read_text(encoding="utf-8"))
         assert metadata["plot_row_count"] >= metadata["written_row_count"] > 0
         assert metadata["source_row_count"] >= metadata["written_row_count"]
+
+
+def test_generic_metric_diagnostics_split_residuals_by_model(tmp_path) -> None:
+    """Generic residual diagnostics should not require notebook-local model loops."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e1", "e2", "e1", "e2", "e1", "e2"],
+            "station": ["STA", "STB", "STA", "STB", "STA", "STB", "STA", "STB"],
+            "sta_lon": [-118.0, -117.9, -118.0, -117.9, -118.0, -117.9, -118.0, -117.9],
+            "sta_lat": [34.0, 34.1, 34.0, 34.1, 34.0, 34.1, 34.0, 34.1],
+            "metric": ["PGA", "PGA", "PGA", "PGA", "PSA", "PSA", "PSA", "PSA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec", "1-2 sec", "", "", "", ""],
+            "model": ["m1", "m1", "m2", "m2", "m1", "m1", "m2", "m2"],
+            "component": ["Z", "R", "Z", "R", "Z", "R", "Z", "R"],
+            "period_s": [np.nan, np.nan, np.nan, np.nan, 1.0, 2.0, 1.0, 2.0],
+            "distance_km": [10.0, 20.0, 10.0, 20.0, 10.0, 20.0, 10.0, 20.0],
+            "log2_residual": [0.2, -0.1, 0.4, -0.3, 0.1, 0.2, -0.2, -0.1],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        metrics,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+    )
+
+    outputs = context.write_generic_metric_diagnostic_plots(
+        scatterplot,
+        boxplot,
+        heatmap,
+        plot_period_score_distribution,
+        passband="1-2 sec",
+        components=["Z", "R"],
+        model=None,
+        value_col="log2_residual",
+    )
+
+    stems = {path.stem for path in outputs}
+    assert any(stem.startswith("scatterplot__pga") and "__m1__" in stem for stem in stems)
+    assert any(stem.startswith("scatterplot__pga") and "__m2__" in stem for stem in stems)
+    assert any(stem.startswith("boxplot__pga") and "__m1__" in stem for stem in stems)
+    assert any(stem.startswith("boxplot__psa") and "__m2__" in stem for stem in stems)
+    assert all("__all-models__" not in stem for stem in stems)
+    assert all(path.exists() for path in outputs)
 
 
 def test_metric_station_summary_uses_supported_station_and_event_aliases(tmp_path) -> None:

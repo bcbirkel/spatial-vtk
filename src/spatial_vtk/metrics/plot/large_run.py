@@ -8,13 +8,14 @@ import inspect
 import importlib
 import re
 from tempfile import TemporaryDirectory
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, Sequence
 
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from spatial_vtk.visualize.figure_context import value_requires_model
 from spatial_vtk.visualize.figure_sidecars import write_figure_row_sidecar
 
 
@@ -698,57 +699,82 @@ class MetricFigureContext:
             return []
         resolved_value_col = self.value_col if value_col is None else value_col
         outputs: list[Path] = []
-        for item in self.iter_metric_frames(
+        for base_item in self.iter_metric_frames(
             passband=passband,
             components=components,
             model=model,
             split_psa_period=False,
         ):
-            metric_name = self.first_value(item["df"], self.metric_col) or item.get("metric", item["label"])
-            if item["key"] == "psa":
-                output = self.write_psa_period_sheet(
-                    "scatterplot",
-                    item,
-                    scatterplot_func,
-                    required=[self.distance_col, resolved_value_col],
-                    indep=self.distance_col,
-                    dep=metric_name,
-                    value_col=resolved_value_col,
-                    forward_value_col=True,
-                    passband=None,
-                    model=model,
-                    colorby=self.component_col,
-                    fit="lowess",
-                    robust_axis_percentile=self.robust_axis_percentile,
-                    showfig=showfig,
+            for item, item_model in self.diagnostic_model_items(base_item, value_col=resolved_value_col, model=model):
+                outputs.extend(
+                    self._write_generic_metric_diagnostic_item(
+                        item,
+                        scatterplot_func,
+                        boxplot_func,
+                        heatmap_func,
+                        period_distribution_func,
+                        passband=passband,
+                        model=item_model,
+                        value_col=resolved_value_col,
+                        showfig=showfig,
+                    )
                 )
-                if output is not None:
-                    outputs.append(output)
-                output = self.write_metric_plot(
-                    "boxplot",
-                    item,
-                    period_distribution_func,
-                    required=[self.period_col, resolved_value_col],
-                    period_col=self.period_col,
-                    score_col=resolved_value_col,
-                    color_col=self.component_col,
-                    robust_axis_percentile=self.robust_axis_percentile,
-                    showfig=showfig,
-                )
-                if output is not None:
-                    outputs.append(output)
-                print("skip heatmap for PSA: use the PSA period curve and period distribution figures instead of passband heatmaps")
+        return outputs
+
+    def diagnostic_model_items(
+        self,
+        item: dict[str, Any],
+        *,
+        value_col: str | None,
+        model: str | Sequence[str] | None = None,
+    ) -> list[tuple[dict[str, Any], str | None]]:
+        """Return model-specific items when a plotted value needs model context."""
+
+        if model is not None or self.model_col is None or self.model_col not in item["df"].columns:
+            return [(item, model if isinstance(model, str) else None)]
+        if not value_requires_model(value_col, item["df"]):
+            return [(item, None)]
+        values = [str(value) for value in pd.unique(item["df"][self.model_col].dropna()) if str(value).strip()]
+        if len(values) <= 1:
+            return [(item, values[0] if values else None)]
+        out: list[tuple[dict[str, Any], str | None]] = []
+        for value in values:
+            subset = item["df"].loc[item["df"][self.model_col].astype(str).eq(value)].copy()
+            if subset.empty:
                 continue
-            output = self.write_metric_plot(
+            split_item = dict(item)
+            split_item["df"] = subset
+            out.append((split_item, value))
+        return out or [(item, None)]
+
+    def _write_generic_metric_diagnostic_item(
+        self,
+        item: dict[str, Any],
+        scatterplot_func: Callable[..., Any],
+        boxplot_func: Callable[..., Any],
+        heatmap_func: Callable[..., Any],
+        period_distribution_func: Callable[..., Any],
+        *,
+        passband: str | None,
+        model: str | None,
+        value_col: str,
+        showfig: bool,
+    ) -> list[Path]:
+        """Write generic diagnostic figures for one already filtered metric item."""
+
+        outputs: list[Path] = []
+        metric_name = self.first_value(item["df"], self.metric_col) or item.get("metric", item["label"])
+        if item["key"] == "psa":
+            output = self.write_psa_period_sheet(
                 "scatterplot",
                 item,
                 scatterplot_func,
-                required=[self.distance_col, resolved_value_col],
+                required=[self.distance_col, value_col],
                 indep=self.distance_col,
                 dep=metric_name,
-                value_col=resolved_value_col,
+                value_col=value_col,
                 forward_value_col=True,
-                passband=passband,
+                passband=None,
                 model=model,
                 colorby=self.component_col,
                 fit="lowess",
@@ -760,36 +786,69 @@ class MetricFigureContext:
             output = self.write_metric_plot(
                 "boxplot",
                 item,
-                boxplot_func,
-                required=[self.component_col, resolved_value_col] if self.component_col else [resolved_value_col],
-                dep=metric_name,
-                indep=self.component_col or self.model_col,
-                value_col=resolved_value_col,
-                forward_value_col=True,
-                passband=passband,
-                model=model,
-                colorby=self.model_col if self.model_col in item["df"].columns else None,
+                period_distribution_func,
+                required=[self.period_col, value_col],
+                period_col=self.period_col,
+                score_col=value_col,
+                color_col=self.component_col,
                 robust_axis_percentile=self.robust_axis_percentile,
                 showfig=showfig,
             )
             if output is not None:
                 outputs.append(output)
-            output = self.write_metric_plot(
-                "heatmap",
-                item,
-                heatmap_func,
-                required=[resolved_value_col],
-                dep=metric_name,
-                indep=self.component_col or self.model_col,
-                column=self.model_col if self.model_col in item["df"].columns else None,
-                value_col=resolved_value_col,
-                forward_value_col=True,
-                passband=passband,
-                model=model,
-                showfig=showfig,
-            )
-            if output is not None:
-                outputs.append(output)
+            print("skip heatmap for PSA: use the PSA period curve and period distribution figures instead of passband heatmaps")
+            return outputs
+        output = self.write_metric_plot(
+            "scatterplot",
+            item,
+            scatterplot_func,
+            required=[self.distance_col, value_col],
+            indep=self.distance_col,
+            dep=metric_name,
+            value_col=value_col,
+            forward_value_col=True,
+            passband=passband,
+            model=model,
+            colorby=self.component_col,
+            fit="lowess",
+            robust_axis_percentile=self.robust_axis_percentile,
+            showfig=showfig,
+        )
+        if output is not None:
+            outputs.append(output)
+        output = self.write_metric_plot(
+            "boxplot",
+            item,
+            boxplot_func,
+            required=[self.component_col, value_col] if self.component_col else [value_col],
+            dep=metric_name,
+            indep=self.component_col or self.model_col,
+            value_col=value_col,
+            forward_value_col=True,
+            passband=passband,
+            model=model,
+            colorby=self.model_col if self.model_col in item["df"].columns else None,
+            robust_axis_percentile=self.robust_axis_percentile,
+            showfig=showfig,
+        )
+        if output is not None:
+            outputs.append(output)
+        output = self.write_metric_plot(
+            "heatmap",
+            item,
+            heatmap_func,
+            required=[value_col],
+            dep=metric_name,
+            indep=self.component_col or self.model_col,
+            column=self.model_col if self.model_col in item["df"].columns else None,
+            value_col=value_col,
+            forward_value_col=True,
+            passband=passband,
+            model=model,
+            showfig=showfig,
+        )
+        if output is not None:
+            outputs.append(output)
         return outputs
 
     def write_score_trend_plots(
