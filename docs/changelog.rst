@@ -18,6 +18,9 @@ Changelog
    Standard Step 7 now uses ``dashboard_outputs`` attributes directly in
    dashboard status and preview cells instead of assigning throwaway local path
    aliases.
+   Added a tutorial notebook hygiene regression requiring committed examples to
+   stay unexecuted, with no saved cell outputs or execution counts, so
+   fresh-checkout users do not inherit stale runtime state.
    Added ``spatial_vtk.io.record_coverage_readiness_from_config`` so Step 1
    notebooks can display the record-coverage rebuild decision without
    duplicating the preprocessed/base event-station fallback used by the build

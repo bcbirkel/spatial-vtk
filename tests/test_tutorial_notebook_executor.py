@@ -201,6 +201,27 @@ def test_tutorial_notebooks_have_stable_cell_ids() -> None:
         assert duplicated == [], f"{notebook_path.relative_to(repo_root)} duplicate cell ids: {duplicated}"
 
 
+def test_tutorial_notebooks_are_committed_without_execution_state() -> None:
+    """Committed notebooks should start clean for fresh-checkout users."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    assert notebooks
+    dirty = []
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            if cell.get("cell_type") != "code":
+                continue
+            cell_label = f"{notebook_path.relative_to(repo_root)} cell {index}"
+            if cell.get("execution_count") is not None:
+                dirty.append(f"{cell_label} has execution_count")
+            if cell.get("outputs"):
+                dirty.append(f"{cell_label} has saved outputs")
+
+    assert dirty == []
+
+
 def test_tutorial_notebook_preflight_runs_before_clean(tmp_path: Path, monkeypatch) -> None:
     """A missing notebook runtime should not erase existing tutorial outputs."""
 
