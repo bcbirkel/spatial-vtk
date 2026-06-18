@@ -869,6 +869,25 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "argument_name=path" not in generator_text
 
 
+def test_generated_cli_reference_includes_config_backed_examples():
+    """Top-level CLI pages should show config-backed commands users can run directly."""
+
+    root = Path(__file__).resolve().parents[1]
+    plot_text = (root / "docs" / "reference" / "cli" / "plot.rst").read_text(encoding="utf-8")
+    dashboard_text = (root / "docs" / "reference" / "cli" / "dashboard.rst").read_text(encoding="utf-8")
+    generator_text = (root / "tools" / "generate_cli_reference.py").read_text(encoding="utf-8")
+
+    assert "Config-Backed Plotting" in plot_text
+    assert "svtk plot metrics band-score-distribution --score-col log2_residual" in plot_text
+    assert "registered figure keys for the selected plot" in plot_text
+    assert "Config-Backed Dashboards" in dashboard_text
+    assert "svtk dashboard metrics --config runs/spatial_vtk_config.yaml --auto-port --proxy-mode" in dashboard_text
+    assert "--metrics-dataset-dir" in dashboard_text
+    assert "--dashboard-summary-table-dir" in dashboard_text
+    assert "Config-Backed Plotting" in generator_text
+    assert "Config-Backed Dashboards" in generator_text
+
+
 def test_configuration_map_override_example_uses_first_class_flags():
     """Configuration docs should not teach routine plot controls through kwargs."""
 

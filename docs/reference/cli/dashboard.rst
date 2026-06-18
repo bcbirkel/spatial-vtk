@@ -3,6 +3,18 @@
 svtk dashboard
 ==============
 
+Config-Backed Dashboards
+------------------------
+
+Dashboard commands can resolve their standard datasets from the active config. The metrics dashboard uses configured dashboard outputs such as ``metrics_dashboard`` and ``dashboard_summaries`` unless you supply the clearer path aliases ``--metrics-dataset-dir`` or ``--dashboard-summary-table-dir`` explicitly.
+
+.. code-block:: bash
+
+   svtk dashboard status --config runs/spatial_vtk_config.yaml
+   svtk dashboard metrics --config runs/spatial_vtk_config.yaml --auto-port --proxy-mode
+
+Use ``--auto-port`` when another Streamlit server may already be running and ``--proxy-mode`` when launching through a proxied notebook or remote desktop service.
+
 Command Tree
 ------------
 

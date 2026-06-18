@@ -3,6 +3,19 @@
 svtk plot
 =========
 
+Config-Backed Plotting
+-----------------------
+
+If a config is active with ``svtk config set`` or passed with ``--config``, registered plotting commands resolve their standard input tables and figure outputs automatically. For routine workflow figures, prefer the curated flags shown below instead of passing raw ``--input`` and ``--output`` paths.
+
+.. code-block:: bash
+
+   svtk config set runs/spatial_vtk_config.yaml
+   svtk plot metrics band-score-distribution --score-col log2_residual
+   svtk plot metrics residuals-vs-distance --metric PGA --passband "2-3 sec" --score-col log2_residual
+
+These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly.
+
 Command Tree
 ------------
 

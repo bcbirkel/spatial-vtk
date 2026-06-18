@@ -163,6 +163,7 @@ def _render_command_page(command_name: str, parser: argparse.ArgumentParser) -> 
     lines = [_command_anchor(parser.prog), "", title, "=" * len(title), ""]
     if summary:
         lines.extend([_rst_escape(summary), ""])
+    lines.extend(_command_page_notes(command_name))
     lines.extend(
         [
             "Command Tree",
@@ -181,6 +182,43 @@ def _render_command_page(command_name: str, parser: argparse.ArgumentParser) -> 
     )
     lines.extend(_render_command_details(parser, level=2, include_title=False, include_summary=False))
     return lines
+
+
+def _command_page_notes(command_name: str) -> list[str]:
+    """Return short top-level notes for command groups that need examples."""
+
+    if command_name == "plot":
+        return [
+            "Config-Backed Plotting",
+            "-----------------------",
+            "",
+            "If a config is active with ``svtk config set`` or passed with ``--config``, registered plotting commands resolve their standard input tables and figure outputs automatically. For routine workflow figures, prefer the curated flags shown below instead of passing raw ``--input`` and ``--output`` paths.",
+            "",
+            ".. code-block:: bash",
+            "",
+            "   svtk config set runs/spatial_vtk_config.yaml",
+            "   svtk plot metrics band-score-distribution --score-col log2_residual",
+            "   svtk plot metrics residuals-vs-distance --metric PGA --passband \"2-3 sec\" --score-col log2_residual",
+            "",
+            "These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly.",
+            "",
+        ]
+    if command_name == "dashboard":
+        return [
+            "Config-Backed Dashboards",
+            "------------------------",
+            "",
+            "Dashboard commands can resolve their standard datasets from the active config. The metrics dashboard uses configured dashboard outputs such as ``metrics_dashboard`` and ``dashboard_summaries`` unless you supply the clearer path aliases ``--metrics-dataset-dir`` or ``--dashboard-summary-table-dir`` explicitly.",
+            "",
+            ".. code-block:: bash",
+            "",
+            "   svtk dashboard status --config runs/spatial_vtk_config.yaml",
+            "   svtk dashboard metrics --config runs/spatial_vtk_config.yaml --auto-port --proxy-mode",
+            "",
+            "Use ``--auto-port`` when another Streamlit server may already be running and ``--proxy-mode`` when launching through a proxied notebook or remote desktop service.",
+            "",
+        ]
+    return []
 
 
 def _render_command_details(

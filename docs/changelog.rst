@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Added config-backed examples to the generated ``svtk plot`` and
+   ``svtk dashboard`` reference pages so users can see path-light commands for
+   common plotting and dashboard workflows without guessing ``--input``,
+   ``--output``, metrics dataset, or summary-table paths.
    Clarified event-centered residual figures in the large-run spatial plotting
    flow. Azimuthal, polar, and path-bin plot labels now use dataframe-aware
    value labels, and the large-run spatial context gives event-centered path
