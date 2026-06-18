@@ -876,6 +876,8 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert "write_metrics_slurm_script_from_config," in source
     assert "merge_metric_batches_from_config," in source
     assert "write_metric_outputs_from_config," in source
+    assert '"batch_count": context.metric_batch_count' in source
+    assert 'os.environ.get("SVTK_METRIC_BATCH_COUNT"' not in source
     assert '"spatial_vtk.metrics.build_metric_waveform_inventories_from_config"' not in source
     assert '"spatial_vtk.metrics.plan_metric_tasks_from_config"' not in source
     assert '"spatial_vtk.metrics.write_metrics_slurm_script_from_config"' not in source
@@ -925,6 +927,8 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     assert "prepare_metadata_tables_from_config," in source
     assert "preprocess_waveforms_from_config," in source
     assert "build_record_coverage_from_config," in source
+    assert "PREPROCESS_CONTINUE_ON_ERROR = context.preprocess_continue_on_error" in source
+    assert 'os.environ.get("SVTK_PREPROCESS_CONTINUE_ON_ERROR"' not in source
     assert "prepare_station_metadata(" not in source
     assert "prepare_event_metadata(" not in source
     assert "prepare_event_station_table(" not in source

@@ -93,7 +93,11 @@ the large-run notebooks.
      - Resolve config, run scenario, output directories, and run/submit flags
        once near the top of a notebook. The helper honors ``SVTK_RUN_SCENARIO``
        when no scenario is passed and exposes the resolved value as
-       ``context.run_scenario`` for downstream package helpers.
+       ``context.run_scenario`` for downstream package helpers. It also owns
+       common execution controls such as ``SVTK_QC_CHUNKSIZE``,
+       ``SVTK_METRIC_BATCH_COUNT``, and
+       ``SVTK_PREPROCESS_CONTINUE_ON_ERROR`` so cells can pass
+       ``context.<field>`` values into package workflow functions.
    * - ``spatial_vtk.io.output_readiness``
      - Report whether configured outputs are missing, stale relative to inputs,
        blocked by missing inputs, or ready to reuse.

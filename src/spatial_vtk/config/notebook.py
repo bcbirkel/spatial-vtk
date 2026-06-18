@@ -54,8 +54,11 @@ class NotebookRunContext:
         Standard output directories resolved from the config.
     run_local, submit_slurm, overwrite
         Common notebook execution flags read from environment variables.
-    preview_rows, qc_chunksize
+    preview_rows, qc_chunksize, metric_batch_count
         Common notebook row/chunk controls read from environment variables.
+    preprocess_continue_on_error
+        Whether preprocessing should allow a partial event-station table when
+        configured input waveform files are missing.
     """
 
     repo_root: Path
@@ -73,6 +76,8 @@ class NotebookRunContext:
     overwrite: bool
     preview_rows: int
     qc_chunksize: int
+    metric_batch_count: int
+    preprocess_continue_on_error: bool
 
 
 @dataclass(frozen=True)
@@ -424,6 +429,8 @@ def notebook_run_context(
         overwrite=_env_bool("SVTK_OVERWRITE", default=False),
         preview_rows=_env_int("SVTK_PREVIEW_ROWS", default=5),
         qc_chunksize=_env_int("SVTK_QC_CHUNKSIZE", default=1_000_000),
+        metric_batch_count=_env_int("SVTK_METRIC_BATCH_COUNT", default=100),
+        preprocess_continue_on_error=_env_bool("SVTK_PREPROCESS_CONTINUE_ON_ERROR", default=True),
     )
 
 
@@ -440,6 +447,12 @@ def print_notebook_context(context: NotebookRunContext) -> None:
         "SUBMIT_SLURM="
         f"{context.submit_slurm} RUN_LOCAL={context.run_local} OVERWRITE={context.overwrite}"
     )
+    print(
+        "PREVIEW_ROWS="
+        f"{context.preview_rows} QC_CHUNKSIZE={context.qc_chunksize} "
+        f"METRIC_BATCH_COUNT={context.metric_batch_count}"
+    )
+    print(f"PREPROCESS_CONTINUE_ON_ERROR={context.preprocess_continue_on_error}")
 
 
 def display_output_table_previews(

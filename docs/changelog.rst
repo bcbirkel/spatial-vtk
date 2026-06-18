@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Added ``metric_batch_count`` and ``preprocess_continue_on_error`` to
+   ``NotebookRunContext``. Large-run Step 1 and Step 3 now use those context
+   fields instead of parsing ``SVTK_PREPROCESS_CONTINUE_ON_ERROR`` and
+   ``SVTK_METRIC_BATCH_COUNT`` directly in notebook cells.
    Added ``run_scenario`` to ``NotebookRunContext`` and updated the large-run
    notebooks to call ``notebook_run_context()`` directly instead of parsing
    ``SVTK_RUN_SCENARIO`` in setup cells. Downstream helpers that need the

@@ -312,6 +312,9 @@ outputs:
     monkeypatch.setenv("SVTK_SUBMIT_SLURM", "1")
     monkeypatch.setenv("SVTK_OVERWRITE", "true")
     monkeypatch.setenv("SVTK_PREVIEW_ROWS", "12")
+    monkeypatch.setenv("SVTK_QC_CHUNKSIZE", "250000")
+    monkeypatch.setenv("SVTK_METRIC_BATCH_COUNT", "37")
+    monkeypatch.setenv("SVTK_PREPROCESS_CONTINUE_ON_ERROR", "0")
 
     context = notebook_run_context(start=repo / "docs", create_dirs=True)
 
@@ -327,6 +330,9 @@ outputs:
     assert context.submit_slurm is True
     assert context.overwrite is True
     assert context.preview_rows == 12
+    assert context.qc_chunksize == 250000
+    assert context.metric_batch_count == 37
+    assert context.preprocess_continue_on_error is False
     assert context.tables_dir.exists()
 
     clear_active_config()
