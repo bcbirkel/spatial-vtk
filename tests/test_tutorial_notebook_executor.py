@@ -825,6 +825,26 @@ def test_large_run_notebooks_do_not_use_fake_missing_config_paths() -> None:
     assert 'geojson_input = {"region_geojson_path": geojson_path}' in source
 
 
+def test_large_run_notebooks_do_not_bind_unused_context_aliases() -> None:
+    """Large-run setup cells should not copy unused context fields into local names."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
+    assert notebooks
+    forbidden = (
+        "repo_root = context.repo_" + "root",
+        "outputs_root = context.outputs_" + "root",
+        "tables_dir = context.tables_" + "dir",
+        "slurm_dir = context.slurm_" + "dir",
+        "logs_dir = context.logs_" + "dir",
+        "RUN_LOCAL = context.run_" + "local",
+    )
+    for notebook_path in notebooks:
+        source = notebook_path.read_text(encoding="utf-8")
+        matches = [pattern for pattern in forbidden if pattern in source]
+        assert not matches, f"{notebook_path.relative_to(repo_root)} binds unused context aliases: {matches}"
+
+
 def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
     """Tutorial notebooks should teach stable public plotting imports."""
 
