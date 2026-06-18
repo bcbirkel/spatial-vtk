@@ -865,6 +865,18 @@ def test_large_run_setup_markdown_describes_package_context() -> None:
         assert expected in source, f"{notebook_path.relative_to(repo_root)} does not describe package context setup"
 
 
+def test_large_run_source_bootstrap_does_not_bind_unused_repo_root() -> None:
+    """Large-run notebooks should import the checkout without keeping unused root paths."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
+    assert notebooks
+    for notebook_path in notebooks:
+        source = notebook_path.read_text(encoding="utf-8")
+        assert "runpy.run_path(str(_bootstrap))" in source, notebook_path.relative_to(repo_root)
+        assert "repo_root = runpy.run_path(str(_bootstrap))" not in source, notebook_path.relative_to(repo_root)
+
+
 def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
     """Tutorial notebooks should teach stable public plotting imports."""
 
