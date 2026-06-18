@@ -845,6 +845,26 @@ def test_large_run_notebooks_do_not_bind_unused_context_aliases() -> None:
         assert not matches, f"{notebook_path.relative_to(repo_root)} binds unused context aliases: {matches}"
 
 
+def test_large_run_setup_markdown_describes_package_context() -> None:
+    """Large-run setup prose should not teach notebook-local path plumbing."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
+    assert notebooks
+    stale_phrases = (
+        "load config/output paths",
+        "printed paths and helper variables",
+        "printed repository/config/output paths",
+        "reusable helper variables",
+    )
+    expected = "Purpose: load the active config and shared notebook settings through package helpers."
+    for notebook_path in notebooks:
+        source = notebook_path.read_text(encoding="utf-8")
+        matches = [phrase for phrase in stale_phrases if phrase in source]
+        assert not matches, f"{notebook_path.relative_to(repo_root)} has stale setup prose: {matches}"
+        assert expected in source, f"{notebook_path.relative_to(repo_root)} does not describe package context setup"
+
+
 def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
     """Tutorial notebooks should teach stable public plotting imports."""
 
