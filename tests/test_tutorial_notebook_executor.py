@@ -320,6 +320,11 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "ingest_outputs.load_tables(" in standard_text
     assert "qc_figure_tables = qc_outputs.load_tables(" in standard_text
     assert "qc_inventory_preview = qc_outputs.preview_tables(" in standard_text
+    assert "qc_outputs.manual_queue_path" in standard_text
+    assert "export_manual_review_queue_from_qc_inventory(" not in standard_text
+    assert "trace_qc_output=trace_qc_path" not in standard_text
+    assert "qc_inventory_output=qc_inventory_path" not in standard_text
+    assert "qc_inventory_overlap_output=qc_inventory_overlap_path" not in standard_text
     assert "preview_output_table(" not in standard_text
     assert "notebook_dashboard_launch_commands(" in standard_text
     assert "launch_configured_qc_dashboard(" in standard_text

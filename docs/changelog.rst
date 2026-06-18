@@ -12,6 +12,9 @@ Changelog
    Standard tutorial Steps 2 and 7 now preview configured QC and dashboard
    tables through ``OutputGroup.preview_tables()`` instead of raw table-preview
    helpers.
+   Standard Step 2 now lets the QC inventory helper resolve configured output
+   paths directly and reuses the manual-review queue written by the compact QC
+   summary workflow, avoiding a redundant notebook-local export call.
    Metrics dashboards now show an explicit row-level dataset notice in the
    dashboard body when summary tabs can render but distribution/download tabs
    cannot load filtered metric rows.
