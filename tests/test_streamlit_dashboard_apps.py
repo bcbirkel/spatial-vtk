@@ -132,6 +132,51 @@ def test_dashboard_summaries_preserve_transform_columns():
     assert "component" in station.columns
 
 
+def test_dashboard_summaries_report_contribution_and_coverage_counts():
+    """Dashboard summaries should expose the rows/events/stations behind aggregates."""
+
+    rows = pd.DataFrame(
+        {
+            "model": ["m1", "m1", "m1", "m1"],
+            "metric": ["PGA", "PGA", "PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec", "1-2 sec"],
+            "component": ["R", "R", "R", "R"],
+            "station": ["STA1", "STA1", "STA2", "STA2"],
+            "event_id": ["ev1", "ev2", "ev1", "ev3"],
+            "sta_lat": [34.0, 34.0, 34.2, 34.2],
+            "sta_lon": [-118.0, -118.0, -118.2, -118.2],
+            "event_lat": [33.9, 34.1, 33.9, 34.3],
+            "event_lon": [-118.3, -118.1, -118.3, -117.9],
+            "distance_km": [12.0, 18.0, 15.0, 19.0],
+            "azimuth_deg": [41.0, 42.0, 43.0, 44.0],
+            "log2_residual": [0.5, 1.0, -0.5, 0.25],
+        }
+    )
+
+    summaries = validate_dashboard_tables(build_dashboard_summaries(rows, hex_dist=10.0, hex_az=10.0))
+
+    model_row = summaries["model_metric_band"].iloc[0]
+    assert model_row["n"] == 4
+    assert model_row["event_count"] == 3
+    assert model_row["station_count"] == 2
+
+    station_rollup = summaries["station_rollup"].set_index("station")
+    assert station_rollup.loc["STA1", "n"] == 2
+    assert station_rollup.loc["STA1", "event_count"] == 2
+    assert station_rollup.loc["STA2", "n"] == 2
+    assert station_rollup.loc["STA2", "event_count"] == 2
+
+    event_rollup = summaries["event_rollup"].set_index("event_id")
+    assert event_rollup.loc["ev1", "n"] == 2
+    assert event_rollup.loc["ev1", "station_count"] == 2
+    assert event_rollup.loc["ev2", "station_count"] == 1
+
+    path_row = summaries["path_hex"].iloc[0]
+    assert path_row["n"] == 4
+    assert path_row["event_count"] == 3
+    assert path_row["station_count"] == 2
+
+
 def test_dashboard_output_helpers_use_configured_roots(tmp_path):
     config_path = tmp_path / "spatial-vtk.yaml"
     config_path.write_text(

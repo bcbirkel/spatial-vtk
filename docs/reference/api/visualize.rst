@@ -109,10 +109,13 @@ dashboard tab and the required columns for that table. Use it in notebooks next
 to ``dashboard_output_status_frame`` when a tab is empty, because the status
 table reports whether the issue is a missing file, missing required columns,
 missing map coordinates, or value columns that exist but contain no finite
-data. The metrics Streamlit dashboard also includes a Data Status tab with the
-same bounded summary-table and row-level dataset readiness tables, plus a
-current-filter row-count summary for the Overview, Stations, Events, Paths, and
-Distributions tabs. The QC dashboard includes a Data Status tab for
+data. Dashboard summary tables use ``n`` for contributing metric row counts and
+include ``event_count`` / ``station_count`` where those identifiers are
+available, so notebook previews and dashboard tables can show how much data is
+behind each aggregate. The metrics Streamlit dashboard also includes a Data
+Status tab with the same bounded summary-table and row-level dataset readiness
+tables, plus a current-filter row-count summary for the Overview, Stations,
+Events, Paths, and Distributions tabs. The QC dashboard includes a Data Status tab for
 trace-summary readiness plus loaded and filtered row counts. A running dashboard
 can therefore explain blank tabs without requiring users to return to the
 notebook.

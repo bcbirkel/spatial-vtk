@@ -448,6 +448,9 @@ Changelog
    summaries and Streamlit Data Status tables so large-run notebook preflight
    output can explain dashboard artifacts without exposing only internal path
    keys.
+   Added sample-data coverage for dashboard summary contribution counts,
+   asserting that ``n``, ``event_count``, and ``station_count`` describe the
+   metric rows, events, and stations behind each aggregate.
    Added shared large-run notebook helpers for package-backed heavy work. The
    older CLI-wrapper helper is now a deprecated compatibility fallback, and the
    large-run QC, metrics, spatial, GeoJSON, and dashboard drivers use
