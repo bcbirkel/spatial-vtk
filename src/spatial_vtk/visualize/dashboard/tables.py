@@ -239,6 +239,7 @@ def _value_aggregations(df: pd.DataFrame) -> dict[str, tuple[str, str]]:
             continue
         if column == "residual":
             aggregations["med_resid"] = (column, "median")
+            aggregations["med_residual"] = (column, "median")
         elif column == "score":
             aggregations["med_score"] = (column, "median")
         else:

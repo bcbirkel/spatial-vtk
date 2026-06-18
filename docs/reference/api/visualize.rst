@@ -239,13 +239,15 @@ dashboard tabs.
 Dashboard summary tables use ``n`` for contributing metric row counts and
 include ``event_count`` / ``station_count`` where those identifiers are
 available, so notebook previews and dashboard tables can show how much data is
-behind each aggregate. The metrics Streamlit dashboard also includes a Data
-Status tab with the same bounded summary-table and row-level dataset readiness
-tables, plus a current-filter row-count summary for the Overview, Stations,
-Events, Paths, and Distributions tabs. The QC dashboard includes a Data Status tab for
-trace-summary readiness plus loaded and filtered row counts. A running dashboard
-can therefore explain blank tabs without requiring users to return to the
-notebook.
+behind each aggregate. Residual summaries include both ``med_resid`` and the
+canonical ``med_residual`` alias, while row-level downloads continue to use
+``residual``. The metrics Streamlit dashboard also includes a Data Status tab
+with the same bounded summary-table and row-level dataset readiness tables,
+plus a current-filter row-count summary for the Overview, Stations, Events,
+Paths, and Distributions tabs. The QC dashboard includes a Data Status tab for
+trace-summary readiness plus loaded and filtered row counts. A running
+dashboard can therefore explain blank tabs without requiring users to return to
+the notebook.
 
 For large runs, the metrics dashboard caps row-level records loaded for the
 Distributions tab and filtered-row CSV download at ``200000`` rows by default.

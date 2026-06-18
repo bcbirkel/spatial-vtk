@@ -618,6 +618,10 @@ def test_dashboard_summaries_do_not_require_residual_column():
     columns = available_dashboard_value_columns(summaries["model_metric_band"])
     assert "med_value_obs" in columns
     assert "med_log2_residual" in columns
+    with_residual = validate_dashboard_tables(build_dashboard_summaries(_metric_rows(), hex_dist=10.0, hex_az=45.0))
+    residual_columns = available_dashboard_value_columns(with_residual["model_metric_band"])
+    assert "med_resid" in residual_columns
+    assert "med_residual" in residual_columns
 
 
 def test_dashboard_summaries_preserve_pair_only_value_column():
