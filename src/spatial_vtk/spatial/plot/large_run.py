@@ -1305,10 +1305,234 @@ class RegionBoxplotResult:
     message: str
 
 
+@dataclass(frozen=True)
+class RegionFigureResult:
+    """Result from writing the large-run GeoJSON/corridor figure family."""
+
+    geojson_overview_path: Path | None
+    corridor_map_path: Path | None
+    boxplot_result: RegionBoxplotResult
+    geojson_status: str
+    corridor_status: str
+    messages: tuple[str, ...]
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact notebook status table for region figure outputs."""
+
+        rows = [
+            {
+                "artifact": "geojson_overview",
+                "status": self.geojson_status,
+                "path": None if self.geojson_overview_path is None else str(self.geojson_overview_path),
+                "message": self._message_for("geojson_overview"),
+            },
+            {
+                "artifact": "corridor_map",
+                "status": self.corridor_status,
+                "path": None if self.corridor_map_path is None else str(self.corridor_map_path),
+                "message": self._message_for("corridor_map"),
+            },
+            {
+                "artifact": "region_boxplot",
+                "status": self.boxplot_result.status,
+                "path": None if self.boxplot_result.figure_path is None else str(self.boxplot_result.figure_path),
+                "message": self.boxplot_result.message,
+            },
+        ]
+        return pd.DataFrame(rows)
+
+    def _message_for(self, artifact: str) -> str | None:
+        """Return the first message tagged for one artifact."""
+
+        prefix = f"{artifact}: "
+        for message in self.messages:
+            if message.startswith(prefix):
+                return message[len(prefix):]
+        return None
+
+
 def prepare_spatial_figure_context(**kwargs: Any) -> SpatialFigureContext:
     """Return a reusable spatial figure context for large-run notebooks."""
 
     return SpatialFigureContext.from_config(**kwargs)
+
+
+def write_large_run_geojson_region_figures_from_outputs(
+    outputs: Any,
+    ingest_outputs: Any,
+    *,
+    geojson_path: str | Path,
+    figure_dir: str | Path,
+    cfg: SpatialVTKConfig | None = None,
+    metric: str = "PGA",
+    passband: str | Sequence[str] = "2-3 sec",
+    component: str | Sequence[str] | None = None,
+    model: str | Sequence[str] | None = None,
+    value_col: str = "log2_residual",
+    compare_to: str | Sequence[str] | None = "LA Basin",
+    max_rows: int = 200_000,
+    region_boxplot_prefix: str = "geojson_region_boxplot",
+    overview_add_basemap: bool = True,
+    corridor_add_basemap: bool = False,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
+    annotate_if_missing: bool = True,
+    overwrite: bool = False,
+    showfig: bool = False,
+) -> RegionFigureResult:
+    """Write the standard large-run Step 5 region and corridor figures.
+
+    The helper keeps large-run notebooks focused on figure settings: package
+    code loads prepared station/event context, renders the GeoJSON overview,
+    renders the corridor map when the corridor table is ready, and delegates the
+    bounded metric read for the region boxplot to
+    :func:`write_large_run_region_boxplot_from_outputs`.
+    """
+
+    from spatial_vtk.spatial.map import plot_corridor_map, plot_geojson_polygons_map
+
+    output_dir = Path(figure_dir).expanduser()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    messages: list[str] = []
+    geojson_status = "skipped"
+    corridor_status = "skipped"
+    geojson_overview_path = _resolve_region_figure_output(
+        outputs,
+        "geojson_polygons_map_path",
+        "geojson_polygons_map",
+        cfg=cfg,
+        fallback_dir=output_dir,
+    )
+    corridor_map_path = _resolve_region_figure_output(
+        outputs,
+        "corridor_map_path",
+        "corridor_map",
+        cfg=cfg,
+        fallback_dir=output_dir,
+    )
+
+    try:
+        stations = _load_group_table_by_path(
+            ingest_outputs,
+            "prepared_stations_path",
+            "prepared_stations",
+            cfg=cfg,
+        )
+        events = _load_group_table_by_path(
+            ingest_outputs,
+            "prepared_events_path",
+            "prepared_events",
+            cfg=cfg,
+        )
+    except Exception as exc:
+        boxplot_result = RegionBoxplotResult(
+            None,
+            None,
+            0,
+            "missing_context",
+            f"skip region boxplot: could not load station/event context: {exc}",
+        )
+        messages.append(f"geojson_overview: skip GeoJSON overview: could not load station/event context: {exc}")
+        messages.append(f"corridor_map: skip corridor map: could not load station/event context: {exc}")
+        return RegionFigureResult(
+            geojson_overview_path=None,
+            corridor_map_path=None,
+            boxplot_result=boxplot_result,
+            geojson_status="missing_context",
+            corridor_status="missing_context",
+            messages=tuple(messages),
+        )
+
+    if geojson_overview_path.exists() and not overwrite:
+        geojson_status = "exists"
+        messages.append(f"geojson_overview: skip {geojson_overview_path.name}: exists")
+    else:
+        try:
+            plot_geojson_polygons_map(
+                geojson_path,
+                output_path=geojson_overview_path,
+                stations_df=stations,
+                events_df=events,
+                add_basemap=overview_add_basemap,
+                savefig=True,
+                showfig=showfig,
+                write_sidecar=write_sidecar,
+                sidecar_rows=sidecar_rows,
+                sidecar_dir=sidecar_dir,
+            )
+            plt.close("all")
+            geojson_status = "wrote"
+            messages.append(f"geojson_overview: wrote {geojson_overview_path}")
+        except Exception as exc:
+            plt.close("all")
+            geojson_status = "plot_failed"
+            messages.append(f"geojson_overview: skip {geojson_overview_path.name}: {type(exc).__name__}: {exc}")
+
+    corridor_table_path = getattr(outputs, "paths", {}).get("corridors_path")
+    if corridor_table_path is not None and Path(corridor_table_path).exists():
+        corridors = read_table(corridor_table_path)
+    elif hasattr(outputs, "load_table"):
+        corridors = outputs.load_table("corridors", cfg=cfg, missing="skip")
+    else:
+        corridors = None
+    if corridors is None:
+        corridor_status = "missing_input"
+        messages.append("corridor_map: corridor table is not ready yet; skipping corridor map")
+    elif corridor_map_path.exists() and not overwrite:
+        corridor_status = "exists"
+        messages.append(f"corridor_map: skip {corridor_map_path.name}: exists")
+    else:
+        try:
+            plot_corridor_map(
+                corridors,
+                output_path=corridor_map_path,
+                stations_df=stations,
+                events_df=events,
+                add_basemap=corridor_add_basemap,
+                savefig=True,
+                showfig=showfig,
+                write_sidecar=write_sidecar,
+                sidecar_rows=sidecar_rows,
+                sidecar_dir=sidecar_dir,
+            )
+            plt.close("all")
+            corridor_status = "wrote"
+            messages.append(f"corridor_map: wrote {corridor_map_path}")
+        except Exception as exc:
+            plt.close("all")
+            corridor_status = "plot_failed"
+            messages.append(f"corridor_map: skip {corridor_map_path.name}: {type(exc).__name__}: {exc}")
+
+    boxplot_result = write_large_run_region_boxplot_from_outputs(
+        outputs,
+        figure_dir=output_dir,
+        geojson_path=geojson_path,
+        metric=metric,
+        passband=passband,
+        component=component,
+        model=model,
+        value_col=value_col,
+        compare_to=compare_to,
+        max_rows=max_rows,
+        output_prefix=region_boxplot_prefix,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        annotate_if_missing=annotate_if_missing,
+        overwrite=overwrite,
+        showfig=showfig,
+    )
+    messages.append(f"region_boxplot: {boxplot_result.message}")
+
+    return RegionFigureResult(
+        geojson_overview_path=geojson_overview_path,
+        corridor_map_path=corridor_map_path if corridors is not None else None,
+        boxplot_result=boxplot_result,
+        geojson_status=geojson_status,
+        corridor_status=corridor_status,
+        messages=tuple(messages),
+    )
 
 
 def write_large_run_region_boxplot(
@@ -1506,6 +1730,40 @@ def write_large_run_region_boxplot_from_outputs(
         figure_dir=figure_dir,
         **kwargs,
     )
+
+
+def _resolve_region_figure_output(
+    outputs: Any,
+    path_name: str,
+    output_key: str,
+    *,
+    cfg: SpatialVTKConfig | None,
+    fallback_dir: Path,
+) -> Path:
+    """Resolve one region figure path from an output group or config."""
+
+    group_paths = getattr(outputs, "paths", {})
+    if isinstance(group_paths, Mapping) and path_name in group_paths:
+        return Path(group_paths[path_name]).expanduser()
+    try:
+        return resolve_output_path(output_key, kind="figure", cfg=cfg, create_parent=True)
+    except Exception:
+        return fallback_dir / f"{output_key}.png"
+
+
+def _load_group_table_by_path(
+    outputs: Any,
+    path_name: str,
+    output_key: str,
+    *,
+    cfg: SpatialVTKConfig | None,
+) -> pd.DataFrame:
+    """Load a table from an output group's explicit path before key fallback."""
+
+    table_path = getattr(outputs, "paths", {}).get(path_name)
+    if table_path is not None and Path(table_path).exists():
+        return read_table(table_path)
+    return outputs.load_table(output_key, cfg=cfg)
 
 
 def _read_if_exists(
@@ -1807,9 +2065,11 @@ def _spatial_overview_plot_functions() -> dict[str, Callable[..., Any]]:
 
 __all__ = [
     "RegionBoxplotResult",
+    "RegionFigureResult",
     "SPATIAL_FIGURE_TABLE_KEYS",
     "SpatialFigureContext",
     "prepare_spatial_figure_context",
+    "write_large_run_geojson_region_figures_from_outputs",
     "write_large_run_region_boxplot",
     "write_large_run_region_boxplot_from_outputs",
 ]

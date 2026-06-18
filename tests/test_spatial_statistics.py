@@ -9,6 +9,7 @@ import os
 import matplotlib
 import numpy as np
 import pandas as pd
+import pytest
 from shapely.geometry import Polygon, mapping
 
 os.environ.setdefault("LOKY_MAX_CPU_COUNT", "1")
@@ -73,6 +74,7 @@ from spatial_vtk.spatial.plot.correlation import (
 )
 from spatial_vtk.spatial.plot.large_run import (
     SpatialFigureContext,
+    write_large_run_geojson_region_figures_from_outputs,
     write_large_run_region_boxplot,
     write_large_run_region_boxplot_from_outputs,
 )
@@ -840,6 +842,100 @@ def test_write_large_run_region_boxplot_from_outputs_uses_metric_fallback(tmp_pa
     assert result.figure_path is not None
     assert result.figure_path.exists()
     assert result.figure_path.name.startswith("fallback_region_boxplot__pga__2_3_sec")
+
+
+def test_write_large_run_geojson_region_figures_from_outputs_orchestrates_notebook_step(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Step 5 region figure orchestration should live in package code."""
+
+    stations = pd.DataFrame({"station": ["STA"], "sta_lon": [-118.0], "sta_lat": [34.0]})
+    events = pd.DataFrame({"event_id": ["e1"], "event_lon": [-118.1], "event_lat": [34.1]})
+    metrics = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGA"],
+            "band": ["2-3 sec", "2-3 sec"],
+            "component": ["Z", "R"],
+            "model": ["example", "example"],
+            "station_region": ["LA_Basin", "Mountains"],
+            "log2_residual": [0.2, -0.2],
+        }
+    )
+    corridors = pd.DataFrame({"corridor_id": ["c1"], "corridor_geometry": ["POLYGON ((-118 34, -117.9 34, -117.9 34.1, -118 34.1, -118 34))"]})
+    stations_path = tmp_path / "prepared_stations.csv"
+    events_path = tmp_path / "prepared_events.csv"
+    metrics_path = tmp_path / "metrics_long.csv"
+    corridors_path = tmp_path / "corridors.csv"
+    stations.to_csv(stations_path, index=False)
+    events.to_csv(events_path, index=False)
+    metrics.to_csv(metrics_path, index=False)
+    corridors.to_csv(corridors_path, index=False)
+
+    ingest_outputs = OutputGroup(
+        name="step_01_ingest",
+        paths={
+            "prepared_stations_path": stations_path,
+            "prepared_events_path": events_path,
+        },
+    )
+    outputs = OutputGroup(
+        name="step_05_geojson",
+        paths={
+            "metrics_long_path": metrics_path,
+            "metrics_enriched_path": tmp_path / "missing_metrics_enriched.parquet",
+            "corridors_path": corridors_path,
+            "geojson_polygons_map_path": tmp_path / "figures" / "regions.png",
+            "corridor_map_path": tmp_path / "figures" / "corridors.png",
+        },
+    )
+    calls: list[tuple[str, Path, bool]] = []
+
+    def _fake_geojson_plot(_geojson_path, *, output_path, add_basemap, **_kwargs):
+        output = Path(output_path)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text("geojson", encoding="utf-8")
+        calls.append(("geojson", output, bool(add_basemap)))
+
+    def _fake_corridor_plot(_corridors, output_path=None, *, add_basemap, **_kwargs):
+        output = Path(output_path)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text("corridor", encoding="utf-8")
+        calls.append(("corridor", output, bool(add_basemap)))
+
+    import spatial_vtk.spatial.map as spatial_map
+
+    monkeypatch.setattr(spatial_map, "plot_geojson_polygons_map", _fake_geojson_plot)
+    monkeypatch.setattr(spatial_map, "plot_corridor_map", _fake_corridor_plot)
+
+    result = write_large_run_geojson_region_figures_from_outputs(
+        outputs,
+        ingest_outputs,
+        geojson_path=tmp_path / "regions.geojson",
+        figure_dir=tmp_path / "figures",
+        metric="PGA",
+        passband="2-3 sec",
+        model="example",
+        max_rows=10,
+        corridor_add_basemap=True,
+        write_sidecar=True,
+        sidecar_rows=None,
+        overwrite=True,
+        showfig=False,
+    )
+
+    assert result.geojson_status == "wrote"
+    assert result.corridor_status == "wrote"
+    assert result.geojson_overview_path == outputs.geojson_polygons_map_path
+    assert result.corridor_map_path == outputs.corridor_map_path
+    assert result.boxplot_result.status == "wrote"
+    assert result.boxplot_result.figure_path is not None
+    assert result.boxplot_result.figure_path.exists()
+    assert ("geojson", outputs.geojson_polygons_map_path, True) in calls
+    assert ("corridor", outputs.corridor_map_path, True) in calls
+    status = result.status_frame()
+    assert status["artifact"].tolist() == ["geojson_overview", "corridor_map", "region_boxplot"]
+    assert set(status["status"]) == {"wrote"}
 
 
 def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -> None:

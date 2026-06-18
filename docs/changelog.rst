@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-18
+   Added ``write_large_run_geojson_region_figures_from_outputs()`` and
+   ``RegionFigureResult`` so large-run Step 5 renders the GeoJSON overview,
+   corridor map, and region boxplot through one package helper. The Step 5
+   notebook now exposes figure settings and a status table while package code
+   owns prepared station/event loading, corridor-table reuse, configured figure
+   paths, overwrite handling, and bounded metric reads.
    Added package-level ``MetricFigureContext`` helpers for large-run Step 3
    metric figure families, including residual distance/depth trends, Vs30
    scatter plots, station maps, residual grids, model-faceted maps, event

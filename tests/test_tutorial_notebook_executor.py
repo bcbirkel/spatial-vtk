@@ -1095,10 +1095,11 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "run_boundary_corridor_workflow_from_config," in source
     assert "step_outputs.display_table_previews(" in source
     assert "display_output_table_previews(" not in source
-    assert "ingest_outputs.load_tables(" in source
-    assert "step_outputs.load_table(" in source
-    assert 'missing="skip"' in source
-    assert "write_large_run_region_boxplot_from_outputs(" in source
+    assert "write_large_run_geojson_region_figures_from_outputs(" in source
+    assert "region_figure_result.status_frame()" in source
+    assert "ingest_outputs.load_tables(" not in source
+    assert "step_outputs.load_table(" not in source
+    assert "write_large_run_region_boxplot_from_outputs(" not in source
     assert "step_outputs.first_existing_path(" not in source
     assert "step_outputs.corridors_path.exists()" not in source
     assert "metrics_enriched_path if metrics_enriched_path.exists() else metrics_long_path" not in source
