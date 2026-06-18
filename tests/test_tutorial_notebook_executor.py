@@ -1045,7 +1045,10 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     assert "spatial_tables = step_outputs.load_tables(" in source
     assert "step_outputs.figure_path(" in source
     assert "spatial_workflow_failure_frame(" in source
+    assert "spatial_correlation_preview_frame(" in source
     assert "spatial_metric_product_summary_frame(" in source
+    assert 'distance_bins.loc[distance_bins["metric"].astype(str).eq(metric_name)].head()' not in source
+    assert 'morans_i.loc[morans_i["metric"].astype(str).eq(metric_name)]' not in source
     assert "figure_dir /" not in source
     assert "pd.DataFrame(" not in source
     assert "import pandas as pd" not in source

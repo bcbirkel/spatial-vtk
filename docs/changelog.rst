@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-18
+   Added ``spatial_correlation_preview_frame()`` to the public spatial API and
+   rewired the standard Step 4 spatial notebook to use it for Moran's I and
+   distance-bin diagnostic previews instead of notebook-local filtered
+   ``.head()`` displays.
    Rewired the standard Step 1 ingest notebook station/event preview cells to
    use ``OutputGroup.display_table_previews()`` instead of direct dataframe
    ``.head()`` displays.

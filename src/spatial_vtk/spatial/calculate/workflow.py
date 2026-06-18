@@ -458,6 +458,54 @@ def spatial_metric_product_summary_frame(
     return pd.DataFrame(rows, columns=["Output", "Rows", "Events", "Stations"])
 
 
+def spatial_correlation_preview_frame(
+    *,
+    morans_i: pd.DataFrame | None = None,
+    distance_bins: pd.DataFrame | None = None,
+    metric: str | None = None,
+    distance_bin_rows: int = 5,
+) -> pd.DataFrame:
+    """Return a compact spatial-correlation diagnostic preview for notebooks.
+
+    Parameters
+    ----------
+    morans_i
+        Moran's I summary rows, optionally containing a ``metric`` column.
+    distance_bins
+        Distance-bin correlation summary rows, optionally containing a
+        ``metric`` column.
+    metric
+        Optional metric name used to filter both tables.
+    distance_bin_rows
+        Maximum number of distance-bin rows to include. Moran rows are not
+        truncated because they are already compact.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Combined preview table with a leading ``Table`` column identifying
+        whether each row came from Moran's I or distance-bin correlations.
+    """
+
+    frames: list[pd.DataFrame] = []
+    moran_rows = _metric_filtered_frame(morans_i, metric)
+    if not moran_rows.empty:
+        moran_rows = moran_rows.copy()
+        moran_rows.insert(0, "Table", "Moran's I")
+        frames.append(moran_rows)
+
+    distance_rows = _metric_filtered_frame(distance_bins, metric)
+    if not distance_rows.empty:
+        distance_rows = distance_rows.head(max(int(distance_bin_rows), 0)).copy()
+        if not distance_rows.empty:
+            distance_rows.insert(0, "Table", "Distance bins")
+            frames.append(distance_rows)
+
+    if not frames:
+        return pd.DataFrame(columns=["Table"])
+    return pd.concat(frames, ignore_index=True, sort=False)
+
+
 def run_spatial_statistics_workflow(
     metrics: pd.DataFrame | str | Path | None = None,
     *,
@@ -1328,6 +1376,17 @@ def _spatial_product_summary_row(label: str, frame: pd.DataFrame | None) -> dict
     }
 
 
+def _metric_filtered_frame(frame: pd.DataFrame | None, metric: str | None) -> pd.DataFrame:
+    """Return a metric-filtered copy of one optional table."""
+
+    if frame is None:
+        return pd.DataFrame()
+    out = frame.copy()
+    if metric is not None and "metric" in out.columns:
+        out = out.loc[out["metric"].astype(str).eq(str(metric))].copy()
+    return out
+
+
 def _summary_unique_count(frame: pd.DataFrame, column: str) -> int | None:
     """Return a nullable unique count for one dataframe column."""
 
@@ -1385,6 +1444,7 @@ __all__ = [
     "run_spatial_derived_outputs_workflow_from_config",
     "run_spatial_statistics_workflow",
     "run_spatial_statistics_workflow_from_config",
+    "spatial_correlation_preview_frame",
     "spatial_metric_product_summary_frame",
     "spatial_statistics_output_paths",
     "spatial_workflow_failure_frame",

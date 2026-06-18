@@ -51,6 +51,9 @@ Public helpers exposed by ``spatial_vtk.spatial``:
    * - ``spatial_workflow_failure_frame``
      - Convert non-fatal spatial workflow failures into a stable notebook
        display table without constructing dataframes in tutorial cells.
+   * - ``spatial_correlation_preview_frame``
+     - Display Moran's I rows plus a bounded number of distance-bin
+       correlation rows for one metric without notebook-local filtering.
    * - ``spatial_metric_product_summary_frame``
      - Summarize per-metric Step 4 products such as metric-field,
        event-centered residual, and station-bias rows with row, event, and
@@ -83,6 +86,8 @@ for users who need narrower module references.
    :members:
 
 .. autofunction:: spatial_vtk.spatial.spatial_workflow_failure_frame
+
+.. autofunction:: spatial_vtk.spatial.spatial_correlation_preview_frame
 
 .. autofunction:: spatial_vtk.spatial.spatial_metric_product_summary_frame
 

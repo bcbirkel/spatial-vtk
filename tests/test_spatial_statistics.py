@@ -53,6 +53,7 @@ from spatial_vtk.spatial.calculate.workflow import (
     run_spatial_statistics_workflow,
     run_spatial_statistics_workflow_from_config,
     spatial_metric_product_summary_frame,
+    spatial_correlation_preview_frame,
     spatial_workflow_failure_frame,
 )
 from spatial_vtk.spatial.map.correlation import (
@@ -163,6 +164,37 @@ def test_spatial_metric_product_summary_frame_counts_rows_events_and_stations() 
     assert summary.loc["Station bias", "Rows"] == 2
     assert pd.isna(summary.loc["Station bias", "Events"])
     assert summary.loc["Station bias", "Stations"] == 2
+
+
+def test_spatial_correlation_preview_frame_filters_metric_and_bounds_distance_rows() -> None:
+    """Correlation diagnostic previews should be package-owned and bounded."""
+
+    morans = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGV"],
+            "moran_i": [0.2, 0.3],
+            "p_two_sided": [0.05, 0.1],
+        }
+    )
+    distance = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGA", "PGA", "PGV"],
+            "distance_center_km": [10.0, 20.0, 30.0, 10.0],
+            "mean_pair_correlation": [0.8, 0.5, 0.2, 0.7],
+        }
+    )
+
+    preview = spatial_correlation_preview_frame(
+        morans_i=morans,
+        distance_bins=distance,
+        metric="PGA",
+        distance_bin_rows=2,
+    )
+
+    assert list(preview["Table"]) == ["Moran's I", "Distance bins", "Distance bins"]
+    assert set(preview["metric"]) == {"PGA"}
+    assert preview["distance_center_km"].dropna().tolist() == [10.0, 20.0]
+    assert spatial_correlation_preview_frame(metric="PGA").empty
 
 
 def test_prepare_stats_correlation_holdout_and_clustering() -> None:
