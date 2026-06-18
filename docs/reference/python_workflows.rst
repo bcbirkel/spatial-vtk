@@ -134,7 +134,10 @@ the large-run notebooks.
      - Display the readiness table, then run or submit a Python package
        workflow function only when work is needed. Pass the imported package
        function directly in notebooks; fully qualified import-path strings are
-       retained only for compatibility and generated Slurm workers.
+       retained only for compatibility and generated Slurm workers. The
+       tutorial notebook preflight fails cells that pass compatibility strings
+       such as ``"spatial_vtk.qc.run_qc_inventory_from_config"`` instead of the
+       imported callable ``run_qc_inventory_from_config``.
    * - ``spatial_vtk.metrics.metric_slurm_submission_readiness_from_config``
      - Report whether the configured metric Slurm array should be written or
        submitted, including missing manifests and already-complete batch

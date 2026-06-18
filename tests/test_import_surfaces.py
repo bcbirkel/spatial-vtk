@@ -566,6 +566,8 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "geojson_region_summaries_path" in workflows
     assert "descriptive keys are the public notebook contract" in workflows
     assert "docs should not depend on generic" in workflows
+    assert "tutorial notebook preflight fails cells that pass compatibility strings" in workflows
+    assert "imported callable ``run_qc_inventory_from_config``" in workflows
     assert "compatibility aliases" not in workflows
     assert "from spatial_vtk.config import notebook_figure_settings" in workflows
     assert "from spatial_vtk.config.notebook import" not in workflows
