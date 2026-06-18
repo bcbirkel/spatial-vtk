@@ -41,6 +41,7 @@ _EXPORT_MODULES = {
     "dashboard_summary_table_contracts": "spatial_vtk.visualize.dashboard.contracts",
     "dashboard_summary_table_paths": "spatial_vtk.visualize.dashboard.contracts",
     "load_dashboard_summary_tables": "spatial_vtk.visualize.dashboard.contracts",
+    "preview_dashboard_summary_tables": "spatial_vtk.visualize.dashboard.contracts",
     "read_dashboard_table": "spatial_vtk.visualize.dashboard.contracts",
     "validate_dashboard_tables": "spatial_vtk.visualize.dashboard.contracts",
     "validate_trace_qc_dashboard_table": "spatial_vtk.visualize.dashboard.contracts",

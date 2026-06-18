@@ -10,6 +10,7 @@ from spatial_vtk.visualize.dashboard import (
     dashboard_row_level_columns,
     load_dashboard_metric_dataset,
     load_dashboard_summary_tables,
+    preview_dashboard_summary_tables,
     validate_dashboard_tables,
     write_configured_dashboard_datasets,
     write_dashboard_metric_dataset,
@@ -476,6 +477,53 @@ def test_dashboard_summary_loader_tolerates_missing_optional_tables(tmp_path) ->
         assert "path_hex" in str(exc)
     else:
         raise AssertionError("strict dashboard summary loading should require missing path_hex")
+
+
+def test_dashboard_summary_previews_are_bounded_and_config_backed(tmp_path) -> None:
+    """Notebook previews should inspect dashboard summaries without loading full tables."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    summary_root = tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
+    summary_root.mkdir()
+    pd.DataFrame(
+        {
+            "model": ["m1", "m2", "m3"],
+            "metric": ["PGA", "PGV", "CAV"],
+            "band": ["1-2 sec", "2-3 sec", "3-5 sec"],
+            "n": [1, 2, 3],
+        }
+    ).to_parquet(summary_root / "model_metric_band.parquet", index=False)
+    pd.DataFrame(
+        {
+            "station": ["STA", "STB", "STC"],
+            "model": ["m1", "m1", "m1"],
+            "metric": ["PGA", "PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec"],
+            "n": [1, 2, 3],
+        }
+    ).to_csv(summary_root / "station_rollup.csv", index=False)
+
+    previews = preview_dashboard_summary_tables(cfg=cfg, nrows=2)
+
+    assert set(previews) == {"model_metric_band", "station_rollup"}
+    assert len(previews["model_metric_band"]) == 2
+    assert previews["model_metric_band"]["model"].tolist() == ["m1", "m2"]
+    assert len(previews["station_rollup"]) == 2
+    assert previews["station_rollup"]["station"].tolist() == ["STA", "STB"]
+    with pytest.raises(FileNotFoundError, match="path_hex"):
+        preview_dashboard_summary_tables(summary_root, missing="raise")
+    with pytest.raises(ValueError, match="missing must be"):
+        preview_dashboard_summary_tables(summary_root, missing="ignore")
 
 
 def test_qc_overview_filter_queue_and_html_helpers(tmp_path) -> None:

@@ -58,6 +58,7 @@ def test_public_imports():
         dashboard_readiness_summary_frame,
         launch_configured_metrics_dashboard,
         launch_configured_qc_dashboard,
+        preview_dashboard_summary_tables,
     )
     from spatial_vtk.spatial.map import add_contextily_basemap, plot_corridor_map, plot_event_residual_map
     from spatial_vtk.visualize.context import plot_distance_amplitude_diagnostics, plot_station_event_context, plot_study_domain_map
@@ -102,6 +103,7 @@ def test_public_imports():
     assert callable(dashboard_readiness_summary_frame)
     assert callable(launch_configured_metrics_dashboard)
     assert callable(launch_configured_qc_dashboard)
+    assert callable(preview_dashboard_summary_tables)
     assert callable(add_contextily_basemap)
     assert callable(plot_corridor_map)
     assert callable(plot_event_residual_map)
@@ -482,6 +484,7 @@ def test_visualize_api_docs_use_public_entry_points():
         "write_configured_dashboard_datasets",
         "dashboard_readiness_summary_frame",
         "dashboard_output_status_frame",
+        "preview_dashboard_summary_tables",
         "launch_configured_metrics_dashboard",
         "launch_configured_qc_dashboard",
     ):
@@ -508,6 +511,7 @@ def test_visualize_api_docs_use_public_entry_points():
         "dashboard_qc_trace_readiness_frame",
         "load_dashboard_metric_dataset",
         "load_dashboard_summary_tables",
+        "preview_dashboard_summary_tables",
         "filter_dashboard_metrics",
         "filter_qc_dashboard_rows",
     ):

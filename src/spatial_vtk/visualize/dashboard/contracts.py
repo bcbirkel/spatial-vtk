@@ -147,6 +147,64 @@ def load_dashboard_summary_tables(
     return tables
 
 
+def preview_dashboard_summary_tables(
+    summary_root: str | Path | None = None,
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    nrows: int = 5,
+    missing: str = "skip",
+    create_parent: bool = True,
+    format: str = "parquet",
+) -> dict[str, pd.DataFrame]:
+    """Return bounded previews for configured dashboard summary tables.
+
+    The helper resolves the dashboard summary directory from the active config
+    when ``summary_root`` is omitted and reads at most ``nrows`` per table. It
+    is intended for notebooks that need to inspect dashboard-tab inputs without
+    loading full large-run summary tables or resolving per-file paths in cells.
+
+    Parameters
+    ----------
+    summary_root
+        Optional dashboard summary directory. When omitted, the configured
+        ``dashboard_summaries`` output path is used.
+    cfg
+        Optional Spatial-VTK config used when ``summary_root`` is omitted.
+    nrows
+        Maximum rows to read from each existing summary table.
+    missing
+        ``"skip"`` to omit missing tables, or ``"raise"`` to fail on the first
+        missing table.
+    create_parent, format
+        Forwarded to :func:`dashboard_summary_table_paths`.
+
+    Returns
+    -------
+    dict
+        Mapping from dashboard summary table name to bounded dataframe preview.
+    """
+
+    if missing not in {"skip", "raise"}:
+        raise ValueError("missing must be 'skip' or 'raise'.")
+    from spatial_vtk.io.tables import read_bounded_table
+
+    paths = dashboard_summary_table_paths(
+        summary_root,
+        cfg=cfg,
+        create_parent=create_parent,
+        format=format,
+    )
+    previews: dict[str, pd.DataFrame] = {}
+    for key, path in paths.items():
+        name = key.removesuffix("_summary_path")
+        if not path.exists():
+            if missing == "raise":
+                raise FileNotFoundError(f"Dashboard summary table does not exist: {path}")
+            continue
+        previews[name] = read_bounded_table(path, max_rows=nrows)
+    return previews
+
+
 def dashboard_summary_table_paths(
     summary_root: str | Path | None = None,
     *,
@@ -1336,6 +1394,7 @@ __all__ = [
     "dashboard_map_readiness",
     "load_dashboard_summary_tables",
     "load_metric_long_table",
+    "preview_dashboard_summary_tables",
     "read_dashboard_table",
     "validate_dashboard_tables",
     "validate_map_columns",

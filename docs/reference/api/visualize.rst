@@ -176,6 +176,10 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
        ``dashboard_summary_table_paths``
      - Explain which summary tables feed dashboard tabs and which columns they
        require.
+   * - ``preview_dashboard_summary_tables``
+     - Read bounded previews of configured dashboard summary tables without
+       loading full large-run dashboard inputs or resolving table paths in
+       notebooks.
    * - ``dashboard_metric_dataset_readiness_frame`` and
        ``dashboard_qc_trace_readiness_frame``
      - Inspect row-level metric dataset and QC trace-summary readiness without
@@ -201,7 +205,10 @@ dashboard tab and the required columns for that table. Use it in notebooks next
 to ``dashboard_output_status_frame`` when a tab is empty, because the status
 table reports whether the issue is a missing file, missing required columns,
 missing map coordinates, or value columns that exist but contain no finite
-data. Dashboard summary tables use ``n`` for contributing metric row counts and
+data. Use ``preview_dashboard_summary_tables`` for small, bounded samples of
+the configured summary tables after readiness checks pass; it keeps large-run
+notebooks from loading whole dashboard inputs just to inspect the first rows.
+Dashboard summary tables use ``n`` for contributing metric row counts and
 include ``event_count`` / ``station_count`` where those identifiers are
 available, so notebook previews and dashboard tables can show how much data is
 behind each aggregate. The metrics Streamlit dashboard also includes a Data
