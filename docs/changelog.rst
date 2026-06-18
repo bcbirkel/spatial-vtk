@@ -7,6 +7,10 @@ Changelog
    parsing repeated ``SVTK_FIGURE_*`` environment variables in cells. The helper
    also preserves existing region/corridor controls such as
    ``SVTK_REGION_BOX_METRIC`` and ``SVTK_REGION_FIGURE_ROWS``.
+   Updated the standard tutorial notebooks to use ``notebook_figure_settings()``
+   for basemap and figure sidecar controls, matching the large-run notebooks and
+   keeping figure behavior in package code rather than notebook-local
+   environment parsing.
    Made ``svtk plot metrics winner-heatmap``, ``svtk plot spatial
    residual-correlation``, and ``svtk map spatial model-improvement`` use
    config-backed input table defaults, and updated the generated CLI reference

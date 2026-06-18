@@ -1111,7 +1111,7 @@ def test_tutorial_figure_sidecar_calls_include_directory_control() -> None:
 
 
 def test_tutorial_figure_sidecar_calls_do_not_hardcode_figure_sidecar_dirs() -> None:
-    """Notebook sidecar calls should use notebook_figure_sidecar_settings directories."""
+    """Notebook sidecar calls should use package-managed figure directories."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
@@ -1128,6 +1128,31 @@ def test_tutorial_figure_sidecar_calls_do_not_hardcode_figure_sidecar_dirs() -> 
             source = "".join(cell.get("source", []))
             matches = [pattern for pattern in forbidden if pattern in source]
             assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} hardcodes {matches}"
+
+
+def test_tutorial_notebooks_use_package_figure_settings() -> None:
+    """Tutorial notebooks should centralize figure settings in package helpers."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = [
+        repo_root / "docs" / "examples" / f"step_{index:02d}_{name}.ipynb"
+        for index, name in (
+            (1, "ingest_and_prepare_data"),
+            (2, "quality_control"),
+            (3, "calculate_metrics"),
+            (4, "spatial_statistics"),
+            (5, "maps_and_figures"),
+            (6, "additional_plotting_options"),
+        )
+    ]
+    notebooks.extend(sorted((repo_root / "docs" / "examples" / "large_run").glob("step_0*.ipynb")))
+
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        assert "notebook_figure_settings(" in source, notebook_path.relative_to(repo_root)
+        assert 'notebook_figure_sidecar_settings(' not in source, notebook_path.relative_to(repo_root)
+        assert 'os.environ.get("SVTK_ADD_BASEMAP"' not in source, notebook_path.relative_to(repo_root)
 
 
 def test_tutorial_notebooks_use_sidecar_settings_kwargs() -> None:
