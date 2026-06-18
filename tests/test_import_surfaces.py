@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import ast
+import importlib
 import os
 import pathlib
+import re
 import subprocess
 import sys
 import textwrap
@@ -315,6 +317,31 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "``bind(globals())`` exposes conventional names" in workflows
     assert "svtk metrics plan" not in workflows
     assert "svtk qc" not in workflows
+
+
+def test_python_workflow_docs_reference_importable_entry_points():
+    """Every documented workflow helper should resolve through its public module."""
+
+    docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "python_workflows.rst"
+    text = docs.read_text(encoding="utf-8")
+    dotted_names = sorted(set(re.findall(r"``(spatial_vtk\.[A-Za-z0-9_\.]+)``", text)))
+    assert dotted_names
+
+    missing: list[str] = []
+    for dotted_name in dotted_names:
+        module_name, _, attribute_name = dotted_name.rpartition(".")
+        if not module_name or not attribute_name:
+            missing.append(dotted_name)
+            continue
+        try:
+            module = importlib.import_module(module_name)
+        except Exception as exc:  # pragma: no cover - assertion message records the import failure.
+            missing.append(f"{dotted_name} import failed: {exc}")
+            continue
+        if not hasattr(module, attribute_name):
+            missing.append(dotted_name)
+
+    assert not missing
 
 
 def test_package_overview_points_to_public_workflow_helpers():

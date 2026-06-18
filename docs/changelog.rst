@@ -11,6 +11,9 @@ Changelog
    for basemap and figure sidecar controls, matching the large-run notebooks and
    keeping figure behavior in package code rather than notebook-local
    environment parsing.
+   Documented that the Python workflow page lists importable public entry
+   points and added a regression that resolves every dotted helper listed there
+   against the package modules.
    Made ``svtk plot metrics winner-heatmap``, ``svtk plot spatial
    residual-correlation``, and ``svtk map spatial model-improvement`` use
    config-backed input table defaults, and updated the generated CLI reference

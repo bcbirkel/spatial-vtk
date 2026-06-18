@@ -27,6 +27,10 @@ notebooks or Slurm logs. New notebook code should prefer explicit keys such as
 keys such as ``path``, ``output``, or ``manifest`` are kept only as
 compatibility aliases.
 
+Every dotted helper listed on this page is an importable public entry point.
+Tutorial notebooks should import these package functions directly rather than
+calling CLI commands from cells.
+
 Config-backed spatial, GeoJSON, and corridor helpers also accept dotted path
 keys such as ``"paths.metric_figure_snapshot"``, ``"paths.site_metadata"``,
 ``"paths.region_geojson"``, or ``"paths.event_station_table"`` for optional
