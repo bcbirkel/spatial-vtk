@@ -625,7 +625,13 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "ingest_outputs.load_tables(" in standard_text
     assert "qc_figure_tables = qc_outputs.load_tables(" in standard_text
     assert "qc_outputs.preview_table(" in standard_text
+    assert "qc_outputs.preview_path_table(" in standard_text
     assert "qc_outputs.manual_queue_path" in standard_text
+    assert "write_waveform_comparison_from_outputs(" in standard_text
+    assert "build_qc_waveform_comparison_records(" not in standard_text
+    assert "load_comparison_eligible_records(" not in standard_text
+    assert "plot_event_trace_comparison(" not in standard_text
+    assert "comparison_preview_rows" not in standard_text
     assert "qc_outputs.qc_inventory_path.exists()" not in standard_text
     assert "qc_outputs.qc_inventory_overlap_path.exists()" not in standard_text
     assert "export_manual_review_queue_from_qc_inventory(" not in standard_text
@@ -1677,7 +1683,8 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "step_outputs = output_group(\"step_06_plotting\")" in source
-    assert "write_large_run_waveform_comparison_from_outputs(" in source
+    assert "write_waveform_comparison_from_outputs(" in source
+    assert "write_large_run_waveform_comparison_from_outputs(" not in source
     assert "build_qc_waveform_comparison_records(" not in source
     assert "load_comparison_eligible_records(" not in source
     assert "plot_event_trace_comparison(" not in source

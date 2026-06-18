@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-18
+   Added the generic
+   ``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_outputs``
+   helper and rewired the standard Step 2 QC notebook to use it for the
+   observed/synthetic waveform preview. The notebook no longer repeats the
+   comparison-eligible loading, waveform-record construction, and trace plotting
+   pipeline inline.
    Added config-backed ``svtk visualize`` guidance to the generated CLI
    reference so context, QC, waveform, and sidecar commands show the same
    configured-default path pattern as ``svtk plot``, ``svtk map``, and

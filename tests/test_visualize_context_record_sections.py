@@ -33,6 +33,7 @@ from spatial_vtk.visualize.waveforms import (
     plot_station_event_waveform_map,
     plot_waveform_overlay_matrix,
     write_large_run_waveform_comparison_from_outputs,
+    write_waveform_comparison_from_outputs,
 )
 
 
@@ -103,8 +104,8 @@ def test_basic_context_figures_write_outputs(tmp_path: Path) -> None:
         _assert_png(output)
 
 
-def test_large_run_waveform_comparison_helper_uses_configured_outputs(tmp_path: Path, monkeypatch) -> None:
-    """Large-run waveform comparison figures should be package-orchestrated."""
+def test_waveform_comparison_helper_uses_configured_outputs(tmp_path: Path, monkeypatch) -> None:
+    """Waveform comparison figures should be package-orchestrated."""
 
     import spatial_vtk.visualize.waveforms.comparison as comparison_helpers
     from spatial_vtk.io.output_paths import OutputGroup
@@ -162,7 +163,9 @@ def test_large_run_waveform_comparison_helper_uses_configured_outputs(tmp_path: 
             "event_trace_comparison_path": figure_path,
         },
     )
-    result = write_large_run_waveform_comparison_from_outputs(
+    assert write_large_run_waveform_comparison_from_outputs is not None
+
+    result = write_waveform_comparison_from_outputs(
         outputs,
         component="Z",
         max_records=12,

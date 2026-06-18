@@ -36,7 +36,7 @@ def _build_qc_waveform_comparison_records(*args: Any, **kwargs: Any) -> pd.DataF
 
 @dataclass(frozen=True)
 class WaveformComparisonFigureResult:
-    """Result returned by large-run waveform comparison figure helpers."""
+    """Result returned by waveform comparison figure helpers."""
 
     figure_path: Path
     event_station_path: Path
@@ -65,7 +65,7 @@ class WaveformComparisonFigureResult:
         )
 
 
-def write_large_run_waveform_comparison_from_outputs(
+def write_waveform_comparison_from_outputs(
     step_outputs: Any,
     *,
     event_station_path: str | Path | None = None,
@@ -81,12 +81,13 @@ def write_large_run_waveform_comparison_from_outputs(
     savefig: bool = True,
     **plot_kwargs: Any,
 ) -> WaveformComparisonFigureResult:
-    """Write the Step 6 waveform trace comparison figure from configured outputs.
+    """Write a waveform trace comparison figure from configured outputs.
 
     Parameters
     ----------
     step_outputs
-        Output group for ``"step_06_plotting"`` or any object with matching
+        Output group for ``"step_02_qc"``, ``"step_06_plotting"``, or any
+        object with matching
         ``event_station_path``, ``comparison_eligible_path``, and
         ``event_trace_comparison_path`` attributes.
     event_station_path, comparison_eligible_path, output_path
@@ -187,8 +188,23 @@ def write_large_run_waveform_comparison_from_outputs(
     )
 
 
+def write_large_run_waveform_comparison_from_outputs(
+    step_outputs: Any,
+    **kwargs: Any,
+) -> WaveformComparisonFigureResult:
+    """Compatibility wrapper for large-run notebooks.
+
+    Prefer :func:`write_waveform_comparison_from_outputs` in new notebooks and
+    docs. The older name remains public so existing large-run notebooks do not
+    break.
+    """
+
+    return write_waveform_comparison_from_outputs(step_outputs, **kwargs)
+
+
 __all__ = [
     "WaveformComparisonFigureResult",
     "plot_event_trace_comparison",
     "write_large_run_waveform_comparison_from_outputs",
+    "write_waveform_comparison_from_outputs",
 ]

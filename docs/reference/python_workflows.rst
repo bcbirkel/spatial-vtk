@@ -351,8 +351,8 @@ Region boxplot cells should use
 package code owns the ``metrics_enriched`` to ``metrics_long`` fallback and the
 notebook only supplies figure settings.
 
-Step 6 waveform-comparison cells should use
-``spatial_vtk.visualize.waveforms.write_large_run_waveform_comparison_from_outputs``.
+Step 2 and Step 6 waveform-comparison cells should use
+``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_outputs``.
 That helper reads only a bounded comparison-eligible sample, builds the plotted
 observed/synthetic trace records, writes the configured
 ``event_trace_comparison`` figure, and returns a small status frame. Notebooks

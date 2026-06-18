@@ -540,6 +540,7 @@ def test_visualize_api_docs_use_public_entry_points():
         "plot_retention_summary",
         "plot_event_station_retention_heatmap",
         "plot_observed_synthetic_record_section",
+        "write_waveform_comparison_from_outputs",
         "write_large_run_waveform_comparison_from_outputs",
         "finish_figure_with_sidecar",
         "write_figure_row_sidecar",
@@ -782,7 +783,11 @@ def test_waveform_large_run_helper_is_public():
     import spatial_vtk.visualize as visualize
     import spatial_vtk.visualize.waveforms as waveforms
 
+    assert "write_waveform_comparison_from_outputs" in visualize.__all__
+    assert "write_waveform_comparison_from_outputs" in waveforms.__all__
     assert "write_large_run_waveform_comparison_from_outputs" in visualize.__all__
     assert "write_large_run_waveform_comparison_from_outputs" in waveforms.__all__
+    assert callable(waveforms.write_waveform_comparison_from_outputs)
     assert callable(waveforms.write_large_run_waveform_comparison_from_outputs)
+    assert visualize.write_waveform_comparison_from_outputs is waveforms.write_waveform_comparison_from_outputs
     assert visualize.write_large_run_waveform_comparison_from_outputs is waveforms.write_large_run_waveform_comparison_from_outputs

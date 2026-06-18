@@ -6,6 +6,7 @@ from spatial_vtk.visualize.waveforms.comparison import (
     WaveformComparisonFigureResult,
     plot_event_trace_comparison,
     write_large_run_waveform_comparison_from_outputs,
+    write_waveform_comparison_from_outputs,
 )
 from spatial_vtk.visualize.waveforms.overlays import plot_waveform_overlay_matrix
 from spatial_vtk.visualize.waveforms.radial_sections import plot_event_radial_trace_section
@@ -26,4 +27,5 @@ __all__ = [
     "plot_station_event_waveform_map",
     "plot_waveform_overlay_matrix",
     "write_large_run_waveform_comparison_from_outputs",
+    "write_waveform_comparison_from_outputs",
 ]
