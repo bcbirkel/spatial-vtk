@@ -440,6 +440,43 @@ def test_dashboard_metric_dataset_loader_pushes_down_large_run_filters(tmp_path)
     assert loaded["period_s"].tolist() == [1.0]
 
 
+def test_dashboard_metric_dataset_loader_treats_passband_as_band_alias(tmp_path) -> None:
+    """Direct row-level dashboard datasets should filter older passband-only tables."""
+
+    rows = pd.DataFrame(
+        {
+            "model": ["m1", "m1"],
+            "passband": ["1-2 sec", "2-3 sec"],
+            "metric": ["PGA", "PGA"],
+            "station": ["KEEP", "DROP"],
+            "event_id": ["e1", "e1"],
+            "log2_residual": [0.1, 0.2],
+        }
+    )
+    direct = tmp_path / "metrics_long.csv"
+    rows.to_csv(direct, index=False)
+
+    loaded_unfiltered = load_dashboard_metric_dataset(
+        direct,
+        columns=["band", "station"],
+    )
+
+    assert loaded_unfiltered.columns.tolist() == ["band", "station"]
+    assert loaded_unfiltered["band"].tolist() == ["1-2 sec", "2-3 sec"]
+
+    loaded = load_dashboard_metric_dataset(
+        direct,
+        columns=["model", "band", "passband", "metric", "station", "log2_residual"],
+        bands=["1-2 sec"],
+        max_rows=10,
+        chunksize=1,
+    )
+
+    assert loaded["station"].tolist() == ["KEEP"]
+    assert loaded["band"].tolist() == ["1-2 sec"]
+    assert loaded["passband"].tolist() == ["1-2 sec"]
+
+
 def test_dashboard_summary_dataset_reads_only_summary_columns(tmp_path, monkeypatch) -> None:
     """Dashboard summaries should not materialize unused long-metric payloads."""
 

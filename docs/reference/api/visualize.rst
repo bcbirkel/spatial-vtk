@@ -208,7 +208,10 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
        ``load_dashboard_metric_dataset`` applies model, metric, passband,
        PSA/FAS oscillator-period, component, distance, and Vs30 filters while
        reading bounded row-level datasets, so large-run dashboards cap the
-       selected rows rather than a broader unfiltered prefix.
+       selected rows rather than a broader unfiltered prefix. Row-level
+       loading treats ``band`` and ``passband`` as aliases so older
+       ``metrics_long`` tables and current dashboard datasets filter the same
+       way.
    * - ``launch_configured_metrics_dashboard`` and
        ``launch_configured_qc_dashboard``
      - Launch Streamlit dashboards from config-backed paths and launch options.

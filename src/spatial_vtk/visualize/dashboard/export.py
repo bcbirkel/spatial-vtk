@@ -336,7 +336,7 @@ def _dashboard_metric_filter_columns(
     if models:
         columns.append("model")
     if bands:
-        columns.append("band")
+        columns.extend(["band", "passband"])
     if metrics:
         columns.append("metric")
     if periods_s:
@@ -355,7 +355,13 @@ def _merged_columns(columns: Sequence[str] | None, extras: Sequence[str]) -> lis
 
     if columns is None:
         return None
-    return list(dict.fromkeys([*(str(column) for column in columns), *(str(column) for column in extras)]))
+    requested = [str(column) for column in columns]
+    alias_columns: list[str] = []
+    if "band" in requested:
+        alias_columns.append("passband")
+    if "passband" in requested:
+        alias_columns.append("band")
+    return list(dict.fromkeys([*requested, *alias_columns, *(str(column) for column in extras)]))
 
 
 def _filter_dashboard_metric_paths(
@@ -418,7 +424,7 @@ def _filter_dashboard_metric_rows(
 ) -> pd.DataFrame:
     """Apply dashboard metric row filters and restore requested column order."""
 
-    out = df.copy()
+    out = _ensure_dashboard_band_aliases(df)
     model_values = _filter_values(models)
     if model_values and "model" in out.columns:
         out = out[out["model"].astype(str).isin(model_values)]
@@ -444,6 +450,19 @@ def _filter_dashboard_metric_rows(
         selected = [column for column in dict.fromkeys(str(column) for column in output_columns) if column in out.columns]
         out = out.loc[:, selected]
     return out.reset_index(drop=True)
+
+
+def _ensure_dashboard_band_aliases(df: pd.DataFrame) -> pd.DataFrame:
+    """Return metric rows with ``band`` and ``passband`` aliases synchronized."""
+
+    out = df.copy()
+    if "passband" in out.columns and ("band" not in out.columns or out["band"].isna().all()):
+        passband = out["passband"].astype("object")
+        out["band"] = passband.where(passband.notna() & passband.astype(str).str.strip().ne(""), "all")
+    if "band" in out.columns and "passband" not in out.columns:
+        band = out["band"].astype("object")
+        out["passband"] = band.where(band.notna() & band.astype(str).str.strip().ne(""), "")
+    return out
 
 
 def _normalize_max_rows(max_rows: int | None) -> int | None:
