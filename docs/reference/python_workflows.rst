@@ -133,6 +133,19 @@ the large-run notebooks.
        workflow function only when work is needed. Pass the imported package
        function directly in notebooks; fully qualified import-path strings are
        retained only for compatibility and generated Slurm workers.
+   * - ``spatial_vtk.metrics.metric_slurm_submission_readiness_from_config``
+     - Report whether the configured metric Slurm array should be written or
+       submitted, including missing manifests and already-complete batch
+       outputs, without notebook-local manifest path checks.
+   * - ``spatial_vtk.metrics.metric_batch_merge_readiness_from_config``
+     - Gate metric batch merging from the active config. The helper reports
+       incomplete Slurm batches with a bounded display of missing batch paths,
+       and uses all completed batch outputs as freshness dependencies before
+       rebuilding the merged metric rows table.
+   * - ``spatial_vtk.metrics.metric_outputs_readiness_from_config``
+     - Gate downstream metric output tables such as ``metrics_long``,
+       ``path_table``, and ``path_summary`` from the active config, so notebooks
+       do not repeat direct ``metric_rows`` existence checks.
    * - ``spatial_vtk.config.display_output_table_previews``
      - Print configured output-table paths and display bounded row previews
        without repeating ``resolve_output_path`` or ``preview_output_table``
@@ -238,14 +251,16 @@ Step 3: Metric Calculation and Metric Figures
      - ``spatial_vtk.metrics.summarize_metric_snapshot_tasks_from_config``
      - ``metric_tasks`` and ``metric_task_estimate``
    * - Write or submit a metric Slurm array script
-     - ``spatial_vtk.metrics.metric_slurm_submission_readiness`` plus
+     - ``spatial_vtk.metrics.metric_slurm_submission_readiness_from_config`` plus
        ``spatial_vtk.metrics.write_metrics_slurm_script_from_config``
      - metric Slurm script; optionally submitted job metadata
    * - Merge completed metric batches
-     - ``spatial_vtk.metrics.merge_metric_batches_from_config``
+     - ``spatial_vtk.metrics.metric_batch_merge_readiness_from_config`` plus
+       ``spatial_vtk.metrics.merge_metric_batches_from_config``
      - ``metric_rows``
    * - Write downstream long, enriched, summary, and dashboard metric tables
-     - ``spatial_vtk.metrics.write_metric_outputs_from_config``
+     - ``spatial_vtk.metrics.metric_outputs_readiness_from_config`` plus
+       ``spatial_vtk.metrics.write_metric_outputs_from_config``
      - ``metrics_long``, ``metrics_enriched``, path tables, dashboard metric
        datasets, dashboard summary tables
    * - Render many large-run metric figures with auditable row sidecars

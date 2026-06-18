@@ -24,6 +24,9 @@ from spatial_vtk.metrics.workflow.outputs import (
 )
 from spatial_vtk.metrics.workflow.configured import (
     build_metric_waveform_inventories_from_config,
+    metric_batch_merge_readiness_from_config,
+    metric_outputs_readiness_from_config,
+    metric_slurm_submission_readiness_from_config,
     merge_metric_batches_from_config,
     plan_metric_tasks_from_config,
     summarize_metric_snapshot_tasks_from_config,
@@ -86,10 +89,13 @@ __all__ = [
     "cache_metric_manifest_waveforms",
     "build_metric_waveform_inventories_from_trace_metadata",
     "chunk_tasks",
+    "metric_batch_merge_readiness_from_config",
     "merge_metric_batches_from_config",
     "merge_batch_outputs",
     "metric_manifest_batch_status",
+    "metric_outputs_readiness_from_config",
     "metric_slurm_submission_readiness",
+    "metric_slurm_submission_readiness_from_config",
     "metric_group_for",
     "plan_metric_tasks",
     "plan_metric_tasks_from_config",

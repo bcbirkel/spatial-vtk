@@ -940,7 +940,7 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
         "large_run/step_02_large_run_quality_control.ipynb": ["run_notebook_step_if_needed("],
         "large_run/step_03_large_run_calculate_metrics.ipynb": [
             "run_notebook_step_if_needed(",
-            "metric_slurm_submission_readiness(",
+            "metric_slurm_submission_readiness_from_config(",
         ],
         "large_run/step_07_large_run_dashboards.ipynb": ["run_notebook_step_if_needed("],
     }
@@ -979,15 +979,21 @@ def test_large_run_step03_uses_metric_batch_status_before_submit_and_merge() -> 
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "from spatial_vtk.metrics import metric_manifest_batch_status, metric_slurm_submission_readiness" in source
+    assert "metric_slurm_submission_readiness_from_config," in source
+    assert "metric_batch_merge_readiness_from_config," in source
+    assert "metric_outputs_readiness_from_config," in source
     assert "from spatial_vtk.metrics.workflow import metric_manifest_batch_status" not in source
-    assert "batch_status = metric_manifest_batch_status(metric_manifest_path)" in source
-    assert "slurm_readiness = metric_slurm_submission_readiness(batch_status, overwrite=OVERWRITE)" in source
-    assert "All metric batch outputs already exist; skipping metric Slurm submission." in source
+    assert "from spatial_vtk.metrics import metric_manifest_batch_status" not in source
+    assert "metric_manifest_batch_status(" not in source
+    assert "metric_slurm_submission_readiness(" not in source
+    assert "slurm_readiness = metric_slurm_submission_readiness_from_config(" in source
+    assert "merge_readiness = metric_batch_merge_readiness_from_config(" in source
+    assert "downstream_readiness = metric_outputs_readiness_from_config(" in source
     assert '"incomplete_only": not OVERWRITE' in source
     assert '"overwrite_batches": OVERWRITE' in source
-    assert "Metric batches are incomplete:" in source
-    assert "sources=(metric_manifest_path, *batch_status.completed_outputs)" in source
+    assert "metric_manifest_path.exists()" not in source
+    assert "metric_rows_path.exists()" not in source
+    assert "sources=(metric_manifest_path, *batch_status.completed_outputs)" not in source
 
 
 def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:

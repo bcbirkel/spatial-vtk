@@ -17,11 +17,14 @@ from typing import Any
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io import metric_plan_from_config
+from spatial_vtk.io.output_paths import OutputReadiness, output_readiness
 from spatial_vtk.io.preprocessing import preprocessed_waveform_metadata_paths
 from spatial_vtk.io.tables import read_table, write_table
 from spatial_vtk.metrics.workflow.execution import (
+    MetricSlurmSubmissionReadiness,
     merge_batch_outputs,
     metric_manifest_batch_status,
+    metric_slurm_submission_readiness,
     write_task_manifest,
 )
 from spatial_vtk.metrics.workflow.inventory import build_metric_waveform_inventories_from_trace_metadata
@@ -292,6 +295,129 @@ def write_metrics_slurm_script_from_config(
     }
 
 
+def metric_slurm_submission_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    manifest: str | Path | None = None,
+    overwrite: bool = False,
+) -> OutputReadiness | MetricSlurmSubmissionReadiness:
+    """Return readiness for writing or submitting configured metric Slurm work.
+
+    The returned object is compatible with
+    ``spatial_vtk.config.run_notebook_step_if_needed``. If the manifest is
+    missing, the decision is a non-running ``OutputReadiness`` with the manifest
+    shown as a missing input. Once the manifest exists, the decision reports
+    missing metric batch outputs through ``metric_slurm_submission_readiness``.
+    """
+
+    config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    manifest_path = (
+        Path(manifest).expanduser()
+        if manifest is not None
+        else _default_metric_manifest_path(config, prefer_cached=True)
+    )
+    script_path = _metric_slurm_script_path(config)
+    if not manifest_path.exists():
+        return output_readiness(
+            {"metric_slurm_script_path": script_path},
+            inputs={"metric_manifest_path": manifest_path},
+            missing_input_message="Metric manifest is not ready yet.",
+        )
+    return metric_slurm_submission_readiness(metric_manifest_batch_status(manifest_path), overwrite=overwrite)
+
+
+def metric_batch_merge_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    manifest: str | Path | None = None,
+    output: str | Path | None = None,
+    overwrite: bool = False,
+    missing_batch_display_limit: int = 20,
+) -> OutputReadiness:
+    """Return readiness for merging configured metric batch outputs."""
+
+    config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    manifest_path = (
+        Path(manifest).expanduser()
+        if manifest is not None
+        else _default_metric_manifest_path(config, prefer_cached=True)
+    )
+    output_path = (
+        Path(output).expanduser()
+        if output is not None
+        else resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
+    )
+    if not manifest_path.exists():
+        return output_readiness(
+            {"metric_rows_path": output_path},
+            inputs={"metric_manifest_path": manifest_path},
+            missing_input_message="Metric manifest is not ready yet.",
+        )
+    status = metric_manifest_batch_status(manifest_path)
+    if not status.all_complete:
+        batch_inputs = {"metric_manifest_path": manifest_path}
+        missing_pairs = tuple(zip(status.missing_batches, status.missing_outputs))
+        if missing_batch_display_limit >= 0:
+            missing_pairs = missing_pairs[:missing_batch_display_limit]
+        batch_inputs.update({f"metric_batch_{index:04d}_path": path for index, path in missing_pairs})
+        display_suffix = ""
+        if 0 <= missing_batch_display_limit < status.missing_count:
+            display_suffix = f" Showing first {missing_batch_display_limit} missing batch path(s)."
+        return output_readiness(
+            {"metric_rows_path": output_path},
+            inputs=batch_inputs,
+            missing_input_message=(
+                f"Metric batches are incomplete: {status.missing_count} batch output(s) missing. "
+                f"Wait for Slurm to finish, then rerun this cell.{display_suffix}"
+            ),
+        )
+    return output_readiness(
+        {"metric_rows_path": output_path},
+        inputs={"metric_manifest_path": manifest_path},
+        sources={
+            "metric_manifest_path": manifest_path,
+            **{
+                f"metric_batch_{index:04d}_path": path
+                for index, path in zip(status.completed_batches, status.completed_outputs)
+            },
+        },
+        overwrite=overwrite,
+        missing_input_message="Metric manifest is not ready yet.",
+        current_message="Merged metric rows are current; skipping.",
+    )
+
+
+def metric_outputs_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    metric_rows: str | Path | None = None,
+    overwrite: bool = False,
+) -> OutputReadiness:
+    """Return readiness for downstream configured metric output tables."""
+
+    config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    metric_rows_path = (
+        Path(metric_rows).expanduser()
+        if metric_rows is not None
+        else resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
+    )
+    return output_readiness(
+        {
+            "metrics_long_path": resolve_output_path("metrics_long", kind="table", cfg=config, create_parent=True),
+            "path_table_path": resolve_output_path("path_table", kind="table", cfg=config, create_parent=True),
+            "path_summary_path": resolve_output_path("path_summary", kind="table", cfg=config, create_parent=True),
+        },
+        inputs={"metric_rows_path": metric_rows_path},
+        sources={"metric_rows_path": metric_rows_path},
+        overwrite=overwrite,
+        missing_input_message="Merged metric rows are not ready yet.",
+        current_message="Downstream metric outputs are current; skipping.",
+    )
+
+
 def merge_metric_batches_from_config(
     *,
     config_path: str | Path | None = None,
@@ -303,8 +429,16 @@ def merge_metric_batches_from_config(
     """Merge configured metric batch outputs into the standard metric row table."""
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
-    manifest_path = Path(manifest).expanduser() if manifest is not None else _default_metric_manifest_path(config, prefer_cached=True)
-    output_path = Path(output).expanduser() if output is not None else resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
+    manifest_path = (
+        Path(manifest).expanduser()
+        if manifest is not None
+        else _default_metric_manifest_path(config, prefer_cached=True)
+    )
+    output_path = (
+        Path(output).expanduser()
+        if output is not None
+        else resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
+    )
     path = merge_batch_outputs(manifest_path, output_path, require_all=require_all)
     return {
         "metric_rows_path": str(path),
@@ -448,6 +582,9 @@ def _metric_snapshot_task_table(snapshot: Any, config: SpatialVTKConfig) -> Any:
 
 __all__ = [
     "build_metric_waveform_inventories_from_config",
+    "metric_batch_merge_readiness_from_config",
+    "metric_outputs_readiness_from_config",
+    "metric_slurm_submission_readiness_from_config",
     "merge_metric_batches_from_config",
     "plan_metric_tasks_from_config",
     "summarize_metric_snapshot_tasks_from_config",

@@ -24,8 +24,11 @@ def test_public_imports():
         amplitude_spectrum,
         calculate_metrics_for_pairs,
         compute_metrics_pair,
+        metric_batch_merge_readiness_from_config,
         metric_manifest_batch_status,
+        metric_outputs_readiness_from_config,
         metric_slurm_submission_readiness,
+        metric_slurm_submission_readiness_from_config,
     )
     from spatial_vtk.metrics.plot import MetricFigureContext
     from spatial_vtk.io import (
@@ -70,8 +73,11 @@ def test_public_imports():
     assert callable(amplitude_spectrum)
     assert callable(calculate_metrics_for_pairs)
     assert callable(compute_metrics_pair)
+    assert callable(metric_batch_merge_readiness_from_config)
     assert callable(metric_manifest_batch_status)
+    assert callable(metric_outputs_readiness_from_config)
     assert callable(metric_slurm_submission_readiness)
+    assert callable(metric_slurm_submission_readiness_from_config)
     assert callable(MetricFigureContext.from_frame)
     assert callable(inspect_synthetic_format)
     assert callable(load_configured_input_tables)

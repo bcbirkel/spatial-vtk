@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Added config-backed metric readiness helpers for Slurm submission, batch
+   merging, and downstream metric output tables. Large-run Step 3 now uses
+   those Python package helpers directly instead of notebook-local manifest and
+   metric-row path checks, keeping the notebook focused on workflow steps while
+   package code owns the large-run readiness logic.
    Added ``OutputGroup.first_existing_path()`` and
    ``OutputGroup.preview_first_existing_table()`` for ordered fallback table
    previews. Large-run Steps 3, 6, and 7 now preview metric tables through

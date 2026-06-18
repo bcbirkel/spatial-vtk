@@ -14,10 +14,13 @@ from spatial_vtk.metrics.workflow import (
     build_metric_waveform_inventories_from_config,
     build_metric_waveform_inventories_from_trace_metadata,
     cache_metric_manifest_waveforms,
+    metric_batch_merge_readiness_from_config,
     merge_metric_batches_from_config,
     merge_batch_outputs,
     metric_manifest_batch_status,
+    metric_outputs_readiness_from_config,
     metric_slurm_submission_readiness,
+    metric_slurm_submission_readiness_from_config,
     plan_metric_tasks,
     plan_metric_tasks_from_config,
     prepare_metric_workflow_outputs,
@@ -1085,6 +1088,21 @@ metrics:
         ]
     ).to_parquet(tables / "qc_inventory_overlap.parquet", index=False)
 
+    missing_manifest_slurm = metric_slurm_submission_readiness_from_config(config_path=config_path)
+    assert missing_manifest_slurm.should_run is False
+    assert missing_manifest_slurm.reason == "missing_inputs"
+    assert "Metric manifest is not ready yet" in missing_manifest_slurm.message
+
+    missing_manifest_merge = metric_batch_merge_readiness_from_config(config_path=config_path)
+    assert missing_manifest_merge.should_run is False
+    assert missing_manifest_merge.reason == "missing_inputs"
+    assert "metric_manifest_path" in set(missing_manifest_merge.status_frame()["name"])
+
+    missing_rows_outputs = metric_outputs_readiness_from_config(config_path=config_path)
+    assert missing_rows_outputs.should_run is False
+    assert missing_rows_outputs.reason == "missing_inputs"
+    assert "Merged metric rows are not ready yet" in missing_rows_outputs.message
+
     plan_result = plan_metric_tasks_from_config(config_path=config_path, manifest=True, batch_count=1)
 
     manifest_path = Path(plan_result["manifest_path"])
@@ -1097,6 +1115,15 @@ metrics:
     assert plan_result["metric_qc_table_path"] == str(tables / "qc_inventory_overlap.parquet")
     assert len(manifest.tasks) == 1
     assert manifest.batches[0]["output_path"].endswith("outputs/metric_batches/metrics_batch_0000.csv")
+
+    incomplete_slurm = metric_slurm_submission_readiness_from_config(config_path=config_path)
+    assert incomplete_slurm.should_run is True
+    assert incomplete_slurm.reason == "incomplete_batches"
+
+    incomplete_merge = metric_batch_merge_readiness_from_config(config_path=config_path)
+    assert incomplete_merge.should_run is False
+    assert incomplete_merge.reason == "missing_inputs"
+    assert "Metric batches are incomplete" in incomplete_merge.message
 
     slurm_result = write_metrics_slurm_script_from_config(config_path=config_path, incomplete_only=True)
     script = Path(slurm_result["script_path"])
@@ -1120,6 +1147,11 @@ metrics:
         }
     ).to_csv(batch_output, index=False)
 
+    ready_to_merge = metric_batch_merge_readiness_from_config(config_path=config_path)
+    assert ready_to_merge.should_run is True
+    assert ready_to_merge.reason == "missing_outputs"
+    assert "metric_batch_0000_path" in set(ready_to_merge.status_frame()["name"])
+
     merge_result = merge_metric_batches_from_config(config_path=config_path)
 
     merged = pd.read_parquet(merge_result["metric_rows"])
@@ -1127,6 +1159,13 @@ metrics:
     assert merge_result["metric_rows_path"] == merge_result["metric_rows"]
     assert merge_result["metric_manifest_path"] == merge_result["manifest"]
     assert merged.loc[0, "station"] == "STA1"
+
+    ready_for_outputs = metric_outputs_readiness_from_config(config_path=config_path)
+    assert ready_for_outputs.should_run is True
+    assert ready_for_outputs.reason == "missing_outputs"
+    assert {"metrics_long_path", "path_table_path", "path_summary_path"}.issubset(
+        set(ready_for_outputs.status_frame()["name"])
+    )
 
     complete_slurm = write_metrics_slurm_script_from_config(config_path=config_path, incomplete_only=True)
     assert complete_slurm["all_complete"] is True
