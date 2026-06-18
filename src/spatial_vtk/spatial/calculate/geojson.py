@@ -503,6 +503,131 @@ def add_geojson_metadata_to_metrics(
     raise ValueError("target must be 'station', 'event', or 'path'.")
 
 
+def geojson_metric_region_frame(
+    metrics_df: pd.DataFrame,
+    geojson_path: str | Path | None = None,
+    *,
+    target: Literal["station", "event"] = "station",
+    selector: object = "all",
+    region_col: str | None = None,
+    require_inside: bool = True,
+    require_overlap: bool = True,
+) -> pd.DataFrame:
+    """Return metric rows annotated and optionally filtered by GeoJSON region.
+
+    Parameters
+    ----------
+    metrics_df
+        Metric rows with station or event coordinates.
+    geojson_path
+        GeoJSON polygon file. When omitted and annotation is needed,
+        ``paths.region_geojson`` from the active config is used.
+    target
+        ``"station"`` or ``"event"`` point membership to annotate.
+    selector
+        Polygon selector passed to :func:`add_geojson_metadata_to_metrics` when
+        annotation columns are not already present.
+    region_col
+        Optional display-label column to add from ``<target>_geojson_labels``.
+        Defaults to ``"<target>_geojson_region"``.
+    require_inside
+        Whether to keep only rows inside at least one selected polygon and with
+        a non-empty label.
+    require_overlap
+        Whether annotation should raise when no polygons overlap the data.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Annotated and optionally filtered metric rows.
+    """
+
+    if target not in {"station", "event"}:
+        raise ValueError("target must be 'station' or 'event'.")
+    labels_col = f"{target}_geojson_labels"
+    inside_col = f"{target}_geojson_inside_any"
+    if labels_col in metrics_df.columns and inside_col in metrics_df.columns:
+        frame = metrics_df.copy()
+    else:
+        frame = add_geojson_metadata_to_metrics(
+            metrics_df,
+            geojson_path,
+            target=target,
+            selector=selector,
+            require_overlap=require_overlap,
+        )
+    if require_inside:
+        frame = frame.loc[
+            frame[inside_col].fillna(False) & frame[labels_col].fillna("").astype(str).ne("")
+        ].copy()
+    output_region_col = region_col or f"{target}_geojson_region"
+    frame[output_region_col] = frame[labels_col].fillna("").astype(str).str.replace("_", " ", regex=False)
+    return frame.reset_index(drop=True)
+
+
+def geojson_metric_subset_frame(
+    metrics_df: pd.DataFrame | None,
+    *,
+    metric: str | None = None,
+    passband: Sequence[str] | str | None = None,
+    component: str | None = None,
+    model: str | None = None,
+    event_region: str | None = None,
+    station_region: str | None = None,
+    event_ids: Sequence[str] | str | None = None,
+    metric_col: str = "metric",
+    band_col: str = "band",
+    component_col: str = "component",
+    model_col: str = "model",
+    event_col: str = "event_id",
+) -> pd.DataFrame:
+    """Return a metric-row subset using common metric and GeoJSON filters.
+
+    Parameters
+    ----------
+    metrics_df
+        Metric rows, usually after GeoJSON annotation.
+    metric, passband, component, model
+        Optional metric dimension filters.
+    event_region, station_region
+        Optional values for ``event_geojson_labels`` and
+        ``station_geojson_labels``.
+    event_ids
+        Optional event-id filter.
+    *_col
+        Column names used for metric dimensions.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Filtered metric rows. Missing optional filter columns are ignored unless
+        their corresponding filter is supplied.
+    """
+
+    if metrics_df is None or metrics_df.empty:
+        return pd.DataFrame()
+    frame = metrics_df.copy()
+    filters: list[tuple[str, object, bool]] = [
+        (metric_col, metric, False),
+        (band_col, passband, False),
+        (component_col, component, False),
+        (model_col, model, True),
+        ("event_geojson_labels", event_region, False),
+        ("station_geojson_labels", station_region, False),
+        (event_col, event_ids, False),
+    ]
+    for column, value, allow_missing in filters:
+        if value is None:
+            continue
+        if column not in frame.columns:
+            if allow_missing:
+                continue
+            raise KeyError(f"Missing metric subset column: {column!r}")
+        values = _coerce_filter_values(value)
+        frame = frame.loc[frame[column].astype(str).isin(values)].copy()
+    return frame.reset_index(drop=True)
+
+
 def build_geojson_region_summary(
     df: pd.DataFrame,
     geojson_path: str | Path,
@@ -969,6 +1094,16 @@ def _maybe_write_csv(df: pd.DataFrame, *, savecsv: bool, outpath: str | Path | N
     path = Path(outpath).expanduser()
     path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(path, index=False)
+
+
+def _coerce_filter_values(value: object) -> set[str]:
+    """Return string filter values from one scalar or sequence."""
+
+    if isinstance(value, str):
+        return {value}
+    if isinstance(value, Iterable):
+        return {str(item) for item in value if item is not None}
+    return {str(value)}
 
 
 def _first_available_column(df: pd.DataFrame, candidates: Sequence[str]) -> str | None:

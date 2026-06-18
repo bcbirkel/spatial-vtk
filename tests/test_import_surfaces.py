@@ -54,6 +54,8 @@ def test_public_imports():
         corridor_record_pair_frame,
         corridor_record_preview_frame,
         geojson_polygon_preview_table,
+        geojson_metric_region_frame,
+        geojson_metric_subset_frame,
         run_boundary_corridor_workflow_from_config,
         run_geojson_region_summary_workflow_from_config,
         run_spatial_derived_outputs_workflow_from_config,
@@ -126,6 +128,8 @@ def test_public_imports():
     assert callable(build_station_edge_corridors)
     assert callable(classify_paths_with_geojson)
     assert callable(geojson_polygon_preview_table)
+    assert callable(geojson_metric_region_frame)
+    assert callable(geojson_metric_subset_frame)
     assert callable(build_dashboard_summaries)
     assert callable(dashboard_readiness_summary_frame)
     assert callable(launch_configured_dashboards_from_notebook_settings)
@@ -441,6 +445,8 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
         "summarize_residuals_by_path_bin",
         "annotate_points_with_geojson",
         "classify_paths_with_geojson",
+        "geojson_metric_region_frame",
+        "geojson_metric_subset_frame",
         "build_station_edge_corridors",
         "corridor_record_pair_frame",
         "corridor_record_preview_frame",

@@ -23,6 +23,8 @@ from spatial_vtk.spatial.calculate import (
     build_station_edge_corridors,
     classify_records_by_corridors,
     classify_paths_with_geojson,
+    geojson_metric_region_frame,
+    geojson_metric_subset_frame,
     geojson_polygon_preview_table,
     load_geojson_polygons,
     run_boundary_corridor_workflow,
@@ -125,6 +127,61 @@ def test_geojson_point_and_path_controls_are_general(tmp_path):
     assert int(event_rows["unique_records"].max()) == 3
     assert int(path_rows["unique_records"].max()) == 3
     assert "outside" in set(station_rows["region"])
+
+
+def test_geojson_metric_region_and_subset_helpers_package_notebook_filters(tmp_path):
+    """GeoJSON metric row selections should not need notebook-local filters."""
+
+    geojson = _write_geojson(
+        tmp_path / "regions.geojson",
+        [
+            _feature("West Basin", Polygon([(-118.4, 34.0), (-118.0, 34.0), (-118.0, 34.4), (-118.4, 34.4)])),
+            _feature("East Block", Polygon([(-117.8, 34.0), (-117.4, 34.0), (-117.4, 34.4), (-117.8, 34.4)])),
+        ],
+    )
+    metrics = pd.DataFrame(
+        {
+            "model": ["m1", "m1", "m1"],
+            "metric": ["PGA", "PGV", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "2-3 sec"],
+            "component": ["Z", "Z", "R"],
+            "event_id": ["e1", "e2", "e3"],
+            "station": ["S1", "S2", "S3"],
+            "event_lon": [-118.2, -118.6, -117.6],
+            "event_lat": [34.2, 34.2, 34.2],
+            "sta_lon": [-118.2, -117.6, -118.8],
+            "sta_lat": [34.2, 34.2, 34.2],
+            "residual": [0.2, -0.1, 0.3],
+        }
+    )
+
+    station_rows = geojson_metric_region_frame(
+        metrics,
+        geojson,
+        target="station",
+        region_col="station_region",
+    )
+    event_rows = geojson_metric_region_frame(
+        station_rows,
+        geojson,
+        target="event",
+        region_col="event_region",
+        require_inside=False,
+    )
+    selected = geojson_metric_subset_frame(
+        event_rows,
+        metric="PGA",
+        passband=["1-2 sec"],
+        component="Z",
+        event_region="West Basin",
+        station_region="West Basin",
+    )
+
+    assert station_rows["station"].tolist() == ["S1", "S2"]
+    assert station_rows["station_region"].tolist() == ["West Basin", "East Block"]
+    assert "event_region" in event_rows.columns
+    assert selected[["event_id", "station"]].to_dict("records") == [{"event_id": "e1", "station": "S1"}]
+    assert geojson_metric_subset_frame(event_rows, event_ids=["e2"])["event_id"].tolist() == ["e2"]
 
 
 def test_geojson_region_summary_reads_only_needed_table_columns(tmp_path):

@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-18
+   Added ``geojson_metric_region_frame()`` and
+   ``geojson_metric_subset_frame()`` to the public spatial API. Rewired
+   standard Step 5 and Step 6 GeoJSON metric plots to use these helpers instead
+   of notebook-local GeoJSON label and metric-dimension filtering.
    Added ``corridor_record_pair_frame()`` to the public spatial API and rewired
    standard Step 5 corridor maps, waveform joins, and selected-path maps to use
    it instead of repeated event-station ``drop_duplicates`` snippets in the

@@ -1100,8 +1100,13 @@ def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
     assert "from spatial_vtk.spatial import (" in source
     assert "load_configured_input_paths(" in source
     assert "load_configured_input_tables(" in source
+    assert "geojson_metric_region_frame(" in source
+    assert "geojson_metric_subset_frame(" in source
     assert "corridor_record_pair_frame(" in source
     assert "corridor_record_preview_frame(" in source
+    assert "metrics_by_station_region.loc[" not in source
+    assert "metrics_by_regions.loc[" not in source
+    assert 'metrics_by_regions["metric"].astype(str).eq' not in source
     assert 'drop_duplicates(["event_id", "station"])' not in source
     assert '[[\"event_id\", \"station\"]].drop_duplicates()' not in source
     assert "drop_duplicates().head()" not in source
@@ -1739,7 +1744,8 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     assert "heatmap_figure_path" in source
     assert "load_output_table(" not in source
     assert "figure_dir /" not in source
-    assert "from spatial_vtk.spatial import add_geojson_metadata_to_metrics" in source
+    assert "geojson_metric_region_frame(" in source
+    assert "from spatial_vtk.spatial import add_geojson_metadata_to_metrics" not in source
     assert "metric_plot_input_summary_frame(" in source
     assert "event_display_label(events, waveform_event_id)" in source
     assert "station_event_waveform_order_frame(waveform_records, max_traces=12)" in source

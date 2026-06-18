@@ -78,6 +78,9 @@ Public helpers exposed by ``spatial_vtk.spatial``:
        exports.
    * - ``annotate_points_with_geojson`` and ``classify_paths_with_geojson``
      - Add region and path-control metadata from configured GeoJSON polygons.
+   * - ``geojson_metric_region_frame`` and ``geojson_metric_subset_frame``
+     - Annotate and filter metric rows for GeoJSON region plotting without
+       repeating label-column and metric-dimension filters in notebooks.
    * - ``build_station_edge_corridors`` and ``select_records_by_corridors``
      - Prepare corridor records for path-focused diagnostics.
    * - ``corridor_record_pair_frame``
@@ -115,6 +118,10 @@ for users who need narrower module references.
 .. autofunction:: spatial_vtk.spatial.corridor_record_preview_frame
 
 .. autofunction:: spatial_vtk.spatial.corridor_record_pair_frame
+
+.. autofunction:: spatial_vtk.spatial.geojson_metric_region_frame
+
+.. autofunction:: spatial_vtk.spatial.geojson_metric_subset_frame
 
 .. automodule:: spatial_vtk.spatial.calculate.prepare_stats
    :members:
