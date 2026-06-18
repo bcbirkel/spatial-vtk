@@ -748,6 +748,36 @@ def test_public_metric_plots_apply_robust_outlier_limits(tmp_path: Path) -> None
     assert max(abs(value) for value in station_map.axes[0].collections[-1].get_clim()) < 5.0
 
 
+def test_metric_maps_include_metric_value_titles_and_reserved_colorbar_space(tmp_path: Path) -> None:
+    """Metric maps should identify the plotted value without cramped colorbars."""
+
+    metrics = _metric_rows()
+    model_map = plot_metric_map_by_model(
+        metrics,
+        tmp_path / "model_map_title.png",
+        value_col="log2_residual",
+        add_basemap=False,
+    )
+    period_map = plot_station_metric_map_by_period(
+        metrics,
+        tmp_path / "period_map_title.png",
+        value_col="log2_residual",
+        add_basemap=False,
+    )
+
+    model_title = model_map._suptitle.get_text()
+    period_title = period_map._suptitle.get_text()
+    assert "PGA, PSA" in model_title or "Log2" in model_title
+    assert "log2(observed / synthetic)" in model_title
+    assert "PSA" in period_title
+    assert "PSA oscillator periods" in period_title
+
+    model_colorbar_ax = model_map.axes[-1]
+    period_colorbar_ax = period_map.axes[-1]
+    assert model_colorbar_ax.get_position().y1 <= 0.70
+    assert period_colorbar_ax.get_position().y1 <= 0.80
+
+
 def test_spatial_metric_maps_write_optional_row_sidecars(tmp_path: Path) -> None:
     """Spatial metric map figures should optionally write plotted/source rows."""
 

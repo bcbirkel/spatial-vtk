@@ -118,7 +118,7 @@ def plot_station_metric_map_by_period(
 
     ncols = min(3, max(1, len(periods)))
     nrows = int(math.ceil(len(periods) / ncols))
-    fig, axes = plt.subplots(nrows, ncols, figsize=(5.2 * ncols + 1.0, 4.1 * nrows + 0.8), dpi=180, squeeze=False)
+    fig, axes = plt.subplots(nrows, ncols, figsize=(5.4 * ncols + 1.4, 4.2 * nrows + 1.2), dpi=180, squeeze=False)
     axes_flat = axes.ravel()
     values_all = pd.to_numeric(plot_df[value_col], errors="coerce")
     cmap, vmin, vmax = _color_settings(values_all.to_numpy(dtype=float), value_col, plot_df)
@@ -148,8 +148,9 @@ def plot_station_metric_map_by_period(
     for ax in axes_flat[len(periods) :]:
         ax.set_axis_off()
     if scatter is not None:
-        cbar_ax = fig.add_axes([0.91, 0.18, 0.018, 0.62])
+        cbar_ax = fig.add_axes([0.925, 0.18, 0.016, 0.58])
         fig.colorbar(scatter, cax=cbar_ax, label=value_column_display_name(value_col))
+    title_text = _title_with_value(title, value_col, plot_df)
     context = figure_context_text(
         plot_df,
         value_col=value_col,
@@ -162,8 +163,8 @@ def plot_station_metric_map_by_period(
         include_component=True,
         extra=[_psa_periods_summary(periods), subset_label] if subset_label else [_psa_periods_summary(periods)],
     )
-    fig.suptitle(f"{_title_with_value(title, value_col, plot_df)}\n{context}" if context else _title_with_value(title, value_col, plot_df), y=0.975, fontsize=10)
-    fig.subplots_adjust(left=0.055, right=0.88, bottom=0.07, top=0.86, wspace=0.22, hspace=0.42)
+    fig.suptitle(f"{title_text}\n{context}" if context else title_text, y=0.985, fontsize=10)
+    fig.subplots_adjust(left=0.055, right=0.89, bottom=0.07, top=0.80, wspace=0.24, hspace=0.46)
     return finish_figure_with_sidecar(
         fig,
         output_path,
@@ -314,9 +315,10 @@ def plot_metric_map_by_model(
             include_period=False,
             include_component=False,
         )
-    fig.subplots_adjust(left=0.055, right=0.86, bottom=0.13, top=0.70, wspace=0.20)
-    cbar_ax = fig.add_axes([0.895, 0.18, 0.018, 0.48])
+    fig.subplots_adjust(left=0.055, right=0.87, bottom=0.13, top=0.68, wspace=0.22)
+    cbar_ax = fig.add_axes([0.91, 0.18, 0.016, 0.44])
     fig.colorbar(scatter, cax=cbar_ax, label=value_column_display_name(value_col))
+    title_text = _title_with_value(title, value_col, plot_df)
     context = figure_context_text(
         plot_df,
         value_col=value_col,
@@ -329,7 +331,7 @@ def plot_metric_map_by_model(
         include_component=True,
         extra=[subset_label] if subset_label else None,
     )
-    fig.suptitle(f"{title}\n{context}" if context else _title_with_value(title, value_col, plot_df), y=0.96, fontsize=11)
+    fig.suptitle(f"{title_text}\n{context}" if context else title_text, y=0.975, fontsize=11)
     return finish_figure_with_sidecar(
         fig,
         output_path,
