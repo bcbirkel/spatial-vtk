@@ -297,7 +297,8 @@ Step 4: Spatial Statistics
      - block holdout, REDCAP, and pattern-similarity tables
    * - Render large-run spatial figures
      - ``spatial_vtk.spatial.plot.prepare_spatial_figure_context``
-     - saved spatial figures and optional row-provenance sidecars
+     - saved spatial figures, package-generated spatial table/dimension status
+       summaries, and optional row-provenance sidecars
 
 Step 5: GeoJSON Regions and Corridors
 -------------------------------------

@@ -184,6 +184,13 @@ same row factories and aggregation audit metadata across Step 3 and Step 4.
    Prepare station summaries for grid and model-map plotting without putting
    dataframe manipulation logic in notebooks.
 
+``status_frame`` and ``dimension_summary_frame``
+   Return small notebook tables for loaded Step 4 output-table status and
+   metric/event-centered dimension coverage. Use them before rendering figures
+   to confirm which spatial outputs exist, which value columns will be plotted,
+   and how many metric/passband/component/model/event/station values are
+   represented.
+
 .. autoclass:: spatial_vtk.spatial.plot.SpatialFigureContext
    :members:
 

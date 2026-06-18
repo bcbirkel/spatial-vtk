@@ -1300,6 +1300,16 @@ def test_spatial_figure_context_writes_overview_plots_with_empty_missing_tables(
         },
         paths={},
     )
+    status = context.status_frame().set_index("name")
+    assert bool(status.loc["metric_field", "loaded"]) is True
+    assert status.loc["metric_field", "row_count"] == 1
+    assert status.loc["metric_field", "value_col"] == "log2_residual"
+    assert "event-station metric field" in status.loc["metric_field", "role"]
+    dimensions = context.dimension_summary_frame()
+    metric_dimensions = dimensions.loc[dimensions["table"].eq("metric_field")].set_index("dimension")
+    assert metric_dimensions.loc["metric", "values_preview"] == "PGA"
+    assert metric_dimensions.loc["station", "unique_count"] == 1
+
     calls: list[dict[str, object]] = []
 
     def _fake_write_spatial_plot(base, item, func, df=None, **kwargs):  # noqa: ANN001, ANN202

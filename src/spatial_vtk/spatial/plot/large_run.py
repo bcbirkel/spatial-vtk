@@ -237,6 +237,58 @@ class SpatialFigureContext:
             )
         return context
 
+    def status_frame(self) -> pd.DataFrame:
+        """Return loaded table status for this spatial figure context.
+
+        The frame reports the configured Step 4 table paths, whether each table
+        exists and was loaded, and the loaded row/column counts. It is safe to
+        display in notebooks because it summarizes tables already loaded by the
+        context and does not read additional large files.
+        """
+
+        rows: list[dict[str, Any]] = []
+        for key in SPATIAL_FIGURE_TABLE_KEYS:
+            path = self.paths.get(key)
+            table = self.tables.get(key)
+            loaded = table is not None
+            rows.append(
+                {
+                    "name": key,
+                    "role": _spatial_table_role(key),
+                    "path": None if path is None else str(path),
+                    "exists": bool(path.exists()) if path is not None else None,
+                    "loaded": loaded,
+                    "row_count": int(len(table)) if loaded else 0,
+                    "column_count": int(len(table.columns)) if loaded else 0,
+                    "value_col": _spatial_table_value_col(key, table, self),
+                }
+            )
+        station_table = self.site_metadata
+        rows.append(
+            {
+                "name": "prepared_stations",
+                "role": "site metadata for geology and station diagnostics",
+                "path": None,
+                "exists": None,
+                "loaded": station_table is not None,
+                "row_count": int(len(station_table)) if station_table is not None else 0,
+                "column_count": int(len(station_table.columns)) if station_table is not None else 0,
+                "value_col": None,
+            }
+        )
+        return pd.DataFrame(rows)
+
+    def dimension_summary_frame(self) -> pd.DataFrame:
+        """Return metric/event-centered dimension coverage for spatial figures."""
+
+        frames = [
+            self.metric_context.dimension_summary_frame().assign(table="metric_field"),
+            self.event_context.dimension_summary_frame().assign(table="event_centered_residuals"),
+        ]
+        out = pd.concat(frames, ignore_index=True, sort=False)
+        columns = ["table", *[column for column in out.columns if column != "table"]]
+        return out.loc[:, columns]
+
     @property
     def metric_field(self) -> pd.DataFrame | None:
         """Loaded metric-field table."""
@@ -1123,6 +1175,61 @@ def _columns_for_spatial_table(key: str) -> tuple[str, ...] | None:
     if key in SPATIAL_EVENT_ROW_TABLE_KEYS:
         return SPATIAL_EVENT_ROW_COLUMNS
     return None
+
+
+def _spatial_table_role(key: str) -> str:
+    """Return a notebook-facing role label for one spatial output table."""
+
+    roles = {
+        "metric_field": "event-station metric field used for station/path spatial figures",
+        "event_centered_residuals": "event-centered residuals used for event-normalized figures",
+        "station_bias": "station bias summary table",
+        "distance_bin_correlations": "distance-bin correlation summary table",
+        "clusters": "cluster assignments",
+        "pca_station_scores": "station PCA scores",
+        "path_summary": "path-level residual summary table",
+        "pca_explained_variance": "PCA explained variance",
+        "pca_feature_loadings": "PCA feature loadings",
+        "cluster_solution_scores": "cluster solution scores",
+        "cluster_feature_summary": "cluster feature summary",
+        "block_holdout_predictions": "spatial block-holdout predictions",
+        "corridors": "boundary corridor records",
+        "redcap_clusters": "REDCAP spatial clusters",
+        "pattern_similarity_station_anomalies": "pattern-similarity station anomalies",
+        "morans_i": "Moran's I spatial autocorrelation",
+        "geology_contrasts": "geology contrast summary table",
+    }
+    return roles.get(key, key.replace("_", " "))
+
+
+def _spatial_table_value_col(
+    key: str,
+    table: pd.DataFrame | None,
+    context: SpatialFigureContext,
+) -> str | None:
+    """Return the primary plotted value column for one loaded spatial table."""
+
+    if key == "metric_field":
+        return context.metric_value_col
+    if key == "event_centered_residuals":
+        return context.event_value_col
+    return _first_existing(
+        table,
+        [
+            "log2_residual",
+            "field_value",
+            "field_centered",
+            "mean_centered",
+            "event_centered_residual",
+            "residual",
+            "median_residual",
+            "mean_pair_correlation",
+            "semivariance",
+            "prediction_error",
+            "score",
+            "explained_variance_ratio",
+        ],
+    )
 
 
 def _existing_columns(path: Path, columns: Sequence[str] | None) -> list[str] | None:

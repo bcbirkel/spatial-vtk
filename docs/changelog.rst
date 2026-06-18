@@ -8,6 +8,11 @@ Changelog
    filter defaults, sidecar settings, and metric/passband/component/model/event
    station coverage before rendering figures. Large-run Step 3 now displays
    those package-generated audit tables next to the plotting context setup.
+   Added matching ``SpatialFigureContext.status_frame()`` and
+   ``SpatialFigureContext.dimension_summary_frame()`` helpers for Step 4
+   large-run spatial figures. The Step 4 notebook now displays loaded spatial
+   output-table status, plotted value-column choices, and metric/event-centered
+   dimension coverage before rendering figure batches.
    Added config-backed metric readiness helpers for Slurm submission, batch
    merging, and downstream metric output tables. Large-run Step 3 now uses
    those Python package helpers directly instead of notebook-local manifest and
