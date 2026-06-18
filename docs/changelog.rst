@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-17
+   Updated the standard and large-run Step 5/6 plotting notebooks to read
+   workflow output tables through ``OutputGroup.load_tables()`` instead of
+   direct ``load_output_table`` calls.
    Updated the large-run Step 1 notebook to read prepared metadata and context
    figure tables through ``OutputGroup.load_tables()`` after package workflow
    execution.

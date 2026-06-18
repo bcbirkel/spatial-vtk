@@ -681,6 +681,9 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "run_geojson_region_summary_workflow_from_config," in source
     assert "run_boundary_corridor_workflow_from_config," in source
     assert "display_output_table_previews(" in source
+    assert "ingest_outputs.load_tables(" in source
+    assert "step_outputs.load_tables(" in source
+    assert "load_output_table(" not in source
     assert '"spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config"' not in source
     assert '"spatial_vtk.spatial.run_boundary_corridor_workflow_from_config"' not in source
     assert "geojson_readiness = step_outputs.readiness(" in source
@@ -996,6 +999,9 @@ def test_step05_uses_geojson_preview_helper() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "geojson_polygon_preview_table(" in source
+    assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" in source
+    assert "output_group(\"step_05_geojson\", cfg=cfg).load_tables(" in source
+    assert "load_output_table(" not in source
     assert "load_geojson_polygons(" not in source
     assert "region_preview = pd.DataFrame(" not in source
 
@@ -1008,13 +1014,28 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert 'load_output_table("comparison_eligible_records")' in source
+    assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" in source
+    assert "output_group(\"step_06_plotting\", cfg=cfg).load_tables(" in source
+    assert "load_output_table(" not in source
     assert "from spatial_vtk.spatial import add_geojson_metadata_to_metrics" in source
     assert "from spatial_vtk.spatial.calculate import" not in source
     assert 'read_config_table("paths.metric_figure_snapshot")' in source
     assert 'cfg.path("paths.metric_figure_snapshot")' not in source
     assert "read_table(metric_source_path)" not in source
     assert "comparison_qc_status" not in source
+
+
+def test_large_run_step06_uses_grouped_table_loading() -> None:
+    """The large-run plotting notebook should read workflow outputs through OutputGroup."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_06_large_run_additional_plotting.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "step_outputs = output_group(\"step_06_plotting\")" in source
+    assert "event_stations = step_outputs.load_tables(" in source
+    assert "load_output_table(" not in source
 
 
 def test_large_run_step03_metric_figures_are_auditable_station_aggregations() -> None:
