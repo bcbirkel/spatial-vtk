@@ -97,6 +97,11 @@ the large-run notebooks.
    * - ``spatial_vtk.config.notebook_figure_sidecar_settings``
      - Read the notebook-side figure sidecar settings and return keyword
        arguments accepted by supported plotting helpers.
+   * - ``spatial_vtk.config.notebook_dashboard_launch_commands``
+     - Return config-backed dashboard launch settings. Use
+       ``metrics_launch_kwargs()`` and ``qc_launch_kwargs()`` with the package
+       dashboard launch helpers; the shell-safe command strings are retained as
+       a terminal fallback for long-lived dashboard sessions.
 
 Step 1: Metadata, Waveforms, and Record Coverage
 ------------------------------------------------
@@ -237,11 +242,13 @@ Step 7: Dashboard Datasets
      - ``spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets``
      - dashboard metric dataset root and dashboard summary table root
    * - Launch dashboards from Python
-     - ``spatial_vtk.visualize.dashboard.launch_configured_metrics_dashboard``,
+     - ``spatial_vtk.config.notebook_dashboard_launch_commands``,
+       ``spatial_vtk.visualize.dashboard.launch_configured_metrics_dashboard``,
        ``spatial_vtk.visualize.dashboard.launch_configured_qc_dashboard``,
        ``spatial_vtk.visualize.dashboard.launch_metrics_dashboard``, and
        ``spatial_vtk.visualize.dashboard.launch_qc_dashboard``
-     - local Streamlit processes configured from the same output registry
+     - local Streamlit processes configured from the same output registry, plus
+       optional terminal fallback commands
 
 Related API Pages
 -----------------

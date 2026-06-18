@@ -110,19 +110,24 @@ class NotebookFigureSidecarSettings:
 
 @dataclass(frozen=True)
 class NotebookDashboardCommands:
-    """Config-backed dashboard launch commands for workflow notebooks.
+    """Config-backed dashboard launch plan for workflow notebooks.
 
     Parameters
     ----------
     metrics_command, qc_command
-        Shell-safe commands for launching the metrics and QC dashboards.
+        Shell-safe fallback commands for launching the metrics and QC
+        dashboards from a terminal.
     metrics_port, qc_port
-        Requested ports before any CLI ``--auto-port`` fallback.
+        Requested ports before any ``auto_port`` fallback.
     auto_port
-        Whether commands include ``--auto-port``.
+        Whether dashboard launch helpers may move to the next available port.
     proxy_mode
-        Whether commands include ``--proxy-mode`` for reverse-proxy notebook
+        Whether launch helpers use reverse-proxy settings for notebook
         environments.
+    config_path
+        Resolved config path passed to package dashboard launch helpers.
+    run_scenario
+        Optional run scenario passed to dashboard launch helpers.
     """
 
     metrics_command: str
@@ -131,6 +136,36 @@ class NotebookDashboardCommands:
     qc_port: int
     auto_port: bool
     proxy_mode: bool
+    config_path: Path
+    run_scenario: str | None = None
+
+    def metrics_launch_kwargs(self, *, show: bool = True) -> dict[str, object]:
+        """Return keyword arguments for ``launch_configured_metrics_dashboard``."""
+
+        kwargs: dict[str, object] = {
+            "config_path": self.config_path,
+            "server_port": self.metrics_port,
+            "auto_port": self.auto_port,
+            "proxy_mode": self.proxy_mode,
+            "show": bool(show),
+        }
+        if self.run_scenario is not None:
+            kwargs["run_scenario"] = self.run_scenario
+        return kwargs
+
+    def qc_launch_kwargs(self, *, show: bool = True) -> dict[str, object]:
+        """Return keyword arguments for ``launch_configured_qc_dashboard``."""
+
+        kwargs: dict[str, object] = {
+            "config_path": self.config_path,
+            "server_port": self.qc_port,
+            "auto_port": self.auto_port,
+            "proxy_mode": self.proxy_mode,
+            "show": bool(show),
+        }
+        if self.run_scenario is not None:
+            kwargs["run_scenario"] = self.run_scenario
+        return kwargs
 
 
 def find_repo_root(start: str | Path | None = None) -> Path:
@@ -336,13 +371,13 @@ def notebook_dashboard_launch_commands(
     proxy_mode: bool | None = None,
     run_scenario: str | None = None,
 ) -> NotebookDashboardCommands:
-    """Return shell-safe dashboard launch commands for notebooks.
+    """Return config-backed dashboard launch settings for notebooks.
 
     Parameters
     ----------
     config_path
-        Config file passed to ``svtk dashboard``. When omitted, the active
-        config path or ``SVTK_CONFIG`` is used when available.
+        Config file passed to dashboard launch helpers. When omitted, the
+        active config path or ``SVTK_CONFIG`` is used when available.
     metrics_port, qc_port
         Optional dashboard ports. Defaults come from
         ``SVTK_METRICS_DASHBOARD_PORT`` and ``SVTK_QC_DASHBOARD_PORT``.
@@ -358,7 +393,9 @@ def notebook_dashboard_launch_commands(
     Returns
     -------
     NotebookDashboardCommands
-        Commands and resolved options suitable for printing in a notebook.
+        Resolved package-launch settings plus terminal command fallbacks for
+        notebook users who prefer to start long-lived dashboard servers outside
+        the notebook kernel.
     """
 
     resolved_config_path = _resolve_dashboard_config_path(config_path)
@@ -388,6 +425,8 @@ def notebook_dashboard_launch_commands(
         qc_port=resolved_qc_port,
         auto_port=resolved_auto_port,
         proxy_mode=resolved_proxy_mode,
+        config_path=resolved_config_path,
+        run_scenario=run_scenario,
     )
 
 

@@ -482,8 +482,23 @@ def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monke
     assert commands.qc_port == 8502
     assert commands.auto_port is True
     assert commands.proxy_mode is False
+    assert commands.config_path == config_path.resolve()
     assert commands.metrics_command == f"svtk dashboard metrics --config {config_path} --port 8501 --auto-port"
     assert commands.qc_command == f"svtk dashboard qc --config {config_path} --port 8502 --auto-port"
+    assert commands.metrics_launch_kwargs(show=False) == {
+        "config_path": config_path.resolve(),
+        "server_port": 8501,
+        "auto_port": True,
+        "proxy_mode": False,
+        "show": False,
+    }
+    assert commands.qc_launch_kwargs(show=False) == {
+        "config_path": config_path.resolve(),
+        "server_port": 8502,
+        "auto_port": True,
+        "proxy_mode": False,
+        "show": False,
+    }
 
 
 def test_notebook_dashboard_launch_commands_parse_env_and_scenario(tmp_path, monkeypatch):
@@ -502,10 +517,27 @@ def test_notebook_dashboard_launch_commands_parse_env_and_scenario(tmp_path, mon
     assert commands.qc_port == 8602
     assert commands.auto_port is False
     assert commands.proxy_mode is True
+    assert commands.run_scenario == "large-run"
     assert "--auto-port" not in commands.metrics_command
     assert "--proxy-mode" in commands.metrics_command
     assert "--run-scenario large-run" in commands.metrics_command
     assert "--proxy-mode" in commands.qc_command
+    assert commands.metrics_launch_kwargs(show=False) == {
+        "config_path": config_path.resolve(),
+        "server_port": 8601,
+        "auto_port": False,
+        "proxy_mode": True,
+        "show": False,
+        "run_scenario": "large-run",
+    }
+    assert commands.qc_launch_kwargs(show=False) == {
+        "config_path": config_path.resolve(),
+        "server_port": 8602,
+        "auto_port": False,
+        "proxy_mode": True,
+        "show": False,
+        "run_scenario": "large-run",
+    }
 
 
 def test_notebook_slurm_script_uses_configured_environment(tmp_path, monkeypatch, capsys):
