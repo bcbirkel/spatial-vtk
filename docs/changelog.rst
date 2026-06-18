@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-18
+   Rewired the standard Step 1 ingest notebook station/event preview cells to
+   use ``OutputGroup.display_table_previews()`` instead of direct dataframe
+   ``.head()`` displays.
    Rewired the standard Step 3 metric notebook to preview the metric task table
    and ``metrics_long`` output through ``OutputGroup.display_table_previews()``
    instead of loading full tables only to display ``.head()`` rows.
