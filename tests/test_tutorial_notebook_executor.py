@@ -821,6 +821,10 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     assert "server_port=notebook_overrides" not in source
     assert "dashboard_outputs = output_group(\"step_07_dashboards\", cfg=cfg)" in source
     assert "dashboard_outputs.preview_tables(" in source
+    assert "dashboard_outputs.qc_trace_summary_path" in source
+    assert "dashboard_outputs.metrics_long_path" in source
+    assert "metrics_path = dashboard_outputs.metrics_long_path" not in source
+    assert "qc_trace_summary_path = dashboard_outputs.qc_trace_summary_path" not in source
     assert "dashboard_output_namespace" not in source
     assert "preview_table(" not in source
     assert "preview_output_table(" not in source

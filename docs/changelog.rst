@@ -15,6 +15,9 @@ Changelog
    Standard Step 2 now lets the QC inventory helper resolve configured output
    paths directly and reuses the manual-review queue written by the compact QC
    summary workflow, avoiding a redundant notebook-local export call.
+   Standard Step 7 now uses ``dashboard_outputs`` attributes directly in
+   dashboard status and preview cells instead of assigning throwaway local path
+   aliases.
    Metrics dashboards now show an explicit row-level dataset notice in the
    dashboard body when summary tabs can render but distribution/download tabs
    cannot load filtered metric rows.
