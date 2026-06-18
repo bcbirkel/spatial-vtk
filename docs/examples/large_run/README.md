@@ -12,6 +12,7 @@ To verify the public notebooks from a clean checkout, install the tutorial
 extras and run:
 
 ```bash
+python -m pip install -e ".[notebooks,waveforms]"
 python tools/execute_tutorial_notebooks.py --clean --include-large-run
 ```
 

@@ -17,6 +17,10 @@ Changelog
    cannot load filtered metric rows.
    QC dashboards now show explicit empty-state messages in the Trace Table and
    Manual Review Queue tabs when active filters remove all loaded trace rows.
+   Tutorial docs now show the editable source-checkout install command with
+   ``notebooks`` and ``waveforms`` extras immediately before the clean
+   notebook execution commands, so fresh-checkout verification does not depend
+   on an implicit runtime setup step.
    Added ``spatial_vtk.io.preprocessed_waveform_output_group`` so Step 1 can
    use ``OutputGroup``-style ``bind()``, ``status_frame()``, and
    ``readiness()`` for preprocessing metadata under

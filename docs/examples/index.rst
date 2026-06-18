@@ -26,6 +26,7 @@ To verify the full standard tutorial from a clean output directory, run:
 
 .. code-block:: bash
 
+   python -m pip install -e ".[notebooks,waveforms]"
    python tools/execute_tutorial_notebooks.py --clean
 
 The command executes the seven notebooks against the committed example data,
@@ -39,6 +40,7 @@ source checkout, run:
 
 .. code-block:: bash
 
+   python -m pip install -e ".[notebooks,waveforms]"
    python tools/execute_tutorial_notebooks.py --clean --include-large-run
 
 The large-run notebooks still use the committed example data during this

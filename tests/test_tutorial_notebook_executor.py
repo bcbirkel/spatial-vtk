@@ -243,6 +243,8 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     large_run_readme = (repo_root / "docs" / "examples" / "large_run" / "README.md").read_text(encoding="utf-8")
     combined = f"{examples_index}\n{large_run_readme}"
 
+    assert 'python -m pip install -e ".[notebooks,waveforms]"' in examples_index
+    assert 'python -m pip install -e ".[notebooks,waveforms]"' in large_run_readme
     assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in combined
     assert "SVTK_FIGURE_SIDECARS=1" in combined
     assert "SVTK_FIGURE_SIDECAR_ROWS=all" in combined
