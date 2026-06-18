@@ -281,10 +281,11 @@ If you prefer each call to be self-contained, pass the config directly.
 .. code-block:: python
 
    from spatial_vtk.config import SpatialVTKConfig
-   from spatial_vtk.config import resolve_output_path
+   from spatial_vtk.io import output_group
 
    cfg = SpatialVTKConfig.from_file("spatial-vtk.yaml", run_scenario="tutorial")
-   path = resolve_output_path("record_coverage", kind="figure", cfg=cfg)
+   ingest_outputs = output_group("step_01_ingest", cfg=cfg)
+   record_coverage_figure = ingest_outputs.record_coverage_figure_path
 
 For CLI workflows, set ``SVTK_CONFIG_FILE`` in your shell and let commands
 discover it.

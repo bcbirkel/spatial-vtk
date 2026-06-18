@@ -21,6 +21,9 @@ Changelog
    Added a tutorial notebook hygiene regression requiring committed examples to
    stay unexecuted, with no saved cell outputs or execution counts, so
    fresh-checkout users do not inherit stale runtime state.
+   Updated the configuration guide to use ``output_group`` for self-contained
+   Python path resolution examples, matching the notebook workflow and avoiding
+   raw ``resolve_output_path`` snippets in user-facing tutorial docs.
    Added ``spatial_vtk.io.record_coverage_readiness_from_config`` so Step 1
    notebooks can display the record-coverage rebuild decision without
    duplicating the preprocessed/base event-station fallback used by the build

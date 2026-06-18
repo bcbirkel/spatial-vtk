@@ -294,6 +294,7 @@ def test_public_docs_describe_committed_tutorial_waveforms() -> None:
     assert 'output_group("step_01_ingest").load_tables' in configuration
     assert 'record_coverage = ingest_tables["record_coverage"]' in configuration
     assert "load_output_table(" not in configuration
+    assert "resolve_output_path(" not in configuration
 
 
 def test_public_docs_describe_registered_table_formats() -> None:
