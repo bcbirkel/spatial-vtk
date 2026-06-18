@@ -55,6 +55,7 @@ from spatial_vtk.io import (
     output_readiness,
     output_status_frame,
     preprocessed_waveform_output_group,
+    record_coverage_readiness_from_config,
     should_rebuild_paths,
     should_rebuild_outputs,
     stable_hash,
@@ -1364,6 +1365,35 @@ outputs:
     assert list(sequence_status_frame["name"]) == ["metrics_long"]
 
     clear_active_config()
+
+
+def test_record_coverage_readiness_uses_preprocessed_event_station_fallback(tmp_path):
+    """Record-coverage readiness should match the build helper's input fallback."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text("project:\n  root_dir: .\n", encoding="utf-8")
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    ingest_outputs = output_group("step_01_ingest", cfg=cfg)
+    preprocessed_outputs = preprocessed_waveform_output_group(config=cfg, create_parent=True)
+
+    readiness = record_coverage_readiness_from_config(config_path=config_path)
+    assert readiness.reason == "missing_inputs"
+    assert dict(readiness.input_items)["event_station_records_path"] == ingest_outputs.event_station_path
+
+    ingest_outputs.event_station_path.parent.mkdir(parents=True, exist_ok=True)
+    ingest_outputs.event_station_path.write_text("event_id,station\nE1,STA\n", encoding="utf-8")
+    preprocessed_outputs.preprocessed_trace_metadata_path.write_text("event_id,station\nE1,STA\n", encoding="utf-8")
+    readiness = record_coverage_readiness_from_config(config_path=config_path)
+    assert readiness.reason == "missing_outputs"
+    assert dict(readiness.input_items)["event_station_records_path"] == ingest_outputs.event_station_path
+
+    preprocessed_outputs.preprocessed_event_station_path.write_text("event_id,station\nE1,STA\n", encoding="utf-8")
+    readiness = record_coverage_readiness_from_config(config_path=config_path)
+    assert readiness.reason == "missing_outputs"
+    assert (
+        dict(readiness.input_items)["event_station_records_path"]
+        == preprocessed_outputs.preprocessed_event_station_path
+    )
 
 
 def test_display_output_table_previews_resolves_and_labels_registered_tables(tmp_path, capsys):

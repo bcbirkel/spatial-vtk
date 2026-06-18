@@ -126,6 +126,7 @@ from spatial_vtk.io.workflows import (
     load_configured_input_tables,
     prepare_metadata_tables_from_config,
     preprocess_waveforms_from_config,
+    record_coverage_readiness_from_config,
 )
 
 __all__ = [
@@ -206,6 +207,7 @@ __all__ = [
     "preprocess_waveforms_from_config",
     "preprocess_stream",
     "preprocess_waveform_files",
+    "record_coverage_readiness_from_config",
     "read_event_patch_table",
     "read_artifact_manifest",
     "read_bounded_table",

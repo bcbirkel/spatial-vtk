@@ -34,6 +34,7 @@ def test_public_imports():
         output_group,
         prepare_metadata_tables_from_config,
         prepare_station_metadata,
+        record_coverage_readiness_from_config,
         resolve_model_aliases,
     )
     from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
@@ -76,6 +77,7 @@ def test_public_imports():
     assert callable(OutputGroup)
     assert callable(prepare_metadata_tables_from_config)
     assert callable(prepare_station_metadata)
+    assert callable(record_coverage_readiness_from_config)
     assert callable(resolve_model_aliases)
     assert callable(load_trace_inventory_lookup)
     assert callable(slurm_settings_from_config)
@@ -309,6 +311,7 @@ def test_core_api_docs_show_stable_start_here_imports():
             "output_group",
             "prepare_event_station_table",
             "preprocess_waveform_files",
+            "record_coverage_readiness_from_config",
         ],
         "metrics.rst": [
             "Start with ``spatial_vtk.metrics``",

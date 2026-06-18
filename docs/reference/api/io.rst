@@ -28,6 +28,7 @@ modules.
        prepare_station_metadata,
        preprocessed_waveform_output_group,
        preprocess_waveform_files,
+       record_coverage_readiness_from_config,
        read_config_table,
        write_output_table,
    )

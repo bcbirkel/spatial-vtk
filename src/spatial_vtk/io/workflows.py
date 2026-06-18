@@ -15,8 +15,10 @@ from pathlib import Path
 from typing import Any
 
 from spatial_vtk.config import SpatialVTKConfig, active_config, resolve_output_path
+from spatial_vtk.io.output_paths import OutputReadiness, output_group
 from spatial_vtk.io.preprocessing import (
     preprocessed_waveform_metadata_paths,
+    preprocessed_waveform_output_group,
     preprocess_waveform_files,
 )
 from spatial_vtk.io.tables import load_output_table, read_config_table, write_output_table
@@ -206,6 +208,48 @@ def build_record_coverage_from_config(
     }
 
 
+def record_coverage_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    overwrite: bool = False,
+    missing_input_message: str = "Trace metadata or event-station records are not ready yet.",
+    current_message: str = "Record coverage table is current; skipping.",
+    rebuild_message: str | None = None,
+) -> OutputReadiness:
+    """Return the configured record-coverage rebuild decision.
+
+    The record-coverage workflow prefers the preprocessed event-station table
+    when preprocessing has written it, and falls back to the base
+    ``event_station_records`` output otherwise. This helper exposes that same
+    fallback as an :class:`~spatial_vtk.io.OutputReadiness` object so notebooks
+    do not have to duplicate path-selection logic before calling
+    :func:`build_record_coverage_from_config`.
+    """
+
+    cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    step_outputs = output_group("step_01_ingest", cfg=cfg)
+    preprocessed_outputs = preprocessed_waveform_output_group(config=cfg)
+    event_station_records = (
+        preprocessed_outputs.preprocessed_event_station_path
+        if preprocessed_outputs.preprocessed_event_station_path.exists()
+        else step_outputs.event_station_path
+    )
+    dependencies = {
+        "preprocessed_trace_metadata_path": preprocessed_outputs.preprocessed_trace_metadata_path,
+        "event_station_records_path": event_station_records,
+    }
+    return step_outputs.readiness(
+        "record_coverage_path",
+        inputs=dependencies,
+        sources=dependencies,
+        overwrite=overwrite,
+        missing_input_message=missing_input_message,
+        current_message=current_message,
+        rebuild_message=rebuild_message,
+    )
+
+
 def load_configured_input_tables(
     tables: Mapping[str, str] | Sequence[str],
     *,
@@ -284,4 +328,5 @@ __all__ = [
     "load_configured_input_tables",
     "prepare_metadata_tables_from_config",
     "preprocess_waveforms_from_config",
+    "record_coverage_readiness_from_config",
 ]

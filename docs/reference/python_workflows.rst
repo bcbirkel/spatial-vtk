@@ -189,6 +189,11 @@ Step 1: Metadata, Waveforms, and Record Coverage
      - ``spatial_vtk.io.build_record_coverage_from_config``
      - ``record_coverage``
 
+Use ``spatial_vtk.io.record_coverage_readiness_from_config`` before the record
+coverage build step when a notebook needs a readiness table. It uses the same
+preprocessed-event-station fallback as ``build_record_coverage_from_config``,
+so notebooks do not need to duplicate that path-selection logic.
+
 Step 2: Quality Control
 -----------------------
 

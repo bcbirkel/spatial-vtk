@@ -1024,6 +1024,7 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     assert "prepare_metadata_tables_from_config," in source
     assert "preprocess_waveforms_from_config," in source
     assert "build_record_coverage_from_config," in source
+    assert "record_coverage_readiness_from_config," in source
     assert "PREPROCESS_CONTINUE_ON_ERROR = context.preprocess_continue_on_error" in source
     assert 'os.environ.get("SVTK_PREPROCESS_CONTINUE_ON_ERROR"' not in source
     assert "prepare_station_metadata(" not in source
@@ -1148,6 +1149,8 @@ def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:
         if notebook_path == step_01:
             assert "preprocessed_waveform_output_group(config=cfg)" in source
             assert "preprocessed_outputs.readiness(" in source
+            assert "record_coverage_readiness_from_config(" in source
+            assert "source_event_station_path" not in source
             assert "preprocess_readiness = output_readiness(" not in source
             assert "record_coverage_readiness = output_readiness(" not in source
             assert "preview_output_table" not in source
