@@ -716,6 +716,48 @@ class MetricFigureContext:
             return self.station_period_summary_for_item(item, value_col=value_col)
         return self.station_summary_for_item(item, value_col=value_col)
 
+    def station_summary_preview_for_metric(
+        self,
+        metric: str,
+        value_col: str | None = None,
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        nrows: int = 5,
+        columns: Iterable[str] | None = None,
+    ) -> pd.DataFrame:
+        """Return a bounded station-summary preview for one named metric.
+
+        This is intended for notebook displays after station aggregation. It
+        uses the same metric selection, PSA handling, and aggregation path as
+        :meth:`station_summary_for_metric`, then returns only available preview
+        columns and a bounded number of rows.
+        """
+
+        summary = self.station_summary_for_metric(
+            metric,
+            value_col=value_col,
+            passband=passband,
+            components=components,
+            model=model,
+        )
+        requested = list(
+            columns
+            or (
+                "station",
+                "period_s",
+                value_col or self.value_col,
+                "source_row_count",
+                "source_event_count",
+                "aggregation",
+            )
+        )
+        available = [column for column in requested if column and column in summary.columns]
+        if not available:
+            return summary.head(max(int(nrows), 0)).reset_index(drop=True)
+        return summary.loc[:, available].head(max(int(nrows), 0)).reset_index(drop=True)
+
     def station_period_summary_for_item(
         self,
         item: dict[str, Any],

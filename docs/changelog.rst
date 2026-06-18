@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-18
+   Added ``MetricFigureContext.station_summary_preview_for_metric()`` and
+   rewired the standard Step 3 metric notebook to use it for station-summary
+   audit previews instead of slicing station-summary dataframes in the
+   notebook.
    Added ``station_event_waveform_order_frame()`` to the public waveform
    visualization API and rewired the standard Step 6 plotting notebook to use
    it for station-order previews instead of inline sort/head dataframe code.

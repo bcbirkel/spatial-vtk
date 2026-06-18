@@ -239,12 +239,28 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
         components=["Z"],
         model="m1",
     )
+    named_station_preview = context.station_summary_preview_for_metric(
+        "Peak ground acceleration",
+        passband="1-2 sec",
+        components=["Z"],
+        model="m1",
+        nrows=1,
+    )
     assert item_station_summary[["station", "log2_residual"]].to_dict("records") == station_summary[
         ["station", "log2_residual"]
     ].to_dict("records")
     assert named_station_summary[["station", "log2_residual"]].to_dict("records") == station_summary[
         ["station", "log2_residual"]
     ].to_dict("records")
+    assert list(named_station_preview.columns) == [
+        "station",
+        "log2_residual",
+        "source_row_count",
+        "source_event_count",
+        "aggregation",
+    ]
+    assert len(named_station_preview) == 1
+    assert named_station_preview.loc[0, "station"] == "STA"
     assert {"lon", "lat"}.issubset(item_station_grid.columns)
     assert {"sta_lon", "sta_lat"}.isdisjoint(item_station_grid.columns)
     sta = station_summary.loc[station_summary["station"].eq("STA")].iloc[0]

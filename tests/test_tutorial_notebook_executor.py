@@ -1500,6 +1500,8 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
     assert "step_outputs.display_table_previews(" in source
     assert 'step_outputs.display_table_previews({"metric_tasks": "metric_tasks_path"}, cfg=cfg, nrows=12)' in source
     assert 'step_outputs.display_table_previews({"metrics_long": "metrics_long_path"}, cfg=cfg, nrows=5)' in source
+    assert 'metric_figure_context.station_summary_preview_for_metric("PGA", "log2_residual", nrows=5)' in source
+    assert "station_pga[[" not in source
     assert "metric_tasks.head(" not in source
     assert "metrics_long.head(" not in source
     assert "load_output_table(" not in source
