@@ -1724,6 +1724,69 @@ def write_large_run_geojson_region_figures_from_outputs(
     )
 
 
+def write_large_run_geojson_region_figures_from_notebook_settings(
+    outputs: Any,
+    ingest_outputs: Any,
+    settings: Any,
+    *,
+    geojson_path: str | Path,
+    cfg: SpatialVTKConfig | None = None,
+    overwrite: bool = False,
+) -> RegionFigureResult:
+    """Write Step 5 GeoJSON/corridor figures using notebook figure settings.
+
+    This wrapper owns the notebook-facing render gate and settings-to-keyword
+    translation for the standard Step 5 figure family.
+    """
+
+    prepared_stations_path = getattr(ingest_outputs, "prepared_stations_path", None)
+    prepared_events_path = getattr(ingest_outputs, "prepared_events_path", None)
+    gate = settings.render_gate(
+        [prepared_stations_path, prepared_events_path, geojson_path],
+        missing_message="Skipping figures until stations, events, and region GeoJSON are ready.",
+    )
+    if not gate.ready:
+        status = "disabled" if not gate.figures_enabled else "missing_input"
+        boxplot_result = RegionBoxplotResult(
+            None,
+            None,
+            0,
+            status,
+            gate.message,
+        )
+        return RegionFigureResult(
+            geojson_overview_path=None,
+            corridor_map_path=None,
+            boxplot_result=boxplot_result,
+            geojson_status=status,
+            corridor_status=status,
+            messages=(
+                f"geojson_overview: {gate.message}",
+                f"corridor_map: {gate.message}",
+                f"region_boxplot: {gate.message}",
+            ),
+        )
+    return write_large_run_geojson_region_figures_from_outputs(
+        outputs,
+        ingest_outputs,
+        geojson_path=geojson_path,
+        figure_dir=settings.figure_dir,
+        cfg=cfg,
+        metric=settings.metric,
+        passband=settings.passband,
+        component=settings.component,
+        model=settings.model,
+        value_col=settings.value_col,
+        compare_to=settings.compare_to,
+        max_rows=settings.sample_rows,
+        corridor_add_basemap=settings.add_basemap,
+        **settings.sidecars.kwargs(),
+        annotate_if_missing=True,
+        overwrite=overwrite,
+        showfig=settings.showfig,
+    )
+
+
 def write_large_run_region_boxplot(
     metric_source: str | Path,
     *,
@@ -2286,6 +2349,7 @@ __all__ = [
     "prepare_spatial_figure_context",
     "prepare_spatial_figure_context_from_notebook_settings",
     "write_large_run_geojson_region_figures_from_outputs",
+    "write_large_run_geojson_region_figures_from_notebook_settings",
     "write_large_run_region_boxplot",
     "write_large_run_region_boxplot_from_outputs",
     "write_large_run_spatial_summary_figures_from_outputs",

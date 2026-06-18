@@ -33,6 +33,7 @@ _EXPORT_MODULES = {
     "prepare_spatial_figure_context_from_notebook_settings": "spatial_vtk.spatial.plot.large_run",
     "SpatialSummaryFigureResult": "spatial_vtk.spatial.plot.large_run",
     "write_large_run_geojson_region_figures_from_outputs": "spatial_vtk.spatial.plot.large_run",
+    "write_large_run_geojson_region_figures_from_notebook_settings": "spatial_vtk.spatial.plot.large_run",
     "write_large_run_region_boxplot": "spatial_vtk.spatial.plot.large_run",
     "write_large_run_region_boxplot_from_outputs": "spatial_vtk.spatial.plot.large_run",
     "write_large_run_spatial_summary_figures_from_outputs": "spatial_vtk.spatial.plot.large_run",

@@ -216,6 +216,10 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Write the Step 5 GeoJSON overview map, corridor map, and region boxplot
        from configured output groups without notebook-local table loading or
        figure-path plumbing.
+   * - ``write_large_run_geojson_region_figures_from_notebook_settings``
+     - Write the same Step 5 GeoJSON/corridor figure family directly from
+       ``notebook_figure_settings(...)`` so notebooks do not repeat render
+       gates, sidecar options, figure-directory settings, or metric filters.
    * - ``write_large_run_region_boxplot_from_outputs``
      - Write a Step 5/6 region boxplot from an ``OutputGroup``, preferring an
        enriched metric table when available and falling back to the long metric
@@ -290,6 +294,8 @@ schemas.
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_spatial_summary_figures_from_outputs
 
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_outputs
+
+.. autofunction:: spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_notebook_settings
 
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs
 

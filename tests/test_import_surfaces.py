@@ -499,6 +499,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
         "plot_pca_feature_loadings",
         "RegionFigureResult",
         "write_large_run_geojson_region_figures_from_outputs",
+        "write_large_run_geojson_region_figures_from_notebook_settings",
         "write_large_run_region_boxplot_from_outputs",
     ):
         assert helper in text
@@ -526,6 +527,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert ".. autofunction:: spatial_vtk.spatial.plot.prepare_spatial_figure_context_from_notebook_settings" in text
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_large_run_spatial_summary_figures_from_outputs" in text
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_outputs" in text
+    assert ".. autofunction:: spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_notebook_settings" in text
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs" in text
     assert "station_summary_for_item" in text
     assert "item_source_rows" in text
@@ -857,6 +859,7 @@ def test_spatial_plot_public_entry_point_is_lazy():
     assert "prepare_spatial_figure_context_from_notebook_settings" in spatial_plot.__all__
     assert "SpatialSummaryFigureResult" in spatial_plot.__all__
     assert "write_large_run_geojson_region_figures_from_outputs" in spatial_plot.__all__
+    assert "write_large_run_geojson_region_figures_from_notebook_settings" in spatial_plot.__all__
     assert "write_large_run_region_boxplot_from_outputs" in spatial_plot.__all__
     assert "write_large_run_spatial_summary_figures_from_outputs" in spatial_plot.__all__
     assert callable(spatial_plot.plot_correlogram)
@@ -864,6 +867,7 @@ def test_spatial_plot_public_entry_point_is_lazy():
     assert callable(spatial_plot.prepare_spatial_figure_context)
     assert callable(spatial_plot.prepare_spatial_figure_context_from_notebook_settings)
     assert callable(spatial_plot.write_large_run_geojson_region_figures_from_outputs)
+    assert callable(spatial_plot.write_large_run_geojson_region_figures_from_notebook_settings)
     assert callable(spatial_plot.write_large_run_region_boxplot_from_outputs)
     assert callable(spatial_plot.write_large_run_spatial_summary_figures_from_outputs)
     assert spatial_plot.plot_correlogram is spatial_plot.plot_correlogram

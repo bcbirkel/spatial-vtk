@@ -3,6 +3,11 @@ Changelog
 
 2026-06-18
    Added
+   ``spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_notebook_settings()``
+   and rewired the large-run Step 5 GeoJSON/corridor figure cell to use it.
+   The notebook no longer performs the region figure render gate or
+   settings-to-figure-keyword translation inline.
+   Added
    ``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings()``
    and rewired the large-run Step 6 waveform comparison cell to use it. The
    notebook no longer performs the waveform figure render gate or

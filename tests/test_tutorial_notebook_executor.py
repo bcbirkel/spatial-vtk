@@ -1282,7 +1282,9 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "run_boundary_corridor_workflow_from_config," in source
     assert "step_outputs.display_table_previews(" in source
     assert "display_output_table_previews(" not in source
-    assert "write_large_run_geojson_region_figures_from_outputs(" in source
+    assert "write_large_run_geojson_region_figures_from_notebook_settings(" in source
+    assert "region_figure_gate = REGION_FIGURE_SETTINGS.render_gate(" not in source
+    assert "write_large_run_geojson_region_figures_from_outputs(" not in source
     assert "region_figure_result.status_frame()" in source
     assert "ingest_outputs.load_tables(" not in source
     assert "step_outputs.load_table(" not in source

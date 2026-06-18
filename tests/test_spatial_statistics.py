@@ -88,6 +88,7 @@ from spatial_vtk.spatial.plot.large_run import (
     SpatialFigureContext,
     prepare_spatial_figure_context_from_notebook_settings,
     write_large_run_geojson_region_figures_from_outputs,
+    write_large_run_geojson_region_figures_from_notebook_settings,
     write_large_run_region_boxplot,
     write_large_run_region_boxplot_from_outputs,
     write_large_run_spatial_summary_figures_from_outputs,
@@ -1397,6 +1398,140 @@ def test_write_large_run_geojson_region_figures_from_outputs_orchestrates_notebo
     status = result.status_frame()
     assert status["artifact"].tolist() == ["geojson_overview", "corridor_map", "region_boxplot"]
     assert set(status["status"]) == {"wrote"}
+
+
+def test_write_large_run_geojson_region_figures_from_notebook_settings_disabled(tmp_path: Path, monkeypatch) -> None:
+    """Step 5 notebook wrapper should report disabled figures without loading data."""
+
+    import spatial_vtk.spatial.plot.large_run as large_run_plot
+
+    outputs = OutputGroup(name="step_05_geojson", paths={})
+    ingest_outputs = OutputGroup(name="step_01_ingest", paths={})
+
+    class Settings:
+        figure_dir = tmp_path / "figures"
+        metric = "PGA"
+        passband = "2-3 sec"
+        component = None
+        model = None
+        value_col = "log2_residual"
+        compare_to = None
+        sample_rows = 100
+        add_basemap = False
+        showfig = False
+
+        class sidecars:
+            @staticmethod
+            def kwargs() -> dict[str, object]:
+                return {"write_sidecar": False}
+
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            return type("Gate", (), {"ready": False, "figures_enabled": False, "message": "figures disabled"})()
+
+    def fail_if_called(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        raise AssertionError("disabled figure block should not load GeoJSON figure inputs")
+
+    monkeypatch.setattr(large_run_plot, "write_large_run_geojson_region_figures_from_outputs", fail_if_called)
+
+    result = write_large_run_geojson_region_figures_from_notebook_settings(
+        outputs,
+        ingest_outputs,
+        Settings(),
+        geojson_path=tmp_path / "regions.geojson",
+    )
+
+    assert result.geojson_status == "disabled"
+    assert result.corridor_status == "disabled"
+    assert result.boxplot_result.status == "disabled"
+    assert result.status_frame()["status"].tolist() == ["disabled", "disabled", "disabled"]
+
+
+def test_write_large_run_geojson_region_figures_from_notebook_settings_delegates_options(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Step 5 notebook wrapper should translate figure settings into the lower-level helper."""
+
+    import spatial_vtk.spatial.plot.large_run as large_run_plot
+
+    stations_path = tmp_path / "prepared_stations.csv"
+    events_path = tmp_path / "prepared_events.csv"
+    geojson_path = tmp_path / "regions.geojson"
+    stations_path.write_text("ready", encoding="utf-8")
+    events_path.write_text("ready", encoding="utf-8")
+    geojson_path.write_text("{}", encoding="utf-8")
+    outputs = OutputGroup(name="step_05_geojson", paths={})
+    ingest_outputs = OutputGroup(
+        name="step_01_ingest",
+        paths={
+            "prepared_stations_path": stations_path,
+            "prepared_events_path": events_path,
+        },
+    )
+    calls: dict[str, object] = {}
+
+    class Settings:
+        figure_dir = tmp_path / "figures"
+        metric = "PGV"
+        passband = "1-2 sec"
+        component = "Z"
+        model = "example"
+        value_col = "log2_residual"
+        compare_to = "LA Basin"
+        sample_rows = 123
+        add_basemap = True
+        showfig = False
+
+        class sidecars:
+            @staticmethod
+            def kwargs() -> dict[str, object]:
+                return {"write_sidecar": True, "sidecar_rows": 5}
+
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            calls["gate_paths"] = list(paths)
+            return type("Gate", (), {"ready": True, "figures_enabled": True, "message": "ready"})()
+
+    def fake_write(outputs_arg, ingest_outputs_arg, **kwargs):  # noqa: ANN001, ANN202
+        calls["outputs"] = outputs_arg
+        calls["ingest_outputs"] = ingest_outputs_arg
+        calls["kwargs"] = kwargs
+        return large_run_plot.RegionFigureResult(
+            geojson_overview_path=tmp_path / "figures" / "regions.png",
+            corridor_map_path=None,
+            boxplot_result=large_run_plot.RegionBoxplotResult(None, None, 0, "wrote", "ok"),
+            geojson_status="wrote",
+            corridor_status="missing_input",
+            messages=("geojson_overview: ok", "corridor_map: missing", "region_boxplot: ok"),
+        )
+
+    monkeypatch.setattr(large_run_plot, "write_large_run_geojson_region_figures_from_outputs", fake_write)
+
+    result = write_large_run_geojson_region_figures_from_notebook_settings(
+        outputs,
+        ingest_outputs,
+        Settings(),
+        geojson_path=geojson_path,
+        cfg=None,
+        overwrite=True,
+    )
+
+    assert result.geojson_status == "wrote"
+    assert calls["gate_paths"] == [stations_path, events_path, geojson_path]
+    assert calls["outputs"] is outputs
+    assert calls["ingest_outputs"] is ingest_outputs
+    kwargs = calls["kwargs"]
+    assert kwargs["geojson_path"] == geojson_path
+    assert kwargs["figure_dir"] == Settings.figure_dir
+    assert kwargs["metric"] == "PGV"
+    assert kwargs["passband"] == "1-2 sec"
+    assert kwargs["component"] == "Z"
+    assert kwargs["model"] == "example"
+    assert kwargs["compare_to"] == "LA Basin"
+    assert kwargs["max_rows"] == 123
+    assert kwargs["corridor_add_basemap"] is True
+    assert kwargs["write_sidecar"] is True
+    assert kwargs["sidecar_rows"] == 5
+    assert kwargs["overwrite"] is True
 
 
 def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -> None:
