@@ -686,7 +686,7 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
         "large_run/step_02_large_run_quality_control.ipynb": ["run_notebook_step_if_needed("],
         "large_run/step_03_large_run_calculate_metrics.ipynb": [
             "run_notebook_step_if_needed(",
-            "batch_status.status_frame()",
+            "metric_slurm_submission_readiness(",
         ],
         "large_run/step_07_large_run_dashboards.ipynb": ["run_notebook_step_if_needed("],
     }
@@ -724,13 +724,13 @@ def test_large_run_step03_uses_metric_batch_status_before_submit_and_merge() -> 
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "from spatial_vtk.metrics import metric_manifest_batch_status" in source
+    assert "from spatial_vtk.metrics import metric_manifest_batch_status, metric_slurm_submission_readiness" in source
     assert "from spatial_vtk.metrics.workflow import metric_manifest_batch_status" not in source
     assert "batch_status = metric_manifest_batch_status(metric_manifest_path)" in source
+    assert "slurm_readiness = metric_slurm_submission_readiness(batch_status, overwrite=OVERWRITE)" in source
     assert "All metric batch outputs already exist; skipping metric Slurm submission." in source
     assert '"incomplete_only": not OVERWRITE' in source
     assert '"overwrite_batches": OVERWRITE' in source
-    assert "if not batch_status.all_complete:" in source
     assert "Metric batches are incomplete:" in source
     assert "sources=(metric_manifest_path, *batch_status.completed_outputs)" in source
 
@@ -744,7 +744,7 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "run_notebook_step_if_needed(" in source
-    assert "run_or_submit_notebook_function(" in source
+    assert "run_or_submit_notebook_function(" not in source
     assert "spatial_vtk.metrics.build_metric_waveform_inventories_from_config" in source
     assert "spatial_vtk.metrics.plan_metric_tasks_from_config" in source
     assert "spatial_vtk.metrics.write_metrics_slurm_script_from_config" in source

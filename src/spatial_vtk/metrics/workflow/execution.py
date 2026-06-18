@@ -134,6 +134,85 @@ class MetricManifestBatchStatus:
         }
 
 
+@dataclass(frozen=True)
+class MetricSlurmSubmissionReadiness:
+    """Notebook readiness decision for metric Slurm array submission.
+
+    This wraps :class:`MetricManifestBatchStatus` in the same minimal interface
+    used by ``run_notebook_step_if_needed``: ``should_run``, ``reason``,
+    ``message``, and ``status_frame()``.
+    """
+
+    batch_status: MetricManifestBatchStatus
+    should_run: bool
+    reason: str
+    message: str
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a one-row dataframe suitable for notebook display."""
+
+        frame = self.batch_status.status_frame().copy()
+        frame["should_submit"] = bool(self.should_run)
+        frame["reason"] = self.reason
+        frame["message"] = self.message
+        return frame
+
+
+def metric_slurm_submission_readiness(
+    batch_status: MetricManifestBatchStatus | MetricWorkflowManifest | str | Path,
+    *,
+    overwrite: bool = False,
+) -> MetricSlurmSubmissionReadiness:
+    """Return whether the metric Slurm array should be written/submitted.
+
+    Parameters
+    ----------
+    batch_status
+        Batch completion status or a metric manifest path/object from which the
+        status can be calculated.
+    overwrite
+        Whether existing batch outputs should be recalculated.
+
+    Returns
+    -------
+    MetricSlurmSubmissionReadiness
+        Readiness object compatible with
+        ``spatial_vtk.config.run_notebook_step_if_needed``.
+    """
+
+    status = (
+        batch_status
+        if isinstance(batch_status, MetricManifestBatchStatus)
+        else metric_manifest_batch_status(batch_status)
+    )
+    if bool(overwrite):
+        return MetricSlurmSubmissionReadiness(
+            batch_status=status,
+            should_run=True,
+            reason="overwrite",
+            message=(
+                "Overwrite requested; writing/submitting metric Slurm script "
+                f"for {status.total_batches} batch(es)."
+            ),
+        )
+    if not status.all_complete:
+        return MetricSlurmSubmissionReadiness(
+            batch_status=status,
+            should_run=True,
+            reason="incomplete_batches",
+            message=(
+                "Metric batches are incomplete; writing/submitting metric Slurm "
+                f"script for {status.missing_count} missing batch output(s)."
+            ),
+        )
+    return MetricSlurmSubmissionReadiness(
+        batch_status=status,
+        should_run=False,
+        reason="current",
+        message="All metric batch outputs already exist; skipping metric Slurm submission.",
+    )
+
+
 def chunk_tasks(tasks: list[MetricWorkflowTask], *, chunk_size: int) -> list[list[MetricWorkflowTask]]:
     """Split tasks into fixed-size chunks.
 
@@ -552,10 +631,12 @@ def main(argv: list[str] | None = None) -> int:
 __all__ = [
     "MANIFEST_VERSION",
     "MetricManifestBatchStatus",
+    "MetricSlurmSubmissionReadiness",
     "MetricWorkflowManifest",
     "chunk_tasks",
     "merge_batch_outputs",
     "metric_manifest_batch_status",
+    "metric_slurm_submission_readiness",
     "read_task_manifest",
     "run_manifest_batch",
     "write_task_manifest",

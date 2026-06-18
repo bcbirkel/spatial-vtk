@@ -58,10 +58,12 @@ from spatial_vtk.metrics.workflow.tasks import (
 
 _EXECUTION_EXPORTS = {
     "MetricManifestBatchStatus",
+    "MetricSlurmSubmissionReadiness",
     "MetricWorkflowManifest",
     "chunk_tasks",
     "merge_batch_outputs",
     "metric_manifest_batch_status",
+    "metric_slurm_submission_readiness",
     "read_task_manifest",
     "run_manifest_batch",
     "write_task_manifest",
@@ -75,6 +77,7 @@ __all__ = [
     "MetricWaveformCacheResult",
     "MetricWaveformInventoryResult",
     "MetricManifestBatchStatus",
+    "MetricSlurmSubmissionReadiness",
     "MetricWorkflowManifest",
     "MetricWorkflowTask",
     "SlurmSettings",
@@ -86,6 +89,7 @@ __all__ = [
     "merge_metric_batches_from_config",
     "merge_batch_outputs",
     "metric_manifest_batch_status",
+    "metric_slurm_submission_readiness",
     "metric_group_for",
     "plan_metric_tasks",
     "plan_metric_tasks_from_config",

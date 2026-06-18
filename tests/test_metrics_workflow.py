@@ -17,6 +17,7 @@ from spatial_vtk.metrics.workflow import (
     merge_metric_batches_from_config,
     merge_batch_outputs,
     metric_manifest_batch_status,
+    metric_slurm_submission_readiness,
     plan_metric_tasks,
     plan_metric_tasks_from_config,
     prepare_metric_workflow_outputs,
@@ -864,6 +865,11 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     assert initial_status.completed_count == 0
     assert initial_status.missing_batches == (0,)
     assert bool(initial_status.status_frame().loc[0, "all_complete"]) is False
+    initial_readiness = metric_slurm_submission_readiness(initial_status)
+    assert initial_readiness.should_run is True
+    assert initial_readiness.reason == "incomplete_batches"
+    assert "1 missing batch output" in initial_readiness.message
+    assert bool(initial_readiness.status_frame().loc[0, "should_submit"]) is True
 
     batch_output = run_manifest_batch(parsed, batch_index=0)
     assert batch_output.exists()
@@ -871,6 +877,13 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     assert completed_status.completed_batches == (0,)
     assert completed_status.missing_count == 0
     assert completed_status.all_complete
+    completed_readiness = metric_slurm_submission_readiness(completed_status)
+    assert completed_readiness.should_run is False
+    assert completed_readiness.reason == "current"
+    assert "skipping metric Slurm submission" in completed_readiness.message
+    overwrite_readiness = metric_slurm_submission_readiness(completed_status, overwrite=True)
+    assert overwrite_readiness.should_run is True
+    assert overwrite_readiness.reason == "overwrite"
     merged_output = merge_batch_outputs(parsed, tmp_path / "merged.csv")
     merged = pd.read_csv(merged_output)
     assert merged.loc[0, "metric"] == "PGA"

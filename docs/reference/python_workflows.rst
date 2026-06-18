@@ -159,7 +159,8 @@ Step 3: Metric Calculation and Metric Figures
      - ``spatial_vtk.metrics.summarize_metric_snapshot_tasks_from_config``
      - ``metric_tasks`` and ``metric_task_estimate``
    * - Write or submit a metric Slurm array script
-     - ``spatial_vtk.metrics.write_metrics_slurm_script_from_config``
+     - ``spatial_vtk.metrics.metric_slurm_submission_readiness`` plus
+       ``spatial_vtk.metrics.write_metrics_slurm_script_from_config``
      - metric Slurm script; optionally submitted job metadata
    * - Merge completed metric batches
      - ``spatial_vtk.metrics.merge_metric_batches_from_config``

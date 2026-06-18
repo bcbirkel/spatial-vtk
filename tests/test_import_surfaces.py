@@ -7,7 +7,14 @@ import pathlib
 def test_public_imports():
     import spatial_vtk
     from spatial_vtk.config import abbreviate_model, configured_output_registry_frame, run_notebook_step_if_needed
-    from spatial_vtk.metrics import METRIC_NAMES, amplitude_spectrum, calculate_metrics_for_pairs, compute_metrics_pair, metric_manifest_batch_status
+    from spatial_vtk.metrics import (
+        METRIC_NAMES,
+        amplitude_spectrum,
+        calculate_metrics_for_pairs,
+        compute_metrics_pair,
+        metric_manifest_batch_status,
+        metric_slurm_submission_readiness,
+    )
     from spatial_vtk.metrics.plot import MetricFigureContext
     from spatial_vtk.io import OutputGroup, inspect_synthetic_format, output_group, prepare_station_metadata, resolve_model_aliases
     from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
@@ -41,6 +48,7 @@ def test_public_imports():
     assert callable(calculate_metrics_for_pairs)
     assert callable(compute_metrics_pair)
     assert callable(metric_manifest_batch_status)
+    assert callable(metric_slurm_submission_readiness)
     assert callable(MetricFigureContext.from_frame)
     assert callable(inspect_synthetic_format)
     assert callable(output_group)

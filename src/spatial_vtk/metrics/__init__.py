@@ -72,6 +72,7 @@ _CALCULATE_EXPORTS = {
 
 _WORKFLOW_EXPORTS = {
     "MetricManifestBatchStatus",
+    "MetricSlurmSubmissionReadiness",
     "MetricWaveformCacheResult",
     "MetricWaveformInventoryResult",
     "MetricWorkflowManifest",
@@ -85,6 +86,7 @@ _WORKFLOW_EXPORTS = {
     "merge_metric_batches_from_config",
     "merge_batch_outputs",
     "metric_manifest_batch_status",
+    "metric_slurm_submission_readiness",
     "metric_group_for",
     "plan_metric_tasks",
     "plan_metric_tasks_from_config",

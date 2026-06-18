@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Added ``metric_slurm_submission_readiness()`` so the large-run Step 3 metric
+   array submission cell uses the same ``run_notebook_step_if_needed()``
+   readiness pattern as the other package-backed heavy workflow steps instead
+   of calling the lower-level notebook submission helper directly.
    Added config-backed Python dashboard launch helpers,
    ``launch_configured_metrics_dashboard()`` and
    ``launch_configured_qc_dashboard()``, so notebooks can launch Streamlit
@@ -14,26 +18,26 @@ Changelog
    ``svtk metrics outputs`` command from the notebook.
    Added config-backed GeoJSON and boundary-corridor workflow helpers for
    large-run Step 5. The notebook now calls importable ``spatial_vtk.spatial``
-   functions through ``run_or_submit_notebook_function()`` and uses structured
-   readiness checks that include GeoJSON and upstream table freshness.
+   functions through readiness-driven package helpers and uses structured
+   freshness checks that include GeoJSON and upstream tables.
    Added config-backed spatial workflow helpers for Step 4 spatial summaries
    and optional spatial plot-input tables. The large-run Step 4 notebook now
-   calls importable ``spatial_vtk.spatial`` functions through
-   ``run_or_submit_notebook_function()`` instead of constructing spatial CLI
-   commands in notebook cells.
+   calls importable ``spatial_vtk.spatial`` functions through readiness-driven
+   package helpers instead of constructing spatial CLI commands in notebook
+   cells.
    Added config-backed metric workflow helpers for waveform-inventory
    generation, task-manifest planning, metric Slurm script writing, batch
    merging, and downstream metric/dashboard output writing. The large-run Step
    3 notebook now calls importable ``spatial_vtk.metrics`` functions through
-   ``run_or_submit_notebook_function()`` instead of constructing metric CLI
-   commands in notebook cells.
+   readiness-driven package helpers instead of constructing metric CLI commands
+   in notebook cells.
    Added config-backed QC notebook workflow helpers for full QC inventory
    builds, overlap sidecar creation, and compact QC summaries. The large-run
    Step 2 notebook now calls importable ``spatial_vtk.qc`` functions through
-   ``run_or_submit_notebook_function()`` instead of constructing CLI commands
-   or inline Slurm worker code.
+   readiness-driven package helpers instead of constructing CLI commands or
+   inline Slurm worker code.
    Added package-backed notebook task execution with
-   ``run_or_submit_notebook_function()`` and moved large-run Step 1
+   ``run_notebook_step_if_needed()`` and moved large-run Step 1
    preprocessing/record-coverage execution behind importable
    ``spatial_vtk.io`` workflow helpers. The notebook now calls Python package
    functions directly while the helper handles local execution or Slurm
