@@ -186,6 +186,7 @@ tutorial-facing API.
        plot_correlogram,
        plot_distance_correlation_by_metric,
        prepare_spatial_figure_context,
+       prepare_spatial_figure_context_from_notebook_settings,
    )
 
 .. automodule:: spatial_vtk.spatial.plot
@@ -202,6 +203,11 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Render large-run spatial figures with the same filtering, station
        aggregation, PSA-period handling, and sidecar metadata conventions used
        by the metric figure context.
+   * - ``prepare_spatial_figure_context_from_notebook_settings``
+     - Build the same large-run spatial figure context directly from
+       ``notebook_figure_settings(...)`` so tutorial notebooks do not repeat
+       figure-directory, sidecar, basemap, filter, and sampling keyword
+       plumbing.
    * - ``write_large_run_geojson_region_figures_from_outputs``
      - Write the Step 5 GeoJSON overview map, corridor map, and region boxplot
        from configured output groups without notebook-local table loading or
@@ -271,6 +277,8 @@ schemas.
    :members:
 
 .. autofunction:: spatial_vtk.spatial.plot.prepare_spatial_figure_context
+
+.. autofunction:: spatial_vtk.spatial.plot.prepare_spatial_figure_context_from_notebook_settings
 
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_outputs
 

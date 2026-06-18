@@ -86,6 +86,7 @@ from spatial_vtk.spatial.plot.correlation import (
 )
 from spatial_vtk.spatial.plot.large_run import (
     SpatialFigureContext,
+    prepare_spatial_figure_context_from_notebook_settings,
     write_large_run_geojson_region_figures_from_outputs,
     write_large_run_region_boxplot,
     write_large_run_region_boxplot_from_outputs,
@@ -1005,6 +1006,55 @@ outputs:
     assert context.event_value_col == "field_centered"
     assert context.site_metadata is not None
     assert context.site_metadata["station"].tolist() == ["STA"]
+
+
+def test_prepare_spatial_figure_context_from_notebook_settings_delegates(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    """Notebook spatial figures should pass settings through package code."""
+
+    import spatial_vtk.spatial.plot.large_run as large_run_module
+
+    calls: dict[str, object] = {}
+
+    class Settings:
+        figure_dir = tmp_path / "figures"
+
+        def context_kwargs(self, *, include_station_aggregation: bool = False) -> dict[str, object]:
+            calls["include_station_aggregation"] = include_station_aggregation
+            return {
+                "make_figures": True,
+                "default_model": "from-settings",
+                "station_aggregation": "median",
+            }
+
+    def _fake_prepare_spatial_figure_context(**kwargs):  # noqa: ANN003, ANN202
+        calls["kwargs"] = kwargs
+        return "spatial-context"
+
+    monkeypatch.setattr(
+        large_run_module,
+        "prepare_spatial_figure_context",
+        _fake_prepare_spatial_figure_context,
+    )
+
+    result = prepare_spatial_figure_context_from_notebook_settings(
+        Settings(),
+        overwrite=True,
+        include_station_aggregation=True,
+        default_model="override-model",
+    )
+
+    assert result == "spatial-context"
+    assert calls["include_station_aggregation"] is True
+    assert calls["kwargs"] == {
+        "figure_dir": tmp_path / "figures",
+        "overwrite": True,
+        "make_figures": True,
+        "default_model": "override-model",
+        "station_aggregation": "median",
+    }
 
 
 def test_write_large_run_region_boxplot_from_bounded_table(tmp_path: Path) -> None:

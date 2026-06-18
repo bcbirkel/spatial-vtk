@@ -345,7 +345,7 @@ Step 4: Spatial Statistics
      - ``spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config``
      - block holdout, REDCAP, and pattern-similarity tables
    * - Render large-run spatial figures
-     - ``spatial_vtk.spatial.plot.prepare_spatial_figure_context``
+     - ``spatial_vtk.spatial.plot.prepare_spatial_figure_context_from_notebook_settings``
      - saved spatial figures, package-generated spatial table/dimension status
        summaries, and optional row-provenance sidecars
 

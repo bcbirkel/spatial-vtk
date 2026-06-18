@@ -82,6 +82,7 @@ def test_public_imports():
         preview_dashboard_summary_tables,
     )
     from spatial_vtk.spatial.map import add_contextily_basemap, plot_corridor_map, plot_event_residual_map
+    from spatial_vtk.spatial.plot import prepare_spatial_figure_context_from_notebook_settings
     from spatial_vtk.visualize.context import plot_distance_amplitude_diagnostics, plot_station_event_context, plot_study_domain_map
     from spatial_vtk.visualize.record_sections import plot_observed_synthetic_record_section, plot_record_section
 
@@ -138,6 +139,7 @@ def test_public_imports():
     assert callable(annotate_points_with_geojson)
     assert callable(build_station_edge_corridors)
     assert callable(classify_paths_with_geojson)
+    assert callable(prepare_spatial_figure_context_from_notebook_settings)
     assert callable(geojson_polygon_preview_table)
     assert callable(geojson_metric_region_frame)
     assert callable(geojson_metric_subset_frame)
@@ -514,6 +516,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert ".. autoclass:: spatial_vtk.spatial.plot.SpatialFigureContext" in text
     assert ".. autoclass:: spatial_vtk.spatial.plot.RegionFigureResult" in text
     assert ".. autofunction:: spatial_vtk.spatial.plot.prepare_spatial_figure_context" in text
+    assert ".. autofunction:: spatial_vtk.spatial.plot.prepare_spatial_figure_context_from_notebook_settings" in text
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_outputs" in text
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs" in text
     assert "station_summary_for_item" in text
@@ -840,10 +843,12 @@ def test_spatial_plot_public_entry_point_is_lazy():
 
     assert "plot_correlogram" in spatial_plot.__all__
     assert "prepare_spatial_figure_context" in spatial_plot.__all__
+    assert "prepare_spatial_figure_context_from_notebook_settings" in spatial_plot.__all__
     assert "write_large_run_geojson_region_figures_from_outputs" in spatial_plot.__all__
     assert "write_large_run_region_boxplot_from_outputs" in spatial_plot.__all__
     assert callable(spatial_plot.plot_correlogram)
     assert callable(spatial_plot.prepare_spatial_figure_context)
+    assert callable(spatial_plot.prepare_spatial_figure_context_from_notebook_settings)
     assert callable(spatial_plot.write_large_run_geojson_region_figures_from_outputs)
     assert callable(spatial_plot.write_large_run_region_boxplot_from_outputs)
     assert spatial_plot.plot_correlogram is spatial_plot.plot_correlogram

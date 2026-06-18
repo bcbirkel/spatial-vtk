@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Added
+   ``spatial_vtk.spatial.plot.prepare_spatial_figure_context_from_notebook_settings()``
+   and rewired the large-run Step 4 spatial notebook to use it. The notebook
+   now keeps figure controls visible without repeating the context keyword,
+   figure-directory, sidecar, basemap, and sampling plumbing.
    Simplified the large-run Step 2 QC notebook so
    ``run_qc_inventory_from_config`` resolves configured event-station and QC
    output paths itself, rather than passing registry paths back through

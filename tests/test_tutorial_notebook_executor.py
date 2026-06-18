@@ -1242,8 +1242,11 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "for item in iter_metric_frames(" not in source
     assert "plot_pca_summary" in source
     assert "spatial_figures.write_pca_summary_plots(" in source
-    assert "DEFAULT_PCA_MODE = SPATIAL_FIGURE_SETTINGS.pca_mode" in source
-    assert "PCA_MODE = DEFAULT_PCA_MODE" in source
+    assert "prepare_spatial_figure_context_from_notebook_settings(" in source
+    assert "PCA_MODE = SPATIAL_FIGURE_SETTINGS.pca_mode" in source
+    assert "DEFAULT_PCA_MODE =" not in source
+    assert "DEFAULT_PLOT_PASSBAND =" not in source
+    assert "SPATIAL_FIGURE_SIDECARS =" not in source
     assert 'os.environ.get("SVTK_PCA_MODE"' not in source
     assert "source_df=item_source_rows(item)" not in source
     assert "source_df_factory=item_source_rows" not in source
@@ -1853,9 +1856,9 @@ def test_large_run_step04_spatial_figures_show_spectral_contract_status() -> Non
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "spatial_figures = prepare_spatial_figure_context(" in source
+    assert "spatial_figures = prepare_spatial_figure_context_from_notebook_settings(" in source
     assert 'figure_subdir="metrics"' in source
-    assert "SPATIAL_FIGURE_SETTINGS.figure_dir" in source
+    assert "SPATIAL_FIGURE_SETTINGS.figure_dir" not in source
     assert "METRICS_FIGURE_DIR" not in source
     assert 'figures_dir / "metrics"' not in source
     assert "display(spatial_figures.status_frame())" in source
@@ -2004,7 +2007,7 @@ def test_metric_and_spatial_notebooks_show_sidecar_status_frames() -> None:
         "docs/examples/step_03_calculate_metrics.ipynb": "metric_sidecars.status_frame()",
         "docs/examples/step_04_spatial_statistics.ipynb": "spatial_sidecars.status_frame()",
         "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": "METRIC_FIGURE_SIDECARS.status_frame()",
-        "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": "SPATIAL_FIGURE_SIDECARS.status_frame()",
+        "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": "SPATIAL_FIGURE_SETTINGS.sidecars.status_frame()",
     }
     for relative_path, call in expected.items():
         notebook = json.loads((repo_root / relative_path).read_text(encoding="utf-8"))

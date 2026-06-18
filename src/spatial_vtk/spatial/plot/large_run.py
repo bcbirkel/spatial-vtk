@@ -1412,6 +1412,30 @@ def prepare_spatial_figure_context(**kwargs: Any) -> SpatialFigureContext:
     return SpatialFigureContext.from_config(**kwargs)
 
 
+def prepare_spatial_figure_context_from_notebook_settings(
+    settings: Any,
+    *,
+    overwrite: bool = False,
+    include_station_aggregation: bool = False,
+    **overrides: Any,
+) -> SpatialFigureContext:
+    """Return a spatial figure context from notebook figure settings.
+
+    Public notebooks use :func:`spatial_vtk.config.notebook_figure_settings`
+    for figure switches. This adapter keeps those notebooks from repeating the
+    individual context keyword names while preserving the lower-level
+    ``prepare_spatial_figure_context`` API for scripts.
+    """
+
+    context_kwargs = dict(settings.context_kwargs(include_station_aggregation=include_station_aggregation))
+    context_kwargs.update(overrides)
+    return prepare_spatial_figure_context(
+        figure_dir=settings.figure_dir,
+        overwrite=overwrite,
+        **context_kwargs,
+    )
+
+
 def write_large_run_geojson_region_figures_from_outputs(
     outputs: Any,
     ingest_outputs: Any,
@@ -2136,6 +2160,7 @@ __all__ = [
     "SPATIAL_FIGURE_TABLE_KEYS",
     "SpatialFigureContext",
     "prepare_spatial_figure_context",
+    "prepare_spatial_figure_context_from_notebook_settings",
     "write_large_run_geojson_region_figures_from_outputs",
     "write_large_run_region_boxplot",
     "write_large_run_region_boxplot_from_outputs",
