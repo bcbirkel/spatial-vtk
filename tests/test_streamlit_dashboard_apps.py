@@ -559,10 +559,13 @@ def test_qc_dashboard_row_and_download_limits_from_environment(monkeypatch):
 
     monkeypatch.setenv("SVTK_QC_DASHBOARD_MAX_ROWS", "123")
     monkeypatch.setenv("SVTK_QC_DASHBOARD_DOWNLOAD_ROWS", "all")
+    source = Path(streamlit_qc.__file__).read_text(encoding="utf-8")
 
     assert _qc_dashboard_row_limit() == 123
     assert _qc_dashboard_download_limit() is None
     assert "all currently filtered" in _qc_download_limit_message(None)
+    assert "Maximum trace-summary rows" in source
+    assert "SVTK_QC_DASHBOARD_MAX_ROWS=all" in source
 
 
 def test_qc_dashboard_status_reports_loaded_subset():

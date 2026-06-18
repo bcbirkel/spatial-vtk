@@ -227,6 +227,12 @@ smaller bounded sample. Summary, station, event, and path tabs continue to use
 precomputed dashboard summary tables rather than loading the full metric
 inventory.
 
+The QC dashboard similarly caps loaded trace-summary rows at ``250000`` by
+default. Set ``SVTK_QC_DASHBOARD_MAX_ROWS`` before launch, or use the "Maximum
+trace-summary rows" sidebar control, to adjust the bounded subset. Set
+``SVTK_QC_DASHBOARD_MAX_ROWS=all`` only when the full trace-summary table is
+small enough for the dashboard process.
+
 .. automodule:: spatial_vtk.visualize.dashboard
    :members:
 

@@ -432,3 +432,7 @@ metrics dashboard to control the bounded row-level sample used by the
 Distributions tab and filtered-row download. The default is ``200000`` rows;
 summary, station, event, and path tabs still use precomputed dashboard summary
 tables.
+Set ``SVTK_QC_DASHBOARD_MAX_ROWS`` before launching the QC dashboard to control
+the bounded trace-summary subset used by QC charts, tables, and manual-review
+queue exports. The default is ``250000`` rows; use ``all`` only when the full
+trace-summary table is small enough to load interactively.

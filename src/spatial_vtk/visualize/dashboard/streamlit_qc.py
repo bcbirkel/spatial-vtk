@@ -86,6 +86,20 @@ def _render_qc_dashboard(
         band_options = ["all", *band_options] if band_options else []
         selected_band = st.selectbox("Band", band_options, format_func=lambda value: "All bands" if value == "all" else band_display_label(value)) if band_options else "all"
         clip_iqr = st.checkbox("Hide histogram outliers with 1.5 x IQR", value=False)
+        if row_limit is not None:
+            configured_row_limit = int(row_limit)
+            row_limit = int(
+                st.number_input(
+                    "Maximum trace-summary rows",
+                    min_value=1_000,
+                    max_value=max(2_000_000, configured_row_limit),
+                    value=configured_row_limit,
+                    step=10_000,
+                )
+            )
+            st.caption("Set SVTK_QC_DASHBOARD_MAX_ROWS=all before launch to load the full trace-summary table.")
+        else:
+            st.caption("Loading the full trace-summary table because SVTK_QC_DASHBOARD_MAX_ROWS is set to all.")
 
     filtered = filter_qc_dashboard_rows(
         df,
