@@ -1356,6 +1356,8 @@ def test_large_run_notebooks_use_figure_render_gates_for_prerequisite_tables() -
     notebooks = [
         repo_root / "docs" / "examples" / "large_run" / "step_01_large_run_ingest_and_prepare_data.ipynb",
         repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb",
+        repo_root / "docs" / "examples" / "large_run" / "step_04_large_run_spatial_statistics.ipynb",
+        repo_root / "docs" / "examples" / "large_run" / "step_05_large_run_geojson_corridors.ipynb",
         repo_root / "docs" / "examples" / "large_run" / "step_06_large_run_additional_plotting.ipynb",
     ]
     for notebook_path in notebooks:

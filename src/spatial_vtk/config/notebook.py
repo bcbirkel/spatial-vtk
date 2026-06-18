@@ -231,7 +231,7 @@ class NotebookFigureSettings:
 
     def render_gate(
         self,
-        required_paths: Iterable[str | Path] | None = None,
+        required_paths: Iterable[str | Path | None] | None = None,
         *,
         disabled_message: str | None = None,
         missing_message: str | None = None,
@@ -243,7 +243,8 @@ class NotebookFigureSettings:
         ----------
         required_paths
             Optional paths that must exist before the figure block can load
-            inputs. Missing paths are reported without loading any tables.
+            inputs. Missing paths are reported without loading any tables. A
+            ``None`` value is reported as ``"<not configured>"``.
         disabled_message
             Message used when ``make_figures`` is false. When omitted, a
             standard ``SVTK_MAKE_FIGURES`` hint is used.
@@ -260,7 +261,15 @@ class NotebookFigureSettings:
                 message=disabled_message or "Skipping figures. Set SVTK_MAKE_FIGURES=1 to render them.",
                 figures_enabled=False,
             )
-        missing = tuple(path for path in (Path(item) for item in (required_paths or ())) if not path.exists())
+        missing_list: list[Path] = []
+        for item in required_paths or ():
+            if item is None:
+                missing_list.append(Path("<not configured>"))
+                continue
+            path = Path(item)
+            if not path.exists():
+                missing_list.append(path)
+        missing = tuple(missing_list)
         if missing:
             if missing_message is None:
                 missing_message = f"Skipping figures until {len(missing)} required input path(s) exist."

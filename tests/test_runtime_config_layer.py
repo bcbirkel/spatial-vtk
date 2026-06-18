@@ -638,6 +638,12 @@ def test_notebook_figure_settings_render_gate_reports_disabled_and_missing_input
     missing_status = missing_gate.status_frame()
     assert list(missing_status["missing_path"]) == [str(missing)]
 
+    unconfigured_gate = enabled.render_gate([None])
+
+    assert unconfigured_gate.ready is False
+    assert unconfigured_gate.missing_paths == (Path("<not configured>"),)
+    assert "<not configured>" in set(unconfigured_gate.status_frame()["missing_path"])
+
     missing.write_text("ready\n", encoding="utf-8")
     ready_gate = enabled.render_gate([missing])
 
