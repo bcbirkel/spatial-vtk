@@ -205,6 +205,10 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
    * - ``load_dashboard_metric_dataset`` and
        ``load_dashboard_summary_tables``
      - Load dashboard-ready datasets after readiness checks pass.
+       ``load_dashboard_metric_dataset`` applies model, metric, passband,
+       PSA/FAS oscillator-period, component, distance, and Vs30 filters while
+       reading bounded row-level datasets, so large-run dashboards cap the
+       selected rows rather than a broader unfiltered prefix.
    * - ``launch_configured_metrics_dashboard`` and
        ``launch_configured_qc_dashboard``
      - Launch Streamlit dashboards from config-backed paths and launch options.

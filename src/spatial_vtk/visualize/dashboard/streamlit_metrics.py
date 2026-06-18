@@ -251,6 +251,10 @@ def _render_metrics_dashboard(
                     models=selected_models,
                     metric=selected_metric,
                     bands=selected_bands,
+                    periods_s=selected_periods,
+                    component=component_filter,
+                    distance_range_km=distance_range,
+                    vs30_range=vs30_range,
                     max_rows=int(row_limit),
                 )
             except Exception as exc:
@@ -380,6 +384,10 @@ def _load_long_metrics_cached(
     models: tuple[str, ...],
     metric: str,
     bands: tuple[str, ...],
+    periods_s: tuple[float, ...],
+    component: str,
+    distance_range_km: tuple[float | None, float | None] | None,
+    vs30_range: tuple[float | None, float | None] | None,
     max_rows: int,
 ) -> pd.DataFrame:
     """Load long metrics with Streamlit caching."""
@@ -390,6 +398,10 @@ def _load_long_metrics_cached(
         models=models,
         metrics=[metric] if metric else None,
         bands=bands,
+        periods_s=periods_s,
+        component=component or None,
+        distance_range_km=distance_range_km,
+        vs30_range=vs30_range,
         max_rows=max_rows,
     )
 
@@ -401,7 +413,11 @@ def _try_load_filtered_long_metrics(
     models: list[str],
     metric: str,
     bands: list[str],
-    max_rows: int,
+    periods_s: list[float] | None = None,
+    component: str | None = None,
+    distance_range_km: tuple[float | None, float | None] | None = None,
+    vs30_range: tuple[float | None, float | None] | None = None,
+    max_rows: int = 200_000,
 ) -> pd.DataFrame:
     """Load selected long metric rows when a root is configured."""
 
@@ -411,6 +427,10 @@ def _try_load_filtered_long_metrics(
         tuple(str(model) for model in models),
         str(metric),
         tuple(str(band) for band in bands),
+        tuple(float(period) for period in periods_s or ()),
+        "" if component in {None, "", "all"} else str(component),
+        distance_range_km,
+        vs30_range,
         int(max_rows),
     )
 

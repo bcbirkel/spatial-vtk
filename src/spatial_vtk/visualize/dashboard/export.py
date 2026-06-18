@@ -96,6 +96,11 @@ def load_dashboard_metric_dataset(
     models: Sequence[str] | str | None = None,
     bands: Sequence[str] | str | None = None,
     metrics: Sequence[str] | str | None = None,
+    periods_s: Sequence[float | str] | float | str | None = None,
+    component: str | None = None,
+    distance_range_km: tuple[float | None, float | None] | None = None,
+    vs30_range: tuple[float | None, float | None] | None = None,
+    preserve_unbanded_bands: bool = True,
     max_rows: int | None = None,
     chunksize: int = 50_000,
 ) -> pd.DataFrame:
@@ -114,6 +119,15 @@ def load_dashboard_metric_dataset(
         ``model=*/band=*/metric=*/part.parquet`` files before reading and then
         apply the same filters after loading. Single-file datasets apply the
         filters after loading.
+    periods_s, component, distance_range_km, vs30_range
+        Additional row filters applied while reading bounded datasets, before
+        ``max_rows`` is enforced. This keeps dashboard distribution tabs from
+        filling their row cap with rows outside the current component,
+        oscillator-period, distance, or site-condition selection.
+    preserve_unbanded_bands
+        Preserve blank/broadband rows when a passband filter is supplied.
+        Spectral metrics such as PSA and FAS are broadband rows, so this keeps
+        row-level dashboard loading consistent with summary-table filtering.
     max_rows
         Optional maximum rows to return after filtering. When provided, files
         are read in bounded chunks where possible so dashboards can show
@@ -129,7 +143,15 @@ def load_dashboard_metric_dataset(
     """
 
     root = Path(input_root).expanduser()
-    filter_columns = _dashboard_metric_filter_columns(models=models, bands=bands, metrics=metrics)
+    filter_columns = _dashboard_metric_filter_columns(
+        models=models,
+        bands=bands,
+        metrics=metrics,
+        periods_s=periods_s,
+        component=component,
+        distance_range_km=distance_range_km,
+        vs30_range=vs30_range,
+    )
     read_columns = _merged_columns(columns, filter_columns)
     row_limit = _normalize_max_rows(max_rows)
     if row_limit == 0:
@@ -142,6 +164,11 @@ def load_dashboard_metric_dataset(
                 models=models,
                 bands=bands,
                 metrics=metrics,
+                periods_s=periods_s,
+                component=component,
+                distance_range_km=distance_range_km,
+                vs30_range=vs30_range,
+                preserve_unbanded_bands=preserve_unbanded_bands,
                 output_columns=columns,
                 max_rows=row_limit,
                 chunksize=chunksize,
@@ -151,6 +178,11 @@ def load_dashboard_metric_dataset(
             models=models,
             bands=bands,
             metrics=metrics,
+            periods_s=periods_s,
+            component=component,
+            distance_range_km=distance_range_km,
+            vs30_range=vs30_range,
+            preserve_unbanded_bands=preserve_unbanded_bands,
             output_columns=columns,
         )
     if not root.exists():
@@ -161,7 +193,13 @@ def load_dashboard_metric_dataset(
             f"No dashboard metric parquet files found under {root}. "
             "Expected metrics_long.parquet or model=*/band=*/metric=*/part.parquet."
         )
-    paths = _filter_dashboard_metric_paths(paths, models=models, bands=bands, metrics=metrics)
+    paths = _filter_dashboard_metric_paths(
+        paths,
+        models=models,
+        bands=bands,
+        metrics=metrics,
+        preserve_unbanded_bands=preserve_unbanded_bands,
+    )
     if not paths:
         return pd.DataFrame(columns=list(columns or ()))
     if row_limit is not None:
@@ -171,6 +209,11 @@ def load_dashboard_metric_dataset(
             models=models,
             bands=bands,
             metrics=metrics,
+            periods_s=periods_s,
+            component=component,
+            distance_range_km=distance_range_km,
+            vs30_range=vs30_range,
+            preserve_unbanded_bands=preserve_unbanded_bands,
             output_columns=columns,
             max_rows=row_limit,
             chunksize=chunksize,
@@ -185,6 +228,11 @@ def load_dashboard_metric_dataset(
         models=models,
         bands=bands,
         metrics=metrics,
+        periods_s=periods_s,
+        component=component,
+        distance_range_km=distance_range_km,
+        vs30_range=vs30_range,
+        preserve_unbanded_bands=preserve_unbanded_bands,
         output_columns=columns,
     )
 
@@ -196,6 +244,11 @@ def _load_dashboard_metric_dataset_bounded(
     models: Sequence[str] | str | None,
     bands: Sequence[str] | str | None,
     metrics: Sequence[str] | str | None,
+    periods_s: Sequence[float | str] | float | str | None,
+    component: str | None,
+    distance_range_km: tuple[float | None, float | None] | None,
+    vs30_range: tuple[float | None, float | None] | None,
+    preserve_unbanded_bands: bool,
     output_columns: Sequence[str] | None,
     max_rows: int,
     chunksize: int,
@@ -213,6 +266,11 @@ def _load_dashboard_metric_dataset_bounded(
                 models=models,
                 bands=bands,
                 metrics=metrics,
+                periods_s=periods_s,
+                component=component,
+                distance_range_km=distance_range_km,
+                vs30_range=vs30_range,
+                preserve_unbanded_bands=preserve_unbanded_bands,
                 output_columns=output_columns,
             )
             if filtered.empty:
@@ -267,6 +325,10 @@ def _dashboard_metric_filter_columns(
     models: Sequence[str] | str | None = None,
     bands: Sequence[str] | str | None = None,
     metrics: Sequence[str] | str | None = None,
+    periods_s: Sequence[float | str] | float | str | None = None,
+    component: str | None = None,
+    distance_range_km: tuple[float | None, float | None] | None = None,
+    vs30_range: tuple[float | None, float | None] | None = None,
 ) -> tuple[str, ...]:
     """Return row columns needed to apply dashboard metric filters."""
 
@@ -277,7 +339,15 @@ def _dashboard_metric_filter_columns(
         columns.append("band")
     if metrics:
         columns.append("metric")
-    return tuple(columns)
+    if periods_s:
+        columns.append("period_s")
+    if component:
+        columns.append("component")
+    if distance_range_km is not None:
+        columns.extend(["distance_km", "med_dist_km", "dist_km"])
+    if vs30_range is not None:
+        columns.extend(["Vs30", "vs30"])
+    return tuple(dict.fromkeys(columns))
 
 
 def _merged_columns(columns: Sequence[str] | None, extras: Sequence[str]) -> list[str] | None:
@@ -294,6 +364,7 @@ def _filter_dashboard_metric_paths(
     models: Sequence[str] | str | None = None,
     bands: Sequence[str] | str | None = None,
     metrics: Sequence[str] | str | None = None,
+    preserve_unbanded_bands: bool = True,
 ) -> list[Path]:
     """Prune partitioned dashboard metric paths using model/band/metric filters."""
 
@@ -311,7 +382,8 @@ def _filter_dashboard_metric_paths(
         if model_tokens and partition.get("model") not in model_tokens:
             continue
         if band_tokens and partition.get("band") not in band_tokens:
-            continue
+            if not (preserve_unbanded_bands and _is_unbanded_dashboard_value(partition.get("band"))):
+                continue
         if metric_tokens and partition.get("metric") not in metric_tokens:
             continue
         selected.append(path)
@@ -337,6 +409,11 @@ def _filter_dashboard_metric_rows(
     models: Sequence[str] | str | None = None,
     bands: Sequence[str] | str | None = None,
     metrics: Sequence[str] | str | None = None,
+    periods_s: Sequence[float | str] | float | str | None = None,
+    component: str | None = None,
+    distance_range_km: tuple[float | None, float | None] | None = None,
+    vs30_range: tuple[float | None, float | None] | None = None,
+    preserve_unbanded_bands: bool = True,
     output_columns: Sequence[str] | None = None,
 ) -> pd.DataFrame:
     """Apply dashboard metric row filters and restore requested column order."""
@@ -347,10 +424,22 @@ def _filter_dashboard_metric_rows(
         out = out[out["model"].astype(str).isin(model_values)]
     band_values = _filter_values(bands)
     if band_values and "band" in out.columns:
-        out = out[out["band"].astype(str).isin(band_values)]
+        band_mask = out["band"].astype(str).isin(band_values)
+        if preserve_unbanded_bands:
+            band_mask = band_mask | out["band"].map(_is_unbanded_dashboard_value)
+        out = out[band_mask]
     metric_values = {normalize_metric_name(value) for value in _filter_values(metrics)}
     if metric_values and "metric" in out.columns:
         out = out[out["metric"].map(normalize_metric_name).isin(metric_values)]
+    period_values = _numeric_filter_values(periods_s)
+    if period_values and "period_s" in out.columns:
+        periods = pd.to_numeric(out["period_s"], errors="coerce")
+        rounded = periods.round(9)
+        out = out[periods.isna() | rounded.isin(period_values)]
+    if component and "component" in out.columns:
+        out = out[out["component"].astype(str).str.upper() == str(component).upper()]
+    out = _filter_numeric_range_any(out, ("med_dist_km", "distance_km", "dist_km"), distance_range_km)
+    out = _filter_numeric_range_any(out, ("Vs30", "vs30"), vs30_range)
     if output_columns is not None:
         selected = [column for column in dict.fromkeys(str(column) for column in output_columns) if column in out.columns]
         out = out.loc[:, selected]
@@ -376,6 +465,52 @@ def _filter_values(values: Sequence[str] | str | None) -> set[str]:
     else:
         items = list(values)
     return {str(item) for item in items if str(item).strip()}
+
+
+def _numeric_filter_values(values: Sequence[float | str] | float | str | None) -> set[float]:
+    """Return rounded numeric filter values from a scalar or sequence."""
+
+    if values is None:
+        return set()
+    if isinstance(values, (str, int, float)):
+        items = [values]
+    else:
+        items = list(values)
+    out: set[float] = set()
+    for item in items:
+        value = pd.to_numeric(pd.Series([item]), errors="coerce").iloc[0]
+        if pd.notna(value):
+            out.add(round(float(value), 9))
+    return out
+
+
+def _filter_numeric_range_any(
+    df: pd.DataFrame,
+    columns: tuple[str, ...],
+    bounds: tuple[float | None, float | None] | None,
+) -> pd.DataFrame:
+    """Apply a numeric range to the first available column."""
+
+    if bounds is None:
+        return df
+    column = next((item for item in columns if item in df.columns), None)
+    if column is None:
+        return df
+    lower, upper = bounds
+    values = pd.to_numeric(df[column], errors="coerce")
+    out = df
+    if lower is not None:
+        out = out[values >= float(lower)]
+        values = values.loc[out.index]
+    if upper is not None:
+        out = out[values <= float(upper)]
+    return out
+
+
+def _is_unbanded_dashboard_value(value: object) -> bool:
+    """Return whether one band or partition token represents broadband rows."""
+
+    return str(value).strip().lower() in {"", "nan", "none", "all", "broadband", "unknown"}
 
 
 def _filter_tokens(values: Sequence[str] | str | None) -> set[str]:

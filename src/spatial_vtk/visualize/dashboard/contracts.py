@@ -1386,6 +1386,10 @@ def load_metric_long_table(
     models: Sequence[str] | str | None = None,
     bands: Sequence[str] | str | None = None,
     metrics: Sequence[str] | str | None = None,
+    periods_s: Sequence[float | str] | float | str | None = None,
+    component: str | None = None,
+    distance_range_km: tuple[float | None, float | None] | None = None,
+    vs30_range: tuple[float | None, float | None] | None = None,
     max_rows: int | None = None,
     chunksize: int = 50_000,
 ) -> pd.DataFrame:
@@ -1399,6 +1403,10 @@ def load_metric_long_table(
         models=models,
         bands=bands,
         metrics=metrics,
+        periods_s=periods_s,
+        component=component,
+        distance_range_km=distance_range_km,
+        vs30_range=vs30_range,
         max_rows=max_rows,
         chunksize=chunksize,
     )

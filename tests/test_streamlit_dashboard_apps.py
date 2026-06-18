@@ -332,16 +332,32 @@ outputs:
 
 
 def test_metrics_dashboard_row_level_loader_uses_selected_filters(monkeypatch):
-    """Row-level dashboard loads should be scoped to selected model/metric/band filters."""
+    """Row-level dashboard loads should be scoped to the active UI filters."""
 
     captured = {}
 
-    def fake_load(metrics_root, columns, models, metric, bands):  # noqa: ANN001
+    def fake_load(
+        metrics_root,
+        columns,
+        models,
+        metric,
+        bands,
+        periods_s,
+        component,
+        distance_range_km,
+        vs30_range,
+        max_rows,
+    ):  # noqa: ANN001
         captured["metrics_root"] = metrics_root
         captured["columns"] = columns
         captured["models"] = models
         captured["metric"] = metric
         captured["bands"] = bands
+        captured["periods_s"] = periods_s
+        captured["component"] = component
+        captured["distance_range_km"] = distance_range_km
+        captured["vs30_range"] = vs30_range
+        captured["max_rows"] = max_rows
         return pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "log2_residual": [0.25]})
 
     monkeypatch.setattr(streamlit_metrics, "_load_long_metrics_cached", fake_load)
@@ -353,6 +369,11 @@ def test_metrics_dashboard_row_level_loader_uses_selected_filters(monkeypatch):
         models=["m1"],
         metric="PGA",
         bands=["1-2 sec"],
+        periods_s=[1.0],
+        component="R",
+        distance_range_km=(10.0, 50.0),
+        vs30_range=(250.0, 760.0),
+        max_rows=1234,
     )
 
     assert rows["log2_residual"].tolist() == [0.25]
@@ -360,6 +381,11 @@ def test_metrics_dashboard_row_level_loader_uses_selected_filters(monkeypatch):
     assert captured["models"] == ("m1",)
     assert captured["metric"] == "PGA"
     assert captured["bands"] == ("1-2 sec",)
+    assert captured["periods_s"] == (1.0,)
+    assert captured["component"] == "R"
+    assert captured["distance_range_km"] == (10.0, 50.0)
+    assert captured["vs30_range"] == (250.0, 760.0)
+    assert captured["max_rows"] == 1234
     assert "log2_residual" in captured["columns"]
     assert "event_id" in captured["columns"]
     assert "unused_payload" not in captured["columns"]

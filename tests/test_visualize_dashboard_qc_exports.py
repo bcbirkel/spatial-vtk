@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -367,6 +368,45 @@ def test_dashboard_metric_dataset_loader_projects_requested_columns(tmp_path) ->
     )
 
     assert loaded_direct_filtered["station"].tolist() == ["BBB"]
+
+
+def test_dashboard_metric_dataset_loader_pushes_down_large_run_filters(tmp_path) -> None:
+    """Bounded dashboard loads should cap rows after period/component/range filters."""
+
+    rows = pd.DataFrame(
+        {
+            "model": ["m1", "m1", "m1", "m1"],
+            "band": ["1-2 sec", "", "", ""],
+            "metric": ["PGA", "PSA", "PSA", "PSA"],
+            "period_s": [np.nan, 1.0, 2.0, 1.0],
+            "component": ["R", "R", "R", "T"],
+            "station": ["BAND", "KEEP", "PERIOD", "COMP"],
+            "event_id": ["e1", "e1", "e1", "e1"],
+            "distance_km": [20.0, 30.0, 30.0, 30.0],
+            "Vs30": [400.0, 500.0, 500.0, 500.0],
+            "log2_residual": [0.1, 0.2, 0.3, 0.4],
+        }
+    )
+    direct = tmp_path / "metrics_long.csv"
+    rows.to_csv(direct, index=False)
+
+    loaded = load_dashboard_metric_dataset(
+        direct,
+        columns=["model", "band", "metric", "period_s", "component", "station", "distance_km", "Vs30", "log2_residual"],
+        models=["m1"],
+        bands=["1-2 sec"],
+        metrics=["PSA"],
+        periods_s=[1.0],
+        component="R",
+        distance_range_km=(25.0, 35.0),
+        vs30_range=(450.0, 550.0),
+        max_rows=1,
+        chunksize=1,
+    )
+
+    assert loaded["station"].tolist() == ["KEEP"]
+    assert loaded["band"].fillna("").tolist() == [""]
+    assert loaded["period_s"].tolist() == [1.0]
 
 
 def test_dashboard_summary_dataset_reads_only_summary_columns(tmp_path, monkeypatch) -> None:
