@@ -1023,6 +1023,7 @@ outputs:
     metric_paths = output_group_paths("step_03_metrics", cfg=cfg)
     assert metric_paths["prepared_events_path"] == tmp_path / "run_outputs" / "tables" / "prepared_events.csv"
     assert metric_paths["prepared_stations_path"] == tmp_path / "run_outputs" / "tables" / "prepared_stations.csv"
+    assert metric_paths["metric_tasks_path"] == tmp_path / "run_outputs" / "tables" / "metric_tasks.csv"
 
     namespace = output_group_namespace("step_07_dashboards", cfg=cfg)
     assert namespace.qc_trace_summary_path == tmp_path / "run_outputs" / "tables" / "qc_trace_summary.csv"

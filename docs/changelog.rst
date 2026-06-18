@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-17
+   Added ``metric_tasks_path`` to the Step 3 output group and updated the
+   standard Step 3 metrics notebook to read metric task, estimate, and long
+   metric tables through ``OutputGroup.load_tables()``.
    Updated the standard and large-run Step 5/6 plotting notebooks to read
    workflow output tables through ``OutputGroup.load_tables()`` instead of
    direct ``load_output_table`` calls.

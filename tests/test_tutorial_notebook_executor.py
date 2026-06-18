@@ -859,7 +859,10 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
 
     assert "summarize_metric_snapshot_tasks_from_config(" in source
     assert "write_metric_outputs_from_config(" in source
-    assert 'load_output_table("metrics_long")' in source
+    assert 'step_outputs = output_group("step_03_metrics", cfg=cfg)' in source
+    assert '"metric_tasks": "metric_tasks_path"' in source
+    assert "step_outputs.load_tables(" in source
+    assert "load_output_table(" not in source
     assert "summarize_metric_tasks(" not in source
     assert "write_metric_outputs(" not in source
     assert "drop_duplicates().copy()" not in source

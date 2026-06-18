@@ -444,6 +444,7 @@ OUTPUT_GROUPS: dict[str, tuple[OutputArtifact, ...]] = {
         OutputArtifact("prepared_stations_path", "prepared_stations"),
         OutputArtifact("observed_inventory_path", "observed_metric_inventory"),
         OutputArtifact("synthetic_inventory_path", "synthetic_metric_inventory"),
+        OutputArtifact("metric_tasks_path", "metric_tasks", required=False),
         OutputArtifact("metric_task_estimate_path", "metric_task_estimate", required=False),
         OutputArtifact("metric_manifest_path", "metric_manifest"),
         OutputArtifact("metric_manifest_cached_path", "metric_manifest_cached", required=False),
