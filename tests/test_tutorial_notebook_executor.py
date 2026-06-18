@@ -1050,8 +1050,11 @@ def test_step03_station_map_uses_package_aggregation_and_source_sidecar() -> Non
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "MetricFigureContext.from_frame(" in source
-    assert "station_summary_for_map(" in source
-    assert "source_df=station_pga_source" in source
+    assert "station_summary_for_metric(" in source
+    assert "write_station_metric_map_for_metric(" in source
+    assert "station_summary_for_map(" not in source
+    assert "station_pga_source" not in source
+    assert "source_df=station_pga_source" not in source
     assert ".groupby([" not in source
 
 

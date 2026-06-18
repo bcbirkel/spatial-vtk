@@ -495,6 +495,42 @@ class MetricFigureContext:
             else:
                 yield {"key": spec["key"], "label": spec["label"], "metric": spec["label"], "period_s": None, "df": subset}
 
+    def metric_item(
+        self,
+        metric: str,
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        split_psa_period: bool = False,
+    ) -> dict[str, Any]:
+        """Return one configured metric item by key, label, or alias.
+
+        This is intended for tutorial cells that need one named figure without
+        hand-building the metric subset in notebook code.
+        """
+
+        wanted = norm_text(metric)
+        matches: list[dict[str, Any]] = []
+        for item in self.iter_metric_frames(
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=split_psa_period,
+        ):
+            spec = _target_metric_spec(item["key"])
+            names = {item["key"], item["label"], item["metric"], *(spec.get("aliases", ()) if spec else ())}
+            if wanted in {norm_text(name) for name in names}:
+                matches.append(item)
+        if not matches:
+            raise ValueError(f"No metric rows matched {metric!r}.")
+        if len(matches) > 1:
+            raise ValueError(
+                f"Metric {metric!r} matched {len(matches)} figure items. "
+                "Pass more specific filters or set split_psa_period=False."
+            )
+        return matches[0]
+
     def figure_name(self, base: str, item: dict[str, Any], value_col: str | None = None) -> str:
         """Build a stable figure filename stem from selected dimensions."""
 
@@ -664,6 +700,22 @@ class MetricFigureContext:
             value_col=value_col,
             extra_group_cols=extra_group_cols,
         )
+
+    def station_summary_for_metric(
+        self,
+        metric: str,
+        value_col: str | None = None,
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+    ) -> pd.DataFrame:
+        """Aggregate one named metric to station rows for notebook previews."""
+
+        item = self.metric_item(metric, passband=passband, components=components, model=model)
+        if item["key"] == "psa" and self.period_col in item["df"].columns:
+            return self.station_period_summary_for_item(item, value_col=value_col)
+        return self.station_summary_for_item(item, value_col=value_col)
 
     def station_period_summary_for_item(
         self,
@@ -1047,6 +1099,66 @@ class MetricFigureContext:
             if output is not None:
                 outputs.append(output)
         return outputs
+
+    def write_station_metric_map_for_metric(
+        self,
+        station_metric_map_func: Callable[..., Any],
+        station_metric_map_by_period_func: Callable[..., Any],
+        *,
+        metric: str,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        add_basemap: bool | None = None,
+        showfig: bool | None = None,
+        title: str | None = None,
+    ) -> Path | None:
+        """Write one station-level map for a named metric.
+
+        The plotted station rows are aggregated with
+        :meth:`station_summary_for_metric`; the source-row sidecar contains the
+        underlying event-station metric rows. Use this for focused tutorial
+        figures that should not render the full target-metric figure suite.
+        """
+
+        resolved_value_col = self.value_col if value_col is None else value_col
+        if not self._can_render_metric_figures("station_metric_map", resolved_value_col):
+            return None
+        item = self.metric_item(metric, passband=passband, components=components, model=model)
+        plot_kwargs: dict[str, Any] = {}
+        if title is not None:
+            plot_kwargs["title"] = title
+        if item["key"] == "psa" and self.period_col in item["df"].columns:
+            station_df = self.station_period_summary_for_item(item, resolved_value_col)
+            return self.write_metric_plot(
+                "station_metric_map",
+                item,
+                station_metric_map_by_period_func,
+                df=station_df,
+                source_df=self.item_source_rows(item),
+                required=["sta_lon", "sta_lat", self.period_col, resolved_value_col],
+                value_col=resolved_value_col,
+                forward_value_col=True,
+                period_col=self.period_col,
+                add_basemap=self._resolved_add_basemap(add_basemap),
+                showfig=self._resolved_showfig(showfig),
+                **plot_kwargs,
+            )
+        station_df = self.station_summary_for_item(item, resolved_value_col)
+        return self.write_metric_plot(
+            "station_metric_map",
+            item,
+            station_metric_map_func,
+            df=station_df,
+            source_df=self.item_source_rows(item),
+            required=["sta_lon", "sta_lat", resolved_value_col],
+            value_col=resolved_value_col,
+            forward_value_col=True,
+            add_basemap=self._resolved_add_basemap(add_basemap),
+            showfig=self._resolved_showfig(showfig),
+            **plot_kwargs,
+        )
 
     def write_residual_grid_maps(
         self,
@@ -1793,6 +1905,17 @@ def norm_text(value: object) -> str:
     """Normalize text for metric alias matching."""
 
     return re.sub(r"[^a-z0-9]+", "", str(value).lower())
+
+
+def _target_metric_spec(key: object) -> dict[str, object] | None:
+    """Return one target metric spec by key, label, or alias."""
+
+    wanted = norm_text(key)
+    for spec in TARGET_METRIC_SPECS:
+        names = {spec["key"], spec["label"], *spec.get("aliases", ())}
+        if wanted in {norm_text(name) for name in names}:
+            return dict(spec)
+    return None
 
 
 def slug(value: object) -> str:

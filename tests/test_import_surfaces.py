@@ -247,6 +247,8 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "``status_frame``\n   also includes ``spectral_contract_status``" in text
     assert "``spectral_metric_contract_status``" in text
     assert "legacy passband-scoped row counts" in text
+    assert "``write_station_metric_map_for_metric``" in text
+    assert "without hand-filtering\n   dataframes in the notebook" in text
     for helper in (
         "plot_band_score_distribution",
         "plot_period_score_distribution",

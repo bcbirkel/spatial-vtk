@@ -2,6 +2,13 @@ Changelog
 =========
 
 2026-06-18
+   Added focused metric figure helpers
+   ``MetricFigureContext.metric_item()``,
+   ``station_summary_for_metric()``, and
+   ``write_station_metric_map_for_metric()``. The standard Step 3 notebook now
+   uses these package helpers for the PGA station map instead of hand-filtering
+   rows and passing ``source_df`` from notebook code, while retaining the same
+   station aggregation and source-row sidecar audit trail.
    Added ``SpatialFigureContext.spectral_metric_contract_status()`` and wired
    the large-run Step 4 notebook to display it beside the spatial status and
    dimension summaries. Spatial figure cells now surface whether

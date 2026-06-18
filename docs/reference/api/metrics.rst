@@ -186,6 +186,14 @@ standard row factories used by the large-run notebooks:
    Collapse all selected event-station metric rows to station summaries before
    plotting. PSA period sheets use the period-aware variant.
 
+``metric_item``, ``station_summary_for_metric``, and
+``write_station_metric_map_for_metric``
+   Select one named metric by key, display label, or alias, then build the
+   station summary and focused station map with the same source-row sidecar
+   contract used by the full large-run figure suite. Use these helpers for
+   concise tutorial cells that should render one metric without hand-filtering
+   dataframes in the notebook.
+
 ``station_grid_for_item`` and ``station_model_summary_for_item``
    Prepare station summaries for grid and model-map plotting while preserving
    aggregation metadata for sidecar JSON files.

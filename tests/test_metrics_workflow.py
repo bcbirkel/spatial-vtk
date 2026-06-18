@@ -201,7 +201,16 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     station_summary = context.station_summary_for_map(pga_item["df"])
     item_station_summary = context.station_summary_for_item(pga_item)
     item_station_grid = context.station_grid_for_item(pga_item)
+    named_station_summary = context.station_summary_for_metric(
+        "Peak ground acceleration",
+        passband="1-2 sec",
+        components=["Z"],
+        model="m1",
+    )
     assert item_station_summary[["station", "log2_residual"]].to_dict("records") == station_summary[
+        ["station", "log2_residual"]
+    ].to_dict("records")
+    assert named_station_summary[["station", "log2_residual"]].to_dict("records") == station_summary[
         ["station", "log2_residual"]
     ].to_dict("records")
     assert {"lon", "lat"}.issubset(item_station_grid.columns)
@@ -237,6 +246,7 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert set(station_model_item_summary["model"]) == {"m1", "m2"}
     assert {"lon", "lat", "model"}.issubset(station_model_item_grid.columns)
     assert station_model_summary.attrs["svtk_aggregation_group_columns"] == ["station", "model"]
+
     assert set(station_model_summary["model"]) == {"m1", "m2"}
     sta_m1 = station_model_summary.loc[
         station_model_summary["station"].eq("STA") & station_model_summary["model"].eq("m1")
@@ -421,6 +431,60 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
         metadata = json.loads(generic_metadata.read_text(encoding="utf-8"))
         assert metadata["plot_row_count"] >= metadata["written_row_count"] > 0
         assert metadata["source_row_count"] >= metadata["written_row_count"]
+
+
+def test_metric_figure_context_writes_single_named_station_map_with_source_sidecar(tmp_path) -> None:
+    """Focused tutorial maps should use package aggregation and source-row sidecars."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3"],
+            "station": ["STA", "STA", "STB"],
+            "sta_lon": [-118.0, -118.1, -117.9],
+            "sta_lat": [34.0, 34.1, 34.2],
+            "metric": ["PGA", "PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec"],
+            "model": ["m1", "m1", "m1"],
+            "component": ["Z", "Z", "Z"],
+            "log2_residual": [1.0, 3.0, 5.0],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        metrics,
+        tmp_path / "figures",
+        make_figures=True,
+        overwrite=True,
+        sample_rows=0,
+        value_col="log2_residual",
+        write_sidecars=True,
+        sidecar_rows=None,
+        station_aggregation="mean",
+    )
+
+    def _dummy_station_map(df: pd.DataFrame, *, output_path: Path, **_kwargs) -> None:
+        assert "source_row_count" in df.columns
+        Path(output_path).write_text("figure", encoding="utf-8")
+
+    output = context.write_station_metric_map_for_metric(
+        _dummy_station_map,
+        _dummy_station_map,
+        metric="PGA",
+        passband="1-2 sec",
+        components=["Z"],
+        model="m1",
+        value_col="log2_residual",
+    )
+
+    assert output is not None
+    assert output.exists()
+    sidecar = context.sidecar_output_dir / f"{output.stem}.csv"
+    source_sidecar = context.sidecar_output_dir / f"{output.stem}.source.csv"
+    metadata = json.loads(sidecar.with_suffix(".json").read_text(encoding="utf-8"))
+    assert sidecar.exists()
+    assert source_sidecar.exists()
+    assert metadata["plot_rows_role"] == "post_aggregation_station_summary"
+    assert metadata["source_row_count"] == 3
+    assert pd.read_csv(source_sidecar)["event_id"].tolist() == ["e1", "e2", "e3"]
 
 
 def test_metric_figure_context_orchestrates_large_run_plot_families(tmp_path) -> None:
