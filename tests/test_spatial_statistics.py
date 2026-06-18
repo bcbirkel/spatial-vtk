@@ -87,7 +87,9 @@ from spatial_vtk.spatial.plot.correlation import (
 from spatial_vtk.spatial.plot.large_run import (
     RegionBoxplotResult,
     SpatialFigureContext,
+    StandardSpatialMapFigureResult,
     prepare_spatial_figure_context_from_notebook_settings,
+    write_standard_spatial_map_figures,
     write_large_run_geojson_region_figures_from_outputs,
     write_large_run_geojson_region_figures_from_notebook_settings,
     write_large_run_region_boxplot,
@@ -212,6 +214,158 @@ def test_spatial_metric_product_frames_selects_all_standard_products() -> None:
     assert products["field"]["field_value"].tolist() == [0.1]
     assert products["centered"]["field_centered"].tolist() == [0.0]
     assert products["station_bias"]["mean_centered"].tolist() == [0.3]
+
+
+def test_write_standard_spatial_map_figures_owns_step04_map_calls(tmp_path: Path) -> None:
+    """Standard Step 4 station-bias and residual-grid plotting should be package-owned."""
+
+    products = {
+        "PGA": {
+            "station_bias": pd.DataFrame(
+                {
+                    "station": ["STA"],
+                    "lon": [-118.0],
+                    "lat": [34.0],
+                    "mean_centered": [0.2],
+                }
+            ),
+            "centered": pd.DataFrame(
+                {
+                    "event_id": ["E1"],
+                    "station": ["STA"],
+                    "lon": [-118.0],
+                    "lat": [34.0],
+                    "field_centered": [0.1],
+                }
+            ),
+        }
+    }
+    outputs = OutputGroup(
+        name="step_04_spatial",
+        paths={
+            "station_bias_figure_path": tmp_path / "figures" / "station_bias.png",
+            "residual_grid_figure_path": tmp_path / "figures" / "residual_grid.png",
+        },
+    )
+    seen: list[tuple[str, Path, dict[str, object]]] = []
+
+    class Sidecars:
+        @staticmethod
+        def kwargs(**_kwargs) -> dict[str, object]:
+            return {
+                "write_sidecar": True,
+                "sidecar_rows": 25,
+                "sidecar_dir": tmp_path / "sidecars",
+            }
+
+    class Settings:
+        add_basemap = True
+        showfig = False
+        sidecars = Sidecars()
+
+    def _fake_station_bias(frame, *, outpath, title, value_col, value_label, **kwargs):
+        output = Path(outpath)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text("station bias", encoding="utf-8")
+        seen.append(
+            (
+                "station_bias",
+                output,
+                {
+                    "rows": len(frame),
+                    "title": title,
+                    "value_col": value_col,
+                    "value_label": value_label,
+                    **kwargs,
+                },
+            )
+        )
+
+    def _fake_residual_grid(frame, *, outpath, title, lon_col, lat_col, value_col, cell_size_deg, **kwargs):
+        output = Path(outpath)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text("grid", encoding="utf-8")
+        seen.append(
+            (
+                "residual_grid",
+                output,
+                {
+                    "rows": len(frame),
+                    "title": title,
+                    "lon_col": lon_col,
+                    "lat_col": lat_col,
+                    "value_col": value_col,
+                    "cell_size_deg": cell_size_deg,
+                    **kwargs,
+                },
+            )
+        )
+
+    result = write_standard_spatial_map_figures(
+        products,
+        outputs,
+        Settings(),
+        station_bias_plot_func=_fake_station_bias,
+        residual_grid_plot_func=_fake_residual_grid,
+    )
+
+    assert isinstance(result, StandardSpatialMapFigureResult)
+    assert [item[0] for item in seen] == ["station_bias", "residual_grid"]
+    assert seen[0][1].name == "step_04_pga_station_bias.png"
+    assert seen[1][1].name == "step_04_pga_residual_grid.png"
+    for _, _, kwargs in seen:
+        assert kwargs["add_basemap"] is True
+        assert kwargs["showfig"] is False
+        assert kwargs["savefig"] is True
+        assert kwargs["write_sidecar"] is True
+        assert kwargs["sidecar_rows"] == 25
+        assert kwargs["sidecar_dir"] == tmp_path / "sidecars"
+    status = result.status_frame()
+    assert status["artifact"].tolist() == ["station_bias_map", "residual_grid_map"]
+    assert set(status["status"]) == {"wrote"}
+    assert status["row_count"].tolist() == [1, 1]
+
+
+def test_write_standard_spatial_map_figures_reports_plot_failures(tmp_path: Path) -> None:
+    """Standard spatial figure helper should show per-figure failures in notebooks."""
+
+    products = {
+        "PGA": {
+            "station_bias": pd.DataFrame({"station": ["STA"]}),
+            "centered": pd.DataFrame({"station": ["STA"]}),
+        }
+    }
+    outputs = OutputGroup(
+        name="step_04_spatial",
+        paths={
+            "station_bias_figure_path": tmp_path / "figures" / "station_bias.png",
+            "residual_grid_figure_path": tmp_path / "figures" / "residual_grid.png",
+        },
+    )
+
+    class Settings:
+        add_basemap = False
+        showfig = False
+
+        class sidecars:
+            @staticmethod
+            def kwargs(**_kwargs) -> dict[str, object]:
+                return {}
+
+    def _raise(*_args, **_kwargs):
+        raise ValueError("bad plot")
+
+    result = write_standard_spatial_map_figures(
+        products,
+        outputs,
+        Settings(),
+        station_bias_plot_func=_raise,
+        residual_grid_plot_func=_raise,
+    )
+
+    status = result.status_frame()
+    assert status["status"].tolist() == ["plot_failed", "plot_failed"]
+    assert status["message"].str.contains("ValueError: bad plot").all()
 
 
 def test_spatial_pca_product_frames_selects_all_pca_products() -> None:

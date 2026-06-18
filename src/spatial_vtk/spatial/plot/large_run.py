@@ -1433,6 +1433,28 @@ class SpatialSummaryFigureResult:
         )
 
 
+@dataclass(frozen=True)
+class StandardSpatialMapFigureResult:
+    """Result from writing standard Step 4 spatial map figures."""
+
+    rows: tuple[dict[str, Any], ...]
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact notebook status table for written spatial figures."""
+
+        return pd.DataFrame(
+            self.rows,
+            columns=[
+                "artifact",
+                "metric",
+                "status",
+                "row_count",
+                "figure_path",
+                "message",
+            ],
+        )
+
+
 def prepare_spatial_figure_context(**kwargs: Any) -> SpatialFigureContext:
     """Return a reusable spatial figure context for large-run notebooks."""
 
@@ -1544,6 +1566,126 @@ def write_large_run_spatial_summary_figures_from_outputs(
         row_count=row_count,
         message=f"wrote {figure_path}" if figure_path is not None else "wrote station bias map",
     )
+
+
+def write_standard_spatial_map_figures(
+    spatial_products: Mapping[str, Mapping[str, pd.DataFrame]],
+    outputs: Any,
+    settings: Any,
+    *,
+    station_bias_value_col: str = "mean_centered",
+    station_bias_value_label: str = "Mean event-centered log2(obs/syn)",
+    residual_grid_value_col: str = "field_centered",
+    grid_cell_size_deg: float = 0.05,
+    station_bias_path_name: str = "station_bias_figure_path",
+    residual_grid_path_name: str = "residual_grid_figure_path",
+    station_bias_plot_func: Callable[..., Any] | None = None,
+    residual_grid_plot_func: Callable[..., Any] | None = None,
+) -> StandardSpatialMapFigureResult:
+    """Write standard Step 4 station-bias and residual-grid maps.
+
+    The helper owns the repeated per-metric plot calls, output-path naming,
+    sidecar keyword expansion, basemap settings, and status reporting used by
+    the standard spatial-statistics tutorial.
+    """
+
+    from spatial_vtk.config.labels import metric_display_name
+
+    if station_bias_plot_func is None:
+        from spatial_vtk.spatial.map import plot_station_bias_map as station_bias_plot_func
+    if residual_grid_plot_func is None:
+        from spatial_vtk.spatial.map import plot_residual_grid as residual_grid_plot_func
+
+    rows: list[dict[str, Any]] = []
+    sidecar_kwargs = dict(settings.sidecars.kwargs())
+    plot_kwargs = {
+        "add_basemap": bool(settings.add_basemap),
+        "showfig": bool(settings.showfig),
+        "savefig": True,
+        **sidecar_kwargs,
+    }
+
+    for metric_name, products in spatial_products.items():
+        label = metric_display_name(metric_name)
+        station_df = products.get("station_bias", pd.DataFrame())
+        station_path = outputs.figure_path(
+            station_bias_path_name,
+            stem_parts=("step_04", metric_name, "station_bias"),
+        )
+        try:
+            station_bias_plot_func(
+                station_df,
+                title=f"{label} Station Bias",
+                value_col=station_bias_value_col,
+                value_label=station_bias_value_label,
+                outpath=station_path,
+                **plot_kwargs,
+            )
+            plt.close("all")
+            rows.append(
+                {
+                    "artifact": "station_bias_map",
+                    "metric": metric_name,
+                    "status": "wrote",
+                    "row_count": len(station_df),
+                    "figure_path": str(station_path),
+                    "message": f"wrote {station_path}",
+                }
+            )
+        except Exception as exc:
+            plt.close("all")
+            rows.append(
+                {
+                    "artifact": "station_bias_map",
+                    "metric": metric_name,
+                    "status": "plot_failed",
+                    "row_count": len(station_df),
+                    "figure_path": str(station_path),
+                    "message": f"{type(exc).__name__}: {exc}",
+                }
+            )
+
+        centered_df = products.get("centered", pd.DataFrame())
+        grid_path = outputs.figure_path(
+            residual_grid_path_name,
+            stem_parts=("step_04", metric_name, "residual_grid"),
+        )
+        try:
+            residual_grid_plot_func(
+                centered_df,
+                lon_col="lon",
+                lat_col="lat",
+                value_col=residual_grid_value_col,
+                cell_size_deg=grid_cell_size_deg,
+                title=f"{label} Residual Grid",
+                outpath=grid_path,
+                **plot_kwargs,
+            )
+            plt.close("all")
+            rows.append(
+                {
+                    "artifact": "residual_grid_map",
+                    "metric": metric_name,
+                    "status": "wrote",
+                    "row_count": len(centered_df),
+                    "figure_path": str(grid_path),
+                    "message": f"wrote {grid_path}",
+                }
+            )
+        except Exception as exc:
+            plt.close("all")
+            rows.append(
+                {
+                    "artifact": "residual_grid_map",
+                    "metric": metric_name,
+                    "status": "plot_failed",
+                    "row_count": len(centered_df),
+                    "figure_path": str(grid_path),
+                    "message": f"{type(exc).__name__}: {exc}",
+                }
+            )
+
+    return StandardSpatialMapFigureResult(tuple(rows))
 
 
 def write_large_run_geojson_region_figures_from_outputs(
@@ -2395,8 +2537,10 @@ __all__ = [
     "SPATIAL_FIGURE_TABLE_KEYS",
     "SpatialSummaryFigureResult",
     "SpatialFigureContext",
+    "StandardSpatialMapFigureResult",
     "prepare_spatial_figure_context",
     "prepare_spatial_figure_context_from_notebook_settings",
+    "write_standard_spatial_map_figures",
     "write_large_run_geojson_region_figures_from_outputs",
     "write_large_run_geojson_region_figures_from_notebook_settings",
     "write_large_run_region_boxplot",

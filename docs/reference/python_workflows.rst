@@ -344,6 +344,10 @@ Step 4: Spatial Statistics
    * - Build optional derived spatial outputs
      - ``spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config``
      - block holdout, REDCAP, and pattern-similarity tables
+   * - Render standard spatial station and grid maps
+     - ``spatial_vtk.spatial.plot.write_standard_spatial_map_figures``
+     - per-metric station-bias and residual-grid figures, compact write status
+       table, and optional row-provenance sidecars
    * - Render large-run spatial figures
      - ``spatial_vtk.spatial.plot.prepare_spatial_figure_context_from_notebook_settings``
      - saved spatial figures, package-generated spatial table/dimension status

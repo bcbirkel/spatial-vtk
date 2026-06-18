@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Added ``spatial_vtk.spatial.plot.write_standard_spatial_map_figures()`` and
+   rewired the standard Step 4 spatial notebook to use it for station-bias and
+   residual-grid maps. The notebook no longer repeats per-metric map loops,
+   output-path construction, sidecar keyword expansion, or basemap/showfig
+   keyword plumbing for those figure families.
    Added
    ``spatial_vtk.visualize.dashboard.prepare_configured_dashboard_datasets_from_notebook_settings()``
    and rewired the standard Step 7 dashboard notebook to use it. The notebook

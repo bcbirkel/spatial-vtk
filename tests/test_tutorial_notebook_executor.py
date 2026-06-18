@@ -1064,6 +1064,10 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     assert "spatial_metric_table_frame(" in source
     assert "spatial_pca_product_frames(" in source
     assert "station_bias_preview_frame(" in source
+    assert "write_standard_spatial_map_figures(" in source
+    assert "spatial_map_result.status_frame()" in source
+    assert "plot_station_bias_map(" not in source
+    assert "plot_residual_grid(" not in source
     assert "display(bias.head())" not in source
     assert 'metric_field.loc[metric_field["metric"].astype(str).eq(metric_name)]' not in source
     assert 'event_centered_residuals.loc[event_centered_residuals["metric"].astype(str).eq(metric_name)]' not in source
@@ -1076,8 +1080,6 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     assert "pd.DataFrame(" not in source
     assert "import pandas as pd" not in source
     for figure_path_name in (
-        "station_bias_figure_path",
-        "residual_grid_figure_path",
         "spatial_correlation_distance_figure_path",
         "pca_summary_figure_path",
         "geology_contrast_figure_path",

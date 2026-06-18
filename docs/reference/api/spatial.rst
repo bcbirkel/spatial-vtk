@@ -212,6 +212,10 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Write compact Step 4 spatial summary figures from an ``OutputGroup``
        without notebook-local input gating, table loading, output-path lookup,
        or plotting keyword expansion.
+   * - ``write_standard_spatial_map_figures``
+     - Write the standard Step 4 station-bias and residual-grid maps for each
+       selected metric without notebook-local per-metric plot loops or output
+       path construction.
    * - ``write_large_run_geojson_region_figures_from_outputs``
      - Write the Step 5 GeoJSON overview map, corridor map, and region boxplot
        from configured output groups without notebook-local table loading or
@@ -296,6 +300,8 @@ schemas.
    :members:
 
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_spatial_summary_figures_from_outputs
+
+.. autofunction:: spatial_vtk.spatial.plot.write_standard_spatial_map_figures
 
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_outputs
 
