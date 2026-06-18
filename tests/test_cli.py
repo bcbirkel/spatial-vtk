@@ -889,6 +889,9 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "--dashboard-summary-table-dir" in dashboard_text
     assert "row-level data used by metric filters" in dashboard_text
     assert "dashboard overview tabs" in dashboard_text
+    assert "Only pass explicit paths when you want to override those configured outputs" in dashboard_text
+    assert "Prefer ``--metrics-dataset-dir`` and ``--dashboard-summary-table-dir``" in dashboard_text
+    assert "are legacy aliases" in dashboard_text
     assert "Config-Backed Plotting" in generator_text
     assert "Config-Backed Dashboards" in generator_text
 
@@ -3192,6 +3195,11 @@ def test_cli_dashboard_help_exposes_clear_path_aliases(capsys):
     assert "station_rollup" in metrics_help
     assert "metrics_dashboard" in metrics_help
     assert "dashboard_summaries" in metrics_help
+    assert "when --config is passed or a default config is set with 'svtk config set'" in metrics_help
+    assert "Prefer --metrics-dataset-dir" in metrics_help
+    assert "--metrics-root and --metrics-dataset are legacy aliases" in metrics_help
+    assert "Prefer --dashboard-summary-table-dir" in metrics_help
+    assert "--summary-root and --dashboard-summary-dir are legacy aliases" in metrics_help
 
     with pytest.raises(SystemExit) as excinfo:
         main(["dashboard", "qc", "--help"])

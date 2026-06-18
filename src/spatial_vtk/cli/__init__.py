@@ -1098,7 +1098,9 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
         help=(
             "Metrics dashboard row dataset directory or direct metrics_long CSV/parquet table "
             "(the row-level data used by metric filters, station/event maps, and detail tables). "
-            "Defaults to configured dashboard output key 'metrics_dashboard'."
+            "Defaults to configured dashboard output key 'metrics_dashboard' when --config is passed "
+            "or a default config is set with 'svtk config set'. Prefer --metrics-dataset-dir; "
+            "--metrics-root and --metrics-dataset are legacy aliases."
         ),
     )
     metrics.add_argument(
@@ -1111,7 +1113,9 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
         help=(
             "Dashboard summary-table directory containing model_metric_band, station_rollup, "
             "event_rollup, and path_hex CSV/parquet tables for dashboard overview tabs. "
-            "Defaults to configured dashboard output key 'dashboard_summaries'."
+            "Defaults to configured dashboard output key 'dashboard_summaries' when --config is passed "
+            "or a default config is set with 'svtk config set'. Prefer --dashboard-summary-table-dir; "
+            "--summary-root and --dashboard-summary-dir are legacy aliases."
         ),
     )
     metrics.add_argument("--port", type=int, default=8501, help="Streamlit server port.")
