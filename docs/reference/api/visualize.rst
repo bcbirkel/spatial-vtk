@@ -326,18 +326,21 @@ into those station values. The JSON sidecar records
 ``aggregation_contract``, ``aggregation_method``,
 ``aggregation_group_columns``, ``aggregation_coordinate_columns``,
 ``aggregation_input_row_count``, ``aggregation_finite_row_count``, and
-``aggregation_dropped_nonfinite_row_count``. For PSA period sheets and other
-multi-panel figures, panel identifiers such as ``__svtk_panel_period_s`` are
-included so the raw source rows can be matched back to the plotted panel. This
-is the public audit trail for verifying that a station figure used all selected
-events and stations rather than a preview or sampled dataframe.
+``aggregation_dropped_nonfinite_row_count``. It also records input and finite
+station/event counts, ``source_rows_filter`` when the source sidecar is limited
+to plotted aggregation groups, and ``aggregation_panel_count`` for multi-panel
+figures. For PSA period sheets and other multi-panel figures, panel identifiers
+such as ``__svtk_panel_period_s`` are included so the raw source rows can be
+matched back to the plotted panel. This is the public audit trail for verifying
+that a station figure used all selected events and stations rather than a
+preview or sampled dataframe.
 
 Use ``figure_sidecar_status_frame(sidecar_dir)`` to inspect a directory of
 JSON sidecars without loading the CSV row files. The status table reports
 exactness flags, plot/source row counts, source-sidecar availability, and
 station-aggregation metadata when a figure was created from station summaries,
 including grouping columns, coordinate columns, collapsed dimensions, and
-aggregation row counts.
+aggregation row, station, event, and panel counts.
 ``read_figure_sidecar_metadata`` reads one JSON sidecar from a figure path,
 main sidecar CSV path, source sidecar CSV path, or JSON metadata path.
 

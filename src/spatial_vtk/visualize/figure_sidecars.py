@@ -340,10 +340,26 @@ def _figure_sidecar_status_row(metadata_path: Path, metadata: dict[str, Any]) ->
         "sidecar_row_limit": metadata.get("sidecar_row_limit", ""),
         "plot_rows_role": metadata.get("plot_rows_role", ""),
         "source_rows_role": metadata.get("source_rows_role", ""),
+        "source_rows_filter": metadata.get("source_rows_filter", ""),
+        "plot_event_count": metadata.get("plot_event_count", ""),
+        "plot_station_count": metadata.get("plot_station_count", ""),
+        "plot_component_count": metadata.get("plot_component_count", ""),
+        "plot_model_count": metadata.get("plot_model_count", ""),
+        "plot_metric_count": metadata.get("plot_metric_count", ""),
+        "plot_passband_count": metadata.get("plot_passband_count", ""),
+        "plot_period_count": metadata.get("plot_period_count", ""),
+        "source_event_count": metadata.get("source_event_count", ""),
+        "source_station_count": metadata.get("source_station_count", ""),
+        "source_component_count": metadata.get("source_component_count", ""),
+        "source_model_count": metadata.get("source_model_count", ""),
+        "source_metric_count": metadata.get("source_metric_count", ""),
+        "source_passband_count": metadata.get("source_passband_count", ""),
+        "source_period_count": metadata.get("source_period_count", ""),
         "aggregation_contract": metadata.get("aggregation_contract", ""),
         "aggregation_kind": metadata.get("aggregation_kind", metadata.get("svtk_aggregation_kind", "")),
         "aggregation_method": metadata.get("aggregation_method", metadata.get("svtk_aggregation_method", "")),
         "aggregation_value_col": metadata.get("aggregation_value_col", metadata.get("svtk_aggregation_value_col", "")),
+        "aggregation_panel_count": metadata.get("aggregation_panel_count", metadata.get("svtk_aggregation_panel_count", "")),
         "aggregation_group_columns": metadata.get("aggregation_group_columns", metadata.get("svtk_aggregation_group_columns", "")),
         "aggregation_coordinate_columns": metadata.get(
             "aggregation_coordinate_columns",
@@ -362,6 +378,22 @@ def _figure_sidecar_status_row(metadata_path: Path, metadata: dict[str, Any]) ->
         "aggregation_dropped_nonfinite_row_count": metadata.get(
             "aggregation_dropped_nonfinite_row_count",
             metadata.get("svtk_aggregation_dropped_nonfinite_row_count", ""),
+        ),
+        "aggregation_input_station_count": metadata.get(
+            "aggregation_input_station_count",
+            metadata.get("svtk_aggregation_input_station_count", ""),
+        ),
+        "aggregation_finite_station_count": metadata.get(
+            "aggregation_finite_station_count",
+            metadata.get("svtk_aggregation_finite_station_count", ""),
+        ),
+        "aggregation_input_event_count": metadata.get(
+            "aggregation_input_event_count",
+            metadata.get("svtk_aggregation_input_event_count", ""),
+        ),
+        "aggregation_finite_event_count": metadata.get(
+            "aggregation_finite_event_count",
+            metadata.get("svtk_aggregation_finite_event_count", ""),
         ),
     }
 

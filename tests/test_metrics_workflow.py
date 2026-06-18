@@ -413,6 +413,14 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert status_row["aggregation_input_row_count"] == 4
     assert status_row["aggregation_finite_row_count"] == 3
     assert status_row["aggregation_dropped_nonfinite_row_count"] == 1
+    assert status_row["aggregation_input_station_count"] == 2
+    assert status_row["aggregation_finite_station_count"] == 2
+    assert status_row["aggregation_input_event_count"] == 4
+    assert status_row["aggregation_finite_event_count"] == 3
+    assert status_row["plot_station_count"] == 2
+    assert status_row["source_station_count"] == 2
+    assert status_row["source_event_count"] == 4
+    assert status_row["source_model_count"] == 1
 
     context.sample_rows = 0
     context.sidecar_rows = None
@@ -896,6 +904,12 @@ def test_psa_period_sheet_source_sidecar_tracks_plotted_station_period_groups(tm
     assert source_keys == plotted_keys
     assert metadata["aggregation_group_columns"] == ["station", "period_s"]
     assert metadata["source_rows_filter"] == "aggregation_groups_present_in_plot_rows"
+    status = figure_sidecar_status_frame(context.sidecar_output_dir).set_index("figure")
+    status_row = status.loc[f"{output.stem}.png"]
+    assert status_row["source_rows_filter"] == "aggregation_groups_present_in_plot_rows"
+    assert status_row["aggregation_group_columns"] == ["station", "period_s"]
+    assert status_row["aggregation_panel_count"] == 2
+    assert status_row["source_period_count"] == 2
 
 
 def test_metric_workflow_runs_tasks_and_applies_side_specific_spectral_qc(tmp_path) -> None:

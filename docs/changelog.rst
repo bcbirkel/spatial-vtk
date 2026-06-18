@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-18
+   Expanded ``figure_sidecar_status_frame()`` so notebook sidecar audits expose
+   source-row filters, plot/source dimension counts, station/event aggregation
+   counts, and PSA/multi-panel counts without loading large CSV sidecars.
    Added ``metric_rows_for_metrics()`` to the public
    ``spatial_vtk.metrics.plot`` API. Rewired the standard Step 3 metric
    notebook to use it for focused plotting examples instead of notebook-local
