@@ -271,8 +271,8 @@ def test_public_docs_describe_committed_tutorial_waveforms() -> None:
     assert 'record_coverage = load_output_table("record_coverage")' in configuration
 
 
-def test_qc_notebooks_use_public_slurm_imports() -> None:
-    """Tutorial notebooks should not import QC Slurm implementation modules."""
+def test_qc_notebooks_use_public_workflow_helpers() -> None:
+    """Tutorial notebooks should use public QC workflow helpers."""
 
     repo_root = Path(__file__).resolve().parents[1]
     standard_text = (repo_root / "docs" / "examples" / "step_02_quality_control.ipynb").read_text(encoding="utf-8")
@@ -280,9 +280,22 @@ def test_qc_notebooks_use_public_slurm_imports() -> None:
         repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb"
     ).read_text(encoding="utf-8")
 
-    assert "from spatial_vtk.qc import slurm_settings_from_config" in standard_text
+    assert "run_qc_inventory_from_config(" in standard_text
+    assert "write_qc_inventory_overlap_from_config(" in standard_text
+    assert "run_qc_summary_workflow_from_config(" in standard_text
     assert "run_notebook_step_if_needed(" in large_run_text
     assert "spatial_vtk.qc.run_qc_inventory_from_config" in large_run_text
+    assert "spatial_vtk.qc.write_qc_inventory_overlap_from_config" in large_run_text
+    assert "spatial_vtk.qc.run_qc_summary_workflow_from_config" in large_run_text
+    for forbidden in (
+        "build_waveform_qc_summary",
+        "build_metric_qc_summary",
+        "write_qc_inventory_overlap_from_full",
+        "submit_qc_slurm_job",
+        "slurm_settings_from_config",
+        "from spatial_vtk.qc.build.slurm import",
+    ):
+        assert forbidden not in standard_text
     assert "from spatial_vtk.qc.build.slurm import" not in standard_text
     assert "from spatial_vtk.qc.build.slurm import" not in large_run_text
 
