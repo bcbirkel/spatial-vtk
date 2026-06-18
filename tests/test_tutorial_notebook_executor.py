@@ -195,6 +195,20 @@ def test_tutorial_notebooks_use_stable_config_import_surface() -> None:
         assert 'os.environ.setdefault("LOKY_MAX_CPU_COUNT"' not in source, f"{notebook_path.relative_to(repo_root)}"
 
 
+def test_standard_tutorial_notebooks_use_notebook_run_context() -> None:
+    """Standard tutorial notebooks should use the same package run-context helper as large-run notebooks."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").glob("step_*.ipynb"))
+    assert notebooks
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        assert "notebook_run_context(" in source, f"{notebook_path.relative_to(repo_root)}"
+        assert "SpatialVTKConfig.from_file(" not in source, f"{notebook_path.relative_to(repo_root)}"
+        assert "from spatial_vtk.config import find_repo_root" not in source, f"{notebook_path.relative_to(repo_root)}"
+
+
 def test_tutorial_notebooks_have_stable_cell_ids() -> None:
     """Committed notebooks should not trigger nbformat cell-id warnings."""
 

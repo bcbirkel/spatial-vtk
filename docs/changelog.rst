@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Standard tutorial notebooks now use ``notebook_run_context()`` for config
+   loading, activation, and output-directory discovery, matching the large-run
+   notebooks and avoiding repeated direct ``SpatialVTKConfig.from_file`` setup
+   cells.
    ``OutputReadiness`` and output status tables now handle unconfigured
    optional input paths explicitly. Passing a named input value of ``None``
    reports ``<not configured>`` in notebook status tables, blocks dependent

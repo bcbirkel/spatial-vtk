@@ -42,14 +42,13 @@ paths in cells.
 
 .. code-block:: python
 
-   from spatial_vtk.config import SpatialVTKConfig
    from spatial_vtk.config import configured_output_registry_frame
    from spatial_vtk.config import notebook_figure_settings, notebook_run_context, run_notebook_step_if_needed
    from spatial_vtk.io import load_configured_input_paths, load_configured_input_tables, output_group
    from spatial_vtk.qc import run_qc_inventory_from_config
 
-   cfg = SpatialVTKConfig.from_file("runs/spatial_vtk_config.yaml").activate()
    context = notebook_run_context()
+   cfg = context.cfg
    step_outputs = output_group("step_02_qc", cfg=cfg)
    display(configured_output_registry_frame(cfg=cfg, kinds=("table",)).head())
    display(step_outputs.status_frame())
@@ -63,7 +62,7 @@ paths in cells.
        context,
        readiness,
        run_qc_inventory_from_config,
-       kwargs={"config_path": str(cfg.config_path), "overwrite": False, "verbose": True},
+       kwargs={"config_path": str(context.config_path), "overwrite": False, "verbose": True},
        script_name="build_qc_inventory.slurm",
        job_name="svtk-qc",
        walltime="24:00:00",
