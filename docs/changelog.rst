@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Clarified Python workflow helper return-value guidance so notebooks treat
+   descriptive keys such as ``metric_manifest_path`` and
+   ``geojson_region_summaries_path`` as the public contract, while generic
+   aliases such as ``path``, ``output``, and ``manifest`` are documented only
+   as backward-compatible internals that notebooks should not depend on.
    Clarified the API reference start points for ``spatial_vtk.io``,
    ``spatial_vtk.qc``, ``spatial_vtk.metrics``, and ``spatial_vtk.spatial`` so
    workflow users see package-level imports before lower-level implementation

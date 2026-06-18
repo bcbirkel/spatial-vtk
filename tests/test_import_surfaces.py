@@ -368,7 +368,9 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "configured_output_registry_frame" in workflows
     assert "metric_manifest_path" in workflows
     assert "geojson_region_summaries_path" in workflows
-    assert "compatibility aliases" in workflows
+    assert "descriptive keys are the public notebook contract" in workflows
+    assert "docs should not depend on generic" in workflows
+    assert "compatibility aliases" not in workflows
     assert "``bind(globals())`` exposes conventional names" in workflows
     assert "svtk metrics plan" not in workflows
     assert "svtk qc" not in workflows

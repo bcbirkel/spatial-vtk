@@ -23,9 +23,12 @@ for terminal-oriented workflows and generated batch scripts.
 Workflow functions return JSON-ready dictionaries that are safe to display in
 notebooks or Slurm logs. New notebook code should prefer explicit keys such as
 ``metric_manifest_path``, ``observed_metric_inventory_path``,
-``record_coverage_path``, and ``geojson_region_summaries_path``. Shorter legacy
-keys such as ``path``, ``output``, or ``manifest`` are kept only as
-compatibility aliases.
+``record_coverage_path``, and ``geojson_region_summaries_path``. These
+descriptive keys are the public notebook contract: they make status tables,
+logs, and downstream cells readable without checking each helper's
+implementation. A few helpers may still return older short aliases internally
+for backward compatibility, but notebooks and docs should not depend on generic
+names such as ``path``, ``output``, or ``manifest``.
 
 Every dotted helper listed on this page is an importable public entry point.
 Tutorial notebooks should import these package functions directly rather than
