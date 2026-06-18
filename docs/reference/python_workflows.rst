@@ -27,10 +27,11 @@ notebooks or Slurm logs. New notebook code should prefer explicit keys such as
 keys such as ``path``, ``output``, or ``manifest`` are kept only as
 compatibility aliases.
 
-Config-backed spatial helpers also accept dotted path keys such as
-``"paths.metric_figure_snapshot"`` or ``"paths.site_metadata"`` for optional
-table inputs, so notebooks can select configured inputs without resolving
-filesystem paths in cells.
+Config-backed spatial, GeoJSON, and corridor helpers also accept dotted path
+keys such as ``"paths.metric_figure_snapshot"``, ``"paths.site_metadata"``,
+``"paths.region_geojson"``, or ``"paths.event_station_table"`` for optional
+inputs, so notebooks can select configured inputs without resolving filesystem
+paths in cells.
 
 .. code-block:: python
 
@@ -204,6 +205,11 @@ Step 5: GeoJSON Regions and Corridors
    * - Build configured boundary corridors
      - ``spatial_vtk.spatial.run_boundary_corridor_workflow_from_config``
      - corridor definitions and corridor-selected records
+
+Both Step 5 helpers can receive configured path keys for optional inputs. For
+example, pass ``metrics_table="paths.metric_figure_snapshot"`` or
+``geojson_path="paths.region_geojson"`` when a notebook needs to select a
+configured non-default input without adding path-resolution cells.
 
 Step 7: Dashboard Datasets
 --------------------------

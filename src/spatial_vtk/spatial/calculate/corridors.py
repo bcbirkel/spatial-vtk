@@ -456,10 +456,10 @@ def run_boundary_corridor_workflow_from_config(
 
     config = _corridor_workflow_config(config_path=config_path, run_scenario=run_scenario)
     result = run_boundary_corridor_workflow(
-        geojson_path=geojson_path,
-        station_table=station_table,
-        event_table=event_table,
-        records_table=records_table,
+        geojson_path=_resolve_config_path_argument(geojson_path, config),
+        station_table=_resolve_config_path_argument(station_table, config),
+        event_table=_resolve_config_path_argument(event_table, config),
+        records_table=_resolve_config_path_argument(records_table, config),
         output_key=output_key,
         cfg=config,
         corridor_config=corridor_config,
@@ -489,6 +489,18 @@ def _corridor_workflow_config(
     if run_scenario is not None and config.config_path is not None:
         return SpatialVTKConfig.from_file(config.config_path, run_scenario=run_scenario).activate()
     return config.activate()
+
+
+def _resolve_config_path_argument(value, config):
+    """Resolve dotted config path keys passed to config-backed wrappers."""
+
+    if isinstance(value, str) and "." in value:
+        try:
+            path = config.path(value, must_exist=True)
+        except Exception:
+            return value
+        return path if path is not None else value
+    return value
 
 
 def classify_records_by_corridors(

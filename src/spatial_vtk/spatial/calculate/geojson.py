@@ -689,8 +689,8 @@ def run_geojson_region_summary_workflow_from_config(
 
     config = _geojson_workflow_config(config_path=config_path, run_scenario=run_scenario)
     result = run_geojson_region_summary_workflow(
-        metrics_table,
-        geojson_path=geojson_path,
+        _resolve_config_path_argument(metrics_table, config),
+        geojson_path=_resolve_config_path_argument(geojson_path, config),
         output_key=output_key,
         cfg=config,
         selector=selector,
@@ -722,6 +722,18 @@ def _geojson_workflow_config(
     if run_scenario is not None and config.config_path is not None:
         return SpatialVTKConfig.from_file(config.config_path, run_scenario=run_scenario).activate()
     return config.activate()
+
+
+def _resolve_config_path_argument(value, config):
+    """Resolve dotted config path keys passed to config-backed wrappers."""
+
+    if isinstance(value, str) and "." in value:
+        try:
+            path = config.path(value, must_exist=True)
+        except Exception:
+            return value
+        return path if path is not None else value
+    return value
 
 
 def summarize_metrics_by_geojson(

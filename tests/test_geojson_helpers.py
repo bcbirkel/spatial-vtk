@@ -164,6 +164,7 @@ def test_geojson_region_summary_reads_only_needed_table_columns(tmp_path):
 project:
   root_dir: .
 paths:
+  metric_figure_snapshot: outputs/tables/metrics_long.parquet
   region_geojson: regions.geojson
 outputs:
   tables: outputs/tables
@@ -222,6 +223,8 @@ outputs:
 
     result = run_geojson_region_summary_workflow_from_config(
         config_path=config_path,
+        metrics_table="paths.metric_figure_snapshot",
+        geojson_path="paths.region_geojson",
         chunksize=1,
         verbose=True,
     )
@@ -346,6 +349,8 @@ project:
   root_dir: .
 paths:
   region_geojson: corridor_regions.geojson
+  station_metadata: inputs/stations.csv
+  event_metadata: inputs/events.csv
 outputs:
   tables: outputs/tables
 spatial:
@@ -362,18 +367,24 @@ spatial:
 """,
         encoding="utf-8",
     )
-    tables = tmp_path / "outputs" / "tables"
-    tables.mkdir(parents=True)
+    inputs = tmp_path / "inputs"
+    inputs.mkdir(parents=True)
     pd.DataFrame({"station": ["S1"], "network": ["XX"], "sta_lon": [-118.2], "sta_lat": [34.2]}).to_csv(
-        tables / "prepared_stations.csv",
+        inputs / "stations.csv",
         index=False,
     )
     pd.DataFrame({"event_id": ["E1"], "event_lon": [-118.25], "event_lat": [34.25]}).to_csv(
-        tables / "prepared_events.csv",
+        inputs / "events.csv",
         index=False,
     )
 
-    result = run_boundary_corridor_workflow_from_config(config_path=config_path, verbose=True)
+    result = run_boundary_corridor_workflow_from_config(
+        config_path=config_path,
+        geojson_path="paths.region_geojson",
+        station_table="paths.station_metadata",
+        event_table="paths.event_metadata",
+        verbose=True,
+    )
 
     assert result["path"] == str(tmp_path / "outputs" / "tables" / "corridors.parquet")
     assert result["corridors_path"] == result["path"]
