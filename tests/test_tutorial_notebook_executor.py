@@ -989,6 +989,31 @@ def test_standard_tutorial_notebooks_avoid_raw_table_preview_helpers() -> None:
             assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} uses {matches}"
 
 
+def test_standard_step01_uses_configured_io_workflows() -> None:
+    """The ingest tutorial should use config-backed IO workflows, not inline table construction."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "step_01_ingest_and_prepare_data.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "prepare_metadata_tables_from_config(" in source
+    assert "preprocess_waveforms_from_config(" in source
+    assert "build_record_coverage_from_config(" in source
+    assert 'step_outputs = output_group("step_01_ingest", cfg=cfg)' in source
+    assert "preprocessed_outputs = preprocessed_waveform_output_group(config=cfg)" in source
+    assert "metadata_tables = step_outputs.load_tables(" in source
+    assert "context_tables = step_outputs.load_tables(" in source
+    assert "continue_on_error=False" in source
+    assert 'component="Z"' in source
+    assert "prepare_station_metadata(" not in source
+    assert "prepare_event_metadata(" not in source
+    assert "prepare_event_station_table(" not in source
+    assert "preprocess_waveform_files(" not in source
+    assert "build_record_coverage_table_from_trace_metadata(" not in source
+    assert "write_output_tables(" not in source
+
+
 def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     """The spatial tutorial should use the package workflow for standard tables."""
 

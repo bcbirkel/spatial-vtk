@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Rewired the standard Step 1 ingest notebook to use config-backed
+   ``spatial_vtk.io`` workflow helpers for metadata preparation, waveform
+   preprocessing, and record-coverage writing. The notebook now reads the
+   resulting station/event/context tables through ``OutputGroup`` and has a
+   regression that prevents returning to inline table construction.
    Added focused metric figure helpers
    ``MetricFigureContext.metric_item()``,
    ``station_summary_for_metric()``, and
