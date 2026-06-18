@@ -36,6 +36,44 @@ modules.
 .. automodule:: spatial_vtk.io
    :members:
 
+Public helpers exposed by ``spatial_vtk.io``:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Helper
+     - Use
+   * - ``output_group``
+     - Resolve a named workflow output group once and use attributes,
+       ``status_frame()``, ``readiness()``, ``load_tables()``, and
+       ``preview_tables()`` instead of repeating output-path variables in
+       notebooks.
+   * - ``preprocessed_waveform_output_group``
+     - Resolve preprocessing metadata outputs that live under the configured
+       preprocessed-waveform metadata directory.
+   * - ``output_readiness`` and ``OutputReadiness``
+     - Gate local or Slurm-backed work on missing, stale, blocked, or reusable
+       outputs.
+   * - ``load_configured_input_tables``
+     - Load optional input tables from dotted config path keys such as
+       ``paths.metric_figure_snapshot`` or ``paths.site_metadata``.
+   * - ``prepare_metadata_tables_from_config``
+     - Normalize station, event, and event-station metadata and write the
+       standard Step 1 tables.
+   * - ``preprocess_waveforms_from_config``
+     - Read configured waveform sources, reuse existing preprocessed files when
+       possible, and write preprocessing metadata.
+   * - ``record_coverage_readiness_from_config``
+     - Check whether record coverage should be rebuilt from preprocessed trace
+       metadata.
+   * - ``build_record_coverage_from_config``
+     - Build and write the configured record-coverage table.
+   * - ``read_bounded_table`` and ``preview_table``
+     - Inspect large CSV or Parquet tables without loading all rows.
+   * - ``write_output_table`` and ``load_output_table``
+     - Read and write registered output tables when lower-level table access is
+       required.
+
 Metadata and Inventories
 ------------------------
 

@@ -286,6 +286,33 @@ def test_qc_api_docs_use_public_package_entry_point():
         assert helper in text
 
 
+def test_io_api_docs_use_public_workflow_helpers():
+    docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "io.rst"
+    text = docs.read_text(encoding="utf-8")
+
+    assert "Start with ``spatial_vtk.io``" in text
+    assert "Public helpers exposed by ``spatial_vtk.io``" in text
+    assert ".. automodule:: spatial_vtk.io\n" in text
+    for helper in (
+        "output_group",
+        "preprocessed_waveform_output_group",
+        "output_readiness",
+        "OutputReadiness",
+        "load_configured_input_tables",
+        "prepare_metadata_tables_from_config",
+        "preprocess_waveforms_from_config",
+        "record_coverage_readiness_from_config",
+        "build_record_coverage_from_config",
+        "read_bounded_table",
+        "preview_table",
+        "write_output_table",
+        "load_output_table",
+    ):
+        assert helper in text
+    assert "instead of repeating output-path variables" in text
+    assert "notebooks." in text
+
+
 def test_metrics_package_reexports_workflow_surface():
     """Top-level metrics should expose the curated workflow API used by docs and CLI."""
 
