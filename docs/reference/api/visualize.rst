@@ -199,7 +199,9 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
    * - ``dashboard_metric_dataset_readiness_frame`` and
        ``dashboard_qc_trace_readiness_frame``
      - Inspect row-level metric dataset and QC trace-summary readiness without
-       loading full inventories.
+       loading full inventories. For partitioned metric datasets, readiness
+       checks row counts and the union of partition schemas, so one sparse
+       partition does not hide value columns present in other partitions.
    * - ``write_configured_dashboard_datasets``
      - Rebuild dashboard row datasets and summary tables from the active config.
    * - ``load_dashboard_metric_dataset`` and

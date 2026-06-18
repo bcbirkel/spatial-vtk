@@ -531,7 +531,7 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
         return pd.DataFrame([row])
     try:
         row_count = sum(_dashboard_metric_row_count(file_path) for file_path in files)
-        columns = _dashboard_metric_columns(files[0])
+        columns = _dashboard_metric_column_union(files)
     except Exception as exc:  # pragma: no cover - integration guardrail
         row.update(
             {
@@ -1159,6 +1159,17 @@ def _dashboard_metric_columns(path: Path) -> list[str]:
     """Return one dashboard metric file's columns without loading rows."""
 
     return _dashboard_table_columns(path)
+
+
+def _dashboard_metric_column_union(paths: Sequence[Path]) -> list[str]:
+    """Return dashboard metric columns seen across all recognized dataset files."""
+
+    columns: list[str] = []
+    for path in paths:
+        for column in _dashboard_metric_columns(path):
+            if column not in columns:
+                columns.append(column)
+    return columns
 
 
 def _dashboard_metric_row_count(path: Path) -> int:

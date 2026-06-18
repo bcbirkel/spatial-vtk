@@ -8,6 +8,7 @@ from spatial_vtk.config import SpatialVTKConfig
 from spatial_vtk.visualize.dashboard import (
     build_dashboard_summaries,
     display_dashboard_output_previews,
+    dashboard_metric_dataset_readiness_frame,
     dashboard_output_readiness,
     dashboard_summary_input_columns,
     dashboard_row_level_columns,
@@ -556,6 +557,41 @@ def test_dashboard_metric_dataset_loader_ignores_unrelated_parquet(tmp_path) -> 
 
     with pytest.raises(FileNotFoundError, match=r"metrics_long\.parquet|model=\*/band=\*/metric=\*/part\.parquet"):
         load_dashboard_metric_dataset(root)
+
+
+def test_dashboard_metric_dataset_readiness_uses_partition_column_union(tmp_path) -> None:
+    """Dataset readiness should not depend on the first partition's schema."""
+
+    root = tmp_path / "dashboard_data"
+    first = root / "model=m1" / "band=1-2_sec" / "metric=AAA" / "part.parquet"
+    second = root / "model=m1" / "band=1-2_sec" / "metric=PGA" / "part.parquet"
+    first.parent.mkdir(parents=True)
+    second.parent.mkdir(parents=True)
+    pd.DataFrame(
+        {
+            "model": ["m1"],
+            "band": ["1-2 sec"],
+            "metric": ["AAA"],
+            "station": ["STA"],
+        }
+    ).to_parquet(first, index=False)
+    pd.DataFrame(
+        {
+            "model": ["m1"],
+            "band": ["1-2 sec"],
+            "metric": ["PGA"],
+            "station": ["STB"],
+            "log2_residual": [0.25],
+        }
+    ).to_parquet(second, index=False)
+
+    readiness = dashboard_metric_dataset_readiness_frame(root).iloc[0]
+
+    assert readiness["ready"] is True
+    assert readiness["readiness"] == "ready"
+    assert readiness["file_count"] == 2
+    assert readiness["row_count"] == 2
+    assert readiness["value_columns"] == "log2_residual"
 
 
 def test_dashboard_summary_loader_tolerates_missing_optional_tables(tmp_path) -> None:
