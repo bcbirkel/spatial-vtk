@@ -183,6 +183,12 @@ standard row factories used by the large-run notebooks:
    Prepare station summaries for grid and model-map plotting while preserving
    aggregation metadata for sidecar JSON files.
 
+``status_frame`` and ``dimension_summary_frame``
+   Return small notebook tables that summarize the configured metric input,
+   loaded columns, selected row count, default filters, sidecar settings, and
+   metric/passband/component/model/event/station coverage before figures are
+   rendered. These checks do not read additional large files.
+
 .. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext
    :members:
 

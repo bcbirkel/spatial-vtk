@@ -275,7 +275,8 @@ Step 3: Metric Calculation and Metric Figures
        datasets, dashboard summary tables
    * - Render many large-run metric figures with auditable row sidecars
      - ``spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context``
-     - saved metric figures and optional ``*.csv``/``*.source.csv``/``*.json``
+     - saved metric figures, package-generated context status and dimension
+       summary tables, and optional ``*.csv``/``*.source.csv``/``*.json``
        sidecars
 
 Step 4: Spatial Statistics

@@ -1544,6 +1544,20 @@ def test_metric_figure_context_reads_plot_columns_and_filters_defaults(tmp_path:
     assert context.metrics_for_figures[["event_id", "metric", "component", "model"]].to_dict("records") == [
         {"event_id": "e1", "metric": "PGA", "component": "R", "model": "m1"}
     ]
+    status = context.status_frame().set_index("name")["value"]
+    assert bool(status["ready"]) is True
+    assert status["selected_metric_rows"] == 1
+    assert status["loaded_column_count"] == len(context.loaded_columns)
+    assert status["default_components"] == "R"
+    assert status["default_model"] == "m1"
+    assert pd.isna(status["sample_rows_per_figure"])
+
+    dimensions = context.dimension_summary_frame().set_index("dimension")
+    assert dimensions.loc["metric", "unique_count"] == 1
+    assert dimensions.loc["metric", "values_preview"] == "PGA"
+    assert dimensions.loc["component", "values_preview"] == "R"
+    assert dimensions.loc["station", "unique_count"] == 1
+    assert dimensions.loc["event", "finite_value_rows"] == 1
 
 
 def test_redcap_clusters_use_spatial_constraints_and_scores() -> None:

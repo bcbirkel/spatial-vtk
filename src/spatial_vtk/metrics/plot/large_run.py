@@ -222,6 +222,88 @@ class MetricFigureContext:
 
         return self.sidecar_dir or (self.figure_dir / "sidecars")
 
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact status table for this metric figure context.
+
+        The table is designed for notebooks: it records the configured input and
+        output paths, filter defaults, loaded row/column counts, and sidecar
+        settings without reading any additional large files.
+        """
+
+        rows = [
+            ("ready", self.ready),
+            ("make_figures", self.make_figures),
+            (
+                "metrics_long_path",
+                None if str(self.metrics_long_path) == "." else str(self.metrics_long_path),
+            ),
+            ("figure_dir", str(self.figure_dir)),
+            ("selected_metric_rows", int(len(self.metrics_for_figures))),
+            ("available_column_count", int(len(self.available_columns))),
+            ("loaded_column_count", int(len(self.loaded_columns))),
+            ("value_col", self.value_col),
+            ("default_passband", self.default_passband),
+            ("default_components", _preview_values(self.default_components)),
+            ("default_model", self.default_model),
+            ("sample_rows_per_figure", None if self.sample_rows <= 0 else int(self.sample_rows)),
+            ("station_aggregation", self.station_aggregation),
+            ("write_sidecars", self.write_sidecars),
+            ("sidecar_dir", str(self.sidecar_output_dir) if self.write_sidecars else None),
+            ("sidecar_rows", "all" if self.sidecar_rows is None or self.sidecar_rows <= 0 else int(self.sidecar_rows)),
+        ]
+        return pd.DataFrame(rows, columns=["name", "value"])
+
+    def dimension_summary_frame(self, *, value_col: str | None = None) -> pd.DataFrame:
+        """Summarize selected metric rows by common plotting dimensions.
+
+        This is a lightweight audit table for large-run plotting cells. It helps
+        users verify that the figure context is using the expected metrics,
+        passbands, components, models, events, and stations before rendering many
+        figures.
+        """
+
+        df = self.metrics_for_figures
+        resolved_value_col = self.value_col if value_col is None else value_col
+        dimension_specs = [
+            ("metric", self.metric_col),
+            ("passband", self.band_col),
+            ("component", self.component_col),
+            ("model", self.model_col),
+            ("psa_period_s", self.period_col),
+            ("event", first_existing(df, ["event_id", "event", "event_title"])),
+            ("station", first_existing(df, ["station", "station_id", "station_code"])),
+        ]
+        rows: list[dict[str, Any]] = []
+        for label, column in dimension_specs:
+            if column is None or column not in df.columns:
+                rows.append(
+                    {
+                        "dimension": label,
+                        "column": column,
+                        "unique_count": None,
+                        "non_null_rows": 0,
+                        "finite_value_rows": 0,
+                        "values_preview": None,
+                    }
+                )
+                continue
+            values = df[column]
+            finite_value_rows = 0
+            if resolved_value_col in df.columns:
+                value_rows = pd.to_numeric(df.loc[values.notna(), resolved_value_col], errors="coerce")
+                finite_value_rows = int(np.isfinite(value_rows).sum())
+            rows.append(
+                {
+                    "dimension": label,
+                    "column": column,
+                    "unique_count": int(values.nunique(dropna=True)),
+                    "non_null_rows": int(values.notna().sum()),
+                    "finite_value_rows": finite_value_rows,
+                    "values_preview": _preview_values(values.dropna().unique()),
+                }
+            )
+        return pd.DataFrame(rows)
+
     def metric_mask(self, df: pd.DataFrame, aliases: tuple[str, ...]) -> pd.Series:
         """Return rows whose metric text matches one alias."""
 
@@ -1519,6 +1601,27 @@ def _unique_count(df: pd.DataFrame, candidates: Iterable[str]) -> int | None:
     if column is None:
         return None
     return int(df[column].nunique(dropna=True))
+
+
+def _preview_values(values: Iterable[Any] | Any, *, limit: int = 6) -> str | None:
+    """Return a compact deterministic preview for settings or dimension values."""
+
+    if values is None:
+        return None
+    if isinstance(values, (str, bytes)):
+        items = [values]
+    else:
+        try:
+            items = list(values)
+        except TypeError:
+            items = [values]
+    cleaned = [item for item in items if not pd.isna(item)]
+    if not cleaned:
+        return None
+    ordered = sorted({str(item) for item in cleaned})
+    preview = ordered[:limit]
+    suffix = f", ... (+{len(ordered) - limit} more)" if len(ordered) > limit else ""
+    return ", ".join(preview) + suffix
 
 
 def _source_rows_for_plotted_groups(plot_rows: pd.DataFrame, source_rows: pd.DataFrame | None) -> pd.DataFrame | None:
