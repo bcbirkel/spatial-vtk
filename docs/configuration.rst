@@ -262,15 +262,17 @@ will use that active config when you do not pass paths or config objects.
 
    from spatial_vtk.config import SpatialVTKConfig
    from spatial_vtk.config.metrics import metrics_settings_from_config
-   from spatial_vtk.io import load_output_table
+   from spatial_vtk.io import output_group
    from spatial_vtk.io import prepare_station_metadata
    from spatial_vtk.visualize.context import plot_record_coverage
 
    cfg = SpatialVTKConfig.from_file("spatial-vtk.yaml", run_scenario="tutorial").activate()
 
    stations = prepare_station_metadata()
-   metrics = load_output_table("metrics_enriched")
-   record_coverage = load_output_table("record_coverage")
+   metric_tables = output_group("step_03_metrics").load_tables({"metrics": "metrics_enriched_path"})
+   ingest_tables = output_group("step_01_ingest").load_tables({"record_coverage": "record_coverage_path"})
+   metrics = metric_tables["metrics"]
+   record_coverage = ingest_tables["record_coverage"]
    metric_settings = metrics_settings_from_config()
    plot_record_coverage(record_coverage, showfig=True, savefig=True)
 
@@ -338,7 +340,7 @@ and let the next step read them the same way:
 
 .. code-block:: python
 
-   from spatial_vtk.io import load_output_table, write_output_tables
+   from spatial_vtk.io import output_group, write_output_tables
 
    write_output_tables(
        prepared_stations=stations,
@@ -346,7 +348,8 @@ and let the next step read them the same way:
        event_station_records=event_stations,
    )
 
-   stations = load_output_table("prepared_stations")
+   ingest_tables = output_group("step_01_ingest").load_tables({"stations": "prepared_stations_path"})
+   stations = ingest_tables["stations"]
 
 You can still override a single output directly:
 

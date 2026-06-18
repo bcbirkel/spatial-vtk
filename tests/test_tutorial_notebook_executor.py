@@ -268,7 +268,9 @@ def test_public_docs_describe_committed_tutorial_waveforms() -> None:
     assert "ValidationToolkit_Workflow.png" not in combined
     assert "docs/_static/spatial_vtk_workflow.png" in readme
     assert "_static/spatial_vtk_workflow.png" in index
-    assert 'record_coverage = load_output_table("record_coverage")' in configuration
+    assert 'output_group("step_01_ingest").load_tables' in configuration
+    assert 'record_coverage = ingest_tables["record_coverage"]' in configuration
+    assert "load_output_table(" not in configuration
 
 
 def test_public_docs_describe_registered_table_formats() -> None:
