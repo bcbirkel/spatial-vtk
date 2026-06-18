@@ -51,9 +51,11 @@ from spatial_vtk.spatial.plot import (
     scatterplot,
 )
 from spatial_vtk.visualize.context import (
+    ContextFigureResult,
     plot_event_magnitude_map,
     plot_station_event_beachball_map,
     plot_station_event_network_map,
+    write_large_run_context_figures_from_outputs,
 )
 from spatial_vtk.visualize.fit import draw_scatter_fit
 from spatial_vtk.visualize.qc import (
@@ -487,6 +489,159 @@ def test_qc_figures_write_optional_row_sidecars(tmp_path: Path) -> None:
     assert trace_metadata["figure_type"] == "trace_inventory_samples"
     assert trace_metadata["plot_row_count"] == 3
     assert trace_metadata["written_row_count"] == 2
+
+
+def test_write_large_run_context_figures_from_outputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Large-run context figure helper should own table loading and plotting."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  figures: figures
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    table_names = {
+        "prepared_stations_path": "stations",
+        "prepared_events_path": "events",
+        "event_station_path": "event_stations",
+        "record_coverage_path": "record_coverage",
+    }
+    tables = {value: pd.DataFrame({"value": [1, 2]}) for value in table_names.values()}
+    calls: list[dict[str, object]] = []
+
+    class Outputs:
+        def __init__(self) -> None:
+            self.paths = {name: tmp_path / f"{name}.csv" for name in table_names}
+            for path in self.paths.values():
+                path.write_text("ready", encoding="utf-8")
+
+        def __getattr__(self, name: str) -> Path:
+            try:
+                return self.paths[name]
+            except KeyError as exc:
+                raise AttributeError(name) from exc
+
+        def load_tables(self, names, *, cfg=None):  # noqa: ANN001, ANN202
+            calls.append({"kind": "load", "names": names, "cfg": cfg})
+            return {label: tables[label] for label in names}
+
+    class Settings:
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            calls.append({"kind": "gate", "paths": paths, "message": missing_message})
+            return type("Gate", (), {"ready": True, "figures_enabled": True, "message": missing_message})()
+
+        def plot_kwargs(self, *, include_basemap: bool = False) -> dict[str, object]:
+            return {"showfig": False, "add_basemap": include_basemap}
+
+    def _fake_plot(*frames: pd.DataFrame, outpath: Path, savefig: bool, **kwargs) -> None:  # noqa: ANN003
+        calls.append({"kind": "plot", "outpath": outpath, "args": len(frames), "savefig": savefig, "kwargs": kwargs})
+        Path(outpath).write_text("figure", encoding="utf-8")
+
+    import spatial_vtk.visualize.context.figures as context_figures
+    import spatial_vtk.visualize.context.maps as context_maps
+
+    for name in (
+        "plot_station_event_context",
+        "plot_station_coverage",
+        "plot_event_coverage",
+        "plot_record_coverage",
+    ):
+        monkeypatch.setattr(context_figures, name, _fake_plot)
+    monkeypatch.setattr(context_maps, "plot_station_event_beachball_map", _fake_plot)
+
+    result = write_large_run_context_figures_from_outputs(Outputs(), Settings(), cfg=cfg, overwrite=True)
+    status = result.status_frame()
+
+    assert isinstance(result, ContextFigureResult)
+    assert set(status["status"]) == {"wrote"}
+    assert len(status) == 5
+    assert all(path and Path(path).exists() for path in status["figure_path"])
+    plot_calls = [call for call in calls if call["kind"] == "plot"]
+    assert len(plot_calls) == 5
+    context_call = next(call for call in plot_calls if Path(call["outpath"]).name == "station_event_context.png")
+    assert context_call["kwargs"]["add_basemap"] is True
+    beachball_call = next(call for call in plot_calls if Path(call["outpath"]).name == "event_beachball_map.png")
+    assert beachball_call["kwargs"]["add_basemap"] is True
+    assert "stations_df" in beachball_call["kwargs"]
+
+
+def test_write_large_run_context_figures_skips_existing(tmp_path: Path) -> None:
+    """Large-run context helper should not load tables when figures are current."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  figures: figures
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    for filename in (
+        "station_event_context.png",
+        "event_beachball_map.png",
+        "station_coverage.png",
+        "event_coverage.png",
+        "record_coverage.png",
+    ):
+        path = tmp_path / "figures" / filename
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("existing", encoding="utf-8")
+
+    class Outputs:
+        def __init__(self) -> None:
+            for name in (
+                "prepared_stations_path",
+                "prepared_events_path",
+                "event_station_path",
+                "record_coverage_path",
+            ):
+                setattr(self, name, tmp_path / f"{name}.csv")
+                getattr(self, name).write_text("ready", encoding="utf-8")
+
+        def load_tables(self, names, *, cfg=None):  # noqa: ANN001, ANN202
+            raise AssertionError("existing figures should skip table loading")
+
+    class Settings:
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            return type("Gate", (), {"ready": True, "figures_enabled": True, "message": missing_message})()
+
+    result = write_large_run_context_figures_from_outputs(Outputs(), Settings(), cfg=cfg)
+
+    assert set(result.status_frame()["status"]) == {"exists"}
+
+
+def test_write_large_run_context_figures_reports_missing_inputs(tmp_path: Path) -> None:
+    """Large-run context helper should return status rows when inputs are missing."""
+
+    class Outputs:
+        prepared_stations_path = tmp_path / "missing_stations.csv"
+        prepared_events_path = tmp_path / "missing_events.csv"
+        event_station_path = tmp_path / "missing_event_station.csv"
+        record_coverage_path = tmp_path / "missing_record_coverage.csv"
+
+        def load_tables(self, names, *, cfg=None):  # noqa: ANN001, ANN202
+            raise AssertionError("missing inputs should skip table loading")
+
+    class Settings:
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            return type("Gate", (), {"ready": False, "figures_enabled": True, "message": missing_message})()
+
+    result = write_large_run_context_figures_from_outputs(Outputs(), Settings(), cfg=None)
+    status = result.status_frame()
+
+    assert len(status) == 5
+    assert set(status["status"]) == {"missing_input"}
+    assert status["message"].str.contains("Step 1 context tables").all()
 
 
 def test_write_large_run_qc_figures_from_outputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

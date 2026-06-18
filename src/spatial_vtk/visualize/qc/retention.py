@@ -399,6 +399,23 @@ def write_large_run_qc_figures_from_outputs(
                 for spec in figure_specs
             )
         )
+    figure_paths = {
+        spec["artifact"]: _qc_figure_output_path(outputs, spec, cfg=cfg)
+        for spec in figure_specs
+    }
+    if not overwrite and all(path is not None and path.exists() for path in figure_paths.values()):
+        return QCFigureResult(
+            tuple(
+                _qc_figure_status_row(
+                    spec["artifact"],
+                    "exists",
+                    table_path=_output_group_path(outputs, table_specs[spec["table"]]),
+                    figure_path=figure_paths[spec["artifact"]],
+                    message=f"skip {figure_paths[spec['artifact']].name}: exists",
+                )
+                for spec in figure_specs
+            )
+        )
 
     try:
         tables = outputs.load_tables(table_specs, cfg=cfg)
@@ -422,7 +439,7 @@ def write_large_run_qc_figures_from_outputs(
         table_name = spec["table"]
         table = tables[table_name]
         table_path = _output_group_path(outputs, table_specs[table_name])
-        figure_path = _qc_figure_output_path(outputs, spec, cfg=cfg)
+        figure_path = figure_paths[artifact]
         if figure_path is None:
             rows.append(
                 _qc_figure_status_row(

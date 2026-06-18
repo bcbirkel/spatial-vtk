@@ -8,6 +8,7 @@ event, and record coverage before calculating validation metrics.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
 import math
@@ -18,11 +19,25 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 from spatial_vtk.config.labels import display_label
+from spatial_vtk.config.outputs import resolve_output_path
+from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import title_with_subtitle
 from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 from spatial_vtk.visualize.selection import FigureSelection
+
+
+@dataclass(frozen=True)
+class ContextFigureResult:
+    """Result from writing the large-run Step 1 context figure suite."""
+
+    rows: tuple[dict[str, object], ...]
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact notebook status table for context figures."""
+
+        return pd.DataFrame(list(self.rows))
 
 
 def _apply_bounds(ax: plt.Axes, bounds: tuple[float, float, float, float] | None) -> None:
@@ -1730,6 +1745,242 @@ def plot_distance_amplitude_diagnostics(
             "synthetic_col": synthetic_col,
         },
     )
+
+
+def write_large_run_context_figures_from_outputs(
+    outputs: Any,
+    settings: Any,
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    overwrite: bool = False,
+) -> ContextFigureResult:
+    """Write standard large-run Step 1 context figures from configured outputs.
+
+    The helper keeps large-run notebooks from repeating readiness checks, table
+    loading, basemap keyword selection, figure-output resolution, and plotting
+    calls for the small Step 1 context products.
+    """
+
+    from spatial_vtk.visualize.context.maps import plot_station_event_beachball_map
+
+    table_specs = {
+        "stations": "prepared_stations_path",
+        "events": "prepared_events_path",
+        "event_stations": "event_station_path",
+        "record_coverage": "record_coverage_path",
+    }
+    required = [_context_output_group_path(outputs, path_name) for path_name in table_specs.values()]
+    gate = settings.render_gate(
+        required,
+        missing_message="Skipping figures until Step 1 context tables exist.",
+    )
+    figure_specs: tuple[dict[str, Any], ...] = (
+        {
+            "artifact": "station_event_context",
+            "tables": ("stations", "events"),
+            "func": plot_station_event_context,
+            "output_key": "station_event_context",
+            "map": True,
+        },
+        {
+            "artifact": "station_event_beachball_map",
+            "tables": ("events",),
+            "func": plot_station_event_beachball_map,
+            "output_key": "station_event_beachball_map",
+            "map": True,
+            "kwargs_from_tables": {"stations_df": "stations"},
+        },
+        {
+            "artifact": "station_coverage",
+            "tables": ("event_stations",),
+            "func": plot_station_coverage,
+            "output_key": "station_coverage",
+        },
+        {
+            "artifact": "event_coverage",
+            "tables": ("event_stations",),
+            "func": plot_event_coverage,
+            "output_key": "event_coverage",
+        },
+        {
+            "artifact": "record_coverage",
+            "tables": ("record_coverage",),
+            "func": plot_record_coverage,
+            "output_key": "record_coverage",
+        },
+    )
+    if not gate.ready:
+        status = "missing_input" if gate.figures_enabled else "disabled"
+        return ContextFigureResult(
+            tuple(
+                _context_figure_status_row(
+                    spec["artifact"],
+                    status,
+                    table_paths={
+                        table_name: _context_output_group_path(outputs, table_specs[table_name])
+                        for table_name in spec["tables"]
+                    },
+                    figure_path=_context_figure_output_path(spec, cfg=cfg),
+                    message=gate.message,
+                )
+                for spec in figure_specs
+            )
+        )
+    figure_paths = {
+        spec["artifact"]: _context_figure_output_path(spec, cfg=cfg)
+        for spec in figure_specs
+    }
+    if not overwrite and all(path is not None and path.exists() for path in figure_paths.values()):
+        return ContextFigureResult(
+            tuple(
+                _context_figure_status_row(
+                    spec["artifact"],
+                    "exists",
+                    table_paths={
+                        table_name: _context_output_group_path(outputs, table_specs[table_name])
+                        for table_name in spec["tables"]
+                    },
+                    figure_path=figure_paths[spec["artifact"]],
+                    message=f"skip {figure_paths[spec['artifact']].name}: exists",
+                )
+                for spec in figure_specs
+            )
+        )
+
+    try:
+        tables = outputs.load_tables(table_specs, cfg=cfg)
+    except Exception as exc:
+        return ContextFigureResult(
+            tuple(
+                _context_figure_status_row(
+                    spec["artifact"],
+                    "load_failed",
+                    table_paths={
+                        table_name: _context_output_group_path(outputs, table_specs[table_name])
+                        for table_name in spec["tables"]
+                    },
+                    figure_path=_context_figure_output_path(spec, cfg=cfg),
+                    message=f"{type(exc).__name__}: {exc}",
+                )
+                for spec in figure_specs
+            )
+        )
+
+    rows: list[dict[str, object]] = []
+    for spec in figure_specs:
+        artifact = spec["artifact"]
+        table_names = tuple(spec["tables"])
+        table_paths = {
+            table_name: _context_output_group_path(outputs, table_specs[table_name])
+            for table_name in table_names
+        }
+        row_count = sum(len(tables[table_name]) for table_name in table_names)
+        figure_path = figure_paths[artifact]
+        if figure_path is None:
+            rows.append(
+                _context_figure_status_row(
+                    artifact,
+                    "missing_output",
+                    table_paths=table_paths,
+                    figure_path=None,
+                    row_count=row_count,
+                    message="No figure output path could be resolved.",
+                )
+            )
+            continue
+        if figure_path.exists() and not overwrite:
+            rows.append(
+                _context_figure_status_row(
+                    artifact,
+                    "exists",
+                    table_paths=table_paths,
+                    figure_path=figure_path,
+                    row_count=row_count,
+                    message=f"skip {figure_path.name}: exists",
+                )
+            )
+            continue
+        plot_kwargs = settings.plot_kwargs(include_basemap=True) if spec.get("map") else settings.plot_kwargs()
+        for kwarg, table_name in spec.get("kwargs_from_tables", {}).items():
+            plot_kwargs[str(kwarg)] = tables[str(table_name)]
+        args = [tables[table_name] for table_name in table_names]
+        try:
+            spec["func"](
+                *args,
+                outpath=figure_path,
+                savefig=True,
+                **plot_kwargs,
+            )
+            plt.close("all")
+            rows.append(
+                _context_figure_status_row(
+                    artifact,
+                    "wrote",
+                    table_paths=table_paths,
+                    figure_path=figure_path,
+                    row_count=row_count,
+                    message=f"wrote {figure_path}",
+                )
+            )
+        except Exception as exc:
+            plt.close("all")
+            rows.append(
+                _context_figure_status_row(
+                    artifact,
+                    "plot_failed",
+                    table_paths=table_paths,
+                    figure_path=figure_path,
+                    row_count=row_count,
+                    message=f"{type(exc).__name__}: {exc}",
+                )
+            )
+    return ContextFigureResult(tuple(rows))
+
+
+def _context_output_group_path(outputs: Any, name: str) -> Path | None:
+    """Return one path from an output group-like object."""
+
+    if hasattr(outputs, name):
+        value = getattr(outputs, name)
+        return None if value is None else Path(value)
+    paths = getattr(outputs, "paths", None)
+    if isinstance(paths, dict) and name in paths:
+        value = paths[name]
+        return None if value is None else Path(value)
+    return None
+
+
+def _context_figure_output_path(spec: dict[str, Any], *, cfg: SpatialVTKConfig | None) -> Path | None:
+    """Return one configured context figure output path."""
+
+    try:
+        return resolve_output_path(str(spec["output_key"]), kind="figure", cfg=cfg, create_parent=True)
+    except Exception:
+        return None
+
+
+def _context_figure_status_row(
+    artifact: str,
+    status: str,
+    *,
+    table_paths: dict[str, Path | None],
+    figure_path: Path | None,
+    row_count: int = 0,
+    message: str = "",
+) -> dict[str, object]:
+    """Return one context figure status row."""
+
+    return {
+        "artifact": artifact,
+        "status": status,
+        "row_count": int(row_count),
+        "table_paths": {
+            name: None if path is None else str(path)
+            for name, path in table_paths.items()
+        },
+        "figure_path": None if figure_path is None else str(figure_path),
+        "message": message,
+    }
 
 
 def summarize_coverage(event_station_df: pd.DataFrame) -> dict[str, int | None]:

@@ -1564,7 +1564,9 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     assert "run_or_submit_notebook_function(" not in source
     assert "from spatial_vtk.io import (" in source
     assert "metadata_tables = step_outputs.load_tables(" in source
-    assert "context_tables = step_outputs.load_tables(" in source
+    assert "write_large_run_context_figures_from_outputs(" in source
+    assert "context_figure_result.status_frame()" in source
+    assert "context_tables = step_outputs.load_tables(" not in source
     assert "load_output_table(" not in source
     assert "prepare_metadata_tables_from_config," in source
     assert "preprocess_waveforms_from_config," in source

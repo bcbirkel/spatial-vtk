@@ -3,6 +3,12 @@ Changelog
 
 2026-06-18
    Added
+   ``spatial_vtk.visualize.context.write_large_run_context_figures_from_outputs()``
+   and rewired the large-run Step 1 context figure cell to use it. The
+   notebook no longer performs context-table readiness checks, table loading,
+   basemap keyword selection, figure-path selection, or context plotting calls
+   inline.
+   Added
    ``spatial_vtk.visualize.qc.write_large_run_qc_figures_from_outputs()``
    and rewired the large-run Step 2 QC figure cell to use it. The notebook no
    longer performs compact-QC input gating, table loading, figure-path
