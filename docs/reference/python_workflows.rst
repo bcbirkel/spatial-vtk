@@ -245,7 +245,9 @@ Step 7: Dashboard Datasets
      - compact tab-level readiness plus detailed status frames
    * - Write dashboard-ready row and summary datasets
      - ``spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets``
-     - dashboard metric dataset root and dashboard summary table root
+     - dashboard metric dataset root and dashboard summary table root; standard
+       dashboard artifacts are replaced so stale partitions or stale
+       CSV/Parquet summary files do not mix with the current run
    * - Launch dashboards from Python
      - ``spatial_vtk.config.notebook_dashboard_launch_commands``,
        ``spatial_vtk.visualize.dashboard.launch_configured_metrics_dashboard``,

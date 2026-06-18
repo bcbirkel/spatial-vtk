@@ -37,6 +37,7 @@ def write_dashboard_metric_dataset(
     *,
     residual_mode: str = "logratio",
     partitioned: bool = False,
+    replace_existing: bool = True,
 ) -> Path:
     """Write dashboard-ready long metric data as Parquet.
 
@@ -52,6 +53,10 @@ def write_dashboard_metric_dataset(
         Residual mode used when converting wide tables.
     partitioned
         Whether to partition by ``model``, ``band``, and ``metric``.
+    replace_existing
+        Remove previously written dashboard metric files under ``output_root``
+        before writing new files. Only recognized dashboard files are removed,
+        so unrelated files in the output directory are preserved.
 
     Returns
     -------
@@ -67,6 +72,8 @@ def write_dashboard_metric_dataset(
     long_df = add_dashboard_path_geometry(long_df)
     root = Path(output_root).expanduser() if output_root is not None else resolve_output_path("metrics_dashboard", kind="dashboard", create_parent=True)
     root.mkdir(parents=True, exist_ok=True)
+    if replace_existing:
+        _clear_dashboard_metric_dataset(root)
     if not partitioned:
         long_df.to_parquet(root / "metrics_long.parquet", index=False)
         return root
@@ -353,6 +360,7 @@ def write_dashboard_summary_dataset(
     hex_dist: float = 10.0,
     hex_az: float = 10.0,
     format: str = "parquet",
+    replace_existing: bool = True,
 ) -> dict[str, Path]:
     """Build and write dashboard summary tables from a metric dataset.
 
@@ -370,6 +378,10 @@ def write_dashboard_summary_dataset(
         Azimuth-bin size in degrees.
     format
         Output format, ``"parquet"`` or ``"csv"``.
+    replace_existing
+        Remove old dashboard summary files with the same table names before
+        writing new summaries. This prevents stale ``.parquet`` files from
+        shadowing newly written ``.csv`` summaries and vice versa.
 
     Returns
     -------
@@ -384,7 +396,7 @@ def write_dashboard_summary_dataset(
         columns=dashboard_summary_input_columns(),
     )
     summaries = build_dashboard_summaries(metrics, hex_dist=hex_dist, hex_az=hex_az)
-    return write_dashboard_summaries(summaries, resolved_output_root, format=format)
+    return write_dashboard_summaries(summaries, resolved_output_root, format=format, replace_existing=replace_existing)
 
 
 def write_configured_dashboard_datasets(
@@ -396,6 +408,7 @@ def write_configured_dashboard_datasets(
     hex_dist: float = 10.0,
     hex_az: float = 10.0,
     format: str = "parquet",
+    replace_existing: bool = True,
 ) -> dict[str, Path]:
     """Write standard dashboard metric and summary datasets from config.
 
@@ -417,6 +430,9 @@ def write_configured_dashboard_datasets(
         Dashboard path-summary bin sizes.
     format
         Dashboard summary table format, ``"parquet"`` or ``"csv"``.
+    replace_existing
+        Replace previously written dashboard metric and summary artifacts before
+        writing this run's outputs.
 
     Returns
     -------
@@ -433,6 +449,7 @@ def write_configured_dashboard_datasets(
         dashboard_root,
         residual_mode=residual_mode,
         partitioned=partitioned,
+        replace_existing=replace_existing,
     )
     summary_paths = write_dashboard_summary_dataset(
         metric_root,
@@ -440,6 +457,7 @@ def write_configured_dashboard_datasets(
         hex_dist=hex_dist,
         hex_az=hex_az,
         format=format,
+        replace_existing=replace_existing,
     )
     return {
         "metrics_dashboard_root": metric_root,
@@ -454,6 +472,24 @@ def _coerce_dashboard_config(cfg: SpatialVTKConfig | str | Path | None) -> Spati
     if cfg is None or isinstance(cfg, SpatialVTKConfig):
         return cfg
     return SpatialVTKConfig.from_file(cfg)
+
+
+def _clear_dashboard_metric_dataset(root: Path) -> None:
+    """Remove recognized dashboard metric files from one output root."""
+
+    for direct_name in ("metrics_long.parquet", "metrics_long.csv"):
+        direct = root / direct_name
+        if direct.exists():
+            direct.unlink()
+    for part_path in sorted(root.glob("model=*/band=*/metric=*/part.parquet"), key=lambda path: len(path.parts), reverse=True):
+        part_path.unlink()
+        for parent in (part_path.parent, part_path.parent.parent, part_path.parent.parent.parent):
+            if parent == root or root not in parent.parents:
+                continue
+            try:
+                parent.rmdir()
+            except OSError:
+                break
 
 
 def add_dashboard_path_geometry(df: pd.DataFrame) -> pd.DataFrame:

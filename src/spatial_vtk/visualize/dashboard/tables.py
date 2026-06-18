@@ -190,13 +190,24 @@ def build_dashboard_summaries(
     return summaries
 
 
-def write_dashboard_summaries(summaries: dict[str, pd.DataFrame], output_dir: str | Path, *, format: str = "parquet") -> dict[str, Path]:
+def write_dashboard_summaries(
+    summaries: dict[str, pd.DataFrame],
+    output_dir: str | Path,
+    *,
+    format: str = "parquet",
+    replace_existing: bool = True,
+) -> dict[str, Path]:
     """Write dashboard summary tables to a directory."""
 
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     written: dict[str, Path] = {}
     for name, table in summaries.items():
+        if replace_existing:
+            for stale_suffix in (".parquet", ".csv"):
+                stale = out_dir / f"{name}{stale_suffix}"
+                if stale.exists():
+                    stale.unlink()
         if format == "csv":
             path = out_dir / f"{name}.csv"
             table.to_csv(path, index=False)

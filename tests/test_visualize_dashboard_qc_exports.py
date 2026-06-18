@@ -57,6 +57,84 @@ def test_dashboard_metric_dataset_export_and_summary_tables(tmp_path) -> None:
     assert written["model_metric_band"].exists()
 
 
+def test_dashboard_metric_dataset_export_replaces_stale_partitions(tmp_path) -> None:
+    """Rerunning a partitioned dashboard export should not leave old rows active."""
+
+    output_root = tmp_path / "dashboard_data"
+    first = pd.DataFrame(
+        {
+            "model": ["m1", "m2"],
+            "metric": ["PGA", "PGV"],
+            "band": ["1-2 sec", "2-3 sec"],
+            "event_id": ["ev1", "ev2"],
+            "station": ["STA1", "STA2"],
+            "value": [1.0, 2.0],
+        }
+    )
+    second = pd.DataFrame(
+        {
+            "model": ["m1"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "event_id": ["ev1"],
+            "station": ["STA1"],
+            "value": [3.0],
+        }
+    )
+
+    write_dashboard_metric_dataset(first, output_root, partitioned=True)
+    stale_path = output_root / "model=m2" / "band=2-3_sec" / "metric=PGV" / "part.parquet"
+    assert stale_path.exists()
+
+    write_dashboard_metric_dataset(second, output_root, partitioned=True)
+    loaded = load_dashboard_metric_dataset(output_root)
+
+    assert not stale_path.exists()
+    assert loaded["model"].tolist() == ["m1"]
+    assert loaded["metric"].tolist() == ["PGA"]
+    assert loaded["value"].tolist() == [3.0]
+
+
+def test_dashboard_summary_dataset_replaces_stale_cross_format_files(tmp_path) -> None:
+    """New summary files should not be shadowed by stale files in another format."""
+
+    metric_root = tmp_path / "dashboard_data"
+    summary_root = tmp_path / "dashboard_summaries"
+    first = pd.DataFrame(
+        {
+            "model": ["m1"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "event_id": ["ev1"],
+            "station": ["STA1"],
+            "value": [1.0],
+        }
+    )
+    second = pd.DataFrame(
+        {
+            "model": ["m2"],
+            "metric": ["PGV"],
+            "band": ["2-3 sec"],
+            "event_id": ["ev2"],
+            "station": ["STA2"],
+            "value": [2.0],
+        }
+    )
+
+    write_dashboard_metric_dataset(first, metric_root, partitioned=False)
+    write_dashboard_summary_dataset(metric_root, summary_root, format="parquet")
+    assert (summary_root / "model_metric_band.parquet").exists()
+
+    write_dashboard_metric_dataset(second, metric_root, partitioned=False)
+    written = write_dashboard_summary_dataset(metric_root, summary_root, format="csv")
+    loaded = load_dashboard_summary_tables(summary_root)
+
+    assert written["model_metric_band"] == summary_root / "model_metric_band.csv"
+    assert not (summary_root / "model_metric_band.parquet").exists()
+    assert loaded["model_metric_band"]["model"].tolist() == ["m2"]
+    assert loaded["model_metric_band"]["metric"].tolist() == ["PGV"]
+
+
 def test_write_configured_dashboard_datasets_uses_registered_paths(tmp_path) -> None:
     """Config-backed dashboard export should not require notebook path plumbing."""
 

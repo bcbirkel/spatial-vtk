@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Made dashboard dataset writes replace recognized dashboard artifacts before
+   writing new outputs. Rerunning dashboard preparation now removes stale metric
+   partitions and stale cross-format summary files without deleting unrelated
+   files in the dashboard output directories.
    Added a current-filter row-count summary to the metrics dashboard Data Status
    tab so blank Overview, Stations, Events, Paths, or Distributions tabs can be
    diagnosed from the running dashboard without loading full large-run tables in

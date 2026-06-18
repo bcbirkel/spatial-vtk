@@ -90,6 +90,11 @@ intentionally bounded checks: they inspect paths, schemas, row counts,
 map-coordinate availability, and recognized dashboard value columns without
 loading the full large-run metric inventory.
 
+``write_configured_dashboard_datasets`` replaces the standard dashboard metric
+dataset files and summary tables for the current run. It removes only
+recognized dashboard artifacts, so reruns cannot accidentally mix old metric
+partitions or stale summary files with newly written outputs.
+
 ``dashboard_summary_table_contracts`` documents which summary table feeds each
 dashboard tab and the required columns for that table. Use it in notebooks next
 to ``dashboard_output_status_frame`` when a tab is empty, because the status
