@@ -532,7 +532,7 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "run_qc_summary_workflow_from_config(" in standard_text
     assert "ingest_outputs.load_tables(" in standard_text
     assert "qc_figure_tables = qc_outputs.load_tables(" in standard_text
-    assert "qc_inventory_preview = qc_outputs.preview_tables(" in standard_text
+    assert "qc_outputs.preview_table(" in standard_text
     assert "qc_outputs.manual_queue_path" in standard_text
     assert "export_manual_review_queue_from_qc_inventory(" not in standard_text
     assert "trace_qc_output=trace_qc_path" not in standard_text
@@ -817,7 +817,7 @@ def test_standard_tutorial_notebooks_avoid_raw_table_preview_helpers() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = sorted((repo_root / "docs" / "examples").glob("*.ipynb"))
     assert notebooks
-    raw_preview = re.compile(r"(?<!geojson_polygon_)preview_table\(")
+    raw_preview = re.compile(r"(?<![._A-Za-z0-9])preview_table\(")
     forbidden = ("preview_output_table(", "load_output_table(")
     for notebook_path in notebooks:
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
@@ -976,7 +976,7 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "plot_correlogram" not in source
     assert "preview_output_table(" not in source
     assert "for name, key in [" not in source
-    assert "step_outputs.load_tables(" in source
+    assert "step_outputs.load_table(" in source
     assert "load_output_table(" not in source
 
 
@@ -994,7 +994,7 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "run_boundary_corridor_workflow_from_config," in source
     assert "display_output_table_previews(" in source
     assert "ingest_outputs.load_tables(" in source
-    assert "step_outputs.load_tables(" in source
+    assert "step_outputs.load_table(" in source
     assert 'missing="skip"' in source
     assert "step_outputs.first_existing_path(" in source
     assert "step_outputs.corridors_path.exists()" not in source
@@ -1014,7 +1014,7 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "run_geojson_region_summary_workflow(" not in source
     assert "run_boundary_corridor_workflow(" not in source
     assert "preview_output_table(" not in source
-    assert "preview_table(" not in source
+    assert "preview_output_table(" not in source
 
 
 def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
@@ -1042,13 +1042,13 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     assert "Launch options:" not in source
     assert "server_port=notebook_overrides" not in source
     assert "dashboard_outputs = output_group(\"step_07_dashboards\", cfg=cfg)" in source
-    assert "dashboard_outputs.preview_tables(" in source
+    assert "dashboard_outputs.preview_table(" in source
     assert "dashboard_outputs.qc_trace_summary_path" in source
     assert "dashboard_outputs.metrics_long_path" in source
     assert "metrics_path = dashboard_outputs.metrics_long_path" not in source
     assert "qc_trace_summary_path = dashboard_outputs.qc_trace_summary_path" not in source
     assert "dashboard_output_namespace" not in source
-    assert "preview_table(" not in source
+    assert "preview_output_table(" not in source
     assert "preview_output_table(" not in source
     assert "write_dashboard_metric_dataset(" not in source
     assert "write_dashboard_summary_dataset(" not in source
@@ -1091,7 +1091,7 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "server_port=dashboard_" not in source
     assert '"cfg": str(config_path)' in source
     assert "dashboard_outputs = output_group(\"step_07_dashboards\")" in source
-    assert "dashboard_outputs.preview_tables(" in source
+    assert "dashboard_outputs.preview_table(" in source
     assert "post_dashboard_readiness = dashboard_readiness_summary_frame(cfg=cfg, overwrite=False)" in source
     assert "post_dashboard_status = dashboard_output_status_frame(cfg=cfg)" in source
     assert "preview_dashboard_summary_tables(cfg=cfg, nrows=PREVIEW_ROWS, missing=\"skip\")" in source
@@ -1204,8 +1204,8 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert "write_metrics_slurm_script_from_config," in source
     assert "merge_metric_batches_from_config," in source
     assert "write_metric_outputs_from_config," in source
-    assert "step_outputs.preview_tables(" in source
-    assert "preview_table(" not in source
+    assert "step_outputs.preview_table(" in source
+    assert "preview_output_table(" not in source
     assert '"batch_count": context.metric_batch_count' in source
     assert 'os.environ.get("SVTK_METRIC_BATCH_COUNT"' not in source
     assert '"spatial_vtk.metrics.build_metric_waveform_inventories_from_config"' not in source
@@ -1447,11 +1447,11 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "step_outputs = output_group(\"step_06_plotting\")" in source
-    assert "event_stations = step_outputs.load_tables(" in source
+    assert "event_stations = step_outputs.load_table(" in source
     assert "step_outputs.preview_first_existing_table(" in source
     assert "step_outputs.first_existing_path(" in source
     assert "load_output_table(" not in source
-    assert "preview_table(" not in source
+    assert "preview_output_table(" not in source
     assert "preview_output_table(" not in source
 
 

@@ -45,9 +45,9 @@ Public helpers exposed by ``spatial_vtk.io``:
      - Use
    * - ``output_group``
      - Resolve a named workflow output group once and use attributes,
-       ``status_frame()``, ``readiness()``, ``load_tables()``, and
-       ``preview_tables()`` instead of repeating output-path variables in
-       notebooks.
+       ``status_frame()``, ``readiness()``, ``load_table()``,
+       ``preview_table()``, ``load_tables()``, and ``preview_tables()``
+       instead of repeating output-path variables in notebooks.
    * - ``preprocessed_waveform_output_group``
      - Resolve preprocessing metadata outputs that live under the configured
        preprocessed-waveform metadata directory.

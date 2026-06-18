@@ -206,6 +206,27 @@ class OutputGroup:
             loaded[label] = load_output_table(artifact.key, cfg=cfg, **kwargs)
         return loaded
 
+    def load_table(
+        self,
+        name: str,
+        *,
+        cfg: SpatialVTKConfig | None = None,
+        missing: Literal["raise", "skip"] = "raise",
+        **kwargs,
+    ) -> object | None:
+        """Load one table artifact from this output group.
+
+        ``name`` can be either the output-group path name, such as
+        ``"metrics_long_path"``, or the configured output key, such as
+        ``"metrics_long"``. The helper keeps notebook cells focused when they
+        need a single table instead of a ``label -> table`` mapping.
+        """
+
+        tables = self.load_tables(name, cfg=cfg, missing=missing, **kwargs)
+        if not tables:
+            return None
+        return next(iter(tables.values()))
+
     def preview_tables(
         self,
         names: str | Iterable[str] | dict[str, str] | None = None,
@@ -230,6 +251,22 @@ class OutputGroup:
                     continue
             previews[label] = preview_output_table(artifact.key, cfg=cfg, nrows=nrows, **kwargs)
         return previews
+
+    def preview_table(
+        self,
+        name: str,
+        *,
+        cfg: SpatialVTKConfig | None = None,
+        nrows: int = 5,
+        missing: Literal["raise", "skip"] = "skip",
+        **kwargs,
+    ) -> object | None:
+        """Load a bounded preview for one table artifact in this output group."""
+
+        previews = self.preview_tables(name, cfg=cfg, nrows=nrows, missing=missing, **kwargs)
+        if not previews:
+            return None
+        return next(iter(previews.values()))
 
     def first_existing_path(
         self,

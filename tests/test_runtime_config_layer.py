@@ -1343,8 +1343,13 @@ outputs:
     assert loaded_tables["events"].to_dict("records") == [{"event_id": "E1"}]
     loaded_by_key = group.load_tables("prepared_events", cfg=cfg)
     assert loaded_by_key["prepared_events"].to_dict("records") == [{"event_id": "E1"}]
+    loaded_single = group.load_table("prepared_events", cfg=cfg)
+    assert loaded_single.to_dict("records") == [{"event_id": "E1"}]
     previews = group.preview_tables({"events_preview": "prepared_events_path"}, cfg=cfg, nrows=1)
     assert previews["events_preview"].to_dict("records") == [{"event_id": "E1"}]
+    preview_single = group.preview_table("prepared_events", cfg=cfg, nrows=1)
+    assert preview_single.to_dict("records") == [{"event_id": "E1"}]
+    assert group.preview_table("metrics_enriched", cfg=cfg, nrows=1, missing="skip") is None
     assert group.first_existing_path(("prepared_stations_path", "prepared_events_path")) == prepared_events
     assert group.first_existing_path(("prepared_stations_path",), default="prepared_events_path") == prepared_events
     assert group.first_existing_path(("prepared_stations_path",)) is None
