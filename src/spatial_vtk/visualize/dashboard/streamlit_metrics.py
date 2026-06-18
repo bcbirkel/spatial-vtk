@@ -52,6 +52,7 @@ from spatial_vtk.visualize.selection import FigureSelection, configured_band_opt
 
 
 SUMMARY_READINESS_DISPLAY_COLUMNS = (
+    "artifact_label",
     "dashboard_table",
     "dashboard_tabs",
     "ready",
@@ -65,6 +66,7 @@ SUMMARY_READINESS_DISPLAY_COLUMNS = (
     "map_message",
 )
 METRIC_DATASET_READINESS_DISPLAY_COLUMNS = (
+    "artifact_label",
     "name",
     "ready",
     "readiness",

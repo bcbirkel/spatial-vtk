@@ -23,6 +23,7 @@ from spatial_vtk.visualize.dashboard import (
     dashboard_output_paths,
     dashboard_output_status_frame,
     dashboard_qc_trace_readiness_frame,
+    dashboard_readiness_summary_frame,
     dashboard_ready_value,
     dashboard_summary_readiness_frame,
     dashboard_summary_table_contracts,
@@ -45,6 +46,8 @@ from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metric_dataset_readiness_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _row_level_dataset_notice_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _select_readiness_columns
+from spatial_vtk.visualize.dashboard.streamlit_metrics import METRIC_DATASET_READINESS_DISPLAY_COLUMNS
+from spatial_vtk.visualize.dashboard.streamlit_metrics import SUMMARY_READINESS_DISPLAY_COLUMNS
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _summary_readiness_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _value_columns_or_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_chart_columns_or_message
@@ -228,6 +231,22 @@ outputs:
     assert qc_status["ready"] is False
     assert qc_status["readiness"] == "missing"
     assert "event_id" in qc_status["required_columns"]
+
+    summary = dashboard_readiness_summary_frame(cfg=cfg)
+    assert "artifact_role" in summary.columns
+    assert "artifact_label" in summary.columns
+    labels = set(summary["artifact_label"])
+    assert "metrics_long source table" in labels
+    assert "metrics dashboard row dataset" in labels
+    assert "station_rollup dashboard summary table" in labels
+    assert "QC trace-summary table" in labels
+
+    summary_display = _select_readiness_columns(summary, SUMMARY_READINESS_DISPLAY_COLUMNS)
+    assert "artifact_label" in summary_display.columns
+    assert "station_rollup dashboard summary table" in set(summary_display["artifact_label"])
+    metric_display = _select_readiness_columns(status_with_dataset, METRIC_DATASET_READINESS_DISPLAY_COLUMNS)
+    assert "artifact_label" in metric_display.columns
+    assert "metrics dashboard row dataset" in set(metric_display["artifact_label"])
     assert "QC trace-summary table is missing" in qc_status["message"]
 
     readiness = dashboard_summary_readiness_frame(paths["dashboard_summary_root"])
@@ -425,6 +444,7 @@ def test_qc_dashboard_readiness_display_columns_are_bounded():
 
     readiness = pd.DataFrame(
         {
+            "artifact_label": ["QC trace-summary table"],
             "dashboard_table": ["qc_trace_summary"],
             "ready": [True],
             "readiness": ["ready"],
@@ -439,6 +459,7 @@ def test_qc_dashboard_readiness_display_columns_are_bounded():
     display = _select_qc_readiness_columns(readiness)
 
     assert list(display.columns) == [
+        "artifact_label",
         "dashboard_table",
         "ready",
         "readiness",
@@ -447,6 +468,7 @@ def test_qc_dashboard_readiness_display_columns_are_bounded():
         "message",
         "path",
     ]
+    assert display["artifact_label"].iloc[0] == "QC trace-summary table"
     assert "unexpected_large_column" not in display.columns
 
 

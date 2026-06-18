@@ -444,6 +444,10 @@ Changelog
    files in one status table. The dashboard CLI now uses the configured
    ``outputs.dashboards`` roots by default, and Step 7 notebooks use the shared
    helper instead of spelling out each dashboard path.
+   Added user-facing artifact roles and labels to compact dashboard readiness
+   summaries and Streamlit Data Status tables so large-run notebook preflight
+   output can explain dashboard artifacts without exposing only internal path
+   keys.
    Added shared large-run notebook helpers for package-backed heavy work. The
    older CLI-wrapper helper is now a deprecated compatibility fallback, and the
    large-run QC, metrics, spatial, GeoJSON, and dashboard drivers use

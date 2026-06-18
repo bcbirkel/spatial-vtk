@@ -313,6 +313,8 @@ def dashboard_readiness_summary_frame(
             {
                 "item_type": "input",
                 "item": name,
+                "artifact_role": _blank_if_missing(row.get("artifact_role")),
+                "artifact_label": _blank_if_missing(row.get("artifact_label")),
                 "dashboard_tabs": "Dashboard preparation",
                 "ready": exists,
                 "readiness": "ready" if exists else "missing",
@@ -337,6 +339,8 @@ def dashboard_readiness_summary_frame(
     columns = [
         "item_type",
         "item",
+        "artifact_role",
+        "artifact_label",
         "dashboard_tabs",
         "ready",
         "readiness",
@@ -362,6 +366,8 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
     row: dict[str, object] = {
         "kind": "dashboard_metrics",
         "name": "metrics_dashboard_root",
+        "artifact_role": "dashboard_dataset",
+        "artifact_label": "metrics dashboard row dataset",
         "path": str(path),
         "exists": path.exists(),
         "ready": False,
@@ -677,6 +683,8 @@ def _dashboard_summary_row(row: dict[str, object], *, item_type: str) -> dict[st
     return {
         "item_type": item_type,
         "item": item,
+        "artifact_role": _blank_if_missing(row.get("artifact_role")),
+        "artifact_label": _blank_if_missing(row.get("artifact_label")),
         "dashboard_tabs": tabs,
         "ready": ready,
         "readiness": _blank_if_missing(row.get("readiness")),

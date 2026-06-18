@@ -18,6 +18,7 @@ from spatial_vtk.visualize.selection import FigureSelection, configured_band_opt
 
 
 QC_READINESS_DISPLAY_COLUMNS = (
+    "artifact_label",
     "dashboard_table",
     "ready",
     "readiness",

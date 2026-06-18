@@ -94,6 +94,10 @@ and user-facing ``artifact_role`` / ``artifact_label`` columns, so notebooks
 can display "metrics dashboard row dataset" or "station_rollup dashboard
 summary table" instead of relying on internal key names such as
 ``metrics_dashboard_root``.
+The compact dashboard readiness summary carries the same
+``artifact_role`` / ``artifact_label`` columns, and the metrics/QC dashboard
+Data Status tabs show those labels while keeping readiness displays bounded to
+small status metadata.
 
 ``write_configured_dashboard_datasets`` replaces the standard dashboard metric
 dataset files and summary tables for the current run. It removes only
