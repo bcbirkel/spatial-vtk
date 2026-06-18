@@ -129,6 +129,40 @@ part of the tutorial-facing API.
 .. automodule:: spatial_vtk.metrics.plot
    :members:
 
+Public plotting helpers exposed by ``spatial_vtk.metrics.plot``:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Helper
+     - Use
+   * - ``plot_band_score_distribution``
+     - Compare metric residual or score distributions by passband, component,
+       model, or metric group.
+   * - ``plot_period_score_distribution``
+     - Compare PSA and period-indexed metric distributions by oscillator
+       period.
+   * - ``plot_period_spectra``
+     - Plot period spectra from prepared spectral summary tables.
+   * - ``plot_period_spectrogram``
+     - Plot period-by-record spectral intensity summaries.
+   * - ``plot_psa_period_curve``
+     - Plot PSA values or residuals across oscillator periods.
+   * - ``plot_residuals_vs_distance``
+     - Plot metric residuals against distance with optional trend overlays.
+   * - ``plot_residuals_vs_depth``
+     - Plot metric residuals against event depth.
+   * - ``plot_phase_delay_vs_distance``
+     - Plot traveltime or phase-delay residuals against distance.
+   * - ``plot_metric_trend`` and ``plot_score_trends``
+     - Plot generic metric trends and optional GOF score diagnostics.
+   * - ``plot_vs30_scatter`` and ``plot_geology_boxplot``
+     - Plot site-condition diagnostics against Vs30 or geologic classes.
+   * - ``plot_model_metric_heatmap`` and ``plot_winner_heatmap``
+     - Plot model-comparison summaries.
+   * - ``plot_example_metric_pairs``
+     - Plot synthetic trace-pair examples for documentation and sanity checks.
+
 Large-Run Figure Context
 ------------------------
 

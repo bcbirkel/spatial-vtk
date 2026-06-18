@@ -202,6 +202,18 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert ".. automodule:: spatial_vtk.metrics.plot\n" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context" in text
+    assert "Public plotting helpers exposed by ``spatial_vtk.metrics.plot``" in text
+    for helper in (
+        "plot_band_score_distribution",
+        "plot_period_score_distribution",
+        "plot_psa_period_curve",
+        "plot_residuals_vs_distance",
+        "plot_phase_delay_vs_distance",
+        "plot_vs30_scatter",
+        "plot_model_metric_heatmap",
+        "plot_example_metric_pairs",
+    ):
+        assert helper in text
     assert "station_summary_for_item" in text
     assert "item_source_rows" in text
     forbidden = (
