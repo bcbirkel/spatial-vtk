@@ -1313,6 +1313,8 @@ def load_metric_long_table(
     models: Sequence[str] | str | None = None,
     bands: Sequence[str] | str | None = None,
     metrics: Sequence[str] | str | None = None,
+    max_rows: int | None = None,
+    chunksize: int = 50_000,
 ) -> pd.DataFrame:
     """Load the dashboard long metric table from a dataset root."""
 
@@ -1324,6 +1326,8 @@ def load_metric_long_table(
         models=models,
         bands=bands,
         metrics=metrics,
+        max_rows=max_rows,
+        chunksize=chunksize,
     )
 
 

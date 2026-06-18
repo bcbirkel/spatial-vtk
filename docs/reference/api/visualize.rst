@@ -219,6 +219,14 @@ trace-summary readiness plus loaded and filtered row counts. A running dashboard
 can therefore explain blank tabs without requiring users to return to the
 notebook.
 
+For large runs, the metrics dashboard caps row-level records loaded for the
+Distributions tab and filtered-row CSV download at ``200000`` rows by default.
+Set ``SVTK_METRICS_DASHBOARD_ROW_LIMIT`` before launching the dashboard, or use
+the "Maximum row-level records" sidebar control, when you need a larger or
+smaller bounded sample. Summary, station, event, and path tabs continue to use
+precomputed dashboard summary tables rather than loading the full metric
+inventory.
+
 .. automodule:: spatial_vtk.visualize.dashboard
    :members:
 

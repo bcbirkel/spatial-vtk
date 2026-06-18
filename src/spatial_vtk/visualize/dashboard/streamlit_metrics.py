@@ -180,6 +180,14 @@ def _render_metrics_dashboard(
         basemap = st.selectbox("Basemap", options=list(BASEMAPS), index=list(BASEMAPS).index("Carto Light"))
         marker_cluster = st.checkbox("Cluster map markers", value=True)
         max_markers = st.number_input("Maximum map markers", min_value=100, max_value=50000, value=3000, step=100)
+        configured_row_limit = _metrics_dashboard_row_limit()
+        row_limit = st.number_input(
+            "Maximum row-level records",
+            min_value=1_000,
+            max_value=max(2_000_000, configured_row_limit),
+            value=configured_row_limit,
+            step=10_000,
+        )
 
     component_filter = None if selected_component in {"", "all"} else selected_component
     heat = filter_dashboard_metrics(
@@ -243,6 +251,7 @@ def _render_metrics_dashboard(
                     models=selected_models,
                     metric=selected_metric,
                     bands=selected_bands,
+                    max_rows=int(row_limit),
                 )
             except Exception as exc:
                 row_value_message = f"Long metric rows were not loaded: {exc}"
@@ -264,6 +273,11 @@ def _render_metrics_dashboard(
     row_level_notice = _row_level_dataset_notice_message(row_value_message, rows)
     if row_level_notice:
         st.warning(row_level_notice)
+    elif rows is not None and int(row_limit) > 0 and len(rows) >= int(row_limit):
+        st.info(
+            f"Row-level dashboard data is capped at {int(row_limit):,} filtered records for responsiveness. "
+            "Increase the sidebar limit if you need a larger distribution sample."
+        )
 
     overview_tab, station_tab, event_tab, path_tab, distribution_tab, compare_tab, status_tab = st.tabs(
         ["Overview", "Stations", "Events", "Paths", "Distributions", "Compare Models", "Data Status"]
@@ -366,6 +380,7 @@ def _load_long_metrics_cached(
     models: tuple[str, ...],
     metric: str,
     bands: tuple[str, ...],
+    max_rows: int,
 ) -> pd.DataFrame:
     """Load long metrics with Streamlit caching."""
 
@@ -375,6 +390,7 @@ def _load_long_metrics_cached(
         models=models,
         metrics=[metric] if metric else None,
         bands=bands,
+        max_rows=max_rows,
     )
 
 
@@ -385,6 +401,7 @@ def _try_load_filtered_long_metrics(
     models: list[str],
     metric: str,
     bands: list[str],
+    max_rows: int,
 ) -> pd.DataFrame:
     """Load selected long metric rows when a root is configured."""
 
@@ -394,6 +411,7 @@ def _try_load_filtered_long_metrics(
         tuple(str(model) for model in models),
         str(metric),
         tuple(str(band) for band in bands),
+        int(max_rows),
     )
 
 
@@ -601,6 +619,19 @@ def _path_setting(query_key: str, env_key: str) -> str:
     if isinstance(value, list):
         value = value[0] if value else ""
     return str(value or os.environ.get(env_key, "")).strip()
+
+
+def _metrics_dashboard_row_limit(default: int = 200_000) -> int:
+    """Return the row-level metrics cap for responsive dashboard rendering."""
+
+    raw = os.environ.get("SVTK_METRICS_DASHBOARD_ROW_LIMIT", "")
+    if not raw:
+        return int(default)
+    try:
+        value = int(raw)
+    except ValueError:
+        return int(default)
+    return max(value, 1_000)
 
 
 def _load_optional_config(config_path: str) -> SpatialVTKConfig | None:

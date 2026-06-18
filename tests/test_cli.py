@@ -1192,6 +1192,7 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert "--max-records 80" in text
     assert "--max-traces 12" in text
     assert "--auto-port" in text
+    assert "SVTK_METRICS_DASHBOARD_ROW_LIMIT" in text
     assert "--kwargs dep=" not in text
     assert " indep=" not in text
     assert " colorby=" not in text

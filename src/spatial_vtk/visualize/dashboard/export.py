@@ -96,6 +96,8 @@ def load_dashboard_metric_dataset(
     models: Sequence[str] | str | None = None,
     bands: Sequence[str] | str | None = None,
     metrics: Sequence[str] | str | None = None,
+    max_rows: int | None = None,
+    chunksize: int = 50_000,
 ) -> pd.DataFrame:
     """Load dashboard metric rows from a dataset directory or table file.
 
@@ -112,6 +114,13 @@ def load_dashboard_metric_dataset(
         ``model=*/band=*/metric=*/part.parquet`` files before reading and then
         apply the same filters after loading. Single-file datasets apply the
         filters after loading.
+    max_rows
+        Optional maximum rows to return after filtering. When provided, files
+        are read in bounded chunks where possible so dashboards can show
+        row-level distributions without materializing a full large-run metric
+        dataset.
+    chunksize
+        Row batch size used when ``max_rows`` is provided.
 
     Returns
     -------
@@ -122,7 +131,21 @@ def load_dashboard_metric_dataset(
     root = Path(input_root).expanduser()
     filter_columns = _dashboard_metric_filter_columns(models=models, bands=bands, metrics=metrics)
     read_columns = _merged_columns(columns, filter_columns)
+    row_limit = _normalize_max_rows(max_rows)
+    if row_limit == 0:
+        return pd.DataFrame(columns=list(columns or ()))
     if root.is_file():
+        if row_limit is not None:
+            return _load_dashboard_metric_dataset_bounded(
+                [root],
+                columns=read_columns,
+                models=models,
+                bands=bands,
+                metrics=metrics,
+                output_columns=columns,
+                max_rows=row_limit,
+                chunksize=chunksize,
+            )
         return _filter_dashboard_metric_rows(
             _read_dashboard_metric_table(root, columns=read_columns),
             models=models,
@@ -141,6 +164,17 @@ def load_dashboard_metric_dataset(
     paths = _filter_dashboard_metric_paths(paths, models=models, bands=bands, metrics=metrics)
     if not paths:
         return pd.DataFrame(columns=list(columns or ()))
+    if row_limit is not None:
+        return _load_dashboard_metric_dataset_bounded(
+            paths,
+            columns=read_columns,
+            models=models,
+            bands=bands,
+            metrics=metrics,
+            output_columns=columns,
+            max_rows=row_limit,
+            chunksize=chunksize,
+        )
     loaded = pd.concat(
         [_read_dashboard_metric_table(path, columns=read_columns) for path in paths],
         ignore_index=True,
@@ -153,6 +187,47 @@ def load_dashboard_metric_dataset(
         metrics=metrics,
         output_columns=columns,
     )
+
+
+def _load_dashboard_metric_dataset_bounded(
+    paths: Sequence[Path],
+    *,
+    columns: Sequence[str] | None,
+    models: Sequence[str] | str | None,
+    bands: Sequence[str] | str | None,
+    metrics: Sequence[str] | str | None,
+    output_columns: Sequence[str] | None,
+    max_rows: int,
+    chunksize: int,
+) -> pd.DataFrame:
+    """Load filtered dashboard metric rows up to ``max_rows``."""
+
+    if max_rows <= 0:
+        return pd.DataFrame(columns=list(output_columns or columns or ()))
+    frames: list[pd.DataFrame] = []
+    remaining = int(max_rows)
+    for path in paths:
+        for chunk in _iter_dashboard_metric_table_chunks(path, columns=columns, chunksize=chunksize):
+            filtered = _filter_dashboard_metric_rows(
+                chunk,
+                models=models,
+                bands=bands,
+                metrics=metrics,
+                output_columns=output_columns,
+            )
+            if filtered.empty:
+                continue
+            if len(filtered) > remaining:
+                filtered = filtered.head(remaining)
+            frames.append(filtered)
+            remaining -= len(filtered)
+            if remaining <= 0:
+                break
+        if remaining <= 0:
+            break
+    if not frames:
+        return pd.DataFrame(columns=list(output_columns or columns or ()))
+    return pd.concat(frames, ignore_index=True, sort=False)
 
 
 def dashboard_metric_dataset_paths(input_root: str | Path) -> list[Path]:
@@ -282,6 +357,15 @@ def _filter_dashboard_metric_rows(
     return out.reset_index(drop=True)
 
 
+def _normalize_max_rows(max_rows: int | None) -> int | None:
+    """Return a non-negative row limit or ``None``."""
+
+    if max_rows is None:
+        return None
+    value = int(max_rows)
+    return max(value, 0)
+
+
 def _filter_values(values: Sequence[str] | str | None) -> set[str]:
     """Normalize scalar or sequence dashboard filter values."""
 
@@ -322,6 +406,41 @@ def _read_dashboard_metric_table(path: Path, *, columns: Sequence[str] | None = 
             return pd.read_csv(path)
         wanted = set(selected)
         return pd.read_csv(path, usecols=lambda column: column in wanted, low_memory=False)
+    raise ValueError(f"Unsupported dashboard metric table format for {path}. Use Parquet or CSV.")
+
+
+def _iter_dashboard_metric_table_chunks(
+    path: Path,
+    *,
+    columns: Sequence[str] | None = None,
+    chunksize: int = 50_000,
+):
+    """Yield projected metric table chunks without requiring full materialization."""
+
+    suffix = path.suffix.lower()
+    selected = _selected_existing_columns(path, columns)
+    size = max(int(chunksize), 1)
+    if suffix in {".parquet", ".pq"}:
+        try:
+            import pyarrow.parquet as pq
+
+            parquet = pq.ParquetFile(path)
+            for batch in parquet.iter_batches(batch_size=size, columns=selected):
+                yield batch.to_pandas()
+            return
+        except Exception:
+            table = pd.read_parquet(path, columns=selected)
+            for start in range(0, len(table), size):
+                yield table.iloc[start : start + size].copy()
+            return
+    if suffix == ".csv":
+        if selected is None:
+            reader = pd.read_csv(path, chunksize=size, low_memory=False)
+        else:
+            wanted = set(selected)
+            reader = pd.read_csv(path, usecols=lambda column: column in wanted, chunksize=size, low_memory=False)
+        yield from reader
+        return
     raise ValueError(f"Unsupported dashboard metric table format for {path}. Use Parquet or CSV.")
 
 

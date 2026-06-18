@@ -1751,6 +1751,32 @@ def test_dashboard_metric_dataset_loader_accepts_direct_table_files(tmp_path):
     assert loaded_dataset[["model", "metric", "band"]].to_dict("records") == [
         {"model": "m1", "metric": "PGA", "band": "1-2 sec"}
     ]
+    bounded_csv = load_dashboard_metric_dataset(direct_csv, max_rows=1, chunksize=1)
+    assert len(bounded_csv) == 1
+
+    many_rows = pd.DataFrame(
+        {
+            "model": ["m1", "m1", "m2", "m1"],
+            "metric": ["PGA", "PGA", "PGA", "PGV"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec", "2-3 sec"],
+            "station": ["A", "B", "C", "D"],
+            "event_id": ["E1", "E2", "E3", "E4"],
+            "log2_residual": [0.1, 0.2, 0.3, 0.4],
+        }
+    )
+    bounded_csv_path = tmp_path / "many_metrics.csv"
+    many_rows.to_csv(bounded_csv_path, index=False)
+    bounded_filtered = load_dashboard_metric_dataset(
+        bounded_csv_path,
+        models=["m1"],
+        metrics=["PGA"],
+        bands=["1-2 sec"],
+        max_rows=1,
+        chunksize=1,
+    )
+    assert bounded_filtered[["model", "metric", "band", "station"]].to_dict("records") == [
+        {"model": "m1", "metric": "PGA", "band": "1-2 sec", "station": "A"}
+    ]
 
     bad_file = tmp_path / "metrics_long.txt"
     bad_file.write_text("not,a,table\n", encoding="utf-8")

@@ -427,3 +427,8 @@ disables Streamlit's local origin checks for the dashboard process so the
 proxied browser connection can attach to the app.
 Use ``--auto-port`` on shared systems so Spatial-VTK can select the next open
 port if the default Streamlit port is already occupied.
+For large runs, set ``SVTK_METRICS_DASHBOARD_ROW_LIMIT`` before launching the
+metrics dashboard to control the bounded row-level sample used by the
+Distributions tab and filtered-row download. The default is ``200000`` rows;
+summary, station, event, and path tabs still use precomputed dashboard summary
+tables.

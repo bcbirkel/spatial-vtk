@@ -503,6 +503,8 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "``dashboard_tabs``" in text
     assert "``suggested_action``" in text
     assert "``required_columns`` / ``missing_columns`` / ``map_message``" in text
+    assert "SVTK_METRICS_DASHBOARD_ROW_LIMIT" in text
+    assert "Maximum row-level records" in text
     assert "Public helpers exposed by ``spatial_vtk.visualize.dashboard``" in text
     for helper in (
         "dashboard_summary_table_contracts",
