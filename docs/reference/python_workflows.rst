@@ -328,7 +328,11 @@ Step 7: Dashboard Datasets
      - ``spatial_vtk.visualize.dashboard.dashboard_readiness_summary_frame``,
        ``spatial_vtk.visualize.dashboard.dashboard_output_status_frame``, and
        ``spatial_vtk.visualize.dashboard.dashboard_output_readiness``
-     - compact tab-level readiness plus detailed status frames
+     - compact tab-level readiness plus detailed status frames. Standard
+       tutorial notebooks can call ``dashboard_output_readiness`` directly and
+       skip local dashboard preparation when ``should_run`` is false; large-run
+       notebooks pass the same readiness object to
+       ``run_notebook_step_if_needed`` for Slurm/local execution.
    * - Write dashboard-ready row and summary datasets
      - ``spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets``
      - dashboard metric dataset root and dashboard summary table root; standard

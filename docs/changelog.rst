@@ -15,6 +15,10 @@ Changelog
    large-run Step 5 optional corridor-map rendering now uses
    ``OutputGroup.load_tables(..., missing="skip")`` instead of direct
    ``Path.exists()`` checks in notebook cells.
+   Standard Step 7 now checks ``dashboard_output_readiness`` before preparing
+   dashboard datasets locally, displays the same readiness summary/status used
+   by the large-run dashboard driver, and skips dataset writes when dashboard
+   outputs are current.
    Added ``OutputGroup.first_existing_path()`` and
    ``OutputGroup.preview_first_existing_table()`` for ordered fallback table
    previews. Large-run Steps 3, 6, and 7 now preview metric tables through

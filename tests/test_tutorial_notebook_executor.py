@@ -848,6 +848,13 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "write_configured_dashboard_datasets(" in source
+    assert "dashboard_output_readiness," in source
+    assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=False)" in source
+    assert "if dashboard_readiness.should_run:" in source
+    assert "print(dashboard_readiness.message)" in source
+    assert "display(display_table(dashboard_readiness.summary_frame(), max_rows=20))" in source
+    assert "display(display_table(dashboard_readiness.status_frame(), max_rows=30))" in source
+    assert "display(dashboard_output_status_frame(cfg=cfg))" in source
     assert "launch_configured_metrics_dashboard(" in source
     assert "launch_configured_qc_dashboard(" in source
     assert "notebook_dashboard_launch_commands(" in source
