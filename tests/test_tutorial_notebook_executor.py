@@ -777,7 +777,9 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "Launch options:" not in source
     assert "server_port=dashboard_" not in source
     assert '"cfg": str(config_path)' in source
-    assert "preview_output_table(\"metrics_long\", cfg=cfg" in source
+    assert "dashboard_outputs = output_group(\"step_07_dashboards\")" in source
+    assert "dashboard_outputs.preview_tables(" in source
+    assert "preview_output_table(" not in source
     assert "dashboard_output_namespace" not in source
     assert "dashboard_paths" not in source
     assert "metrics_long_path" not in source
@@ -879,6 +881,8 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert "write_metrics_slurm_script_from_config," in source
     assert "merge_metric_batches_from_config," in source
     assert "write_metric_outputs_from_config," in source
+    assert "step_outputs.preview_tables(" in source
+    assert "preview_table(" not in source
     assert '"batch_count": context.metric_batch_count' in source
     assert 'os.environ.get("SVTK_METRIC_BATCH_COUNT"' not in source
     assert '"spatial_vtk.metrics.build_metric_waveform_inventories_from_config"' not in source
@@ -1107,7 +1111,11 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
 
     assert "step_outputs = output_group(\"step_06_plotting\")" in source
     assert "event_stations = step_outputs.load_tables(" in source
+    assert "step_outputs.preview_first_existing_table(" in source
+    assert "step_outputs.first_existing_path(" in source
     assert "load_output_table(" not in source
+    assert "preview_table(" not in source
+    assert "preview_output_table(" not in source
 
 
 def test_large_run_step03_metric_figures_are_auditable_station_aggregations() -> None:

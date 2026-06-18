@@ -230,6 +230,60 @@ class OutputGroup:
             previews[label] = preview_output_table(artifact.key, cfg=cfg, nrows=nrows, **kwargs)
         return previews
 
+    def first_existing_path(
+        self,
+        names: str | Iterable[str],
+        *,
+        default: str | Path | None = None,
+    ) -> Path | None:
+        """Return the first existing path from this group.
+
+        Parameters
+        ----------
+        names
+            Group path name or ordered group path names to check.
+        default
+            Optional fallback group path name or explicit path returned when no
+            candidate exists. When omitted, ``None`` is returned.
+        """
+
+        candidates = (names,) if isinstance(names, str) else tuple(names)
+        for name in candidates:
+            path = self.paths[str(name)]
+            if path.exists():
+                return path
+        if default is None:
+            return None
+        if isinstance(default, str) and default in self.paths:
+            return self.paths[default]
+        return Path(default)
+
+    def preview_first_existing_table(
+        self,
+        names: str | Iterable[str],
+        *,
+        cfg: SpatialVTKConfig | None = None,
+        nrows: int = 5,
+        **kwargs,
+    ) -> dict[str, object]:
+        """Preview the first existing table from an ordered set of group paths.
+
+        This is useful for notebooks that prefer a derived table when present
+        but can fall back to an earlier table without repeating path checks.
+        The returned dictionary has either one ``label -> preview`` entry or is
+        empty when none of the candidate tables exists.
+        """
+
+        from spatial_vtk.io.tables import preview_output_table
+
+        artifacts = _output_group_table_artifacts(self.name)
+        candidates = _selected_output_artifacts(artifacts, names)
+        for label, artifact in candidates:
+            path = self.paths.get(artifact.name)
+            if path is not None and path.exists():
+                return {label: preview_output_table(artifact.key, cfg=cfg, nrows=nrows, **kwargs)}
+        return {}
+
     def status_frame(self, *, extra_paths=None):
         """Return a display-ready status frame for the group."""
 

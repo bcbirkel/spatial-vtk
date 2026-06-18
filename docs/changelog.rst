@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Added ``OutputGroup.first_existing_path()`` and
+   ``OutputGroup.preview_first_existing_table()`` for ordered fallback table
+   previews. Large-run Steps 3, 6, and 7 now preview metric tables through
+   output groups instead of direct ``preview_table`` or ``preview_output_table``
+   calls in notebook cells.
    Added ``spatial_vtk.io.preprocessed_waveform_output_group`` so Step 1 can
    use ``OutputGroup``-style ``bind()``, ``status_frame()``, and
    ``readiness()`` for preprocessing metadata under
