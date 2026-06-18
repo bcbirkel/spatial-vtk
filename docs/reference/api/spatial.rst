@@ -86,9 +86,13 @@ Public helpers exposed by ``spatial_vtk.spatial``:
    * - ``corridor_record_pair_frame``
      - Return one row per selected corridor event-station pair for maps,
        waveform joins, and downstream subset tables.
+   * - ``event_station_records_matching_pairs`` and
+       ``geojson_matched_record_frame``
+     - Filter record tables by selected event-station pairs or GeoJSON match
+       flags without notebook-local merges or boolean masks.
    * - ``corridor_record_preview_frame``
      - Display bounded selected corridor event-station rows without repeating
-      preview-column and duplicate-removal logic in notebooks.
+       preview-column and duplicate-removal logic in notebooks.
 
 Calculate
 ---------
@@ -118,6 +122,10 @@ for users who need narrower module references.
 .. autofunction:: spatial_vtk.spatial.corridor_record_preview_frame
 
 .. autofunction:: spatial_vtk.spatial.corridor_record_pair_frame
+
+.. autofunction:: spatial_vtk.spatial.event_station_records_matching_pairs
+
+.. autofunction:: spatial_vtk.spatial.geojson_matched_record_frame
 
 .. autofunction:: spatial_vtk.spatial.geojson_metric_region_frame
 

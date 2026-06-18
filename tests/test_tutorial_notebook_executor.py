@@ -1521,7 +1521,9 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
     assert 'step_outputs.display_table_previews({"metric_tasks": "metric_tasks_path"}, cfg=cfg, nrows=12)' in source
     assert 'step_outputs.display_table_previews({"metrics_long": "metrics_long_path"}, cfg=cfg, nrows=5)' in source
     assert 'metric_figure_context.station_summary_preview_for_metric("PGA", "log2_residual", nrows=5)' in source
+    assert 'metric_rows_for_metrics(figure_metrics, ["PGA", "PGV", "PGD"])' in source
     assert "station_pga[[" not in source
+    assert 'figure_metrics.loc[figure_metrics["metric"].isin' not in source
     assert "metric_tasks.head(" not in source
     assert "metrics_long.head(" not in source
     assert "load_output_table(" not in source
@@ -1715,9 +1717,14 @@ def test_step05_uses_geojson_preview_helper() -> None:
     assert "event_ids_from_records(" in source
     assert "event_rows_for_records(" in source
     assert "event_label_preview_frame(" in source
+    assert "event_station_records_matching_pairs(" in source
+    assert "geojson_matched_record_frame(" in source
     assert 'events.loc[events["event_id"].astype(str).isin' not in source
     assert '["event_id"].dropna().astype(str).unique()' not in source
     assert '[["event_id", "event_name"]].drop_duplicates()' not in source
+    assert 'central_boundary_paths.loc[central_boundary_paths["path_geojson_matches"]]' not in source
+    assert '.merge(selected_pairs, on=["event_id", "station"], how="inner")' not in source
+    assert '.merge(pgv_corridor_pairs, on=["event_id", "station"], how="inner")' not in source
     assert "geojson_polygon_preview_table(" in source
     assert "load_configured_input_paths(" in source
     assert "ingest_outputs = output_group(\"step_01_ingest\", cfg=cfg)" in source

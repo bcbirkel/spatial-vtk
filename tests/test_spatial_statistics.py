@@ -60,7 +60,12 @@ from spatial_vtk.spatial.calculate.workflow import (
     spatial_pca_product_frames,
     spatial_workflow_failure_frame,
 )
-from spatial_vtk.spatial.calculate.corridors import corridor_record_pair_frame, corridor_record_preview_frame
+from spatial_vtk.spatial.calculate.corridors import (
+    corridor_record_pair_frame,
+    corridor_record_preview_frame,
+    event_station_records_matching_pairs,
+    geojson_matched_record_frame,
+)
 from spatial_vtk.spatial.map.correlation import (
     plot_block_holdout_error_map,
     plot_cluster_map,
@@ -309,6 +314,48 @@ def test_corridor_record_pair_frame_returns_unique_event_station_rows() -> None:
     assert list(corridor_record_pair_frame(None).columns) == ["event_id", "station"]
     with pytest.raises(KeyError, match="missing required pair"):
         corridor_record_pair_frame(pd.DataFrame({"event_id": ["e1"]}))
+
+
+def test_geojson_matched_record_frame_filters_truthy_rows() -> None:
+    """GeoJSON match filtering should be reusable outside notebooks."""
+
+    records = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3", "e4"],
+            "path_geojson_matches": [True, False, "yes", None],
+        }
+    )
+
+    matched = geojson_matched_record_frame(records)
+
+    assert matched["event_id"].tolist() == ["e1", "e3"]
+    assert geojson_matched_record_frame(None).empty
+    with pytest.raises(KeyError, match="missing match column"):
+        geojson_matched_record_frame(pd.DataFrame({"event_id": ["e1"]}))
+
+
+def test_event_station_records_matching_pairs_preserves_records_and_order() -> None:
+    """Pair filtering should replace notebook-local event/station merges."""
+
+    records = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3", "e2"],
+            "station": ["STA1", "sta2", "STA3", "STA2"],
+            "value": [1, 2, 3, 4],
+        }
+    )
+    pairs = pd.DataFrame({"event_id": ["e2", "e2", "e4"], "station": ["STA2", "STA2", "STA4"]})
+
+    selected = event_station_records_matching_pairs(records, pairs)
+
+    assert selected.to_dict("records") == [
+        {"event_id": "e2", "station": "sta2", "value": 2},
+        {"event_id": "e2", "station": "STA2", "value": 4},
+    ]
+    assert event_station_records_matching_pairs(records, None).empty
+    assert event_station_records_matching_pairs(None, pairs).empty
+    with pytest.raises(KeyError, match="missing required pair"):
+        event_station_records_matching_pairs(pd.DataFrame({"event_id": ["e1"]}), pairs)
 
 
 def test_spatial_correlation_preview_frame_filters_metric_and_bounds_distance_rows() -> None:

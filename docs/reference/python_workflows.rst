@@ -312,6 +312,10 @@ Step 3: Metric Calculation and Metric Figures
      - saved metric figures, package-generated context status and dimension
        summary tables, and optional ``*.csv``/``*.source.csv``/``*.json``
        sidecars
+   * - Select metric rows for focused notebook plots
+     - ``spatial_vtk.metrics.plot.metric_rows_for_metrics``
+     - bounded plotting inputs filtered by metric name, display label, key, or
+       alias without notebook-local ``.loc[...isin(...)]`` filtering
 
 Spectral metrics are planned differently from passband metrics. ``PSA`` and
 ``FAS`` are broadband spectral calculations: the metric manifest should contain
@@ -365,6 +369,10 @@ Both Step 5 helpers can receive configured path keys for optional inputs. For
 example, pass ``metrics_table="paths.metric_figure_snapshot"`` or
 ``geojson_path="paths.region_geojson"`` when a notebook needs to select a
 configured non-default input without adding path-resolution cells.
+Use ``spatial_vtk.spatial.geojson_matched_record_frame`` and
+``spatial_vtk.spatial.event_station_records_matching_pairs`` for corridor
+record filtering and event-station pair joins instead of notebook-local boolean
+masks or dataframe merges.
 Region boxplot cells should use
 ``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs`` so
 package code owns the ``metrics_enriched`` to ``metrics_long`` fallback and the

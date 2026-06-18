@@ -31,7 +31,7 @@ def test_public_imports():
         metric_slurm_submission_readiness,
         metric_slurm_submission_readiness_from_config,
     )
-    from spatial_vtk.metrics.plot import MetricFigureContext, metric_plot_input_summary_frame
+    from spatial_vtk.metrics.plot import MetricFigureContext, metric_plot_input_summary_frame, metric_rows_for_metrics
     from spatial_vtk.io import (
         load_configured_input_paths,
         load_configured_input_tables,
@@ -56,6 +56,8 @@ def test_public_imports():
         classify_paths_with_geojson,
         corridor_record_pair_frame,
         corridor_record_preview_frame,
+        event_station_records_matching_pairs,
+        geojson_matched_record_frame,
         geojson_polygon_preview_table,
         geojson_metric_region_frame,
         geojson_metric_subset_frame,
@@ -100,6 +102,7 @@ def test_public_imports():
     assert callable(metric_slurm_submission_readiness_from_config)
     assert callable(MetricFigureContext.from_frame)
     assert callable(metric_plot_input_summary_frame)
+    assert callable(metric_rows_for_metrics)
     assert callable(inspect_synthetic_format)
     assert callable(load_configured_input_paths)
     assert callable(load_configured_input_tables)
@@ -123,6 +126,8 @@ def test_public_imports():
     assert callable(run_spatial_statistics_workflow_from_config)
     assert callable(corridor_record_preview_frame)
     assert callable(corridor_record_pair_frame)
+    assert callable(event_station_records_matching_pairs)
+    assert callable(geojson_matched_record_frame)
     assert callable(spatial_correlation_preview_frame)
     assert callable(spatial_metric_product_frames)
     assert callable(spatial_metric_product_summary_frame)
@@ -272,6 +277,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert ".. automodule:: spatial_vtk.metrics.plot\n" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.metric_plot_input_summary_frame" in text
+    assert ".. autofunction:: spatial_vtk.metrics.plot.metric_rows_for_metrics" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context" in text
     assert "Public plotting helpers exposed by ``spatial_vtk.metrics.plot``" in text
     assert "``PSA`` and ``FAS`` are broadband spectral metrics" in text
@@ -287,6 +293,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
         "plot_band_score_distribution",
         "plot_period_score_distribution",
         "plot_psa_period_curve",
+        "metric_rows_for_metrics",
         "plot_residuals_vs_distance",
         "plot_phase_delay_vs_distance",
         "plot_vs30_scatter",
@@ -459,6 +466,8 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
         "build_station_edge_corridors",
         "corridor_record_pair_frame",
         "corridor_record_preview_frame",
+        "event_station_records_matching_pairs",
+        "geojson_matched_record_frame",
         "select_records_by_corridors",
     ):
         assert helper in text

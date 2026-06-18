@@ -2,6 +2,14 @@ Changelog
 =========
 
 2026-06-18
+   Added ``metric_rows_for_metrics()`` to the public
+   ``spatial_vtk.metrics.plot`` API. Rewired the standard Step 3 metric
+   notebook to use it for focused plotting examples instead of notebook-local
+   ``figure_metrics.loc[...isin(...)]`` filtering.
+   Added ``event_station_records_matching_pairs()`` and
+   ``geojson_matched_record_frame()`` to the public ``spatial_vtk.spatial``
+   API. Rewired the standard Step 5 corridor notebook to use them instead of
+   notebook-local GeoJSON boolean masks and event-station pair merges.
    Added ``event_ids_from_records()``, ``event_rows_for_records()``, and
    ``event_label_preview_frame()`` to the public ``spatial_vtk.io`` API.
    Rewired the standard Step 5 maps notebook to use these helpers for regional

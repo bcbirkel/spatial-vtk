@@ -274,6 +274,76 @@ def corridor_record_pair_frame(
     return records.loc[:, columns].drop_duplicates([event_col, station_col]).reset_index(drop=True)
 
 
+def geojson_matched_record_frame(
+    records: pd.DataFrame | None,
+    *,
+    match_col: str = "path_geojson_matches",
+) -> pd.DataFrame:
+    """Return rows marked as matching a GeoJSON relation.
+
+    Parameters
+    ----------
+    records
+        Event-station or path records with a boolean GeoJSON match column.
+    match_col
+        Column containing truthy match values.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Matching rows in their original order. Missing or empty inputs return
+        an empty frame with the same columns where possible.
+    """
+
+    if records is None:
+        return pd.DataFrame()
+    if records.empty:
+        return records.copy()
+    if match_col not in records.columns:
+        raise KeyError(f"GeoJSON classified records are missing match column {match_col!r}.")
+    return records.loc[_truthy_record_series(records[match_col])].copy()
+
+
+def event_station_records_matching_pairs(
+    records: pd.DataFrame | None,
+    pairs: pd.DataFrame | None,
+    *,
+    event_col: str = "event_id",
+    station_col: str = "station",
+) -> pd.DataFrame:
+    """Return records whose event-station pair appears in ``pairs``.
+
+    Parameters
+    ----------
+    records
+        Record table to filter.
+    pairs
+        Table containing event-station pairs to keep.
+    event_col, station_col
+        Event and station identifier columns.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Rows from ``records`` whose pair keys are present in ``pairs``. The
+        original record columns and row order are preserved.
+    """
+
+    if records is None:
+        return pd.DataFrame()
+    if records.empty:
+        return records.copy()
+    missing = [column for column in (event_col, station_col) if column not in records.columns]
+    if missing:
+        raise KeyError(f"Records are missing required pair column(s): {missing}")
+    keys = corridor_record_pair_frame(pairs, event_col=event_col, station_col=station_col, keep_columns=False)
+    if keys.empty:
+        return records.iloc[0:0].copy()
+    record_keys = _event_station_key_series(records, event_col=event_col, station_col=station_col)
+    keep_keys = set(_event_station_key_series(keys, event_col=event_col, station_col=station_col).tolist())
+    return records.loc[record_keys.isin(keep_keys)].copy()
+
+
 def build_station_edge_corridors(
     station_df: pd.DataFrame,
     geojson_path: str | Path,
@@ -1445,6 +1515,21 @@ def _selection_to_row(selection: StationEdgeSelection) -> dict[str, object]:
         "inward_normal_x": selection.inward_normal_xy[0],
         "inward_normal_y": selection.inward_normal_xy[1],
     }
+
+
+def _truthy_record_series(values: pd.Series) -> pd.Series:
+    """Return a boolean mask from mixed boolean/string match values."""
+
+    if values.dtype == bool:
+        return values.fillna(False)
+    text = values.fillna(False).astype(str).str.strip().str.lower()
+    return text.isin({"1", "true", "t", "yes", "y"})
+
+
+def _event_station_key_series(records: pd.DataFrame, *, event_col: str, station_col: str) -> pd.Series:
+    """Return normalized event/station keys for pair matching."""
+
+    return records[event_col].astype(str).str.strip() + "\0" + records[station_col].astype(str).str.strip().str.upper()
 
 
 def _normalize_station_table(

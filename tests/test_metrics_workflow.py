@@ -38,7 +38,12 @@ from spatial_vtk.metrics.workflow import (
     write_task_manifest,
     MetricWorkflowTask,
 )
-from spatial_vtk.metrics.plot import MetricFigureContext, metric_plot_input_summary_frame, plot_period_score_distribution
+from spatial_vtk.metrics.plot import (
+    MetricFigureContext,
+    metric_plot_input_summary_frame,
+    metric_rows_for_metrics,
+    plot_period_score_distribution,
+)
 from spatial_vtk.visualize import figure_sidecar_status_frame
 from spatial_vtk.spatial.map import plot_event_residual_map
 from spatial_vtk.spatial.plot import boxplot, heatmap, scatterplot
@@ -129,6 +134,32 @@ def test_metric_plot_input_summary_frame_handles_missing_optional_columns() -> N
     assert pd.isna(summary["Events"])
     assert pd.isna(summary["Stations"])
     assert pd.isna(summary["Metrics"])
+
+
+def test_metric_rows_for_metrics_matches_aliases_and_preserves_order() -> None:
+    """Plotting notebooks should use package-owned metric row filtering."""
+
+    metrics = pd.DataFrame(
+        {
+            "metric": ["PGV", "Arias duration (5-95%)", "FAS", "Peak acceleration (PGA)", "PGD"],
+            "value": [1, 2, 3, 4, 5],
+        }
+    )
+
+    selected = metric_rows_for_metrics(metrics, ["pga", "Arias duration", "PGV"])
+
+    assert selected["value"].tolist() == [1, 2, 4]
+
+
+def test_metric_rows_for_metrics_handles_missing_inputs() -> None:
+    """Metric row filtering should be safe for optional notebook branches."""
+
+    metrics = pd.DataFrame({"value": [1.0]})
+
+    assert metric_rows_for_metrics(None, ["PGA"]).empty
+    assert metric_rows_for_metrics(metrics, ["PGA"]).empty
+    assert list(metric_rows_for_metrics(metrics, ["PGA"]).columns) == ["value"]
+    assert metric_rows_for_metrics(pd.DataFrame({"metric": ["PGV"]}), []).empty
 
 
 def test_metric_inventories_from_config_resolve_standard_paths(tmp_path) -> None:

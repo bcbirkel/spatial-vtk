@@ -38,6 +38,7 @@ _EXPORT_MODULES = {
     "plot_score_trends": "spatial_vtk.metrics.plot.trends",
     "MetricFigureContext": "spatial_vtk.metrics.plot.large_run",
     "metric_plot_input_summary_frame": "spatial_vtk.metrics.plot.large_run",
+    "metric_rows_for_metrics": "spatial_vtk.metrics.plot.large_run",
     "prepare_large_run_metric_figure_context": "spatial_vtk.metrics.plot.large_run",
 }
 

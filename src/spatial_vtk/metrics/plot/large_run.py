@@ -1951,6 +1951,46 @@ def metric_plot_input_summary_frame(
     return pd.DataFrame(rows, columns=["Input", "Value"])
 
 
+def metric_rows_for_metrics(
+    metrics: pd.DataFrame | None,
+    metric_names: Sequence[object],
+    *,
+    metric_col: str | None = None,
+) -> pd.DataFrame:
+    """Return metric rows matching one or more metric names or aliases.
+
+    Parameters
+    ----------
+    metrics
+        Metric table to filter.
+    metric_names
+        Metric names, display labels, keys, or aliases to keep. Values such as
+        ``"pga"`` and ``"Peak acceleration"`` match the same target metric.
+    metric_col
+        Optional metric column override. When omitted, common metric column
+        names are resolved from ``metrics``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Filtered metric rows in their original order. Missing inputs or metric
+        columns return an empty frame with the same columns where possible.
+    """
+
+    if metrics is None:
+        return pd.DataFrame()
+    if metrics.empty:
+        return metrics.copy()
+    column = metric_col if metric_col in metrics.columns else first_existing(metrics, ["metric", "metric_name"])
+    if column is None:
+        return metrics.iloc[0:0].copy()
+    wanted = _metric_name_match_tokens(metric_names)
+    if not wanted:
+        return metrics.iloc[0:0].copy()
+    mask = metrics[column].map(lambda value: bool(_metric_name_alias_tokens(value) & wanted))
+    return metrics.loc[mask].copy()
+
+
 def first_existing(df: pd.DataFrame, candidates: list[str | None]) -> str | None:
     """Return the first candidate column present in a dataframe."""
 
@@ -2002,6 +2042,40 @@ def _target_metric_spec(key: object) -> dict[str, object] | None:
         if wanted in {norm_text(name) for name in names}:
             return dict(spec)
     return None
+
+
+def _metric_name_match_tokens(metric_names: Sequence[object]) -> set[str]:
+    """Return normalized metric names and known aliases for filtering."""
+
+    tokens: set[str] = set()
+    for name in metric_names:
+        name_tokens = _metric_name_alias_tokens(name)
+        if not name_tokens:
+            continue
+        tokens.update(name_tokens)
+        spec = _target_metric_spec(name)
+        if spec is None:
+            continue
+        names = {spec["key"], spec["label"], *spec.get("aliases", ())}
+        for value in names:
+            tokens.update(_metric_name_alias_tokens(value))
+    return tokens
+
+
+def _metric_name_alias_tokens(value: object) -> set[str]:
+    """Return normalized tokens for a metric display value."""
+
+    text = str(value).strip()
+    if not text:
+        return set()
+    tokens = {norm_text(text)}
+    without_parenthetical = re.sub(r"\([^)]*\)", "", text).strip()
+    if without_parenthetical:
+        tokens.add(norm_text(without_parenthetical))
+    for match in re.findall(r"\(([^)]*)\)", text):
+        if match.strip():
+            tokens.add(norm_text(match))
+    return {token for token in tokens if token}
 
 
 def slug(value: object) -> str:
@@ -2495,6 +2569,7 @@ __all__ = [
     "first_existing",
     "first_value",
     "metric_plot_input_summary_frame",
+    "metric_rows_for_metrics",
     "norm_text",
     "prepare_large_run_metric_figure_context",
     "psa_period_label",

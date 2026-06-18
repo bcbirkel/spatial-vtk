@@ -128,6 +128,7 @@ part of the tutorial-facing API.
 .. code-block:: python
 
    from spatial_vtk.metrics.plot import (
+       metric_rows_for_metrics,
        plot_band_score_distribution,
        plot_period_spectra,
        plot_residuals_vs_distance,
@@ -155,6 +156,9 @@ Public plotting helpers exposed by ``spatial_vtk.metrics.plot``:
      - Plot period-by-record spectral intensity summaries.
    * - ``plot_psa_period_curve``
      - Plot PSA values or residuals across oscillator periods.
+   * - ``metric_rows_for_metrics``
+     - Select metric rows by metric names, display labels, keys, or aliases
+       without notebook-local dataframe filtering.
    * - ``plot_residuals_vs_distance``
      - Plot metric residuals against distance with optional trend overlays.
    * - ``plot_residuals_vs_depth``
@@ -240,5 +244,7 @@ input rows contain multiple ``period_s`` values; period curves use the same
    :members:
 
 .. autofunction:: spatial_vtk.metrics.plot.metric_plot_input_summary_frame
+
+.. autofunction:: spatial_vtk.metrics.plot.metric_rows_for_metrics
 
 .. autofunction:: spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context
