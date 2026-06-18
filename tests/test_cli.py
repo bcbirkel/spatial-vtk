@@ -1161,6 +1161,19 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert "lowpass_hz=" not in text
 
 
+def test_metric_cli_commands_use_public_metrics_surface():
+    """Curated metric CLI commands should use the top-level metrics API surface."""
+
+    import spatial_vtk.cli as cli_module
+
+    source = inspect.getsource(cli_module)
+    assert "from spatial_vtk.metrics import run_manifest_batch" in source
+    assert "from spatial_vtk.metrics import metric_manifest_batch_status" in source
+    assert "from spatial_vtk.metrics import (\n        metric_manifest_batch_status," in source
+    assert "from spatial_vtk.metrics.workflow import metric_manifest_batch_status" not in source
+    assert "from spatial_vtk.metrics.workflow import run_manifest_batch" not in source
+
+
 def test_cli_workflow_explanatory_text_is_not_in_bash_blocks():
     """Prose near shell examples should not be indented into bash literal blocks."""
 

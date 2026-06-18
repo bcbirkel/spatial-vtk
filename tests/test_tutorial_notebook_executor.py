@@ -698,7 +698,8 @@ def test_large_run_step03_uses_metric_batch_status_before_submit_and_merge() -> 
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "from spatial_vtk.metrics.workflow import metric_manifest_batch_status" in source
+    assert "from spatial_vtk.metrics import metric_manifest_batch_status" in source
+    assert "from spatial_vtk.metrics.workflow import metric_manifest_batch_status" not in source
     assert "batch_status = metric_manifest_batch_status(metric_manifest_path)" in source
     assert "All metric batch outputs already exist; skipping metric Slurm submission." in source
     assert '"incomplete_only": not OVERWRITE' in source

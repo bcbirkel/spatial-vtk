@@ -71,6 +71,7 @@ _CALCULATE_EXPORTS = {
 }
 
 _WORKFLOW_EXPORTS = {
+    "MetricManifestBatchStatus",
     "MetricWorkflowManifest",
     "MetricWorkflowTask",
     "SlurmSettings",
@@ -79,6 +80,7 @@ _WORKFLOW_EXPORTS = {
     "chunk_tasks",
     "merge_metric_batches_from_config",
     "merge_batch_outputs",
+    "metric_manifest_batch_status",
     "plan_metric_tasks",
     "plan_metric_tasks_from_config",
     "read_task_manifest",

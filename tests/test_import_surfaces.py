@@ -6,7 +6,7 @@ import pathlib
 def test_public_imports():
     import spatial_vtk
     from spatial_vtk.config import abbreviate_model, configured_output_registry_frame, run_notebook_step_if_needed
-    from spatial_vtk.metrics import METRIC_NAMES, amplitude_spectrum, calculate_metrics_for_pairs, compute_metrics_pair
+    from spatial_vtk.metrics import METRIC_NAMES, amplitude_spectrum, calculate_metrics_for_pairs, compute_metrics_pair, metric_manifest_batch_status
     from spatial_vtk.metrics.plot import MetricFigureContext
     from spatial_vtk.io import OutputGroup, inspect_synthetic_format, output_group, prepare_station_metadata, resolve_model_aliases
     from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
@@ -34,6 +34,7 @@ def test_public_imports():
     assert callable(amplitude_spectrum)
     assert callable(calculate_metrics_for_pairs)
     assert callable(compute_metrics_pair)
+    assert callable(metric_manifest_batch_status)
     assert callable(MetricFigureContext.from_frame)
     assert callable(inspect_synthetic_format)
     assert callable(output_group)
@@ -84,6 +85,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "metrics.rst"
     text = docs.read_text(encoding="utf-8")
     assert ".. automodule:: spatial_vtk.metrics.workflow\n" in text
+    assert "helpers from the stable ``spatial_vtk.metrics`` package entry" in text
     assert "from spatial_vtk.metrics.plot import (" in text
     assert ".. automodule:: spatial_vtk.metrics.plot\n" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext" in text

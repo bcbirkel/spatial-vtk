@@ -2142,7 +2142,7 @@ def _cmd_metrics_run(args: argparse.Namespace) -> int:
 def _cmd_metrics_run_batch(args: argparse.Namespace) -> int:
     """Run ``svtk metrics run-batch``."""
 
-    from spatial_vtk.metrics.workflow import run_manifest_batch
+    from spatial_vtk.metrics import run_manifest_batch
 
     config = _required_cli_config(args.config, run_scenario=args.run_scenario) if args.manifest is None else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config, prefer_cached=True)
@@ -2154,7 +2154,7 @@ def _cmd_metrics_run_batch(args: argparse.Namespace) -> int:
 def _cmd_metrics_batch_status(args: argparse.Namespace) -> int:
     """Run ``svtk metrics batch-status``."""
 
-    from spatial_vtk.metrics.workflow import metric_manifest_batch_status
+    from spatial_vtk.metrics import metric_manifest_batch_status
 
     config = _required_cli_config(args.config, run_scenario=args.run_scenario) if args.manifest is None else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config, prefer_cached=True)
@@ -2240,7 +2240,7 @@ def _cmd_metrics_outputs(args: argparse.Namespace) -> int:
 def _cmd_metrics_slurm(args: argparse.Namespace) -> int:
     """Run ``svtk metrics slurm``."""
 
-    from spatial_vtk.metrics.workflow import (
+    from spatial_vtk.metrics import (
         metric_manifest_batch_status,
         slurm_settings_from_config,
         submit_metrics_slurm_job,
