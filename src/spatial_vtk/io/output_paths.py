@@ -820,6 +820,11 @@ OUTPUT_GROUPS: dict[str, tuple[OutputArtifact, ...]] = {
         OutputArtifact("metrics_long_path", "metrics_long"),
         OutputArtifact("metrics_enriched_path", "metrics_enriched"),
         OutputArtifact("event_trace_comparison_path", "event_trace_comparison", kind="figure", required=False),
+        OutputArtifact("station_event_waveform_map_path", "station_event_waveform_map", kind="figure", required=False),
+        OutputArtifact("pattern_similarity_figure_path", "pattern_similarity", kind="figure", required=False),
+        OutputArtifact("scatterplot_figure_path", "scatterplot", kind="figure", required=False),
+        OutputArtifact("boxplot_figure_path", "boxplot", kind="figure", required=False),
+        OutputArtifact("heatmap_figure_path", "heatmap", kind="figure", required=False),
     ),
     "step_07_dashboards": (
         OutputArtifact("metrics_long_path", "metrics_long"),

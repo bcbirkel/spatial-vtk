@@ -1282,6 +1282,19 @@ outputs:
     assert geojson_paths["corridors_path"] == tmp_path / "run_outputs" / "tables" / "corridors.parquet"
     assert geojson_paths["corridor_map_path"] == tmp_path / "run_outputs" / "figures" / "corridor_map.png"
 
+    plotting_paths = output_group_paths("step_06_plotting", cfg=cfg)
+    assert plotting_paths["station_event_waveform_map_path"] == tmp_path / "run_outputs" / "figures" / "station_event_waveform_map.png"
+    assert plotting_paths["pattern_similarity_figure_path"] == tmp_path / "run_outputs" / "figures" / "pattern_similarity.png"
+    assert plotting_paths["scatterplot_figure_path"] == tmp_path / "run_outputs" / "figures" / "scatterplot.png"
+    assert plotting_paths["boxplot_figure_path"] == tmp_path / "run_outputs" / "figures" / "boxplot.png"
+    assert plotting_paths["heatmap_figure_path"] == tmp_path / "run_outputs" / "figures" / "heatmap.png"
+
+    plotting_group = output_group("step_06_plotting", cfg=cfg)
+    assert plotting_group.figure_path(
+        "scatterplot_figure_path",
+        stem_parts=("step 06", "metric scatterplot"),
+    ) == tmp_path / "run_outputs" / "figures" / "step_06_metric_scatterplot.png"
+
     metric_paths = output_group_paths("step_03_metrics", cfg=cfg)
     assert metric_paths["prepared_events_path"] == tmp_path / "run_outputs" / "tables" / "prepared_events.csv"
     assert metric_paths["prepared_stations_path"] == tmp_path / "run_outputs" / "tables" / "prepared_stations.csv"

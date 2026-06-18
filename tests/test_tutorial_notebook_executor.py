@@ -1673,8 +1673,16 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" in source
-    assert "output_group(\"step_06_plotting\", cfg=cfg).load_tables(" in source
+    assert "step_outputs = output_group(\"step_06_plotting\", cfg=cfg)" in source
+    assert "plotting_tables = step_outputs.load_tables(" in source
+    assert "step_outputs.figure_path(" in source
+    assert "station_event_waveform_map_path" in source
+    assert "pattern_similarity_figure_path" in source
+    assert "scatterplot_figure_path" in source
+    assert "boxplot_figure_path" in source
+    assert "heatmap_figure_path" in source
     assert "load_output_table(" not in source
+    assert "figure_dir /" not in source
     assert "from spatial_vtk.spatial import add_geojson_metadata_to_metrics" in source
     assert "from spatial_vtk.spatial.calculate import" not in source
     assert "load_configured_input_tables(" in source

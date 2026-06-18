@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Registered the standard Step 6 plotting figures on the ``step_06_plotting``
+   output group and rewired the Step 6 additional plotting notebook to use
+   ``OutputGroup.figure_path()`` for waveform maps, pattern similarity,
+   scatterplot, boxplot, and heatmap outputs instead of hand-joining
+   ``figure_dir`` paths in notebook cells.
    Added ``OutputGroup.figure_path()`` and registered optional Step 4 spatial
    figure artifacts so notebooks can derive metric-specific figure filenames
    from configured output keys instead of hand-joining ``figure_dir`` paths.
