@@ -336,6 +336,12 @@ Step 7: Dashboard Datasets
        skip local dashboard preparation when ``should_run`` is false; large-run
        notebooks pass the same readiness object to
        ``run_notebook_step_if_needed`` for Slurm/local execution.
+   * - Preview dashboard summary tables without loading full tab inputs
+     - ``spatial_vtk.visualize.dashboard.preview_dashboard_summary_tables``
+     - bounded samples from the configured ``dashboard_summaries`` directory
+       after readiness checks pass, so notebooks can inspect the tables that
+       feed Overview, Stations, Events, and Paths tabs without resolving
+       dashboard summary paths in cells
    * - Write dashboard-ready row and summary datasets
      - ``spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets``
      - dashboard metric dataset root and dashboard summary table root; standard

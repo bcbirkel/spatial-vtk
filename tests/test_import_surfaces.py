@@ -533,6 +533,7 @@ def test_reference_docs_map_python_workflow_entry_points():
     index = (root / "index.rst").read_text(encoding="utf-8")
     python_api = (root / "python_api.rst").read_text(encoding="utf-8")
     workflows = (root / "python_workflows.rst").read_text(encoding="utf-8")
+    normalized_workflows = " ".join(workflows.split())
 
     assert "python_workflows" in index
     assert ":doc:`python_workflows`" in python_api
@@ -559,6 +560,7 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config",
         "spatial_vtk.spatial.run_boundary_corridor_workflow_from_config",
         "spatial_vtk.visualize.dashboard.dashboard_readiness_summary_frame",
+        "spatial_vtk.visualize.dashboard.preview_dashboard_summary_tables",
         "spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets",
     ]
     for helper in required_helpers:
@@ -572,6 +574,8 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "docs should not depend on generic" in workflows
     assert "tutorial notebook preflight fails cells that pass compatibility strings" in workflows
     assert "imported callable ``run_qc_inventory_from_config``" in workflows
+    assert "Preview dashboard summary tables without loading full tab inputs" in workflows
+    assert "without resolving dashboard summary paths in cells" in normalized_workflows
     assert "compatibility aliases" not in workflows
     assert "from spatial_vtk.config import notebook_figure_settings" in workflows
     assert "from spatial_vtk.config.notebook import" not in workflows
