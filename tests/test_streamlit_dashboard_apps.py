@@ -43,6 +43,7 @@ from spatial_vtk.visualize.dashboard.streamlit_metrics import _empty_rows_messag
 import spatial_vtk.visualize.dashboard.streamlit_metrics as streamlit_metrics
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard_startup_blocker
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metric_dataset_readiness_message
+from spatial_vtk.visualize.dashboard.streamlit_metrics import _row_level_dataset_notice_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _select_readiness_columns
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _summary_readiness_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _value_columns_or_message
@@ -871,6 +872,18 @@ def test_metrics_dashboard_row_dataset_readiness_message():
     assert _metric_dataset_readiness_message(None) is None
     assert _metric_dataset_readiness_message(missing) == "Dashboard metric dataset contains no recognized files."
     assert _metric_dataset_readiness_message(blank) == "The row-level metrics dashboard dataset is not ready."
+
+
+def test_metrics_dashboard_body_reports_unavailable_row_level_dataset():
+    """Dashboard body should explain when summary tabs work but row-level rows are unavailable."""
+
+    rows = pd.DataFrame({"metric": ["PGA"]})
+
+    assert _row_level_dataset_notice_message("Dashboard metric dataset contains no recognized files.", None) == (
+        "Dashboard metric dataset contains no recognized files."
+    )
+    assert _row_level_dataset_notice_message("", None).startswith("Row-level metric rows are not loaded")
+    assert _row_level_dataset_notice_message("ignored", rows) is None
 
 
 def test_metrics_dashboard_readiness_display_columns_are_bounded():

@@ -99,7 +99,6 @@ def main() -> None:
         st.warning(blocker)
         return
     metric_dataset_readiness = dashboard_metric_dataset_readiness_frame(metrics_root) if metrics_root else pd.DataFrame()
-    _render_metric_dataset_readiness(metric_dataset_readiness)
     skip_tables = _not_ready_optional_summary_tables(readiness)
     try:
         summaries = _load_summary_tables_cached(summary_root, tuple(skip_tables))
@@ -258,6 +257,10 @@ def _render_metrics_dashboard(
     else:
         row_value_message = "Configure the metrics dashboard dataset to view row-level distributions."
 
+    row_level_notice = _row_level_dataset_notice_message(row_value_message, rows)
+    if row_level_notice:
+        st.warning(row_level_notice)
+
     overview_tab, station_tab, event_tab, path_tab, distribution_tab, compare_tab, status_tab = st.tabs(
         ["Overview", "Stations", "Events", "Paths", "Distributions", "Compare Models", "Data Status"]
     )
@@ -412,6 +415,17 @@ def _metric_dataset_readiness_message(readiness: pd.DataFrame | None) -> str | N
         return None
     message = str(row.get("message") or "").strip()
     return message or "The row-level metrics dashboard dataset is not ready."
+
+
+def _row_level_dataset_notice_message(row_value_message: str | None, rows: pd.DataFrame | None) -> str | None:
+    """Return the dashboard-level notice for unavailable row-level metric rows."""
+
+    if rows is not None:
+        return None
+    message = str(row_value_message or "").strip()
+    if message:
+        return message
+    return "Row-level metric rows are not loaded. Summary tabs can still render, but distributions and filtered row downloads need the metrics dashboard dataset."
 
 
 def _render_dashboard_readiness(readiness: pd.DataFrame) -> None:
