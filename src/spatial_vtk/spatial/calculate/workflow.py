@@ -399,6 +399,65 @@ def run_spatial_derived_outputs_workflow_from_config(
     }
 
 
+def spatial_workflow_failure_frame(result_or_failures: object) -> pd.DataFrame:
+    """Return non-fatal spatial workflow failures as a notebook display table.
+
+    Parameters
+    ----------
+    result_or_failures
+        Either a JSON-ready workflow result dictionary with a ``failures`` key,
+        a spatial workflow result dataclass, or an iterable of failure
+        dictionaries.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Failure table with stable ``metric``, ``step``, ``error``, and
+        ``message`` columns. The frame is empty when there are no failures.
+    """
+
+    columns = ["metric", "step", "error", "message"]
+    if isinstance(result_or_failures, (SpatialStatisticsWorkflowResult, SpatialDerivedOutputsWorkflowResult)):
+        failures = result_or_failures.failures
+    elif isinstance(result_or_failures, dict):
+        failures = result_or_failures.get("failures", ())
+    else:
+        failures = result_or_failures
+    rows = [dict(item) for item in (failures or ()) if isinstance(item, dict)]
+    return pd.DataFrame(rows, columns=columns)
+
+
+def spatial_metric_product_summary_frame(
+    *,
+    metric_field: pd.DataFrame | None = None,
+    event_centered: pd.DataFrame | None = None,
+    station_bias: pd.DataFrame | None = None,
+) -> pd.DataFrame:
+    """Summarize standard per-metric spatial products for notebooks.
+
+    Parameters
+    ----------
+    metric_field
+        Metric field rows for one metric.
+    event_centered
+        Event-centered residual rows for one metric.
+    station_bias
+        Station-bias rows for one metric.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Summary with ``Output``, ``Rows``, ``Events``, and ``Stations`` columns.
+    """
+
+    rows = [
+        _spatial_product_summary_row("Metric field", metric_field),
+        _spatial_product_summary_row("Event-centered field", event_centered),
+        _spatial_product_summary_row("Station bias", station_bias),
+    ]
+    return pd.DataFrame(rows, columns=["Output", "Rows", "Events", "Stations"])
+
+
 def run_spatial_statistics_workflow(
     metrics: pd.DataFrame | str | Path | None = None,
     *,
@@ -1256,6 +1315,27 @@ def _concat_or_empty(frames: list[pd.DataFrame], columns: tuple[str, ...]) -> pd
     return pd.DataFrame(columns=list(columns))
 
 
+def _spatial_product_summary_row(label: str, frame: pd.DataFrame | None) -> dict[str, object]:
+    """Return one row for a spatial product summary table."""
+
+    if frame is None:
+        return {"Output": label, "Rows": 0, "Events": None, "Stations": None}
+    return {
+        "Output": label,
+        "Rows": int(len(frame)),
+        "Events": _summary_unique_count(frame, "event_id"),
+        "Stations": _summary_unique_count(frame, "station"),
+    }
+
+
+def _summary_unique_count(frame: pd.DataFrame, column: str) -> int | None:
+    """Return a nullable unique count for one dataframe column."""
+
+    if column not in frame.columns:
+        return None
+    return int(frame[column].nunique(dropna=True))
+
+
 def _with_metric(frame: pd.DataFrame, metric_name: str) -> pd.DataFrame:
     """Ensure one output frame contains a metric column."""
 
@@ -1305,5 +1385,7 @@ __all__ = [
     "run_spatial_derived_outputs_workflow_from_config",
     "run_spatial_statistics_workflow",
     "run_spatial_statistics_workflow_from_config",
+    "spatial_metric_product_summary_frame",
     "spatial_statistics_output_paths",
+    "spatial_workflow_failure_frame",
 ]

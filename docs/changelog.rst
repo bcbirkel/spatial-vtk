@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Added ``spatial_workflow_failure_frame()`` and
+   ``spatial_metric_product_summary_frame()`` to the public spatial API. The
+   standard Step 4 spatial notebook now uses these helpers for workflow
+   diagnostics and per-metric product summaries instead of constructing local
+   ``pd.DataFrame`` displays.
    Added ``metric_plot_input_summary_frame()`` to the public metric plotting API
    and rewired the standard Step 6 plotting notebook to use it instead of
    constructing a local ``pd.DataFrame`` summary. This keeps the notebook

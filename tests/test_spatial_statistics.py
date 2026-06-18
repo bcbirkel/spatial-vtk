@@ -52,6 +52,8 @@ from spatial_vtk.spatial.calculate.workflow import (
     run_spatial_derived_outputs_workflow_from_config,
     run_spatial_statistics_workflow,
     run_spatial_statistics_workflow_from_config,
+    spatial_metric_product_summary_frame,
+    spatial_workflow_failure_frame,
 )
 from spatial_vtk.spatial.map.correlation import (
     plot_block_holdout_error_map,
@@ -116,6 +118,51 @@ def _toy_metrics_table() -> pd.DataFrame:
                     }
                 )
     return pd.DataFrame(records)
+
+
+def test_spatial_workflow_failure_frame_formats_result_failures() -> None:
+    """Spatial workflow failures should be displayable without notebook dataframe code."""
+
+    frame = spatial_workflow_failure_frame(
+        {
+            "failures": [
+                {
+                    "metric": "PGA",
+                    "step": "geology_contrasts",
+                    "error": "RuntimeError",
+                    "message": "missing station metadata",
+                }
+            ]
+        }
+    )
+
+    assert list(frame.columns) == ["metric", "step", "error", "message"]
+    assert frame.loc[0, "metric"] == "PGA"
+    assert frame.loc[0, "step"] == "geology_contrasts"
+    assert spatial_workflow_failure_frame({"failures": []}).empty
+
+
+def test_spatial_metric_product_summary_frame_counts_rows_events_and_stations() -> None:
+    """Per-metric spatial product summaries should come from package code."""
+
+    field = pd.DataFrame({"event_id": ["e1", "e1", "e2"], "station": ["STA1", "STA2", "STA1"]})
+    centered = pd.DataFrame({"event_id": ["e1"], "station": ["STA1"]})
+    station_bias = pd.DataFrame({"station": ["STA1", "STA2"]})
+
+    summary = spatial_metric_product_summary_frame(
+        metric_field=field,
+        event_centered=centered,
+        station_bias=station_bias,
+    ).set_index("Output")
+
+    assert summary.loc["Metric field", "Rows"] == 3
+    assert summary.loc["Metric field", "Events"] == 2
+    assert summary.loc["Metric field", "Stations"] == 2
+    assert summary.loc["Event-centered field", "Rows"] == 1
+    assert summary.loc["Event-centered field", "Events"] == 1
+    assert summary.loc["Station bias", "Rows"] == 2
+    assert pd.isna(summary.loc["Station bias", "Events"])
+    assert summary.loc["Station bias", "Stations"] == 2
 
 
 def test_prepare_stats_correlation_holdout_and_clustering() -> None:

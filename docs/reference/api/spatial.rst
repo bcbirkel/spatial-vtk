@@ -48,6 +48,13 @@ Public helpers exposed by ``spatial_vtk.spatial``:
    * - ``run_spatial_derived_outputs_workflow_from_config``
      - Rebuild downstream spatial outputs that depend on existing metric and
        spatial-statistics tables.
+   * - ``spatial_workflow_failure_frame``
+     - Convert non-fatal spatial workflow failures into a stable notebook
+       display table without constructing dataframes in tutorial cells.
+   * - ``spatial_metric_product_summary_frame``
+     - Summarize per-metric Step 4 products such as metric-field,
+       event-centered residual, and station-bias rows with row, event, and
+       station counts.
    * - ``run_geojson_region_summary_workflow_from_config``
      - Summarize configured metric rows by GeoJSON regions using config-backed
        metric and region paths.
@@ -74,6 +81,10 @@ for users who need narrower module references.
 
 .. automodule:: spatial_vtk.spatial.calculate
    :members:
+
+.. autofunction:: spatial_vtk.spatial.spatial_workflow_failure_frame
+
+.. autofunction:: spatial_vtk.spatial.spatial_metric_product_summary_frame
 
 .. automodule:: spatial_vtk.spatial.calculate.prepare_stats
    :members:

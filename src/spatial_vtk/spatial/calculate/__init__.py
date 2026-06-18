@@ -70,7 +70,9 @@ from spatial_vtk.spatial.calculate.workflow import (
     run_spatial_derived_outputs_workflow_from_config,
     run_spatial_statistics_workflow,
     run_spatial_statistics_workflow_from_config,
+    spatial_metric_product_summary_frame,
     spatial_statistics_output_paths,
+    spatial_workflow_failure_frame,
 )
 
 __all__ = [
@@ -137,7 +139,9 @@ __all__ = [
     "run_spatial_derived_outputs_workflow_from_config",
     "run_spatial_statistics_workflow",
     "run_spatial_statistics_workflow_from_config",
+    "spatial_metric_product_summary_frame",
     "spatial_statistics_output_paths",
+    "spatial_workflow_failure_frame",
     "spatial_statistics_settings_from_config",
     "summarize_corridor_event_counts",
     "build_geojson_region_summary_from_table",
