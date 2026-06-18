@@ -254,8 +254,10 @@ Step 7: Dashboard Datasets
        ``spatial_vtk.visualize.dashboard.launch_configured_qc_dashboard``,
        ``spatial_vtk.visualize.dashboard.launch_metrics_dashboard``, and
        ``spatial_vtk.visualize.dashboard.launch_qc_dashboard``
-     - local Streamlit processes configured from the same output registry, plus
-       optional terminal fallback commands
+     - local Streamlit processes configured from the same output registry,
+       optional terminal fallback commands, and a bounded
+       ``dashboard_launch.status_frame()`` preview showing ports, commands, and
+       configured dashboard inputs
 
 Related API Pages
 -----------------

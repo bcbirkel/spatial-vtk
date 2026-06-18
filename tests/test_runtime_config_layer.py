@@ -501,13 +501,32 @@ def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monke
         "proxy_mode": False,
         "show": False,
     }
+    status = commands.status_frame().set_index("dashboard")
+    assert status.loc["metrics", "requested_port"] == 8501
+    assert status.loc["metrics", "metrics_dataset_dir"] == str(
+        tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    )
+    assert status.loc["metrics", "dashboard_summary_table_dir"] == str(
+        tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
+    )
+    assert status.loc["qc", "requested_port"] == 8502
+    assert status.loc["qc", "trace_summary_table"] == str(tmp_path / "outputs" / "tables" / "qc_trace_summary.csv")
+    assert "svtk dashboard metrics" in status.loc["metrics", "terminal_command"]
 
 
 def test_notebook_dashboard_launch_commands_parse_env_and_scenario(tmp_path, monkeypatch):
     """Notebook dashboard commands should expose proxy and scenario options clearly."""
 
     config_path = tmp_path / "spatial-vtk.yaml"
-    config_path.write_text("project:\n  root_dir: .\n", encoding="utf-8")
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+run_scenarios:
+  large-run: {}
+""",
+        encoding="utf-8",
+    )
     monkeypatch.setenv("SVTK_METRICS_DASHBOARD_PORT", "8601")
     monkeypatch.setenv("SVTK_QC_DASHBOARD_PORT", "8602")
     monkeypatch.setenv("SVTK_DASHBOARD_AUTO_PORT", "0")
@@ -524,6 +543,9 @@ def test_notebook_dashboard_launch_commands_parse_env_and_scenario(tmp_path, mon
     assert "--proxy-mode" in commands.metrics_command
     assert "--run-scenario large-run" in commands.metrics_command
     assert "--proxy-mode" in commands.qc_command
+    status = commands.status_frame().set_index("dashboard")
+    assert status.loc["metrics", "run_scenario"] == "large-run"
+    assert "--run-scenario large-run" in status.loc["metrics", "terminal_command"]
     assert commands.metrics_launch_kwargs(show=False) == {
         "config_path": config_path.resolve(),
         "server_port": 8601,

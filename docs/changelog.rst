@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Added ``NotebookDashboardCommands.status_frame()`` and updated Step 7
+   notebooks to display the package-generated dashboard launch plan. The launch
+   preview now shows requested ports, terminal fallback commands, config path,
+   and the configured metrics dataset, summary-table, and QC trace-summary
+   inputs without notebook-local path plumbing.
    Made dashboard dataset writes replace recognized dashboard artifacts before
    writing new outputs. Rerunning dashboard preparation now removes stale metric
    partitions and stale cross-format summary files without deleting unrelated

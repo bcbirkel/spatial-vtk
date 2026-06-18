@@ -167,6 +167,49 @@ class NotebookDashboardCommands:
             kwargs["run_scenario"] = self.run_scenario
         return kwargs
 
+    def status_frame(self) -> Any:
+        """Return a display-ready dashboard launch plan.
+
+        The frame shows both the Python-launch settings and the terminal command
+        fallback, plus the configured dashboard paths that each dashboard will
+        read. It is intended for notebooks, where users need to verify launch
+        inputs without resolving paths manually.
+        """
+
+        import pandas as pd
+
+        from spatial_vtk.visualize.dashboard.contracts import dashboard_output_paths
+
+        cfg = SpatialVTKConfig.from_file(self.config_path, run_scenario=self.run_scenario)
+        paths = dashboard_output_paths(cfg=cfg, create_parent=False, include_summary_tables=False)
+        common = {
+            "config_path": str(self.config_path),
+            "run_scenario": self.run_scenario or "",
+            "auto_port": self.auto_port,
+            "proxy_mode": self.proxy_mode,
+        }
+        rows = [
+            {
+                "dashboard": "metrics",
+                "requested_port": self.metrics_port,
+                "metrics_dataset_dir": str(paths["metrics_dashboard_root"]),
+                "dashboard_summary_table_dir": str(paths["dashboard_summary_root"]),
+                "trace_summary_table": "",
+                "terminal_command": self.metrics_command,
+                **common,
+            },
+            {
+                "dashboard": "qc",
+                "requested_port": self.qc_port,
+                "metrics_dataset_dir": "",
+                "dashboard_summary_table_dir": "",
+                "trace_summary_table": str(paths["qc_trace_summary_path"]),
+                "terminal_command": self.qc_command,
+                **common,
+            },
+        ]
+        return pd.DataFrame(rows)
+
 
 def find_repo_root(start: str | Path | None = None) -> Path:
     """Find the nearest Spatial-VTK repository root.

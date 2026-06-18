@@ -703,6 +703,8 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     assert "notebook_dashboard_launch_commands(" in source
     assert "dashboard_launch.metrics_launch_kwargs(show=True)" in source
     assert "dashboard_launch.qc_launch_kwargs(show=True)" in source
+    assert "display(dashboard_launch.status_frame())" in source
+    assert "Launch options:" not in source
     assert "server_port=notebook_overrides" not in source
     assert "write_dashboard_metric_dataset(" not in source
     assert "write_dashboard_summary_dataset(" not in source
@@ -729,9 +731,12 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert '"spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets"' not in source
     assert "launch_configured_metrics_dashboard(" in source
     assert "launch_configured_qc_dashboard(" in source
-    assert "notebook_dashboard_launch_commands(config_path)" in source
+    assert "notebook_dashboard_launch_commands(" in source
+    assert 'run_scenario=os.environ.get("SVTK_RUN_SCENARIO", "tutorial")' in source
     assert "dashboard_launch.metrics_launch_kwargs(show=True)" in source
     assert "dashboard_launch.qc_launch_kwargs(show=True)" in source
+    assert "display(dashboard_launch.status_frame())" in source
+    assert "Launch options:" not in source
     assert "server_port=dashboard_" not in source
     assert '"cfg": str(config_path)' in source
     assert "preview_output_table(\"metrics_long\", cfg=cfg" in source
