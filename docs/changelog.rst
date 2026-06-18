@@ -56,6 +56,11 @@ Changelog
    and 6 can render region boxplots through a package-owned
    ``metrics_enriched``/``metrics_long`` fallback instead of selecting metric
    source paths in notebook cells.
+   Added
+   ``spatial_vtk.visualize.waveforms.write_large_run_waveform_comparison_from_outputs()``
+   so large-run Step 6 can render the observed/synthetic trace comparison from
+   configured Step 6 outputs without inline QC sample loading or waveform-record
+   construction in the notebook.
    Added ``spatial_vtk.io.load_configured_input_paths()`` for configured
    non-table inputs such as ``paths.region_geojson``. Standard and large-run
    Step 5 now use this helper instead of resolving GeoJSON paths with direct

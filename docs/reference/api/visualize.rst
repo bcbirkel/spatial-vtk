@@ -33,6 +33,10 @@ Public helpers exposed by ``spatial_vtk.visualize``:
      - Render post-QC maps and rejection-reason diagnostics.
    * - ``plot_observed_synthetic_record_section`` and ``plot_record_section``
      - Render record-section waveform figures from prepared waveform tables.
+   * - ``write_large_run_waveform_comparison_from_outputs``
+     - Render the large-run Step 6 observed/synthetic trace-comparison figure
+       from configured event-station and comparison-eligible outputs without
+       loading full QC inventories in the notebook.
    * - ``finish_figure_with_sidecar`` and ``write_figure_row_sidecar``
      - Save figures with optional row-provenance CSV/JSON sidecars.
    * - ``figure_sidecar_status_frame`` and

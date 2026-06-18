@@ -1545,7 +1545,7 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
 
 
 def test_large_run_step06_uses_grouped_table_loading() -> None:
-    """The large-run plotting notebook should read workflow outputs through OutputGroup."""
+    """The large-run plotting notebook should delegate workflow plotting to helpers."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_06_large_run_additional_plotting.ipynb"
@@ -1553,7 +1553,11 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "step_outputs = output_group(\"step_06_plotting\")" in source
-    assert "event_stations = step_outputs.load_table(" in source
+    assert "write_large_run_waveform_comparison_from_outputs(" in source
+    assert "build_qc_waveform_comparison_records(" not in source
+    assert "load_comparison_eligible_records(" not in source
+    assert "plot_event_trace_comparison(" not in source
+    assert "event_stations = step_outputs.load_table(" not in source
     assert "step_outputs.display_first_existing_table_preview(" in source
     assert "step_outputs.preview_first_existing_table(" not in source
     assert "write_large_run_region_boxplot_from_outputs(" in source

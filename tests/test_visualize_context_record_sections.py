@@ -32,6 +32,7 @@ from spatial_vtk.visualize.waveforms import (
     plot_event_radial_trace_section,
     plot_station_event_waveform_map,
     plot_waveform_overlay_matrix,
+    write_large_run_waveform_comparison_from_outputs,
 )
 
 
@@ -100,6 +101,82 @@ def test_basic_context_figures_write_outputs(tmp_path: Path) -> None:
     ]
     for output in outputs:
         _assert_png(output)
+
+
+def test_large_run_waveform_comparison_helper_uses_configured_outputs(tmp_path: Path, monkeypatch) -> None:
+    """Large-run waveform comparison figures should be package-orchestrated."""
+
+    import spatial_vtk.visualize.waveforms.comparison as comparison_helpers
+    from spatial_vtk.io.output_paths import OutputGroup
+
+    event_station_path = tmp_path / "event_station_records.csv"
+    comparison_eligible_path = tmp_path / "comparison_eligible.csv"
+    figure_path = tmp_path / "figures" / "event_trace_comparison.png"
+    pd.DataFrame(
+        {
+            "event_id": ["E1"],
+            "station": ["S1"],
+            "observed_processed_waveform": ["observed.npz"],
+            "synthetic_processed_waveform": ["synthetic.npz"],
+        }
+    ).to_csv(event_station_path, index=False)
+    pd.DataFrame(
+        {
+            "event_id": ["E1", "E1"],
+            "station": ["S1", "S2"],
+            "component": ["Z", "R"],
+            "passband": ["1-2 sec", "1-2 sec"],
+            "metric_group": ["trace", "trace"],
+            "metric": ["PGA", "PGA"],
+            "period_s": [np.nan, np.nan],
+        }
+    ).to_csv(comparison_eligible_path, index=False)
+
+    calls: dict[str, object] = {}
+
+    def fake_load(comparison_eligible, *, component=None, **kwargs):
+        frame = pd.read_csv(comparison_eligible)
+        return frame.loc[frame["component"].astype(str).eq(str(component))].reset_index(drop=True)
+
+    def fake_build(event_station_records, qc_summary=None, *, comparison_eligible=None, component="Z", **kwargs):
+        calls["event_station_records"] = Path(event_station_records)
+        calls["comparison_eligible"] = comparison_eligible.copy()
+        calls["component"] = component
+        return _records().head(1)
+
+    def fake_plot(records_df, output_path=None, **kwargs):
+        calls["plot_records"] = records_df.copy()
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(output_path).write_bytes(b"png")
+        return Path(output_path)
+
+    monkeypatch.setattr(comparison_helpers, "_load_comparison_eligible_records", fake_load)
+    monkeypatch.setattr(comparison_helpers, "_build_qc_waveform_comparison_records", fake_build)
+    monkeypatch.setattr(comparison_helpers, "plot_event_trace_comparison", fake_plot)
+
+    outputs = OutputGroup(
+        "step_06_plotting",
+        {
+            "event_station_path": event_station_path,
+            "comparison_eligible_path": comparison_eligible_path,
+            "event_trace_comparison_path": figure_path,
+        },
+    )
+    result = write_large_run_waveform_comparison_from_outputs(
+        outputs,
+        component="Z",
+        max_records=12,
+        overwrite=True,
+        showfig=False,
+    )
+
+    assert result.status == "written"
+    assert result.figure_path == figure_path
+    assert result.status_frame().loc[0, "record_count"] == 1
+    assert calls["event_station_records"] == event_station_path
+    assert calls["component"] == "Z"
+    assert calls["comparison_eligible"]["component"].tolist() == ["Z"]
+    _assert_png(figure_path)
 
 
 def test_record_coverage_table_from_waveform_qc(tmp_path: Path) -> None:

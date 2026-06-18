@@ -487,6 +487,7 @@ def test_visualize_api_docs_use_public_entry_points():
         "plot_retention_summary",
         "plot_event_station_retention_heatmap",
         "plot_observed_synthetic_record_section",
+        "write_large_run_waveform_comparison_from_outputs",
         "finish_figure_with_sidecar",
         "write_figure_row_sidecar",
         "figure_sidecar_status_frame",
@@ -713,3 +714,13 @@ def test_spatial_plot_public_entry_point_is_lazy():
     assert callable(spatial_plot.write_large_run_geojson_region_figures_from_outputs)
     assert callable(spatial_plot.write_large_run_region_boxplot_from_outputs)
     assert spatial_plot.plot_correlogram is spatial_plot.plot_correlogram
+
+
+def test_waveform_large_run_helper_is_public():
+    import spatial_vtk.visualize as visualize
+    import spatial_vtk.visualize.waveforms as waveforms
+
+    assert "write_large_run_waveform_comparison_from_outputs" in visualize.__all__
+    assert "write_large_run_waveform_comparison_from_outputs" in waveforms.__all__
+    assert callable(waveforms.write_large_run_waveform_comparison_from_outputs)
+    assert visualize.write_large_run_waveform_comparison_from_outputs is waveforms.write_large_run_waveform_comparison_from_outputs
