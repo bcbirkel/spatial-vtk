@@ -1450,7 +1450,8 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
 
     assert "step_outputs = output_group(\"step_06_plotting\")" in source
     assert "event_stations = step_outputs.load_table(" in source
-    assert "step_outputs.preview_first_existing_table(" in source
+    assert "step_outputs.display_first_existing_table_preview(" in source
+    assert "step_outputs.preview_first_existing_table(" not in source
     assert "step_outputs.first_existing_path(" in source
     assert "load_output_table(" not in source
     assert "preview_output_table(" not in source

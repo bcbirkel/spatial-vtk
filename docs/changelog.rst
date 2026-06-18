@@ -17,6 +17,10 @@ Changelog
    configured output paths and bounded previews from the group object that owns
    those paths. Large-run Steps 4 and 5 now use this method instead of importing
    a separate preview helper and repeating output-key preview mappings.
+   Added ``OutputGroup.display_first_existing_table_preview()`` for fallback
+   table previews such as ``metrics_enriched`` with ``metrics_long`` fallback.
+   Large-run Step 6 now uses this helper instead of separately selecting and
+   previewing the same fallback table list in notebook code.
    Added config-backed metric readiness helpers for Slurm submission, batch
    merging, and downstream metric output tables. Large-run Step 3 now uses
    those Python package helpers directly instead of notebook-local manifest and

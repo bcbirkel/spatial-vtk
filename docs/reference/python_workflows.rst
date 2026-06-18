@@ -118,8 +118,10 @@ the large-run notebooks.
        ``first_existing_path()`` and ``preview_first_existing_table()`` cover
        common fallback cases such as
        preferring ``metrics_enriched`` when it exists and otherwise using
-       ``metrics_long``. These helpers keep notebook cells focused on workflow
-       tasks rather than repeated table-path and preview plumbing.
+       ``metrics_long``; ``display_first_existing_table_preview()`` prints and
+       displays that selected fallback in one package call. These helpers keep
+       notebook cells focused on workflow tasks rather than repeated table-path
+       and preview plumbing.
    * - ``spatial_vtk.io.preprocessed_waveform_output_group``
      - Resolve the preprocessing metadata directory as an ``OutputGroup``.
        Use this for Step 1 preprocessed event-station records, preprocessing

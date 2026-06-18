@@ -1369,6 +1369,16 @@ outputs:
         nrows=1,
     )
     assert first_preview["prepared_events"].to_dict("records") == [{"event_id": "E1"}]
+    displayed_first: list[object] = []
+    first_display_preview = group.display_first_existing_table_preview(
+        ("prepared_stations_path", "prepared_events_path"),
+        cfg=cfg,
+        nrows=1,
+        display_fn=displayed_first.append,
+    )
+    assert first_display_preview["prepared_events"].to_dict("records") == [{"event_id": "E1"}]
+    assert len(displayed_first) == 1
+    assert displayed_first[0].to_dict("records") == [{"event_id": "E1"}]
     assert group.load_tables({"missing": "metrics_enriched_path"}, cfg=cfg, missing="skip") == {}
     with pytest.raises(KeyError, match="Unknown table artifact"):
         group.load_tables("missing_artifact", cfg=cfg)

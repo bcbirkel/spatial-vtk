@@ -48,7 +48,10 @@ Public helpers exposed by ``spatial_vtk.io``:
        ``status_frame()``, ``readiness()``, ``load_table()``,
        ``preview_table()``, ``load_tables()``, ``preview_tables()``, and
        ``display_table_previews()`` instead of repeating output-path variables
-       or preview loops in notebooks.
+       or preview loops in notebooks. Use
+       ``display_first_existing_table_preview()`` when a notebook should prefer
+       a derived table, such as ``metrics_enriched``, but fall back to an
+       earlier table, such as ``metrics_long``.
    * - ``preprocessed_waveform_output_group``
      - Resolve preprocessing metadata outputs that live under the configured
        preprocessed-waveform metadata directory.

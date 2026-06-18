@@ -383,6 +383,45 @@ class OutputGroup:
                 return {label: preview_output_table(artifact.key, cfg=cfg, nrows=nrows, **kwargs)}
         return {}
 
+    def display_first_existing_table_preview(
+        self,
+        names: str | Iterable[str],
+        *,
+        cfg: SpatialVTKConfig | None = None,
+        nrows: int = 5,
+        display_fn: Callable[[Any], Any] | None = None,
+        missing_message: str | None = None,
+        **kwargs,
+    ) -> dict[str, object]:
+        """Print and display a bounded preview for the first available table.
+
+        ``names`` follows :meth:`first_existing_path`: pass an ordered sequence
+        of output-group path names such as ``("metrics_enriched_path",
+        "metrics_long_path")``. The helper prints which candidate was selected
+        and returns a one-entry ``label -> preview`` mapping, or an empty mapping
+        when none of the candidates exists.
+        """
+
+        from spatial_vtk.io.tables import preview_output_table
+
+        display = _notebook_display(display_fn)
+        artifacts = _output_group_table_artifacts(self.name)
+        candidates = _selected_output_artifacts(artifacts, names)
+        for label, artifact in candidates:
+            path = self.paths.get(artifact.name)
+            if path is not None and path.exists():
+                print(f"\nPreviewing {label}: {path}")
+                preview = preview_output_table(artifact.key, cfg=cfg, nrows=nrows, **kwargs)
+                if display is not None:
+                    display(preview)
+                elif hasattr(preview, "to_string"):
+                    print(preview.to_string(index=False))
+                else:
+                    print(preview)
+                return {label: preview}
+        print(missing_message or "No candidate table is ready yet.")
+        return {}
+
     def status_frame(self, *, extra_paths=None):
         """Return a display-ready status frame for the group."""
 
