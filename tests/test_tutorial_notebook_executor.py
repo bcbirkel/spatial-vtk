@@ -1824,6 +1824,10 @@ def test_tutorial_notebooks_use_package_figure_settings() -> None:
         assert "notebook_figure_settings(" in source, notebook_path.relative_to(repo_root)
         assert 'notebook_figure_sidecar_settings(' not in source, notebook_path.relative_to(repo_root)
         assert 'os.environ.get("SVTK_ADD_BASEMAP"' not in source, notebook_path.relative_to(repo_root)
+        if "large_run" not in notebook_path.parts:
+            assert "figure_dir = context.figures_dir" not in source, notebook_path.relative_to(repo_root)
+            assert "figure_dir.mkdir(" not in source, notebook_path.relative_to(repo_root)
+            assert "figure_dir=figure_dir" not in source, notebook_path.relative_to(repo_root)
 
 
 def test_large_run_notebooks_use_figure_render_gates_for_prerequisite_tables() -> None:

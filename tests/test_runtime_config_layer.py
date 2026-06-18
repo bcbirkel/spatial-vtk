@@ -577,6 +577,8 @@ def test_notebook_figure_settings_parse_common_controls(tmp_path, monkeypatch):
     settings = notebook_figure_settings("metric", figure_dir=tmp_path / "figures")
 
     assert settings.figure_kind == "metric"
+    assert settings.figure_dir == tmp_path / "figures"
+    assert settings.figure_dir.exists()
     assert settings.make_figures is False
     assert settings.add_basemap is True
     assert settings.showfig is True
@@ -613,6 +615,31 @@ def test_notebook_figure_settings_parse_common_controls(tmp_path, monkeypatch):
         "sidecar_dir": tmp_path / "figures" / "sidecars",
         "add_basemap": True,
     }
+
+
+def test_notebook_figure_settings_default_to_configured_figure_dir(tmp_path, monkeypatch):
+    """Notebook figure settings should own configured figure-directory resolution."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  figures: run_outputs/custom_figures
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+
+    settings = notebook_figure_settings("metric")
+
+    assert active_config() is cfg
+    assert settings.figure_dir == tmp_path / "run_outputs" / "custom_figures"
+    assert settings.figure_dir.exists()
+    assert settings.sidecars.directory == tmp_path / "run_outputs" / "custom_figures" / "sidecars"
 
 
 def test_notebook_figure_settings_render_gate_reports_disabled_and_missing_inputs(tmp_path, monkeypatch):

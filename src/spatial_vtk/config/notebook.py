@@ -177,6 +177,7 @@ class NotebookFigureSettings:
     """
 
     figure_kind: str | None = None
+    figure_dir: Path | None = None
     make_figures: bool = False
     add_basemap: bool = False
     showfig: bool = False
@@ -720,7 +721,9 @@ def notebook_figure_settings(
         ``SVTK_METRIC_FIGURE_PASSBAND`` before ``SVTK_FIGURE_PASSBAND``.
     figure_dir, sidecar_dir
         Figure and sidecar directories passed through to
-        :func:`notebook_figure_sidecar_settings`.
+        :func:`notebook_figure_sidecar_settings`. When ``figure_dir`` is
+        omitted, the active config's ``outputs.figures`` directory is used
+        when available.
     default_make_figures, default_add_basemap, default_showfig
         Fallback booleans when no corresponding environment variable is set.
     default_metric, default_passband, default_component, default_model,
@@ -789,8 +792,11 @@ def notebook_figure_settings(
         components = [component]
     default_scores = list(default_score_columns) if default_score_columns is not None else None
 
+    resolved_figure_dir = _resolve_notebook_figure_dir(figure_dir)
+
     return NotebookFigureSettings(
         figure_kind=figure_kind,
+        figure_dir=resolved_figure_dir,
         make_figures=_env_bool_first(make_names, default=default_make_figures),
         add_basemap=_env_bool("SVTK_ADD_BASEMAP", default=default_add_basemap),
         showfig=_env_bool_first(showfig_names, default=default_showfig),
@@ -810,11 +816,30 @@ def notebook_figure_settings(
         pca_mode=_env_text_first(pca_mode_names, default=default_pca_mode) or default_pca_mode,
         sidecars=notebook_figure_sidecar_settings(
             figure_kind,
-            figure_dir=figure_dir,
+            figure_dir=resolved_figure_dir,
             sidecar_dir=sidecar_dir,
             default_rows=default_sidecar_rows,
         ),
     )
+
+
+def _resolve_notebook_figure_dir(figure_dir: str | Path | None) -> Path | None:
+    """Resolve the figure directory used by notebook figure settings."""
+
+    if figure_dir is not None:
+        resolved = Path(figure_dir).expanduser()
+        resolved.mkdir(parents=True, exist_ok=True)
+        return resolved
+    try:
+        cfg = active_config()
+        resolved = cfg.path("outputs.figures", create_parent=True)
+    except Exception:
+        return None
+    if resolved is None:
+        return None
+    path = Path(resolved)
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 def notebook_dashboard_launch_commands(

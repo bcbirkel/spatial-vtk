@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Updated ``notebook_figure_settings()`` so it resolves and creates the
+   active config's ``outputs.figures`` directory when no explicit
+   ``figure_dir`` is supplied. Standard tutorial notebooks now rely on that
+   package helper instead of assigning ``figure_dir = context.figures_dir`` and
+   creating the directory in setup cells.
    Registered missing waveform visualization figure defaults for record
    sections, observed/synthetic record sections, waveform overlay matrices,
    and event radial trace sections. Rewired the standard Step 5 GeoJSON and

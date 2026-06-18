@@ -198,6 +198,11 @@ the large-run notebooks.
        by package code rather than notebook cells. Use ``render_gate()`` before
        figure blocks that depend on generated tables; it reports disabled
        figures and missing input paths without loading large tables.
+       When ``figure_dir`` is omitted, this helper resolves and creates the
+       active config's ``outputs.figures`` directory and uses
+       ``outputs.figures/sidecars`` for row-provenance sidecars, so standard
+       notebooks do not need a separate ``figure_dir = context.figures_dir``
+       setup line.
        For large-run metric figures, use
        ``spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context`` and
        gate plotting cells on ``metric_plot_context.ready`` rather than
