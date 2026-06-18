@@ -22,6 +22,7 @@ error or emits warning-like output.
 Environment switches:
 
 - `SVTK_SUBMIT_SLURM=1`: submit generated Slurm scripts from notebook cells. Otherwise cells print `sbatch ...` commands.
+- `SVTK_RUN_SCENARIO=tutorial`: choose a configured run scenario. Large-run notebooks let `notebook_run_context()` read this once and reuse `context.run_scenario`.
 - `SVTK_RUN_LOCAL=1`: run lightweight package helper calls directly from the notebook. Otherwise heavy cells write Slurm scripts and print or submit them.
 - `SVTK_OVERWRITE=1`: rebuild outputs even when they already exist.
 - `SVTK_MAKE_FIGURES=1`: render figure cells after compact input tables exist.

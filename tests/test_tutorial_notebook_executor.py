@@ -762,7 +762,9 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "launch_configured_metrics_dashboard(" in source
     assert "launch_configured_qc_dashboard(" in source
     assert "notebook_dashboard_launch_commands(" in source
-    assert 'run_scenario=os.environ.get("SVTK_RUN_SCENARIO", "tutorial")' in source
+    assert "run_scenario=context.run_scenario" in source
+    assert 'run_scenario=os.environ.get("SVTK_RUN_SCENARIO", "tutorial")' not in source
+    assert 'os.environ.get("SVTK_RUN_SCENARIO"' not in source
     assert "if dashboard_launch.launch_metrics_dashboard:" in source
     assert "if dashboard_launch.launch_qc_dashboard:" in source
     assert 'os.environ.get("SVTK_LAUNCH_METRICS_DASHBOARD"' not in source
@@ -783,6 +785,19 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "run_or_submit_notebook_cli_command(" not in source
     assert '"svtk", "metrics"' not in source
     assert '"--metrics", str(' not in source
+
+
+def test_large_run_notebooks_use_context_run_scenario_resolution() -> None:
+    """Large-run notebooks should let notebook_run_context resolve SVTK_RUN_SCENARIO."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
+    assert notebooks
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        assert "notebook_run_context()" in source, notebook_path.relative_to(repo_root)
+        assert 'run_scenario=os.environ.get("SVTK_RUN_SCENARIO"' not in source, notebook_path.relative_to(repo_root)
 
 
 def test_large_run_notebooks_display_output_readiness_tables() -> None:

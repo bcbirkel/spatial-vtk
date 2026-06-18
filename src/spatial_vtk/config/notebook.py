@@ -47,6 +47,9 @@ class NotebookRunContext:
         Config file loaded for the run.
     cfg
         Activated Spatial-VTK config.
+    run_scenario
+        Resolved run scenario applied to the config, or ``None`` when no
+        scenario overlay is active.
     outputs_root, tables_dir, figures_dir, dashboards_dir, slurm_dir, logs_dir
         Standard output directories resolved from the config.
     run_local, submit_slurm, overwrite
@@ -58,6 +61,7 @@ class NotebookRunContext:
     repo_root: Path
     config_path: Path
     cfg: SpatialVTKConfig
+    run_scenario: str | None
     outputs_root: Path
     tables_dir: Path
     figures_dir: Path
@@ -408,6 +412,7 @@ def notebook_run_context(
         repo_root=repo_root,
         config_path=resolved_config,
         cfg=cfg,
+        run_scenario=scenario,
         outputs_root=outputs_root,
         tables_dir=tables_dir,
         figures_dir=figures_dir,
@@ -427,6 +432,7 @@ def print_notebook_context(context: NotebookRunContext) -> None:
 
     print(f"repo_root: {context.repo_root}")
     print(f"config_path: {context.config_path}")
+    print(f"run_scenario: {context.run_scenario or ''}")
     print(f"outputs_root: {context.outputs_root}")
     print(f"tables_dir: {context.tables_dir}")
     print(f"figures_dir: {context.figures_dir}")

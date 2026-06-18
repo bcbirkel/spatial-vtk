@@ -317,6 +317,7 @@ outputs:
 
     assert context.repo_root == repo.resolve()
     assert context.config_path == config_path.resolve()
+    assert context.run_scenario is None
     expected_outputs = config_path.parent / "run_outputs"
     assert context.outputs_root == expected_outputs
     assert context.tables_dir == expected_outputs / "tables"
@@ -390,9 +391,44 @@ run_scenarios:
 
     context = notebook_run_context(start=repo / "docs" / "examples", run_scenario="tutorial", create_dirs=False)
 
+    assert context.run_scenario == "tutorial"
     assert context.cfg.run_scenario == "tutorial"
     assert context.outputs_root == repo / "outputs" / "tutorials"
     assert context.cfg.section("paths.station_metadata") == "data/examples/example_five_event_subset/metadata/selected_stations.csv"
+    clear_active_config()
+
+
+def test_notebook_run_context_applies_environment_run_scenario(tmp_path, monkeypatch):
+    """Notebook cells should not need to parse SVTK_RUN_SCENARIO directly."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(tmp_path / "cli-config.json"))
+    monkeypatch.setenv("SVTK_RUN_SCENARIO", "tutorial")
+    repo = tmp_path / "project"
+    (repo / "src" / "spatial_vtk").mkdir(parents=True)
+    (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
+    config_path = repo / "data" / "examples" / "configuration" / "example_spatial_vtk_config.yaml"
+    config_path.parent.mkdir(parents=True)
+    config_path.write_text(
+        f"""
+project:
+  name: base
+  root_dir: {repo}
+outputs:
+  root: outputs/base
+run_scenarios:
+  tutorial:
+    outputs:
+      root: "{{root_dir}}/outputs/tutorials"
+""",
+        encoding="utf-8",
+    )
+
+    context = notebook_run_context(start=repo / "docs" / "examples", create_dirs=False)
+
+    assert context.run_scenario == "tutorial"
+    assert context.cfg.run_scenario == "tutorial"
+    assert context.outputs_root == repo / "outputs" / "tutorials"
     clear_active_config()
 
 

@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Added ``run_scenario`` to ``NotebookRunContext`` and updated the large-run
+   notebooks to call ``notebook_run_context()`` directly instead of parsing
+   ``SVTK_RUN_SCENARIO`` in setup cells. Downstream helpers that need the
+   scenario now use ``context.run_scenario``.
    Extended ``notebook_dashboard_launch_commands()`` to expose dashboard launch
    request flags from ``SVTK_LAUNCH_METRICS_DASHBOARD`` and
    ``SVTK_LAUNCH_QC_DASHBOARD``. Standard Step 2 now uses the config-backed

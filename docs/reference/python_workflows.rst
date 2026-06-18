@@ -91,7 +91,9 @@ the large-run notebooks.
      - Use
    * - ``spatial_vtk.config.notebook_run_context``
      - Resolve config, run scenario, output directories, and run/submit flags
-       once near the top of a notebook.
+       once near the top of a notebook. The helper honors ``SVTK_RUN_SCENARIO``
+       when no scenario is passed and exposes the resolved value as
+       ``context.run_scenario`` for downstream package helpers.
    * - ``spatial_vtk.io.output_readiness``
      - Report whether configured outputs are missing, stale relative to inputs,
        blocked by missing inputs, or ready to reuse.
