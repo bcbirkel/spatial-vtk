@@ -458,6 +458,55 @@ def spatial_metric_product_summary_frame(
     return pd.DataFrame(rows, columns=["Output", "Rows", "Events", "Stations"])
 
 
+def station_bias_preview_frame(
+    station_bias: pd.DataFrame | None,
+    *,
+    metric: str | None = None,
+    nrows: int = 5,
+    columns: list[str] | tuple[str, ...] | None = None,
+) -> pd.DataFrame:
+    """Return a bounded station-bias preview for notebooks.
+
+    Parameters
+    ----------
+    station_bias
+        Station-bias table, typically one metric subset from Step 4.
+    metric
+        Optional metric name used to filter ``station_bias`` when a metric
+        column is present.
+    nrows
+        Maximum number of preview rows.
+    columns
+        Optional preview column order. Missing columns are skipped.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Bounded preview rows with only available requested columns.
+    """
+
+    if station_bias is None or station_bias.empty:
+        return pd.DataFrame()
+    frame = station_bias.copy()
+    if metric is not None and "metric" in frame.columns:
+        frame = frame.loc[frame["metric"].astype(str).eq(str(metric))].copy()
+    requested = list(
+        columns
+        or (
+            "metric",
+            "station",
+            "mean_centered",
+            "median_centered",
+            "n_events",
+            "sem_centered",
+            "bias_zscore",
+        )
+    )
+    available = [column for column in requested if column in frame.columns]
+    preview = frame.loc[:, available] if available else frame
+    return preview.head(max(int(nrows), 0)).reset_index(drop=True)
+
+
 def spatial_correlation_preview_frame(
     *,
     morans_i: pd.DataFrame | None = None,

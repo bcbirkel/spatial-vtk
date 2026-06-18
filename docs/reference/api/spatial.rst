@@ -58,6 +58,9 @@ Public helpers exposed by ``spatial_vtk.spatial``:
      - Summarize per-metric Step 4 products such as metric-field,
        event-centered residual, and station-bias rows with row, event, and
        station counts.
+   * - ``station_bias_preview_frame``
+     - Display bounded station-bias rows for one metric without notebook-local
+       ``head()`` calls or repeated preview-column selection.
    * - ``run_geojson_region_summary_workflow_from_config``
      - Summarize configured metric rows by GeoJSON regions using config-backed
        metric and region paths.
@@ -73,6 +76,9 @@ Public helpers exposed by ``spatial_vtk.spatial``:
      - Add region and path-control metadata from configured GeoJSON polygons.
    * - ``build_station_edge_corridors`` and ``select_records_by_corridors``
      - Prepare corridor records for path-focused diagnostics.
+   * - ``corridor_record_preview_frame``
+     - Display bounded selected corridor event-station rows without repeating
+       preview-column and duplicate-removal logic in notebooks.
 
 Calculate
 ---------
@@ -90,6 +96,10 @@ for users who need narrower module references.
 .. autofunction:: spatial_vtk.spatial.spatial_correlation_preview_frame
 
 .. autofunction:: spatial_vtk.spatial.spatial_metric_product_summary_frame
+
+.. autofunction:: spatial_vtk.spatial.station_bias_preview_frame
+
+.. autofunction:: spatial_vtk.spatial.corridor_record_preview_frame
 
 .. automodule:: spatial_vtk.spatial.calculate.prepare_stats
    :members:

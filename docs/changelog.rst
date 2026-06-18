@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-18
+   Added ``station_bias_preview_frame()`` and
+   ``corridor_record_preview_frame()`` to the public spatial API. Rewired the
+   standard Step 4 and Step 5 notebooks to use those package helpers instead of
+   direct ``head()``/``drop_duplicates().head()`` preview snippets.
    Added ``MetricFigureContext.station_summary_preview_for_metric()`` and
    rewired the standard Step 3 metric notebook to use it for station-summary
    audit previews instead of slicing station-summary dataframes in the

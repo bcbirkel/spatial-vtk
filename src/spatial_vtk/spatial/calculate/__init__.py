@@ -20,6 +20,7 @@ from spatial_vtk.spatial.calculate.corridors import (
     build_boundary_corridors,
     build_station_edge_corridors,
     classify_records_by_corridors,
+    corridor_record_preview_frame,
     run_boundary_corridor_workflow,
     run_boundary_corridor_workflow_from_config,
     select_records_by_corridors,
@@ -73,6 +74,7 @@ from spatial_vtk.spatial.calculate.workflow import (
     spatial_correlation_preview_frame,
     spatial_metric_product_summary_frame,
     spatial_statistics_output_paths,
+    station_bias_preview_frame,
     spatial_workflow_failure_frame,
 )
 
@@ -101,6 +103,7 @@ __all__ = [
     "classify_records_by_corridors",
     "compute_global_morans_i",
     "compute_pca_spatial_modes",
+    "corridor_record_preview_frame",
     "CorridorAnchorConfig",
     "CorridorSelectionConfig",
     "evaluate_spatial_block_holdouts",
@@ -143,6 +146,7 @@ __all__ = [
     "spatial_correlation_preview_frame",
     "spatial_metric_product_summary_frame",
     "spatial_statistics_output_paths",
+    "station_bias_preview_frame",
     "spatial_workflow_failure_frame",
     "spatial_statistics_settings_from_config",
     "summarize_corridor_event_counts",

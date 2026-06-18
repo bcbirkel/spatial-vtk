@@ -192,6 +192,53 @@ class BoundaryCorridorWorkflowResult:
     elapsed_s: float
 
 
+def corridor_record_preview_frame(
+    records: pd.DataFrame | None,
+    *,
+    nrows: int = 5,
+    columns: list[str] | tuple[str, ...] | None = None,
+    drop_duplicates: bool = True,
+) -> pd.DataFrame:
+    """Return a bounded preview of selected corridor event-station records.
+
+    Parameters
+    ----------
+    records
+        Corridor-selected event-station rows.
+    nrows
+        Maximum number of preview rows.
+    columns
+        Optional preview column order. Missing columns are skipped.
+    drop_duplicates
+        Whether to drop duplicate preview rows before bounding.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Bounded preview rows with only available requested columns.
+    """
+
+    if records is None or records.empty:
+        return pd.DataFrame()
+    frame = records.copy()
+    requested = list(
+        columns
+        or (
+            "event_id",
+            "station",
+            "distance_km",
+            "path_length_in_corridor_km",
+            "corridor_id",
+            "path_geojson_matches",
+        )
+    )
+    available = [column for column in requested if column in frame.columns]
+    preview = frame.loc[:, available] if available else frame
+    if drop_duplicates:
+        preview = preview.drop_duplicates()
+    return preview.head(max(int(nrows), 0)).reset_index(drop=True)
+
+
 def build_station_edge_corridors(
     station_df: pd.DataFrame,
     geojson_path: str | Path,

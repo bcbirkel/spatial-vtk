@@ -52,10 +52,12 @@ from spatial_vtk.spatial.calculate.workflow import (
     run_spatial_derived_outputs_workflow_from_config,
     run_spatial_statistics_workflow,
     run_spatial_statistics_workflow_from_config,
-    spatial_metric_product_summary_frame,
+    station_bias_preview_frame,
     spatial_correlation_preview_frame,
+    spatial_metric_product_summary_frame,
     spatial_workflow_failure_frame,
 )
+from spatial_vtk.spatial.calculate.corridors import corridor_record_preview_frame
 from spatial_vtk.spatial.map.correlation import (
     plot_block_holdout_error_map,
     plot_cluster_map,
@@ -164,6 +166,66 @@ def test_spatial_metric_product_summary_frame_counts_rows_events_and_stations() 
     assert summary.loc["Station bias", "Rows"] == 2
     assert pd.isna(summary.loc["Station bias", "Events"])
     assert summary.loc["Station bias", "Stations"] == 2
+
+
+def test_station_bias_preview_frame_filters_metric_and_bounds_columns() -> None:
+    """Station-bias notebook previews should be package-owned and bounded."""
+
+    station_bias = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGA", "PGV"],
+            "station": ["STA1", "STA2", "STA3"],
+            "mean_centered": [0.1, 0.2, 0.3],
+            "n_events": [3, 4, 5],
+            "extra": ["x", "y", "z"],
+        }
+    )
+
+    preview = station_bias_preview_frame(station_bias, metric="PGA", nrows=1)
+
+    assert list(preview.columns) == ["metric", "station", "mean_centered", "n_events"]
+    assert preview.to_dict("records") == [
+        {"metric": "PGA", "station": "STA1", "mean_centered": 0.1, "n_events": 3}
+    ]
+    assert station_bias_preview_frame(pd.DataFrame()).empty
+
+
+def test_corridor_record_preview_frame_deduplicates_and_bounds_rows() -> None:
+    """Corridor selected-path previews should not require notebook-local slicing."""
+
+    records = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1", "e2"],
+            "station": ["STA1", "STA1", "STA2"],
+            "distance_km": [10.0, 10.0, 20.0],
+            "path_length_in_corridor_km": [2.5, 2.5, 4.0],
+            "unneeded": [1, 2, 3],
+        }
+    )
+
+    preview = corridor_record_preview_frame(records, nrows=5)
+
+    assert list(preview.columns) == [
+        "event_id",
+        "station",
+        "distance_km",
+        "path_length_in_corridor_km",
+    ]
+    assert preview.to_dict("records") == [
+        {
+            "event_id": "e1",
+            "station": "STA1",
+            "distance_km": 10.0,
+            "path_length_in_corridor_km": 2.5,
+        },
+        {
+            "event_id": "e2",
+            "station": "STA2",
+            "distance_km": 20.0,
+            "path_length_in_corridor_km": 4.0,
+        },
+    ]
+    assert corridor_record_preview_frame(None).empty
 
 
 def test_spatial_correlation_preview_frame_filters_metric_and_bounds_distance_rows() -> None:
