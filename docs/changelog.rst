@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-17
+   Updated the large-run Step 1 notebook to read prepared metadata and context
+   figure tables through ``OutputGroup.load_tables()`` after package workflow
+   execution.
    Updated the standard and large-run Step 2 QC notebooks to read Step 1
    metadata tables and compact QC plotting summaries through
    ``OutputGroup.load_tables()`` instead of repeated ``load_output_table``
