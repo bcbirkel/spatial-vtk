@@ -10,6 +10,7 @@ The script does not save executed notebooks back to the repository.
 from __future__ import annotations
 
 import argparse
+import ast
 import csv
 import importlib.util
 import json
@@ -331,7 +332,47 @@ def tutorial_notebook_contract_violations(notebooks: list[Path], *, repo_root: P
                 match = pattern.search(source)
                 if match:
                     violations.append(f"{cell_label}: user-specific path or address {match.group(0)!r}")
+            if cell.get("cell_type") == "code":
+                violations.extend(_notebook_package_callable_violations(source, cell_label))
     return violations
+
+
+def _notebook_package_callable_violations(source: str, cell_label: str) -> list[str]:
+    """Return notebook calls that use compatibility import-path strings."""
+
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return []
+
+    violations: list[str] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        call_name = _ast_call_name(node.func)
+        if call_name not in {"run_notebook_step_if_needed", "run_or_submit_notebook_function"}:
+            continue
+        function_node: ast.AST | None = node.args[2] if len(node.args) >= 3 else None
+        for keyword in node.keywords:
+            if keyword.arg == "function":
+                function_node = keyword.value
+                break
+        if isinstance(function_node, ast.Constant) and isinstance(function_node.value, str):
+            violations.append(
+                f"{cell_label}: {call_name} should receive an imported package callable, "
+                f"not compatibility import path {function_node.value!r}"
+            )
+    return violations
+
+
+def _ast_call_name(node: ast.AST) -> str | None:
+    """Return the terminal name for a call expression."""
+
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        return node.attr
+    return None
 
 
 def scan_notebook_outputs(notebook: Any) -> list[dict[str, Any]]:

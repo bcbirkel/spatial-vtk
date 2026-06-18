@@ -285,6 +285,22 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
                             "step_outputs['metrics_long_path']\n",
                             "layout = 'runs/outputs/tables'\n",
                         ],
+                    },
+                    {
+                        "cell_type": "code",
+                        "id": "string-function-target",
+                        "execution_count": None,
+                        "metadata": {},
+                        "outputs": [],
+                        "source": [
+                            "run_notebook_step_if_needed(\n",
+                            "    context,\n",
+                            "    readiness,\n",
+                            "    \"spatial_vtk.qc.run_qc_inventory_from_config\",\n",
+                            "    script_name=\"qc.slurm\",\n",
+                            "    job_name=\"svtk-qc\",\n",
+                            ")\n",
+                        ],
                     }
                 ],
                 "metadata": {},
@@ -309,6 +325,8 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert "output_group_namespace" in combined
     assert "step_outputs[" in combined
     assert "runs/outputs" in combined
+    assert "should receive an imported package callable" in combined
+    assert "spatial_vtk.qc.run_qc_inventory_from_config" in combined
     assert "user-specific path or address" in combined
 
 
