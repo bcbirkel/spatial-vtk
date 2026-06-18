@@ -207,6 +207,7 @@ def test_standard_tutorial_notebooks_use_notebook_run_context() -> None:
         assert "notebook_run_context(" in source, f"{notebook_path.relative_to(repo_root)}"
         assert "SpatialVTKConfig" not in source, f"{notebook_path.relative_to(repo_root)}"
         assert "from spatial_vtk.config import find_repo_root" not in source, f"{notebook_path.relative_to(repo_root)}"
+        assert 'cfg.path("outputs.figures")' not in source, f"{notebook_path.relative_to(repo_root)}"
 
 
 def test_tutorial_notebooks_have_stable_cell_ids() -> None:
