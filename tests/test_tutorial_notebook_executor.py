@@ -998,7 +998,8 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "ingest_outputs.load_tables(" in source
     assert "step_outputs.load_table(" in source
     assert 'missing="skip"' in source
-    assert "step_outputs.first_existing_path(" in source
+    assert "write_large_run_region_boxplot_from_outputs(" in source
+    assert "step_outputs.first_existing_path(" not in source
     assert "step_outputs.corridors_path.exists()" not in source
     assert "metrics_enriched_path if metrics_enriched_path.exists() else metrics_long_path" not in source
     assert "load_output_table(" not in source
@@ -1452,7 +1453,8 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     assert "event_stations = step_outputs.load_table(" in source
     assert "step_outputs.display_first_existing_table_preview(" in source
     assert "step_outputs.preview_first_existing_table(" not in source
-    assert "step_outputs.first_existing_path(" in source
+    assert "write_large_run_region_boxplot_from_outputs(" in source
+    assert "step_outputs.first_existing_path(" not in source
     assert "load_output_table(" not in source
     assert "preview_output_table(" not in source
     assert "preview_output_table(" not in source

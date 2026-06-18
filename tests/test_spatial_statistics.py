@@ -16,7 +16,7 @@ matplotlib.use("Agg", force=True)
 
 from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.config.outputs import resolve_output_path
-from spatial_vtk.io import write_table
+from spatial_vtk.io import OutputGroup, write_table
 from spatial_vtk.metrics.plot.large_run import MetricFigureContext
 from spatial_vtk.metrics.plot import plot_score_trends
 from spatial_vtk.spatial.calculate.clustering import assign_redcap_clusters, run_residual_feature_clustering
@@ -71,7 +71,11 @@ from spatial_vtk.spatial.plot.correlation import (
     plot_pattern_similarity,
     plot_semivariogram,
 )
-from spatial_vtk.spatial.plot.large_run import SpatialFigureContext, write_large_run_region_boxplot
+from spatial_vtk.spatial.plot.large_run import (
+    SpatialFigureContext,
+    write_large_run_region_boxplot,
+    write_large_run_region_boxplot_from_outputs,
+)
 from spatial_vtk.spatial.plot.metrics import plot_geology_contrast
 from spatial_vtk.spatial.plot.pca import plot_pca_explained_variance, plot_pca_feature_loadings
 from spatial_vtk.visualize.figure_context import value_color_settings
@@ -795,6 +799,47 @@ def test_write_large_run_region_boxplot_from_bounded_table(tmp_path: Path) -> No
     existing_metadata = json.loads(existing.sidecar_path.with_suffix(".json").read_text(encoding="utf-8"))
     assert len(existing_rows) == 4
     assert existing_metadata["sampled"] is False
+
+
+def test_write_large_run_region_boxplot_from_outputs_uses_metric_fallback(tmp_path: Path) -> None:
+    """Region boxplot wrapper should select the first available group metric table."""
+
+    metrics = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGA"],
+            "band": ["2-3 sec", "2-3 sec"],
+            "component": ["Z", "R"],
+            "model": ["example", "example"],
+            "station_region": ["LA_Basin", "Mountains"],
+            "log2_residual": [0.2, -0.2],
+        }
+    )
+    metrics_long = tmp_path / "metrics_long.csv"
+    metrics.to_csv(metrics_long, index=False)
+    outputs = OutputGroup(
+        name="step_06_plotting",
+        paths={
+            "metrics_enriched_path": tmp_path / "missing_metrics_enriched.parquet",
+            "metrics_long_path": metrics_long,
+        },
+    )
+
+    result = write_large_run_region_boxplot_from_outputs(
+        outputs,
+        figure_dir=tmp_path / "figures",
+        metric="PGA",
+        passband="2-3 sec",
+        model="example",
+        max_rows=10,
+        output_prefix="fallback_region_boxplot",
+        overwrite=True,
+        showfig=False,
+    )
+
+    assert result.status == "wrote"
+    assert result.figure_path is not None
+    assert result.figure_path.exists()
+    assert result.figure_path.name.startswith("fallback_region_boxplot__pga__2_3_sec")
 
 
 def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -> None:

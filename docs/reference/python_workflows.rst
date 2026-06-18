@@ -323,6 +323,10 @@ Both Step 5 helpers can receive configured path keys for optional inputs. For
 example, pass ``metrics_table="paths.metric_figure_snapshot"`` or
 ``geojson_path="paths.region_geojson"`` when a notebook needs to select a
 configured non-default input without adding path-resolution cells.
+Region boxplot cells should use
+``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs`` so
+package code owns the ``metrics_enriched`` to ``metrics_long`` fallback and the
+notebook only supplies figure settings.
 
 Step 7: Dashboard Datasets
 --------------------------

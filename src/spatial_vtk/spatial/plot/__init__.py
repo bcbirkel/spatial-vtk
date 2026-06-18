@@ -30,6 +30,7 @@ _EXPORT_MODULES = {
     "SpatialFigureContext": "spatial_vtk.spatial.plot.large_run",
     "prepare_spatial_figure_context": "spatial_vtk.spatial.plot.large_run",
     "write_large_run_region_boxplot": "spatial_vtk.spatial.plot.large_run",
+    "write_large_run_region_boxplot_from_outputs": "spatial_vtk.spatial.plot.large_run",
     "boxplot": "spatial_vtk.spatial.plot.metrics",
     "heatmap": "spatial_vtk.spatial.plot.metrics",
     "plot_azimuthal_residuals": "spatial_vtk.spatial.plot.metrics",

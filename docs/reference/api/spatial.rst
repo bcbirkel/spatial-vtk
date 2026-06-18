@@ -146,6 +146,10 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Render large-run spatial figures with the same filtering, station
        aggregation, PSA-period handling, and sidecar metadata conventions used
        by the metric figure context.
+   * - ``write_large_run_region_boxplot_from_outputs``
+     - Write a Step 5/6 region boxplot from an ``OutputGroup``, preferring an
+       enriched metric table when available and falling back to the long metric
+       table without adding notebook-local path-selection logic.
    * - ``plot_correlogram``, ``plot_semivariogram``, and
        ``plot_directional_correlogram``
      - Plot spatial correlation diagnostics by distance or direction.
@@ -195,6 +199,8 @@ same row factories and aggregation audit metadata across Step 3 and Step 4.
    :members:
 
 .. autofunction:: spatial_vtk.spatial.plot.prepare_spatial_figure_context
+
+.. autofunction:: spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs
 
 Maps
 ----

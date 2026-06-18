@@ -21,6 +21,10 @@ Changelog
    table previews such as ``metrics_enriched`` with ``metrics_long`` fallback.
    Large-run Step 6 now uses this helper instead of separately selecting and
    previewing the same fallback table list in notebook code.
+   Added ``write_large_run_region_boxplot_from_outputs()`` so large-run Steps 5
+   and 6 can render region boxplots through a package-owned
+   ``metrics_enriched``/``metrics_long`` fallback instead of selecting metric
+   source paths in notebook cells.
    Added config-backed metric readiness helpers for Slurm submission, batch
    merging, and downstream metric output tables. Large-run Step 3 now uses
    those Python package helpers directly instead of notebook-local manifest and

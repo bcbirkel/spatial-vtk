@@ -1148,6 +1148,42 @@ def write_large_run_region_boxplot(
     return RegionBoxplotResult(output, sidecar_path, len(plot_rows), "wrote", message)
 
 
+def write_large_run_region_boxplot_from_outputs(
+    outputs: Any,
+    *,
+    figure_dir: str | Path,
+    metric_candidates: Sequence[str] = ("metrics_enriched_path", "metrics_long_path"),
+    default_metric_source: str | Path | None = "metrics_long_path",
+    **kwargs: Any,
+) -> RegionBoxplotResult:
+    """Write a region boxplot using a fallback metric table from an output group.
+
+    Large-run notebooks usually prefer ``metrics_enriched`` because it carries
+    spatial metadata, but can fall back to ``metrics_long`` when enrichment has
+    not been written yet. This helper keeps that fallback selection in package
+    code and delegates the bounded table read and plotting behavior to
+    :func:`write_large_run_region_boxplot`.
+    """
+
+    metric_source = outputs.first_existing_path(
+        tuple(metric_candidates),
+        default=default_metric_source,
+    )
+    if metric_source is None:
+        return RegionBoxplotResult(
+            None,
+            None,
+            0,
+            "missing_input",
+            "skip region boxplot: no configured metric table candidate is available",
+        )
+    return write_large_run_region_boxplot(
+        metric_source,
+        figure_dir=figure_dir,
+        **kwargs,
+    )
+
+
 def _read_if_exists(
     path: str | Path | None,
     *,
@@ -1451,4 +1487,5 @@ __all__ = [
     "SpatialFigureContext",
     "prepare_spatial_figure_context",
     "write_large_run_region_boxplot",
+    "write_large_run_region_boxplot_from_outputs",
 ]
