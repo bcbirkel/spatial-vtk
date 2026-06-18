@@ -18,9 +18,9 @@ Calculate
 ---------
 
 Notebook and CLI workflows should import spatial statistics, GeoJSON, corridor,
-and geometry helpers from the stable ``spatial_vtk.spatial.calculate`` package
-entry point. The implementation modules below document the lower-level
-organization.
+and geometry helpers from the stable ``spatial_vtk.spatial`` package entry
+point. The implementation modules below document the lower-level organization
+for users who need narrower module references.
 
 .. automodule:: spatial_vtk.spatial.calculate
    :members:

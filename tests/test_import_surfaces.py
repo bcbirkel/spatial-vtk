@@ -12,12 +12,15 @@ def test_public_imports():
     from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
     from spatial_vtk.qc.build import slurm_settings_from_config as build_slurm_settings_from_config
     from spatial_vtk.spatial import (
+        annotate_points_with_geojson,
+        build_station_edge_corridors,
+        classify_paths_with_geojson,
+        geojson_polygon_preview_table,
         run_boundary_corridor_workflow_from_config,
         run_geojson_region_summary_workflow_from_config,
         run_spatial_derived_outputs_workflow_from_config,
         run_spatial_statistics_workflow_from_config,
     )
-    from spatial_vtk.spatial.calculate import annotate_points_with_geojson, build_station_edge_corridors, classify_paths_with_geojson, geojson_polygon_preview_table
     from spatial_vtk.visualize.dashboard import build_dashboard_summaries, dashboard_readiness_summary_frame
     from spatial_vtk.spatial.map import add_contextily_basemap, plot_corridor_map, plot_event_residual_map
     from spatial_vtk.visualize.context import plot_distance_amplitude_diagnostics, plot_station_event_context, plot_study_domain_map
@@ -103,6 +106,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "spatial.rst"
     text = docs.read_text(encoding="utf-8")
     assert ".. automodule:: spatial_vtk.spatial.calculate\n" in text
+    assert "helpers from the stable ``spatial_vtk.spatial`` package entry" in text
     assert "from spatial_vtk.spatial.plot import (" in text
     assert "from spatial_vtk.spatial.map import (" in text
     assert ".. automodule:: spatial_vtk.spatial.plot\n" in text

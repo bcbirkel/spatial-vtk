@@ -2,16 +2,7 @@
 
 from __future__ import annotations
 
-from spatial_vtk.spatial.calculate import (
-    run_boundary_corridor_workflow_from_config,
-    run_geojson_region_summary_workflow_from_config,
-    run_spatial_derived_outputs_workflow_from_config,
-    run_spatial_statistics_workflow_from_config,
-)
+from spatial_vtk.spatial.calculate import *  # noqa: F401,F403
+from spatial_vtk.spatial.calculate import __all__ as _CALCULATE_EXPORTS
 
-__all__ = [
-    "run_boundary_corridor_workflow_from_config",
-    "run_geojson_region_summary_workflow_from_config",
-    "run_spatial_derived_outputs_workflow_from_config",
-    "run_spatial_statistics_workflow_from_config",
-]
+__all__ = sorted(_CALCULATE_EXPORTS)

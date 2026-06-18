@@ -512,9 +512,11 @@ def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "run_geojson_region_summary_workflow_from_config(" in source
+    assert "from spatial_vtk.spatial import (" in source
     assert "read_config_table(\"paths.metric_figure_snapshot\")" in source
     assert 'metrics_table="paths.metric_figure_snapshot"' in source
     assert 'geojson_path="paths.region_geojson"' in source
+    assert "from spatial_vtk.spatial.calculate import" not in source
     assert 'cfg.path("paths.metric_figure_snapshot")' not in source
     assert "read_table(metric_source_path)" not in source
 
@@ -868,6 +870,8 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert 'load_output_table("comparison_eligible_records")' in source
+    assert "from spatial_vtk.spatial import add_geojson_metadata_to_metrics" in source
+    assert "from spatial_vtk.spatial.calculate import" not in source
     assert 'read_config_table("paths.metric_figure_snapshot")' in source
     assert 'cfg.path("paths.metric_figure_snapshot")' not in source
     assert "read_table(metric_source_path)" not in source
