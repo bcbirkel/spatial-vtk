@@ -235,6 +235,11 @@ missing map coordinates, or value columns that exist but contain no finite
 data. Use ``preview_dashboard_summary_tables`` for small, bounded samples of
 the configured summary tables after readiness checks pass; it keeps large-run
 notebooks from loading whole dashboard inputs just to inspect the first rows.
+The path summary is optional when the source ``metrics_long`` table has no
+``distance_km`` and ``azimuth_deg`` columns. In that case the status table still
+reports the missing or empty ``path_hex`` artifact for the Paths tab, but
+``dashboard_output_readiness`` does not request a rebuild that cannot create
+path-bin summaries from the available source columns.
 Dashboard summary writing normalizes accepted station/event coordinate aliases
 such as ``station_lat`` / ``station_lon`` and ``event_latitude`` /
 ``event_longitude`` into the canonical map columns used by station and event

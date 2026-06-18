@@ -670,7 +670,11 @@ def dashboard_output_readiness(
         summary_format=summary_format,
     )
     metrics_ready = bool(metrics_status["ready"].iloc[0]) if "ready" in metrics_status.columns else False
-    summary_ready_mask = _bool_status_series(summary_status["ready"]) if "ready" in summary_status.columns else pd.Series(dtype=bool)
+    summary_ready_mask = (
+        _dashboard_summary_output_ready_mask(summary_status, metrics_long_path)
+        if "ready" in summary_status.columns
+        else pd.Series(dtype=bool)
+    )
     summaries_ready = bool(summary_ready_mask.all()) if not summary_ready_mask.empty else False
     stale = _dashboard_outputs_stale(metrics_long_path, metrics_root, summary_status)
     if overwrite:
@@ -1175,6 +1179,40 @@ def _dashboard_outputs_stale(metrics_long_path: Path, metrics_root: Path, summar
     if not output_paths:
         return False
     return any(path.stat().st_mtime < source_mtime for path in output_paths)
+
+
+def _dashboard_summary_output_ready_mask(summary_status: pd.DataFrame, metrics_long_path: Path) -> pd.Series:
+    """Return summary-table readiness for dashboard output rebuild decisions."""
+
+    if summary_status.empty or "ready" not in summary_status.columns:
+        return pd.Series(dtype=bool)
+    source_has_path_geometry: bool | None = None
+    values: list[bool] = []
+    for _, row in summary_status.iterrows():
+        if dashboard_ready_value(row.get("ready"), default=False):
+            values.append(True)
+            continue
+        table_name = str(row.get("dashboard_table") or "")
+        readiness = str(row.get("readiness") or "")
+        if table_name == "path_hex" and readiness in {"missing", "empty", "no_value_data", "missing_columns"}:
+            if source_has_path_geometry is None:
+                source_has_path_geometry = _dashboard_source_has_path_geometry(metrics_long_path)
+            values.append(not source_has_path_geometry)
+            continue
+        values.append(False)
+    return pd.Series(values, index=summary_status.index, dtype=bool)
+
+
+def _dashboard_source_has_path_geometry(metrics_long_path: Path) -> bool:
+    """Return whether the source metric table can build path-bin summaries."""
+
+    if not metrics_long_path.exists():
+        return False
+    try:
+        columns = set(_dashboard_table_columns(metrics_long_path))
+    except Exception:
+        return False
+    return {"distance_km", "azimuth_deg"} <= columns
 
 
 def _bool_status_series(series: pd.Series) -> pd.Series:

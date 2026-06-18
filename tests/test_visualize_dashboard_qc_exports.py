@@ -8,6 +8,7 @@ from spatial_vtk.config import SpatialVTKConfig
 from spatial_vtk.visualize.dashboard import (
     build_dashboard_summaries,
     display_dashboard_output_previews,
+    dashboard_output_readiness,
     dashboard_summary_input_columns,
     dashboard_row_level_columns,
     load_dashboard_metric_dataset,
@@ -586,6 +587,70 @@ def test_dashboard_summary_loader_tolerates_missing_optional_tables(tmp_path) ->
         assert "path_hex" in str(exc)
     else:
         raise AssertionError("strict dashboard summary loading should require missing path_hex")
+
+
+def test_dashboard_output_readiness_accepts_missing_path_summary_without_path_geometry(tmp_path) -> None:
+    """Dashboard rebuild decisions should not loop when path bins cannot be built."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+  metrics_long: metrics_long.csv
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    tables_root = tmp_path / "outputs" / "tables"
+    dashboard_root = tmp_path / "outputs" / "dashboards"
+    summary_root = dashboard_root / "dashboard_summaries"
+    metric_dataset_root = dashboard_root / "metrics_dashboard"
+    tables_root.mkdir(parents=True)
+    summary_root.mkdir(parents=True)
+    metric_dataset_root.mkdir(parents=True)
+
+    source_rows = pd.DataFrame(
+        {
+            "model": ["m1"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "station": ["STA"],
+            "event_id": ["E1"],
+            "log2_residual": [0.25],
+        }
+    )
+    source_rows.to_csv(tables_root / "metrics_long.csv", index=False)
+    source_rows.to_parquet(metric_dataset_root / "metrics_long.parquet", index=False)
+    pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "n": [1], "med_log2_residual": [0.25]}).to_csv(
+        summary_root / "model_metric_band.csv",
+        index=False,
+    )
+    pd.DataFrame({"station": ["STA"], "model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "n": [1], "med_log2_residual": [0.25]}).to_csv(
+        summary_root / "station_rollup.csv",
+        index=False,
+    )
+    pd.DataFrame({"event_id": ["E1"], "model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "n": [1], "med_log2_residual": [0.25]}).to_csv(
+        summary_root / "event_rollup.csv",
+        index=False,
+    )
+
+    readiness = dashboard_output_readiness(cfg=cfg, create_parent=False)
+    path_status = readiness.summary_status.loc[readiness.summary_status["dashboard_table"].eq("path_hex")].iloc[0]
+
+    assert readiness.should_run is False
+    assert readiness.reason == "current"
+    assert path_status["readiness"] == "missing"
+
+    source_rows.assign(distance_km=[10.0], azimuth_deg=[45.0]).to_csv(tables_root / "metrics_long.csv", index=False)
+    needs_path = dashboard_output_readiness(cfg=cfg, create_parent=False)
+
+    assert needs_path.should_run is True
+    assert needs_path.reason == "missing_outputs"
+    assert "path_hex" in needs_path.message
 
 
 def test_dashboard_summary_previews_are_bounded_and_config_backed(tmp_path) -> None:
