@@ -22,6 +22,7 @@ from spatial_vtk.config import (
     notebook_dashboard_launch_commands,
     notebook_figure_sidecar_settings,
     notebook_run_context,
+    display_output_table_previews,
     get_saved_config_path,
     load_config,
     notebook_timing_enabled,
@@ -1074,6 +1075,42 @@ outputs:
     assert list(namespace_status_frame["name"]) == ["metrics_long_path"]
     sequence_status_frame = output_status_frame([paths["metrics_long_path"]])
     assert list(sequence_status_frame["name"]) == ["metrics_long"]
+
+    clear_active_config()
+
+
+def test_display_output_table_previews_resolves_and_labels_registered_tables(tmp_path, capsys):
+    """Notebook previews should resolve configured paths without path boilerplate."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    write_output_table("metrics_long", pd.DataFrame({"metric": ["PGA", "PGV"]}), cfg=cfg)
+
+    displayed: list[pd.DataFrame] = []
+    paths = display_output_table_previews(
+        {"Metric rows": "metrics_long", "Missing QC": "qc_inventory"},
+        cfg=cfg,
+        nrows=1,
+        display_fn=displayed.append,
+    )
+
+    output = capsys.readouterr().out
+    assert "Metric rows:" in output
+    assert "Missing QC is not ready yet." in output
+    assert paths["Metric rows"] == tmp_path / "run_outputs" / "tables" / "metrics_long.parquet"
+    assert paths["Missing QC"] == tmp_path / "run_outputs" / "tables" / "qc_inventory.csv"
+    assert len(displayed) == 1
+    assert list(displayed[0]["metric"]) == ["PGA"]
 
     clear_active_config()
 

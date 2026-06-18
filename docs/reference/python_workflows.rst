@@ -97,6 +97,10 @@ the large-run notebooks.
        workflow function only when work is needed. Pass the imported package
        function directly in notebooks; fully qualified import-path strings are
        retained only for compatibility and generated Slurm workers.
+   * - ``spatial_vtk.config.display_output_table_previews``
+     - Print configured output-table paths and display bounded row previews
+       without repeating ``resolve_output_path`` or ``preview_output_table``
+       loops in notebook cells.
    * - ``spatial_vtk.config.notebook_figure_sidecar_settings``
      - Read the notebook-side figure sidecar settings and return keyword
        arguments accepted by supported plotting helpers.

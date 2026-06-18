@@ -311,6 +311,85 @@ def print_notebook_context(context: NotebookRunContext) -> None:
     )
 
 
+def display_output_table_previews(
+    keys: Iterable[str | tuple[str, str]] | dict[str, str],
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    nrows: int = 5,
+    display_fn: Callable[[Any], Any] | None = None,
+) -> dict[str, Path]:
+    """Print paths and display bounded previews for configured output tables.
+
+    Parameters
+    ----------
+    keys
+        Output table keys, ``(label, key)`` pairs, or a ``label -> key``
+        mapping. Labels are printed before each preview; keys are resolved
+        through the configured output registry.
+    cfg
+        Optional Spatial-VTK config. When omitted, the active config is used by
+        the underlying output resolver.
+    nrows
+        Number of rows to preview from each existing table.
+    display_fn
+        Optional display function. When omitted, IPython's ``display`` is used
+        if available, otherwise dataframes are printed as plain text.
+
+    Returns
+    -------
+    dict
+        Mapping from display labels to resolved output paths.
+    """
+
+    from spatial_vtk.config.outputs import resolve_output_path
+    from spatial_vtk.io.tables import preview_output_table
+
+    display = _notebook_display(display_fn)
+    resolved: dict[str, Path] = {}
+    for label, key in _preview_key_items(keys):
+        path = resolve_output_path(key, kind="table", cfg=cfg)
+        resolved[label] = path
+        print(f"\n{label}: {path}")
+        if not path.exists():
+            print(f"{label} is not ready yet.")
+            continue
+        preview = preview_output_table(key, cfg=cfg, nrows=nrows)
+        if display is not None:
+            display(preview)
+        elif hasattr(preview, "to_string"):
+            print(preview.to_string(index=False))
+        else:
+            print(preview)
+    return resolved
+
+
+def _preview_key_items(keys: Iterable[str | tuple[str, str]] | dict[str, str]) -> list[tuple[str, str]]:
+    """Return ``(label, output_key)`` pairs for preview requests."""
+
+    items = keys.items() if isinstance(keys, dict) else keys
+    normalized: list[tuple[str, str]] = []
+    for item in items:
+        if isinstance(item, str):
+            normalized.append((item, item))
+        else:
+            label, key = item
+            normalized.append((str(label), str(key)))
+    return normalized
+
+
+def _notebook_display(display_fn: Callable[[Any], Any] | None = None) -> Callable[[Any], Any] | None:
+    """Return a notebook display function when available."""
+
+    if display_fn is not None:
+        return display_fn
+    try:
+        from IPython.display import display as ipython_display
+
+        return ipython_display
+    except Exception:
+        return None
+
+
 def notebook_figure_sidecar_settings(
     figure_kind: str | None = None,
     *,
@@ -1110,6 +1189,7 @@ __all__ = [
     "NotebookDashboardCommands",
     "NotebookFigureSidecarSettings",
     "NotebookRunContext",
+    "display_output_table_previews",
     "find_repo_root",
     "format_run_time",
     "notebook_dashboard_launch_commands",

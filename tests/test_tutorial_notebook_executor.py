@@ -627,6 +627,7 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "from spatial_vtk.spatial import (" in source
     assert "run_spatial_statistics_workflow_from_config," in source
     assert "run_spatial_derived_outputs_workflow_from_config," in source
+    assert "display_output_table_previews(" in source
     assert '"spatial_vtk.spatial.run_spatial_statistics_workflow_from_config"' not in source
     assert '"spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config"' not in source
     assert "run_or_submit_notebook_function(" not in source
@@ -649,6 +650,8 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "spatial_figures.write_overview_plots(" in source
     assert 'write_spatial_plot("spatial_correlogram"' not in source
     assert "plot_correlogram" not in source
+    assert "preview_output_table(" not in source
+    assert "for name, key in [" not in source
 
 
 def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
@@ -663,6 +666,7 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "from spatial_vtk.spatial import (" in source
     assert "run_geojson_region_summary_workflow_from_config," in source
     assert "run_boundary_corridor_workflow_from_config," in source
+    assert "display_output_table_previews(" in source
     assert '"spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config"' not in source
     assert '"spatial_vtk.spatial.run_boundary_corridor_workflow_from_config"' not in source
     assert "geojson_readiness = step_outputs.readiness(" in source
@@ -676,6 +680,7 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "submit_notebook_slurm_script" not in source
     assert "run_geojson_region_summary_workflow(" not in source
     assert "run_boundary_corridor_workflow(" not in source
+    assert "preview_output_table(" not in source
 
 
 def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:

@@ -10,7 +10,12 @@ import textwrap
 
 def test_public_imports():
     import spatial_vtk
-    from spatial_vtk.config import abbreviate_model, configured_output_registry_frame, run_notebook_step_if_needed
+    from spatial_vtk.config import (
+        abbreviate_model,
+        configured_output_registry_frame,
+        display_output_table_previews,
+        run_notebook_step_if_needed,
+    )
     from spatial_vtk.metrics import (
         METRIC_NAMES,
         amplitude_spectrum,
@@ -54,6 +59,7 @@ def test_public_imports():
     assert "C1" in METRIC_NAMES
     assert callable(abbreviate_model)
     assert callable(configured_output_registry_frame)
+    assert callable(display_output_table_previews)
     assert callable(run_notebook_step_if_needed)
     assert callable(amplitude_spectrum)
     assert callable(calculate_metrics_for_pairs)
@@ -276,7 +282,9 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert ":doc:`python_workflows`" in python_api
     required_helpers = [
         "spatial_vtk.config.run_notebook_step_if_needed",
+        "spatial_vtk.config.display_output_table_previews",
         "spatial_vtk.io.output_group",
+        "spatial_vtk.io.prepare_metadata_tables_from_config",
         "spatial_vtk.io.preprocess_waveforms_from_config",
         "spatial_vtk.io.build_record_coverage_from_config",
         "spatial_vtk.qc.run_qc_inventory_from_config",
