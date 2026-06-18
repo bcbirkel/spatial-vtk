@@ -1138,6 +1138,17 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
         assert f"metric_plot_context.{helper}(" in source
 
 
+def test_metric_plot_package_does_not_export_notebook_reload_hook() -> None:
+    """Development-only notebook reload helpers should stay out of the public plotting API."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    package_init = repo_root / "src" / "spatial_vtk" / "metrics" / "plot" / "__init__.py"
+    large_run_module = repo_root / "src" / "spatial_vtk" / "metrics" / "plot" / "large_run.py"
+
+    assert "reload_metric_plot_modules" not in package_init.read_text(encoding="utf-8")
+    assert "reload_metric_plot_modules" not in large_run_module.read_text(encoding="utf-8")
+
+
 def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     """Large-run spatial figures should use package row factories, not notebook lambdas."""
 

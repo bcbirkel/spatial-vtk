@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-18
+   Removed the remaining development-only ``reload_metric_plot_modules()``
+   helper from the metric plotting package surface. Large-run notebooks now use
+   normal imports from ``spatial_vtk.metrics.plot`` and tests guard against the
+   reload hook returning.
    Updated the configuration API reference so notebook helpers are documented
    through the stable ``spatial_vtk.config`` package surface instead of the
    implementation module ``spatial_vtk.config.notebook``. Added a regression so

@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 import inspect
-import importlib
 import re
 from tempfile import TemporaryDirectory
 from typing import Any, Callable, Iterable, Sequence
@@ -1933,42 +1932,6 @@ def psa_period_label(period: float) -> str:
     return f"T={period:g} s (f={1.0 / period:g} Hz)" if np.isfinite(period) and period > 0 else "PSA period unknown"
 
 
-def reload_metric_plot_modules() -> dict[str, Callable[..., Any]]:
-    """Reload and return plotting functions used by large-run notebooks."""
-
-    import spatial_vtk.metrics.plot.model_comparison as model_plots
-    import spatial_vtk.metrics.plot.periods as period_plots
-    import spatial_vtk.metrics.plot.site_terms as site_plots
-    import spatial_vtk.metrics.plot.trends as trend_plots
-    import spatial_vtk.spatial.map.metrics as metric_maps
-    import spatial_vtk.spatial.map.path.residuals as path_maps
-    import spatial_vtk.spatial.plot.metrics as spatial_metric_plots
-
-    for module in [model_plots, period_plots, site_plots, trend_plots, metric_maps, path_maps, spatial_metric_plots]:
-        importlib.reload(module)
-    return {
-        "plot_band_score_distribution": model_plots.plot_band_score_distribution,
-        "plot_period_spectra": period_plots.plot_period_spectra,
-        "plot_period_score_distribution": period_plots.plot_period_score_distribution,
-        "plot_psa_period_curve": period_plots.plot_psa_period_curve,
-        "plot_geology_boxplot": site_plots.plot_geology_boxplot,
-        "plot_vs30_scatter": site_plots.plot_vs30_scatter,
-        "plot_metric_trend": trend_plots.plot_metric_trend,
-        "plot_phase_delay_vs_distance": trend_plots.plot_phase_delay_vs_distance,
-        "plot_residuals_vs_depth": trend_plots.plot_residuals_vs_depth,
-        "plot_residuals_vs_distance": trend_plots.plot_residuals_vs_distance,
-        "plot_score_trends": trend_plots.plot_score_trends,
-        "plot_metric_map_by_model": metric_maps.plot_metric_map_by_model,
-        "plot_residual_grid": metric_maps.plot_residual_grid,
-        "plot_station_metric_map": metric_maps.plot_station_metric_map,
-        "plot_station_metric_map_by_period": metric_maps.plot_station_metric_map_by_period,
-        "plot_event_residual_map": path_maps.plot_event_residual_map,
-        "boxplot": spatial_metric_plots.boxplot,
-        "heatmap": spatial_metric_plots.heatmap,
-        "scatterplot": spatial_metric_plots.scatterplot,
-    }
-
-
 def _table_columns(path: str | Path) -> list[str]:
     """Return table columns without reading full row data when possible."""
 
@@ -2425,6 +2388,5 @@ __all__ = [
     "norm_text",
     "prepare_large_run_metric_figure_context",
     "psa_period_label",
-    "reload_metric_plot_modules",
     "slug",
 ]
