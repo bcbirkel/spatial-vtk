@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Added a current-filter row-count summary to the metrics dashboard Data Status
+   tab so blank Overview, Stations, Events, Paths, or Distributions tabs can be
+   diagnosed from the running dashboard without loading full large-run tables in
+   a notebook.
    Added config-backed examples to the generated ``svtk plot`` and
    ``svtk dashboard`` reference pages so users can see path-light commands for
    common plotting and dashboard workflows without guessing ``--input``,

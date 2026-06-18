@@ -332,7 +332,17 @@ def _render_metrics_dashboard(
             st.plotly_chart(build_metric_heatmap_figure(heat, value_col=value_col, title="Model Comparison"), width="stretch")
         st.dataframe(_display_table(heat), width="stretch")
     with status_tab:
-        _render_data_status_tab(readiness, metric_dataset_readiness)
+        _render_data_status_tab(
+            readiness,
+            metric_dataset_readiness,
+            filtered_summary=_dashboard_filtered_row_summary(
+                heat=heat,
+                stations=stations,
+                events=events,
+                paths=paths,
+                rows=rows,
+            ),
+        )
 
 
 @st.cache_data(show_spinner=False)
@@ -417,8 +427,19 @@ def _render_dashboard_readiness(readiness: pd.DataFrame) -> None:
     st.dataframe(_display_table(shown), width="stretch")
 
 
-def _render_data_status_tab(readiness: pd.DataFrame | None, metric_dataset_readiness: pd.DataFrame | None) -> None:
+def _render_data_status_tab(
+    readiness: pd.DataFrame | None,
+    metric_dataset_readiness: pd.DataFrame | None,
+    *,
+    filtered_summary: pd.DataFrame | None = None,
+) -> None:
     """Render the data-readiness tab for already-started dashboards."""
+
+    st.subheader("Current Filter Results")
+    if filtered_summary is None or filtered_summary.empty:
+        st.info("No current-filter summary is available yet.")
+    else:
+        st.dataframe(_display_table(filtered_summary), width="stretch")
 
     st.subheader("Dashboard Summary Tables")
     summary_status = _select_readiness_columns(readiness, SUMMARY_READINESS_DISPLAY_COLUMNS)
@@ -445,6 +466,62 @@ def _select_readiness_columns(readiness: pd.DataFrame | None, columns: tuple[str
         return pd.DataFrame()
     shown = [column for column in columns if column in readiness.columns]
     return readiness.loc[:, shown].copy() if shown else pd.DataFrame()
+
+
+def _dashboard_filtered_row_summary(
+    *,
+    heat: pd.DataFrame,
+    stations: pd.DataFrame,
+    events: pd.DataFrame,
+    paths: pd.DataFrame,
+    rows: pd.DataFrame | None,
+) -> pd.DataFrame:
+    """Return tab-level row counts for the active dashboard filters."""
+
+    specs = [
+        ("Overview / Compare Models", "model_metric_band", heat),
+        ("Stations", "station_rollup", stations),
+        ("Events", "event_rollup", events),
+        ("Paths", "path_hex", paths),
+        ("Distributions", "metrics_dashboard_dataset", rows),
+    ]
+    result_rows: list[dict[str, object]] = []
+    for tab, table, frame in specs:
+        if frame is None:
+            result_rows.append(
+                {
+                    "dashboard_tab": tab,
+                    "dashboard_table": table,
+                    "row_count": "",
+                    "event_count": "",
+                    "station_count": "",
+                    "model_count": "",
+                    "metric_count": "",
+                    "message": "Row-level metrics are not loaded for the current selection.",
+                }
+            )
+            continue
+        result_rows.append(
+            {
+                "dashboard_tab": tab,
+                "dashboard_table": table,
+                "row_count": int(len(frame)),
+                "event_count": _unique_count(frame, "event_id"),
+                "station_count": _unique_count(frame, "station"),
+                "model_count": _unique_count(frame, "model"),
+                "metric_count": _unique_count(frame, "metric"),
+                "message": "Ready for current filters." if not frame.empty else "No rows match the current filters.",
+            }
+        )
+    return pd.DataFrame(result_rows)
+
+
+def _unique_count(df: pd.DataFrame, column: str) -> int | str:
+    """Return a display-safe unique count for one optional column."""
+
+    if column not in df.columns:
+        return ""
+    return int(df[column].dropna().astype(str).nunique())
 
 
 def _metrics_dashboard_startup_blocker(readiness: pd.DataFrame) -> str | None:

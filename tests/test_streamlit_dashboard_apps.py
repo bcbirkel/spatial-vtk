@@ -284,6 +284,46 @@ def test_metrics_dashboard_row_level_loader_uses_selected_filters(monkeypatch):
     assert "unused_payload" not in captured["columns"]
 
 
+def test_metrics_dashboard_filtered_summary_explains_blank_tabs():
+    """Metrics Data Status should expose current-filter row counts by tab."""
+
+    heat = pd.DataFrame(
+        {
+            "model": ["m1"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "event_count": [2],
+            "station_count": [3],
+            "med_log2_residual": [0.1],
+        }
+    )
+    stations = pd.DataFrame(
+        {
+            "station": ["STA1", "STA2"],
+            "model": ["m1", "m1"],
+            "metric": ["PGA", "PGA"],
+            "med_log2_residual": [0.1, 0.2],
+        }
+    )
+    events = pd.DataFrame(columns=["event_id", "model", "metric", "med_log2_residual"])
+    paths = pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "dist_bin_km": [10.0], "az_bin_deg": [45.0]})
+
+    summary = streamlit_metrics._dashboard_filtered_row_summary(
+        heat=heat,
+        stations=stations,
+        events=events,
+        paths=paths,
+        rows=None,
+    ).set_index("dashboard_tab")
+
+    assert summary.loc["Overview / Compare Models", "row_count"] == 1
+    assert summary.loc["Stations", "station_count"] == 2
+    assert summary.loc["Events", "row_count"] == 0
+    assert summary.loc["Events", "message"] == "No rows match the current filters."
+    assert summary.loc["Distributions", "dashboard_table"] == "metrics_dashboard_dataset"
+    assert "not loaded" in summary.loc["Distributions", "message"]
+
+
 def test_dashboard_qc_trace_readiness_is_bounded_and_schema_aware(tmp_path):
     ready_path = tmp_path / "qc_trace_summary.csv"
     ready_path.write_text("event_id,station,component,qc_status\nev1,STA,R,pass\n", encoding="utf-8")
