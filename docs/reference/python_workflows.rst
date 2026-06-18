@@ -111,8 +111,10 @@ the large-run notebooks.
        names such as ``"metrics_long_path"`` and resolves them to configured
        paths before building the status table. ``load_tables()`` and
        ``preview_tables()`` read selected table artifacts by group path name,
-       output key, or a display-label mapping. ``first_existing_path()`` and
-       ``preview_first_existing_table()`` cover common fallback cases such as
+       output key, or a display-label mapping; pass ``missing="skip"`` when a
+       figure can use an optional output if present but should continue without
+       it. ``first_existing_path()`` and ``preview_first_existing_table()``
+       cover common fallback cases such as
        preferring ``metrics_enriched`` when it exists and otherwise using
        ``metrics_long``. These helpers keep notebook cells focused on workflow
        tasks rather than repeated table-path and preview plumbing.

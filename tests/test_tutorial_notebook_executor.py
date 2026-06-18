@@ -817,7 +817,9 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "display_output_table_previews(" in source
     assert "ingest_outputs.load_tables(" in source
     assert "step_outputs.load_tables(" in source
+    assert 'missing="skip"' in source
     assert "step_outputs.first_existing_path(" in source
+    assert "step_outputs.corridors_path.exists()" not in source
     assert "metrics_enriched_path if metrics_enriched_path.exists() else metrics_long_path" not in source
     assert "load_output_table(" not in source
     assert '"spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config"' not in source
@@ -1115,6 +1117,8 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     assert "run_qc_inventory_from_config," in source
     assert "write_qc_inventory_overlap_from_config," in source
     assert "run_qc_summary_workflow_from_config," in source
+    assert "summary_readiness = step_outputs.readiness(" in source
+    assert "step_outputs.qc_inventory_overlap_path.exists()" not in source
     assert '"spatial_vtk.qc.run_qc_inventory_from_config"' not in source
     assert '"spatial_vtk.qc.write_qc_inventory_overlap_from_config"' not in source
     assert '"spatial_vtk.qc.run_qc_summary_workflow_from_config"' not in source

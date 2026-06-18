@@ -10,6 +10,11 @@ Changelog
    Large-run Step 3 metric figure cells now gate plotting through
    ``metric_plot_context.ready`` instead of repeating metric-table existence,
    figure-enable, and value-column checks in every cell.
+   Large-run Step 2 compact QC summaries now rely on
+   ``OutputGroup.readiness()`` to report a missing overlap inventory, and
+   large-run Step 5 optional corridor-map rendering now uses
+   ``OutputGroup.load_tables(..., missing="skip")`` instead of direct
+   ``Path.exists()`` checks in notebook cells.
    Added ``OutputGroup.first_existing_path()`` and
    ``OutputGroup.preview_first_existing_table()`` for ordered fallback table
    previews. Large-run Steps 3, 6, and 7 now preview metric tables through
