@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-18
+   Rewired the standard Step 3 metric notebook to preview the metric task table
+   and ``metrics_long`` output through ``OutputGroup.display_table_previews()``
+   instead of loading full tables only to display ``.head()`` rows.
    Added ``first_nonempty_table_value()`` to the public ``spatial_vtk.io`` API
    and rewired the standard Step 5 maps notebook to use it for model labels.
    Missing or empty model columns now use a stable fallback instead of raising

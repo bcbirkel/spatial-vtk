@@ -1490,7 +1490,11 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
     assert "write_metric_outputs_from_config(" in source
     assert 'step_outputs = output_group("step_03_metrics", cfg=cfg)' in source
     assert '"metric_tasks": "metric_tasks_path"' in source
-    assert "step_outputs.load_tables(" in source
+    assert "step_outputs.display_table_previews(" in source
+    assert 'step_outputs.display_table_previews({"metric_tasks": "metric_tasks_path"}, cfg=cfg, nrows=12)' in source
+    assert 'step_outputs.display_table_previews({"metrics_long": "metrics_long_path"}, cfg=cfg, nrows=5)' in source
+    assert "metric_tasks.head(" not in source
+    assert "metrics_long.head(" not in source
     assert "load_output_table(" not in source
     assert "summarize_metric_tasks(" not in source
     assert "write_metric_outputs(" not in source
