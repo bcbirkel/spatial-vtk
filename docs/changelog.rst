@@ -2,6 +2,13 @@ Changelog
 =========
 
 2026-06-18
+   Added ``tools/execute_tutorial_notebooks.py --runtime-check-only`` so users
+   can verify tutorial source contracts, committed example data, and notebook
+   execution runtime dependencies without cleaning outputs or starting notebook
+   kernels.
+   Aligned notebook runtime dependencies across the pip ``notebooks`` extra and
+   ``svtk_environment.yaml``. Both install paths now name the modules required
+   by the tutorial notebook executor, including ``IPython``.
    Added ``write_large_run_geojson_region_figures_from_outputs()`` and
    ``RegionFigureResult`` so large-run Step 5 renders the GeoJSON overview,
    corridor map, and region boxplot through one package helper. The Step 5
