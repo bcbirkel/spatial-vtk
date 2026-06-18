@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Improved generated API-reference fallback parameter text. When a public
+   function lacks hand-written parameter docs, Sphinx now emits name-aware
+   descriptions for common workflow values such as ``input_path``, ``output``,
+   ``summary``, ``config_path``, and figure sidecar settings instead of generic
+   placeholder text.
    Added ``tools/execute_tutorial_notebooks.py --runtime-check-only`` so users
    can verify tutorial source contracts, committed example data, and notebook
    execution runtime dependencies without cleaning outputs or starting notebook

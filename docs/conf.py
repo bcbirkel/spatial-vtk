@@ -75,6 +75,56 @@ _ACRONYMS = {
     "vs30": "Vs30",
 }
 
+_PARAMETER_DESCRIPTIONS = {
+    "add_basemap": "Whether to add a configured basemap layer to geospatial figures.",
+    "cfg": "Spatial-VTK configuration object used for path and setting resolution.",
+    "close": "Whether to close the figure after display or save handling.",
+    "component": "Waveform component or component filter used for the calculation or figure.",
+    "components": "Waveform components included in the calculation or figure.",
+    "config": "Spatial-VTK configuration object or path used to resolve workflow inputs and outputs.",
+    "config_path": "Path to the Spatial-VTK YAML configuration file.",
+    "event_id": "Canonical event identifier used to select event-scoped records.",
+    "figure_dir": "Directory where generated figures should be written.",
+    "input": "Input table or file used by this workflow step.",
+    "input_path": "Path to the input table or file used by this workflow step.",
+    "manifest": "Metric or QC manifest that lists resumable workflow work units.",
+    "manifest_path": "Path to the metric or QC manifest file.",
+    "metric": "Metric name or metric filter used for the calculation or figure.",
+    "metrics": "Metric names included in the calculation or figure.",
+    "model": "Synthetic model name or model filter used for the calculation or figure.",
+    "output": "Output table or file written by this workflow step.",
+    "output_dir": "Directory where workflow outputs should be written.",
+    "output_path": "Path to the output table or file written by this workflow step.",
+    "overwrite": "Whether existing outputs should be replaced.",
+    "passband": "Passband label or passband filter used for the calculation or figure.",
+    "path": "Filesystem path or configured path key accepted by this helper.",
+    "run_scenario": "Configured run scenario name used to resolve scenario-specific settings.",
+    "savefig": "Whether to save the generated figure.",
+    "showfig": "Whether to display the generated figure interactively.",
+    "sidecar_dir": "Directory where figure sidecar CSV/JSON files should be written.",
+    "sidecar_rows": "Maximum number of rows to write to each figure sidecar; use ``None`` or ``0`` for all rows.",
+    "source": "Source table, path, or source label used by this workflow step.",
+    "source_df": "Pre-aggregation rows used to produce the plotted or summarized rows.",
+    "summary": "Summary table or summary configuration consumed by this helper.",
+    "table": "Input table, output table, or table selector used by this helper.",
+    "value_col": "Column containing the value to plot, summarize, or validate.",
+    "verbose": "Whether to print progress messages.",
+    "write_sidecar": "Whether to write row-provenance sidecar files for the figure.",
+    "write_sidecars": "Whether to write row-provenance sidecar files for generated figures.",
+}
+
+_PARAMETER_NAME_PATTERNS = (
+    ("config", "Configuration value used to resolve workflow settings."),
+    ("manifest", "Manifest value used to plan, resume, or merge workflow work units."),
+    ("sidecar", "Figure sidecar setting used for row-provenance outputs."),
+    ("output", "Output value written or resolved by this workflow step."),
+    ("input", "Input value read or resolved by this workflow step."),
+    ("summary", "Summary value read, written, or displayed by this workflow step."),
+    ("figure", "Figure value used for plotting or figure output handling."),
+    ("table", "Table value read, written, or selected by this helper."),
+    ("path", "Filesystem path or configured path key used by this helper."),
+)
+
 
 def _humanize_module_part(value: str) -> str:
     """Convert one Python module name segment into a reader-facing label."""
@@ -167,12 +217,25 @@ def _parameter_description(parameter: inspect.Parameter) -> str:
     """Return a concise generic description for an undocumented parameter."""
 
     if parameter.kind is inspect.Parameter.VAR_POSITIONAL:
-        return "Additional positional arguments passed to the function."
+        return "Additional positional arguments forwarded to the wrapped function."
     if parameter.kind is inspect.Parameter.VAR_KEYWORD:
-        return "Additional keyword arguments passed to the function."
+        return "Additional keyword options forwarded to the wrapped function."
+    name = parameter.name
+    if name in _PARAMETER_DESCRIPTIONS:
+        description = _PARAMETER_DESCRIPTIONS[name]
+    else:
+        normalized = name.lower()
+        description = next(
+            (
+                pattern_description
+                for pattern, pattern_description in _PARAMETER_NAME_PATTERNS
+                if pattern in normalized
+            ),
+            f"Value supplied for the ``{name}`` parameter.",
+        )
     if parameter.default is inspect.Signature.empty:
-        return "Required function argument."
-    return f"Optional function argument. Defaults to ``{parameter.default!r}``."
+        return description
+    return f"{description} Defaults to ``{parameter.default!r}``."
 
 
 def _append_missing_parameter_docs(obj, lines: list[str]) -> None:
@@ -219,7 +282,7 @@ def _append_missing_return_docs(obj, lines: list[str]) -> None:
     return_type = _format_annotation(return_annotation)
     if lines and lines[-1].strip():
         lines.append("")
-    lines.append(":returns: Return value produced by the function.")
+    lines.append(":returns: Result produced by the function.")
     lines.append(f":rtype: {return_type}")
 
 

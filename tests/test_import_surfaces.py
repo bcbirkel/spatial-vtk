@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import inspect
 import importlib
 import os
 import pathlib
@@ -203,6 +204,28 @@ def test_notebook_and_waveform_extras_include_runtime_dependencies():
     assert '"gmprocess>=' in text
     for dependency in ("ipykernel", "ipython", "nbclient", "nbformat"):
         assert f"  - {dependency}" in environment_text
+
+
+def test_autodoc_fallback_parameter_docs_are_descriptive():
+    """Generated API docs should not fall back to placeholder parameter text."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location("svtk_docs_conf", root / "docs" / "conf.py")
+    assert spec is not None
+    conf = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(conf)
+
+    def parameter(name: str, default: object = inspect.Signature.empty) -> inspect.Parameter:
+        return inspect.Parameter(name, inspect.Parameter.POSITIONAL_OR_KEYWORD, default=default)
+
+    assert conf._parameter_description(parameter("input_path")).startswith("Path to the input table or file")
+    assert conf._parameter_description(parameter("output")).startswith("Output table or file")
+    assert conf._parameter_description(parameter("summary")).startswith("Summary table")
+    assert conf._parameter_description(parameter("config_path")).startswith("Path to the Spatial-VTK YAML")
+    assert conf._parameter_description(parameter("sidecar_rows", default=100)).endswith("Defaults to ``100``.")
+    assert "Required function argument" not in conf._parameter_description(parameter("sample_size"))
+    assert "Optional function argument" not in conf._parameter_description(parameter("sample_size", default=10))
 
 
 def test_metrics_api_docs_use_public_plot_entry_point():
