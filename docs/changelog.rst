@@ -19,6 +19,10 @@ Changelog
    ``metrics_dashboard`` dataset and ``--dashboard-summary-table-dir`` is
    described as the ``dashboard_summaries`` table directory used by overview
    tabs.
+   Made ``svtk plot spatial directional-correlogram`` use the configured
+   ``distance_bin_correlations`` table by default, matching the large-run
+   spatial figure context and avoiding an unnecessary raw ``--input`` path for
+   standard spatial outputs.
    Made ``svtk plot metrics winner-heatmap``, ``svtk plot spatial
    residual-correlation``, and ``svtk map spatial model-improvement`` use
    config-backed input table defaults, and updated the generated CLI reference

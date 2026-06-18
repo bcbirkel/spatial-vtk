@@ -4650,7 +4650,7 @@ svtk plot spatial directional-correlogram
 
 .. code-block:: bash
 
-   svtk plot spatial directional-correlogram [-h] --input PATH
+   svtk plot spatial directional-correlogram [-h] [--input PATH]
                                                  [--output PATH]
                                                  [--config CONFIG]
                                                  [--run-scenario RUN_SCENARIO]
@@ -4702,9 +4702,9 @@ svtk plot spatial directional-correlogram
      -
      - show this help message and exit
    * - ``--input``, ``--input-table``
-     - Yes
+     - No
      -
-     - Filesystem path. Primary figure input table (directional); accepts CSV or parquet.
+     - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -

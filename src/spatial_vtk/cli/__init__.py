@@ -166,6 +166,7 @@ SPATIAL_PLOT_COMMANDS = _with_registered_plot_defaults(
     input_defaults={
         "correlogram": "distance_bin_correlations",
         "semivariogram": "distance_bin_correlations",
+        "directional-correlogram": "distance_bin_correlations",
         "block-holdout-scatter": "block_holdout_predictions",
         "cluster-solution-scores": "cluster_solution_scores",
         "cluster-feature-heatmap": "cluster_feature_summary",

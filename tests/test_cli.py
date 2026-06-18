@@ -919,6 +919,7 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "svtk plot metrics winner-heatmap [-h] [--input PATH] [--output PATH]" in plot_text
     assert "Defaults to configured output table 'metrics_long'" in plot_text
     assert "svtk plot spatial residual-correlation [-h] [--input PATH]" in plot_text
+    assert "svtk plot spatial directional-correlogram [-h] [--input PATH]" in plot_text
     assert "Defaults to configured output table 'distance_bin_correlations'" in plot_text
     assert "configured figure output 'band_score_distribution' when --config is passed" in plot_text
     assert "default config is set with 'svtk config set'" in plot_text
