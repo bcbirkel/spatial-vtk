@@ -14,6 +14,7 @@ Plot retention counts:
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 import math
@@ -23,9 +24,23 @@ import numpy as np
 import pandas as pd
 
 from spatial_vtk.config.labels import display_label
+from spatial_vtk.config.outputs import resolve_output_path
+from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_io import finish_figure
 from spatial_vtk.visualize.figure_sidecars import write_figure_row_sidecar
+
+
+@dataclass(frozen=True)
+class QCFigureResult:
+    """Result from writing the large-run QC figure suite."""
+
+    rows: tuple[dict[str, object], ...]
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact notebook status table for QC figure outputs."""
+
+        return pd.DataFrame(list(self.rows))
 
 
 def plot_retention_summary(
@@ -295,6 +310,227 @@ def plot_data_synthetic_availability(
             "synthetic_col": synthetic_col,
         },
     )
+
+
+def write_large_run_qc_figures_from_outputs(
+    outputs: Any,
+    settings: Any,
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    overwrite: bool = False,
+) -> QCFigureResult:
+    """Write standard large-run QC figures from configured output groups.
+
+    The helper keeps notebooks from repeating compact-table readiness checks,
+    table loading, map/figure keyword selection, and figure-output plumbing.
+    """
+
+    table_specs = {
+        "retention": "retention_path",
+        "event_station_retention": "event_station_retention_path",
+        "qc_availability": "availability_path",
+        "post_qc_records": "post_qc_records_path",
+        "drop_causes": "drop_causes_path",
+        "drop_causes_overlap": "drop_causes_overlap_path",
+    }
+    required = [_output_group_path(outputs, path_name) for path_name in table_specs.values()]
+    gate = settings.render_gate(
+        required,
+        missing_message="Skipping figures until all compact QC tables exist.",
+    )
+    figure_specs: tuple[dict[str, Any], ...] = (
+        {
+            "artifact": "retention_summary",
+            "table": "retention",
+            "func": plot_retention_summary,
+            "output_key": "retention_summary",
+            "title": "QC Pair Retention Summary (Observed/Synthetic Trace Overlap)",
+        },
+        {
+            "artifact": "event_station_retention",
+            "table": "event_station_retention",
+            "func": plot_event_station_retention_heatmap,
+            "output_key": "event_station_retention",
+            "title": "Post-QC Pair Retention by Event and Station (Trace Overlap)",
+        },
+        {
+            "artifact": "data_synthetic_availability",
+            "table": "qc_availability",
+            "func": plot_data_synthetic_availability,
+            "output_key": "data_synthetic_availability",
+            "title": "Observed/Synthetic Availability (Post-QC Trace Overlap)",
+        },
+        {
+            "artifact": "post_qc_station_event_map",
+            "table": "post_qc_records",
+            "func": plot_post_qc_station_event_map,
+            "output_key": "post_qc_station_event_map",
+            "map": True,
+        },
+        {
+            "artifact": "drop_cause_diagnostics",
+            "table": "drop_causes",
+            "func": plot_qc_drop_cause_diagnostics,
+            "output_key": "drop_cause_diagnostics",
+            "title": "QC Drop Causes (All Events)",
+            "kwargs": {"reason_col": "_reason", "status_col": None, "count_col": "count"},
+        },
+        {
+            "artifact": "qc_drop_cause_diagnostics_overlap",
+            "table": "drop_causes_overlap",
+            "func": plot_qc_drop_cause_diagnostics,
+            "path_name": "drop_causes_overlap_figure_path",
+            "output_key": "qc_drop_cause_diagnostics_overlap",
+            "title": "QC Drop Causes (Observed/Synthetic Trace Overlap)",
+            "kwargs": {"reason_col": "_reason", "status_col": None, "count_col": "count"},
+        },
+    )
+    if not gate.ready:
+        status = "missing_input" if gate.figures_enabled else "disabled"
+        return QCFigureResult(
+            tuple(
+                _qc_figure_status_row(
+                    spec["artifact"],
+                    status,
+                    table_path=_output_group_path(outputs, table_specs[spec["table"]]),
+                    figure_path=_qc_figure_output_path(outputs, spec, cfg=cfg),
+                    message=gate.message,
+                )
+                for spec in figure_specs
+            )
+        )
+
+    try:
+        tables = outputs.load_tables(table_specs, cfg=cfg)
+    except Exception as exc:
+        return QCFigureResult(
+            tuple(
+                _qc_figure_status_row(
+                    spec["artifact"],
+                    "load_failed",
+                    table_path=_output_group_path(outputs, table_specs[spec["table"]]),
+                    figure_path=_qc_figure_output_path(outputs, spec, cfg=cfg),
+                    message=f"{type(exc).__name__}: {exc}",
+                )
+                for spec in figure_specs
+            )
+        )
+
+    rows: list[dict[str, object]] = []
+    for spec in figure_specs:
+        artifact = spec["artifact"]
+        table_name = spec["table"]
+        table = tables[table_name]
+        table_path = _output_group_path(outputs, table_specs[table_name])
+        figure_path = _qc_figure_output_path(outputs, spec, cfg=cfg)
+        if figure_path is None:
+            rows.append(
+                _qc_figure_status_row(
+                    artifact,
+                    "missing_output",
+                    table_path=table_path,
+                    figure_path=None,
+                    row_count=len(table),
+                    message="No figure output path could be resolved.",
+                )
+            )
+            continue
+        if figure_path.exists() and not overwrite:
+            rows.append(
+                _qc_figure_status_row(
+                    artifact,
+                    "exists",
+                    table_path=table_path,
+                    figure_path=figure_path,
+                    row_count=len(table),
+                    message=f"skip {figure_path.name}: exists",
+                )
+            )
+            continue
+        plot_kwargs = settings.plot_kwargs(include_basemap=True) if spec.get("map") else settings.plot_kwargs()
+        plot_kwargs.update(spec.get("kwargs", {}))
+        if "title" in spec:
+            plot_kwargs["title"] = spec["title"]
+        try:
+            spec["func"](
+                table,
+                outpath=figure_path,
+                savefig=True,
+                **plot_kwargs,
+            )
+            plt.close("all")
+            rows.append(
+                _qc_figure_status_row(
+                    artifact,
+                    "wrote",
+                    table_path=table_path,
+                    figure_path=figure_path,
+                    row_count=len(table),
+                    message=f"wrote {figure_path}",
+                )
+            )
+        except Exception as exc:
+            plt.close("all")
+            rows.append(
+                _qc_figure_status_row(
+                    artifact,
+                    "plot_failed",
+                    table_path=table_path,
+                    figure_path=figure_path,
+                    row_count=len(table),
+                    message=f"{type(exc).__name__}: {exc}",
+                )
+            )
+    return QCFigureResult(tuple(rows))
+
+
+def _output_group_path(outputs: Any, name: str) -> Path | None:
+    """Return one path from an output group-like object."""
+
+    if hasattr(outputs, name):
+        value = getattr(outputs, name)
+        return None if value is None else Path(value)
+    paths = getattr(outputs, "paths", None)
+    if isinstance(paths, dict) and name in paths:
+        value = paths[name]
+        return None if value is None else Path(value)
+    return None
+
+
+def _qc_figure_output_path(outputs: Any, spec: dict[str, Any], *, cfg: SpatialVTKConfig | None) -> Path | None:
+    """Return one QC figure output path."""
+
+    path_name = spec.get("path_name")
+    if path_name:
+        configured = _output_group_path(outputs, str(path_name))
+        if configured is not None:
+            configured.parent.mkdir(parents=True, exist_ok=True)
+            return configured
+    try:
+        return resolve_output_path(str(spec["output_key"]), kind="figure", cfg=cfg, create_parent=True)
+    except Exception:
+        return None
+
+
+def _qc_figure_status_row(
+    artifact: str,
+    status: str,
+    *,
+    table_path: Path | None,
+    figure_path: Path | None,
+    row_count: int = 0,
+    message: str = "",
+) -> dict[str, object]:
+    """Return one QC figure status row."""
+
+    return {
+        "artifact": artifact,
+        "status": status,
+        "row_count": int(row_count),
+        "table_path": None if table_path is None else str(table_path),
+        "figure_path": None if figure_path is None else str(figure_path),
+        "message": message,
+    }
 
 
 def plot_event_station_retention_heatmap(
@@ -814,8 +1050,10 @@ def _readable_qc_reason(reason: object) -> str:
 
 
 __all__ = [
+    "QCFigureResult",
     "plot_data_synthetic_availability",
     "plot_post_qc_station_event_map",
     "plot_qc_drop_cause_diagnostics",
     "plot_retention_summary",
+    "write_large_run_qc_figures_from_outputs",
 ]

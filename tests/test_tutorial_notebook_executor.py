@@ -662,7 +662,9 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "run_qc_inventory_from_config," in large_run_text
     assert "write_qc_inventory_overlap_from_config," in large_run_text
     assert "run_qc_summary_workflow_from_config," in large_run_text
-    assert "qc_figure_tables = step_outputs.load_tables(" in large_run_text
+    assert "write_large_run_qc_figures_from_outputs(" in large_run_text
+    assert "qc_figure_result.status_frame()" in large_run_text
+    assert "qc_figure_tables = step_outputs.load_tables(" not in large_run_text
     assert '"spatial_vtk.qc.run_qc_inventory_from_config"' not in large_run_text
     assert '"spatial_vtk.qc.write_qc_inventory_overlap_from_config"' not in large_run_text
     assert '"spatial_vtk.qc.run_qc_summary_workflow_from_config"' not in large_run_text
@@ -1596,11 +1598,13 @@ def test_large_run_step02_uses_qc_availability_output() -> None:
     assert "step_outputs.bind(globals())" not in source
     assert "step_outputs.availability_path" in source
     assert "availability_path," in source
-    assert '"qc_availability": "availability_path"' in source
-    assert 'qc_availability = qc_figure_tables["qc_availability"]' in source
+    assert "write_large_run_qc_figures_from_outputs(" in source
+    assert "qc_figure_result.status_frame()" in source
+    assert '"qc_availability": "availability_path"' not in source
+    assert 'qc_availability = qc_figure_tables["qc_availability"]' not in source
     assert 'load_output_table("qc_availability")' not in source
-    assert "plot_data_synthetic_availability(" in source
-    assert "Observed/Synthetic Availability (Post-QC Trace Overlap)" in source
+    assert "plot_data_synthetic_availability(" not in source
+    assert "Observed/Synthetic Availability (Post-QC Trace Overlap)" not in source
 
 
 def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
@@ -1617,7 +1621,9 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     assert "run_qc_inventory_from_config," in source
     assert "write_qc_inventory_overlap_from_config," in source
     assert "run_qc_summary_workflow_from_config," in source
+    assert "write_large_run_qc_figures_from_outputs(" in source
     assert "summary_readiness = step_outputs.readiness(" in source
+    assert "qc_figure_tables = step_outputs.load_tables(" not in source
     assert "step_outputs.qc_inventory_overlap_path.exists()" not in source
     assert '"spatial_vtk.qc.run_qc_inventory_from_config"' not in source
     assert '"spatial_vtk.qc.write_qc_inventory_overlap_from_config"' not in source

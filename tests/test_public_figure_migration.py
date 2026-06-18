@@ -57,12 +57,14 @@ from spatial_vtk.visualize.context import (
 )
 from spatial_vtk.visualize.fit import draw_scatter_fit
 from spatial_vtk.visualize.qc import (
+    QCFigureResult,
     plot_data_synthetic_availability,
     plot_event_station_retention_heatmap,
     plot_post_qc_station_event_map,
     plot_qc_drop_cause_diagnostics,
     plot_retention_summary,
     plot_trace_inventory_samples,
+    write_large_run_qc_figures_from_outputs,
 )
 from spatial_vtk.visualize import savefig
 from spatial_vtk.visualize.waveforms import (
@@ -485,6 +487,170 @@ def test_qc_figures_write_optional_row_sidecars(tmp_path: Path) -> None:
     assert trace_metadata["figure_type"] == "trace_inventory_samples"
     assert trace_metadata["plot_row_count"] == 3
     assert trace_metadata["written_row_count"] == 2
+
+
+def test_write_large_run_qc_figures_from_outputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Large-run QC figure helper should own table loading and plotting."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  figures: figures
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    table_names = {
+        "retention_path": "retention",
+        "event_station_retention_path": "event_station_retention",
+        "availability_path": "qc_availability",
+        "post_qc_records_path": "post_qc_records",
+        "drop_causes_path": "drop_causes",
+        "drop_causes_overlap_path": "drop_causes_overlap",
+    }
+    tables = {value: pd.DataFrame({"value": [1, 2]}) for value in table_names.values()}
+    calls: list[dict[str, object]] = []
+
+    class Outputs:
+        def __init__(self) -> None:
+            self.paths = {name: tmp_path / f"{name}.csv" for name in table_names}
+            self.paths["drop_causes_overlap_figure_path"] = tmp_path / "overlap_drop_causes.png"
+            for path in self.paths.values():
+                if path.suffix == ".csv":
+                    path.write_text("ready", encoding="utf-8")
+
+        def __getattr__(self, name: str) -> Path:
+            try:
+                return self.paths[name]
+            except KeyError as exc:
+                raise AttributeError(name) from exc
+
+        def load_tables(self, names, *, cfg=None):  # noqa: ANN001, ANN202
+            calls.append({"kind": "load", "names": names, "cfg": cfg})
+            return {label: tables[label] for label in names}
+
+    class Settings:
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            calls.append({"kind": "gate", "paths": paths, "message": missing_message})
+            return type("Gate", (), {"ready": True, "figures_enabled": True, "message": missing_message})()
+
+        def plot_kwargs(self, *, include_basemap: bool = False) -> dict[str, object]:
+            return {"showfig": False, "add_basemap": include_basemap}
+
+    def _fake_plot(frame: pd.DataFrame, *, outpath: Path, savefig: bool, **kwargs) -> None:  # noqa: ANN003
+        calls.append({"kind": "plot", "outpath": outpath, "rows": len(frame), "savefig": savefig, "kwargs": kwargs})
+        Path(outpath).write_text("figure", encoding="utf-8")
+
+    import spatial_vtk.visualize.qc.retention as retention_module
+
+    for name in (
+        "plot_retention_summary",
+        "plot_event_station_retention_heatmap",
+        "plot_data_synthetic_availability",
+        "plot_post_qc_station_event_map",
+        "plot_qc_drop_cause_diagnostics",
+    ):
+        monkeypatch.setattr(retention_module, name, _fake_plot)
+
+    outputs = Outputs()
+    result = write_large_run_qc_figures_from_outputs(outputs, Settings(), cfg=cfg, overwrite=True)
+    status = result.status_frame()
+
+    assert isinstance(result, QCFigureResult)
+    assert set(status["status"]) == {"wrote"}
+    assert len(status) == 6
+    assert all(path and Path(path).exists() for path in status["figure_path"])
+    plot_calls = [call for call in calls if call["kind"] == "plot"]
+    assert len(plot_calls) == 6
+    post_qc_call = next(call for call in plot_calls if Path(call["outpath"]).name == "post_qc_station_event_map.png")
+    assert post_qc_call["kwargs"]["add_basemap"] is True
+    overlap_row = status.loc[status["artifact"].eq("qc_drop_cause_diagnostics_overlap")].iloc[0]
+    assert overlap_row["figure_path"] == str(outputs.drop_causes_overlap_figure_path)
+
+
+def test_write_large_run_qc_figures_skips_existing(tmp_path: Path) -> None:
+    """Large-run QC figure helper should not load tables when outputs are current."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  figures: figures
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    figure_keys = (
+        "retention_summary",
+        "event_station_retention",
+        "data_synthetic_availability",
+        "post_qc_station_event_map",
+        "drop_cause_diagnostics",
+        "qc_drop_cause_diagnostics_overlap",
+    )
+    for key in figure_keys:
+        path = tmp_path / "figures" / f"{key}.png"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("existing", encoding="utf-8")
+
+    class Outputs:
+        def __init__(self) -> None:
+            for name in (
+                "retention_path",
+                "event_station_retention_path",
+                "availability_path",
+                "post_qc_records_path",
+                "drop_causes_path",
+                "drop_causes_overlap_path",
+            ):
+                setattr(self, name, tmp_path / f"{name}.csv")
+                getattr(self, name).write_text("ready", encoding="utf-8")
+            self.drop_causes_overlap_figure_path = tmp_path / "figures" / "qc_drop_cause_diagnostics_overlap.png"
+
+        def load_tables(self, names, *, cfg=None):  # noqa: ANN001, ANN202
+            raise AssertionError("existing figures should skip table loading")
+
+    class Settings:
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            return type("Gate", (), {"ready": True, "figures_enabled": True, "message": missing_message})()
+
+    result = write_large_run_qc_figures_from_outputs(Outputs(), Settings(), cfg=cfg)
+
+    assert set(result.status_frame()["status"]) == {"exists"}
+
+
+def test_write_large_run_qc_figures_reports_missing_inputs(tmp_path: Path) -> None:
+    """Large-run QC figure helper should return status rows when inputs are missing."""
+
+    class Outputs:
+        retention_path = tmp_path / "missing_retention.csv"
+        event_station_retention_path = tmp_path / "missing_event_station.csv"
+        availability_path = tmp_path / "missing_availability.csv"
+        post_qc_records_path = tmp_path / "missing_post_qc.csv"
+        drop_causes_path = tmp_path / "missing_drop.csv"
+        drop_causes_overlap_path = tmp_path / "missing_drop_overlap.csv"
+        drop_causes_overlap_figure_path = tmp_path / "overlap.png"
+
+        def load_tables(self, names, *, cfg=None):  # noqa: ANN001, ANN202
+            raise AssertionError("missing inputs should skip table loading")
+
+    class Settings:
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            return type("Gate", (), {"ready": False, "figures_enabled": True, "message": missing_message})()
+
+    result = write_large_run_qc_figures_from_outputs(Outputs(), Settings(), cfg=None)
+    status = result.status_frame()
+
+    assert len(status) == 6
+    assert set(status["status"]) == {"missing_input"}
+    assert status["message"].str.contains("compact QC tables").all()
 
 
 def test_qc_availability_and_retention_heatmaps_have_distinct_default_outputs(tmp_path: Path) -> None:

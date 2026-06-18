@@ -14,6 +14,7 @@ _EXPORT_MODULES = {
     "filter_trace_summary": "spatial_vtk.visualize.qc.overview",
     "load_trace_qc_summary": "spatial_vtk.visualize.qc.overview",
     "normalize_trace_qc_summary": "spatial_vtk.visualize.qc.overview",
+    "QCFigureResult": "spatial_vtk.visualize.qc.retention",
     "queue_rows_from_filtered_trace_df": "spatial_vtk.visualize.qc.overview",
     "trace_qc_records": "spatial_vtk.visualize.qc.overview",
     "write_trace_qc_overview_html": "spatial_vtk.visualize.qc.overview",
@@ -23,6 +24,7 @@ _EXPORT_MODULES = {
     "plot_qc_drop_cause_diagnostics": "spatial_vtk.visualize.qc.retention",
     "plot_retention_summary": "spatial_vtk.visualize.qc.retention",
     "plot_trace_inventory_samples": "spatial_vtk.visualize.qc.samples",
+    "write_large_run_qc_figures_from_outputs": "spatial_vtk.visualize.qc.retention",
 }
 
 __all__ = sorted(_EXPORT_MODULES)

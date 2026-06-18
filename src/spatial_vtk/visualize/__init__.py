@@ -19,6 +19,7 @@ _EXPORT_MODULES = {
     "launch_qc_dashboard": "spatial_vtk.visualize.dashboard",
     "load_dashboard_metric_dataset": "spatial_vtk.visualize.dashboard",
     "prepare_dashboard_metric_table": "spatial_vtk.visualize.dashboard",
+    "QCFigureResult": "spatial_vtk.visualize.qc",
     "write_configured_dashboard_datasets": "spatial_vtk.visualize.dashboard",
     "write_dashboard_metric_dataset": "spatial_vtk.visualize.dashboard",
     "write_dashboard_summaries": "spatial_vtk.visualize.dashboard",
@@ -65,6 +66,7 @@ _EXPORT_MODULES = {
     "station_event_waveform_order_frame": "spatial_vtk.visualize.waveforms",
     "WaveformComparisonFigureResult": "spatial_vtk.visualize.waveforms",
     "write_large_run_waveform_comparison_from_outputs": "spatial_vtk.visualize.waveforms",
+    "write_large_run_qc_figures_from_outputs": "spatial_vtk.visualize.qc",
     "write_waveform_comparison_from_outputs": "spatial_vtk.visualize.waveforms",
 }
 

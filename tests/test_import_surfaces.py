@@ -611,6 +611,7 @@ def test_visualize_api_docs_use_public_entry_points():
         "plot_station_event_beachball_map",
         "plot_retention_summary",
         "plot_event_station_retention_heatmap",
+        "write_large_run_qc_figures_from_outputs",
         "plot_observed_synthetic_record_section",
         "write_waveform_comparison_from_outputs",
         "write_large_run_waveform_comparison_from_outputs",

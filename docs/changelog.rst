@@ -3,6 +3,11 @@ Changelog
 
 2026-06-18
    Added
+   ``spatial_vtk.visualize.qc.write_large_run_qc_figures_from_outputs()``
+   and rewired the large-run Step 2 QC figure cell to use it. The notebook no
+   longer performs compact-QC input gating, table loading, figure-path
+   selection, or plotting calls inline.
+   Added
    ``spatial_vtk.spatial.plot.write_large_run_spatial_summary_figures_from_outputs()``
    and rewired the large-run Step 4 quick spatial-figure cell to use it. The
    notebook no longer performs station-bias input gating, table loading, or
