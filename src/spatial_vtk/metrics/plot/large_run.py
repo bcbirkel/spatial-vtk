@@ -1864,6 +1864,51 @@ def prepare_large_run_metric_figure_context(
     return MetricFigureContext.from_metrics_long(metrics_long_path, figures_dir, **kwargs)
 
 
+def metric_plot_input_summary_frame(
+    metrics: pd.DataFrame,
+    *,
+    comparison_eligible: pd.DataFrame | None = None,
+    metric_col: str | None = None,
+    event_col: str | None = None,
+    station_col: str | None = None,
+    max_metric_names: int = 12,
+) -> pd.DataFrame:
+    """Return a compact notebook summary for metric plotting inputs.
+
+    Parameters
+    ----------
+    metrics
+        Metric rows used by a plotting notebook.
+    comparison_eligible
+        Optional observed/synthetic waveform-pair table used by waveform
+        preview plots.
+    metric_col, event_col, station_col
+        Optional column overrides. When omitted, common Spatial-VTK aliases are
+        resolved from ``metrics``.
+    max_metric_names
+        Maximum number of metric names to show before appending an overflow
+        count.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Two-column summary with ``Input`` and ``Value`` columns.
+    """
+
+    metric_column = metric_col if metric_col in metrics.columns else first_existing(metrics, ["metric", "metric_name"])
+    event_column = event_col if event_col in metrics.columns else first_existing(metrics, ["event_id", "event", "event_title"])
+    station_column = station_col if station_col in metrics.columns else first_existing(metrics, ["station", "station_id", "station_code"])
+    rows: list[dict[str, Any]] = [
+        {"Input": "Metric rows", "Value": int(len(metrics))},
+        {"Input": "Events", "Value": _summary_unique_count(metrics, event_column)},
+        {"Input": "Stations", "Value": _summary_unique_count(metrics, station_column)},
+        {"Input": "Metrics", "Value": _summary_metric_names(metrics, metric_column, max_names=max_metric_names)},
+    ]
+    if comparison_eligible is not None:
+        rows.append({"Input": "Waveform preview pairs", "Value": int(len(comparison_eligible))})
+    return pd.DataFrame(rows, columns=["Input", "Value"])
+
+
 def first_existing(df: pd.DataFrame, candidates: list[str | None]) -> str | None:
     """Return the first candidate column present in a dataframe."""
 
@@ -2277,6 +2322,28 @@ def _unique_count(df: pd.DataFrame, candidates: Iterable[str]) -> int | None:
     return int(df[column].nunique(dropna=True))
 
 
+def _summary_unique_count(df: pd.DataFrame, column: str | None) -> int | None:
+    """Return a nullable unique count for a notebook summary row."""
+
+    if column is None or column not in df.columns:
+        return None
+    return int(df[column].nunique(dropna=True))
+
+
+def _summary_metric_names(df: pd.DataFrame, column: str | None, *, max_names: int) -> str | None:
+    """Return a compact metric-name preview for a notebook summary row."""
+
+    if column is None or column not in df.columns:
+        return None
+    names = sorted({str(value) for value in df[column].dropna().unique() if str(value).strip()})
+    if not names:
+        return None
+    limit = max(1, int(max_names))
+    shown = names[:limit]
+    suffix = f", ... (+{len(names) - limit} more)" if len(names) > limit else ""
+    return ", ".join(shown) + suffix
+
+
 def _preview_values(values: Iterable[Any] | Any, *, limit: int = 6) -> str | None:
     """Return a compact deterministic preview for settings or dimension values."""
 
@@ -2385,6 +2452,7 @@ __all__ = [
     "filter_optional",
     "first_existing",
     "first_value",
+    "metric_plot_input_summary_frame",
     "norm_text",
     "prepare_large_run_metric_figure_context",
     "psa_period_label",

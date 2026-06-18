@@ -1706,6 +1706,8 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     assert "load_output_table(" not in source
     assert "figure_dir /" not in source
     assert "from spatial_vtk.spatial import add_geojson_metadata_to_metrics" in source
+    assert "metric_plot_input_summary_frame(" in source
+    assert "pd.DataFrame(" not in source
     assert "from spatial_vtk.spatial.calculate import" not in source
     assert "load_configured_input_tables(" in source
     assert 'read_config_table("paths.metric_figure_snapshot")' not in source

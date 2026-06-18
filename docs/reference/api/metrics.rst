@@ -213,6 +213,12 @@ standard row factories used by the large-run notebooks:
    legacy passband-scoped row counts, period counts, and rebuild guidance.
    Display this next to ``status_frame`` when diagnosing old metric outputs.
 
+``metric_plot_input_summary_frame``
+   Return a small ``Input``/``Value`` table for plotting notebooks, including
+   metric row count, event count, station count, metric names, and optional
+   waveform-preview pair count. Use this instead of constructing summary
+   dataframes in notebook cells.
+
 ``write_residuals_vs_distance_plots``, ``write_residuals_vs_depth_plots``,
 ``write_vs30_scatter_plots``, ``write_station_metric_maps``,
 ``write_residual_grid_maps``, ``write_metric_by_model_maps``,
@@ -231,5 +237,7 @@ input rows contain multiple ``period_s`` values; period curves use the same
 
 .. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext
    :members:
+
+.. autofunction:: spatial_vtk.metrics.plot.metric_plot_input_summary_frame
 
 .. autofunction:: spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context

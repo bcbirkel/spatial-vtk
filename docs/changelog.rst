@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Added ``metric_plot_input_summary_frame()`` to the public metric plotting API
+   and rewired the standard Step 6 plotting notebook to use it instead of
+   constructing a local ``pd.DataFrame`` summary. This keeps the notebook
+   focused on plotting tasks while package code owns the reusable input-summary
+   contract.
    Updated standard Step 5 and Step 6 notebooks to name their Step 1
    ``OutputGroup`` before loading tables, keeping output-group access
    consistent across tutorial cells.

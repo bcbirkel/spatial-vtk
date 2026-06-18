@@ -38,7 +38,7 @@ from spatial_vtk.metrics.workflow import (
     write_task_manifest,
     MetricWorkflowTask,
 )
-from spatial_vtk.metrics.plot import MetricFigureContext, plot_period_score_distribution
+from spatial_vtk.metrics.plot import MetricFigureContext, metric_plot_input_summary_frame, plot_period_score_distribution
 from spatial_vtk.visualize import figure_sidecar_status_frame
 from spatial_vtk.spatial.map import plot_event_residual_map
 from spatial_vtk.spatial.plot import boxplot, heatmap, scatterplot
@@ -97,6 +97,38 @@ def test_metric_inventories_from_trace_metadata_use_explicit_path_columns(tmp_pa
     assert reused.reused
     assert reused.observed_rows is None
     assert reused.synthetic_rows is None
+
+
+def test_metric_plot_input_summary_frame_reports_notebook_inputs() -> None:
+    """Plotting notebooks should use package-owned metric input summaries."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1", "e2"],
+            "station": ["STA1", "STA2", "STA1"],
+            "metric": ["PGA", "PGV", "PGA"],
+        }
+    )
+    comparison_eligible = pd.DataFrame({"event_id": ["e1", "e2"]})
+
+    summary = metric_plot_input_summary_frame(metrics, comparison_eligible=comparison_eligible).set_index("Input")["Value"]
+
+    assert summary["Metric rows"] == 3
+    assert summary["Events"] == 2
+    assert summary["Stations"] == 2
+    assert summary["Metrics"] == "PGA, PGV"
+    assert summary["Waveform preview pairs"] == 2
+
+
+def test_metric_plot_input_summary_frame_handles_missing_optional_columns() -> None:
+    """The summary helper should not force every plotting table to share one schema."""
+
+    summary = metric_plot_input_summary_frame(pd.DataFrame({"value": [1.0]})).set_index("Input")["Value"]
+
+    assert summary["Metric rows"] == 1
+    assert pd.isna(summary["Events"])
+    assert pd.isna(summary["Stations"])
+    assert pd.isna(summary["Metrics"])
 
 
 def test_metric_inventories_from_config_resolve_standard_paths(tmp_path) -> None:

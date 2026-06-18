@@ -31,7 +31,7 @@ def test_public_imports():
         metric_slurm_submission_readiness,
         metric_slurm_submission_readiness_from_config,
     )
-    from spatial_vtk.metrics.plot import MetricFigureContext
+    from spatial_vtk.metrics.plot import MetricFigureContext, metric_plot_input_summary_frame
     from spatial_vtk.io import (
         load_configured_input_paths,
         load_configured_input_tables,
@@ -83,6 +83,7 @@ def test_public_imports():
     assert callable(metric_slurm_submission_readiness)
     assert callable(metric_slurm_submission_readiness_from_config)
     assert callable(MetricFigureContext.from_frame)
+    assert callable(metric_plot_input_summary_frame)
     assert callable(inspect_synthetic_format)
     assert callable(load_configured_input_paths)
     assert callable(load_configured_input_tables)
@@ -238,6 +239,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "from spatial_vtk.metrics.plot import (" in text
     assert ".. automodule:: spatial_vtk.metrics.plot\n" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext" in text
+    assert ".. autofunction:: spatial_vtk.metrics.plot.metric_plot_input_summary_frame" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context" in text
     assert "Public plotting helpers exposed by ``spatial_vtk.metrics.plot``" in text
     assert "``PSA`` and ``FAS`` are broadband spectral metrics" in text
