@@ -344,10 +344,55 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "run_spatial_statistics_workflow_from_config" in text
     assert "run_geojson_region_summary_workflow_from_config" in text
     assert "run_boundary_corridor_workflow_from_config" in text
+    assert "Public helpers exposed by ``spatial_vtk.spatial``" in text
+    for helper in (
+        "run_spatial_derived_outputs_workflow_from_config",
+        "spatial_statistics_settings_from_config",
+        "build_path_table",
+        "summarize_residuals_by_path_bin",
+        "annotate_points_with_geojson",
+        "classify_paths_with_geojson",
+        "build_station_edge_corridors",
+        "select_records_by_corridors",
+    ):
+        assert helper in text
     assert "from spatial_vtk.spatial.plot import (" in text
     assert "from spatial_vtk.spatial.map import (" in text
     assert ".. automodule:: spatial_vtk.spatial.plot\n" in text
     assert ".. automodule:: spatial_vtk.spatial.map\n" in text
+    assert "Public helpers exposed by ``spatial_vtk.spatial.plot``" in text
+    for helper in (
+        "plot_correlogram",
+        "plot_semivariogram",
+        "plot_directional_correlogram",
+        "plot_distance_correlation_by_metric",
+        "plot_residual_correlation",
+        "plot_block_holdout_scatter",
+        "plot_cluster_solution_scores",
+        "plot_cluster_feature_heatmap",
+        "plot_geology_contrast",
+        "plot_path_bin_summary",
+        "plot_pca_explained_variance",
+        "plot_pca_feature_loadings",
+    ):
+        assert helper in text
+    assert "Public helpers exposed by ``spatial_vtk.spatial.map``" in text
+    for helper in (
+        "plot_station_metric_map",
+        "plot_station_metric_map_by_period",
+        "plot_metric_map_by_model",
+        "plot_model_improvement_map",
+        "plot_residual_grid",
+        "plot_score_map",
+        "plot_event_residual_map",
+        "plot_corridor_map",
+        "plot_geojson_polygons_map",
+        "plot_station_bias_map",
+        "plot_cluster_map",
+        "plot_pca_mode_map",
+        "plot_pca_summary",
+    ):
+        assert helper in text
     assert ".. autoclass:: spatial_vtk.spatial.plot.SpatialFigureContext" in text
     assert ".. autofunction:: spatial_vtk.spatial.plot.prepare_spatial_figure_context" in text
     assert "station_summary_for_item" in text

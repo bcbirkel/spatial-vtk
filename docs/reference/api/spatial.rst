@@ -34,6 +34,36 @@ module names.
 .. automodule:: spatial_vtk.spatial
    :members:
 
+Public helpers exposed by ``spatial_vtk.spatial``:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Helper
+     - Use
+   * - ``run_spatial_statistics_workflow_from_config``
+     - Build the configured metric-field, event-centered residual,
+       station-bias, Moran's I, distance-correlation, clustering, PCA, and
+       geology tables.
+   * - ``run_spatial_derived_outputs_workflow_from_config``
+     - Rebuild downstream spatial outputs that depend on existing metric and
+       spatial-statistics tables.
+   * - ``run_geojson_region_summary_workflow_from_config``
+     - Summarize configured metric rows by GeoJSON regions using config-backed
+       metric and region paths.
+   * - ``run_boundary_corridor_workflow_from_config``
+     - Build configured boundary-corridor selections and summaries.
+   * - ``spatial_statistics_settings_from_config``
+     - Resolve metric, component, passband, distance-bin, clustering, PCA, and
+       geologic-contrast settings from the active config.
+   * - ``build_path_table`` and ``summarize_residuals_by_path_bin``
+     - Build path-level residual summaries for maps, corridors, and dashboard
+       exports.
+   * - ``annotate_points_with_geojson`` and ``classify_paths_with_geojson``
+     - Add region and path-control metadata from configured GeoJSON polygons.
+   * - ``build_station_edge_corridors`` and ``select_records_by_corridors``
+     - Prepare corridor records for path-focused diagnostics.
+
 Calculate
 ---------
 
@@ -105,6 +135,34 @@ tutorial-facing API.
 .. automodule:: spatial_vtk.spatial.plot
    :members:
 
+Public helpers exposed by ``spatial_vtk.spatial.plot``:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Helper
+     - Use
+   * - ``prepare_spatial_figure_context`` and ``SpatialFigureContext``
+     - Render large-run spatial figures with the same filtering, station
+       aggregation, PSA-period handling, and sidecar metadata conventions used
+       by the metric figure context.
+   * - ``plot_correlogram``, ``plot_semivariogram``, and
+       ``plot_directional_correlogram``
+     - Plot spatial correlation diagnostics by distance or direction.
+   * - ``plot_distance_correlation_by_metric`` and
+       ``plot_residual_correlation``
+     - Plot metric-level spatial correlation summaries.
+   * - ``plot_block_holdout_scatter``
+     - Plot spatial block-holdout predictions against observed values.
+   * - ``plot_cluster_solution_scores`` and ``plot_cluster_feature_heatmap``
+     - Plot clustering diagnostics and feature summaries.
+   * - ``boxplot``, ``scatterplot``, and ``heatmap``
+     - Plot generic spatial metric distributions from prepared tables.
+   * - ``plot_geology_contrast`` and ``plot_path_bin_summary``
+     - Plot geologic-class and path-bin diagnostic tables.
+   * - ``plot_pca_explained_variance`` and ``plot_pca_feature_loadings``
+     - Plot PCA spatial-mode diagnostics.
+
 Large-Run Spatial Figure Context
 --------------------------------
 
@@ -149,3 +207,27 @@ contains the path and corridor map helpers used by the tutorials.
 
 .. automodule:: spatial_vtk.spatial.map
    :members:
+
+Public helpers exposed by ``spatial_vtk.spatial.map``:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Helper
+     - Use
+   * - ``plot_station_metric_map`` and ``plot_station_metric_map_by_period``
+     - Map station-level metric residuals, including PSA-period sheets.
+   * - ``plot_metric_map_by_model`` and ``plot_model_improvement_map``
+     - Map model-level residual and model-improvement summaries.
+   * - ``plot_residual_grid`` and ``plot_score_map``
+     - Map gridded residuals or score summaries from prepared spatial tables.
+   * - ``plot_event_residual_map``
+     - Map event-level path residuals after event/station filtering.
+   * - ``plot_corridor_map``
+     - Map selected station-event corridors and boundary-crossing paths.
+   * - ``plot_geojson_polygons_map``
+     - Map configured GeoJSON regions and preview polygon selections.
+   * - ``plot_station_bias_map`` and ``plot_cluster_map``
+     - Map station bias and spatial cluster assignments.
+   * - ``plot_pca_mode_map`` and ``plot_pca_summary``
+     - Map spatial PCA mode scores and summary diagnostics.
