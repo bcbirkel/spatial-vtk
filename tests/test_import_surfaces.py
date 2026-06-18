@@ -376,6 +376,7 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "The readiness and status frames are intentionally small" in text
     assert "``artifact_label``" in text
     assert "``dashboard_tabs``" in text
+    assert "``suggested_action``" in text
     assert "``required_columns`` / ``missing_columns`` / ``map_message``" in text
 
 

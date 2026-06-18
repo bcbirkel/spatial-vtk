@@ -64,6 +64,7 @@ SUMMARY_READINESS_DISPLAY_COLUMNS = (
     "nonempty_value_columns",
     "message",
     "map_message",
+    "suggested_action",
 )
 METRIC_DATASET_READINESS_DISPLAY_COLUMNS = (
     "artifact_label",
@@ -74,6 +75,7 @@ METRIC_DATASET_READINESS_DISPLAY_COLUMNS = (
     "row_count",
     "value_columns",
     "message",
+    "suggested_action",
 )
 
 

@@ -322,6 +322,7 @@ def dashboard_readiness_summary_frame(
                 "file_count": "",
                 "map_ready": "",
                 "message": f"{name} is ready." if exists else f"{name} is missing.",
+                "suggested_action": "" if exists else _dashboard_suggested_action({"name": name, "readiness": "missing"}),
                 "path": row.get("path", ""),
             }
         )
@@ -349,6 +350,7 @@ def dashboard_readiness_summary_frame(
         "map_ready",
         "message",
         "map_message",
+        "suggested_action",
         "path",
     ]
     return pd.DataFrame(rows, columns=columns)
@@ -376,6 +378,7 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
         "row_count": "",
         "value_columns": "",
         "message": f"Dashboard metric dataset root is missing: {path}",
+        "suggested_action": _dashboard_suggested_action({"name": "metrics_dashboard_root", "readiness": "missing"}),
     }
     if not path.exists():
         return pd.DataFrame([row])
@@ -389,6 +392,9 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
                     "Dashboard metric dataset contains no recognized files. "
                     "Expected metrics_long.parquet or model=*/band=*/metric=*/part.parquet."
                 ),
+                "suggested_action": _dashboard_suggested_action(
+                    {"name": "metrics_dashboard_root", "readiness": "missing_dataset_files"}
+                ),
             }
         )
         return pd.DataFrame([row])
@@ -401,6 +407,7 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
                 "readiness": "read_error",
                 "row_count": "",
                 "message": f"Dashboard metric dataset could not be inspected: {exc}",
+                "suggested_action": _dashboard_suggested_action({"name": "metrics_dashboard_root", "readiness": "read_error"}),
             }
         )
         return pd.DataFrame([row])
@@ -408,16 +415,25 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
     row["row_count"] = row_count
     row["value_columns"] = ", ".join(value_columns)
     if row_count <= 0:
-        row.update({"readiness": "empty", "message": "Dashboard metric dataset has no rows."})
+        row.update(
+            {
+                "readiness": "empty",
+                "message": "Dashboard metric dataset has no rows.",
+                "suggested_action": _dashboard_suggested_action({"name": "metrics_dashboard_root", "readiness": "empty"}),
+            }
+        )
     elif not value_columns:
         row.update(
             {
                 "readiness": "no_value_columns",
                 "message": "Dashboard metric dataset has rows but no recognized residual/score/value columns.",
+                "suggested_action": _dashboard_suggested_action(
+                    {"name": "metrics_dashboard_root", "readiness": "no_value_columns"}
+                ),
             }
         )
     else:
-        row.update({"ready": True, "readiness": "ready", "message": "Dashboard metric dataset is ready."})
+        row.update({"ready": True, "readiness": "ready", "message": "Dashboard metric dataset is ready.", "suggested_action": ""})
     return pd.DataFrame([row])
 
 
@@ -693,6 +709,7 @@ def _dashboard_summary_row(row: dict[str, object], *, item_type: str) -> dict[st
         "map_ready": _blank_if_missing(row.get("map_ready")),
         "message": message,
         "map_message": map_message,
+        "suggested_action": _blank_if_missing(row.get("suggested_action")),
         "path": _blank_if_missing(row.get("path")),
     }
 
@@ -707,6 +724,27 @@ def _blank_if_missing(value: object) -> object:
     if value is None or missing:
         return ""
     return value
+
+
+def _dashboard_suggested_action(row: dict[str, object]) -> str:
+    """Return one bounded remediation hint for a dashboard readiness row."""
+
+    readiness = str(row.get("readiness") or "")
+    if readiness == "ready":
+        return ""
+    name = str(row.get("name") or "")
+    role = str(row.get("artifact_role") or "")
+    dashboard_table = str(row.get("dashboard_table") or "")
+    if name == "metrics_long_path":
+        return "Finish the metric workflow outputs so the configured metrics_long table exists."
+    if name == "metrics_dashboard_root" or role == "dashboard_dataset":
+        return "Run write_configured_dashboard_datasets or the Step 7 dashboard workflow to rebuild the row-level dashboard dataset."
+    if name == "qc_trace_summary_path":
+        return "Run the Step 2 QC workflow so qc_trace_summary exists with the required event/station/status columns."
+    if role == "dashboard_summary_table" or dashboard_table:
+        table_text = dashboard_table or "this summary table"
+        return f"Run write_configured_dashboard_datasets or the Step 7 dashboard workflow to rebuild {table_text}."
+    return "Rebuild this configured dashboard artifact from the active Spatial-VTK config."
 
 
 def _attach_dashboard_contract(status: pd.DataFrame) -> pd.DataFrame:
@@ -746,6 +784,7 @@ def _attach_dashboard_readiness(status: pd.DataFrame) -> pd.DataFrame:
         "nonempty_value_columns",
         "message",
         "map_message",
+        "suggested_action",
     ):
         out[column] = pd.Series([pd.NA] * len(out), index=out.index, dtype="object")
     for index, row in out.iterrows():
@@ -771,6 +810,7 @@ def _attach_metric_dataset_readiness(status: pd.DataFrame) -> pd.DataFrame:
         "file_count": pd.NA,
         "value_columns": pd.NA,
         "message": pd.NA,
+        "suggested_action": pd.NA,
         "dashboard_table": "",
         "dashboard_tabs": "",
         "required_columns": "",
@@ -788,7 +828,7 @@ def _attach_metric_dataset_readiness(status: pd.DataFrame) -> pd.DataFrame:
     out.loc[mask, "purpose"] = "Partitioned or single-file long metric dataset used by all metrics dashboard tabs."
     for index, row in out.loc[mask].iterrows():
         readiness = dashboard_metric_dataset_readiness_frame(Path(str(row["path"]))).iloc[0].to_dict()
-        for key in ("ready", "readiness", "file_count", "row_count", "value_columns", "message"):
+        for key in ("ready", "readiness", "file_count", "row_count", "value_columns", "message", "suggested_action"):
             out.at[index, key] = readiness.get(key, pd.NA)
     return out
 
@@ -809,6 +849,7 @@ def _attach_qc_trace_readiness(status: pd.DataFrame) -> pd.DataFrame:
         "row_count": pd.NA,
         "missing_columns": pd.NA,
         "message": pd.NA,
+        "suggested_action": pd.NA,
     }
     for column, value in defaults.items():
         if column not in out.columns:
@@ -838,6 +879,7 @@ def _inspect_qc_trace_summary_table(path: Path) -> dict[str, object]:
             "row_count": "",
             "missing_columns": ", ".join(REQUIRED_TRACE_QC_TABLE_COLUMNS),
             "message": f"QC trace-summary table is missing: {path}",
+            "suggested_action": _dashboard_suggested_action({"name": "qc_trace_summary_path", "readiness": "missing"}),
         }
     try:
         columns = _dashboard_table_columns(path)
@@ -849,6 +891,7 @@ def _inspect_qc_trace_summary_table(path: Path) -> dict[str, object]:
             "row_count": "",
             "missing_columns": "",
             "message": f"QC trace-summary table could not be inspected: {exc}",
+            "suggested_action": _dashboard_suggested_action({"name": "qc_trace_summary_path", "readiness": "read_error"}),
         }
     missing = sorted(column for column in required if column not in columns)
     if missing:
@@ -858,6 +901,9 @@ def _inspect_qc_trace_summary_table(path: Path) -> dict[str, object]:
             "row_count": row_count,
             "missing_columns": ", ".join(missing),
             "message": f"QC trace-summary table is missing required columns: {', '.join(missing)}.",
+            "suggested_action": _dashboard_suggested_action(
+                {"name": "qc_trace_summary_path", "readiness": "missing_columns"}
+            ),
         }
     if row_count == 0:
         return {
@@ -866,6 +912,7 @@ def _inspect_qc_trace_summary_table(path: Path) -> dict[str, object]:
             "row_count": row_count,
             "missing_columns": "",
             "message": "QC trace-summary table has no rows.",
+            "suggested_action": _dashboard_suggested_action({"name": "qc_trace_summary_path", "readiness": "empty"}),
         }
     return {
         "ready": True,
@@ -873,6 +920,7 @@ def _inspect_qc_trace_summary_table(path: Path) -> dict[str, object]:
         "row_count": row_count,
         "missing_columns": "",
         "message": "QC trace-summary table is ready.",
+        "suggested_action": "",
     }
 
 
@@ -889,6 +937,9 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
             "value_columns": "",
             "nonempty_value_columns": "",
             "message": f"{table_name} summary file is missing.",
+            "suggested_action": _dashboard_suggested_action(
+                {"dashboard_table": table_name, "artifact_role": "dashboard_summary_table", "readiness": "missing"}
+            ),
         }
     try:
         columns = _dashboard_table_columns(path)
@@ -902,6 +953,9 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
             "value_columns": "",
             "nonempty_value_columns": "",
             "message": f"{table_name} summary file could not be read: {exc}",
+            "suggested_action": _dashboard_suggested_action(
+                {"dashboard_table": table_name, "artifact_role": "dashboard_summary_table", "readiness": "read_error"}
+            ),
         }
     missing = sorted(column for column in required if column not in columns)
     schema_table = pd.DataFrame(columns=columns)
@@ -936,6 +990,9 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
         "nonempty_value_columns": ", ".join(nonempty_value_columns),
         "message": message,
         "map_message": map_status["message"],
+        "suggested_action": _dashboard_suggested_action(
+            {"dashboard_table": table_name, "artifact_role": "dashboard_summary_table", "readiness": readiness}
+        ),
     }
 
 

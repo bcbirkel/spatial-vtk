@@ -121,8 +121,10 @@ artifacts before loading full metric or QC inventories:
 The readiness and status frames are intentionally small. Use ``artifact_label``
 to find the user-facing dataset, ``dashboard_tabs`` to see which dashboard tab
 uses it, ``readiness`` / ``message`` to identify the failure, and
+``suggested_action`` to see the next rebuild step. Use
 ``required_columns`` / ``missing_columns`` / ``map_message`` to decide whether
-the dashboard inputs need to be rebuilt.
+the dashboard inputs need to be rebuilt because of missing schema or map
+coordinate data.
 
 ``write_configured_dashboard_datasets`` replaces the standard dashboard metric
 dataset files and summary tables for the current run. It removes only

@@ -25,6 +25,7 @@ QC_READINESS_DISPLAY_COLUMNS = (
     "row_count",
     "missing_columns",
     "message",
+    "suggested_action",
     "path",
 )
 DEFAULT_QC_DASHBOARD_MAX_ROWS = 250_000

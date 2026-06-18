@@ -214,6 +214,7 @@ outputs:
     assert "name" in status.columns
     assert "artifact_role" in status.columns
     assert "artifact_label" in status.columns
+    assert "suggested_action" in status.columns
     assert "metrics_dashboard_root" in set(status["name"])
     assert "qc_trace_summary_path" in set(status["name"])
     assert "path_hex_summary_path" in set(status["name"])
@@ -227,6 +228,7 @@ outputs:
     assert metrics_dataset_status["readiness"] == "missing_dataset_files"
     assert metrics_dataset_status["file_count"] == 0
     assert "recognized files" in metrics_dataset_status["message"]
+    assert "Step 7 dashboard workflow" in metrics_dataset_status["suggested_action"]
 
     station_status = status.loc[status["name"].eq("station_rollup_summary_path")].iloc[0]
     assert station_status["artifact_role"] == "dashboard_summary_table"
@@ -240,6 +242,7 @@ outputs:
     assert "finite dashboard value" in station_status["message"]
     assert station_status["map_ready"] is False
     assert "coordinate columns" in station_status["map_message"]
+    assert "rebuild station_rollup" in station_status["suggested_action"]
 
     pd.DataFrame(
         {
@@ -256,6 +259,7 @@ outputs:
     assert ready_dataset_status["file_count"] == 1
     assert ready_dataset_status["row_count"] == 1
     assert ready_dataset_status["value_columns"] == "log2_residual"
+    assert ready_dataset_status["suggested_action"] == ""
 
     model_status = status.loc[status["name"].eq("model_metric_band_summary_path")].iloc[0]
 
@@ -276,10 +280,12 @@ outputs:
     assert qc_status["ready"] is False
     assert qc_status["readiness"] == "missing"
     assert "event_id" in qc_status["required_columns"]
+    assert "Step 2 QC workflow" in qc_status["suggested_action"]
 
     summary = dashboard_readiness_summary_frame(cfg=cfg)
     assert "artifact_role" in summary.columns
     assert "artifact_label" in summary.columns
+    assert "suggested_action" in summary.columns
     labels = set(summary["artifact_label"])
     assert "metrics_long source table" in labels
     assert "metrics dashboard row dataset" in labels
@@ -288,9 +294,11 @@ outputs:
 
     summary_display = _select_readiness_columns(summary, SUMMARY_READINESS_DISPLAY_COLUMNS)
     assert "artifact_label" in summary_display.columns
+    assert "suggested_action" in summary_display.columns
     assert "station_rollup dashboard summary table" in set(summary_display["artifact_label"])
     metric_display = _select_readiness_columns(status_with_dataset, METRIC_DATASET_READINESS_DISPLAY_COLUMNS)
     assert "artifact_label" in metric_display.columns
+    assert "suggested_action" in metric_display.columns
     assert "metrics dashboard row dataset" in set(metric_display["artifact_label"])
     assert "QC trace-summary table is missing" in qc_status["message"]
 
@@ -496,6 +504,7 @@ def test_qc_dashboard_readiness_display_columns_are_bounded():
             "row_count": [3],
             "missing_columns": [""],
             "message": ["QC trace-summary table is ready."],
+            "suggested_action": [""],
             "path": ["/example/run/outputs/qc_trace_summary.parquet"],
             "unexpected_large_column": ["not displayed"],
         }
@@ -511,6 +520,7 @@ def test_qc_dashboard_readiness_display_columns_are_bounded():
         "row_count",
         "missing_columns",
         "message",
+        "suggested_action",
         "path",
     ]
     assert display["artifact_label"].iloc[0] == "QC trace-summary table"
