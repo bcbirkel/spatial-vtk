@@ -289,6 +289,20 @@ represents. Use ``sidecar_rows=None`` or ``sidecar_rows=0`` to write all rows,
 or a positive integer to write a deterministic sample. The metadata records
 ``sidecar_row_policy``, ``plot_sidecar_exact``, and ``source_sidecar_exact`` so
 callers can tell whether a sidecar contains every row or a sampled audit table.
+
+For station-level metric maps and other large-run station summaries, the main
+sidecar rows are the post-aggregation station values handed to Matplotlib. The
+matching source sidecar rows are the metric/event-station records aggregated
+into those station values. The JSON sidecar records
+``aggregation_contract``, ``aggregation_method``,
+``aggregation_group_columns``, ``aggregation_coordinate_columns``,
+``aggregation_input_row_count``, ``aggregation_finite_row_count``, and
+``aggregation_dropped_nonfinite_row_count``. For PSA period sheets and other
+multi-panel figures, panel identifiers such as ``__svtk_panel_period_s`` are
+included so the raw source rows can be matched back to the plotted panel. This
+is the public audit trail for verifying that a station figure used all selected
+events and stations rather than a preview or sampled dataframe.
+
 Use ``figure_sidecar_status_frame(sidecar_dir)`` to inspect a directory of
 JSON sidecars without loading the CSV row files. The status table reports
 exactness flags, plot/source row counts, source-sidecar availability, and

@@ -535,6 +535,10 @@ def test_visualize_api_docs_use_public_entry_points():
     ):
         assert helper in text
     assert "Public sidecar helpers exposed by ``spatial_vtk.visualize``" in text
+    assert "aggregation_contract" in text
+    assert "aggregation_input_row_count" in text
+    assert "__svtk_panel_period_s" in text
+    assert "rather than a preview or sampled dataframe" in text
     for helper in (
         "layered_figure_rows",
         "sidecar_rows_for_write",
