@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import pathlib
 
 
@@ -102,6 +103,27 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     )
     for token in forbidden:
         assert token not in text
+
+
+def test_metrics_package_reexports_workflow_surface():
+    """Top-level metrics should expose the curated workflow API used by docs and CLI."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    workflow_tree = ast.parse((root / "src" / "spatial_vtk" / "metrics" / "workflow" / "__init__.py").read_text(encoding="utf-8"))
+    metrics_tree = ast.parse((root / "src" / "spatial_vtk" / "metrics" / "__init__.py").read_text(encoding="utf-8"))
+
+    def literal_items(tree: ast.Module, name: str) -> set[str]:
+        for node in tree.body:
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id == name:
+                        if isinstance(node.value, (ast.List, ast.Set)):
+                            return {str(elt.value) for elt in node.value.elts if isinstance(elt, ast.Constant)}
+        return set()
+
+    workflow_exports = literal_items(workflow_tree, "__all__")
+    metrics_workflow_exports = literal_items(metrics_tree, "_WORKFLOW_EXPORTS")
+    assert workflow_exports <= metrics_workflow_exports
 
 
 def test_spatial_api_docs_use_public_plot_and_map_entry_points():

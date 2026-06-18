@@ -1987,7 +1987,7 @@ def _cmd_metrics_plan(args: argparse.Namespace) -> int:
     """Run ``svtk metrics plan``."""
 
     from spatial_vtk.io import metric_plan_from_config
-    from spatial_vtk.metrics.workflow import plan_metric_tasks, tasks_to_frame, write_task_manifest
+    from spatial_vtk.metrics import plan_metric_tasks, tasks_to_frame, write_task_manifest
 
     config = _required_cli_config(args.config, run_scenario=args.run_scenario)
     observed_inventory = Path(args.observed_inventory).expanduser() if args.observed_inventory else _configured_output_path("observed_metric_inventory", config=config)
@@ -2024,7 +2024,7 @@ def _cmd_metrics_plan(args: argparse.Namespace) -> int:
 def _cmd_metrics_inventories(args: argparse.Namespace) -> int:
     """Run ``svtk metrics inventories``."""
 
-    from spatial_vtk.metrics.workflow import build_metric_waveform_inventories_from_trace_metadata
+    from spatial_vtk.metrics import build_metric_waveform_inventories_from_trace_metadata
     from spatial_vtk.io.preprocessing import preprocessed_waveform_metadata_paths
 
     needs_config = not (args.trace_metadata and args.observed_output and args.synthetic_output)
@@ -2069,7 +2069,7 @@ def _cmd_metrics_inventories(args: argparse.Namespace) -> int:
 def _cmd_metrics_estimate(args: argparse.Namespace) -> int:
     """Run ``svtk metrics estimate``."""
 
-    from spatial_vtk.metrics.workflow import read_task_manifest, summarize_metric_tasks
+    from spatial_vtk.metrics import read_task_manifest, summarize_metric_tasks
 
     needs_config = args.tasks is None and args.manifest is None
     config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
@@ -2121,7 +2121,7 @@ def _metric_plan_overrides(args: argparse.Namespace) -> dict[str, Any]:
 def _cmd_metrics_run(args: argparse.Namespace) -> int:
     """Run ``svtk metrics run``."""
 
-    from spatial_vtk.metrics.workflow import run_metric_tasks, tasks_from_frame, write_metric_rows
+    from spatial_vtk.metrics import run_metric_tasks, tasks_from_frame, write_metric_rows
 
     needs_config = args.tasks is None or args.output is None
     config = (
@@ -2166,7 +2166,7 @@ def _cmd_metrics_batch_status(args: argparse.Namespace) -> int:
 def _cmd_metrics_cache_waveforms(args: argparse.Namespace) -> int:
     """Run ``svtk metrics cache-waveforms``."""
 
-    from spatial_vtk.metrics.workflow import cache_metric_manifest_waveforms
+    from spatial_vtk.metrics import cache_metric_manifest_waveforms
 
     needs_config = not (args.manifest and args.output and args.cache_root)
     config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
@@ -2200,7 +2200,7 @@ def _cmd_metrics_cache_waveforms(args: argparse.Namespace) -> int:
 def _cmd_metrics_merge_batches(args: argparse.Namespace) -> int:
     """Run ``svtk metrics merge-batches``."""
 
-    from spatial_vtk.metrics.workflow import merge_batch_outputs
+    from spatial_vtk.metrics import merge_batch_outputs
 
     needs_config = not (args.manifest and args.output)
     config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
@@ -2214,7 +2214,7 @@ def _cmd_metrics_merge_batches(args: argparse.Namespace) -> int:
 def _cmd_metrics_outputs(args: argparse.Namespace) -> int:
     """Run ``svtk metrics outputs``."""
 
-    from spatial_vtk.metrics.workflow import write_metric_outputs
+    from spatial_vtk.metrics import write_metric_outputs
 
     needs_config = args.metrics is None or args.output_dir is None
     config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)

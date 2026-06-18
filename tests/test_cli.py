@@ -619,7 +619,7 @@ def test_cli_metrics_estimate_writes_summary(tmp_path, capsys):
 def test_cli_metrics_estimate_reads_manifest(tmp_path, capsys):
     """Metric estimates should work directly from resumable manifests."""
 
-    from spatial_vtk.metrics.workflow import MetricWorkflowTask, write_task_manifest
+    from spatial_vtk.metrics import MetricWorkflowTask, write_task_manifest
 
     manifest = tmp_path / "metric_manifest.json"
     write_task_manifest(
@@ -663,7 +663,7 @@ def test_cli_metrics_estimate_reads_manifest(tmp_path, capsys):
 def test_cli_metrics_estimate_uses_saved_config_defaults(tmp_path, monkeypatch, capsys):
     """After svtk config set, metric estimate should not need repeated path flags."""
 
-    from spatial_vtk.metrics.workflow import MetricWorkflowTask, write_task_manifest
+    from spatial_vtk.metrics import MetricWorkflowTask, write_task_manifest
 
     settings = tmp_path / "settings" / "svtk-config.json"
     config = tmp_path / "spatial-vtk.yaml"
@@ -1167,11 +1167,13 @@ def test_metric_cli_commands_use_public_metrics_surface():
     import spatial_vtk.cli as cli_module
 
     source = inspect.getsource(cli_module)
+    assert "from spatial_vtk.metrics.workflow import" not in source
     assert "from spatial_vtk.metrics import run_manifest_batch" in source
     assert "from spatial_vtk.metrics import metric_manifest_batch_status" in source
     assert "from spatial_vtk.metrics import (\n        metric_manifest_batch_status," in source
-    assert "from spatial_vtk.metrics.workflow import metric_manifest_batch_status" not in source
-    assert "from spatial_vtk.metrics.workflow import run_manifest_batch" not in source
+    assert "from spatial_vtk.metrics import plan_metric_tasks, tasks_to_frame, write_task_manifest" in source
+    assert "from spatial_vtk.metrics import cache_metric_manifest_waveforms" in source
+    assert "from spatial_vtk.metrics import write_metric_outputs" in source
 
 
 def test_cli_workflow_explanatory_text_is_not_in_bash_blocks():
