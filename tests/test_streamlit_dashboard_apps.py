@@ -669,6 +669,7 @@ def test_streamlit_entrypoints_import_and_launch_command():
 def test_dashboard_empty_state_messages_are_explicit():
     assert _metrics_empty_rows_message("station") == "No station rows match the selected filters."
     assert _qc_empty_rows_message("trace QC") == "No trace QC rows match the selected filters."
+    assert _qc_empty_rows_message("manual review queue") == "No manual review queue rows match the selected filters."
     assert _qc_missing_columns_message("timing") == "No timing columns are available in the loaded trace-summary table."
 
 

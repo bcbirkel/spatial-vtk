@@ -149,6 +149,8 @@ def _render_qc_dashboard(
             for column in content_columns:
                 st.plotly_chart(build_qc_histogram_figure(filtered, value_col=column, title=_qc_column_label(column), clip_iqr=clip_iqr), width="stretch", key=f"band_{column}")
     with table_tab:
+        if filtered.empty:
+            st.info(_empty_rows_message("trace QC"))
         st.dataframe(display_table(filtered, max_rows=5000), width="stretch")
         download_rows, download_message = _bounded_download_frame(filtered, download_limit)
         if download_message:
@@ -161,6 +163,8 @@ def _render_qc_dashboard(
     with queue_tab:
         queue_rows = normalize_manual_review_queue(queue_rows_from_filtered_trace_df(filtered))
         st.metric("Event/Station Pairs in Queue", f"{len(queue_rows):,}")
+        if not queue_rows:
+            st.info(_empty_rows_message("manual review queue"))
         st.dataframe(display_table(pd.DataFrame(queue_rows)), width="stretch")
         queue_download_rows, queue_download_message = _bounded_queue_rows(queue_rows, download_limit)
         if queue_download_message:

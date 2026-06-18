@@ -15,6 +15,8 @@ Changelog
    Metrics dashboards now show an explicit row-level dataset notice in the
    dashboard body when summary tabs can render but distribution/download tabs
    cannot load filtered metric rows.
+   QC dashboards now show explicit empty-state messages in the Trace Table and
+   Manual Review Queue tabs when active filters remove all loaded trace rows.
    Added ``spatial_vtk.io.preprocessed_waveform_output_group`` so Step 1 can
    use ``OutputGroup``-style ``bind()``, ``status_frame()``, and
    ``readiness()`` for preprocessing metadata under
