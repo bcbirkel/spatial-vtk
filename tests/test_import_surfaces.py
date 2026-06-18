@@ -206,6 +206,34 @@ def test_metrics_api_docs_use_public_plot_entry_point():
         assert token not in text
 
 
+def test_public_docs_avoid_plot_implementation_import_paths():
+    root = pathlib.Path(__file__).resolve().parents[1]
+    docs = list((root / "docs").rglob("*.rst")) + [root / "README.md"]
+    text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in docs
+        if "_build" not in path.parts
+    )
+    forbidden = (
+        "spatial_vtk.metrics.plot.example_metric_plots",
+        "spatial_vtk.metrics.plot.model_comparison",
+        "spatial_vtk.metrics.plot.periods",
+        "spatial_vtk.metrics.plot.site_terms",
+        "spatial_vtk.metrics.plot.trends",
+        "spatial_vtk.metrics.plot.large_run",
+        "spatial_vtk.spatial.plot.large_run",
+        "spatial_vtk.spatial.map.basemaps",
+        "spatial_vtk.spatial.map.correlation",
+        "spatial_vtk.spatial.map.geojson",
+        "spatial_vtk.spatial.map.metrics",
+        "spatial_vtk.spatial.map.path.corridors",
+        "spatial_vtk.spatial.map.path.residuals",
+        "spatial_vtk.spatial.map.pca",
+    )
+    for token in forbidden:
+        assert token not in text
+
+
 def test_config_api_docs_include_compute_helpers():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "config.rst"
     text = docs.read_text(encoding="utf-8")

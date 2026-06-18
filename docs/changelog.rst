@@ -471,8 +471,7 @@ Changelog
    rather than stale table-directory examples.
    Trimmed the metrics API plotting reference to the stable
    ``spatial_vtk.metrics.plot`` entry point so docs no longer direct notebook
-   users to implementation modules such as
-   ``spatial_vtk.metrics.plot.periods``.
+   users to plotting implementation modules.
    Trimmed the spatial API plotting and map references to the stable
    ``spatial_vtk.spatial.plot`` and ``spatial_vtk.spatial.map`` entry points,
    including path-map helpers, so public docs no longer point users at
