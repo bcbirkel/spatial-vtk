@@ -115,7 +115,7 @@ spatial_statistics:
         )
 
     monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(settings))
-    monkeypatch.setattr("spatial_vtk.spatial.calculate.run_spatial_statistics_workflow", fake_run_spatial_statistics_workflow)
+    monkeypatch.setattr("spatial_vtk.spatial.run_spatial_statistics_workflow", fake_run_spatial_statistics_workflow)
 
     assert main(["config", "set", str(config)]) == 0
     assert main(["spatial", "summaries", "--verbose"]) == 0
@@ -159,7 +159,7 @@ outputs:
         seen.update(kwargs)
         return SimpleNamespace(metrics=("PGA",), elapsed_s=0.5, paths={}, failures=())
 
-    monkeypatch.setattr("spatial_vtk.spatial.calculate.run_spatial_statistics_workflow", fake_run_spatial_statistics_workflow)
+    monkeypatch.setattr("spatial_vtk.spatial.run_spatial_statistics_workflow", fake_run_spatial_statistics_workflow)
 
     assert (
         main(
@@ -236,7 +236,7 @@ outputs:
         )
 
     monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(settings))
-    monkeypatch.setattr("spatial_vtk.spatial.calculate.run_spatial_derived_outputs_workflow", fake_run_spatial_derived_outputs_workflow)
+    monkeypatch.setattr("spatial_vtk.spatial.run_spatial_derived_outputs_workflow", fake_run_spatial_derived_outputs_workflow)
 
     assert main(["config", "set", str(config)]) == 0
     assert main(["spatial", "derived-outputs", "--outputs", "redcap_clusters", "--overwrite", "--verbose"]) == 0
@@ -285,7 +285,7 @@ outputs:
         seen.update(kwargs)
         return SimpleNamespace(elapsed_s=0.75, paths={}, rows={}, reused=(), failures=())
 
-    monkeypatch.setattr("spatial_vtk.spatial.calculate.run_spatial_derived_outputs_workflow", fake_run_spatial_derived_outputs_workflow)
+    monkeypatch.setattr("spatial_vtk.spatial.run_spatial_derived_outputs_workflow", fake_run_spatial_derived_outputs_workflow)
 
     assert (
         main(
@@ -433,8 +433,8 @@ paths:
         }
         return SimpleNamespace(path=tmp_path / "corridors.parquet", rows=2, elapsed_s=1.5)
 
-    monkeypatch.setattr("spatial_vtk.spatial.calculate.run_geojson_region_summary_workflow", fake_geojson)
-    monkeypatch.setattr("spatial_vtk.spatial.calculate.run_boundary_corridor_workflow", fake_corridors)
+    monkeypatch.setattr("spatial_vtk.spatial.run_geojson_region_summary_workflow", fake_geojson)
+    monkeypatch.setattr("spatial_vtk.spatial.run_boundary_corridor_workflow", fake_corridors)
 
     assert (
         main(
@@ -1174,6 +1174,20 @@ def test_metric_cli_commands_use_public_metrics_surface():
     assert "from spatial_vtk.metrics import plan_metric_tasks, tasks_to_frame, write_task_manifest" in source
     assert "from spatial_vtk.metrics import cache_metric_manifest_waveforms" in source
     assert "from spatial_vtk.metrics import write_metric_outputs" in source
+
+
+def test_spatial_cli_commands_use_public_spatial_surface():
+    """Curated spatial CLI commands should use the top-level spatial API surface."""
+
+    import spatial_vtk.cli as cli_module
+
+    source = inspect.getsource(cli_module)
+    forbidden_import = "from spatial_vtk.spatial.calculate import " + "run_"
+    assert forbidden_import not in source
+    assert "from spatial_vtk.spatial import run_spatial_statistics_workflow" in source
+    assert "from spatial_vtk.spatial import run_spatial_derived_outputs_workflow" in source
+    assert "from spatial_vtk.spatial import run_geojson_region_summary_workflow" in source
+    assert "from spatial_vtk.spatial import run_boundary_corridor_workflow" in source
 
 
 def test_cli_workflow_explanatory_text_is_not_in_bash_blocks():

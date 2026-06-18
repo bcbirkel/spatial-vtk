@@ -2284,7 +2284,7 @@ def _cmd_metrics_slurm(args: argparse.Namespace) -> int:
 def _cmd_spatial_summaries(args: argparse.Namespace) -> int:
     """Run ``svtk spatial summaries``."""
 
-    from spatial_vtk.spatial.calculate import run_spatial_statistics_workflow
+    from spatial_vtk.spatial import run_spatial_statistics_workflow
 
     cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     result = run_spatial_statistics_workflow(
@@ -2311,7 +2311,7 @@ def _cmd_spatial_summaries(args: argparse.Namespace) -> int:
 def _cmd_spatial_derived_outputs(args: argparse.Namespace) -> int:
     """Run ``svtk spatial derived-outputs``."""
 
-    from spatial_vtk.spatial.calculate import run_spatial_derived_outputs_workflow
+    from spatial_vtk.spatial import run_spatial_derived_outputs_workflow
 
     cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     result = run_spatial_derived_outputs_workflow(
@@ -2345,7 +2345,7 @@ def _cmd_spatial_derived_outputs(args: argparse.Namespace) -> int:
 def _cmd_spatial_geojson_summaries(args: argparse.Namespace) -> int:
     """Run ``svtk spatial geojson-summaries``."""
 
-    from spatial_vtk.spatial.calculate import run_geojson_region_summary_workflow
+    from spatial_vtk.spatial import run_geojson_region_summary_workflow
 
     cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     result = run_geojson_region_summary_workflow(
@@ -2367,7 +2367,7 @@ def _cmd_spatial_geojson_summaries(args: argparse.Namespace) -> int:
 def _cmd_spatial_corridors(args: argparse.Namespace) -> int:
     """Run ``svtk spatial corridors``."""
 
-    from spatial_vtk.spatial.calculate import run_boundary_corridor_workflow
+    from spatial_vtk.spatial import run_boundary_corridor_workflow
 
     cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     result = run_boundary_corridor_workflow(
