@@ -67,6 +67,29 @@ TUTORIAL_REQUIRED_FILES = (
     Path("data/examples/data_formats/example_metrics_snapshot.csv"),
     Path("data/examples/data_formats/example_metrics_large_qc_passed.parquet"),
 )
+NOTEBOOK_CONTRACT_FORBIDDEN_SNIPPETS = (
+    "import subprocess",
+    "from subprocess",
+    "subprocess.",
+    "os.system(",
+    "os.popen(",
+    "run_or_submit_notebook_cli_command(",
+    "write_notebook_cli_slurm_script(",
+    "resolve_output_path(",
+    "load_output_table(",
+    "preview_output_table(",
+    "read_config_table(",
+    "pd.read_",
+)
+NOTEBOOK_CONTRACT_FORBIDDEN_LINE_PATTERNS = (
+    re.compile(r"^\s*![^\n]*\bsvtk\b", re.MULTILINE),
+    re.compile(r"^\s*%%bash\b", re.MULTILINE),
+    re.compile(r"\[\s*['\"]svtk['\"]\s*,"),
+)
+NOTEBOOK_CONTRACT_PRIVATE_PATH_PATTERNS = (
+    re.compile(r"(?<![\w.-])/(?:Users|home|home\d*|project\d*|scratch|work|lustre)/[^\s'\"),\]]+"),
+    re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
+)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -84,6 +107,8 @@ def main(argv: list[str] | None = None) -> int:
     tutorial_output = repo_root / args.tutorial_output
 
     configure_notebook_runtime_environment(tutorial_output)
+    if not args.skip_notebook_contract_check:
+        check_tutorial_notebook_contracts(notebooks, repo_root=repo_root)
     check_notebook_runtime()
     if not args.skip_example_data_check:
         check_tutorial_example_data(repo_root)
@@ -233,6 +258,68 @@ def missing_tutorial_example_data(repo_root: Path) -> list[str]:
     return missing
 
 
+def check_tutorial_notebook_contracts(notebooks: list[Path], *, repo_root: Path) -> None:
+    """Exit when tutorial notebooks violate the public source-checkout contract."""
+
+    violations = tutorial_notebook_contract_violations(notebooks, repo_root=repo_root)
+    if not violations:
+        return
+    preview = "\n".join(f"- {item}" for item in violations[:20])
+    suffix = f"\n- ... {len(violations) - 20} more" if len(violations) > 20 else ""
+    raise SystemExit(
+        "Tutorial notebook source contract failed. Notebooks should run from a "
+        "fresh public checkout, use importable spatial_vtk package APIs instead "
+        "of shell/CLI workflow cells, and avoid raw output-path/table plumbing.\n"
+        f"{preview}{suffix}"
+    )
+
+
+def tutorial_notebook_contract_violations(notebooks: list[Path], *, repo_root: Path) -> list[str]:
+    """Return source-level tutorial notebook contract violations."""
+
+    violations: list[str] = []
+    for notebook_path in notebooks:
+        label = _notebook_label(notebook_path, repo_root)
+        try:
+            notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        except Exception as exc:
+            violations.append(f"{label}: could not read notebook JSON: {type(exc).__name__}: {exc}")
+            continue
+
+        cells = notebook.get("cells", [])
+        source_text = "\n".join("".join(cell.get("source", [])) for cell in cells)
+        if _is_example_notebook(notebook_path, repo_root):
+            if "_source_bootstrap.py" not in source_text or "runpy.run_path(str(_bootstrap))" not in source_text:
+                violations.append(f"{label}: missing shared source-checkout bootstrap cell")
+
+        cell_ids = [str(cell.get("id", "")).strip() for cell in cells]
+        duplicated_ids = sorted({cell_id for cell_id in cell_ids if cell_id and cell_ids.count(cell_id) > 1})
+        if duplicated_ids:
+            violations.append(f"{label}: duplicate cell ids: {', '.join(duplicated_ids[:10])}")
+
+        for index, cell in enumerate(cells, start=1):
+            cell_label = f"{label} cell {index}"
+            source = "".join(cell.get("source", []))
+            if not str(cell.get("id", "")).strip():
+                violations.append(f"{cell_label}: missing cell id")
+            if cell.get("cell_type") == "code":
+                if cell.get("execution_count") is not None:
+                    violations.append(f"{cell_label}: committed execution_count should be empty")
+                if cell.get("outputs"):
+                    violations.append(f"{cell_label}: committed outputs should be empty")
+            for token in NOTEBOOK_CONTRACT_FORBIDDEN_SNIPPETS:
+                if token in source:
+                    violations.append(f"{cell_label}: forbidden source snippet {token!r}")
+            for pattern in NOTEBOOK_CONTRACT_FORBIDDEN_LINE_PATTERNS:
+                if pattern.search(source):
+                    violations.append(f"{cell_label}: forbidden shell/CLI workflow pattern {pattern.pattern!r}")
+            for pattern in NOTEBOOK_CONTRACT_PRIVATE_PATH_PATTERNS:
+                match = pattern.search(source)
+                if match:
+                    violations.append(f"{cell_label}: user-specific path or address {match.group(0)!r}")
+    return violations
+
+
 def scan_notebook_outputs(notebook: Any) -> list[dict[str, Any]]:
     """Return cell outputs that look like warnings or tracebacks."""
 
@@ -273,6 +360,25 @@ def _output_text(output: Any) -> str:
     if isinstance(text, list):
         return "".join(str(part) for part in text)
     return str(text)
+
+
+def _notebook_label(notebook_path: Path, repo_root: Path) -> str:
+    """Return a readable notebook path for diagnostics."""
+
+    try:
+        return str(notebook_path.relative_to(repo_root))
+    except ValueError:
+        return str(notebook_path)
+
+
+def _is_example_notebook(notebook_path: Path, repo_root: Path) -> bool:
+    """Return True when a notebook lives under the public examples tree."""
+
+    try:
+        notebook_path.relative_to(repo_root / "docs" / "examples")
+    except ValueError:
+        return False
+    return True
 
 
 def _find_repo_root(start: Path) -> Path:
@@ -366,6 +472,15 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
         "--skip-example-data-check",
         action="store_true",
         help="Skip the committed tutorial example-data preflight for custom notebook subsets.",
+    )
+    parser.add_argument(
+        "--skip-notebook-contract-check",
+        action="store_true",
+        help=(
+            "Skip source-level tutorial notebook contract checks for custom "
+            "notebook subsets. The default protects public tutorials from "
+            "private paths, saved outputs, and shell/CLI workflow cells."
+        ),
     )
     parser.set_defaults(stop_on_failure=True)
     return parser.parse_args(argv)

@@ -23,7 +23,9 @@ python tools/execute_tutorial_notebooks.py --clean --include-large-run
 
 The checker executes the standard notebooks first, then these large-run
 drivers, using only committed example data. It fails if any notebook raises an
-error or emits warning-like output.
+error or emits warning-like output. Before execution or output cleanup, it also
+checks that tutorial notebooks have no saved execution state, private absolute
+paths, shell/CLI workflow cells, or raw output-path/table reads.
 
 Environment switches:
 

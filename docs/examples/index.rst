@@ -32,8 +32,11 @@ To verify the full standard tutorial from a clean output directory, run:
 The command executes the seven notebooks against the committed example data,
 writes ``outputs/tutorials/notebook_execution_report.json``, and fails if a
 notebook raises an error or emits warning-like cell output. It also checks the
-committed five-event metadata, snapshot tables, and observed/synthetic NPZ
-waveform subset before cleaning ``outputs/tutorials``.
+notebook source contract, committed five-event metadata, snapshot tables, and
+observed/synthetic NPZ waveform subset before cleaning ``outputs/tutorials``.
+The source contract catches saved execution state, private absolute paths,
+shell/CLI workflow cells, and raw output-path/table reads so public tutorials
+stay package-first and source-checkout safe.
 
 To verify the standard and large-run tutorial drivers together from a fresh
 source checkout, run:
@@ -46,7 +49,7 @@ source checkout, run:
 The large-run notebooks still use the committed example data during this
 check, but their cells are structured for larger datasets: expensive work is
 chunked or submitted through package helpers, and notebook previews stay
-bounded.
+bounded. The same source-contract preflight runs before execution.
 
 Large-Run Driver Notebooks
 --------------------------

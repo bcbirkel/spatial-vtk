@@ -256,6 +256,93 @@ def test_tutorial_notebook_preflight_runs_before_clean(tmp_path: Path, monkeypat
     assert marker.exists()
 
 
+def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Path) -> None:
+    """The public runner should catch source-level notebook contract violations."""
+
+    module = _load_executor_module()
+    repo = tmp_path / "repo"
+    examples = repo / "docs" / "examples"
+    examples.mkdir(parents=True)
+    (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
+    notebook = examples / "step_01.ipynb"
+    notebook.write_text(
+        json.dumps(
+            {
+                "cells": [
+                    {
+                        "cell_type": "code",
+                        "id": "bad-cell",
+                        "execution_count": 1,
+                        "metadata": {},
+                        "outputs": [{"output_type": "stream", "name": "stdout", "text": "stale"}],
+                        "source": [
+                            "import subprocess\n",
+                            "!svtk metrics plan\n",
+                            "metrics = pd.read_csv('/Users/example/project/metrics.csv')\n",
+                            "path = resolve_output_path('metrics_long')\n",
+                        ],
+                    }
+                ],
+                "metadata": {},
+                "nbformat": 4,
+                "nbformat_minor": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    violations = module.tutorial_notebook_contract_violations([notebook], repo_root=repo)
+
+    combined = "\n".join(violations)
+    assert "missing shared source-checkout bootstrap cell" in combined
+    assert "committed execution_count should be empty" in combined
+    assert "committed outputs should be empty" in combined
+    assert "import subprocess" in combined
+    assert "forbidden shell/CLI workflow pattern" in combined
+    assert "pd.read_" in combined
+    assert "resolve_output_path(" in combined
+    assert "user-specific path or address" in combined
+
+
+def test_tutorial_notebook_contract_preflight_runs_before_clean(tmp_path: Path) -> None:
+    """Contract failures should not erase existing tutorial outputs."""
+
+    module = _load_executor_module()
+    repo = tmp_path / "repo"
+    examples = repo / "docs" / "examples"
+    examples.mkdir(parents=True)
+    (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
+    notebook = examples / "step_01.ipynb"
+    notebook.write_text(
+        json.dumps(
+            {
+                "cells": [
+                    {
+                        "cell_type": "code",
+                        "id": "bad-cell",
+                        "execution_count": None,
+                        "metadata": {},
+                        "outputs": [],
+                        "source": ["!svtk qc build\n"],
+                    }
+                ],
+                "metadata": {},
+                "nbformat": 4,
+                "nbformat_minor": 5,
+            }
+        ),
+        encoding="utf-8",
+    )
+    marker = repo / "outputs" / "tutorials" / "keep.txt"
+    marker.parent.mkdir(parents=True)
+    marker.write_text("do not delete", encoding="utf-8")
+
+    with pytest.raises(SystemExit, match="Tutorial notebook source contract failed"):
+        module.main(["--repo-root", str(repo), "--notebook", str(notebook), "--clean", "--skip-example-data-check"])
+
+    assert marker.exists()
+
+
 def test_ci_runs_clean_tutorial_notebooks_with_notebook_extras() -> None:
     """CI should prove source-checkout tutorial notebooks run from example data."""
 
@@ -285,6 +372,9 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "*.source.csv" in combined
     assert "pre-aggregation" in combined
     assert "committed example data" in combined
+    assert "source-contract preflight" in combined
+    assert "shell/CLI workflow cells" in combined
+    assert "raw output-path/table reads" in combined
     assert "Notebook cells use importable ``spatial_vtk`` package functions" in examples_index
     assert "Notebook cells call importable `spatial_vtk` package functions directly" in large_run_readme
     assert "do not shell out to `svtk` CLI commands for workflow work" in large_run_readme
