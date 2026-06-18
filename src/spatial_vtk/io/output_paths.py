@@ -17,7 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass, fields, is_dataclass
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, Callable, Iterable, Literal
+from typing import Any, Callable, Iterable, Literal, Sequence
 
 from spatial_vtk.config.outputs import OutputKind, resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
@@ -268,6 +268,57 @@ class OutputGroup:
             return None
         return next(iter(previews.values()))
 
+    def load_path_table(
+        self,
+        name: str,
+        *,
+        missing: Literal["raise", "skip"] = "raise",
+        **kwargs,
+    ) -> object | None:
+        """Load a table from one resolved group path.
+
+        Use this for output groups that own table paths outside the standard
+        output registry, such as ``preprocessed_waveforms`` metadata files.
+        Registry-backed workflow tables should continue to use
+        :meth:`load_table` so reads go through configured output keys.
+        """
+
+        from spatial_vtk.io.tables import read_table
+
+        _validate_missing_policy(missing)
+        path = self._path_by_name(name)
+        if not path.exists():
+            if missing == "skip":
+                return None
+            raise FileNotFoundError(f"{name} is not ready yet: {path}")
+        return read_table(path, **kwargs)
+
+    def preview_path_table(
+        self,
+        name: str,
+        *,
+        nrows: int = 5,
+        columns: Sequence[str] | None = None,
+        missing: Literal["raise", "skip"] = "skip",
+        **kwargs,
+    ) -> object | None:
+        """Load a bounded preview from one resolved group path.
+
+        This mirrors :meth:`preview_table` for non-registry path groups. It
+        keeps notebooks from calling ``read_table(...).head()`` for metadata
+        tables that already have a named owner in the output group.
+        """
+
+        from spatial_vtk.io.tables import preview_table
+
+        _validate_missing_policy(missing)
+        path = self._path_by_name(name)
+        if not path.exists():
+            if missing == "skip":
+                return None
+            raise FileNotFoundError(f"{name} is not ready yet: {path}")
+        return preview_table(path, nrows=nrows, columns=columns, **kwargs)
+
     def display_table_previews(
         self,
         names: str | Iterable[str] | dict[str, str] | None = None,
@@ -421,6 +472,16 @@ class OutputGroup:
                 return {label: preview}
         print(missing_message or "No candidate table is ready yet.")
         return {}
+
+    def _path_by_name(self, name: str) -> Path:
+        """Return a resolved group path by path-name with a clear error."""
+
+        key = str(name)
+        try:
+            return self.paths[key]
+        except KeyError as exc:
+            choices = ", ".join(sorted(self.paths))
+            raise KeyError(f"Unknown output-group path {key!r}. Choices: {choices}") from exc
 
     def status_frame(self, *, extra_paths=None):
         """Return a display-ready status frame for the group."""

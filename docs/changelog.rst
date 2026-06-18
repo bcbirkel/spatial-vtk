@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Added ``OutputGroup.load_path_table()`` and ``preview_path_table()`` for
+   output groups that own table paths outside the standard registry, such as
+   preprocessed waveform metadata. Standard Step 1 now previews the waveform
+   preprocessing manifest through the preprocessed output group instead of
+   calling ``read_table(...).head()`` in the notebook.
    Removed the development-only ``reload_metric_plot_modules()``/
    ``globals().update(...)`` hook from the large-run Step 3 notebook. Metric
    figure cells now rely only on the package ``MetricFigureContext`` methods,

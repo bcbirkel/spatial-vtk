@@ -1307,6 +1307,23 @@ outputs:
         "preprocessed_trace_metadata_path",
         "preprocessed_manifest_path",
     }
+    preprocessed_group.preprocessed_manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(
+        {
+            "source": ["observed", "synthetic"],
+            "event_id": ["e1", "e1"],
+            "trace_count": [3, 4],
+        }
+    ).to_csv(preprocessed_group.preprocessed_manifest_path, index=False)
+    manifest = preprocessed_group.load_path_table("preprocessed_manifest_path")
+    preview = preprocessed_group.preview_path_table("preprocessed_manifest_path", nrows=1)
+    assert manifest["source"].tolist() == ["observed", "synthetic"]
+    assert preview["source"].tolist() == ["observed"]
+    assert preprocessed_group.preview_path_table("preprocessed_trace_metadata_path", missing="skip") is None
+    with pytest.raises(FileNotFoundError, match="preprocessed_trace_metadata_path is not ready yet"):
+        preprocessed_group.preview_path_table("preprocessed_trace_metadata_path", missing="raise")
+    with pytest.raises(KeyError, match="Unknown output-group path"):
+        preprocessed_group.preview_path_table("missing_manifest_path")
 
     group = output_group("step_03_metrics", cfg=cfg)
     assert group.name == "step_03_metrics"

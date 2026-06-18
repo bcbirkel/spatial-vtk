@@ -1004,6 +1004,7 @@ def test_standard_step01_uses_configured_io_workflows() -> None:
     assert "preprocessed_outputs = preprocessed_waveform_output_group(config=cfg)" in source
     assert "metadata_tables = step_outputs.load_tables(" in source
     assert "context_tables = step_outputs.load_tables(" in source
+    assert 'preprocessed_outputs.preview_path_table("preprocessed_manifest_path"' in source
     assert "continue_on_error=False" in source
     assert 'component="Z"' in source
     assert "prepare_station_metadata(" not in source
@@ -1012,6 +1013,7 @@ def test_standard_step01_uses_configured_io_workflows() -> None:
     assert "preprocess_waveform_files(" not in source
     assert "build_record_coverage_table_from_trace_metadata(" not in source
     assert "write_output_tables(" not in source
+    assert "read_table(" not in source
 
 
 def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:

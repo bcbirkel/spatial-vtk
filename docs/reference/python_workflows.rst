@@ -114,6 +114,10 @@ the large-run notebooks.
        ``display_table_previews()`` handle multiple tables or display-label
        mappings. Pass ``missing="skip"`` when a figure can use an optional
        output if present but should continue without it.
+       For output groups that own table paths outside the configured output
+       registry, such as preprocessing metadata, use ``load_path_table()`` or
+       ``preview_path_table()`` with the group path name so notebook cells still
+       avoid direct ``read_table(...).head()`` calls.
        When a required input comes from an optional config value, pass the
        named mapping value as ``None``. The readiness/status table displays
        ``<not configured>`` and blocks the step cleanly instead of using a
