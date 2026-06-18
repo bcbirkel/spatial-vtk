@@ -158,7 +158,9 @@ the large-run notebooks.
        diagnostics use
        ``notebook_figure_settings("score_trend")`` so
        ``SVTK_MAKE_SCORE_TRENDS`` and ``SVTK_SCORE_TREND_COLUMNS`` are parsed
-       by package code rather than notebook cells.
+       by package code rather than notebook cells. Use ``render_gate()`` before
+       figure blocks that depend on generated tables; it reports disabled
+       figures and missing input paths without loading large tables.
    * - ``spatial_vtk.config.notebook_dashboard_launch_commands``
      - Return config-backed dashboard launch settings. Use
        ``metrics_launch_kwargs()`` and ``qc_launch_kwargs()`` with the package

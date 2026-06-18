@@ -131,6 +131,42 @@ class NotebookFigureSidecarSettings:
 
 
 @dataclass(frozen=True)
+class NotebookFigureRenderGate:
+    """Decision object for notebook figure rendering blocks."""
+
+    ready: bool
+    message: str
+    missing_paths: tuple[Path, ...] = ()
+    figures_enabled: bool = True
+
+    def status_frame(self) -> Any:
+        """Return a compact dataframe describing the render decision."""
+
+        import pandas as pd
+
+        if self.missing_paths:
+            rows = [
+                {
+                    "ready": self.ready,
+                    "figures_enabled": self.figures_enabled,
+                    "message": self.message,
+                    "missing_path": str(path),
+                }
+                for path in self.missing_paths
+            ]
+        else:
+            rows = [
+                {
+                    "ready": self.ready,
+                    "figures_enabled": self.figures_enabled,
+                    "message": self.message,
+                    "missing_path": "",
+                }
+            ]
+        return pd.DataFrame(rows)
+
+
+@dataclass(frozen=True)
 class NotebookFigureSettings:
     """Environment-backed figure controls for workflow notebooks.
 
@@ -192,6 +228,49 @@ class NotebookFigureSettings:
         """Return a compact sidecar status table for this figure family."""
 
         return self.sidecars.status_frame()
+
+    def render_gate(
+        self,
+        required_paths: Iterable[str | Path] | None = None,
+        *,
+        disabled_message: str | None = None,
+        missing_message: str | None = None,
+        ready_message: str = "Figure inputs are ready.",
+    ) -> NotebookFigureRenderGate:
+        """Return whether a notebook figure block should render.
+
+        Parameters
+        ----------
+        required_paths
+            Optional paths that must exist before the figure block can load
+            inputs. Missing paths are reported without loading any tables.
+        disabled_message
+            Message used when ``make_figures`` is false. When omitted, a
+            standard ``SVTK_MAKE_FIGURES`` hint is used.
+        missing_message
+            Message used when one or more required paths are missing. The
+            returned gate also exposes the exact missing paths.
+        ready_message
+            Message used when figures are enabled and all required paths exist.
+        """
+
+        if not self.make_figures:
+            return NotebookFigureRenderGate(
+                ready=False,
+                message=disabled_message or "Skipping figures. Set SVTK_MAKE_FIGURES=1 to render them.",
+                figures_enabled=False,
+            )
+        missing = tuple(path for path in (Path(item) for item in (required_paths or ())) if not path.exists())
+        if missing:
+            if missing_message is None:
+                missing_message = f"Skipping figures until {len(missing)} required input path(s) exist."
+            return NotebookFigureRenderGate(
+                ready=False,
+                message=missing_message,
+                missing_paths=missing,
+                figures_enabled=True,
+            )
+        return NotebookFigureRenderGate(ready=True, message=ready_message, figures_enabled=True)
 
 
 @dataclass(frozen=True)
@@ -1554,6 +1633,7 @@ def _figure_env_prefix(figure_kind: str | None) -> str:
 
 __all__ = [
     "NotebookDashboardCommands",
+    "NotebookFigureRenderGate",
     "NotebookFigureSettings",
     "NotebookFigureSidecarSettings",
     "NotebookRunContext",

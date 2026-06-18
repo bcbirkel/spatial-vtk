@@ -613,6 +613,39 @@ def test_notebook_figure_settings_parse_common_controls(tmp_path, monkeypatch):
     }
 
 
+def test_notebook_figure_settings_render_gate_reports_disabled_and_missing_inputs(tmp_path, monkeypatch):
+    """Figure blocks should use package-owned gating instead of repeated path checks."""
+
+    monkeypatch.delenv("SVTK_MAKE_FIGURES", raising=False)
+    missing = tmp_path / "missing.csv"
+    settings = notebook_figure_settings("qc", figure_dir=tmp_path / "figures")
+
+    disabled_gate = settings.render_gate([missing])
+
+    assert disabled_gate.ready is False
+    assert disabled_gate.figures_enabled is False
+    assert disabled_gate.missing_paths == ()
+    assert "SVTK_MAKE_FIGURES=1" in disabled_gate.message
+
+    monkeypatch.setenv("SVTK_MAKE_FIGURES", "1")
+    enabled = notebook_figure_settings("qc", figure_dir=tmp_path / "figures")
+    missing_gate = enabled.render_gate([missing], missing_message="QC inputs are missing.")
+
+    assert missing_gate.ready is False
+    assert missing_gate.figures_enabled is True
+    assert missing_gate.missing_paths == (missing,)
+    assert missing_gate.message == "QC inputs are missing."
+    missing_status = missing_gate.status_frame()
+    assert list(missing_status["missing_path"]) == [str(missing)]
+
+    missing.write_text("ready\n", encoding="utf-8")
+    ready_gate = enabled.render_gate([missing])
+
+    assert ready_gate.ready is True
+    assert ready_gate.message == "Figure inputs are ready."
+    assert bool(ready_gate.status_frame().loc[0, "ready"]) is True
+
+
 def test_notebook_figure_settings_parse_region_legacy_controls(tmp_path, monkeypatch):
     """Region notebooks should keep their existing SVTK_REGION_* controls."""
 

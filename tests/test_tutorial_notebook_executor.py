@@ -1349,6 +1349,23 @@ def test_tutorial_notebooks_use_package_figure_settings() -> None:
         assert 'os.environ.get("SVTK_ADD_BASEMAP"' not in source, notebook_path.relative_to(repo_root)
 
 
+def test_large_run_notebooks_use_figure_render_gates_for_prerequisite_tables() -> None:
+    """Large-run figure cells should report missing inputs through package gates."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = [
+        repo_root / "docs" / "examples" / "large_run" / "step_01_large_run_ingest_and_prepare_data.ipynb",
+        repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb",
+        repo_root / "docs" / "examples" / "large_run" / "step_06_large_run_additional_plotting.ipynb",
+    ]
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        assert ".render_gate(" in source, notebook_path.relative_to(repo_root)
+        assert "gate.status_frame()" in source, notebook_path.relative_to(repo_root)
+        assert "all(path.exists() for path in required)" not in source, notebook_path.relative_to(repo_root)
+
+
 def test_tutorial_notebooks_use_sidecar_settings_kwargs() -> None:
     """Notebook figure sidecar calls should not expand settings into local variables."""
 

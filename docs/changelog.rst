@@ -30,6 +30,10 @@ Changelog
    Extended ``prepare_notebook_geospatial_environment()`` with optional
    ``LOKY_MAX_CPU_COUNT`` setup and moved the Step 4 tutorial notebook's direct
    environment write into that shared helper.
+   Added ``NotebookFigureSettings.render_gate()`` so notebook figure blocks can
+   report disabled rendering and missing input paths consistently without
+   loading large tables. Large-run Steps 1, 2, and 6 now use the gate for
+   context, QC, and waveform figure prerequisites.
    Added ``spatial_vtk.io.record_coverage_readiness_from_config`` so Step 1
    notebooks can display the record-coverage rebuild decision without
    duplicating the preprocessed/base event-station fallback used by the build

@@ -42,6 +42,7 @@ from spatial_vtk.config.naming import abbreviate_model
 from spatial_vtk.config.notebook import (
     NotebookDashboardCommands,
     NotebookFigureSettings,
+    NotebookFigureRenderGate,
     NotebookFigureSidecarSettings,
     NotebookRunContext,
     display_output_table_previews,
@@ -120,6 +121,7 @@ __all__ = [
     "SpectralSettings",
     "NotebookFigureSidecarSettings",
     "NotebookFigureSettings",
+    "NotebookFigureRenderGate",
     "NotebookDashboardCommands",
     "NotebookRunContext",
     "SVTK_CLI_CONFIG_ENV",

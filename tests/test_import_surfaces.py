@@ -13,6 +13,7 @@ import textwrap
 def test_public_imports():
     import spatial_vtk
     from spatial_vtk.config import (
+        NotebookFigureRenderGate,
         abbreviate_model,
         configured_output_registry_frame,
         display_output_table_previews,
@@ -61,6 +62,7 @@ def test_public_imports():
 
     assert spatial_vtk.__version__
     assert "C1" in METRIC_NAMES
+    assert callable(NotebookFigureRenderGate)
     assert callable(abbreviate_model)
     assert callable(configured_output_registry_frame)
     assert callable(display_output_table_previews)
