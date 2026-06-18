@@ -755,6 +755,429 @@ class MetricFigureContext:
         print(f"wrote {output}")
         return output
 
+    def write_residuals_vs_distance_plots(
+        self,
+        residuals_vs_distance_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        showfig: bool | None = None,
+        robust_axis_percentile: float | None = None,
+    ) -> list[Path]:
+        """Write residual-vs-distance figures for all configured target metrics."""
+
+        resolved_value_col = self.value_col if value_col is None else value_col
+        outputs: list[Path] = []
+        if not self._can_render_metric_figures("residuals_vs_distance", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            writer = self.write_psa_period_sheet if item["key"] == "psa" else self.write_metric_plot
+            output = writer(
+                "residuals_vs_distance",
+                item,
+                residuals_vs_distance_func,
+                required=[self.distance_col, resolved_value_col],
+                y_col=resolved_value_col,
+                group_col=self.component_col,
+                fit="lowess",
+                connect_points=False,
+                robust_axis_percentile=self._resolved_robust_axis_percentile(robust_axis_percentile),
+                showfig=self._resolved_showfig(showfig),
+            )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
+    def write_residuals_vs_depth_plots(
+        self,
+        residuals_vs_depth_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        showfig: bool | None = None,
+        robust_axis_percentile: float | None = None,
+    ) -> list[Path]:
+        """Write residual-vs-depth figures for all configured target metrics."""
+
+        resolved_value_col = self.value_col if value_col is None else value_col
+        outputs: list[Path] = []
+        if not self._can_render_metric_figures("residuals_vs_depth", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            writer = self.write_psa_period_sheet if item["key"] == "psa" else self.write_metric_plot
+            output = writer(
+                "residuals_vs_depth",
+                item,
+                residuals_vs_depth_func,
+                required=[self.depth_col, resolved_value_col],
+                y_col=resolved_value_col,
+                group_col=self.component_col,
+                fit="lowess",
+                connect_points=False,
+                robust_axis_percentile=self._resolved_robust_axis_percentile(robust_axis_percentile),
+                showfig=self._resolved_showfig(showfig),
+            )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
+    def write_vs30_scatter_plots(
+        self,
+        vs30_scatter_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        showfig: bool | None = None,
+        robust_axis_percentile: float | None = None,
+    ) -> list[Path]:
+        """Write Vs30 scatter figures for all configured target metrics."""
+
+        resolved_value_col = self.value_col if value_col is None else value_col
+        outputs: list[Path] = []
+        if not self._can_render_metric_figures("vs30_scatter", resolved_value_col):
+            return outputs
+        if self.vs30_col is None:
+            print("Skipping Vs30 figures: no Vs30 column found.")
+            return outputs
+        for item in self.iter_metric_frames(
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            writer = self.write_psa_period_sheet if item["key"] == "psa" else self.write_metric_plot
+            output = writer(
+                "vs30_scatter",
+                item,
+                vs30_scatter_func,
+                required=[self.vs30_col, resolved_value_col],
+                vs30_col=self.vs30_col,
+                value_col=resolved_value_col,
+                forward_value_col=True,
+                group_col=self.component_col,
+                fit="lowess",
+                connect_points=False,
+                robust_axis_percentile=self._resolved_robust_axis_percentile(robust_axis_percentile),
+                showfig=self._resolved_showfig(showfig),
+            )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
+    def write_station_metric_maps(
+        self,
+        station_metric_map_func: Callable[..., Any],
+        station_metric_map_by_period_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        add_basemap: bool | None = None,
+        showfig: bool | None = None,
+    ) -> list[Path]:
+        """Write station-level metric maps for all configured target metrics."""
+
+        resolved_value_col = self.value_col if value_col is None else value_col
+        outputs: list[Path] = []
+        if not self._can_render_metric_figures("station_metric_map", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            if item["key"] == "psa" and self.period_col in item["df"].columns:
+                station_df = self.station_period_summary_for_item(item, resolved_value_col)
+                output = self.write_metric_plot(
+                    "station_metric_map",
+                    item,
+                    station_metric_map_by_period_func,
+                    df=station_df,
+                    source_df=self.item_source_rows(item),
+                    required=["sta_lon", "sta_lat", self.period_col, resolved_value_col],
+                    value_col=resolved_value_col,
+                    forward_value_col=True,
+                    period_col=self.period_col,
+                    add_basemap=self._resolved_add_basemap(add_basemap),
+                    showfig=self._resolved_showfig(showfig),
+                )
+            else:
+                station_df = self.station_summary_for_item(item, resolved_value_col)
+                output = self.write_metric_plot(
+                    "station_metric_map",
+                    item,
+                    station_metric_map_func,
+                    df=station_df,
+                    source_df=self.item_source_rows(item),
+                    required=["sta_lon", "sta_lat", resolved_value_col],
+                    value_col=resolved_value_col,
+                    forward_value_col=True,
+                    add_basemap=self._resolved_add_basemap(add_basemap),
+                    showfig=self._resolved_showfig(showfig),
+                )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
+    def write_residual_grid_maps(
+        self,
+        residual_grid_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        add_basemap: bool | None = None,
+        showfig: bool | None = None,
+    ) -> list[Path]:
+        """Write station-interpolated residual grid maps for target metrics."""
+
+        resolved_value_col = self.value_col if value_col is None else value_col
+        outputs: list[Path] = []
+        if not self._can_render_metric_figures("residual_grid", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            if item["key"] == "psa":
+                output = self.write_psa_period_sheet(
+                    "residual_grid",
+                    item,
+                    residual_grid_func,
+                    df_factory=self.station_grid_for_item,
+                    source_df_factory=self.item_source_rows,
+                    required=["lon", "lat", resolved_value_col],
+                    value_col=resolved_value_col,
+                    forward_value_col=True,
+                    add_basemap=self._resolved_add_basemap(add_basemap),
+                    showfig=self._resolved_showfig(showfig),
+                )
+            else:
+                station_df = self.station_grid_for_item(item, resolved_value_col)
+                output = self.write_metric_plot(
+                    "residual_grid",
+                    item,
+                    residual_grid_func,
+                    df=station_df,
+                    source_df=self.item_source_rows(item),
+                    required=["lon", "lat", resolved_value_col],
+                    value_col=resolved_value_col,
+                    forward_value_col=True,
+                    add_basemap=self._resolved_add_basemap(add_basemap),
+                    showfig=self._resolved_showfig(showfig),
+                )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
+    def write_metric_by_model_maps(
+        self,
+        metric_by_model_map_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        add_basemap: bool | None = None,
+        showfig: bool | None = None,
+    ) -> list[Path]:
+        """Write faceted station metric maps split by model."""
+
+        resolved_value_col = self.value_col if value_col is None else value_col
+        outputs: list[Path] = []
+        if not self._can_render_metric_figures("metric_by_model_map", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            if item["key"] == "psa":
+                output = self.write_psa_period_sheet(
+                    "metric_by_model_map",
+                    item,
+                    metric_by_model_map_func,
+                    df_factory=self.station_model_summary_for_item,
+                    source_df_factory=self.item_source_rows,
+                    required=[self.model_col, "sta_lon", "sta_lat", resolved_value_col],
+                    value_col=resolved_value_col,
+                    forward_value_col=True,
+                    add_basemap=self._resolved_add_basemap(add_basemap),
+                    showfig=self._resolved_showfig(showfig),
+                )
+            else:
+                station_model_df = self.station_model_summary_for_item(item, resolved_value_col)
+                output = self.write_metric_plot(
+                    "metric_by_model_map",
+                    item,
+                    metric_by_model_map_func,
+                    df=station_model_df,
+                    source_df=self.item_source_rows(item),
+                    required=[self.model_col, "sta_lon", "sta_lat", resolved_value_col],
+                    value_col=resolved_value_col,
+                    forward_value_col=True,
+                    add_basemap=self._resolved_add_basemap(add_basemap),
+                    showfig=self._resolved_showfig(showfig),
+                )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
+    def write_event_residual_maps(
+        self,
+        event_residual_map_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        add_basemap: bool | None = None,
+        showfig: bool | None = None,
+    ) -> list[Path]:
+        """Write event residual maps for all configured target metrics."""
+
+        resolved_value_col = self.value_col if value_col is None else value_col
+        outputs: list[Path] = []
+        if not self._can_render_metric_figures("event_residual_map", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            writer = self.write_psa_period_sheet if item["key"] == "psa" else self.write_metric_plot
+            output = writer(
+                "event_residual_map",
+                item,
+                event_residual_map_func,
+                required=["event_id", "sta_lon", "sta_lat", resolved_value_col],
+                value_col=resolved_value_col,
+                forward_value_col=True,
+                metric=None,
+                add_basemap=self._resolved_add_basemap(add_basemap),
+                showfig=self._resolved_showfig(showfig),
+            )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
+    def write_log2_residual_distribution_plots(
+        self,
+        band_score_distribution_func: Callable[..., Any],
+        period_score_distribution_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        showfig: bool | None = None,
+        robust_axis_percentile: float | None = None,
+    ) -> list[Path]:
+        """Write passband or PSA-period residual distribution figures."""
+
+        resolved_value_col = self.value_col if value_col is None else value_col
+        outputs: list[Path] = []
+        if not self._can_render_metric_figures("log2_residual_distribution", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            if item["key"] == "psa":
+                output = self.write_metric_plot(
+                    "period_log2_residual_distribution",
+                    item,
+                    period_score_distribution_func,
+                    required=[self.period_col, resolved_value_col],
+                    period_col=self.period_col,
+                    score_col=resolved_value_col,
+                    color_col=self.component_col,
+                    robust_axis_percentile=self._resolved_robust_axis_percentile(robust_axis_percentile),
+                    showfig=self._resolved_showfig(showfig),
+                )
+            else:
+                output = self.write_metric_plot(
+                    "band_log2_residual_distribution",
+                    item,
+                    band_score_distribution_func,
+                    required=[self.band_col, resolved_value_col],
+                    band_col=self.band_col,
+                    score_col=resolved_value_col,
+                    color_col=self.component_col,
+                    robust_axis_percentile=self._resolved_robust_axis_percentile(robust_axis_percentile),
+                    showfig=self._resolved_showfig(showfig),
+                )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
+    def write_psa_period_curve_plots(
+        self,
+        psa_period_curve_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        showfig: bool | None = None,
+        robust_axis_percentile: float | None = None,
+    ) -> list[Path]:
+        """Write PSA period-curve figures for selected PSA rows."""
+
+        resolved_value_col = self.value_col if value_col is None else value_col
+        outputs: list[Path] = []
+        if not self._can_render_metric_figures("psa_period_curve", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            if item["key"] != "psa":
+                continue
+            output = self.write_metric_plot(
+                "psa_period_curve",
+                item,
+                psa_period_curve_func,
+                required=[self.period_col, resolved_value_col],
+                metric=None,
+                period_col=self.period_col,
+                value_col=resolved_value_col,
+                forward_value_col=True,
+                group_col=self.component_col,
+                robust_axis_percentile=self._resolved_robust_axis_percentile(robust_axis_percentile),
+                showfig=self._resolved_showfig(showfig),
+            )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
     def write_generic_metric_diagnostic_plots(
         self,
         scatterplot_func: Callable[..., Any],
@@ -996,6 +1419,32 @@ class MetricFigureContext:
                 if output is not None:
                     outputs.append(output)
         return outputs
+
+    def _resolved_add_basemap(self, add_basemap: bool | None) -> bool:
+        """Resolve an optional per-call basemap override."""
+
+        return self.add_basemap if add_basemap is None else bool(add_basemap)
+
+    def _resolved_showfig(self, showfig: bool | None) -> bool:
+        """Resolve an optional per-call showfig override."""
+
+        return self.default_showfig if showfig is None else bool(showfig)
+
+    def _resolved_robust_axis_percentile(self, robust_axis_percentile: float | None) -> float:
+        """Resolve an optional per-call robust-axis percentile override."""
+
+        return self.robust_axis_percentile if robust_axis_percentile is None else float(robust_axis_percentile)
+
+    def _can_render_metric_figures(self, label: str, value_col: str | None) -> bool:
+        """Return whether a metric figure family can be rendered."""
+
+        if not self.ready:
+            print(f"Skipping {label}: metric figure context is not ready.")
+            return False
+        if value_col is None or value_col not in self.metrics_for_figures.columns:
+            print(f"Skipping {label}: value column {value_col!r} is not present.")
+            return False
+        return True
 
     def psa_period_items(self, item: dict[str, Any]) -> list[dict[str, Any]]:
         """Return PSA item variants, one per oscillator period."""

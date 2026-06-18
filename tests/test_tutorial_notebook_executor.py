@@ -988,18 +988,19 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "write_psa_period_sheet = metric_plot_context.write_psa_period_sheet" in source
-    assert "write_score_trend_plots = metric_plot_context.write_score_trend_plots" in source
-    assert "station_summary_for_item = metric_plot_context.station_summary_for_item" in source
-    assert "station_period_summary_for_item = metric_plot_context.station_period_summary_for_item" in source
-    assert "station_grid_for_item = metric_plot_context.station_grid_for_item" in source
-    assert "station_model_summary_for_item = metric_plot_context.station_model_summary_for_item" in source
-    assert "item_source_rows = metric_plot_context.item_source_rows" in source
-    assert "source_df=item_source_rows(item)" in source
-    assert "source_df_factory=item_source_rows" in source
+    assert "metric_plot_context.write_station_metric_maps(" in source
+    assert "metric_plot_context.write_residual_grid_maps(" in source
+    assert "metric_plot_context.write_metric_by_model_maps(" in source
+    assert "metric_plot_context.write_event_residual_maps(" in source
+    assert "write_psa_period_sheet = metric_plot_context.write_psa_period_sheet" not in source
+    assert "write_metric_plot = metric_plot_context.write_metric_plot" not in source
+    assert "station_summary_for_item = metric_plot_context.station_summary_for_item" not in source
+    assert "item_source_rows = metric_plot_context.item_source_rows" not in source
+    assert "source_df=item_source_rows(item)" not in source
+    assert "source_df_factory=item_source_rows" not in source
     assert "source_df=item[\"df\"]" not in source
     assert "source_df_factory=lambda period_item" not in source
-    assert "write_score_trend_plots(" in source
+    assert "metric_plot_context.write_score_trend_plots(" in source
     assert "plot_score_trends" in source
     assert 'SCORE_TREND_FIGURE_SETTINGS = notebook_figure_settings(' in source
     assert 'MAKE_SCORE_TRENDS = SCORE_TREND_FIGURE_SETTINGS.make_figures' in source
@@ -1016,10 +1017,18 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     assert "SCORE_TREND_COLUMNS" in source
     assert "raw event-level rows used for the station summaries" in source
     assert "STATION_AGGREGATION = METRIC_FIGURE_SETTINGS.station_aggregation" in source
-    for base in ("station_metric_map", "residual_grid", "metric_by_model_map"):
-        assert f'"{base}"' in source
-    assert source.count("source_df=item_source_rows(item)") >= 3
-    assert source.count("source_df_factory=item_source_rows") >= 2
+    for helper in (
+        "write_residuals_vs_distance_plots",
+        "write_residuals_vs_depth_plots",
+        "write_vs30_scatter_plots",
+        "write_station_metric_maps",
+        "write_residual_grid_maps",
+        "write_metric_by_model_maps",
+        "write_event_residual_maps",
+        "write_log2_residual_distribution_plots",
+        "write_psa_period_curve_plots",
+    ):
+        assert f"metric_plot_context.{helper}(" in source
 
 
 def test_large_run_step04_uses_spatial_context_row_factories() -> None:
@@ -1570,26 +1579,15 @@ def test_large_run_step03_metric_figures_are_auditable_station_aggregations() ->
     assert "PLOT_VALUE_COL in metrics_for_figures.columns" not in source
     assert "MAKE_METRIC_FIGURES and metric_plot_context.ready" not in source
 
-    station_cells = [
-        "".join(cell.get("source", []))
-        for cell in notebook.get("cells", [])
-        if any(
-            marker in "".join(cell.get("source", []))
-            for marker in (
-                '"station_metric_map"',
-                '"residual_grid"',
-                '"metric_by_model_map"',
-            )
-        )
-    ]
-    station_source = "\n".join(station_cells)
-
-    assert "station_summary_for_item(item, PLOT_VALUE_COL)" in station_source
-    assert "station_period_summary_for_item(item, PLOT_VALUE_COL)" in station_source
-    assert "station_grid_for_item(item, PLOT_VALUE_COL)" in station_source
-    assert "station_model_summary_for_item(item, PLOT_VALUE_COL)" in station_source
-    assert "source_df=item_source_rows(item)" in station_source
-    assert "source_df_factory=item_source_rows" in station_source
+    assert "metric_plot_context.write_station_metric_maps(" in source
+    assert "metric_plot_context.write_residual_grid_maps(" in source
+    assert "metric_plot_context.write_metric_by_model_maps(" in source
+    assert "metric_plot_context.write_event_residual_maps(" in source
+    assert "for item in iter_metric_frames(" not in source
+    assert "station_summary_for_item(item, PLOT_VALUE_COL)" not in source
+    assert "station_grid_for_item(item, PLOT_VALUE_COL)" not in source
+    assert "source_df=item_source_rows(item)" not in source
+    assert "source_df_factory=item_source_rows" not in source
 
 
 def test_tutorial_figure_sidecar_calls_include_directory_control() -> None:
@@ -1741,16 +1739,17 @@ def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> 
     """Large-run station aggregation figures should keep raw-row provenance."""
 
     repo_root = Path(__file__).resolve().parents[1]
+    metric_context_source = (
+        repo_root / "src" / "spatial_vtk" / "metrics" / "plot" / "large_run.py"
+    ).read_text(encoding="utf-8")
     spatial_context_source = (
         repo_root / "src" / "spatial_vtk" / "spatial" / "plot" / "large_run.py"
     ).read_text(encoding="utf-8")
     requirements = {
         "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": (
-            'write_metric_plot(\n                "station_metric_map"',
-            'write_metric_plot(\n            "residual_grid"',
-            'write_metric_plot(\n            "metric_by_model_map"',
-            "source_df=item_source_rows(item)",
-            "source_df_factory=item_source_rows",
+            "metric_plot_context.write_station_metric_maps(",
+            "metric_plot_context.write_residual_grid_maps(",
+            "metric_plot_context.write_metric_by_model_maps(",
         ),
         "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": (
             "spatial_figures.write_station_metric_maps(",
@@ -1765,6 +1764,8 @@ def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> 
             assert snippet in source, f"{relative_path} is missing provenance snippet {snippet!r}"
     assert "source_df=self.item_source_rows(item)" in spatial_context_source
     assert "source_df_factory=self.item_source_rows" in spatial_context_source
+    assert "source_df=self.item_source_rows(item)" in metric_context_source
+    assert "source_df_factory=self.item_source_rows" in metric_context_source
 
 
 def test_public_saved_plot_functions_expose_sidecar_controls() -> None:

@@ -2,6 +2,14 @@ Changelog
 =========
 
 2026-06-18
+   Added package-level ``MetricFigureContext`` helpers for large-run Step 3
+   metric figure families, including residual distance/depth trends, Vs30
+   scatter plots, station maps, residual grids, model-faceted maps, event
+   residual maps, log2 residual distributions, and PSA period curves. The
+   large-run metric notebook now keeps only per-cell plotting overrides and
+   calls those package helpers, while target-metric iteration, PSA period-sheet
+   branching, station aggregation, and raw source-row sidecars stay in package
+   code.
    Added package-level ``SpatialFigureContext`` helpers for large-run Step 4
    spatial figure families, including station metric maps, residual grids,
    model-faceted maps, event residual maps, and event-centered azimuthal/polar

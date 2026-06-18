@@ -415,6 +415,117 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
         assert metadata["source_row_count"] >= metadata["written_row_count"]
 
 
+def test_metric_figure_context_orchestrates_large_run_plot_families(tmp_path) -> None:
+    """Large-run metric plot families should be package helpers, not notebook loops."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e1", "e2"],
+            "station": ["STA", "STB", "STA", "STB"],
+            "sta_lon": [-118.0, -117.9, -118.0, -117.9],
+            "sta_lat": [34.0, 34.1, 34.0, 34.1],
+            "metric": ["PGA", "PGA", "PSA", "PSA"],
+            "band": ["1-2 sec", "1-2 sec", "", ""],
+            "model": ["m1", "m1", "m1", "m1"],
+            "component": ["Z", "R", "Z", "R"],
+            "period_s": [np.nan, np.nan, 1.0, 2.0],
+            "distance_km": [10.0, 20.0, 10.0, 20.0],
+            "depth_km": [5.0, 6.0, 5.0, 6.0],
+            "vs30": [400.0, 500.0, 400.0, 500.0],
+            "log2_residual": [0.2, -0.1, 0.1, 0.2],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        metrics,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+    )
+    calls: list[dict[str, object]] = []
+
+    def _dummy_plot(_df: pd.DataFrame, *, output_path, **_kwargs) -> None:
+        Path(output_path).write_text("plot", encoding="utf-8")
+
+    def _record_metric(base, item, func, df=None, source_df=None, required=(), **kwargs):
+        calls.append(
+            {
+                "writer": "metric",
+                "base": base,
+                "key": item["key"],
+                "rows": None if df is None else len(df),
+                "source_rows": None if source_df is None else len(source_df),
+                "required": tuple(required),
+                "kwargs": dict(kwargs),
+            }
+        )
+        return tmp_path / f"{base}_{item['key']}.png"
+
+    def _record_sheet(base, item, func, df_factory=None, source_df_factory=None, required=(), **kwargs):
+        plot_df = df_factory(item) if df_factory is not None else item["df"]
+        source_df = source_df_factory(item) if source_df_factory is not None else None
+        calls.append(
+            {
+                "writer": "sheet",
+                "base": base,
+                "key": item["key"],
+                "rows": len(plot_df),
+                "source_rows": None if source_df is None else len(source_df),
+                "required": tuple(required),
+                "source_factory": source_df_factory,
+                "kwargs": dict(kwargs),
+            }
+        )
+        return tmp_path / f"{base}_{item['key']}_sheet.png"
+
+    context.write_metric_plot = _record_metric  # type: ignore[method-assign]
+    context.write_psa_period_sheet = _record_sheet  # type: ignore[method-assign]
+
+    outputs = []
+    outputs.extend(context.write_residuals_vs_distance_plots(_dummy_plot, passband="1-2 sec", components=["Z", "R"]))
+    outputs.extend(context.write_residuals_vs_depth_plots(_dummy_plot, passband="1-2 sec", components=["Z", "R"]))
+    outputs.extend(context.write_vs30_scatter_plots(_dummy_plot, passband="1-2 sec", components=["Z", "R"]))
+    outputs.extend(context.write_station_metric_maps(_dummy_plot, _dummy_plot, passband="1-2 sec", components=["Z", "R"]))
+    outputs.extend(context.write_residual_grid_maps(_dummy_plot, passband="1-2 sec", components=["Z", "R"]))
+    outputs.extend(context.write_metric_by_model_maps(_dummy_plot, passband="1-2 sec", components=["Z", "R"]))
+    outputs.extend(context.write_event_residual_maps(_dummy_plot, passband="1-2 sec", components=["Z", "R"]))
+    outputs.extend(context.write_log2_residual_distribution_plots(_dummy_plot, _dummy_plot, components=["Z", "R"]))
+    outputs.extend(context.write_psa_period_curve_plots(_dummy_plot, passband="1-2 sec", components=["Z", "R"]))
+
+    assert outputs
+    bases = {str(call["base"]) for call in calls}
+    assert {
+        "residuals_vs_distance",
+        "residuals_vs_depth",
+        "vs30_scatter",
+        "station_metric_map",
+        "residual_grid",
+        "metric_by_model_map",
+        "event_residual_map",
+        "band_log2_residual_distribution",
+        "period_log2_residual_distribution",
+        "psa_period_curve",
+    }.issubset(bases)
+    station_calls = [call for call in calls if call["base"] == "station_metric_map"]
+    assert any(call["key"] == "pga" and call["source_rows"] == 2 for call in station_calls)
+    assert any(call["key"] == "psa" and call["source_rows"] == 2 for call in station_calls)
+    sheet_calls = [call for call in calls if call["writer"] == "sheet"]
+    item_source_func = context.item_source_rows.__func__
+    assert any(
+        call["base"] == "residual_grid"
+        and getattr(call["source_factory"], "__self__", None) is context
+        and getattr(call["source_factory"], "__func__", None) is item_source_func
+        for call in sheet_calls
+    )
+    assert any(
+        call["base"] == "metric_by_model_map"
+        and getattr(call["source_factory"], "__self__", None) is context
+        and getattr(call["source_factory"], "__func__", None) is item_source_func
+        for call in sheet_calls
+    )
+    assert any("log2_residual" in call["required"] for call in calls)
+
+
 def test_generic_metric_diagnostics_split_residuals_by_model(tmp_path) -> None:
     """Generic residual diagnostics should not require notebook-local model loops."""
 
