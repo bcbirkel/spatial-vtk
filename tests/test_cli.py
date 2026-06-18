@@ -875,6 +875,7 @@ def test_generated_cli_reference_includes_config_backed_examples():
     root = Path(__file__).resolve().parents[1]
     plot_text = (root / "docs" / "reference" / "cli" / "plot.rst").read_text(encoding="utf-8")
     map_text = (root / "docs" / "reference" / "cli" / "map.rst").read_text(encoding="utf-8")
+    visualize_text = (root / "docs" / "reference" / "cli" / "visualize.rst").read_text(encoding="utf-8")
     dashboard_text = (root / "docs" / "reference" / "cli" / "dashboard.rst").read_text(encoding="utf-8")
     generator_text = (root / "tools" / "generate_cli_reference.py").read_text(encoding="utf-8")
 
@@ -889,6 +890,13 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "svtk map spatial list" in map_text
     assert "named map bounds" in map_text
     assert "Basemaps are enabled by default" in map_text
+    assert "Config-Backed Visualization" in visualize_text
+    assert "svtk visualize qc retention-summary" in visualize_text
+    assert "svtk visualize context station-event-context --bounds study_area" in visualize_text
+    assert "svtk visualize waveforms observed-synthetic-record-section --components R --max-records 80" in visualize_text
+    assert "svtk visualize waveforms list" in visualize_text
+    assert "svtk visualize sidecars status" in visualize_text
+    assert "event_station_records" in visualize_text
     assert "Config-Backed Dashboards" in dashboard_text
     assert "svtk dashboard metrics --config runs/spatial_vtk_config.yaml --auto-port --proxy-mode" in dashboard_text
     assert "--metrics-dataset-dir" in dashboard_text
@@ -900,6 +908,7 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "are legacy aliases" in dashboard_text
     assert "Config-Backed Plotting" in generator_text
     assert "Config-Backed Mapping" in generator_text
+    assert "Config-Backed Visualization" in generator_text
     assert "Config-Backed Dashboards" in generator_text
 
 

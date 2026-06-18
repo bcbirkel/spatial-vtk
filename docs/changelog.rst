@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-18
+   Added config-backed ``svtk visualize`` guidance to the generated CLI
+   reference so context, QC, waveform, and sidecar commands show the same
+   configured-default path pattern as ``svtk plot``, ``svtk map``, and
+   dashboards.
    Removed the remaining development-only ``reload_metric_plot_modules()``
    helper from the metric plotting package surface. Large-run notebooks now use
    normal imports from ``spatial_vtk.metrics.plot`` and tests guard against the

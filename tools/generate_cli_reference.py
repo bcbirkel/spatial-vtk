@@ -221,6 +221,25 @@ def _command_page_notes(command_name: str) -> list[str]:
             "Basemaps are enabled by default for map figures; use ``--no-basemap`` only when you explicitly want a data-only map.",
             "",
         ]
+    if command_name == "visualize":
+        return [
+            "Config-Backed Visualization",
+            "---------------------------",
+            "",
+            "If a config is active with ``svtk config set`` or passed with ``--config``, registered visualization commands resolve their standard input tables and figure outputs automatically. For routine context, QC, and waveform figures, prefer the curated flags shown below instead of passing raw ``--input`` and ``--output`` paths.",
+            "",
+            ".. code-block:: bash",
+            "",
+            "   svtk config set runs/spatial_vtk_config.yaml",
+            "   svtk visualize qc retention-summary",
+            "   svtk visualize context station-event-context --bounds study_area",
+            "   svtk visualize waveforms observed-synthetic-record-section --components R --max-records 80",
+            "",
+            "These commands use configured outputs such as ``qc_metric_pair_retention``, ``event_station_records``, and the registered figure keys for the selected visualization unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk visualize qc list``, ``svtk visualize context list``, or ``svtk visualize waveforms list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:--input`` entries.",
+            "",
+            "Use ``svtk visualize sidecars status`` to inspect figure provenance sidecars written by commands that support ``--write-sidecar``.",
+            "",
+        ]
     if command_name == "dashboard":
         return [
             "Config-Backed Dashboards",
