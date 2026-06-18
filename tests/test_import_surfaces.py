@@ -569,6 +569,7 @@ def test_reference_docs_map_python_workflow_entry_points():
     ]
     for helper in required_helpers:
         assert helper in workflows
+    assert "display_table_previews()" in workflows
     assert "run_notebook_step_if_needed" in workflows
     assert "notebooks should use package functions" in workflows.lower()
     assert "configured_output_registry_frame" in workflows

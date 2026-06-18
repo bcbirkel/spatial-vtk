@@ -947,7 +947,8 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "from spatial_vtk.spatial import (" in source
     assert "run_spatial_statistics_workflow_from_config," in source
     assert "run_spatial_derived_outputs_workflow_from_config," in source
-    assert "display_output_table_previews(" in source
+    assert "step_outputs.display_table_previews(" in source
+    assert "display_output_table_previews(" not in source
     assert '"spatial_vtk.spatial.run_spatial_statistics_workflow_from_config"' not in source
     assert '"spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config"' not in source
     assert "run_or_submit_notebook_function(" not in source
@@ -992,7 +993,8 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "from spatial_vtk.spatial import (" in source
     assert "run_geojson_region_summary_workflow_from_config," in source
     assert "run_boundary_corridor_workflow_from_config," in source
-    assert "display_output_table_previews(" in source
+    assert "step_outputs.display_table_previews(" in source
+    assert "display_output_table_previews(" not in source
     assert "ingest_outputs.load_tables(" in source
     assert "step_outputs.load_table(" in source
     assert 'missing="skip"' in source

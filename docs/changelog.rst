@@ -13,6 +13,10 @@ Changelog
    large-run spatial figures. The Step 4 notebook now displays loaded spatial
    output-table status, plotted value-column choices, and metric/event-centered
    dimension coverage before rendering figure batches.
+   Added ``OutputGroup.display_table_previews()`` so notebooks can print
+   configured output paths and bounded previews from the group object that owns
+   those paths. Large-run Steps 4 and 5 now use this method instead of importing
+   a separate preview helper and repeating output-key preview mappings.
    Added config-backed metric readiness helpers for Slurm submission, batch
    merging, and downstream metric output tables. Large-run Step 3 now uses
    those Python package helpers directly instead of notebook-local manifest and

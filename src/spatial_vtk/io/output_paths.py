@@ -17,7 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass, fields, is_dataclass
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Iterable, Literal
+from typing import Any, Callable, Iterable, Literal
 
 from spatial_vtk.config.outputs import OutputKind, resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
@@ -267,6 +267,67 @@ class OutputGroup:
         if not previews:
             return None
         return next(iter(previews.values()))
+
+    def display_table_previews(
+        self,
+        names: str | Iterable[str] | dict[str, str] | None = None,
+        *,
+        cfg: SpatialVTKConfig | None = None,
+        nrows: int = 5,
+        missing: Literal["raise", "skip"] = "skip",
+        display_fn: Callable[[Any], Any] | None = None,
+        **kwargs,
+    ) -> dict[str, object]:
+        """Print paths and display bounded previews for group table artifacts.
+
+        Parameters
+        ----------
+        names
+            Artifact names, output keys, or a ``label -> artifact/key`` mapping.
+            When omitted, every table artifact in the group is previewed.
+        cfg
+            Optional config passed to :func:`spatial_vtk.io.preview_output_table`.
+        nrows
+            Number of rows to preview from each existing table.
+        missing
+            ``"raise"`` to fail on a missing table, or ``"skip"`` to print a
+            not-ready message and continue.
+        display_fn
+            Optional display function. When omitted, IPython's ``display`` is
+            used when available, otherwise dataframes are printed as text.
+
+        Returns
+        -------
+        dict
+            Mapping from requested labels to preview dataframes for tables that
+            were available.
+        """
+
+        from spatial_vtk.io.tables import preview_output_table
+
+        _validate_missing_policy(missing)
+        display = _notebook_display(display_fn)
+        artifacts = _output_group_table_artifacts(self.name)
+        selected = _selected_output_artifacts(artifacts, names)
+        previews: dict[str, object] = {}
+        for label, artifact in selected:
+            path = self.paths.get(artifact.name)
+            print(f"\n{label}: {path}")
+            if path is not None and not path.exists():
+                message = f"{label} is not ready yet."
+                if missing == "raise":
+                    raise FileNotFoundError(message)
+                print(message)
+                continue
+            preview = preview_output_table(artifact.key, cfg=cfg, nrows=nrows, **kwargs)
+            previews[label] = preview
+            if display is not None:
+                display(preview)
+            elif hasattr(preview, "to_string"):
+                print(preview.to_string(index=False))
+            else:
+                print(preview)
+        return previews
 
     def first_existing_path(
         self,
@@ -1245,6 +1306,19 @@ def _paths_message(prefix: str, paths: tuple[Path, ...] | dict[str, Path]) -> st
     if len(items) == 1:
         return f"{prefix}: {first}"
     return f"{prefix}: {len(items)} path(s); first is {first}"
+
+
+def _notebook_display(display_fn: Callable[[Any], Any] | None = None) -> Callable[[Any], Any] | None:
+    """Return a notebook display function when one is available."""
+
+    if display_fn is not None:
+        return display_fn
+    try:
+        from IPython.display import display  # type: ignore
+
+        return display
+    except Exception:
+        return None
 
 
 OUTPUT_GROUPS["large_run_core"] = tuple(

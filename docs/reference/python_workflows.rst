@@ -111,9 +111,10 @@ the large-run notebooks.
        names such as ``"metrics_long_path"`` and resolves them to configured
        paths before building the status table. ``load_table()`` and
        ``preview_table()`` read one table artifact by group path name or output
-       key; ``load_tables()`` and ``preview_tables()`` handle multiple tables
-       or display-label mappings. Pass ``missing="skip"`` when a figure can use
-       an optional output if present but should continue without it.
+       key; ``load_tables()``, ``preview_tables()``, and
+       ``display_table_previews()`` handle multiple tables or display-label
+       mappings. Pass ``missing="skip"`` when a figure can use an optional
+       output if present but should continue without it.
        ``first_existing_path()`` and ``preview_first_existing_table()`` cover
        common fallback cases such as
        preferring ``metrics_enriched`` when it exists and otherwise using
