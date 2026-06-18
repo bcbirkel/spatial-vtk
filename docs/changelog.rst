@@ -65,7 +65,9 @@ Changelog
    ``spatial_vtk.visualize.dashboard.launch_configured_dashboards_from_notebook_settings()``
    so Step 7 notebooks can launch requested Metrics/QC dashboards or display
    terminal fallback commands through one package helper instead of duplicating
-   per-dashboard launch branches.
+   per-dashboard launch branches. The helper also supports QC-only launch
+   status rows, and the Step 2 QC tutorial now uses that package helper instead
+   of branching around ``launch_configured_qc_dashboard()`` in notebook code.
    Added ``spatial_vtk.io.load_configured_input_paths()`` for configured
    non-table inputs such as ``paths.region_geojson``. Standard and large-run
    Step 5 now use this helper instead of resolving GeoJSON paths with direct

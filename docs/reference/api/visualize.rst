@@ -202,7 +202,7 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
    * - ``launch_configured_dashboards_from_notebook_settings``
      - Use notebook launch settings to launch requested dashboards or return
        terminal fallback commands and launch errors in one compact status
-       frame.
+       frame. Pass ``dashboards=("qc",)`` for QC-only notebook cells.
    * - ``filter_dashboard_metrics`` and ``filter_qc_dashboard_rows``
      - Apply dashboard filters consistently in apps, tests, and exported tables.
 

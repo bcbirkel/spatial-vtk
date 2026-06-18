@@ -1221,6 +1221,36 @@ def test_notebook_dashboard_launch_helper_reports_launch_errors(monkeypatch):
     assert "port busy" in status.loc[status["dashboard"].eq("metrics"), "message"].item()
 
 
+def test_notebook_dashboard_launch_helper_can_report_qc_only():
+    """QC-only notebooks should not show metrics dashboard fallback rows."""
+
+    class FakeLaunchSettings:
+        launch_metrics_dashboard = False
+        launch_qc_dashboard = False
+        metrics_port = 8750
+        qc_port = 8752
+        metrics_command = "svtk dashboard metrics --port 8750"
+        qc_command = "svtk dashboard qc --port 8752"
+
+        def metrics_launch_kwargs(self, *, show=True):
+            return {"show": show}
+
+        def qc_launch_kwargs(self, *, show=True):
+            return {"show": show}
+
+    result = dashboard_launch.launch_configured_dashboards_from_notebook_settings(
+        FakeLaunchSettings(),
+        dashboards=("qc",),
+    )
+    status = result.status_frame()
+
+    assert result.metrics_process is None
+    assert result.qc_process is None
+    assert status["dashboard"].tolist() == ["qc"]
+    assert status.loc[0, "status"] == "command"
+    assert "svtk dashboard qc" in status.loc[0, "terminal_command"]
+
+
 def test_dashboard_launch_detects_busy_port():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
         server.bind(("127.0.0.1", 0))

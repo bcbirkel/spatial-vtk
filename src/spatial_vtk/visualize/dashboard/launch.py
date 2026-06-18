@@ -10,7 +10,7 @@ import socket
 import subprocess
 import sys
 import time
-from typing import Any
+from typing import Any, Iterable
 
 from spatial_vtk.config import SpatialVTKConfig, active_config, resolve_output_path
 
@@ -212,6 +212,7 @@ def launch_configured_qc_dashboard(
 def launch_configured_dashboards_from_notebook_settings(
     dashboard_launch: Any,
     *,
+    dashboards: Iterable[str] = ("metrics", "qc"),
     show: bool = True,
     catch_errors: bool = True,
 ) -> DashboardLaunchResult:
@@ -223,6 +224,10 @@ def launch_configured_dashboards_from_notebook_settings(
         Result from :func:`spatial_vtk.config.notebook_dashboard_launch_commands`.
         The object supplies launch flags, requested ports, terminal fallback
         commands, and config-backed keyword arguments for each dashboard.
+    dashboards
+        Dashboard names to include. Use ``("qc",)`` for QC-only tutorial cells
+        and the default ``("metrics", "qc")`` for Step 7 dashboard launch
+        cells.
     show
         Passed through to configured dashboard launch helpers.
     catch_errors
@@ -239,27 +244,35 @@ def launch_configured_dashboards_from_notebook_settings(
         launch errors.
     """
 
+    requested_dashboards = tuple(str(name).strip().lower() for name in dashboards)
+    unknown = sorted({name for name in requested_dashboards if name not in {"metrics", "qc"}})
+    if unknown:
+        raise ValueError(f"Unknown dashboard name(s): {unknown}. Expected 'metrics' and/or 'qc'.")
     rows: list[dict[str, Any]] = []
-    metrics_process = _launch_one_dashboard_from_notebook_settings(
-        dashboard_name="metrics",
-        launch_requested=bool(getattr(dashboard_launch, "launch_metrics_dashboard", False)),
-        requested_port=int(getattr(dashboard_launch, "metrics_port", 8501)),
-        terminal_command=str(getattr(dashboard_launch, "metrics_command", "")),
-        launch_callable=launch_configured_metrics_dashboard,
-        launch_kwargs=dashboard_launch.metrics_launch_kwargs(show=show),
-        rows=rows,
-        catch_errors=catch_errors,
-    )
-    qc_process = _launch_one_dashboard_from_notebook_settings(
-        dashboard_name="qc",
-        launch_requested=bool(getattr(dashboard_launch, "launch_qc_dashboard", False)),
-        requested_port=int(getattr(dashboard_launch, "qc_port", 8502)),
-        terminal_command=str(getattr(dashboard_launch, "qc_command", "")),
-        launch_callable=launch_configured_qc_dashboard,
-        launch_kwargs=dashboard_launch.qc_launch_kwargs(show=show),
-        rows=rows,
-        catch_errors=catch_errors,
-    )
+    metrics_process = None
+    qc_process = None
+    if "metrics" in requested_dashboards:
+        metrics_process = _launch_one_dashboard_from_notebook_settings(
+            dashboard_name="metrics",
+            launch_requested=bool(getattr(dashboard_launch, "launch_metrics_dashboard", False)),
+            requested_port=int(getattr(dashboard_launch, "metrics_port", 8501)),
+            terminal_command=str(getattr(dashboard_launch, "metrics_command", "")),
+            launch_callable=launch_configured_metrics_dashboard,
+            launch_kwargs=dashboard_launch.metrics_launch_kwargs(show=show),
+            rows=rows,
+            catch_errors=catch_errors,
+        )
+    if "qc" in requested_dashboards:
+        qc_process = _launch_one_dashboard_from_notebook_settings(
+            dashboard_name="qc",
+            launch_requested=bool(getattr(dashboard_launch, "launch_qc_dashboard", False)),
+            requested_port=int(getattr(dashboard_launch, "qc_port", 8502)),
+            terminal_command=str(getattr(dashboard_launch, "qc_command", "")),
+            launch_callable=launch_configured_qc_dashboard,
+            launch_kwargs=dashboard_launch.qc_launch_kwargs(show=show),
+            rows=rows,
+            catch_errors=catch_errors,
+        )
     return DashboardLaunchResult(
         metrics_process=metrics_process,
         qc_process=qc_process,

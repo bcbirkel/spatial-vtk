@@ -562,8 +562,11 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "qc_inventory_overlap_output=qc_inventory_overlap_path" not in standard_text
     assert "preview_output_table(" not in standard_text
     assert "notebook_dashboard_launch_commands(" in standard_text
-    assert "launch_configured_qc_dashboard(" in standard_text
-    assert "dashboard_launch.qc_launch_kwargs(show=True)" in standard_text
+    assert "launch_configured_dashboards_from_notebook_settings(" in standard_text
+    assert 'dashboards=("qc",)' in standard_text
+    assert "launch_configured_qc_dashboard(" not in standard_text
+    assert "dashboard_launch.qc_launch_kwargs(show=True)" not in standard_text
+    assert "display(dashboard_launch_result.status_frame())" in standard_text
     assert "launch_qc_dashboard(" not in standard_text
     assert 'os.environ.get("SVTK_QC_DASHBOARD_PORT"' not in standard_text
     assert 'os.environ.get("SVTK_LAUNCH_QC_DASHBOARD"' not in standard_text
