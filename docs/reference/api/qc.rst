@@ -29,6 +29,40 @@ helpers without requiring notebooks to import lower-level builder modules.
 .. automodule:: spatial_vtk.qc
    :members:
 
+Public helpers exposed by ``spatial_vtk.qc``:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Helper
+     - Use
+   * - ``run_qc_inventory_from_config``
+     - Build or resume the configured waveform and metric QC inventory with
+       checkpointed outputs for large datasets.
+   * - ``write_qc_inventory_overlap_from_config``
+     - Write the observed/synthetic event-station overlap inventory used by
+       pairwise metric planning.
+   * - ``run_qc_summary_workflow_from_config``
+     - Build compact retention, drop-cause, post-QC record, and availability
+       tables for figures and dashboards without loading the full inventory in a
+       notebook.
+   * - ``build_metric_pair_retention_table_from_qc_inventory``
+     - Stream the QC inventory into metric/passband/component retention counts.
+   * - ``build_event_station_pair_retention_table_from_qc_inventory``
+     - Stream the QC inventory into event-station retained-pair summaries.
+   * - ``build_post_qc_record_table_from_qc_inventory``
+     - Join retained QC decisions back to event and station coordinates for
+       post-QC maps.
+   * - ``build_qc_drop_cause_table_from_qc_inventory``
+     - Stream compact rejection-reason counts for diagnostics.
+   * - ``export_manual_review_queue_from_qc_inventory``
+     - Write a bounded manual-review queue from filtered QC rows.
+   * - ``filter_event_station_records_for_source_overlap``
+     - Keep only event-station rows with both observed and synthetic source
+       records when planning paired metrics.
+   * - ``load_trace_inventory_lookup``
+     - Load trace-inventory lookup metadata for reusable QC filtering.
+
 Build
 -----
 

@@ -264,6 +264,28 @@ def test_config_api_docs_include_compute_helpers():
     assert ".. automodule:: spatial_vtk.config.compute\n" in text
 
 
+def test_qc_api_docs_use_public_package_entry_point():
+    docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "qc.rst"
+    text = docs.read_text(encoding="utf-8")
+
+    assert "Start with ``spatial_vtk.qc``" in text
+    assert "Public helpers exposed by ``spatial_vtk.qc``" in text
+    assert ".. automodule:: spatial_vtk.qc\n" in text
+    for helper in (
+        "run_qc_inventory_from_config",
+        "write_qc_inventory_overlap_from_config",
+        "run_qc_summary_workflow_from_config",
+        "build_metric_pair_retention_table_from_qc_inventory",
+        "build_event_station_pair_retention_table_from_qc_inventory",
+        "build_post_qc_record_table_from_qc_inventory",
+        "build_qc_drop_cause_table_from_qc_inventory",
+        "export_manual_review_queue_from_qc_inventory",
+        "filter_event_station_records_for_source_overlap",
+        "load_trace_inventory_lookup",
+    ):
+        assert helper in text
+
+
 def test_metrics_package_reexports_workflow_surface():
     """Top-level metrics should expose the curated workflow API used by docs and CLI."""
 
