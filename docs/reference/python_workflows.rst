@@ -103,7 +103,11 @@ the large-run notebooks.
        loops in notebook cells.
    * - ``spatial_vtk.config.notebook_figure_sidecar_settings``
      - Read the notebook-side figure sidecar settings and return keyword
-       arguments accepted by supported plotting helpers.
+       arguments accepted by supported plotting helpers. The returned settings
+       object also has ``status_frame()``, which reads only the small sidecar
+       JSON files and shows which figures were written, whether row sidecars
+       are exact or sampled, and which aggregated figures include source-row
+       provenance.
    * - ``spatial_vtk.config.notebook_dashboard_launch_commands``
      - Return config-backed dashboard launch settings. Use
        ``metrics_launch_kwargs()`` and ``qc_launch_kwargs()`` with the package

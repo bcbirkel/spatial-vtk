@@ -107,6 +107,18 @@ class NotebookFigureSidecarSettings:
             "sidecar_dir": self.directory,
         }
 
+    def status_frame(self) -> Any:
+        """Return a compact status table for sidecars written by these settings.
+
+        The helper reads only the small JSON metadata files, not the plotted-row
+        CSV sidecars. It is intended for notebook review cells after a figure
+        block has run.
+        """
+
+        from spatial_vtk.visualize.figure_sidecars import figure_sidecar_status_frame
+
+        return figure_sidecar_status_frame(self.directory)
+
 
 @dataclass(frozen=True)
 class NotebookDashboardCommands:

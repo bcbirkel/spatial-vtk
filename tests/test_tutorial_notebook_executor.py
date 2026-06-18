@@ -1124,6 +1124,22 @@ def test_tutorial_notebooks_use_sidecar_settings_kwargs() -> None:
         assert not matches, f"{notebook_path.relative_to(repo_root)} expands sidecar settings: {matches}"
 
 
+def test_metric_and_spatial_notebooks_show_sidecar_status_frames() -> None:
+    """Metric and spatial tutorials should expose package-native provenance review cells."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    expected = {
+        "docs/examples/step_03_calculate_metrics.ipynb": "metric_sidecars.status_frame()",
+        "docs/examples/step_04_spatial_statistics.ipynb": "spatial_sidecars.status_frame()",
+        "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": "METRIC_FIGURE_SIDECARS.status_frame()",
+        "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": "SPATIAL_FIGURE_SIDECARS.status_frame()",
+    }
+    for relative_path, call in expected.items():
+        notebook = json.loads((repo_root / relative_path).read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        assert call in source
+
+
 def test_public_saved_plot_functions_expose_sidecar_controls() -> None:
     """Saved plotting helpers should let users write row-provenance sidecars."""
 

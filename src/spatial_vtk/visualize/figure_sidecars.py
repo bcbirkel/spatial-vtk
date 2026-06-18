@@ -299,7 +299,7 @@ def figure_sidecar_metadata_path(path: str | Path) -> Path:
     return source.with_suffix(".json")
 
 
-def figure_sidecar_status_frame(sidecar_dir: str | Path) -> pd.DataFrame:
+def figure_sidecar_status_frame(sidecar_dir: str | Path | None) -> pd.DataFrame:
     """Return a compact audit table for all figure sidecar metadata files.
 
     The returned frame is intended for notebooks: each row is one saved figure
@@ -309,12 +309,15 @@ def figure_sidecar_status_frame(sidecar_dir: str | Path) -> pd.DataFrame:
     sidecars.
     """
 
+    if sidecar_dir is None:
+        return pd.DataFrame(columns=_FIGURE_SIDECAR_STATUS_COLUMNS)
+
     root = Path(sidecar_dir).expanduser()
     rows: list[dict[str, Any]] = []
     for metadata_path in sorted(root.glob("*.json")):
         metadata = read_figure_sidecar_metadata(metadata_path)
         rows.append(_figure_sidecar_status_row(metadata_path, metadata))
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows, columns=_FIGURE_SIDECAR_STATUS_COLUMNS)
 
 
 def _figure_sidecar_status_row(metadata_path: Path, metadata: dict[str, Any]) -> dict[str, Any]:
@@ -348,6 +351,16 @@ def _figure_sidecar_status_row(metadata_path: Path, metadata: dict[str, Any]) ->
             metadata.get("svtk_aggregation_dropped_nonfinite_row_count", ""),
         ),
     }
+
+
+_FIGURE_SIDECAR_STATUS_COLUMNS = list(
+    _figure_sidecar_status_row(
+        Path("figure_sidecar.json"),
+        {
+            "figure": "",
+        },
+    ).keys()
+)
 
 
 def figure_sidecar_dimension_counts(df: pd.DataFrame | None, *, prefix: str) -> dict[str, int]:

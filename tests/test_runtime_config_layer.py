@@ -467,6 +467,30 @@ def test_notebook_figure_sidecar_settings_parse_env(tmp_path, monkeypatch):
     assert explicit.rows == 10
     assert explicit.directory == tmp_path / "custom_sidecars"
 
+    empty_status = explicit.status_frame()
+    assert list(empty_status.columns) == list(figure_sidecar_status_frame(explicit.directory).columns)
+    assert empty_status.empty
+
+    write_figure_row_sidecar(
+        tmp_path / "figures" / "station_metric_map.png",
+        pd.DataFrame(
+            {
+                "station": ["STA1", "STA2"],
+                "event_id": ["ev1", "ev2"],
+                "metric": ["PGA", "PGA"],
+            }
+        ),
+        sidecar_dir=explicit.directory,
+        metadata={"aggregation_contract": "station_event_rows_to_station_summary"},
+    )
+    status = explicit.status_frame().set_index("figure")
+    assert "station_metric_map.png" in status.index
+    assert status.loc["station_metric_map.png", "plot_row_count"] == 2
+    assert status.loc["station_metric_map.png", "aggregation_contract"] == "station_event_rows_to_station_summary"
+
+    no_directory = notebook_figure_sidecar_settings("metric")
+    assert no_directory.status_frame().empty
+
 
 def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monkeypatch):
     """Notebook dashboard commands should be config-backed and collision tolerant."""

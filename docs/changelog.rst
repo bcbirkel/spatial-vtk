@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Added ``NotebookFigureSidecarSettings.status_frame()`` and updated the
+   metric and spatial notebooks to show package-native figure provenance
+   review tables after plotting. The status frame reads only the small JSON
+   sidecar files, reports exact/sampled row status plus source-row availability,
+   and keeps notebook cells free of sidecar path plumbing.
    Added ``NotebookDashboardCommands.status_frame()`` and updated Step 7
    notebooks to display the package-generated dashboard launch plan. The launch
    preview now shows requested ports, terminal fallback commands, config path,
