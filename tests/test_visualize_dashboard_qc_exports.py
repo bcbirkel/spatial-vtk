@@ -268,6 +268,26 @@ def test_dashboard_metric_dataset_loader_projects_requested_columns(tmp_path) ->
     assert loaded_partitioned.columns.tolist() == ["station", "event_id", "log2_residual"]
     assert loaded_partitioned["station"].tolist() == ["AAA", "BBB"]
 
+    loaded_filtered = load_dashboard_metric_dataset(
+        root,
+        columns=["model", "band", "metric", "station", "log2_residual"],
+        models=["m1"],
+        bands=["1-3s"],
+        metrics=["PGA"],
+    )
+
+    assert loaded_filtered.columns.tolist() == ["model", "band", "metric", "station", "log2_residual"]
+    assert loaded_filtered["station"].tolist() == ["AAA"]
+    assert loaded_filtered["metric"].tolist() == ["PGA"]
+
+    loaded_direct_filtered = load_dashboard_metric_dataset(
+        direct,
+        columns=["model", "band", "metric", "station", "log2_residual"],
+        metrics=["PGV"],
+    )
+
+    assert loaded_direct_filtered["station"].tolist() == ["BBB"]
+
 
 def test_dashboard_summary_dataset_reads_only_summary_columns(tmp_path, monkeypatch) -> None:
     """Dashboard summaries should not materialize unused long-metric payloads."""

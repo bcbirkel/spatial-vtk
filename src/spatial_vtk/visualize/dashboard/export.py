@@ -20,6 +20,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from spatial_vtk.config.labels import normalize_metric_name
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.visualize.dashboard.tables import (
@@ -85,6 +86,9 @@ def load_dashboard_metric_dataset(
     input_root: str | Path,
     *,
     columns: Sequence[str] | None = None,
+    models: Sequence[str] | str | None = None,
+    bands: Sequence[str] | str | None = None,
+    metrics: Sequence[str] | str | None = None,
 ) -> pd.DataFrame:
     """Load dashboard metric rows from a dataset directory or table file.
 
@@ -96,6 +100,11 @@ def load_dashboard_metric_dataset(
     columns
         Optional column subset to load. Missing requested columns are ignored
         so dashboard previews can run against older metric datasets.
+    models, bands, metrics
+        Optional row filters. Partitioned dashboard datasets prune matching
+        ``model=*/band=*/metric=*/part.parquet`` files before reading and then
+        apply the same filters after loading. Single-file datasets apply the
+        filters after loading.
 
     Returns
     -------
@@ -104,8 +113,16 @@ def load_dashboard_metric_dataset(
     """
 
     root = Path(input_root).expanduser()
+    filter_columns = _dashboard_metric_filter_columns(models=models, bands=bands, metrics=metrics)
+    read_columns = _merged_columns(columns, filter_columns)
     if root.is_file():
-        return _read_dashboard_metric_table(root, columns=columns)
+        return _filter_dashboard_metric_rows(
+            _read_dashboard_metric_table(root, columns=read_columns),
+            models=models,
+            bands=bands,
+            metrics=metrics,
+            output_columns=columns,
+        )
     if not root.exists():
         raise FileNotFoundError(f"Dashboard metric dataset path does not exist: {root}")
     paths = _dashboard_metric_parquet_paths(root)
@@ -114,10 +131,20 @@ def load_dashboard_metric_dataset(
             f"No dashboard metric parquet files found under {root}. "
             "Expected metrics_long.parquet or model=*/band=*/metric=*/part.parquet."
         )
-    return pd.concat(
-        [_read_dashboard_metric_table(path, columns=columns) for path in paths],
+    paths = _filter_dashboard_metric_paths(paths, models=models, bands=bands, metrics=metrics)
+    if not paths:
+        return pd.DataFrame(columns=list(columns or ()))
+    loaded = pd.concat(
+        [_read_dashboard_metric_table(path, columns=read_columns) for path in paths],
         ignore_index=True,
         sort=False,
+    )
+    return _filter_dashboard_metric_rows(
+        loaded,
+        models=models,
+        bands=bands,
+        metrics=metrics,
+        output_columns=columns,
     )
 
 
@@ -151,6 +178,129 @@ def _dashboard_metric_parquet_paths(root: Path) -> list[Path]:
     if direct.exists():
         return [direct]
     return sorted(path for path in root.glob("model=*/band=*/metric=*/part.parquet") if path.is_file())
+
+
+def _dashboard_metric_filter_columns(
+    *,
+    models: Sequence[str] | str | None = None,
+    bands: Sequence[str] | str | None = None,
+    metrics: Sequence[str] | str | None = None,
+) -> tuple[str, ...]:
+    """Return row columns needed to apply dashboard metric filters."""
+
+    columns: list[str] = []
+    if models:
+        columns.append("model")
+    if bands:
+        columns.append("band")
+    if metrics:
+        columns.append("metric")
+    return tuple(columns)
+
+
+def _merged_columns(columns: Sequence[str] | None, extras: Sequence[str]) -> list[str] | None:
+    """Return a stable column projection that includes filter columns."""
+
+    if columns is None:
+        return None
+    return list(dict.fromkeys([*(str(column) for column in columns), *(str(column) for column in extras)]))
+
+
+def _filter_dashboard_metric_paths(
+    paths: Sequence[Path],
+    *,
+    models: Sequence[str] | str | None = None,
+    bands: Sequence[str] | str | None = None,
+    metrics: Sequence[str] | str | None = None,
+) -> list[Path]:
+    """Prune partitioned dashboard metric paths using model/band/metric filters."""
+
+    model_tokens = _filter_tokens(models)
+    band_tokens = _filter_tokens(bands)
+    metric_tokens = _metric_filter_tokens(metrics)
+    if not model_tokens and not band_tokens and not metric_tokens:
+        return list(paths)
+    selected: list[Path] = []
+    for path in paths:
+        partition = _dashboard_metric_partition_values(path)
+        if not partition:
+            selected.append(path)
+            continue
+        if model_tokens and partition.get("model") not in model_tokens:
+            continue
+        if band_tokens and partition.get("band") not in band_tokens:
+            continue
+        if metric_tokens and partition.get("metric") not in metric_tokens:
+            continue
+        selected.append(path)
+    return selected
+
+
+def _dashboard_metric_partition_values(path: Path) -> dict[str, str]:
+    """Return sanitized partition values from one metric dataset path."""
+
+    values: dict[str, str] = {}
+    for part in path.parts:
+        if "=" not in part:
+            continue
+        key, value = part.split("=", 1)
+        if key in {"model", "band", "metric"}:
+            values[key] = value
+    return values if {"model", "band", "metric"} <= set(values) else {}
+
+
+def _filter_dashboard_metric_rows(
+    df: pd.DataFrame,
+    *,
+    models: Sequence[str] | str | None = None,
+    bands: Sequence[str] | str | None = None,
+    metrics: Sequence[str] | str | None = None,
+    output_columns: Sequence[str] | None = None,
+) -> pd.DataFrame:
+    """Apply dashboard metric row filters and restore requested column order."""
+
+    out = df.copy()
+    model_values = _filter_values(models)
+    if model_values and "model" in out.columns:
+        out = out[out["model"].astype(str).isin(model_values)]
+    band_values = _filter_values(bands)
+    if band_values and "band" in out.columns:
+        out = out[out["band"].astype(str).isin(band_values)]
+    metric_values = {normalize_metric_name(value) for value in _filter_values(metrics)}
+    if metric_values and "metric" in out.columns:
+        out = out[out["metric"].map(normalize_metric_name).isin(metric_values)]
+    if output_columns is not None:
+        selected = [column for column in dict.fromkeys(str(column) for column in output_columns) if column in out.columns]
+        out = out.loc[:, selected]
+    return out.reset_index(drop=True)
+
+
+def _filter_values(values: Sequence[str] | str | None) -> set[str]:
+    """Normalize scalar or sequence dashboard filter values."""
+
+    if values is None:
+        return set()
+    if isinstance(values, str):
+        items = [values]
+    else:
+        items = list(values)
+    return {str(item) for item in items if str(item).strip()}
+
+
+def _filter_tokens(values: Sequence[str] | str | None) -> set[str]:
+    """Return sanitized partition tokens for raw dashboard filter values."""
+
+    return {safe_path_token(value) for value in _filter_values(values)}
+
+
+def _metric_filter_tokens(values: Sequence[str] | str | None) -> set[str]:
+    """Return sanitized partition tokens for metric names and their aliases."""
+
+    tokens: set[str] = set()
+    for value in _filter_values(values):
+        tokens.add(safe_path_token(value))
+        tokens.add(safe_path_token(normalize_metric_name(value)))
+    return tokens
 
 
 def _read_dashboard_metric_table(path: Path, *, columns: Sequence[str] | None = None) -> pd.DataFrame:

@@ -559,8 +559,10 @@ def run_or_submit_notebook_function(
     context
         Active notebook run context.
     function
-        Import path such as ``"spatial_vtk.io.preprocess_waveforms_from_config"``
-        or the top-level callable itself.
+        Top-level package callable, or an import path such as
+        ``"spatial_vtk.io.preprocess_waveforms_from_config"`` for compatibility.
+        New notebooks should pass the callable itself so cells stay tied to the
+        public Python API rather than string paths.
     args, kwargs
         JSON-serializable arguments passed to ``function``.
     script_name, job_name, walltime, memory, cpus, run_local, section
@@ -632,7 +634,7 @@ def run_notebook_step_if_needed(
         Object with ``should_run``, ``message``, and ``status_frame()``
         attributes, such as ``OutputReadiness`` or dashboard readiness objects.
     function
-        Import path or callable passed to
+        Top-level package callable, or a compatibility import path passed to
         :func:`run_or_submit_notebook_function` when
         ``readiness.should_run`` is true.
     args, kwargs

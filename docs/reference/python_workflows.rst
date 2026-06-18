@@ -93,7 +93,9 @@ the large-run notebooks.
        building the status table.
    * - ``spatial_vtk.config.run_notebook_step_if_needed``
      - Display the readiness table, then run or submit a Python package
-       workflow function only when work is needed.
+       workflow function only when work is needed. Pass the imported package
+       function directly in notebooks; fully qualified import-path strings are
+       retained only for compatibility and generated Slurm workers.
    * - ``spatial_vtk.config.notebook_figure_sidecar_settings``
      - Read the notebook-side figure sidecar settings and return keyword
        arguments accepted by supported plotting helpers.

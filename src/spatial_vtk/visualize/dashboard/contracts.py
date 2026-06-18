@@ -1158,12 +1158,25 @@ def dashboard_row_level_columns() -> tuple[str, ...]:
     return tuple(dict.fromkeys(columns))
 
 
-def load_metric_long_table(metrics_root: str | Path, *, columns: Sequence[str] | None = None) -> pd.DataFrame:
+def load_metric_long_table(
+    metrics_root: str | Path,
+    *,
+    columns: Sequence[str] | None = None,
+    models: Sequence[str] | str | None = None,
+    bands: Sequence[str] | str | None = None,
+    metrics: Sequence[str] | str | None = None,
+) -> pd.DataFrame:
     """Load the dashboard long metric table from a dataset root."""
 
     from spatial_vtk.visualize.dashboard.export import load_dashboard_metric_dataset
 
-    return load_dashboard_metric_dataset(metrics_root, columns=columns)
+    return load_dashboard_metric_dataset(
+        metrics_root,
+        columns=columns,
+        models=models,
+        bands=bands,
+        metrics=metrics,
+    )
 
 
 def _find_table(root: Path, name: str, *, required: bool = True) -> Path | None:

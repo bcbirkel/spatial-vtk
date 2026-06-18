@@ -198,6 +198,7 @@ outputs:
     assert ready_dataset_status["value_columns"] == "log2_residual"
 
     model_status = status.loc[status["name"].eq("model_metric_band_summary_path")].iloc[0]
+
     assert model_status["ready"] is True
     assert model_status["readiness"] == "ready"
     assert model_status["nonempty_value_columns"] == "med_log2_residual"
@@ -242,6 +243,40 @@ outputs:
     )
     assert station_map_status["ready"] is False
     assert "longitude" in station_map_status["missing_columns"]
+
+
+def test_metrics_dashboard_row_level_loader_uses_selected_filters(monkeypatch):
+    """Row-level dashboard loads should be scoped to selected model/metric/band filters."""
+
+    captured = {}
+
+    def fake_load(metrics_root, columns, models, metric, bands):  # noqa: ANN001
+        captured["metrics_root"] = metrics_root
+        captured["columns"] = columns
+        captured["models"] = models
+        captured["metric"] = metric
+        captured["bands"] = bands
+        return pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "log2_residual": [0.25]})
+
+    monkeypatch.setattr(streamlit_metrics, "_load_long_metrics_cached", fake_load)
+
+    columns = streamlit_metrics._row_level_columns_for_selection("log2_residual")
+    rows = streamlit_metrics._try_load_filtered_long_metrics(
+        "/tmp/dashboard_metrics",
+        columns=columns,
+        models=["m1"],
+        metric="PGA",
+        bands=["1-2 sec"],
+    )
+
+    assert rows["log2_residual"].tolist() == [0.25]
+    assert captured["metrics_root"] == "/tmp/dashboard_metrics"
+    assert captured["models"] == ("m1",)
+    assert captured["metric"] == "PGA"
+    assert captured["bands"] == ("1-2 sec",)
+    assert "log2_residual" in captured["columns"]
+    assert "event_id" in captured["columns"]
+    assert "unused_payload" not in captured["columns"]
 
 
 def test_dashboard_qc_trace_readiness_is_bounded_and_schema_aware(tmp_path):

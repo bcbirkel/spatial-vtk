@@ -311,9 +311,13 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "write_qc_inventory_overlap_from_config(" in standard_text
     assert "run_qc_summary_workflow_from_config(" in standard_text
     assert "run_notebook_step_if_needed(" in large_run_text
-    assert "spatial_vtk.qc.run_qc_inventory_from_config" in large_run_text
-    assert "spatial_vtk.qc.write_qc_inventory_overlap_from_config" in large_run_text
-    assert "spatial_vtk.qc.run_qc_summary_workflow_from_config" in large_run_text
+    assert "from spatial_vtk.qc import (" in large_run_text
+    assert "run_qc_inventory_from_config," in large_run_text
+    assert "write_qc_inventory_overlap_from_config," in large_run_text
+    assert "run_qc_summary_workflow_from_config," in large_run_text
+    assert '"spatial_vtk.qc.run_qc_inventory_from_config"' not in large_run_text
+    assert '"spatial_vtk.qc.write_qc_inventory_overlap_from_config"' not in large_run_text
+    assert '"spatial_vtk.qc.run_qc_summary_workflow_from_config"' not in large_run_text
     for forbidden in (
         "build_waveform_qc_summary",
         "build_metric_qc_summary",
@@ -620,8 +624,11 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "run_notebook_step_if_needed(" in source
-    assert "spatial_vtk.spatial.run_spatial_statistics_workflow_from_config" in source
-    assert "spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config" in source
+    assert "from spatial_vtk.spatial import (" in source
+    assert "run_spatial_statistics_workflow_from_config," in source
+    assert "run_spatial_derived_outputs_workflow_from_config," in source
+    assert '"spatial_vtk.spatial.run_spatial_statistics_workflow_from_config"' not in source
+    assert '"spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config"' not in source
     assert "run_or_submit_notebook_function(" not in source
     assert "run_or_submit_notebook_cli_command(" not in source
     assert '"svtk", "spatial"' not in source
@@ -653,8 +660,11 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "run_notebook_step_if_needed(" in source
-    assert "spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config" in source
-    assert "spatial_vtk.spatial.run_boundary_corridor_workflow_from_config" in source
+    assert "from spatial_vtk.spatial import (" in source
+    assert "run_geojson_region_summary_workflow_from_config," in source
+    assert "run_boundary_corridor_workflow_from_config," in source
+    assert '"spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config"' not in source
+    assert '"spatial_vtk.spatial.run_boundary_corridor_workflow_from_config"' not in source
     assert "geojson_readiness = step_outputs.readiness(" in source
     assert "corridor_readiness = step_outputs.readiness(" in source
     assert "geojson_readiness = output_readiness(" not in source
@@ -704,7 +714,8 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "display(dashboard_readiness_summary)" in source
     assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=OVERWRITE)" in source
     assert "run_notebook_step_if_needed(" in source
-    assert "spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets" in source
+    assert "write_configured_dashboard_datasets," in source
+    assert '"spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets"' not in source
     assert "launch_configured_metrics_dashboard(" in source
     assert "launch_configured_qc_dashboard(" in source
     assert "notebook_dashboard_launch_commands(config_path)" in source
@@ -794,11 +805,17 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
 
     assert "run_notebook_step_if_needed(" in source
     assert "run_or_submit_notebook_function(" not in source
-    assert "spatial_vtk.metrics.build_metric_waveform_inventories_from_config" in source
-    assert "spatial_vtk.metrics.plan_metric_tasks_from_config" in source
-    assert "spatial_vtk.metrics.write_metrics_slurm_script_from_config" in source
-    assert "spatial_vtk.metrics.merge_metric_batches_from_config" in source
-    assert "spatial_vtk.metrics.write_metric_outputs_from_config" in source
+    assert "from spatial_vtk.metrics import (" in source
+    assert "build_metric_waveform_inventories_from_config," in source
+    assert "plan_metric_tasks_from_config," in source
+    assert "write_metrics_slurm_script_from_config," in source
+    assert "merge_metric_batches_from_config," in source
+    assert "write_metric_outputs_from_config," in source
+    assert '"spatial_vtk.metrics.build_metric_waveform_inventories_from_config"' not in source
+    assert '"spatial_vtk.metrics.plan_metric_tasks_from_config"' not in source
+    assert '"spatial_vtk.metrics.write_metrics_slurm_script_from_config"' not in source
+    assert '"spatial_vtk.metrics.merge_metric_batches_from_config"' not in source
+    assert '"spatial_vtk.metrics.write_metric_outputs_from_config"' not in source
     assert "run_or_submit_notebook_cli_command(" not in source
     assert "submit_notebook_slurm_script" not in source
     assert "write_notebook_python_slurm_script" not in source
@@ -834,8 +851,11 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     assert "metadata_readiness = step_outputs.readiness(" in source
     assert "display(metadata_readiness.status_frame())" in source
     assert "run_or_submit_notebook_function(" not in source
-    assert "spatial_vtk.io.preprocess_waveforms_from_config" in source
-    assert "spatial_vtk.io.build_record_coverage_from_config" in source
+    assert "from spatial_vtk.io import (" in source
+    assert "preprocess_waveforms_from_config," in source
+    assert "build_record_coverage_from_config," in source
+    assert '"spatial_vtk.io.preprocess_waveforms_from_config"' not in source
+    assert '"spatial_vtk.io.build_record_coverage_from_config"' not in source
     assert "run_or_submit_notebook_cli_command(" not in source
     assert "write_notebook_python_slurm_script" not in source
     assert "submit_notebook_slurm_script" not in source
@@ -869,9 +889,13 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
 
     assert "run_notebook_step_if_needed(" in source
     assert "run_or_submit_notebook_function(" not in source
-    assert "spatial_vtk.qc.run_qc_inventory_from_config" in source
-    assert "spatial_vtk.qc.write_qc_inventory_overlap_from_config" in source
-    assert "spatial_vtk.qc.run_qc_summary_workflow_from_config" in source
+    assert "from spatial_vtk.qc import (" in source
+    assert "run_qc_inventory_from_config," in source
+    assert "write_qc_inventory_overlap_from_config," in source
+    assert "run_qc_summary_workflow_from_config," in source
+    assert '"spatial_vtk.qc.run_qc_inventory_from_config"' not in source
+    assert '"spatial_vtk.qc.write_qc_inventory_overlap_from_config"' not in source
+    assert '"spatial_vtk.qc.run_qc_summary_workflow_from_config"' not in source
     assert "run_or_submit_notebook_cli_command(" not in source
     assert "write_notebook_python_slurm_script" not in source
     assert "submit_notebook_slurm_script" not in source

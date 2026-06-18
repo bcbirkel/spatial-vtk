@@ -106,11 +106,10 @@ def main() -> None:
     except Exception as exc:
         st.error(str(exc))
         return
-    long_metrics = _try_load_long_metrics(metrics_root, readiness=metric_dataset_readiness)
     config = _load_optional_config(config_path)
     _render_metrics_dashboard(
         summaries,
-        long_metrics,
+        metrics_root,
         config,
         readiness=readiness,
         metric_dataset_readiness=metric_dataset_readiness,
@@ -119,7 +118,7 @@ def main() -> None:
 
 def _render_metrics_dashboard(
     summaries: dict[str, pd.DataFrame],
-    long_metrics: pd.DataFrame | None,
+    metrics_root: str,
     config: SpatialVTKConfig | None = None,
     *,
     readiness: pd.DataFrame | None = None,
@@ -133,7 +132,7 @@ def _render_metrics_dashboard(
     configured_bands = configured_band_options(config, command="metrics.dashboard", fallback_df=summaries["model_metric_band"])
     all_bands = _merged_options(configured_bands, data_bands, key=band_display_label)
     period_options = _period_options(summaries["model_metric_band"])
-    component_options = _component_options(config, summaries, long_metrics)
+    component_options = _component_options(config, summaries, None)
     if not all_metrics or not all_models or (not all_bands and not period_options):
         st.info("The model/metric summary is empty, so dashboard filters cannot be built yet.")
         st.dataframe(_display_table(summaries["model_metric_band"]), width="stretch")
@@ -225,22 +224,39 @@ def _render_metrics_dashboard(
     rows = None
     row_value = None
     row_value_message = None
-    if long_metrics is not None:
-        row_value = row_value_column_for_summary(value_col, long_metrics)
+    metric_dataset_message = _metric_dataset_readiness_message(metric_dataset_readiness)
+    if metric_dataset_message:
+        row_value_message = metric_dataset_message
+    elif metrics_root:
+        row_value = row_value_column_for_summary(value_col, pd.DataFrame(columns=dashboard_row_level_columns()))
         if row_value is None:
             row_value_message = _missing_row_value_message(value_col)
         else:
-            rows = filter_dashboard_metrics(
-                long_metrics,
-                models=selected_models,
-                metric=selected_metric,
-                bands=selected_bands,
-                periods_s=selected_periods,
-                value_column=row_value,
-                distance_range_km=distance_range,
-                vs30_range=vs30_range,
-                component=component_filter,
-            )
+            needed_columns = _row_level_columns_for_selection(row_value)
+            try:
+                loaded_rows = _try_load_filtered_long_metrics(
+                    metrics_root,
+                    columns=needed_columns,
+                    models=selected_models,
+                    metric=selected_metric,
+                    bands=selected_bands,
+                )
+            except Exception as exc:
+                row_value_message = f"Long metric rows were not loaded: {exc}"
+            else:
+                if row_value not in loaded_rows.columns:
+                    row_value_message = _missing_row_value_message(value_col)
+                else:
+                    rows = filter_dashboard_metrics(
+                        loaded_rows,
+                        periods_s=selected_periods,
+                        value_column=row_value,
+                        distance_range_km=distance_range,
+                        vs30_range=vs30_range,
+                        component=component_filter,
+                    )
+    else:
+        row_value_message = "Configure the metrics dashboard dataset to view row-level distributions."
 
     overview_tab, station_tab, event_tab, path_tab, distribution_tab, compare_tab, status_tab = st.tabs(
         ["Overview", "Stations", "Events", "Paths", "Distributions", "Compare Models", "Data Status"]
@@ -327,25 +343,41 @@ def _load_summary_tables_cached(summary_root: str, skip_tables: tuple[str, ...] 
 
 
 @st.cache_data(show_spinner=False)
-def _load_long_metrics_cached(metrics_root: str, columns: tuple[str, ...]) -> pd.DataFrame:
+def _load_long_metrics_cached(
+    metrics_root: str,
+    columns: tuple[str, ...],
+    models: tuple[str, ...],
+    metric: str,
+    bands: tuple[str, ...],
+) -> pd.DataFrame:
     """Load long metrics with Streamlit caching."""
 
-    return load_metric_long_table(metrics_root, columns=columns)
+    return load_metric_long_table(
+        metrics_root,
+        columns=columns,
+        models=models,
+        metrics=[metric] if metric else None,
+        bands=bands,
+    )
 
 
-def _try_load_long_metrics(metrics_root: str, *, readiness: pd.DataFrame | None = None) -> pd.DataFrame | None:
-    """Load long metrics when a root is configured."""
+def _try_load_filtered_long_metrics(
+    metrics_root: str,
+    *,
+    columns: tuple[str, ...],
+    models: list[str],
+    metric: str,
+    bands: list[str],
+) -> pd.DataFrame:
+    """Load selected long metric rows when a root is configured."""
 
-    if not metrics_root:
-        return None
-    message = _metric_dataset_readiness_message(readiness)
-    if message:
-        return None
-    try:
-        return _load_long_metrics_cached(metrics_root, dashboard_row_level_columns())
-    except Exception as exc:
-        st.warning(f"Long metric table was not loaded: {exc}")
-        return None
+    return _load_long_metrics_cached(
+        metrics_root,
+        tuple(columns),
+        tuple(str(model) for model in models),
+        str(metric),
+        tuple(str(band) for band in bands),
+    )
 
 
 def _render_metric_dataset_readiness(readiness: pd.DataFrame) -> None:
@@ -565,6 +597,33 @@ def _missing_row_value_message(summary_value_col: str) -> str:
         f"{value_column_display_name(summary_value_col)}. Rebuild the dashboard metric dataset "
         "from metric rows that contain this value to view row-level distributions."
     )
+
+
+def _row_level_columns_for_selection(value_col: str) -> tuple[str, ...]:
+    """Return bounded row-level columns needed for selected distributions."""
+
+    needed = {
+        "model",
+        "metric",
+        "band",
+        "period_s",
+        "component",
+        "station",
+        "event_id",
+        "distance_km",
+        "med_dist_km",
+        "Vs30",
+        "vs30",
+        value_col,
+    }
+    columns = [
+        column
+        for column in dashboard_row_level_columns()
+        if column in needed
+    ]
+    if value_col not in columns:
+        columns.append(value_col)
+    return tuple(dict.fromkeys(columns))
 
 
 def _available_nonempty_value_columns(df: pd.DataFrame) -> list[str]:

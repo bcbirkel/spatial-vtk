@@ -18,6 +18,7 @@ from spatial_vtk.config import (
     configured_output_registry_frame,
     find_config_file,
     format_run_time,
+    metric_display_name,
     notebook_dashboard_launch_commands,
     notebook_figure_sidecar_settings,
     notebook_run_context,
@@ -764,6 +765,61 @@ compute:
     clear_active_config()
 
 
+def test_notebook_function_helper_accepts_top_level_callables(tmp_path, monkeypatch, capsys):
+    """Notebook helpers should prefer package callables while retaining Slurm importability."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(tmp_path / "cli-config.json"))
+    repo = tmp_path / "project"
+    (repo / "src" / "spatial_vtk").mkdir(parents=True)
+    (repo / "pyproject.toml").write_text("[project]\nname='spatial-vtk'\n", encoding="utf-8")
+    config_path = repo / "runs" / "spatial_vtk_config.yaml"
+    config_path.parent.mkdir()
+    config_path.write_text(
+        """
+project:
+  root_dir: ..
+outputs:
+  root: run_outputs
+compute:
+  slurm:
+    python_command: python
+    submit_command: sbatch --parsable
+""",
+        encoding="utf-8",
+    )
+    context = notebook_run_context(start=repo / "docs", create_dirs=True)
+
+    local_result = run_or_submit_notebook_function(
+        context,
+        metric_display_name,
+        args=["PGA"],
+        script_name="callable_metric_label.slurm",
+        job_name="svtk-callable-metric-label",
+        run_local=True,
+    )
+
+    assert local_result == "Peak acceleration (PGA)"
+
+    submission = run_or_submit_notebook_function(
+        context,
+        metric_display_name,
+        args=["PGV"],
+        script_name="callable_metric_label.slurm",
+        job_name="svtk-callable-metric-label",
+        run_local=False,
+    )
+
+    script = context.slurm_dir / "callable_metric_label.slurm"
+    text = script.read_text(encoding="utf-8")
+    printed = capsys.readouterr().out
+    assert submission is None
+    assert "spatial_vtk.config.labels.metric_display_name" in printed
+    assert "spatial_vtk.config.labels.metric_display_name" in text
+    assert "_run_notebook_function_worker" in text
+    clear_active_config()
+
+
 def test_register_svtk_cell_timer_prints_for_successful_cells(tmp_path, monkeypatch, capsys):
     """Automatic notebook timing should register one reusable IPython hook."""
 
@@ -1418,7 +1474,7 @@ def test_run_notebook_step_if_needed_displays_and_delegates(tmp_path, monkeypatc
     result = notebook_helpers.run_notebook_step_if_needed(
         context,
         run_readiness,
-        "spatial_vtk.fake.workflow",
+        metric_display_name,
         kwargs={"config_path": "run.yaml"},
         script_name="workflow.slurm",
         job_name="svtk-workflow",
@@ -1431,7 +1487,7 @@ def test_run_notebook_step_if_needed_displays_and_delegates(tmp_path, monkeypatc
     assert result == "submitted"
     assert len(calls) == 1
     assert calls[0][0] is context
-    assert calls[0][1] == "spatial_vtk.fake.workflow"
+    assert calls[0][1] is metric_display_name
     assert calls[0][2]["kwargs"] == {"config_path": "run.yaml"}
     assert calls[0][2]["script_name"] == "workflow.slurm"
     assert calls[0][2]["walltime"] == "02:00:00"
