@@ -149,11 +149,11 @@ svtk dashboard metrics
    * - ``--metrics-dataset-dir``, ``--metrics-root``, ``--metrics-dataset``
      - No
      -
-     - Filesystem path. Dashboard-ready metric row dataset directory or direct CSV/parquet table. Defaults to the configured dashboard output key 'metrics_dashboard'.
+     - Filesystem path. Metrics dashboard row dataset directory or direct metrics_long CSV/parquet table (the row-level data used by metric filters, station/event maps, and detail tables). Defaults to configured dashboard output key 'metrics_dashboard'.
    * - ``--dashboard-summary-table-dir``, ``--summary-root``, ``--dashboard-summary-dir``
      - No
      -
-     - Directory path. Directory containing dashboard summary tables (model_metric_band, station_rollup, event_rollup, path_hex). Defaults to the configured dashboard output key 'dashboard_summaries'.
+     - Directory path. Dashboard summary-table directory containing model_metric_band, station_rollup, event_rollup, and path_hex CSV/parquet tables for dashboard overview tabs. Defaults to configured dashboard output key 'dashboard_summaries'.
    * - ``--port``
      - No
      - Default: ``8501``

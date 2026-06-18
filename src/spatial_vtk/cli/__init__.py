@@ -1095,8 +1095,9 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
         dest="metrics_root",
         default=None,
         help=(
-            "Dashboard-ready metric row dataset directory or direct CSV/parquet table. "
-            "Defaults to the configured dashboard output key 'metrics_dashboard'."
+            "Metrics dashboard row dataset directory or direct metrics_long CSV/parquet table "
+            "(the row-level data used by metric filters, station/event maps, and detail tables). "
+            "Defaults to configured dashboard output key 'metrics_dashboard'."
         ),
     )
     metrics.add_argument(
@@ -1107,9 +1108,9 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
         dest="summary_root",
         default=None,
         help=(
-            "Directory containing dashboard summary tables "
-            "(model_metric_band, station_rollup, event_rollup, path_hex). "
-            "Defaults to the configured dashboard output key 'dashboard_summaries'."
+            "Dashboard summary-table directory containing model_metric_band, station_rollup, "
+            "event_rollup, and path_hex CSV/parquet tables for dashboard overview tabs. "
+            "Defaults to configured dashboard output key 'dashboard_summaries'."
         ),
     )
     metrics.add_argument("--port", type=int, default=8501, help="Streamlit server port.")
@@ -1628,8 +1629,9 @@ def _resolve_metrics_dashboard_paths(
     if config is None:
         raise ValueError(
             "No dashboard roots were provided and no Spatial-VTK config was found. "
-            "Pass --metrics-dataset-dir and --dashboard-summary-table-dir, pass --config, "
-            "or run 'svtk config set CONFIG_PATH'."
+            "Pass --metrics-dataset-dir for the metrics_dashboard row dataset and "
+            "--dashboard-summary-table-dir for the dashboard_summaries table directory, "
+            "pass --config, or run 'svtk config set CONFIG_PATH'."
         )
     paths = dashboard_output_paths(cfg=config, include_summary_tables=False)
     resolved_metrics_root = Path(metrics_root).expanduser() if metrics_root else paths["metrics_dashboard_root"]

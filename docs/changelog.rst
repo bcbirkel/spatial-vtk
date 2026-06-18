@@ -14,6 +14,11 @@ Changelog
    Documented that the Python workflow page lists importable public entry
    points and added a regression that resolves every dotted helper listed there
    against the package modules.
+   Clarified ``svtk dashboard metrics`` help and generated CLI reference text
+   so ``--metrics-dataset-dir`` is described as the row-level
+   ``metrics_dashboard`` dataset and ``--dashboard-summary-table-dir`` is
+   described as the ``dashboard_summaries`` table directory used by overview
+   tabs.
    Made ``svtk plot metrics winner-heatmap``, ``svtk plot spatial
    residual-correlation``, and ``svtk map spatial model-improvement`` use
    config-backed input table defaults, and updated the generated CLI reference

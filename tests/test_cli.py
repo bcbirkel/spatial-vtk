@@ -884,6 +884,8 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "svtk dashboard metrics --config runs/spatial_vtk_config.yaml --auto-port --proxy-mode" in dashboard_text
     assert "--metrics-dataset-dir" in dashboard_text
     assert "--dashboard-summary-table-dir" in dashboard_text
+    assert "row-level data used by metric filters" in dashboard_text
+    assert "dashboard overview tabs" in dashboard_text
     assert "Config-Backed Plotting" in generator_text
     assert "Config-Backed Dashboards" in generator_text
 
@@ -3178,7 +3180,11 @@ def test_cli_dashboard_help_exposes_clear_path_aliases(capsys):
     assert "--dashboard-summary-table-dir" in metrics_help
     assert "--dashboard-summary-dir" in metrics_help
     assert "--summary-root" in metrics_help
-    assert "metric row dataset directory" in metrics_help
+    assert "Metrics dashboard row dataset directory" in metrics_help
+    assert "row-level data used by metric filters" in metrics_help
+    assert "Dashboard summary-table directory" in metrics_help
+    assert "model_metric_band" in metrics_help
+    assert "station_rollup" in metrics_help
     assert "metrics_dashboard" in metrics_help
     assert "dashboard_summaries" in metrics_help
 
