@@ -3164,7 +3164,8 @@ outputs:
     assert main(["dashboard", "metrics", "--config", str(config), "--port", "8555", "--proxy-mode"]) == 0
 
     captured = capsys.readouterr()
-    assert "Metrics dashboard data:" in captured.out
+    assert "Metrics dashboard row dataset:" in captured.out
+    assert "Metrics dashboard summary tables:" in captured.out
     assert Path(launched["metrics_root"]) == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
     assert Path(launched["summary_root"]) == tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
     assert Path(launched["config_path"]) == config.resolve()
@@ -3234,7 +3235,8 @@ def test_cli_dashboard_metrics_accepts_clear_path_aliases(tmp_path, monkeypatch,
     )
 
     captured = capsys.readouterr()
-    assert "Metrics dashboard data:" in captured.out
+    assert "Metrics dashboard row dataset:" in captured.out
+    assert "Metrics dashboard summary tables:" in captured.out
     assert Path(launched["metrics_root"]) == metrics_path
     assert Path(launched["summary_root"]) == summary_path
     assert launched["config_path"] is None

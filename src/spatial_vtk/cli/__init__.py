@@ -2458,8 +2458,8 @@ def _cmd_dashboard_metrics(args: argparse.Namespace) -> int:
         show=args.show,
     )
     resolved_port = getattr(process, "spatial_vtk_server_port", args.port)
-    print(f"Metrics dashboard data: {metrics_root}")
-    print(f"Metrics dashboard summaries: {summary_root}")
+    print(f"Metrics dashboard row dataset: {metrics_root}")
+    print(f"Metrics dashboard summary tables: {summary_root}")
     if args.proxy_mode:
         print("Metrics dashboard proxy mode: enabled")
     if args.auto_port and int(resolved_port) != int(args.port):
