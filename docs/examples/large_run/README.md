@@ -63,6 +63,12 @@ Dashboard summaries:
 - Dashboard rollup tables expose `n` for contributing row counts and, when the source data includes the needed identifiers, `event_count` and `station_count` for unique event/station coverage behind each displayed aggregate.
 - PSA summaries preserve `period_s`, so dashboard filters and rollups can separate oscillator periods even when PSA rows are not tied to one waveform passband.
 
+Spectral metrics:
+
+- `PSA` and `FAS` are broadband spectral metrics. Metric planning writes one broadband task per event/station/component/model for these metrics, with a blank passband, and then writes one output row per requested oscillator period in `period_s`.
+- Passband filters in figure cells apply to passband-dependent metrics such as `PGA`, `PGV`, `CAV`, durations, delays, and correlations. PSA figures use oscillator periods instead; PSA period sheets and period curves should be compared by `period_s` or oscillator frequency, not by waveform passband.
+- If an older run has PSA rows repeated under passband labels such as `1-2 sec`, rebuild the metric manifest and metric rows before using the large-run plotting notebooks. The package plotting helpers treat blank-passband PSA rows as the current contract.
+
 Run order:
 
 1. `step_01_large_run_ingest_and_prepare_data.ipynb`

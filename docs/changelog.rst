@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Documented the broadband spectral-metric contract for large runs. The
+   large-run README, Python workflow reference, and metrics API now state that
+   ``PSA`` and ``FAS`` are planned as blank-passband spectral tasks with
+   oscillator-period outputs in ``period_s``, and that legacy passband-scoped
+   PSA metric rows should be rebuilt before using current plotting notebooks.
    Improved generated API-reference fallback parameter text. When a public
    function lacks hand-written parameter docs, Sphinx now emits name-aware
    descriptions for common workflow values such as ``input_path``, ``output``,

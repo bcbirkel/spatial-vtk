@@ -240,6 +240,10 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context" in text
     assert "Public plotting helpers exposed by ``spatial_vtk.metrics.plot``" in text
+    assert "``PSA`` and ``FAS`` are broadband spectral metrics" in text
+    assert "writes blank\n``passband`` values for spectral tasks" in text
+    assert "older output table contains PSA rows repeated under passband labels" in text
+    assert "For PSA, large-run figure helpers compare oscillator periods instead of\nwaveform passbands" in text
     for helper in (
         "plot_band_score_distribution",
         "plot_period_score_distribution",
@@ -637,6 +641,10 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "from spatial_vtk.config.notebook import" not in workflows
     assert "Prefer direct attributes such as ``step_outputs.metrics_long_path``" in workflows
     assert "``bind()`` remains available for older notebooks" in workflows
+    assert "``PSA`` and\n``FAS`` are broadband spectral calculations" in workflows
+    assert "one blank-passband spectral task" in workflows
+    assert "PSA figures should use\noscillator-period sheets" in workflows
+    assert "legacy metric table repeats PSA rows under waveform\npassbands" in workflows
     assert "bind(globals())" not in workflows
     assert "svtk metrics plan" not in workflows
     assert "svtk qc" not in workflows

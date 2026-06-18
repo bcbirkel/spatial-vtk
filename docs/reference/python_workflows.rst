@@ -290,6 +290,17 @@ Step 3: Metric Calculation and Metric Figures
        summary tables, and optional ``*.csv``/``*.source.csv``/``*.json``
        sidecars
 
+Spectral metrics are planned differently from passband metrics. ``PSA`` and
+``FAS`` are broadband spectral calculations: the metric manifest should contain
+one blank-passband spectral task per event/station/component/model and output
+one row per requested oscillator period in ``period_s``. Passband filters in
+metric figure cells apply to passband-dependent metrics such as ``PGA``,
+``PGV``, ``CAV``, durations, delays, and correlations. PSA figures should use
+oscillator-period sheets, period curves, and ``period_s`` filters instead of
+passband comparisons. If a legacy metric table repeats PSA rows under waveform
+passbands such as ``1-2 sec`` or ``2-3 sec``, rebuild the metric manifest and
+metric rows before using the current large-run plotting helpers.
+
 Step 4: Spatial Statistics
 --------------------------
 

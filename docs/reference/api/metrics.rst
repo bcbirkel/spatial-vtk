@@ -82,6 +82,13 @@ and output helpers from the stable ``spatial_vtk.metrics`` package entry
 point. The implementation modules below document the lower-level organization
 for users who need narrower module references.
 
+``PSA`` and ``FAS`` are broadband spectral metrics in the file-based workflow.
+Task planning separates them from passband-dependent metrics, writes blank
+``passband`` values for spectral tasks, and stores oscillator-period outputs in
+``period_s``. This keeps PSA/FAS values from being interpreted as values after
+each waveform passband filter. Rebuild metric manifests and metric rows if an
+older output table contains PSA rows repeated under passband labels.
+
 .. automodule:: spatial_vtk.metrics.workflow
    :members:
    :exclude-members: MetricWorkflowTask, SlurmSettings
@@ -198,6 +205,12 @@ standard row factories used by the large-run notebooks:
    methods keep target-metric iteration, PSA period sheets, robust axis
    settings, station aggregation, and raw source-row sidecars in package code
    instead of notebook-local loops.
+
+For PSA, large-run figure helpers compare oscillator periods instead of
+waveform passbands. Station maps, model maps, residual grids, event maps,
+scatter plots, and distribution plots are written as PSA period sheets when the
+input rows contain multiple ``period_s`` values; period curves use the same
+``period_s`` values directly.
 
 .. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext
    :members:

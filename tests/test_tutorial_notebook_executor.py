@@ -546,6 +546,10 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "Notebook cells use importable ``spatial_vtk`` package functions" in examples_index
     assert "Notebook cells call importable `spatial_vtk` package functions directly" in large_run_readme
     assert "do not shell out to `svtk` CLI commands for workflow work" in large_run_readme
+    assert "PSA` and `FAS` are broadband spectral metrics" in large_run_readme
+    assert "blank passband" in large_run_readme
+    assert "PSA figures use oscillator periods instead" in large_run_readme
+    assert "rebuild the metric manifest and metric rows" in large_run_readme
 
 
 def test_public_docs_describe_committed_tutorial_waveforms() -> None:
