@@ -278,8 +278,12 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
                         "source": [
                             "import subprocess\n",
                             "!svtk metrics plan\n",
+                            "from spatial_vtk.metrics.plot.periods import plot_period_spectra\n",
                             "metrics = pd.read_csv('/Users/example/project/metrics.csv')\n",
                             "path = resolve_output_path('metrics_long')\n",
+                            "outputs = output_group_namespace('step_03_metrics')\n",
+                            "step_outputs['metrics_long_path']\n",
+                            "layout = 'runs/outputs/tables'\n",
                         ],
                     }
                 ],
@@ -301,6 +305,10 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert "forbidden shell/CLI workflow pattern" in combined
     assert "pd.read_" in combined
     assert "resolve_output_path(" in combined
+    assert "from spatial_vtk.metrics.plot." in combined
+    assert "output_group_namespace" in combined
+    assert "step_outputs[" in combined
+    assert "runs/outputs" in combined
     assert "user-specific path or address" in combined
 
 
@@ -431,6 +439,8 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "committed example data" in combined
     assert "source-contract preflight" in combined
     assert "shell/CLI workflow cells" in combined
+    assert "implementation plotting imports" in combined
+    assert "fixed run" in combined
     assert "raw output-path/table reads" in combined
     assert "Notebook cells use importable ``spatial_vtk`` package functions" in examples_index
     assert "Notebook cells call importable `spatial_vtk` package functions directly" in large_run_readme
