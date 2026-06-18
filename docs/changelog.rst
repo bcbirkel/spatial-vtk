@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-18
+   Updated standard Step 5 and Step 6 notebooks to name their Step 1
+   ``OutputGroup`` before loading tables, keeping output-group access
+   consistent across tutorial cells.
    Rewired Step 2 QC and large-run Step 3 metric preview cells to use
    ``OutputGroup.display_table_previews()`` instead of notebook-local
    ``preview_table()`` branches.

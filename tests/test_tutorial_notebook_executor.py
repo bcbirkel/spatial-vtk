@@ -1675,7 +1675,9 @@ def test_step05_uses_geojson_preview_helper() -> None:
     assert "from spatial_vtk.spatial.plot." not in source
     assert "geojson_polygon_preview_table(" in source
     assert "load_configured_input_paths(" in source
-    assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" in source
+    assert "ingest_outputs = output_group(\"step_01_ingest\", cfg=cfg)" in source
+    assert "ingest_tables = ingest_outputs.load_tables(" in source
+    assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" not in source
     assert "figure_dir /" not in source
     assert "load_output_table(" not in source
     assert "load_geojson_polygons(" not in source
@@ -1690,7 +1692,9 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" in source
+    assert "ingest_outputs = output_group(\"step_01_ingest\", cfg=cfg)" in source
+    assert "ingest_tables = ingest_outputs.load_tables(" in source
+    assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" not in source
     assert "step_outputs = output_group(\"step_06_plotting\", cfg=cfg)" in source
     assert "plotting_tables = step_outputs.load_tables(" in source
     assert "step_outputs.figure_path(" in source
