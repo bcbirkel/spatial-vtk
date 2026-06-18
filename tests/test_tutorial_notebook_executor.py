@@ -1677,6 +1677,20 @@ def test_large_run_step03_metric_figures_are_auditable_station_aggregations() ->
     assert "source_df_factory=item_source_rows" not in source
 
 
+def test_large_run_step04_spatial_figures_show_spectral_contract_status() -> None:
+    """Large-run spatial figures should expose PSA/FAS contract checks."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_04_large_run_spatial_statistics.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "spatial_figures = prepare_spatial_figure_context(" in source
+    assert "display(spatial_figures.status_frame())" in source
+    assert "display(spatial_figures.dimension_summary_frame())" in source
+    assert "display(spatial_figures.spectral_metric_contract_status())" in source
+
+
 def test_tutorial_figure_sidecar_calls_include_directory_control() -> None:
     """Notebook figure sidecar calls should honor configured sidecar directories."""
 

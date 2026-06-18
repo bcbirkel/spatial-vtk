@@ -199,6 +199,12 @@ same row factories and aggregation audit metadata across Step 3 and Step 4.
    and how many metric/passband/component/model/event/station values are
    represented.
 
+``spectral_metric_contract_status``
+   Return a compact PSA/FAS audit table for both ``metric_field`` and
+   ``event_centered_residuals``. Use it before spatial figure rendering to
+   catch legacy passband-scoped spectral rows that should be rebuilt as
+   broadband PSA/FAS rows split by ``period_s``.
+
 .. autoclass:: spatial_vtk.spatial.plot.SpatialFigureContext
    :members:
 

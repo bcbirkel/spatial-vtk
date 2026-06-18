@@ -289,6 +289,24 @@ class SpatialFigureContext:
         columns = ["table", *[column for column in out.columns if column != "table"]]
         return out.loc[:, columns]
 
+    def spectral_metric_contract_status(self) -> pd.DataFrame:
+        """Return PSA/FAS broadband-passband contract status for spatial rows.
+
+        Step 4 spatial figures use ``metric_field`` and
+        ``event_centered_residuals`` tables produced from metric rows. This
+        helper audits both tables with the same broadband spectral contract used
+        by :class:`MetricFigureContext`, while adding a ``table`` column so
+        notebooks can tell which spatial input needs to be rebuilt.
+        """
+
+        frames = [
+            self.metric_context.spectral_metric_contract_status().assign(table="metric_field"),
+            self.event_context.spectral_metric_contract_status().assign(table="event_centered_residuals"),
+        ]
+        out = pd.concat(frames, ignore_index=True, sort=False)
+        columns = ["table", *[column for column in out.columns if column != "table"]]
+        return out.loc[:, columns]
+
     @property
     def metric_field(self) -> pd.DataFrame | None:
         """Loaded metric-field table."""

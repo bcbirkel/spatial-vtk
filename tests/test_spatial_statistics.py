@@ -1237,6 +1237,48 @@ def test_metric_figure_context_status_flags_legacy_psa_passband_rows(tmp_path: P
     assert status.loc["psa_period_count"] == 2
 
 
+def test_spatial_figure_context_reports_spectral_contract_by_table(tmp_path: Path) -> None:
+    """Spatial figure status should show which Step 4 table has legacy PSA rows."""
+
+    metric_rows = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1", "e2"],
+            "station": ["STA", "STA", "STB"],
+            "sta_lon": [-118.0, -118.0, -117.9],
+            "sta_lat": [34.0, 34.0, 34.1],
+            "metric": ["PSA", "PSA", "PSA"],
+            "band": ["", "1-2 sec", "2-3 sec"],
+            "component": ["R", "R", "R"],
+            "model": ["m1", "m1", "m1"],
+            "period_s": [1.0, 1.0, 2.0],
+            "log2_residual": [0.1, 0.2, 0.3],
+        }
+    )
+    event_rows = metric_rows.assign(band=["", "", ""])
+    context = SpatialFigureContext(
+        figure_dir=tmp_path / "figures",
+        make_figures=True,
+        metric_context=MetricFigureContext.from_frame(
+            metric_rows,
+            tmp_path / "figures",
+            make_figures=True,
+            value_col="log2_residual",
+        ),
+        event_context=MetricFigureContext.from_frame(
+            event_rows,
+            tmp_path / "figures",
+            make_figures=True,
+            value_col="log2_residual",
+        ),
+    )
+
+    spectral = context.spectral_metric_contract_status().set_index(["table", "metric"])
+    assert spectral.loc[("metric_field", "PSA"), "status"] == "mixed_passband_rows"
+    assert spectral.loc[("metric_field", "PSA"), "legacy_passband_row_count"] == 2
+    assert spectral.loc[("event_centered_residuals", "PSA"), "status"] == "ok"
+    assert spectral.loc[("event_centered_residuals", "PSA"), "broadband_row_count"] == 3
+
+
 def test_psa_period_sheet_existing_file_writes_panel_source_sidecars(tmp_path: Path) -> None:
     """Existing PSA sheets should refresh sidecars for every oscillator panel."""
 

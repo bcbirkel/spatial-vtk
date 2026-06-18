@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Added ``SpatialFigureContext.spectral_metric_contract_status()`` and wired
+   the large-run Step 4 notebook to display it beside the spatial status and
+   dimension summaries. Spatial figure cells now surface whether
+   ``metric_field`` or ``event_centered_residuals`` still contain legacy
+   passband-scoped PSA/FAS rows before Step 4 maps and grids are rendered.
    Added PSA/FAS spectral-contract status to ``MetricFigureContext``.
    ``status_frame()`` now reports aggregate spectral contract status and
    PSA/FAS broadband versus legacy passband row counts, while
