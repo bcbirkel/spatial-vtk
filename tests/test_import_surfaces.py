@@ -368,6 +368,15 @@ def test_visualize_api_docs_use_public_entry_points():
     assert ".. automodule:: spatial_vtk.visualize.dashboard\n" in text
     assert ".. automodule:: spatial_vtk.visualize.qc\n" in text
     assert ".. automodule:: spatial_vtk.visualize.waveforms\n" in text
+    assert "When a dashboard tab is blank or unexpectedly sparse" in text
+    assert "from spatial_vtk.visualize.dashboard import (" in text
+    assert "dashboard_output_status_frame" in text
+    assert "dashboard_readiness_summary_frame" in text
+    assert "dashboard_summary_table_contracts" in text
+    assert "The readiness and status frames are intentionally small" in text
+    assert "``artifact_label``" in text
+    assert "``dashboard_tabs``" in text
+    assert "``required_columns`` / ``missing_columns`` / ``map_message``" in text
 
 
 def test_reference_docs_map_python_workflow_entry_points():

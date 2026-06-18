@@ -99,6 +99,31 @@ The compact dashboard readiness summary carries the same
 Data Status tabs show those labels while keeping readiness displays bounded to
 small status metadata.
 
+When a dashboard tab is blank or unexpectedly sparse, diagnose the configured
+artifacts before loading full metric or QC inventories:
+
+.. code-block:: python
+
+   from spatial_vtk.visualize.dashboard import (
+       dashboard_output_status_frame,
+       dashboard_readiness_summary_frame,
+       dashboard_summary_table_contracts,
+   )
+
+   readiness_summary = dashboard_readiness_summary_frame(cfg=cfg)
+   dashboard_status = dashboard_output_status_frame(cfg=cfg)
+   dashboard_contracts = dashboard_summary_table_contracts()
+
+   display(readiness_summary)
+   display(dashboard_status)
+   display(dashboard_contracts)
+
+The readiness and status frames are intentionally small. Use ``artifact_label``
+to find the user-facing dataset, ``dashboard_tabs`` to see which dashboard tab
+uses it, ``readiness`` / ``message`` to identify the failure, and
+``required_columns`` / ``missing_columns`` / ``map_message`` to decide whether
+the dashboard inputs need to be rebuilt.
+
 ``write_configured_dashboard_datasets`` replaces the standard dashboard metric
 dataset files and summary tables for the current run. It removes only
 recognized dashboard artifacts, so reruns cannot accidentally mix old metric
