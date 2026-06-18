@@ -1096,13 +1096,19 @@ def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:
 
 
 def test_step05_uses_geojson_preview_helper() -> None:
-    """The map tutorial should use package helpers for GeoJSON feature previews."""
+    """The map tutorial should use package helpers and public spatial imports."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebook_path = repo_root / "docs" / "examples" / "step_05_maps_and_figures.ipynb"
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
+    assert "from spatial_vtk.spatial import (" in source
+    assert "from spatial_vtk.spatial.map import" in source
+    assert "from spatial_vtk.spatial.plot import" in source
+    assert "from spatial_vtk.spatial.calculate import" not in source
+    assert "from spatial_vtk.spatial.map." not in source
+    assert "from spatial_vtk.spatial.plot." not in source
     assert "geojson_polygon_preview_table(" in source
     assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" in source
     assert "output_group(\"step_05_geojson\", cfg=cfg).load_tables(" in source
