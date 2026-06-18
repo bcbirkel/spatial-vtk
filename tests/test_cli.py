@@ -914,6 +914,10 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Value: ``PATH``. Primary figure input table" not in plot_text
     assert "Value: ``PATH``. Output figure path" not in plot_text
     assert "configured output table 'metrics_long' when --config is passed" in plot_text
+    assert "svtk plot metrics winner-heatmap [-h] [--input PATH] [--output PATH]" in plot_text
+    assert "Defaults to configured output table 'metrics_long'" in plot_text
+    assert "svtk plot spatial residual-correlation [-h] [--input PATH]" in plot_text
+    assert "Defaults to configured output table 'distance_bin_correlations'" in plot_text
     assert "configured figure output 'band_score_distribution' when --config is passed" in plot_text
     assert "default config is set with 'svtk config set'" in plot_text
     assert "Advanced extra table mapping as function_argument=path" in plot_text
@@ -928,6 +932,8 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Value: ``PATH``. Primary figure input table" not in map_text
     assert "Value: ``PATH``. Output figure path" not in map_text
     assert "configured output table 'station_bias' when --config is passed" in map_text
+    assert "svtk map spatial model-improvement [-h] [--input PATH] [--output PATH]" in map_text
+    assert "Defaults to configured output table 'metrics_long'" in map_text
     assert "configured figure output 'station_residual_map' when --config is passed" in map_text
     assert "``--mode``" in map_text
     assert "``--dep``" in map_text

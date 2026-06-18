@@ -124,6 +124,7 @@ METRICS_PLOT_COMMANDS = _with_registered_plot_defaults(
     METRICS_PLOT_COMMANDS,
     input_defaults={
         "model-metric-heatmap": "metrics_long",
+        "winner-heatmap": "metrics_long",
         "band-score-distribution": "metrics_long",
         "psa-period-curve": "metrics_long",
         "vs30-scatter": "metrics_long",
@@ -171,6 +172,7 @@ SPATIAL_PLOT_COMMANDS = _with_registered_plot_defaults(
         "pattern-similarity": "pattern_similarity_station_anomalies",
         "azimuthal-residuals": "event_centered_residuals",
         "path-bin-summary": "path_summary",
+        "residual-correlation": "distance_bin_correlations",
         "polar-residuals": "event_centered_residuals",
         "pca-explained-variance": "pca_explained_variance",
         "pca-feature-loadings": "pca_feature_loadings",
@@ -241,6 +243,7 @@ SPATIAL_MAP_COMMANDS = _with_registered_plot_defaults(
         "score": "metrics_long",
         "residual-grid": "metric_field",
         "metric-by-model": "metrics_long",
+        "model-improvement": "metrics_long",
         "event-residual": "path_table",
         "corridor": "corridors",
     },

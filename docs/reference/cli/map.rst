@@ -1194,7 +1194,7 @@ svtk map spatial model-improvement
 
 .. code-block:: bash
 
-   svtk map spatial model-improvement [-h] --input PATH [--output PATH]
+   svtk map spatial model-improvement [-h] [--input PATH] [--output PATH]
                                           [--config CONFIG]
                                           [--run-scenario RUN_SCENARIO]
                                           [--table [TABLE]] [--no-table]
@@ -1242,9 +1242,9 @@ svtk map spatial model-improvement
      -
      - show this help message and exit
    * - ``--input``, ``--input-table``
-     - Yes
+     - No
      -
-     - Filesystem path. Primary figure input table (figure input); accepts CSV or parquet.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -

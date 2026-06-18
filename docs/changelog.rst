@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Made ``svtk plot metrics winner-heatmap``, ``svtk plot spatial
+   residual-correlation``, and ``svtk map spatial model-improvement`` use
+   config-backed input table defaults, and updated the generated CLI reference
+   accordingly.
    Updated configuration documentation to show grouped output table loading
    with ``OutputGroup.load_tables()`` instead of direct ``load_output_table``
    examples.

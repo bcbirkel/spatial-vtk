@@ -3389,7 +3389,7 @@ svtk plot metrics winner-heatmap
 
 .. code-block:: bash
 
-   svtk plot metrics winner-heatmap [-h] --input PATH [--output PATH]
+   svtk plot metrics winner-heatmap [-h] [--input PATH] [--output PATH]
                                         [--config CONFIG]
                                         [--run-scenario RUN_SCENARIO]
                                         [--table [TABLE]] [--no-table]
@@ -3435,9 +3435,9 @@ svtk plot metrics winner-heatmap
      -
      - show this help message and exit
    * - ``--input``, ``--input-table``
-     - Yes
+     - No
      -
-     - Filesystem path. Primary figure input table (summary); accepts CSV or parquet.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
@@ -5911,7 +5911,7 @@ svtk plot spatial residual-correlation
 
 .. code-block:: bash
 
-   svtk plot spatial residual-correlation [-h] --input PATH
+   svtk plot spatial residual-correlation [-h] [--input PATH]
                                               [--output PATH]
                                               [--config CONFIG]
                                               [--run-scenario RUN_SCENARIO]
@@ -5961,9 +5961,9 @@ svtk plot spatial residual-correlation
      -
      - show this help message and exit
    * - ``--input``, ``--input-table``
-     - Yes
+     - No
      -
-     - Filesystem path. Primary figure input table (correlation); accepts CSV or parquet.
+     - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -
