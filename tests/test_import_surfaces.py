@@ -79,6 +79,7 @@ def test_public_imports():
         launch_configured_dashboards_from_notebook_settings,
         launch_configured_metrics_dashboard,
         launch_configured_qc_dashboard,
+        prepare_configured_dashboard_datasets_from_notebook_settings,
         preview_dashboard_summary_tables,
     )
     from spatial_vtk.spatial.map import add_contextily_basemap, plot_corridor_map, plot_event_residual_map
@@ -154,6 +155,7 @@ def test_public_imports():
     assert callable(launch_configured_dashboards_from_notebook_settings)
     assert callable(launch_configured_metrics_dashboard)
     assert callable(launch_configured_qc_dashboard)
+    assert callable(prepare_configured_dashboard_datasets_from_notebook_settings)
     assert callable(preview_dashboard_summary_tables)
     assert callable(add_contextily_basemap)
     assert callable(plot_corridor_map)
@@ -625,6 +627,7 @@ def test_visualize_api_docs_use_public_entry_points():
         "write_figure_row_sidecar",
         "figure_sidecar_status_frame",
         "write_configured_dashboard_datasets",
+        "prepare_configured_dashboard_datasets_from_notebook_settings",
         "dashboard_readiness_summary_frame",
         "dashboard_output_status_frame",
         "preview_dashboard_summary_tables",
@@ -722,6 +725,7 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.visualize.dashboard.dashboard_readiness_summary_frame",
         "spatial_vtk.visualize.dashboard.preview_dashboard_summary_tables",
         "spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets",
+        "spatial_vtk.visualize.dashboard.prepare_configured_dashboard_datasets_from_notebook_settings",
     ]
     for helper in required_helpers:
         assert helper in workflows

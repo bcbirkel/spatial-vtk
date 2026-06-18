@@ -85,6 +85,7 @@ from spatial_vtk.visualize.dashboard import (
     dashboard_summary_table_contracts,
     find_available_port,
     filter_optional_dashboard_summary,
+    prepare_configured_dashboard_datasets_from_notebook_settings,
     row_value_column_for_summary,
 )
 from spatial_vtk.visualize.dashboard.export import load_dashboard_metric_dataset
@@ -1748,6 +1749,85 @@ outputs:
     assert by_item.loc["model_metric_band", "readiness"] == "missing"
     assert by_item.loc["qc_trace_summary", "readiness"] == "missing"
     assert readiness.summary_frame().equals(summary)
+
+
+def test_notebook_dashboard_preparation_can_skip_local_writes(tmp_path):
+    """Standard notebooks should get readiness/status frames without writing large dashboards."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+
+    result = prepare_configured_dashboard_datasets_from_notebook_settings(
+        cfg=cfg,
+        prepare_locally=False,
+    )
+
+    assert result.status == "skipped"
+    assert result.written_paths == {}
+    assert "large-run dashboard driver" in result.message
+    assert not result.summary_frame().empty
+    assert not result.status_frame().empty
+    assert result.written_frame().empty
+
+
+def test_notebook_dashboard_preparation_delegates_configured_writer(tmp_path):
+    """Tutorial dashboard preparation should use config-backed writer defaults."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    paths = dashboard_output_namespace(cfg=cfg)
+    paths.metrics_long_path.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "value": [0.5]}).to_parquet(
+        paths.metrics_long_path,
+        index=False,
+    )
+    seen: dict[str, object] = {}
+
+    def _fake_writer(**kwargs):
+        seen.update(kwargs)
+        return {
+            "metrics_dashboard_root": tmp_path / "dashboards" / "metrics_dashboard",
+            "dashboard_summary_root": tmp_path / "dashboards" / "dashboard_summaries",
+        }
+
+    result = prepare_configured_dashboard_datasets_from_notebook_settings(
+        cfg=cfg,
+        prepare_locally=True,
+        partitioned=True,
+        format="parquet",
+        writer=_fake_writer,
+    )
+
+    assert result.status == "wrote"
+    assert result.written_paths["metrics_dashboard_root"] == tmp_path / "dashboards" / "metrics_dashboard"
+    assert seen["cfg"] is cfg
+    assert seen["residual_mode"] == "logratio"
+    assert seen["partitioned"] is True
+    assert seen["format"] == "parquet"
+    assert seen["replace_existing"] is True
+    assert not result.summary_frame().empty
+    written = result.written_frame().set_index("name")
+    assert "dashboard_summary_root" in written.index
 
 
 def test_dashboard_output_readiness_rebuilds_map_summaries_when_source_has_coordinates(tmp_path):

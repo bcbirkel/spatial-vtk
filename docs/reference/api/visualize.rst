@@ -61,6 +61,9 @@ Public helpers exposed by ``spatial_vtk.visualize``:
    * - ``write_configured_dashboard_datasets``
      - Write dashboard-ready row and summary datasets from configured metric
        outputs.
+   * - ``prepare_configured_dashboard_datasets_from_notebook_settings``
+     - Check dashboard readiness and optionally write configured dashboard
+       datasets from one notebook-facing helper.
    * - ``dashboard_readiness_summary_frame`` and
        ``dashboard_output_status_frame``
      - Inspect dashboard readiness with bounded schema, row-count, and map-data
@@ -214,6 +217,10 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
        partition does not hide value columns present in other partitions.
    * - ``write_configured_dashboard_datasets``
      - Rebuild dashboard row datasets and summary tables from the active config.
+   * - ``prepare_configured_dashboard_datasets_from_notebook_settings``
+     - Own the Step 7 notebook branch that checks readiness, optionally writes
+       tutorial-sized dashboard datasets, and returns compact readiness,
+       status, and written-output frames.
    * - ``load_dashboard_metric_dataset`` and
        ``load_dashboard_summary_tables``
      - Load dashboard-ready datasets after readiness checks pass.
@@ -238,6 +245,11 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
 dataset files and summary tables for the current run. It removes only
 recognized dashboard artifacts, so reruns cannot accidentally mix old metric
 partitions or stale summary files with newly written outputs.
+``prepare_configured_dashboard_datasets_from_notebook_settings`` wraps that
+writer for notebooks: it calls the bounded dashboard readiness checks, skips
+local preparation when requested for large datasets, and reports the readiness,
+current artifact status, and written paths without requiring notebooks to loop
+over output dictionaries or repeat ``should_run`` branches.
 
 ``dashboard_summary_table_contracts`` documents which summary table feeds each
 dashboard tab and the required columns for that table. Use it in notebooks next

@@ -3,6 +3,11 @@ Changelog
 
 2026-06-18
    Added
+   ``spatial_vtk.visualize.dashboard.prepare_configured_dashboard_datasets_from_notebook_settings()``
+   and rewired the standard Step 7 dashboard notebook to use it. The notebook
+   no longer performs dashboard readiness branching, local-write decisions, or
+   written-output loop printing inline.
+   Added
    ``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings()``
    and rewired the large-run Step 6 region boxplot cell to use it. The
    notebook no longer performs the region-boxplot render gate or

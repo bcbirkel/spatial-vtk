@@ -400,8 +400,8 @@ Step 7: Dashboard Datasets
        ``spatial_vtk.visualize.dashboard.dashboard_output_status_frame``, and
        ``spatial_vtk.visualize.dashboard.dashboard_output_readiness``
      - compact tab-level readiness plus detailed status frames. Standard
-       tutorial notebooks can call ``dashboard_output_readiness`` directly and
-       skip local dashboard preparation when ``should_run`` is false; large-run
+       tutorial notebooks should prefer the preparation helper below so they do
+       not repeat ``should_run`` branches inline; large-run
        notebooks pass the same readiness object to
        ``run_notebook_step_if_needed`` for Slurm/local execution.
    * - Preview dashboard outputs without loading full tab inputs
@@ -412,10 +412,13 @@ Step 7: Dashboard Datasets
        inspect dashboard inputs without resolving paths or repeating preview
        conditionals in cells
    * - Write dashboard-ready row and summary datasets
-     - ``spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets``
+     - ``spatial_vtk.visualize.dashboard.prepare_configured_dashboard_datasets_from_notebook_settings``
+       and ``spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets``
      - dashboard metric dataset root and dashboard summary table root; standard
        dashboard artifacts are replaced so stale partitions or stale
-       CSV/Parquet summary files do not mix with the current run
+       CSV/Parquet summary files do not mix with the current run. The notebook
+       preparation helper owns local-skip/current/rebuild decisions and returns
+       readiness, status, and written-output frames for display.
    * - Launch dashboards from Python
      - ``spatial_vtk.config.notebook_dashboard_launch_commands``,
        ``spatial_vtk.visualize.dashboard.launch_configured_dashboards_from_notebook_settings``,

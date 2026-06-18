@@ -14,6 +14,7 @@ Write one dashboard dataset:
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -29,6 +30,39 @@ from spatial_vtk.visualize.dashboard.tables import (
     prepare_dashboard_metric_table,
     write_dashboard_summaries,
 )
+
+
+@dataclass(frozen=True)
+class DashboardDatasetPreparationResult:
+    """Notebook-friendly result from preparing configured dashboard datasets."""
+
+    readiness: Any
+    written_paths: dict[str, Path]
+    status: str
+    message: str
+    current_status: pd.DataFrame | None = None
+
+    def summary_frame(self) -> pd.DataFrame:
+        """Return the dashboard readiness summary captured before preparation."""
+
+        if hasattr(self.readiness, "summary_frame"):
+            return self.readiness.summary_frame()
+        return pd.DataFrame()
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return current dashboard artifact status when available."""
+
+        if self.current_status is not None:
+            return self.current_status
+        if hasattr(self.readiness, "status_frame"):
+            return self.readiness.status_frame()
+        return pd.DataFrame()
+
+    def written_frame(self) -> pd.DataFrame:
+        """Return paths written by this preparation step."""
+
+        rows = [{"name": name, "path": str(path)} for name, path in self.written_paths.items()]
+        return pd.DataFrame(rows, columns=["name", "path"])
 
 
 def write_dashboard_metric_dataset(
@@ -739,6 +773,69 @@ def write_configured_dashboard_datasets(
     }
 
 
+def prepare_configured_dashboard_datasets_from_notebook_settings(
+    *,
+    cfg: SpatialVTKConfig | str | Path | None = None,
+    prepare_locally: bool = True,
+    overwrite: bool = False,
+    residual_mode: str = "logratio",
+    partitioned: bool = True,
+    hex_dist: float = 10.0,
+    hex_az: float = 10.0,
+    format: str = "parquet",
+    replace_existing: bool = True,
+    writer: Any | None = None,
+) -> DashboardDatasetPreparationResult:
+    """Prepare dashboard datasets for notebooks using config-backed defaults.
+
+    The helper owns the notebook-facing readiness branch for standard Step 7:
+    it checks configured dashboard outputs, optionally writes dashboard-ready
+    datasets for tutorial-sized runs, and returns compact status frames. Large
+    runs can set ``prepare_locally=False`` and use the large-run dashboard
+    driver or Slurm-backed helper without changing the notebook's readiness
+    display.
+    """
+
+    from spatial_vtk.visualize.dashboard.contracts import dashboard_output_readiness, dashboard_output_status_frame
+
+    readiness = dashboard_output_readiness(cfg=cfg, overwrite=overwrite)
+    if not prepare_locally:
+        return DashboardDatasetPreparationResult(
+            readiness=readiness,
+            written_paths={},
+            status="skipped",
+            message="Skipping local dashboard preparation. Use the large-run dashboard driver for large datasets.",
+            current_status=dashboard_output_status_frame(cfg=cfg),
+        )
+    if not readiness.should_run:
+        return DashboardDatasetPreparationResult(
+            readiness=readiness,
+            written_paths={},
+            status="current",
+            message=readiness.message,
+            current_status=dashboard_output_status_frame(cfg=cfg),
+        )
+
+    write_func = write_configured_dashboard_datasets if writer is None else writer
+    written = write_func(
+        cfg=cfg,
+        residual_mode=residual_mode,
+        partitioned=partitioned,
+        hex_dist=hex_dist,
+        hex_az=hex_az,
+        format=format,
+        replace_existing=replace_existing,
+    )
+    written_paths = {str(name): Path(path) for name, path in dict(written).items()}
+    return DashboardDatasetPreparationResult(
+        readiness=readiness,
+        written_paths=written_paths,
+        status="wrote",
+        message=f"Wrote {len(written_paths)} dashboard output artifact(s).",
+        current_status=dashboard_output_status_frame(cfg=cfg),
+    )
+
+
 def _coerce_dashboard_config(cfg: SpatialVTKConfig | str | Path | None) -> SpatialVTKConfig | None:
     """Return a config object for dashboard output resolution."""
 
@@ -888,11 +985,13 @@ def _as_sequence(value: pd.DataFrame | str | Path | Sequence[pd.DataFrame | str 
 
 
 __all__ = [
+    "DashboardDatasetPreparationResult",
     "add_dashboard_path_geometry",
     "dashboard_metric_dataset_paths",
     "forward_azimuth_deg",
     "haversine_km",
     "load_dashboard_metric_dataset",
+    "prepare_configured_dashboard_datasets_from_notebook_settings",
     "safe_path_token",
     "write_dashboard_metric_dataset",
     "write_dashboard_summary_dataset",

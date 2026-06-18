@@ -21,6 +21,8 @@ _EXPORT_MODULES = {
     "prepare_dashboard_metric_table": "spatial_vtk.visualize.dashboard",
     "ContextFigureResult": "spatial_vtk.visualize.context",
     "QCFigureResult": "spatial_vtk.visualize.qc",
+    "DashboardDatasetPreparationResult": "spatial_vtk.visualize.dashboard",
+    "prepare_configured_dashboard_datasets_from_notebook_settings": "spatial_vtk.visualize.dashboard",
     "write_configured_dashboard_datasets": "spatial_vtk.visualize.dashboard",
     "write_dashboard_metric_dataset": "spatial_vtk.visualize.dashboard",
     "write_dashboard_summaries": "spatial_vtk.visualize.dashboard",

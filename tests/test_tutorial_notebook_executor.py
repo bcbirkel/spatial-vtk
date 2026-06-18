@@ -1319,14 +1319,18 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "write_configured_dashboard_datasets(" in source
-    assert "dashboard_output_readiness," in source
-    assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=False)" in source
-    assert "if dashboard_readiness.should_run:" in source
-    assert "print(dashboard_readiness.message)" in source
-    assert "display(display_table(dashboard_readiness.summary_frame(), max_rows=20))" in source
-    assert "display(display_table(dashboard_readiness.status_frame(), max_rows=30))" in source
-    assert "display(dashboard_output_status_frame(cfg=cfg))" in source
+    assert "prepare_configured_dashboard_datasets_from_notebook_settings," in source
+    assert "dashboard_preparation = prepare_configured_dashboard_datasets_from_notebook_settings(" in source
+    assert "display(display_table(dashboard_preparation.summary_frame(), max_rows=20))" in source
+    assert "display(display_table(dashboard_preparation.status_frame(), max_rows=30))" in source
+    assert "display(display_table(dashboard_preparation.written_frame(), max_rows=20))" in source
+    assert "dashboard_output_readiness," not in source
+    assert "dashboard_output_status_frame," not in source
+    assert "write_configured_dashboard_datasets," not in source
+    assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=False)" not in source
+    assert "if dashboard_readiness.should_run:" not in source
+    assert "print(dashboard_readiness.message)" not in source
+    assert "display(dashboard_output_status_frame(cfg=cfg))" not in source
     assert "launch_configured_dashboards_from_notebook_settings(" in source
     assert "launch_configured_metrics_dashboard(" not in source
     assert "launch_configured_qc_dashboard(" not in source
