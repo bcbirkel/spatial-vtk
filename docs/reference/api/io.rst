@@ -52,7 +52,9 @@ Public helpers exposed by ``spatial_vtk.io``:
        or preview loops in notebooks. Use
        ``display_first_existing_table_preview()`` when a notebook should prefer
        a derived table, such as ``metrics_enriched``, but fall back to an
-       earlier table, such as ``metrics_long``.
+       earlier table, such as ``metrics_long``. Use ``figure_path()`` when a
+       notebook needs a metric-specific figure filename beside a registered
+       configured figure path.
    * - ``preprocessed_waveform_output_group``
      - Resolve preprocessing metadata outputs that live under the configured
        preprocessed-waveform metadata directory.

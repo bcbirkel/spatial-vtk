@@ -118,6 +118,9 @@ the large-run notebooks.
        registry, such as preprocessing metadata, use ``load_path_table()`` or
        ``preview_path_table()`` with the group path name so notebook cells still
        avoid direct ``read_table(...).head()`` calls.
+       Use ``figure_path()`` for figure artifacts that need configured
+       directories but metric-specific filenames; pass ``stem_parts`` instead
+       of constructing ``figure_dir / "name.png"`` in notebook cells.
        When a required input comes from an optional config value, pass the
        named mapping value as ``None``. The readiness/status table displays
        ``<not configured>`` and blocks the step cleanly instead of using a

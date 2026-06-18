@@ -1267,6 +1267,16 @@ outputs:
     assert paths["corridors_path"] == tmp_path / "run_outputs" / "tables" / "corridors.parquet"
     assert paths["redcap_clusters_path"] == tmp_path / "run_outputs" / "tables" / "redcap_clusters.parquet"
     assert paths["pattern_similarity_path"] == tmp_path / "run_outputs" / "tables" / "pattern_similarity_station_anomalies.csv"
+    assert paths["station_bias_figure_path"] == tmp_path / "run_outputs" / "figures" / "station_residual_map.png"
+    assert paths["residual_grid_figure_path"] == tmp_path / "run_outputs" / "figures" / "residual_grid.png"
+    assert paths["pca_summary_figure_path"] == tmp_path / "run_outputs" / "figures" / "pca_summary.png"
+
+    spatial_group = output_group("step_04_spatial", cfg=cfg)
+    assert spatial_group.figure_path("residual_grid") == tmp_path / "run_outputs" / "figures" / "residual_grid.png"
+    assert spatial_group.figure_path(
+        "residual_grid_figure_path",
+        stem_parts=("step 04", "PGA", "residual grid"),
+    ) == tmp_path / "run_outputs" / "figures" / "step_04_pga_residual_grid.png"
 
     geojson_paths = output_group_paths("step_05_geojson", cfg=cfg)
     assert geojson_paths["corridors_path"] == tmp_path / "run_outputs" / "tables" / "corridors.parquet"

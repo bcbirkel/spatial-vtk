@@ -235,6 +235,9 @@ figures:
   pca_feature_loadings:
     filename: pca_feature_loadings.png
     description: PCA feature loading figure
+  pca_summary:
+    filename: pca_summary.png
+    description: PCA spatial mode summary figure
   geology_contrast:
     filename: geology_contrast.png
     description: Geology-class contrast figure

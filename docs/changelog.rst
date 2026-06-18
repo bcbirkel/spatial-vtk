@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-18
+   Added ``OutputGroup.figure_path()`` and registered optional Step 4 spatial
+   figure artifacts so notebooks can derive metric-specific figure filenames
+   from configured output keys instead of hand-joining ``figure_dir`` paths.
+   Rewired the standard Step 4 spatial notebook to use the helper for station
+   bias maps, residual grids, spatial-correlation plots, PCA summaries, and
+   geology contrasts.
    Added the generic
    ``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_outputs``
    helper and rewired the standard Step 2 QC notebook to use it for the

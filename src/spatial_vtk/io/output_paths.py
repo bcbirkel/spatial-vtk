@@ -21,6 +21,7 @@ from typing import Any, Callable, Iterable, Literal, Sequence
 
 from spatial_vtk.config.outputs import OutputKind, resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
+from spatial_vtk.io.artifacts import slugify
 
 
 OutputGroupName = Literal[
@@ -408,6 +409,47 @@ class OutputGroup:
             return self.paths[default]
         return Path(default)
 
+    def figure_path(
+        self,
+        name: str,
+        *,
+        stem: str | None = None,
+        stem_parts: Sequence[object] | None = None,
+    ) -> Path:
+        """Return a configured figure path, optionally with a variant stem.
+
+        Parameters
+        ----------
+        name
+            Figure artifact path name, such as ``"residual_grid_figure_path"``,
+            or configured figure output key, such as ``"residual_grid"``.
+        stem
+            Optional exact replacement stem for the output filename.
+        stem_parts
+            Optional values slugified and joined with underscores to form the
+            replacement stem. Use this for metric-specific figure variants that
+            should live beside the configured base figure.
+
+        Returns
+        -------
+        pathlib.Path
+            Configured figure path or figure variant path.
+        """
+
+        if stem is not None and stem_parts is not None:
+            raise ValueError("Pass either stem or stem_parts, not both.")
+        artifact = self._artifact_by_name_or_key(name, kind="figure")
+        base = self.paths.get(artifact.name)
+        if base is None:
+            raise KeyError(f"Figure artifact {name!r} is not resolved in output group {self.name!r}.")
+        if stem is None and stem_parts is None:
+            return base
+        resolved_stem = str(stem) if stem is not None else "_".join(slugify(part) for part in (stem_parts or ()))
+        resolved_stem = resolved_stem.strip()
+        if not resolved_stem:
+            raise ValueError("Figure stem cannot be empty.")
+        return base.with_name(f"{resolved_stem}{base.suffix}")
+
     def preview_first_existing_table(
         self,
         names: str | Iterable[str],
@@ -482,6 +524,31 @@ class OutputGroup:
         except KeyError as exc:
             choices = ", ".join(sorted(self.paths))
             raise KeyError(f"Unknown output-group path {key!r}. Choices: {choices}") from exc
+
+    def _artifact_by_name_or_key(self, name: str, *, kind: OutputKind | None = None) -> OutputArtifact:
+        """Return one group artifact by path-name or output key."""
+
+        key = str(name)
+        artifacts = output_group_artifacts(self.name)
+        matches = [
+            artifact
+            for artifact in artifacts
+            if artifact.name == key or artifact.key == key
+        ]
+        if kind is not None:
+            matches = [artifact for artifact in matches if artifact.kind == kind]
+        if matches:
+            return matches[0]
+        choices = sorted(
+            {
+                value
+                for artifact in artifacts
+                if kind is None or artifact.kind == kind
+                for value in (artifact.name, artifact.key)
+            }
+        )
+        label = f"{kind} artifact" if kind else "artifact"
+        raise KeyError(f"Unknown output-group {label} {key!r}. Choices: {', '.join(choices)}")
 
     def status_frame(self, *, extra_paths=None):
         """Return a display-ready status frame for the group."""
@@ -727,6 +794,11 @@ OUTPUT_GROUPS: dict[str, tuple[OutputArtifact, ...]] = {
         OutputArtifact("pca_loadings_path", "pca_feature_loadings"),
         OutputArtifact("pca_explained_path", "pca_explained_variance"),
         OutputArtifact("geology_path", "geology_contrasts"),
+        OutputArtifact("station_bias_figure_path", "station_residual_map", kind="figure", required=False),
+        OutputArtifact("residual_grid_figure_path", "residual_grid", kind="figure", required=False),
+        OutputArtifact("spatial_correlation_distance_figure_path", "spatial_correlation_distance", kind="figure", required=False),
+        OutputArtifact("pca_summary_figure_path", "pca_summary", kind="figure", required=False),
+        OutputArtifact("geology_contrast_figure_path", "geology_contrast", kind="figure", required=False),
         OutputArtifact("path_summary_path", "path_summary", required=False),
         OutputArtifact("block_holdout_path", "block_holdout_predictions", required=False),
         OutputArtifact("corridors_path", "corridors", required=False),

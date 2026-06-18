@@ -1035,6 +1035,16 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     assert 'station_metadata="paths.site_metadata"' in source
     assert 'step_outputs = output_group("step_04_spatial", cfg=cfg)' in source
     assert "spatial_tables = step_outputs.load_tables(" in source
+    assert "step_outputs.figure_path(" in source
+    assert "figure_dir /" not in source
+    for figure_path_name in (
+        "station_bias_figure_path",
+        "residual_grid_figure_path",
+        "spatial_correlation_distance_figure_path",
+        "pca_summary_figure_path",
+        "geology_contrast_figure_path",
+    ):
+        assert figure_path_name in source
     assert 'metric_field = spatial_tables["metric_field"]' in source
     assert "load_configured_input_tables(" in source
     assert 'read_config_table("paths.site_metadata")' not in source
