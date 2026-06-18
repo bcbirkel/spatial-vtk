@@ -13,7 +13,11 @@ from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.config.runtime import SVTK_CLI_CONFIG_ENV, SVTK_CONFIG_ENV
 from spatial_vtk.io import workflows as io_workflows
 from spatial_vtk.io import preprocessing as preprocessing_module
-from spatial_vtk.io.workflows import build_record_coverage_from_config, preprocess_waveforms_from_config
+from spatial_vtk.io.workflows import (
+    build_record_coverage_from_config,
+    prepare_metadata_tables_from_config,
+    preprocess_waveforms_from_config,
+)
 from spatial_vtk.io.preprocessing import preprocessed_waveform_metadata_paths, preprocess_waveform_files
 
 
@@ -114,6 +118,46 @@ outputs:
     assert result["preprocessed_event_station_records_path"] == result["event_station_records"]
     assert result["preprocessing_manifest_path"] == result["manifest"]
     assert result["preprocessed_trace_metadata_path"] == result["trace_metadata"]
+
+
+def test_prepare_metadata_tables_from_config_writes_registered_outputs(tmp_path: Path, monkeypatch) -> None:
+    """Step 1 metadata workflow should write the standard configured outputs."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+    stations = pd.DataFrame({"station": ["STA1"], "lat": [34.0], "lon": [-118.0]})
+    events = pd.DataFrame({"event_id": ["E1"], "start": ["2020-01-01T00:00:00Z"]})
+    event_stations = pd.DataFrame({"event_id": ["E1"], "station": ["STA1"]})
+    seen: dict[str, object] = {}
+
+    def fake_prepare_event_station_table(*, station_metadata=None, event_metadata=None, **kwargs):
+        seen["station_rows"] = len(station_metadata)
+        seen["event_rows"] = len(event_metadata)
+        return event_stations
+
+    monkeypatch.setattr(io_workflows, "prepare_station_metadata", lambda: stations)
+    monkeypatch.setattr(io_workflows, "prepare_event_metadata", lambda: events)
+    monkeypatch.setattr(io_workflows, "prepare_event_station_table", fake_prepare_event_station_table)
+
+    result = prepare_metadata_tables_from_config(config_path=config_path, overwrite=True)
+
+    assert seen == {"station_rows": 1, "event_rows": 1}
+    assert result["station_rows"] == 1
+    assert result["event_rows"] == 1
+    assert result["event_station_rows"] == 1
+    assert result["reused"] is False
+    assert Path(result["prepared_stations_path"]).exists()
+    assert Path(result["prepared_events_path"]).exists()
+    assert Path(result["event_station_records_path"]).exists()
 
 
 def test_build_record_coverage_from_config_uses_preprocessed_metadata(tmp_path: Path) -> None:

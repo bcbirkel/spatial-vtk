@@ -849,11 +849,16 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
 
     assert "run_notebook_step_if_needed(" in source
     assert "metadata_readiness = step_outputs.readiness(" in source
-    assert "display(metadata_readiness.status_frame())" in source
     assert "run_or_submit_notebook_function(" not in source
     assert "from spatial_vtk.io import (" in source
+    assert "prepare_metadata_tables_from_config," in source
     assert "preprocess_waveforms_from_config," in source
     assert "build_record_coverage_from_config," in source
+    assert "prepare_station_metadata(" not in source
+    assert "prepare_event_metadata(" not in source
+    assert "prepare_event_station_table(" not in source
+    assert "write_output_table(" not in source
+    assert '"spatial_vtk.io.prepare_metadata_tables_from_config"' not in source
     assert '"spatial_vtk.io.preprocess_waveforms_from_config"' not in source
     assert '"spatial_vtk.io.build_record_coverage_from_config"' not in source
     assert "run_or_submit_notebook_cli_command(" not in source

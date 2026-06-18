@@ -116,9 +116,7 @@ Step 1: Metadata, Waveforms, and Record Coverage
      - Python entry point
      - Standard outputs
    * - Prepare stations, events, and event-station rows
-     - ``spatial_vtk.io.prepare_station_metadata``,
-       ``spatial_vtk.io.prepare_event_metadata``, and
-       ``spatial_vtk.io.prepare_event_station_table``
+     - ``spatial_vtk.io.prepare_metadata_tables_from_config``
      - ``prepared_stations``, ``prepared_events``,
        ``event_station_records``
    * - Preprocess observed/synthetic waveforms

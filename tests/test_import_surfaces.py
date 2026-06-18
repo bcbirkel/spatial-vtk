@@ -20,7 +20,14 @@ def test_public_imports():
         metric_slurm_submission_readiness,
     )
     from spatial_vtk.metrics.plot import MetricFigureContext
-    from spatial_vtk.io import OutputGroup, inspect_synthetic_format, output_group, prepare_station_metadata, resolve_model_aliases
+    from spatial_vtk.io import (
+        OutputGroup,
+        inspect_synthetic_format,
+        output_group,
+        prepare_metadata_tables_from_config,
+        prepare_station_metadata,
+        resolve_model_aliases,
+    )
     from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
     from spatial_vtk.qc.build import slurm_settings_from_config as build_slurm_settings_from_config
     from spatial_vtk.spatial import (
@@ -57,6 +64,7 @@ def test_public_imports():
     assert callable(inspect_synthetic_format)
     assert callable(output_group)
     assert callable(OutputGroup)
+    assert callable(prepare_metadata_tables_from_config)
     assert callable(prepare_station_metadata)
     assert callable(resolve_model_aliases)
     assert callable(load_trace_inventory_lookup)

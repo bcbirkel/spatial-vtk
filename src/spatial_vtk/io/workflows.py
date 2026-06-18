@@ -18,7 +18,72 @@ from spatial_vtk.io.preprocessing import (
     preprocessed_waveform_metadata_paths,
     preprocess_waveform_files,
 )
-from spatial_vtk.io.tables import write_output_table
+from spatial_vtk.io.tables import load_output_table, write_output_table
+from spatial_vtk.io.metadata import (
+    prepare_event_metadata,
+    prepare_event_station_table,
+    prepare_station_metadata,
+)
+
+
+def prepare_metadata_tables_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    overwrite: bool = False,
+) -> dict[str, Any]:
+    """Prepare configured station, event, and event-station metadata tables.
+
+    Parameters
+    ----------
+    config_path
+        Spatial-VTK config file. When omitted, the active/discoverable config is
+        used.
+    run_scenario
+        Optional named run scenario overlay.
+    overwrite
+        Whether to rebuild existing prepared metadata outputs.
+
+    Returns
+    -------
+    dict
+        Summary with written output paths and row counts.
+    """
+
+    cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    station_path = resolve_output_path("prepared_stations", kind="table", cfg=cfg, create_parent=True)
+    event_path = resolve_output_path("prepared_events", kind="table", cfg=cfg, create_parent=True)
+    event_station_path = resolve_output_path("event_station_records", kind="table", cfg=cfg, create_parent=True)
+
+    if not overwrite and station_path.exists() and event_path.exists() and event_station_path.exists():
+        stations = load_output_table("prepared_stations", cfg=cfg)
+        events = load_output_table("prepared_events", cfg=cfg)
+        event_stations = load_output_table("event_station_records", cfg=cfg)
+        return {
+            "prepared_stations_path": str(station_path),
+            "prepared_events_path": str(event_path),
+            "event_station_records_path": str(event_station_path),
+            "station_rows": int(len(stations)),
+            "event_rows": int(len(events)),
+            "event_station_rows": int(len(event_stations)),
+            "reused": True,
+        }
+
+    stations = prepare_station_metadata()
+    events = prepare_event_metadata()
+    event_stations = prepare_event_station_table(station_metadata=stations, event_metadata=events)
+    written_station_path = write_output_table("prepared_stations", stations, cfg=cfg)
+    written_event_path = write_output_table("prepared_events", events, cfg=cfg)
+    written_event_station_path = write_output_table("event_station_records", event_stations, cfg=cfg)
+    return {
+        "prepared_stations_path": str(written_station_path),
+        "prepared_events_path": str(written_event_path),
+        "event_station_records_path": str(written_event_station_path),
+        "station_rows": int(len(stations)),
+        "event_rows": int(len(events)),
+        "event_station_rows": int(len(event_stations)),
+        "reused": False,
+    }
 
 
 def preprocess_waveforms_from_config(
@@ -153,5 +218,6 @@ def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None
 
 __all__ = [
     "build_record_coverage_from_config",
+    "prepare_metadata_tables_from_config",
     "preprocess_waveforms_from_config",
 ]

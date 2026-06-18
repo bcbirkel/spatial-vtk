@@ -122,6 +122,7 @@ from spatial_vtk.io.waveforms import (
 )
 from spatial_vtk.io.workflows import (
     build_record_coverage_from_config,
+    prepare_metadata_tables_from_config,
     preprocess_waveforms_from_config,
 )
 
@@ -197,6 +198,7 @@ __all__ = [
     "preview_output_table",
     "preview_table",
     "preprocessed_waveform_metadata_paths",
+    "prepare_metadata_tables_from_config",
     "preprocess_waveforms_from_config",
     "preprocess_stream",
     "preprocess_waveform_files",
