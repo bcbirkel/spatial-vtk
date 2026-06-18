@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-18
+   Updated the configuration API reference so notebook helpers are documented
+   through the stable ``spatial_vtk.config`` package surface instead of the
+   implementation module ``spatial_vtk.config.notebook``. Added a regression so
+   the implementation-module autodoc block does not return.
    Added ``OutputGroup.load_path_table()`` and ``preview_path_table()`` for
    output groups that own table paths outside the standard registry, such as
    preprocessed waveform metadata. Standard Step 1 now previews the waveform

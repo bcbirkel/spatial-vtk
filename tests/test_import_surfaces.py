@@ -309,6 +309,14 @@ def test_config_api_docs_include_compute_helpers():
 
     assert "Compute and Slurm" in text
     assert ".. automodule:: spatial_vtk.config.compute\n" in text
+    assert "Import notebook helpers from ``spatial_vtk.config``" in text
+    assert "``NotebookRunContext`` and ``notebook_run_context``" in text
+    assert "``run_notebook_step_if_needed``" in text
+    assert "``NotebookFigureSettings`` and ``notebook_figure_settings``" in text
+    assert "``NotebookDashboardCommands`` and" in text
+    assert "``notebook_dashboard_launch_commands``" in text
+    assert "``display_output_table_previews``" in text
+    assert ".. automodule:: spatial_vtk.config.notebook" not in text
 
 
 def test_qc_api_docs_use_public_package_entry_point():
