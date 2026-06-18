@@ -3,6 +3,11 @@ Changelog
 
 2026-06-18
    Added
+   ``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings()``
+   and rewired the large-run Step 6 region boxplot cell to use it. The
+   notebook no longer performs the region-boxplot render gate or
+   settings-to-plot-keyword translation inline.
+   Added
    ``spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_notebook_settings()``
    and rewired the large-run Step 5 GeoJSON/corridor figure cell to use it.
    The notebook no longer performs the region figure render gate or

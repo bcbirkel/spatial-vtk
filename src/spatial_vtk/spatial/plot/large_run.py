@@ -1984,6 +1984,55 @@ def write_large_run_region_boxplot_from_outputs(
     )
 
 
+def write_large_run_region_boxplot_from_notebook_settings(
+    outputs: Any,
+    settings: Any,
+    *,
+    output_prefix: str = "additional_region_boxplot",
+    geojson_path: str | Path | None = None,
+    annotate_if_missing: bool = False,
+    overwrite: bool = False,
+) -> RegionBoxplotResult:
+    """Write a Step 6 region boxplot using notebook figure settings.
+
+    Public notebooks use :func:`spatial_vtk.config.notebook_figure_settings`
+    for figure switches and row-provenance controls. This wrapper owns the
+    notebook-facing render gate and settings-to-keyword translation so the
+    notebook only states which figure family it wants.
+    """
+
+    gate = settings.render_gate(
+        [],
+        disabled_message="Skipping region boxplot. Set SVTK_MAKE_FIGURES=1 to render it.",
+    )
+    if not gate.ready:
+        status = "disabled" if not gate.figures_enabled else "missing_input"
+        return RegionBoxplotResult(
+            None,
+            None,
+            0,
+            status,
+            gate.message,
+        )
+    return write_large_run_region_boxplot_from_outputs(
+        outputs,
+        figure_dir=settings.figure_dir,
+        geojson_path=geojson_path,
+        metric=settings.metric,
+        passband=settings.passband,
+        component=settings.component,
+        model=settings.model,
+        value_col=settings.value_col,
+        compare_to=settings.compare_to,
+        max_rows=settings.sample_rows,
+        output_prefix=output_prefix,
+        **settings.sidecars.kwargs(),
+        annotate_if_missing=annotate_if_missing,
+        overwrite=overwrite,
+        showfig=settings.showfig,
+    )
+
+
 def _group_path(outputs: Any, name: str) -> Path | None:
     """Return one path from an output group-like object."""
 
@@ -2352,5 +2401,6 @@ __all__ = [
     "write_large_run_geojson_region_figures_from_notebook_settings",
     "write_large_run_region_boxplot",
     "write_large_run_region_boxplot_from_outputs",
+    "write_large_run_region_boxplot_from_notebook_settings",
     "write_large_run_spatial_summary_figures_from_outputs",
 ]

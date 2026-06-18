@@ -85,12 +85,14 @@ from spatial_vtk.spatial.plot.correlation import (
     plot_semivariogram,
 )
 from spatial_vtk.spatial.plot.large_run import (
+    RegionBoxplotResult,
     SpatialFigureContext,
     prepare_spatial_figure_context_from_notebook_settings,
     write_large_run_geojson_region_figures_from_outputs,
     write_large_run_geojson_region_figures_from_notebook_settings,
     write_large_run_region_boxplot,
     write_large_run_region_boxplot_from_outputs,
+    write_large_run_region_boxplot_from_notebook_settings,
     write_large_run_spatial_summary_figures_from_outputs,
 )
 from spatial_vtk.spatial.plot.metrics import plot_geology_contrast
@@ -1304,6 +1306,142 @@ def test_write_large_run_region_boxplot_from_outputs_uses_metric_fallback(tmp_pa
     assert result.figure_path is not None
     assert result.figure_path.exists()
     assert result.figure_path.name.startswith("fallback_region_boxplot__pga__2_3_sec")
+
+
+def test_write_large_run_region_boxplot_from_notebook_settings_disabled(tmp_path: Path, monkeypatch) -> None:
+    """Step 6 region-boxplot wrapper should report disabled figures without reading data."""
+
+    import spatial_vtk.spatial.plot.large_run as large_run_plot
+
+    def _unexpected_call(*_args, **_kwargs):
+        raise AssertionError("disabled region boxplot should not call the output writer")
+
+    monkeypatch.setattr(large_run_plot, "write_large_run_region_boxplot_from_outputs", _unexpected_call)
+
+    class Settings:
+        figure_dir = tmp_path / "figures"
+        metric = "PGA"
+        passband = "2-3 sec"
+        component = None
+        model = None
+        value_col = "log2_residual"
+        compare_to = None
+        sample_rows = 100
+        showfig = False
+
+        class sidecars:
+            @staticmethod
+            def kwargs() -> dict[str, object]:
+                return {"write_sidecar": True}
+
+        def render_gate(self, paths, *, disabled_message: str):  # noqa: ANN001, ANN202
+            assert paths == []
+            return type(
+                "Gate",
+                (),
+                {
+                    "ready": False,
+                    "figures_enabled": False,
+                    "message": disabled_message,
+                },
+            )()
+
+    result = write_large_run_region_boxplot_from_notebook_settings(
+        OutputGroup(name="step_06_plotting", paths={}),
+        Settings(),
+    )
+
+    assert result.status == "disabled"
+    assert result.rows == 0
+    assert result.figure_path is None
+    assert "SVTK_MAKE_FIGURES=1" in result.message
+
+
+def test_write_large_run_region_boxplot_from_notebook_settings_delegates_options(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    """Step 6 region-boxplot wrapper should translate notebook settings once."""
+
+    import spatial_vtk.spatial.plot.large_run as large_run_plot
+
+    outputs = OutputGroup(name="step_06_plotting", paths={"metrics_long_path": tmp_path / "metrics.csv"})
+    seen: dict[str, object] = {}
+
+    def _fake_writer(output_group, **kwargs):
+        seen["output_group"] = output_group
+        seen["kwargs"] = kwargs
+        return RegionBoxplotResult(
+            tmp_path / "figures" / "boxplot.png",
+            tmp_path / "figures" / "sidecars" / "boxplot.csv",
+            12,
+            "wrote",
+            "wrote region boxplot",
+        )
+
+    monkeypatch.setattr(large_run_plot, "write_large_run_region_boxplot_from_outputs", _fake_writer)
+
+    class Settings:
+        figure_dir = tmp_path / "figures"
+        metric = "PGV"
+        passband = "1-2 sec"
+        component = "R"
+        model = "cvmsi"
+        value_col = "log2_residual"
+        compare_to = "LA Basin"
+        sample_rows = 250
+        showfig = True
+
+        class sidecars:
+            @staticmethod
+            def kwargs() -> dict[str, object]:
+                return {
+                    "write_sidecar": True,
+                    "sidecar_rows": 50,
+                    "sidecar_dir": tmp_path / "sidecars",
+                }
+
+        def render_gate(self, paths, *, disabled_message: str):  # noqa: ANN001, ANN202
+            assert paths == []
+            assert "SVTK_MAKE_FIGURES=1" in disabled_message
+            return type(
+                "Gate",
+                (),
+                {
+                    "ready": True,
+                    "figures_enabled": True,
+                    "message": "ready",
+                },
+            )()
+
+    result = write_large_run_region_boxplot_from_notebook_settings(
+        outputs,
+        Settings(),
+        output_prefix="custom_region_boxplot",
+        geojson_path=tmp_path / "regions.geojson",
+        annotate_if_missing=True,
+        overwrite=True,
+    )
+
+    assert result.status == "wrote"
+    assert seen["output_group"] is outputs
+    kwargs = seen["kwargs"]
+    assert kwargs["figure_dir"] == tmp_path / "figures"
+    assert kwargs["geojson_path"] == tmp_path / "regions.geojson"
+    assert kwargs["metric"] == "PGV"
+    assert kwargs["passband"] == "1-2 sec"
+    assert kwargs["component"] == "R"
+    assert kwargs["model"] == "cvmsi"
+    assert kwargs["value_col"] == "log2_residual"
+    assert kwargs["compare_to"] == "LA Basin"
+    assert kwargs["max_rows"] == 250
+    assert kwargs["output_prefix"] == "custom_region_boxplot"
+    assert kwargs["write_sidecar"] is True
+    assert kwargs["sidecar_rows"] == 50
+    assert kwargs["sidecar_dir"] == tmp_path / "sidecars"
+    assert kwargs["annotate_if_missing"] is True
+    assert kwargs["overwrite"] is True
+    assert kwargs["showfig"] is True
 
 
 def test_write_large_run_geojson_region_figures_from_outputs_orchestrates_notebook_step(

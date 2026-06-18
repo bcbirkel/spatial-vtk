@@ -224,6 +224,10 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Write a Step 5/6 region boxplot from an ``OutputGroup``, preferring an
        enriched metric table when available and falling back to the long metric
        table without adding notebook-local path-selection logic.
+   * - ``write_large_run_region_boxplot_from_notebook_settings``
+     - Write the Step 6 region boxplot directly from
+       ``notebook_figure_settings(...)`` so notebooks do not repeat render
+       gates, sidecar options, figure-directory settings, or metric filters.
    * - ``plot_correlogram``, ``plot_semivariogram``, and
        ``plot_directional_correlogram``
      - Plot spatial correlation diagnostics by distance or direction.
@@ -298,6 +302,8 @@ schemas.
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_notebook_settings
 
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs
+
+.. autofunction:: spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings
 
 Maps
 ----
