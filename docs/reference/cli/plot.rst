@@ -173,7 +173,7 @@ svtk plot metrics band-score-distribution
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -370,7 +370,7 @@ svtk plot metrics boxplot
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -572,7 +572,7 @@ svtk plot metrics example-metric-pairs
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -775,7 +775,7 @@ svtk plot metrics geology-boxplot
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -972,7 +972,7 @@ svtk plot metrics heatmap
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1198,7 +1198,7 @@ svtk plot metrics metric-trend
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1405,7 +1405,7 @@ svtk plot metrics model-metric-heatmap
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1608,7 +1608,7 @@ svtk plot metrics period-spectra
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1813,7 +1813,7 @@ svtk plot metrics period-spectrogram
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2022,7 +2022,7 @@ svtk plot metrics phase-delay-vs-distance
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2225,7 +2225,7 @@ svtk plot metrics psa-period-curve
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2430,7 +2430,7 @@ svtk plot metrics residuals-vs-depth
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2637,7 +2637,7 @@ svtk plot metrics residuals-vs-distance
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2837,7 +2837,7 @@ svtk plot metrics scatterplot
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -3037,7 +3037,7 @@ svtk plot metrics score-trends
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -3237,7 +3237,7 @@ svtk plot metrics vs30-scatter
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -3440,7 +3440,7 @@ svtk plot metrics winner-heatmap
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -3673,7 +3673,7 @@ svtk plot spatial azimuthal-residuals
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -3880,7 +3880,7 @@ svtk plot spatial block-holdout-scatter
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -4089,7 +4089,7 @@ svtk plot spatial cluster-feature-heatmap
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -4298,7 +4298,7 @@ svtk plot spatial cluster-solution-scores
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -4498,7 +4498,7 @@ svtk plot spatial correlogram
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -4707,7 +4707,7 @@ svtk plot spatial directional-correlogram
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -4936,7 +4936,7 @@ svtk plot spatial path-bin-summary
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -5141,7 +5141,7 @@ svtk plot spatial pattern-similarity
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -5349,7 +5349,7 @@ svtk plot spatial pca-explained-variance
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -5556,7 +5556,7 @@ svtk plot spatial pca-feature-loadings
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -5759,7 +5759,7 @@ svtk plot spatial polar-residuals
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -5966,7 +5966,7 @@ svtk plot spatial residual-correlation
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -6166,7 +6166,7 @@ svtk plot spatial semivariogram
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -

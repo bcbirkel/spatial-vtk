@@ -1230,7 +1230,8 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
         default=None,
         help=(
             "Advanced extra table mapping as function_argument=path. May be repeated. "
-            "Prefer named table flags such as --events, --stations, or --records when this command lists them. "
+            "Prefer config-backed defaults and named table flags such as --events, --stations, or --records "
+            "when this command lists them. "
             "For plotting functions with a boolean table option, omit the value to show the table."
         ),
     )

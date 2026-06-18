@@ -849,7 +849,6 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "``--colorby``" in text
     assert "``--compare-to``" in text
     assert "``--bin-label``" in text
-    assert "``--table``" in text
     assert "``--input-table``" in text
     assert "``--figure-output``" in text
     assert "``--station-region``" in text
@@ -859,11 +858,14 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "``--max-records``" in text
     assert "``--max-traces``" in text
     assert "``--no-connect-points``" in text
+    assert "Registered table defaults may be CSV or Parquet" in text
+    assert "commands that say they accept CSV or parquet read either suffix through the package table helpers" in text
     assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
-    assert "Prefer named table aliases such as ``--events`` or ``--stations``" in text
+    assert "Prefer configured default tables and named table aliases such as ``--events`` or ``--stations``" in text
     assert "advanced ``--table function_argument=path``" in text
-    assert "Prefer named table aliases such as ``--events`` or ``--stations``" in generator_text
+    assert "Prefer configured default tables and named table aliases such as ``--events`` or ``--stations``" in generator_text
     assert "advanced ``--table function_argument=path``" in generator_text
+    assert "Registered table defaults may be CSV or Parquet" in generator_text
     assert "argument_name=path" not in generator_text
 
 
@@ -896,6 +898,7 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "configured figure output 'band_score_distribution' when --config is passed" in plot_text
     assert "default config is set with 'svtk config set'" in plot_text
     assert "Advanced extra table mapping as function_argument=path" in plot_text
+    assert "Prefer config-backed defaults and named table flags" in plot_text
     assert "Extra table as argument_name=path" not in plot_text
     assert "Primary figure input table (station bias); accepts CSV or parquet" in map_text
     assert "function argument 'station_df'" not in map_text
@@ -928,6 +931,7 @@ def test_generated_cli_reference_uses_role_based_table_help():
         assert "function argument '" not in text, path.name
         assert "Extra table as argument_name=path" not in text, path.name
         assert "Advanced extra table mapping as function_argument=path" in text, path.name
+        assert "Prefer config-backed defaults and named table flags" in text, path.name
 
 
 def test_generated_cli_reference_names_metrics_run_defaults():
