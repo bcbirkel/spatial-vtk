@@ -205,7 +205,7 @@ def test_standard_tutorial_notebooks_use_notebook_run_context() -> None:
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
         assert "notebook_run_context(" in source, f"{notebook_path.relative_to(repo_root)}"
-        assert "SpatialVTKConfig.from_file(" not in source, f"{notebook_path.relative_to(repo_root)}"
+        assert "SpatialVTKConfig" not in source, f"{notebook_path.relative_to(repo_root)}"
         assert "from spatial_vtk.config import find_repo_root" not in source, f"{notebook_path.relative_to(repo_root)}"
 
 
