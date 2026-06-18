@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-17
+   Extended ``notebook_figure_settings()`` to cover optional score-trend
+   diagnostics through ``notebook_figure_settings("score_trend")``. Large-run
+   Step 3 now keeps ``SVTK_MAKE_SCORE_TRENDS`` and
+   ``SVTK_SCORE_TREND_COLUMNS`` as supported user controls while moving their
+   parsing out of notebook cells.
    Added ``spatial_vtk.io.load_configured_input_tables`` so notebooks can load
    labeled non-output input tables from dotted config keys such as
    ``paths.metric_figure_snapshot`` and ``paths.site_metadata`` without

@@ -614,7 +614,11 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     assert "source_df_factory=lambda period_item" not in source
     assert "write_score_trend_plots(" in source
     assert "plot_score_trends" in source
-    assert 'MAKE_SCORE_TRENDS = os.environ.get("SVTK_MAKE_SCORE_TRENDS", "0") == "1"' in source
+    assert 'SCORE_TREND_FIGURE_SETTINGS = notebook_figure_settings(' in source
+    assert 'MAKE_SCORE_TRENDS = SCORE_TREND_FIGURE_SETTINGS.make_figures' in source
+    assert 'SCORE_TREND_COLUMNS = SCORE_TREND_FIGURE_SETTINGS.score_columns or ["anderson_2004_gof"]' in source
+    assert 'os.environ.get("SVTK_MAKE_SCORE_TRENDS"' not in source
+    assert 'os.environ.get("SVTK_SCORE_TREND_COLUMNS"' not in source
     assert "Skipping optional GOF score trends. Set SVTK_MAKE_SCORE_TRENDS=1" in source
     assert "The main large-run figure suite uses `log2_residual`" in source
     assert "METRIC_FIGURE_SETTINGS = notebook_figure_settings(" in source

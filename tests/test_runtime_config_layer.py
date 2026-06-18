@@ -587,6 +587,34 @@ def test_notebook_figure_settings_parse_region_legacy_controls(tmp_path, monkeyp
     assert settings.sidecars.rows == 1000
 
 
+def test_notebook_figure_settings_parse_score_trend_controls(tmp_path, monkeypatch):
+    """Score-trend diagnostics should use package settings instead of notebook env parsing."""
+
+    monkeypatch.setenv("SVTK_MAKE_SCORE_TRENDS", "1")
+    monkeypatch.setenv("SVTK_SCORE_TREND_COLUMNS", "anderson_2004_gof, olsen_mayhew_gof")
+    monkeypatch.setenv("SVTK_SCORE_TREND_FIGURE_SHOWFIG", "1")
+
+    settings = notebook_figure_settings(
+        "score_trend",
+        figure_dir=tmp_path / "figures",
+        default_score_columns=("score",),
+    )
+
+    assert settings.make_figures is True
+    assert settings.score_columns == ["anderson_2004_gof", "olsen_mayhew_gof"]
+    assert settings.showfig is True
+
+
+def test_notebook_figure_settings_keeps_score_trends_opt_in(tmp_path, monkeypatch):
+    """Generic figure rendering should not enable optional GOF score trends."""
+
+    monkeypatch.setenv("SVTK_MAKE_FIGURES", "1")
+
+    settings = notebook_figure_settings("score_trend", figure_dir=tmp_path / "figures")
+
+    assert settings.make_figures is False
+
+
 def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monkeypatch):
     """Notebook dashboard commands should be config-backed and collision tolerant."""
 

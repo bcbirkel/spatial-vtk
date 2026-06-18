@@ -145,6 +145,7 @@ class NotebookFigureSettings:
     station_aggregation: str = "mean"
     compare_to: str | None = None
     comparison_table: bool = False
+    score_columns: list[str] | None = None
     sidecars: NotebookFigureSidecarSettings = field(default_factory=NotebookFigureSidecarSettings)
 
     def context_kwargs(self, *, include_station_aggregation: bool = False) -> dict[str, object]:
@@ -574,6 +575,7 @@ def notebook_figure_settings(
     default_sample_rows: int = 200_000,
     default_robust_axis_percentile: float = 95.0,
     default_station_aggregation: str = "mean",
+    default_score_columns: list[str] | tuple[str, ...] | None = None,
     default_sidecar_rows: int | None = None,
 ) -> NotebookFigureSettings:
     """Return standard notebook figure settings from environment variables.
@@ -599,6 +601,8 @@ def notebook_figure_settings(
         Fallback dense-plot controls.
     default_station_aggregation
         Fallback station aggregation method for station-summary figures.
+    default_score_columns
+        Fallback score columns for optional GOF/score trend diagnostics.
     default_sidecar_rows
         Fallback sidecar row count.
 
@@ -627,11 +631,15 @@ def notebook_figure_settings(
     robust_names = _figure_setting_names(prefix, "ROBUST_PERCENTILE")
     compare_to_names = _figure_setting_names(prefix, "COMPARE_TO")
     comparison_table_names = _figure_setting_names(prefix, "COMPARISON_TABLE")
+    score_column_names = _figure_setting_names(prefix, "SCORE_COLUMNS")
 
     aggregation_names = []
     if prefix:
         aggregation_names.append(f"SVTK_{prefix}_STATION_AGGREGATION")
     aggregation_names.append("SVTK_STATION_AGGREGATION")
+    if prefix == "SCORE_TREND":
+        make_names = ["SVTK_MAKE_SCORE_TRENDS", "SVTK_MAKE_SCORE_TREND_FIGURES"]
+        score_column_names.insert(0, "SVTK_SCORE_TREND_COLUMNS")
     if prefix == "REGION":
         metric_names.insert(0, "SVTK_REGION_BOX_METRIC")
         passband_names.insert(0, "SVTK_REGION_BOX_PASSBAND")
@@ -645,6 +653,7 @@ def notebook_figure_settings(
     components = _env_list_first(component_names)
     if components is None and component:
         components = [component]
+    default_scores = list(default_score_columns) if default_score_columns is not None else None
 
     return NotebookFigureSettings(
         figure_kind=figure_kind,
@@ -663,6 +672,7 @@ def notebook_figure_settings(
         or default_station_aggregation,
         compare_to=_env_text_first(compare_to_names),
         comparison_table=_env_bool_first(comparison_table_names, default=False),
+        score_columns=_env_list_first(score_column_names) or default_scores,
         sidecars=notebook_figure_sidecar_settings(
             figure_kind,
             figure_dir=figure_dir,

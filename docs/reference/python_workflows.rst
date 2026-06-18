@@ -137,7 +137,11 @@ the large-run notebooks.
        settings once. Use ``context_kwargs()`` for large-run plotting contexts
        and ``plot_kwargs()`` for single plotting calls so notebook cells stay
        focused on the figure being rendered. Region/corridor notebooks also
-       retain the existing ``SVTK_REGION_*`` controls through this helper.
+       retain the existing ``SVTK_REGION_*`` controls through this helper, and
+       optional GOF score-trend diagnostics use
+       ``notebook_figure_settings("score_trend")`` so
+       ``SVTK_MAKE_SCORE_TRENDS`` and ``SVTK_SCORE_TREND_COLUMNS`` are parsed
+       by package code rather than notebook cells.
    * - ``spatial_vtk.config.notebook_dashboard_launch_commands``
      - Return config-backed dashboard launch settings. Use
        ``metrics_launch_kwargs()`` and ``qc_launch_kwargs()`` with the package

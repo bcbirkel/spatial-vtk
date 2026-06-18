@@ -26,6 +26,7 @@ Environment switches:
 - `SVTK_OVERWRITE=1`: rebuild outputs even when they already exist.
 - `SVTK_MAKE_FIGURES=1`: render figure cells after compact input tables exist.
 - `SVTK_MAKE_SCORE_TRENDS=1`: render optional GOF score-trend diagnostics in Step 3. The main metric figure suite uses log2 residuals and does not render GOF score figures unless this is set.
+- `SVTK_SCORE_TREND_COLUMNS=anderson_2004_gof`: choose the score columns for optional Step 3 GOF trend diagnostics.
 - `SVTK_QC_CHUNKSIZE=1000000`: chunk size for disk-backed QC readers.
 - `SVTK_FIGURE_SIDECARS=1`: write CSV/JSON row-provenance sidecars for saved figures.
 - `SVTK_FIGURE_SIDECAR_ROWS=all`: write every plotted/source row to each sidecar. Use a positive integer to write a deterministic sample of that many rows. The matching JSON metadata records whether each CSV is exact or sampled.
