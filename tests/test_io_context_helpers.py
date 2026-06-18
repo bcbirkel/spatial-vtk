@@ -15,6 +15,7 @@ from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.io import (
     build_observed_synthetic_inventory,
     event_display_label,
+    first_nonempty_table_value,
     load_or_build_output_table,
     prepare_event_metadata,
     prepare_event_station_table,
@@ -154,6 +155,17 @@ def test_event_display_label_uses_names_and_stable_fallbacks() -> None:
     assert event_display_label(events, "E03") == "E03"
     assert event_display_label(events, "missing") == "missing"
     assert event_display_label(events, "missing", fallback="Unknown event") == "Unknown event"
+
+
+def test_first_nonempty_table_value_uses_stable_fallbacks() -> None:
+    """Notebook label helpers should not depend on fragile first-row lookups."""
+
+    table = pd.DataFrame({"model": [None, "", "  ", "cvmsi"], "empty": [None, "", " ", None]})
+
+    assert first_nonempty_table_value(table, "model", fallback="unknown") == "cvmsi"
+    assert first_nonempty_table_value(table, "empty", fallback="unknown") == "unknown"
+    assert first_nonempty_table_value(table, "missing", fallback="unknown") == "unknown"
+    assert first_nonempty_table_value(None, "model", fallback="unknown") == "unknown"
 
 
 def test_prepare_event_station_table_normalizes_supplied_event_metadata_aliases() -> None:

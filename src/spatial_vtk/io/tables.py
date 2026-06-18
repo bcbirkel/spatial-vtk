@@ -140,6 +140,43 @@ def read_bounded_table(path: str | Path, max_rows: int) -> pd.DataFrame:
     return pd.read_csv(input_path, nrows=limit, low_memory=False)
 
 
+def first_nonempty_table_value(
+    table: pd.DataFrame | None,
+    column: str,
+    *,
+    fallback: str | None = None,
+) -> str | None:
+    """Return the first non-empty value from a table column.
+
+    This is intended for notebook titles, labels, and compact summaries where a
+    missing optional column should use a stable fallback instead of relying on a
+    brittle ``.iloc[0]`` lookup.
+
+    Parameters
+    ----------
+    table
+        Source dataframe.
+    column
+        Column to scan.
+    fallback
+        Value returned when the table is missing, the column is absent, or all
+        values are empty/null.
+
+    Returns
+    -------
+    str or None
+        First non-empty string value, or ``fallback``.
+    """
+
+    if table is None or column not in table.columns:
+        return fallback
+    for value in table[column].dropna():
+        text = str(value).strip()
+        if text:
+            return text
+    return fallback
+
+
 def normalize_metric_table(df: pd.DataFrame) -> pd.DataFrame:
     """Normalize common legacy metric-table column names.
 

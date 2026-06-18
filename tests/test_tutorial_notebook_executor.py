@@ -1677,6 +1677,8 @@ def test_step05_uses_geojson_preview_helper() -> None:
     assert "from spatial_vtk.spatial.calculate import" not in source
     assert "from spatial_vtk.spatial.map." not in source
     assert "from spatial_vtk.spatial.plot." not in source
+    assert "first_nonempty_table_value(metrics, \"model\", fallback=\"model\")" in source
+    assert "metrics[\"model\"].dropna().astype(str).iloc[0]" not in source
     assert "geojson_polygon_preview_table(" in source
     assert "load_configured_input_paths(" in source
     assert "ingest_outputs = output_group(\"step_01_ingest\", cfg=cfg)" in source

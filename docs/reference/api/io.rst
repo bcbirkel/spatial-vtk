@@ -74,6 +74,10 @@ Public helpers exposed by ``spatial_vtk.io``:
    * - ``event_display_label``
      - Return a human-readable event label for notebook titles and displays,
        falling back to the event id instead of raising when a label is missing.
+   * - ``first_nonempty_table_value``
+     - Return a safe first non-empty value from an optional table column for
+       notebook titles, labels, and summaries, with a fallback when the column
+       is missing or empty.
    * - ``prepare_metadata_tables_from_config``
      - Normalize station, event, and event-station metadata and write the
        standard Step 1 tables.

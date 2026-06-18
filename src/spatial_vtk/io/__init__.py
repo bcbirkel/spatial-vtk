@@ -92,6 +92,7 @@ from spatial_vtk.io.preprocessing import (
 from spatial_vtk.io.synthetic_formats import SyntheticFormatInfo, inspect_synthetic_format, synthetic_reader_for
 from spatial_vtk.io.tables import (
     aggregate_metric_by_station_over_events,
+    first_nonempty_table_value,
     load_csv_bundle,
     load_or_build_output_table,
     load_output_table,
@@ -174,6 +175,7 @@ __all__ = [
     "ensure_run_dir",
     "event_display_label",
     "expected_metric_rows_from_inventory",
+    "first_nonempty_table_value",
     "inspect_synthetic_format",
     "inspect_station_event_layouts",
     "load_csv_bundle",

@@ -37,6 +37,7 @@ def test_public_imports():
         load_configured_input_tables,
         OutputGroup,
         event_display_label,
+        first_nonempty_table_value,
         inspect_synthetic_format,
         output_group,
         prepare_metadata_tables_from_config,
@@ -91,6 +92,7 @@ def test_public_imports():
     assert callable(load_configured_input_paths)
     assert callable(load_configured_input_tables)
     assert callable(event_display_label)
+    assert callable(first_nonempty_table_value)
     assert callable(output_group)
     assert callable(OutputGroup)
     assert callable(prepare_metadata_tables_from_config)
@@ -364,6 +366,7 @@ def test_io_api_docs_use_public_workflow_helpers():
         "load_configured_input_paths",
         "load_configured_input_tables",
         "event_display_label",
+        "first_nonempty_table_value",
         "prepare_metadata_tables_from_config",
         "preprocess_waveforms_from_config",
         "record_coverage_readiness_from_config",
