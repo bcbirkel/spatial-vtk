@@ -535,7 +535,10 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     assert "run_spatial_statistics_workflow_from_config(" in source
     assert 'metrics="paths.metric_figure_snapshot"' in source
     assert 'station_metadata="paths.site_metadata"' in source
-    assert 'metric_field = load_output_table("metric_field")' in source
+    assert 'step_outputs = output_group("step_04_spatial", cfg=cfg)' in source
+    assert "spatial_tables = step_outputs.load_tables(" in source
+    assert 'metric_field = spatial_tables["metric_field"]' in source
+    assert 'load_output_table("metric_field")' not in source
     assert "run_spatial_statistics_workflow(" not in source
     assert 'cfg.path("paths.metric_figure_snapshot")' not in source
     for helper in (
@@ -658,6 +661,8 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "plot_correlogram" not in source
     assert "preview_output_table(" not in source
     assert "for name, key in [" not in source
+    assert "step_outputs.load_tables(" in source
+    assert "load_output_table(" not in source
 
 
 def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:

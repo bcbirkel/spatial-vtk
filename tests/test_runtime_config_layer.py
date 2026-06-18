@@ -1060,6 +1060,15 @@ outputs:
     prepared_events = metric_paths["prepared_events_path"]
     prepared_events.parent.mkdir(parents=True, exist_ok=True)
     prepared_events.write_text("event_id\nE1\n", encoding="utf-8")
+    loaded_tables = group.load_tables({"events": "prepared_events_path"}, cfg=cfg)
+    assert loaded_tables["events"].to_dict("records") == [{"event_id": "E1"}]
+    loaded_by_key = group.load_tables("prepared_events", cfg=cfg)
+    assert loaded_by_key["prepared_events"].to_dict("records") == [{"event_id": "E1"}]
+    previews = group.preview_tables({"events_preview": "prepared_events_path"}, cfg=cfg, nrows=1)
+    assert previews["events_preview"].to_dict("records") == [{"event_id": "E1"}]
+    assert group.load_tables({"missing": "metrics_enriched_path"}, cfg=cfg, missing="skip") == {}
+    with pytest.raises(KeyError, match="Unknown table artifact"):
+        group.load_tables("missing_artifact", cfg=cfg)
     group.metrics_long_path.parent.mkdir(parents=True, exist_ok=True)
     group.metrics_long_path.write_text("metric\nPGA\n", encoding="utf-8")
     readiness = group.readiness(

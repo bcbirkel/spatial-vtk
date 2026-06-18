@@ -91,7 +91,10 @@ the large-run notebooks.
        ``metrics_long_path`` in a notebook setup cell. ``readiness()`` can
        receive registered output, input, and source path names such as
        ``"metrics_long_path"`` and resolves them to configured paths before
-       building the status table.
+       building the status table. ``load_tables()`` and ``preview_tables()``
+       read selected table artifacts by group path name, output key, or a
+       display-label mapping, which keeps notebook cells focused on workflow
+       tasks rather than repeated ``load_output_table`` calls.
    * - ``spatial_vtk.config.run_notebook_step_if_needed``
      - Display the readiness table, then run or submit a Python package
        workflow function only when work is needed. Pass the imported package

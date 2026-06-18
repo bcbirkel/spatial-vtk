@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-17
+   Added ``OutputGroup.load_tables()`` and ``OutputGroup.preview_tables()``
+   for config-backed table reads from named workflow output groups. The
+   standard and large-run Step 4 notebooks now use grouped table loading for
+   spatial outputs instead of repeating individual ``load_output_table`` calls.
    Added ``NotebookFigureSidecarSettings.status_frame()`` and updated the
    metric and spatial notebooks to show package-native figure provenance
    review tables after plotting. The status frame reads only the small JSON

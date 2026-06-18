@@ -160,6 +160,76 @@ class OutputGroup:
             namespace.update(selected)
         return selected
 
+    def load_tables(
+        self,
+        names: str | Iterable[str] | dict[str, str] | None = None,
+        *,
+        cfg: SpatialVTKConfig | None = None,
+        missing: Literal["raise", "skip"] = "raise",
+        **kwargs,
+    ) -> dict[str, object]:
+        """Load table artifacts from this output group.
+
+        Parameters
+        ----------
+        names
+            Artifact names, output keys, or a ``label -> artifact/key`` mapping.
+            When omitted, every table artifact in the group is loaded. Mapping
+            labels become the returned dictionary keys, which keeps notebook
+            variables readable without repeating path-resolution code.
+        cfg
+            Optional config passed to :func:`spatial_vtk.io.load_output_table`.
+        missing
+            ``"raise"`` to fail on a missing table, or ``"skip"`` to omit
+            missing tables.
+        **kwargs
+            Additional read options forwarded to ``load_output_table``.
+
+        Returns
+        -------
+        dict
+            Mapping from requested labels to loaded dataframes.
+        """
+
+        from spatial_vtk.io.tables import load_output_table
+
+        _validate_missing_policy(missing)
+        artifacts = _output_group_table_artifacts(self.name)
+        selected = _selected_output_artifacts(artifacts, names)
+        loaded: dict[str, object] = {}
+        for label, artifact in selected:
+            path = self.paths.get(artifact.name)
+            if path is not None and not path.exists():
+                if missing == "skip":
+                    continue
+            loaded[label] = load_output_table(artifact.key, cfg=cfg, **kwargs)
+        return loaded
+
+    def preview_tables(
+        self,
+        names: str | Iterable[str] | dict[str, str] | None = None,
+        *,
+        cfg: SpatialVTKConfig | None = None,
+        nrows: int = 5,
+        missing: Literal["raise", "skip"] = "skip",
+        **kwargs,
+    ) -> dict[str, object]:
+        """Load bounded previews for table artifacts in this output group."""
+
+        from spatial_vtk.io.tables import preview_output_table
+
+        _validate_missing_policy(missing)
+        artifacts = _output_group_table_artifacts(self.name)
+        selected = _selected_output_artifacts(artifacts, names)
+        previews: dict[str, object] = {}
+        for label, artifact in selected:
+            path = self.paths.get(artifact.name)
+            if path is not None and not path.exists():
+                if missing == "skip":
+                    continue
+            previews[label] = preview_output_table(artifact.key, cfg=cfg, nrows=nrows, **kwargs)
+        return previews
+
     def status_frame(self, *, extra_paths=None):
         """Return a display-ready status frame for the group."""
 
@@ -565,6 +635,47 @@ def output_group(
             include_optional=include_optional,
         ),
     )
+
+
+def _output_group_table_artifacts(group: str) -> tuple[OutputArtifact, ...]:
+    """Return only table artifacts for one output group."""
+
+    return tuple(artifact for artifact in output_group_artifacts(group) if artifact.kind == "table")
+
+
+def _selected_output_artifacts(
+    artifacts: tuple[OutputArtifact, ...],
+    names: str | Iterable[str] | dict[str, str] | None,
+) -> list[tuple[str, OutputArtifact]]:
+    """Resolve artifact names or output keys to display labels and artifacts."""
+
+    by_name = {artifact.name: artifact for artifact in artifacts}
+    by_key = {artifact.key: artifact for artifact in artifacts}
+
+    if names is None:
+        return [(artifact.key, artifact) for artifact in artifacts]
+
+    if isinstance(names, str):
+        raw_items = ((None, names),)
+    else:
+        raw_items = names.items() if isinstance(names, dict) else ((None, name) for name in names)
+    selected: list[tuple[str, OutputArtifact]] = []
+    for raw_label, raw_name in raw_items:
+        name = str(raw_name)
+        artifact = by_name.get(name) or by_key.get(name)
+        if artifact is None:
+            choices = sorted({*by_name.keys(), *by_key.keys()})
+            raise KeyError(f"Unknown table artifact {name!r}. Choices: {', '.join(choices)}")
+        label = str(raw_label) if raw_label is not None else artifact.key
+        selected.append((label, artifact))
+    return selected
+
+
+def _validate_missing_policy(missing: str) -> None:
+    """Validate a missing-table policy."""
+
+    if missing not in {"raise", "skip"}:
+        raise ValueError("missing must be 'raise' or 'skip'.")
 
 
 def output_status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
