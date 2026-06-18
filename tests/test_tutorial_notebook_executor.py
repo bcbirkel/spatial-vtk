@@ -612,8 +612,10 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "run_notebook_step_if_needed(" in source
     assert "spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config" in source
     assert "spatial_vtk.spatial.run_boundary_corridor_workflow_from_config" in source
-    assert "geojson_readiness = output_readiness(" in source
-    assert "corridor_readiness = output_readiness(" in source
+    assert "geojson_readiness = step_outputs.readiness(" in source
+    assert "corridor_readiness = step_outputs.readiness(" in source
+    assert "geojson_readiness = output_readiness(" not in source
+    assert "corridor_readiness = output_readiness(" not in source
     assert "run_or_submit_notebook_cli_command(" not in source
     assert '"svtk", "spatial"' not in source
     assert "should_rebuild_paths(" not in source
@@ -690,6 +692,24 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
         assert not missing, f"{notebook_path.relative_to(repo_root)} missing readiness displays: {missing}"
 
 
+def test_large_run_grouped_steps_use_output_group_readiness() -> None:
+    """Grouped large-run steps should keep path-readiness plumbing in OutputGroup."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    for relative in (
+        "large_run/step_02_large_run_quality_control.ipynb",
+        "large_run/step_03_large_run_calculate_metrics.ipynb",
+        "large_run/step_04_large_run_spatial_statistics.ipynb",
+        "large_run/step_05_large_run_geojson_corridors.ipynb",
+    ):
+        notebook_path = repo_root / "docs" / "examples" / relative
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        assert "step_outputs.readiness(" in source, notebook_path.relative_to(repo_root)
+        assert "output_readiness(" not in source, notebook_path.relative_to(repo_root)
+        assert "output_readiness," not in source, notebook_path.relative_to(repo_root)
+
+
 def test_large_run_step03_uses_metric_batch_status_before_submit_and_merge() -> None:
     """Metric Slurm and merge cells should be gated by manifest batch completion."""
 
@@ -706,7 +726,7 @@ def test_large_run_step03_uses_metric_batch_status_before_submit_and_merge() -> 
     assert '"overwrite_batches": OVERWRITE' in source
     assert "if not batch_status.all_complete:" in source
     assert "Metric batches are incomplete:" in source
-    assert "sources=[metric_manifest_path, *batch_status.completed_outputs]" in source
+    assert "sources=(metric_manifest_path, *batch_status.completed_outputs)" in source
 
 
 def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
@@ -823,15 +843,17 @@ def test_large_run_step02_overlap_sidecar_has_separate_rebuild_gate() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "qc_readiness = output_readiness(" in source
-    assert '{"trace_qc_path": trace_qc_path, "qc_inventory_path": qc_inventory_path}' in source
-    assert 'inputs={"event_station_path": event_station_path}' in source
-    assert 'sources={"event_station_path": event_station_path}' in source
+    assert "qc_readiness = step_outputs.readiness(" in source
+    assert '("trace_qc_path", "qc_inventory_path")' in source
+    assert 'inputs=("event_station_path",)' in source
+    assert 'sources=("event_station_path",)' in source
     assert "run_notebook_step_if_needed(" in source
     assert "Full QC outputs are current; skipping QC Slurm submission." in source
     assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, overwrite=OVERWRITE)" not in source
     assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, qc_inventory_overlap_path" not in source
-    assert "overlap_readiness = output_readiness(" in source
+    assert "overlap_readiness = step_outputs.readiness(" in source
+    assert "qc_readiness = output_readiness(" not in source
+    assert "overlap_readiness = output_readiness(" not in source
 
 
 def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:

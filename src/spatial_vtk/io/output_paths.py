@@ -157,7 +157,7 @@ class OutputGroup:
 
     def readiness(
         self,
-        outputs: Iterable[str] | None = None,
+        outputs: str | Iterable[str] | None = None,
         *,
         inputs=(),
         sources=(),
@@ -171,22 +171,58 @@ class OutputGroup:
         Parameters
         ----------
         outputs
-            Optional path names from this group. When omitted, all resolved
-            group paths are considered outputs.
-        inputs, sources, overwrite, missing_input_message, current_message, rebuild_message
+            Optional path name or path names from this group. When omitted, all
+            resolved group paths are considered outputs.
+        inputs, sources
+            Path collections passed through to :func:`output_readiness`.
+            Strings that match path names in this group are resolved to those
+            paths first, so notebooks can use
+            ``inputs=("metrics_long_path",)`` instead of repeating local path
+            variables.
+        overwrite, missing_input_message, current_message, rebuild_message
             Passed through to :func:`output_readiness`.
         """
 
-        selected = self.paths if outputs is None else {name: self.paths[name] for name in outputs}
+        if outputs is None:
+            selected = self.paths
+        elif isinstance(outputs, str):
+            selected = {outputs: self.paths[outputs]}
+        else:
+            selected = {name: self.paths[name] for name in outputs}
         return output_readiness(
             selected,
-            inputs=inputs,
-            sources=sources,
+            inputs=self._resolve_path_references(inputs),
+            sources=self._resolve_path_references(sources),
             overwrite=overwrite,
             missing_input_message=missing_input_message,
             current_message=current_message,
             rebuild_message=rebuild_message,
         )
+
+    def _resolve_path_references(self, paths):
+        """Resolve path-name strings in an input/source path collection."""
+
+        if paths is None:
+            return None
+        if _looks_like_path_value(paths):
+            return self.paths.get(str(paths), paths)
+        if isinstance(paths, dict):
+            return {str(name): self._resolve_path_reference(path) for name, path in paths.items()}
+        if isinstance(paths, SimpleNamespace) or (is_dataclass(paths) and not isinstance(paths, type)):
+            return paths
+        return [
+            (str(item[0]), self._resolve_path_reference(item[1]))
+            if isinstance(item, tuple) and len(item) == 2
+            else self._resolve_path_reference(item)
+            for item in paths
+        ]
+
+    def _resolve_path_reference(self, path):
+        """Resolve one path-name string if it belongs to this group."""
+
+        if isinstance(path, str) and path in self.paths:
+            return self.paths[path]
+        return path
 
 
 @dataclass(frozen=True)

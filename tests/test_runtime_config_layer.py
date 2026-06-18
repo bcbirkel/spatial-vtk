@@ -924,6 +924,16 @@ outputs:
     )
     assert readiness.reason == "current"
     assert readiness.message == "Metric outputs are current."
+    named_readiness = group.readiness(
+        "metrics_long_path",
+        inputs=("prepared_events_path",),
+        sources=("prepared_events_path",),
+        current_message="Metric outputs are current.",
+    )
+    assert named_readiness.reason == "current"
+    named_frame = named_readiness.status_frame()
+    assert set(named_frame["name"]) == {"metrics_long_path", "prepared_events_path"}
+    assert set(named_frame["role"]) == {"output", "input", "source"}
 
     dashboard_namespace = dashboard_output_namespace(cfg=cfg)
     assert dashboard_namespace.qc_trace_summary_path == namespace.qc_trace_summary_path

@@ -83,7 +83,10 @@ the large-run notebooks.
    * - ``spatial_vtk.io.output_group``
      - Resolve a named workflow output group once, then use attribute access,
        ``status_frame()``, ``completion()``, and ``readiness()`` instead of
-       cluttering notebooks with repeated path variables.
+       cluttering notebooks with repeated path variables. ``readiness()`` can
+       receive registered output, input, and source path names such as
+       ``"metrics_long_path"`` and resolves them to configured paths before
+       building the status table.
    * - ``spatial_vtk.config.run_notebook_step_if_needed``
      - Display the readiness table, then run or submit a Python package
        workflow function only when work is needed.
