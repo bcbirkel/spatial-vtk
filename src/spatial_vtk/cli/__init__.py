@@ -2564,20 +2564,68 @@ def _cmd_visualize_sidecars_status(args: argparse.Namespace) -> int:
 def _cmd_list_registered_plots(args: argparse.Namespace) -> int:
     """List available registered plotting commands."""
 
+    rows: list[dict[str, str]] = []
     for name, spec in sorted(args.registry.items()):
-        input_note = f" --input <table>" if spec.primary_arg is not None and spec.input_key is None else ""
-        output_note = " --output <path>" if spec.output_key is None else ""
-        default_notes = []
-        if spec.input_key:
-            default_notes.append(f"default input from config: {spec.input_key}")
-        if spec.output_key:
-            default_notes.append(f"default output from config: {spec.output_key}")
-        for option, table_key in sorted((spec.table_alias_defaults or {}).items()):
-            table_arg = (spec.table_aliases or {}).get(option, option)
-            default_notes.append(f"default --{option.replace('_', '-')} ({table_arg}) from config: {table_key}")
-        default_note = f" ({'; '.join(default_notes)})" if default_notes else ""
-        print(f"{name}{input_note}{output_note}  # {spec.help}{default_note}")
+        rows.append(
+            {
+                "Command": name,
+                "Input": _registered_list_input(spec),
+                "Output": _registered_list_output(spec),
+                "Extra tables": _registered_list_extra_tables(spec),
+                "Description": spec.help,
+            }
+        )
+    _print_table(rows)
     return 0
+
+
+def _registered_list_input(spec: PlotCommand) -> str:
+    """Return a compact input status for ``svtk ... list`` output."""
+
+    if spec.primary_arg is None:
+        return "none"
+    if spec.input_key:
+        return f"config:{spec.input_key}"
+    return "required:--input"
+
+
+def _registered_list_output(spec: PlotCommand) -> str:
+    """Return a compact output status for ``svtk ... list`` output."""
+
+    if spec.output_key:
+        return f"config:{spec.output_key}"
+    return "required:--output"
+
+
+def _registered_list_extra_tables(spec: PlotCommand) -> str:
+    """Return compact extra-table defaults for ``svtk ... list`` output."""
+
+    notes: list[str] = []
+    for option, table_arg in sorted((spec.table_aliases or {}).items()):
+        table_key = (spec.table_alias_defaults or {}).get(option)
+        option_name = f"--{option.replace('_', '-')}"
+        if table_key:
+            notes.append(f"{option_name}({table_arg})=config:{table_key}")
+        else:
+            notes.append(f"{option_name}({table_arg})=optional")
+    return ", ".join(notes) if notes else "-"
+
+
+def _print_table(rows: list[dict[str, str]]) -> None:
+    """Print rows as a compact left-aligned table."""
+
+    if not rows:
+        return
+    columns = list(rows[0])
+    widths = {
+        column: max(len(column), *(len(str(row.get(column, ""))) for row in rows))
+        for column in columns
+    }
+    header = "  ".join(column.ljust(widths[column]) for column in columns)
+    print(header)
+    print("  ".join("-" * widths[column] for column in columns))
+    for row in rows:
+        print("  ".join(str(row.get(column, "")).ljust(widths[column]) for column in columns))
 
 
 def _cmd_registered_plot(args: argparse.Namespace) -> int:

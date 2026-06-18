@@ -23,6 +23,10 @@ Changelog
    ``distance_bin_correlations`` table by default, matching the large-run
    spatial figure context and avoiding an unnecessary raw ``--input`` path for
    standard spatial outputs.
+   Reworked ``svtk plot ... list``, ``svtk map ... list``, and
+   ``svtk visualize ... list`` output as compact tables that show whether each
+   command uses a ``config:<key>`` input/output, requires ``--input`` or
+   ``--output``, or has optional extra table arguments.
    Made ``svtk plot metrics winner-heatmap``, ``svtk plot spatial
    residual-correlation``, and ``svtk map spatial model-improvement`` use
    config-backed input table defaults, and updated the generated CLI reference

@@ -880,6 +880,9 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "Config-Backed Plotting" in plot_text
     assert "svtk plot metrics band-score-distribution --score-col log2_residual" in plot_text
     assert "registered figure keys for the selected plot" in plot_text
+    assert "svtk plot metrics list" in plot_text
+    assert "config:<key>" in plot_text
+    assert "required:--input" in plot_text
     assert "Config-Backed Dashboards" in dashboard_text
     assert "svtk dashboard metrics --config runs/spatial_vtk_config.yaml --auto-port --proxy-mode" in dashboard_text
     assert "--metrics-dataset-dir" in dashboard_text
@@ -3447,11 +3450,16 @@ def test_cli_visualize_context_wrapper(tmp_path):
 def test_cli_plot_list(capsys):
     assert main(["plot", "metrics", "list"]) == 0
     captured = capsys.readouterr()
+    assert "Command" in captured.out
+    assert "Input" in captured.out
+    assert "Output" in captured.out
     assert "residuals-vs-distance" in captured.out
-    assert "default input from config: metrics_long" in captured.out
+    assert "config:metrics_long" in captured.out
+    assert "period-spectra" in captured.out
+    assert "required:--input" in captured.out
     assert "model-metric-heatmap" in captured.out
-    assert "default output from config: band_score_distribution" in captured.out
-    assert "default output from config: model_metric_heatmap" in captured.out
+    assert "config:band_score_distribution" in captured.out
+    assert "config:model_metric_heatmap" in captured.out
     assert "from config from config" not in captured.out
 
 
@@ -3459,5 +3467,8 @@ def test_cli_spatial_plot_list_includes_pattern_similarity_defaults(capsys):
     assert main(["plot", "spatial", "list"]) == 0
     captured = capsys.readouterr()
     assert "pattern-similarity" in captured.out
-    assert "default input from config: pattern_similarity_station_anomalies" in captured.out
-    assert "default output from config: pattern_similarity" in captured.out
+    assert "config:pattern_similarity_station_anomalies" in captured.out
+    assert "config:pattern_similarity" in captured.out
+    assert "directional-correlogram" in captured.out
+    assert "config:distance_bin_correlations" in captured.out
+    assert "--fit(fit_df)=optional" in captured.out

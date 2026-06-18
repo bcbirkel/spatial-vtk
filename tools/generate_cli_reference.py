@@ -126,7 +126,7 @@ def _write_cli_index(
             "Plotting and Mapping Notes",
             "--------------------------",
             "",
-            "Most plotting and mapping commands can resolve their standard input tables and figure paths from the active config, so ``--input``/``--input-table`` and ``--output``/``--figure-output`` are optional for the usual tutorial/workflow outputs. Registered table defaults may be CSV or Parquet depending on the configured output key; commands that say they accept CSV or parquet read either suffix through the package table helpers.",
+            "Most plotting and mapping commands can resolve their standard input tables and figure paths from the active config, so ``--input``/``--input-table`` and ``--output``/``--figure-output`` are optional for the usual tutorial/workflow outputs. Registered table defaults may be CSV or Parquet depending on the configured output key; commands that say they accept CSV or parquet read either suffix through the package table helpers. Use ``svtk plot metrics list``, ``svtk plot spatial list``, or ``svtk map spatial list`` to see which commands use ``config:<key>`` defaults and which still require explicit input tables.",
             "",
             "Common figure controls such as ``--metric``, ``--passband``, ``--bin-label``, ``--component``, ``--components``, ``--model``, ``--mode``, ``--dep``, ``--indep``, ``--colorby``, ``--compare-to``, ``--value-col``, ``--score-col``, ``--scale``, ``--time-limit-s``, ``--max-records``, ``--max-traces``, ``--title``, ``--station-region``, ``--event-region``, ``--no-connect-points``, and sidecar options are first-class flags where they apply. Use ``--kwargs key=value`` only for advanced function-specific options that do not yet have curated flags. Prefer configured default tables and named table aliases such as ``--events`` or ``--stations`` when a command lists them; use advanced ``--table function_argument=path`` only for extra function tables that do not yet have named flags.",
             "",
@@ -200,7 +200,7 @@ def _command_page_notes(command_name: str) -> list[str]:
             "   svtk plot metrics band-score-distribution --score-col log2_residual",
             "   svtk plot metrics residuals-vs-distance --metric PGA --passband \"2-3 sec\" --score-col log2_residual",
             "",
-            "These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly.",
+            "These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk plot metrics list`` or ``svtk plot spatial list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:--input`` entries.",
             "",
         ]
     if command_name == "dashboard":

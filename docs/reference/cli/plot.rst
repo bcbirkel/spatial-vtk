@@ -14,7 +14,7 @@ If a config is active with ``svtk config set`` or passed with ``--config``, regi
    svtk plot metrics band-score-distribution --score-col log2_residual
    svtk plot metrics residuals-vs-distance --metric PGA --passband "2-3 sec" --score-col log2_residual
 
-These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly.
+These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk plot metrics list`` or ``svtk plot spatial list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:--input`` entries.
 
 Command Tree
 ------------
