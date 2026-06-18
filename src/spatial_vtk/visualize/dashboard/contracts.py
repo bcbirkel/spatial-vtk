@@ -205,6 +205,79 @@ def preview_dashboard_summary_tables(
     return previews
 
 
+def display_dashboard_output_previews(
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    nrows: int = 5,
+    include_metrics_long: bool = True,
+    missing: str = "skip",
+    display_fn: Any | None = None,
+) -> dict[str, pd.DataFrame]:
+    """Display bounded previews for dashboard-ready outputs.
+
+    The helper is intended for tutorial notebooks after dashboard datasets have
+    been built. It keeps cells from repeating summary-table path resolution,
+    ``metrics_long`` path checks, and ``display`` fallback handling. Only
+    bounded previews are read, so it is safe for large-run notebooks.
+
+    Parameters
+    ----------
+    cfg
+        Optional Spatial-VTK config. When omitted, the active config is used by
+        the output resolvers.
+    nrows
+        Maximum rows to read from each dashboard artifact.
+    include_metrics_long
+        Whether to include a bounded preview of the configured ``metrics_long``
+        source table alongside the dashboard summary tables.
+    missing
+        ``"skip"`` to print not-ready messages for missing artifacts, or
+        ``"raise"`` to fail on the first missing artifact.
+    display_fn
+        Optional display function. When omitted, IPython's ``display`` is used
+        when available, otherwise dataframes are printed as plain text.
+
+    Returns
+    -------
+    dict
+        Mapping from artifact label to preview dataframe.
+    """
+
+    if missing not in {"skip", "raise"}:
+        raise ValueError("missing must be 'skip' or 'raise'.")
+
+    from spatial_vtk.io.tables import read_bounded_table
+
+    display = _dashboard_display(display_fn)
+    previews: dict[str, pd.DataFrame] = {}
+
+    summary_previews = preview_dashboard_summary_tables(cfg=cfg, nrows=nrows, missing=missing)
+    if summary_previews:
+        for table_name, preview in summary_previews.items():
+            label = f"dashboard_summary:{table_name}"
+            previews[label] = preview
+            print(f"{label} preview:")
+            _display_dashboard_preview(preview, display)
+    else:
+        print("Dashboard summary tables are not ready yet.")
+
+    if include_metrics_long:
+        metrics_long_path = dashboard_output_paths(cfg=cfg, create_parent=False, include_summary_tables=False)[
+            "metrics_long_path"
+        ]
+        if metrics_long_path.exists():
+            preview = read_bounded_table(metrics_long_path, max_rows=nrows)
+            previews["metrics_long"] = preview
+            print("metrics_long preview:")
+            _display_dashboard_preview(preview, display)
+        elif missing == "raise":
+            raise FileNotFoundError(f"Dashboard source table does not exist: {metrics_long_path}")
+        else:
+            print(f"metrics_long table is not ready yet: {metrics_long_path}")
+
+    return previews
+
+
 def dashboard_summary_table_paths(
     summary_root: str | Path | None = None,
     *,
@@ -1366,6 +1439,30 @@ def _empty_dashboard_table(name: str) -> pd.DataFrame:
     return pd.DataFrame(columns=list(dict.fromkeys(columns)))
 
 
+def _dashboard_display(display_fn: Any | None = None) -> Any | None:
+    """Return a notebook display function when available."""
+
+    if display_fn is not None:
+        return display_fn
+    try:
+        from IPython.display import display as ipython_display
+
+        return ipython_display
+    except Exception:
+        return None
+
+
+def _display_dashboard_preview(preview: pd.DataFrame, display: Any | None) -> None:
+    """Display or print one dashboard preview table."""
+
+    if display is not None:
+        display(preview)
+    elif hasattr(preview, "to_string"):
+        print(preview.to_string(index=False))
+    else:
+        print(preview)
+
+
 def _require_columns(df: pd.DataFrame, columns: set[str], *, table_name: str) -> None:
     """Raise a clear error when required columns are missing."""
 
@@ -1396,6 +1493,7 @@ __all__ = [
     "dashboard_summary_table_contracts",
     "dashboard_summary_table_paths",
     "dashboard_map_readiness",
+    "display_dashboard_output_previews",
     "load_dashboard_summary_tables",
     "load_metric_long_table",
     "preview_dashboard_summary_tables",

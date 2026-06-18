@@ -576,6 +576,7 @@ def test_visualize_api_docs_use_public_entry_points():
     for helper in (
         "dashboard_summary_table_contracts",
         "dashboard_summary_table_paths",
+        "display_dashboard_output_previews",
         "dashboard_metric_dataset_readiness_frame",
         "dashboard_qc_trace_readiness_frame",
         "load_dashboard_metric_dataset",

@@ -190,6 +190,9 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
      - Read bounded previews of configured dashboard summary tables without
        loading full large-run dashboard inputs or resolving table paths in
        notebooks.
+   * - ``display_dashboard_output_previews``
+     - Display bounded dashboard summary and ``metrics_long`` previews from
+       configured paths in one notebook-safe package call.
    * - ``dashboard_metric_dataset_readiness_frame`` and
        ``dashboard_qc_trace_readiness_frame``
      - Inspect row-level metric dataset and QC trace-summary readiness without

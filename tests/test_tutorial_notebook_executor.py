@@ -1287,10 +1287,12 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     assert "display(dashboard_launch_result.status_frame())" in source
     assert "Launch options:" not in source
     assert "server_port=notebook_overrides" not in source
-    assert "dashboard_outputs = output_group(\"step_07_dashboards\", cfg=cfg)" in source
-    assert "dashboard_outputs.preview_table(" in source
-    assert "dashboard_outputs.qc_trace_summary_path" in source
-    assert "dashboard_outputs.metrics_long_path" in source
+    assert "display_dashboard_output_previews," in source
+    assert "display_dashboard_output_previews(" in source
+    assert "dashboard_outputs = output_group(\"step_07_dashboards\", cfg=cfg)" not in source
+    assert "dashboard_outputs.preview_table(" not in source
+    assert "dashboard_outputs.qc_trace_summary_path" not in source
+    assert "dashboard_outputs.metrics_long_path" not in source
     assert "metrics_path = dashboard_outputs.metrics_long_path" not in source
     assert "qc_trace_summary_path = dashboard_outputs.qc_trace_summary_path" not in source
     assert "dashboard_output_namespace" not in source
@@ -1318,7 +1320,8 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=OVERWRITE)" in source
     assert "run_notebook_step_if_needed(" in source
     assert "write_configured_dashboard_datasets," in source
-    assert "preview_dashboard_summary_tables," in source
+    assert "display_dashboard_output_previews," in source
+    assert "preview_dashboard_summary_tables," not in source
     assert '"spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets"' not in source
     assert "launch_configured_dashboards_from_notebook_settings(" in source
     assert "launch_configured_metrics_dashboard(" not in source
@@ -1338,11 +1341,11 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "Launch options:" not in source
     assert "server_port=dashboard_" not in source
     assert '"cfg": str(config_path)' in source
-    assert "dashboard_outputs = output_group(\"step_07_dashboards\")" in source
-    assert "dashboard_outputs.preview_table(" in source
+    assert "dashboard_outputs = output_group(\"step_07_dashboards\")" not in source
+    assert "dashboard_outputs.preview_table(" not in source
     assert "post_dashboard_readiness = dashboard_readiness_summary_frame(cfg=cfg, overwrite=False)" in source
     assert "post_dashboard_status = dashboard_output_status_frame(cfg=cfg)" in source
-    assert "preview_dashboard_summary_tables(cfg=cfg, nrows=PREVIEW_ROWS, missing=\"skip\")" in source
+    assert "display_dashboard_output_previews(cfg=cfg, nrows=PREVIEW_ROWS, missing=\"skip\")" in source
     assert "preview_output_table(" not in source
     assert "dashboard_output_namespace" not in source
     assert "dashboard_summary_root" not in source

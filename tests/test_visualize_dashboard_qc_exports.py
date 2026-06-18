@@ -6,6 +6,7 @@ import pytest
 from spatial_vtk.config import SpatialVTKConfig
 from spatial_vtk.visualize.dashboard import (
     build_dashboard_summaries,
+    display_dashboard_output_previews,
     dashboard_summary_input_columns,
     dashboard_row_level_columns,
     load_dashboard_metric_dataset,
@@ -524,6 +525,51 @@ outputs:
         preview_dashboard_summary_tables(summary_root, missing="raise")
     with pytest.raises(ValueError, match="missing must be"):
         preview_dashboard_summary_tables(summary_root, missing="ignore")
+
+
+def test_display_dashboard_output_previews_reads_bounded_dashboard_outputs(tmp_path, capsys) -> None:
+    """Dashboard notebook preview helper should avoid manual table path plumbing."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+  metrics_long: metrics_long.parquet
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    tables_root = tmp_path / "outputs" / "tables"
+    summary_root = tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
+    tables_root.mkdir(parents=True)
+    summary_root.mkdir(parents=True)
+    pd.DataFrame({"event_id": ["e1", "e2", "e3"], "metric": ["PGA", "PGV", "CAV"]}).to_parquet(
+        tables_root / "metrics_long.parquet",
+        index=False,
+    )
+    pd.DataFrame(
+        {
+            "model": ["m1", "m2", "m3"],
+            "metric": ["PGA", "PGV", "CAV"],
+            "band": ["1-2 sec", "2-3 sec", "3-5 sec"],
+            "n": [1, 2, 3],
+        }
+    ).to_parquet(summary_root / "model_metric_band.parquet", index=False)
+
+    displayed: list[pd.DataFrame] = []
+    previews = display_dashboard_output_previews(cfg=cfg, nrows=2, display_fn=displayed.append)
+
+    output = capsys.readouterr().out
+    assert "dashboard_summary:model_metric_band preview:" in output
+    assert "metrics_long preview:" in output
+    assert set(previews) == {"dashboard_summary:model_metric_band", "metrics_long"}
+    assert len(previews["dashboard_summary:model_metric_band"]) == 2
+    assert len(previews["metrics_long"]) == 2
+    assert [len(frame) for frame in displayed] == [2, 2]
 
 
 def test_qc_overview_filter_queue_and_html_helpers(tmp_path) -> None:

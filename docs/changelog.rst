@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-18
+   Added ``display_dashboard_output_previews()`` to the public dashboard API
+   and rewired Step 7 notebooks to use it for bounded dashboard summary and
+   ``metrics_long`` previews instead of notebook-local path checks.
    Added ``figure_subdir`` support to ``notebook_figure_settings()`` and
    rewired the large-run notebooks to use ``figure_subdir="metrics"`` for
    metric, spatial, and region figure suites. The large-run notebooks no
