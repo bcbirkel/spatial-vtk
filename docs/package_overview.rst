@@ -157,6 +157,21 @@ Plot and map tools:
 - station-bias maps, score maps, residual grids, and event residual maps
 - corridor and polygon-path maps
 
+Start with public helpers from ``spatial_vtk.spatial``:
+
+- ``run_spatial_statistics_workflow_from_config`` for standard spatial
+  statistics tables
+- ``run_spatial_derived_outputs_workflow_from_config`` for optional REDCAP,
+  block holdout, and pattern-similarity tables
+- ``run_geojson_region_summary_workflow_from_config`` and
+  ``run_boundary_corridor_workflow_from_config`` for GeoJSON and corridor
+  tables
+- ``add_geojson_metadata_to_metrics``, ``build_boundary_corridors``, and
+  ``build_pattern_similarity_station_anomalies`` for focused spatial
+  calculations
+- ``spatial_vtk.spatial.plot`` and ``spatial_vtk.spatial.map`` for spatial
+  figures and maps
+
 ``visualize``
 -------------
 

@@ -20,8 +20,8 @@ Planned behavior:
   or other project context.
 * Let users draw arbitrary polygons, corridor polygons, and line features.
 * Save drawn features to standard GeoJSON with clear feature properties so the
-  files can be used by ``spatial_vtk.spatial.calculate.geojson`` and
-  ``spatial_vtk.spatial.calculate.corridors``.
+  files can be used by the public ``spatial_vtk.spatial`` GeoJSON and corridor
+  helpers.
 * Keep drawing/editing dependencies optional so the core package remains usable
   in non-interactive or server environments.
 

@@ -202,6 +202,11 @@ def test_package_overview_points_to_public_workflow_helpers():
         "``plan_metric_tasks_from_config``",
         "``summarize_metric_snapshot_tasks_from_config``",
         "``write_metric_outputs_from_config``",
+        "Start with public helpers from ``spatial_vtk.spatial``",
+        "``run_spatial_statistics_workflow_from_config``",
+        "``run_geojson_region_summary_workflow_from_config``",
+        "``run_boundary_corridor_workflow_from_config``",
+        "``spatial_vtk.spatial.plot`` and ``spatial_vtk.spatial.map``",
     ]
     for snippet in required:
         assert snippet in text
@@ -211,9 +216,16 @@ def test_package_overview_points_to_public_workflow_helpers():
         "``io.preprocessing``",
         "``qc.build``",
         "``metrics.workflow`` for",
+        "``spatial.calculate``",
     )
     for snippet in forbidden:
         assert snippet not in text
+
+    future = (docs.parent / "future_features.rst").read_text(encoding="utf-8")
+    assert "public ``spatial_vtk.spatial`` GeoJSON and corridor" in future
+    assert "helpers." in future
+    assert "``spatial_vtk.spatial.calculate.geojson``" not in future
+    assert "``spatial_vtk.spatial.calculate.corridors``" not in future
 
 
 def test_spatial_plot_public_entry_point_is_lazy():
