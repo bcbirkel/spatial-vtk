@@ -51,6 +51,9 @@ Changelog
     previews without loading large plotting inputs.
   - Added standard notebook input/output loaders for QC summaries.
   - Added standard notebook input/output loaders for spatial summaries.
+  - Added standard Step 4 spatial output result methods for map and diagnostic
+    figure writing so notebooks no longer unpack spatial product tables or
+    output groups before plotting.
   - Added standard notebook input/output loaders for GeoJSON plotting.
   - Added standard notebook input/output loaders for Step 5 readiness checks.
 

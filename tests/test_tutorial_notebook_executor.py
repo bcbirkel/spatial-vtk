@@ -1295,12 +1295,18 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     assert "summarize_standard_spatial_products," not in source
     assert "spatial_outputs.summary_frame()" in source
     assert "spatial_outputs.station_bias_preview_frame()" in source
+    assert "spatial_tables = spatial_outputs.tables" not in source
+    assert "spatial_products = spatial_outputs.spatial_products" not in source
+    assert "spatial_metrics_run = spatial_outputs.metrics" not in source
+    assert "step_outputs = spatial_outputs.outputs" not in source
     assert "spatial_metric_product_frames(" not in source
     assert "spatial_metric_product_summary_frame(" not in source
     assert "station_bias_preview_frame(bias" not in source
     assert "for metric_name in spatial_metrics_run" not in source
-    assert "write_standard_spatial_map_figures(" in source
-    assert "write_standard_spatial_diagnostic_figures(" in source
+    assert "write_standard_spatial_map_figures(" not in source
+    assert "write_standard_spatial_diagnostic_figures(" not in source
+    assert "spatial_outputs.write_map_figures(" in source
+    assert "spatial_outputs.write_diagnostic_figures(" in source
     assert "spatial_map_result.status_frame()" in source
     assert "spatial_diagnostic_result.preview_frame()" in source
     assert "spatial_diagnostic_result.status_frame()" in source

@@ -174,7 +174,7 @@ Start with public helpers from ``spatial_vtk.spatial``:
 - ``load_standard_spatial_workflow_output_status`` for Step 4 large-run output
   status and bounded table previews without loading large tables
 - ``load_standard_spatial_workflow_outputs`` for standard Step 4 output-table
-  loading and per-metric product summaries
+  loading, per-metric product summaries, and standard Step 4 figure suites
 - ``run_spatial_derived_outputs_workflow_from_config`` for optional REDCAP,
   block holdout, and pattern-similarity tables
 - ``geojson_region_summary_readiness_from_config`` and

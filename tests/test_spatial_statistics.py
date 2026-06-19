@@ -49,6 +49,7 @@ from spatial_vtk.spatial.calculate.prepare_stats import (
 from spatial_vtk.spatial.calculate.workflow import spatial_statistics_output_paths
 from spatial_vtk.spatial.calculate.workflow import (
     StandardSpatialProductSummaryResult,
+    StandardSpatialWorkflowOutputResult,
     run_spatial_derived_outputs_workflow,
     run_spatial_derived_outputs_workflow_from_config,
     run_spatial_statistics_workflow,
@@ -1064,6 +1065,99 @@ def test_write_standard_spatial_diagnostic_figures_owns_step04_plot_loops(tmp_pa
     preview = result.preview_frame()
     assert {"spatial_correlation", "pca_explained_variance", "geology_contrast"} <= set(preview["artifact"])
     assert set(preview["metric"]) == {"PGA"}
+
+
+def test_standard_spatial_workflow_output_result_writes_figures(tmp_path: Path) -> None:
+    """The standard Step 4 result should own map and diagnostic figure wiring."""
+
+    spatial_products = {
+        "PGA": {
+            "station_bias": pd.DataFrame(
+                {"metric": ["PGA"], "station": ["STA"], "lon": [-118.0], "lat": [34.0], "mean_centered": [0.2]}
+            ),
+            "centered": pd.DataFrame(
+                {
+                    "metric": ["PGA"],
+                    "event_id": ["E1"],
+                    "station": ["STA"],
+                    "lon": [-118.0],
+                    "lat": [34.0],
+                    "field_centered": [0.1],
+                }
+            ),
+        }
+    }
+    spatial_tables = {
+        "metric_field": pd.DataFrame({"metric": ["PGA"], "field_value": [0.1]}),
+        "event_centered_residuals": spatial_products["PGA"]["centered"],
+        "station_bias": spatial_products["PGA"]["station_bias"],
+        "morans_i": pd.DataFrame({"metric": ["PGA"], "moran_i": [0.2]}),
+        "distance_bins": pd.DataFrame({"metric": ["PGA"], "distance_center_km": [10.0], "pair_count": [5]}),
+        "geology_contrasts": pd.DataFrame({"metric": ["PGA"], "contrast": ["basin-crust"]}),
+        "pca_station_scores": pd.DataFrame({"metric": ["PGA"], "station": ["STA"], "PC1_score": [0.5]}),
+        "pca_feature_loadings": pd.DataFrame({"metric": ["PGA"], "mode": ["PC1"], "feature": ["x"], "loading": [0.7]}),
+        "pca_explained_variance": pd.DataFrame({"metric": ["PGA"], "mode": ["PC1"], "variance_ratio": [0.8]}),
+    }
+    outputs = OutputGroup(
+        name="step_04_spatial",
+        paths={
+            "station_bias_figure_path": tmp_path / "figures" / "station_bias.png",
+            "residual_grid_figure_path": tmp_path / "figures" / "residual_grid.png",
+            "spatial_correlation_distance_figure_path": tmp_path / "figures" / "distance.png",
+            "pca_summary_figure_path": tmp_path / "figures" / "pca.png",
+            "geology_contrast_figure_path": tmp_path / "figures" / "geology.png",
+        },
+    )
+    result = StandardSpatialWorkflowOutputResult(
+        outputs=outputs,
+        tables=spatial_tables,
+        product_summary=StandardSpatialProductSummaryResult(
+            metrics=("PGA",),
+            spatial_products=spatial_products,
+            summary_rows=(),
+            station_bias_previews=(),
+        ),
+    )
+    seen: list[tuple[str, str, int]] = []
+
+    class Sidecars:
+        @staticmethod
+        def kwargs(**_kwargs) -> dict[str, object]:
+            return {}
+
+    class Settings:
+        add_basemap = False
+        showfig = False
+        pca_mode = "PC1"
+        sidecars = Sidecars()
+
+    def _fake_plot(name):
+        def _inner(frame: pd.DataFrame, *args, outpath, **_kwargs):
+            output = Path(outpath)
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(name, encoding="utf-8")
+            seen.append((name, output.name, len(frame)))
+
+        return _inner
+
+    map_result = result.write_map_figures(
+        Settings(),
+        station_bias_plot_func=_fake_plot("station_bias"),
+        residual_grid_plot_func=_fake_plot("residual_grid"),
+    )
+    diagnostic_result = result.write_diagnostic_figures(
+        Settings(),
+        site_metadata=pd.DataFrame({"station": ["STA"]}),
+        distance_plot_func=_fake_plot("distance"),
+        pca_plot_func=_fake_plot("pca"),
+        geology_plot_func=_fake_plot("geology"),
+    )
+
+    assert isinstance(map_result, StandardSpatialMapFigureResult)
+    assert isinstance(diagnostic_result, StandardSpatialDiagnosticFigureResult)
+    assert [item[0] for item in seen] == ["station_bias", "residual_grid", "distance", "pca", "geology"]
+    assert map_result.status_frame()["status"].tolist() == ["wrote", "wrote"]
+    assert diagnostic_result.status_frame()["status"].tolist() == ["wrote", "wrote", "wrote"]
 
 
 def test_spatial_pca_product_frames_selects_all_pca_products() -> None:

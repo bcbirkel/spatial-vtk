@@ -363,8 +363,9 @@ fallbacks, and bounded previews stay in package code.
        and ``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``
      - Lightweight Step 4 output status/previews for large-run driver cells,
        plus loaded spatial workflow tables, per-metric product summaries,
-       station-bias previews, and failure/status frames when the standard
-       tutorial needs in-memory products.
+       station-bias previews, standard map/diagnostic figure methods, and
+       failure/status frames when the standard tutorial needs in-memory
+       products.
    * - Step 5 GeoJSON regions and corridors
      - ``spatial_vtk.spatial.plot.load_standard_geojson_workflow_output_status``
        and ``spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs``

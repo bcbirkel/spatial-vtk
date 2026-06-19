@@ -408,6 +408,51 @@ class StandardSpatialWorkflowOutputResult:
         rows = [{"table": name, "rows": len(frame)} for name, frame in self.tables.items()]
         return pd.DataFrame(rows, columns=["table", "rows"])
 
+    def write_map_figures(self, settings: Any, **kwargs: Any) -> object:
+        """Write standard Step 4 map figures from loaded spatial products.
+
+        This keeps notebooks from unpacking ``spatial_products`` and output
+        handles before rendering the station-bias and residual-grid figure
+        suite. Additional keyword arguments are forwarded to
+        :func:`spatial_vtk.spatial.plot.write_standard_spatial_map_figures`.
+        """
+
+        from spatial_vtk.spatial.plot import write_standard_spatial_map_figures
+
+        return write_standard_spatial_map_figures(
+            self.spatial_products,
+            self.outputs,
+            settings,
+            **kwargs,
+        )
+
+    def write_diagnostic_figures(
+        self,
+        settings: Any,
+        *,
+        cfg: SpatialVTKConfig | None = None,
+        metrics: Sequence[str] | None = None,
+        **kwargs: Any,
+    ) -> object:
+        """Write standard Step 4 diagnostic figures from loaded spatial tables.
+
+        The result object owns the per-metric product mapping, loaded summary
+        tables, configured output handles, and default metric selection used by
+        the standard spatial-statistics tutorial.
+        """
+
+        from spatial_vtk.spatial.plot import write_standard_spatial_diagnostic_figures
+
+        return write_standard_spatial_diagnostic_figures(
+            self.spatial_products,
+            self.tables,
+            self.outputs,
+            settings,
+            cfg=cfg,
+            metrics=tuple(metrics or self.metrics),
+            **kwargs,
+        )
+
 
 @dataclass(frozen=True)
 class StandardSpatialWorkflowOutputStatusResult:
