@@ -130,6 +130,9 @@ Changelog
   - Normalized generated CLI help text for dashboard, inventory, and waveform
     path arguments so usage strings show ``PATH`` or ``DIR`` where
     appropriate.
+  - Normalized spatial workflow CLI help for summary, derived-output,
+    GeoJSON, and corridor commands so table/path options use ``PATH``/``DIR``
+    and output registry options use ``KEY``.
   - Added a top-level CLI missing-dependency message so source-checkout
     commands report the missing package and install command instead of a raw
     traceback.

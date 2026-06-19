@@ -989,10 +989,11 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--metrics",
         "--metrics-table",
         dest="metrics",
+        metavar="PATH",
         default=None,
         help="Metric rows table. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.",
     )
-    summaries.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    summaries.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file.")
     summaries.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     summaries.add_argument(
         "--metric",
@@ -1003,11 +1004,13 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--station-metadata",
         "--station-metadata-table",
         dest="station_metadata",
+        metavar="PATH",
         default=None,
         help="Prepared station metadata table for geology contrasts. Defaults to configured output table 'prepared_stations'.",
     )
     summaries.add_argument(
         "--checkpoint-dir",
+        metavar="DIR",
         default=None,
         help=(
             "Base directory for resumable per-metric checkpoints. Defaults to "
@@ -1035,6 +1038,7 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--metrics",
         "--metrics-table",
         dest="metrics",
+        metavar="PATH",
         default=None,
         help="Long metric rows table. Defaults to configured output table 'metrics_long'.",
     )
@@ -1042,6 +1046,7 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--metric-field",
         "--metric-field-table",
         dest="metric_field",
+        metavar="PATH",
         default=None,
         help="Metric-field table. Defaults to configured output table 'metric_field'.",
     )
@@ -1049,16 +1054,17 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--station-bias",
         "--station-bias-table",
         dest="station_bias",
+        metavar="PATH",
         default=None,
         help="Station-bias table. Defaults to configured output table 'station_bias'.",
     )
-    derived.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    derived.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file.")
     derived.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     derived.add_argument("--metric", default=None, help="Metric filter. Defaults to spatial.pattern_metric/spatial.metric; use 'all' for all available metrics.")
     derived.add_argument("--pattern-passband", default=None, help="Pattern-similarity passband filter. Defaults to spatial.pattern_passband; use 'all' for all passbands.")
     derived.add_argument("--pattern-component", default=None, help="Pattern-similarity component filter. Defaults to spatial.pattern_component; use 'all' for all components.")
     derived.add_argument("--pattern-model", default=None, help="Pattern-similarity model filter. Defaults to spatial.pattern_model; use 'all' for all models.")
-    derived.add_argument("--outputs", default="all", help="Comma-separated derived output keys to build. Defaults to all optional spatial derived outputs.")
+    derived.add_argument("--outputs", metavar="KEYS", default="all", help="Comma-separated derived output keys to build. Defaults to all optional spatial derived outputs.")
     derived.add_argument("--overwrite", action="store_true", help="Overwrite existing derived output tables.")
     derived.add_argument("--verbose", action="store_true", help="Print elapsed-time progress for Slurm logs.")
     derived.set_defaults(handler=_cmd_spatial_derived_outputs)
@@ -1072,6 +1078,7 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--metrics",
         "--metrics-table",
         dest="metrics",
+        metavar="PATH",
         default=None,
         help="Metric rows table. Defaults to configured output table 'metrics_long'.",
     )
@@ -1079,17 +1086,19 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--geojson",
         "--region-geojson",
         dest="geojson",
+        metavar="PATH",
         default=None,
         help="Region GeoJSON path. Defaults to paths.region_geojson.",
     )
-    geojson_summaries.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    geojson_summaries.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file.")
     geojson_summaries.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     geojson_summaries.add_argument("--selector", default="all", help="GeoJSON polygon selector. Defaults to all polygons.")
-    geojson_summaries.add_argument("--chunksize", type=int, default=1_000_000, help="Rows per metric-table chunk.")
+    geojson_summaries.add_argument("--chunksize", metavar="N", type=int, default=1_000_000, help="Rows per metric-table chunk.")
     geojson_summaries.add_argument(
         "--output-key",
         "--output-table-key",
         dest="output_key",
+        metavar="KEY",
         default="geojson_region_summaries",
         help="Registered output table key, not a filesystem path.",
     )
@@ -1105,6 +1114,7 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--geojson",
         "--region-geojson",
         dest="geojson",
+        metavar="PATH",
         default=None,
         help="Region GeoJSON path. Defaults to paths.region_geojson.",
     )
@@ -1112,6 +1122,7 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--stations",
         "--station-table",
         dest="stations",
+        metavar="PATH",
         default=None,
         help="Prepared station metadata table. Defaults to configured output table 'prepared_stations'.",
     )
@@ -1119,6 +1130,7 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--events",
         "--event-table",
         dest="events",
+        metavar="PATH",
         default=None,
         help="Prepared event metadata table. Defaults to configured output table 'prepared_events'.",
     )
@@ -1126,15 +1138,17 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--records",
         "--records-table",
         dest="records",
+        metavar="PATH",
         default=None,
         help="Event-station records used by max-records anchor strategies. Defaults to comparison_eligible_records when needed.",
     )
-    corridors.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    corridors.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file.")
     corridors.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     corridors.add_argument(
         "--output-key",
         "--output-table-key",
         dest="output_key",
+        metavar="KEY",
         default="corridors",
         help="Registered output table key, not a filesystem path.",
     )

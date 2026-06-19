@@ -144,6 +144,8 @@ def test_cli_spatial_summaries_help(capsys):
     assert "--metrics-table" in captured.out
     assert "--checkpoint-dir" in captured.out
     assert "--no-resume" in captured.out
+    assert "svtk spatial summaries [-h] [--metrics PATH] [--config PATH]" in captured.out
+    assert "[--station-metadata PATH] [--checkpoint-dir DIR]" in captured.out
     assert "default config is set with 'svtk config set'" in help_text
 
 
@@ -455,6 +457,9 @@ def test_cli_spatial_geojson_and_corridor_help(capsys):
     assert "--metrics-table" in geojson_help
     assert "--region-geojson" in geojson_help
     assert "--output-table-key" in geojson_help
+    assert "svtk spatial geojson-summaries [-h] [--metrics PATH] [--geojson PATH]" in geojson_help
+    assert "[--chunksize N]" in geojson_help
+    assert "[--output-key KEY]" in geojson_help
     assert "not a filesystem path" in geojson_help
     assert "--chunksize" in geojson_help
     assert "--selector" in geojson_help
@@ -471,6 +476,9 @@ def test_cli_spatial_geojson_and_corridor_help(capsys):
     assert "--station-table" in corridor_help
     assert "--event-table" in corridor_help
     assert "--output-table-key" in corridor_help
+    assert "svtk spatial corridors [-h] [--geojson PATH] [--stations PATH]" in corridor_help
+    assert "[--events PATH] [--records PATH] [--config PATH]" in corridor_help
+    assert "[--output-key KEY]" in corridor_help
 
 
 def test_cli_spatial_geojson_and_corridors_dispatch_configured_workflows(tmp_path, monkeypatch, capsys):
@@ -1369,8 +1377,14 @@ def test_generated_cli_reference_names_spatial_summary_aliases():
     assert "``--metrics``, ``--metrics-table``" in derived_section
     assert "``--metric-field``, ``--metric-field-table``" in derived_section
     assert "``--station-bias``, ``--station-bias-table``" in derived_section
+    assert "svtk spatial derived-outputs [-h] [--metrics PATH]" in derived_section
+    assert "[--metric-field PATH]" in derived_section
+    assert "[--station-bias PATH] [--config PATH]" in derived_section
+    assert "[--outputs KEYS]" in derived_section
     assert "``--metrics``, ``--metrics-table``" in summaries_section
     assert "``--station-metadata``, ``--station-metadata-table``" in summaries_section
+    assert "svtk spatial summaries [-h] [--metrics PATH] [--config PATH]" in summaries_section
+    assert "[--station-metadata PATH] [--checkpoint-dir DIR]" in summaries_section
     assert "metrics_long" in summaries_section
     assert "prepared_stations" in summaries_section
 
