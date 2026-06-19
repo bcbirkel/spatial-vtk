@@ -1559,6 +1559,10 @@ outputs:
         group.bind(names=("missing_path",))
     group_status = group.status_frame()
     assert "metrics_long_path" in set(group_status["name"])
+    metrics_long_status = group_status.loc[group_status["name"].eq("metrics_long_path")].iloc[0]
+    assert metrics_long_status["output_key"] == "metrics_long"
+    assert metrics_long_status["kind"] == "table"
+    assert bool(metrics_long_status["required"]) is True
     group_completion = group.completion()
     assert group_completion["complete"] is False
     assert "metrics_enriched_path" in group_completion["missing"]
@@ -1674,6 +1678,9 @@ outputs:
 
     status = output_group_status("step_04_spatial", cfg=cfg)
     assert status[0]["name"] == "metrics_long_path"
+    assert status[0]["output_key"] == "metrics_long"
+    assert status[0]["kind"] == "table"
+    assert status[0]["required"] is True
     assert status[0]["exists"] is True
     extra_input = tmp_path / "run_outputs" / "preprocessed_waveforms" / "metadata" / "trace_metadata.parquet"
     extra_input.parent.mkdir(parents=True, exist_ok=True)
@@ -1686,6 +1693,8 @@ outputs:
     extra_row = status_with_extra.loc[status_with_extra["name"].eq("trace_metadata_path")].iloc[0]
     assert extra_row["path"] == str(extra_input)
     assert bool(extra_row["exists"]) is True
+    assert "output_key" in status_with_extra.columns
+    assert pd.isna(extra_row["output_key"])
 
     write_output_table("metrics_long", pd.DataFrame({"metric": ["PGA"]}), cfg=cfg)
     completion = output_group_completion("step_03_metrics", cfg=cfg)
@@ -1701,6 +1710,7 @@ outputs:
     assert should_rebuild_paths(paths["metrics_long_path"], sources=[source]) is True
     status_frame = output_status_frame({"metrics_long_path": paths["metrics_long_path"]})
     assert list(status_frame["name"]) == ["metrics_long_path"]
+    assert "output_key" not in status_frame.columns
     namespace_status_frame = output_status_frame(
         types.SimpleNamespace(metrics_long_path=paths["metrics_long_path"], ignored=object())
     )

@@ -595,10 +595,12 @@ class OutputGroup:
     def status_frame(self, *, extra_paths=None):
         """Return a display-ready status frame for the group."""
 
-        paths = self.as_dict()
+        import pandas as pd
+
+        rows = _output_group_status_rows_from_paths(self.name, self.paths)
         if extra_paths is not None:
-            paths.update(_coerce_named_paths(extra_paths))
-        return output_status_frame(paths)
+            rows.extend(output_status_rows(_coerce_named_paths(extra_paths)))
+        return pd.DataFrame(rows)
 
     def completion(self, *, include_optional: bool = False) -> dict[str, object]:
         """Return completion counts for this group's currently resolved paths."""
@@ -1097,6 +1099,37 @@ def _validate_missing_policy(missing: str) -> None:
 UNCONFIGURED_PATH_LABEL = "<not configured>"
 
 
+def _output_group_status_rows_from_paths(group: str, paths: dict[str, Path]) -> list[dict[str, object]]:
+    """Return status rows for resolved output-group paths with artifact metadata."""
+
+    artifacts = tuple(artifact for artifact in output_group_artifacts(group) if artifact.name in paths)
+    return _output_group_status_rows_from_artifacts(artifacts, paths)
+
+
+def _output_group_status_rows_from_artifacts(
+    artifacts: Sequence[OutputArtifact],
+    paths: dict[str, Path],
+) -> list[dict[str, object]]:
+    """Return display status rows annotated with output registry metadata."""
+
+    status_paths = {
+        artifact.name: paths[artifact.name]
+        for artifact in artifacts
+    }
+    rows_by_name = {
+        str(row["name"]): row
+        for row in output_status_rows(status_paths)
+    }
+    rows: list[dict[str, object]] = []
+    for artifact in artifacts:
+        row = dict(rows_by_name[artifact.name])
+        row["output_key"] = artifact.key
+        row["kind"] = artifact.kind
+        row["required"] = artifact.required
+        rows.append(row)
+    return rows
+
+
 def output_status_rows(paths: dict[str, str | Path | None]) -> list[dict[str, object]]:
     """Return display-ready file status rows for named paths.
 
@@ -1194,10 +1227,22 @@ def output_group_status(
         Display-ready status rows.
     """
 
-    paths = output_group_paths(group, cfg=cfg, create_parent=create_parent, include_optional=include_optional)
+    artifacts = output_group_artifacts(group)
+    if not include_optional:
+        artifacts = tuple(artifact for artifact in artifacts if artifact.required)
+    paths = {
+        artifact.name: resolve_output_path(
+            artifact.key,
+            kind=artifact.kind,
+            cfg=cfg,
+            create_parent=create_parent,
+        )
+        for artifact in artifacts
+    }
+    rows = _output_group_status_rows_from_artifacts(artifacts, paths)
     if extra_paths is not None:
-        paths.update(_coerce_named_paths(extra_paths))
-    return output_status_rows(paths)
+        rows.extend(output_status_rows(_coerce_named_paths(extra_paths)))
+    return rows
 
 
 def output_group_status_frame(
