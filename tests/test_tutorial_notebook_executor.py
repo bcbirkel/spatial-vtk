@@ -1880,7 +1880,8 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert "write_metrics_slurm_script_from_config," in source
     assert "merge_metric_batches_from_config," in source
     assert "write_metric_outputs_from_config," in source
-    assert "step_outputs.display_table_previews(" in source
+    assert "metric_outputs.display_metrics_preview(nrows=PREVIEW_ROWS)" in source
+    assert "step_outputs.display_table_previews(" not in source
     assert "step_outputs.preview_table(" not in source
     assert "metrics_preview =" not in source
     assert "Metric output is not ready yet" not in source

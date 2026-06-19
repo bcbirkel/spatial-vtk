@@ -714,6 +714,8 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "older output table contains PSA rows repeated under passband labels" in text
     assert ".. autoclass:: spatial_vtk.metrics.workflow.StandardMetricWorkflowOutputResult" in text
     assert ".. autofunction:: spatial_vtk.metrics.workflow.load_standard_metric_workflow_outputs" in text
+    assert "bounded preview helpers such as" in text
+    assert "metrics_long`` display helper" in text
     assert "Advanced row-selection helper for scripts" in text
     assert "New notebook cells should prefer\n       ``write_large_run_metric_figure_suite_from_notebook_settings``" in text
     forbidden_modules = (

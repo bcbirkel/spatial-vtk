@@ -225,6 +225,9 @@ Changelog
   - Added a Step 2 QC compact-summary preview helper and updated the large-run
     QC notebook to preview summary products without touching full QC
     inventories.
+  - Updated the large-run metric notebook to preview ``metrics_long`` through
+    the package-owned metric workflow result helper instead of direct
+    output-group calls.
   - Reused the standard ingest output helper inside record-coverage
     readiness/build workflows so script and notebook path fallback behavior
     stays aligned.
