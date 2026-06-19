@@ -421,7 +421,28 @@ def main(argv: list[str] | None = None) -> int:
     if not hasattr(args, "handler"):
         parser.print_help()
         return 0
-    return int(args.handler(args) or 0)
+    try:
+        return int(args.handler(args) or 0)
+    except ModuleNotFoundError as exc:
+        print(_missing_cli_dependency_message(exc), file=sys.stderr)
+        return 2
+
+
+def _missing_cli_dependency_message(exc: ModuleNotFoundError) -> str:
+    """Return an actionable CLI message for missing runtime dependencies."""
+
+    if exc.name:
+        module_name = exc.name
+    elif "'" in str(exc):
+        module_name = str(exc).split("'")[1]
+    else:
+        module_name = str(exc)
+    return (
+        f"Missing Python dependency {module_name!r} required by this command. "
+        "Install Spatial-VTK with its runtime dependencies, for example: "
+        "python -m pip install -e \".[validation,docs,dashboard,notebooks,waveforms]\" "
+        "from a source checkout, or python -m pip install spatial-vtk for a published release."
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:

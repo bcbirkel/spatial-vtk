@@ -17,6 +17,27 @@ def test_cli_help(capsys):
     assert "Spatial validation tools" in captured.out
 
 
+def test_cli_main_reports_missing_runtime_dependency(monkeypatch, capsys):
+    """Missing runtime dependencies should produce install guidance, not a traceback."""
+
+    import argparse
+    import spatial_vtk.cli as cli
+
+    parser = argparse.ArgumentParser(prog="svtk")
+
+    def missing_dependency_handler(_args):
+        raise ModuleNotFoundError("No module named 'pandas'", name="pandas")
+
+    parser.set_defaults(handler=missing_dependency_handler)
+    monkeypatch.setattr(cli, "build_parser", lambda: parser)
+
+    assert cli.main([]) == 2
+    captured = capsys.readouterr()
+    assert "Missing Python dependency 'pandas' required by this command." in captured.err
+    assert "python -m pip install -e" in captured.err
+    assert "Traceback" not in captured.err
+
+
 def test_cli_version(capsys):
     assert main(["--version"]) == 0
     captured = capsys.readouterr()

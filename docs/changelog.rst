@@ -67,6 +67,9 @@ Changelog
     - Normalized generated CLI help text for config, input, output, manifest,
       dashboard, inventory, and waveform path arguments so usage strings show
       ``PATH`` or ``DIR`` where appropriate.
+    - Added a top-level CLI missing-dependency message so source-checkout
+      commands report the missing package and install command instead of a raw
+      traceback.
 
   - **Large-run resilience**
 
