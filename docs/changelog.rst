@@ -205,6 +205,8 @@ Changelog
     output-registry frames while preserving the existing ``path`` alias.
   - Added ``resolved_path`` to output status and readiness frames while keeping
     ``path`` as a compatibility alias.
+  - Added ``resolved_path`` to Step 5 GeoJSON plotting input and region-figure
+    status tables while preserving ``path`` for existing notebooks.
   - Reused the standard ingest output helper inside record-coverage
     readiness/build workflows so script and notebook path fallback behavior
     stays aligned.

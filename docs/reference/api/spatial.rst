@@ -317,6 +317,11 @@ schemas.
    catch legacy passband-scoped spectral rows that should be rebuilt as
    broadband PSA/FAS rows split by ``period_s``.
 
+GeoJSON and region plotting status tables use ``resolved_path`` as the clear
+notebook-facing path column while preserving ``path`` as a compatibility alias.
+Figure-specific result tables that already expose ``figure_path`` keep that
+descriptive column.
+
 .. autoclass:: spatial_vtk.spatial.plot.SpatialFigureContext
    :members:
 

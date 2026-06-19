@@ -2409,6 +2409,13 @@ def test_write_large_run_geojson_region_figures_from_outputs_orchestrates_notebo
     status = result.status_frame()
     assert status["artifact"].tolist() == ["geojson_overview", "corridor_map", "region_boxplot"]
     assert set(status["status"]) == {"wrote"}
+    assert "resolved_path" in status.columns
+    assert status.loc[status["artifact"].eq("geojson_overview"), "resolved_path"].iloc[0] == str(
+        outputs.geojson_polygons_map_path
+    )
+    assert status.loc[status["artifact"].eq("geojson_overview"), "path"].iloc[0] == status.loc[
+        status["artifact"].eq("geojson_overview"), "resolved_path"
+    ].iloc[0]
 
 
 def test_write_large_run_geojson_region_figures_from_notebook_settings_disabled(tmp_path: Path, monkeypatch) -> None:
@@ -2454,7 +2461,9 @@ def test_write_large_run_geojson_region_figures_from_notebook_settings_disabled(
     assert result.geojson_status == "disabled"
     assert result.corridor_status == "disabled"
     assert result.boxplot_result.status == "disabled"
-    assert result.status_frame()["status"].tolist() == ["disabled", "disabled", "disabled"]
+    status = result.status_frame()
+    assert status["status"].tolist() == ["disabled", "disabled", "disabled"]
+    assert status["resolved_path"].isna().all()
 
 
 def test_write_large_run_geojson_region_figures_from_notebook_settings_delegates_options(

@@ -1374,23 +1374,29 @@ class RegionFigureResult:
     def status_frame(self) -> pd.DataFrame:
         """Return a compact notebook status table for region figure outputs."""
 
+        geojson_path = None if self.geojson_overview_path is None else str(self.geojson_overview_path)
+        corridor_path = None if self.corridor_map_path is None else str(self.corridor_map_path)
+        boxplot_path = None if self.boxplot_result.figure_path is None else str(self.boxplot_result.figure_path)
         rows = [
             {
                 "artifact": "geojson_overview",
                 "status": self.geojson_status,
-                "path": None if self.geojson_overview_path is None else str(self.geojson_overview_path),
+                "resolved_path": geojson_path,
+                "path": geojson_path,
                 "message": self._message_for("geojson_overview"),
             },
             {
                 "artifact": "corridor_map",
                 "status": self.corridor_status,
-                "path": None if self.corridor_map_path is None else str(self.corridor_map_path),
+                "resolved_path": corridor_path,
+                "path": corridor_path,
                 "message": self._message_for("corridor_map"),
             },
             {
                 "artifact": "region_boxplot",
                 "status": self.boxplot_result.status,
-                "path": None if self.boxplot_result.figure_path is None else str(self.boxplot_result.figure_path),
+                "resolved_path": boxplot_path,
+                "path": boxplot_path,
                 "message": self.boxplot_result.message,
             },
         ]
@@ -1492,25 +1498,28 @@ class StandardGeoJSONPlottingInputResult:
     def status_frame(self) -> pd.DataFrame:
         """Return a compact row-count/path table for loaded Step 5 inputs."""
 
+        geojson_path = str(self.geojson_path)
         rows = [
             {
                 "artifact": "region_geojson",
                 "status": "ready" if self.geojson_path.exists() else "missing",
                 "rows": None,
-                "path": str(self.geojson_path),
+                "resolved_path": geojson_path,
+                "path": geojson_path,
             },
-            {"artifact": "metrics", "status": "loaded", "rows": len(self.metrics), "path": None},
-            {"artifact": "stations", "status": "loaded", "rows": len(self.stations), "path": None},
-            {"artifact": "events", "status": "loaded", "rows": len(self.events), "path": None},
-            {"artifact": "event_stations", "status": "loaded", "rows": len(self.event_stations), "path": None},
+            {"artifact": "metrics", "status": "loaded", "rows": len(self.metrics), "resolved_path": None, "path": None},
+            {"artifact": "stations", "status": "loaded", "rows": len(self.stations), "resolved_path": None, "path": None},
+            {"artifact": "events", "status": "loaded", "rows": len(self.events), "resolved_path": None, "path": None},
+            {"artifact": "event_stations", "status": "loaded", "rows": len(self.event_stations), "resolved_path": None, "path": None},
             {
                 "artifact": "comparison_eligible",
                 "status": "loaded",
                 "rows": len(self.comparison_eligible),
+                "resolved_path": None,
                 "path": None,
             },
         ]
-        return pd.DataFrame(rows, columns=["artifact", "status", "rows", "path"])
+        return pd.DataFrame(rows, columns=["artifact", "status", "rows", "resolved_path", "path"])
 
 
 @dataclass(frozen=True)

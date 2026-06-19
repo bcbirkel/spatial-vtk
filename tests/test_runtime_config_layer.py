@@ -2116,6 +2116,9 @@ outputs:
         "comparison_eligible",
     }
     assert status.loc[status["artifact"].eq("region_geojson"), "status"].iloc[0] == "ready"
+    region_row = status.loc[status["artifact"].eq("region_geojson")].iloc[0]
+    assert region_row["resolved_path"] == str(region_geojson)
+    assert region_row["path"] == region_row["resolved_path"]
     clear_active_config()
 
 
