@@ -47,16 +47,20 @@ Public helpers exposed by ``spatial_vtk.visualize``:
      - Preview the bounded station/component order used by station-event
        waveform map panels without notebook-local sorting and slicing.
    * - ``write_waveform_comparison_from_outputs``
-     - Render observed/synthetic trace-comparison figures
-       from configured event-station and comparison-eligible outputs without
-       loading full QC inventories in the notebook.
+     - Lower-level script helper for observed/synthetic trace-comparison
+       figures when output paths and plotting keyword arguments are already
+       resolved. It reads bounded comparison-eligible rows from configured
+       event-station and comparison-eligible outputs without loading full QC
+       inventories.
    * - ``write_waveform_comparison_from_notebook_settings``
-     - Render the Step 6 waveform-comparison figure using
-       ``notebook_figure_settings(...)`` for the render gate, sidecar controls,
-       component, passband, and display settings.
+     - Notebook-facing Step 2/6 waveform-comparison wrapper. It owns the
+       ``notebook_figure_settings(...)`` render gate, sidecar controls,
+       component, passband, and display settings before delegating to the
+       lower-level output writer.
    * - ``write_large_run_waveform_comparison_from_outputs``
-     - Compatibility alias for older large-run notebooks that used the
-       original helper name.
+     - Backward-compatible alias for older large-run notebooks that used the
+       original helper name. New notebook cells should prefer
+       ``write_waveform_comparison_from_notebook_settings``.
    * - ``finish_figure_with_sidecar`` and ``write_figure_row_sidecar``
      - Save figures with optional row-provenance CSV/JSON sidecars.
    * - ``figure_sidecar_status_frame`` and
@@ -121,6 +125,12 @@ Waveform Figures
 
 Use ``spatial_vtk.visualize.waveforms`` as the public entry point for waveform
 comparison, overlay, record-section, and station-event waveform figures.
+Notebook cells should use
+``write_waveform_comparison_from_notebook_settings`` when rendering the
+standard or large-run comparison figure because that wrapper owns the render
+gate, sidecar options, and notebook figure settings. Scripts can use
+``write_waveform_comparison_from_outputs`` when they have already resolved the
+output group, filters, and plotting keyword arguments.
 
 .. automodule:: spatial_vtk.visualize.waveforms
    :members:

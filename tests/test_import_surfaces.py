@@ -898,6 +898,11 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "SVTK_QC_DASHBOARD_MAX_ROWS" in text
     assert "Maximum trace-summary rows" in text
     assert "Public helpers exposed by ``spatial_vtk.visualize.dashboard``" in text
+    assert "Lower-level script helper for observed/synthetic trace-comparison" in text
+    assert "Notebook-facing Step 2/6 waveform-comparison wrapper" in text
+    assert "Backward-compatible alias for older large-run notebooks" in text
+    assert "Notebook cells should use\n``write_waveform_comparison_from_notebook_settings``" in text
+    assert "Scripts can use\n``write_waveform_comparison_from_outputs``" in text
     for helper in (
         "dashboard_summary_table_contracts",
         "dashboard_summary_table_paths",
