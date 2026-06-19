@@ -21,6 +21,9 @@ Changelog
 
   - Added a lightweight standard Step 2 QC output loader for large-run setup
     cells that need QC output status without loading prepared metadata tables.
+  - Added standard Step 2 QC input-result helpers for skipped-step fallback
+    payloads, compact output summaries, and bounded QC inventory/summary
+    previews.
   - Added config-backed Step 2 QC readiness helpers for full QC inventory,
     observed/synthetic overlap inventory, and compact QC summary workflows.
   - Added ``overwrite`` and readiness-message pass-throughs to Step 2 QC

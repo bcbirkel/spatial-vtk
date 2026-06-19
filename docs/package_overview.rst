@@ -95,8 +95,8 @@ Common tasks:
 
 Start with public helpers from ``spatial_vtk.qc``:
 
-- ``load_standard_qc_inputs`` for standard Step 2 prepared metadata and QC
-  output-group loading
+- ``load_standard_qc_inputs`` for standard Step 2 prepared metadata, QC
+  output-group loading, skipped-step results, and bounded preview display
 - ``load_standard_qc_workflow_outputs`` for large-run Step 2 QC output status
   without eager prepared-table reads
 - ``run_qc_inventory_from_config`` for full waveform and metric QC inventories

@@ -2173,10 +2173,14 @@ outputs:
     )
     cfg = SpatialVTKConfig.from_file(config_path).activate()
     ingest_outputs = output_group("step_01_ingest", cfg=cfg)
+    qc_outputs = output_group("step_02_qc", cfg=cfg)
     for path, text in (
         (ingest_outputs.prepared_stations_path, "station,lat,lon\nSTA,0,0\n"),
         (ingest_outputs.prepared_events_path, "event_id,lat,lon\nE1,0,0\n"),
         (ingest_outputs.event_station_path, "event_id,station\nE1,STA\n"),
+        (qc_outputs.qc_inventory_path, "event_id,station,qc_status\nE1,STA,pass\n"),
+        (qc_outputs.comparison_eligible_path, "event_id,station\nE1,STA\n"),
+        (qc_outputs.manual_queue_path, "event_id,station,reason\nE1,STA,review\n"),
     ):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
@@ -2190,6 +2194,19 @@ outputs:
     status = inputs.status_frame()
     assert set(status["table"]) == {"stations", "events", "event_stations"}
     assert status["rows"].tolist() == [1, 1, 1]
+    displayed: list[pd.DataFrame] = []
+    inventory_preview = inputs.display_inventory_preview(nrows=1, display_fn=displayed.append)
+    assert inventory_preview["qc_inventory"].to_dict("records") == [
+        {"event_id": "E1", "station": "STA", "qc_status": "pass"}
+    ]
+    summary_preview = inputs.display_summary_previews(nrows=1, display_fn=displayed.append)
+    assert summary_preview["comparison_eligible"].to_dict("records") == [{"event_id": "E1", "station": "STA"}]
+    compact = inputs.compact_output_summary_frame().set_index("artifact")
+    assert bool(compact.loc["comparison_eligible", "exists"]) is True
+    readiness = output_readiness((qc_outputs.qc_inventory_path,), current_message="current")
+    fallback = inputs.step_result(readiness, qc_inventory_path=qc_outputs.qc_inventory_path)
+    assert fallback["reused"] is True
+    assert fallback["qc_inventory_path"] == str(qc_outputs.qc_inventory_path)
     clear_active_config()
 
 

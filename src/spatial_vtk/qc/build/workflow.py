@@ -103,6 +103,7 @@ class StandardQCInputResult:
     events: pd.DataFrame
     event_stations: pd.DataFrame
     outputs: object
+    cfg: SpatialVTKConfig | None = None
 
     def status_frame(self) -> pd.DataFrame:
         """Return a compact row-count table for loaded QC inputs."""
@@ -113,6 +114,77 @@ class StandardQCInputResult:
             {"table": "event_stations", "rows": len(self.event_stations)},
         ]
         return pd.DataFrame(rows, columns=["table", "rows"])
+
+    def step_result(self, readiness: OutputReadiness, **values: Any) -> dict[str, Any]:
+        """Return a JSON-friendly skipped-step result with path values encoded.
+
+        Standard Step 2 notebooks use this as the fallback when
+        ``run_notebook_step_if_needed(...)`` determines that a QC workflow is
+        current. Keeping the fallback here avoids notebook-local result
+        dictionaries and preserves the same payload shape as
+        :func:`spatial_vtk.config.notebook_step_result`.
+        """
+
+        from spatial_vtk.config import notebook_step_result
+
+        return notebook_step_result(readiness, **values)
+
+    def display_inventory_preview(
+        self,
+        *,
+        nrows: int = 5,
+        display_fn: Any | None = None,
+    ) -> dict[str, object]:
+        """Display a bounded preview of the configured metric QC inventory."""
+
+        return self.outputs.display_table_previews(
+            "qc_inventory",
+            cfg=self.cfg,
+            nrows=nrows,
+            missing="skip",
+            display_fn=display_fn,
+        )
+
+    def display_summary_previews(
+        self,
+        *,
+        nrows: int = 5,
+        display_fn: Any | None = None,
+    ) -> dict[str, object]:
+        """Display bounded previews of compact QC summary handoff tables."""
+
+        return self.outputs.display_table_previews(
+            {
+                "comparison_eligible": "comparison_eligible_path",
+                "manual_review_queue": "manual_queue_path",
+            },
+            cfg=self.cfg,
+            nrows=nrows,
+            missing="skip",
+            display_fn=display_fn,
+        )
+
+    def compact_output_summary_frame(self) -> pd.DataFrame:
+        """Return configured compact QC output paths for notebook display."""
+
+        rows = [
+            ("qc_inventory_overlap", "qc_inventory_overlap_path"),
+            ("comparison_eligible", "comparison_eligible_path"),
+            ("manual_review_queue", "manual_queue_path"),
+        ]
+        records = []
+        for artifact, path_name in rows:
+            path = getattr(self.outputs, path_name, None)
+            path_text = None if path is None else str(path)
+            records.append(
+                {
+                    "artifact": artifact,
+                    "resolved_path": path_text,
+                    "path": path_text,
+                    "exists": bool(path is not None and Path(path).exists()),
+                }
+            )
+        return pd.DataFrame(records, columns=["artifact", "resolved_path", "path", "exists"])
 
 
 @dataclass(frozen=True)
@@ -219,6 +291,7 @@ def load_standard_qc_inputs(
         events=ingest_tables["events"],
         event_stations=ingest_tables["event_stations"],
         outputs=qc_outputs,
+        cfg=cfg,
     )
 
 

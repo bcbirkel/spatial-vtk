@@ -694,7 +694,8 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "write_qc_inventory_overlap_from_config(" in standard_text
     assert "run_qc_summary_workflow_from_config(" in standard_text
     assert "run_notebook_step_if_needed(" in standard_text
-    assert "notebook_step_result(" in standard_text
+    assert "notebook_step_result(" not in standard_text
+    assert "qc_inputs.step_result(" in standard_text
     assert "qc_readiness = qc_inventory_readiness_from_config(" in standard_text
     assert "overlap_readiness = qc_overlap_readiness_from_config(" in standard_text
     assert "summary_readiness = qc_summary_readiness_from_config(" in standard_text
@@ -715,12 +716,17 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "qc_figure_result.status_frame()" in standard_text
     assert '"availability_path"' in standard_text
     assert "qc_figure_tables = qc_outputs.load_tables(" not in standard_text
-    assert "qc_outputs.display_table_previews(" in standard_text
+    assert "qc_outputs.display_table_previews(" not in standard_text
+    assert "qc_inputs.display_inventory_preview(nrows=5)" in standard_text
     assert "qc_outputs.preview_table(" not in standard_text
-    assert "qc_outputs.display_path_table_previews(" in standard_text
+    assert "qc_outputs.display_path_table_previews(" not in standard_text
+    assert "qc_inputs.display_summary_previews(nrows=5)" in standard_text
+    assert "qc_inputs.compact_output_summary_frame()" in standard_text
     assert "qc_outputs.preview_path_table(" not in standard_text
     assert "comparison_eligible_preview =" not in standard_text
-    assert "qc_outputs.manual_queue_path" in standard_text
+    assert "manual-review queue:" not in standard_text
+    assert "QC overlap inventory:" not in standard_text
+    assert "comparison-eligible records:" not in standard_text
     assert "plot_retention_summary(" not in standard_text
     assert "plot_event_station_retention_heatmap(" not in standard_text
     assert "plot_post_qc_station_event_map(" not in standard_text
