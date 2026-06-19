@@ -173,6 +173,10 @@ and user-facing ``artifact_role`` / ``artifact_label`` columns, plus
 available as an alias. Notebooks can display "metrics dashboard row dataset" or
 "station_rollup dashboard summary table" instead of relying on lower-level
 output registry names.
+Dashboard readiness also reports ``value_families`` and
+``nonempty_value_families`` so notebooks and dashboard Data Status tabs can
+distinguish residual, GOF score, observed, synthetic, and generic metric-value
+coverage before opening plots that depend on one family.
 The compact dashboard readiness summary carries the same
 ``artifact_role`` / ``artifact_label`` and ``resolved_path`` columns, and the
 metrics/QC dashboard Data Status tabs show those labels while keeping

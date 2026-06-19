@@ -28,6 +28,7 @@ from spatial_vtk.visualize.dashboard import (
     dashboard_summary_readiness_frame,
     dashboard_summary_table_contracts,
     dashboard_summary_table_paths,
+    dashboard_value_column_families,
     display_table,
     filter_dashboard_metrics,
     filter_qc_dashboard_rows,
@@ -265,6 +266,7 @@ outputs:
     assert ready_dataset_status["file_count"] == 1
     assert ready_dataset_status["row_count"] == 1
     assert ready_dataset_status["value_columns"] == "log2_residual"
+    assert ready_dataset_status["value_families"] == "residual"
     assert ready_dataset_status["suggested_action"] == ""
 
     model_status = status.loc[status["name"].eq("model_metric_band_summary_path")].iloc[0]
@@ -272,6 +274,8 @@ outputs:
     assert model_status["ready"] is True
     assert model_status["readiness"] == "ready"
     assert model_status["nonempty_value_columns"] == "med_log2_residual"
+    assert model_status["value_families"] == "residual"
+    assert model_status["nonempty_value_families"] == "residual"
 
     missing_status = status.loc[status["name"].eq("path_hex_summary_path")].iloc[0]
     assert missing_status["ready"] is False
@@ -301,10 +305,12 @@ outputs:
 
     summary_display = _select_readiness_columns(summary, SUMMARY_READINESS_DISPLAY_COLUMNS)
     assert "artifact_label" in summary_display.columns
+    assert "nonempty_value_families" in summary_display.columns
     assert "suggested_action" in summary_display.columns
     assert "station_rollup dashboard summary table" in set(summary_display["artifact_label"])
     metric_display = _select_readiness_columns(status_with_dataset, METRIC_DATASET_READINESS_DISPLAY_COLUMNS)
     assert "artifact_label" in metric_display.columns
+    assert "value_families" in metric_display.columns
     assert "suggested_action" in metric_display.columns
     assert "metrics dashboard row dataset" in set(metric_display["artifact_label"])
     assert "QC trace-summary table is missing" in qc_status["message"]
@@ -376,6 +382,25 @@ def test_dashboard_summary_readiness_uses_chunked_projected_scans(tmp_path, monk
     assert station["ready"] is True
     assert station["map_ready"] is True
     assert station["nonempty_value_columns"] == "med_log2_residual"
+    assert station["nonempty_value_families"] == "residual"
+
+
+def test_dashboard_value_column_families_are_schema_level_status():
+    """Dashboard readiness should expose which metric value families are present."""
+
+    families = dashboard_value_column_families(
+        [
+            "value_obs",
+            "mean_value_syn",
+            "med_log2_residual",
+            "anderson_2004_gof",
+            "med_score",
+            "median_value",
+            "not_a_metric",
+        ]
+    )
+
+    assert families == ("residual", "score/gof", "observed", "synthetic", "metric value")
 
 
 def test_filtered_dashboard_summary_loader_filters_without_full_table_read(tmp_path, monkeypatch):

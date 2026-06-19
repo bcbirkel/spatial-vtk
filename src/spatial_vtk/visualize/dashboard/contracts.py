@@ -51,6 +51,7 @@ MAP_COORDINATE_CANDIDATES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = 
     "station_rollup": (("sta_lon", "station_lon", "lon", "longitude"), ("sta_lat", "station_lat", "lat", "latitude")),
     "event_rollup": (("event_lon", "lon", "longitude"), ("event_lat", "lat", "latitude")),
 }
+VALUE_COLUMN_FAMILY_ORDER: tuple[str, ...] = ("residual", "score/gof", "observed", "synthetic", "metric value")
 
 
 @dataclass(frozen=True)
@@ -553,6 +554,8 @@ def dashboard_readiness_summary_frame(
         "row_count",
         "file_count",
         "map_ready",
+        "value_families",
+        "nonempty_value_families",
         "message",
         "map_message",
         "suggested_action",
@@ -584,6 +587,7 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
         "file_count": 0,
         "row_count": "",
         "value_columns": "",
+        "value_families": "",
         "message": f"Dashboard metric dataset root is missing: {path}",
         "suggested_action": _dashboard_suggested_action({"name": "metrics_dashboard_root", "readiness": "missing"}),
     }
@@ -619,8 +623,10 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
         )
         return pd.DataFrame([row])
     value_columns = _dashboard_value_columns(pd.DataFrame(columns=columns))
+    value_families = dashboard_value_column_families(value_columns)
     row["row_count"] = row_count
     row["value_columns"] = ", ".join(value_columns)
+    row["value_families"] = ", ".join(value_families)
     if row_count <= 0:
         row.update(
             {
@@ -920,6 +926,8 @@ def _dashboard_summary_row(row: dict[str, object], *, item_type: str) -> dict[st
         "row_count": _blank_if_missing(row.get("row_count")),
         "file_count": _blank_if_missing(row.get("file_count")),
         "map_ready": _blank_if_missing(row.get("map_ready")),
+        "value_families": _blank_if_missing(row.get("value_families")),
+        "nonempty_value_families": _blank_if_missing(row.get("nonempty_value_families")),
         "message": message,
         "map_message": map_message,
         "suggested_action": _blank_if_missing(row.get("suggested_action")),
@@ -996,6 +1004,8 @@ def _attach_dashboard_readiness(status: pd.DataFrame) -> pd.DataFrame:
         "missing_map_columns",
         "value_columns",
         "nonempty_value_columns",
+        "value_families",
+        "nonempty_value_families",
         "message",
         "map_message",
         "suggested_action",
@@ -1023,6 +1033,7 @@ def _attach_metric_dataset_readiness(status: pd.DataFrame) -> pd.DataFrame:
         "row_count": pd.NA,
         "file_count": pd.NA,
         "value_columns": pd.NA,
+        "value_families": pd.NA,
         "message": pd.NA,
         "suggested_action": pd.NA,
         "dashboard_table": "",
@@ -1042,7 +1053,7 @@ def _attach_metric_dataset_readiness(status: pd.DataFrame) -> pd.DataFrame:
     out.loc[mask, "purpose"] = "Partitioned or single-file long metric dataset used by all metrics dashboard tabs."
     for index, row in out.loc[mask].iterrows():
         readiness = dashboard_metric_dataset_readiness_frame(Path(str(row["path"]))).iloc[0].to_dict()
-        for key in ("ready", "readiness", "file_count", "row_count", "value_columns", "message", "suggested_action"):
+        for key in ("ready", "readiness", "file_count", "row_count", "value_columns", "value_families", "message", "suggested_action"):
             out.at[index, key] = readiness.get(key, pd.NA)
     return out
 
@@ -1150,6 +1161,8 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
             "missing_columns": ", ".join(sorted(required)),
             "value_columns": "",
             "nonempty_value_columns": "",
+            "value_families": "",
+            "nonempty_value_families": "",
             "message": f"{table_name} summary file is missing.",
             "suggested_action": _dashboard_suggested_action(
                 {"dashboard_table": table_name, "artifact_role": "dashboard_summary_table", "readiness": "missing"}
@@ -1166,6 +1179,8 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
             "missing_columns": "",
             "value_columns": "",
             "nonempty_value_columns": "",
+            "value_families": "",
+            "nonempty_value_families": "",
             "message": f"{table_name} summary file could not be read: {exc}",
             "suggested_action": _dashboard_suggested_action(
                 {"dashboard_table": table_name, "artifact_role": "dashboard_summary_table", "readiness": "read_error"}
@@ -1174,12 +1189,14 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
     missing = sorted(column for column in required if column not in columns)
     schema_table = pd.DataFrame(columns=columns)
     value_columns = _dashboard_value_columns(schema_table)
+    value_families = dashboard_value_column_families(value_columns)
     map_status = _dashboard_map_readiness_from_path(path, table_name, columns)
     nonempty_value_columns = (
         []
         if missing or row_count == 0
         else _nonempty_dashboard_value_columns_from_path(path, value_columns)
     )
+    nonempty_value_families = dashboard_value_column_families(nonempty_value_columns)
     if missing:
         readiness = "missing_columns"
         ready = False
@@ -1205,6 +1222,8 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
         "missing_map_columns": map_status["missing_columns"],
         "value_columns": ", ".join(value_columns),
         "nonempty_value_columns": ", ".join(nonempty_value_columns),
+        "value_families": ", ".join(value_families),
+        "nonempty_value_families": ", ".join(nonempty_value_families),
         "message": message,
         "map_message": map_status["message"],
         "suggested_action": _dashboard_suggested_action(
@@ -1499,6 +1518,33 @@ def dashboard_map_readiness(table: pd.DataFrame, table_name: str) -> dict[str, o
     return {"ready": True, "missing_columns": "", "message": f"{table_name} map coordinates are ready."}
 
 
+def dashboard_value_column_families(columns: Iterable[object]) -> tuple[str, ...]:
+    """Return dashboard value families represented by one column collection.
+
+    The readiness tables use this bounded schema-level check to tell users
+    whether a dashboard dataset contains residuals, GOF scores, observed
+    values, synthetic values, or only generic metric values without loading the
+    full large-run table.
+    """
+
+    families: set[str] = set()
+    for raw_column in columns:
+        column = str(raw_column or "").strip().lower()
+        if not column:
+            continue
+        if "value_obs" in column:
+            families.add("observed")
+        elif "value_syn" in column:
+            families.add("synthetic")
+        elif "gof" in column or "score" in column:
+            families.add("score/gof")
+        elif "residual" in column or "resid" in column:
+            families.add("residual")
+        elif column == "value" or column.endswith("_value"):
+            families.add("metric value")
+    return tuple(family for family in VALUE_COLUMN_FAMILY_ORDER if family in families)
+
+
 def _dashboard_value_columns(table: pd.DataFrame) -> list[str]:
     """Return dashboard value columns without importing labels at module load."""
 
@@ -1694,6 +1740,7 @@ __all__ = [
     "dashboard_summary_readiness_frame",
     "dashboard_summary_table_contracts",
     "dashboard_summary_table_paths",
+    "dashboard_value_column_families",
     "dashboard_map_readiness",
     "display_dashboard_output_previews",
     "load_filtered_dashboard_summary_table",

@@ -202,6 +202,9 @@ Changelog
     frames while preserving ``trace_summary_table`` for existing code.
   - Added ``resolved_path`` to dashboard output status, readiness summary, and
     written-output frames while preserving ``path`` for existing notebooks.
+  - Added dashboard value-family readiness metadata so status tables show
+    whether row-level and summary datasets contain residuals, GOF scores,
+    observed values, synthetic values, or only generic metric values.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 
