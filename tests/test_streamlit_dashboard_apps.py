@@ -592,6 +592,8 @@ def test_qc_dashboard_loaded_row_summary_reports_filtered_scope():
     assert summary.loc["loaded", "events"] == 2
     assert summary.loc["filtered", "events"] == 1
     assert summary.loc["filtered", "stations"] == 1
+    assert summary.loc["loaded", "message"] == "All available trace-summary rows are loaded."
+    assert summary.loc["filtered", "message"] == "Ready for current filters."
 
 
 def test_load_trace_qc_summary_respects_csv_row_limit(tmp_path):
@@ -633,8 +635,22 @@ def test_qc_dashboard_status_reports_loaded_subset():
     assert summary.loc["loaded", "table_rows"] == 3
     assert summary.loc["loaded", "row_limit"] == 2
     assert bool(summary.loc["loaded", "loaded_subset"]) is True
+    assert "Loaded 2 of 3" in summary.loc["loaded", "message"]
+    assert summary.loc["filtered", "message"] == "Ready for current filters."
     assert message is not None
     assert "Loaded 2 of 3" in message
+
+
+def test_qc_dashboard_status_reports_empty_filtered_scope():
+    """QC Data Status should explain when filters remove all loaded rows."""
+
+    loaded = _qc_rows()
+    filtered = loaded.iloc[0:0].copy()
+
+    summary = _qc_loaded_row_summary(loaded, filtered).set_index("scope")
+
+    assert summary.loc["filtered", "trace_rows"] == 0
+    assert summary.loc["filtered", "message"] == "No trace QC rows match the selected filters."
 
 
 def test_dashboard_summaries_do_not_require_residual_column():

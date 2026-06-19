@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-18
+   Added explicit QC dashboard Data Status messages for loaded and filtered
+   trace-summary scopes, including bounded-prefix loads and filters that remove
+   all currently loaded rows.
    Updated the metrics dashboard Data Status current-filter summary so skipped
    optional summary tables report their readiness cause, such as a missing
    station or path summary, instead of a generic "no rows match" message.

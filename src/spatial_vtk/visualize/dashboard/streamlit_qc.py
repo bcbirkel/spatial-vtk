@@ -273,6 +273,7 @@ def _qc_loaded_row_summary(
     table_rows = _qc_readiness_row_count(readiness)
     row_limit_text = "all" if row_limit is None else int(row_limit)
     loaded_subset = bool(table_rows is not None and len(loaded) < table_rows)
+    subset_message = _qc_row_limit_message(readiness, loaded, row_limit)
     rows = [
         {
             "scope": "loaded",
@@ -284,6 +285,7 @@ def _qc_loaded_row_summary(
             "events": _nunique_if_present(loaded, "event_id"),
             "stations": _nunique_if_present(loaded, "station"),
             "components": _nunique_if_present(loaded, "component"),
+            "message": subset_message or "All available trace-summary rows are loaded.",
         },
         {
             "scope": "filtered",
@@ -295,6 +297,7 @@ def _qc_loaded_row_summary(
             "events": _nunique_if_present(filtered, "event_id"),
             "stations": _nunique_if_present(filtered, "station"),
             "components": _nunique_if_present(filtered, "component"),
+            "message": _empty_rows_message("trace QC") if filtered.empty else "Ready for current filters.",
         },
     ]
     return pd.DataFrame(rows)
