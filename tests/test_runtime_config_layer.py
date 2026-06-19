@@ -110,6 +110,7 @@ from spatial_vtk.qc import (
     qc_summary_readiness_from_config,
 )
 from spatial_vtk.metrics import (
+    load_standard_metric_workflow_outputs,
     metric_inventories_readiness_from_config,
     metric_manifest_readiness_from_config,
 )
@@ -1972,7 +1973,10 @@ outputs:
     )
     cfg = SpatialVTKConfig.from_file(config_path).activate()
     metric_outputs = output_group("step_03_metrics", cfg=cfg)
+    standard_metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg, load_task_estimate=False)
     preprocessed_outputs = preprocessed_waveform_output_group(config=cfg, create_parent=True)
+
+    assert standard_metric_outputs.metrics_long_path == metric_outputs.metrics_long_path
 
     inventories_missing = metric_inventories_readiness_from_config(config_path=config_path)
     assert inventories_missing.reason == "missing_inputs"

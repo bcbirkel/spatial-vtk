@@ -1873,8 +1873,9 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert "build_metric_waveform_inventories_from_config," in source
     assert "load_standard_metric_workflow_outputs," in source
     assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg, load_task_estimate=False)" in source
-    assert "step_outputs = metric_outputs.outputs" in source
-    assert "trace_metadata_path = metric_outputs.trace_metadata_path" in source
+    assert "metric_outputs.metrics_long_path" in source
+    assert "step_outputs = metric_outputs.outputs" not in source
+    assert "trace_metadata_path = metric_outputs.trace_metadata_path" not in source
     assert "display(metric_outputs.status_frame())" in source
     assert 'step_outputs = output_group("step_03_metrics")' not in source
     assert "preprocessed_waveform_metadata_paths(config=cfg)" not in source
@@ -2139,7 +2140,8 @@ def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:
             assert "preview_output_table" not in source
             assert "preview_table" not in source
         else:
-            assert "trace_metadata_path = metric_outputs.trace_metadata_path" in source
+            assert "metric_outputs.metrics_long_path" in source
+            assert "trace_metadata_path = metric_outputs.trace_metadata_path" not in source
             assert "preprocessed_waveform_metadata_paths(config=cfg)" not in source
         assert re.search(r"(?<!waveform_)preprocessing_manifest\.csv", source) is None
         assert 'outputs_root / "preprocessed_waveforms"' not in source

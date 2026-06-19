@@ -165,9 +165,13 @@ the large-run notebooks.
      - Resolve a named workflow output group once, then use attribute access,
        ``bind()``, ``status_frame()``, ``completion()``, and ``readiness()``
        instead of cluttering notebooks with repeated path variables.
-       Prefer direct attributes such as ``step_outputs.metrics_long_path`` when
-       a cell needs a resolved path; ``bind()`` remains available for older
-       notebooks but should not be the default pattern for new tutorial cells.
+       Prefer direct attributes when a cell needs a resolved path; standard
+       result objects expose common paths directly, such as
+       ``metric_outputs.metrics_long_path`` for Step 3 metric figures, while
+       lower-level output groups expose paths such as
+       ``step_outputs.metrics_long_path``. ``bind()`` remains available for
+       older notebooks but should not be the default pattern for new tutorial
+       cells.
        ``readiness()`` can receive registered output, input, and source path
        names such as ``"metrics_long_path"`` and resolves them to configured
        paths before building the status table. ``load_table()`` and

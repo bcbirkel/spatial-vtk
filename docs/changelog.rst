@@ -69,6 +69,10 @@ Changelog
 
   - Rewired the large-run Step 3 notebook to resolve metric outputs and trace
     metadata dependencies through the standard metric output helper.
+  - Rewired the large-run Step 3 metric figure cell to use
+    ``metric_outputs.metrics_long_path`` directly instead of exposing a
+    lower-level ``step_outputs`` object and trace-metadata path variables in
+    the notebook.
   - Rewired the large-run Step 2 notebook to resolve QC output status through
     the lightweight QC workflow output helper.
   - Rewired standard and large-run Step 2 notebooks to use package-owned QC

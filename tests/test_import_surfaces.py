@@ -1645,10 +1645,10 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "from spatial_vtk.config.notebook import" not in workflows
     assert "exact signatures, return contracts, and supporting public helpers" in workflows
     assert "exact signatures and lower-level utilities" not in workflows
-    assert "Prefer direct attributes such as ``step_outputs.metrics_long_path``" in workflows
+    assert "``metric_outputs.metrics_long_path`` for Step 3 metric figures" in workflows
+    assert "``bind()`` remains available for older notebooks" in workflows
     assert "Use ``figure_path()`` for figure artifacts" in workflows
     assert "``figure_dir / \"name.png\"``" in workflows
-    assert "``bind()`` remains available for older notebooks" in workflows
     assert "Legacy helpers such as ``output_group_namespace()`` return only path attributes" in workflows
     assert "New workflow notebooks should prefer the standard\n       ``load_standard_*`` helpers" in workflows
     assert "use ``output_group()`` directly\n       only when a new reusable standard helper does not exist yet" in workflows

@@ -25,6 +25,12 @@ class StandardMetricWorkflowOutputResult:
         )
         return self.outputs.status_frame(extra_paths=extra_paths)
 
+    @property
+    def metrics_long_path(self) -> object:
+        """Return the configured ``metrics_long`` table path."""
+
+        return self.outputs.metrics_long_path
+
     def display_task_previews(
         self,
         *,
