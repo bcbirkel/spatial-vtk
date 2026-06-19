@@ -120,7 +120,7 @@ svtk plot metrics band-score-distribution
                                                  [--output PATH]
                                                  [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
-                                                 [--table [TABLE]]
+                                                 [--table [ARG=PATH]]
                                                  [--no-table]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
@@ -151,7 +151,7 @@ svtk plot metrics band-score-distribution
                                                  [--title TITLE]
                                                  [--write-sidecar]
                                                  [--sidecar-rows SIDECAR_ROWS]
-                                                 [--sidecar-dir SIDECAR_DIR]
+                                                 [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -327,7 +327,7 @@ svtk plot metrics boxplot
 
    svtk plot metrics boxplot [-h] [--input PATH] [--output PATH]
                                  [--config PATH] [--run-scenario RUN_SCENARIO]
-                                 [--table [TABLE]] [--no-table]
+                                 [--table [ARG=PATH]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
                                  [--passband PASSBAND] [--bin-label BIN_LABEL]
@@ -347,7 +347,7 @@ svtk plot metrics boxplot
                                  [--max-traces MAX_TRACES] [--title TITLE]
                                  [--write-sidecar]
                                  [--sidecar-rows SIDECAR_ROWS]
-                                 [--sidecar-dir SIDECAR_DIR]
+                                 [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -524,7 +524,8 @@ svtk plot metrics example-metric-pairs
    svtk plot metrics example-metric-pairs [-h] [--output PATH]
                                               [--config PATH]
                                               [--run-scenario RUN_SCENARIO]
-                                              [--table [TABLE]] [--no-table]
+                                              [--table [ARG=PATH]]
+                                              [--no-table]
                                               [--kwargs [KWARGS ...]]
                                               [--kwargs-json KWARGS_JSON]
                                               [--metric METRIC]
@@ -553,7 +554,7 @@ svtk plot metrics example-metric-pairs
                                               [--title TITLE]
                                               [--write-sidecar]
                                               [--sidecar-rows SIDECAR_ROWS]
-                                              [--sidecar-dir SIDECAR_DIR]
+                                              [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -726,7 +727,7 @@ svtk plot metrics geology-boxplot
    svtk plot metrics geology-boxplot [-h] [--input PATH] [--output PATH]
                                          [--config PATH]
                                          [--run-scenario RUN_SCENARIO]
-                                         [--table [TABLE]] [--no-table]
+                                         [--table [ARG=PATH]] [--no-table]
                                          [--kwargs [KWARGS ...]]
                                          [--kwargs-json KWARGS_JSON]
                                          [--metric METRIC]
@@ -752,7 +753,7 @@ svtk plot metrics geology-boxplot
                                          [--max-traces MAX_TRACES]
                                          [--title TITLE] [--write-sidecar]
                                          [--sidecar-rows SIDECAR_ROWS]
-                                         [--sidecar-dir SIDECAR_DIR]
+                                         [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -928,7 +929,7 @@ svtk plot metrics heatmap
 
    svtk plot metrics heatmap [-h] [--input PATH] [--output PATH]
                                  [--config PATH] [--run-scenario RUN_SCENARIO]
-                                 [--table [TABLE]] [--no-table]
+                                 [--table [ARG=PATH]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
                                  [--passband PASSBAND] [--bin-label BIN_LABEL]
@@ -948,7 +949,7 @@ svtk plot metrics heatmap
                                  [--max-traces MAX_TRACES] [--title TITLE]
                                  [--write-sidecar]
                                  [--sidecar-rows SIDECAR_ROWS]
-                                 [--sidecar-dir SIDECAR_DIR]
+                                 [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -1151,7 +1152,7 @@ svtk plot metrics metric-trend
    svtk plot metrics metric-trend [-h] [--input PATH] [--output PATH]
                                       [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
-                                      [--table [TABLE]] [--no-table]
+                                      [--table [ARG=PATH]] [--no-table]
                                       [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
                                       [--metric METRIC] [--passband PASSBAND]
@@ -1174,7 +1175,7 @@ svtk plot metrics metric-trend
                                       [--max-traces MAX_TRACES]
                                       [--title TITLE] [--write-sidecar]
                                       [--sidecar-rows SIDECAR_ROWS]
-                                      [--sidecar-dir SIDECAR_DIR]
+                                      [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -1351,7 +1352,8 @@ svtk plot metrics model-metric-heatmap
    svtk plot metrics model-metric-heatmap [-h] [--input PATH]
                                               [--output PATH] [--config PATH]
                                               [--run-scenario RUN_SCENARIO]
-                                              [--table [TABLE]] [--no-table]
+                                              [--table [ARG=PATH]]
+                                              [--no-table]
                                               [--kwargs [KWARGS ...]]
                                               [--kwargs-json KWARGS_JSON]
                                               [--metric METRIC]
@@ -1380,7 +1382,7 @@ svtk plot metrics model-metric-heatmap
                                               [--title TITLE]
                                               [--write-sidecar]
                                               [--sidecar-rows SIDECAR_ROWS]
-                                              [--sidecar-dir SIDECAR_DIR]
+                                              [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -1557,7 +1559,7 @@ svtk plot metrics period-spectra
    svtk plot metrics period-spectra [-h] [--input PATH] [--output PATH]
                                         [--config PATH]
                                         [--run-scenario RUN_SCENARIO]
-                                        [--table [TABLE]] [--no-table]
+                                        [--table [ARG=PATH]] [--no-table]
                                         [--kwargs [KWARGS ...]]
                                         [--kwargs-json KWARGS_JSON]
                                         [--metric METRIC]
@@ -1583,7 +1585,7 @@ svtk plot metrics period-spectra
                                         [--max-traces MAX_TRACES]
                                         [--title TITLE] [--write-sidecar]
                                         [--sidecar-rows SIDECAR_ROWS]
-                                        [--sidecar-dir SIDECAR_DIR]
+                                        [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -1760,7 +1762,7 @@ svtk plot metrics period-spectrogram
    svtk plot metrics period-spectrogram [-h] [--input PATH]
                                             [--output PATH] [--config PATH]
                                             [--run-scenario RUN_SCENARIO]
-                                            [--table [TABLE]] [--no-table]
+                                            [--table [ARG=PATH]] [--no-table]
                                             [--kwargs [KWARGS ...]]
                                             [--kwargs-json KWARGS_JSON]
                                             [--metric METRIC]
@@ -1788,7 +1790,7 @@ svtk plot metrics period-spectrogram
                                             [--max-traces MAX_TRACES]
                                             [--title TITLE] [--write-sidecar]
                                             [--sidecar-rows SIDECAR_ROWS]
-                                            [--sidecar-dir SIDECAR_DIR]
+                                            [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -1966,7 +1968,7 @@ svtk plot metrics phase-delay-vs-distance
                                                  [--output PATH]
                                                  [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
-                                                 [--table [TABLE]]
+                                                 [--table [ARG=PATH]]
                                                  [--no-table]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
@@ -1997,7 +1999,7 @@ svtk plot metrics phase-delay-vs-distance
                                                  [--title TITLE]
                                                  [--write-sidecar]
                                                  [--sidecar-rows SIDECAR_ROWS]
-                                                 [--sidecar-dir SIDECAR_DIR]
+                                                 [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -2174,7 +2176,7 @@ svtk plot metrics psa-period-curve
    svtk plot metrics psa-period-curve [-h] [--input PATH] [--output PATH]
                                           [--config PATH]
                                           [--run-scenario RUN_SCENARIO]
-                                          [--table [TABLE]] [--no-table]
+                                          [--table [ARG=PATH]] [--no-table]
                                           [--kwargs [KWARGS ...]]
                                           [--kwargs-json KWARGS_JSON]
                                           [--metric METRIC]
@@ -2200,7 +2202,7 @@ svtk plot metrics psa-period-curve
                                           [--max-traces MAX_TRACES]
                                           [--title TITLE] [--write-sidecar]
                                           [--sidecar-rows SIDECAR_ROWS]
-                                          [--sidecar-dir SIDECAR_DIR]
+                                          [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -2377,7 +2379,7 @@ svtk plot metrics residuals-vs-depth
    svtk plot metrics residuals-vs-depth [-h] [--input PATH]
                                             [--output PATH] [--config PATH]
                                             [--run-scenario RUN_SCENARIO]
-                                            [--table [TABLE]] [--no-table]
+                                            [--table [ARG=PATH]] [--no-table]
                                             [--kwargs [KWARGS ...]]
                                             [--kwargs-json KWARGS_JSON]
                                             [--metric METRIC]
@@ -2405,7 +2407,7 @@ svtk plot metrics residuals-vs-depth
                                             [--max-traces MAX_TRACES]
                                             [--title TITLE] [--write-sidecar]
                                             [--sidecar-rows SIDECAR_ROWS]
-                                            [--sidecar-dir SIDECAR_DIR]
+                                            [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -2582,7 +2584,8 @@ svtk plot metrics residuals-vs-distance
    svtk plot metrics residuals-vs-distance [-h] [--input PATH]
                                                [--output PATH] [--config PATH]
                                                [--run-scenario RUN_SCENARIO]
-                                               [--table [TABLE]] [--no-table]
+                                               [--table [ARG=PATH]]
+                                               [--no-table]
                                                [--kwargs [KWARGS ...]]
                                                [--kwargs-json KWARGS_JSON]
                                                [--metric METRIC]
@@ -2611,7 +2614,7 @@ svtk plot metrics residuals-vs-distance
                                                [--title TITLE]
                                                [--write-sidecar]
                                                [--sidecar-rows SIDECAR_ROWS]
-                                               [--sidecar-dir SIDECAR_DIR]
+                                               [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -2788,7 +2791,7 @@ svtk plot metrics scatterplot
    svtk plot metrics scatterplot [-h] [--input PATH] [--output PATH]
                                      [--config PATH]
                                      [--run-scenario RUN_SCENARIO]
-                                     [--table [TABLE]] [--no-table]
+                                     [--table [ARG=PATH]] [--no-table]
                                      [--kwargs [KWARGS ...]]
                                      [--kwargs-json KWARGS_JSON]
                                      [--metric METRIC] [--passband PASSBAND]
@@ -2811,7 +2814,7 @@ svtk plot metrics scatterplot
                                      [--max-traces MAX_TRACES] [--title TITLE]
                                      [--write-sidecar]
                                      [--sidecar-rows SIDECAR_ROWS]
-                                     [--sidecar-dir SIDECAR_DIR]
+                                     [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -2988,7 +2991,7 @@ svtk plot metrics score-trends
    svtk plot metrics score-trends [-h] [--input PATH] [--output PATH]
                                       [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
-                                      [--table [TABLE]] [--no-table]
+                                      [--table [ARG=PATH]] [--no-table]
                                       [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
                                       [--metric METRIC] [--passband PASSBAND]
@@ -3011,7 +3014,7 @@ svtk plot metrics score-trends
                                       [--max-traces MAX_TRACES]
                                       [--title TITLE] [--write-sidecar]
                                       [--sidecar-rows SIDECAR_ROWS]
-                                      [--sidecar-dir SIDECAR_DIR]
+                                      [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -3188,7 +3191,7 @@ svtk plot metrics vs30-scatter
    svtk plot metrics vs30-scatter [-h] [--input PATH] [--output PATH]
                                       [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
-                                      [--table [TABLE]] [--no-table]
+                                      [--table [ARG=PATH]] [--no-table]
                                       [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
                                       [--metric METRIC] [--passband PASSBAND]
@@ -3211,7 +3214,7 @@ svtk plot metrics vs30-scatter
                                       [--max-traces MAX_TRACES]
                                       [--title TITLE] [--write-sidecar]
                                       [--sidecar-rows SIDECAR_ROWS]
-                                      [--sidecar-dir SIDECAR_DIR]
+                                      [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -3388,7 +3391,7 @@ svtk plot metrics winner-heatmap
    svtk plot metrics winner-heatmap [-h] [--input PATH] [--output PATH]
                                         [--config PATH]
                                         [--run-scenario RUN_SCENARIO]
-                                        [--table [TABLE]] [--no-table]
+                                        [--table [ARG=PATH]] [--no-table]
                                         [--kwargs [KWARGS ...]]
                                         [--kwargs-json KWARGS_JSON]
                                         [--metric METRIC]
@@ -3414,7 +3417,7 @@ svtk plot metrics winner-heatmap
                                         [--max-traces MAX_TRACES]
                                         [--title TITLE] [--write-sidecar]
                                         [--sidecar-rows SIDECAR_ROWS]
-                                        [--sidecar-dir SIDECAR_DIR]
+                                        [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -3619,7 +3622,7 @@ svtk plot spatial azimuthal-residuals
    svtk plot spatial azimuthal-residuals [-h] [--input PATH]
                                              [--output PATH] [--config PATH]
                                              [--run-scenario RUN_SCENARIO]
-                                             [--table [TABLE]] [--no-table]
+                                             [--table [ARG=PATH]] [--no-table]
                                              [--kwargs [KWARGS ...]]
                                              [--kwargs-json KWARGS_JSON]
                                              [--metric METRIC]
@@ -3647,7 +3650,7 @@ svtk plot spatial azimuthal-residuals
                                              [--max-traces MAX_TRACES]
                                              [--title TITLE] [--write-sidecar]
                                              [--sidecar-rows SIDECAR_ROWS]
-                                             [--sidecar-dir SIDECAR_DIR]
+                                             [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -3824,7 +3827,8 @@ svtk plot spatial block-holdout-scatter
    svtk plot spatial block-holdout-scatter [-h] [--input PATH]
                                                [--output PATH] [--config PATH]
                                                [--run-scenario RUN_SCENARIO]
-                                               [--table [TABLE]] [--no-table]
+                                               [--table [ARG=PATH]]
+                                               [--no-table]
                                                [--kwargs [KWARGS ...]]
                                                [--kwargs-json KWARGS_JSON]
                                                [--metric METRIC]
@@ -3853,7 +3857,7 @@ svtk plot spatial block-holdout-scatter
                                                [--title TITLE]
                                                [--write-sidecar]
                                                [--sidecar-rows SIDECAR_ROWS]
-                                               [--sidecar-dir SIDECAR_DIR]
+                                               [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -4031,7 +4035,7 @@ svtk plot spatial cluster-feature-heatmap
                                                  [--output PATH]
                                                  [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
-                                                 [--table [TABLE]]
+                                                 [--table [ARG=PATH]]
                                                  [--no-table]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
@@ -4062,7 +4066,7 @@ svtk plot spatial cluster-feature-heatmap
                                                  [--title TITLE]
                                                  [--write-sidecar]
                                                  [--sidecar-rows SIDECAR_ROWS]
-                                                 [--sidecar-dir SIDECAR_DIR]
+                                                 [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -4240,7 +4244,7 @@ svtk plot spatial cluster-solution-scores
                                                  [--output PATH]
                                                  [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
-                                                 [--table [TABLE]]
+                                                 [--table [ARG=PATH]]
                                                  [--no-table]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
@@ -4271,7 +4275,7 @@ svtk plot spatial cluster-solution-scores
                                                  [--title TITLE]
                                                  [--write-sidecar]
                                                  [--sidecar-rows SIDECAR_ROWS]
-                                                 [--sidecar-dir SIDECAR_DIR]
+                                                 [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -4448,7 +4452,7 @@ svtk plot spatial correlogram
    svtk plot spatial correlogram [-h] [--input PATH] [--output PATH]
                                      [--config PATH]
                                      [--run-scenario RUN_SCENARIO]
-                                     [--table [TABLE]] [--no-table]
+                                     [--table [ARG=PATH]] [--no-table]
                                      [--kwargs [KWARGS ...]]
                                      [--kwargs-json KWARGS_JSON]
                                      [--metric METRIC] [--passband PASSBAND]
@@ -4471,7 +4475,7 @@ svtk plot spatial correlogram
                                      [--max-traces MAX_TRACES] [--title TITLE]
                                      [--write-sidecar]
                                      [--sidecar-rows SIDECAR_ROWS]
-                                     [--sidecar-dir SIDECAR_DIR]
+                                     [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -4649,7 +4653,7 @@ svtk plot spatial directional-correlogram
                                                  [--output PATH]
                                                  [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
-                                                 [--table [TABLE]]
+                                                 [--table [ARG=PATH]]
                                                  [--no-table]
                                                  [--kwargs [KWARGS ...]]
                                                  [--kwargs-json KWARGS_JSON]
@@ -4679,8 +4683,8 @@ svtk plot spatial directional-correlogram
                                                  [--title TITLE]
                                                  [--write-sidecar]
                                                  [--sidecar-rows SIDECAR_ROWS]
-                                                 [--sidecar-dir SIDECAR_DIR]
-                                                 [--fit FIT]
+                                                 [--sidecar-dir DIR]
+                                                 [--fit PATH]
 
 .. rubric:: Parameters
 
@@ -4883,7 +4887,7 @@ svtk plot spatial path-bin-summary
    svtk plot spatial path-bin-summary [-h] [--input PATH] [--output PATH]
                                           [--config PATH]
                                           [--run-scenario RUN_SCENARIO]
-                                          [--table [TABLE]] [--no-table]
+                                          [--table [ARG=PATH]] [--no-table]
                                           [--kwargs [KWARGS ...]]
                                           [--kwargs-json KWARGS_JSON]
                                           [--metric METRIC]
@@ -4909,7 +4913,7 @@ svtk plot spatial path-bin-summary
                                           [--max-traces MAX_TRACES]
                                           [--title TITLE] [--write-sidecar]
                                           [--sidecar-rows SIDECAR_ROWS]
-                                          [--sidecar-dir SIDECAR_DIR]
+                                          [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -5086,7 +5090,7 @@ svtk plot spatial pattern-similarity
    svtk plot spatial pattern-similarity [-h] [--input PATH]
                                             [--output PATH] [--config PATH]
                                             [--run-scenario RUN_SCENARIO]
-                                            [--table [TABLE]] [--no-table]
+                                            [--table [ARG=PATH]] [--no-table]
                                             [--kwargs [KWARGS ...]]
                                             [--kwargs-json KWARGS_JSON]
                                             [--metric METRIC]
@@ -5114,7 +5118,7 @@ svtk plot spatial pattern-similarity
                                             [--max-traces MAX_TRACES]
                                             [--title TITLE] [--write-sidecar]
                                             [--sidecar-rows SIDECAR_ROWS]
-                                            [--sidecar-dir SIDECAR_DIR]
+                                            [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -5292,7 +5296,8 @@ svtk plot spatial pca-explained-variance
                                                 [--output PATH]
                                                 [--config PATH]
                                                 [--run-scenario RUN_SCENARIO]
-                                                [--table [TABLE]] [--no-table]
+                                                [--table [ARG=PATH]]
+                                                [--no-table]
                                                 [--kwargs [KWARGS ...]]
                                                 [--kwargs-json KWARGS_JSON]
                                                 [--metric METRIC]
@@ -5322,7 +5327,7 @@ svtk plot spatial pca-explained-variance
                                                 [--title TITLE]
                                                 [--write-sidecar]
                                                 [--sidecar-rows SIDECAR_ROWS]
-                                                [--sidecar-dir SIDECAR_DIR]
+                                                [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -5499,7 +5504,8 @@ svtk plot spatial pca-feature-loadings
    svtk plot spatial pca-feature-loadings [-h] [--input PATH]
                                               [--output PATH] [--config PATH]
                                               [--run-scenario RUN_SCENARIO]
-                                              [--table [TABLE]] [--no-table]
+                                              [--table [ARG=PATH]]
+                                              [--no-table]
                                               [--kwargs [KWARGS ...]]
                                               [--kwargs-json KWARGS_JSON]
                                               [--metric METRIC]
@@ -5528,7 +5534,7 @@ svtk plot spatial pca-feature-loadings
                                               [--title TITLE]
                                               [--write-sidecar]
                                               [--sidecar-rows SIDECAR_ROWS]
-                                              [--sidecar-dir SIDECAR_DIR]
+                                              [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -5705,7 +5711,7 @@ svtk plot spatial polar-residuals
    svtk plot spatial polar-residuals [-h] [--input PATH] [--output PATH]
                                          [--config PATH]
                                          [--run-scenario RUN_SCENARIO]
-                                         [--table [TABLE]] [--no-table]
+                                         [--table [ARG=PATH]] [--no-table]
                                          [--kwargs [KWARGS ...]]
                                          [--kwargs-json KWARGS_JSON]
                                          [--metric METRIC]
@@ -5731,7 +5737,7 @@ svtk plot spatial polar-residuals
                                          [--max-traces MAX_TRACES]
                                          [--title TITLE] [--write-sidecar]
                                          [--sidecar-rows SIDECAR_ROWS]
-                                         [--sidecar-dir SIDECAR_DIR]
+                                         [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -5908,7 +5914,8 @@ svtk plot spatial residual-correlation
    svtk plot spatial residual-correlation [-h] [--input PATH]
                                               [--output PATH] [--config PATH]
                                               [--run-scenario RUN_SCENARIO]
-                                              [--table [TABLE]] [--no-table]
+                                              [--table [ARG=PATH]]
+                                              [--no-table]
                                               [--kwargs [KWARGS ...]]
                                               [--kwargs-json KWARGS_JSON]
                                               [--metric METRIC]
@@ -5937,7 +5944,7 @@ svtk plot spatial residual-correlation
                                               [--title TITLE]
                                               [--write-sidecar]
                                               [--sidecar-rows SIDECAR_ROWS]
-                                              [--sidecar-dir SIDECAR_DIR]
+                                              [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 
@@ -6114,7 +6121,7 @@ svtk plot spatial semivariogram
    svtk plot spatial semivariogram [-h] [--input PATH] [--output PATH]
                                        [--config PATH]
                                        [--run-scenario RUN_SCENARIO]
-                                       [--table [TABLE]] [--no-table]
+                                       [--table [ARG=PATH]] [--no-table]
                                        [--kwargs [KWARGS ...]]
                                        [--kwargs-json KWARGS_JSON]
                                        [--metric METRIC] [--passband PASSBAND]
@@ -6137,7 +6144,7 @@ svtk plot spatial semivariogram
                                        [--max-traces MAX_TRACES]
                                        [--title TITLE] [--write-sidecar]
                                        [--sidecar-rows SIDECAR_ROWS]
-                                       [--sidecar-dir SIDECAR_DIR]
+                                       [--sidecar-dir DIR]
 
 .. rubric:: Parameters
 

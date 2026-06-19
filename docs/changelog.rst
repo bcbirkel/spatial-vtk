@@ -96,6 +96,8 @@ Changelog
     importing optional runtime modules.
   - Made IO, QC, spatial, and dashboard commands validate missing configured
     defaults before importing optional workflow modules.
+  - Normalized registered figure command help so advanced ``--table`` mappings,
+    named table aliases, and sidecar directories use path-oriented metavars.
 
 - **Large-run resilience** *(Hardened)*
 

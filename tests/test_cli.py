@@ -1132,6 +1132,25 @@ def test_generated_cli_reference_uses_role_based_table_help():
         assert "Extra table as argument_name=path" not in text, path.name
         assert "Advanced extra table mapping as function_argument=path" in text, path.name
         assert "Prefer config-backed defaults and named table flags" in text, path.name
+        assert "[--table [TABLE]]" not in text, path.name
+        assert "[--table [ARG=PATH]]" in text, path.name
+        assert "SIDECAR_DIR" not in text, path.name
+        assert "[--sidecar-dir DIR]" in text, path.name
+
+
+def test_registered_table_alias_help_uses_path_metavars(capsys):
+    """Named table aliases should look like file paths in CLI help."""
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["map", "spatial", "corridor", "--help"])
+    assert excinfo.value.code == 0
+    help_text = capsys.readouterr().out
+    assert "[--events PATH]" in help_text
+    assert "[--records PATH]" in help_text
+    assert "[--stations PATH]" in help_text
+    assert "[--events EVENTS]" not in help_text
+    assert "[--records RECORDS]" not in help_text
+    assert "[--stations STATIONS]" not in help_text
 
 
 def test_generated_cli_reference_names_metrics_run_defaults():

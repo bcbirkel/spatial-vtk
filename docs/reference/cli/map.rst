@@ -101,7 +101,7 @@ svtk map spatial block-holdout-error
    svtk map spatial block-holdout-error [-h] [--input PATH]
                                             [--output PATH] [--config PATH]
                                             [--run-scenario RUN_SCENARIO]
-                                            [--table [TABLE]] [--no-table]
+                                            [--table [ARG=PATH]] [--no-table]
                                             [--kwargs [KWARGS ...]]
                                             [--kwargs-json KWARGS_JSON]
                                             [--metric METRIC]
@@ -129,7 +129,7 @@ svtk map spatial block-holdout-error
                                             [--max-traces MAX_TRACES]
                                             [--title TITLE] [--write-sidecar]
                                             [--sidecar-rows SIDECAR_ROWS]
-                                            [--sidecar-dir SIDECAR_DIR]
+                                            [--sidecar-dir DIR]
                                             [--bounds BOUNDS] [--no-basemap]
                                             [--basemap-source BASEMAP_SOURCE]
 
@@ -319,7 +319,7 @@ svtk map spatial cluster
 
    svtk map spatial cluster [-h] [--input PATH] [--output PATH]
                                 [--config PATH] [--run-scenario RUN_SCENARIO]
-                                [--table [TABLE]] [--no-table]
+                                [--table [ARG=PATH]] [--no-table]
                                 [--kwargs [KWARGS ...]]
                                 [--kwargs-json KWARGS_JSON] [--metric METRIC]
                                 [--passband PASSBAND] [--bin-label BIN_LABEL]
@@ -339,7 +339,7 @@ svtk map spatial cluster
                                 [--max-traces MAX_TRACES] [--title TITLE]
                                 [--write-sidecar]
                                 [--sidecar-rows SIDECAR_ROWS]
-                                [--sidecar-dir SIDECAR_DIR] [--bounds BOUNDS]
+                                [--sidecar-dir DIR] [--bounds BOUNDS]
                                 [--no-basemap]
                                 [--basemap-source BASEMAP_SOURCE]
 
@@ -529,7 +529,7 @@ svtk map spatial corridor
 
    svtk map spatial corridor [-h] [--input PATH] [--output PATH]
                                  [--config PATH] [--run-scenario RUN_SCENARIO]
-                                 [--table [TABLE]] [--no-table]
+                                 [--table [ARG=PATH]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
                                  [--passband PASSBAND] [--bin-label BIN_LABEL]
@@ -549,8 +549,8 @@ svtk map spatial corridor
                                  [--max-traces MAX_TRACES] [--title TITLE]
                                  [--write-sidecar]
                                  [--sidecar-rows SIDECAR_ROWS]
-                                 [--sidecar-dir SIDECAR_DIR] [--events EVENTS]
-                                 [--records RECORDS] [--stations STATIONS]
+                                 [--sidecar-dir DIR] [--events PATH]
+                                 [--records PATH] [--stations PATH]
                                  [--bounds BOUNDS] [--no-basemap]
                                  [--basemap-source BASEMAP_SOURCE]
 
@@ -753,7 +753,7 @@ svtk map spatial event-residual
    svtk map spatial event-residual [-h] [--input PATH] [--output PATH]
                                        [--config PATH]
                                        [--run-scenario RUN_SCENARIO]
-                                       [--table [TABLE]] [--no-table]
+                                       [--table [ARG=PATH]] [--no-table]
                                        [--kwargs [KWARGS ...]]
                                        [--kwargs-json KWARGS_JSON]
                                        [--metric METRIC] [--passband PASSBAND]
@@ -776,8 +776,8 @@ svtk map spatial event-residual
                                        [--max-traces MAX_TRACES]
                                        [--title TITLE] [--write-sidecar]
                                        [--sidecar-rows SIDECAR_ROWS]
-                                       [--sidecar-dir SIDECAR_DIR]
-                                       [--bounds BOUNDS] [--no-basemap]
+                                       [--sidecar-dir DIR] [--bounds BOUNDS]
+                                       [--no-basemap]
                                        [--basemap-source BASEMAP_SOURCE]
 
 .. rubric:: Parameters
@@ -993,7 +993,7 @@ svtk map spatial metric-by-model
    svtk map spatial metric-by-model [-h] [--input PATH] [--output PATH]
                                         [--config PATH]
                                         [--run-scenario RUN_SCENARIO]
-                                        [--table [TABLE]] [--no-table]
+                                        [--table [ARG=PATH]] [--no-table]
                                         [--kwargs [KWARGS ...]]
                                         [--kwargs-json KWARGS_JSON]
                                         [--metric METRIC]
@@ -1019,8 +1019,8 @@ svtk map spatial metric-by-model
                                         [--max-traces MAX_TRACES]
                                         [--title TITLE] [--write-sidecar]
                                         [--sidecar-rows SIDECAR_ROWS]
-                                        [--sidecar-dir SIDECAR_DIR]
-                                        [--bounds BOUNDS] [--no-basemap]
+                                        [--sidecar-dir DIR] [--bounds BOUNDS]
+                                        [--no-basemap]
                                         [--basemap-source BASEMAP_SOURCE]
 
 .. rubric:: Parameters
@@ -1210,7 +1210,7 @@ svtk map spatial model-improvement
    svtk map spatial model-improvement [-h] [--input PATH] [--output PATH]
                                           [--config PATH]
                                           [--run-scenario RUN_SCENARIO]
-                                          [--table [TABLE]] [--no-table]
+                                          [--table [ARG=PATH]] [--no-table]
                                           [--kwargs [KWARGS ...]]
                                           [--kwargs-json KWARGS_JSON]
                                           [--metric METRIC]
@@ -1236,7 +1236,7 @@ svtk map spatial model-improvement
                                           [--max-traces MAX_TRACES]
                                           [--title TITLE] [--write-sidecar]
                                           [--sidecar-rows SIDECAR_ROWS]
-                                          [--sidecar-dir SIDECAR_DIR]
+                                          [--sidecar-dir DIR]
                                           [--bounds BOUNDS] [--no-basemap]
                                           [--basemap-source BASEMAP_SOURCE]
 
@@ -1426,7 +1426,7 @@ svtk map spatial pca-mode
 
    svtk map spatial pca-mode [-h] [--input PATH] [--output PATH]
                                  [--config PATH] [--run-scenario RUN_SCENARIO]
-                                 [--table [TABLE]] [--no-table]
+                                 [--table [ARG=PATH]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
                                  [--passband PASSBAND] [--bin-label BIN_LABEL]
@@ -1446,7 +1446,7 @@ svtk map spatial pca-mode
                                  [--max-traces MAX_TRACES] [--title TITLE]
                                  [--write-sidecar]
                                  [--sidecar-rows SIDECAR_ROWS]
-                                 [--sidecar-dir SIDECAR_DIR] [--bounds BOUNDS]
+                                 [--sidecar-dir DIR] [--bounds BOUNDS]
                                  [--no-basemap]
                                  [--basemap-source BASEMAP_SOURCE]
 
@@ -1637,7 +1637,7 @@ svtk map spatial redcap-cluster
    svtk map spatial redcap-cluster [-h] [--input PATH] [--output PATH]
                                        [--config PATH]
                                        [--run-scenario RUN_SCENARIO]
-                                       [--table [TABLE]] [--no-table]
+                                       [--table [ARG=PATH]] [--no-table]
                                        [--kwargs [KWARGS ...]]
                                        [--kwargs-json KWARGS_JSON]
                                        [--metric METRIC] [--passband PASSBAND]
@@ -1660,8 +1660,8 @@ svtk map spatial redcap-cluster
                                        [--max-traces MAX_TRACES]
                                        [--title TITLE] [--write-sidecar]
                                        [--sidecar-rows SIDECAR_ROWS]
-                                       [--sidecar-dir SIDECAR_DIR]
-                                       [--bounds BOUNDS] [--no-basemap]
+                                       [--sidecar-dir DIR] [--bounds BOUNDS]
+                                       [--no-basemap]
                                        [--basemap-source BASEMAP_SOURCE]
 
 .. rubric:: Parameters
@@ -1851,7 +1851,7 @@ svtk map spatial residual-grid
    svtk map spatial residual-grid [-h] [--input PATH] [--output PATH]
                                       [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
-                                      [--table [TABLE]] [--no-table]
+                                      [--table [ARG=PATH]] [--no-table]
                                       [--kwargs [KWARGS ...]]
                                       [--kwargs-json KWARGS_JSON]
                                       [--metric METRIC] [--passband PASSBAND]
@@ -1874,8 +1874,8 @@ svtk map spatial residual-grid
                                       [--max-traces MAX_TRACES]
                                       [--title TITLE] [--write-sidecar]
                                       [--sidecar-rows SIDECAR_ROWS]
-                                      [--sidecar-dir SIDECAR_DIR]
-                                      [--bounds BOUNDS] [--no-basemap]
+                                      [--sidecar-dir DIR] [--bounds BOUNDS]
+                                      [--no-basemap]
                                       [--basemap-source BASEMAP_SOURCE]
 
 .. rubric:: Parameters
@@ -2064,7 +2064,7 @@ svtk map spatial score
 
    svtk map spatial score [-h] [--input PATH] [--output PATH]
                               [--config PATH] [--run-scenario RUN_SCENARIO]
-                              [--table [TABLE]] [--no-table]
+                              [--table [ARG=PATH]] [--no-table]
                               [--kwargs [KWARGS ...]]
                               [--kwargs-json KWARGS_JSON] [--metric METRIC]
                               [--passband PASSBAND] [--bin-label BIN_LABEL]
@@ -2083,7 +2083,7 @@ svtk map spatial score
                               [--max-records MAX_RECORDS]
                               [--max-traces MAX_TRACES] [--title TITLE]
                               [--write-sidecar] [--sidecar-rows SIDECAR_ROWS]
-                              [--sidecar-dir SIDECAR_DIR] [--bounds BOUNDS]
+                              [--sidecar-dir DIR] [--bounds BOUNDS]
                               [--no-basemap] [--basemap-source BASEMAP_SOURCE]
 
 .. rubric:: Parameters
@@ -2273,7 +2273,7 @@ svtk map spatial station-bias
    svtk map spatial station-bias [-h] [--input PATH] [--output PATH]
                                      [--config PATH]
                                      [--run-scenario RUN_SCENARIO]
-                                     [--table [TABLE]] [--no-table]
+                                     [--table [ARG=PATH]] [--no-table]
                                      [--kwargs [KWARGS ...]]
                                      [--kwargs-json KWARGS_JSON]
                                      [--metric METRIC] [--passband PASSBAND]
@@ -2296,8 +2296,8 @@ svtk map spatial station-bias
                                      [--max-traces MAX_TRACES] [--title TITLE]
                                      [--write-sidecar]
                                      [--sidecar-rows SIDECAR_ROWS]
-                                     [--sidecar-dir SIDECAR_DIR]
-                                     [--bounds BOUNDS] [--no-basemap]
+                                     [--sidecar-dir DIR] [--bounds BOUNDS]
+                                     [--no-basemap]
                                      [--basemap-source BASEMAP_SOURCE]
 
 .. rubric:: Parameters
@@ -2487,7 +2487,7 @@ svtk map spatial station-metric
    svtk map spatial station-metric [-h] [--input PATH] [--output PATH]
                                        [--config PATH]
                                        [--run-scenario RUN_SCENARIO]
-                                       [--table [TABLE]] [--no-table]
+                                       [--table [ARG=PATH]] [--no-table]
                                        [--kwargs [KWARGS ...]]
                                        [--kwargs-json KWARGS_JSON]
                                        [--metric METRIC] [--passband PASSBAND]
@@ -2510,8 +2510,8 @@ svtk map spatial station-metric
                                        [--max-traces MAX_TRACES]
                                        [--title TITLE] [--write-sidecar]
                                        [--sidecar-rows SIDECAR_ROWS]
-                                       [--sidecar-dir SIDECAR_DIR]
-                                       [--bounds BOUNDS] [--no-basemap]
+                                       [--sidecar-dir DIR] [--bounds BOUNDS]
+                                       [--no-basemap]
                                        [--basemap-source BASEMAP_SOURCE]
 
 .. rubric:: Parameters

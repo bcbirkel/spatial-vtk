@@ -1321,6 +1321,7 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
         parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     parser.add_argument(
         "--table",
+        metavar="ARG=PATH",
         nargs="?",
         action="append",
         const=FIGURE_TABLE_SENTINEL,
@@ -1338,10 +1339,10 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
     _add_common_figure_options(parser, exclude=set((spec.table_aliases or {}).keys()))
     parser.add_argument("--write-sidecar", action="store_true", help="Write CSV/JSON sidecars with rows used by the figure.")
     parser.add_argument("--sidecar-rows", type=int, default=None, help="Maximum rows to write to each sidecar. Omit to write all rows.")
-    parser.add_argument("--sidecar-dir", default=None, help="Directory for figure sidecars. Defaults next to the output figure.")
+    parser.add_argument("--sidecar-dir", metavar="DIR", default=None, help="Directory for figure sidecars. Defaults next to the output figure.")
     for option in sorted((spec.table_aliases or {}).keys()):
         alias_help = _registered_alias_help(spec.table_aliases[option], (spec.table_alias_defaults or {}).get(option))
-        parser.add_argument(f"--{option.replace('_', '-')}", default=None, help=alias_help)
+        parser.add_argument(f"--{option.replace('_', '-')}", metavar="PATH", default=None, help=alias_help)
     if include_map_options:
         if not (spec.input_key or spec.output_key or spec.table_alias_defaults):
             parser.add_argument("--config", default=None, help="Optional Spatial-VTK config for named bounds.")
