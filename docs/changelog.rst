@@ -82,6 +82,9 @@ Changelog
 - Added a CLI workflow regression requiring tutorial commands that pass the
   example config to also pass the ``tutorial`` run scenario, keeping shell
   examples on the committed lightweight input bundle.
+- Rewired standard tutorial workflow cells to pass ``context.run_scenario``
+  after setup instead of repeating literal ``"tutorial"`` scenario arguments in
+  downstream package calls.
 - Made ``svtk plot metrics period-spectra`` use the configured ``metrics_long``
   table by default, and taught ``plot_period_spectra()`` to accept standard
   metric-table residual/value columns through ``value_col`` instead of

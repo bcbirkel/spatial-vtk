@@ -1604,6 +1604,31 @@ def test_large_run_notebooks_use_context_run_scenario_resolution() -> None:
         assert 'run_scenario=os.environ.get("SVTK_RUN_SCENARIO"' not in source, notebook_path.relative_to(repo_root)
 
 
+def test_standard_notebooks_reuse_context_run_scenario_after_setup() -> None:
+    """Standard notebooks should not repeat literal tutorial scenarios in workflow cells."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").glob("step_*.ipynb"))
+    assert notebooks
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        source_without_setup = source.replace(
+            'context = notebook_run_context(config_path, run_scenario="tutorial")',
+            "",
+        )
+        assert '"run_scenario": "tutorial"' not in source_without_setup, notebook_path.relative_to(repo_root)
+        assert 'run_scenario="tutorial"' not in source_without_setup, notebook_path.relative_to(repo_root)
+    combined_source = "\n".join(
+        "\n".join(
+            "".join(cell.get("source", []))
+            for cell in json.loads(path.read_text(encoding="utf-8")).get("cells", [])
+        )
+        for path in notebooks
+    )
+    assert "run_scenario=context.run_scenario" in combined_source
+
+
 def test_large_run_notebooks_display_output_readiness_tables() -> None:
     """Large-run driver cells should show named readiness status tables."""
 
