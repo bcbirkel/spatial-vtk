@@ -252,14 +252,23 @@ def test_public_package_discovery_excludes_legacy_namespace():
 
 
 def test_release_checklist_exists_and_matches_public_validation_gates():
-    """The public repo should include the release checklist referenced by AGENTS.md."""
+    """The public release checklist should name the current validation gates."""
 
     root = pathlib.Path(__file__).resolve().parents[1]
     checklist_path = root / "RELEASE_CHECKLIST.md"
-    agents = (root / "AGENTS.md").read_text(encoding="utf-8")
+    agents_path = root / "AGENTS.md"
+    agents = agents_path.read_text(encoding="utf-8") if agents_path.exists() else ""
     text = checklist_path.read_text(encoding="utf-8")
 
-    assert "RELEASE_CHECKLIST.md" in agents
+    if agents:
+        assert "RELEASE_CHECKLIST.md" in agents
+        for snippet in (
+            'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"',
+            "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run",
+            "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run",
+        ):
+            assert snippet in agents
+        assert 'python -m pip install -e ".[validation,docs,dashboard,waveforms]"' not in agents
     for snippet in (
         'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"',
         "python -m pytest -q",

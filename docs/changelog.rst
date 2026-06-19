@@ -4,6 +4,10 @@ Changelog
 2026-06-19
 ----------
 
+- Hardened release-check regression coverage so the public release checklist
+  remains the authoritative source for the notebook extra and standard plus
+  large-run tutorial preflight/runtime gates, while local agent guidance is
+  checked only when present in the working tree.
 - Clarified the examples index so ``--runtime-check-only`` is described as a
   non-executing environment check, while notebook execution and report writing
   are attached to the ``--clean --include-large-run`` command.
