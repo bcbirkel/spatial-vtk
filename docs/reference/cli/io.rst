@@ -52,7 +52,7 @@ svtk io inventory
 
    svtk io inventory [-h] [--observed-root OBSERVED_ROOT]
                          [--synthetic-root SYNTHETIC_ROOT] [--output PATH]
-                         [--config CONFIG] [--run-scenario RUN_SCENARIO]
+                         [--config PATH] [--run-scenario RUN_SCENARIO]
                          [--suffix SUFFIX] [--relative-to RELATIVE_TO]
                          [--no-sha256]
 
@@ -182,7 +182,7 @@ svtk io prepare-event-stations
 
    svtk io prepare-event-stations [-h] [--input PATH] [--stations PATH]
                                       [--events PATH] [--output PATH]
-                                      [--config CONFIG]
+                                      [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
 
 .. rubric:: Parameters
@@ -234,7 +234,7 @@ svtk io prepare-events
 .. code-block:: bash
 
    svtk io prepare-events [-h] [--input PATH] [--output PATH]
-                              [--config CONFIG] [--run-scenario RUN_SCENARIO]
+                              [--config PATH] [--run-scenario RUN_SCENARIO]
 
 .. rubric:: Parameters
 
@@ -277,8 +277,7 @@ svtk io prepare-stations
 .. code-block:: bash
 
    svtk io prepare-stations [-h] [--input PATH] [--output PATH]
-                                [--config CONFIG]
-                                [--run-scenario RUN_SCENARIO]
+                                [--config PATH] [--run-scenario RUN_SCENARIO]
 
 .. rubric:: Parameters
 
@@ -321,7 +320,7 @@ svtk io preprocess-waveforms
 .. code-block:: bash
 
    svtk io preprocess-waveforms [-h] [--records PATH] [--output-root DIR]
-                                    [--config CONFIG]
+                                    [--config PATH]
                                     [--run-scenario RUN_SCENARIO]
                                     [--observed-column OBSERVED_COLUMN]
                                     [--synthetic-column SYNTHETIC_COLUMN]
@@ -360,7 +359,7 @@ svtk io preprocess-waveforms
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config file.
+     - Filesystem path. Spatial-VTK config file.
    * - ``--run-scenario``
      - No
      -

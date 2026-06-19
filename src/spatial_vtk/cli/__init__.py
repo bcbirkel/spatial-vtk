@@ -453,7 +453,21 @@ def build_parser() -> argparse.ArgumentParser:
     _add_visualize_commands(subparsers)
     _add_dashboard_commands(subparsers)
     _add_call_command(subparsers)
+    _normalize_config_path_arguments(parser)
     return parser
+
+
+def _normalize_config_path_arguments(parser: argparse.ArgumentParser) -> None:
+    """Mark config-file arguments as path values throughout the command tree."""
+
+    for action in parser._actions:
+        if "--config" in getattr(action, "option_strings", ()):
+            action.metavar = "PATH"
+        elif not getattr(action, "option_strings", ()) and action.dest == "config_path":
+            action.metavar = "PATH"
+        if isinstance(action, argparse._SubParsersAction):
+            for child in action.choices.values():
+                _normalize_config_path_arguments(child)
 
 
 def _add_config_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:

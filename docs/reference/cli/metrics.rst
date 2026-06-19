@@ -53,7 +53,7 @@ svtk metrics batch-status
 
 .. code-block:: bash
 
-   svtk metrics batch-status [-h] [--manifest PATH] [--config CONFIG]
+   svtk metrics batch-status [-h] [--manifest PATH] [--config PATH]
                                  [--run-scenario RUN_SCENARIO]
                                  [--missing-limit MISSING_LIMIT] [--json]
 
@@ -78,7 +78,7 @@ svtk metrics batch-status
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config used to resolve the default manifest path.
+     - Filesystem path. Spatial-VTK config used to resolve the default manifest path.
    * - ``--run-scenario``
      - No
      -
@@ -103,7 +103,7 @@ svtk metrics cache-waveforms
 
    svtk metrics cache-waveforms [-h] [--manifest PATH] [--output PATH]
                                     [--cache-root DIR]
-                                    [--batch-output-dir DIR] [--config CONFIG]
+                                    [--batch-output-dir DIR] [--config PATH]
                                     [--run-scenario RUN_SCENARIO]
                                     [--overwrite] [--compressed] [--verbose]
                                     [--progress-interval PROGRESS_INTERVAL]
@@ -141,7 +141,7 @@ svtk metrics cache-waveforms
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config used to resolve default paths.
+     - Filesystem path. Spatial-VTK config used to resolve default paths.
    * - ``--run-scenario``
      - No
      -
@@ -173,7 +173,7 @@ svtk metrics estimate
 .. code-block:: bash
 
    svtk metrics estimate [-h] [--tasks PATH] [--manifest PATH]
-                             [--config CONFIG] [--run-scenario RUN_SCENARIO]
+                             [--config PATH] [--run-scenario RUN_SCENARIO]
                              [--output PATH]
                              [--seconds-per-task SECONDS_PER_TASK]
                              [--memory-gb-per-task MEMORY_GB_PER_TASK]
@@ -242,7 +242,7 @@ svtk metrics inventories
 
    svtk metrics inventories [-h] [--trace-metadata PATH]
                                 [--observed-output PATH]
-                                [--synthetic-output PATH] [--config CONFIG]
+                                [--synthetic-output PATH] [--config PATH]
                                 [--run-scenario RUN_SCENARIO]
                                 [--synthetic-model SYNTHETIC_MODEL]
                                 [--observed-path-column OBSERVED_PATH_COLUMN]
@@ -278,7 +278,7 @@ svtk metrics inventories
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config used to infer a single synthetic model.
+     - Filesystem path. Optional Spatial-VTK config used to infer a single synthetic model.
    * - ``--run-scenario``
      - No
      -
@@ -314,7 +314,7 @@ svtk metrics merge-batches
 .. code-block:: bash
 
    svtk metrics merge-batches [-h] [--manifest PATH] [--output PATH]
-                                  [--config CONFIG]
+                                  [--config PATH]
                                   [--run-scenario RUN_SCENARIO]
                                   [--allow-missing]
 
@@ -343,7 +343,7 @@ svtk metrics merge-batches
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config used to resolve default paths.
+     - Filesystem path. Spatial-VTK config used to resolve default paths.
    * - ``--run-scenario``
      - No
      -
@@ -363,7 +363,7 @@ svtk metrics outputs
 .. code-block:: bash
 
    svtk metrics outputs [-h] [--metrics PATH] [--output-dir DIR]
-                            [--config CONFIG] [--run-scenario RUN_SCENARIO]
+                            [--config PATH] [--run-scenario RUN_SCENARIO]
                             [--events PATH] [--stations PATH]
                             [--residual-column RESIDUAL_COLUMN]
                             [--score-column SCORE_COLUMN]
@@ -434,7 +434,7 @@ svtk metrics plan
 .. code-block:: bash
 
    svtk metrics plan [-h] [--observed-inventory PATH]
-                         [--synthetic-inventory PATH] [--config CONFIG]
+                         [--synthetic-inventory PATH] [--config PATH]
                          [--run-scenario RUN_SCENARIO] [--metric METRICS]
                          [--metric-group METRIC_GROUPS]
                          [--component COMPONENTS] [--passband PASSBANDS]
@@ -472,7 +472,7 @@ svtk metrics plan
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config file.
+     - Filesystem path. Spatial-VTK config file.
    * - ``--run-scenario``
      - No
      -
@@ -555,7 +555,7 @@ svtk metrics run
 
 .. code-block:: bash
 
-   svtk metrics run [-h] [--tasks PATH] [--output PATH] [--config CONFIG]
+   svtk metrics run [-h] [--tasks PATH] [--output PATH] [--config PATH]
                         [--run-scenario RUN_SCENARIO] [--qc-table PATH]
 
 .. rubric:: Parameters
@@ -602,7 +602,7 @@ svtk metrics run-batch
 
 .. code-block:: bash
 
-   svtk metrics run-batch [-h] [--manifest PATH] [--config CONFIG]
+   svtk metrics run-batch [-h] [--manifest PATH] [--config PATH]
                               [--run-scenario RUN_SCENARIO] --batch-index
                               BATCH_INDEX [--overwrite]
 
@@ -627,7 +627,7 @@ svtk metrics run-batch
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config used to resolve the default manifest path.
+     - Filesystem path. Spatial-VTK config used to resolve the default manifest path.
    * - ``--run-scenario``
      - No
      -
@@ -651,7 +651,7 @@ svtk metrics slurm
 .. code-block:: bash
 
    svtk metrics slurm [-h] [--manifest PATH] [--output PATH]
-                          [--config CONFIG] [--run-scenario RUN_SCENARIO]
+                          [--config PATH] [--run-scenario RUN_SCENARIO]
                           [--submit] [--incomplete-only] [--overwrite-batches]
 
 .. rubric:: Parameters
@@ -679,7 +679,7 @@ svtk metrics slurm
    * - ``--config``
      - No
      -
-     - Value: ``config``. Config file containing metrics.slurm settings.
+     - Filesystem path. Config file containing metrics.slurm settings.
    * - ``--run-scenario``
      - No
      -

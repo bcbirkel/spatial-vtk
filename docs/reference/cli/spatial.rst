@@ -54,7 +54,7 @@ Build configured boundary corridor tables from region GeoJSON and prepared metad
 
    svtk spatial corridors [-h] [--geojson GEOJSON] [--stations STATIONS]
                               [--events EVENTS] [--records RECORDS]
-                              [--config CONFIG] [--run-scenario RUN_SCENARIO]
+                              [--config PATH] [--run-scenario RUN_SCENARIO]
                               [--output-key OUTPUT_KEY] [--verbose]
 
 .. rubric:: Parameters
@@ -90,7 +90,7 @@ Build configured boundary corridor tables from region GeoJSON and prepared metad
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config file.
+     - Filesystem path. Spatial-VTK config file.
    * - ``--run-scenario``
      - No
      -
@@ -118,7 +118,7 @@ Build optional Step 4 spatial tables used by overview plots: block_holdout_predi
    svtk spatial derived-outputs [-h] [--metrics METRICS]
                                     [--metric-field METRIC_FIELD]
                                     [--station-bias STATION_BIAS]
-                                    [--config CONFIG]
+                                    [--config PATH]
                                     [--run-scenario RUN_SCENARIO]
                                     [--metric METRIC]
                                     [--pattern-passband PATTERN_PASSBAND]
@@ -156,7 +156,7 @@ Build optional Step 4 spatial tables used by overview plots: block_holdout_predi
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config file.
+     - Filesystem path. Spatial-VTK config file.
    * - ``--run-scenario``
      - No
      -
@@ -202,7 +202,7 @@ Build configured GeoJSON region summary tables from metric outputs.
 .. code-block:: bash
 
    svtk spatial geojson-summaries [-h] [--metrics METRICS]
-                                      [--geojson GEOJSON] [--config CONFIG]
+                                      [--geojson GEOJSON] [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
                                       [--selector SELECTOR]
                                       [--chunksize CHUNKSIZE]
@@ -233,7 +233,7 @@ Build configured GeoJSON region summary tables from metric outputs.
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config file.
+     - Filesystem path. Spatial-VTK config file.
    * - ``--run-scenario``
      - No
      -
@@ -266,9 +266,8 @@ Inspect configured spatial-statistics inputs and outputs without running calcula
 
 .. code-block:: bash
 
-   svtk spatial status [-h] [--config CONFIG]
-                           [--run-scenario RUN_SCENARIO] [--include-optional]
-                           [--json]
+   svtk spatial status [-h] [--config PATH] [--run-scenario RUN_SCENARIO]
+                           [--include-optional] [--json]
 
 .. rubric:: Parameters
 
@@ -287,7 +286,7 @@ Inspect configured spatial-statistics inputs and outputs without running calcula
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config file.
+     - Filesystem path. Spatial-VTK config file.
    * - ``--run-scenario``
      - No
      -
@@ -312,7 +311,7 @@ Build standard spatial-statistics summary tables.
 
 .. code-block:: bash
 
-   svtk spatial summaries [-h] [--metrics METRICS] [--config CONFIG]
+   svtk spatial summaries [-h] [--metrics METRICS] [--config PATH]
                               [--run-scenario RUN_SCENARIO] [--metric METRIC]
                               [--station-metadata STATION_METADATA]
                               [--checkpoint-dir CHECKPOINT_DIR] [--no-resume]
@@ -339,7 +338,7 @@ Build standard spatial-statistics summary tables.
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config file.
+     - Filesystem path. Spatial-VTK config file.
    * - ``--run-scenario``
      - No
      -

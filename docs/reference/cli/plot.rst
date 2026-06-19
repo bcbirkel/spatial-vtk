@@ -118,7 +118,7 @@ svtk plot metrics band-score-distribution
 
    svtk plot metrics band-score-distribution [-h] [--input PATH]
                                                  [--output PATH]
-                                                 [--config CONFIG]
+                                                 [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [TABLE]]
                                                  [--no-table]
@@ -326,8 +326,7 @@ svtk plot metrics boxplot
 .. code-block:: bash
 
    svtk plot metrics boxplot [-h] [--input PATH] [--output PATH]
-                                 [--config CONFIG]
-                                 [--run-scenario RUN_SCENARIO]
+                                 [--config PATH] [--run-scenario RUN_SCENARIO]
                                  [--table [TABLE]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
@@ -523,7 +522,7 @@ svtk plot metrics example-metric-pairs
 .. code-block:: bash
 
    svtk plot metrics example-metric-pairs [-h] [--output PATH]
-                                              [--config CONFIG]
+                                              [--config PATH]
                                               [--run-scenario RUN_SCENARIO]
                                               [--table [TABLE]] [--no-table]
                                               [--kwargs [KWARGS ...]]
@@ -725,7 +724,7 @@ svtk plot metrics geology-boxplot
 .. code-block:: bash
 
    svtk plot metrics geology-boxplot [-h] [--input PATH] [--output PATH]
-                                         [--config CONFIG]
+                                         [--config PATH]
                                          [--run-scenario RUN_SCENARIO]
                                          [--table [TABLE]] [--no-table]
                                          [--kwargs [KWARGS ...]]
@@ -928,8 +927,7 @@ svtk plot metrics heatmap
 .. code-block:: bash
 
    svtk plot metrics heatmap [-h] [--input PATH] [--output PATH]
-                                 [--config CONFIG]
-                                 [--run-scenario RUN_SCENARIO]
+                                 [--config PATH] [--run-scenario RUN_SCENARIO]
                                  [--table [TABLE]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
@@ -1151,7 +1149,7 @@ svtk plot metrics metric-trend
 .. code-block:: bash
 
    svtk plot metrics metric-trend [-h] [--input PATH] [--output PATH]
-                                      [--config CONFIG]
+                                      [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
                                       [--table [TABLE]] [--no-table]
                                       [--kwargs [KWARGS ...]]
@@ -1351,8 +1349,7 @@ svtk plot metrics model-metric-heatmap
 .. code-block:: bash
 
    svtk plot metrics model-metric-heatmap [-h] [--input PATH]
-                                              [--output PATH]
-                                              [--config CONFIG]
+                                              [--output PATH] [--config PATH]
                                               [--run-scenario RUN_SCENARIO]
                                               [--table [TABLE]] [--no-table]
                                               [--kwargs [KWARGS ...]]
@@ -1558,7 +1555,7 @@ svtk plot metrics period-spectra
 .. code-block:: bash
 
    svtk plot metrics period-spectra [-h] [--input PATH] [--output PATH]
-                                        [--config CONFIG]
+                                        [--config PATH]
                                         [--run-scenario RUN_SCENARIO]
                                         [--table [TABLE]] [--no-table]
                                         [--kwargs [KWARGS ...]]
@@ -1761,7 +1758,7 @@ svtk plot metrics period-spectrogram
 .. code-block:: bash
 
    svtk plot metrics period-spectrogram [-h] --input PATH [--output PATH]
-                                            [--config CONFIG]
+                                            [--config PATH]
                                             [--run-scenario RUN_SCENARIO]
                                             [--table [TABLE]] [--no-table]
                                             [--kwargs [KWARGS ...]]
@@ -1967,7 +1964,7 @@ svtk plot metrics phase-delay-vs-distance
 
    svtk plot metrics phase-delay-vs-distance [-h] [--input PATH]
                                                  [--output PATH]
-                                                 [--config CONFIG]
+                                                 [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [TABLE]]
                                                  [--no-table]
@@ -2175,7 +2172,7 @@ svtk plot metrics psa-period-curve
 .. code-block:: bash
 
    svtk plot metrics psa-period-curve [-h] [--input PATH] [--output PATH]
-                                          [--config CONFIG]
+                                          [--config PATH]
                                           [--run-scenario RUN_SCENARIO]
                                           [--table [TABLE]] [--no-table]
                                           [--kwargs [KWARGS ...]]
@@ -2378,7 +2375,7 @@ svtk plot metrics residuals-vs-depth
 .. code-block:: bash
 
    svtk plot metrics residuals-vs-depth [-h] [--input PATH]
-                                            [--output PATH] [--config CONFIG]
+                                            [--output PATH] [--config PATH]
                                             [--run-scenario RUN_SCENARIO]
                                             [--table [TABLE]] [--no-table]
                                             [--kwargs [KWARGS ...]]
@@ -2583,8 +2580,7 @@ svtk plot metrics residuals-vs-distance
 .. code-block:: bash
 
    svtk plot metrics residuals-vs-distance [-h] [--input PATH]
-                                               [--output PATH]
-                                               [--config CONFIG]
+                                               [--output PATH] [--config PATH]
                                                [--run-scenario RUN_SCENARIO]
                                                [--table [TABLE]] [--no-table]
                                                [--kwargs [KWARGS ...]]
@@ -2790,7 +2786,7 @@ svtk plot metrics scatterplot
 .. code-block:: bash
 
    svtk plot metrics scatterplot [-h] [--input PATH] [--output PATH]
-                                     [--config CONFIG]
+                                     [--config PATH]
                                      [--run-scenario RUN_SCENARIO]
                                      [--table [TABLE]] [--no-table]
                                      [--kwargs [KWARGS ...]]
@@ -2990,7 +2986,7 @@ svtk plot metrics score-trends
 .. code-block:: bash
 
    svtk plot metrics score-trends [-h] [--input PATH] [--output PATH]
-                                      [--config CONFIG]
+                                      [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
                                       [--table [TABLE]] [--no-table]
                                       [--kwargs [KWARGS ...]]
@@ -3190,7 +3186,7 @@ svtk plot metrics vs30-scatter
 .. code-block:: bash
 
    svtk plot metrics vs30-scatter [-h] [--input PATH] [--output PATH]
-                                      [--config CONFIG]
+                                      [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
                                       [--table [TABLE]] [--no-table]
                                       [--kwargs [KWARGS ...]]
@@ -3390,7 +3386,7 @@ svtk plot metrics winner-heatmap
 .. code-block:: bash
 
    svtk plot metrics winner-heatmap [-h] [--input PATH] [--output PATH]
-                                        [--config CONFIG]
+                                        [--config PATH]
                                         [--run-scenario RUN_SCENARIO]
                                         [--table [TABLE]] [--no-table]
                                         [--kwargs [KWARGS ...]]
@@ -3621,7 +3617,7 @@ svtk plot spatial azimuthal-residuals
 .. code-block:: bash
 
    svtk plot spatial azimuthal-residuals [-h] [--input PATH]
-                                             [--output PATH] [--config CONFIG]
+                                             [--output PATH] [--config PATH]
                                              [--run-scenario RUN_SCENARIO]
                                              [--table [TABLE]] [--no-table]
                                              [--kwargs [KWARGS ...]]
@@ -3826,8 +3822,7 @@ svtk plot spatial block-holdout-scatter
 .. code-block:: bash
 
    svtk plot spatial block-holdout-scatter [-h] [--input PATH]
-                                               [--output PATH]
-                                               [--config CONFIG]
+                                               [--output PATH] [--config PATH]
                                                [--run-scenario RUN_SCENARIO]
                                                [--table [TABLE]] [--no-table]
                                                [--kwargs [KWARGS ...]]
@@ -4034,7 +4029,7 @@ svtk plot spatial cluster-feature-heatmap
 
    svtk plot spatial cluster-feature-heatmap [-h] [--input PATH]
                                                  [--output PATH]
-                                                 [--config CONFIG]
+                                                 [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [TABLE]]
                                                  [--no-table]
@@ -4243,7 +4238,7 @@ svtk plot spatial cluster-solution-scores
 
    svtk plot spatial cluster-solution-scores [-h] [--input PATH]
                                                  [--output PATH]
-                                                 [--config CONFIG]
+                                                 [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [TABLE]]
                                                  [--no-table]
@@ -4451,7 +4446,7 @@ svtk plot spatial correlogram
 .. code-block:: bash
 
    svtk plot spatial correlogram [-h] [--input PATH] [--output PATH]
-                                     [--config CONFIG]
+                                     [--config PATH]
                                      [--run-scenario RUN_SCENARIO]
                                      [--table [TABLE]] [--no-table]
                                      [--kwargs [KWARGS ...]]
@@ -4652,7 +4647,7 @@ svtk plot spatial directional-correlogram
 
    svtk plot spatial directional-correlogram [-h] [--input PATH]
                                                  [--output PATH]
-                                                 [--config CONFIG]
+                                                 [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [TABLE]]
                                                  [--no-table]
@@ -4886,7 +4881,7 @@ svtk plot spatial path-bin-summary
 .. code-block:: bash
 
    svtk plot spatial path-bin-summary [-h] [--input PATH] [--output PATH]
-                                          [--config CONFIG]
+                                          [--config PATH]
                                           [--run-scenario RUN_SCENARIO]
                                           [--table [TABLE]] [--no-table]
                                           [--kwargs [KWARGS ...]]
@@ -5089,7 +5084,7 @@ svtk plot spatial pattern-similarity
 .. code-block:: bash
 
    svtk plot spatial pattern-similarity [-h] [--input PATH]
-                                            [--output PATH] [--config CONFIG]
+                                            [--output PATH] [--config PATH]
                                             [--run-scenario RUN_SCENARIO]
                                             [--table [TABLE]] [--no-table]
                                             [--kwargs [KWARGS ...]]
@@ -5295,7 +5290,7 @@ svtk plot spatial pca-explained-variance
 
    svtk plot spatial pca-explained-variance [-h] [--input PATH]
                                                 [--output PATH]
-                                                [--config CONFIG]
+                                                [--config PATH]
                                                 [--run-scenario RUN_SCENARIO]
                                                 [--table [TABLE]] [--no-table]
                                                 [--kwargs [KWARGS ...]]
@@ -5502,8 +5497,7 @@ svtk plot spatial pca-feature-loadings
 .. code-block:: bash
 
    svtk plot spatial pca-feature-loadings [-h] [--input PATH]
-                                              [--output PATH]
-                                              [--config CONFIG]
+                                              [--output PATH] [--config PATH]
                                               [--run-scenario RUN_SCENARIO]
                                               [--table [TABLE]] [--no-table]
                                               [--kwargs [KWARGS ...]]
@@ -5709,7 +5703,7 @@ svtk plot spatial polar-residuals
 .. code-block:: bash
 
    svtk plot spatial polar-residuals [-h] [--input PATH] [--output PATH]
-                                         [--config CONFIG]
+                                         [--config PATH]
                                          [--run-scenario RUN_SCENARIO]
                                          [--table [TABLE]] [--no-table]
                                          [--kwargs [KWARGS ...]]
@@ -5912,8 +5906,7 @@ svtk plot spatial residual-correlation
 .. code-block:: bash
 
    svtk plot spatial residual-correlation [-h] [--input PATH]
-                                              [--output PATH]
-                                              [--config CONFIG]
+                                              [--output PATH] [--config PATH]
                                               [--run-scenario RUN_SCENARIO]
                                               [--table [TABLE]] [--no-table]
                                               [--kwargs [KWARGS ...]]
@@ -6119,7 +6112,7 @@ svtk plot spatial semivariogram
 .. code-block:: bash
 
    svtk plot spatial semivariogram [-h] [--input PATH] [--output PATH]
-                                       [--config CONFIG]
+                                       [--config PATH]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table [TABLE]] [--no-table]
                                        [--kwargs [KWARGS ...]]

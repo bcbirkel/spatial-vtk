@@ -99,7 +99,7 @@ svtk map spatial block-holdout-error
 .. code-block:: bash
 
    svtk map spatial block-holdout-error [-h] [--input PATH]
-                                            [--output PATH] [--config CONFIG]
+                                            [--output PATH] [--config PATH]
                                             [--run-scenario RUN_SCENARIO]
                                             [--table [TABLE]] [--no-table]
                                             [--kwargs [KWARGS ...]]
@@ -318,8 +318,7 @@ svtk map spatial cluster
 .. code-block:: bash
 
    svtk map spatial cluster [-h] [--input PATH] [--output PATH]
-                                [--config CONFIG]
-                                [--run-scenario RUN_SCENARIO]
+                                [--config PATH] [--run-scenario RUN_SCENARIO]
                                 [--table [TABLE]] [--no-table]
                                 [--kwargs [KWARGS ...]]
                                 [--kwargs-json KWARGS_JSON] [--metric METRIC]
@@ -529,8 +528,7 @@ svtk map spatial corridor
 .. code-block:: bash
 
    svtk map spatial corridor [-h] [--input PATH] [--output PATH]
-                                 [--config CONFIG]
-                                 [--run-scenario RUN_SCENARIO]
+                                 [--config PATH] [--run-scenario RUN_SCENARIO]
                                  [--table [TABLE]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
@@ -753,7 +751,7 @@ svtk map spatial event-residual
 .. code-block:: bash
 
    svtk map spatial event-residual [-h] [--input PATH] [--output PATH]
-                                       [--config CONFIG]
+                                       [--config PATH]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table [TABLE]] [--no-table]
                                        [--kwargs [KWARGS ...]]
@@ -993,7 +991,7 @@ svtk map spatial metric-by-model
 .. code-block:: bash
 
    svtk map spatial metric-by-model [-h] [--input PATH] [--output PATH]
-                                        [--config CONFIG]
+                                        [--config PATH]
                                         [--run-scenario RUN_SCENARIO]
                                         [--table [TABLE]] [--no-table]
                                         [--kwargs [KWARGS ...]]
@@ -1210,7 +1208,7 @@ svtk map spatial model-improvement
 .. code-block:: bash
 
    svtk map spatial model-improvement [-h] [--input PATH] [--output PATH]
-                                          [--config CONFIG]
+                                          [--config PATH]
                                           [--run-scenario RUN_SCENARIO]
                                           [--table [TABLE]] [--no-table]
                                           [--kwargs [KWARGS ...]]
@@ -1427,8 +1425,7 @@ svtk map spatial pca-mode
 .. code-block:: bash
 
    svtk map spatial pca-mode [-h] [--input PATH] [--output PATH]
-                                 [--config CONFIG]
-                                 [--run-scenario RUN_SCENARIO]
+                                 [--config PATH] [--run-scenario RUN_SCENARIO]
                                  [--table [TABLE]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
@@ -1638,7 +1635,7 @@ svtk map spatial redcap-cluster
 .. code-block:: bash
 
    svtk map spatial redcap-cluster [-h] [--input PATH] [--output PATH]
-                                       [--config CONFIG]
+                                       [--config PATH]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table [TABLE]] [--no-table]
                                        [--kwargs [KWARGS ...]]
@@ -1852,7 +1849,7 @@ svtk map spatial residual-grid
 .. code-block:: bash
 
    svtk map spatial residual-grid [-h] [--input PATH] [--output PATH]
-                                      [--config CONFIG]
+                                      [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
                                       [--table [TABLE]] [--no-table]
                                       [--kwargs [KWARGS ...]]
@@ -2066,7 +2063,7 @@ svtk map spatial score
 .. code-block:: bash
 
    svtk map spatial score [-h] [--input PATH] [--output PATH]
-                              [--config CONFIG] [--run-scenario RUN_SCENARIO]
+                              [--config PATH] [--run-scenario RUN_SCENARIO]
                               [--table [TABLE]] [--no-table]
                               [--kwargs [KWARGS ...]]
                               [--kwargs-json KWARGS_JSON] [--metric METRIC]
@@ -2274,7 +2271,7 @@ svtk map spatial station-bias
 .. code-block:: bash
 
    svtk map spatial station-bias [-h] [--input PATH] [--output PATH]
-                                     [--config CONFIG]
+                                     [--config PATH]
                                      [--run-scenario RUN_SCENARIO]
                                      [--table [TABLE]] [--no-table]
                                      [--kwargs [KWARGS ...]]
@@ -2488,7 +2485,7 @@ svtk map spatial station-metric
 .. code-block:: bash
 
    svtk map spatial station-metric [-h] [--input PATH] [--output PATH]
-                                       [--config CONFIG]
+                                       [--config PATH]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table [TABLE]] [--no-table]
                                        [--kwargs [KWARGS ...]]

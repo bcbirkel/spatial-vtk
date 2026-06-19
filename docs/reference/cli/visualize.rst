@@ -116,7 +116,7 @@ svtk visualize qc data-synthetic-availability
 
    svtk visualize qc data-synthetic-availability [-h] [--input PATH]
                                                      [--output PATH]
-                                                     [--config CONFIG]
+                                                     [--config PATH]
                                                      [--run-scenario RUN_SCENARIO]
                                                      [--table [TABLE]]
                                                      [--no-table]
@@ -340,7 +340,7 @@ svtk visualize qc drop-cause-diagnostics
 
    svtk visualize qc drop-cause-diagnostics [-h] [--input PATH]
                                                 [--output PATH]
-                                                [--config CONFIG]
+                                                [--config PATH]
                                                 [--run-scenario RUN_SCENARIO]
                                                 [--table [TABLE]] [--no-table]
                                                 [--kwargs [KWARGS ...]]
@@ -563,7 +563,7 @@ svtk visualize qc event-station-retention
 
    svtk visualize qc event-station-retention [-h] [--input PATH]
                                                  [--output PATH]
-                                                 [--config CONFIG]
+                                                 [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [TABLE]]
                                                  [--no-table]
@@ -813,7 +813,7 @@ svtk visualize qc post-qc-station-event-map
 
    svtk visualize qc post-qc-station-event-map [-h] [--input PATH]
                                                    [--output PATH]
-                                                   [--config CONFIG]
+                                                   [--config PATH]
                                                    [--run-scenario RUN_SCENARIO]
                                                    [--table [TABLE]]
                                                    [--no-table]
@@ -1036,7 +1036,7 @@ svtk visualize qc retention-summary
 .. code-block:: bash
 
    svtk visualize qc retention-summary [-h] [--input PATH] [--output PATH]
-                                           [--config CONFIG]
+                                           [--config PATH]
                                            [--run-scenario RUN_SCENARIO]
                                            [--table [TABLE]] [--no-table]
                                            [--kwargs [KWARGS ...]]
@@ -1254,7 +1254,7 @@ svtk visualize qc trace-inventory-samples
 
    svtk visualize qc trace-inventory-samples [-h] --input PATH
                                                  [--output PATH]
-                                                 [--config CONFIG]
+                                                 [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [TABLE]]
                                                  [--no-table]
@@ -1505,7 +1505,7 @@ svtk visualize context distance-amplitude-diagnostics
 .. code-block:: bash
 
    svtk visualize context distance-amplitude-diagnostics
-       [-h] [--input PATH] [--output PATH] [--config CONFIG]
+       [-h] [--input PATH] [--output PATH] [--config PATH]
        [--run-scenario RUN_SCENARIO] [--table [TABLE]] [--no-table]
        [--kwargs [KWARGS ...]] [--kwargs-json KWARGS_JSON] [--metric METRIC]
        [--passband PASSBAND] [--bin-label BIN_LABEL] [--component COMPONENT]
@@ -1706,7 +1706,7 @@ svtk visualize context event-coverage
 .. code-block:: bash
 
    svtk visualize context event-coverage [-h] [--input PATH]
-                                             [--output PATH] [--config CONFIG]
+                                             [--output PATH] [--config PATH]
                                              [--run-scenario RUN_SCENARIO]
                                              [--table [TABLE]] [--no-table]
                                              [--kwargs [KWARGS ...]]
@@ -1926,7 +1926,7 @@ svtk visualize context event-magnitude-map
 
    svtk visualize context event-magnitude-map [-h] [--input PATH]
                                                   [--output PATH]
-                                                  [--config CONFIG]
+                                                  [--config PATH]
                                                   [--run-scenario RUN_SCENARIO]
                                                   [--table [TABLE]]
                                                   [--no-table]
@@ -2150,7 +2150,7 @@ svtk visualize context event-trace-comparison
 
    svtk visualize context event-trace-comparison [-h] [--input PATH]
                                                      [--output PATH]
-                                                     [--config CONFIG]
+                                                     [--config PATH]
                                                      [--run-scenario RUN_SCENARIO]
                                                      [--table [TABLE]]
                                                      [--no-table]
@@ -2399,8 +2399,7 @@ svtk visualize context record-coverage
 .. code-block:: bash
 
    svtk visualize context record-coverage [-h] [--input PATH]
-                                              [--output PATH]
-                                              [--config CONFIG]
+                                              [--output PATH] [--config PATH]
                                               [--run-scenario RUN_SCENARIO]
                                               [--table [TABLE]] [--no-table]
                                               [--kwargs [KWARGS ...]]
@@ -2620,8 +2619,7 @@ svtk visualize context station-coverage
 .. code-block:: bash
 
    svtk visualize context station-coverage [-h] [--input PATH]
-                                               [--output PATH]
-                                               [--config CONFIG]
+                                               [--output PATH] [--config PATH]
                                                [--run-scenario RUN_SCENARIO]
                                                [--table [TABLE]] [--no-table]
                                                [--kwargs [KWARGS ...]]
@@ -2843,7 +2841,7 @@ svtk visualize context station-event-beachball
 
    svtk visualize context station-event-beachball [-h] [--input PATH]
                                                       [--output PATH]
-                                                      [--config CONFIG]
+                                                      [--config PATH]
                                                       [--run-scenario RUN_SCENARIO]
                                                       [--table [TABLE]]
                                                       [--no-table]
@@ -3073,7 +3071,7 @@ svtk visualize context station-event-context
 
    svtk visualize context station-event-context [-h] [--input PATH]
                                                     [--output PATH]
-                                                    [--config CONFIG]
+                                                    [--config PATH]
                                                     [--run-scenario RUN_SCENARIO]
                                                     [--table [TABLE]]
                                                     [--no-table]
@@ -3302,7 +3300,7 @@ svtk visualize context station-event-network
 
    svtk visualize context station-event-network [-h] [--input PATH]
                                                     [--output PATH]
-                                                    [--config CONFIG]
+                                                    [--config PATH]
                                                     [--run-scenario RUN_SCENARIO]
                                                     [--table [TABLE]]
                                                     [--no-table]
@@ -3530,7 +3528,7 @@ svtk visualize context study-domain
 .. code-block:: bash
 
    svtk visualize context study-domain [-h] [--input PATH] [--output PATH]
-                                           [--config CONFIG]
+                                           [--config PATH]
                                            [--run-scenario RUN_SCENARIO]
                                            [--table [TABLE]] [--no-table]
                                            [--kwargs [KWARGS ...]]
@@ -3841,7 +3839,7 @@ svtk visualize waveforms event-radial-trace-section
 
    svtk visualize waveforms event-radial-trace-section [-h] [--input PATH]
                                                            [--output PATH]
-                                                           [--config CONFIG]
+                                                           [--config PATH]
                                                            [--run-scenario RUN_SCENARIO]
                                                            [--table [TABLE]]
                                                            [--no-table]
@@ -4091,7 +4089,7 @@ svtk visualize waveforms observed-synthetic-record-section
 .. code-block:: bash
 
    svtk visualize waveforms observed-synthetic-record-section
-       [-h] [--input PATH] [--output PATH] [--config CONFIG]
+       [-h] [--input PATH] [--output PATH] [--config PATH]
        [--run-scenario RUN_SCENARIO] [--table [TABLE]] [--no-table]
        [--kwargs [KWARGS ...]] [--kwargs-json KWARGS_JSON] [--metric METRIC]
        [--passband PASSBAND] [--bin-label BIN_LABEL] [--component COMPONENT]
@@ -4292,8 +4290,7 @@ svtk visualize waveforms record-section
 .. code-block:: bash
 
    svtk visualize waveforms record-section [-h] [--input PATH]
-                                               [--output PATH]
-                                               [--config CONFIG]
+                                               [--output PATH] [--config PATH]
                                                [--run-scenario RUN_SCENARIO]
                                                [--table [TABLE]] [--no-table]
                                                [--kwargs [KWARGS ...]]
@@ -4515,7 +4512,7 @@ svtk visualize waveforms station-event-waveform-map
 
    svtk visualize waveforms station-event-waveform-map [-h] [--input PATH]
                                                            [--output PATH]
-                                                           [--config CONFIG]
+                                                           [--config PATH]
                                                            [--run-scenario RUN_SCENARIO]
                                                            [--table [TABLE]]
                                                            [--no-table]
@@ -4740,7 +4737,7 @@ svtk visualize waveforms waveform-overlay-matrix
 
    svtk visualize waveforms waveform-overlay-matrix [-h] [--input PATH]
                                                         [--output PATH]
-                                                        [--config CONFIG]
+                                                        [--config PATH]
                                                         [--run-scenario RUN_SCENARIO]
                                                         [--table [TABLE]]
                                                         [--no-table]

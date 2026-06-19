@@ -974,6 +974,33 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Value: ``stations``. Convenience prepared stations table path" not in map_text
 
 
+def test_config_cli_help_marks_config_values_as_paths(capsys):
+    """Config-file arguments should render as path values in help and docs."""
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["config", "show", "--help"])
+    assert excinfo.value.code == 0
+    show_help = capsys.readouterr().out
+    assert "[--config PATH]" in show_help
+    assert "[--config CONFIG]" not in show_help
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["config", "set", "--help"])
+    assert excinfo.value.code == 0
+    set_help = capsys.readouterr().out
+    assert "svtk config set [-h] PATH" in set_help
+    assert "svtk config set [-h] config_path" not in set_help
+
+    root = Path(__file__).resolve().parents[1]
+    config_reference = (root / "docs" / "reference" / "cli" / "config.rst").read_text(encoding="utf-8")
+    assert "svtk config show [-h] [--config PATH]" in config_reference
+    assert "svtk config set [-h] PATH" in config_reference
+    assert "Filesystem path. Explicit config file." in config_reference
+    assert "Filesystem path. Spatial-VTK config file to use by default." in config_reference
+    assert "[--config CONFIG]" not in config_reference
+    assert "Value: ``config``. Explicit config file." not in config_reference
+
+
 def test_generated_cli_reference_uses_role_based_table_help():
     """Generated plotting docs should present table roles, not raw Python argument names."""
 

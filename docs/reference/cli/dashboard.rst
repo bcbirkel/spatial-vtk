@@ -56,7 +56,7 @@ svtk dashboard qc
 
 .. code-block:: bash
 
-   svtk dashboard qc [-h] [--config CONFIG] [--run-scenario RUN_SCENARIO]
+   svtk dashboard qc [-h] [--config PATH] [--run-scenario RUN_SCENARIO]
                          [--trace-summary PATH] [--port PORT]
                          [--address ADDRESS] [--auto-port] [--proxy-mode]
                          [--show]
@@ -78,7 +78,7 @@ svtk dashboard qc
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config used to find the default trace-summary output.
+     - Filesystem path. Spatial-VTK config used to find the default trace-summary output.
    * - ``--run-scenario``
      - No
      -
@@ -117,7 +117,7 @@ svtk dashboard metrics
 
 .. code-block:: bash
 
-   svtk dashboard metrics [-h] [--config CONFIG]
+   svtk dashboard metrics [-h] [--config PATH]
                               [--run-scenario RUN_SCENARIO]
                               [--metrics-dataset-dir PATH]
                               [--dashboard-summary-table-dir DIR]
@@ -141,7 +141,7 @@ svtk dashboard metrics
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config used to find default dashboard outputs.
+     - Filesystem path. Spatial-VTK config used to find default dashboard outputs.
    * - ``--run-scenario``
      - No
      -
@@ -184,7 +184,7 @@ svtk dashboard status
 
 .. code-block:: bash
 
-   svtk dashboard status [-h] [--config CONFIG]
+   svtk dashboard status [-h] [--config PATH]
                              [--run-scenario RUN_SCENARIO]
                              [--summary-format {parquet,csv}] [--json]
 
@@ -205,7 +205,7 @@ svtk dashboard status
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config used to resolve dashboard inputs.
+     - Filesystem path. Spatial-VTK config used to resolve dashboard inputs.
    * - ``--run-scenario``
      - No
      -

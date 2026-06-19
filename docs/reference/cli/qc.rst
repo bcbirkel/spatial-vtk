@@ -47,7 +47,7 @@ Build standard QC trace, inventory, and overlap tables from the active config.
 
 .. code-block:: bash
 
-   svtk qc build [-h] [--event-stations PATH] [--config CONFIG]
+   svtk qc build [-h] [--event-stations PATH] [--config PATH]
                      [--run-scenario RUN_SCENARIO]
                      [--trace-output TRACE_OUTPUT]
                      [--inventory-output INVENTORY_OUTPUT]
@@ -75,7 +75,7 @@ Build standard QC trace, inventory, and overlap tables from the active config.
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config file.
+     - Filesystem path. Spatial-VTK config file.
    * - ``--run-scenario``
      - No
      -
@@ -107,7 +107,7 @@ svtk qc manual-queue
 .. code-block:: bash
 
    svtk qc manual-queue [-h] [--trace-summary PATH] [--output PATH]
-                            [--config CONFIG] [--run-scenario RUN_SCENARIO]
+                            [--config PATH] [--run-scenario RUN_SCENARIO]
                             [--event-id EVENT_ID]
                             [--station-family STATION_FAMILY]
                             [--component COMPONENT]
@@ -175,7 +175,7 @@ svtk qc slurm
 .. code-block:: bash
 
    svtk qc slurm [-h] [--event-stations PATH] [--output PATH]
-                     [--config CONFIG] [--run-scenario RUN_SCENARIO]
+                     [--config PATH] [--run-scenario RUN_SCENARIO]
                      [--trace-output PATH] [--inventory-output PATH]
                      [--overlap-inventory-output PATH] [--submit]
 
@@ -204,7 +204,7 @@ svtk qc slurm
    * - ``--config``
      - No
      -
-     - Value: ``config``. Config file containing compute.slurm or qc.slurm settings.
+     - Filesystem path. Config file containing compute.slurm or qc.slurm settings.
    * - ``--run-scenario``
      - No
      -
@@ -237,7 +237,7 @@ Build compact QC summary tables from configured QC inventories.
 
 .. code-block:: bash
 
-   svtk qc summaries [-h] [--config CONFIG] [--run-scenario RUN_SCENARIO]
+   svtk qc summaries [-h] [--config PATH] [--run-scenario RUN_SCENARIO]
                          [--chunksize CHUNKSIZE] [--overwrite] [--verbose]
 
 .. rubric:: Parameters
@@ -257,7 +257,7 @@ Build compact QC summary tables from configured QC inventories.
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config file.
+     - Filesystem path. Spatial-VTK config file.
    * - ``--run-scenario``
      - No
      -

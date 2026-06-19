@@ -4,6 +4,8 @@ Changelog
 2026-06-19
 ----------
 
+- Normalized ``--config`` CLI arguments to render as ``PATH`` values in live
+  help and generated reference pages, including ``svtk config set``.
 - Added a public workflow-helper table to the Metrics API reference so
   large-run notebooks and scripts can find metric inventory, manifest, Slurm,
   batch, merge, and output helpers from ``spatial_vtk.metrics`` without

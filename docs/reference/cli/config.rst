@@ -47,7 +47,7 @@ svtk config bounds
 
 .. code-block:: bash
 
-   svtk config bounds [-h] [--config CONFIG] [--run-scenario RUN_SCENARIO]
+   svtk config bounds [-h] [--config PATH] [--run-scenario RUN_SCENARIO]
                           [--json]
 
 .. rubric:: Parameters
@@ -67,7 +67,7 @@ svtk config bounds
    * - ``--config``
      - No
      -
-     - Value: ``config``. Explicit config file.
+     - Filesystem path. Explicit config file.
    * - ``--run-scenario``
      - No
      -
@@ -86,7 +86,7 @@ svtk config find
 
 .. code-block:: bash
 
-   svtk config find [-h] [--config CONFIG] [--start-dir START_DIR]
+   svtk config find [-h] [--config PATH] [--start-dir START_DIR]
 
 .. rubric:: Parameters
 
@@ -105,7 +105,7 @@ svtk config find
    * - ``--config``
      - No
      -
-     - Value: ``config``. Explicit config file.
+     - Filesystem path. Explicit config file.
    * - ``--start-dir``
      - No
      -
@@ -120,8 +120,7 @@ svtk config outputs
 
 .. code-block:: bash
 
-   svtk config outputs [-h] [--config CONFIG]
-                           [--run-scenario RUN_SCENARIO]
+   svtk config outputs [-h] [--config PATH] [--run-scenario RUN_SCENARIO]
                            [--kind {all,table,figure,dashboard}] [--no-paths]
                            [--json]
 
@@ -169,7 +168,7 @@ svtk config set
 
 .. code-block:: bash
 
-   svtk config set [-h] config_path
+   svtk config set [-h] PATH
 
 .. rubric:: Parameters
 
@@ -188,7 +187,7 @@ svtk config set
    * - ``config_path``
      - Yes
      -
-     - Spatial-VTK config file to use by default.
+     - Filesystem path. Spatial-VTK config file to use by default.
 
 .. _cli-svtk-config-show:
 
@@ -199,7 +198,7 @@ svtk config show
 
 .. code-block:: bash
 
-   svtk config show [-h] [--config CONFIG] [--run-scenario RUN_SCENARIO]
+   svtk config show [-h] [--config PATH] [--run-scenario RUN_SCENARIO]
                         [--section SECTION] [--json]
 
 .. rubric:: Parameters
@@ -219,7 +218,7 @@ svtk config show
    * - ``--config``
      - No
      -
-     - Value: ``config``. Explicit config file.
+     - Filesystem path. Explicit config file.
    * - ``--run-scenario``
      - No
      -
