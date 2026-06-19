@@ -760,6 +760,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     text = docs.read_text(encoding="utf-8")
     assert ".. automodule:: spatial_vtk.spatial.calculate\n" in text
     assert "helpers from the stable ``spatial_vtk.spatial`` package entry" in text
+    assert "lower-level calculate modules are\nimplementation organization" in text
     assert "Start with ``spatial_vtk.spatial`` for spatial-statistics" in text
     assert "from spatial_vtk.spatial import (" in text
     assert "run_spatial_statistics_workflow_from_config" in text
@@ -856,6 +857,20 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "legacy passband-scoped spectral rows" in text
     assert "without notebook-local plot-function imports" in text
     forbidden = (
+        "spatial_vtk.spatial.calculate.prepare_stats",
+        "spatial_vtk.spatial.calculate.correlation",
+        "spatial_vtk.spatial.calculate.clustering",
+        "spatial_vtk.spatial.calculate.pca",
+        "spatial_vtk.spatial.calculate.geology",
+        "spatial_vtk.spatial.calculate.geojson",
+        "spatial_vtk.spatial.calculate.corridors",
+        "spatial_vtk.spatial.calculate.geometry",
+        "spatial_vtk.spatial.calculate.paths",
+        "spatial_vtk.spatial.calculate.patterns",
+        "spatial_vtk.spatial.calculate.polygon_edges",
+        "spatial_vtk.spatial.calculate.rotation",
+        "spatial_vtk.spatial.calculate.settings",
+        "spatial_vtk.spatial.calculate.workflow",
         "spatial_vtk.spatial.plot.correlation",
         "spatial_vtk.spatial.plot.large_run",
         "spatial_vtk.spatial.plot.metrics",

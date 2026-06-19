@@ -103,8 +103,10 @@ Calculate
 
 Notebook and CLI workflows should import spatial statistics, GeoJSON, corridor,
 and geometry helpers from the stable ``spatial_vtk.spatial`` package entry
-point. The implementation modules below document the lower-level organization
-for users who need narrower module references.
+point. ``spatial_vtk.spatial.calculate`` remains a public module for advanced
+calculation scripts, while the lower-level calculate modules are
+implementation organization and are intentionally not listed as notebook-facing
+import paths.
 
 .. automodule:: spatial_vtk.spatial.calculate
    :members:
@@ -139,48 +141,6 @@ for users who need narrower module references.
 .. autofunction:: spatial_vtk.spatial.geojson_metric_region_frame
 
 .. autofunction:: spatial_vtk.spatial.geojson_metric_subset_frame
-
-.. automodule:: spatial_vtk.spatial.calculate.prepare_stats
-   :members:
-
-.. automodule:: spatial_vtk.spatial.calculate.correlation
-   :members:
-
-.. automodule:: spatial_vtk.spatial.calculate.clustering
-   :members:
-
-.. automodule:: spatial_vtk.spatial.calculate.pca
-   :members:
-
-.. automodule:: spatial_vtk.spatial.calculate.geology
-   :members:
-
-.. automodule:: spatial_vtk.spatial.calculate.geojson
-   :members:
-
-.. automodule:: spatial_vtk.spatial.calculate.corridors
-   :members:
-
-.. automodule:: spatial_vtk.spatial.calculate.geometry
-   :members:
-
-.. automodule:: spatial_vtk.spatial.calculate.paths
-   :members:
-
-.. automodule:: spatial_vtk.spatial.calculate.patterns
-   :members:
-
-.. automodule:: spatial_vtk.spatial.calculate.polygon_edges
-   :members:
-
-.. automodule:: spatial_vtk.spatial.calculate.rotation
-   :members:
-
-.. automodule:: spatial_vtk.spatial.calculate.settings
-   :members:
-
-.. automodule:: spatial_vtk.spatial.calculate.workflow
-   :members:
 
 Plots
 -----
