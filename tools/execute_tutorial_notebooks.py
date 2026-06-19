@@ -80,6 +80,7 @@ NOTEBOOK_RUNTIME_MODULES = {
     "streamlit": "streamlit",
     "streamlit-folium": "streamlit_folium",
 }
+SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND = 'python -m pip install -e ".[notebooks,waveforms]"'
 KERNEL_EXTRA_ARGUMENTS = ("--IPKernelApp.log_level=ERROR",)
 TUTORIAL_EXAMPLE_ROOT = Path("data/examples/example_five_event_subset")
 TUTORIAL_SYNTHETIC_MODEL = "cvmsi_20260506_material_0p6x1p2_asdf"
@@ -248,8 +249,9 @@ def check_notebook_runtime(required: dict[str, str] | None = None) -> None:
     raise SystemExit(
         "Missing tutorial runtime modules: "
         f"{missing_text}. These modules are required before executing the "
-        "tutorial notebooks. Install the tutorial extras with "
-        'python -m pip install -e ".[notebooks,waveforms]".'
+        "tutorial notebooks, including Jupyter, mapping, dashboard, and "
+        "waveform readers. From a source checkout, install the package runtime "
+        f"plus tutorial extras with {SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND}."
     )
 
 

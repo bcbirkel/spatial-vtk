@@ -82,8 +82,13 @@ def test_tutorial_notebook_runtime_preflight_reports_missing_modules() -> None:
     missing = module.missing_notebook_runtime_modules({"demo": "definitely_missing_svtk_module"})
 
     assert missing == ["demo"]
-    with pytest.raises(SystemExit, match=r"Missing tutorial runtime modules: demo.*\[notebooks,waveforms\]"):
+    assert module.SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND == 'python -m pip install -e ".[notebooks,waveforms]"'
+    with pytest.raises(SystemExit) as excinfo:
         module.check_notebook_runtime({"demo": "definitely_missing_svtk_module"})
+    message = str(excinfo.value)
+    assert "Missing tutorial runtime modules: demo" in message
+    assert "Jupyter, mapping, dashboard, and waveform readers" in message
+    assert module.SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND in message
 
 
 def test_tutorial_notebook_runtime_preflight_includes_package_runtime_modules() -> None:

@@ -4,6 +4,10 @@ Changelog
 2026-06-19
 ----------
 
+- Clarified tutorial runtime-check install guidance so missing dependency
+  errors and installation docs explain that the tutorial runtime includes
+  Jupyter, mapping, dashboard, and waveform-reader modules, with a shared
+  source-checkout install command.
 - Updated the generated CLI reference formatter so config files, figure
   sidecar directories, named convenience table inputs, manifests, and other
   path-like options are described as filesystem or directory paths, while

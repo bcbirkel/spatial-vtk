@@ -109,7 +109,7 @@ extras, you can also run the public test suite:
    python -m pytest
 
 To verify that the standard and large-run tutorial notebooks run cleanly from
-the committed example data, install the notebook extra and run:
+the committed example data, install the tutorial runtime extras and run:
 
 .. code-block:: bash
 
@@ -122,7 +122,9 @@ stops before cleaning ``outputs/tutorials`` if the example data is incomplete.
 The ``--runtime-check-only`` command performs the same source/data preflight,
 makes the source checkout importable, and verifies the Jupyter,
 ``spatial_vtk``, scientific Python, mapping, dashboard, and waveform modules
-used by the tutorial cells without deleting outputs or executing notebooks.
+used by the tutorial cells without deleting outputs or executing notebooks. If
+modules are missing, the checker prints the source-checkout install command
+needed for the tutorial runtime.
 
 You are ready to continue once the import prints a version, ``svtk --help``
 shows the command groups, and the tests or tutorial notebook check pass if you
