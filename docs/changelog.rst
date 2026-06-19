@@ -2,6 +2,13 @@ Changelog
 =========
 
 2026-06-18
+   Added
+   ``spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings()``
+   and rewired the standard Step 3 metrics notebook to use it for the focused
+   station residual map. The notebook no longer imports
+   ``MetricFigureContext`` or spatial map plotting functions just to render
+   one station summary; package code now owns the context setup, station
+   aggregation, source-row sidecar contract, status table, and preview rows.
    Added ``spatial_vtk.visualize.qc.write_qc_figures_from_outputs()`` as the
    generic QC figure-suite writer and rewired the standard Step 2 QC notebook
    to use it. The notebook no longer imports individual QC plotting functions,

@@ -1178,10 +1178,15 @@ def test_step03_station_map_uses_package_aggregation_and_source_sidecar() -> Non
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "MetricFigureContext.from_frame(" in source
-    assert "station_summary_for_metric(" in source
-    assert "write_station_metric_map_for_metric(" in source
-    assert "metric_figure_settings.sidecars.kwargs(plural=True)" in source
+    assert "write_station_metric_map_from_notebook_settings(" in source
+    assert "station_metric_result.status_frame()" in source
+    assert "station_metric_result.preview" in source
+    assert "MetricFigureContext.from_frame(" not in source
+    assert "station_summary_for_metric(" not in source
+    assert "write_station_metric_map_for_metric(" not in source
+    assert "metric_figure_settings.sidecars.kwargs(plural=True)" not in source
+    assert "plot_station_metric_map" not in source
+    assert "plot_station_metric_map_by_period" not in source
     assert "station_summary_for_map(" not in source
     assert "station_pga_source" not in source
     assert "source_df=station_pga_source" not in source

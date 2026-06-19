@@ -1906,6 +1906,87 @@ def prepare_large_run_metric_figure_context(
     return MetricFigureContext.from_metrics_long(metrics_long_path, figures_dir, **kwargs)
 
 
+@dataclass(frozen=True)
+class StationMetricMapResult:
+    """Result from a focused station metric map notebook helper."""
+
+    output_path: Path | None
+    context: MetricFigureContext
+    preview: pd.DataFrame
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact notebook status table for the rendered station map."""
+
+        rows = [
+            ("output_path", None if self.output_path is None else str(self.output_path)),
+            ("ready", bool(self.context.ready)),
+            ("selected_metric_rows", int(len(self.context.metrics_for_figures))),
+            ("preview_rows", int(len(self.preview))),
+            ("station_aggregation", self.context.station_aggregation),
+            ("write_sidecars", bool(self.context.write_sidecars)),
+            ("sidecar_dir", str(self.context.sidecar_output_dir) if self.context.write_sidecars else None),
+        ]
+        return pd.DataFrame(rows, columns=["name", "value"])
+
+
+def write_station_metric_map_from_notebook_settings(
+    metrics: pd.DataFrame,
+    settings: Any,
+    *,
+    metric: str,
+    value_col: str = "log2_residual",
+    passband: str | None = None,
+    components: list[str] | str | None = None,
+    model: str | None = None,
+    title: str | None = None,
+    preview_rows: int = 5,
+    make_figures: bool = True,
+    overwrite: bool = True,
+) -> StationMetricMapResult:
+    """Write one station metric map using notebook figure settings.
+
+    This helper keeps tutorial notebooks from constructing
+    :class:`MetricFigureContext` directly for a single focused figure while
+    preserving the same station aggregation and source-row sidecar contract.
+    """
+
+    from spatial_vtk.spatial.map import plot_station_metric_map, plot_station_metric_map_by_period
+
+    context_kwargs = dict(settings.context_kwargs(include_station_aggregation=True))
+    context_kwargs["make_figures"] = bool(make_figures)
+    context = MetricFigureContext.from_frame(
+        metrics,
+        settings.figure_dir,
+        overwrite=bool(overwrite),
+        value_col=value_col,
+        **context_kwargs,
+    )
+    resolved_passband = passband if passband is not None else settings.passband
+    resolved_components = components if components is not None else settings.components
+    resolved_model = model if model is not None else settings.model
+    output = context.write_station_metric_map_for_metric(
+        plot_station_metric_map,
+        plot_station_metric_map_by_period,
+        metric=metric,
+        passband=resolved_passband,
+        components=resolved_components,
+        model=resolved_model,
+        value_col=value_col,
+        add_basemap=settings.add_basemap,
+        title=title,
+        showfig=settings.showfig,
+    )
+    preview = context.station_summary_preview_for_metric(
+        metric,
+        value_col,
+        passband=resolved_passband,
+        components=resolved_components,
+        model=resolved_model,
+        nrows=preview_rows,
+    )
+    return StationMetricMapResult(output, context, preview)
+
+
 def metric_plot_input_summary_frame(
     metrics: pd.DataFrame,
     *,
@@ -2563,6 +2644,7 @@ def _group_key_value(value: object) -> object:
 
 __all__ = [
     "MetricFigureContext",
+    "StationMetricMapResult",
     "TARGET_METRIC_SPECS",
     "dimension_value",
     "filter_optional",
@@ -2574,4 +2656,5 @@ __all__ = [
     "prepare_large_run_metric_figure_context",
     "psa_period_label",
     "slug",
+    "write_station_metric_map_from_notebook_settings",
 ]

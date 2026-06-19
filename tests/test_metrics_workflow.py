@@ -43,6 +43,7 @@ from spatial_vtk.metrics.plot import (
     metric_plot_input_summary_frame,
     metric_rows_for_metrics,
     plot_period_score_distribution,
+    write_station_metric_map_from_notebook_settings,
 )
 from spatial_vtk.visualize import figure_sidecar_status_frame
 from spatial_vtk.spatial.map import plot_event_residual_map
@@ -572,6 +573,83 @@ def test_metric_figure_context_writes_single_named_station_map_with_source_sidec
     assert metadata["plot_rows_role"] == "post_aggregation_station_summary"
     assert metadata["source_row_count"] == 3
     assert pd.read_csv(source_sidecar)["event_id"].tolist() == ["e1", "e2", "e3"]
+
+
+def test_station_metric_map_notebook_helper_writes_preview_and_sidecar(tmp_path, monkeypatch) -> None:
+    """Notebook wrapper should own context setup for one station metric map."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3"],
+            "station": ["STA", "STA", "STB"],
+            "sta_lon": [-118.0, -118.1, -117.9],
+            "sta_lat": [34.0, 34.1, 34.2],
+            "metric": ["PGA", "PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec"],
+            "model": ["m1", "m1", "m1"],
+            "component": ["Z", "Z", "Z"],
+            "log2_residual": [1.0, 3.0, 5.0],
+        }
+    )
+
+    class Settings:
+        figure_dir = tmp_path / "figures"
+        passband = "1-2 sec"
+        components = ["Z"]
+        model = "m1"
+        add_basemap = False
+        showfig = False
+
+        def context_kwargs(self, *, include_station_aggregation: bool = False) -> dict[str, object]:
+            kwargs: dict[str, object] = {
+                "sample_rows": 0,
+                "default_passband": self.passband,
+                "default_components": self.components,
+                "default_showfig": self.showfig,
+                "default_model": self.model,
+                "add_basemap": self.add_basemap,
+                "robust_axis_percentile": 95.0,
+                "write_sidecars": True,
+                "sidecar_rows": None,
+                "sidecar_dir": self.figure_dir / "sidecars",
+            }
+            if include_station_aggregation:
+                kwargs["station_aggregation"] = "mean"
+            return kwargs
+
+    def _dummy_station_map(df: pd.DataFrame, *, output_path: Path, **_kwargs) -> None:
+        assert "source_row_count" in df.columns
+        Path(output_path).write_text("figure", encoding="utf-8")
+
+    import spatial_vtk.spatial.map as map_public
+    import spatial_vtk.spatial.map.metrics as map_metrics
+
+    monkeypatch.setattr(map_metrics, "plot_station_metric_map", _dummy_station_map)
+    monkeypatch.setattr(map_metrics, "plot_station_metric_map_by_period", _dummy_station_map)
+    monkeypatch.setattr(map_public, "plot_station_metric_map", _dummy_station_map, raising=False)
+    monkeypatch.setattr(map_public, "plot_station_metric_map_by_period", _dummy_station_map, raising=False)
+
+    result = write_station_metric_map_from_notebook_settings(
+        metrics,
+        Settings(),
+        metric="PGA",
+        value_col="log2_residual",
+        title="Mean Station PGA Log2 Residual",
+        preview_rows=1,
+    )
+
+    assert result.output_path is not None
+    assert result.output_path.exists()
+    assert result.preview["station"].tolist() == ["STA"]
+    status = result.status_frame().set_index("name")
+    assert bool(status.loc["ready", "value"]) is True
+    assert status.loc["preview_rows", "value"] == 1
+    assert status.loc["station_aggregation", "value"] == "mean"
+    source_sidecar = result.context.sidecar_output_dir / f"{result.output_path.stem}.source.csv"
+    metadata = json.loads((result.context.sidecar_output_dir / f"{result.output_path.stem}.json").read_text(encoding="utf-8"))
+    assert source_sidecar.exists()
+    assert metadata["aggregation_contract"] == "station_event_rows_to_station_summary"
+    assert metadata["source_row_count"] == 3
 
 
 def test_metric_figure_context_orchestrates_large_run_plot_families(tmp_path) -> None:

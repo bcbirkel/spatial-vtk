@@ -32,7 +32,12 @@ def test_public_imports():
         metric_slurm_submission_readiness,
         metric_slurm_submission_readiness_from_config,
     )
-    from spatial_vtk.metrics.plot import MetricFigureContext, metric_plot_input_summary_frame, metric_rows_for_metrics
+    from spatial_vtk.metrics.plot import (
+        MetricFigureContext,
+        metric_plot_input_summary_frame,
+        metric_rows_for_metrics,
+        write_station_metric_map_from_notebook_settings,
+    )
     from spatial_vtk.io import (
         load_configured_input_paths,
         load_configured_input_tables,
@@ -113,6 +118,7 @@ def test_public_imports():
     assert callable(MetricFigureContext.from_frame)
     assert callable(metric_plot_input_summary_frame)
     assert callable(metric_rows_for_metrics)
+    assert callable(write_station_metric_map_from_notebook_settings)
     assert callable(inspect_synthetic_format)
     assert callable(load_configured_input_paths)
     assert callable(load_configured_input_tables)
@@ -292,9 +298,11 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "from spatial_vtk.metrics.plot import (" in text
     assert ".. automodule:: spatial_vtk.metrics.plot\n" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext" in text
+    assert ".. autoclass:: spatial_vtk.metrics.plot.StationMetricMapResult" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.metric_plot_input_summary_frame" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.metric_rows_for_metrics" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context" in text
+    assert ".. autofunction:: spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings" in text
     assert "Public plotting helpers exposed by ``spatial_vtk.metrics.plot``" in text
     assert "``PSA`` and ``FAS`` are broadband spectral metrics" in text
     assert "writes blank\n``passband`` values for spectral tasks" in text
@@ -304,6 +312,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "``spectral_metric_contract_status``" in text
     assert "legacy passband-scoped row counts" in text
     assert "``write_station_metric_map_for_metric``" in text
+    assert "``write_station_metric_map_from_notebook_settings``" in text
     assert "without hand-filtering\n   dataframes in the notebook" in text
     for helper in (
         "plot_band_score_distribution",

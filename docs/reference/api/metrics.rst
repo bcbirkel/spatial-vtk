@@ -199,6 +199,12 @@ standard row factories used by the large-run notebooks:
    concise tutorial cells that should render or preview one metric without
    hand-filtering dataframes in the notebook.
 
+``write_station_metric_map_from_notebook_settings``
+   Build the focused station-map context, render one named metric, and return
+   both a status table and station-summary preview using notebook figure
+   settings. Standard tutorials use this helper instead of constructing a
+   ``MetricFigureContext`` in the notebook.
+
 ``station_grid_for_item`` and ``station_model_summary_for_item``
    Prepare station summaries for grid and model-map plotting while preserving
    aggregation metadata for sidecar JSON files.
@@ -243,8 +249,13 @@ input rows contain multiple ``period_s`` values; period curves use the same
 .. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext
    :members:
 
+.. autoclass:: spatial_vtk.metrics.plot.StationMetricMapResult
+   :members:
+
 .. autofunction:: spatial_vtk.metrics.plot.metric_plot_input_summary_frame
 
 .. autofunction:: spatial_vtk.metrics.plot.metric_rows_for_metrics
 
 .. autofunction:: spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context
+
+.. autofunction:: spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings
