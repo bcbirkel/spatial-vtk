@@ -10,8 +10,9 @@ Dashboard commands can resolve their standard datasets from the active config. T
 
 .. code-block:: bash
 
-   svtk dashboard status --config data/examples/configuration/example_spatial_vtk_config.yaml
-   svtk dashboard metrics --config data/examples/configuration/example_spatial_vtk_config.yaml --auto-port --proxy-mode
+   svtk dashboard status --config data/examples/configuration/example_spatial_vtk_config.yaml --run-scenario tutorial
+   svtk dashboard metrics --config data/examples/configuration/example_spatial_vtk_config.yaml --run-scenario tutorial --auto-port --proxy-mode
+   svtk dashboard qc --config data/examples/configuration/example_spatial_vtk_config.yaml --run-scenario tutorial --auto-port --proxy-mode
 
 Use ``--auto-port`` when another Streamlit server may already be running and ``--proxy-mode`` when launching through a proxied notebook or remote desktop service.
 

@@ -101,6 +101,9 @@ Changelog
 - Updated generated CLI reference examples for plotting, mapping,
   visualization, and dashboards to use the committed example config path
   instead of a project-local ``runs/spatial_vtk_config.yaml`` placeholder.
+- Updated dashboard CLI reference examples to pass the ``tutorial`` run
+  scenario with the committed example config and include both Metrics and QC
+  dashboard launch patterns.
 - Aligned waveform-comparison workflow docs and helper docstrings with the
   stabilized notebook pattern: notebooks use
   ``write_waveform_comparison_from_notebook_settings()``, while scripts can use

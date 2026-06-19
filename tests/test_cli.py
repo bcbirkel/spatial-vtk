@@ -902,7 +902,15 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert f"svtk config set {example_config}" in plot_text
     assert f"svtk config set {example_config}" in map_text
     assert f"svtk config set {example_config}" in visualize_text
-    assert f"svtk dashboard metrics --config {example_config} --auto-port --proxy-mode" in dashboard_text
+    assert f"svtk dashboard status --config {example_config} --run-scenario tutorial" in dashboard_text
+    assert (
+        f"svtk dashboard metrics --config {example_config} --run-scenario tutorial --auto-port --proxy-mode"
+        in dashboard_text
+    )
+    assert (
+        f"svtk dashboard qc --config {example_config} --run-scenario tutorial --auto-port --proxy-mode"
+        in dashboard_text
+    )
     cli_reference_preambles = [
         plot_text.split("Command Tree", 1)[0],
         map_text.split("Command Tree", 1)[0],
