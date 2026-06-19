@@ -130,15 +130,21 @@ Changelog
   scenario with the committed example config and include both Metrics and QC
   dashboard launch patterns.
 - Aligned waveform-comparison workflow docs and helper docstrings with the
-  stabilized notebook pattern: notebooks use
-  ``write_waveform_comparison_from_notebook_settings()``, while scripts can use
-  ``write_waveform_comparison_from_outputs()`` when plotting kwargs are already
-  resolved.
+  stabilized notebook pattern.
+- Documented
+  ``write_waveform_comparison_from_notebook_settings()`` as the notebook-facing
+  waveform-comparison helper.
+- Documented ``write_waveform_comparison_from_outputs()`` as the script-facing
+  waveform-comparison helper for callers that already resolved plotting
+  keyword arguments.
 - Aligned region-boxplot workflow docs with the stabilized Step 6 notebook
-  pattern: notebooks use
-  ``write_large_run_region_boxplot_from_notebook_settings()``, while scripts
-  can use ``write_large_run_region_boxplot_from_outputs()`` once figure
-  settings are resolved.
+  pattern.
+- Documented
+  ``write_large_run_region_boxplot_from_notebook_settings()`` as the
+  notebook-facing region-boxplot helper.
+- Documented ``write_large_run_region_boxplot_from_outputs()`` as the
+  script-facing region-boxplot helper for callers that already resolved figure
+  settings.
 - Updated the generated CLI reference tables to use explicit positional
   metavars, so ``svtk config set`` documents the saved config argument as
   ``PATH`` consistently in both usage and parameter rows.
@@ -299,11 +305,13 @@ Changelog
 - Registered missing waveform visualization figure defaults for record
   sections, observed/synthetic record sections, waveform overlay matrices, and
   event radial trace sections.
-- Registered the standard Step 6 plotting figures on the ``step_06_plotting``
-  output group and rewired the Step 6 additional plotting notebook to use
+- Registered the standard Step 6 plotting figures on the
+  ``step_06_plotting`` output group.
+- Rewired the Step 6 additional plotting notebook to use
   ``OutputGroup.figure_path()`` for waveform maps, pattern similarity,
-  scatterplot, boxplot, and heatmap outputs instead of hand-joining
-  ``figure_dir`` paths in notebook cells.
+  scatterplot, boxplot, and heatmap outputs.
+- Removed the Step 6 notebook's hand-joined ``figure_dir`` path construction
+  for those figure outputs.
 - Added ``OutputGroup.figure_path()`` and registered optional Step 4 spatial
   figure artifacts so notebooks can derive metric-specific figure filenames
   from configured output keys instead of hand-joining ``figure_dir`` paths.
@@ -828,11 +836,14 @@ Changelog
 - Clarified dashboard CLI path options.
 - Hardened metrics-dashboard startup for large or partial dashboard outputs.
 - Simplified the large-run Step 7 dashboard driver so the notebook uses
-  config-backed dashboard status, submits
-  ``write_configured_dashboard_datasets()`` through the package-function
-  notebook helper, and previews ``metrics_long`` through
-  ``preview_output_table("metrics_long")`` instead of expanding configured
-  dashboard paths or building metric-output CLI commands in task cells.
+  config-backed dashboard status.
+- Rewired large-run Step 7 dashboard dataset generation through
+  ``write_configured_dashboard_datasets()`` and the package-function notebook
+  helper.
+- Rewired the large-run Step 7 ``metrics_long`` preview through
+  ``preview_output_table("metrics_long")``.
+- Removed configured dashboard path expansion and metric-output CLI command
+  assembly from large-run Step 7 task cells.
 - Made ``svtk metrics run`` config-backed for small local metric runs.
 - Tightened large-run metric figure provenance for sampled station maps.
 - Hardened metric plotting compatibility for older pandas and Matplotlib
@@ -864,16 +875,18 @@ Changelog
 - Updated configuration documentation to show grouped output table loading with
   ``OutputGroup.load_tables()`` instead of direct ``load_output_table``
   examples.
-- The README workflow image now points at the committed public asset, the
-  configuration example loads ``record_coverage`` before plotting it, QC Slurm
-  settings are exposed from the public ``spatial_vtk.qc`` entry point, tutorial
-  notebooks use that public import, and the API reference documents
-  notebook-facing workflow, spatial, and visualization package entry points.
-- The docs now describe the committed NPZ tutorial waveform subset, the
-  workflow diagram lives under ``docs/_static/``, large-run Step 1 and Step 2
-  define ``SVTK_ADD_BASEMAP`` before optional figure rendering, and the Step 2
-  full-QC submission no longer reruns just because the overlap sidecar is
-  missing.
+- The README workflow image now points at the committed public asset.
+- The configuration example loads ``record_coverage`` before plotting it.
+- QC Slurm settings are exposed from the public ``spatial_vtk.qc`` entry point,
+  and tutorial notebooks use that public import.
+- The API reference documents notebook-facing workflow, spatial, and
+  visualization package entry points.
+- The docs now describe the committed NPZ tutorial waveform subset.
+- The workflow diagram lives under ``docs/_static/``.
+- Large-run Step 1 and Step 2 define ``SVTK_ADD_BASEMAP`` before optional
+  figure rendering.
+- The Step 2 full-QC submission no longer reruns just because the overlap
+  sidecar is missing.
 
 **Other Notes**
 
@@ -1002,11 +1015,14 @@ Changelog
   CLI commands or inline Slurm worker code.
 - The notebook now calls Python package functions directly while the helper
   handles local execution or Slurm submission.
-- Observed and synthetic roots now default from
-  ``paths.observed_root``/``paths.observed_template`` and
-  ``paths.synthetic_root``/``paths.synthetic_template``, output defaults to the
-  registered ``waveform_inventory`` table, and template/glob paths are reduced
-  to their static scan directory.
+- Observed roots now default from
+  ``paths.observed_root``/``paths.observed_template``.
+- Synthetic roots now default from
+  ``paths.synthetic_root``/``paths.synthetic_template``.
+- Waveform-inventory output now defaults to the registered
+  ``waveform_inventory`` table.
+- Template and glob paths are reduced to their static scan directory before
+  inventory scanning.
 - ``svtk metrics inventories`` now exposes ``--observed-inventory-output`` and
   ``--synthetic-inventory-output``.
 - ``svtk metrics plan`` exposes ``--observed-metric-inventory`` and
@@ -1523,9 +1539,11 @@ Changelog
 **Fixed and Hardened**
 
 - Clarified spectral QC reason labels so requested periods are not described as
-  frequencies, regenerated the example QC preview, replaced the site metadata
-  preview with rows derived from actual LA Basin metadata products, and
-  simplified the dashboard output section to show the dashboard screenshot
+  frequencies.
+- Regenerated the example QC preview.
+- Replaced the site metadata preview with rows derived from actual LA Basin
+  metadata products.
+- Simplified the dashboard output section so it shows the dashboard screenshot
   without a mismatched CSV preview.
 - Cleaned the six tutorial notebooks so they use the activated tutorial config,
   shared default output registry, standard ``write_output_table`` table writes,
@@ -1604,10 +1622,12 @@ Changelog
 **Added**
 
 - Added public spatial-statistics calculation modules for metric preparation,
-  station bias, Moran's I, distance-bin correlations, spatial holdout,
-  residual-feature clustering, REDCAP clustering, geology-class joins, PCA
-  spatial modes, bootstrap contrasts, permutation Moran tests, and
-  observed/synthetic pattern similarity.
+  station bias, Moran's I, and distance-bin correlations.
+- Added public spatial-statistics calculation modules for spatial holdout,
+  residual-feature clustering, REDCAP clustering, and geology-class joins.
+- Added public spatial-statistics calculation modules for PCA spatial modes,
+  bootstrap contrasts, permutation Moran tests, and observed/synthetic pattern
+  similarity.
 - Added companion plot and map wrappers for correlograms, semivariograms,
   directional correlation, holdout scatter/error maps, cluster summaries, PCA
   variance/loadings diagnostics, PCA mode maps, station-bias maps, REDCAP maps,
@@ -1639,11 +1659,13 @@ Changelog
   configs, resolving paths and named bounds, merging run defaults, planning
   deterministic output artifacts, writing artifact manifests, and reading
   metric calculation plans from config.
-- Added optional Streamlit dashboard app support with Folium maps, Plotly
-  charts, dashboard schema validation, human-readable public metric and
-  transform labels, selectable observed/synthetic/residual/GOF value columns,
-  filtered export helpers, and manual-review queue exports compatible with the
-  manual QC picker.
+- Added optional Streamlit dashboard app support with Folium maps and Plotly
+  charts.
+- Added dashboard schema validation and human-readable public metric and
+  transform labels.
+- Added selectable observed/synthetic/residual/GOF dashboard value columns.
+- Added filtered dashboard export helpers and manual-review queue exports
+  compatible with the manual QC picker.
 - Added shared public metric, transform, and passband labels for dashboard,
   plotting, mapping, and future CLI output.
 - Added reusable figure-selection helpers so plots can consistently apply
@@ -1663,7 +1685,7 @@ Changelog
 Future Work
 -----------
 
-Planned additions are tracked in :doc:`future_features`.
+- Planned additions are tracked in :doc:`future_features`.
 
 .. toctree::
  :maxdepth: 1
