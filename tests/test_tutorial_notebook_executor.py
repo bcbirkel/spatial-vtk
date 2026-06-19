@@ -1190,20 +1190,21 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     assert "metric_plot_context.write_score_trend_plots(" in source
     assert "plot_score_trends" in source
     assert 'SCORE_TREND_FIGURE_SETTINGS = notebook_figure_settings(' in source
-    assert 'MAKE_SCORE_TRENDS = SCORE_TREND_FIGURE_SETTINGS.make_figures' in source
+    assert 'if not SCORE_TREND_FIGURE_SETTINGS.make_figures:' in source
     assert 'SCORE_TREND_COLUMNS = SCORE_TREND_FIGURE_SETTINGS.score_columns or ["anderson_2004_gof"]' in source
     assert 'os.environ.get("SVTK_MAKE_SCORE_TRENDS"' not in source
     assert 'os.environ.get("SVTK_SCORE_TREND_COLUMNS"' not in source
     assert "Skipping optional GOF score trends. Set SVTK_MAKE_SCORE_TRENDS=1" in source
     assert "The main large-run figure suite uses `log2_residual`" in source
     assert "METRIC_FIGURE_SETTINGS = notebook_figure_settings(" in source
-    assert "PLOT_COMPARE_TO = METRIC_FIGURE_SETTINGS.compare_to" in source
-    assert "PLOT_COMPARISON_TABLE = METRIC_FIGURE_SETTINGS.comparison_table" in source
-    assert "compare_to=PLOT_COMPARE_TO" in source
-    assert "table=PLOT_COMPARISON_TABLE" in source
+    assert "METRIC_FIGURE_SETTINGS.plot_selection_kwargs(" in source
+    assert "compare_to=METRIC_FIGURE_SETTINGS.compare_to" in source
+    assert "table=METRIC_FIGURE_SETTINGS.comparison_table" in source
     assert "SCORE_TREND_COLUMNS" in source
     assert "raw event-level rows used for the station summaries" in source
-    assert "STATION_AGGREGATION = METRIC_FIGURE_SETTINGS.station_aggregation" in source
+    assert "STATION_AGGREGATION = METRIC_FIGURE_SETTINGS.station_aggregation" not in source
+    assert "DEFAULT_PLOT_" not in source
+    assert "METRIC_FIGURE_SIDECARS" not in source
     for helper in (
         "write_residuals_vs_distance_plots",
         "write_residuals_vs_depth_plots",
@@ -1879,8 +1880,9 @@ def test_large_run_step03_metric_figures_are_auditable_station_aggregations() ->
     assert "METRIC_FIGURE_SETTINGS.figure_dir" in source
     assert "METRICS_FIGURE_DIR" not in source
     assert 'figures_dir / "metrics"' not in source
-    assert "STATION_AGGREGATION = METRIC_FIGURE_SETTINGS.station_aggregation" in source
+    assert "STATION_AGGREGATION = METRIC_FIGURE_SETTINGS.station_aggregation" not in source
     assert "**METRIC_FIGURE_SETTINGS.context_kwargs(include_station_aggregation=True)" in source
+    assert "METRIC_FIGURE_SETTINGS.plot_selection_kwargs(" in source
     assert "display(metric_plot_context.spectral_metric_contract_status())" in source
     assert "if metric_plot_context.ready:" in source
     assert "MAKE_METRIC_FIGURES and step_outputs.metrics_long_path.exists()" not in source
@@ -2056,7 +2058,7 @@ def test_metric_and_spatial_notebooks_show_sidecar_status_frames() -> None:
     expected = {
         "docs/examples/step_03_calculate_metrics.ipynb": "metric_sidecars.status_frame()",
         "docs/examples/step_04_spatial_statistics.ipynb": "spatial_sidecars.status_frame()",
-        "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": "METRIC_FIGURE_SIDECARS.status_frame()",
+        "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": "METRIC_FIGURE_SETTINGS.status_frame()",
         "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": "SPATIAL_FIGURE_SETTINGS.sidecars.status_frame()",
     }
     for relative_path, call in expected.items():

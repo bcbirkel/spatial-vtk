@@ -166,6 +166,9 @@ class NotebookFigureRenderGate:
         return pd.DataFrame(rows)
 
 
+_PLOT_SELECTION_DEFAULT = object()
+
+
 @dataclass(frozen=True)
 class NotebookFigureSettings:
     """Environment-backed figure controls for workflow notebooks.
@@ -223,6 +226,63 @@ class NotebookFigureSettings:
         }
         if include_basemap:
             kwargs["add_basemap"] = self.add_basemap
+        return kwargs
+
+    def plot_selection_kwargs(
+        self,
+        *,
+        passband: object = _PLOT_SELECTION_DEFAULT,
+        components: object = _PLOT_SELECTION_DEFAULT,
+        model: object = _PLOT_SELECTION_DEFAULT,
+        showfig: object = _PLOT_SELECTION_DEFAULT,
+        value_col: str | None = None,
+        include_basemap: bool = False,
+        include_robust_axis_percentile: bool = False,
+        compare_to: object = _PLOT_SELECTION_DEFAULT,
+        table: object = _PLOT_SELECTION_DEFAULT,
+    ) -> dict[str, object]:
+        """Return common selection kwargs for context-managed plotting calls.
+
+        Parameters
+        ----------
+        passband, components, model, showfig
+            Optional per-call overrides. When omitted, the corresponding
+            setting from this object is used. Pass ``None`` explicitly when a
+            figure should intentionally show all values for that dimension.
+        value_col
+            Optional metric value column to forward.
+        include_basemap
+            Include ``add_basemap`` in the returned kwargs.
+        include_robust_axis_percentile
+            Include ``robust_axis_percentile`` in the returned kwargs.
+        compare_to, table
+            Optional generic diagnostic settings to include. These are omitted
+            by default because not every plotting context accepts them. Pass
+            ``self.compare_to`` or ``self.comparison_table`` when calling a
+            generic diagnostic plot that supports those options.
+        """
+
+        sentinel = _PLOT_SELECTION_DEFAULT
+        resolved_passband = self.passband if passband is sentinel else passband
+        resolved_components = self.components if components is sentinel else components
+        resolved_model = self.model if model is sentinel else model
+        resolved_showfig = self.showfig if showfig is sentinel else bool(showfig)
+        kwargs: dict[str, object] = {
+            "passband": resolved_passband,
+            "components": resolved_components,
+            "model": resolved_model,
+            "showfig": resolved_showfig,
+        }
+        if value_col is not None:
+            kwargs["value_col"] = value_col
+        if include_basemap:
+            kwargs["add_basemap"] = self.add_basemap
+        if include_robust_axis_percentile:
+            kwargs["robust_axis_percentile"] = self.robust_axis_percentile
+        if compare_to is not sentinel:
+            kwargs["compare_to"] = compare_to
+        if table is not sentinel:
+            kwargs["table"] = bool(table)
         return kwargs
 
     def status_frame(self) -> Any:

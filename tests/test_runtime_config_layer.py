@@ -618,6 +618,23 @@ def test_notebook_figure_settings_parse_common_controls(tmp_path, monkeypatch):
         "add_basemap": True,
     }
 
+    assert settings.plot_selection_kwargs(
+        value_col="log2_residual",
+        include_basemap=True,
+        include_robust_axis_percentile=True,
+    ) == {
+        "passband": "2-3 sec",
+        "components": ["R", "T", "Z"],
+        "model": "cvmsi",
+        "showfig": True,
+        "value_col": "log2_residual",
+        "add_basemap": True,
+        "robust_axis_percentile": 97.5,
+    }
+    all_selection_kwargs = settings.plot_selection_kwargs(passband=None, model=None)
+    assert all_selection_kwargs["passband"] is None
+    assert all_selection_kwargs["model"] is None
+
 
 def test_render_notebook_figure_owns_output_sidecar_display_and_close(tmp_path, monkeypatch):
     """Notebook figure calls should not repeat path, sidecar, display, and close plumbing."""

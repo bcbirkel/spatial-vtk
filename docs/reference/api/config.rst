@@ -80,6 +80,11 @@ the stable package surface below.
    * - ``NotebookFigureSettings`` and ``notebook_figure_settings``
      - Parse figure controls, robust-axis settings, sidecar settings, and
        render gates from environment variables in one package-owned helper.
+       Use ``context_kwargs()`` for large-run figure contexts,
+       ``plot_kwargs()`` for individual plotting functions, and
+       ``plot_selection_kwargs()`` for context-managed plotting calls that
+       need passband, component, model, value-column, basemap, or robust-axis
+       selections.
    * - ``render_notebook_figure``
      - Call one plotting helper with configured output path, ``showfig``,
        basemap, sidecar, save, display, and close behavior.

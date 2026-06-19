@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Added ``NotebookFigureSettings.plot_selection_kwargs()`` for
+   context-managed notebook plotting calls and rewired the large-run Step 3
+   metric plotting notebook to use it. The notebook no longer defines separate
+   default passband, component, model, basemap, robust-axis, comparison-table,
+   or sidecar variables around each metric figure family.
    Added optional standard Step 3 figure artifacts for residual-distance,
    score-trend, station metric map, and band score distribution outputs. The
    standard Step 3 metrics notebook now uses

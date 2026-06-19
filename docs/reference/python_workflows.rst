@@ -201,7 +201,10 @@ the large-run notebooks.
        ``SVTK_FIGURE_SHOWFIG``, ``SVTK_FIGURE_ROBUST_PERCENTILE``, and sidecar
        settings once. Use ``context_kwargs()`` for large-run plotting contexts
        and ``plot_kwargs()`` for single plotting calls so notebook cells stay
-       focused on the figure being rendered. Region/corridor notebooks also
+       focused on the figure being rendered. Use ``plot_selection_kwargs()``
+       for context-managed figure families that share passband, component,
+       model, value-column, basemap, or robust-axis selections across many
+       calls. Region/corridor notebooks also
        retain the existing ``SVTK_REGION_*`` controls through this helper,
        spatial PCA figures use ``SVTK_PCA_MODE`` through
        ``notebook_figure_settings("spatial")``, and optional GOF score-trend
