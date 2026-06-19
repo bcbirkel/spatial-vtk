@@ -1120,6 +1120,8 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "prepare_spatial_figure_context_from_notebook_settings," not in text
     assert "Advanced lower-level context builder for scripts" in text
     assert "New notebook cells should prefer\n       ``write_large_run_spatial_figure_suite_from_notebook_settings``" in text
+    assert "exact ``figure_paths`` lists" in text
+    assert "preview-oriented path fields" in text
     assert "station_summary_for_item" in text
     assert "item_source_rows" in text
     assert "``status_frame`` uses ``resolved_path`` as the clear path\n   column while preserving ``path`` for compatibility" in text

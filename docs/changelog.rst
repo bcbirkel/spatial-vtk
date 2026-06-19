@@ -213,6 +213,9 @@ Changelog
     preserving ``output_path`` for existing notebooks.
   - Added exact ``figure_paths`` lists to Step 3 large-run metric figure-suite
     status frames while preserving preview-oriented figure path fields.
+  - Added exact ``figure_paths`` lists to Step 4 large-run spatial
+    figure-suite status frames while preserving preview-oriented figure path
+    fields.
   - Reused the standard ingest output helper inside record-coverage
     readiness/build workflows so script and notebook path fallback behavior
     stays aligned.

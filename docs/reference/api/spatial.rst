@@ -202,7 +202,9 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
    * - ``write_large_run_spatial_figure_suite_from_notebook_settings``
      - Render the full Step 4 large-run spatial figure suite from notebook
        settings without notebook-local plot-function imports, per-family
-       keyword expansion, or repeated render gates.
+       keyword expansion, or repeated render gates. The returned status table
+       includes exact ``figure_paths`` lists plus preview-oriented path fields
+       for compact notebook display.
    * - ``write_large_run_spatial_summary_figures_from_outputs``
      - Write compact Step 4 spatial summary figures from an ``OutputGroup``
        without notebook-local input gating, table loading, output-path lookup,
