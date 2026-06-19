@@ -3749,10 +3749,15 @@ outputs:
 
     captured = capsys.readouterr()
     assert "Dashboard outputs current: False" in captured.out
-    assert "metrics_long_path" in captured.out
-    assert "qc_trace_summary_path" in captured.out
+    assert "Dashboard readiness summary:" in captured.out
+    assert "metrics_long source table" in captured.out
+    assert "QC trace-summary table" in captured.out
+    assert "Run the Step 2 QC workflow" in captured.out
+    assert "Finish the metric workflow outputs" in captured.out
+    assert "QC Overview, Charts, Review Queue" in captured.out
+    assert "metrics_long_path" not in captured.out
     assert "QC trace-summary table is missing" in captured.out
-    assert "model_metric_band_summary_path" in captured.out
+    assert "model_metric_band dashboard summary table" in captured.out
 
 
 def test_cli_call_importable_function(capsys):

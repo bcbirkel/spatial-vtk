@@ -104,6 +104,9 @@ Changelog
   - Clarified registered figure missing-path messages so input and figure
     output errors name both legacy and clearer path aliases before suggesting
     config-backed defaults.
+  - Made ``svtk dashboard status`` print artifact labels, dashboard-tab
+    readiness, and suggested rebuild actions in its human-readable output
+    instead of the lower-level configured path table.
 
 - **Large-run resilience** *(Hardened)*
 

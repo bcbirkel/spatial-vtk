@@ -2646,11 +2646,35 @@ def _cmd_dashboard_status(args: argparse.Namespace) -> int:
     print(f"Dashboard build recommended: {readiness.should_run}")
     print(f"Reason: {readiness.reason}")
     print(f"Message: {readiness.message}")
-    if status.empty:
+    summary = readiness.summary_frame()
+    if summary.empty and status.empty:
         print("No configured dashboard paths were resolved.")
     else:
-        print(status.to_string(index=False))
+        shown = _dashboard_cli_readiness_columns(summary if not summary.empty else status)
+        print("Dashboard readiness summary:")
+        print(shown.to_string(index=False))
     return 0
+
+
+def _dashboard_cli_readiness_columns(status: pd.DataFrame) -> pd.DataFrame:
+    """Return bounded dashboard status columns for human CLI output."""
+
+    columns = [
+        "item_type",
+        "item",
+        "artifact_label",
+        "dashboard_tabs",
+        "ready",
+        "readiness",
+        "row_count",
+        "file_count",
+        "map_ready",
+        "message",
+        "suggested_action",
+        "path",
+    ]
+    available = [column for column in columns if column in status.columns]
+    return status.loc[:, available].copy()
 
 
 def _cmd_dashboard_qc(args: argparse.Namespace) -> int:
