@@ -1029,6 +1029,16 @@ def test_config_cli_help_marks_config_values_as_paths(capsys):
     assert "Value: ``config``. Explicit config file." not in config_reference
 
 
+def test_cli_config_error_messages_use_path_metavar():
+    """Runtime guidance should match ``svtk config set`` help."""
+
+    source = (Path(__file__).resolve().parents[1] / "src" / "spatial_vtk" / "cli" / "__init__.py").read_text(
+        encoding="utf-8"
+    )
+    assert "svtk config set PATH" in source
+    assert "svtk config set CONFIG_PATH" not in source
+
+
 def test_generated_cli_reference_uses_role_based_table_help():
     """Generated plotting docs should present table roles, not raw Python argument names."""
 

@@ -1491,7 +1491,7 @@ def _required_config_path(config_path: str | None = None) -> str:
 
     path = _effective_config_path(config_path)
     if path is None:
-        raise ValueError("No Spatial-VTK config was found. Pass --config or run 'svtk config set CONFIG_PATH'.")
+        raise ValueError("No Spatial-VTK config was found. Pass --config or run 'svtk config set PATH'.")
     return path
 
 
@@ -1675,7 +1675,7 @@ def _resolve_metrics_dashboard_paths(
             "No dashboard roots were provided and no Spatial-VTK config was found. "
             "Pass --metrics-dataset-dir for the metrics_dashboard row dataset and "
             "--dashboard-summary-table-dir for the dashboard_summaries table directory, "
-            "pass --config, or run 'svtk config set CONFIG_PATH'."
+            "pass --config, or run 'svtk config set PATH'."
         )
     paths = dashboard_output_paths(cfg=config, include_summary_tables=False)
     resolved_metrics_root = Path(metrics_root).expanduser() if metrics_root else paths["metrics_dashboard_root"]
@@ -1701,7 +1701,7 @@ def _resolve_qc_dashboard_path(
     if config is None:
         raise ValueError(
             "No trace-summary path was provided and no Spatial-VTK config was found. "
-            "Pass --qc-trace-summary, pass --config, or run 'svtk config set CONFIG_PATH'."
+            "Pass --qc-trace-summary, pass --config, or run 'svtk config set PATH'."
         )
     resolved_config_path = str(config.config_path) if config.config_path is not None else None
     return resolve_output_path("qc_trace_summary", kind="table", cfg=config), resolved_config_path
@@ -2724,7 +2724,7 @@ def _registered_plot_kwargs(args: argparse.Namespace, spec: PlotCommand) -> dict
             if config is None:
                 raise ValueError(
                     f"No --{option.replace('_', '-')} table was provided for '{table_arg}' and no Spatial-VTK config was found. "
-                    "Pass the table option, pass --config, or run 'svtk config set CONFIG_PATH'."
+                    "Pass the table option, pass --config, or run 'svtk config set PATH'."
                 )
             from spatial_vtk.config import resolve_output_path
 
@@ -2804,7 +2804,7 @@ def _registered_plot_input_path(args: argparse.Namespace, spec: PlotCommand, con
     if config is None:
         raise ValueError(
             f"No --input was provided for '{spec.input_key}' and no Spatial-VTK config was found. "
-            "Pass --input, pass --config, or run 'svtk config set CONFIG_PATH'."
+            "Pass --input, pass --config, or run 'svtk config set PATH'."
         )
     from spatial_vtk.config import resolve_output_path
 
@@ -2821,7 +2821,7 @@ def _registered_plot_output_path(args: argparse.Namespace, spec: PlotCommand, co
     if config is None:
         raise ValueError(
             f"No --output was provided for '{spec.output_key}' and no Spatial-VTK config was found. "
-            "Pass --output, pass --config, or run 'svtk config set CONFIG_PATH'."
+            "Pass --output, pass --config, or run 'svtk config set PATH'."
         )
     from spatial_vtk.config import resolve_output_path
 

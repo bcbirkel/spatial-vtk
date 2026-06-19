@@ -65,6 +65,8 @@ Changelog
 
 **Fixed and Hardened**
 
+- Aligned CLI runtime guidance with generated help so missing-config errors
+  suggest ``svtk config set PATH`` instead of the older ``CONFIG_PATH`` token.
 - Normalized remaining path-like CLI metavars for config discovery and waveform
   inventory roots so generated help shows ``DIR`` or ``PATH`` instead of
   internal option names such as ``START_DIR`` or ``OBSERVED_ROOT``.
