@@ -237,6 +237,9 @@ Changelog
   - Added dashboard output previews to the Step 7 preparation result so
     large-run dashboard notebooks inspect bounded dashboard products without
     lower-level config/path preview calls.
+  - Added broad notebook regression coverage and workflow docs requiring
+    standard result-object preview methods instead of lower-level preview
+    functions with repeated config arguments.
   - Reused the standard ingest output helper inside record-coverage
     readiness/build workflows so script and notebook path fallback behavior
     stays aligned.

@@ -1618,6 +1618,11 @@ def test_reference_docs_map_python_workflow_entry_points():
         assert helper in workflows
     assert "display_table_previews()" in workflows
     assert "display_first_existing_table_preview()" in workflows
+    assert "Notebook cells should call those methods instead\nof passing ``cfg`` into lower-level preview helpers" in workflows
+    assert "``display_summary_previews()``" in workflows
+    assert "``display_metrics_preview()``" in workflows
+    assert "``display_metric_source_preview()``" in workflows
+    assert "``display_output_previews()``" in workflows
     assert "run_notebook_step_if_needed" in workflows
     assert "notebooks should use package functions" in workflows.lower()
     assert "configured_output_registry_preview_frame" in workflows

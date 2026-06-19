@@ -325,6 +325,13 @@ fallback path choices in the cell. If a workflow step needs a new reusable
 input bundle, add the bundle as a package helper first, then keep the notebook
 cell focused on the analysis task.
 
+The same rule applies to status and preview cells. Standard notebook result
+objects expose bounded display helpers such as ``display_summary_previews()``,
+``display_metrics_preview()``, ``display_metric_source_preview()``, and
+``display_output_previews()``. Notebook cells should call those methods instead
+of passing ``cfg`` into lower-level preview helpers, because the result object
+already owns the configured paths, missing-output policy, and display fallback.
+
 Step 1: Metadata, Waveforms, and Record Coverage
 ------------------------------------------------
 

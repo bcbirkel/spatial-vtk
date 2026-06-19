@@ -2421,6 +2421,12 @@ def test_tutorial_notebooks_avoid_low_level_io_and_shell_workflow_cells() -> Non
         "subprocess.run(",
         "run_or_submit_notebook_cli_command(",
         "run_or_submit_notebook_function(",
+        "display_table_previews(cfg=",
+        "display_metric_source_preview(cfg=",
+        "display_dashboard_output_previews(",
+        "preview_dashboard_summary_tables(",
+        "preview_output_table(",
+        "display_output_table_previews(",
         "svtk ",
     )
     for notebook_path in notebooks:
