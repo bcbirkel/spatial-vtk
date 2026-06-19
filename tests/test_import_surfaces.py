@@ -307,9 +307,13 @@ def test_autodoc_fallback_parameter_docs_are_descriptive():
     def parameter(name: str, default: object = inspect.Signature.empty) -> inspect.Parameter:
         return inspect.Parameter(name, inspect.Parameter.POSITIONAL_OR_KEYWORD, default=default)
 
-    assert conf._parameter_description(parameter("input_path")).startswith("Path to the input table or file")
-    assert conf._parameter_description(parameter("output")).startswith("Output table or file")
-    assert conf._parameter_description(parameter("summary")).startswith("Summary table")
+    assert conf._parameter_description(parameter("input_path")).startswith("Path to the input table, file, or configured path artifact")
+    assert conf._parameter_description(parameter("output")).startswith("Output table, figure, manifest, or configured artifact")
+    assert conf._parameter_description(parameter("summary")).startswith("Summary table, dashboard summary dataset")
+    assert conf._parameter_description(parameter("metrics_root")).startswith("Directory containing dashboard-ready metric row datasets")
+    assert conf._parameter_description(parameter("summary_root")).startswith("Directory containing dashboard summary tables")
+    assert conf._parameter_description(parameter("dataset_root")).startswith("Directory root or configured output root")
+    assert conf._parameter_description(parameter("batch_manifest")).startswith("Manifest value used to plan, resume, or merge workflow work units")
     assert conf._parameter_description(parameter("config_path")).startswith("Path to the Spatial-VTK YAML")
     assert conf._parameter_description(parameter("sidecar_rows", default=100)).endswith("Defaults to ``100``.")
     assert "Required function argument" not in conf._parameter_description(parameter("sample_size"))
