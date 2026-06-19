@@ -518,15 +518,15 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     io_sub = io.add_subparsers(dest="io_command", required=True)
 
     stations = io_sub.add_parser("prepare-stations", help="Normalize station metadata column names.")
-    stations.add_argument("--input", default=None, help="Station CSV/parquet path. Defaults to config paths.station_metadata.")
-    stations.add_argument("--output", default=None, help="Output CSV/parquet path. Defaults to configured output table 'prepared_stations'.")
+    stations.add_argument("--input", metavar="PATH", default=None, help="Station CSV/parquet path. Defaults to config paths.station_metadata.")
+    stations.add_argument("--output", metavar="PATH", default=None, help="Output CSV/parquet path. Defaults to configured output table 'prepared_stations'.")
     stations.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
     stations.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     stations.set_defaults(handler=_cmd_io_prepare_stations)
 
     events = io_sub.add_parser("prepare-events", help="Normalize event metadata column names.")
-    events.add_argument("--input", default=None, help="Event CSV/parquet path. Defaults to config paths.event_metadata.")
-    events.add_argument("--output", default=None, help="Output CSV/parquet path. Defaults to configured output table 'prepared_events'.")
+    events.add_argument("--input", metavar="PATH", default=None, help="Event CSV/parquet path. Defaults to config paths.event_metadata.")
+    events.add_argument("--output", metavar="PATH", default=None, help="Output CSV/parquet path. Defaults to configured output table 'prepared_events'.")
     events.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
     events.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     events.set_defaults(handler=_cmd_io_prepare_events)
@@ -534,24 +534,25 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     event_stations = io_sub.add_parser("prepare-event-stations", help="Normalize or build event-station records.")
     event_stations.add_argument(
         "--input",
+        metavar="PATH",
         default=None,
         help="Event-station CSV/parquet path. Defaults to config paths.event_station_table when that file exists; otherwise all station/event pairs are built.",
     )
-    event_stations.add_argument("--stations", default=None, help="Station metadata table. Defaults to prepared_stations, then config paths.station_metadata.")
-    event_stations.add_argument("--events", default=None, help="Event metadata table. Defaults to prepared_events, then config paths.event_metadata.")
-    event_stations.add_argument("--output", default=None, help="Output CSV/parquet path. Defaults to configured output table 'event_station_records'.")
+    event_stations.add_argument("--stations", metavar="PATH", default=None, help="Station metadata table. Defaults to prepared_stations, then config paths.station_metadata.")
+    event_stations.add_argument("--events", metavar="PATH", default=None, help="Event metadata table. Defaults to prepared_events, then config paths.event_metadata.")
+    event_stations.add_argument("--output", metavar="PATH", default=None, help="Output CSV/parquet path. Defaults to configured output table 'event_station_records'.")
     event_stations.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
     event_stations.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     event_stations.set_defaults(handler=_cmd_io_prepare_event_stations)
 
     master_stations = io_sub.add_parser("master-stations", help="Build a master station list from one or more tables.")
-    master_stations.add_argument("--input", nargs="+", required=True, help="Station CSV/parquet paths.")
-    master_stations.add_argument("--output", required=True, help="Output CSV path.")
+    master_stations.add_argument("--input", metavar="PATH", nargs="+", required=True, help="Station CSV/parquet paths.")
+    master_stations.add_argument("--output", metavar="PATH", required=True, help="Output CSV path.")
     master_stations.set_defaults(handler=_cmd_io_master_stations)
 
     master_events = io_sub.add_parser("master-events", help="Build a master event list from one or more tables.")
-    master_events.add_argument("--input", nargs="+", required=True, help="Event CSV/parquet paths.")
-    master_events.add_argument("--output", required=True, help="Output CSV path.")
+    master_events.add_argument("--input", metavar="PATH", nargs="+", required=True, help="Event CSV/parquet paths.")
+    master_events.add_argument("--output", metavar="PATH", required=True, help="Output CSV path.")
     master_events.set_defaults(handler=_cmd_io_master_events)
 
     inventory = io_sub.add_parser("inventory", help="Build a lightweight observed/synthetic file inventory.")
@@ -565,7 +566,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         default=None,
         help="Synthetic waveform directory or path template. Defaults to paths.synthetic_root or paths.synthetic_template from config.",
     )
-    inventory.add_argument("--output", default=None, help="Output CSV/parquet path. Defaults to configured output table 'waveform_inventory'.")
+    inventory.add_argument("--output", metavar="PATH", default=None, help="Output CSV/parquet path. Defaults to configured output table 'waveform_inventory'.")
     inventory.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default roots and output path.")
     inventory.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     inventory.add_argument("--suffix", action="append", default=None, help="Waveform suffix to include. May be repeated.")
@@ -574,9 +575,10 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     inventory.set_defaults(handler=_cmd_io_inventory)
 
     preprocess = io_sub.add_parser("preprocess-waveforms", help="Filter/resample waveform files and write reusable processed copies.")
-    preprocess.add_argument("--records", default=None, help="Event-station CSV/parquet with waveform path columns. Defaults to configured output table 'event_station_records'.")
+    preprocess.add_argument("--records", metavar="PATH", default=None, help="Event-station CSV/parquet with waveform path columns. Defaults to configured output table 'event_station_records'.")
     preprocess.add_argument(
         "--output-root",
+        metavar="DIR",
         default=None,
         help="Folder where processed waveforms and metadata tables are written. Defaults to outputs.preprocessed_waveforms from config.",
     )
@@ -610,6 +612,7 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     )
     build.add_argument(
         "--event-stations",
+        metavar="PATH",
         default=None,
         help="Prepared event-station table. Defaults to configured output table 'event_station_records'.",
     )
@@ -640,8 +643,8 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     build.set_defaults(handler=_cmd_qc_build)
 
     queue = qc_sub.add_parser("manual-queue", help="Export a manual-QC review queue from trace summary rows.")
-    queue.add_argument("--trace-summary", default=None, help="Trace-summary CSV/parquet path. Defaults to configured output table 'qc_trace_summary'.")
-    queue.add_argument("--output", default=None, help="Output manual-review queue CSV. Defaults to configured output table 'manual_review_queue'.")
+    queue.add_argument("--trace-summary", metavar="PATH", default=None, help="Trace-summary CSV/parquet path. Defaults to configured output table 'qc_trace_summary'.")
+    queue.add_argument("--output", metavar="PATH", default=None, help="Output manual-review queue CSV. Defaults to configured output table 'manual_review_queue'.")
     queue.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default input/output paths.")
     queue.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     queue.add_argument("--event-id", default="", help="Optional event id filter.")
@@ -652,14 +655,15 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     queue.set_defaults(handler=_cmd_qc_manual_queue)
 
     slurm = qc_sub.add_parser("slurm", help="Write a SLURM script for QC inventory generation.")
-    slurm.add_argument("--event-stations", default=None, help="Prepared event-station table. Defaults to configured output table 'event_station_records'.")
-    slurm.add_argument("--output", default=None, help="Output SLURM script path. Defaults to outputs/slurm/build_qc_inventory.slurm.")
+    slurm.add_argument("--event-stations", metavar="PATH", default=None, help="Prepared event-station table. Defaults to configured output table 'event_station_records'.")
+    slurm.add_argument("--output", metavar="PATH", default=None, help="Output SLURM script path. Defaults to outputs/slurm/build_qc_inventory.slurm.")
     slurm.add_argument("--config", default=None, help="Config file containing compute.slurm or qc.slurm settings.")
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     slurm.add_argument(
         "--trace-output",
         "--qc-trace-summary-output",
         dest="trace_output",
+        metavar="PATH",
         default=None,
         help="Output waveform QC table path. Defaults to configured output table 'qc_trace_summary'.",
     )
@@ -667,6 +671,7 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         "--inventory-output",
         "--qc-inventory-output",
         dest="inventory_output",
+        metavar="PATH",
         default=None,
         help="Output metric QC inventory path. Defaults to configured output table 'qc_inventory'.",
     )
@@ -674,6 +679,7 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         "--overlap-inventory-output",
         "--qc-overlap-inventory-output",
         dest="overlap_inventory_output",
+        metavar="PATH",
         default=None,
         help="Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'.",
     )
@@ -700,11 +706,12 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     metrics_sub = metrics.add_subparsers(dest="metrics_command", required=True)
 
     inventories = metrics_sub.add_parser("inventories", help="Build observed/synthetic metric waveform inventories from trace metadata.")
-    inventories.add_argument("--trace-metadata", default=None, help="Preprocessed trace metadata CSV/parquet path. Defaults to the configured preprocessing trace_metadata output.")
+    inventories.add_argument("--trace-metadata", metavar="PATH", default=None, help="Preprocessed trace metadata CSV/parquet path. Defaults to the configured preprocessing trace_metadata output.")
     inventories.add_argument(
         "--observed-output",
         "--observed-inventory-output",
         dest="observed_output",
+        metavar="PATH",
         default=None,
         help="Observed metric waveform inventory output CSV/parquet path. Defaults to configured output table 'observed_metric_inventory'.",
     )
@@ -712,6 +719,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--synthetic-output",
         "--synthetic-inventory-output",
         dest="synthetic_output",
+        metavar="PATH",
         default=None,
         help="Synthetic metric waveform inventory output CSV/parquet path. Defaults to configured output table 'synthetic_metric_inventory'.",
     )
@@ -729,6 +737,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--observed-inventory",
         "--observed-metric-inventory",
         dest="observed_inventory",
+        metavar="PATH",
         default=None,
         help="Observed metric waveform inventory CSV/parquet path. Defaults to configured output table 'observed_metric_inventory'.",
     )
@@ -736,6 +745,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--synthetic-inventory",
         "--synthetic-metric-inventory",
         dest="synthetic_inventory",
+        metavar="PATH",
         default=None,
         help="Synthetic metric waveform inventory CSV/parquet path. Defaults to configured output table 'synthetic_metric_inventory'.",
     )
@@ -750,12 +760,12 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     plan.add_argument("--output-mode", default=None, help="Metric output mode override.")
     plan.add_argument("--require-source-overlap", action="store_true", help="Only plan metric tasks for events or event-station rows with both observed and synthetic data.")
     plan.add_argument("--source-overlap-scope", choices=("event", "event_station"), default=None, help="Overlap scope for --require-source-overlap.")
-    plan.add_argument("--output", default=None, help="Output task table or manifest path. Defaults to configured output table 'metric_manifest' with --manifest, otherwise 'metric_tasks'.")
+    plan.add_argument("--output", metavar="PATH", default=None, help="Output task table or manifest path. Defaults to configured output table 'metric_manifest' with --manifest, otherwise 'metric_tasks'.")
     plan.add_argument("--manifest", action="store_true", help="Write a JSON manifest instead of a task table.")
-    plan.add_argument("--batch-output-dir", default=None, help="Batch output directory when writing a manifest. Defaults to outputs/metric_batches.")
+    plan.add_argument("--batch-output-dir", metavar="DIR", default=None, help="Batch output directory when writing a manifest. Defaults to outputs/metric_batches.")
     plan.add_argument("--batch-size", type=int, default=100, help="Tasks per batch when writing a manifest.")
     plan.add_argument("--batch-count", type=int, default=None, help="Target number of batches when writing a manifest. Overrides --batch-size.")
-    plan.add_argument("--qc-table", default=None, help="Optional QC inventory recorded in a manifest. Defaults to configured output table 'qc_inventory_overlap' when QC is enabled.")
+    plan.add_argument("--qc-table", metavar="PATH", default=None, help="Optional QC inventory recorded in a manifest. Defaults to configured output table 'qc_inventory_overlap' when QC is enabled.")
     plan.add_argument("--no-qc", action="store_true", help="Do not mark planned tasks as QC-filtered by default.")
     plan.add_argument(
         "--include-qc-failed-tasks",
@@ -765,11 +775,11 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     plan.set_defaults(handler=_cmd_metrics_plan)
 
     estimate = metrics_sub.add_parser("estimate", help="Summarize metric task counts and resource estimates.")
-    estimate.add_argument("--tasks", default=None, help="Metric task CSV/parquet path. Overrides --manifest.")
-    estimate.add_argument("--manifest", default=None, help="Metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'.")
+    estimate.add_argument("--tasks", metavar="PATH", default=None, help="Metric task CSV/parquet path. Overrides --manifest.")
+    estimate.add_argument("--manifest", metavar="PATH", default=None, help="Metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'.")
     estimate.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default manifest and output paths.")
     estimate.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
-    estimate.add_argument("--output", default=None, help="Optional output CSV/parquet path for the estimate table. Defaults to configured output table 'metric_task_estimate' when a config is available.")
+    estimate.add_argument("--output", metavar="PATH", default=None, help="Optional output CSV/parquet path for the estimate table. Defaults to configured output table 'metric_task_estimate' when a config is available.")
     estimate.add_argument("--seconds-per-task", type=float, default=60.0, help="Approximate runtime for one task in seconds.")
     estimate.add_argument("--memory-gb-per-task", type=float, default=2.0, help="Approximate memory needed by one task.")
     estimate.add_argument("--cpus-per-task", type=int, default=1, help="CPU cores requested per task.")
@@ -781,6 +791,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--tasks",
         "--task-table",
         dest="tasks",
+        metavar="PATH",
         default=None,
         help="Metric task table CSV/parquet path. Defaults to configured output table 'metric_tasks'.",
     )
@@ -788,16 +799,17 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--output",
         "--metric-rows",
         dest="output",
+        metavar="PATH",
         default=None,
         help="Metric row output CSV/parquet path. Defaults to configured output table 'metric_rows'.",
     )
     run.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default task/output paths.")
     run.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
-    run.add_argument("--qc-table", default=None, help="Optional QC inventory.")
+    run.add_argument("--qc-table", metavar="PATH", default=None, help="Optional QC inventory.")
     run.set_defaults(handler=_cmd_metrics_run)
 
     batch = metrics_sub.add_parser("run-batch", help="Run one batch from a metric manifest.")
-    batch.add_argument("--manifest", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
+    batch.add_argument("--manifest", metavar="PATH", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
     batch.add_argument("--config", default=None, help="Spatial-VTK config used to resolve the default manifest path.")
     batch.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     batch.add_argument("--batch-index", type=int, required=True, help="Batch index to run.")
@@ -805,7 +817,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     batch.set_defaults(handler=_cmd_metrics_run_batch)
 
     batch_status = metrics_sub.add_parser("batch-status", help="Summarize metric manifest batch output completion.")
-    batch_status.add_argument("--manifest", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
+    batch_status.add_argument("--manifest", metavar="PATH", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
     batch_status.add_argument("--config", default=None, help="Spatial-VTK config used to resolve the default manifest path.")
     batch_status.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     batch_status.add_argument("--missing-limit", type=int, default=20, help="Maximum missing batch outputs to list. Use -1 for all.")
@@ -813,10 +825,10 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     batch_status.set_defaults(handler=_cmd_metrics_batch_status)
 
     cache = metrics_sub.add_parser("cache-waveforms", help="Write a metric manifest backed by lightweight cached waveform traces.")
-    cache.add_argument("--manifest", default=None, help="Source metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'.")
-    cache.add_argument("--output", default=None, help="Cached metric workflow manifest JSON. Defaults to configured output table 'metric_manifest_cached'.")
-    cache.add_argument("--cache-root", default=None, help="Directory for cached metric-ready waveform .npz files. Defaults to outputs/metric_ready_waveform_cache.")
-    cache.add_argument("--batch-output-dir", default=None, help="Batch output directory for the cached manifest. Defaults to outputs/metric_batches_cached.")
+    cache.add_argument("--manifest", metavar="PATH", default=None, help="Source metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'.")
+    cache.add_argument("--output", metavar="PATH", default=None, help="Cached metric workflow manifest JSON. Defaults to configured output table 'metric_manifest_cached'.")
+    cache.add_argument("--cache-root", metavar="DIR", default=None, help="Directory for cached metric-ready waveform .npz files. Defaults to outputs/metric_ready_waveform_cache.")
+    cache.add_argument("--batch-output-dir", metavar="DIR", default=None, help="Batch output directory for the cached manifest. Defaults to outputs/metric_batches_cached.")
     cache.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default paths.")
     cache.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     cache.add_argument("--overwrite", action="store_true", help="Rewrite existing cached waveform files.")
@@ -826,9 +838,10 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     cache.set_defaults(handler=_cmd_metrics_cache_waveforms)
 
     merge = metrics_sub.add_parser("merge-batches", help="Merge metric manifest batch outputs.")
-    merge.add_argument("--manifest", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
+    merge.add_argument("--manifest", metavar="PATH", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
     merge.add_argument(
         "--output",
+        metavar="PATH",
         default=None,
         help=(
             "Merged output CSV/parquet path. If an existing directory or directory-style path is passed, "
@@ -845,6 +858,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--metrics",
         "--metric-rows",
         dest="metrics",
+        metavar="PATH",
         default=None,
         help="Raw metric workflow rows CSV/parquet path. Defaults to configured output table 'metric_rows'.",
     )
@@ -852,6 +866,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--output-dir",
         "--metrics-output-dir",
         dest="output_dir",
+        metavar="DIR",
         default=None,
         help="Ad hoc downstream metric output directory. When omitted, configured output paths are used.",
     )
@@ -861,6 +876,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--events",
         "--event-table",
         dest="events",
+        metavar="PATH",
         default=None,
         help="Optional prepared event metadata CSV/parquet path. Defaults to configured output table 'prepared_events' when it exists.",
     )
@@ -868,6 +884,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         "--stations",
         "--station-table",
         dest="stations",
+        metavar="PATH",
         default=None,
         help="Optional prepared station metadata CSV/parquet path. Defaults to configured output table 'prepared_stations' when it exists.",
     )
@@ -878,8 +895,8 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     outputs.set_defaults(handler=_cmd_metrics_outputs)
 
     slurm = metrics_sub.add_parser("slurm", help="Write a SLURM array script for a metric manifest.")
-    slurm.add_argument("--manifest", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
-    slurm.add_argument("--output", default=None, help="Output SLURM script path. Defaults to outputs/slurm/step03_run_metrics.slurm.")
+    slurm.add_argument("--manifest", metavar="PATH", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
+    slurm.add_argument("--output", metavar="PATH", default=None, help="Output SLURM script path. Defaults to outputs/slurm/step03_run_metrics.slurm.")
     slurm.add_argument("--config", default=None, help="Config file containing metrics.slurm settings.")
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     slurm.add_argument("--submit", action="store_true", help="Submit the script with sbatch after writing it.")
@@ -1363,7 +1380,7 @@ def _add_call_command(subparsers: argparse._SubParsersAction[argparse.ArgumentPa
     call.add_argument("--args-json", default=None, help="JSON/YAML list of positional arguments.")
     call.add_argument("--kwargs", nargs="*", default=(), help="Keyword arguments as key=value, parsed as YAML values.")
     call.add_argument("--kwargs-json", default=None, help="JSON/YAML mapping of keyword arguments.")
-    call.add_argument("--output", default=None, help="Optional output path for DataFrame/dict/list results.")
+    call.add_argument("--output", metavar="PATH", default=None, help="Optional output path for DataFrame/dict/list results.")
     call.set_defaults(handler=_cmd_call)
 
 

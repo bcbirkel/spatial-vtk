@@ -51,7 +51,7 @@ svtk io inventory
 .. code-block:: bash
 
    svtk io inventory [-h] [--observed-root OBSERVED_ROOT]
-                         [--synthetic-root SYNTHETIC_ROOT] [--output OUTPUT]
+                         [--synthetic-root SYNTHETIC_ROOT] [--output PATH]
                          [--config CONFIG] [--run-scenario RUN_SCENARIO]
                          [--suffix SUFFIX] [--relative-to RELATIVE_TO]
                          [--no-sha256]
@@ -81,7 +81,7 @@ svtk io inventory
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output CSV/parquet path. Defaults to configured output table 'waveform_inventory'.
+     - Filesystem path. Output CSV/parquet path. Defaults to configured output table 'waveform_inventory'.
    * - ``--config``
      - No
      -
@@ -112,7 +112,7 @@ svtk io master-events
 
 .. code-block:: bash
 
-   svtk io master-events [-h] --input INPUT [INPUT ...] --output OUTPUT
+   svtk io master-events [-h] --input PATH [PATH ...] --output PATH
 
 .. rubric:: Parameters
 
@@ -131,11 +131,11 @@ svtk io master-events
    * - ``--input``
      - Yes
      - Nargs: ``+``
-     - Value: ``input``. Event CSV/parquet paths.
+     - Filesystem path. Event CSV/parquet paths.
    * - ``--output``
      - Yes
      -
-     - Value: ``output``. Output CSV path.
+     - Filesystem path. Output CSV path.
 
 .. _cli-svtk-io-master-stations:
 
@@ -146,7 +146,7 @@ svtk io master-stations
 
 .. code-block:: bash
 
-   svtk io master-stations [-h] --input INPUT [INPUT ...] --output OUTPUT
+   svtk io master-stations [-h] --input PATH [PATH ...] --output PATH
 
 .. rubric:: Parameters
 
@@ -165,11 +165,11 @@ svtk io master-stations
    * - ``--input``
      - Yes
      - Nargs: ``+``
-     - Value: ``input``. Station CSV/parquet paths.
+     - Filesystem path. Station CSV/parquet paths.
    * - ``--output``
      - Yes
      -
-     - Value: ``output``. Output CSV path.
+     - Filesystem path. Output CSV path.
 
 .. _cli-svtk-io-prepare-event-stations:
 
@@ -180,9 +180,9 @@ svtk io prepare-event-stations
 
 .. code-block:: bash
 
-   svtk io prepare-event-stations [-h] [--input INPUT]
-                                      [--stations STATIONS] [--events EVENTS]
-                                      [--output OUTPUT] [--config CONFIG]
+   svtk io prepare-event-stations [-h] [--input PATH] [--stations PATH]
+                                      [--events PATH] [--output PATH]
+                                      [--config CONFIG]
                                       [--run-scenario RUN_SCENARIO]
 
 .. rubric:: Parameters
@@ -202,19 +202,19 @@ svtk io prepare-event-stations
    * - ``--input``
      - No
      -
-     - Value: ``input``. Event-station CSV/parquet path. Defaults to config paths.event_station_table when that file exists; otherwise all station/event pairs are built.
+     - Filesystem path. Event-station CSV/parquet path. Defaults to config paths.event_station_table when that file exists; otherwise all station/event pairs are built.
    * - ``--stations``
      - No
      -
-     - Value: ``stations``. Station metadata table. Defaults to prepared_stations, then config paths.station_metadata.
+     - Filesystem path. Station metadata table. Defaults to prepared_stations, then config paths.station_metadata.
    * - ``--events``
      - No
      -
-     - Value: ``events``. Event metadata table. Defaults to prepared_events, then config paths.event_metadata.
+     - Filesystem path. Event metadata table. Defaults to prepared_events, then config paths.event_metadata.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output CSV/parquet path. Defaults to configured output table 'event_station_records'.
+     - Filesystem path. Output CSV/parquet path. Defaults to configured output table 'event_station_records'.
    * - ``--config``
      - No
      -
@@ -233,7 +233,7 @@ svtk io prepare-events
 
 .. code-block:: bash
 
-   svtk io prepare-events [-h] [--input INPUT] [--output OUTPUT]
+   svtk io prepare-events [-h] [--input PATH] [--output PATH]
                               [--config CONFIG] [--run-scenario RUN_SCENARIO]
 
 .. rubric:: Parameters
@@ -253,11 +253,11 @@ svtk io prepare-events
    * - ``--input``
      - No
      -
-     - Value: ``input``. Event CSV/parquet path. Defaults to config paths.event_metadata.
+     - Filesystem path. Event CSV/parquet path. Defaults to config paths.event_metadata.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output CSV/parquet path. Defaults to configured output table 'prepared_events'.
+     - Filesystem path. Output CSV/parquet path. Defaults to configured output table 'prepared_events'.
    * - ``--config``
      - No
      -
@@ -276,7 +276,7 @@ svtk io prepare-stations
 
 .. code-block:: bash
 
-   svtk io prepare-stations [-h] [--input INPUT] [--output OUTPUT]
+   svtk io prepare-stations [-h] [--input PATH] [--output PATH]
                                 [--config CONFIG]
                                 [--run-scenario RUN_SCENARIO]
 
@@ -297,11 +297,11 @@ svtk io prepare-stations
    * - ``--input``
      - No
      -
-     - Value: ``input``. Station CSV/parquet path. Defaults to config paths.station_metadata.
+     - Filesystem path. Station CSV/parquet path. Defaults to config paths.station_metadata.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output CSV/parquet path. Defaults to configured output table 'prepared_stations'.
+     - Filesystem path. Output CSV/parquet path. Defaults to configured output table 'prepared_stations'.
    * - ``--config``
      - No
      -
@@ -320,8 +320,7 @@ svtk io preprocess-waveforms
 
 .. code-block:: bash
 
-   svtk io preprocess-waveforms [-h] [--records RECORDS]
-                                    [--output-root OUTPUT_ROOT]
+   svtk io preprocess-waveforms [-h] [--records PATH] [--output-root DIR]
                                     [--config CONFIG]
                                     [--run-scenario RUN_SCENARIO]
                                     [--observed-column OBSERVED_COLUMN]
@@ -353,11 +352,11 @@ svtk io preprocess-waveforms
    * - ``--records``
      - No
      -
-     - Value: ``records``. Event-station CSV/parquet with waveform path columns. Defaults to configured output table 'event_station_records'.
+     - Filesystem path. Event-station CSV/parquet with waveform path columns. Defaults to configured output table 'event_station_records'.
    * - ``--output-root``
      - No
      -
-     - Value: ``output_root``. Folder where processed waveforms and metadata tables are written. Defaults to outputs.preprocessed_waveforms from config.
+     - Directory path. Folder where processed waveforms and metadata tables are written. Defaults to outputs.preprocessed_waveforms from config.
    * - ``--config``
      - No
      -

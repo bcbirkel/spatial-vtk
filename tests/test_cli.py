@@ -990,9 +990,11 @@ def test_generated_cli_reference_names_metrics_run_defaults():
     root = Path(__file__).resolve().parents[1]
     text = (root / "docs" / "reference" / "cli" / "metrics.rst").read_text(encoding="utf-8")
     section = text.split(".. _cli-svtk-metrics-run:", maxsplit=1)[1].split(".. _cli-svtk-metrics-run-batch:", maxsplit=1)[0]
-    assert "[--tasks TASKS]" in section
-    assert "[--output OUTPUT]" in section
+    assert "[--tasks PATH]" in section
+    assert "[--output PATH]" in section
     assert "--tasks TASKS --output OUTPUT" not in section
+    assert "Filesystem path. Metric task table CSV/parquet path" in section
+    assert "Filesystem path. Metric row output CSV/parquet path" in section
     assert "Defaults to configured output table 'metric_tasks'" in section
     assert "Defaults to configured output table 'metric_rows'" in section
     assert "Spatial-VTK config used to resolve default task/output paths" in section
@@ -1008,7 +1010,8 @@ def test_generated_cli_reference_names_io_inventory_defaults():
     )[0]
     assert "[--observed-root OBSERVED_ROOT]" in section
     assert "[--synthetic-root SYNTHETIC_ROOT]" in section
-    assert "[--output OUTPUT]" in section
+    assert "[--output PATH]" in section
+    assert "Filesystem path. Output CSV/parquet path" in section
     assert "Defaults to paths.observed_root or paths.observed_template from config" in section
     assert "Defaults to paths.synthetic_root or paths.synthetic_template from config" in section
     assert "Defaults to configured output table 'waveform_inventory'" in section

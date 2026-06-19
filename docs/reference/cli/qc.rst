@@ -47,7 +47,7 @@ Build standard QC trace, inventory, and overlap tables from the active config.
 
 .. code-block:: bash
 
-   svtk qc build [-h] [--event-stations EVENT_STATIONS] [--config CONFIG]
+   svtk qc build [-h] [--event-stations PATH] [--config CONFIG]
                      [--run-scenario RUN_SCENARIO]
                      [--trace-output TRACE_OUTPUT]
                      [--inventory-output INVENTORY_OUTPUT]
@@ -71,7 +71,7 @@ Build standard QC trace, inventory, and overlap tables from the active config.
    * - ``--event-stations``
      - No
      -
-     - Value: ``event_stations``. Prepared event-station table. Defaults to configured output table 'event_station_records'.
+     - Filesystem path. Prepared event-station table. Defaults to configured output table 'event_station_records'.
    * - ``--config``
      - No
      -
@@ -106,9 +106,8 @@ svtk qc manual-queue
 
 .. code-block:: bash
 
-   svtk qc manual-queue [-h] [--trace-summary TRACE_SUMMARY]
-                            [--output OUTPUT] [--config CONFIG]
-                            [--run-scenario RUN_SCENARIO]
+   svtk qc manual-queue [-h] [--trace-summary PATH] [--output PATH]
+                            [--config CONFIG] [--run-scenario RUN_SCENARIO]
                             [--event-id EVENT_ID]
                             [--station-family STATION_FAMILY]
                             [--component COMPONENT]
@@ -132,11 +131,11 @@ svtk qc manual-queue
    * - ``--trace-summary``
      - No
      -
-     - Value: ``trace_summary``. Trace-summary CSV/parquet path. Defaults to configured output table 'qc_trace_summary'.
+     - Filesystem path. Trace-summary CSV/parquet path. Defaults to configured output table 'qc_trace_summary'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output manual-review queue CSV. Defaults to configured output table 'manual_review_queue'.
+     - Filesystem path. Output manual-review queue CSV. Defaults to configured output table 'manual_review_queue'.
    * - ``--config``
      - No
      -
@@ -175,12 +174,10 @@ svtk qc slurm
 
 .. code-block:: bash
 
-   svtk qc slurm [-h] [--event-stations EVENT_STATIONS] [--output OUTPUT]
+   svtk qc slurm [-h] [--event-stations PATH] [--output PATH]
                      [--config CONFIG] [--run-scenario RUN_SCENARIO]
-                     [--trace-output TRACE_OUTPUT]
-                     [--inventory-output INVENTORY_OUTPUT]
-                     [--overlap-inventory-output OVERLAP_INVENTORY_OUTPUT]
-                     [--submit]
+                     [--trace-output PATH] [--inventory-output PATH]
+                     [--overlap-inventory-output PATH] [--submit]
 
 .. rubric:: Parameters
 
@@ -199,11 +196,11 @@ svtk qc slurm
    * - ``--event-stations``
      - No
      -
-     - Value: ``event_stations``. Prepared event-station table. Defaults to configured output table 'event_station_records'.
+     - Filesystem path. Prepared event-station table. Defaults to configured output table 'event_station_records'.
    * - ``--output``
      - No
      -
-     - Value: ``output``. Output SLURM script path. Defaults to outputs/slurm/build_qc_inventory.slurm.
+     - Filesystem path. Output SLURM script path. Defaults to outputs/slurm/build_qc_inventory.slurm.
    * - ``--config``
      - No
      -
@@ -215,15 +212,15 @@ svtk qc slurm
    * - ``--trace-output``, ``--qc-trace-summary-output``
      - No
      -
-     - Value: ``trace_output``. Output waveform QC table path. Defaults to configured output table 'qc_trace_summary'.
+     - Filesystem path. Output waveform QC table path. Defaults to configured output table 'qc_trace_summary'.
    * - ``--inventory-output``, ``--qc-inventory-output``
      - No
      -
-     - Value: ``inventory_output``. Output metric QC inventory path. Defaults to configured output table 'qc_inventory'.
+     - Filesystem path. Output metric QC inventory path. Defaults to configured output table 'qc_inventory'.
    * - ``--overlap-inventory-output``, ``--qc-overlap-inventory-output``
      - No
      -
-     - Value: ``overlap_inventory_output``. Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'.
+     - Filesystem path. Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'.
    * - ``--submit``
      - No
      - Flag

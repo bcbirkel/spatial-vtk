@@ -24,7 +24,7 @@ Command Details
 
    svtk call [-h] [--args [ARGS ...]] [--args-json ARGS_JSON]
                  [--kwargs [KWARGS ...]] [--kwargs-json KWARGS_JSON]
-                 [--output OUTPUT]
+                 [--output PATH]
                  function
 
 .. rubric:: Parameters
@@ -64,4 +64,4 @@ Command Details
    * - ``--output``
      - No
      -
-     - Value: ``output``. Optional output path for DataFrame/dict/list results.
+     - Filesystem path. Optional output path for DataFrame/dict/list results.

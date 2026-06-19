@@ -4,6 +4,10 @@ Changelog
 2026-06-19
 ----------
 
+- Clarified generated CLI help and reference pages for core IO, QC, and
+  metric workflow commands so path-like options render as ``PATH`` or ``DIR``
+  with filesystem/directory descriptions instead of ambiguous argparse names
+  such as ``INPUT``, ``OUTPUT``, ``TASKS``, or ``MANIFEST``.
 - Hardened release-check regression coverage so the public release checklist
   remains the authoritative source for the notebook extra and standard plus
   large-run tutorial preflight/runtime gates, while local agent guidance is
