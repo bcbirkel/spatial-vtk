@@ -17,6 +17,7 @@ def test_public_imports():
         NotebookFigureRenderGate,
         abbreviate_model,
         configured_output_registry_frame,
+        configured_output_registry_preview_frame,
         display_output_table_previews,
         render_notebook_figure,
         run_notebook_step_if_needed,
@@ -133,6 +134,7 @@ def test_public_imports():
     assert callable(write_large_run_spatial_figure_suite_from_notebook_settings)
     assert callable(abbreviate_model)
     assert callable(configured_output_registry_frame)
+    assert callable(configured_output_registry_preview_frame)
     assert callable(display_output_table_previews)
     assert callable(render_notebook_figure)
     assert callable(run_notebook_step_if_needed)
@@ -844,7 +846,8 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "display_first_existing_table_preview()" in workflows
     assert "run_notebook_step_if_needed" in workflows
     assert "notebooks should use package functions" in workflows.lower()
-    assert "configured_output_registry_frame" in workflows
+    assert "configured_output_registry_preview_frame" in workflows
+    assert "configured_output_registry_frame(cfg=cfg, kinds=(\"table\",)).head()" not in workflows
     assert "metric_manifest_path" in workflows
     assert "geojson_region_summaries_path" in workflows
     assert "descriptive keys are the public notebook contract" in workflows

@@ -16,6 +16,7 @@ from spatial_vtk.config import (
     clear_saved_config_path,
     clear_active_config,
     configured_output_registry_frame,
+    configured_output_registry_preview_frame,
     find_config_file,
     format_run_time,
     metric_display_name,
@@ -1364,6 +1365,16 @@ outputs:
     compact = configured_output_registry_frame(include_paths=False, kinds=("dashboard",))
     assert list(compact.columns) == ["kind", "key", "filename", "description"]
     assert "dashboard_summaries" in set(compact["key"])
+
+    preview = configured_output_registry_preview_frame(
+        cfg=cfg,
+        kinds=("table",),
+        include_paths=False,
+        nrows=2,
+    )
+    assert list(preview.columns) == ["kind", "key", "filename", "description"]
+    assert len(preview) == 2
+    assert list(preview.index) == [0, 1]
 
 
 def test_output_groups_resolve_configured_paths(tmp_path, monkeypatch):

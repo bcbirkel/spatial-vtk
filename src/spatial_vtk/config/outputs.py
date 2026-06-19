@@ -123,6 +123,30 @@ def configured_output_registry_frame(
     return pd.DataFrame(rows, columns=["kind", "key", "filename", "description", "path"] if include_paths else ["kind", "key", "filename", "description"])
 
 
+def configured_output_registry_preview_frame(
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    include_paths: bool = True,
+    kinds: Iterable[OutputKind] | None = None,
+    create_parent: bool = False,
+    nrows: int = 10,
+):
+    """Return a bounded preview of registered output artifacts.
+
+    This is a notebook-facing wrapper around
+    :func:`configured_output_registry_frame` for examples that only need to show
+    a few configured outputs without teaching direct dataframe slicing.
+    """
+
+    frame = configured_output_registry_frame(
+        cfg=cfg,
+        include_paths=include_paths,
+        kinds=kinds,
+        create_parent=create_parent,
+    )
+    return frame.head(max(int(nrows), 0)).reset_index(drop=True)
+
+
 def output_spec(key: str, *, kind: OutputKind | None = None) -> OutputSpec:
     """Return one output spec, falling back to a generated filename.
 
@@ -289,6 +313,7 @@ __all__ = [
     "OutputKind",
     "OutputSpec",
     "configured_output_registry_frame",
+    "configured_output_registry_preview_frame",
     "default_output_registry",
     "infer_output_key",
     "output_description",

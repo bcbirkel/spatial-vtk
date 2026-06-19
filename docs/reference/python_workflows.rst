@@ -42,7 +42,7 @@ paths in cells.
 
 .. code-block:: python
 
-   from spatial_vtk.config import configured_output_registry_frame
+   from spatial_vtk.config import configured_output_registry_preview_frame
    from spatial_vtk.config import (
        notebook_figure_settings,
        notebook_run_context,
@@ -55,7 +55,7 @@ paths in cells.
    context = notebook_run_context()
    cfg = context.cfg
    step_outputs = output_group("step_02_qc", cfg=cfg)
-   display(configured_output_registry_frame(cfg=cfg, kinds=("table",)).head())
+   display(configured_output_registry_preview_frame(cfg=cfg, kinds=("table",)))
    display(step_outputs.status_frame())
    readiness = step_outputs.readiness(
        "trace_qc_path",

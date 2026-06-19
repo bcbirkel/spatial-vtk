@@ -69,6 +69,7 @@ from spatial_vtk.config.notebook import (
 from spatial_vtk.config.outputs import (
     OutputSpec,
     configured_output_registry_frame,
+    configured_output_registry_preview_frame,
     default_output_registry,
     infer_output_key,
     output_description,
@@ -145,6 +146,7 @@ __all__ = [
     "column_display_lookup",
     "column_display_name",
     "configured_output_registry_frame",
+    "configured_output_registry_preview_frame",
     "deep_merge",
     "default_output_registry",
     "display_label",

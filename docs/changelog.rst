@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-19
+   - Added ``configured_output_registry_preview_frame()`` and updated the
+     Python workflow reference to use it for bounded output-registry examples
+     instead of displaying ``configured_output_registry_frame(...).head()``.
    - Added ``StandardAdditionalPlottingFigureResult.pattern_preview_frame()`` and
      rewired the standard Step 6 plotting notebook to use it for bounded pattern
      similarity previews instead of calling ``.head()`` in the notebook cell.
