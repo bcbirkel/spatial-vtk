@@ -531,7 +531,11 @@ Step 7: Dashboard Datasets
        materialize the full ``metrics_long`` table before writing dashboard
        partitions. Summary tables are then built one dashboard partition at a
        time so exact medians, IQRs, and unique counts do not require loading the
-       full dashboard metric dataset.
+       full dashboard metric dataset. The metrics dashboard also caps
+       row-level CSV downloads separately through
+       ``SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS`` or the shared
+       ``SVTK_DASHBOARD_DOWNLOAD_ROWS`` setting so filtered distributions do not
+       serialize more rows than intended.
    * - Launch dashboards from Python
      - ``spatial_vtk.config.notebook_dashboard_launch_commands``,
        ``spatial_vtk.visualize.dashboard.launch_configured_dashboards_from_notebook_settings``,

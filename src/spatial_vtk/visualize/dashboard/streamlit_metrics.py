@@ -77,6 +77,8 @@ METRIC_DATASET_READINESS_DISPLAY_COLUMNS = (
     "message",
     "suggested_action",
 )
+DEFAULT_METRICS_DASHBOARD_MAX_ROWS = 200_000
+DEFAULT_METRICS_DASHBOARD_DOWNLOAD_ROWS = 100_000
 
 
 def main() -> None:
@@ -181,6 +183,7 @@ def _render_metrics_dashboard(
         marker_cluster = st.checkbox("Cluster map markers", value=True)
         max_markers = st.number_input("Maximum map markers", min_value=100, max_value=50000, value=3000, step=100)
         configured_row_limit = _metrics_dashboard_row_limit()
+        download_limit = _metrics_dashboard_download_limit()
         row_limit = st.number_input(
             "Maximum row-level records",
             min_value=1_000,
@@ -349,7 +352,10 @@ def _render_metrics_dashboard(
             st.plotly_chart(build_value_histogram_figure(rows, value_col=row_value), width="stretch")
             if {"distance_km", "med_dist_km"} & set(rows.columns):
                 st.plotly_chart(build_value_vs_distance_figure(rows, value_col=row_value), width="stretch")
-            st.download_button("Download filtered metric rows", rows.to_csv(index=False).encode("utf-8"), file_name="filtered_metrics.csv")
+            download_rows, download_message = _bounded_metric_download_frame(rows, download_limit)
+            if download_message:
+                st.caption(download_message)
+            st.download_button("Download filtered metric rows", download_rows.to_csv(index=False).encode("utf-8"), file_name="filtered_metrics.csv")
     with compare_tab:
         if heat.empty:
             st.info(_empty_rows_message("model comparison"))
@@ -644,7 +650,7 @@ def _path_setting(query_key: str, env_key: str) -> str:
     return str(value or os.environ.get(env_key, "")).strip()
 
 
-def _metrics_dashboard_row_limit(default: int = 200_000) -> int:
+def _metrics_dashboard_row_limit(default: int = DEFAULT_METRICS_DASHBOARD_MAX_ROWS) -> int:
     """Return the row-level metrics cap for responsive dashboard rendering."""
 
     raw = os.environ.get("SVTK_METRICS_DASHBOARD_ROW_LIMIT", "")
@@ -655,6 +661,50 @@ def _metrics_dashboard_row_limit(default: int = 200_000) -> int:
     except ValueError:
         return int(default)
     return max(value, 1_000)
+
+
+def _metrics_dashboard_download_limit(default: int | None = DEFAULT_METRICS_DASHBOARD_DOWNLOAD_ROWS) -> int | None:
+    """Return the maximum metric rows serialized by dashboard download buttons."""
+
+    return _env_optional_positive_int(
+        ("SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS", "SVTK_DASHBOARD_DOWNLOAD_ROWS"),
+        default=default,
+    )
+
+
+def _env_optional_positive_int(names: tuple[str, ...], *, default: int | None) -> int | None:
+    """Read the first configured positive integer, or ``None`` for all rows."""
+
+    for name in names:
+        raw = os.environ.get(name)
+        if raw is None or str(raw).strip() == "":
+            continue
+        value = str(raw).strip().lower()
+        if value in {"all", "none", "unlimited", "full"}:
+            return None
+        try:
+            parsed = int(value)
+        except ValueError as exc:
+            raise ValueError(f"{name} must be a positive integer or 'all', got {raw!r}.") from exc
+        return parsed if parsed > 0 else None
+    return default
+
+
+def _metrics_download_limit_message(download_limit: int | None) -> str:
+    """Return a concise explanation of metrics dashboard download limits."""
+
+    if download_limit is None:
+        return "Download buttons include all currently filtered loaded rows."
+    return f"Download buttons include at most {download_limit:,} currently filtered loaded row(s)."
+
+
+def _bounded_metric_download_frame(df: pd.DataFrame, limit: int | None) -> tuple[pd.DataFrame, str | None]:
+    """Return bounded metric rows and a caption when the download is truncated."""
+
+    if limit is None or len(df) <= limit:
+        return df, None
+    message = f"Download is limited to the first {int(limit):,} of {len(df):,} filtered loaded row(s)."
+    return df.head(int(limit)).copy(), message
 
 
 def _load_optional_config(config_path: str) -> SpatialVTKConfig | None:

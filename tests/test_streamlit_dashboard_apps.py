@@ -1046,6 +1046,34 @@ def test_metrics_dashboard_body_reports_unavailable_row_level_dataset():
     assert _row_level_dataset_notice_message("ignored", rows) is None
 
 
+def test_metrics_dashboard_download_limits_from_environment(monkeypatch):
+    """Metrics dashboard downloads should be separately bounded from row loading."""
+
+    monkeypatch.setenv("SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS", "123")
+    assert streamlit_metrics._metrics_dashboard_download_limit() == 123
+    assert "123" in streamlit_metrics._metrics_download_limit_message(123)
+
+    monkeypatch.setenv("SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS", "all")
+    assert streamlit_metrics._metrics_dashboard_download_limit() is None
+    assert "all currently filtered" in streamlit_metrics._metrics_download_limit_message(None)
+
+
+def test_metrics_dashboard_download_frame_is_bounded():
+    """Metric row downloads should not serialize every loaded row by default."""
+
+    rows = pd.DataFrame({"event_id": ["e1", "e2", "e3"], "value": [1.0, 2.0, 3.0]})
+
+    bounded, message = streamlit_metrics._bounded_metric_download_frame(rows, 2)
+
+    assert bounded["event_id"].tolist() == ["e1", "e2"]
+    assert "first 2 of 3" in str(message)
+
+    unbounded, unbounded_message = streamlit_metrics._bounded_metric_download_frame(rows, None)
+
+    assert len(unbounded) == 3
+    assert unbounded_message is None
+
+
 def test_metrics_dashboard_readiness_display_columns_are_bounded():
     """Dashboard status displays should not expose unrelated wide-table columns."""
 
