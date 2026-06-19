@@ -63,6 +63,9 @@ Changelog
 - Simplified generated CLI reference parameter descriptions so non-path options
   use their parser help directly instead of repeating generic ``Value: ...``
   prefixes.
+- Added a runtime warning when scoped metric-QC Parquet predicate pushdown
+  fails and the reader falls back to slower batch streaming, so large-run
+  metric jobs explain the slowdown instead of appearing silent.
 - Hardened release-check regression coverage so the public release checklist
   remains the authoritative source for the notebook extra and standard plus
   large-run tutorial preflight/runtime gates, while local agent guidance is

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import sys
+from types import ModuleType, SimpleNamespace
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -145,6 +148,55 @@ def test_metric_input_and_qc_tables_are_side_specific() -> None:
     obs = lookup[("observed", "e1", "ABC", "Z", "", "PGA", "")]
     syn = lookup[("synthetic", "e1", "ABC", "Z", "", "PGA", "")]
     assert not comparison_qc_passed(obs, syn)
+
+
+def test_metric_qc_lookup_warns_when_parquet_predicate_pushdown_falls_back(tmp_path, monkeypatch) -> None:
+    """Scoped QC parquet reads should explain slow streaming fallbacks."""
+
+    qc_path = tmp_path / "qc_inventory.parquet"
+    qc = pd.DataFrame(
+        {
+            "source": ["observed", "synthetic", "observed"],
+            "event_id": ["e1", "e1", "e2"],
+            "station": ["abc", "abc", "other"],
+            "component": ["z", "z", "n"],
+            "metric": ["PGA", "PGA", "PGA"],
+            "qc_status": ["pass", "pass", "fail"],
+        }
+    )
+    fake_pyarrow = ModuleType("pyarrow")
+    fake_parquet = ModuleType("pyarrow.parquet")
+
+    class _FakeBatch:
+        def to_pandas(self) -> pd.DataFrame:
+            return qc.copy()
+
+    class _FakeParquetFile:
+        schema = SimpleNamespace(names=list(qc.columns))
+
+        def __init__(self, path: object) -> None:
+            self.path = path
+
+        def iter_batches(self, *, batch_size: int, columns: list[str] | None):
+            yield _FakeBatch()
+
+    def _failing_filtered_read(*args, **kwargs):
+        raise RuntimeError("test predicate failure")
+
+    fake_parquet.ParquetFile = _FakeParquetFile
+    fake_parquet.read_table = _failing_filtered_read
+    fake_pyarrow.parquet = fake_parquet
+    monkeypatch.setitem(sys.modules, "pyarrow", fake_pyarrow)
+    monkeypatch.setitem(sys.modules, "pyarrow.parquet", fake_parquet)
+    tasks = [SimpleNamespace(event_id="e1", station="ABC", component="Z")]
+
+    with pytest.warns(RuntimeWarning, match="Parquet predicate pushdown failed"):
+        lookup = metric_qc_lookup(qc_path, tasks=tasks)
+
+    assert sorted(lookup) == [
+        ("observed", "e1", "ABC", "Z", "", "PGA", ""),
+        ("synthetic", "e1", "ABC", "Z", "", "PGA", ""),
+    ]
 
 
 def test_spectral_qc_uses_relative_support_and_synthetic_max_frequency() -> None:

@@ -13,6 +13,7 @@ Normalize a waveform inventory:
 
 from __future__ import annotations
 
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -267,8 +268,16 @@ def _read_parquet_qc_scoped(path: Path, scope: dict[str, set[str]]) -> pd.DataFr
         try:
             table = pq.read_table(path, columns=read_columns, filters=filters)
             return _filter_qc_scope(table.to_pandas(), scope)
-        except Exception:
-            pass
+        except Exception as exc:
+            warnings.warn(
+                (
+                    "Parquet predicate pushdown failed while reading scoped metric QC rows; "
+                    "falling back to streaming batches. This is correct but can be slower for "
+                    f"large QC inventories. Path: {path}. Reason: {exc}"
+                ),
+                RuntimeWarning,
+                stacklevel=2,
+            )
     frames: list[pd.DataFrame] = []
     for batch in parquet.iter_batches(batch_size=500_000, columns=read_columns):
         frame = batch.to_pandas()
