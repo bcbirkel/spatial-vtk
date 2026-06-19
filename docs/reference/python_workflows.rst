@@ -239,9 +239,11 @@ the large-run notebooks.
        ``outputs.figures/metrics`` without hard-coding
        ``context.figures_dir / "metrics"`` in notebook cells.
        For large-run metric figures, use
-       ``spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context`` and
-       gate plotting cells on ``metric_plot_context.ready`` rather than
-       repeating metric-table existence and value-column checks in each cell.
+       ``spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings``.
+       That wrapper owns the figure render gate, metric-table readiness checks,
+       value-column checks, settings resolution, and sidecar options so
+       notebook cells do not repeat metric-table existence checks or build
+       figure contexts by hand.
    * - ``spatial_vtk.config.render_notebook_figure``
      - Call one plotting helper with a configured ``OutputGroup`` figure path,
        the relevant ``NotebookFigureSettings`` object, optional basemap
@@ -399,14 +401,11 @@ Step 3: Metric Calculation and Metric Figures
      - ``metrics_long``, ``metrics_enriched``, path tables, dashboard metric
        datasets, dashboard summary tables
    * - Render many large-run metric figures with auditable row sidecars
-     - ``spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context``
+     - ``spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings``
      - saved metric figures, package-generated context status and dimension
-       summary tables, and optional ``*.csv``/``*.source.csv``/``*.json``
-       sidecars
-   * - Select metric rows for focused notebook plots
-     - ``spatial_vtk.metrics.plot.metric_rows_for_metrics``
-     - bounded plotting inputs filtered by metric name, display label, key, or
-       alias without notebook-local ``.loc[...isin(...)]`` filtering
+       summary tables, spectral-contract status, and optional
+       ``*.csv``/``*.source.csv``/``*.json`` sidecars without notebook-local
+       row filtering, figure-context construction, or per-plot path plumbing
 
 Spectral metrics are planned differently from passband metrics. ``PSA`` and
 ``FAS`` are broadband spectral calculations: the metric manifest should contain

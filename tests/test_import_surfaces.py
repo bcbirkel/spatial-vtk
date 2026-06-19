@@ -1620,6 +1620,20 @@ def test_python_workflow_docs_prefer_region_boxplot_notebook_settings_wrapper():
     assert "Use\n``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs`` from\nscripts" in workflows
     assert "Standard Notebook Input Helpers" in workflows
     assert "the preferred pattern for standard notebooks" in workflows
+
+
+def test_python_workflow_docs_prefer_metric_figure_suite_wrapper():
+    """Metric workflow docs should point notebook users at the task-level figure suite."""
+
+    workflows_path = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "python_workflows.rst"
+    workflows = workflows_path.read_text(encoding="utf-8")
+    normalized = " ".join(workflows.split())
+
+    assert "spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings" in workflows
+    assert "That wrapper owns the figure render gate, metric-table readiness checks" in workflows
+    assert "without notebook-local row filtering, figure-context construction, or per-plot path plumbing" in normalized
+    assert "spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context" not in workflows
+    assert "spatial_vtk.metrics.plot.metric_rows_for_metrics" not in workflows
     assert "``spatial_vtk.io.load_standard_ingest_workflow_outputs``" in workflows
     assert "``spatial_vtk.qc.load_standard_qc_inputs``" in workflows
     assert "``spatial_vtk.qc.load_standard_qc_workflow_outputs``" in workflows
