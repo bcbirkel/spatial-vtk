@@ -123,10 +123,10 @@ older output table contains PSA rows repeated under passband labels.
    :members:
    :exclude-members: MetricWorkflowTask, SlurmSettings
 
-.. autoclass:: spatial_vtk.metrics.workflow.StandardMetricWorkflowOutputResult
+.. autoclass:: spatial_vtk.metrics.StandardMetricWorkflowOutputResult
    :members:
 
-.. autofunction:: spatial_vtk.metrics.workflow.load_standard_metric_workflow_outputs
+.. autofunction:: spatial_vtk.metrics.load_standard_metric_workflow_outputs
 
 Import workflow helpers from ``spatial_vtk.metrics`` or
 ``spatial_vtk.metrics.workflow``. The configured, inventory, cache,

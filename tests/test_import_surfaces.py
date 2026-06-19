@@ -718,8 +718,10 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "``PSA`` and ``FAS`` are broadband spectral metrics" in text
     assert "writes blank\n``passband`` values for spectral tasks" in text
     assert "older output table contains PSA rows repeated under passband labels" in text
-    assert ".. autoclass:: spatial_vtk.metrics.workflow.StandardMetricWorkflowOutputResult" in text
-    assert ".. autofunction:: spatial_vtk.metrics.workflow.load_standard_metric_workflow_outputs" in text
+    assert ".. autoclass:: spatial_vtk.metrics.StandardMetricWorkflowOutputResult" in text
+    assert ".. autofunction:: spatial_vtk.metrics.load_standard_metric_workflow_outputs" in text
+    assert ".. autoclass:: spatial_vtk.metrics.workflow.StandardMetricWorkflowOutputResult" not in text
+    assert ".. autofunction:: spatial_vtk.metrics.workflow.load_standard_metric_workflow_outputs" not in text
     assert "bounded preview helpers such as" in text
     assert "metrics_long`` display helper" in text
     assert "Advanced row-selection helper for scripts" in text

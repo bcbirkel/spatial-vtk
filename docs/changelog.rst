@@ -130,6 +130,9 @@ Changelog
     helpers to be re-exported before notebooks use them.
   - Reworded the large-run notebook guidance to name stable public import
     packages without showing obsolete implementation-submodule examples.
+  - Updated the Metrics API workflow result docs to reference the
+    ``spatial_vtk.metrics`` package re-exports instead of lower-level
+    workflow-module paths.
   - Updated workflow examples to prefer ``output_group()`` and configured
     output-registry helpers over raw ``resolve_output_path()`` snippets for
     normal notebook workflows.
