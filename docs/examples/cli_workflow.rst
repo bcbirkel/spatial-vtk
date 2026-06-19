@@ -342,6 +342,7 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
 
    svtk plot spatial pattern-similarity \
      --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
      --metric PGA \
      --bin-label "1-2 sec"
 

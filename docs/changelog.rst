@@ -79,6 +79,9 @@ Changelog
 - Added a fresh-clone tutorial scenario regression that verifies the committed
   example config uses lightweight NPZ waveform templates and points at tracked
   metadata, GeoJSON, site, and metric snapshot inputs.
+- Added a CLI workflow regression requiring tutorial commands that pass the
+  example config to also pass the ``tutorial`` run scenario, keeping shell
+  examples on the committed lightweight input bundle.
 - Made ``svtk plot metrics period-spectra`` use the configured ``metrics_long``
   table by default, and taught ``plot_period_spectra()`` to accept standard
   metric-table residual/value columns through ``value_col`` instead of
