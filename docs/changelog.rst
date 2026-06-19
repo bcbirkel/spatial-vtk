@@ -4,15 +4,18 @@ Changelog
 2026-06-19
 ----------
 
-- **Public workflow helpers** *(Added)*
+- **Step 1 workflow helpers** *(Added)*
 
   - Added a standard Step 1 ingest output loader for combined ingest and
     preprocessing output status.
   - Added bounded station, event, and preprocessing manifest previews for the
     standard Step 1 ingest output loader.
-  - Extended the standard Step 3 metric output loader with the preprocessed
-    trace metadata dependency and status-frame helper used by large-run
-    metric readiness cells.
+  - Added config-backed Step 1 metadata and preprocessing readiness helpers so
+    notebook cells no longer repeat prepared-table or preprocessed-metadata
+    path contracts.
+
+- **Step 2 workflow helpers** *(Added)*
+
   - Added a lightweight standard Step 2 QC output loader for large-run setup
     cells that need QC output status without loading prepared metadata tables.
   - Added config-backed Step 2 QC readiness helpers for full QC inventory,
@@ -20,12 +23,20 @@ Changelog
   - Added ``overwrite`` and readiness-message pass-throughs to Step 2 QC
     readiness helpers so notebooks keep rerun controls without local readiness
     contracts.
-  - Added config-backed Step 1 metadata and preprocessing readiness helpers so
-    notebook cells no longer repeat prepared-table or preprocessed-metadata
-    path contracts.
+
+- **Step 3 workflow helpers** *(Added)*
+
+  - Extended the standard Step 3 metric output loader with the preprocessed
+    trace metadata dependency and status-frame helper used by large-run
+    metric readiness cells.
+  - Added a standard Step 3 metric output loader for task-estimate,
+    task-preview, and ``metrics_long`` notebook previews.
   - Added config-backed Step 3 metric inventory and manifest readiness helpers
     so metric notebooks no longer repeat trace-metadata or QC-overlap
     dependency contracts.
+
+- **Later-step workflow helpers** *(Added)*
+
   - Added lightweight Step 4, Step 5, and Step 6 output-status loaders for
     large-run driver notebooks that need configured status tables and bounded
     previews without loading large plotting inputs.
@@ -33,8 +44,9 @@ Changelog
   - Added standard notebook input/output loaders for spatial summaries.
   - Added standard notebook input/output loaders for GeoJSON plotting.
   - Added standard notebook input/output loaders for Step 5 readiness checks.
-  - Added a standard Step 3 metric output loader for task-estimate,
-    task-preview, and ``metrics_long`` notebook previews.
+
+- **Notebook preview helpers** *(Added)*
+
   - Added output-registry preview helpers for notebook display cells.
   - Added path-backed table preview helpers for notebook display cells.
   - Added workflow-step status helpers for notebook display cells.
@@ -42,6 +54,9 @@ Changelog
     cells.
   - Added artifact labels, readiness messages, and suggested rebuild actions
     to output-group status frames used by notebook status cells.
+
+- **Metrics API helpers** *(Added)*
+
   - Added public Metrics API reference tables for inventory and manifest
     helpers exposed through stable package entry points.
   - Added public Metrics API reference tables for Slurm, batch, merge, and
@@ -50,7 +65,7 @@ Changelog
     preparation chunking is configured once with the rest of the large-run
     controls.
 
-- **Notebook-owned display cleanup** *(Rewired)*
+- **Large-run notebook readiness** *(Rewired)*
 
   - Rewired the large-run Step 3 notebook to resolve metric outputs and trace
     metadata dependencies through the standard metric output helper.
@@ -65,6 +80,9 @@ Changelog
     outputs through the same package helper as the standard tutorial.
   - Rewired the large-run Step 1 notebook to use package-owned metadata and
     preprocessing readiness helpers before local or Slurm execution.
+
+- **Notebook-owned display cleanup** *(Rewired)*
+
   - Rewired large-run Step 4, Step 5, and Step 6 status/preview cells to call
     package-owned output-status helpers instead of direct ``output_group(...)``
     methods.
@@ -89,7 +107,7 @@ Changelog
     output-registry helpers over raw ``resolve_output_path()`` snippets for
     normal notebook workflows.
 
-- **CLI and workflow docs** *(Changed)*
+- **CLI examples and defaults** *(Changed)*
 
   - Updated CLI workflow examples so routine GeoJSON commands resolve
     standard inputs from the active config.
@@ -99,6 +117,11 @@ Changelog
   - Updated ``svtk ... list`` discovery output for plot, map, and visualization
     commands so required explicit inputs name the table role, such as
     ``required:spectrogram table``, instead of only naming a generic flag.
+  - Added first-class ``svtk dashboard metrics`` runtime-limit flags for
+    row-level loading, summary-table display, and CSV downloads.
+
+- **CLI validation and help text** *(Changed)*
+
   - Made registered plot/map/visualization commands validate missing required
     input and output paths before importing plotting modules or loading config,
     so missing-table errors are not masked by optional dependency messages.
@@ -107,8 +130,6 @@ Changelog
   - Normalized generated CLI help text for dashboard, inventory, and waveform
     path arguments so usage strings show ``PATH`` or ``DIR`` where
     appropriate.
-  - Added first-class ``svtk dashboard metrics`` runtime-limit flags for
-    row-level loading, summary-table display, and CSV downloads.
   - Added a top-level CLI missing-dependency message so source-checkout
     commands report the missing package and install command instead of a raw
     traceback.
@@ -118,6 +139,9 @@ Changelog
     defaults before importing optional workflow modules.
   - Normalized registered figure command help so advanced ``--table`` mappings,
     named table aliases, and sidecar directories use path-oriented metavars.
+
+- **CLI guidance output** *(Changed)*
+
   - Clarified CLI plotting notes so visualization list commands are included
     with plot/map list commands, and ``required:<role>`` entries explain when
     explicit input tables are still required.
@@ -131,7 +155,7 @@ Changelog
     Step 3/Step 4 rebuild guidance in its human-readable output instead of
     the lower-level path-key readiness table.
 
-- **Large-run resilience** *(Hardened)*
+- **Dashboard large-run resilience** *(Hardened)*
 
   - Streamed partitioned dashboard metric dataset writes from path-backed CSV
     or Parquet metric tables, using chunked partition files instead of
@@ -151,6 +175,9 @@ Changelog
     the browser by default.
   - Added a separate metrics-dashboard download row cap so filtered row-level
     CSV downloads do not serialize every loaded distribution row by default.
+
+- **Workflow large-run resilience** *(Hardened)*
+
   - Reused the standard ingest output helper inside record-coverage
     readiness/build workflows so script and notebook path fallback behavior
     stays aligned.
