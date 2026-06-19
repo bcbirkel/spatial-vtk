@@ -154,6 +154,9 @@ Changelog
     standard notebook cells where package helpers now own the task.
   - Made large-run README guidance explicit about public plotting, mapping, and
     visualization entry points.
+  - Replaced large-run README single-figure import examples with package-owned
+    workflow helper examples for metrics, QC, spatial figures, dashboards, and
+    bounded notebook context setup.
 
 2026-06-18
 ----------

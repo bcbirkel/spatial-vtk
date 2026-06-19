@@ -1106,6 +1106,23 @@ def test_large_run_readme_lists_rejected_implementation_import_prefixes() -> Non
 
     repo_root = Path(__file__).resolve().parents[1]
     readme = (repo_root / "docs" / "examples" / "large_run" / "README.md").read_text(encoding="utf-8")
+    stale_examples = (
+        "from spatial_vtk.metrics.plot import plot_period_spectra",
+        "from spatial_vtk.spatial.map import plot_station_metric_map",
+        "from spatial_vtk.spatial.plot import scatterplot",
+    )
+    for example in stale_examples:
+        assert example not in readme
+    for helper in (
+        "notebook_run_context",
+        "load_standard_ingest_workflow_outputs",
+        "plan_metric_tasks_from_config",
+        "write_large_run_metric_figure_suite_from_notebook_settings",
+        "run_qc_inventory_from_config",
+        "write_large_run_spatial_figure_suite_from_notebook_settings",
+        "prepare_configured_dashboard_datasets_from_notebook_settings",
+    ):
+        assert helper in readme
     for prefix in (
         "spatial_vtk.metrics.plot.*",
         "spatial_vtk.spatial.plot.*",

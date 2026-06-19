@@ -28,16 +28,24 @@ checks that tutorial notebooks have no saved execution state, private absolute
 paths, shell/CLI workflow cells, implementation plotting imports, fixed run
 layout paths, raw output-path/table reads, or notebook-local dataframe
 filtering and joins that should live in package helpers.
-Use public plotting imports such as:
+Notebook driver cells should use package workflow helpers that own path
+resolution, skip/rebuild checks, chunking, Slurm script generation, figure
+sidecars, and bounded previews. Common large-run entry points include:
 
 ```python
-from spatial_vtk.metrics.plot import plot_period_spectra
-from spatial_vtk.spatial.map import plot_station_metric_map
-from spatial_vtk.spatial.plot import scatterplot
+from spatial_vtk.config import notebook_run_context, notebook_figure_settings
+from spatial_vtk.io import load_standard_ingest_workflow_outputs
+from spatial_vtk.metrics import plan_metric_tasks_from_config
+from spatial_vtk.metrics.plot import write_large_run_metric_figure_suite_from_notebook_settings
+from spatial_vtk.qc import run_qc_inventory_from_config
+from spatial_vtk.spatial.plot import write_large_run_spatial_figure_suite_from_notebook_settings
+from spatial_vtk.visualize.dashboard import prepare_configured_dashboard_datasets_from_notebook_settings
 ```
 
-Do not import from implementation submodules under public plotting,
-mapping, or visualization entry points. Preflight rejects paths such as
+Single-figure helpers remain available for ad-hoc Python scripts, but the
+large-run notebooks should not hand-wire individual plot calls, figure paths, or
+dataframe joins. Do not import from implementation submodules under public
+plotting, mapping, or visualization entry points. Preflight rejects paths such as
 `spatial_vtk.metrics.plot.*`, `spatial_vtk.spatial.plot.*`,
 `spatial_vtk.spatial.map.*`, `spatial_vtk.visualize.context.*`,
 `spatial_vtk.visualize.qc.*`, `spatial_vtk.visualize.waveforms.*`, and
