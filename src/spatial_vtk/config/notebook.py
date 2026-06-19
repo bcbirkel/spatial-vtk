@@ -1342,7 +1342,10 @@ def run_notebook_step_if_needed(
     """
 
     _display_notebook_readiness_status(readiness, display_fn=display_fn)
+    message = getattr(readiness, "message", None)
     if bool(getattr(readiness, "should_run", False)):
+        if message:
+            print(f"Running notebook step: {message}")
         return run_or_submit_notebook_function(
             context,
             function,
@@ -1356,7 +1359,6 @@ def run_notebook_step_if_needed(
             run_local=run_local,
             section=section,
         )
-    message = getattr(readiness, "message", None)
     if message:
         print(message)
     return None

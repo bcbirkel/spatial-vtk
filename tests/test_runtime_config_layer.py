@@ -2281,6 +2281,9 @@ def test_run_notebook_step_if_needed_displays_and_delegates(tmp_path, monkeypatc
     )
 
     assert result == "submitted"
+    printed = capsys.readouterr().out
+    assert "Running notebook step:" in printed
+    assert "Output is missing; building" in printed
     assert len(calls) == 1
     assert calls[0][0] is context
     assert calls[0][1] is metric_display_name
