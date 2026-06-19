@@ -391,29 +391,54 @@ def test_changelog_dated_sections_use_bulleted_entries():
     topic_bullet = re.compile(r"^- \*\*.+\*\* \*\(.+\)\*$")
 
     in_dated_section = False
+    topic_open = False
+    current_entry_has_detail_bullet = False
+    previous_line_was_detail = False
     violations: list[str] = []
     for line_number, line in enumerate(lines, start=1):
         stripped = line.strip()
         if not stripped:
             continue
         if date_heading.match(stripped):
+            if in_dated_section and topic_open and not current_entry_has_detail_bullet:
+                violations.append(f"{line_number}: previous changelog entry has no detail bullets")
             in_dated_section = True
+            topic_open = False
+            current_entry_has_detail_bullet = False
+            previous_line_was_detail = False
             continue
         if in_dated_section and stripped == "Future Work":
+            if topic_open and not current_entry_has_detail_bullet:
+                violations.append(f"{line_number}: previous changelog entry has no detail bullets")
             in_dated_section = False
             continue
         if set(stripped) <= {"-"}:
             continue
         if not in_dated_section:
             continue
-        if line.startswith("- ") and not topic_bullet.match(line):
-            violations.append(
-                f"{line_number}: top-level changelog bullets must include a topic and status: {line}"
-            )
+        if line.startswith("- "):
+            if topic_open and not current_entry_has_detail_bullet:
+                violations.append(f"{line_number}: previous changelog entry has no detail bullets")
+            if not topic_bullet.match(line):
+                violations.append(
+                    f"{line_number}: top-level changelog bullets must include a topic and status: {line}"
+                )
+            topic_open = True
+            current_entry_has_detail_bullet = False
+            previous_line_was_detail = False
             continue
-        if line.startswith("- ") or line.startswith("  "):
+        if line.startswith("  - "):
+            current_entry_has_detail_bullet = True
+            previous_line_was_detail = True
+            continue
+        if line.startswith("    ") and previous_line_was_detail:
+            continue
+        if line.startswith("  "):
+            violations.append(f"{line_number}: changelog entry details must use nested bullets: {line}")
+            previous_line_was_detail = False
             continue
         violations.append(f"{line_number}: {line}")
+        previous_line_was_detail = False
 
     assert not violations, "Changelog dated entries must be bullets:\n" + "\n".join(violations)
 

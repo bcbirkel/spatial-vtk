@@ -139,6 +139,8 @@ Changelog
   - Added regression coverage for committed tutorial data.
   - Added regression coverage for CLI workflow examples.
   - Added regression coverage for changelog formatting.
+  - Tightened changelog formatting checks so dated entries must keep their
+    details as nested bullets instead of indented paragraph blocks.
   - Added release guardrails so local agent notes and execplans stay ignored.
   - Added release guardrails so machine-specific instructions are called out
     before public publishing.
