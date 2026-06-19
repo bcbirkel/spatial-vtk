@@ -982,7 +982,7 @@ def test_large_run_notebooks_describe_configured_output_locations() -> None:
 
 
 def test_large_run_notebooks_use_output_group_helper() -> None:
-    """Large-run notebooks should use the consolidated output group helper."""
+    """Large-run notebooks should use package-owned output helpers."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
@@ -996,6 +996,9 @@ def test_large_run_notebooks_use_output_group_helper() -> None:
             or "load_standard_ingest_workflow_outputs(" in source
             or "load_standard_qc_workflow_outputs(" in source
             or "load_standard_metric_workflow_outputs(" in source
+            or "load_standard_spatial_workflow_output_status(" in source
+            or "load_standard_geojson_workflow_output_status(" in source
+            or "load_standard_additional_plotting_output_status(" in source
         ), notebook_path.relative_to(repo_root)
         assert "output_group_namespace" not in source, notebook_path.relative_to(repo_root)
         assert "output_group_status_frame" not in source, notebook_path.relative_to(repo_root)
@@ -1438,6 +1441,8 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "from spatial_vtk.spatial import (" in source
     assert "run_spatial_statistics_workflow_from_config," in source
     assert "run_spatial_derived_outputs_workflow_from_config," in source
+    assert "load_standard_spatial_workflow_output_status," in source
+    assert "step_outputs = load_standard_spatial_workflow_output_status(cfg=context.cfg)" in source
     assert "spatial_summary_readiness_from_config," in source
     assert "spatial_derived_outputs_readiness_from_config," in source
     assert "spatial_summary_readiness = spatial_summary_readiness_from_config(" in source
@@ -1446,6 +1451,7 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "derived_spatial_output_names" not in source
     assert "step_outputs.readiness(" not in source
     assert "step_outputs.display_table_previews(" in source
+    assert 'step_outputs = output_group("step_04_spatial")' not in source
     assert "display_output_table_previews(" not in source
     assert '"spatial_vtk.spatial.run_spatial_statistics_workflow_from_config"' not in source
     assert '"spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config"' not in source
@@ -1518,7 +1524,10 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "boundary_corridor_readiness_from_config," in source
     assert "run_geojson_region_summary_workflow_from_config," in source
     assert "run_boundary_corridor_workflow_from_config," in source
+    assert "load_standard_geojson_workflow_output_status" in source
+    assert "step_outputs = load_standard_geojson_workflow_output_status(cfg=cfg)" in source
     assert "step_outputs.display_table_previews(" in source
+    assert 'step_outputs = output_group("step_05_geojson")' not in source
     assert "display_output_table_previews(" not in source
     assert "write_large_run_geojson_region_figures_from_notebook_settings(" in source
     assert "region_figure_gate = REGION_FIGURE_SETTINGS.render_gate(" not in source
@@ -2146,7 +2155,8 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "step_outputs = output_group(\"step_06_plotting\")" in source
+    assert "load_standard_additional_plotting_output_status" in source
+    assert "step_outputs = load_standard_additional_plotting_output_status(cfg=cfg)" in source
     assert "write_waveform_comparison_from_notebook_settings(" in source
     assert "waveform_result.status_frame()" in source
     assert "waveform_figure_gate = WAVEFORM_FIGURE_SETTINGS.render_gate(" not in source
@@ -2156,7 +2166,8 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     assert "load_comparison_eligible_records(" not in source
     assert "plot_event_trace_comparison(" not in source
     assert "event_stations = step_outputs.load_table(" not in source
-    assert "step_outputs.display_first_existing_table_preview(" in source
+    assert "step_outputs.display_metric_source_preview(" in source
+    assert "step_outputs.display_first_existing_table_preview(" not in source
     assert "step_outputs.preview_first_existing_table(" not in source
     assert "write_large_run_region_boxplot_from_notebook_settings(" in source
     assert "write_large_run_region_boxplot_from_outputs(" not in source

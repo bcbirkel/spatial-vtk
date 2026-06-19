@@ -138,6 +138,11 @@ import paths.
 
 .. autofunction:: spatial_vtk.spatial.load_standard_spatial_workflow_outputs
 
+.. autoclass:: spatial_vtk.spatial.StandardSpatialWorkflowOutputStatusResult
+   :members:
+
+.. autofunction:: spatial_vtk.spatial.load_standard_spatial_workflow_output_status
+
 .. autofunction:: spatial_vtk.spatial.spatial_metric_table_frame
 
 .. autofunction:: spatial_vtk.spatial.spatial_metric_product_frames
@@ -224,6 +229,10 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Load the standard Step 5 metrics, prepared metadata, comparison-eligible
        records, configured GeoJSON path, and configured output group without
        notebook-local output-group, config-path, or table-loading plumbing.
+   * - ``load_standard_geojson_workflow_output_status``
+     - Resolve Step 5 output status and bounded table previews for large-run
+       driver notebooks without loading the full metrics or GeoJSON input
+       tables.
    * - ``write_standard_additional_plotting_figures``
      - Write the standard Step 6 waveform map, pattern-similarity figure,
        residual scatterplot, region boxplot, and region heatmap while keeping
@@ -233,6 +242,10 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Load the standard Step 6 metric snapshot, event metadata,
        event-station records, comparison-eligible pairs, and configured output
        group without notebook-local output-group or config-table plumbing.
+   * - ``load_standard_additional_plotting_output_status``
+     - Resolve Step 6 output status and the first available metric-source
+       preview for large-run driver notebooks without loading the plotting
+       inputs.
    * - ``write_large_run_geojson_region_figures_from_outputs``
      - Write the Step 5 GeoJSON overview map, corridor map, and region boxplot
        from configured output groups without notebook-local table loading or
@@ -342,10 +355,20 @@ schemas.
 
 .. autofunction:: spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs
 
+.. autoclass:: spatial_vtk.spatial.plot.StandardGeoJSONWorkflowOutputStatusResult
+   :members:
+
+.. autofunction:: spatial_vtk.spatial.plot.load_standard_geojson_workflow_output_status
+
 .. autoclass:: spatial_vtk.spatial.plot.StandardAdditionalPlottingInputResult
    :members:
 
 .. autofunction:: spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs
+
+.. autoclass:: spatial_vtk.spatial.plot.StandardAdditionalPlottingOutputStatusResult
+   :members:
+
+.. autofunction:: spatial_vtk.spatial.plot.load_standard_additional_plotting_output_status
 
 .. autoclass:: spatial_vtk.spatial.plot.StandardAdditionalPlottingFigureResult
    :members:

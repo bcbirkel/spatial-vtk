@@ -409,6 +409,36 @@ class StandardSpatialWorkflowOutputResult:
 
 
 @dataclass(frozen=True)
+class StandardSpatialWorkflowOutputStatusResult:
+    """Configured Step 4 output status and bounded preview helpers.
+
+    This lightweight result is intended for large-run driver notebooks that
+    need to report output readiness without loading the full spatial result
+    tables into memory.
+    """
+
+    outputs: object
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return configured Step 4 output path status."""
+
+        return self.outputs.status_frame()
+
+    def display_table_previews(self, *, cfg: SpatialVTKConfig | None = None, nrows: int = 5) -> dict[str, object]:
+        """Display bounded previews of the core Step 4 spatial output tables."""
+
+        return self.outputs.display_table_previews(
+            {
+                "metric_field": "metric_field",
+                "event_centered_residuals": "event_centered_residuals",
+                "station_bias": "station_bias",
+            },
+            cfg=cfg,
+            nrows=nrows,
+        )
+
+
+@dataclass(frozen=True)
 class _SpatialMetricCheckpoint:
     """Loaded checkpoint tables for one spatial metric."""
 
@@ -745,6 +775,32 @@ def load_standard_spatial_workflow_outputs(
         tables=tables,
         product_summary=product_summary,
     )
+
+
+def load_standard_spatial_workflow_output_status(
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    output_group_name: str = "step_04_spatial",
+) -> StandardSpatialWorkflowOutputStatusResult:
+    """Return configured Step 4 output status without loading large tables.
+
+    Parameters
+    ----------
+    cfg
+        Active Spatial-VTK config. When omitted, the active config is used by
+        the underlying output-group helpers.
+    output_group_name
+        Configured output group that owns the standard Step 4 spatial tables
+        and figures.
+
+    Returns
+    -------
+    StandardSpatialWorkflowOutputStatusResult
+        Lightweight output status and bounded preview helpers for Step 4
+        large-run notebooks.
+    """
+
+    return StandardSpatialWorkflowOutputStatusResult(outputs=output_group(output_group_name, cfg=cfg))
 
 
 def spatial_metric_table_frame(
@@ -1935,6 +1991,8 @@ __all__ = [
     "SpatialStatisticsWorkflowResult",
     "StandardSpatialProductSummaryResult",
     "StandardSpatialWorkflowOutputResult",
+    "StandardSpatialWorkflowOutputStatusResult",
+    "load_standard_spatial_workflow_output_status",
     "load_standard_spatial_workflow_outputs",
     "run_spatial_derived_outputs_workflow",
     "run_spatial_derived_outputs_workflow_from_config",

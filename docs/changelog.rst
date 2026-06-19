@@ -16,6 +16,9 @@ Changelog
       metric readiness cells.
     - Added a lightweight standard Step 2 QC output loader for large-run setup
       cells that need QC output status without loading prepared metadata tables.
+    - Added lightweight Step 4, Step 5, and Step 6 output-status loaders for
+      large-run driver notebooks that need configured status tables and bounded
+      previews without loading large plotting inputs.
     - Added standard notebook input/output loaders for QC, spatial summaries,
       GeoJSON plotting, and Step 5 readiness checks so notebooks no longer
       duplicate config path plumbing.
@@ -36,6 +39,9 @@ Changelog
       the lightweight QC workflow output helper.
     - Rewired the large-run Step 1 notebook to resolve ingest and preprocessing
       outputs through the same package helper as the standard tutorial.
+    - Rewired large-run Step 4, Step 5, and Step 6 status/preview cells to call
+      package-owned output-status helpers instead of direct ``output_group(...)``
+      methods.
     - Rewired standard Step 1, Step 2, Step 4, Step 5, and Step 6 notebooks to
       call package helpers for table previews, readiness messages, and configured
       output loading.

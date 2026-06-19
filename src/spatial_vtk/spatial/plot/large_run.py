@@ -1514,6 +1514,30 @@ class StandardGeoJSONPlottingInputResult:
 
 
 @dataclass(frozen=True)
+class StandardGeoJSONWorkflowOutputStatusResult:
+    """Configured Step 5 output status and bounded preview helpers."""
+
+    outputs: Any
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return configured Step 5 output path status."""
+
+        return self.outputs.status_frame()
+
+    def display_table_previews(self, *, cfg: Any | None = None, nrows: int = 5) -> dict[str, object]:
+        """Display bounded previews of the core Step 5 GeoJSON output tables."""
+
+        return self.outputs.display_table_previews(
+            {
+                "geojson_region_summaries": "geojson_region_summaries",
+                "corridors": "corridors",
+            },
+            cfg=cfg,
+            nrows=nrows,
+        )
+
+
+@dataclass(frozen=True)
 class StandardAdditionalPlottingFigureResult:
     """Result from writing standard Step 6 additional plotting figures."""
 
@@ -1578,6 +1602,34 @@ class StandardAdditionalPlottingInputResult:
             {"table": "comparison_eligible", "rows": len(self.comparison_eligible)},
         ]
         return pd.DataFrame(rows, columns=["table", "rows"])
+
+
+@dataclass(frozen=True)
+class StandardAdditionalPlottingOutputStatusResult:
+    """Configured Step 6 output status and bounded preview helpers."""
+
+    outputs: Any
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return configured Step 6 output path status."""
+
+        return self.outputs.status_frame()
+
+    def display_metric_source_preview(
+        self,
+        *,
+        cfg: Any | None = None,
+        nrows: int = 5,
+        missing_message: str = "Metric plotting source is not ready yet.",
+    ) -> dict[str, object]:
+        """Display a bounded preview of the first available metric source table."""
+
+        return self.outputs.display_first_existing_table_preview(
+            ("metrics_enriched_path", "metrics_long_path"),
+            cfg=cfg,
+            nrows=nrows,
+            missing_message=missing_message,
+        )
 
 
 @dataclass(frozen=True)
@@ -2557,6 +2609,18 @@ def load_standard_geojson_plotting_inputs(
     )
 
 
+def load_standard_geojson_workflow_output_status(
+    *,
+    cfg: Any | None = None,
+    geojson_group_name: str = "step_05_geojson",
+) -> StandardGeoJSONWorkflowOutputStatusResult:
+    """Return configured Step 5 output status without loading large tables."""
+
+    from spatial_vtk.io import output_group
+
+    return StandardGeoJSONWorkflowOutputStatusResult(outputs=output_group(geojson_group_name, cfg=cfg))
+
+
 def write_standard_geojson_corridor_figures(
     *,
     metrics_by_regions: pd.DataFrame,
@@ -2873,6 +2937,18 @@ def load_standard_additional_plotting_inputs(
         comparison_eligible=plotting_tables["comparison_eligible"],
         outputs=plotting_outputs,
     )
+
+
+def load_standard_additional_plotting_output_status(
+    *,
+    cfg: Any | None = None,
+    plotting_group_name: str = "step_06_plotting",
+) -> StandardAdditionalPlottingOutputStatusResult:
+    """Return configured Step 6 output status without loading large tables."""
+
+    from spatial_vtk.io import output_group
+
+    return StandardAdditionalPlottingOutputStatusResult(outputs=output_group(plotting_group_name, cfg=cfg))
 
 
 def write_standard_additional_plotting_figures(
@@ -3971,15 +4047,19 @@ __all__ = [
     "SPATIAL_FIGURE_TABLE_KEYS",
     "StandardAdditionalPlottingFigureResult",
     "StandardAdditionalPlottingInputResult",
+    "StandardAdditionalPlottingOutputStatusResult",
     "StandardGeoJSONCorridorFigureResult",
     "StandardGeoJSONFigureResult",
     "StandardGeoJSONPlottingInputResult",
+    "StandardGeoJSONWorkflowOutputStatusResult",
     "SpatialSummaryFigureResult",
     "SpatialFigureSuiteResult",
     "SpatialFigureContext",
     "StandardSpatialDiagnosticFigureResult",
     "StandardSpatialMapFigureResult",
+    "load_standard_additional_plotting_output_status",
     "load_standard_additional_plotting_inputs",
+    "load_standard_geojson_workflow_output_status",
     "load_standard_geojson_plotting_inputs",
     "prepare_spatial_figure_context",
     "prepare_spatial_figure_context_from_notebook_settings",

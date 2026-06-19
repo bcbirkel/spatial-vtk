@@ -167,6 +167,8 @@ Start with public helpers from ``spatial_vtk.spatial``:
 
 - ``run_spatial_statistics_workflow_from_config`` for standard spatial
   statistics tables
+- ``load_standard_spatial_workflow_output_status`` for Step 4 large-run output
+  status and bounded table previews without loading large tables
 - ``load_standard_spatial_workflow_outputs`` for standard Step 4 output-table
   loading and per-metric product summaries
 - ``run_spatial_derived_outputs_workflow_from_config`` for optional REDCAP,
@@ -177,8 +179,13 @@ Start with public helpers from ``spatial_vtk.spatial``:
 - ``run_geojson_region_summary_workflow_from_config`` and
   ``run_boundary_corridor_workflow_from_config`` for GeoJSON and corridor
   tables
-- ``load_standard_geojson_plotting_inputs`` for standard Step 5 notebook inputs
-  without notebook-local GeoJSON path or output-table plumbing
+- ``load_standard_geojson_workflow_output_status`` and
+  ``load_standard_geojson_plotting_inputs`` for Step 5 output status and
+  standard notebook inputs without notebook-local GeoJSON path or output-table
+  plumbing
+- ``load_standard_additional_plotting_output_status`` and
+  ``load_standard_additional_plotting_inputs`` for Step 6 output status,
+  metric-source previews, and standard plotting inputs
 - ``add_geojson_metadata_to_metrics``, ``build_boundary_corridors``, and
   ``build_pattern_similarity_station_anomalies`` for focused spatial
   calculations

@@ -86,6 +86,7 @@ def test_public_imports():
         run_boundary_corridor_workflow_from_config,
         boundary_corridor_readiness_from_config,
         geojson_region_summary_readiness_from_config,
+        load_standard_spatial_workflow_output_status,
         load_standard_spatial_workflow_outputs,
         run_geojson_region_summary_workflow_from_config,
         run_spatial_derived_outputs_workflow_from_config,
@@ -101,6 +102,7 @@ def test_public_imports():
         spatial_workflow_failure_frame,
         station_bias_preview_frame,
         StandardSpatialWorkflowOutputResult,
+        StandardSpatialWorkflowOutputStatusResult,
         summarize_standard_spatial_products,
     )
     from spatial_vtk.visualize.dashboard import (
@@ -119,12 +121,16 @@ def test_public_imports():
         SpatialSummaryFigureResult,
         StandardAdditionalPlottingFigureResult,
         StandardAdditionalPlottingInputResult,
+        StandardAdditionalPlottingOutputStatusResult,
         StandardGeoJSONCorridorFigureResult,
         StandardGeoJSONFigureResult,
         StandardGeoJSONPlottingInputResult,
+        StandardGeoJSONWorkflowOutputStatusResult,
         StandardSpatialDiagnosticFigureResult,
         StandardSpatialMapFigureResult,
+        load_standard_additional_plotting_output_status,
         load_standard_additional_plotting_inputs,
+        load_standard_geojson_workflow_output_status,
         load_standard_geojson_plotting_inputs,
         prepare_spatial_figure_context_from_notebook_settings,
         write_standard_additional_plotting_figures,
@@ -144,12 +150,16 @@ def test_public_imports():
     assert callable(SpatialFigureSuiteResult)
     assert callable(StandardAdditionalPlottingFigureResult)
     assert callable(StandardAdditionalPlottingInputResult)
+    assert callable(StandardAdditionalPlottingOutputStatusResult)
+    assert callable(load_standard_additional_plotting_output_status)
     assert callable(load_standard_additional_plotting_inputs)
     assert callable(write_standard_additional_plotting_figures)
     assert callable(StandardGeoJSONCorridorFigureResult)
     assert callable(write_standard_geojson_corridor_figures)
     assert callable(StandardGeoJSONFigureResult)
     assert callable(StandardGeoJSONPlottingInputResult)
+    assert callable(StandardGeoJSONWorkflowOutputStatusResult)
+    assert callable(load_standard_geojson_workflow_output_status)
     assert callable(load_standard_geojson_plotting_inputs)
     assert callable(write_standard_geojson_region_figures)
     assert callable(write_large_run_spatial_figure_suite_from_notebook_settings)
@@ -203,6 +213,7 @@ def test_public_imports():
     assert callable(run_boundary_corridor_workflow_from_config)
     assert callable(boundary_corridor_readiness_from_config)
     assert callable(geojson_region_summary_readiness_from_config)
+    assert callable(load_standard_spatial_workflow_output_status)
     assert callable(load_standard_spatial_workflow_outputs)
     assert callable(run_geojson_region_summary_workflow_from_config)
     assert callable(run_spatial_derived_outputs_workflow_from_config)
@@ -210,6 +221,7 @@ def test_public_imports():
     assert callable(spatial_derived_outputs_readiness_from_config)
     assert callable(StandardSpatialProductSummaryResult)
     assert callable(StandardSpatialWorkflowOutputResult)
+    assert callable(StandardSpatialWorkflowOutputStatusResult)
     assert callable(corridor_record_preview_frame)
     assert callable(corridor_record_pair_frame)
     assert callable(event_station_records_matching_pairs)

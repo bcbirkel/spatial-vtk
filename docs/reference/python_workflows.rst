@@ -288,17 +288,26 @@ fallbacks, and bounded previews stay in package code.
        frame, optional metric task estimate, task-preview display helper,
        ``metrics_long`` display helper, and plotting-table loader.
    * - Step 4 spatial statistics
-     - ``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``
-     - The Step 4 output group, loaded spatial workflow tables, per-metric
-       product summaries, station-bias previews, and failure/status frames.
+     - ``spatial_vtk.spatial.load_standard_spatial_workflow_output_status``
+       and ``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``
+     - Lightweight Step 4 output status/previews for large-run driver cells,
+       plus loaded spatial workflow tables, per-metric product summaries,
+       station-bias previews, and failure/status frames when the standard
+       tutorial needs in-memory products.
    * - Step 5 GeoJSON regions and corridors
-     - ``spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs``
-     - Prepared station/event/event-station metadata, metric tables, configured
-       GeoJSON paths, Step 5 outputs, and compact plotting input summaries.
+     - ``spatial_vtk.spatial.plot.load_standard_geojson_workflow_output_status``
+       and ``spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs``
+     - Lightweight Step 5 output status/previews for large-run driver cells,
+       plus prepared station/event/event-station metadata, metric tables,
+       configured GeoJSON paths, Step 5 outputs, and compact plotting input
+       summaries when figures need loaded inputs.
    * - Step 6 additional plotting
-     - ``spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs``
-     - Metric snapshot rows, event metadata, event-station records,
-       comparison-eligible records, and the Step 6 plotting output group.
+     - ``spatial_vtk.spatial.plot.load_standard_additional_plotting_output_status``
+       and ``spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs``
+     - Lightweight Step 6 output status and metric-source preview helpers for
+       large-run driver cells, plus metric snapshot rows, event metadata,
+       event-station records, comparison-eligible records, and the Step 6
+       plotting output group when figures need loaded inputs.
 
 These helpers should replace notebook-local blocks that create several
 ``output_group(...)`` objects, call ``load_tables(...)`` manually, or keep
