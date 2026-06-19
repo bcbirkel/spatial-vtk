@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-19
+   - Updated the I/O API reference so ``output_group`` guidance covers
+     ``display_path_table_previews()`` alongside registered-table preview
+     helpers, making path-backed preprocessing metadata previews discoverable
+     from the public API docs.
    - Clarified that ``output_group_namespace()`` is a legacy path-only
      compatibility wrapper. Python workflow docs now steer new notebooks to
      ``output_group()`` so readiness, previews, completion checks, and figure

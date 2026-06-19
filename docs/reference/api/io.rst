@@ -54,7 +54,10 @@ Public helpers exposed by ``spatial_vtk.io``:
        a derived table, such as ``metrics_enriched``, but fall back to an
        earlier table, such as ``metrics_long``. Use ``figure_path()`` when a
        notebook needs a metric-specific figure filename beside a registered
-       configured figure path.
+       configured figure path. For path-backed artifacts outside the registered
+       output table registry, such as preprocessing manifests, use
+       ``display_path_table_previews()`` so notebooks still print the owning
+       path and display bounded rows through the output group.
    * - ``preprocessed_waveform_output_group``
      - Resolve preprocessing metadata outputs that live under the configured
        preprocessed-waveform metadata directory.

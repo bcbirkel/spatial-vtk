@@ -899,6 +899,17 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "svtk qc" not in workflows
 
 
+def test_io_api_docs_cover_output_group_preview_helpers():
+    """I/O docs should list table and path-backed preview helpers together."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    text = (root / "docs" / "reference" / "api" / "io.rst").read_text(encoding="utf-8")
+    assert "``display_table_previews()``" in text
+    assert "``display_first_existing_table_preview()``" in text
+    assert "``display_path_table_previews()``" in text
+    assert "path-backed artifacts outside the registered\n       output table registry" in text
+
+
 def test_notebook_cli_compat_helper_is_not_top_level_config_api():
     """Notebook CLI wrappers should not be advertised as the standard config API."""
 
