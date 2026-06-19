@@ -24,9 +24,11 @@ Changelog
       duplicate config path plumbing.
     - Added a standard Step 3 metric output loader for task-estimate,
       task-preview, and ``metrics_long`` notebook previews.
-    - Added output-registry preview helpers, path-backed table preview helpers,
-      workflow-step status helpers, and bounded pattern-similarity preview
-      helpers for notebook display cells.
+    - Added output-registry preview helpers for notebook display cells.
+    - Added path-backed table preview helpers for notebook display cells.
+    - Added workflow-step status helpers for notebook display cells.
+    - Added bounded pattern-similarity preview helpers for notebook display
+      cells.
     - Added public Metrics API reference tables for inventory, manifest, Slurm,
       batch, merge, and output helpers exposed through stable package entry
       points.
@@ -42,9 +44,11 @@ Changelog
     - Rewired large-run Step 4, Step 5, and Step 6 status/preview cells to call
       package-owned output-status helpers instead of direct ``output_group(...)``
       methods.
-    - Rewired standard Step 1, Step 2, Step 4, Step 5, and Step 6 notebooks to
-      call package helpers for table previews, readiness messages, and configured
-      output loading.
+    - Rewired standard Step 1 and Step 2 notebooks to call package helpers for
+      table previews, readiness messages, and configured output loading.
+    - Rewired standard Step 4, Step 5, and Step 6 notebooks to call package
+      helpers for table previews, readiness messages, and configured output
+      loading.
     - Kept reusable skip/rebuild decisions, ``reused`` flags, and path string
       conversion in package code rather than in notebook-local dictionaries.
 
@@ -52,21 +56,27 @@ Changelog
 
   - **Public API documentation**
 
-    - Updated Metrics, QC, Spatial, Visualization, I/O, and Configuration API
-      pages to document stable package entry points instead of lower-level
-      implementation modules.
+    - Updated Metrics API pages to document stable package entry points instead
+      of lower-level implementation modules.
+    - Updated QC, Spatial, Visualization, I/O, and Configuration API pages to
+      document stable package entry points instead of lower-level implementation
+      modules.
     - Updated workflow examples to prefer ``output_group()`` and configured
       output-registry helpers over raw ``resolve_output_path()`` snippets for
       normal notebook workflows.
 
   - **CLI and workflow docs**
 
-    - Updated CLI workflow examples so routine GeoJSON, metric plotting, mapping,
+    - Updated CLI workflow examples so routine GeoJSON commands resolve
+      standard inputs from the active config.
+    - Updated CLI workflow examples so routine metric plotting, mapping,
       visualization, and dashboard commands resolve standard inputs from the
       active config.
-    - Normalized generated CLI help text for config, input, output, manifest,
-      dashboard, inventory, and waveform path arguments so usage strings show
-      ``PATH`` or ``DIR`` where appropriate.
+    - Normalized generated CLI help text for config, input, output, and manifest
+      arguments so usage strings show ``PATH`` or ``DIR`` where appropriate.
+    - Normalized generated CLI help text for dashboard, inventory, and waveform
+      path arguments so usage strings show ``PATH`` or ``DIR`` where
+      appropriate.
     - Added a top-level CLI missing-dependency message so source-checkout
       commands report the missing package and install command instead of a raw
       traceback.
@@ -85,15 +95,18 @@ Changelog
 
   - **Fresh checkout and docs checks**
 
-    - Added regression coverage for public API import examples, committed
-      tutorial data, CLI workflow examples, and changelog formatting.
+    - Added regression coverage for public API import examples.
+    - Added regression coverage for committed tutorial data, CLI workflow
+      examples, and changelog formatting.
     - Added release guardrails so local agent notes, execplans, and machine-
       specific instructions stay ignored and are called out before public
       publishing.
     - Clarified tutorial runtime checks so missing importable modules are
       reported directly before the install command.
-    - Aligned README, installation docs, source-checkout validation, and CI
-      tutorial gates around the same notebook and large-run preflight commands.
+    - Aligned README and installation docs around the same notebook and
+      large-run preflight commands.
+    - Aligned source-checkout validation and CI tutorial gates around the same
+      notebook and large-run preflight commands.
 
   - **Config and plotting behavior**
 
@@ -108,8 +121,10 @@ Changelog
 
   - **Workflow guidance**
 
-    - Clarified Python workflow and output-registry guidance around public helper
-      signatures, return contracts, and bounded previews.
+    - Clarified Python workflow guidance around public helper signatures, return
+      contracts, and bounded previews.
+    - Clarified output-registry guidance around public helper signatures, return
+      contracts, and bounded previews.
     - Updated Python workflow guidance so the leading notebook example uses the
       standard QC output helper, with direct ``output_group(...)`` documented as
       a lower-level fallback when no standard helper exists yet.
@@ -132,17 +147,22 @@ Changelog
 
   - **Package-owned figure suites**
 
-    - Added standard and large-run figure-suite helpers for metric diagnostics,
-      spatial diagnostics, GeoJSON regions/corridors, waveform comparison,
-      context figures, QC figures, region boxplots, and dashboard preparation.
-    - Added focused station-map, spatial-product, PCA-product, corridor-record,
-      waveform-order, and pattern-similarity preview helpers.
+    - Added standard and large-run figure-suite helpers for metric diagnostics
+      and spatial diagnostics.
+    - Added standard and large-run figure-suite helpers for GeoJSON regions,
+      corridors, waveform comparison, context figures, QC figures, region
+      boxplots, and dashboard preparation.
+    - Added focused station-map, spatial-product, and PCA-product preview
+      helpers.
+    - Added focused corridor-record, waveform-order, and pattern-similarity
+      preview helpers.
 
   - **Figure provenance and sidecars**
 
-    - Expanded figure sidecar metadata and status frames with source-row roles,
-      plot/source dimension counts, aggregation contracts, exactness flags,
-      station/event counts, and PSA/multi-panel counts.
+    - Expanded figure sidecar metadata and status frames with source-row roles.
+    - Expanded figure sidecar metadata and status frames with plot/source
+      dimension counts, aggregation contracts, exactness flags, station/event
+      counts, and PSA/multi-panel counts.
     - Added sampled station-map sidecar regression coverage so plotted station
       groups and source rows stay aligned.
 
@@ -150,26 +170,30 @@ Changelog
 
     - Added a public ``RELEASE_CHECKLIST.md`` for validation, docs, build, wheel
       inspection, and publish gates.
-    - Added public helpers for metric row selection, event/station matching,
-      GeoJSON metric frames, event labels, spatial metric products, and first
-      non-empty table values.
+    - Added public helpers for metric row selection and event/station matching.
+    - Added public helpers for GeoJSON metric frames, event labels, spatial
+      metric products, and first non-empty table values.
 
 - **Changed and Rewired**
 
   - **Notebook simplification**
 
     - Rewired standard and large-run plotting notebooks so cells call package
-      helpers instead of importing individual plotting functions, constructing
-      figure paths, or repeating sidecar/showfig/savefig plumbing.
-    - Rewired standard Step 3, Step 4, Step 5, Step 6, and Step 7 notebooks to
-      use package-owned context setup, table previews, dashboard displays, and
-      diagnostic figure writers.
+      helpers instead of importing individual plotting functions.
+    - Rewired standard and large-run plotting notebooks so cells no longer
+      construct figure paths or repeat sidecar/showfig/savefig plumbing.
+    - Rewired standard Step 3 and Step 4 notebooks to use package-owned context
+      setup, table previews, dashboard displays, and diagnostic figure writers.
+    - Rewired standard Step 5, Step 6, and Step 7 notebooks to use package-owned
+      context setup, table previews, dashboard displays, and diagnostic figure
+      writers.
 
   - **Large-run metric and spatial plotting**
 
-    - Moved metric target iteration, PSA period-sheet branching, station
-      aggregation, robust-axis selection, model/component/passband defaults, and
-      raw source-row sidecars into package code.
+    - Moved metric target iteration, PSA period-sheet branching, and station
+      aggregation into package code.
+    - Moved robust-axis selection, model/component/passband defaults, and raw
+      source-row sidecars into package code.
     - Added spectral contract status checks for PSA/FAS rows so notebooks can
       flag legacy passband-scoped spectral metrics before rendering figures.
 
@@ -177,16 +201,19 @@ Changelog
 
   - **Tutorial/runtime checks**
 
-    - Strengthened runtime checks to verify the source checkout and required
-      scientific, mapping, dashboard, waveform, Jupyter, and IPython modules
-      before notebook outputs are cleaned or executed.
+    - Strengthened runtime checks to verify the source checkout before notebook
+      outputs are cleaned or executed.
+    - Strengthened runtime checks to verify required scientific, mapping,
+      dashboard, waveform, Jupyter, and IPython modules before notebook outputs
+      are cleaned or executed.
     - Tightened notebook preflight to reject notebook-local function and class
       definitions.
 
   - **Dashboard and plotting stability**
 
     - Improved metrics-dashboard Data Status messages for skipped optional
-      summary tables and filtered-empty views.
+      summary tables.
+    - Improved metrics-dashboard Data Status messages for filtered-empty views.
     - Routed Step 4 spatial figure items by explicit owner tags instead of
       dataframe column-subset inference.
     - Improved generated API-reference fallback text for common parameter names.
@@ -214,9 +241,10 @@ Changelog
 
   - **Large-run workflow drivers**
 
-    - Added config-backed QC, metrics, spatial, GeoJSON, dashboard, preprocessing,
-      record-coverage, waveform-inventory, Slurm, batch-merge, and output-writing
-      helpers for large-run notebooks.
+    - Added config-backed QC, metrics, spatial, GeoJSON, and dashboard helpers
+      for large-run notebooks.
+    - Added config-backed preprocessing, record-coverage, waveform-inventory,
+      Slurm, batch-merge, and output-writing helpers for large-run notebooks.
     - Added ``run_notebook_step_if_needed()`` and structured readiness/status
       frames so notebooks can skip current outputs and explain stale or missing
       prerequisites.
@@ -224,20 +252,23 @@ Changelog
   - **Output groups and previews**
 
     - Added ``OutputGroup`` helpers for grouped table loading, fallback previews,
-      path-backed preprocessing metadata, first-existing outputs, figure paths,
+      and path-backed preprocessing metadata.
+    - Added ``OutputGroup`` helpers for first-existing outputs, figure paths,
       readiness checks, and status frames.
     - Added notebook settings helpers for run scenarios, metric batch counts,
-      preprocessing error policy, figure controls, sidecar settings, PCA mode,
-      dashboard launch commands, and optional score trends.
+      and preprocessing error policy.
+    - Added notebook settings helpers for figure controls, sidecar settings, PCA
+      mode, dashboard launch commands, and optional score trends.
 
   - **Dashboard and figure diagnostics**
 
-    - Added metrics/QC dashboard launch helpers, dashboard dataset writers,
-      dashboard readiness summaries, bounded dashboard startup checks, and
+    - Added metrics/QC dashboard launch helpers and dashboard dataset writers.
+    - Added dashboard readiness summaries, bounded dashboard startup checks, and
       current-filter diagnostics.
     - Added metric and spatial figure contexts with status frames, dimension
-      summaries, sidecar status, PSA/FAS contract checks, station aggregation
-      metadata, and source-row provenance.
+      summaries, and sidecar status.
+    - Added metric and spatial figure contexts with PSA/FAS contract checks,
+      station aggregation metadata, and source-row provenance.
 
 - **Changed and Rewired**
 
@@ -246,14 +277,18 @@ Changelog
     - Updated standard and large-run notebooks to load tables through output
       groups and package helpers instead of repeated ``load_output_table`` or
       raw path checks.
-    - Made routine ``svtk io``, ``svtk metrics``, ``svtk plot``, ``svtk map``,
-      ``svtk visualize``, ``svtk spatial``, ``svtk qc``, and dashboard commands
-      use configured defaults or clearer artifact-named aliases.
+    - Made routine ``svtk io``, ``svtk metrics``, ``svtk plot``, and
+      ``svtk map`` commands use configured defaults or clearer artifact-named
+      aliases.
+    - Made routine ``svtk visualize``, ``svtk spatial``, ``svtk qc``, and
+      dashboard commands use configured defaults or clearer artifact-named
+      aliases.
 
   - **Metric and spatial execution**
 
-    - Added incomplete-only metric Slurm arrays, metric batch-status reporting,
-      output-directory-aware batch merging, and config-backed metric task
+    - Added incomplete-only metric Slurm arrays and metric batch-status
+      reporting.
+    - Added output-directory-aware batch merging and config-backed metric task
       planning/running/merging.
     - Preserved PSA oscillator periods, path geometry, and public value columns
       in compact spatial outputs for downstream Step 4 figures.
@@ -262,27 +297,31 @@ Changelog
 
   - **Large-run performance and robustness**
 
-    - Reduced dashboard summary memory use and made dashboard dataset rewrites
-      replace stale artifacts safely.
+    - Reduced dashboard summary memory use.
+    - Made dashboard dataset rewrites replace stale artifacts safely.
     - Hardened dashboard startup for partial or large outputs, including missing
       map-coordinate and value-column diagnostics.
-    - Hardened station aggregation, map coordinates, figure sidecars, PSA sheets,
-      older pandas/Matplotlib compatibility, and directory-style metric batch
-      merge outputs.
+    - Hardened station aggregation, map coordinates, and figure sidecars.
+    - Hardened PSA sheets, older pandas/Matplotlib compatibility, and
+      directory-style metric batch merge outputs.
 
   - **User-facing clarity**
 
-    - Clarified public API start points, dashboard path names, metric/spatial/QC
-      CLI aliases, large-run plotting defaults, and helper return-value guidance.
-    - Updated tests to guard outlier handling, sidecar provenance, config-backed
-      CLI defaults, notebook imports, and tutorial freshness checks.
+    - Clarified public API start points, dashboard path names, and
+      metric/spatial/QC CLI aliases.
+    - Clarified large-run plotting defaults and helper return-value guidance.
+    - Updated tests to guard outlier handling, sidecar provenance, and
+      config-backed CLI defaults.
+    - Updated tests to guard notebook imports and tutorial freshness checks.
 
 - **Documentation and Examples**
 
   - **Notebook and workflow docs**
 
-    - Updated tutorial notebooks and Python workflow docs to use public package
-      helpers, grouped output loading, and direct output-group attributes.
+    - Updated tutorial notebooks to use public package helpers, grouped output
+      loading, and direct output-group attributes.
+    - Updated Python workflow docs to use public package helpers, grouped output
+      loading, and direct output-group attributes.
     - Documented the committed NPZ tutorial waveform subset, source-checkout
       install extras, package-level plotting/map entry points, and dashboard
       output contracts.
@@ -294,9 +333,10 @@ Changelog
 
   - **CLI and plotting controls**
 
-    - Added first-class plotting, mapping, waveform, table, sidecar, mode,
-      component, metric, passband, value-column, fit, title, and comparison flags
-      so routine figure configuration no longer depends on generic ``--kwargs``.
+    - Added first-class plotting, mapping, waveform, table, and sidecar flags.
+    - Added first-class mode, component, metric, passband, value-column, fit,
+      title, and comparison flags so routine figure configuration no longer
+      depends on generic ``--kwargs``.
     - Registered plotting and mapping commands through stable public import
       surfaces and expanded config-backed command defaults.
 
@@ -304,15 +344,15 @@ Changelog
 
     - Added ``tools/execute_tutorial_notebooks.py`` for clean source-checkout
       notebook execution and warning-like output detection.
-    - Added tutorial data preflight, runtime dependency preflight, CI notebook
-      execution coverage, and regression checks against private/local notebook
-      paths.
+    - Added tutorial data preflight and runtime dependency preflight.
+    - Added CI notebook execution coverage and regression checks against
+      private/local notebook paths.
 
   - **Dashboard and sidecar contracts**
 
-    - Added dashboard output helpers, readiness diagnostics, artifact roles,
-      dashboard summary contribution-count tests, map-coordinate requirements,
-      and optional row-provenance sidecars for saved figures.
+    - Added dashboard output helpers, readiness diagnostics, and artifact roles.
+    - Added dashboard summary contribution-count tests, map-coordinate
+      requirements, and optional row-provenance sidecars for saved figures.
 
 - **Changed and Rewired**
 
@@ -326,9 +366,10 @@ Changelog
 
   - **Public workflow docs**
 
-    - Updated generated CLI reference, shell workflow examples, Python workflow
-      docs, and configuration examples to prefer first-class flags and stable
-      package entry points.
+    - Updated generated CLI reference and shell workflow examples to prefer
+      first-class flags and stable package entry points.
+    - Updated Python workflow docs and configuration examples to prefer
+      first-class flags and stable package entry points.
 
 - **Fixed and Hardened**
 
@@ -336,8 +377,9 @@ Changelog
 
     - Hardened metrics and QC dashboards against missing, empty, schema-invalid,
       filtered-empty, and value-less optional tables.
-    - Hardened station-map aggregation, station coordinate handling, sidecar
-      metadata, warning scans, notebook output labels, and output-readiness
+    - Hardened station-map aggregation, station coordinate handling, and sidecar
+      metadata.
+    - Hardened warning scans, notebook output labels, and output-readiness
       messages.
 
   - **Fresh checkout reliability**
@@ -407,33 +449,37 @@ Changelog
 
   - **Public docs and examples**
 
-    - Added data formats, configuration, package overview, installation, Python
-      API, CLI API, CLI workflow, tutorial, and downloadable notebook guidance.
+    - Added data formats, configuration, package overview, and installation
+      guidance.
+    - Added Python API, CLI API, CLI workflow, tutorial, and downloadable
+      notebook guidance.
     - Added lightweight LA Basin metadata, public example manifests, GeoJSON
-      regions, site metadata previews, basemap-backed output previews, and
-      tutorial waveform/data snippets.
+      regions, and site metadata previews.
+    - Added basemap-backed output previews and tutorial waveform/data snippets.
 
   - **Tutorial workflow helpers**
 
-    - Added config-default metadata preparation, output table readers/writers,
-      shared metric catalog/run scenarios, dashboard/table display helpers, and
-      concise tutorial comments before main package calls.
+    - Added config-default metadata preparation and output table
+      readers/writers.
+    - Added shared metric catalog/run scenarios, dashboard/table display
+      helpers, and concise tutorial comments before main package calls.
     - Added Step 6 plotting examples for waveform maps, pattern similarity,
       scatterplot, boxplot, and heatmap outputs.
 
   - **CLI and spatial examples**
 
-    - Expanded generated CLI reference pages and added a shell workflow tutorial
-      covering config, preprocessing, QC, metrics, spatial figures, GeoJSON,
-      corridors, flexible plots, and dashboards.
+    - Expanded generated CLI reference pages.
+    - Added a shell workflow tutorial covering config, preprocessing, QC,
+      metrics, spatial figures, GeoJSON, corridors, flexible plots, and
+      dashboards.
     - Added spatial-correlation-by-distance and geology-contrast examples.
 
 - **Changed and Rewired**
 
   - **Installation and workflow docs**
 
-    - Restored conda-environment-first installation guidance while keeping
-      ``python -m pip install spatial-vtk`` as the main PyPI command.
+    - Restored conda-environment-first installation guidance.
+    - Kept ``python -m pip install spatial-vtk`` as the main PyPI command.
     - Reworked package overview into a workflow-oriented guide.
     - Renamed tutorial-facing loaders/writers to ``load_output_table`` and
       ``write_metric_outputs``.
@@ -441,20 +487,24 @@ Changelog
   - **Tutorial outputs**
 
     - Replaced notebook timing magics with shared timing registration.
-    - Updated signed residual/log-ratio/mean-centered map figures to use a
-      zero-centered divergent colorscale.
+    - Updated signed residual map figures to use a zero-centered divergent
+      colorscale.
+    - Updated log-ratio and mean-centered map figures to use a zero-centered
+      divergent colorscale.
     - Regenerated Step 5 regions and corridor maps with public LA Basin examples.
 
 - **Fixed and Hardened**
 
   - **Tutorial reliability**
 
-    - Cleaned tutorial notebooks so they use the activated tutorial config,
-      shared output registry, standard table writes/reads, and headless figure
-      display support.
+    - Cleaned tutorial notebooks so they use the activated tutorial config and
+      shared output registry.
+    - Cleaned tutorial notebooks so they use standard table writes/reads and
+      headless figure display support.
     - Simplified Step 4 so spatial-statistics functions resolve metric/value
-      selection, event-centering, Moran, clustering, PCA, GeoJSON, and geology
-      options from the active config.
+      selection and event-centering from the active config.
+    - Simplified Step 4 so spatial-statistics functions resolve Moran,
+      clustering, PCA, GeoJSON, and geology options from the active config.
     - Clarified spectral QC reason labels, regenerated QC previews, and cleaned
       internal trace-offset displays from waveform-map tutorials.
 
@@ -475,43 +525,48 @@ Changelog
   - **Initial public migration**
 
     - Started the public Spatial-VTK package skeleton.
-    - Added runtime configuration, output planning, metric catalog, YAML/JSON
-      config loading, named bounds, output manifests, and config-backed metric
-      plans.
+    - Added runtime configuration, output planning, and the metric catalog.
+    - Added YAML/JSON config loading, named bounds, output manifests, and
+      config-backed metric plans.
 
   - **Core workflow modules**
 
-    - Added metadata preparation, waveform inventories, context figures, QC
-      helpers, metric batch calculations, arrival-pick normalization, long
+    - Added metadata preparation, waveform inventories, context figures, and QC
+      helpers.
+    - Added metric batch calculations, arrival-pick normalization, long
       residual-table preparation, metadata enrichment, and deterministic example
       metric plots.
-    - Added public metric, transform, passband, dashboard, plotting, mapping, and
-      figure-selection labels/helpers.
+    - Added public metric, transform, passband, and dashboard labels/helpers.
+    - Added public plotting, mapping, and figure-selection labels/helpers.
 
   - **Spatial analysis and visualization**
 
     - Added spatial-statistics modules for metric preparation, station bias,
-      Moran's I, distance-bin correlations, spatial holdout, clustering, REDCAP,
-      PCA, bootstrap contrasts, permutation tests, pattern similarity, and
-      observed/synthetic geometry.
+      Moran's I, distance-bin correlations, and spatial holdout.
+    - Added spatial-statistics modules for clustering, REDCAP, PCA, bootstrap
+      contrasts, permutation tests, pattern similarity, and observed/synthetic
+      geometry.
     - Added plot/map wrappers for correlograms, semivariograms, directional
-      correlation, holdout maps, clusters, PCA, station bias, REDCAP,
-      pattern-similarity, path maps, event residual maps, GeoJSON polygons, and
-      boundary corridors.
+      correlation, holdout maps, clusters, PCA, station bias, and REDCAP.
+    - Added plot/map wrappers for pattern similarity, path maps, event residual
+      maps, GeoJSON polygons, and boundary corridors.
 
   - **Dashboards**
 
-    - Added optional Streamlit dashboard support with Folium maps, Plotly charts,
-      dashboard schema validation, filtered exports, manual-review exports, and
-      selectable observed/synthetic/residual/GOF value columns.
+    - Added optional Streamlit dashboard support with Folium maps and Plotly
+      charts.
+    - Added dashboard schema validation, filtered exports, manual-review
+      exports, and selectable observed/synthetic/residual/GOF value columns.
 
 - **Changed and Rewired**
 
   - **Metric naming**
 
-    - Updated metric plots, spatial plots, maps, dashboard summaries, QC
-      dashboard controls, waveform figures, record sections, and context figures
-      to support the renamed metric scheme and selectable value columns.
+    - Updated metric plots, spatial plots, maps, and dashboard summaries to
+      support the renamed metric scheme and selectable value columns.
+    - Updated QC dashboard controls, waveform figures, record sections, and
+      context figures to support the renamed metric scheme and selectable value
+      columns.
 
 Future Work
 -----------
