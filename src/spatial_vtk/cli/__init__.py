@@ -2852,8 +2852,10 @@ def _cmd_visualize_sidecars_status(args: argparse.Namespace) -> int:
 
     sidecar_dir = Path(args.sidecar_dir).expanduser()
     status = figure_sidecar_status_frame(sidecar_dir)
+    sidecar_dir_exists = sidecar_dir.exists()
     payload = {
         "sidecar_dir": sidecar_dir,
+        "sidecar_dir_exists": sidecar_dir_exists,
         "sidecar_count": len(status),
         "status": status,
     }
@@ -2862,9 +2864,13 @@ def _cmd_visualize_sidecars_status(args: argparse.Namespace) -> int:
         return 0
 
     print(f"Figure sidecar directory: {sidecar_dir}")
+    print(f"Figure sidecar directory exists: {sidecar_dir_exists}")
     print(f"Figure sidecars found: {len(status)}")
     if status.empty:
-        print("No figure sidecar JSON files found.")
+        if sidecar_dir_exists:
+            print("No figure sidecar JSON files found in the existing directory.")
+        else:
+            print("Figure sidecar directory does not exist; no figure sidecar JSON files found.")
     else:
         print(status.to_string(index=False))
     return 0

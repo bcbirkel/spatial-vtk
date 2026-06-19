@@ -157,6 +157,9 @@ Changelog
   - Clarified dashboard launch errors so missing config/path messages name the
     metrics-dashboard row dataset, dashboard summary-table directory, and QC
     trace-summary table instead of generic roots or paths.
+  - Clarified ``svtk visualize sidecars status`` output so missing sidecar
+    directories are reported separately from existing directories with no JSON
+    sidecars.
   - Made ``svtk spatial status`` print artifact labels, output keys, and
     Step 3/Step 4 rebuild guidance in its human-readable output instead of
     the lower-level path-key readiness table.

@@ -890,6 +890,28 @@ def test_cli_visualize_sidecars_status_reports_metadata_without_csv_loads(tmp_pa
     assert payload["status"][0]["plot_sidecar_exact"] is False
 
 
+def test_cli_visualize_sidecars_status_distinguishes_missing_and_empty_directories(tmp_path, capsys):
+    """Sidecar status should distinguish missing sidecar dirs from empty dirs."""
+
+    missing_dir = tmp_path / "missing_sidecars"
+    assert main(["visualize", "sidecars", "status", "--sidecar-dir", str(missing_dir)]) == 0
+    missing_text = capsys.readouterr().out
+    assert "Figure sidecar directory exists: False" in missing_text
+    assert "Figure sidecar directory does not exist" in missing_text
+
+    assert main(["visualize", "sidecars", "status", "--sidecar-dir", str(missing_dir), "--json"]) == 0
+    missing_payload = json.loads(capsys.readouterr().out)
+    assert missing_payload["sidecar_dir_exists"] is False
+    assert missing_payload["sidecar_count"] == 0
+
+    empty_dir = tmp_path / "empty_sidecars"
+    empty_dir.mkdir()
+    assert main(["visualize", "sidecars", "status", "--sidecar-dir", str(empty_dir)]) == 0
+    empty_text = capsys.readouterr().out
+    assert "Figure sidecar directory exists: True" in empty_text
+    assert "No figure sidecar JSON files found in the existing directory." in empty_text
+
+
 def test_cli_registered_plot_help_names_config_defaults(capsys):
     """Registered figure help should explain config-backed table and figure defaults."""
 
