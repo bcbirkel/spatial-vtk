@@ -1341,6 +1341,20 @@ def test_visualize_api_docs_use_public_entry_points():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "visualize.rst"
     text = docs.read_text(encoding="utf-8")
     assert "Public helpers exposed by ``spatial_vtk.visualize``" in text
+    assert "from spatial_vtk.visualize import (" in text
+    import_block = text.split("from spatial_vtk.visualize import (", 1)[1].split(")", 1)[0]
+    assert "prepare_configured_dashboard_datasets_from_notebook_settings," in import_block
+    assert "write_waveform_comparison_from_notebook_settings," in import_block
+    assert "write_configured_dashboard_datasets," not in import_block
+    assert text.index("``write_waveform_comparison_from_notebook_settings``") < text.index(
+        "``write_waveform_comparison_from_outputs``"
+    )
+    assert text.index("``prepare_configured_dashboard_datasets_from_notebook_settings``") < text.index(
+        "``write_configured_dashboard_datasets``"
+    )
+    assert text.index("``launch_configured_dashboards_from_notebook_settings``") < text.index(
+        "``launch_configured_metrics_dashboard``"
+    )
     for helper in (
         "plot_station_event_beachball_map",
         "write_context_figures_from_outputs",
@@ -1418,6 +1432,8 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Backward-compatible alias for older large-run notebooks" in text
     assert "Notebook cells should use\n``write_waveform_comparison_from_notebook_settings``" in text
     assert "Scripts can use\n``write_waveform_comparison_from_outputs``" in text
+    assert "Lower-level script helper that writes dashboard-ready row and summary" in text
+    assert "Lower-level launch helpers for scripts" in text
     for helper in (
         "dashboard_summary_table_contracts",
         "dashboard_summary_table_paths",

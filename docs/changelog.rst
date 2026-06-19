@@ -174,6 +174,8 @@ Changelog
     as advanced helpers.
   - Updated Metrics API examples so plotting starts from package-owned figure
     wrappers, with row-selection helpers described as advanced script APIs.
+  - Updated Visualization API examples so notebook-facing waveform and
+    dashboard wrappers appear before lower-level script helpers.
   - Documented notebook-facing and script-facing waveform-comparison and
     region-boxplot helpers.
   - Updated generated CLI reference examples to use the committed example

@@ -11,6 +11,20 @@ waveform plots, reusable figure utilities, and Streamlit dashboard inputs.
 Package Entry Point
 -------------------
 
+Start with ``spatial_vtk.visualize`` for notebook-facing context, QC, waveform,
+dashboard, and sidecar helpers. Use lower-level ``context``, ``qc``,
+``waveforms``, and ``dashboard`` packages when writing focused scripts that
+need one visualization family.
+
+.. code-block:: python
+
+   from spatial_vtk.visualize import (
+       prepare_configured_dashboard_datasets_from_notebook_settings,
+       write_context_figures_from_outputs,
+       write_qc_figures_from_outputs,
+       write_waveform_comparison_from_notebook_settings,
+   )
+
 .. automodule:: spatial_vtk.visualize
    :members:
 
@@ -46,17 +60,17 @@ Public helpers exposed by ``spatial_vtk.visualize``:
    * - ``station_event_waveform_order_frame``
      - Preview the bounded station/component order used by station-event
        waveform map panels without notebook-local sorting and slicing.
+   * - ``write_waveform_comparison_from_notebook_settings``
+     - Notebook-facing Step 2/6 waveform-comparison wrapper. It owns the
+       ``notebook_figure_settings(...)`` render gate, sidecar controls,
+       component, passband, and display settings before delegating to the
+       lower-level output writer.
    * - ``write_waveform_comparison_from_outputs``
      - Lower-level script helper for observed/synthetic trace-comparison
        figures when output paths and plotting keyword arguments are already
        resolved. It reads bounded comparison-eligible rows from configured
        event-station and comparison-eligible outputs without loading full QC
        inventories.
-   * - ``write_waveform_comparison_from_notebook_settings``
-     - Notebook-facing Step 2/6 waveform-comparison wrapper. It owns the
-       ``notebook_figure_settings(...)`` render gate, sidecar controls,
-       component, passband, and display settings before delegating to the
-       lower-level output writer.
    * - ``write_large_run_waveform_comparison_from_outputs``
      - Backward-compatible alias for older large-run notebooks that used the
        original helper name. New notebook cells should prefer
@@ -66,12 +80,13 @@ Public helpers exposed by ``spatial_vtk.visualize``:
    * - ``figure_sidecar_status_frame`` and
        ``read_figure_sidecar_metadata``
      - Inspect saved figure provenance without loading large sidecar CSV files.
-   * - ``write_configured_dashboard_datasets``
-     - Write dashboard-ready row and summary datasets from configured metric
-       outputs.
    * - ``prepare_configured_dashboard_datasets_from_notebook_settings``
      - Check dashboard readiness and optionally write configured dashboard
        datasets from one notebook-facing helper.
+   * - ``write_configured_dashboard_datasets``
+     - Lower-level script helper that writes dashboard-ready row and summary
+       datasets from configured metric outputs after the caller has decided a
+       local write is appropriate.
    * - ``display_dashboard_preparation_result``
      - Display the standard dashboard preparation readiness, status, written
        output, and summary-contract tables without notebook-local formatting
@@ -80,12 +95,13 @@ Public helpers exposed by ``spatial_vtk.visualize``:
        ``dashboard_output_status_frame``
      - Inspect dashboard readiness with bounded schema, row-count, and map-data
        checks.
-   * - ``launch_configured_metrics_dashboard`` and
-       ``launch_configured_qc_dashboard``
-     - Launch dashboards from config-backed inputs.
    * - ``launch_configured_dashboards_from_notebook_settings``
      - Launch requested dashboards or show terminal fallback commands from
        config-backed notebook settings.
+   * - ``launch_configured_metrics_dashboard`` and
+       ``launch_configured_qc_dashboard``
+     - Lower-level launch helpers for scripts that already know which
+       dashboard should start and how launch options should be applied.
 
 Context Figures
 ---------------
