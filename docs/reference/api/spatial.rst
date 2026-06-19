@@ -58,6 +58,10 @@ Public helpers exposed by ``spatial_vtk.spatial``:
      - Summarize per-metric Step 4 products such as metric-field,
        event-centered residual, and station-bias rows with row, event, and
        station counts.
+   * - ``summarize_standard_spatial_products``
+     - Build the per-metric Step 4 product frame dictionary and compact
+       summary/preview display tables from configured spatial workflow
+       outputs, keeping metric-specific dataframe loops out of notebooks.
    * - ``spatial_metric_table_frame``, ``spatial_metric_product_frames``, and
        ``spatial_pca_product_frames``
      - Select metric-specific rows from Step 4 output tables without repeating
@@ -110,6 +114,11 @@ for users who need narrower module references.
 .. autofunction:: spatial_vtk.spatial.spatial_correlation_preview_frame
 
 .. autofunction:: spatial_vtk.spatial.spatial_metric_product_summary_frame
+
+.. autoclass:: spatial_vtk.spatial.StandardSpatialProductSummaryResult
+   :members:
+
+.. autofunction:: spatial_vtk.spatial.summarize_standard_spatial_products
 
 .. autofunction:: spatial_vtk.spatial.spatial_metric_table_frame
 

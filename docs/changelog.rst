@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-18
+   Added ``summarize_standard_spatial_products()`` and rewired the standard
+   Step 4 spatial notebook to use it for per-metric spatial product summaries
+   and station-bias previews. The notebook no longer loops over metrics to
+   build product dictionaries or display summary/preview tables by hand.
    Added ``write_standard_geojson_corridor_figures()`` and rewired the
    standard Step 5 GeoJSON notebook to use it for boundary-corridor maps, the
    boundary-crossing waveform record section, and the outward-corridor PGV

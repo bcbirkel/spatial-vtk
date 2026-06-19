@@ -75,6 +75,7 @@ def test_public_imports():
         run_geojson_region_summary_workflow_from_config,
         run_spatial_derived_outputs_workflow_from_config,
         run_spatial_statistics_workflow_from_config,
+        StandardSpatialProductSummaryResult,
         spatial_correlation_preview_frame,
         spatial_metric_product_frames,
         spatial_metric_product_summary_frame,
@@ -82,6 +83,7 @@ def test_public_imports():
         spatial_pca_product_frames,
         spatial_workflow_failure_frame,
         station_bias_preview_frame,
+        summarize_standard_spatial_products,
     )
     from spatial_vtk.visualize.dashboard import (
         build_dashboard_summaries,
@@ -167,6 +169,7 @@ def test_public_imports():
     assert callable(run_geojson_region_summary_workflow_from_config)
     assert callable(run_spatial_derived_outputs_workflow_from_config)
     assert callable(run_spatial_statistics_workflow_from_config)
+    assert callable(StandardSpatialProductSummaryResult)
     assert callable(corridor_record_preview_frame)
     assert callable(corridor_record_pair_frame)
     assert callable(event_station_records_matching_pairs)
@@ -178,6 +181,7 @@ def test_public_imports():
     assert callable(spatial_pca_product_frames)
     assert callable(spatial_workflow_failure_frame)
     assert callable(station_bias_preview_frame)
+    assert callable(summarize_standard_spatial_products)
     assert callable(annotate_points_with_geojson)
     assert callable(build_station_edge_corridors)
     assert callable(classify_paths_with_geojson)

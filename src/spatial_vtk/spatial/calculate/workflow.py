@@ -299,6 +299,30 @@ class SpatialDerivedOutputsWorkflowResult:
 
 
 @dataclass(frozen=True)
+class StandardSpatialProductSummaryResult:
+    """Metric-specific Step 4 product frames and compact notebook summaries."""
+
+    metrics: tuple[str, ...]
+    spatial_products: dict[str, dict[str, pd.DataFrame]]
+    summary_rows: tuple[pd.DataFrame, ...]
+    station_bias_previews: tuple[pd.DataFrame, ...]
+
+    def summary_frame(self) -> pd.DataFrame:
+        """Return one compact row group per metric and output table."""
+
+        if not self.summary_rows:
+            return pd.DataFrame(columns=["metric", "Output", "Rows", "Events", "Stations"])
+        return pd.concat([frame.copy() for frame in self.summary_rows], ignore_index=True)
+
+    def station_bias_preview_frame(self) -> pd.DataFrame:
+        """Return bounded station-bias preview rows for all selected metrics."""
+
+        if not self.station_bias_previews:
+            return pd.DataFrame()
+        return pd.concat([frame.copy() for frame in self.station_bias_previews], ignore_index=True)
+
+
+@dataclass(frozen=True)
 class _SpatialMetricCheckpoint:
     """Loaded checkpoint tables for one spatial metric."""
 
@@ -505,6 +529,75 @@ def station_bias_preview_frame(
     available = [column for column in requested if column in frame.columns]
     preview = frame.loc[:, available] if available else frame
     return preview.head(max(int(nrows), 0)).reset_index(drop=True)
+
+
+def summarize_standard_spatial_products(
+    spatial_result: SpatialStatisticsWorkflowResult | dict[str, object] | Sequence[str],
+    *,
+    metric_field: pd.DataFrame | None = None,
+    event_centered: pd.DataFrame | None = None,
+    station_bias: pd.DataFrame | None = None,
+    station_bias_preview_rows: int = 5,
+) -> StandardSpatialProductSummaryResult:
+    """Build per-metric Step 4 product frames and compact display tables.
+
+    Parameters
+    ----------
+    spatial_result
+        Spatial workflow result, configured-workflow summary dictionary, or
+        explicit metric sequence.
+    metric_field, event_centered, station_bias
+        Standard Step 4 output tables loaded from the configured output group.
+    station_bias_preview_rows
+        Maximum station-bias preview rows to keep per metric.
+
+    Returns
+    -------
+    StandardSpatialProductSummaryResult
+        Product frames keyed by metric plus compact summary and preview frames
+        for notebook display.
+    """
+
+    if isinstance(spatial_result, SpatialStatisticsWorkflowResult):
+        metrics = tuple(str(metric) for metric in spatial_result.metrics)
+    elif isinstance(spatial_result, dict):
+        metrics = tuple(str(metric) for metric in spatial_result.get("metrics", ()) or ())
+    else:
+        metrics = tuple(str(metric) for metric in spatial_result)
+
+    products_by_metric: dict[str, dict[str, pd.DataFrame]] = {}
+    summary_rows: list[pd.DataFrame] = []
+    preview_rows: list[pd.DataFrame] = []
+    for metric_name in metrics:
+        products = spatial_metric_product_frames(
+            metric_name,
+            metric_field=metric_field,
+            event_centered=event_centered,
+            station_bias=station_bias,
+        )
+        products_by_metric[metric_name] = products
+        summary = spatial_metric_product_summary_frame(
+            metric_field=products["field"],
+            event_centered=products["centered"],
+            station_bias=products["station_bias"],
+        )
+        summary.insert(0, "metric", metric_name)
+        summary_rows.append(summary)
+        preview = station_bias_preview_frame(
+            products["station_bias"],
+            metric=metric_name,
+            nrows=station_bias_preview_rows,
+        )
+        if not preview.empty and "metric" not in preview.columns:
+            preview.insert(0, "metric", metric_name)
+        preview_rows.append(preview)
+
+    return StandardSpatialProductSummaryResult(
+        metrics=metrics,
+        spatial_products=products_by_metric,
+        summary_rows=tuple(summary_rows),
+        station_bias_previews=tuple(preview_rows),
+    )
 
 
 def spatial_metric_table_frame(
@@ -1581,6 +1674,7 @@ __all__ = [
     "SPATIAL_SUMMARY_OUTPUT_KEYS",
     "SpatialDerivedOutputsWorkflowResult",
     "SpatialStatisticsWorkflowResult",
+    "StandardSpatialProductSummaryResult",
     "run_spatial_derived_outputs_workflow",
     "run_spatial_derived_outputs_workflow_from_config",
     "run_spatial_statistics_workflow",
@@ -1589,4 +1683,5 @@ __all__ = [
     "spatial_metric_product_summary_frame",
     "spatial_statistics_output_paths",
     "spatial_workflow_failure_frame",
+    "summarize_standard_spatial_products",
 ]

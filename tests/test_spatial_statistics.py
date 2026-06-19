@@ -48,6 +48,7 @@ from spatial_vtk.spatial.calculate.prepare_stats import (
 )
 from spatial_vtk.spatial.calculate.workflow import spatial_statistics_output_paths
 from spatial_vtk.spatial.calculate.workflow import (
+    StandardSpatialProductSummaryResult,
     run_spatial_derived_outputs_workflow,
     run_spatial_derived_outputs_workflow_from_config,
     run_spatial_statistics_workflow,
@@ -59,6 +60,7 @@ from spatial_vtk.spatial.calculate.workflow import (
     spatial_metric_table_frame,
     spatial_pca_product_frames,
     spatial_workflow_failure_frame,
+    summarize_standard_spatial_products,
 )
 from spatial_vtk.spatial.calculate.corridors import (
     corridor_record_pair_frame,
@@ -167,6 +169,54 @@ def test_spatial_workflow_failure_frame_formats_result_failures() -> None:
     assert frame.loc[0, "metric"] == "PGA"
     assert frame.loc[0, "step"] == "geology_contrasts"
     assert spatial_workflow_failure_frame({"failures": []}).empty
+
+
+def test_summarize_standard_spatial_products_returns_products_and_display_frames() -> None:
+    """Step 4 notebooks should get per-metric products through package code."""
+
+    metric_field = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGA", "PGV"],
+            "event_id": ["e1", "e2", "e1"],
+            "station": ["STA1", "STA2", "STA1"],
+            "field_value": [0.1, -0.2, 0.3],
+        }
+    )
+    event_centered = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGA", "PGV"],
+            "event_id": ["e1", "e2", "e1"],
+            "station": ["STA1", "STA2", "STA1"],
+            "centered_value": [0.05, -0.05, 0.2],
+        }
+    )
+    station_bias = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGV"],
+            "station": ["STA1", "STA1"],
+            "mean_centered": [0.05, 0.2],
+            "median_centered": [0.05, 0.2],
+            "n_events": [2, 1],
+        }
+    )
+
+    result = summarize_standard_spatial_products(
+        {"metrics": ("PGA", "PGV")},
+        metric_field=metric_field,
+        event_centered=event_centered,
+        station_bias=station_bias,
+    )
+
+    assert isinstance(result, StandardSpatialProductSummaryResult)
+    assert result.metrics == ("PGA", "PGV")
+    assert result.spatial_products["PGA"]["field"]["metric"].tolist() == ["PGA", "PGA"]
+    assert result.spatial_products["PGV"]["station_bias"]["station"].tolist() == ["STA1"]
+    summary = result.summary_frame()
+    assert summary["metric"].tolist() == ["PGA", "PGA", "PGA", "PGV", "PGV", "PGV"]
+    assert summary.loc[summary["Output"].eq("Metric field"), "Rows"].tolist() == [2, 1]
+    preview = result.station_bias_preview_frame()
+    assert preview["metric"].tolist() == ["PGA", "PGV"]
+    assert preview["station"].tolist() == ["STA1", "STA1"]
 
 
 def test_write_standard_geojson_region_figures_returns_status_tables(monkeypatch, tmp_path) -> None:

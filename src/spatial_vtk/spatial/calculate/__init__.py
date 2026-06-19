@@ -72,6 +72,7 @@ from spatial_vtk.spatial.calculate.workflow import (
     SPATIAL_SUMMARY_OUTPUT_KEYS,
     SpatialDerivedOutputsWorkflowResult,
     SpatialStatisticsWorkflowResult,
+    StandardSpatialProductSummaryResult,
     run_spatial_derived_outputs_workflow,
     run_spatial_derived_outputs_workflow_from_config,
     run_spatial_statistics_workflow,
@@ -84,6 +85,7 @@ from spatial_vtk.spatial.calculate.workflow import (
     spatial_statistics_output_paths,
     station_bias_preview_frame,
     spatial_workflow_failure_frame,
+    summarize_standard_spatial_products,
 )
 
 __all__ = [
@@ -151,6 +153,7 @@ __all__ = [
     "SPATIAL_SUMMARY_OUTPUT_KEYS",
     "SpatialDerivedOutputsWorkflowResult",
     "SpatialStatisticsWorkflowResult",
+    "StandardSpatialProductSummaryResult",
     "SpatialStatisticsSettings",
     "run_spatial_derived_outputs_workflow",
     "run_spatial_derived_outputs_workflow_from_config",
@@ -165,6 +168,7 @@ __all__ = [
     "station_bias_preview_frame",
     "spatial_workflow_failure_frame",
     "spatial_statistics_settings_from_config",
+    "summarize_standard_spatial_products",
     "summarize_corridor_event_counts",
     "build_geojson_region_summary_from_table",
     "summarize_metrics_by_geojson",
