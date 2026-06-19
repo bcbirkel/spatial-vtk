@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-18
+   Added regression coverage for sampled station-map sidecars so source-row
+   sidecars stay tied to the station groups actually plotted while aggregation
+   metadata still reports the full selected event-station input.
    Added a public ``RELEASE_CHECKLIST.md`` matching the current validation,
    notebook execution, docs, build, wheel-inspection, and publish gates. The
    checklist keeps release steps in the repository instead of only in agent

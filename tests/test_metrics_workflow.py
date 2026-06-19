@@ -923,6 +923,58 @@ def test_metric_station_summary_uses_supported_station_and_event_aliases(tmp_pat
     assert metadata["source_event_count"] == 4
 
 
+def test_sampled_station_map_source_sidecar_matches_plotted_station_groups(tmp_path) -> None:
+    """Sampled station maps should keep source rows tied to plotted station groups."""
+
+    rows = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3", "e4", "e5", "e6"],
+            "station": ["STA", "STA", "STB", "STB", "STC", "STC"],
+            "sta_lon": [-118.0, -118.02, -117.8, -117.82, -117.6, -117.62],
+            "sta_lat": [34.0, 34.02, 34.1, 34.12, 34.2, 34.22],
+            "metric": ["PGA"] * 6,
+            "band": ["1-2 sec"] * 6,
+            "component": ["Z"] * 6,
+            "model": ["m1"] * 6,
+            "log2_residual": [1.0, 3.0, 5.0, 7.0, 9.0, 11.0],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        rows,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=1,
+        value_col="log2_residual",
+        station_aggregation="mean",
+        write_sidecars=True,
+        sidecar_rows=None,
+    )
+    station_summary = context.station_summary_for_map(rows)
+
+    def _dummy_plot(frame: pd.DataFrame, *, output_path, **kwargs) -> None:
+        Path(output_path).write_text(",".join(frame["station"].astype(str)), encoding="utf-8")
+
+    item = {"key": "pga", "label": "PGA", "metric": "PGA", "period_s": None, "df": rows}
+    output = context.write_metric_plot("sampled_station_map", item, _dummy_plot, df=station_summary, source_df=rows)
+
+    assert output is not None
+    sidecar = pd.read_csv(context.sidecar_output_dir / f"{output.stem}.csv")
+    source_sidecar = pd.read_csv(context.sidecar_output_dir / f"{output.stem}.source.csv")
+    metadata = json.loads((context.sidecar_output_dir / f"{output.stem}.json").read_text(encoding="utf-8"))
+    plotted_station = sidecar.loc[0, "station"]
+
+    assert len(sidecar) == 1
+    assert set(source_sidecar["station"]) == {plotted_station}
+    assert len(source_sidecar) == 2
+    assert metadata["plot_row_count"] == 1
+    assert metadata["source_row_count"] == 2
+    assert metadata["source_rows_filter"] == "aggregation_groups_present_in_plot_rows"
+    assert metadata["aggregation_input_row_count"] == 6
+    assert metadata["aggregation_finite_row_count"] == 6
+    assert metadata["aggregation_input_station_count"] == 3
+    assert metadata["aggregation_finite_station_count"] == 3
+
+
 def test_psa_period_sheet_source_sidecar_tracks_plotted_station_period_groups(tmp_path) -> None:
     """PSA station sheets should filter source rows to the station/period groups plotted."""
 
