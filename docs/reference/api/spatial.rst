@@ -111,6 +111,10 @@ import paths.
 .. automodule:: spatial_vtk.spatial.calculate
    :members:
 
+.. autofunction:: spatial_vtk.spatial.spatial_summary_readiness_from_config
+
+.. autofunction:: spatial_vtk.spatial.spatial_derived_outputs_readiness_from_config
+
 .. autofunction:: spatial_vtk.spatial.spatial_workflow_failure_frame
 
 .. autofunction:: spatial_vtk.spatial.spatial_correlation_preview_frame

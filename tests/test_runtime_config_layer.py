@@ -93,6 +93,10 @@ from spatial_vtk.visualize.dashboard import (
     row_value_column_for_summary,
 )
 from spatial_vtk.visualize.dashboard.export import load_dashboard_metric_dataset
+from spatial_vtk.spatial import (
+    spatial_derived_outputs_readiness_from_config,
+    spatial_summary_readiness_from_config,
+)
 
 
 def test_runtime_config_loads_paths_defaults_and_bounds(tmp_path, monkeypatch):
@@ -1718,6 +1722,78 @@ outputs:
     sequence_status_frame = output_status_frame([paths["metrics_long_path"]])
     assert list(sequence_status_frame["name"]) == ["metrics_long"]
 
+    clear_active_config()
+
+
+def test_spatial_readiness_helpers_own_step04_output_contract(tmp_path, monkeypatch):
+    """Large-run Step 4 notebooks should not duplicate spatial path-name lists."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+  figures: run_outputs/figures
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    step_outputs = output_group("step_04_spatial", cfg=cfg)
+
+    summary_missing = spatial_summary_readiness_from_config(config_path=config_path)
+
+    assert summary_missing.reason == "missing_inputs"
+    summary_rows = summary_missing.status_frame()
+    output_names = set(summary_rows.loc[summary_rows["role"].eq("output"), "name"])
+    assert "metric_field_path" in output_names
+    assert "event_centered_path" in output_names
+    assert "geology_path" in output_names
+    assert "metrics_long_path" not in output_names
+    assert set(summary_rows.loc[summary_rows["role"].eq("input"), "name"]) == {"metrics_long_path"}
+
+    step_outputs.metrics_long_path.parent.mkdir(parents=True, exist_ok=True)
+    step_outputs.metrics_long_path.write_text("metric\nPGA\n", encoding="utf-8")
+    summary_ready_to_run = spatial_summary_readiness_from_config(config_path=config_path)
+    assert summary_ready_to_run.reason == "missing_outputs"
+    assert summary_ready_to_run.should_run is True
+
+    derived_blocked = spatial_derived_outputs_readiness_from_config(config_path=config_path)
+    assert derived_blocked.reason == "missing_inputs"
+    assert "Core spatial summary tables are not ready yet" in derived_blocked.message
+
+    for name in (
+        "metric_field_path",
+        "event_centered_path",
+        "station_bias_path",
+        "morans_i_path",
+        "permutation_moran_path",
+        "distance_corr_path",
+        "clusters_path",
+        "cluster_scores_path",
+        "cluster_summary_path",
+        "cluster_features_path",
+        "pca_scores_path",
+        "pca_loadings_path",
+        "pca_explained_path",
+        "geology_path",
+    ):
+        path = step_outputs[name]
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("ready\n", encoding="utf-8")
+
+    derived_ready_to_run = spatial_derived_outputs_readiness_from_config(config_path=config_path)
+    assert derived_ready_to_run.reason == "missing_outputs"
+    derived_rows = derived_ready_to_run.status_frame()
+    assert set(derived_rows.loc[derived_rows["role"].eq("output"), "name"]) == {
+        "block_holdout_path",
+        "redcap_clusters_path",
+        "pattern_similarity_path",
+    }
+    assert "metrics_long_path" in set(derived_rows.loc[derived_rows["role"].eq("input"), "name"])
     clear_active_config()
 
 

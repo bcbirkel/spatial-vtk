@@ -1406,6 +1406,13 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "from spatial_vtk.spatial import (" in source
     assert "run_spatial_statistics_workflow_from_config," in source
     assert "run_spatial_derived_outputs_workflow_from_config," in source
+    assert "spatial_summary_readiness_from_config," in source
+    assert "spatial_derived_outputs_readiness_from_config," in source
+    assert "spatial_summary_readiness = spatial_summary_readiness_from_config(" in source
+    assert "derived_readiness = spatial_derived_outputs_readiness_from_config(" in source
+    assert "core_spatial_output_names" not in source
+    assert "derived_spatial_output_names" not in source
+    assert "step_outputs.readiness(" not in source
     assert "step_outputs.display_table_previews(" in source
     assert "display_output_table_previews(" not in source
     assert '"spatial_vtk.spatial.run_spatial_statistics_workflow_from_config"' not in source

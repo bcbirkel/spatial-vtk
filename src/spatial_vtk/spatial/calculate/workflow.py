@@ -26,7 +26,15 @@ import pandas as pd
 
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
-from spatial_vtk.io import default_output_paths, load_output_table, read_table, write_output_table, write_table
+from spatial_vtk.io import (
+    OutputReadiness,
+    default_output_paths,
+    load_output_table,
+    output_group,
+    read_table,
+    write_output_table,
+    write_table,
+)
 from spatial_vtk.spatial.calculate.clustering import assign_redcap_clusters, run_residual_feature_clustering
 from spatial_vtk.spatial.calculate.correlation import (
     build_distance_bin_summary,
@@ -119,6 +127,29 @@ SPATIAL_DERIVED_OUTPUT_KEYS: tuple[str, ...] = (
     "block_holdout_predictions",
     "redcap_clusters",
     "pattern_similarity_station_anomalies",
+)
+
+SPATIAL_SUMMARY_OUTPUT_PATH_NAMES: tuple[str, ...] = (
+    "metric_field_path",
+    "event_centered_path",
+    "station_bias_path",
+    "morans_i_path",
+    "permutation_moran_path",
+    "distance_corr_path",
+    "clusters_path",
+    "cluster_scores_path",
+    "cluster_summary_path",
+    "cluster_features_path",
+    "pca_scores_path",
+    "pca_loadings_path",
+    "pca_explained_path",
+    "geology_path",
+)
+
+SPATIAL_DERIVED_OUTPUT_PATH_NAMES: tuple[str, ...] = (
+    "block_holdout_path",
+    "redcap_clusters_path",
+    "pattern_similarity_path",
 )
 
 SPATIAL_SUMMARY_COLUMNS: dict[str, tuple[str, ...]] = {
@@ -1150,6 +1181,55 @@ def _spatial_workflow_config(
     return config.activate()
 
 
+def spatial_summary_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    overwrite: bool = False,
+) -> OutputReadiness:
+    """Return readiness for configured core spatial summary tables.
+
+    Large-run notebooks can pass this directly to
+    :func:`spatial_vtk.config.run_notebook_step_if_needed` instead of keeping
+    the Step 4 output-name contract in notebook cells.
+    """
+
+    config = _spatial_workflow_config(config_path=config_path, run_scenario=run_scenario)
+    outputs = output_group("step_04_spatial", cfg=config)
+    return outputs.readiness(
+        SPATIAL_SUMMARY_OUTPUT_PATH_NAMES,
+        inputs=("metrics_long_path",),
+        sources=("metrics_long_path",),
+        overwrite=overwrite,
+        missing_input_message="metrics_long.parquet is not ready yet; finish Step 3 first.",
+        current_message="All spatial summary tables are current; skipping.",
+    )
+
+
+def spatial_derived_outputs_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    overwrite: bool = False,
+) -> OutputReadiness:
+    """Return readiness for configured optional spatial plot-input tables."""
+
+    config = _spatial_workflow_config(config_path=config_path, run_scenario=run_scenario)
+    outputs = output_group("step_04_spatial", cfg=config)
+    dependencies = ("metrics_long_path", *SPATIAL_SUMMARY_OUTPUT_PATH_NAMES)
+    return outputs.readiness(
+        SPATIAL_DERIVED_OUTPUT_PATH_NAMES,
+        inputs=dependencies,
+        sources=dependencies,
+        overwrite=overwrite,
+        missing_input_message=(
+            "Core spatial summary tables are not ready yet; wait for the "
+            "previous Step 4 job to finish, then rerun this cell."
+        ),
+        current_message="Optional spatial plot-input tables are current; skipping.",
+    )
+
+
 def _resolve_config_path_argument(value, config: SpatialVTKConfig):
     """Resolve dotted config path keys passed to config-backed wrappers."""
 
@@ -1669,9 +1749,11 @@ def _record_failure(failures: list[dict[str, str]], metric: str, step: str, exc:
 
 __all__ = [
     "SPATIAL_DERIVED_OUTPUT_KEYS",
+    "SPATIAL_DERIVED_OUTPUT_PATH_NAMES",
     "SPATIAL_STATISTICS_OUTPUT_DESCRIPTIONS",
     "SPATIAL_STATISTICS_OUTPUT_NAMES",
     "SPATIAL_SUMMARY_OUTPUT_KEYS",
+    "SPATIAL_SUMMARY_OUTPUT_PATH_NAMES",
     "SpatialDerivedOutputsWorkflowResult",
     "SpatialStatisticsWorkflowResult",
     "StandardSpatialProductSummaryResult",
@@ -1680,8 +1762,10 @@ __all__ = [
     "run_spatial_statistics_workflow",
     "run_spatial_statistics_workflow_from_config",
     "spatial_correlation_preview_frame",
+    "spatial_derived_outputs_readiness_from_config",
     "spatial_metric_product_summary_frame",
     "spatial_statistics_output_paths",
+    "spatial_summary_readiness_from_config",
     "spatial_workflow_failure_frame",
     "summarize_standard_spatial_products",
 ]

@@ -365,11 +365,14 @@ Step 4: Spatial Statistics
      - Python entry point
      - Standard outputs
    * - Build spatial-statistics summary tables
-     - ``spatial_vtk.spatial.run_spatial_statistics_workflow_from_config``
+     - ``spatial_vtk.spatial.spatial_summary_readiness_from_config`` and
+       ``spatial_vtk.spatial.run_spatial_statistics_workflow_from_config``
      - metric field, event-centered residuals, station bias, Moran's I,
        distance correlation, cluster, PCA, and geology tables
    * - Build optional derived spatial outputs
-     - ``spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config``
+     - ``spatial_vtk.spatial.spatial_derived_outputs_readiness_from_config``
+       and
+       ``spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config``
      - block holdout, REDCAP, and pattern-similarity tables
    * - Render standard spatial station and grid maps
      - ``spatial_vtk.spatial.plot.write_standard_spatial_map_figures``

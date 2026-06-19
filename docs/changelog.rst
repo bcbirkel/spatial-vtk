@@ -31,6 +31,9 @@ Changelog
 - Rewired the configured record-coverage workflow to import the trace-metadata
   coverage builder from the public ``spatial_vtk.visualize.context`` entry
   point instead of the lower-level implementation module.
+- Added package-owned Step 4 spatial readiness helpers and rewired the
+  large-run spatial notebook so summary and derived-output readiness decisions
+  no longer duplicate spatial output path-name lists in notebook cells.
 - Updated the Metrics API reference to document metric calculation and
   workflow helpers through ``spatial_vtk.metrics.calculate`` and
   ``spatial_vtk.metrics.workflow`` instead of lower-level implementation

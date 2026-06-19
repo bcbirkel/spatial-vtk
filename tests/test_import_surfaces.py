@@ -76,12 +76,14 @@ def test_public_imports():
         run_geojson_region_summary_workflow_from_config,
         run_spatial_derived_outputs_workflow_from_config,
         run_spatial_statistics_workflow_from_config,
+        spatial_derived_outputs_readiness_from_config,
         StandardSpatialProductSummaryResult,
         spatial_correlation_preview_frame,
         spatial_metric_product_frames,
         spatial_metric_product_summary_frame,
         spatial_metric_table_frame,
         spatial_pca_product_frames,
+        spatial_summary_readiness_from_config,
         spatial_workflow_failure_frame,
         station_bias_preview_frame,
         summarize_standard_spatial_products,
@@ -175,6 +177,7 @@ def test_public_imports():
     assert callable(run_geojson_region_summary_workflow_from_config)
     assert callable(run_spatial_derived_outputs_workflow_from_config)
     assert callable(run_spatial_statistics_workflow_from_config)
+    assert callable(spatial_derived_outputs_readiness_from_config)
     assert callable(StandardSpatialProductSummaryResult)
     assert callable(corridor_record_preview_frame)
     assert callable(corridor_record_pair_frame)
@@ -185,6 +188,7 @@ def test_public_imports():
     assert callable(spatial_metric_product_summary_frame)
     assert callable(spatial_metric_table_frame)
     assert callable(spatial_pca_product_frames)
+    assert callable(spatial_summary_readiness_from_config)
     assert callable(spatial_workflow_failure_frame)
     assert callable(station_bias_preview_frame)
     assert callable(summarize_standard_spatial_products)
@@ -1352,7 +1356,9 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.metrics.write_metrics_slurm_script_from_config",
         "spatial_vtk.metrics.merge_metric_batches_from_config",
         "spatial_vtk.metrics.write_metric_outputs_from_config",
+        "spatial_vtk.spatial.spatial_summary_readiness_from_config",
         "spatial_vtk.spatial.run_spatial_statistics_workflow_from_config",
+        "spatial_vtk.spatial.spatial_derived_outputs_readiness_from_config",
         "spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config",
         "spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config",
         "spatial_vtk.spatial.run_boundary_corridor_workflow_from_config",
