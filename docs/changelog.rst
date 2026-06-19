@@ -247,6 +247,9 @@ Changelog
 
   - Removed one-off preview variables and repeated path construction from
     standard notebook cells where package helpers now own the task.
+  - Added a global tutorial-notebook import-boundary guard so notebooks cannot
+    reintroduce implementation modules for config, I/O, QC, metrics, spatial,
+    visualization, or dashboard workflows.
   - Made large-run README guidance explicit about public plotting entry
     points.
   - Made large-run README guidance explicit about public mapping and

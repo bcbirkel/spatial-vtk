@@ -1110,6 +1110,36 @@ def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
             assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} uses {matches}"
 
 
+def test_tutorial_notebooks_avoid_implementation_module_imports() -> None:
+    """Tutorial notebooks should stay on public package surfaces."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    forbidden_import_patterns = (
+        re.compile(r"^\s*from\s+spatial_vtk\.io\.(metadata|preprocessing|tables)\b", re.MULTILINE),
+        re.compile(r"^\s*import\s+spatial_vtk\.io\.(metadata|preprocessing|tables)\b", re.MULTILINE),
+        re.compile(r"^\s*from\s+spatial_vtk\.config\.(outputs|runtime)\b", re.MULTILINE),
+        re.compile(r"^\s*import\s+spatial_vtk\.config\.(outputs|runtime)\b", re.MULTILINE),
+        re.compile(r"^\s*from\s+spatial_vtk\.qc\.build\b", re.MULTILINE),
+        re.compile(r"^\s*import\s+spatial_vtk\.qc\.build\.", re.MULTILINE),
+        re.compile(r"^\s*from\s+spatial_vtk\.metrics\.workflow\.(execution|outputs|run|tasks)\b", re.MULTILINE),
+        re.compile(r"^\s*import\s+spatial_vtk\.metrics\.workflow\.(execution|outputs|run|tasks)\b", re.MULTILINE),
+        re.compile(r"^\s*from\s+spatial_vtk\.spatial\.(calculate|map\.|plot\.)", re.MULTILINE),
+        re.compile(r"^\s*import\s+spatial_vtk\.spatial\.(calculate|map\.|plot\.)", re.MULTILINE),
+        re.compile(r"^\s*from\s+spatial_vtk\.visualize\.(context\.|dashboard\.|qc\.|waveforms\.)", re.MULTILINE),
+        re.compile(r"^\s*import\s+spatial_vtk\.visualize\.(context\.|dashboard\.|qc\.|waveforms\.)", re.MULTILINE),
+    )
+    assert notebooks
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            if cell.get("cell_type") != "code":
+                continue
+            source = "".join(cell.get("source", []))
+            matches = [pattern.pattern for pattern in forbidden_import_patterns if pattern.search(source)]
+            assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} uses {matches}"
+
+
 def test_large_run_readme_distinguishes_public_and_implementation_imports() -> None:
     """Large-run docs should describe the same public-import boundary as preflight."""
 
