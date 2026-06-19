@@ -181,6 +181,9 @@ Changelog
   - Replaced large-run README single-figure import examples with package-owned
     workflow helper examples for metrics, QC, spatial figures, dashboards, and
     bounded notebook context setup.
+  - Clarified that large-run notebooks may import stable public plotting and
+    dashboard packages, while deeper implementation submodule imports remain
+    blocked by preflight.
 
 2026-06-18
 ----------

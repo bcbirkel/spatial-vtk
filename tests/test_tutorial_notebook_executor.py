@@ -1101,7 +1101,7 @@ def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
             assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} uses {matches}"
 
 
-def test_large_run_readme_lists_rejected_implementation_import_prefixes() -> None:
+def test_large_run_readme_distinguishes_public_and_implementation_imports() -> None:
     """Large-run docs should describe the same public-import boundary as preflight."""
 
     repo_root = Path(__file__).resolve().parents[1]
@@ -1123,16 +1123,23 @@ def test_large_run_readme_lists_rejected_implementation_import_prefixes() -> Non
         "prepare_configured_dashboard_datasets_from_notebook_settings",
     ):
         assert helper in readme
-    for prefix in (
+    assert "Imports from public packages" in readme
+    assert "from spatial_vtk.metrics.plot import ..." in readme
+    for pattern in (
+        "from spatial_vtk.metrics.plot.periods",
+        "from spatial_vtk.spatial.map.station",
+        "from spatial_vtk.visualize.context.figures",
+        "import spatial_vtk.visualize.dashboard.streamlit_metrics",
+    ):
+        assert pattern in readme
+    for ambiguous_prefix in (
         "spatial_vtk.metrics.plot.*",
         "spatial_vtk.spatial.plot.*",
         "spatial_vtk.spatial.map.*",
         "spatial_vtk.visualize.context.*",
-        "spatial_vtk.visualize.qc.*",
-        "spatial_vtk.visualize.waveforms.*",
         "spatial_vtk.visualize.dashboard.*",
     ):
-        assert prefix in readme
+        assert ambiguous_prefix not in readme
 
 
 def test_standard_tutorial_notebooks_avoid_raw_table_preview_helpers() -> None:
