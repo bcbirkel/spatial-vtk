@@ -108,13 +108,13 @@ extras, you can also run the public test suite:
 
    python -m pytest
 
-To verify that the standard tutorial notebooks run cleanly from the committed
-example data, install the notebook extra and run:
+To verify that the standard and large-run tutorial notebooks run cleanly from
+the committed example data, install the notebook extra and run:
 
 .. code-block:: bash
 
-   python tools/execute_tutorial_notebooks.py --runtime-check-only
-   python tools/execute_tutorial_notebooks.py --clean
+   python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run
+   python tools/execute_tutorial_notebooks.py --clean --include-large-run
 
 The tutorial checker first verifies that the committed five-event metadata,
 snapshot tables, and observed/synthetic NPZ waveform subset are present. It

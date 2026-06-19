@@ -576,12 +576,16 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     """Public tutorial docs should expose the clean-run and figure-audit contract."""
 
     repo_root = Path(__file__).resolve().parents[1]
+    installation = (repo_root / "docs" / "installation.rst").read_text(encoding="utf-8")
     examples_index = (repo_root / "docs" / "examples" / "index.rst").read_text(encoding="utf-8")
     large_run_readme = (repo_root / "docs" / "examples" / "large_run" / "README.md").read_text(encoding="utf-8")
-    combined = f"{examples_index}\n{large_run_readme}"
+    combined = f"{installation}\n{examples_index}\n{large_run_readme}"
 
+    assert "standard and large-run tutorial notebooks" in installation
     assert 'python -m pip install -e ".[notebooks,waveforms]"' in examples_index
     assert 'python -m pip install -e ".[notebooks,waveforms]"' in large_run_readme
+    assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in installation
+    assert "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run" in installation
     assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in combined
     assert "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run" in combined
     assert "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run" in combined

@@ -4,6 +4,9 @@ Changelog
 2026-06-19
 ----------
 
+- Updated the Installation check commands so source-checkout notebook
+  verification includes ``--include-large-run``, matching the examples docs,
+  release checklist, and CI tutorial gate.
 - Clarified the tutorial notebook runtime preflight failure message so it
   reports the missing importable modules directly before the install command,
   instead of wording the missing subset as a generic required-module list.
