@@ -1158,6 +1158,7 @@ def test_step03_station_map_uses_package_aggregation_and_source_sidecar() -> Non
     assert "MetricFigureContext.from_frame(" in source
     assert "station_summary_for_metric(" in source
     assert "write_station_metric_map_for_metric(" in source
+    assert "metric_figure_settings.sidecars.kwargs(plural=True)" in source
     assert "station_summary_for_map(" not in source
     assert "station_pga_source" not in source
     assert "source_df=station_pga_source" not in source
@@ -1555,6 +1556,10 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
     assert "summarize_metric_snapshot_tasks_from_config(" in source
     assert "write_metric_outputs_from_config(" in source
     assert 'step_outputs = output_group("step_03_metrics", cfg=cfg)' in source
+    assert "render_notebook_figure(" in source
+    assert "residuals_vs_distance_figure_path" in source
+    assert "score_trends_figure_path" in source
+    assert "band_score_distribution_figure_path" in source
     assert '"metric_tasks": "metric_tasks_path"' in source
     assert "step_outputs.display_table_previews(" in source
     assert 'step_outputs.display_table_previews({"metric_tasks": "metric_tasks_path"}, cfg=cfg, nrows=12)' in source
@@ -1570,6 +1575,9 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
     assert "write_metric_outputs(" not in source
     assert "drop_duplicates().copy()" not in source
     assert 'read_config_table("paths.metric_figure_snapshot")' not in source
+    assert "metric_sidecars" not in source
+    assert "savefig=True" not in source
+    assert "showfig=True" not in source
 
 
 def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:

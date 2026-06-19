@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-18
+   Added optional standard Step 3 figure artifacts for residual-distance,
+   score-trend, station metric map, and band score distribution outputs. The
+   standard Step 3 metrics notebook now uses
+   ``spatial_vtk.config.render_notebook_figure()`` for individual metric
+   figures and no longer repeats sidecar, ``showfig``, or ``savefig`` kwargs
+   in those plot cells.
    Rewired the remaining standard Step 4 spatial plotting cells to use
    ``spatial_vtk.config.render_notebook_figure()`` for distance-correlation,
    PCA summary, and geology-contrast figures. The notebook no longer repeats

@@ -1417,6 +1417,13 @@ outputs:
     assert metric_paths["prepared_events_path"] == tmp_path / "run_outputs" / "tables" / "prepared_events.csv"
     assert metric_paths["prepared_stations_path"] == tmp_path / "run_outputs" / "tables" / "prepared_stations.csv"
     assert metric_paths["metric_tasks_path"] == tmp_path / "run_outputs" / "tables" / "metric_tasks.csv"
+    assert metric_paths["residuals_vs_distance_figure_path"] == tmp_path / "run_outputs" / "figures" / "residuals_vs_distance.png"
+    assert metric_paths["score_trends_figure_path"] == tmp_path / "run_outputs" / "figures" / "score_trends.png"
+    assert metric_paths["station_metric_map_path"] == tmp_path / "run_outputs" / "figures" / "station_residual_map.png"
+    assert (
+        metric_paths["band_score_distribution_figure_path"]
+        == tmp_path / "run_outputs" / "figures" / "band_score_distribution.png"
+    )
 
     namespace = output_group_namespace("step_07_dashboards", cfg=cfg)
     assert namespace.qc_trace_summary_path == tmp_path / "run_outputs" / "tables" / "qc_trace_summary.csv"

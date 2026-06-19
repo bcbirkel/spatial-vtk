@@ -777,6 +777,10 @@ OUTPUT_GROUPS: dict[str, tuple[OutputArtifact, ...]] = {
         OutputArtifact("metrics_enriched_path", "metrics_enriched"),
         OutputArtifact("path_table_path", "path_table"),
         OutputArtifact("path_summary_path", "path_summary"),
+        OutputArtifact("residuals_vs_distance_figure_path", "residuals_vs_distance", kind="figure", required=False),
+        OutputArtifact("score_trends_figure_path", "score_trends", kind="figure", required=False),
+        OutputArtifact("station_metric_map_path", "station_metric_map", kind="figure", required=False),
+        OutputArtifact("band_score_distribution_figure_path", "band_score_distribution", kind="figure", required=False),
     ),
     "step_04_spatial": (
         OutputArtifact("metrics_long_path", "metrics_long"),
