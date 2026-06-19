@@ -28,6 +28,9 @@ Changelog
 
 **Changed and Rewired**
 
+- Rewired the configured record-coverage workflow to import the trace-metadata
+  coverage builder from the public ``spatial_vtk.visualize.context`` entry
+  point instead of the lower-level implementation module.
 - Updated the Metrics API reference to document metric calculation and
   workflow helpers through ``spatial_vtk.metrics.calculate`` and
   ``spatial_vtk.metrics.workflow`` instead of lower-level implementation

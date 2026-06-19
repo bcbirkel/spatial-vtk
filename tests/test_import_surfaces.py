@@ -456,6 +456,15 @@ def test_autodoc_module_labels_use_public_entry_points():
     assert conf._module_doc_label("spatial_vtk.visualize.qc") == "QC Visualization"
 
 
+def test_io_workflow_uses_public_context_visualization_entry_point():
+    """Notebook-facing I/O workflows should call public visualization helpers."""
+
+    workflows = pathlib.Path(__file__).resolve().parents[1] / "src" / "spatial_vtk" / "io" / "workflows.py"
+    text = workflows.read_text(encoding="utf-8")
+    assert "from spatial_vtk.visualize.context import build_record_coverage_table_from_trace_metadata" in text
+    assert "from spatial_vtk.visualize.context.figures import build_record_coverage_table_from_trace_metadata" not in text
+
+
 def test_metrics_api_docs_use_public_plot_entry_point():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "metrics.rst"
     text = docs.read_text(encoding="utf-8")

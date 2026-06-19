@@ -179,7 +179,7 @@ def build_record_coverage_from_config(
     """
 
     cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
-    from spatial_vtk.visualize.context.figures import build_record_coverage_table_from_trace_metadata
+    from spatial_vtk.visualize.context import build_record_coverage_table_from_trace_metadata
 
     preprocessing_paths = preprocessed_waveform_metadata_paths(config=cfg)
     event_station_records = (
