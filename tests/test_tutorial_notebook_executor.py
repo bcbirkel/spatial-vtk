@@ -2016,6 +2016,36 @@ def test_tutorial_notebooks_use_package_figure_settings() -> None:
             assert "figure_dir=figure_dir" not in source, notebook_path.relative_to(repo_root)
 
 
+def test_tutorial_notebooks_avoid_low_level_io_and_shell_workflow_cells() -> None:
+    """Tutorial notebooks should use task-level package helpers, not path plumbing."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    assert notebooks
+    forbidden_patterns = (
+        "resolve_output_path(",
+        "load_output_table(",
+        "write_output_table(",
+        "write_output_tables(",
+        "read_config_table(",
+        "pd.read_",
+        ".to_csv(",
+        ".to_parquet(",
+        "subprocess.run(",
+        "run_or_submit_notebook_cli_command(",
+        "run_or_submit_notebook_function(",
+        "svtk ",
+    )
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            if cell.get("cell_type") != "code":
+                continue
+            source = "".join(cell.get("source", []))
+            matches = [pattern for pattern in forbidden_patterns if pattern in source]
+            assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} uses {matches}"
+
+
 def test_large_run_notebooks_use_figure_render_gates_for_prerequisite_tables() -> None:
     """Large-run figure cells should report missing inputs through package gates."""
 
