@@ -50,14 +50,15 @@ paths in cells.
        render_notebook_figure,
        run_notebook_step_if_needed,
    )
-   from spatial_vtk.io import event_rows_for_records, load_configured_input_paths, load_configured_input_tables, output_group
-   from spatial_vtk.qc import run_qc_inventory_from_config
+   from spatial_vtk.io import event_rows_for_records, load_configured_input_paths, load_configured_input_tables
+   from spatial_vtk.qc import load_standard_qc_workflow_outputs, run_qc_inventory_from_config
 
    context = notebook_run_context()
    cfg = context.cfg
-   step_outputs = output_group("step_02_qc", cfg=cfg)
+   qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)
+   step_outputs = qc_outputs.outputs
    display(configured_output_registry_preview_frame(cfg=cfg, kinds=("table",)))
-   display(step_outputs.status_frame())
+   display(qc_outputs.status_frame())
    readiness = step_outputs.readiness(
        "trace_qc_path",
        inputs=("event_station_path",),
@@ -121,9 +122,11 @@ the large-run notebooks.
        mappings. Pass ``missing="skip"`` when a figure can use an optional
        output if present but should continue without it.
        Legacy helpers such as ``output_group_namespace()`` return only path
-       attributes; new notebooks should use ``output_group()`` so readiness,
-       previews, completion checks, and figure-path helpers stay attached to
-       the same object.
+       attributes. New workflow notebooks should prefer the standard
+       ``load_standard_*`` helpers listed below; use ``output_group()`` directly
+       only when a new reusable standard helper does not exist yet, so
+       readiness, previews, completion checks, and figure-path helpers stay
+       attached to the same object.
        For output groups that own table paths outside the configured output
        registry, such as preprocessing metadata, use ``load_path_table()`` or
        ``preview_path_table()`` with the group path name for one table, or

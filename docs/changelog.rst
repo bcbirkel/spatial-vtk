@@ -110,6 +110,9 @@ Changelog
 
     - Clarified Python workflow and output-registry guidance around public helper
       signatures, return contracts, and bounded previews.
+    - Updated Python workflow guidance so the leading notebook example uses the
+      standard QC output helper, with direct ``output_group(...)`` documented as
+      a lower-level fallback when no standard helper exists yet.
     - Documented notebook-facing and script-facing waveform-comparison and
       region-boxplot helpers.
     - Updated generated CLI reference examples to use the committed example

@@ -1498,6 +1498,8 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "without resolving dashboard summary paths in cells" in normalized_workflows
     assert "compatibility aliases" not in workflows
     assert "from spatial_vtk.config import (" in workflows
+    assert "from spatial_vtk.qc import load_standard_qc_workflow_outputs, run_qc_inventory_from_config" in workflows
+    assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in workflows
     assert "notebook_figure_settings" in workflows
     assert "render_notebook_figure" in workflows
     assert "from spatial_vtk.config.notebook import" not in workflows
@@ -1508,7 +1510,9 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "``figure_dir / \"name.png\"``" in workflows
     assert "``bind()`` remains available for older notebooks" in workflows
     assert "Legacy helpers such as ``output_group_namespace()`` return only path attributes" in workflows
-    assert "new notebooks should use ``output_group()``" in workflows
+    assert "New workflow notebooks should prefer the standard\n       ``load_standard_*`` helpers" in workflows
+    assert "use ``output_group()`` directly\n       only when a new reusable standard helper does not exist yet" in workflows
+    assert "new notebooks should use ``output_group()``" not in workflows
     assert "``PSA`` and\n``FAS`` are broadband spectral calculations" in workflows
     assert "one blank-passband spectral task" in workflows
     assert "PSA figures should use\noscillator-period sheets" in workflows
