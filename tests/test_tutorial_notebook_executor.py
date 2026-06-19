@@ -1056,7 +1056,12 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     assert 'station_metadata="paths.site_metadata"' in source
     assert 'step_outputs = output_group("step_04_spatial", cfg=cfg)' in source
     assert "spatial_tables = step_outputs.load_tables(" in source
-    assert "step_outputs.figure_path(" in source
+    assert "render_notebook_figure(" in source
+    assert "step_outputs.figure_path(" not in source
+    assert "outpath=" not in source
+    assert "savefig=True" not in source
+    assert "showfig=True" not in source
+    assert "spatial_sidecars" not in source
     assert "spatial_workflow_failure_frame(" in source
     assert "spatial_correlation_preview_frame(" in source
     assert "spatial_metric_product_frames(" in source
