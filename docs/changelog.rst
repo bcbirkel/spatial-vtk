@@ -25,6 +25,8 @@ Changelog
 
   - **Notebook-owned display cleanup**
 
+    - Rewired the large-run Step 1 notebook to resolve ingest and preprocessing
+      outputs through the same package helper as the standard tutorial.
     - Rewired standard Step 1, Step 2, Step 4, Step 5, and Step 6 notebooks to
       call package helpers for table previews, readiness messages, and configured
       output loading.

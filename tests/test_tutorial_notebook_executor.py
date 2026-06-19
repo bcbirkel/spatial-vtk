@@ -1842,6 +1842,13 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     assert "metadata_readiness = step_outputs.readiness(" in source
     assert "run_or_submit_notebook_function(" not in source
     assert "from spatial_vtk.io import (" in source
+    assert "load_standard_ingest_workflow_outputs," in source
+    assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in source
+    assert "step_outputs = ingest_outputs.outputs" in source
+    assert "preprocessed_outputs = ingest_outputs.preprocessed_outputs" in source
+    assert "display(ingest_outputs.status_frame())" in source
+    assert 'step_outputs = output_group("step_01_ingest")' not in source
+    assert "preprocessed_outputs = preprocessed_waveform_output_group(config=cfg)" not in source
     assert "metadata_tables = step_outputs.load_tables(" in source
     assert "write_large_run_context_figures_from_outputs(" in source
     assert "context_figure_result.status_frame()" in source
@@ -1983,7 +1990,8 @@ def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
         if notebook_path == step_01:
-            assert "preprocessed_waveform_output_group(config=cfg)" in source
+            assert "preprocessed_outputs = ingest_outputs.preprocessed_outputs" in source
+            assert "preprocessed_waveform_output_group(config=cfg)" not in source
             assert "preprocessed_outputs.readiness(" in source
             assert "record_coverage_readiness_from_config(" in source
             assert "source_event_station_path" not in source
