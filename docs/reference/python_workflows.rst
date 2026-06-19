@@ -254,6 +254,44 @@ the large-run notebooks.
        ``SVTK_LAUNCH_QC_DASHBOARD`` so notebooks do not repeat dashboard
        launch environment parsing in cells.
 
+Standard Notebook Input Helpers
+-------------------------------
+
+Use these helpers when a standard tutorial notebook needs the prepared inputs
+for a later step. They return named result objects with the configured
+``OutputGroup`` objects and loaded tables that the step actually needs. This is
+the preferred pattern for standard notebooks because path resolution,
+fallbacks, and bounded previews stay in package code.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Step
+     - Helper
+     - What it owns
+   * - Step 2 QC
+     - ``spatial_vtk.qc.load_standard_qc_inputs``
+     - Prepared stations, events, event-station records, the Step 1 output
+       group, and the Step 2 QC output group.
+   * - Step 4 spatial statistics
+     - ``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``
+     - The Step 4 output group, loaded spatial workflow tables, per-metric
+       product summaries, station-bias previews, and failure/status frames.
+   * - Step 5 GeoJSON regions and corridors
+     - ``spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs``
+     - Prepared station/event/event-station metadata, metric tables, configured
+       GeoJSON paths, Step 5 outputs, and compact plotting input summaries.
+   * - Step 6 additional plotting
+     - ``spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs``
+     - Metric snapshot rows, event metadata, event-station records,
+       comparison-eligible records, and the Step 6 plotting output group.
+
+These helpers should replace notebook-local blocks that create several
+``output_group(...)`` objects, call ``load_tables(...)`` manually, or keep
+fallback path choices in the cell. If a workflow step needs a new reusable
+input bundle, add the bundle as a package helper first, then keep the notebook
+cell focused on the analysis task.
+
 Step 1: Metadata, Waveforms, and Record Coverage
 ------------------------------------------------
 

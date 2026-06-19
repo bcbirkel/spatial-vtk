@@ -1514,6 +1514,13 @@ def test_python_workflow_docs_prefer_region_boxplot_notebook_settings_wrapper():
     assert "spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings" in workflows
     assert "That wrapper owns the figure render gate, notebook figure settings, sidecar" in workflows
     assert "Use\n``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs`` from\nscripts" in workflows
+    assert "Standard Notebook Input Helpers" in workflows
+    assert "the preferred pattern for standard notebooks" in workflows
+    assert "``spatial_vtk.qc.load_standard_qc_inputs``" in workflows
+    assert "``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``" in workflows
+    assert "``spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs``" in workflows
+    assert "``spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs``" in workflows
+    assert "fallback path choices in the cell" in workflows
 
 
 def test_package_overview_points_to_public_workflow_helpers():
