@@ -1907,6 +1907,295 @@ def prepare_large_run_metric_figure_context(
 
 
 @dataclass(frozen=True)
+class MetricFigureSuiteResult:
+    """Result from rendering the full large-run Step 3 metric figure suite."""
+
+    context: MetricFigureContext
+    rows: tuple[dict[str, Any], ...]
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return one row per metric figure family rendered or skipped."""
+
+        return pd.DataFrame(
+            self.rows,
+            columns=[
+                "artifact",
+                "status",
+                "figure_count",
+                "first_figure_path",
+                "figure_paths_preview",
+                "message",
+            ],
+        )
+
+
+def _metric_suite_status_row(artifact: str, outputs: Sequence[Path], *, message: str = "") -> dict[str, Any]:
+    """Return one notebook status row for a metric figure family."""
+
+    paths = [Path(path) for path in outputs]
+    preview = ", ".join(str(path) for path in paths[:3])
+    if len(paths) > 3:
+        preview += f", ... (+{len(paths) - 3} more)"
+    return {
+        "artifact": artifact,
+        "status": "written" if paths else "skipped",
+        "figure_count": int(len(paths)),
+        "first_figure_path": None if not paths else str(paths[0]),
+        "figure_paths_preview": preview,
+        "message": message if message else ("" if paths else "No figures were written; check context status and missing-table messages above."),
+    }
+
+
+def write_large_run_metric_figure_suite_from_notebook_settings(
+    metrics_long_path: str | Path,
+    settings: Any,
+    *,
+    value_col: str | None = None,
+    overwrite: bool = False,
+    score_settings: Any | None = None,
+    residuals_vs_distance_func: Callable[..., Any] | None = None,
+    score_trend_func: Callable[..., Any] | None = None,
+    residuals_vs_depth_func: Callable[..., Any] | None = None,
+    vs30_scatter_func: Callable[..., Any] | None = None,
+    station_metric_map_func: Callable[..., Any] | None = None,
+    station_metric_map_by_period_func: Callable[..., Any] | None = None,
+    residual_grid_func: Callable[..., Any] | None = None,
+    metric_by_model_map_func: Callable[..., Any] | None = None,
+    event_residual_map_func: Callable[..., Any] | None = None,
+    band_score_distribution_func: Callable[..., Any] | None = None,
+    period_score_distribution_func: Callable[..., Any] | None = None,
+    psa_period_curve_func: Callable[..., Any] | None = None,
+    scatterplot_func: Callable[..., Any] | None = None,
+    boxplot_func: Callable[..., Any] | None = None,
+    heatmap_func: Callable[..., Any] | None = None,
+) -> MetricFigureSuiteResult:
+    """Render the full large-run Step 3 metric figure suite.
+
+    This keeps the large-run metric notebook as a lightweight driver. Package
+    code owns the public plotting-function imports, metric figure context
+    construction, repeated selection keyword expansion, optional score-trend
+    controls, PSA period sheets, station aggregation, and source-row sidecars.
+    """
+
+    if any(
+        func is None
+        for func in (
+            residuals_vs_distance_func,
+            score_trend_func,
+            residuals_vs_depth_func,
+            vs30_scatter_func,
+            band_score_distribution_func,
+            period_score_distribution_func,
+            psa_period_curve_func,
+        )
+    ):
+        from spatial_vtk.metrics.plot import (
+            plot_band_score_distribution,
+            plot_period_score_distribution,
+            plot_psa_period_curve,
+            plot_residuals_vs_depth,
+            plot_residuals_vs_distance,
+            plot_score_trends,
+            plot_vs30_scatter,
+        )
+
+        residuals_vs_distance_func = residuals_vs_distance_func or plot_residuals_vs_distance
+        score_trend_func = score_trend_func or plot_score_trends
+        residuals_vs_depth_func = residuals_vs_depth_func or plot_residuals_vs_depth
+        vs30_scatter_func = vs30_scatter_func or plot_vs30_scatter
+        band_score_distribution_func = band_score_distribution_func or plot_band_score_distribution
+        period_score_distribution_func = period_score_distribution_func or plot_period_score_distribution
+        psa_period_curve_func = psa_period_curve_func or plot_psa_period_curve
+    if any(
+        func is None
+        for func in (
+            station_metric_map_func,
+            station_metric_map_by_period_func,
+            residual_grid_func,
+            metric_by_model_map_func,
+            event_residual_map_func,
+        )
+    ):
+        from spatial_vtk.spatial.map import (
+            plot_event_residual_map,
+            plot_metric_map_by_model,
+            plot_residual_grid,
+            plot_station_metric_map,
+            plot_station_metric_map_by_period,
+        )
+
+        station_metric_map_func = station_metric_map_func or plot_station_metric_map
+        station_metric_map_by_period_func = station_metric_map_by_period_func or plot_station_metric_map_by_period
+        residual_grid_func = residual_grid_func or plot_residual_grid
+        metric_by_model_map_func = metric_by_model_map_func or plot_metric_map_by_model
+        event_residual_map_func = event_residual_map_func or plot_event_residual_map
+    if scatterplot_func is None or boxplot_func is None or heatmap_func is None:
+        from spatial_vtk.spatial.plot import boxplot, heatmap, scatterplot
+
+        scatterplot_func = scatterplot_func or scatterplot
+        boxplot_func = boxplot_func or boxplot
+        heatmap_func = heatmap_func or heatmap
+
+    resolved_value_col = str(value_col or getattr(settings, "value_col", "log2_residual"))
+    context = prepare_large_run_metric_figure_context(
+        metrics_long_path,
+        settings.figure_dir,
+        value_col=resolved_value_col,
+        overwrite=overwrite,
+        **settings.context_kwargs(include_station_aggregation=True),
+    )
+    rows: list[dict[str, Any]] = []
+    if not settings.make_figures:
+        rows.append(
+            {
+                "artifact": "metric_figure_suite",
+                "status": "skipped",
+                "figure_count": 0,
+                "first_figure_path": None,
+                "figure_paths_preview": "",
+                "message": "Set SVTK_MAKE_METRIC_FIGURES=1 or SVTK_MAKE_FIGURES=1 to render metric figures.",
+            }
+        )
+        return MetricFigureSuiteResult(context=context, rows=tuple(rows))
+    if not context.ready:
+        rows.append(
+            {
+                "artifact": "metric_figure_suite",
+                "status": "skipped",
+                "figure_count": 0,
+                "first_figure_path": None,
+                "figure_paths_preview": "",
+                "message": "Metric figure context is not ready; check metrics_long path and value column status above.",
+            }
+        )
+        return MetricFigureSuiteResult(context=context, rows=tuple(rows))
+
+    trend_kwargs = settings.plot_selection_kwargs(
+        value_col=resolved_value_col,
+        include_robust_axis_percentile=True,
+    )
+    rows.append(
+        _metric_suite_status_row(
+            "residuals_vs_distance",
+            context.write_residuals_vs_distance_plots(residuals_vs_distance_func, **trend_kwargs),
+        )
+    )
+
+    if score_settings is None:
+        from spatial_vtk.config import notebook_figure_settings
+
+        score_settings = notebook_figure_settings(
+            "score_trend",
+            figure_dir=settings.figure_dir,
+            default_score_columns=("anderson_2004_gof",),
+        )
+    if not score_settings.make_figures:
+        rows.append(
+            _metric_suite_status_row(
+                "score_trends",
+                [],
+                message="Set SVTK_MAKE_SCORE_TRENDS=1 to render optional GOF score trends.",
+            )
+        )
+    else:
+        rows.append(
+            _metric_suite_status_row(
+                "score_trends",
+                context.write_score_trend_plots(
+                    score_trend_func,
+                    score_columns=score_settings.score_columns or ["anderson_2004_gof"],
+                    **settings.plot_selection_kwargs(showfig=score_settings.showfig),
+                ),
+            )
+        )
+
+    rows.append(
+        _metric_suite_status_row(
+            "residuals_vs_depth",
+            context.write_residuals_vs_depth_plots(residuals_vs_depth_func, **trend_kwargs),
+        )
+    )
+    rows.append(
+        _metric_suite_status_row(
+            "vs30_scatter",
+            context.write_vs30_scatter_plots(vs30_scatter_func, **trend_kwargs),
+        )
+    )
+    map_kwargs = settings.plot_selection_kwargs(
+        value_col=resolved_value_col,
+        include_basemap=True,
+    )
+    rows.append(
+        _metric_suite_status_row(
+            "station_metric_maps",
+            context.write_station_metric_maps(
+                station_metric_map_func,
+                station_metric_map_by_period_func,
+                **map_kwargs,
+            ),
+        )
+    )
+    rows.append(
+        _metric_suite_status_row(
+            "residual_grid_maps",
+            context.write_residual_grid_maps(residual_grid_func, **map_kwargs),
+        )
+    )
+    rows.append(
+        _metric_suite_status_row(
+            "metric_by_model_maps",
+            context.write_metric_by_model_maps(
+                metric_by_model_map_func,
+                **settings.plot_selection_kwargs(value_col=resolved_value_col, include_basemap=True, model=None),
+            ),
+        )
+    )
+    rows.append(
+        _metric_suite_status_row(
+            "event_residual_maps",
+            context.write_event_residual_maps(event_residual_map_func, **map_kwargs),
+        )
+    )
+    rows.append(
+        _metric_suite_status_row(
+            "log2_residual_distributions",
+            context.write_log2_residual_distribution_plots(
+                band_score_distribution_func,
+                period_score_distribution_func,
+                **settings.plot_selection_kwargs(
+                    value_col=resolved_value_col,
+                    include_robust_axis_percentile=True,
+                    passband=None,
+                ),
+            ),
+        )
+    )
+    rows.append(
+        _metric_suite_status_row(
+            "psa_period_curves",
+            context.write_psa_period_curve_plots(psa_period_curve_func, **trend_kwargs),
+        )
+    )
+    rows.append(
+        _metric_suite_status_row(
+            "generic_metric_diagnostics",
+            context.write_generic_metric_diagnostic_plots(
+                scatterplot_func,
+                boxplot_func,
+                heatmap_func,
+                period_score_distribution_func,
+                **settings.plot_selection_kwargs(
+                    value_col=resolved_value_col,
+                    compare_to=settings.compare_to,
+                    table=settings.comparison_table,
+                ),
+            ),
+        )
+    )
+    return MetricFigureSuiteResult(context=context, rows=tuple(rows))
+
+
+@dataclass(frozen=True)
 class StationMetricMapResult:
     """Result from a focused station metric map notebook helper."""
 
@@ -2686,6 +2975,7 @@ def _group_key_value(value: object) -> object:
 
 __all__ = [
     "MetricFigureContext",
+    "MetricFigureSuiteResult",
     "StationMetricMapResult",
     "TARGET_METRIC_SPECS",
     "dimension_value",
@@ -2698,5 +2988,6 @@ __all__ = [
     "prepare_large_run_metric_figure_context",
     "psa_period_label",
     "slug",
+    "write_large_run_metric_figure_suite_from_notebook_settings",
     "write_station_metric_map_from_notebook_settings",
 ]

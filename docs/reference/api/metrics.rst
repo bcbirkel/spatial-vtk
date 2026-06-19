@@ -159,6 +159,10 @@ Public plotting helpers exposed by ``spatial_vtk.metrics.plot``:
    * - ``metric_rows_for_metrics``
      - Select metric rows by metric names, display labels, keys, or aliases
        without notebook-local dataframe filtering.
+   * - ``write_large_run_metric_figure_suite_from_notebook_settings``
+     - Render the full Step 3 large-run metric figure suite from notebook
+       settings without notebook-local plot-function imports, per-family
+       keyword expansion, score-trend gates, or repeated render cells.
    * - ``plot_residuals_vs_distance``
      - Plot metric residuals against distance with optional trend overlays.
    * - ``plot_residuals_vs_depth``
@@ -208,6 +212,12 @@ standard row factories used by the large-run notebooks:
    station-aggregation contract, source-row role/filter, input/finite row and
    event counts, and sidecar exactness flags from the saved JSON metadata.
 
+``write_large_run_metric_figure_suite_from_notebook_settings``
+   Build the large-run metric figure context, render the standard Step 3
+   figure families, and return a per-family status table. Large-run notebooks
+   use this helper instead of importing individual plotting functions,
+   repeating selection kwargs, or manually gating optional score trends.
+
 ``station_grid_for_item`` and ``station_model_summary_for_item``
    Prepare station summaries for grid and model-map plotting while preserving
    aggregation metadata for sidecar JSON files.
@@ -252,6 +262,9 @@ input rows contain multiple ``period_s`` values; period curves use the same
 .. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext
    :members:
 
+.. autoclass:: spatial_vtk.metrics.plot.MetricFigureSuiteResult
+   :members:
+
 .. autoclass:: spatial_vtk.metrics.plot.StationMetricMapResult
    :members:
 
@@ -260,5 +273,7 @@ input rows contain multiple ``period_s`` values; period curves use the same
 .. autofunction:: spatial_vtk.metrics.plot.metric_rows_for_metrics
 
 .. autofunction:: spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context
+
+.. autofunction:: spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings
 
 .. autofunction:: spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings

@@ -40,6 +40,7 @@ from spatial_vtk.metrics.workflow import (
 )
 from spatial_vtk.metrics.plot import (
     MetricFigureContext,
+    write_large_run_metric_figure_suite_from_notebook_settings,
     metric_plot_input_summary_frame,
     metric_rows_for_metrics,
     plot_period_score_distribution,
@@ -771,6 +772,149 @@ def test_metric_figure_context_orchestrates_large_run_plot_families(tmp_path) ->
         for call in sheet_calls
     )
     assert any("log2_residual" in call["required"] for call in calls)
+
+
+def test_write_large_run_metric_figure_suite_from_notebook_settings_delegates(tmp_path, monkeypatch) -> None:
+    """Full Step 3 figure suite helper should keep plotting orchestration out of notebooks."""
+
+    import spatial_vtk.metrics.plot.large_run as large_run_module
+
+    calls: list[tuple[str, tuple[object, ...], dict[str, object]]] = []
+
+    class Settings:
+        figure_dir = tmp_path / "figures"
+        make_figures = True
+        value_col = "log2_residual"
+        compare_to = "reference"
+        comparison_table = True
+
+        def context_kwargs(self, *, include_station_aggregation: bool = False) -> dict[str, object]:
+            assert include_station_aggregation is True
+            return {
+                "make_figures": True,
+                "default_passband": "1-2 sec",
+                "default_components": ["Z"],
+                "default_model": "m1",
+                "station_aggregation": "mean",
+            }
+
+        def plot_selection_kwargs(self, **kwargs: object) -> dict[str, object]:
+            out: dict[str, object] = {
+                "passband": "1-2 sec",
+                "components": ["Z"],
+                "model": "m1",
+                "showfig": False,
+            }
+            if kwargs.pop("include_basemap", False):
+                out["add_basemap"] = True
+            if kwargs.pop("include_robust_axis_percentile", False):
+                out["robust_axis_percentile"] = 95.0
+            out.update(kwargs)
+            return out
+
+    class ScoreSettings:
+        make_figures = True
+        showfig = False
+        score_columns = ["anderson_2004_gof"]
+
+    class FakeContext:
+        ready = True
+
+        def _record(self, name: str, *args: object, **kwargs: object) -> list[Path]:
+            calls.append((name, args, kwargs))
+            return [tmp_path / "figures" / f"{name}.png"]
+
+        def write_residuals_vs_distance_plots(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("residuals_vs_distance", *args, **kwargs)
+
+        def write_score_trend_plots(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("score_trends", *args, **kwargs)
+
+        def write_residuals_vs_depth_plots(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("residuals_vs_depth", *args, **kwargs)
+
+        def write_vs30_scatter_plots(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("vs30_scatter", *args, **kwargs)
+
+        def write_station_metric_maps(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("station_metric_maps", *args, **kwargs)
+
+        def write_residual_grid_maps(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("residual_grid_maps", *args, **kwargs)
+
+        def write_metric_by_model_maps(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("metric_by_model_maps", *args, **kwargs)
+
+        def write_event_residual_maps(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("event_residual_maps", *args, **kwargs)
+
+        def write_log2_residual_distribution_plots(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("log2_residual_distributions", *args, **kwargs)
+
+        def write_psa_period_curve_plots(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("psa_period_curves", *args, **kwargs)
+
+        def write_generic_metric_diagnostic_plots(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("generic_metric_diagnostics", *args, **kwargs)
+
+    fake_context = FakeContext()
+    monkeypatch.setattr(
+        large_run_module,
+        "prepare_large_run_metric_figure_context",
+        lambda *args, **kwargs: fake_context,
+    )
+
+    def _dummy_plot(*_args: object, **_kwargs: object) -> None:
+        return None
+
+    result = write_large_run_metric_figure_suite_from_notebook_settings(
+        tmp_path / "metrics_long.parquet",
+        Settings(),
+        overwrite=True,
+        score_settings=ScoreSettings(),
+        residuals_vs_distance_func=_dummy_plot,
+        score_trend_func=_dummy_plot,
+        residuals_vs_depth_func=_dummy_plot,
+        vs30_scatter_func=_dummy_plot,
+        station_metric_map_func=_dummy_plot,
+        station_metric_map_by_period_func=_dummy_plot,
+        residual_grid_func=_dummy_plot,
+        metric_by_model_map_func=_dummy_plot,
+        event_residual_map_func=_dummy_plot,
+        band_score_distribution_func=_dummy_plot,
+        period_score_distribution_func=_dummy_plot,
+        psa_period_curve_func=_dummy_plot,
+        scatterplot_func=_dummy_plot,
+        boxplot_func=_dummy_plot,
+        heatmap_func=_dummy_plot,
+    )
+
+    expected = [
+        "residuals_vs_distance",
+        "score_trends",
+        "residuals_vs_depth",
+        "vs30_scatter",
+        "station_metric_maps",
+        "residual_grid_maps",
+        "metric_by_model_maps",
+        "event_residual_maps",
+        "log2_residual_distributions",
+        "psa_period_curves",
+        "generic_metric_diagnostics",
+    ]
+    assert result.context is fake_context
+    assert [call[0] for call in calls] == expected
+    assert calls[0][2]["value_col"] == "log2_residual"
+    assert calls[0][2]["robust_axis_percentile"] == 95.0
+    assert calls[1][2]["score_columns"] == ["anderson_2004_gof"]
+    assert calls[6][2]["model"] is None
+    assert calls[8][2]["passband"] is None
+    assert calls[10][2]["compare_to"] == "reference"
+    assert calls[10][2]["table"] is True
+    status = result.status_frame()
+    assert status["artifact"].tolist() == expected
+    assert status["status"].tolist() == ["written"] * len(expected)
+    assert status["figure_count"].tolist() == [1] * len(expected)
 
 
 def test_generic_metric_diagnostics_split_residuals_by_model(tmp_path) -> None:

@@ -3,6 +3,14 @@ Changelog
 
 2026-06-18
    Added
+   ``write_large_run_metric_figure_suite_from_notebook_settings()`` and
+   rewired the large-run Step 3 metric notebook to call it for the full metric
+   figure suite. The notebook no longer imports or references individual
+   metric/spatial plotting functions or repeats per-family plotting cells;
+   package code owns metric context construction, selection kwargs, optional
+   score-trend gates, PSA period sheets, station aggregation, and source-row
+   sidecars.
+   Added
    ``write_large_run_spatial_figure_suite_from_notebook_settings()`` and
    rewired the large-run Step 4 spatial notebook to call it for the full
    spatial figure suite. The notebook no longer imports individual map/plot

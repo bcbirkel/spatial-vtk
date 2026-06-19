@@ -1247,10 +1247,13 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "metric_plot_context.write_station_metric_maps(" in source
-    assert "metric_plot_context.write_residual_grid_maps(" in source
-    assert "metric_plot_context.write_metric_by_model_maps(" in source
-    assert "metric_plot_context.write_event_residual_maps(" in source
+    assert "write_large_run_metric_figure_suite_from_notebook_settings(" in source
+    assert "metric_figure_suite.status_frame()" in source
+    assert "metric_plot_context = metric_figure_suite.context" in source
+    assert "metric_plot_context.write_station_metric_maps(" not in source
+    assert "metric_plot_context.write_residual_grid_maps(" not in source
+    assert "metric_plot_context.write_metric_by_model_maps(" not in source
+    assert "metric_plot_context.write_event_residual_maps(" not in source
     assert "write_psa_period_sheet = metric_plot_context.write_psa_period_sheet" not in source
     assert "write_metric_plot = metric_plot_context.write_metric_plot" not in source
     assert "reload_metric_plot_modules" not in source
@@ -1261,20 +1264,20 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     assert "source_df_factory=item_source_rows" not in source
     assert "source_df=item[\"df\"]" not in source
     assert "source_df_factory=lambda period_item" not in source
-    assert "metric_plot_context.write_score_trend_plots(" in source
-    assert "plot_score_trends" in source
-    assert 'SCORE_TREND_FIGURE_SETTINGS = notebook_figure_settings(' in source
-    assert 'if not SCORE_TREND_FIGURE_SETTINGS.make_figures:' in source
-    assert 'SCORE_TREND_COLUMNS = SCORE_TREND_FIGURE_SETTINGS.score_columns or ["anderson_2004_gof"]' in source
+    assert "metric_plot_context.write_score_trend_plots(" not in source
+    assert "plot_score_trends" not in source
+    assert 'SCORE_TREND_FIGURE_SETTINGS = notebook_figure_settings(' not in source
+    assert 'if not SCORE_TREND_FIGURE_SETTINGS.make_figures:' not in source
+    assert 'SCORE_TREND_COLUMNS = SCORE_TREND_FIGURE_SETTINGS.score_columns or ["anderson_2004_gof"]' not in source
     assert 'os.environ.get("SVTK_MAKE_SCORE_TRENDS"' not in source
     assert 'os.environ.get("SVTK_SCORE_TREND_COLUMNS"' not in source
-    assert "Skipping optional GOF score trends. Set SVTK_MAKE_SCORE_TRENDS=1" in source
+    assert "Skipping optional GOF score trends. Set SVTK_MAKE_SCORE_TRENDS=1" not in source
     assert "The main large-run figure suite uses `log2_residual`" in source
     assert "METRIC_FIGURE_SETTINGS = notebook_figure_settings(" in source
-    assert "METRIC_FIGURE_SETTINGS.plot_selection_kwargs(" in source
-    assert "compare_to=METRIC_FIGURE_SETTINGS.compare_to" in source
-    assert "table=METRIC_FIGURE_SETTINGS.comparison_table" in source
-    assert "SCORE_TREND_COLUMNS" in source
+    assert "METRIC_FIGURE_SETTINGS.plot_selection_kwargs(" not in source
+    assert "compare_to=METRIC_FIGURE_SETTINGS.compare_to" not in source
+    assert "table=METRIC_FIGURE_SETTINGS.comparison_table" not in source
+    assert "SCORE_TREND_COLUMNS" not in source
     assert "raw event-level rows used for the station summaries" in source
     assert "STATION_AGGREGATION = METRIC_FIGURE_SETTINGS.station_aggregation" not in source
     assert "DEFAULT_PLOT_" not in source
@@ -1290,7 +1293,23 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
         "write_log2_residual_distribution_plots",
         "write_psa_period_curve_plots",
     ):
-        assert f"metric_plot_context.{helper}(" in source
+        assert f"metric_plot_context.{helper}(" not in source
+    for plot_name in (
+        "plot_residuals_vs_distance",
+        "plot_residuals_vs_depth",
+        "plot_vs30_scatter",
+        "plot_station_metric_map",
+        "plot_station_metric_map_by_period",
+        "plot_residual_grid",
+        "plot_metric_map_by_model",
+        "plot_event_residual_map",
+        "plot_band_score_distribution",
+        "plot_psa_period_curve",
+        "scatterplot",
+        "boxplot",
+        "heatmap",
+    ):
+        assert plot_name not in source
 
 
 def test_metric_plot_package_does_not_export_notebook_reload_hook() -> None:
@@ -1964,25 +1983,26 @@ def test_large_run_step03_metric_figures_are_auditable_station_aggregations() ->
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert 'PLOT_VALUE_COL = "log2_residual"' in source
     assert "METRIC_FIGURE_SETTINGS = notebook_figure_settings(" in source
     assert 'figure_subdir="metrics"' in source
-    assert "METRIC_FIGURE_SETTINGS.figure_dir" in source
     assert "METRICS_FIGURE_DIR" not in source
     assert 'figures_dir / "metrics"' not in source
     assert "STATION_AGGREGATION = METRIC_FIGURE_SETTINGS.station_aggregation" not in source
-    assert "**METRIC_FIGURE_SETTINGS.context_kwargs(include_station_aggregation=True)" in source
-    assert "METRIC_FIGURE_SETTINGS.plot_selection_kwargs(" in source
+    assert "**METRIC_FIGURE_SETTINGS.context_kwargs(include_station_aggregation=True)" not in source
+    assert "METRIC_FIGURE_SETTINGS.plot_selection_kwargs(" not in source
+    assert "write_large_run_metric_figure_suite_from_notebook_settings(" in source
+    assert "metric_plot_context = metric_figure_suite.context" in source
+    assert "display(metric_figure_suite.status_frame())" in source
     assert "display(metric_plot_context.spectral_metric_contract_status())" in source
     assert "if metric_plot_context.ready:" in source
     assert "MAKE_METRIC_FIGURES and step_outputs.metrics_long_path.exists()" not in source
     assert "PLOT_VALUE_COL in metrics_for_figures.columns" not in source
     assert "MAKE_METRIC_FIGURES and metric_plot_context.ready" not in source
 
-    assert "metric_plot_context.write_station_metric_maps(" in source
-    assert "metric_plot_context.write_residual_grid_maps(" in source
-    assert "metric_plot_context.write_metric_by_model_maps(" in source
-    assert "metric_plot_context.write_event_residual_maps(" in source
+    assert "metric_plot_context.write_station_metric_maps(" not in source
+    assert "metric_plot_context.write_residual_grid_maps(" not in source
+    assert "metric_plot_context.write_metric_by_model_maps(" not in source
+    assert "metric_plot_context.write_event_residual_maps(" not in source
     assert "for item in iter_metric_frames(" not in source
     assert "station_summary_for_item(item, PLOT_VALUE_COL)" not in source
     assert "station_grid_for_item(item, PLOT_VALUE_COL)" not in source
@@ -2201,9 +2221,9 @@ def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> 
     ).read_text(encoding="utf-8")
     requirements = {
         "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": (
-            "metric_plot_context.write_station_metric_maps(",
-            "metric_plot_context.write_residual_grid_maps(",
-            "metric_plot_context.write_metric_by_model_maps(",
+            "write_large_run_metric_figure_suite_from_notebook_settings(",
+            "metric_figure_suite.status_frame()",
+            "metric_plot_context = metric_figure_suite.context",
         ),
         "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": (
             "write_large_run_spatial_figure_suite_from_notebook_settings(",

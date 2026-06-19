@@ -34,8 +34,10 @@ def test_public_imports():
     )
     from spatial_vtk.metrics.plot import (
         MetricFigureContext,
+        MetricFigureSuiteResult,
         metric_plot_input_summary_frame,
         metric_rows_for_metrics,
+        write_large_run_metric_figure_suite_from_notebook_settings,
         write_station_metric_map_from_notebook_settings,
     )
     from spatial_vtk.io import (
@@ -120,8 +122,10 @@ def test_public_imports():
     assert callable(metric_slurm_submission_readiness)
     assert callable(metric_slurm_submission_readiness_from_config)
     assert callable(MetricFigureContext.from_frame)
+    assert callable(MetricFigureSuiteResult)
     assert callable(metric_plot_input_summary_frame)
     assert callable(metric_rows_for_metrics)
+    assert callable(write_large_run_metric_figure_suite_from_notebook_settings)
     assert callable(write_station_metric_map_from_notebook_settings)
     assert callable(inspect_synthetic_format)
     assert callable(load_configured_input_paths)
@@ -334,10 +338,12 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "from spatial_vtk.metrics.plot import (" in text
     assert ".. automodule:: spatial_vtk.metrics.plot\n" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext" in text
+    assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureSuiteResult" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.StationMetricMapResult" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.metric_plot_input_summary_frame" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.metric_rows_for_metrics" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context" in text
+    assert ".. autofunction:: spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings" in text
     assert "Public plotting helpers exposed by ``spatial_vtk.metrics.plot``" in text
     assert "``PSA`` and ``FAS`` are broadband spectral metrics" in text
@@ -349,6 +355,8 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "legacy passband-scoped row counts" in text
     assert "``write_station_metric_map_for_metric``" in text
     assert "``write_station_metric_map_from_notebook_settings``" in text
+    assert "``write_large_run_metric_figure_suite_from_notebook_settings``" in text
+    assert "without notebook-local plot-function imports" in text
     assert "``StationMetricMapResult.status_frame()`` includes the" in text
     assert "source-row role/filter" in text
     assert "without hand-filtering\n   dataframes in the notebook" in text
@@ -357,6 +365,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
         "plot_period_score_distribution",
         "plot_psa_period_curve",
         "metric_rows_for_metrics",
+        "write_large_run_metric_figure_suite_from_notebook_settings",
         "plot_residuals_vs_distance",
         "plot_phase_delay_vs_distance",
         "plot_vs30_scatter",
@@ -951,6 +960,19 @@ def test_spatial_plot_public_entry_point_is_lazy():
     assert callable(spatial_plot.write_large_run_spatial_summary_figures_from_outputs)
     assert callable(spatial_plot.write_standard_spatial_map_figures)
     assert spatial_plot.plot_correlogram is spatial_plot.plot_correlogram
+
+
+def test_metric_plot_public_entry_point_exposes_large_run_suite():
+    import spatial_vtk.metrics.plot as metric_plot
+
+    assert "MetricFigureSuiteResult" in metric_plot.__all__
+    assert "write_large_run_metric_figure_suite_from_notebook_settings" in metric_plot.__all__
+    assert callable(metric_plot.MetricFigureSuiteResult)
+    assert callable(metric_plot.write_large_run_metric_figure_suite_from_notebook_settings)
+    assert (
+        metric_plot.write_large_run_metric_figure_suite_from_notebook_settings
+        is metric_plot.write_large_run_metric_figure_suite_from_notebook_settings
+    )
 
 
 def test_waveform_large_run_helper_is_public():
