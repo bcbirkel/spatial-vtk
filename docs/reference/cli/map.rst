@@ -14,7 +14,7 @@ If a config is active with ``svtk config set`` or passed with ``--config``, regi
    svtk map spatial station-metric --value-col log2_residual --metric PGA --passband "2-3 sec"
    svtk map spatial event-residual --value-col log2_residual --metric PGA --bounds study_area
 
-These commands use configured outputs such as ``metrics_long`` and ``path_table`` plus the registered figure keys for the selected map unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk map spatial list`` to print a table showing each map command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries.
+These commands use configured outputs such as ``metrics_long`` and ``path_table`` plus the registered figure keys for the selected map unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk map spatial list`` to print a table showing each map command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.
 
 Basemaps are enabled by default for map figures; use ``--no-basemap`` only when you explicitly want a data-only map.
 
@@ -964,7 +964,8 @@ svtk map spatial list
 
 .. code-block:: bash
 
-   svtk map spatial list [-h]
+   svtk map spatial list [-h] [--config PATH]
+                             [--run-scenario RUN_SCENARIO] [--resolve-paths]
 
 .. rubric:: Parameters
 
@@ -980,6 +981,18 @@ svtk map spatial list
      - No
      -
      - show this help message and exit
+   * - ``--config``
+     - No
+     -
+     - Filesystem path. Optional Spatial-VTK config used with --resolve-paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Apply one named run_scenarios overlay when resolving paths.
+   * - ``--resolve-paths``
+     - No
+     - Flag
+     - Resolve config-backed input, output, and extra-table keys to concrete paths.
 
 .. _cli-svtk-map-spatial-metric-by-model:
 

@@ -1080,6 +1080,8 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "function argument 'df'" not in plot_text
     assert "``--input``, ``--input-table``" in plot_text
     assert "``--output``, ``--figure-output``" in plot_text
+    assert "``--resolve-paths``" in plot_text
+    assert "Add ``--resolve-paths --config PATH``" in plot_text
     assert "Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet" in plot_text
     assert "Filesystem path. Output figure path." in plot_text
     assert "Value: ``PATH``. Primary figure input table" not in plot_text
@@ -1089,6 +1091,9 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Defaults to configured output table 'metrics_long'" in plot_text
     assert "svtk plot spatial residual-correlation [-h] [--input PATH]" in plot_text
     assert "svtk plot spatial directional-correlogram [-h] [--input PATH]" in plot_text
+    assert "svtk plot metrics list [-h] [--config PATH]" in plot_text
+    assert "``--resolve-paths``" in plot_text
+    assert "Add ``--resolve-paths --config PATH`` to show the concrete configured files." in plot_text
     assert "Defaults to configured output table 'distance_bin_correlations'" in plot_text
     assert "configured figure output 'band_score_distribution' when --config is passed" in plot_text
     assert "default config is set with 'svtk config set'" in plot_text
@@ -1100,12 +1105,15 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "function argument 'station_df'" not in map_text
     assert "``--input``, ``--input-table``" in map_text
     assert "``--output``, ``--figure-output``" in map_text
+    assert "``--resolve-paths``" in map_text
     assert "Filesystem path. Primary figure input table (station bias); accepts CSV or parquet" in map_text
     assert "Filesystem path. Output figure path." in map_text
     assert "Value: ``PATH``. Primary figure input table" not in map_text
     assert "Value: ``PATH``. Output figure path" not in map_text
     assert "configured output table 'station_bias' when --config is passed" in map_text
     assert "svtk map spatial model-improvement [-h] [--input PATH] [--output PATH]" in map_text
+    assert "svtk map spatial list [-h] [--config PATH]" in map_text
+    assert "``--resolve-paths``" in map_text
     assert "Defaults to configured output table 'metrics_long'" in map_text
     assert "configured figure output 'station_residual_map' when --config is passed" in map_text
     assert "``--mode``" in map_text
@@ -3902,6 +3910,53 @@ def test_cli_plot_list(capsys):
     assert "config:band_score_distribution" in captured.out
     assert "config:model_metric_heatmap" in captured.out
     assert "from config from config" not in captured.out
+
+
+def test_cli_plot_list_can_resolve_config_backed_paths(tmp_path, capsys):
+    """Figure list commands should show concrete configured paths on request."""
+
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  root: outputs
+  tables: outputs/tables
+  figures: outputs/figures
+""",
+        encoding="utf-8",
+    )
+
+    assert main(["plot", "metrics", "list", "--config", str(config), "--resolve-paths"]) == 0
+    text = capsys.readouterr().out
+    assert "config:metrics_long ->" in text
+    assert str(tmp_path / "outputs" / "tables" / "metrics_long.parquet") in text
+    assert "config:band_score_distribution ->" in text
+    assert str(tmp_path / "outputs" / "figures" / "band_score_distribution.png") in text
+    assert "required:spectrogram table" in text
+
+    assert main(["map", "spatial", "list", "--config", str(config), "--resolve-paths"]) == 0
+    map_text = capsys.readouterr().out
+    assert "config:station_bias ->" in map_text
+    assert str(tmp_path / "outputs" / "tables" / "station_bias.parquet") in map_text
+    assert "--events(events_df)=config:prepared_events ->" in map_text
+    assert str(tmp_path / "outputs" / "tables" / "prepared_events.csv") in map_text
+    assert "config:corridor_map ->" in map_text
+
+
+def test_cli_plot_list_resolve_paths_requires_config(tmp_path, monkeypatch, capsys):
+    """Resolved list output should fail with standard config guidance."""
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("SVTK_CONFIG_FILE", raising=False)
+    monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(tmp_path / "missing-settings.json"))
+
+    assert main(["plot", "metrics", "list", "--resolve-paths"]) == 2
+    captured = capsys.readouterr()
+    assert "No Spatial-VTK config was found" in captured.err
+    assert "svtk config set PATH" in captured.err
+    assert "Traceback" not in captured.err
 
 
 def test_cli_registered_plot_missing_input_names_required_table_role(capsys):

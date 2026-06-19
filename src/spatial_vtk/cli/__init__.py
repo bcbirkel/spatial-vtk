@@ -1301,6 +1301,22 @@ def _add_registered_command_group(
     group = subparsers.add_parser(group_name, help=help_text)
     group_sub = group.add_subparsers(dest=f"{group_name}_figure", required=True)
     list_cmd = group_sub.add_parser("list", help="List available figure commands in this group.")
+    list_cmd.add_argument(
+        "--config",
+        metavar="PATH",
+        default=None,
+        help="Optional Spatial-VTK config used with --resolve-paths.",
+    )
+    list_cmd.add_argument(
+        "--run-scenario",
+        default=None,
+        help="Apply one named run_scenarios overlay when resolving paths.",
+    )
+    list_cmd.add_argument(
+        "--resolve-paths",
+        action="store_true",
+        help="Resolve config-backed input, output, and extra-table keys to concrete paths.",
+    )
     list_cmd.set_defaults(handler=_cmd_list_registered_plots, registry=commands)
     for command_name, spec in sorted(commands.items()):
         command = group_sub.add_parser(command_name, help=spec.help)
@@ -2879,14 +2895,15 @@ def _cmd_visualize_sidecars_status(args: argparse.Namespace) -> int:
 def _cmd_list_registered_plots(args: argparse.Namespace) -> int:
     """List available registered plotting commands."""
 
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if args.resolve_paths else None
     rows: list[dict[str, str]] = []
     for name, spec in sorted(args.registry.items()):
         rows.append(
             {
                 "Command": name,
-                "Input": _registered_list_input(spec),
-                "Output": _registered_list_output(spec),
-                "Extra tables": _registered_list_extra_tables(spec),
+                "Input": _registered_list_input(spec, config=config),
+                "Output": _registered_list_output(spec, config=config),
+                "Extra tables": _registered_list_extra_tables(spec, config=config),
                 "Description": spec.help,
             }
         )
@@ -2894,27 +2911,27 @@ def _cmd_list_registered_plots(args: argparse.Namespace) -> int:
     return 0
 
 
-def _registered_list_input(spec: PlotCommand) -> str:
+def _registered_list_input(spec: PlotCommand, *, config: Any | None = None) -> str:
     """Return a compact input status for ``svtk ... list`` output."""
 
     if spec.primary_arg is None:
         return "none"
     if spec.input_key:
-        return f"config:{spec.input_key}"
+        return _registered_list_config_status(spec.input_key, kind="table", config=config)
     role = _registered_table_role(spec.primary_arg, None, fallback="input")
     suffix = "" if "table" in role else " table"
     return f"required:{role}{suffix}"
 
 
-def _registered_list_output(spec: PlotCommand) -> str:
+def _registered_list_output(spec: PlotCommand, *, config: Any | None = None) -> str:
     """Return a compact output status for ``svtk ... list`` output."""
 
     if spec.output_key:
-        return f"config:{spec.output_key}"
+        return _registered_list_config_status(spec.output_key, kind="figure", config=config)
     return "required:figure output"
 
 
-def _registered_list_extra_tables(spec: PlotCommand) -> str:
+def _registered_list_extra_tables(spec: PlotCommand, *, config: Any | None = None) -> str:
     """Return compact extra-table defaults for ``svtk ... list`` output."""
 
     notes: list[str] = []
@@ -2922,10 +2939,23 @@ def _registered_list_extra_tables(spec: PlotCommand) -> str:
         table_key = (spec.table_alias_defaults or {}).get(option)
         option_name = f"--{option.replace('_', '-')}"
         if table_key:
-            notes.append(f"{option_name}({table_arg})=config:{table_key}")
+            status = _registered_list_config_status(table_key, kind="table", config=config)
+            notes.append(f"{option_name}({table_arg})={status}")
         else:
             notes.append(f"{option_name}({table_arg})=optional")
     return ", ".join(notes) if notes else "-"
+
+
+def _registered_list_config_status(key: str, *, kind: str, config: Any | None) -> str:
+    """Return one config-backed list status, optionally with a resolved path."""
+
+    status = f"config:{key}"
+    if config is None:
+        return status
+    from spatial_vtk.config import resolve_output_path
+
+    path = resolve_output_path(key, kind=kind, cfg=config, create_parent=False)
+    return f"{status} -> {path}"
 
 
 def _print_table(rows: list[dict[str, str]]) -> None:

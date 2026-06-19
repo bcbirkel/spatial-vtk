@@ -117,6 +117,9 @@ Changelog
   - Updated ``svtk ... list`` discovery output for plot, map, and visualization
     commands so required explicit inputs name the table role, such as
     ``required:spectrogram table``, instead of only naming a generic flag.
+  - Added ``--resolve-paths`` to plot, map, and visualization ``list``
+    commands so config-backed input, output, and extra-table keys can be
+    expanded to concrete configured paths before running a figure command.
   - Added first-class ``svtk dashboard metrics`` runtime-limit flags for
     row-level loading, summary-table display, and CSV downloads.
 

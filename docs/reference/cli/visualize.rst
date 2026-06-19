@@ -15,7 +15,7 @@ If a config is active with ``svtk config set`` or passed with ``--config``, regi
    svtk visualize context station-event-context --bounds study_area
    svtk visualize waveforms observed-synthetic-record-section --components R --max-records 80
 
-These commands use configured outputs such as ``qc_metric_pair_retention``, ``event_station_records``, and the registered figure keys for the selected visualization unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk visualize qc list``, ``svtk visualize context list``, or ``svtk visualize waveforms list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries.
+These commands use configured outputs such as ``qc_metric_pair_retention``, ``event_station_records``, and the registered figure keys for the selected visualization unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk visualize qc list``, ``svtk visualize context list``, or ``svtk visualize waveforms list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.
 
 Use ``svtk visualize sidecars status`` to inspect figure provenance sidecars written by commands that support ``--write-sidecar``.
 
@@ -786,7 +786,8 @@ svtk visualize qc list
 
 .. code-block:: bash
 
-   svtk visualize qc list [-h]
+   svtk visualize qc list [-h] [--config PATH]
+                              [--run-scenario RUN_SCENARIO] [--resolve-paths]
 
 .. rubric:: Parameters
 
@@ -802,6 +803,18 @@ svtk visualize qc list
      - No
      -
      - show this help message and exit
+   * - ``--config``
+     - No
+     -
+     - Filesystem path. Optional Spatial-VTK config used with --resolve-paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Apply one named run_scenarios overlay when resolving paths.
+   * - ``--resolve-paths``
+     - No
+     - Flag
+     - Resolve config-backed input, output, and extra-table keys to concrete paths.
 
 .. _cli-svtk-visualize-qc-post-qc-station-event-map:
 
@@ -2372,7 +2385,9 @@ svtk visualize context list
 
 .. code-block:: bash
 
-   svtk visualize context list [-h]
+   svtk visualize context list [-h] [--config PATH]
+                                   [--run-scenario RUN_SCENARIO]
+                                   [--resolve-paths]
 
 .. rubric:: Parameters
 
@@ -2388,6 +2403,18 @@ svtk visualize context list
      - No
      -
      - show this help message and exit
+   * - ``--config``
+     - No
+     -
+     - Filesystem path. Optional Spatial-VTK config used with --resolve-paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Apply one named run_scenarios overlay when resolving paths.
+   * - ``--resolve-paths``
+     - No
+     - Flag
+     - Resolve config-backed input, output, and extra-table keys to concrete paths.
 
 .. _cli-svtk-visualize-context-record-coverage:
 
@@ -4063,7 +4090,9 @@ svtk visualize waveforms list
 
 .. code-block:: bash
 
-   svtk visualize waveforms list [-h]
+   svtk visualize waveforms list [-h] [--config PATH]
+                                     [--run-scenario RUN_SCENARIO]
+                                     [--resolve-paths]
 
 .. rubric:: Parameters
 
@@ -4079,6 +4108,18 @@ svtk visualize waveforms list
      - No
      -
      - show this help message and exit
+   * - ``--config``
+     - No
+     -
+     - Filesystem path. Optional Spatial-VTK config used with --resolve-paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Apply one named run_scenarios overlay when resolving paths.
+   * - ``--resolve-paths``
+     - No
+     - Flag
+     - Resolve config-backed input, output, and extra-table keys to concrete paths.
 
 .. _cli-svtk-visualize-waveforms-observed-synthetic-record-section:
 

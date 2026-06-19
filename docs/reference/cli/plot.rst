@@ -14,7 +14,7 @@ If a config is active with ``svtk config set`` or passed with ``--config``, regi
    svtk plot metrics band-score-distribution --score-col log2_residual
    svtk plot metrics residuals-vs-distance --metric PGA --passband "2-3 sec" --score-col log2_residual
 
-These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk plot metrics list`` or ``svtk plot spatial list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries.
+These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk plot metrics list`` or ``svtk plot spatial list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.
 
 Command Tree
 ------------
@@ -1123,7 +1123,8 @@ svtk plot metrics list
 
 .. code-block:: bash
 
-   svtk plot metrics list [-h]
+   svtk plot metrics list [-h] [--config PATH]
+                              [--run-scenario RUN_SCENARIO] [--resolve-paths]
 
 .. rubric:: Parameters
 
@@ -1139,6 +1140,18 @@ svtk plot metrics list
      - No
      -
      - show this help message and exit
+   * - ``--config``
+     - No
+     -
+     - Filesystem path. Optional Spatial-VTK config used with --resolve-paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Apply one named run_scenarios overlay when resolving paths.
+   * - ``--resolve-paths``
+     - No
+     - Flag
+     - Resolve config-backed input, output, and extra-table keys to concrete paths.
 
 .. _cli-svtk-plot-metrics-metric-trend:
 
@@ -4858,7 +4871,8 @@ svtk plot spatial list
 
 .. code-block:: bash
 
-   svtk plot spatial list [-h]
+   svtk plot spatial list [-h] [--config PATH]
+                              [--run-scenario RUN_SCENARIO] [--resolve-paths]
 
 .. rubric:: Parameters
 
@@ -4874,6 +4888,18 @@ svtk plot spatial list
      - No
      -
      - show this help message and exit
+   * - ``--config``
+     - No
+     -
+     - Filesystem path. Optional Spatial-VTK config used with --resolve-paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Apply one named run_scenarios overlay when resolving paths.
+   * - ``--resolve-paths``
+     - No
+     - Flag
+     - Resolve config-backed input, output, and extra-table keys to concrete paths.
 
 .. _cli-svtk-plot-spatial-path-bin-summary:
 
