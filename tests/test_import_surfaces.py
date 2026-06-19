@@ -429,6 +429,33 @@ def test_autodoc_fallback_parameter_docs_are_descriptive():
     assert "Optional function argument" not in conf._parameter_description(parameter("sample_size", default=10))
 
 
+def test_autodoc_module_labels_use_public_entry_points():
+    """Generated API headings should not special-case implementation modules."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location("svtk_docs_conf", root / "docs" / "conf.py")
+    assert spec is not None
+    conf = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(conf)
+
+    for module_name in conf._MODULE_LABELS:
+        assert module_name not in {
+            "spatial_vtk.metrics.calculate.gof",
+            "spatial_vtk.spatial.calculate.geojson",
+            "spatial_vtk.spatial.calculate.pca",
+            "spatial_vtk.spatial.map.geojson",
+            "spatial_vtk.spatial.map.pca",
+            "spatial_vtk.spatial.plot.pca",
+            "spatial_vtk.visualize.qc.overview",
+        }
+    assert conf._module_doc_label("spatial_vtk.metrics.calculate") == "Metric Calculations"
+    assert conf._module_doc_label("spatial_vtk.spatial.calculate") == "Spatial Calculations"
+    assert conf._module_doc_label("spatial_vtk.spatial.map") == "Spatial Maps"
+    assert conf._module_doc_label("spatial_vtk.spatial.plot") == "Spatial Plots"
+    assert conf._module_doc_label("spatial_vtk.visualize.qc") == "QC Visualization"
+
+
 def test_metrics_api_docs_use_public_plot_entry_point():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "metrics.rst"
     text = docs.read_text(encoding="utf-8")

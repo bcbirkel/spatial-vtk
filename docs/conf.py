@@ -32,14 +32,12 @@ _PACKAGE_LABELS = {
 
 _MODULE_LABELS = {
     "spatial_vtk.io.output_paths": "Output Paths",
-    "spatial_vtk.metrics.calculate.gof": "GOF Calculation",
-    "spatial_vtk.spatial.calculate.geojson": "GeoJSON Calculations",
-    "spatial_vtk.spatial.calculate.pca": "PCA Calculations",
-    "spatial_vtk.spatial.map.geojson": "GeoJSON Maps",
-    "spatial_vtk.spatial.map.pca": "PCA Maps",
-    "spatial_vtk.spatial.plot.pca": "PCA Plots",
+    "spatial_vtk.metrics.calculate": "Metric Calculations",
+    "spatial_vtk.spatial.calculate": "Spatial Calculations",
+    "spatial_vtk.spatial.map": "Spatial Maps",
+    "spatial_vtk.spatial.plot": "Spatial Plots",
     "spatial_vtk.visualize.figure_io": "Figure I/O",
-    "spatial_vtk.visualize.qc.overview": "Quality Control",
+    "spatial_vtk.visualize.qc": "QC Visualization",
 }
 
 _SECTION_PREFIXES = {

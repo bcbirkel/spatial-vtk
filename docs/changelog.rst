@@ -38,6 +38,8 @@ Changelog
 - Updated the Spatial API reference to keep calculation guidance on
   ``spatial_vtk.spatial`` and ``spatial_vtk.spatial.calculate`` instead of
   lower-level calculate-module autodoc blocks.
+- Updated Sphinx autodoc module labels to special-case public entry-point
+  modules instead of removed implementation-module paths.
 - Updated the Installation check commands so source-checkout notebook
   verification includes ``--include-large-run``, matching the examples docs,
   release checklist, and CI tutorial gate.
