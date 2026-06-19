@@ -1065,6 +1065,14 @@ def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
         "import spatial_vtk.spatial.map.",
         "from spatial_vtk.spatial.plot.",
         "import spatial_vtk.spatial.plot.",
+        "from spatial_vtk.visualize.context.",
+        "import spatial_vtk.visualize.context.",
+        "from spatial_vtk.visualize.qc.",
+        "import spatial_vtk.visualize.qc.",
+        "from spatial_vtk.visualize.waveforms.",
+        "import spatial_vtk.visualize.waveforms.",
+        "from spatial_vtk.visualize.dashboard.",
+        "import spatial_vtk.visualize.dashboard.",
     )
     assert notebooks
     for notebook_path in notebooks:
@@ -1073,6 +1081,23 @@ def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
             source = "".join(cell.get("source", []))
             matches = [pattern for pattern in forbidden if pattern in source]
             assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} uses {matches}"
+
+
+def test_large_run_readme_lists_rejected_implementation_import_prefixes() -> None:
+    """Large-run docs should describe the same public-import boundary as preflight."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    readme = (repo_root / "docs" / "examples" / "large_run" / "README.md").read_text(encoding="utf-8")
+    for prefix in (
+        "spatial_vtk.metrics.plot.*",
+        "spatial_vtk.spatial.plot.*",
+        "spatial_vtk.spatial.map.*",
+        "spatial_vtk.visualize.context.*",
+        "spatial_vtk.visualize.qc.*",
+        "spatial_vtk.visualize.waveforms.*",
+        "spatial_vtk.visualize.dashboard.*",
+    ):
+        assert prefix in readme
 
 
 def test_standard_tutorial_notebooks_avoid_raw_table_preview_helpers() -> None:

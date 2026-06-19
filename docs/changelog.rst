@@ -123,6 +123,9 @@ Changelog
 
 **Documentation and Examples**
 
+- Clarified the large-run README public-API guidance so it names the plotting,
+  mapping, and visualization implementation-submodule prefixes rejected by
+  notebook preflight.
 - Updated generated CLI reference examples for plotting, mapping,
   visualization, and dashboards to use the committed example config path
   instead of a project-local ``runs/spatial_vtk_config.yaml`` placeholder.
