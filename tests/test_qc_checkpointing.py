@@ -54,6 +54,48 @@ def test_metric_qc_checkpoint_read_failure_warns_and_starts_empty(
     assert checkpoint.empty
 
 
+def test_metric_qc_checkpoint_key_scan_failure_warns_for_csv(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Disk-backed CSV resume scans should explain unreadable checkpoints."""
+
+    checkpoint_path = tmp_path / "qc_inventory.csv"
+    checkpoint_path.write_text("event_id,station\nE1,S1\n", encoding="utf-8")
+
+    def fail_read_csv(*args, **kwargs):
+        raise ValueError("cannot scan csv checkpoint")
+
+    monkeypatch.setattr(qc_workflow_module.pd, "read_csv", fail_read_csv)
+
+    with pytest.warns(RuntimeWarning, match="Could not scan metric QC checkpoint"):
+        completed, row_count = qc_workflow_module._metric_qc_completed_records_from_path(checkpoint_path)
+
+    assert completed == set()
+    assert row_count == 0
+
+
+def test_metric_qc_checkpoint_key_scan_failure_warns_for_parquet(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Disk-backed Parquet resume scans should explain unreadable checkpoints."""
+
+    checkpoint_path = tmp_path / "qc_inventory.parquet"
+    checkpoint_path.write_bytes(b"not parquet")
+
+    def fail_read_parquet(*args, **kwargs):
+        raise ValueError("cannot scan parquet checkpoint")
+
+    monkeypatch.setattr(qc_workflow_module.pd, "read_parquet", fail_read_parquet)
+
+    with pytest.warns(RuntimeWarning, match="Could not scan metric QC checkpoint"):
+        completed, row_count = qc_workflow_module._metric_qc_completed_records_from_path(checkpoint_path)
+
+    assert completed == set()
+    assert row_count == 0
+
+
 def test_waveform_trace_qc_resumes_from_checkpoint_without_reloading_waveforms(tmp_path: Path, monkeypatch, capsys) -> None:
     """Waveform QC checkpoints should skip completed source/event/station/component groups."""
 

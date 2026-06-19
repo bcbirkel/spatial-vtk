@@ -285,12 +285,26 @@ def _metric_qc_completed_records_from_path(path: str | Path | None) -> tuple[set
                 row_count += len(chunk)
                 completed.update(_metric_qc_completed_records(chunk))
             return completed, row_count
-        except Exception:
+        except Exception as exc:
+            warnings.warn(
+                f"Could not scan metric QC checkpoint completion keys from {checkpoint}; "
+                "resume will treat the checkpoint as empty. "
+                f"Original error: {exc}",
+                RuntimeWarning,
+                stacklevel=2,
+            )
             return set(), 0
     if suffix in {".parquet", ".pq"}:
         try:
             checkpoint_rows = pd.read_parquet(checkpoint, columns=["event_id", "station"])
-        except Exception:
+        except Exception as exc:
+            warnings.warn(
+                f"Could not scan metric QC checkpoint completion keys from {checkpoint}; "
+                "resume will treat the checkpoint as empty. "
+                f"Original error: {exc}",
+                RuntimeWarning,
+                stacklevel=2,
+            )
             return set(), 0
         return _metric_qc_completed_records(checkpoint_rows), len(checkpoint_rows)
     checkpoint_rows = _load_qc_checkpoint(checkpoint)

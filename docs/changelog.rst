@@ -70,8 +70,9 @@ Changelog
   the required numeric ``lon_min,lon_max,lat_min,lat_max`` form instead of
   falling through to named-bounds lookup.
 - Made waveform and metric QC checkpoint resume warn when an existing
-  checkpoint cannot be read, preserving the start-from-empty fallback while
-  explaining why expensive large-run work is not being reused.
+  checkpoint cannot be read or disk-backed metric checkpoint keys cannot be
+  scanned, preserving the start-from-empty fallback while explaining why
+  expensive large-run work is not being reused.
 - Hardened release-check regression coverage so the public release checklist
   remains the authoritative source for the notebook extra and standard plus
   large-run tutorial preflight/runtime gates, while local agent guidance is
