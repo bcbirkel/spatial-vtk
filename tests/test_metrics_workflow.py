@@ -8,9 +8,11 @@ import pandas as pd
 import pytest
 
 from spatial_vtk.config.runtime import SpatialVTKConfig, clear_active_config
+from spatial_vtk.io import OutputGroup
 from spatial_vtk.io.plans import MetricPlan
 from spatial_vtk.metrics.workflow import (
     SlurmSettings,
+    StandardMetricWorkflowOutputResult,
     build_metric_waveform_inventories_from_config,
     build_metric_waveform_inventories_from_trace_metadata,
     cache_metric_manifest_waveforms,
@@ -242,6 +244,69 @@ def test_write_standard_metric_diagnostic_figures_owns_step03_plot_calls(tmp_pat
     preview = result.preview_frame().set_index("Input")
     assert preview.loc["Metric rows", "Value"] == 3
     assert preview.loc["Metrics", "Value"] == "PGA, PGV, PGD"
+
+
+def test_standard_metric_workflow_output_result_writes_diagnostic_figures(tmp_path) -> None:
+    """The standard Step 3 result should own diagnostic table/output wiring."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1", "e2"],
+            "station": ["STA", "STB", "STC"],
+            "metric": ["PGA", "PGV", "FAS"],
+            "band": ["1-2 sec", "2-3 sec", ""],
+            "distance_km": [10.0, 20.0, 30.0],
+            "log2_residual": [0.1, -0.2, 0.3],
+            "anderson_2004_gof": [8.0, 7.0, 6.0],
+        }
+    )
+    task_estimate = pd.DataFrame({"item": ["tasks"], "value": [2]})
+    seen: list[tuple[str, Path, list[str]]] = []
+
+    class Outputs:
+        def load_table(self, name, **_kwargs):
+            if name == "metric_task_estimate_path":
+                return task_estimate
+            if name == "metrics_long":
+                return metrics
+            raise KeyError(name)
+
+        def figure_path(self, _name, *, stem_parts):
+            return tmp_path / "figures" / f"{'_'.join(stem_parts)}.png"
+
+    class Sidecars:
+        @staticmethod
+        def kwargs(**_kwargs) -> dict[str, object]:
+            return {}
+
+    class Settings:
+        showfig = False
+        sidecars = Sidecars()
+
+    def _fake_plot(name):
+        def _inner(frame: pd.DataFrame, *, outpath, **_kwargs):
+            output = Path(outpath)
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(name, encoding="utf-8")
+            seen.append((name, output, frame["metric"].tolist()))
+
+        return _inner
+
+    result = StandardMetricWorkflowOutputResult(outputs=Outputs()).with_task_estimate()
+    assert result.task_estimate.equals(task_estimate)
+
+    diagnostic_result = result.write_standard_diagnostic_figures(
+        Settings(),
+        metric_names=("PGA", "PGV"),
+        residuals_plot_func=_fake_plot("residuals"),
+        score_trends_plot_func=_fake_plot("scores"),
+        band_distribution_plot_func=_fake_plot("band"),
+    )
+
+    assert isinstance(diagnostic_result, StandardMetricDiagnosticFigureResult)
+    assert [item[0] for item in seen] == ["residuals", "scores", "band"]
+    assert {metric for _, _, metrics_seen in seen for metric in metrics_seen} == {"PGA", "PGV"}
+    assert diagnostic_result.status_frame()["status"].tolist() == ["wrote", "wrote", "wrote"]
 
 
 def test_metric_inventories_from_config_resolve_standard_paths(tmp_path) -> None:

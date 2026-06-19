@@ -37,6 +37,9 @@ Changelog
     metric readiness cells.
   - Added a standard Step 3 metric output loader for task-estimate,
     task-preview, and ``metrics_long`` notebook previews.
+  - Added standard Step 3 metric output result methods for task-estimate
+    loading and diagnostic figure writing so notebooks no longer load
+    ``metrics_long`` or pass output groups into figure writers directly.
   - Added config-backed Step 3 metric inventory and manifest readiness helpers
     so metric notebooks no longer repeat trace-metadata or QC-overlap
     dependency contracts.

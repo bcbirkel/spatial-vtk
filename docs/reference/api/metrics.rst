@@ -108,7 +108,9 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
      - Load configured Step 3 output handles, the preprocessed trace metadata
        dependency, a status frame, and bounded preview helpers such as the
        ``metrics_long`` display helper ``display_metrics_preview()`` for
-       standard metric notebooks.
+       standard metric notebooks. The returned result also owns task-estimate
+       loading through ``with_task_estimate()`` and standard diagnostic figure
+       rendering through ``write_standard_diagnostic_figures()``.
 
 ``PSA`` and ``FAS`` are broadband spectral metrics in the file-based workflow.
 Task planning separates them from passband-dependent metrics, writes blank

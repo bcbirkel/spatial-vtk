@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -65,6 +66,41 @@ class StandardMetricWorkflowOutputResult:
         """Load the configured ``metrics_long`` table for plotting helpers."""
 
         return self.outputs.load_table("metrics_long", cfg=self.cfg, **kwargs)
+
+    def with_task_estimate(self) -> "StandardMetricWorkflowOutputResult":
+        """Return a copy with the configured metric task estimate loaded."""
+
+        return StandardMetricWorkflowOutputResult(
+            outputs=self.outputs,
+            cfg=self.cfg,
+            task_estimate=self.outputs.load_table("metric_task_estimate_path", cfg=self.cfg, missing="skip"),
+            trace_metadata_path=self.trace_metadata_path,
+        )
+
+    def write_standard_diagnostic_figures(
+        self,
+        settings: Any,
+        *,
+        metric_names: Sequence[object] = ("PGA", "PGV", "PGD"),
+        **kwargs: Any,
+    ) -> object:
+        """Load ``metrics_long`` and write the standard Step 3 diagnostic figures.
+
+        The standard tutorial uses this method so the result object owns the
+        configured metric table, output group, and diagnostic figure writer.
+        Additional keyword arguments are forwarded to
+        :func:`spatial_vtk.metrics.plot.write_standard_metric_diagnostic_figures`.
+        """
+
+        from spatial_vtk.metrics.plot import write_standard_metric_diagnostic_figures
+
+        return write_standard_metric_diagnostic_figures(
+            self.load_metrics_long(),
+            self.outputs,
+            settings,
+            metric_names=metric_names,
+            **kwargs,
+        )
 
 
 def load_standard_metric_workflow_outputs(

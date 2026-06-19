@@ -1944,16 +1944,17 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
     assert "write_metric_outputs_from_config(" in source
     assert "load_standard_metric_workflow_outputs," in source
     assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg, load_task_estimate=False)" in source
-    assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)" in source
+    assert "metric_outputs = metric_outputs.with_task_estimate()" in source
     assert 'step_outputs = output_group("step_03_metrics", cfg=cfg)' not in source
     assert "render_notebook_figure(" not in source
-    assert "write_standard_metric_diagnostic_figures(" in source
+    assert "write_standard_metric_diagnostic_figures(" not in source
+    assert "metric_outputs.write_standard_diagnostic_figures(" in source
     assert "metric_diagnostic_result.preview_frame()" in source
     assert "metric_diagnostic_result.status_frame()" in source
     assert "metric_outputs.display_task_previews(nrows=12)" in source
     assert "metric_outputs.display_metrics_preview(nrows=5)" in source
-    assert "figure_metrics = metric_outputs.load_metrics_long()" in source
-    assert "metric_outputs.outputs," in source
+    assert "figure_metrics = metric_outputs.load_metrics_long()" not in source
+    assert "metric_outputs.outputs," not in source
     assert "step_outputs.display_table_previews(" not in source
     assert 'metric_names=("PGA", "PGV", "PGD")' in source
     assert "metric_rows_for_metrics(" not in source
