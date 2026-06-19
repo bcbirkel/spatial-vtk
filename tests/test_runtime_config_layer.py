@@ -1595,6 +1595,10 @@ outputs:
     assert metrics_long_status["output_key"] == "metrics_long"
     assert metrics_long_status["kind"] == "table"
     assert bool(metrics_long_status["required"]) is True
+    assert metrics_long_status["artifact_label"] == "metrics long table"
+    assert metrics_long_status["readiness"] == "missing"
+    assert metrics_long_status["message"] == "metrics long table is missing."
+    assert "Step 3 metric outputs" in metrics_long_status["suggested_action"]
     group_completion = group.completion()
     assert group_completion["complete"] is False
     assert "metrics_enriched_path" in group_completion["missing"]
@@ -1714,6 +1718,10 @@ outputs:
     assert status[0]["kind"] == "table"
     assert status[0]["required"] is True
     assert status[0]["exists"] is True
+    assert status[0]["artifact_label"] == "metrics long table"
+    assert status[0]["readiness"] == "ready"
+    assert status[0]["message"] == "metrics long table is ready."
+    assert status[0]["suggested_action"] == ""
     extra_input = tmp_path / "run_outputs" / "preprocessed_waveforms" / "metadata" / "trace_metadata.parquet"
     extra_input.parent.mkdir(parents=True, exist_ok=True)
     extra_input.write_text("placeholder\n", encoding="utf-8")
@@ -1727,6 +1735,8 @@ outputs:
     assert bool(extra_row["exists"]) is True
     assert "output_key" in status_with_extra.columns
     assert pd.isna(extra_row["output_key"])
+    assert "artifact_label" in status_with_extra.columns
+    assert pd.isna(extra_row["artifact_label"])
 
     write_output_table("metrics_long", pd.DataFrame({"metric": ["PGA"]}), cfg=cfg)
     completion = output_group_completion("step_03_metrics", cfg=cfg)
@@ -1845,6 +1855,12 @@ outputs:
     )
     cfg = SpatialVTKConfig.from_file(config_path).activate()
     step_outputs = output_group("step_05_geojson", cfg=cfg)
+    geojson_status = step_outputs.status_frame().set_index("name")
+    assert geojson_status.loc["geojson_summaries_path", "artifact_label"] == "geojson region summaries table"
+    assert geojson_status.loc["geojson_summaries_path", "readiness"] == "missing"
+    assert "Step 5 GeoJSON" in geojson_status.loc["geojson_summaries_path", "suggested_action"]
+    assert geojson_status.loc["corridor_map_path", "artifact_label"] == "corridor map figure"
+    assert "plotting workflow" in geojson_status.loc["corridor_map_path", "suggested_action"]
     ingest_outputs = output_group("step_01_ingest", cfg=cfg)
     region_geojson = tmp_path / "inputs" / "regions.geojson"
     region_geojson.parent.mkdir(parents=True, exist_ok=True)

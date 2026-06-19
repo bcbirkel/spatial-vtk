@@ -29,6 +29,8 @@ Changelog
   - Added workflow-step status helpers for notebook display cells.
   - Added bounded pattern-similarity preview helpers for notebook display
     cells.
+  - Added artifact labels, readiness messages, and suggested rebuild actions
+    to output-group status frames used by notebook status cells.
   - Added public Metrics API reference tables for inventory and manifest
     helpers exposed through stable package entry points.
   - Added public Metrics API reference tables for Slurm, batch, merge, and

@@ -1126,8 +1126,83 @@ def _output_group_status_rows_from_artifacts(
         row["output_key"] = artifact.key
         row["kind"] = artifact.kind
         row["required"] = artifact.required
+        row["artifact_label"] = _output_artifact_label(artifact)
+        row["readiness"] = "ready" if row.get("exists") else "missing"
+        row["message"] = _output_artifact_status_message(artifact, exists=bool(row.get("exists")))
+        row["suggested_action"] = _output_artifact_suggested_action(
+            artifact,
+            exists=bool(row.get("exists")),
+        )
         rows.append(row)
     return rows
+
+
+def _output_artifact_label(artifact: OutputArtifact) -> str:
+    """Return a human-readable label for one output-group artifact."""
+
+    text = artifact.key.replace("_", " ").strip()
+    if artifact.kind == "figure":
+        suffix = "figure"
+    elif artifact.kind == "dashboard":
+        suffix = "dashboard directory"
+    else:
+        suffix = "table"
+    if text.endswith(suffix):
+        return text
+    return f"{text} {suffix}"
+
+
+def _output_artifact_status_message(artifact: OutputArtifact, *, exists: bool) -> str:
+    """Return a concise readiness message for one output-group artifact."""
+
+    label = _output_artifact_label(artifact)
+    if exists:
+        return f"{label} is ready."
+    if artifact.required:
+        return f"{label} is missing."
+    return f"Optional {label} is missing."
+
+
+def _output_artifact_suggested_action(artifact: OutputArtifact, *, exists: bool) -> str:
+    """Return one bounded rebuild hint for a missing output-group artifact."""
+
+    if exists:
+        return ""
+    if artifact.key == "metrics_long":
+        return "Finish Step 3 metric outputs so the configured metrics_long table exists."
+    if artifact.key in {"prepared_stations", "prepared_events", "event_station_records", "record_coverage"}:
+        return "Run Step 1 ingest and metadata preparation with the active config."
+    if artifact.key in {"qc_trace_summary", "qc_inventory", "qc_inventory_overlap", "comparison_eligible_records"}:
+        return "Run Step 2 QC workflows with the active config."
+    if artifact.key in {"metric_rows", "metrics_enriched", "path_table", "path_summary"}:
+        return "Run Step 3 metric planning, execution, merge, and output workflows with the active config."
+    if artifact.key in {
+        "metric_field",
+        "event_centered_residuals",
+        "station_bias",
+        "morans_i",
+        "permutation_moran",
+        "distance_bin_correlations",
+        "clusters",
+        "cluster_scores",
+        "cluster_summary",
+        "cluster_feature_summary",
+        "pca_station_scores",
+        "pca_feature_loadings",
+        "pca_explained_variance",
+        "geology_contrasts",
+        "block_holdout_predictions",
+        "redcap_clusters",
+        "pattern_similarity_station_anomalies",
+    }:
+        return "Run Step 4 spatial statistics workflows with the active config."
+    if artifact.key in {"geojson_region_summaries", "corridors"}:
+        return "Run Step 5 GeoJSON and corridor workflows with the active config."
+    if artifact.kind == "figure":
+        return "Run the corresponding plotting workflow with the active config."
+    if artifact.kind == "dashboard":
+        return "Run Step 7 dashboard preparation with the active config."
+    return "Run the workflow step that produces this configured output artifact."
 
 
 def output_status_rows(paths: dict[str, str | Path | None]) -> list[dict[str, object]]:
