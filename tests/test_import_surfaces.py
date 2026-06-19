@@ -655,6 +655,7 @@ def test_io_api_docs_use_public_workflow_helpers():
     ):
         assert helper in text
     assert "instead of repeating output-path variables" in text
+    assert "``status_frame()`` and\n       ``output_group_status_frame()`` include ``output_key``, ``kind``, and\n       ``required`` columns" in text
     assert "notebooks." in text
 
 
