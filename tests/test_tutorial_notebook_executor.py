@@ -1691,10 +1691,22 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "dashboard_status = dashboard_output_status_frame(cfg=cfg)" in source
-    assert "dashboard_readiness_summary = dashboard_readiness_summary_frame(cfg=cfg, overwrite=OVERWRITE)" in source
-    assert "display(dashboard_readiness_summary)" in source
-    assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=OVERWRITE)" in source
+    assert "prepare_configured_dashboard_datasets_from_notebook_settings," in source
+    assert "display_dashboard_preparation_result," in source
+    assert "dashboard_preparation = prepare_configured_dashboard_datasets_from_notebook_settings(" in source
+    assert "prepare_locally=False" in source
+    assert "display_dashboard_preparation_result(dashboard_preparation, display=display)" in source
+    assert "dashboard_preparation.readiness" in source
+    assert "post_dashboard_preparation = prepare_configured_dashboard_datasets_from_notebook_settings(" in source
+    assert "display_dashboard_preparation_result(post_dashboard_preparation, display=display, include_contracts=False)" in source
+    assert "dashboard_output_status_frame," not in source
+    assert "dashboard_readiness_summary_frame," not in source
+    assert "dashboard_summary_table_contracts," not in source
+    assert "dashboard_output_readiness," not in source
+    assert "dashboard_status = dashboard_output_status_frame(cfg=cfg)" not in source
+    assert "dashboard_readiness_summary = dashboard_readiness_summary_frame(cfg=cfg, overwrite=OVERWRITE)" not in source
+    assert "display(dashboard_readiness_summary)" not in source
+    assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=OVERWRITE)" not in source
     assert "run_notebook_step_if_needed(" in source
     assert "write_configured_dashboard_datasets," in source
     assert "display_dashboard_output_previews," in source
@@ -1722,8 +1734,8 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert '"cfg": str(config_path)' in source
     assert "dashboard_outputs = output_group(\"step_07_dashboards\")" not in source
     assert "dashboard_outputs.preview_table(" not in source
-    assert "post_dashboard_readiness = dashboard_readiness_summary_frame(cfg=cfg, overwrite=False)" in source
-    assert "post_dashboard_status = dashboard_output_status_frame(cfg=cfg)" in source
+    assert "post_dashboard_readiness = dashboard_readiness_summary_frame(cfg=cfg, overwrite=False)" not in source
+    assert "post_dashboard_status = dashboard_output_status_frame(cfg=cfg)" not in source
     assert "display_dashboard_output_previews(cfg=cfg, nrows=PREVIEW_ROWS, missing=\"skip\")" in source
     assert "preview_output_table(" not in source
     assert "dashboard_output_namespace" not in source

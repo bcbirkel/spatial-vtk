@@ -285,7 +285,10 @@ partitions or stale summary files with newly written outputs.
 writer for notebooks: it calls the bounded dashboard readiness checks, skips
 local preparation when requested for large datasets, and reports the readiness,
 current artifact status, and written paths without requiring notebooks to loop
-over output dictionaries or repeat ``should_run`` branches.
+over output dictionaries or repeat ``should_run`` branches. Large-run notebooks
+set ``prepare_locally=False`` and pass the returned ``readiness`` object to the
+Slurm-aware preparation cell, so preflight and postflight displays stay on the
+same package helper path.
 
 ``dashboard_summary_table_contracts`` documents which summary table feeds each
 dashboard tab and the required columns for that table. Use it in notebooks next

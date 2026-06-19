@@ -972,9 +972,8 @@ def prepare_configured_dashboard_datasets_from_notebook_settings(
     The helper owns the notebook-facing readiness branch for standard Step 7:
     it checks configured dashboard outputs, optionally writes dashboard-ready
     datasets for tutorial-sized runs, and returns compact status frames. Large
-    runs can set ``prepare_locally=False`` and use the large-run dashboard
-    driver or Slurm-backed helper without changing the notebook's readiness
-    display.
+    runs can set ``prepare_locally=False`` and pass the returned readiness to a
+    Slurm-aware driver without changing the notebook's readiness display.
     """
 
     from spatial_vtk.visualize.dashboard.contracts import dashboard_output_readiness, dashboard_output_status_frame
@@ -985,7 +984,7 @@ def prepare_configured_dashboard_datasets_from_notebook_settings(
             readiness=readiness,
             written_paths={},
             status="skipped",
-            message="Skipping local dashboard preparation. Use the large-run dashboard driver for large datasets.",
+            message="Skipping in-notebook dashboard writes. Use the Slurm-aware dashboard preparation cell for large datasets.",
             current_status=dashboard_output_status_frame(cfg=cfg),
         )
     if not readiness.should_run:

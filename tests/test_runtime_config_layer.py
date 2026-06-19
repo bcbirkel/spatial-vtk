@@ -2507,7 +2507,7 @@ outputs:
 
     assert result.status == "skipped"
     assert result.written_paths == {}
-    assert "large-run dashboard driver" in result.message
+    assert "Slurm-aware dashboard preparation cell" in result.message
     assert not result.summary_frame().empty
     assert not result.status_frame().empty
     assert result.written_frame().empty

@@ -216,6 +216,9 @@ Changelog
   - Added exact ``figure_paths`` lists to Step 4 large-run spatial
     figure-suite status frames while preserving preview-oriented figure path
     fields.
+  - Updated the large-run dashboard notebook to use the package-owned
+    dashboard preparation/display helper for preflight and postflight status,
+    while keeping heavy dataset writes in the Slurm-aware notebook runner.
   - Reused the standard ingest output helper inside record-coverage
     readiness/build workflows so script and notebook path fallback behavior
     stays aligned.
