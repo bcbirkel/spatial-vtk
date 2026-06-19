@@ -1212,6 +1212,10 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert "event_region=" not in text
     assert "table=true" not in text
     assert "gain=2.0" not in text
+    assert '--metrics "$TABLES/metrics_long.parquet"' not in text
+    assert '--input "$TABLES/metrics_long.parquet"' not in text
+    assert "svtk plot metrics scatterplot \\\n     --config \"$CONFIG\"" in text
+    assert "svtk plot metrics heatmap \\\n     --config \"$CONFIG\"" in text
 
 
 def test_cli_reference_frames_svtk_call_as_advanced_escape_hatch():

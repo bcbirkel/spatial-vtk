@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-19
+   - Updated the CLI workflow tutorial so routine GeoJSON and metric plotting
+     commands resolve ``metrics_long`` through the active config instead of
+     teaching raw ``$TABLES/metrics_long.parquet`` inputs for standard
+     workflow outputs.
    - Made ``svtk plot metrics period-spectra`` use the configured
      ``metrics_long`` table by default, and taught ``plot_period_spectra()`` to
      accept standard metric-table residual/value columns through ``value_col``

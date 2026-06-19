@@ -281,7 +281,6 @@ Work with region polygons and corridor selections, then make maps and waveform s
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --geojson "$REGIONS" \
-     --metrics "$TABLES/metrics_long.parquet" \
      --chunksize 1000000 \
      --verbose
 
@@ -291,7 +290,8 @@ Work with region polygons and corridor selections, then make maps and waveform s
      --verbose
 
    svtk plot metrics boxplot \
-     --input "$TABLES/metrics_long.parquet" \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
      --output "$FIGURES/geojson_region_boxplot.png" \
      --value-col log2_residual \
      --passband "1-2 sec" \
@@ -346,7 +346,8 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
      --bin-label "1-2 sec"
 
    svtk plot metrics scatterplot \
-     --input "$TABLES/metrics_long.parquet" \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
      --output "$FIGURES/scatterplot_distance.png" \
      --value-col log2_residual \
      --passband "1-2 sec" \
@@ -359,7 +360,8 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
      --colorby dep
 
    svtk plot metrics boxplot \
-     --input "$TABLES/metrics_long.parquet" \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
      --output "$FIGURES/boxplot_by_region.png" \
      --value-col log2_residual \
      --passband "1-2 sec" \
@@ -371,7 +373,8 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
      --table
 
    svtk plot metrics heatmap \
-     --input "$TABLES/metrics_long.parquet" \
+     --config "$CONFIG" \
+     --run-scenario "$SCENARIO" \
      --output "$FIGURES/heatmap_by_region.png" \
      --value-col log2_residual \
      --passband "1-2 sec" \
