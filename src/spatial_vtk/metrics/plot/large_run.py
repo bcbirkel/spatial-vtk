@@ -2212,8 +2212,10 @@ class StationMetricMapResult:
         without opening the sidecar JSON by hand.
         """
 
+        resolved_path = None if self.output_path is None else str(self.output_path)
         rows = [
-            ("output_path", None if self.output_path is None else str(self.output_path)),
+            ("resolved_path", resolved_path),
+            ("output_path", resolved_path),
             ("ready", bool(self.context.ready)),
             ("selected_metric_rows", int(len(self.context.metrics_for_figures))),
             ("preview_rows", int(len(self.preview))),

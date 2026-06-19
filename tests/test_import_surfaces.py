@@ -750,6 +750,8 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "``write_large_run_metric_figure_suite_from_notebook_settings``" in text
     assert "without notebook-local plot-function imports" in text
     assert "``StationMetricMapResult.status_frame()`` includes the" in text
+    assert "``resolved_path`` row for the rendered figure" in text
+    assert "preserving\n   ``output_path`` for compatibility" in text
     assert "source-row role/filter" in text
     assert "without hand-filtering\n   dataframes in the notebook" in text
     for helper in (

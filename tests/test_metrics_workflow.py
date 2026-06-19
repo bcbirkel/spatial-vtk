@@ -723,6 +723,8 @@ def test_station_metric_map_notebook_helper_writes_preview_and_sidecar(tmp_path,
     assert result.output_path.exists()
     assert result.preview["station"].tolist() == ["STA"]
     status = result.status_frame().set_index("name")
+    assert status.loc["resolved_path", "value"] == str(result.output_path)
+    assert status.loc["output_path", "value"] == status.loc["resolved_path", "value"]
     assert bool(status.loc["ready", "value"]) is True
     assert status.loc["preview_rows", "value"] == 1
     assert status.loc["station_aggregation", "value"] == "mean"

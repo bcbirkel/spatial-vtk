@@ -225,9 +225,11 @@ standard row factories used by the large-run notebooks:
    both a status table and station-summary preview using notebook figure
    settings. Standard tutorials use this helper instead of constructing a
    ``MetricFigureContext`` in the notebook. When figure sidecars are enabled,
-   the returned ``StationMetricMapResult.status_frame()`` includes the
-   station-aggregation contract, source-row role/filter, input/finite row and
-   event counts, and sidecar exactness flags from the saved JSON metadata.
+   the returned ``StationMetricMapResult.status_frame()`` includes a clear
+   ``resolved_path`` row for the rendered figure while preserving
+   ``output_path`` for compatibility. It also includes the station-aggregation
+   contract, source-row role/filter, input/finite row and event counts, and
+   sidecar exactness flags from the saved JSON metadata.
 
 ``write_standard_metric_diagnostic_figures``
    Render the standard Step 3 residual-distance, GOF-distance, and
