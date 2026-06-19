@@ -115,6 +115,10 @@ import paths.
 
 .. autofunction:: spatial_vtk.spatial.spatial_derived_outputs_readiness_from_config
 
+.. autofunction:: spatial_vtk.spatial.geojson_region_summary_readiness_from_config
+
+.. autofunction:: spatial_vtk.spatial.boundary_corridor_readiness_from_config
+
 .. autofunction:: spatial_vtk.spatial.spatial_workflow_failure_frame
 
 .. autofunction:: spatial_vtk.spatial.spatial_correlation_preview_frame

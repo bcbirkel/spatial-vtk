@@ -94,6 +94,8 @@ from spatial_vtk.visualize.dashboard import (
 )
 from spatial_vtk.visualize.dashboard.export import load_dashboard_metric_dataset
 from spatial_vtk.spatial import (
+    boundary_corridor_readiness_from_config,
+    geojson_region_summary_readiness_from_config,
     spatial_derived_outputs_readiness_from_config,
     spatial_summary_readiness_from_config,
 )
@@ -1794,6 +1796,63 @@ outputs:
         "pattern_similarity_path",
     }
     assert "metrics_long_path" in set(derived_rows.loc[derived_rows["role"].eq("input"), "name"])
+    clear_active_config()
+
+
+def test_geojson_readiness_helpers_own_step05_input_contract(tmp_path, monkeypatch):
+    """Large-run Step 5 notebooks should not resolve GeoJSON readiness paths."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+paths:
+  region_geojson: inputs/regions.geojson
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+  figures: run_outputs/figures
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    step_outputs = output_group("step_05_geojson", cfg=cfg)
+    ingest_outputs = output_group("step_01_ingest", cfg=cfg)
+    region_geojson = tmp_path / "inputs" / "regions.geojson"
+    region_geojson.parent.mkdir(parents=True, exist_ok=True)
+
+    geojson_missing = geojson_region_summary_readiness_from_config(config_path=config_path)
+
+    assert geojson_missing.reason == "missing_inputs"
+    geojson_rows = geojson_missing.status_frame()
+    assert set(geojson_rows.loc[geojson_rows["role"].eq("input"), "name"]) == {
+        "metrics_long_path",
+        "region_geojson_path",
+    }
+
+    region_geojson.write_text('{"type":"FeatureCollection","features":[]}\n', encoding="utf-8")
+    step_outputs.metrics_long_path.parent.mkdir(parents=True, exist_ok=True)
+    step_outputs.metrics_long_path.write_text("metric\nPGA\n", encoding="utf-8")
+    geojson_ready_to_run = geojson_region_summary_readiness_from_config(config_path=config_path)
+    assert geojson_ready_to_run.reason == "missing_outputs"
+    assert dict(geojson_ready_to_run.output_items)["geojson_summaries_path"] == step_outputs.geojson_summaries_path
+
+    corridor_missing = boundary_corridor_readiness_from_config(config_path=config_path)
+    assert corridor_missing.reason == "missing_inputs"
+    corridor_rows = corridor_missing.status_frame()
+    assert {"region_geojson_path", "prepared_stations_path", "prepared_events_path"}.issubset(
+        set(corridor_rows.loc[corridor_rows["role"].eq("input"), "name"])
+    )
+
+    ingest_outputs.prepared_stations_path.parent.mkdir(parents=True, exist_ok=True)
+    ingest_outputs.prepared_stations_path.write_text("station,lat,lon\nSTA,0,0\n", encoding="utf-8")
+    ingest_outputs.prepared_events_path.write_text("event_id,lat,lon\nE1,0,0\n", encoding="utf-8")
+    corridor_ready_to_run = boundary_corridor_readiness_from_config(config_path=config_path)
+    assert corridor_ready_to_run.reason == "missing_outputs"
+    assert dict(corridor_ready_to_run.output_items)["corridors_path"] == step_outputs.corridors_path
+    assert "comparison_eligible_path" in dict(corridor_ready_to_run.source_items)
     clear_active_config()
 
 

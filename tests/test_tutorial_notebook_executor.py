@@ -1481,7 +1481,9 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
 
     assert "run_notebook_step_if_needed(" in source
     assert "from spatial_vtk.spatial import (" in source
-    assert "load_configured_input_paths(" in source
+    assert "load_configured_input_paths(" not in source
+    assert "geojson_region_summary_readiness_from_config," in source
+    assert "boundary_corridor_readiness_from_config," in source
     assert "run_geojson_region_summary_workflow_from_config," in source
     assert "run_boundary_corridor_workflow_from_config," in source
     assert "step_outputs.display_table_previews(" in source
@@ -1500,8 +1502,13 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "load_output_table(" not in source
     assert '"spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config"' not in source
     assert '"spatial_vtk.spatial.run_boundary_corridor_workflow_from_config"' not in source
-    assert "geojson_readiness = step_outputs.readiness(" in source
-    assert "corridor_readiness = step_outputs.readiness(" in source
+    assert "geojson_readiness = geojson_region_summary_readiness_from_config(" in source
+    assert "corridor_readiness = boundary_corridor_readiness_from_config(" in source
+    assert "geojson_readiness = step_outputs.readiness(" not in source
+    assert "corridor_readiness = step_outputs.readiness(" not in source
+    assert "geojson_input" not in source
+    assert "corridor_required_inputs" not in source
+    assert "corridor_source_paths" not in source
     assert "geojson_readiness = output_readiness(" not in source
     assert "corridor_readiness = output_readiness(" not in source
     assert "run_or_submit_notebook_cli_command(" not in source
@@ -1692,8 +1699,6 @@ def test_large_run_grouped_steps_use_output_group_readiness() -> None:
         "large_run/step_01_large_run_ingest_and_prepare_data.ipynb",
         "large_run/step_02_large_run_quality_control.ipynb",
         "large_run/step_03_large_run_calculate_metrics.ipynb",
-        "large_run/step_04_large_run_spatial_statistics.ipynb",
-        "large_run/step_05_large_run_geojson_corridors.ipynb",
     ):
         notebook_path = repo_root / "docs" / "examples" / relative
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))

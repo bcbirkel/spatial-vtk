@@ -17,23 +17,30 @@ Changelog
 - Added ``configured_output_registry_preview_frame()`` and updated the Python
   workflow reference to use it for bounded output-registry examples instead of
   displaying ``configured_output_registry_frame(...).head()``.
-- Added ``StandardAdditionalPlottingFigureResult.pattern_preview_frame()`` and
-  rewired the standard Step 6 plotting notebook to use it for bounded pattern
-  similarity previews instead of calling ``.head()`` in the notebook cell.
-- Added ``OutputGroup.display_path_table_previews()`` and rewired standard Step
-  1 and Step 2 path-backed preview cells to use it for preprocessing manifests
-  and comparison-eligible records.
-- Added ``notebook_step_result()`` and rewired the standard Step 2 QC notebook
-  to use it for current/skipped workflow-step status.
+- Added ``StandardAdditionalPlottingFigureResult.pattern_preview_frame()`` for
+  bounded pattern-similarity previews.
+- Rewired the standard Step 6 plotting notebook to use that helper instead of
+  calling ``.head()`` in the notebook cell.
+- Added ``OutputGroup.display_path_table_previews()`` for path-backed metadata
+  previews.
+- Rewired standard Step 1 and Step 2 path-backed preview cells to use that
+  helper for preprocessing manifests and comparison-eligible records.
+- Added ``notebook_step_result()`` for current/skipped workflow-step status.
+- Rewired the standard Step 2 QC notebook to use that workflow-step status
+  helper.
 
 **Changed and Rewired**
 
 - Rewired the configured record-coverage workflow to import the trace-metadata
   coverage builder from the public ``spatial_vtk.visualize.context`` entry
   point instead of the lower-level implementation module.
-- Added package-owned Step 4 spatial readiness helpers and rewired the
-  large-run spatial notebook so summary and derived-output readiness decisions
-  no longer duplicate spatial output path-name lists in notebook cells.
+- Added package-owned Step 4 spatial readiness helpers.
+- Rewired the large-run spatial notebook so summary and derived-output
+  readiness decisions no longer duplicate spatial output path-name lists in
+  notebook cells.
+- Added package-owned Step 5 GeoJSON and boundary-corridor readiness helpers.
+- Rewired the large-run GeoJSON notebook so configured region inputs and
+  upstream table dependencies are resolved by package code.
 - Updated the Metrics API reference to document metric calculation and
   workflow helpers through ``spatial_vtk.metrics.calculate`` and
   ``spatial_vtk.metrics.workflow`` instead of lower-level implementation

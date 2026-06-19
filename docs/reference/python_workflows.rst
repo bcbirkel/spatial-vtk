@@ -393,10 +393,13 @@ Step 5: GeoJSON Regions and Corridors
      - Python entry point
      - Standard outputs
    * - Summarize configured GeoJSON regions
-     - ``spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config``
+     - ``spatial_vtk.spatial.geojson_region_summary_readiness_from_config``
+       and
+       ``spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config``
      - GeoJSON region summary tables
    * - Build configured boundary corridors
-     - ``spatial_vtk.spatial.run_boundary_corridor_workflow_from_config``
+     - ``spatial_vtk.spatial.boundary_corridor_readiness_from_config`` and
+       ``spatial_vtk.spatial.run_boundary_corridor_workflow_from_config``
      - corridor definitions and corridor-selected records
 
 Both Step 5 helpers can receive configured path keys for optional inputs. For

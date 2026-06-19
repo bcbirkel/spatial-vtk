@@ -165,6 +165,9 @@ Start with public helpers from ``spatial_vtk.spatial``:
   statistics tables
 - ``run_spatial_derived_outputs_workflow_from_config`` for optional REDCAP,
   block holdout, and pattern-similarity tables
+- ``geojson_region_summary_readiness_from_config`` and
+  ``boundary_corridor_readiness_from_config`` for Step 5 readiness checks that
+  resolve configured region and upstream table paths
 - ``run_geojson_region_summary_workflow_from_config`` and
   ``run_boundary_corridor_workflow_from_config`` for GeoJSON and corridor
   tables

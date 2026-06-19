@@ -73,6 +73,8 @@ def test_public_imports():
         geojson_metric_region_frame,
         geojson_metric_subset_frame,
         run_boundary_corridor_workflow_from_config,
+        boundary_corridor_readiness_from_config,
+        geojson_region_summary_readiness_from_config,
         run_geojson_region_summary_workflow_from_config,
         run_spatial_derived_outputs_workflow_from_config,
         run_spatial_statistics_workflow_from_config,
@@ -174,6 +176,8 @@ def test_public_imports():
     assert callable(slurm_settings_from_config)
     assert callable(build_slurm_settings_from_config)
     assert callable(run_boundary_corridor_workflow_from_config)
+    assert callable(boundary_corridor_readiness_from_config)
+    assert callable(geojson_region_summary_readiness_from_config)
     assert callable(run_geojson_region_summary_workflow_from_config)
     assert callable(run_spatial_derived_outputs_workflow_from_config)
     assert callable(run_spatial_statistics_workflow_from_config)
@@ -1360,7 +1364,9 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.spatial.run_spatial_statistics_workflow_from_config",
         "spatial_vtk.spatial.spatial_derived_outputs_readiness_from_config",
         "spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config",
+        "spatial_vtk.spatial.geojson_region_summary_readiness_from_config",
         "spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config",
+        "spatial_vtk.spatial.boundary_corridor_readiness_from_config",
         "spatial_vtk.spatial.run_boundary_corridor_workflow_from_config",
         "spatial_vtk.visualize.dashboard.dashboard_readiness_summary_frame",
         "spatial_vtk.visualize.dashboard.preview_dashboard_summary_tables",
@@ -1513,6 +1519,8 @@ def test_package_overview_points_to_public_workflow_helpers():
         "``metric_manifest_batch_status`` and ``metric_slurm_submission_readiness``",
         "``write_metric_outputs_from_config``",
         "Start with public helpers from ``spatial_vtk.spatial``",
+        "``geojson_region_summary_readiness_from_config``",
+        "``boundary_corridor_readiness_from_config``",
         "``run_spatial_statistics_workflow_from_config``",
         "``run_geojson_region_summary_workflow_from_config``",
         "``run_boundary_corridor_workflow_from_config``",

@@ -1230,6 +1230,65 @@ def spatial_derived_outputs_readiness_from_config(
     )
 
 
+def geojson_region_summary_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    overwrite: bool = False,
+) -> OutputReadiness:
+    """Return readiness for the configured GeoJSON region summary table."""
+
+    config = _spatial_workflow_config(config_path=config_path, run_scenario=run_scenario)
+    step_outputs = output_group("step_05_geojson", cfg=config)
+    region_geojson = config.path("paths.region_geojson", must_exist=False)
+    return step_outputs.readiness(
+        "geojson_summaries_path",
+        inputs={"metrics_long_path": "metrics_long_path", "region_geojson_path": region_geojson},
+        sources={"metrics_long_path": "metrics_long_path", "region_geojson_path": region_geojson},
+        overwrite=overwrite,
+        missing_input_message=(
+            "Region GeoJSON or metrics_long.parquet is not ready yet; "
+            "finish Step 3 and check paths.region_geojson."
+        ),
+        current_message="GeoJSON summary table is current; skipping.",
+    )
+
+
+def boundary_corridor_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    overwrite: bool = False,
+) -> OutputReadiness:
+    """Return readiness for the configured boundary-corridor table."""
+
+    config = _spatial_workflow_config(config_path=config_path, run_scenario=run_scenario)
+    step_outputs = output_group("step_05_geojson", cfg=config)
+    ingest_outputs = output_group("step_01_ingest", cfg=config)
+    region_geojson = config.path("paths.region_geojson", must_exist=False)
+    required_inputs = {
+        "region_geojson_path": region_geojson,
+        "prepared_stations_path": ingest_outputs.prepared_stations_path,
+        "prepared_events_path": ingest_outputs.prepared_events_path,
+    }
+    source_paths = {
+        **required_inputs,
+        "event_station_path": ingest_outputs.event_station_path,
+        "comparison_eligible_path": step_outputs.comparison_eligible_path,
+    }
+    return step_outputs.readiness(
+        "corridors_path",
+        inputs=required_inputs,
+        sources=source_paths,
+        overwrite=overwrite,
+        missing_input_message=(
+            "Region GeoJSON or prepared station/event tables are not ready yet; "
+            "finish Step 1 and check paths.region_geojson."
+        ),
+        current_message="Corridor table is current; skipping.",
+    )
+
+
 def _resolve_config_path_argument(value, config: SpatialVTKConfig):
     """Resolve dotted config path keys passed to config-backed wrappers."""
 
@@ -1748,6 +1807,8 @@ def _record_failure(failures: list[dict[str, str]], metric: str, step: str, exc:
 
 
 __all__ = [
+    "boundary_corridor_readiness_from_config",
+    "geojson_region_summary_readiness_from_config",
     "SPATIAL_DERIVED_OUTPUT_KEYS",
     "SPATIAL_DERIVED_OUTPUT_PATH_NAMES",
     "SPATIAL_STATISTICS_OUTPUT_DESCRIPTIONS",
