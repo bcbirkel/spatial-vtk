@@ -147,6 +147,74 @@ def load_dashboard_summary_tables(
     return tables
 
 
+def load_filtered_dashboard_summary_table(
+    summary_root: str | Path,
+    table_name: str,
+    *,
+    models: Iterable[str] | None = None,
+    metric: str | None = None,
+    bands: Iterable[str] | None = None,
+    periods_s: Iterable[float | str] | None = None,
+    value_column: str | None = None,
+    vs30_range: tuple[float | None, float | None] | None = None,
+    distance_range_km: tuple[float | None, float | None] | None = None,
+    component: str | None = None,
+    max_rows: int | None = None,
+    chunksize: int = 50_000,
+    allow_missing_optional: bool = True,
+) -> pd.DataFrame:
+    """Load one filtered dashboard summary table in chunks.
+
+    This is intended for Streamlit tabs that need station, event, or path
+    summaries after the user has selected a model, metric, passband, period, or
+    component. It avoids materializing large optional summary tables at
+    dashboard startup while preserving the same filter semantics as in-memory
+    summary filtering.
+    """
+
+    name = str(table_name)
+    if name not in METRICS_TABLES:
+        raise KeyError(f"Unknown dashboard summary table: {name}")
+    root = Path(summary_root).expanduser()
+    path = _find_table(root, name, required=not allow_missing_optional)
+    if path is None:
+        return _empty_dashboard_table(name)
+    columns = _dashboard_table_columns(path)
+    missing = [column for column in REQUIRED_METRICS_TABLE_COLUMNS[name] if column not in columns]
+    if missing or (value_column and value_column not in columns):
+        return pd.DataFrame(columns=columns)
+
+    from spatial_vtk.visualize.dashboard.filters import filter_dashboard_metrics
+
+    frames: list[pd.DataFrame] = []
+    remaining = None if max_rows is None else max(int(max_rows), 0)
+    for chunk in _iter_dashboard_table_column_chunks(path, columns, chunksize=chunksize):
+        filtered = filter_dashboard_metrics(
+            chunk,
+            models=models,
+            metric=metric,
+            bands=bands,
+            periods_s=periods_s,
+            value_column=value_column,
+            vs30_range=vs30_range,
+            distance_range_km=distance_range_km,
+            component=component,
+        )
+        if filtered.empty:
+            continue
+        if remaining is not None:
+            if remaining <= 0:
+                break
+            filtered = filtered.head(remaining)
+            remaining -= len(filtered)
+        frames.append(filtered)
+        if remaining == 0:
+            break
+    if not frames:
+        return pd.DataFrame(columns=columns)
+    return pd.concat(frames, ignore_index=True)
+
+
 def preview_dashboard_summary_tables(
     summary_root: str | Path | None = None,
     *,
@@ -1617,6 +1685,7 @@ __all__ = [
     "dashboard_summary_table_paths",
     "dashboard_map_readiness",
     "display_dashboard_output_previews",
+    "load_filtered_dashboard_summary_table",
     "load_dashboard_summary_tables",
     "load_metric_long_table",
     "preview_dashboard_summary_tables",

@@ -98,6 +98,9 @@ Changelog
     - Made metrics-dashboard summary readiness checks scan value and
       map-coordinate columns in projected chunks instead of materializing full
       summary tables during startup.
+    - Made metrics-dashboard station, event, and path summary tabs load
+      filtered summary rows lazily in chunks instead of loading every optional
+      summary table at startup.
     - Added a separate metrics-dashboard summary-table display row cap so large
       station, event, path, or model-summary tables are not fully serialized to
       the browser by default.

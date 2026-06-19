@@ -374,6 +374,45 @@ def test_dashboard_summary_readiness_uses_chunked_projected_scans(tmp_path, monk
     assert station["nonempty_value_columns"] == "med_log2_residual"
 
 
+def test_filtered_dashboard_summary_loader_filters_without_full_table_read(tmp_path, monkeypatch):
+    """Optional dashboard summaries should be loadable by filter in chunks."""
+
+    summary_root = tmp_path / "dashboard_summaries"
+    summary_root.mkdir()
+    pd.DataFrame(
+        {
+            "station": ["STA1", "STA2", "STA3"],
+            "model": ["m1", "m1", "m2"],
+            "metric": ["PGA", "PGV", "PGA"],
+            "band": ["1-2 sec", "1-2 sec", "2-3 sec"],
+            "component": ["R", "R", "T"],
+            "n": [4, 5, 6],
+            "sta_lon": [-118.0, -118.1, -118.2],
+            "sta_lat": [34.0, 34.1, 34.2],
+            "med_log2_residual": [0.1, 0.2, 0.3],
+        }
+    ).to_csv(summary_root / "station_rollup.csv", index=False)
+
+    def fail_full_read(*args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        raise AssertionError("filtered optional summaries should use chunked reads")
+
+    monkeypatch.setattr(dashboard_contracts, "read_dashboard_table", fail_full_read)
+
+    filtered = dashboard_contracts.load_filtered_dashboard_summary_table(
+        summary_root,
+        "station_rollup",
+        models=("m1",),
+        metric="PGA",
+        bands=("1-2 sec",),
+        component="R",
+        value_column="med_log2_residual",
+        chunksize=1,
+    )
+
+    assert filtered["station"].tolist() == ["STA1"]
+    assert filtered["med_log2_residual"].tolist() == [0.1]
+
+
 def test_metrics_dashboard_row_level_loader_uses_selected_filters(monkeypatch):
     """Row-level dashboard loads should be scoped to the active UI filters."""
 
@@ -921,10 +960,21 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
     def fail_uncached_loader(summary_root: str):  # noqa: ANN001, ARG001
         raise AssertionError("main should use _load_summary_tables_cached")
 
-    def fake_render_dashboard(loaded, metrics_root, config, *, readiness, metric_dataset_readiness=None):  # noqa: ANN001
+    def fake_render_dashboard(  # noqa: ANN001
+        loaded,
+        metrics_root,
+        config,
+        *,
+        summary_root=None,
+        optional_skip_tables=(),
+        readiness,
+        metric_dataset_readiness=None,
+    ):
         rendered["summaries"] = loaded
         rendered["metrics_root"] = metrics_root
         rendered["config"] = config
+        rendered["summary_root"] = summary_root
+        rendered["optional_skip_tables"] = optional_skip_tables
         rendered["readiness"] = readiness
         rendered["metric_dataset_readiness"] = metric_dataset_readiness
 
@@ -944,9 +994,11 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
 
     streamlit_metrics.main()
 
-    assert calls == [("summary-root", ())]
+    assert calls == [("summary-root", ("event_rollup", "path_hex", "station_rollup"))]
     assert rendered["summaries"] is summaries
     assert rendered["metrics_root"] == "metrics-root"
+    assert rendered["summary_root"] == "summary-root"
+    assert rendered["optional_skip_tables"] == ()
     assert rendered["readiness"] is readiness
     assert list(rendered["metric_dataset_readiness"]["ready"]) == [True]
 
@@ -1012,10 +1064,21 @@ def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
         calls.append((summary_root, skip_tables))
         return summaries
 
-    def fake_render_dashboard(loaded, metrics_root, config, *, readiness, metric_dataset_readiness=None):  # noqa: ANN001
+    def fake_render_dashboard(  # noqa: ANN001
+        loaded,
+        metrics_root,
+        config,
+        *,
+        summary_root=None,
+        optional_skip_tables=(),
+        readiness,
+        metric_dataset_readiness=None,
+    ):
         rendered["summaries"] = loaded
         rendered["metrics_root"] = metrics_root
         rendered["config"] = config
+        rendered["summary_root"] = summary_root
+        rendered["optional_skip_tables"] = optional_skip_tables
         rendered["readiness"] = readiness
         rendered["metric_dataset_readiness"] = metric_dataset_readiness
 
@@ -1031,9 +1094,11 @@ def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
 
     streamlit_metrics.main()
 
-    assert calls == [("summary-root", ("path_hex", "station_rollup"))]
+    assert calls == [("summary-root", ("event_rollup", "path_hex", "station_rollup"))]
     assert rendered["summaries"] is summaries
     assert rendered["metrics_root"] == ""
+    assert rendered["summary_root"] == "summary-root"
+    assert rendered["optional_skip_tables"] == ("path_hex", "station_rollup")
     assert rendered["readiness"] is readiness
     assert rendered["metric_dataset_readiness"].empty
 

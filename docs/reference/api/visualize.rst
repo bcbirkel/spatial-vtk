@@ -225,8 +225,9 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
    * - ``display_dashboard_preparation_result``
      - Return and optionally display the standard dashboard preparation frames
        with bounded row counts and summary-table contracts.
-   * - ``load_dashboard_metric_dataset`` and
-       ``load_dashboard_summary_tables``
+   * - ``load_dashboard_metric_dataset``,
+       ``load_dashboard_summary_tables``, and
+       ``load_filtered_dashboard_summary_table``
      - Load dashboard-ready datasets after readiness checks pass.
        ``load_dashboard_metric_dataset`` applies model, metric, passband,
        PSA/FAS oscillator-period, component, distance, and Vs30 filters while
@@ -234,7 +235,11 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
        selected rows rather than a broader unfiltered prefix. Row-level
        loading treats ``band`` and ``passband`` as aliases so older
        ``metrics_long`` tables and current dashboard datasets filter the same
-       way.
+       way. ``load_filtered_dashboard_summary_table`` applies the same
+       model/metric/passband/period/component filters while reading one summary
+       table in chunks, which lets dashboard station, event, and path tabs load
+       only the active selection instead of materializing every optional
+       summary table at startup.
    * - ``launch_configured_metrics_dashboard`` and
        ``launch_configured_qc_dashboard``
      - Launch Streamlit dashboards from config-backed paths and launch options.

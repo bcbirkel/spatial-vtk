@@ -112,6 +112,7 @@ def test_public_imports():
         launch_configured_dashboards_from_notebook_settings,
         launch_configured_metrics_dashboard,
         launch_configured_qc_dashboard,
+        load_filtered_dashboard_summary_table,
         prepare_configured_dashboard_datasets_from_notebook_settings,
         preview_dashboard_summary_tables,
     )
@@ -253,6 +254,7 @@ def test_public_imports():
     assert callable(launch_configured_dashboards_from_notebook_settings)
     assert callable(launch_configured_metrics_dashboard)
     assert callable(launch_configured_qc_dashboard)
+    assert callable(load_filtered_dashboard_summary_table)
     assert callable(prepare_configured_dashboard_datasets_from_notebook_settings)
     assert callable(display_dashboard_preparation_result)
     assert callable(preview_dashboard_summary_tables)
@@ -1406,6 +1408,7 @@ def test_visualize_api_docs_use_public_entry_points():
         "dashboard_metric_dataset_readiness_frame",
         "dashboard_qc_trace_readiness_frame",
         "load_dashboard_metric_dataset",
+        "load_filtered_dashboard_summary_table",
         "load_dashboard_summary_tables",
         "preview_dashboard_summary_tables",
         "filter_dashboard_metrics",

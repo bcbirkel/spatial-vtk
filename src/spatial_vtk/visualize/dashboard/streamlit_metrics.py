@@ -30,6 +30,7 @@ from spatial_vtk.visualize.dashboard.contracts import (
     dashboard_row_level_columns,
     dashboard_summary_readiness_frame,
     dashboard_summary_table_contracts,
+    load_filtered_dashboard_summary_table,
     load_dashboard_summary_tables,
     load_metric_long_table,
     validate_dashboard_tables,
@@ -80,6 +81,7 @@ METRIC_DATASET_READINESS_DISPLAY_COLUMNS = (
 DEFAULT_METRICS_DASHBOARD_MAX_ROWS = 200_000
 DEFAULT_METRICS_DASHBOARD_DOWNLOAD_ROWS = 100_000
 DEFAULT_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS = 5_000
+OPTIONAL_SUMMARY_TABLES = ("station_rollup", "event_rollup", "path_hex")
 
 
 def main() -> None:
@@ -106,7 +108,7 @@ def main() -> None:
         st.warning(blocker)
         return
     metric_dataset_readiness = dashboard_metric_dataset_readiness_frame(metrics_root) if metrics_root else pd.DataFrame()
-    skip_tables = _not_ready_optional_summary_tables(readiness)
+    skip_tables = _startup_skip_summary_tables(readiness)
     try:
         summaries = _load_summary_tables_cached(summary_root, tuple(skip_tables))
     except Exception as exc:
@@ -117,6 +119,8 @@ def main() -> None:
         summaries,
         metrics_root,
         config,
+        summary_root=summary_root,
+        optional_skip_tables=tuple(_not_ready_optional_summary_tables(readiness)),
         readiness=readiness,
         metric_dataset_readiness=metric_dataset_readiness,
     )
@@ -127,6 +131,8 @@ def _render_metrics_dashboard(
     metrics_root: str,
     config: SpatialVTKConfig | None = None,
     *,
+    summary_root: str | None = None,
+    optional_skip_tables: tuple[str, ...] = (),
     readiness: pd.DataFrame | None = None,
     metric_dataset_readiness: pd.DataFrame | None = None,
 ) -> None:
@@ -178,8 +184,23 @@ def _render_metrics_dashboard(
         if not value_columns:
             return
         value_col = st.selectbox("Displayed Value", options=value_columns, format_func=value_column_display_name)
-        distance_range = _range_slider_from_columns("Distance (km)", summaries["station_rollup"], ("med_dist_km", "distance_km"))
-        vs30_range = _range_slider_from_columns("Vs30", summaries["station_rollup"], ("Vs30", "vs30"))
+        component_filter = None if selected_component in {"", "all"} else selected_component
+        summary_chunksize = _metrics_dashboard_summary_chunksize()
+        station_source = _optional_summary_for_selection(
+            summaries,
+            summary_root,
+            "station_rollup",
+            skip_tables=optional_skip_tables,
+            models=selected_models,
+            metric=selected_metric,
+            bands=selected_bands,
+            periods_s=selected_periods,
+            value_column=value_col,
+            component=component_filter,
+            chunksize=summary_chunksize,
+        )
+        distance_range = _range_slider_from_columns("Distance (km)", station_source, ("med_dist_km", "distance_km"))
+        vs30_range = _range_slider_from_columns("Vs30", station_source, ("Vs30", "vs30"))
         basemap = st.selectbox("Basemap", options=list(BASEMAPS), index=list(BASEMAPS).index("Carto Light"))
         marker_cluster = st.checkbox("Cluster map markers", value=True)
         max_markers = st.number_input("Maximum map markers", min_value=100, max_value=50000, value=3000, step=100)
@@ -194,7 +215,6 @@ def _render_metrics_dashboard(
             step=10_000,
         )
 
-    component_filter = None if selected_component in {"", "all"} else selected_component
     heat = filter_dashboard_metrics(
         summaries["model_metric_band"],
         models=selected_models,
@@ -205,37 +225,48 @@ def _render_metrics_dashboard(
         component=component_filter,
     )
     stations, station_value_message = filter_optional_dashboard_summary(
-        summaries["station_rollup"],
+        station_source,
         table_label="station",
         value_column=value_col,
-        models=selected_models,
-        metric=selected_metric,
-        bands=selected_bands,
-        periods_s=selected_periods,
         distance_range_km=distance_range,
         vs30_range=vs30_range,
-        component=component_filter,
     )
-    events, event_value_message = filter_optional_dashboard_summary(
-        summaries["event_rollup"],
-        table_label="event",
-        value_column=value_col,
+    event_source = _optional_summary_for_selection(
+        summaries,
+        summary_root,
+        "event_rollup",
+        skip_tables=optional_skip_tables,
         models=selected_models,
         metric=selected_metric,
         bands=selected_bands,
         periods_s=selected_periods,
+        value_column=value_col,
         distance_range_km=distance_range,
         component=component_filter,
+        chunksize=summary_chunksize,
     )
-    paths, path_value_message = filter_optional_dashboard_summary(
-        summaries["path_hex"],
-        table_label="path",
+    events, event_value_message = filter_optional_dashboard_summary(
+        event_source,
+        table_label="event",
         value_column=value_col,
+    )
+    path_source = _optional_summary_for_selection(
+        summaries,
+        summary_root,
+        "path_hex",
+        skip_tables=optional_skip_tables,
         models=selected_models,
         metric=selected_metric,
         bands=selected_bands,
         periods_s=selected_periods,
+        value_column=value_col,
         component=component_filter,
+        chunksize=summary_chunksize,
+    )
+    paths, path_value_message = filter_optional_dashboard_summary(
+        path_source,
+        table_label="path",
+        value_column=value_col,
     )
     rows = None
     row_value = None
@@ -384,6 +415,72 @@ def _load_summary_tables_cached(summary_root: str, skip_tables: tuple[str, ...] 
     """Load summary tables with Streamlit caching."""
 
     return validate_dashboard_tables(load_dashboard_summary_tables(summary_root, skip_tables=skip_tables))
+
+
+@st.cache_data(show_spinner=False)
+def _load_filtered_summary_table_cached(
+    summary_root: str,
+    table_name: str,
+    models: tuple[str, ...],
+    metric: str,
+    bands: tuple[str, ...],
+    periods_s: tuple[float, ...],
+    value_column: str,
+    component: str,
+    distance_range_km: tuple[float | None, float | None] | None,
+    vs30_range: tuple[float | None, float | None] | None,
+    chunksize: int,
+) -> pd.DataFrame:
+    """Load one filtered optional summary table with Streamlit caching."""
+
+    return load_filtered_dashboard_summary_table(
+        summary_root,
+        table_name,
+        models=models,
+        metric=metric or None,
+        bands=bands,
+        periods_s=periods_s,
+        value_column=value_column or None,
+        component=component or None,
+        distance_range_km=distance_range_km,
+        vs30_range=vs30_range,
+        chunksize=chunksize,
+    )
+
+
+def _optional_summary_for_selection(
+    summaries: dict[str, pd.DataFrame],
+    summary_root: str | None,
+    table_name: str,
+    *,
+    skip_tables: tuple[str, ...],
+    models: list[str],
+    metric: str,
+    bands: list[str],
+    periods_s: list[float] | None = None,
+    value_column: str,
+    component: str | None = None,
+    distance_range_km: tuple[float | None, float | None] | None = None,
+    vs30_range: tuple[float | None, float | None] | None = None,
+    chunksize: int = 50_000,
+) -> pd.DataFrame:
+    """Return a lazily loaded optional summary table for current filters."""
+
+    if table_name in set(skip_tables) or not summary_root:
+        return summaries.get(table_name, pd.DataFrame()).copy()
+    return _load_filtered_summary_table_cached(
+        str(summary_root),
+        str(table_name),
+        tuple(str(model) for model in models),
+        str(metric or ""),
+        tuple(str(band) for band in bands),
+        tuple(float(period) for period in periods_s or ()),
+        str(value_column or ""),
+        "" if component in {None, "", "all"} else str(component),
+        distance_range_km,
+        vs30_range,
+        int(chunksize),
+    )
 
 
 @st.cache_data(show_spinner=False)
@@ -623,6 +720,14 @@ def _not_ready_optional_summary_tables(readiness: pd.DataFrame) -> list[str]:
     return sorted(dict.fromkeys(skip))
 
 
+def _startup_skip_summary_tables(readiness: pd.DataFrame) -> list[str]:
+    """Return dashboard summaries skipped during initial Streamlit startup."""
+
+    skip = set(OPTIONAL_SUMMARY_TABLES)
+    skip.update(_not_ready_optional_summary_tables(readiness))
+    return sorted(skip)
+
+
 def _summary_readiness_message(readiness: pd.DataFrame | None, table_name: str) -> str | None:
     """Return the tab-level readiness message for one optional summary table."""
 
@@ -672,6 +777,19 @@ def _metrics_dashboard_download_limit(default: int | None = DEFAULT_METRICS_DASH
         ("SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS", "SVTK_DASHBOARD_DOWNLOAD_ROWS"),
         default=default,
     )
+
+
+def _metrics_dashboard_summary_chunksize(default: int = 50_000) -> int:
+    """Return the chunk size for lazy optional summary-table loads."""
+
+    raw = os.environ.get("SVTK_METRICS_DASHBOARD_SUMMARY_CHUNKSIZE") or os.environ.get("SVTK_DASHBOARD_CHUNKSIZE")
+    if not raw:
+        return int(default)
+    try:
+        value = int(raw)
+    except ValueError:
+        return int(default)
+    return max(value, 1_000)
 
 
 def _metrics_dashboard_summary_display_limit(default: int | None = DEFAULT_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS) -> int | None:

@@ -534,9 +534,13 @@ Step 7: Dashboard Datasets
        full dashboard metric dataset. Dashboard startup/readiness checks inspect
        summary value and map-coordinate columns with projected chunk scans, so
        they can report schema/value/map readiness without materializing complete
-       summary tables. The metrics dashboard caps summary-table dataframe
-       displays through ``SVTK_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS`` or the
-       shared ``SVTK_DASHBOARD_DISPLAY_ROWS`` setting, and caps row-level CSV
+       summary tables. The metrics dashboard loads the primary
+       ``model_metric_band`` summary at startup, then reads optional
+       station/event/path summaries lazily in chunks after the active
+       model/metric/passband/period/component filters are known. It caps
+       summary-table dataframe displays through
+       ``SVTK_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS`` or the shared
+       ``SVTK_DASHBOARD_DISPLAY_ROWS`` setting, and caps row-level CSV
        downloads separately through
        ``SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS`` or the shared
        ``SVTK_DASHBOARD_DOWNLOAD_ROWS`` setting so dashboard tabs and downloads
