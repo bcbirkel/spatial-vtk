@@ -910,6 +910,17 @@ def test_io_api_docs_cover_output_group_preview_helpers():
     assert "path-backed artifacts outside the registered\n       output table registry" in text
 
 
+def test_config_api_docs_cover_output_registry_preview_helpers():
+    """Config docs should expose full and bounded output-registry helpers."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    text = (root / "docs" / "reference" / "api" / "config.rst").read_text(encoding="utf-8")
+
+    assert "``configured_output_registry_frame``" in text
+    assert "``configured_output_registry_preview_frame``" in text
+    assert "Use the preview helper in notebooks when only a bounded path listing is\n       needed" in text
+
+
 def test_notebook_cli_compat_helper_is_not_top_level_config_api():
     """Notebook CLI wrappers should not be advertised as the standard config API."""
 

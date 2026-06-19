@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-19
+   - Added the configured output-registry display helpers to the Configuration
+     API notebook-helper table, making ``configured_output_registry_frame()``
+     and ``configured_output_registry_preview_frame()`` discoverable from the
+     public config reference as well as the workflow guide.
    - Updated the I/O API reference so ``output_group`` guidance covers
      ``display_path_table_previews()`` alongside registered-table preview
      helpers, making path-backed preprocessing metadata previews discoverable
