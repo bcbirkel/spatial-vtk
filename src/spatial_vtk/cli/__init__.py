@@ -26,10 +26,24 @@ import importlib
 import inspect
 import json
 import math
+import os
 import sys
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Iterable
+
+
+_CONFIG_ENV = "SVTK_CONFIG_FILE"
+_CLI_CONFIG_ENV = "SVTK_CLI_CONFIG_FILE"
+_DEFAULT_CONFIG_FILENAMES = (
+    "spatial_vtk_config.yaml",
+    "spatial_vtk_config.yml",
+    "spatial-vtk.yaml",
+    "spatial-vtk.yml",
+    "svtk.yaml",
+    "svtk.yml",
+)
+_DEFAULT_CLI_CONFIG_PATH = Path.home() / ".config" / "spatial-vtk" / "config.json"
 
 
 @dataclass(frozen=True)
@@ -425,6 +439,9 @@ def main(argv: list[str] | None = None) -> int:
         return int(args.handler(args) or 0)
     except ModuleNotFoundError as exc:
         print(_missing_cli_dependency_message(exc), file=sys.stderr)
+        return 2
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
         return 2
 
 
@@ -1519,10 +1536,45 @@ def _cmd_config_outputs(args: argparse.Namespace) -> int:
 def _effective_config_path(config_path: str | None = None) -> str | None:
     """Return the effective config path from CLI/env/saved/default discovery."""
 
-    from spatial_vtk.config import find_config_file
-
-    path = find_config_file(config_path)
+    path = _find_config_file(config_path)
     return str(path) if path is not None else None
+
+
+def _find_config_file(explicit_path: str | Path | None = None, *, start_dir: str | Path | None = None) -> Path | None:
+    """Find a config path without importing the full config package."""
+
+    if explicit_path is not None:
+        return Path(explicit_path).expanduser().resolve()
+    env_value = os.environ.get(_CONFIG_ENV)
+    if env_value:
+        return Path(env_value).expanduser().resolve()
+    saved_path = _saved_config_path()
+    if saved_path is not None:
+        return saved_path
+    base = Path(start_dir or Path.cwd()).expanduser().resolve()
+    for directory in (base, *base.parents):
+        for name in _DEFAULT_CONFIG_FILENAMES:
+            candidate = directory / name
+            if candidate.exists():
+                return candidate.resolve()
+    return None
+
+
+def _saved_config_path() -> Path | None:
+    """Return the CLI-saved config path without importing config runtime helpers."""
+
+    settings_value = os.environ.get(_CLI_CONFIG_ENV)
+    settings_path = Path(settings_value).expanduser().resolve() if settings_value else _DEFAULT_CLI_CONFIG_PATH
+    if not settings_path.exists():
+        return None
+    try:
+        payload = json.loads(settings_path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    value = payload.get("config_path") if isinstance(payload, dict) else None
+    if not value:
+        return None
+    return Path(value).expanduser().resolve()
 
 
 def _required_config_path(config_path: str | None = None) -> str:
@@ -1537,20 +1589,23 @@ def _required_config_path(config_path: str | None = None) -> str:
 def _optional_cli_config(config_path: str | None = None, *, run_scenario: str | None = None):
     """Load a config when one is explicitly, environmentally, or persistently available."""
 
-    from spatial_vtk.config import SpatialVTKConfig
-
     path = _effective_config_path(config_path)
     if path is None and not run_scenario:
         return None
+    if path is None:
+        raise ValueError("No Spatial-VTK config was found. Pass --config or run 'svtk config set PATH'.")
+    from spatial_vtk.config import SpatialVTKConfig
+
     return SpatialVTKConfig.from_file(path, run_scenario=run_scenario)
 
 
 def _required_cli_config(config_path: str | None = None, *, run_scenario: str | None = None):
     """Load a config or raise a clear CLI-oriented error."""
 
+    path = _required_config_path(config_path)
     from spatial_vtk.config import SpatialVTKConfig
 
-    return SpatialVTKConfig.from_file(_required_config_path(config_path), run_scenario=run_scenario)
+    return SpatialVTKConfig.from_file(path, run_scenario=run_scenario)
 
 
 def _configured_output_path(
@@ -2075,10 +2130,10 @@ def _cmd_qc_summaries(args: argparse.Namespace) -> int:
 def _cmd_metrics_plan(args: argparse.Namespace) -> int:
     """Run ``svtk metrics plan``."""
 
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.io import metric_plan_from_config
     from spatial_vtk.metrics import plan_metric_tasks, tasks_to_frame, write_task_manifest
 
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
     observed_inventory = Path(args.observed_inventory).expanduser() if args.observed_inventory else _configured_output_path("observed_metric_inventory", config=config)
     synthetic_inventory = Path(args.synthetic_inventory).expanduser() if args.synthetic_inventory else _configured_output_path("synthetic_metric_inventory", config=config)
     output = (
@@ -2113,11 +2168,11 @@ def _cmd_metrics_plan(args: argparse.Namespace) -> int:
 def _cmd_metrics_inventories(args: argparse.Namespace) -> int:
     """Run ``svtk metrics inventories``."""
 
+    needs_config = not (args.trace_metadata and args.observed_output and args.synthetic_output)
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.metrics import build_metric_waveform_inventories_from_trace_metadata
     from spatial_vtk.io.preprocessing import preprocessed_waveform_metadata_paths
 
-    needs_config = not (args.trace_metadata and args.observed_output and args.synthetic_output)
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     trace_metadata = (
         Path(args.trace_metadata).expanduser()
         if args.trace_metadata
@@ -2158,10 +2213,10 @@ def _cmd_metrics_inventories(args: argparse.Namespace) -> int:
 def _cmd_metrics_estimate(args: argparse.Namespace) -> int:
     """Run ``svtk metrics estimate``."""
 
-    from spatial_vtk.metrics import read_task_manifest, summarize_metric_tasks
-
     needs_config = args.tasks is None and args.manifest is None
     config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    from spatial_vtk.metrics import read_task_manifest, summarize_metric_tasks
+
     if args.tasks:
         tasks = Path(args.tasks).expanduser()
     else:
@@ -2210,14 +2265,14 @@ def _metric_plan_overrides(args: argparse.Namespace) -> dict[str, Any]:
 def _cmd_metrics_run(args: argparse.Namespace) -> int:
     """Run ``svtk metrics run``."""
 
-    from spatial_vtk.metrics import run_metric_tasks, tasks_from_frame, write_metric_rows
-
     needs_config = args.tasks is None or args.output is None
     config = (
         _required_cli_config(args.config, run_scenario=args.run_scenario)
         if needs_config
         else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     )
+    from spatial_vtk.metrics import run_metric_tasks, tasks_from_frame, write_metric_rows
+
     tasks_path = Path(args.tasks).expanduser() if args.tasks else _configured_output_path("metric_tasks", config=config)
     output = Path(args.output).expanduser() if args.output else _configured_output_path("metric_rows", config=config)
     qc_table = Path(args.qc_table).expanduser() if args.qc_table else None
@@ -2231,9 +2286,9 @@ def _cmd_metrics_run(args: argparse.Namespace) -> int:
 def _cmd_metrics_run_batch(args: argparse.Namespace) -> int:
     """Run ``svtk metrics run-batch``."""
 
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if args.manifest is None else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.metrics import run_manifest_batch
 
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if args.manifest is None else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config, prefer_cached=True)
     path = run_manifest_batch(manifest, batch_index=args.batch_index, overwrite=args.overwrite)
     print(path)
@@ -2243,9 +2298,9 @@ def _cmd_metrics_run_batch(args: argparse.Namespace) -> int:
 def _cmd_metrics_batch_status(args: argparse.Namespace) -> int:
     """Run ``svtk metrics batch-status``."""
 
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if args.manifest is None else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.metrics import metric_manifest_batch_status
 
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if args.manifest is None else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config, prefer_cached=True)
     status = metric_manifest_batch_status(manifest)
     _print_payload(status.to_dict(missing_limit=args.missing_limit), as_json=args.json)
@@ -2255,10 +2310,10 @@ def _cmd_metrics_batch_status(args: argparse.Namespace) -> int:
 def _cmd_metrics_cache_waveforms(args: argparse.Namespace) -> int:
     """Run ``svtk metrics cache-waveforms``."""
 
-    from spatial_vtk.metrics import cache_metric_manifest_waveforms
-
     needs_config = not (args.manifest and args.output and args.cache_root)
     config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    from spatial_vtk.metrics import cache_metric_manifest_waveforms
+
     manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config)
     output = Path(args.output).expanduser() if args.output else _configured_output_path("metric_manifest_cached", config=config)
     cache_root = Path(args.cache_root).expanduser() if args.cache_root else _metric_workflow_dir(config, "metric_ready_waveform_cache")
@@ -2289,10 +2344,10 @@ def _cmd_metrics_cache_waveforms(args: argparse.Namespace) -> int:
 def _cmd_metrics_merge_batches(args: argparse.Namespace) -> int:
     """Run ``svtk metrics merge-batches``."""
 
-    from spatial_vtk.metrics import merge_batch_outputs
-
     needs_config = not (args.manifest and args.output)
     config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    from spatial_vtk.metrics import merge_batch_outputs
+
     manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config, prefer_cached=True)
     output = Path(args.output).expanduser() if args.output else _configured_output_path("metric_rows", config=config)
     path = merge_batch_outputs(manifest, output, require_all=not args.allow_missing)
@@ -2303,10 +2358,10 @@ def _cmd_metrics_merge_batches(args: argparse.Namespace) -> int:
 def _cmd_metrics_outputs(args: argparse.Namespace) -> int:
     """Run ``svtk metrics outputs``."""
 
-    from spatial_vtk.metrics import write_metric_outputs
-
     needs_config = args.metrics is None or args.output_dir is None
     config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    from spatial_vtk.metrics import write_metric_outputs
+
     if config is not None:
         config.activate()
     metrics = Path(args.metrics).expanduser() if args.metrics else _configured_output_path("metric_rows", config=config)
@@ -2329,6 +2384,7 @@ def _cmd_metrics_outputs(args: argparse.Namespace) -> int:
 def _cmd_metrics_slurm(args: argparse.Namespace) -> int:
     """Run ``svtk metrics slurm``."""
 
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.metrics import (
         metric_manifest_batch_status,
         slurm_settings_from_config,
@@ -2336,7 +2392,6 @@ def _cmd_metrics_slurm(args: argparse.Namespace) -> int:
         write_metrics_slurm_script,
     )
 
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
     manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config, prefer_cached=True)
     output = Path(args.output).expanduser() if args.output else _metric_slurm_script_path(config)
     settings = slurm_settings_from_config(config)

@@ -38,6 +38,23 @@ def test_cli_main_reports_missing_runtime_dependency(monkeypatch, capsys):
     assert "Traceback" not in captured.err
 
 
+def test_cli_missing_config_reports_config_before_optional_dependencies(tmp_path, monkeypatch, capsys):
+    """Config-required workflow commands should report missing config before optional imports."""
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("SVTK_CONFIG_FILE", raising=False)
+    monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(tmp_path / "missing-settings.json"))
+
+    assert main(["metrics", "run"]) == 2
+
+    captured = capsys.readouterr()
+    assert "No Spatial-VTK config was found" in captured.err
+    assert "Pass --config or run 'svtk config set PATH'" in captured.err
+    assert "Missing Python dependency" not in captured.err
+    assert "No module named" not in captured.err
+    assert "Traceback" not in captured.err
+
+
 def test_cli_version(capsys):
     assert main(["--version"]) == 0
     captured = capsys.readouterr()
