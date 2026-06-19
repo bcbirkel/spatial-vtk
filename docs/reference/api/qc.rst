@@ -23,6 +23,9 @@ helpers without requiring notebooks to import lower-level builder modules.
        build_qc_drop_cause_table_from_qc_inventory,
        load_standard_qc_inputs,
        load_standard_qc_workflow_outputs,
+       qc_inventory_readiness_from_config,
+       qc_overlap_readiness_from_config,
+       qc_summary_readiness_from_config,
        run_qc_inventory_from_config,
        run_qc_summary_workflow_from_config,
        write_qc_inventory_overlap_from_config,
@@ -41,13 +44,22 @@ Public helpers exposed by ``spatial_vtk.qc``:
    * - ``run_qc_inventory_from_config``
      - Build or resume the configured waveform and metric QC inventory with
        checkpointed outputs for large datasets.
+   * - ``qc_inventory_readiness_from_config``
+     - Check whether configured event-station records, trace QC, and full QC
+       inventory outputs are ready without loading large tables.
    * - ``write_qc_inventory_overlap_from_config``
      - Write the observed/synthetic event-station overlap inventory used by
        pairwise metric planning.
+   * - ``qc_overlap_readiness_from_config``
+     - Check whether the configured full QC inventory and event-station table
+       are ready before writing the overlap inventory sidecar.
    * - ``run_qc_summary_workflow_from_config``
      - Build compact retention, drop-cause, post-QC record, and availability
        tables for figures and dashboards without loading the full inventory in a
        notebook.
+   * - ``qc_summary_readiness_from_config``
+     - Check whether compact QC summary/review outputs are missing or stale
+       from configured QC inventories without loading the inventories.
    * - ``load_standard_qc_inputs``
      - Load standard Step 2 prepared metadata tables and the configured QC
        output group without notebook-local Step 1 output-group table mapping.

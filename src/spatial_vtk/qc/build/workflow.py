@@ -22,7 +22,7 @@ from spatial_vtk.config.metric_catalog import metric_group_for
 from spatial_vtk.config.metrics import metrics_settings_from_config
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
-from spatial_vtk.io import output_group
+from spatial_vtk.io import OutputReadiness, output_group
 from spatial_vtk.io.inventory import build_file_inventory
 from spatial_vtk.io.tables import load_output_table, write_output_table, write_table
 from spatial_vtk.io.waveforms import WaveformPreprocessing, read_waveform_file, select_waveform_trace
@@ -201,6 +201,76 @@ def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None
     if run_scenario:
         return SpatialVTKConfig.from_file(cfg.config_path, run_scenario=run_scenario).activate()
     return cfg
+
+
+def qc_inventory_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    qc_group_name: str = "step_02_qc",
+) -> OutputReadiness:
+    """Return readiness for configured full QC trace and inventory tables.
+
+    This helper owns the Step 2 input/output contract used by tutorial and
+    large-run notebooks before they call
+    :func:`spatial_vtk.config.run_notebook_step_if_needed`. It checks only
+    configured paths and file freshness; it does not load waveform or QC
+    tables.
+    """
+
+    config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    outputs = output_group(qc_group_name, cfg=config)
+    return outputs.readiness(
+        ("trace_qc_path", "qc_inventory_path"),
+        inputs=("event_station_path",),
+        sources=("event_station_path",),
+        missing_input_message="Event-station records are not ready yet.",
+    )
+
+
+def qc_overlap_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    qc_group_name: str = "step_02_qc",
+) -> OutputReadiness:
+    """Return readiness for the configured observed/synthetic overlap QC sidecar."""
+
+    config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    outputs = output_group(qc_group_name, cfg=config)
+    return outputs.readiness(
+        "qc_inventory_overlap_path",
+        inputs=("qc_inventory_path", "event_station_path"),
+        sources=("qc_inventory_path", "event_station_path"),
+        missing_input_message="Full QC inventory or event-station records are not ready yet.",
+    )
+
+
+def qc_summary_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    qc_group_name: str = "step_02_qc",
+) -> OutputReadiness:
+    """Return readiness for configured compact QC summary and review tables."""
+
+    config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    outputs = output_group(qc_group_name, cfg=config)
+    return outputs.readiness(
+        (
+            "comparison_eligible_path",
+            "retention_path",
+            "event_station_retention_path",
+            "availability_path",
+            "post_qc_records_path",
+            "drop_causes_overlap_path",
+            "drop_causes_path",
+            "manual_queue_path",
+        ),
+        inputs=("qc_inventory_overlap_path",),
+        sources=("qc_inventory_overlap_path", "qc_inventory_path"),
+        missing_input_message="Overlap QC sidecar is not ready yet.",
+    )
 
 
 def _progress(verbose: bool, message: str) -> None:
@@ -2692,6 +2762,9 @@ __all__ = [
     "load_standard_qc_workflow_outputs",
     "load_comparison_eligible_records",
     "QCSummaryWorkflowResult",
+    "qc_inventory_readiness_from_config",
+    "qc_overlap_readiness_from_config",
+    "qc_summary_readiness_from_config",
     "StandardQCInputResult",
     "StandardQCWorkflowOutputResult",
     "run_qc_summary_workflow",

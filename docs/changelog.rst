@@ -15,6 +15,8 @@ Changelog
     metric readiness cells.
   - Added a lightweight standard Step 2 QC output loader for large-run setup
     cells that need QC output status without loading prepared metadata tables.
+  - Added config-backed Step 2 QC readiness helpers for full QC inventory,
+    observed/synthetic overlap inventory, and compact QC summary workflows.
   - Added lightweight Step 4, Step 5, and Step 6 output-status loaders for
     large-run driver notebooks that need configured status tables and bounded
     previews without loading large plotting inputs.

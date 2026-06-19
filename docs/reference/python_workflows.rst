@@ -51,7 +51,11 @@ paths in cells.
        run_notebook_step_if_needed,
    )
    from spatial_vtk.io import event_rows_for_records, load_configured_input_paths, load_configured_input_tables
-   from spatial_vtk.qc import load_standard_qc_workflow_outputs, run_qc_inventory_from_config
+   from spatial_vtk.qc import (
+       load_standard_qc_workflow_outputs,
+       qc_inventory_readiness_from_config,
+       run_qc_inventory_from_config,
+   )
 
    context = notebook_run_context()
    cfg = context.cfg
@@ -59,11 +63,7 @@ paths in cells.
    step_outputs = qc_outputs.outputs
    display(configured_output_registry_preview_frame(cfg=cfg, kinds=("table",)))
    display(qc_outputs.status_frame())
-   readiness = step_outputs.readiness(
-       "trace_qc_path",
-       inputs=("event_station_path",),
-       sources=("event_station_path",),
-   )
+   readiness = qc_inventory_readiness_from_config(config_path=context.config_path)
 
    run_notebook_step_if_needed(
        context,

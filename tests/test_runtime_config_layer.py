@@ -100,8 +100,13 @@ from spatial_vtk.spatial import (
     spatial_derived_outputs_readiness_from_config,
     spatial_summary_readiness_from_config,
 )
+from spatial_vtk.qc import (
+    load_standard_qc_inputs,
+    qc_inventory_readiness_from_config,
+    qc_overlap_readiness_from_config,
+    qc_summary_readiness_from_config,
+)
 from spatial_vtk.spatial.plot import load_standard_geojson_plotting_inputs
-from spatial_vtk.qc import load_standard_qc_inputs
 
 
 def test_runtime_config_loads_paths_defaults_and_bounds(tmp_path, monkeypatch):
@@ -1832,6 +1837,71 @@ outputs:
         "pattern_similarity_path",
     }
     assert "metrics_long_path" in set(derived_rows.loc[derived_rows["role"].eq("input"), "name"])
+    clear_active_config()
+
+
+def test_qc_readiness_helpers_own_step02_contracts(tmp_path, monkeypatch):
+    """Step 2 notebooks should use package-owned QC readiness contracts."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    step_outputs = output_group("step_02_qc", cfg=cfg)
+
+    inventory_missing = qc_inventory_readiness_from_config(config_path=config_path)
+    assert inventory_missing.reason == "missing_inputs"
+    inventory_missing_rows = inventory_missing.status_frame()
+    assert set(inventory_missing_rows.loc[inventory_missing_rows["role"].eq("input"), "name"]) == {
+        "event_station_path",
+    }
+
+    step_outputs.event_station_path.parent.mkdir(parents=True, exist_ok=True)
+    step_outputs.event_station_path.write_text("event_id,station\nE1,STA\n", encoding="utf-8")
+    inventory_ready_to_run = qc_inventory_readiness_from_config(config_path=config_path)
+    assert inventory_ready_to_run.reason == "missing_outputs"
+    assert set(dict(inventory_ready_to_run.output_items)) == {"trace_qc_path", "qc_inventory_path"}
+
+    overlap_missing = qc_overlap_readiness_from_config(config_path=config_path)
+    assert overlap_missing.reason == "missing_inputs"
+    overlap_missing_rows = overlap_missing.status_frame()
+    assert set(overlap_missing_rows.loc[overlap_missing_rows["role"].eq("input"), "name"]) == {
+        "qc_inventory_path",
+        "event_station_path",
+    }
+
+    step_outputs.trace_qc_path.write_text("source,event_id,station,component,passband,qc_status\n", encoding="utf-8")
+    step_outputs.qc_inventory_path.write_text("source,event_id,station,component,passband,qc_status\n", encoding="utf-8")
+    overlap_ready_to_run = qc_overlap_readiness_from_config(config_path=config_path)
+    assert overlap_ready_to_run.reason == "missing_outputs"
+    assert dict(overlap_ready_to_run.output_items)["qc_inventory_overlap_path"] == step_outputs.qc_inventory_overlap_path
+
+    summary_missing = qc_summary_readiness_from_config(config_path=config_path)
+    assert summary_missing.reason == "missing_inputs"
+    summary_missing_rows = summary_missing.status_frame()
+    assert set(summary_missing_rows.loc[summary_missing_rows["role"].eq("input"), "name"]) == {
+        "qc_inventory_overlap_path",
+    }
+
+    step_outputs.qc_inventory_overlap_path.write_text(
+        "source,event_id,station,component,passband,qc_status\n",
+        encoding="utf-8",
+    )
+    summary_ready_to_run = qc_summary_readiness_from_config(config_path=config_path)
+    assert summary_ready_to_run.reason == "missing_outputs"
+    output_names = set(dict(summary_ready_to_run.output_items))
+    assert "comparison_eligible_path" in output_names
+    assert "manual_queue_path" in output_names
+    assert dict(summary_ready_to_run.output_items)["drop_causes_overlap_path"] == step_outputs.drop_causes_overlap_path
     clear_active_config()
 
 

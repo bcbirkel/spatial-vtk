@@ -69,6 +69,9 @@ def test_public_imports():
         load_standard_qc_inputs,
         load_standard_qc_workflow_outputs,
         load_trace_inventory_lookup,
+        qc_inventory_readiness_from_config,
+        qc_overlap_readiness_from_config,
+        qc_summary_readiness_from_config,
         slurm_settings_from_config,
     )
     from spatial_vtk.qc.build import slurm_settings_from_config as build_slurm_settings_from_config
@@ -209,6 +212,9 @@ def test_public_imports():
     assert callable(StandardQCWorkflowOutputResult)
     assert callable(load_standard_qc_inputs)
     assert callable(load_standard_qc_workflow_outputs)
+    assert callable(qc_inventory_readiness_from_config)
+    assert callable(qc_overlap_readiness_from_config)
+    assert callable(qc_summary_readiness_from_config)
     assert callable(slurm_settings_from_config)
     assert callable(build_slurm_settings_from_config)
     assert callable(run_boundary_corridor_workflow_from_config)
@@ -901,8 +907,11 @@ def test_qc_api_docs_use_public_package_entry_point():
     assert "lower-level summary rules module is implementation" in text
     for helper in (
         "run_qc_inventory_from_config",
+        "qc_inventory_readiness_from_config",
         "write_qc_inventory_overlap_from_config",
+        "qc_overlap_readiness_from_config",
         "run_qc_summary_workflow_from_config",
+        "qc_summary_readiness_from_config",
         "load_standard_qc_inputs",
         "load_standard_qc_workflow_outputs",
         "build_metric_pair_retention_table_from_qc_inventory",
@@ -1516,6 +1525,9 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.io.build_record_coverage_from_config",
         "spatial_vtk.qc.load_standard_qc_inputs",
         "spatial_vtk.qc.load_standard_qc_workflow_outputs",
+        "spatial_vtk.qc.qc_inventory_readiness_from_config",
+        "spatial_vtk.qc.qc_overlap_readiness_from_config",
+        "spatial_vtk.qc.qc_summary_readiness_from_config",
         "spatial_vtk.qc.run_qc_inventory_from_config",
         "spatial_vtk.qc.write_qc_inventory_overlap_from_config",
         "spatial_vtk.qc.run_qc_summary_workflow_from_config",
@@ -1559,8 +1571,9 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "without resolving dashboard summary paths in cells" in normalized_workflows
     assert "compatibility aliases" not in workflows
     assert "from spatial_vtk.config import (" in workflows
-    assert "from spatial_vtk.qc import load_standard_qc_workflow_outputs, run_qc_inventory_from_config" in workflows
+    assert "qc_inventory_readiness_from_config" in workflows
     assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in workflows
+    assert "readiness = qc_inventory_readiness_from_config(config_path=context.config_path)" in workflows
     assert "notebook_figure_settings" in workflows
     assert "render_notebook_figure" in workflows
     assert "from spatial_vtk.config.notebook import" not in workflows
