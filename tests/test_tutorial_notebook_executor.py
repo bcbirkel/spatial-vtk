@@ -672,9 +672,13 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "write_qc_inventory_overlap_from_config(" in standard_text
     assert "run_qc_summary_workflow_from_config(" in standard_text
     assert "run_notebook_step_if_needed(" in standard_text
+    assert "notebook_step_result(" in standard_text
     assert "qc_readiness = qc_outputs.readiness(" in standard_text
     assert "overlap_readiness = qc_outputs.readiness(" in standard_text
     assert "summary_readiness = qc_outputs.readiness(" in standard_text
+    assert '"reused": not qc_readiness.should_run' not in standard_text
+    assert '"reused": not overlap_readiness.should_run' not in standard_text
+    assert '"reused": not summary_readiness.should_run' not in standard_text
     assert "run_local=True" in standard_text
     assert "ingest_outputs.load_tables(" in standard_text
     assert "write_qc_figures_from_outputs(" in standard_text

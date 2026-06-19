@@ -1364,6 +1364,42 @@ def run_notebook_step_if_needed(
     return None
 
 
+def notebook_step_result(readiness: Any, **values: Any) -> dict[str, Any]:
+    """Return a compact JSON-friendly notebook result for a skipped step.
+
+    Notebook workflow cells often call :func:`run_notebook_step_if_needed` and
+    then need a displayable result even when the step is current and no function
+    ran. This helper keeps that fallback status in package code instead of
+    repeating ``{"path": str(...), "reused": ...}`` dictionaries in notebook
+    cells.
+
+    Parameters
+    ----------
+    readiness
+        Object with ``should_run``, ``reason``, and ``message`` attributes,
+        such as ``OutputReadiness``.
+    **values
+        Additional named values to include in the returned result. ``Path``
+        values are converted to strings so the result can be printed in
+        notebooks or Slurm logs.
+
+    Returns
+    -------
+    dict
+        JSON-friendly status dictionary containing ``reused``, ``reason``,
+        ``message``, and any supplied values.
+    """
+
+    result: dict[str, Any] = {
+        "reused": not bool(getattr(readiness, "should_run", False)),
+        "reason": str(getattr(readiness, "reason", "")),
+        "message": str(getattr(readiness, "message", "")),
+    }
+    for key, value in values.items():
+        result[key] = _notebook_json_payload(value)
+    return result
+
+
 def _display_notebook_readiness_status(readiness: Any, *, display_fn: Callable[[Any], Any] | None = None) -> None:
     """Display one readiness status frame in notebooks or plain Python."""
 
@@ -1868,6 +1904,7 @@ __all__ = [
     "notebook_timer",
     "notebook_timing_enabled",
     "notebook_run_context",
+    "notebook_step_result",
     "prepare_notebook_geospatial_environment",
     "print_run_time",
     "print_notebook_context",

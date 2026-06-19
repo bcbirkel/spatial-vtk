@@ -23,6 +23,7 @@ from spatial_vtk.config import (
     notebook_figure_settings,
     notebook_figure_sidecar_settings,
     notebook_run_context,
+    notebook_step_result,
     display_output_table_previews,
     get_saved_config_path,
     load_config,
@@ -2293,6 +2294,29 @@ def test_run_notebook_step_if_needed_displays_and_delegates(tmp_path, monkeypatc
     assert calls[0][2]["memory"] == "8G"
     assert calls[0][2]["cpus"] == 2
     assert list(displayed[0]["state"]) == ["missing", "ready"]
+
+
+def test_notebook_step_result_reports_reuse_and_named_values(tmp_path):
+    """Notebook skipped-step fallbacks should stay compact and JSON-friendly."""
+
+    output = tmp_path / "outputs" / "summary.csv"
+    output.parent.mkdir()
+    output.write_text("value\n1\n", encoding="utf-8")
+    readiness = output_readiness({"summary": output})
+
+    result = notebook_step_result(
+        readiness,
+        summary_path=output,
+        nested={"output": output},
+        row_count=1,
+    )
+
+    assert result["reused"] is True
+    assert result["reason"] == "current"
+    assert result["message"].startswith("Outputs are current; skipping")
+    assert result["summary_path"] == str(output)
+    assert result["nested"] == {"output": str(output)}
+    assert result["row_count"] == 1
 
 
 def test_finish_figure_uses_rich_display_in_notebooks(monkeypatch):

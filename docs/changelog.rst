@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-19
+   - Added ``notebook_step_result()`` and rewired the standard Step 2 QC
+     notebook to use it for current/skipped workflow-step status. This keeps
+     ``reused`` flags, readiness messages, and path string conversion in
+     package code instead of inline fallback dictionaries in notebook cells.
    - Updated ``run_notebook_step_if_needed()`` so readiness-aware notebook cells
      print the reason a package workflow step is running before local execution
      or Slurm script generation. This makes skip/rebuild decisions visible in
