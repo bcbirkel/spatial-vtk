@@ -24,9 +24,11 @@ def test_public_imports():
     )
     from spatial_vtk.metrics import (
         METRIC_NAMES,
+        StandardMetricWorkflowOutputResult,
         amplitude_spectrum,
         calculate_metrics_for_pairs,
         compute_metrics_pair,
+        load_standard_metric_workflow_outputs,
         metric_batch_merge_readiness_from_config,
         metric_manifest_batch_status,
         metric_outputs_readiness_from_config,
@@ -156,6 +158,8 @@ def test_public_imports():
     assert callable(amplitude_spectrum)
     assert callable(calculate_metrics_for_pairs)
     assert callable(compute_metrics_pair)
+    assert callable(StandardMetricWorkflowOutputResult)
+    assert callable(load_standard_metric_workflow_outputs)
     assert callable(metric_batch_merge_readiness_from_config)
     assert callable(metric_manifest_batch_status)
     assert callable(metric_outputs_readiness_from_config)
@@ -361,11 +365,18 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
 
         import spatial_vtk.qc
         import spatial_vtk.qc.build
+        import spatial_vtk.metrics.workflow
         import spatial_vtk.visualize
         import spatial_vtk.visualize.qc
         import spatial_vtk.visualize.dashboard
 
         forbidden_after_package_import = {
+            "pandas",
+            "yaml",
+            "spatial_vtk.metrics.workflow.configured",
+            "spatial_vtk.metrics.workflow.execution",
+            "spatial_vtk.metrics.workflow.outputs",
+            "spatial_vtk.metrics.workflow.tasks",
             "spatial_vtk.qc.build.inventory",
             "spatial_vtk.visualize.figure_io",
             "spatial_vtk.visualize.qc.retention",
@@ -380,10 +391,13 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
             raise SystemExit(f"unexpected eager imports: {sorted(loaded)}")
 
         from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
+        from spatial_vtk.metrics import StandardMetricWorkflowOutputResult, load_standard_metric_workflow_outputs
         from spatial_vtk.visualize import read_figure_sidecar_metadata, write_figure_row_sidecar
         from spatial_vtk.visualize.qc import load_trace_qc_summary
         from spatial_vtk.visualize.dashboard import dashboard_readiness_summary_frame, launch_configured_metrics_dashboard
 
+        assert StandardMetricWorkflowOutputResult.__module__ == "spatial_vtk.metrics.workflow.standard"
+        assert load_standard_metric_workflow_outputs.__module__ == "spatial_vtk.metrics.workflow.standard"
         assert load_trace_inventory_lookup.__module__ == "spatial_vtk.qc.build.filtering"
         assert slurm_settings_from_config.__module__ == "spatial_vtk.qc.build.slurm"
         assert read_figure_sidecar_metadata.__module__ == "spatial_vtk.visualize.figure_sidecars"
@@ -393,6 +407,12 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         assert launch_configured_metrics_dashboard.__module__ == "spatial_vtk.visualize.dashboard.launch"
 
         forbidden_after_light_import = {
+            "pandas",
+            "yaml",
+            "spatial_vtk.metrics.workflow.configured",
+            "spatial_vtk.metrics.workflow.execution",
+            "spatial_vtk.metrics.workflow.outputs",
+            "spatial_vtk.metrics.workflow.tasks",
             "spatial_vtk.qc.build.inventory",
             "spatial_vtk.visualize.figure_io",
             "spatial_vtk.visualize.qc.retention",
@@ -543,6 +563,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
         "build_metric_waveform_inventories_from_config",
         "plan_metric_tasks_from_config",
         "cache_metric_manifest_waveforms",
+        "load_standard_metric_workflow_outputs",
         "metric_slurm_submission_readiness_from_config",
         "write_metrics_slurm_script_from_config",
         "read_task_manifest",
@@ -570,6 +591,8 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "``PSA`` and ``FAS`` are broadband spectral metrics" in text
     assert "writes blank\n``passband`` values for spectral tasks" in text
     assert "older output table contains PSA rows repeated under passband labels" in text
+    assert ".. autoclass:: spatial_vtk.metrics.workflow.StandardMetricWorkflowOutputResult" in text
+    assert ".. autofunction:: spatial_vtk.metrics.workflow.load_standard_metric_workflow_outputs" in text
     forbidden_modules = (
         "spatial_vtk.metrics.calculate.amplitudes",
         "spatial_vtk.metrics.calculate.arrival_picks",
@@ -1009,6 +1032,7 @@ def test_core_api_docs_show_stable_start_here_imports():
             "metric_manifest_batch_status",
             "metric_slurm_submission_readiness",
             "metric_slurm_submission_readiness_from_config",
+            "load_standard_metric_workflow_outputs",
             "write_metric_outputs_from_config",
         ],
         "qc.rst": [
@@ -1371,6 +1395,7 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.metrics.build_metric_waveform_inventories_from_config",
         "spatial_vtk.metrics.plan_metric_tasks_from_config",
         "spatial_vtk.metrics.summarize_metric_snapshot_tasks_from_config",
+        "spatial_vtk.metrics.load_standard_metric_workflow_outputs",
         "spatial_vtk.metrics.metric_slurm_submission_readiness_from_config",
         "spatial_vtk.metrics.write_metrics_slurm_script_from_config",
         "spatial_vtk.metrics.merge_metric_batches_from_config",
@@ -1517,6 +1542,7 @@ def test_python_workflow_docs_prefer_region_boxplot_notebook_settings_wrapper():
     assert "Standard Notebook Input Helpers" in workflows
     assert "the preferred pattern for standard notebooks" in workflows
     assert "``spatial_vtk.qc.load_standard_qc_inputs``" in workflows
+    assert "``spatial_vtk.metrics.load_standard_metric_workflow_outputs``" in workflows
     assert "``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``" in workflows
     assert "``spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs``" in workflows
     assert "``spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs``" in workflows

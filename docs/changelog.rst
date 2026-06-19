@@ -11,6 +11,8 @@ Changelog
   - Added standard notebook input/output loaders for QC, spatial summaries,
     GeoJSON plotting, and Step 5 readiness checks so notebooks no longer
     duplicate config path plumbing.
+  - Added a standard Step 3 metric output loader for task-estimate,
+    task-preview, and ``metrics_long`` notebook previews.
   - Added output-registry preview helpers, path-backed table preview helpers,
     workflow-step status helpers, and bounded pattern-similarity preview
     helpers for notebook display cells.

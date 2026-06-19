@@ -4,7 +4,8 @@ Purpose
 -------
 This package turns prepared waveform inventories and QC inventories into
 metric task manifests, batch outputs, merged metric tables, and generic SLURM
-array scripts.
+array scripts. Public names are loaded lazily so documentation and CLI help can
+inspect the package without importing pandas-heavy workflow modules.
 
 Usage examples
 --------------
@@ -18,116 +19,60 @@ from __future__ import annotations
 from importlib import import_module
 from typing import Any
 
-from spatial_vtk.metrics.workflow.outputs import (
-    prepare_metric_workflow_outputs,
-    write_metric_outputs,
-)
-from spatial_vtk.metrics.workflow.configured import (
-    build_metric_waveform_inventories_from_config,
-    metric_batch_merge_readiness_from_config,
-    metric_outputs_readiness_from_config,
-    metric_slurm_submission_readiness_from_config,
-    merge_metric_batches_from_config,
-    plan_metric_tasks_from_config,
-    summarize_metric_snapshot_tasks_from_config,
-    write_metric_outputs_from_config,
-    write_metrics_slurm_script_from_config,
-)
-from spatial_vtk.metrics.workflow.inventory import (
-    MetricWaveformInventoryResult,
-    build_metric_waveform_inventories_from_trace_metadata,
-)
-from spatial_vtk.metrics.workflow.run import (
-    calculate_task_rows,
-    run_metric_tasks,
-    write_metric_rows,
-)
-from spatial_vtk.metrics.workflow.slurm import (
-    SlurmSettings,
-    slurm_settings_from_config,
-    submit_metrics_slurm_job,
-    write_metrics_slurm_script,
-)
-from spatial_vtk.metrics.workflow.tasks import (
-    MetricWorkflowTask,
-    metric_group_for,
-    plan_metric_tasks,
-    resolve_metric_names,
-    summarize_metric_tasks,
-    tasks_from_frame,
-    tasks_to_frame,
-)
 
-
-_EXECUTION_EXPORTS = {
-    "MetricManifestBatchStatus",
-    "MetricSlurmSubmissionReadiness",
-    "MetricWorkflowManifest",
-    "chunk_tasks",
-    "merge_batch_outputs",
-    "metric_manifest_batch_status",
-    "metric_slurm_submission_readiness",
-    "read_task_manifest",
-    "run_manifest_batch",
-    "write_task_manifest",
-}
-_CACHE_EXPORTS = {
-    "MetricWaveformCacheResult",
-    "cache_metric_manifest_waveforms",
+_EXPORT_MODULES = {
+    "MetricManifestBatchStatus": "spatial_vtk.metrics.workflow.execution",
+    "MetricSlurmSubmissionReadiness": "spatial_vtk.metrics.workflow.execution",
+    "MetricWaveformCacheResult": "spatial_vtk.metrics.workflow.cache",
+    "MetricWaveformInventoryResult": "spatial_vtk.metrics.workflow.inventory",
+    "MetricWorkflowManifest": "spatial_vtk.metrics.workflow.execution",
+    "MetricWorkflowTask": "spatial_vtk.metrics.workflow.tasks",
+    "SlurmSettings": "spatial_vtk.metrics.workflow.slurm",
+    "StandardMetricWorkflowOutputResult": "spatial_vtk.metrics.workflow.standard",
+    "build_metric_waveform_inventories_from_config": "spatial_vtk.metrics.workflow.configured",
+    "build_metric_waveform_inventories_from_trace_metadata": "spatial_vtk.metrics.workflow.inventory",
+    "cache_metric_manifest_waveforms": "spatial_vtk.metrics.workflow.cache",
+    "calculate_task_rows": "spatial_vtk.metrics.workflow.run",
+    "chunk_tasks": "spatial_vtk.metrics.workflow.execution",
+    "load_standard_metric_workflow_outputs": "spatial_vtk.metrics.workflow.standard",
+    "merge_batch_outputs": "spatial_vtk.metrics.workflow.execution",
+    "merge_metric_batches_from_config": "spatial_vtk.metrics.workflow.configured",
+    "metric_batch_merge_readiness_from_config": "spatial_vtk.metrics.workflow.configured",
+    "metric_group_for": "spatial_vtk.metrics.workflow.tasks",
+    "metric_manifest_batch_status": "spatial_vtk.metrics.workflow.execution",
+    "metric_outputs_readiness_from_config": "spatial_vtk.metrics.workflow.configured",
+    "metric_slurm_submission_readiness": "spatial_vtk.metrics.workflow.execution",
+    "metric_slurm_submission_readiness_from_config": "spatial_vtk.metrics.workflow.configured",
+    "plan_metric_tasks": "spatial_vtk.metrics.workflow.tasks",
+    "plan_metric_tasks_from_config": "spatial_vtk.metrics.workflow.configured",
+    "prepare_metric_workflow_outputs": "spatial_vtk.metrics.workflow.outputs",
+    "read_task_manifest": "spatial_vtk.metrics.workflow.execution",
+    "resolve_metric_names": "spatial_vtk.metrics.workflow.tasks",
+    "run_manifest_batch": "spatial_vtk.metrics.workflow.execution",
+    "run_metric_tasks": "spatial_vtk.metrics.workflow.run",
+    "slurm_settings_from_config": "spatial_vtk.metrics.workflow.slurm",
+    "submit_metrics_slurm_job": "spatial_vtk.metrics.workflow.slurm",
+    "summarize_metric_snapshot_tasks_from_config": "spatial_vtk.metrics.workflow.configured",
+    "summarize_metric_tasks": "spatial_vtk.metrics.workflow.tasks",
+    "tasks_from_frame": "spatial_vtk.metrics.workflow.tasks",
+    "tasks_to_frame": "spatial_vtk.metrics.workflow.tasks",
+    "write_metric_outputs": "spatial_vtk.metrics.workflow.outputs",
+    "write_metric_outputs_from_config": "spatial_vtk.metrics.workflow.configured",
+    "write_metric_rows": "spatial_vtk.metrics.workflow.run",
+    "write_metrics_slurm_script": "spatial_vtk.metrics.workflow.slurm",
+    "write_metrics_slurm_script_from_config": "spatial_vtk.metrics.workflow.configured",
+    "write_task_manifest": "spatial_vtk.metrics.workflow.execution",
 }
 
-__all__ = [
-    "MetricWaveformCacheResult",
-    "MetricWaveformInventoryResult",
-    "MetricManifestBatchStatus",
-    "MetricSlurmSubmissionReadiness",
-    "MetricWorkflowManifest",
-    "MetricWorkflowTask",
-    "SlurmSettings",
-    "build_metric_waveform_inventories_from_config",
-    "calculate_task_rows",
-    "cache_metric_manifest_waveforms",
-    "build_metric_waveform_inventories_from_trace_metadata",
-    "chunk_tasks",
-    "metric_batch_merge_readiness_from_config",
-    "merge_metric_batches_from_config",
-    "merge_batch_outputs",
-    "metric_manifest_batch_status",
-    "metric_outputs_readiness_from_config",
-    "metric_slurm_submission_readiness",
-    "metric_slurm_submission_readiness_from_config",
-    "metric_group_for",
-    "plan_metric_tasks",
-    "plan_metric_tasks_from_config",
-    "prepare_metric_workflow_outputs",
-    "read_task_manifest",
-    "resolve_metric_names",
-    "run_manifest_batch",
-    "run_metric_tasks",
-    "slurm_settings_from_config",
-    "submit_metrics_slurm_job",
-    "summarize_metric_snapshot_tasks_from_config",
-    "summarize_metric_tasks",
-    "tasks_from_frame",
-    "tasks_to_frame",
-    "write_metric_rows",
-    "write_metric_outputs",
-    "write_metric_outputs_from_config",
-    "write_metrics_slurm_script",
-    "write_metrics_slurm_script_from_config",
-    "write_task_manifest",
-]
+__all__ = sorted(_EXPORT_MODULES)
 
 
 def __getattr__(name: str) -> Any:
-    """Load execution helpers lazily to keep ``python -m`` execution clean."""
+    """Load one metric workflow helper lazily."""
 
-    if name in _EXECUTION_EXPORTS:
-        value = getattr(import_module("spatial_vtk.metrics.workflow.execution"), name)
-        globals()[name] = value
-        return value
-    if name in _CACHE_EXPORTS:
-        value = getattr(import_module("spatial_vtk.metrics.workflow.cache"), name)
-        globals()[name] = value
-        return value
-    raise AttributeError(f"module 'spatial_vtk.metrics.workflow' has no attribute {name!r}")
+    module_name = _EXPORT_MODULES.get(name)
+    if module_name is None:
+        raise AttributeError(f"module 'spatial_vtk.metrics.workflow' has no attribute {name!r}")
+    value = getattr(import_module(module_name), name)
+    globals()[name] = value
+    return value

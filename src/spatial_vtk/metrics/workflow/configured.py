@@ -16,26 +16,11 @@ from typing import Any
 
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
-from spatial_vtk.io import metric_plan_from_config
 from spatial_vtk.io.output_paths import OutputReadiness, output_readiness
-from spatial_vtk.io.preprocessing import preprocessed_waveform_metadata_paths
-from spatial_vtk.io.tables import read_table, write_table
-from spatial_vtk.metrics.workflow.execution import (
-    MetricSlurmSubmissionReadiness,
-    merge_batch_outputs,
-    metric_manifest_batch_status,
-    metric_slurm_submission_readiness,
-    write_task_manifest,
+from spatial_vtk.metrics.workflow.standard import (
+    StandardMetricWorkflowOutputResult,
+    load_standard_metric_workflow_outputs,
 )
-from spatial_vtk.metrics.workflow.inventory import build_metric_waveform_inventories_from_trace_metadata
-from spatial_vtk.metrics.workflow.outputs import write_metric_outputs
-from spatial_vtk.metrics.workflow.slurm import (
-    slurm_settings_from_config,
-    submit_metrics_slurm_job,
-    write_metrics_slurm_script,
-)
-from spatial_vtk.metrics.workflow.tasks import plan_metric_tasks, tasks_to_frame
-from spatial_vtk.metrics.workflow.tasks import summarize_metric_tasks
 
 
 def build_metric_waveform_inventories_from_config(
@@ -52,6 +37,9 @@ def build_metric_waveform_inventories_from_config(
     verbose: bool = False,
 ) -> dict[str, object]:
     """Build observed/synthetic metric inventories from configured metadata."""
+
+    from spatial_vtk.io.preprocessing import preprocessed_waveform_metadata_paths
+    from spatial_vtk.metrics.workflow.inventory import build_metric_waveform_inventories_from_trace_metadata
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
     trace_metadata_path = (
@@ -108,6 +96,10 @@ def plan_metric_tasks_from_config(
     overrides: dict[str, Any] | None = None,
 ) -> dict[str, object]:
     """Plan metric tasks from configured inventories and optionally write a manifest."""
+
+    from spatial_vtk.io.plans import metric_plan_from_config
+    from spatial_vtk.metrics.workflow.execution import write_task_manifest
+    from spatial_vtk.metrics.workflow.tasks import plan_metric_tasks, tasks_to_frame
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
     observed_path = (
@@ -200,6 +192,9 @@ def summarize_metric_snapshot_tasks_from_config(
     compact JSON-ready summary.
     """
 
+    from spatial_vtk.io.tables import read_table, write_table
+    from spatial_vtk.metrics.workflow.tasks import summarize_metric_tasks
+
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
     snapshot_path = (
         Path(metric_snapshot).expanduser()
@@ -247,6 +242,13 @@ def write_metrics_slurm_script_from_config(
     submit: bool = False,
 ) -> dict[str, object]:
     """Write or submit a metric Slurm array script from configured defaults."""
+
+    from spatial_vtk.metrics.workflow.execution import metric_manifest_batch_status
+    from spatial_vtk.metrics.workflow.slurm import (
+        slurm_settings_from_config,
+        submit_metrics_slurm_job,
+        write_metrics_slurm_script,
+    )
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
     manifest_path = Path(manifest).expanduser() if manifest is not None else _default_metric_manifest_path(config, prefer_cached=True)
@@ -305,7 +307,7 @@ def metric_slurm_submission_readiness_from_config(
     run_scenario: str | None = None,
     manifest: str | Path | None = None,
     overwrite: bool = False,
-) -> OutputReadiness | MetricSlurmSubmissionReadiness:
+) -> OutputReadiness | Any:
     """Return readiness for writing or submitting configured metric Slurm work.
 
     The returned object is compatible with
@@ -314,6 +316,11 @@ def metric_slurm_submission_readiness_from_config(
     shown as a missing input. Once the manifest exists, the decision reports
     missing metric batch outputs through ``metric_slurm_submission_readiness``.
     """
+
+    from spatial_vtk.metrics.workflow.execution import (
+        metric_manifest_batch_status,
+        metric_slurm_submission_readiness,
+    )
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
     manifest_path = (
@@ -341,6 +348,8 @@ def metric_batch_merge_readiness_from_config(
     missing_batch_display_limit: int = 20,
 ) -> OutputReadiness:
     """Return readiness for merging configured metric batch outputs."""
+
+    from spatial_vtk.metrics.workflow.execution import metric_manifest_batch_status
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
     manifest_path = (
@@ -432,6 +441,8 @@ def merge_metric_batches_from_config(
 ) -> dict[str, object]:
     """Merge configured metric batch outputs into the standard metric row table."""
 
+    from spatial_vtk.metrics.workflow.execution import merge_batch_outputs
+
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
     manifest_path = (
         Path(manifest).expanduser()
@@ -465,6 +476,8 @@ def write_metric_outputs_from_config(
     dashboard_partitioned: bool = True,
 ) -> dict[str, str]:
     """Write configured downstream metric tables and dashboard datasets."""
+
+    from spatial_vtk.metrics.workflow.outputs import write_metric_outputs
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
     metric_rows_path = Path(metric_rows).expanduser() if metric_rows is not None else _configured_metric_rows_or_snapshot(config)
@@ -586,11 +599,13 @@ def _metric_snapshot_task_table(snapshot: Any, config: SpatialVTKConfig) -> Any:
 
 __all__ = [
     "build_metric_waveform_inventories_from_config",
+    "load_standard_metric_workflow_outputs",
     "metric_batch_merge_readiness_from_config",
     "metric_outputs_readiness_from_config",
     "metric_slurm_submission_readiness_from_config",
     "merge_metric_batches_from_config",
     "plan_metric_tasks_from_config",
+    "StandardMetricWorkflowOutputResult",
     "summarize_metric_snapshot_tasks_from_config",
     "write_metric_outputs_from_config",
     "write_metrics_slurm_script_from_config",

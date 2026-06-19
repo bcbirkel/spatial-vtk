@@ -30,6 +30,7 @@ stable package surface.
        metric_batch_merge_readiness_from_config,
        metric_slurm_submission_readiness,
        metric_slurm_submission_readiness_from_config,
+       load_standard_metric_workflow_outputs,
        plan_metric_tasks_from_config,
        read_task_manifest,
        run_manifest_batch,
@@ -94,6 +95,9 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
    * - ``write_metric_outputs_from_config``
      - Write downstream long, enriched, dashboard, and summary metric outputs
        from registered config paths.
+   * - ``load_standard_metric_workflow_outputs``
+     - Load configured Step 3 output handles and bounded preview helpers for
+       standard metric notebooks.
 
 ``PSA`` and ``FAS`` are broadband spectral metrics in the file-based workflow.
 Task planning separates them from passband-dependent metrics, writes blank
@@ -105,6 +109,11 @@ older output table contains PSA rows repeated under passband labels.
 .. automodule:: spatial_vtk.metrics.workflow
    :members:
    :exclude-members: MetricWorkflowTask, SlurmSettings
+
+.. autoclass:: spatial_vtk.metrics.workflow.StandardMetricWorkflowOutputResult
+   :members:
+
+.. autofunction:: spatial_vtk.metrics.workflow.load_standard_metric_workflow_outputs
 
 Import workflow helpers from ``spatial_vtk.metrics`` or
 ``spatial_vtk.metrics.workflow``. The configured, inventory, cache,
