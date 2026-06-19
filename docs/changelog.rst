@@ -4,6 +4,10 @@ Changelog
 2026-06-19
 ----------
 
+- Added a public workflow-helper table to the Metrics API reference so
+  large-run notebooks and scripts can find metric inventory, manifest, Slurm,
+  batch, merge, and output helpers from ``spatial_vtk.metrics`` without
+  reaching into implementation modules.
 - Aligned the README source-checkout install command with the tutorial runtime
   docs so fresh clones install notebook and waveform extras needed by the
   committed examples.

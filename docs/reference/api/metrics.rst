@@ -21,15 +21,21 @@ stable package surface.
 .. code-block:: python
 
    from spatial_vtk.metrics import (
+       MetricWorkflowTask,
        build_metric_waveform_inventories_from_config,
        cache_metric_manifest_waveforms,
+       merge_batch_outputs,
        merge_metric_batches_from_config,
        metric_manifest_batch_status,
+       metric_batch_merge_readiness_from_config,
        metric_slurm_submission_readiness,
        metric_slurm_submission_readiness_from_config,
        plan_metric_tasks_from_config,
+       read_task_manifest,
+       run_manifest_batch,
        submit_metrics_slurm_job,
        write_metric_outputs_from_config,
+       write_metrics_slurm_script_from_config,
    )
 
 .. automodule:: spatial_vtk.metrics
@@ -81,6 +87,39 @@ Notebook and CLI workflows should import metric planning, execution, summary,
 and output helpers from the stable ``spatial_vtk.metrics`` package entry
 point. The implementation modules below document the lower-level organization
 for users who need narrower module references.
+
+Public workflow helpers exposed by ``spatial_vtk.metrics``:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Helper
+     - Use
+   * - ``build_metric_waveform_inventories_from_config``
+     - Build observed and synthetic metric-ready waveform inventories from the
+       active config and preprocessed waveform metadata.
+   * - ``plan_metric_tasks_from_config``
+     - Plan metric tasks from configured inventories, QC overlap tables, and
+       metric settings.
+   * - ``cache_metric_manifest_waveforms``
+     - Materialize metric-ready waveform cache files for repeated large-run
+       batch execution.
+   * - ``metric_slurm_submission_readiness_from_config``
+     - Check whether a metric Slurm array should be submitted or skipped.
+   * - ``write_metrics_slurm_script_from_config``
+     - Write a config-backed metric Slurm array script without notebook-local
+       path plumbing.
+   * - ``read_task_manifest`` and ``run_manifest_batch``
+     - Load a manifest and execute one planned batch from Python or a generated
+       worker script.
+   * - ``metric_manifest_batch_status`` and
+       ``metric_batch_merge_readiness_from_config``
+     - Report which metric batches are complete before merging outputs.
+   * - ``merge_batch_outputs`` and ``merge_metric_batches_from_config``
+     - Merge completed metric batch files into the registered metric-row table.
+   * - ``write_metric_outputs_from_config``
+     - Write downstream long, enriched, dashboard, and summary metric outputs
+       from registered config paths.
 
 ``PSA`` and ``FAS`` are broadband spectral metrics in the file-based workflow.
 Task planning separates them from passband-dependent metrics, writes blank

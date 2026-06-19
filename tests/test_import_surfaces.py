@@ -399,6 +399,22 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert ".. automodule:: spatial_vtk.metrics.workflow.inventory\n" in text
     assert ".. automodule:: spatial_vtk.metrics.workflow.cache\n" in text
     assert "helpers from the stable ``spatial_vtk.metrics`` package entry" in text
+    assert "Public workflow helpers exposed by ``spatial_vtk.metrics``" in text
+    for helper in (
+        "build_metric_waveform_inventories_from_config",
+        "plan_metric_tasks_from_config",
+        "cache_metric_manifest_waveforms",
+        "metric_slurm_submission_readiness_from_config",
+        "write_metrics_slurm_script_from_config",
+        "read_task_manifest",
+        "run_manifest_batch",
+        "metric_manifest_batch_status",
+        "metric_batch_merge_readiness_from_config",
+        "merge_batch_outputs",
+        "merge_metric_batches_from_config",
+        "write_metric_outputs_from_config",
+    ):
+        assert f"``{helper}``" in text
     assert "from spatial_vtk.metrics.plot import (" in text
     assert ".. automodule:: spatial_vtk.metrics.plot\n" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext" in text
@@ -453,6 +469,29 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     )
     for token in forbidden:
         assert token not in text
+
+
+def test_metrics_api_docs_workflow_helpers_resolve_from_public_surface():
+    """Workflow helpers documented for notebooks should import from spatial_vtk.metrics."""
+
+    import spatial_vtk.metrics as metrics
+
+    helpers = (
+        "build_metric_waveform_inventories_from_config",
+        "plan_metric_tasks_from_config",
+        "cache_metric_manifest_waveforms",
+        "metric_slurm_submission_readiness_from_config",
+        "write_metrics_slurm_script_from_config",
+        "read_task_manifest",
+        "run_manifest_batch",
+        "metric_manifest_batch_status",
+        "metric_batch_merge_readiness_from_config",
+        "merge_batch_outputs",
+        "merge_metric_batches_from_config",
+        "write_metric_outputs_from_config",
+    )
+    for helper in helpers:
+        assert callable(getattr(metrics, helper))
 
 
 def test_public_docs_avoid_plot_implementation_import_paths():
