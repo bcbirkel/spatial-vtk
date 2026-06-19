@@ -74,6 +74,9 @@ Changelog
   - Updated ``svtk ... list`` discovery output for plot, map, and visualization
     commands so required explicit inputs name the table role, such as
     ``required:spectrogram table``, instead of only naming a generic flag.
+  - Made registered plot/map/visualization commands validate missing required
+    input and output paths before importing plotting modules or loading config,
+    so missing-table errors are not masked by optional dependency messages.
   - Normalized generated CLI help text for config, input, output, and manifest
     arguments so usage strings show ``PATH`` or ``DIR`` where appropriate.
   - Normalized generated CLI help text for dashboard, inventory, and waveform

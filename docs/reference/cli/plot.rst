@@ -1757,8 +1757,8 @@ svtk plot metrics period-spectrogram
 
 .. code-block:: bash
 
-   svtk plot metrics period-spectrogram [-h] --input PATH [--output PATH]
-                                            [--config PATH]
+   svtk plot metrics period-spectrogram [-h] [--input PATH]
+                                            [--output PATH] [--config PATH]
                                             [--run-scenario RUN_SCENARIO]
                                             [--table [TABLE]] [--no-table]
                                             [--kwargs [KWARGS ...]]
@@ -1805,7 +1805,7 @@ svtk plot metrics period-spectrogram
      -
      - show this help message and exit
    * - ``--input``, ``--input-table``
-     - Yes
+     - No
      -
      - Filesystem path. Primary figure input table (spectrogram); accepts CSV or parquet.
    * - ``--output``, ``--figure-output``

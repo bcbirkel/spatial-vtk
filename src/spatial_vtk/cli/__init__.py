@@ -1274,7 +1274,7 @@ def _add_registered_command_group(
     for command_name, spec in sorted(commands.items()):
         command = group_sub.add_parser(command_name, help=spec.help)
         _add_figure_io_arguments(command, spec, include_map_options=include_map_options)
-        command.set_defaults(handler=_cmd_registered_plot, plot_spec=spec)
+        command.set_defaults(handler=_cmd_registered_plot, plot_spec=spec, parser=command)
 
 
 def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand, *, include_map_options: bool) -> None:
@@ -1287,7 +1287,7 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
             "--input-table",
             metavar="PATH",
             dest="input",
-            required=spec.input_key is None,
+            required=False,
             help=input_help,
         )
     output_help = _registered_output_help(spec.output_key)
@@ -1296,7 +1296,7 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
         "--figure-output",
         metavar="PATH",
         dest="output",
-        required=spec.output_key is None,
+        required=False,
         help=output_help,
     )
     if spec.input_key or spec.output_key or spec.table_alias_defaults:
@@ -2725,8 +2725,14 @@ def _cmd_registered_plot(args: argparse.Namespace) -> int:
     """Run one registry-backed plotting command."""
 
     spec: PlotCommand = args.plot_spec
+    try:
+        kwargs = _registered_plot_kwargs(args, spec)
+    except ValueError as exc:
+        parser = getattr(args, "parser", None)
+        if parser is not None:
+            parser.error(str(exc))
+        raise
     function = _resolve_registered_plot_function(spec.function)
-    kwargs = _registered_plot_kwargs(args, spec)
     _drop_unsupported_auto_plot_kwargs(function, kwargs)
     _validate_supported_plot_kwargs(function, kwargs, USER_FIGURE_OPTION_KEYS)
     result = function(**kwargs)
@@ -2755,6 +2761,7 @@ def _cmd_call(args: argparse.Namespace) -> int:
 def _registered_plot_kwargs(args: argparse.Namespace, spec: PlotCommand) -> dict[str, Any]:
     """Build plotting keyword arguments from CLI table and scalar options."""
 
+    _validate_registered_plot_required_paths(args, spec)
     config = _registered_plot_config(args, spec)
     output_path = _registered_plot_output_path(args, spec, config)
     kwargs: dict[str, Any] = {"output_path": output_path}
@@ -2807,6 +2814,15 @@ def _registered_plot_kwargs(args: argparse.Namespace, spec: PlotCommand) -> dict
     return kwargs
 
 
+def _validate_registered_plot_required_paths(args: argparse.Namespace, spec: PlotCommand) -> None:
+    """Validate non-config-backed registered plot paths before loading config or plot modules."""
+
+    if spec.primary_arg is not None and spec.input_key is None and not getattr(args, "input", None):
+        _registered_plot_input_path(args, spec, None)
+    if spec.output_key is None and not getattr(args, "output", None):
+        _registered_plot_output_path(args, spec, None)
+
+
 def _apply_common_figure_options(args: argparse.Namespace, kwargs: dict[str, Any], *, exclude: set[str] | None = None) -> None:
     """Apply first-class registered figure options to function kwargs."""
 
@@ -2850,7 +2866,12 @@ def _registered_plot_input_path(args: argparse.Namespace, spec: PlotCommand, con
     if getattr(args, "input", None):
         return Path(args.input).expanduser()
     if spec.input_key is None:
-        raise ValueError("No input table was provided. Pass --input.")
+        role = _registered_table_role(spec.primary_arg, None, fallback="input")
+        suffix = "" if "table" in role else " table"
+        raise ValueError(
+            f"No {role}{suffix} was provided. Pass --input/--input-table PATH. "
+            "Run the corresponding 'list' command to see config-backed defaults and required table roles."
+        )
     if config is None:
         raise ValueError(
             f"No --input was provided for '{spec.input_key}' and no Spatial-VTK config was found. "

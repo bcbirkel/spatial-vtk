@@ -180,11 +180,11 @@ svtk dashboard metrics
    * - ``--summary-display-rows``
      - No
      -
-     - Maximum filtered summary-table rows displayed per dashboard tab, or ``all`` for no display cap.
+     - Maximum filtered summary-table rows displayed per dashboard tab, or 'all' for no display cap.
    * - ``--download-rows``
      - No
      -
-     - Maximum filtered row-level metric records included in CSV downloads, or ``all`` for no download cap.
+     - Maximum filtered row-level metric records included in CSV downloads, or 'all' for no download cap.
    * - ``--show``
      - No
      - Flag

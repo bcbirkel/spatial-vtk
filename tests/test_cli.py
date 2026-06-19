@@ -3751,6 +3751,20 @@ def test_cli_plot_list(capsys):
     assert "from config from config" not in captured.out
 
 
+def test_cli_registered_plot_missing_input_names_required_table_role(capsys):
+    """Missing registered plot inputs should name the table role before importing plot modules."""
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["plot", "metrics", "period-spectrogram"])
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert "No spectrogram table was provided" in captured.err
+    assert "Pass --input/--input-table PATH" in captured.err
+    assert "required table roles" in captured.err
+    assert "Missing Python dependency" not in captured.err
+    assert "the following arguments are required" not in captured.err
+
+
 def test_cli_spatial_plot_list_includes_pattern_similarity_defaults(capsys):
     assert main(["plot", "spatial", "list"]) == 0
     captured = capsys.readouterr()

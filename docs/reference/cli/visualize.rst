@@ -1252,7 +1252,7 @@ svtk visualize qc trace-inventory-samples
 
 .. code-block:: bash
 
-   svtk visualize qc trace-inventory-samples [-h] --input PATH
+   svtk visualize qc trace-inventory-samples [-h] [--input PATH]
                                                  [--output PATH]
                                                  [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
@@ -1307,7 +1307,7 @@ svtk visualize qc trace-inventory-samples
      -
      - show this help message and exit
    * - ``--input``, ``--input-table``
-     - Yes
+     - No
      -
      - Filesystem path. Primary figure input table (sample); accepts CSV or parquet.
    * - ``--output``, ``--figure-output``
