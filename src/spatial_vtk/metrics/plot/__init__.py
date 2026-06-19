@@ -38,11 +38,13 @@ _EXPORT_MODULES = {
     "plot_score_trends": "spatial_vtk.metrics.plot.trends",
     "MetricFigureContext": "spatial_vtk.metrics.plot.large_run",
     "MetricFigureSuiteResult": "spatial_vtk.metrics.plot.large_run",
+    "StandardMetricDiagnosticFigureResult": "spatial_vtk.metrics.plot.large_run",
     "StationMetricMapResult": "spatial_vtk.metrics.plot.large_run",
     "metric_plot_input_summary_frame": "spatial_vtk.metrics.plot.large_run",
     "metric_rows_for_metrics": "spatial_vtk.metrics.plot.large_run",
     "prepare_large_run_metric_figure_context": "spatial_vtk.metrics.plot.large_run",
     "write_large_run_metric_figure_suite_from_notebook_settings": "spatial_vtk.metrics.plot.large_run",
+    "write_standard_metric_diagnostic_figures": "spatial_vtk.metrics.plot.large_run",
     "write_station_metric_map_from_notebook_settings": "spatial_vtk.metrics.plot.large_run",
 }
 

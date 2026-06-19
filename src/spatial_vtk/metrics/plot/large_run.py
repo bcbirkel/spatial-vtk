@@ -2260,6 +2260,143 @@ class StationMetricMapResult:
             return {}
 
 
+@dataclass(frozen=True)
+class StandardMetricDiagnosticFigureResult:
+    """Result from writing standard Step 3 metric diagnostic figures."""
+
+    rows: tuple[dict[str, Any], ...]
+    metrics: pd.DataFrame
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return one row per diagnostic figure written or skipped."""
+
+        return pd.DataFrame(
+            self.rows,
+            columns=[
+                "artifact",
+                "status",
+                "row_count",
+                "figure_path",
+                "message",
+            ],
+        )
+
+    def preview_frame(self) -> pd.DataFrame:
+        """Return a compact summary of the metric rows used for figures."""
+
+        return metric_plot_input_summary_frame(self.metrics)
+
+
+def write_standard_metric_diagnostic_figures(
+    metrics: pd.DataFrame,
+    outputs: Any,
+    settings: Any,
+    *,
+    metric_names: Sequence[object] = ("PGA", "PGV", "PGD"),
+    residual_value_col: str = "log2_residual",
+    score_col: str = "anderson_2004_gof",
+    band_col: str = "band",
+    group_col: str = "metric",
+    color_col: str = "metric",
+    residuals_path_name: str = "residuals_vs_distance_figure_path",
+    score_trends_path_name: str = "score_trends_figure_path",
+    band_distribution_path_name: str = "band_score_distribution_figure_path",
+    residuals_plot_func: Callable[..., Any] | None = None,
+    score_trends_plot_func: Callable[..., Any] | None = None,
+    band_distribution_plot_func: Callable[..., Any] | None = None,
+) -> StandardMetricDiagnosticFigureResult:
+    """Write standard Step 3 metric diagnostic figures from notebook settings.
+
+    This helper keeps the standard metric tutorial from importing individual
+    plotting functions, repeating output-path names, or hand-filtering metric
+    rows before each diagnostic figure.
+    """
+
+    if residuals_plot_func is None:
+        from spatial_vtk.metrics.plot import plot_residuals_vs_distance as residuals_plot_func
+    if score_trends_plot_func is None:
+        from spatial_vtk.metrics.plot import plot_score_trends as score_trends_plot_func
+    if band_distribution_plot_func is None:
+        from spatial_vtk.metrics.plot import plot_band_score_distribution as band_distribution_plot_func
+
+    figure_metrics = metric_rows_for_metrics(metrics, metric_names)
+    plot_kwargs = {
+        "showfig": bool(getattr(settings, "showfig", False)),
+        "savefig": True,
+        **settings.sidecars.kwargs(),
+    }
+    rows: list[dict[str, Any]] = []
+    rows.append(
+        _write_standard_metric_diagnostic_figure(
+            "residuals_vs_distance",
+            figure_metrics,
+            outputs.figure_path(residuals_path_name, stem_parts=("step_03", "residuals_vs_distance")),
+            residuals_plot_func,
+            y_col=residual_value_col,
+            group_col=group_col,
+            fit="lowess",
+            connect_points=False,
+            title="Residuals vs Distance",
+            **plot_kwargs,
+        )
+    )
+    rows.append(
+        _write_standard_metric_diagnostic_figure(
+            "score_trends",
+            figure_metrics,
+            outputs.figure_path(score_trends_path_name, stem_parts=("step_03", "score_trends")),
+            score_trends_plot_func,
+            score_col=score_col,
+            group_col=group_col,
+            fit="lowess",
+            connect_points=False,
+            title="Anderson 2004 GOF vs Distance",
+            **plot_kwargs,
+        )
+    )
+    rows.append(
+        _write_standard_metric_diagnostic_figure(
+            "band_score_distribution",
+            figure_metrics,
+            outputs.figure_path(band_distribution_path_name, stem_parts=("step_03", "band_residual_distribution")),
+            band_distribution_plot_func,
+            band_col=band_col,
+            score_col=residual_value_col,
+            color_col=color_col,
+            title="Band Residual Distribution (CVM-SI)",
+            **plot_kwargs,
+        )
+    )
+    return StandardMetricDiagnosticFigureResult(tuple(rows), figure_metrics)
+
+
+def _write_standard_metric_diagnostic_figure(
+    artifact: str,
+    frame: pd.DataFrame,
+    figure_path: Path,
+    plot_func: Callable[..., Any],
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """Call one standard Step 3 diagnostic plot and return a status row."""
+
+    try:
+        plot_func(frame, outpath=figure_path, **kwargs)
+        plt.close("all")
+        status = "wrote"
+        message = f"wrote {figure_path}"
+    except Exception as exc:
+        plt.close("all")
+        status = "plot_failed"
+        message = f"{type(exc).__name__}: {exc}"
+    return {
+        "artifact": artifact,
+        "status": status,
+        "row_count": len(frame),
+        "figure_path": str(figure_path),
+        "message": message,
+    }
+
+
 def write_station_metric_map_from_notebook_settings(
     metrics: pd.DataFrame,
     settings: Any,
@@ -2976,6 +3113,7 @@ def _group_key_value(value: object) -> object:
 __all__ = [
     "MetricFigureContext",
     "MetricFigureSuiteResult",
+    "StandardMetricDiagnosticFigureResult",
     "StationMetricMapResult",
     "TARGET_METRIC_SPECS",
     "dimension_value",
@@ -2989,5 +3127,6 @@ __all__ = [
     "psa_period_label",
     "slug",
     "write_large_run_metric_figure_suite_from_notebook_settings",
+    "write_standard_metric_diagnostic_figures",
     "write_station_metric_map_from_notebook_settings",
 ]

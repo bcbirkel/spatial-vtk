@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-18
+   Added ``write_standard_metric_diagnostic_figures()`` and rewired the
+   standard Step 3 metric notebook to use it for residual-distance,
+   GOF-distance, and band-distribution diagnostics. The notebook no longer
+   imports individual metric plotting functions, calls
+   ``render_notebook_figure()`` directly, or filters the tutorial metric set in
+   notebook code for those figures.
    Added ``write_standard_spatial_diagnostic_figures()`` and rewired the
    standard Step 4 spatial notebook to use it for spatial-correlation,
    PCA-summary, and geology-contrast diagnostic figures. The notebook no

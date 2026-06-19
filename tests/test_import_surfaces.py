@@ -35,9 +35,11 @@ def test_public_imports():
     from spatial_vtk.metrics.plot import (
         MetricFigureContext,
         MetricFigureSuiteResult,
+        StandardMetricDiagnosticFigureResult,
         metric_plot_input_summary_frame,
         metric_rows_for_metrics,
         write_large_run_metric_figure_suite_from_notebook_settings,
+        write_standard_metric_diagnostic_figures,
         write_station_metric_map_from_notebook_settings,
     )
     from spatial_vtk.io import (
@@ -128,6 +130,8 @@ def test_public_imports():
     assert callable(metric_plot_input_summary_frame)
     assert callable(metric_rows_for_metrics)
     assert callable(write_large_run_metric_figure_suite_from_notebook_settings)
+    assert callable(StandardMetricDiagnosticFigureResult)
+    assert callable(write_standard_metric_diagnostic_figures)
     assert callable(write_station_metric_map_from_notebook_settings)
     assert callable(inspect_synthetic_format)
     assert callable(load_configured_input_paths)
@@ -343,11 +347,13 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert ".. automodule:: spatial_vtk.metrics.plot\n" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureSuiteResult" in text
+    assert ".. autoclass:: spatial_vtk.metrics.plot.StandardMetricDiagnosticFigureResult" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.StationMetricMapResult" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.metric_plot_input_summary_frame" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.metric_rows_for_metrics" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings" in text
+    assert ".. autofunction:: spatial_vtk.metrics.plot.write_standard_metric_diagnostic_figures" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings" in text
     assert "Public plotting helpers exposed by ``spatial_vtk.metrics.plot``" in text
     assert "``PSA`` and ``FAS`` are broadband spectral metrics" in text
@@ -359,6 +365,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "legacy passband-scoped row counts" in text
     assert "``write_station_metric_map_for_metric``" in text
     assert "``write_station_metric_map_from_notebook_settings``" in text
+    assert "``write_standard_metric_diagnostic_figures``" in text
     assert "``write_large_run_metric_figure_suite_from_notebook_settings``" in text
     assert "without notebook-local plot-function imports" in text
     assert "``StationMetricMapResult.status_frame()`` includes the" in text
@@ -369,6 +376,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
         "plot_period_score_distribution",
         "plot_psa_period_curve",
         "metric_rows_for_metrics",
+        "write_standard_metric_diagnostic_figures",
         "write_large_run_metric_figure_suite_from_notebook_settings",
         "plot_residuals_vs_distance",
         "plot_phase_delay_vs_distance",
@@ -979,9 +987,13 @@ def test_metric_plot_public_entry_point_exposes_large_run_suite():
     import spatial_vtk.metrics.plot as metric_plot
 
     assert "MetricFigureSuiteResult" in metric_plot.__all__
+    assert "StandardMetricDiagnosticFigureResult" in metric_plot.__all__
     assert "write_large_run_metric_figure_suite_from_notebook_settings" in metric_plot.__all__
+    assert "write_standard_metric_diagnostic_figures" in metric_plot.__all__
     assert callable(metric_plot.MetricFigureSuiteResult)
+    assert callable(metric_plot.StandardMetricDiagnosticFigureResult)
     assert callable(metric_plot.write_large_run_metric_figure_suite_from_notebook_settings)
+    assert callable(metric_plot.write_standard_metric_diagnostic_figures)
     assert (
         metric_plot.write_large_run_metric_figure_suite_from_notebook_settings
         is metric_plot.write_large_run_metric_figure_suite_from_notebook_settings

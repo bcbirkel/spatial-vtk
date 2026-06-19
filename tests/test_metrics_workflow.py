@@ -40,10 +40,12 @@ from spatial_vtk.metrics.workflow import (
 )
 from spatial_vtk.metrics.plot import (
     MetricFigureContext,
+    StandardMetricDiagnosticFigureResult,
     write_large_run_metric_figure_suite_from_notebook_settings,
     metric_plot_input_summary_frame,
     metric_rows_for_metrics,
     plot_period_score_distribution,
+    write_standard_metric_diagnostic_figures,
     write_station_metric_map_from_notebook_settings,
 )
 from spatial_vtk.visualize import figure_sidecar_status_frame
@@ -162,6 +164,84 @@ def test_metric_rows_for_metrics_handles_missing_inputs() -> None:
     assert metric_rows_for_metrics(metrics, ["PGA"]).empty
     assert list(metric_rows_for_metrics(metrics, ["PGA"]).columns) == ["value"]
     assert metric_rows_for_metrics(pd.DataFrame({"metric": ["PGV"]}), []).empty
+
+
+def test_write_standard_metric_diagnostic_figures_owns_step03_plot_calls(tmp_path) -> None:
+    """Standard Step 3 metric diagnostics should be package-owned."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1", "e1", "e2"],
+            "station": ["STA", "STB", "STC", "STD"],
+            "metric": ["PGA", "PGV", "PGD", "FAS"],
+            "band": ["1-2 sec", "2-3 sec", "3-5 sec", "1-2 sec"],
+            "distance_km": [10.0, 20.0, 30.0, 40.0],
+            "log2_residual": [0.1, -0.2, 0.3, 0.4],
+            "anderson_2004_gof": [8.0, 7.0, 6.0, 5.0],
+        }
+    )
+    outputs = OutputGroup(
+        name="step_03_metrics",
+        paths={
+            "residuals_vs_distance_figure_path": tmp_path / "figures" / "residuals_vs_distance.png",
+            "score_trends_figure_path": tmp_path / "figures" / "score_trends.png",
+            "band_score_distribution_figure_path": tmp_path / "figures" / "band_distribution.png",
+        },
+    )
+    seen: list[tuple[str, Path, list[str], dict[str, object]]] = []
+
+    class Sidecars:
+        @staticmethod
+        def kwargs(**_kwargs) -> dict[str, object]:
+            return {
+                "write_sidecar": True,
+                "sidecar_rows": 10,
+                "sidecar_dir": tmp_path / "sidecars",
+            }
+
+    class Settings:
+        showfig = False
+        sidecars = Sidecars()
+
+    def _fake_plot(name):
+        def _inner(frame: pd.DataFrame, *, outpath, **kwargs):
+            output = Path(outpath)
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(name, encoding="utf-8")
+            seen.append((name, output, frame["metric"].tolist(), kwargs))
+
+        return _inner
+
+    result = write_standard_metric_diagnostic_figures(
+        metrics,
+        outputs,
+        Settings(),
+        residuals_plot_func=_fake_plot("residuals"),
+        score_trends_plot_func=_fake_plot("scores"),
+        band_distribution_plot_func=_fake_plot("band"),
+    )
+
+    assert isinstance(result, StandardMetricDiagnosticFigureResult)
+    assert [item[0] for item in seen] == ["residuals", "scores", "band"]
+    assert seen[0][1].name == "step_03_residuals_vs_distance.png"
+    assert seen[1][1].name == "step_03_score_trends.png"
+    assert seen[2][1].name == "step_03_band_residual_distribution.png"
+    for _, _, metric_names, kwargs in seen:
+        assert metric_names == ["PGA", "PGV", "PGD"]
+        assert kwargs["showfig"] is False
+        assert kwargs["savefig"] is True
+        assert kwargs["write_sidecar"] is True
+        assert kwargs["sidecar_rows"] == 10
+        assert kwargs["sidecar_dir"] == tmp_path / "sidecars"
+    assert seen[0][3]["y_col"] == "log2_residual"
+    assert seen[1][3]["score_col"] == "anderson_2004_gof"
+    assert seen[2][3]["band_col"] == "band"
+    status = result.status_frame()
+    assert status["artifact"].tolist() == ["residuals_vs_distance", "score_trends", "band_score_distribution"]
+    assert status["status"].tolist() == ["wrote", "wrote", "wrote"]
+    preview = result.preview_frame().set_index("Input")
+    assert preview.loc["Metric rows", "Value"] == 3
+    assert preview.loc["Metrics", "Value"] == "PGA, PGV, PGD"
 
 
 def test_metric_inventories_from_config_resolve_standard_paths(tmp_path) -> None:

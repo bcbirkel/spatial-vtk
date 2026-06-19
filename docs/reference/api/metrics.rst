@@ -212,6 +212,14 @@ standard row factories used by the large-run notebooks:
    station-aggregation contract, source-row role/filter, input/finite row and
    event counts, and sidecar exactness flags from the saved JSON metadata.
 
+``write_standard_metric_diagnostic_figures``
+   Render the standard Step 3 residual-distance, GOF-distance, and
+   band-distribution diagnostics from one metric dataframe and an
+   ``OutputGroup``. The helper owns the tutorial metric filtering, configured
+   figure paths, sidecar keyword expansion, and per-figure status table so
+   notebooks do not import individual plotting functions or call
+   ``render_notebook_figure`` directly.
+
 ``write_large_run_metric_figure_suite_from_notebook_settings``
    Build the large-run metric figure context, render the standard Step 3
    figure families, and return a per-family status table. Large-run notebooks
@@ -265,6 +273,9 @@ input rows contain multiple ``period_s`` values; period curves use the same
 .. autoclass:: spatial_vtk.metrics.plot.MetricFigureSuiteResult
    :members:
 
+.. autoclass:: spatial_vtk.metrics.plot.StandardMetricDiagnosticFigureResult
+   :members:
+
 .. autoclass:: spatial_vtk.metrics.plot.StationMetricMapResult
    :members:
 
@@ -275,5 +286,7 @@ input rows contain multiple ``period_s`` values; period curves use the same
 .. autofunction:: spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context
 
 .. autofunction:: spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings
+
+.. autofunction:: spatial_vtk.metrics.plot.write_standard_metric_diagnostic_figures
 
 .. autofunction:: spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings
