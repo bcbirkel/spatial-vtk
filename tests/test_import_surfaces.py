@@ -388,6 +388,7 @@ def test_changelog_dated_sections_use_bulleted_entries():
     changelog_path = pathlib.Path(__file__).resolve().parents[1] / "docs" / "changelog.rst"
     lines = changelog_path.read_text(encoding="utf-8").splitlines()
     date_heading = re.compile(r"^20\d{2}-\d{2}-\d{2}$")
+    topic_bullet = re.compile(r"^- \*\*.+\*\* \*\(.+\)\*$")
 
     in_dated_section = False
     violations: list[str] = []
@@ -404,6 +405,11 @@ def test_changelog_dated_sections_use_bulleted_entries():
         if set(stripped) <= {"-"}:
             continue
         if not in_dated_section:
+            continue
+        if line.startswith("- ") and not topic_bullet.match(line):
+            violations.append(
+                f"{line_number}: top-level changelog bullets must include a topic and status: {line}"
+            )
             continue
         if line.startswith("- ") or line.startswith("  "):
             continue
