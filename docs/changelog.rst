@@ -205,6 +205,9 @@ Changelog
   - Added dashboard value-family readiness metadata so status tables show
     whether row-level and summary datasets contain residuals, GOF scores,
     observed values, synthetic values, or only generic metric values.
+  - Promoted dashboard tab empty-state, missing-column, chart-readiness, and
+    value-selector messages into public package helpers so notebooks and CLI
+    status output can share the same contracts as Streamlit tabs.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 

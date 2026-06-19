@@ -1545,6 +1545,56 @@ def dashboard_value_column_families(columns: Iterable[object]) -> tuple[str, ...
     return tuple(family for family in VALUE_COLUMN_FAMILY_ORDER if family in families)
 
 
+def dashboard_empty_rows_message(row_label: str) -> str:
+    """Return a consistent filtered-empty dashboard message."""
+
+    return f"No {row_label} rows match the selected filters."
+
+
+def dashboard_missing_columns_message(column_label: str, *, table_label: str = "loaded table") -> str:
+    """Return a consistent missing-column dashboard message."""
+
+    return f"No {column_label} columns are available in the {table_label}."
+
+
+def dashboard_chart_columns_or_message(
+    df: pd.DataFrame,
+    columns: Sequence[str],
+    column_label: str,
+    *,
+    row_label: str,
+    table_label: str = "loaded table",
+) -> tuple[list[str], str | None]:
+    """Return chart columns or an explicit dashboard empty-state message."""
+
+    if df.empty:
+        return [], dashboard_empty_rows_message(row_label)
+    if not columns:
+        return [], dashboard_missing_columns_message(column_label, table_label=table_label)
+    return list(columns), None
+
+
+def dashboard_value_columns_or_message(
+    df: pd.DataFrame,
+    *,
+    row_label: str = "model/metric/passband-or-period",
+) -> tuple[list[str], str | None]:
+    """Return selectable dashboard value columns with a precise state message."""
+
+    if df.empty:
+        return [], dashboard_empty_rows_message(row_label)
+    columns = _dashboard_value_columns(df)
+    if not columns:
+        return [], f"No observed, synthetic, residual, or score value columns are present in the {row_label} summary."
+    nonempty = _nonempty_dashboard_value_columns(df, columns)
+    if nonempty:
+        return nonempty, None
+    return (
+        columns,
+        f"The selected {row_label} rows have dashboard value columns, but all selected values are missing or non-finite.",
+    )
+
+
 def _dashboard_value_columns(table: pd.DataFrame) -> list[str]:
     """Return dashboard value columns without importing labels at module load."""
 
@@ -1740,6 +1790,10 @@ __all__ = [
     "dashboard_summary_readiness_frame",
     "dashboard_summary_table_contracts",
     "dashboard_summary_table_paths",
+    "dashboard_chart_columns_or_message",
+    "dashboard_empty_rows_message",
+    "dashboard_missing_columns_message",
+    "dashboard_value_columns_or_message",
     "dashboard_value_column_families",
     "dashboard_map_readiness",
     "display_dashboard_output_previews",

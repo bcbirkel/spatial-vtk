@@ -234,6 +234,13 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
        ``dashboard_summary_table_paths``
      - Explain which summary tables feed dashboard tabs and which columns they
        require.
+   * - ``dashboard_empty_rows_message``,
+       ``dashboard_missing_columns_message``,
+       ``dashboard_chart_columns_or_message``, and
+       ``dashboard_value_columns_or_message``
+     - Build consistent empty-state, missing-column, chart-readiness, and
+       value-selector messages for notebooks, CLI status output, and dashboard
+       tabs without importing Streamlit.
    * - ``preview_dashboard_summary_tables``
      - Read bounded previews of configured dashboard summary tables without
        loading full large-run dashboard inputs or resolving table paths in

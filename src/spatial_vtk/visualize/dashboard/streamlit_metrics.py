@@ -24,12 +24,14 @@ from spatial_vtk.visualize.dashboard.charts import (
     build_value_vs_distance_figure,
 )
 from spatial_vtk.visualize.dashboard.contracts import (
+    dashboard_empty_rows_message,
     dashboard_map_readiness,
     dashboard_metric_dataset_readiness_frame,
     dashboard_ready_value,
     dashboard_row_level_columns,
     dashboard_summary_readiness_frame,
     dashboard_summary_table_contracts,
+    dashboard_value_columns_or_message,
     load_filtered_dashboard_summary_table,
     load_dashboard_summary_tables,
     load_metric_long_table,
@@ -1002,22 +1004,7 @@ def _available_nonempty_value_columns(df: pd.DataFrame) -> list[str]:
 def _value_columns_or_message(df: pd.DataFrame) -> tuple[list[str], str | None]:
     """Return selectable value columns with a precise empty-state message."""
 
-    if df.empty:
-        return [], _empty_rows_message("model/metric/passband-or-period")
-    columns = available_dashboard_value_columns(df)
-    if not columns:
-        return [], "No observed, synthetic, residual, or score value columns are present in the model/metric/passband-or-period summary."
-    nonempty = [
-        column
-        for column in columns
-        if column in df.columns and pd.to_numeric(df[column], errors="coerce").notna().any()
-    ]
-    if nonempty:
-        return nonempty, None
-    return (
-        columns,
-        "The selected model/metric/passband-or-period rows have dashboard value columns, but all selected values are missing or non-finite.",
-    )
+    return dashboard_value_columns_or_message(df)
 
 
 def _display_table(df: pd.DataFrame) -> pd.DataFrame:
@@ -1029,7 +1016,7 @@ def _display_table(df: pd.DataFrame) -> pd.DataFrame:
 def _empty_rows_message(row_label: str) -> str:
     """Return a consistent filtered-empty dashboard message."""
 
-    return f"No {row_label} rows match the selected filters."
+    return dashboard_empty_rows_message(row_label)
 
 
 if __name__ == "__main__":

@@ -18,7 +18,10 @@ from spatial_vtk.visualize.dashboard import (
     build_qc_histogram_figure,
     build_station_folium_map,
     build_streamlit_command,
+    dashboard_chart_columns_or_message,
+    dashboard_empty_rows_message,
     dashboard_map_readiness,
+    dashboard_missing_columns_message,
     dashboard_output_namespace,
     dashboard_output_paths,
     dashboard_output_status_frame,
@@ -28,6 +31,7 @@ from spatial_vtk.visualize.dashboard import (
     dashboard_summary_readiness_frame,
     dashboard_summary_table_contracts,
     dashboard_summary_table_paths,
+    dashboard_value_columns_or_message,
     dashboard_value_column_families,
     display_table,
     filter_dashboard_metrics,
@@ -41,7 +45,6 @@ from spatial_vtk.visualize.dashboard import (
 )
 from spatial_vtk.visualize.dashboard.tables import build_dashboard_summaries
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _available_nonempty_value_columns
-from spatial_vtk.visualize.dashboard.streamlit_metrics import _empty_rows_message as _metrics_empty_rows_message
 import spatial_vtk.visualize.dashboard.streamlit_metrics as streamlit_metrics
 import spatial_vtk.visualize.dashboard.contracts as dashboard_contracts
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard_startup_blocker
@@ -53,15 +56,12 @@ from spatial_vtk.visualize.dashboard.streamlit_metrics import _select_readiness_
 from spatial_vtk.visualize.dashboard.streamlit_metrics import METRIC_DATASET_READINESS_DISPLAY_COLUMNS
 from spatial_vtk.visualize.dashboard.streamlit_metrics import SUMMARY_READINESS_DISPLAY_COLUMNS
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _summary_readiness_message
-from spatial_vtk.visualize.dashboard.streamlit_metrics import _value_columns_or_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_chart_columns_or_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_dashboard_startup_blocker
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_download_limit_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_row_limit_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_dashboard_download_limit
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_dashboard_row_limit
-from spatial_vtk.visualize.dashboard.streamlit_qc import _empty_rows_message as _qc_empty_rows_message
-from spatial_vtk.visualize.dashboard.streamlit_qc import _missing_columns_message as _qc_missing_columns_message
 from spatial_vtk.visualize.dashboard.streamlit_qc import _qc_loaded_row_summary
 from spatial_vtk.visualize.dashboard.streamlit_qc import _select_qc_readiness_columns
 import spatial_vtk.visualize.dashboard.streamlit_qc as streamlit_qc
@@ -938,10 +938,35 @@ def test_streamlit_entrypoints_import_and_launch_command():
 
 
 def test_dashboard_empty_state_messages_are_explicit():
-    assert _metrics_empty_rows_message("station") == "No station rows match the selected filters."
-    assert _qc_empty_rows_message("trace QC") == "No trace QC rows match the selected filters."
-    assert _qc_empty_rows_message("manual review queue") == "No manual review queue rows match the selected filters."
-    assert _qc_missing_columns_message("timing") == "No timing columns are available in the loaded trace-summary table."
+    assert dashboard_empty_rows_message("station") == "No station rows match the selected filters."
+    assert dashboard_empty_rows_message("trace QC") == "No trace QC rows match the selected filters."
+    assert dashboard_empty_rows_message("manual review queue") == "No manual review queue rows match the selected filters."
+    assert (
+        dashboard_missing_columns_message("timing", table_label="loaded trace-summary table")
+        == "No timing columns are available in the loaded trace-summary table."
+    )
+
+    empty = pd.DataFrame(columns=["value"])
+    columns, message = dashboard_chart_columns_or_message(
+        empty,
+        ["value"],
+        "value",
+        row_label="example",
+        table_label="example table",
+    )
+    assert columns == []
+    assert message == "No example rows match the selected filters."
+
+    missing = pd.DataFrame({"event_id": ["ev1"]})
+    columns, message = dashboard_chart_columns_or_message(
+        missing,
+        [],
+        "timing",
+        row_label="example",
+        table_label="example table",
+    )
+    assert columns == []
+    assert message == "No timing columns are available in the example table."
 
 
 def test_metrics_dashboard_path_setting_accepts_clear_and_legacy_query_keys(monkeypatch):
@@ -1004,22 +1029,22 @@ def test_qc_dashboard_path_setting_accepts_clear_and_legacy_query_keys(monkeypat
 
 def test_metrics_value_selector_reports_why_no_value_can_be_selected():
     empty = pd.DataFrame(columns=["model", "metric", "band", "med_log2_residual"])
-    columns, message = _value_columns_or_message(empty)
+    columns, message = dashboard_value_columns_or_message(empty)
     assert columns == []
     assert message == "No model/metric/passband-or-period rows match the selected filters."
 
     missing_values = pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["2-4"]})
-    columns, message = _value_columns_or_message(missing_values)
+    columns, message = dashboard_value_columns_or_message(missing_values)
     assert columns == []
     assert message == "No observed, synthetic, residual, or score value columns are present in the model/metric/passband-or-period summary."
 
     all_missing = pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["2-4"], "med_log2_residual": [pd.NA]})
-    columns, message = _value_columns_or_message(all_missing)
+    columns, message = dashboard_value_columns_or_message(all_missing)
     assert columns == ["med_log2_residual"]
     assert message == "The selected model/metric/passband-or-period rows have dashboard value columns, but all selected values are missing or non-finite."
 
     ready = pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["2-4"], "med_log2_residual": [0.5]})
-    columns, message = _value_columns_or_message(ready)
+    columns, message = dashboard_value_columns_or_message(ready)
     assert columns == ["med_log2_residual"]
     assert message is None
 

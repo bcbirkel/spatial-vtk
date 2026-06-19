@@ -9,7 +9,13 @@ import streamlit as st
 
 from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.visualize.dashboard.charts import build_qc_bar_figure, build_qc_histogram_figure
-from spatial_vtk.visualize.dashboard.contracts import dashboard_qc_trace_readiness_frame, dashboard_ready_value
+from spatial_vtk.visualize.dashboard.contracts import (
+    dashboard_chart_columns_or_message,
+    dashboard_empty_rows_message,
+    dashboard_missing_columns_message,
+    dashboard_qc_trace_readiness_frame,
+    dashboard_ready_value,
+)
 from spatial_vtk.visualize.dashboard.exports import normalize_manual_review_queue, queue_to_csv_bytes
 from spatial_vtk.visualize.dashboard.filters import filter_qc_dashboard_rows
 from spatial_vtk.config.labels import band_display_label, display_table
@@ -501,11 +507,13 @@ def _qc_chart_columns_or_message(
 ) -> tuple[list[str], str | None]:
     """Return chart columns or the explicit empty-state message for one QC tab."""
 
-    if df.empty:
-        return [], _empty_rows_message("trace QC")
-    if not columns:
-        return [], _missing_columns_message(column_label)
-    return columns, None
+    return dashboard_chart_columns_or_message(
+        df,
+        columns,
+        column_label,
+        row_label="trace QC",
+        table_label="loaded trace-summary table",
+    )
 
 
 def _qc_column_label(column: str) -> str:
@@ -517,13 +525,13 @@ def _qc_column_label(column: str) -> str:
 def _empty_rows_message(row_label: str) -> str:
     """Return a consistent filtered-empty dashboard message."""
 
-    return f"No {row_label} rows match the selected filters."
+    return dashboard_empty_rows_message(row_label)
 
 
 def _missing_columns_message(column_label: str) -> str:
     """Return a consistent missing-column dashboard message."""
 
-    return f"No {column_label} columns are available in the loaded trace-summary table."
+    return dashboard_missing_columns_message(column_label, table_label="loaded trace-summary table")
 
 
 def _nunique_if_present(df: pd.DataFrame, column: str) -> int:
