@@ -1247,8 +1247,15 @@ def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
     assert "geojson_corridor_result.outward_event_frame()" in source
     assert "geojson_corridor_result.status_frame()" in source
     assert "from spatial_vtk.spatial import (" not in source
-    assert "load_configured_input_paths(" in source
+    assert "load_standard_geojson_plotting_inputs," in source
+    assert "geojson_inputs = load_standard_geojson_plotting_inputs(cfg=cfg)" in source
+    assert "geojson_inputs.status_frame()" in source
+    assert "load_configured_input_paths(" not in source
     assert "load_configured_input_tables(" not in source
+    assert "output_group(" not in source
+    assert "ingest_outputs.load_tables(" not in source
+    assert "step_outputs.load_tables(" not in source
+    assert "output_group(\"step_03_metrics\"" not in source
     assert "render_notebook_figure(" not in source
     assert "geojson_metric_region_frame(" not in source
     assert "geojson_metric_subset_frame(" not in source
@@ -1980,15 +1987,18 @@ def test_step05_uses_geojson_preview_helper() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "from spatial_vtk.spatial import (" in source
-    assert "from spatial_vtk.spatial.map import" in source
     assert "from spatial_vtk.spatial.plot import" in source
-    assert "step_outputs = output_group(\"step_05_geojson\", cfg=cfg)" in source
-    assert "plotting_tables = step_outputs.load_tables(" in source
-    assert "render_notebook_figure(" in source
-    assert "station_metric_map_path" in source
-    assert "corridor_map_path" in source
-    assert "record_section_figure_path" in source
+    assert "load_standard_geojson_plotting_inputs," in source
+    assert "geojson_inputs = load_standard_geojson_plotting_inputs(cfg=cfg)" in source
+    assert "geojson_inputs.status_frame()" in source
+    assert "from spatial_vtk.spatial import (" not in source
+    assert "from spatial_vtk.spatial.map import" not in source
+    assert "step_outputs = output_group(\"step_05_geojson\", cfg=cfg)" not in source
+    assert "plotting_tables = step_outputs.load_tables(" not in source
+    assert "render_notebook_figure(" not in source
+    assert "station_metric_map_path" not in source
+    assert "corridor_map_path" not in source
+    assert "record_section_figure_path" not in source
     assert "from spatial_vtk.spatial.calculate import" not in source
     assert "from spatial_vtk.spatial.map." not in source
     assert "from spatial_vtk.spatial.plot." not in source
@@ -1998,21 +2008,21 @@ def test_step05_uses_geojson_preview_helper() -> None:
     assert "boxplot(" not in source
     assert "first_nonempty_table_value(metrics, \"model\", fallback=\"model\")" not in source
     assert "metrics[\"model\"].dropna().astype(str).iloc[0]" not in source
-    assert "event_ids_from_records(" in source
-    assert "event_rows_for_records(" in source
-    assert "event_label_preview_frame(" in source
-    assert "event_station_records_matching_pairs(" in source
-    assert "geojson_matched_record_frame(" in source
+    assert "event_ids_from_records(" not in source
+    assert "event_rows_for_records(" not in source
+    assert "event_label_preview_frame(" not in source
+    assert "event_station_records_matching_pairs(" not in source
+    assert "geojson_matched_record_frame(" not in source
     assert 'events.loc[events["event_id"].astype(str).isin' not in source
     assert '["event_id"].dropna().astype(str).unique()' not in source
     assert '[["event_id", "event_name"]].drop_duplicates()' not in source
     assert 'central_boundary_paths.loc[central_boundary_paths["path_geojson_matches"]]' not in source
     assert '.merge(selected_pairs, on=["event_id", "station"], how="inner")' not in source
     assert '.merge(pgv_corridor_pairs, on=["event_id", "station"], how="inner")' not in source
-    assert "geojson_polygon_preview_table(" in source
-    assert "load_configured_input_paths(" in source
-    assert "ingest_outputs = output_group(\"step_01_ingest\", cfg=cfg)" in source
-    assert "ingest_tables = ingest_outputs.load_tables(" in source
+    assert "geojson_polygon_preview_table(" not in source
+    assert "load_configured_input_paths(" not in source
+    assert "ingest_outputs = output_group(\"step_01_ingest\", cfg=cfg)" not in source
+    assert "ingest_tables = ingest_outputs.load_tables(" not in source
     assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" not in source
     assert "figure_dir /" not in source
     assert "load_output_table(" not in source

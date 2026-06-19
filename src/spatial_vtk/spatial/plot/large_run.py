@@ -1478,6 +1478,42 @@ class StandardGeoJSONCorridorFigureResult:
 
 
 @dataclass(frozen=True)
+class StandardGeoJSONPlottingInputResult:
+    """Configured input tables and output group for the standard Step 5 notebook."""
+
+    metrics: pd.DataFrame
+    stations: pd.DataFrame
+    events: pd.DataFrame
+    event_stations: pd.DataFrame
+    comparison_eligible: pd.DataFrame
+    geojson_path: Path
+    outputs: Any
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact row-count/path table for loaded Step 5 inputs."""
+
+        rows = [
+            {
+                "artifact": "region_geojson",
+                "status": "ready" if self.geojson_path.exists() else "missing",
+                "rows": None,
+                "path": str(self.geojson_path),
+            },
+            {"artifact": "metrics", "status": "loaded", "rows": len(self.metrics), "path": None},
+            {"artifact": "stations", "status": "loaded", "rows": len(self.stations), "path": None},
+            {"artifact": "events", "status": "loaded", "rows": len(self.events), "path": None},
+            {"artifact": "event_stations", "status": "loaded", "rows": len(self.event_stations), "path": None},
+            {
+                "artifact": "comparison_eligible",
+                "status": "loaded",
+                "rows": len(self.comparison_eligible),
+                "path": None,
+            },
+        ]
+        return pd.DataFrame(rows, columns=["artifact", "status", "rows", "path"])
+
+
+@dataclass(frozen=True)
 class StandardAdditionalPlottingFigureResult:
     """Result from writing standard Step 6 additional plotting figures."""
 
@@ -2457,6 +2493,68 @@ def _first_nonempty_metric_value(df: pd.DataFrame, column: str, *, fallback: str
     values = df[column].dropna().astype(str)
     values = values.loc[values.str.strip().ne("")]
     return str(values.iloc[0]) if not values.empty else str(fallback)
+
+
+def load_standard_geojson_plotting_inputs(
+    *,
+    cfg: Any | None = None,
+    geojson_config_key: str = "paths.region_geojson",
+    ingest_group_name: str = "step_01_ingest",
+    metrics_group_name: str = "step_03_metrics",
+    geojson_group_name: str = "step_05_geojson",
+) -> StandardGeoJSONPlottingInputResult:
+    """Load standard Step 5 GeoJSON tutorial inputs through configured registries.
+
+    Parameters
+    ----------
+    cfg
+        Active Spatial-VTK config. When omitted, the active config is used by
+        the underlying IO helpers.
+    geojson_config_key
+        Dotted config key for the region GeoJSON file.
+    ingest_group_name, metrics_group_name, geojson_group_name
+        Output-group names for prepared Step 1 metadata, Step 3 metrics, and
+        Step 5 GeoJSON figure/table outputs.
+
+    Returns
+    -------
+    StandardGeoJSONPlottingInputResult
+        Loaded metrics, station/event metadata, event-station records,
+        comparison-eligible pairs, configured GeoJSON path, and the configured
+        Step 5 output group.
+    """
+
+    from spatial_vtk.io import load_configured_input_paths, output_group
+
+    ingest_outputs = output_group(ingest_group_name, cfg=cfg)
+    metrics_outputs = output_group(metrics_group_name, cfg=cfg)
+    geojson_outputs = output_group(geojson_group_name, cfg=cfg)
+    configured_paths = load_configured_input_paths({"region_geojson": geojson_config_key}, cfg=cfg)
+    ingest_tables = ingest_outputs.load_tables(
+        {
+            "stations": "prepared_stations_path",
+            "events": "prepared_events_path",
+            "event_stations": "event_station_path",
+        },
+        cfg=cfg,
+    )
+    geojson_tables = geojson_outputs.load_tables(
+        {"comparison_eligible": "comparison_eligible_path"},
+        cfg=cfg,
+    )
+    metrics = metrics_outputs.load_table("metrics_long", cfg=cfg)
+    if metrics is None:
+        raise FileNotFoundError("Configured Step 3 metrics_long table is missing.")
+
+    return StandardGeoJSONPlottingInputResult(
+        metrics=metrics,
+        stations=ingest_tables["stations"],
+        events=ingest_tables["events"],
+        event_stations=ingest_tables["event_stations"],
+        comparison_eligible=geojson_tables["comparison_eligible"],
+        geojson_path=configured_paths["region_geojson"],
+        outputs=geojson_outputs,
+    )
 
 
 def write_standard_geojson_corridor_figures(
@@ -3875,12 +3973,14 @@ __all__ = [
     "StandardAdditionalPlottingInputResult",
     "StandardGeoJSONCorridorFigureResult",
     "StandardGeoJSONFigureResult",
+    "StandardGeoJSONPlottingInputResult",
     "SpatialSummaryFigureResult",
     "SpatialFigureSuiteResult",
     "SpatialFigureContext",
     "StandardSpatialDiagnosticFigureResult",
     "StandardSpatialMapFigureResult",
     "load_standard_additional_plotting_inputs",
+    "load_standard_geojson_plotting_inputs",
     "prepare_spatial_figure_context",
     "prepare_spatial_figure_context_from_notebook_settings",
     "write_standard_additional_plotting_figures",

@@ -99,6 +99,7 @@ from spatial_vtk.spatial import (
     spatial_derived_outputs_readiness_from_config,
     spatial_summary_readiness_from_config,
 )
+from spatial_vtk.spatial.plot import load_standard_geojson_plotting_inputs
 
 
 def test_runtime_config_loads_paths_defaults_and_bounds(tmp_path, monkeypatch):
@@ -1853,6 +1854,64 @@ outputs:
     assert corridor_ready_to_run.reason == "missing_outputs"
     assert dict(corridor_ready_to_run.output_items)["corridors_path"] == step_outputs.corridors_path
     assert "comparison_eligible_path" in dict(corridor_ready_to_run.source_items)
+    clear_active_config()
+
+
+def test_standard_geojson_plotting_input_loader_owns_path_and_table_loading(tmp_path, monkeypatch):
+    """Standard Step 5 notebooks should load GeoJSON inputs through one helper."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+paths:
+  region_geojson: inputs/regions.geojson
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+  figures: run_outputs/figures
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    region_geojson = tmp_path / "inputs" / "regions.geojson"
+    region_geojson.parent.mkdir(parents=True, exist_ok=True)
+    region_geojson.write_text('{"type":"FeatureCollection","features":[]}\n', encoding="utf-8")
+
+    ingest_outputs = output_group("step_01_ingest", cfg=cfg)
+    metrics_outputs = output_group("step_03_metrics", cfg=cfg)
+    geojson_outputs = output_group("step_05_geojson", cfg=cfg)
+    for path, text in (
+        (ingest_outputs.prepared_stations_path, "station,lat,lon\nSTA,0,0\n"),
+        (ingest_outputs.prepared_events_path, "event_id,lat,lon\nE1,0,0\n"),
+        (ingest_outputs.event_station_path, "event_id,station\nE1,STA\n"),
+        (metrics_outputs.metrics_long_path, "event_id,station,metric,log2_residual\nE1,STA,PGA,0.1\n"),
+        (geojson_outputs.comparison_eligible_path, "event_id,station\nE1,STA\n"),
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+    inputs = load_standard_geojson_plotting_inputs(cfg=cfg)
+
+    assert inputs.geojson_path == region_geojson
+    assert inputs.outputs.name == "step_05_geojson"
+    assert len(inputs.metrics) == 1
+    assert len(inputs.stations) == 1
+    assert len(inputs.events) == 1
+    assert len(inputs.event_stations) == 1
+    assert len(inputs.comparison_eligible) == 1
+    status = inputs.status_frame()
+    assert set(status["artifact"]) == {
+        "region_geojson",
+        "metrics",
+        "stations",
+        "events",
+        "event_stations",
+        "comparison_eligible",
+    }
+    assert status.loc[status["artifact"].eq("region_geojson"), "status"].iloc[0] == "ready"
     clear_active_config()
 
 

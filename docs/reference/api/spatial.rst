@@ -212,6 +212,10 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
        keeping corridor construction, selected-record joins, waveform
        selection, metric filtering, figure paths, and preview tables in
        package code.
+   * - ``load_standard_geojson_plotting_inputs``
+     - Load the standard Step 5 metrics, prepared metadata, comparison-eligible
+       records, configured GeoJSON path, and configured output group without
+       notebook-local output-group, config-path, or table-loading plumbing.
    * - ``write_standard_additional_plotting_figures``
      - Write the standard Step 6 waveform map, pattern-similarity figure,
        residual scatterplot, region boxplot, and region heatmap while keeping
@@ -324,6 +328,11 @@ schemas.
    :members:
 
 .. autofunction:: spatial_vtk.spatial.plot.write_standard_geojson_corridor_figures
+
+.. autoclass:: spatial_vtk.spatial.plot.StandardGeoJSONPlottingInputResult
+   :members:
+
+.. autofunction:: spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs
 
 .. autoclass:: spatial_vtk.spatial.plot.StandardAdditionalPlottingInputResult
    :members:

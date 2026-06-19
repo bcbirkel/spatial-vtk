@@ -171,6 +171,8 @@ Start with public helpers from ``spatial_vtk.spatial``:
 - ``run_geojson_region_summary_workflow_from_config`` and
   ``run_boundary_corridor_workflow_from_config`` for GeoJSON and corridor
   tables
+- ``load_standard_geojson_plotting_inputs`` for standard Step 5 notebook inputs
+  without notebook-local GeoJSON path or output-table plumbing
 - ``add_geojson_metadata_to_metrics``, ``build_boundary_corridors``, and
   ``build_pattern_similarity_station_anomalies`` for focused spatial
   calculations

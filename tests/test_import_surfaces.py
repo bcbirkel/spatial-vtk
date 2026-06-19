@@ -108,9 +108,11 @@ def test_public_imports():
         StandardAdditionalPlottingInputResult,
         StandardGeoJSONCorridorFigureResult,
         StandardGeoJSONFigureResult,
+        StandardGeoJSONPlottingInputResult,
         StandardSpatialDiagnosticFigureResult,
         StandardSpatialMapFigureResult,
         load_standard_additional_plotting_inputs,
+        load_standard_geojson_plotting_inputs,
         prepare_spatial_figure_context_from_notebook_settings,
         write_standard_additional_plotting_figures,
         write_standard_geojson_corridor_figures,
@@ -134,6 +136,8 @@ def test_public_imports():
     assert callable(StandardGeoJSONCorridorFigureResult)
     assert callable(write_standard_geojson_corridor_figures)
     assert callable(StandardGeoJSONFigureResult)
+    assert callable(StandardGeoJSONPlottingInputResult)
+    assert callable(load_standard_geojson_plotting_inputs)
     assert callable(write_standard_geojson_region_figures)
     assert callable(write_large_run_spatial_figure_suite_from_notebook_settings)
     assert callable(abbreviate_model)
@@ -1524,6 +1528,7 @@ def test_package_overview_points_to_public_workflow_helpers():
         "``run_spatial_statistics_workflow_from_config``",
         "``run_geojson_region_summary_workflow_from_config``",
         "``run_boundary_corridor_workflow_from_config``",
+        "``load_standard_geojson_plotting_inputs``",
         "``spatial_vtk.spatial.plot`` and ``spatial_vtk.spatial.map``",
     ]
     for snippet in required:
