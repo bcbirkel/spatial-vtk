@@ -188,6 +188,34 @@ def test_public_package_discovery_excludes_legacy_namespace():
     assert not (pyproject.parent / "src" / legacy_namespace).exists()
 
 
+def test_release_checklist_exists_and_matches_public_validation_gates():
+    """The public repo should include the release checklist referenced by AGENTS.md."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    checklist_path = root / "RELEASE_CHECKLIST.md"
+    agents = (root / "AGENTS.md").read_text(encoding="utf-8")
+    text = checklist_path.read_text(encoding="utf-8")
+
+    assert "RELEASE_CHECKLIST.md" in agents
+    for snippet in (
+        'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"',
+        "python -m pytest -q",
+        "python -m compileall -q src tests",
+        "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run",
+        "python tools/execute_tutorial_notebooks.py --clean --include-large-run",
+        "python -m sphinx -W -b html docs docs/_build/html",
+        "python -m build --sdist --wheel",
+        "python -m twine check dist/*",
+        "svtk plot metrics list",
+        "svtk map spatial list",
+        "svtk dashboard status --help",
+    ):
+        assert snippet in text
+    assert "/pro" + "ject" not in text
+    assert "jvi" + "dale" not in text
+    assert "CA" + "RC" not in text
+
+
 def test_public_package_entry_points_keep_optional_imports_lazy():
     """Package entry points should not import heavy plotting/QC modules on inspection."""
 

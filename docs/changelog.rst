@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-18
+   Added a public ``RELEASE_CHECKLIST.md`` matching the current validation,
+   notebook execution, docs, build, wheel-inspection, and publish gates. The
+   checklist keeps release steps in the repository instead of only in agent
+   instructions and avoids private machine- or cluster-specific paths.
    Added
    ``spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings()``
    and rewired the standard Step 3 metrics notebook to use it for the focused
