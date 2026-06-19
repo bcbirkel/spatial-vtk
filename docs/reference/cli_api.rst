@@ -1,7 +1,7 @@
 CLI API
 =======
 
-The public command is ``svtk``. It gives you file-based access to the same major Spatial-VTK workflows used from Python: configuration inspection, metadata and waveform preparation, QC queue export, metric planning and execution, plotting, mapping, dashboards, and advanced calls to importable public functions.
+The public command is ``svtk``. It gives you file-based access to the same major Spatial-VTK workflows used from Python: configuration inspection, metadata and waveform preparation, QC queue export, metric planning and execution, plotting, mapping, dashboards, and advanced calls to public functions that do not yet have curated commands.
 
 Run ``svtk --help`` to see the command tree from your installed environment.
 
@@ -38,7 +38,7 @@ Command Groups
    * - :doc:`svtk dashboard <cli/dashboard>`
      - Prepare and launch Streamlit dashboards.
    * - :doc:`svtk call <cli/call>`
-     - Call any importable Spatial-VTK Python function.
+     - Advanced escape hatch for public Spatial-VTK Python functions without curated commands.
 
 Detailed Command Reference
 --------------------------
@@ -69,4 +69,4 @@ Map commands also accept ``--config`` and ``--bounds`` so you can reuse named bo
 Advanced Python Calls
 ---------------------
 
-``svtk call`` is available when you need to run an importable public function that does not yet have a curated workflow command. It only accepts import paths under ``spatial_vtk``.
+``svtk call`` is an advanced escape hatch for importable public functions that do not yet have curated workflow commands. Prefer the named ``config``, ``io``, ``qc``, ``metrics``, ``spatial``, ``plot``, ``map``, ``visualize``, and ``dashboard`` commands for standard workflows. ``svtk call`` only accepts import paths under ``spatial_vtk``.

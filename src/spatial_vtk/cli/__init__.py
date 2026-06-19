@@ -4,8 +4,8 @@ Purpose
 -------
 This module exposes the public ``svtk`` command. The curated subcommands cover
 file-based workflows that users commonly run outside notebooks, while
-``svtk call`` provides a generic CLI path to any importable public Python
-function.
+``svtk call`` remains an advanced escape hatch for public Python functions that
+do not yet have a curated command.
 
 Usage examples
 --------------
@@ -15,7 +15,7 @@ Show active config:
 Prepare downstream metric outputs from configured workflow paths:
   ``svtk metrics outputs --config spatial-vtk.yaml``
 
-Run any public function with JSON/YAML arguments:
+Run an advanced public-function call with JSON/YAML arguments:
   ``svtk call spatial_vtk.config.labels.metric_display_name --args C5``
 """
 
@@ -1351,7 +1351,14 @@ def _add_common_figure_options(parser: argparse.ArgumentParser, *, exclude: set[
 def _add_call_command(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
     """Register the generic Python-call CLI command."""
 
-    call = subparsers.add_parser("call", help="Call any importable Spatial-VTK Python function.")
+    call = subparsers.add_parser(
+        "call",
+        help="Advanced escape hatch for public Spatial-VTK Python functions without curated commands.",
+        description=(
+            "Advanced escape hatch for importable public Spatial-VTK Python functions "
+            "that do not yet have curated workflow commands."
+        ),
+    )
     call.add_argument("function", help="Import path, for example spatial_vtk.config.labels.metric_display_name.")
     call.add_argument("--args", nargs="*", default=(), help="Positional arguments parsed as YAML scalars/sequences.")
     call.add_argument("--args-json", default=None, help="JSON/YAML list of positional arguments.")

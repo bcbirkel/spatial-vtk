@@ -1212,6 +1212,20 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert "event_region=" not in text
     assert "table=true" not in text
     assert "gain=2.0" not in text
+
+
+def test_cli_reference_frames_svtk_call_as_advanced_escape_hatch():
+    """The CLI reference should not present svtk call as a standard workflow path."""
+
+    root = Path(__file__).resolve().parents[1]
+    index_text = (root / "docs" / "reference" / "cli_api.rst").read_text(encoding="utf-8")
+    call_text = (root / "docs" / "reference" / "cli" / "call.rst").read_text(encoding="utf-8")
+
+    assert "Advanced escape hatch" in index_text
+    assert "Advanced Escape Hatch" in call_text
+    assert "Prefer the named ``config``, ``io``, ``qc``, ``metrics``" in index_text
+    assert "Call any importable Spatial-VTK Python function." not in index_text
+    assert "Call any importable Spatial-VTK Python function." not in call_text
     assert "xlim_s=" not in text
     assert "max_time_s=" not in text
     assert "lowpass_hz=" not in text

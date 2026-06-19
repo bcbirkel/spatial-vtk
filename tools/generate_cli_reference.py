@@ -80,7 +80,7 @@ def _write_cli_index(
         "CLI API",
         "=======",
         "",
-        "The public command is ``svtk``. It gives you file-based access to the same major Spatial-VTK workflows used from Python: configuration inspection, metadata and waveform preparation, QC queue export, metric planning and execution, plotting, mapping, dashboards, and advanced calls to importable public functions.",
+        "The public command is ``svtk``. It gives you file-based access to the same major Spatial-VTK workflows used from Python: configuration inspection, metadata and waveform preparation, QC queue export, metric planning and execution, plotting, mapping, dashboards, and advanced calls to public functions that do not yet have curated commands.",
         "",
         "Run ``svtk --help`` to see the command tree from your installed environment.",
         "",
@@ -135,7 +135,7 @@ def _write_cli_index(
             "Advanced Python Calls",
             "---------------------",
             "",
-            "``svtk call`` is available when you need to run an importable public function that does not yet have a curated workflow command. It only accepts import paths under ``spatial_vtk``.",
+            "``svtk call`` is an advanced escape hatch for importable public functions that do not yet have curated workflow commands. Prefer the named ``config``, ``io``, ``qc``, ``metrics``, ``spatial``, ``plot``, ``map``, ``visualize``, and ``dashboard`` commands for standard workflows. ``svtk call`` only accepts import paths under ``spatial_vtk``.",
             "",
         ]
     )
@@ -253,6 +253,14 @@ def _command_page_notes(command_name: str) -> list[str]:
             "   svtk dashboard metrics --config runs/spatial_vtk_config.yaml --auto-port --proxy-mode",
             "",
             "Use ``--auto-port`` when another Streamlit server may already be running and ``--proxy-mode`` when launching through a proxied notebook or remote desktop service.",
+            "",
+        ]
+    if command_name == "call":
+        return [
+            "Advanced Escape Hatch",
+            "---------------------",
+            "",
+            "Use ``svtk call`` only for public Spatial-VTK functions that do not yet have a curated workflow command. Standard project workflows should use the named command groups because they resolve config-backed paths, expose stable flags, and document expected inputs directly.",
             "",
         ]
     return []
