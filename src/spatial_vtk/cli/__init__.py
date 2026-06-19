@@ -2852,8 +2852,12 @@ def _resolve_cli_bounds(
     if len(parts) == 4:
         try:
             return tuple(float(part) for part in parts)  # type: ignore[return-value]
-        except ValueError:
-            pass
+        except ValueError as exc:
+            raise ValueError(
+                "Bounds given as four comma-separated values must be numeric: "
+                "lon_min,lon_max,lat_min,lat_max. "
+                f"Got: {value!r}"
+            ) from exc
     from spatial_vtk.config import SpatialVTKConfig
 
     config = (

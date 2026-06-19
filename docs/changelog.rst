@@ -66,6 +66,9 @@ Changelog
 - Added a runtime warning when scoped metric-QC Parquet predicate pushdown
   fails and the reader falls back to slower batch streaming, so large-run
   metric jobs explain the slowdown instead of appearing silent.
+- Clarified ``--bounds`` CLI validation so malformed four-value extents report
+  the required numeric ``lon_min,lon_max,lat_min,lat_max`` form instead of
+  falling through to named-bounds lookup.
 - Hardened release-check regression coverage so the public release checklist
   remains the authoritative source for the notebook extra and standard plus
   large-run tutorial preflight/runtime gates, while local agent guidance is
@@ -451,8 +454,7 @@ Changelog
   instructions and avoids private machine- or cluster-specific paths.
 - Reusable logic now has an executable guard that keeps it in importable
   package helpers instead of public notebook cells.
-- Added
-  ``spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings()``
+- Added ``spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings()``
   and rewired the standard Step 3 metrics notebook to use it for the focused
   station residual map.
 - The notebook no longer imports ``MetricFigureContext`` or spatial map
@@ -486,41 +488,36 @@ Changelog
 - The notebook no longer repeats per-metric map loops, output-path
   construction, sidecar keyword expansion, or basemap/showfig keyword plumbing
   for those figure families.
-- Added
+- Added the dashboard dataset helper
   ``spatial_vtk.visualize.dashboard.prepare_configured_dashboard_datasets_from_notebook_settings()``
   and rewired the standard Step 7 dashboard notebook to use it.
 - The notebook no longer performs dashboard readiness branching, local-write
   decisions, or written-output loop printing inline.
-- Added
-  ``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings()``
+- Added ``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings()``
   and rewired the large-run Step 6 region boxplot cell to use it.
 - The notebook no longer performs the region-boxplot render gate or
   settings-to-plot-keyword translation inline.
-- Added
+- Added the large-run GeoJSON region helper
   ``spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_notebook_settings()``
   and rewired the large-run Step 5 GeoJSON/corridor figure cell to use it.
 - The notebook no longer performs the region figure render gate or
   settings-to-figure-keyword translation inline.
-- Added
-  ``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings()``
+- Added ``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings()``
   and rewired the large-run Step 6 waveform comparison cell to use it.
 - The notebook no longer performs the waveform figure render gate or
   settings-to-plot-keyword translation inline.
-- Added
-  ``spatial_vtk.visualize.context.write_large_run_context_figures_from_outputs()``
+- Added ``spatial_vtk.visualize.context.write_large_run_context_figures_from_outputs()``
   and rewired the large-run Step 1 context figure cell to use it.
 - The notebook no longer performs context-table readiness checks, table
   loading, basemap keyword selection, figure-path selection, or context
   plotting calls inline.
 - The notebook no longer performs compact-QC input gating, table loading,
   figure-path selection, or plotting calls inline.
-- Added
-  ``spatial_vtk.spatial.plot.write_large_run_spatial_summary_figures_from_outputs()``
+- Added ``spatial_vtk.spatial.plot.write_large_run_spatial_summary_figures_from_outputs()``
   and rewired the large-run Step 4 quick spatial-figure cell to use it.
 - The notebook no longer performs station-bias input gating, table loading, or
   map-path plumbing inline.
-- Added
-  ``spatial_vtk.spatial.plot.prepare_spatial_figure_context_from_notebook_settings()``
+- Added ``spatial_vtk.spatial.plot.prepare_spatial_figure_context_from_notebook_settings()``
   and rewired the large-run Step 4 spatial notebook to use it.
 - The notebook now keeps figure controls visible without repeating the context
   keyword, figure-directory, sidecar, basemap, and sampling plumbing.
@@ -876,13 +873,11 @@ Changelog
   preview helper and repeating output-key preview mappings.
 - Large-run Step 6 now uses this helper instead of separately selecting and
   previewing the same fallback table list in notebook code.
-- Added
-  ``spatial_vtk.visualize.waveforms.write_large_run_waveform_comparison_from_outputs()``
+- Added ``spatial_vtk.visualize.waveforms.write_large_run_waveform_comparison_from_outputs()``
   so large-run Step 6 can render the observed/synthetic trace comparison from
   configured Step 6 outputs without inline QC sample loading or waveform-record
   construction in the notebook.
-- Added
-  ``spatial_vtk.visualize.dashboard.launch_configured_dashboards_from_notebook_settings()``
+- Added ``spatial_vtk.visualize.dashboard.launch_configured_dashboards_from_notebook_settings()``
   so Step 7 notebooks can launch requested Metrics/QC dashboards or display
   terminal fallback commands through one package helper instead of duplicating
   per-dashboard launch branches.

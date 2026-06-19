@@ -2129,6 +2129,16 @@ def test_registered_plot_commands_use_public_import_surfaces():
         assert callable(_resolve_function(spec.function))
 
 
+def test_cli_bounds_reports_malformed_numeric_extent():
+    """Comma-separated bounds should fail with a numeric-extent message."""
+
+    from spatial_vtk.cli import _resolve_cli_bounds
+
+    assert _resolve_cli_bounds("1,2,3,4", None) == (1.0, 2.0, 3.0, 4.0)
+    with pytest.raises(ValueError, match="four comma-separated values must be numeric"):
+        _resolve_cli_bounds("1,2,bad,4", None)
+
+
 def test_cli_spatial_plot_uses_configured_standard_table_default(tmp_path, monkeypatch, capsys):
     config = tmp_path / "spatial-vtk.yaml"
     table_dir = tmp_path / "outputs" / "tables"
