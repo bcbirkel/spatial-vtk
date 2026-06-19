@@ -985,7 +985,11 @@ def test_large_run_notebooks_use_output_group_helper() -> None:
         source = notebook_path.read_text(encoding="utf-8")
         if notebook_path.name == "step_07_large_run_dashboards.ipynb":
             continue
-        assert "output_group(" in source, notebook_path.relative_to(repo_root)
+        assert (
+            "output_group(" in source
+            or "load_standard_ingest_workflow_outputs(" in source
+            or "load_standard_metric_workflow_outputs(" in source
+        ), notebook_path.relative_to(repo_root)
         assert "output_group_namespace" not in source, notebook_path.relative_to(repo_root)
         assert "output_group_status_frame" not in source, notebook_path.relative_to(repo_root)
         assert "vars(step_outputs)" not in source, notebook_path.relative_to(repo_root)
@@ -1766,6 +1770,13 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert "run_or_submit_notebook_function(" not in source
     assert "from spatial_vtk.metrics import (" in source
     assert "build_metric_waveform_inventories_from_config," in source
+    assert "load_standard_metric_workflow_outputs," in source
+    assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg, load_task_estimate=False)" in source
+    assert "step_outputs = metric_outputs.outputs" in source
+    assert "trace_metadata_path = metric_outputs.trace_metadata_path" in source
+    assert "display(metric_outputs.status_frame())" in source
+    assert 'step_outputs = output_group("step_03_metrics")' not in source
+    assert "preprocessed_waveform_metadata_paths(config=cfg)" not in source
     assert "plan_metric_tasks_from_config," in source
     assert "write_metrics_slurm_script_from_config," in source
     assert "merge_metric_batches_from_config," in source
@@ -2000,7 +2011,8 @@ def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:
             assert "preview_output_table" not in source
             assert "preview_table" not in source
         else:
-            assert "preprocessed_waveform_metadata_paths(config=cfg)" in source
+            assert "trace_metadata_path = metric_outputs.trace_metadata_path" in source
+            assert "preprocessed_waveform_metadata_paths(config=cfg)" not in source
         assert re.search(r"(?<!waveform_)preprocessing_manifest\.csv", source) is None
         assert 'outputs_root / "preprocessed_waveforms"' not in source
 

@@ -280,9 +280,9 @@ fallbacks, and bounded previews stay in package code.
        group, and the Step 2 QC output group.
    * - Step 3 metric calculation
      - ``spatial_vtk.metrics.load_standard_metric_workflow_outputs``
-     - The Step 3 output group, optional metric task estimate, task-preview
-       display helper, ``metrics_long`` display helper, and plotting-table
-       loader.
+     - The Step 3 output group, preprocessed trace metadata dependency, status
+       frame, optional metric task estimate, task-preview display helper,
+       ``metrics_long`` display helper, and plotting-table loader.
    * - Step 4 spatial statistics
      - ``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``
      - The Step 4 output group, loaded spatial workflow tables, per-metric

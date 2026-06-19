@@ -11,6 +11,9 @@ Changelog
     - Added a standard Step 1 ingest output loader for combined ingest and
       preprocessing output status plus bounded station, event, and preprocessing
       manifest previews.
+    - Extended the standard Step 3 metric output loader with the preprocessed
+      trace metadata dependency and status-frame helper used by large-run
+      metric readiness cells.
     - Added standard notebook input/output loaders for QC, spatial summaries,
       GeoJSON plotting, and Step 5 readiness checks so notebooks no longer
       duplicate config path plumbing.
@@ -25,6 +28,8 @@ Changelog
 
   - **Notebook-owned display cleanup**
 
+    - Rewired the large-run Step 3 notebook to resolve metric outputs and trace
+      metadata dependencies through the standard metric output helper.
     - Rewired the large-run Step 1 notebook to resolve ingest and preprocessing
       outputs through the same package helper as the standard tutorial.
     - Rewired standard Step 1, Step 2, Step 4, Step 5, and Step 6 notebooks to

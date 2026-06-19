@@ -13,6 +13,17 @@ class StandardMetricWorkflowOutputResult:
     outputs: object
     cfg: Any | None = None
     task_estimate: object | None = None
+    trace_metadata_path: object | None = None
+
+    def status_frame(self) -> object:
+        """Return Step 3 output status, including trace metadata when known."""
+
+        extra_paths = (
+            {"trace_metadata_path": self.trace_metadata_path}
+            if self.trace_metadata_path is not None
+            else None
+        )
+        return self.outputs.status_frame(extra_paths=extra_paths)
 
     def display_task_previews(
         self,
@@ -76,9 +87,10 @@ def load_standard_metric_workflow_outputs(
         preview, ``metrics_long`` preview, and plotting-table load.
     """
 
-    from spatial_vtk.io import output_group
+    from spatial_vtk.io import output_group, preprocessed_waveform_metadata_paths
 
     outputs = output_group(output_group_name, cfg=cfg)
+    trace_metadata_path = preprocessed_waveform_metadata_paths(config=cfg).trace_metadata_path
     task_estimate = (
         outputs.load_table("metric_task_estimate_path", cfg=cfg, missing="skip")
         if load_task_estimate
@@ -88,6 +100,7 @@ def load_standard_metric_workflow_outputs(
         outputs=outputs,
         cfg=cfg,
         task_estimate=task_estimate,
+        trace_metadata_path=trace_metadata_path,
     )
 
 
