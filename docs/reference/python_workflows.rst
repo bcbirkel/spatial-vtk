@@ -41,6 +41,61 @@ keys such as ``"paths.metric_figure_snapshot"``, ``"paths.site_metadata"``,
 inputs, so notebooks can select configured inputs without resolving filesystem
 paths in cells.
 
+Stable Import Surfaces
+----------------------
+
+Use these package namespaces as the public workflow import surface. If a
+notebook needs a helper that is only available from a lower-level module, add a
+stable re-export first, then update the notebook to use the package-level
+namespace.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Namespace
+     - Use
+   * - ``spatial_vtk.config``
+     - Notebook run contexts, readiness-driven local/Slurm execution,
+       configured figure settings, output-registry previews, dashboard launch
+       settings, and shared figure rendering helpers.
+   * - ``spatial_vtk.io``
+     - Step 1 ingest workflow helpers, output groups, configured input-table
+       loaders, preprocessing outputs, bounded table previews, event-label
+       helpers, and table read/write helpers.
+   * - ``spatial_vtk.qc``
+     - Step 2 QC inventory builders, overlap inventory writers, compact QC
+       summary builders, manual-review helpers, and standard QC input/output
+       result objects.
+   * - ``spatial_vtk.metrics``
+     - Step 3 metric inventories, manifest planning, Slurm/batch readiness,
+       batch execution/merge helpers, metric-output writers, and standard
+       metric workflow result objects.
+   * - ``spatial_vtk.metrics.plot``
+     - Metric diagnostic plots, large-run metric figure suites, station metric
+       maps, metric row selectors, and metric figure result objects.
+   * - ``spatial_vtk.spatial``
+     - Step 4 spatial-statistics workflows, Step 5 GeoJSON/corridor
+       workflows, spatial readiness checks, configured spatial settings,
+       region/corridor joins, and spatial product preview helpers.
+   * - ``spatial_vtk.spatial.plot``
+     - Spatial diagnostic plots, large-run spatial figure suites, GeoJSON and
+       additional-plotting figure suites, and spatial figure result objects.
+   * - ``spatial_vtk.spatial.map``
+     - Geographic map helpers and basemap utilities.
+   * - ``spatial_vtk.visualize.dashboard``
+     - Dashboard dataset preparation, dashboard readiness/status previews, and
+       dashboard launch helpers.
+   * - ``spatial_vtk.visualize.waveforms``
+     - Waveform comparison helpers and waveform figure result objects.
+
+Avoid importing tutorial workflow helpers from implementation modules such as
+``spatial_vtk.metrics.workflow.execution``,
+``spatial_vtk.qc.build.workflow``,
+``spatial_vtk.spatial.calculate.workflow``, or
+``spatial_vtk.spatial.plot.large_run`` in notebooks. Those modules remain
+available for package internals and advanced scripts, but standard docs and
+notebooks should depend on the stable namespaces above.
+
 .. code-block:: python
 
    from spatial_vtk.config import configured_output_registry_preview_frame

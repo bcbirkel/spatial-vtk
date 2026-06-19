@@ -1662,6 +1662,87 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "svtk qc" not in workflows
 
 
+def test_python_workflow_docs_define_stable_import_surfaces():
+    """Workflow docs should map notebook helpers to importable namespaces."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    workflows = (root / "docs" / "reference" / "python_workflows.rst").read_text(encoding="utf-8")
+
+    assert "Stable Import Surfaces" in workflows
+    assert "Use these package namespaces as the public workflow import surface." in workflows
+    assert "add a\nstable re-export first" in workflows
+    assert "Avoid importing tutorial workflow helpers from implementation modules" in workflows
+    assert "``spatial_vtk.metrics.workflow.execution``" in workflows
+    assert "``spatial_vtk.qc.build.workflow``" in workflows
+    assert "``spatial_vtk.spatial.calculate.workflow``" in workflows
+    assert "``spatial_vtk.spatial.plot.large_run``" in workflows
+
+    stable_helpers = {
+        "spatial_vtk.config": [
+            "notebook_run_context",
+            "run_notebook_step_if_needed",
+            "notebook_figure_settings",
+            "render_notebook_figure",
+        ],
+        "spatial_vtk.io": [
+            "load_standard_ingest_workflow_outputs",
+            "load_configured_input_tables",
+            "preprocessing_readiness_from_config",
+            "build_record_coverage_from_config",
+        ],
+        "spatial_vtk.qc": [
+            "load_standard_qc_workflow_outputs",
+            "qc_inventory_readiness_from_config",
+            "run_qc_inventory_from_config",
+            "write_qc_inventory_overlap_from_config",
+        ],
+        "spatial_vtk.metrics": [
+            "load_standard_metric_workflow_outputs",
+            "metric_manifest_readiness_from_config",
+            "plan_metric_tasks_from_config",
+            "write_metric_outputs_from_config",
+        ],
+        "spatial_vtk.metrics.plot": [
+            "write_large_run_metric_figure_suite_from_notebook_settings",
+            "write_standard_metric_diagnostic_figures",
+            "write_station_metric_map_from_notebook_settings",
+        ],
+        "spatial_vtk.spatial": [
+            "load_standard_spatial_workflow_outputs",
+            "run_spatial_statistics_workflow_from_config",
+            "run_geojson_region_summary_workflow_from_config",
+            "run_boundary_corridor_workflow_from_config",
+        ],
+        "spatial_vtk.spatial.plot": [
+            "load_standard_geojson_plotting_inputs",
+            "load_standard_additional_plotting_inputs",
+            "write_large_run_spatial_figure_suite_from_notebook_settings",
+            "write_standard_spatial_map_figures",
+        ],
+        "spatial_vtk.spatial.map": [
+            "plot_station_metric_map",
+            "plot_event_residual_map",
+            "add_contextily_basemap",
+        ],
+        "spatial_vtk.visualize.dashboard": [
+            "prepare_configured_dashboard_datasets_from_notebook_settings",
+            "dashboard_readiness_summary_frame",
+            "launch_configured_dashboards_from_notebook_settings",
+        ],
+        "spatial_vtk.visualize.waveforms": [
+            "write_waveform_comparison_from_notebook_settings",
+            "write_waveform_comparison_from_outputs",
+            "WaveformComparisonFigureResult",
+        ],
+    }
+    for module_name, helpers in stable_helpers.items():
+        assert f"``{module_name}``" in workflows
+        module = importlib.import_module(module_name)
+        for helper in helpers:
+            assert helper in workflows
+            assert hasattr(module, helper), f"{module_name}.{helper} is not public"
+
+
 def test_io_api_docs_cover_output_group_preview_helpers():
     """I/O docs should list table and path-backed preview helpers together."""
 

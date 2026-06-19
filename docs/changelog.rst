@@ -103,6 +103,9 @@ Changelog
   - Updated QC, Spatial, Visualization, I/O, and Configuration API pages to
     document stable package entry points instead of lower-level implementation
     modules.
+  - Added a stable workflow import-surface table that maps notebook and
+    large-run helper families to public package namespaces and directs new
+    helpers to be re-exported before notebooks use them.
   - Updated workflow examples to prefer ``output_group()`` and configured
     output-registry helpers over raw ``resolve_output_path()`` snippets for
     normal notebook workflows.
