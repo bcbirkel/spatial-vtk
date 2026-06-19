@@ -3569,6 +3569,28 @@ def test_cli_dashboard_help_exposes_clear_path_aliases(capsys):
     assert "qc_trace_summary" in qc_help
 
 
+def test_cli_dashboard_missing_config_errors_name_dashboard_artifacts(tmp_path, monkeypatch, capsys):
+    """Dashboard launch errors should name concrete artifact roles, not generic roots."""
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("SVTK_CONFIG_FILE", raising=False)
+    monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(tmp_path / "missing-settings.json"))
+
+    assert main(["dashboard", "metrics"]) == 2
+    metrics_error = capsys.readouterr().err
+    assert "metrics dashboard row dataset" in metrics_error
+    assert "dashboard summary-table directory" in metrics_error
+    assert "metrics_dashboard row dataset" in metrics_error
+    assert "dashboard_summaries table directory" in metrics_error
+    assert "dashboard roots" not in metrics_error
+
+    assert main(["dashboard", "qc"]) == 2
+    qc_error = capsys.readouterr().err
+    assert "QC trace-summary table" in qc_error
+    assert "qc_trace_summary table" in qc_error
+    assert "trace-summary path" not in qc_error
+
+
 def test_cli_dashboard_metrics_accepts_clear_path_aliases(tmp_path, monkeypatch, capsys):
     metrics_path = tmp_path / "dashboard_metrics"
     summary_path = tmp_path / "dashboard_summaries"

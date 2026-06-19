@@ -1765,7 +1765,8 @@ def _resolve_metrics_dashboard_paths(
     config = _optional_cli_config(config_path, run_scenario=run_scenario)
     if config is None:
         raise ValueError(
-            "No dashboard roots were provided and no Spatial-VTK config was found. "
+            "No metrics dashboard row dataset or dashboard summary-table directory was provided, "
+            "and no Spatial-VTK config was found. "
             "Pass --metrics-dataset-dir for the metrics_dashboard row dataset and "
             "--dashboard-summary-table-dir for the dashboard_summaries table directory, "
             "pass --config, or run 'svtk config set PATH'."
@@ -1793,8 +1794,9 @@ def _resolve_qc_dashboard_path(
     config = _optional_cli_config(config_path, run_scenario=run_scenario)
     if config is None:
         raise ValueError(
-            "No trace-summary path was provided and no Spatial-VTK config was found. "
-            "Pass --qc-trace-summary, pass --config, or run 'svtk config set PATH'."
+            "No QC trace-summary table was provided and no Spatial-VTK config was found. "
+            "Pass --qc-trace-summary for the configured qc_trace_summary table, "
+            "pass --config, or run 'svtk config set PATH'."
         )
     from spatial_vtk.config import resolve_output_path
 
