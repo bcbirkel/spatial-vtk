@@ -170,8 +170,7 @@ loading the full large-run metric inventory.
 The detailed status table includes both the configured path key in ``name``
 and user-facing ``artifact_role`` / ``artifact_label`` columns, so notebooks
 can display "metrics dashboard row dataset" or "station_rollup dashboard
-summary table" instead of relying on internal key names such as
-``metrics_dashboard_root``.
+summary table" instead of relying on lower-level output registry names.
 The compact dashboard readiness summary carries the same
 ``artifact_role`` / ``artifact_label`` columns, and the metrics/QC dashboard
 Data Status tabs show those labels while keeping readiness displays bounded to

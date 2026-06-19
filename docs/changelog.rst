@@ -246,6 +246,8 @@ Changelog
   - Updated Python workflow guidance so large-run spatial plotting points to
     the package-owned figure-suite wrapper rather than lower-level spatial
     figure-context helpers.
+  - Clarified dashboard API guidance so notebooks display user-facing artifact
+    labels instead of internal dashboard output-registry names.
   - Updated Spatial API examples so large-run plotting starts from the
     package-owned spatial figure-suite wrapper, with context builders described
     as advanced helpers.
