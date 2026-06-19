@@ -667,7 +667,8 @@ def test_output_registry_docstring_prefers_output_group_for_notebooks():
 
     assert "from spatial_vtk.io import output_group" in text
     assert 'step_outputs = output_group("step_01_ingest")' in text
-    assert "Use ``resolve_output_path()`` directly for lower-level helpers" in text
+    assert "Use ``resolve_output_path()`` directly for scripts or single-artifact helpers" in text
+    assert "Use ``resolve_output_path()`` directly for lower-level helpers" not in text
     assert 'path = resolve_output_path("record_coverage", kind="figure")' not in text
 
 
@@ -1340,6 +1341,8 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "notebook_figure_settings" in workflows
     assert "render_notebook_figure" in workflows
     assert "from spatial_vtk.config.notebook import" not in workflows
+    assert "exact signatures, return contracts, and supporting public helpers" in workflows
+    assert "exact signatures and lower-level utilities" not in workflows
     assert "Prefer direct attributes such as ``step_outputs.metrics_long_path``" in workflows
     assert "Use ``figure_path()`` for figure artifacts" in workflows
     assert "``figure_dir / \"name.png\"``" in workflows

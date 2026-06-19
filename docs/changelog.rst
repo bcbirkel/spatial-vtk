@@ -126,6 +126,9 @@ Changelog
 
 **Documentation and Examples**
 
+- Clarified Python workflow and output-registry guidance so API pages are
+  framed around signatures, return contracts, and public helpers rather than
+  lower-level utility patterns.
 - Clarified the large-run README public-API guidance so it names the plotting,
   mapping, and visualization implementation-submodule prefixes rejected by
   notebook preflight.

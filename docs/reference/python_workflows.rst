@@ -473,7 +473,7 @@ Related API Pages
 -----------------
 
 The workflow helpers above are stable entry points. Use the module pages for
-exact signatures and lower-level utilities:
+exact signatures, return contracts, and supporting public helpers:
 
 - :doc:`api/config`
 - :doc:`api/io`

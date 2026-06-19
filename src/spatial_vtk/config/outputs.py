@@ -13,9 +13,9 @@ Resolve workflow outputs from the active config:
   ``step_outputs = output_group("step_01_ingest")``
   ``path = step_outputs.record_coverage_figure``
 
-Use ``resolve_output_path()`` directly for lower-level helpers that need one
-registered artifact path without the readiness and preview methods attached to
-an output group.
+Use ``resolve_output_path()`` directly for scripts or single-artifact helpers
+that need one registered artifact path without the readiness and preview
+methods attached to an output group.
 """
 
 from __future__ import annotations
