@@ -65,7 +65,9 @@ def test_public_imports():
     )
     from spatial_vtk.qc import (
         StandardQCInputResult,
+        StandardQCWorkflowOutputResult,
         load_standard_qc_inputs,
+        load_standard_qc_workflow_outputs,
         load_trace_inventory_lookup,
         slurm_settings_from_config,
     )
@@ -193,7 +195,9 @@ def test_public_imports():
     assert callable(resolve_model_aliases)
     assert callable(load_trace_inventory_lookup)
     assert callable(StandardQCInputResult)
+    assert callable(StandardQCWorkflowOutputResult)
     assert callable(load_standard_qc_inputs)
+    assert callable(load_standard_qc_workflow_outputs)
     assert callable(slurm_settings_from_config)
     assert callable(build_slurm_settings_from_config)
     assert callable(run_boundary_corridor_workflow_from_config)
@@ -803,6 +807,8 @@ def test_qc_api_docs_use_public_package_entry_point():
         "run_qc_inventory_from_config",
         "write_qc_inventory_overlap_from_config",
         "run_qc_summary_workflow_from_config",
+        "load_standard_qc_inputs",
+        "load_standard_qc_workflow_outputs",
         "build_metric_pair_retention_table_from_qc_inventory",
         "build_event_station_pair_retention_table_from_qc_inventory",
         "build_post_qc_record_table_from_qc_inventory",
@@ -1390,6 +1396,8 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.io.prepare_metadata_tables_from_config",
         "spatial_vtk.io.preprocess_waveforms_from_config",
         "spatial_vtk.io.build_record_coverage_from_config",
+        "spatial_vtk.qc.load_standard_qc_inputs",
+        "spatial_vtk.qc.load_standard_qc_workflow_outputs",
         "spatial_vtk.qc.run_qc_inventory_from_config",
         "spatial_vtk.qc.write_qc_inventory_overlap_from_config",
         "spatial_vtk.qc.run_qc_summary_workflow_from_config",
@@ -1544,6 +1552,7 @@ def test_python_workflow_docs_prefer_region_boxplot_notebook_settings_wrapper():
     assert "the preferred pattern for standard notebooks" in workflows
     assert "``spatial_vtk.io.load_standard_ingest_workflow_outputs``" in workflows
     assert "``spatial_vtk.qc.load_standard_qc_inputs``" in workflows
+    assert "``spatial_vtk.qc.load_standard_qc_workflow_outputs``" in workflows
     assert "``spatial_vtk.metrics.load_standard_metric_workflow_outputs``" in workflows
     assert "``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``" in workflows
     assert "``spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs``" in workflows
@@ -1562,6 +1571,7 @@ def test_package_overview_points_to_public_workflow_helpers():
         "``output_group`` and ``output_readiness``",
         "Start with public helpers from ``spatial_vtk.qc``",
         "``load_standard_qc_inputs``",
+        "``load_standard_qc_workflow_outputs``",
         "``run_qc_inventory_from_config``",
         "``write_qc_inventory_overlap_from_config``",
         "Start with public helpers from ``spatial_vtk.metrics``",

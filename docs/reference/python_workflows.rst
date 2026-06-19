@@ -278,6 +278,10 @@ fallbacks, and bounded previews stay in package code.
      - ``spatial_vtk.qc.load_standard_qc_inputs``
      - Prepared stations, events, event-station records, the Step 1 output
        group, and the Step 2 QC output group.
+   * - Step 2 large-run QC setup
+     - ``spatial_vtk.qc.load_standard_qc_workflow_outputs``
+     - The Step 2 QC output group and status frame without eager reads of the
+       prepared station/event/event-station tables.
    * - Step 3 metric calculation
      - ``spatial_vtk.metrics.load_standard_metric_workflow_outputs``
      - The Step 3 output group, preprocessed trace metadata dependency, status

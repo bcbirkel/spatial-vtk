@@ -744,6 +744,12 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert 'os.environ.get("SVTK_LAUNCH_QC_DASHBOARD"' not in standard_text
     assert "run_notebook_step_if_needed(" in large_run_text
     assert "from spatial_vtk.qc import (" in large_run_text
+    assert "load_standard_qc_workflow_outputs," in large_run_text
+    assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in large_run_text
+    assert "step_outputs = qc_outputs.outputs" in large_run_text
+    assert "display(qc_outputs.status_frame())" in large_run_text
+    assert 'from spatial_vtk.io import output_group' not in large_run_text
+    assert 'step_outputs = output_group("step_02_qc")' not in large_run_text
     assert "run_qc_inventory_from_config," in large_run_text
     assert "write_qc_inventory_overlap_from_config," in large_run_text
     assert "run_qc_summary_workflow_from_config," in large_run_text
@@ -988,6 +994,7 @@ def test_large_run_notebooks_use_output_group_helper() -> None:
         assert (
             "output_group(" in source
             or "load_standard_ingest_workflow_outputs(" in source
+            or "load_standard_qc_workflow_outputs(" in source
             or "load_standard_metric_workflow_outputs(" in source
         ), notebook_path.relative_to(repo_root)
         assert "output_group_namespace" not in source, notebook_path.relative_to(repo_root)
@@ -1917,6 +1924,12 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     assert "run_notebook_step_if_needed(" in source
     assert "run_or_submit_notebook_function(" not in source
     assert "from spatial_vtk.qc import (" in source
+    assert "load_standard_qc_workflow_outputs," in source
+    assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in source
+    assert "step_outputs = qc_outputs.outputs" in source
+    assert "display(qc_outputs.status_frame())" in source
+    assert 'from spatial_vtk.io import output_group' not in source
+    assert 'step_outputs = output_group("step_02_qc")' not in source
     assert "run_qc_inventory_from_config," in source
     assert "write_qc_inventory_overlap_from_config," in source
     assert "run_qc_summary_workflow_from_config," in source

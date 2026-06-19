@@ -14,6 +14,8 @@ Changelog
     - Extended the standard Step 3 metric output loader with the preprocessed
       trace metadata dependency and status-frame helper used by large-run
       metric readiness cells.
+    - Added a lightweight standard Step 2 QC output loader for large-run setup
+      cells that need QC output status without loading prepared metadata tables.
     - Added standard notebook input/output loaders for QC, spatial summaries,
       GeoJSON plotting, and Step 5 readiness checks so notebooks no longer
       duplicate config path plumbing.
@@ -30,6 +32,8 @@ Changelog
 
     - Rewired the large-run Step 3 notebook to resolve metric outputs and trace
       metadata dependencies through the standard metric output helper.
+    - Rewired the large-run Step 2 notebook to resolve QC output status through
+      the lightweight QC workflow output helper.
     - Rewired the large-run Step 1 notebook to resolve ingest and preprocessing
       outputs through the same package helper as the standard tutorial.
     - Rewired standard Step 1, Step 2, Step 4, Step 5, and Step 6 notebooks to

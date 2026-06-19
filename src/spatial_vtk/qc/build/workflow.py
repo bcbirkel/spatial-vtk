@@ -114,6 +114,43 @@ class StandardQCInputResult:
         return pd.DataFrame(rows, columns=["table", "rows"])
 
 
+@dataclass(frozen=True)
+class StandardQCWorkflowOutputResult:
+    """Configured Step 2 QC output handles without loading large input tables."""
+
+    outputs: object
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return configured Step 2 QC output status."""
+
+        return self.outputs.status_frame()
+
+
+def load_standard_qc_workflow_outputs(
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    qc_group_name: str = "step_02_qc",
+) -> StandardQCWorkflowOutputResult:
+    """Load standard Step 2 QC output handles without table reads.
+
+    Parameters
+    ----------
+    cfg
+        Active Spatial-VTK config. When omitted, the active config is used by
+        the underlying output-group helper.
+    qc_group_name
+        Output-group name for Step 2 QC outputs.
+
+    Returns
+    -------
+    StandardQCWorkflowOutputResult
+        Configured Step 2 output group and status-frame helper for large-run
+        notebooks that should not load Step 1 tables in setup cells.
+    """
+
+    return StandardQCWorkflowOutputResult(outputs=output_group(qc_group_name, cfg=cfg))
+
+
 def load_standard_qc_inputs(
     *,
     cfg: SpatialVTKConfig | None = None,
@@ -2652,9 +2689,11 @@ __all__ = [
     "export_manual_review_queue_from_qc_inventory",
     "filter_event_station_records_for_source_overlap",
     "load_standard_qc_inputs",
+    "load_standard_qc_workflow_outputs",
     "load_comparison_eligible_records",
     "QCSummaryWorkflowResult",
     "StandardQCInputResult",
+    "StandardQCWorkflowOutputResult",
     "run_qc_summary_workflow",
     "run_qc_summary_workflow_from_config",
     "write_comparison_eligibility_from_qc_inventory",
