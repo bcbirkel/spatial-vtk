@@ -132,6 +132,206 @@ class StandardIngestWorkflowOutputResult:
         )
 
 
+class _SummaryMappingMixin(Mapping[str, Any]):
+    """Mapping compatibility for result objects that expose ``as_dict``."""
+
+    def as_dict(self) -> dict[str, Any]:
+        """Return a backward-compatible dictionary representation."""
+
+        raise NotImplementedError
+
+    def __getitem__(self, key: str) -> Any:
+        return self.as_dict()[key]
+
+    def __iter__(self):
+        return iter(self.as_dict())
+
+    def __len__(self) -> int:
+        return len(self.as_dict())
+
+
+@dataclass(frozen=True)
+class MetadataPreparationResult(_SummaryMappingMixin):
+    """Summary returned by the configured Step 1 metadata workflow."""
+
+    prepared_stations_path: str
+    prepared_events_path: str
+    event_station_records_path: str
+    station_rows: int
+    event_rows: int
+    event_station_rows: int
+    reused: bool = False
+
+    def as_dict(self) -> dict[str, Any]:
+        """Return a backward-compatible dictionary representation."""
+
+        return {
+            "prepared_stations_path": self.prepared_stations_path,
+            "prepared_events_path": self.prepared_events_path,
+            "event_station_records_path": self.event_station_records_path,
+            "station_rows": self.station_rows,
+            "event_rows": self.event_rows,
+            "event_station_rows": self.event_station_rows,
+            "reused": self.reused,
+        }
+
+    def summary_message(self) -> str:
+        """Return a concise notebook status message."""
+
+        action = "Reused" if self.reused else "Prepared"
+        return (
+            f"{action} metadata: {self.station_rows:,} station(s), "
+            f"{self.event_rows:,} event(s), "
+            f"{self.event_station_rows:,} event-station row(s)."
+        )
+
+    def summary_frame(self) -> pd.DataFrame:
+        """Return one row per prepared metadata output."""
+
+        return pd.DataFrame(
+            [
+                {
+                    "artifact": "prepared_stations",
+                    "rows": self.station_rows,
+                    "resolved_path": self.prepared_stations_path,
+                    "path": self.prepared_stations_path,
+                    "reused": self.reused,
+                },
+                {
+                    "artifact": "prepared_events",
+                    "rows": self.event_rows,
+                    "resolved_path": self.prepared_events_path,
+                    "path": self.prepared_events_path,
+                    "reused": self.reused,
+                },
+                {
+                    "artifact": "event_station_records",
+                    "rows": self.event_station_rows,
+                    "resolved_path": self.event_station_records_path,
+                    "path": self.event_station_records_path,
+                    "reused": self.reused,
+                },
+            ],
+            columns=["artifact", "rows", "resolved_path", "path", "reused"],
+        )
+
+
+@dataclass(frozen=True)
+class WaveformPreprocessingSummaryResult(_SummaryMappingMixin):
+    """Summary returned by the configured waveform preprocessing workflow."""
+
+    preprocessed_event_station_records_path: str
+    preprocessed_manifest_path: str
+    preprocessed_trace_metadata_path: str
+    manifest_rows: int
+    trace_metadata_rows: int
+    event_station_rows: int
+
+    def as_dict(self) -> dict[str, Any]:
+        """Return a backward-compatible dictionary representation."""
+
+        return {
+            "preprocessed_event_station_records_path": self.preprocessed_event_station_records_path,
+            "preprocessed_manifest_path": self.preprocessed_manifest_path,
+            "preprocessing_manifest_path": self.preprocessed_manifest_path,
+            "preprocessed_trace_metadata_path": self.preprocessed_trace_metadata_path,
+            "event_station_records": self.preprocessed_event_station_records_path,
+            "manifest": self.preprocessed_manifest_path,
+            "trace_metadata": self.preprocessed_trace_metadata_path,
+            "manifest_rows": self.manifest_rows,
+            "trace_metadata_rows": self.trace_metadata_rows,
+            "event_station_rows": self.event_station_rows,
+        }
+
+    def summary_message(self) -> str:
+        """Return a concise notebook status message."""
+
+        return (
+            f"Preprocessed waveforms: {self.event_station_rows:,} event-station row(s), "
+            f"{self.trace_metadata_rows:,} trace metadata row(s), "
+            f"{self.manifest_rows:,} manifest row(s)."
+        )
+
+    def summary_frame(self) -> pd.DataFrame:
+        """Return one row per preprocessing metadata output."""
+
+        return pd.DataFrame(
+            [
+                {
+                    "artifact": "preprocessed_event_station_records",
+                    "rows": self.event_station_rows,
+                    "resolved_path": self.preprocessed_event_station_records_path,
+                    "path": self.preprocessed_event_station_records_path,
+                },
+                {
+                    "artifact": "preprocessing_manifest",
+                    "rows": self.manifest_rows,
+                    "resolved_path": self.preprocessed_manifest_path,
+                    "path": self.preprocessed_manifest_path,
+                },
+                {
+                    "artifact": "preprocessed_trace_metadata",
+                    "rows": self.trace_metadata_rows,
+                    "resolved_path": self.preprocessed_trace_metadata_path,
+                    "path": self.preprocessed_trace_metadata_path,
+                },
+            ],
+            columns=["artifact", "rows", "resolved_path", "path"],
+        )
+
+
+@dataclass(frozen=True)
+class RecordCoverageWorkflowResult(_SummaryMappingMixin):
+    """Summary returned by the configured record-coverage workflow."""
+
+    record_coverage_path: str
+    preprocessed_trace_metadata_path: str
+    event_station_records_path: str
+    rows: int
+
+    def as_dict(self) -> dict[str, Any]:
+        """Return a backward-compatible dictionary representation."""
+
+        return {
+            "record_coverage_path": self.record_coverage_path,
+            "preprocessed_trace_metadata_path": self.preprocessed_trace_metadata_path,
+            "event_station_records_path": self.event_station_records_path,
+            "record_coverage": self.record_coverage_path,
+            "trace_metadata": self.preprocessed_trace_metadata_path,
+            "event_stations": self.event_station_records_path,
+            "rows": self.rows,
+        }
+
+    def summary_message(self) -> str:
+        """Return a concise notebook status message."""
+
+        return f"Built record coverage: {self.rows:,} row(s)."
+
+    def summary_frame(self) -> pd.DataFrame:
+        """Return a compact record-coverage output status table."""
+
+        return pd.DataFrame(
+            [
+                {
+                    "artifact": "record_coverage",
+                    "rows": self.rows,
+                    "resolved_path": self.record_coverage_path,
+                    "path": self.record_coverage_path,
+                    "trace_metadata_path": self.preprocessed_trace_metadata_path,
+                    "event_station_records_path": self.event_station_records_path,
+                }
+            ],
+            columns=[
+                "artifact",
+                "rows",
+                "resolved_path",
+                "path",
+                "trace_metadata_path",
+                "event_station_records_path",
+            ],
+        )
+
+
 def load_standard_ingest_workflow_outputs(
     *,
     cfg: SpatialVTKConfig | None = None,
@@ -182,8 +382,10 @@ def prepare_metadata_tables_from_config(
 
     Returns
     -------
-    dict
-        Summary with written output paths and row counts.
+    MetadataPreparationResult
+        Summary with written output paths and row counts. The result supports
+        mapping-style access for existing scripts and ``summary_frame()`` /
+        ``summary_message()`` for notebooks.
     """
 
     cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
@@ -195,15 +397,15 @@ def prepare_metadata_tables_from_config(
         stations = load_output_table("prepared_stations", cfg=cfg)
         events = load_output_table("prepared_events", cfg=cfg)
         event_stations = load_output_table("event_station_records", cfg=cfg)
-        return {
-            "prepared_stations_path": str(station_path),
-            "prepared_events_path": str(event_path),
-            "event_station_records_path": str(event_station_path),
-            "station_rows": int(len(stations)),
-            "event_rows": int(len(events)),
-            "event_station_rows": int(len(event_stations)),
-            "reused": True,
-        }
+        return MetadataPreparationResult(
+            prepared_stations_path=str(station_path),
+            prepared_events_path=str(event_path),
+            event_station_records_path=str(event_station_path),
+            station_rows=int(len(stations)),
+            event_rows=int(len(events)),
+            event_station_rows=int(len(event_stations)),
+            reused=True,
+        )
 
     stations = prepare_station_metadata()
     events = prepare_event_metadata()
@@ -211,15 +413,15 @@ def prepare_metadata_tables_from_config(
     written_station_path = write_output_table("prepared_stations", stations, cfg=cfg)
     written_event_path = write_output_table("prepared_events", events, cfg=cfg)
     written_event_station_path = write_output_table("event_station_records", event_stations, cfg=cfg)
-    return {
-        "prepared_stations_path": str(written_station_path),
-        "prepared_events_path": str(written_event_path),
-        "event_station_records_path": str(written_event_station_path),
-        "station_rows": int(len(stations)),
-        "event_rows": int(len(events)),
-        "event_station_rows": int(len(event_stations)),
-        "reused": False,
-    }
+    return MetadataPreparationResult(
+        prepared_stations_path=str(written_station_path),
+        prepared_events_path=str(written_event_path),
+        event_station_records_path=str(written_event_station_path),
+        station_rows=int(len(stations)),
+        event_rows=int(len(events)),
+        event_station_rows=int(len(event_stations)),
+        reused=False,
+    )
 
 
 def metadata_tables_readiness_from_config(
@@ -276,9 +478,10 @@ def preprocess_waveforms_from_config(
 
     Returns
     -------
-    dict
+    WaveformPreprocessingSummaryResult
         Summary with event-station, manifest, trace-metadata paths and row
-        counts.
+        counts. The result supports mapping-style access for existing scripts
+        and ``summary_frame()`` / ``summary_message()`` for notebooks.
     """
 
     cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
@@ -290,18 +493,14 @@ def preprocess_waveforms_from_config(
         continue_on_error=continue_on_error,
         verbose=verbose,
     )
-    return {
-        "preprocessed_event_station_records_path": str(result.event_station_path),
-        "preprocessed_manifest_path": str(result.manifest_path),
-        "preprocessing_manifest_path": str(result.manifest_path),
-        "preprocessed_trace_metadata_path": str(result.trace_metadata_path),
-        "event_station_records": str(result.event_station_path),
-        "manifest": str(result.manifest_path),
-        "trace_metadata": str(result.trace_metadata_path),
-        "manifest_rows": int(len(result.manifest)),
-        "trace_metadata_rows": int(len(result.trace_metadata)),
-        "event_station_rows": int(len(result.event_station_records)),
-    }
+    return WaveformPreprocessingSummaryResult(
+        preprocessed_event_station_records_path=str(result.event_station_path),
+        preprocessed_manifest_path=str(result.manifest_path),
+        preprocessed_trace_metadata_path=str(result.trace_metadata_path),
+        manifest_rows=int(len(result.manifest)),
+        trace_metadata_rows=int(len(result.trace_metadata)),
+        event_station_rows=int(len(result.event_station_records)),
+    )
 
 
 def preprocessing_readiness_from_config(
@@ -366,8 +565,10 @@ def build_record_coverage_from_config(
 
     Returns
     -------
-    dict
-        Summary with input/output paths and row count.
+    RecordCoverageWorkflowResult
+        Summary with input/output paths and row count. The result supports
+        mapping-style access for existing scripts and ``summary_frame()`` /
+        ``summary_message()`` for notebooks.
     """
 
     cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
@@ -392,15 +593,12 @@ def build_record_coverage_from_config(
         on_missing_metadata=on_missing_metadata,
     )
     output_path = write_output_table("record_coverage", record_coverage, cfg=cfg)
-    return {
-        "record_coverage_path": str(output_path),
-        "preprocessed_trace_metadata_path": str(preprocessed_outputs.preprocessed_trace_metadata_path),
-        "event_station_records_path": str(event_station_records),
-        "record_coverage": str(output_path),
-        "trace_metadata": str(preprocessed_outputs.preprocessed_trace_metadata_path),
-        "event_stations": str(event_station_records),
-        "rows": int(len(record_coverage)),
-    }
+    return RecordCoverageWorkflowResult(
+        record_coverage_path=str(output_path),
+        preprocessed_trace_metadata_path=str(preprocessed_outputs.preprocessed_trace_metadata_path),
+        event_station_records_path=str(event_station_records),
+        rows=int(len(record_coverage)),
+    )
 
 
 def record_coverage_readiness_from_config(
@@ -590,10 +788,13 @@ __all__ = [
     "load_configured_input_paths",
     "load_configured_input_tables",
     "load_standard_ingest_workflow_outputs",
+    "MetadataPreparationResult",
     "metadata_tables_readiness_from_config",
     "prepare_metadata_tables_from_config",
     "preprocessing_readiness_from_config",
     "preprocess_waveforms_from_config",
     "record_coverage_readiness_from_config",
+    "RecordCoverageWorkflowResult",
     "StandardIngestWorkflowOutputResult",
+    "WaveformPreprocessingSummaryResult",
 ]

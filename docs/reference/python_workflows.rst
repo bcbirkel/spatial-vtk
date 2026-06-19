@@ -404,7 +404,8 @@ Step 1: Metadata, Waveforms, and Record Coverage
    * - Prepare stations, events, and event-station rows
      - ``spatial_vtk.io.prepare_metadata_tables_from_config``
      - ``prepared_stations``, ``prepared_events``,
-       ``event_station_records``
+       ``event_station_records``; returns ``MetadataPreparationResult`` with
+       notebook summary helpers
    * - Check prepared metadata readiness
      - ``spatial_vtk.io.metadata_tables_readiness_from_config``
      - Readiness/status for ``prepared_stations``, ``prepared_events``, and
@@ -412,14 +413,16 @@ Step 1: Metadata, Waveforms, and Record Coverage
    * - Preprocess observed/synthetic waveforms
      - ``spatial_vtk.io.preprocess_waveforms_from_config``
      - preprocessed waveform files, preprocessing manifest,
-       trace metadata, preprocessed event-station records
+       trace metadata, preprocessed event-station records; returns
+       ``WaveformPreprocessingSummaryResult``
    * - Check preprocessing readiness
      - ``spatial_vtk.io.preprocessing_readiness_from_config``
      - Readiness/status for preprocessing metadata and its
        ``event_station_records`` dependency without repeating path names
    * - Build record coverage from trace metadata
      - ``spatial_vtk.io.build_record_coverage_from_config``
-     - ``record_coverage``
+     - ``record_coverage``; returns ``RecordCoverageWorkflowResult`` with the
+       exact trace metadata and event-station inputs used
 
 Use ``spatial_vtk.io.metadata_tables_readiness_from_config``,
 ``spatial_vtk.io.preprocessing_readiness_from_config``, and

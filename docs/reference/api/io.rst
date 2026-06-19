@@ -75,6 +75,10 @@ Public helpers exposed by ``spatial_vtk.io``:
      - Load the standard Step 1 ingest output group, preprocessing metadata
        output group, combined status frame, metadata row-count summary, and
        bounded station/event/manifest preview helpers for tutorial notebooks.
+   * - ``MetadataPreparationResult``
+     - Report prepared metadata output paths and row counts with
+       mapping-compatible access plus ``summary_message()`` and
+       ``summary_frame()`` for notebooks.
    * - ``output_readiness`` and ``OutputReadiness``
      - Gate local or Slurm-backed work on missing, stale, blocked, or reusable
        outputs. Required input mappings may use ``None`` for an optional
@@ -109,7 +113,11 @@ Public helpers exposed by ``spatial_vtk.io``:
        without loading the tables in notebook cells.
    * - ``preprocess_waveforms_from_config``
      - Read configured waveform sources, reuse existing preprocessed files when
-       possible, and write preprocessing metadata.
+       possible, and write preprocessing metadata. Returns a
+       ``WaveformPreprocessingSummaryResult`` with bounded display helpers.
+   * - ``WaveformPreprocessingSummaryResult``
+     - Report preprocessed event-station, manifest, and trace-metadata outputs
+       with mapping-compatible access plus notebook summary helpers.
    * - ``preprocessing_readiness_from_config``
      - Check whether preprocessing metadata outputs and their
        ``event_station_records`` dependency are ready without duplicating
@@ -118,7 +126,12 @@ Public helpers exposed by ``spatial_vtk.io``:
      - Check whether record coverage should be rebuilt from preprocessed trace
        metadata.
    * - ``build_record_coverage_from_config``
-     - Build and write the configured record-coverage table.
+     - Build and write the configured record-coverage table. Returns a
+       ``RecordCoverageWorkflowResult`` with input/output path provenance and
+       row counts.
+   * - ``RecordCoverageWorkflowResult``
+     - Report the record-coverage output and the exact trace metadata and
+       event-station inputs used to build it.
    * - ``read_bounded_table`` and ``preview_table``
      - Inspect large CSV or Parquet tables without loading all rows.
    * - ``write_output_table`` and ``load_output_table``

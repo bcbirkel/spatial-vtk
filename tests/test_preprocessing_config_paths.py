@@ -14,6 +14,9 @@ from spatial_vtk.config.runtime import SVTK_CLI_CONFIG_ENV, SVTK_CONFIG_ENV
 from spatial_vtk.io import workflows as io_workflows
 from spatial_vtk.io import preprocessing as preprocessing_module
 from spatial_vtk.io.workflows import (
+    MetadataPreparationResult,
+    RecordCoverageWorkflowResult,
+    WaveformPreprocessingSummaryResult,
     build_record_coverage_from_config,
     load_configured_input_paths,
     load_configured_input_tables,
@@ -117,6 +120,13 @@ outputs:
     assert result["manifest_rows"] == 1
     assert result["trace_metadata_rows"] == 2
     assert result["event_station_rows"] == 1
+    assert isinstance(result, WaveformPreprocessingSummaryResult)
+    assert "Preprocessed waveforms: 1 event-station row(s)" in result.summary_message()
+    assert result.summary_frame()["artifact"].tolist() == [
+        "preprocessed_event_station_records",
+        "preprocessing_manifest",
+        "preprocessed_trace_metadata",
+    ]
     assert result["preprocessed_event_station_records_path"] == result["event_station_records"]
     assert result["preprocessed_manifest_path"] == result["manifest"]
     assert result["preprocessing_manifest_path"] == result["manifest"]
@@ -157,6 +167,13 @@ outputs:
     assert result["station_rows"] == 1
     assert result["event_rows"] == 1
     assert result["event_station_rows"] == 1
+    assert isinstance(result, MetadataPreparationResult)
+    assert result.summary_message() == "Prepared metadata: 1 station(s), 1 event(s), 1 event-station row(s)."
+    assert result.summary_frame()["artifact"].tolist() == [
+        "prepared_stations",
+        "prepared_events",
+        "event_station_records",
+    ]
     assert result["reused"] is False
     assert Path(result["prepared_stations_path"]).exists()
     assert Path(result["prepared_events_path"]).exists()
@@ -291,6 +308,9 @@ outputs:
 
     output = tmp_path / "outputs" / "tables" / "record_coverage.csv"
     records = pd.read_csv(output)
+    assert isinstance(result, RecordCoverageWorkflowResult)
+    assert result.summary_message() == "Built record coverage: 1 row(s)."
+    assert result.summary_frame().loc[0, "artifact"] == "record_coverage"
     assert result["record_coverage"] == str(output)
     assert result["record_coverage_path"] == str(output)
     assert result["preprocessed_trace_metadata_path"].endswith("trace_metadata_preprocessed.csv")

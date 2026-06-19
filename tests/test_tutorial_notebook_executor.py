@@ -1219,6 +1219,19 @@ def test_standard_step01_uses_configured_io_workflows() -> None:
     assert "ingest_outputs.display_station_preview(nrows=5)" in source
     assert "ingest_outputs.display_event_preview(nrows=5)" in source
     assert "ingest_outputs.display_preprocessing_manifest_preview(nrows=5)" in source
+    assert "metadata_result.summary_message()" in source
+    assert "metadata_result.summary_frame()" in source
+    assert "preprocessing_result.summary_message()" in source
+    assert "preprocessing_result.summary_frame()" in source
+    assert "coverage_result.summary_message()" in source
+    assert "coverage_result.summary_frame()" in source
+    assert "metadata_result['station_rows']" not in source
+    assert "metadata_result['event_rows']" not in source
+    assert "metadata_result['event_station_rows']" not in source
+    assert "preprocessing_result['event_station_rows']" not in source
+    assert "preprocessing_result['trace_metadata_rows']" not in source
+    assert "preprocessing_result['manifest_rows']" not in source
+    assert "coverage_result['record_coverage_path']" not in source
     assert 'step_outputs = output_group("step_01_ingest", cfg=cfg)' not in source
     assert "preprocessed_outputs = preprocessed_waveform_output_group(config=cfg)" not in source
     assert "step_outputs.display_table_previews(" not in source

@@ -8,6 +8,9 @@ Changelog
 
   - Added a standard Step 1 ingest output loader for combined ingest and
     preprocessing output status.
+  - Added typed Step 1 metadata, preprocessing, and record-coverage result
+    objects with mapping-compatible access plus ``summary_message()`` and
+    ``summary_frame()`` methods for notebooks.
   - Added bounded station, event, and preprocessing manifest previews for the
     standard Step 1 ingest output loader.
   - Added config-backed Step 1 metadata and preprocessing readiness helpers so

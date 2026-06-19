@@ -60,7 +60,9 @@ Start with public helpers from ``spatial_vtk.io``:
 - ``prepare_station_metadata``, ``prepare_event_metadata``, and
   ``prepare_event_station_table`` for prepared station/event tables
 - ``preprocess_waveforms_from_config`` and ``build_record_coverage_from_config``
-  for config-backed waveform preprocessing and record coverage
+  for config-backed waveform preprocessing and record coverage; their result
+  objects provide ``summary_message()`` and ``summary_frame()`` so notebooks do
+  not need to unpack path dictionaries just to report progress
 - ``output_group`` and ``output_readiness`` for notebook-friendly output status
   checks without hand-written path cells
 

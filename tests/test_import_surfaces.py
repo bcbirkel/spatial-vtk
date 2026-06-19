@@ -48,7 +48,10 @@ def test_public_imports():
         write_station_metric_map_from_notebook_settings,
     )
     from spatial_vtk.io import (
+        MetadataPreparationResult,
+        RecordCoverageWorkflowResult,
         StandardIngestWorkflowOutputResult,
+        WaveformPreprocessingSummaryResult,
         load_configured_input_paths,
         load_configured_input_tables,
         OutputGroup,
@@ -199,6 +202,9 @@ def test_public_imports():
     assert callable(write_station_metric_map_from_notebook_settings)
     assert callable(inspect_synthetic_format)
     assert callable(StandardIngestWorkflowOutputResult)
+    assert callable(MetadataPreparationResult)
+    assert callable(RecordCoverageWorkflowResult)
+    assert callable(WaveformPreprocessingSummaryResult)
     assert callable(load_configured_input_paths)
     assert callable(load_configured_input_tables)
     assert callable(load_standard_ingest_workflow_outputs)
@@ -977,6 +983,7 @@ def test_io_api_docs_use_public_workflow_helpers():
         "output_group",
         "preprocessed_waveform_output_group",
         "load_standard_ingest_workflow_outputs",
+        "MetadataPreparationResult",
         "output_readiness",
         "OutputReadiness",
         "load_configured_input_paths",
@@ -990,7 +997,9 @@ def test_io_api_docs_use_public_workflow_helpers():
         "prepare_metadata_tables_from_config",
         "preprocessing_readiness_from_config",
         "preprocess_waveforms_from_config",
+        "WaveformPreprocessingSummaryResult",
         "record_coverage_readiness_from_config",
+        "RecordCoverageWorkflowResult",
         "build_record_coverage_from_config",
         "read_bounded_table",
         "preview_table",
