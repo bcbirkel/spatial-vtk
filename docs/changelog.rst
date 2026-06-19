@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-19
+   - Added ``StandardAdditionalPlottingFigureResult.pattern_preview_frame()`` and
+     rewired the standard Step 6 plotting notebook to use it for bounded pattern
+     similarity previews instead of calling ``.head()`` in the notebook cell.
    - Added ``OutputGroup.display_path_table_previews()`` and rewired standard
      Step 1 and Step 2 path-backed preview cells to use it for preprocessing
      manifests and comparison-eligible records. The notebooks no longer assign

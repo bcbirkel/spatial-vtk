@@ -621,6 +621,15 @@ def test_write_standard_additional_plotting_figures_returns_previews(tmp_path) -
     assert result.metric_summary_frame().loc[0, "Value"] == 2
     assert result.waveform_order_frame().loc[0, "station"] == "STA1"
     assert result.pattern_frame().loc[0, "dataset"] == "observed"
+    assert result.pattern_preview_frame(nrows=1).to_dict("records") == [
+        {
+            "station_name": "STA1",
+            "dataset": "observed",
+            "metric": "PGA",
+            "bin": "1-2 sec",
+            "value": 0.0,
+        }
+    ]
     assert set(result.region_metrics["station_geojson_region"]) == {"LA Basin"}
     assert len(calls) == 5
 

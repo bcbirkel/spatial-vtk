@@ -1516,6 +1516,11 @@ class StandardAdditionalPlottingFigureResult:
 
         return self.pattern_rows.copy()
 
+    def pattern_preview_frame(self, nrows: int = 5) -> pd.DataFrame:
+        """Return a bounded preview of pattern-similarity rows."""
+
+        return self.pattern_rows.head(nrows).copy()
+
 
 @dataclass(frozen=True)
 class StandardAdditionalPlottingInputResult:

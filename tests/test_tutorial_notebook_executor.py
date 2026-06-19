@@ -1959,7 +1959,8 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     assert "write_standard_additional_plotting_figures(" in source
     assert "additional_plot_result.metric_summary_frame()" in source
     assert "additional_plot_result.waveform_order_frame()" in source
-    assert "additional_plot_result.pattern_frame().head()" in source
+    assert "additional_plot_result.pattern_preview_frame()" in source
+    assert "additional_plot_result.pattern_frame().head()" not in source
     assert "additional_plot_result.status_frame()" in source
     assert "render_notebook_figure(" not in source
     assert "station_event_waveform_map_path" not in source
