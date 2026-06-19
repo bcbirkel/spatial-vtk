@@ -68,6 +68,10 @@ Public helpers exposed by ``spatial_vtk.visualize``:
    * - ``prepare_configured_dashboard_datasets_from_notebook_settings``
      - Check dashboard readiness and optionally write configured dashboard
        datasets from one notebook-facing helper.
+   * - ``display_dashboard_preparation_result``
+     - Display the standard dashboard preparation readiness, status, written
+       output, and summary-contract tables without notebook-local formatting
+       code.
    * - ``dashboard_readiness_summary_frame`` and
        ``dashboard_output_status_frame``
      - Inspect dashboard readiness with bounded schema, row-count, and map-data
@@ -225,6 +229,9 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
      - Own the Step 7 notebook branch that checks readiness, optionally writes
        tutorial-sized dashboard datasets, and returns compact readiness,
        status, and written-output frames.
+   * - ``display_dashboard_preparation_result``
+     - Return and optionally display the standard dashboard preparation frames
+       with bounded row counts and summary-table contracts.
    * - ``load_dashboard_metric_dataset`` and
        ``load_dashboard_summary_tables``
      - Load dashboard-ready datasets after readiness checks pass.

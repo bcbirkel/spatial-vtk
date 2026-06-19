@@ -84,6 +84,7 @@ from spatial_vtk.visualize.dashboard import (
     dashboard_readiness_summary_frame,
     dashboard_summary_readiness_frame,
     dashboard_summary_table_contracts,
+    display_dashboard_preparation_result,
     find_available_port,
     filter_optional_dashboard_summary,
     prepare_configured_dashboard_datasets_from_notebook_settings,
@@ -1937,6 +1938,37 @@ outputs:
     assert not result.summary_frame().empty
     written = result.written_frame().set_index("name")
     assert "dashboard_summary_root" in written.index
+
+
+def test_display_dashboard_preparation_result_returns_named_frames(tmp_path):
+    """Dashboard notebooks should display preparation frames through package code."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    result = prepare_configured_dashboard_datasets_from_notebook_settings(
+        cfg=cfg,
+        prepare_locally=False,
+    )
+    displayed: list[pd.DataFrame] = []
+
+    frames = display_dashboard_preparation_result(result, display=displayed.append)
+
+    assert list(frames) == ["readiness", "status", "written", "summary_contracts"]
+    assert len(displayed) == 4
+    assert not frames["readiness"].empty
+    assert not frames["status"].empty
+    assert frames["written"].empty
+    assert not frames["summary_contracts"].empty
 
 
 def test_dashboard_output_readiness_rebuilds_map_summaries_when_source_has_coordinates(tmp_path):

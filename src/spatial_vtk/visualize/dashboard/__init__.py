@@ -18,6 +18,7 @@ _EXPORT_MODULES = {
     "haversine_km": "spatial_vtk.visualize.dashboard.export",
     "load_dashboard_metric_dataset": "spatial_vtk.visualize.dashboard.export",
     "DashboardDatasetPreparationResult": "spatial_vtk.visualize.dashboard.export",
+    "display_dashboard_preparation_result": "spatial_vtk.visualize.dashboard.export",
     "prepare_configured_dashboard_datasets_from_notebook_settings": "spatial_vtk.visualize.dashboard.export",
     "safe_path_token": "spatial_vtk.visualize.dashboard.export",
     "write_configured_dashboard_datasets": "spatial_vtk.visualize.dashboard.export",

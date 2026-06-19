@@ -65,6 +65,38 @@ class DashboardDatasetPreparationResult:
         return pd.DataFrame(rows, columns=["name", "path"])
 
 
+def display_dashboard_preparation_result(
+    result: DashboardDatasetPreparationResult,
+    *,
+    display: Any | None = None,
+    readiness_rows: int = 20,
+    status_rows: int = 30,
+    written_rows: int = 20,
+    include_contracts: bool = True,
+) -> dict[str, pd.DataFrame]:
+    """Return and optionally display standard dashboard preparation tables.
+
+    Standard dashboard notebooks use this helper to keep table formatting and
+    contract previews in package code while still exposing the same readiness,
+    artifact-status, written-output, and summary-table-contract dataframes.
+    """
+
+    from spatial_vtk.visualize.dashboard.contracts import dashboard_summary_table_contracts
+    from spatial_vtk.visualize.dashboard.labels import display_table
+
+    frames = {
+        "readiness": display_table(result.summary_frame(), max_rows=readiness_rows),
+        "status": display_table(result.status_frame(), max_rows=status_rows),
+        "written": display_table(result.written_frame(), max_rows=written_rows),
+    }
+    if include_contracts:
+        frames["summary_contracts"] = display_table(dashboard_summary_table_contracts(), max_rows=10)
+    if display is not None:
+        for frame in frames.values():
+            display(frame)
+    return frames
+
+
 def write_dashboard_metric_dataset(
     tables: pd.DataFrame | str | Path | Sequence[pd.DataFrame | str | Path],
     output_root: str | Path | None = None,

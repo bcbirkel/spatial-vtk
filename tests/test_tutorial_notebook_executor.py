@@ -1448,10 +1448,14 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "prepare_configured_dashboard_datasets_from_notebook_settings," in source
+    assert "display_dashboard_preparation_result," in source
     assert "dashboard_preparation = prepare_configured_dashboard_datasets_from_notebook_settings(" in source
-    assert "display(display_table(dashboard_preparation.summary_frame(), max_rows=20))" in source
-    assert "display(display_table(dashboard_preparation.status_frame(), max_rows=30))" in source
-    assert "display(display_table(dashboard_preparation.written_frame(), max_rows=20))" in source
+    assert "display_dashboard_preparation_result(dashboard_preparation, display=display)" in source
+    assert "display(display_table(dashboard_preparation.summary_frame(), max_rows=20))" not in source
+    assert "display(display_table(dashboard_preparation.status_frame(), max_rows=30))" not in source
+    assert "display(display_table(dashboard_preparation.written_frame(), max_rows=20))" not in source
+    assert "dashboard_summary_table_contracts," not in source
+    assert "display_table," not in source
     assert "dashboard_output_readiness," not in source
     assert "dashboard_output_status_frame," not in source
     assert "write_configured_dashboard_datasets," not in source

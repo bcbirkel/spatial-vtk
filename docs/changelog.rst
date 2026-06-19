@@ -13,6 +13,11 @@ Changelog
    notebook no longer imports individual plotting functions, calls
    ``render_notebook_figure()`` directly, or owns waveform selection, GeoJSON
    metric annotation, figure-path lookup, and preview-table construction.
+   Added ``display_dashboard_preparation_result()`` and rewired the standard
+   Step 7 dashboard notebook to use it for readiness, artifact-status,
+   written-output, and dashboard-summary contract displays. The notebook no
+   longer imports dashboard table-formatting helpers or formats each
+   preparation dataframe by hand.
    Added ``write_standard_metric_diagnostic_figures()`` and rewired the
    standard Step 3 metric notebook to use it for residual-distance,
    GOF-distance, and band-distribution diagnostics. The notebook no longer
