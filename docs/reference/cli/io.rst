@@ -50,11 +50,10 @@ svtk io inventory
 
 .. code-block:: bash
 
-   svtk io inventory [-h] [--observed-root OBSERVED_ROOT]
-                         [--synthetic-root SYNTHETIC_ROOT] [--output PATH]
-                         [--config PATH] [--run-scenario RUN_SCENARIO]
-                         [--suffix SUFFIX] [--relative-to RELATIVE_TO]
-                         [--no-sha256]
+   svtk io inventory [-h] [--observed-root PATH] [--synthetic-root PATH]
+                         [--output PATH] [--config PATH]
+                         [--run-scenario RUN_SCENARIO] [--suffix SUFFIX]
+                         [--relative-to DIR] [--no-sha256]
 
 .. rubric:: Parameters
 
@@ -73,11 +72,11 @@ svtk io inventory
    * - ``--observed-root``
      - No
      -
-     - Directory path. Observed waveform directory or path template. Defaults to paths.observed_root or paths.observed_template from config.
+     - Filesystem path. Observed waveform directory or path template. Defaults to paths.observed_root or paths.observed_template from config.
    * - ``--synthetic-root``
      - No
      -
-     - Directory path. Synthetic waveform directory or path template. Defaults to paths.synthetic_root or paths.synthetic_template from config.
+     - Filesystem path. Synthetic waveform directory or path template. Defaults to paths.synthetic_root or paths.synthetic_template from config.
    * - ``--output``
      - No
      -
@@ -97,7 +96,7 @@ svtk io inventory
    * - ``--relative-to``
      - No
      -
-     - Base path used for relative inventory paths.
+     - Directory path. Base path used for relative inventory paths.
    * - ``--no-sha256``
      - No
      - Flag

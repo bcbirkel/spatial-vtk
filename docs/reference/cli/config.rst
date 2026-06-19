@@ -86,7 +86,7 @@ svtk config find
 
 .. code-block:: bash
 
-   svtk config find [-h] [--config PATH] [--start-dir START_DIR]
+   svtk config find [-h] [--config PATH] [--start-dir DIR]
 
 .. rubric:: Parameters
 

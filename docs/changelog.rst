@@ -65,6 +65,9 @@ Changelog
 
 **Fixed and Hardened**
 
+- Normalized remaining path-like CLI metavars for config discovery and waveform
+  inventory roots so generated help shows ``DIR`` or ``PATH`` instead of
+  internal option names such as ``START_DIR`` or ``OBSERVED_ROOT``.
 - Normalized ``--config`` CLI arguments to render as ``PATH`` values in live
   help and generated reference pages, including ``svtk config set``.
 - Clarified tutorial runtime-check install guidance so missing dependency

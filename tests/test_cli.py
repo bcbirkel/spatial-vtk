@@ -1070,8 +1070,11 @@ def test_generated_cli_reference_names_io_inventory_defaults():
     section = text.split(".. _cli-svtk-io-inventory:", maxsplit=1)[1].split(
         ".. _cli-svtk-io-master-events:", maxsplit=1
     )[0]
-    assert "[--observed-root OBSERVED_ROOT]" in section
-    assert "[--synthetic-root SYNTHETIC_ROOT]" in section
+    assert "[--observed-root PATH]" in section
+    assert "[--synthetic-root PATH]" in section
+    assert "[--relative-to DIR]" in section
+    assert "OBSERVED_ROOT" not in section
+    assert "SYNTHETIC_ROOT" not in section
     assert "[--output PATH]" in section
     assert "Filesystem path. Output CSV/parquet path" in section
     assert "Defaults to paths.observed_root or paths.observed_template from config" in section
@@ -1079,6 +1082,17 @@ def test_generated_cli_reference_names_io_inventory_defaults():
     assert "Defaults to configured output table 'waveform_inventory'" in section
     assert "``--config``" in section
     assert "``--run-scenario``" in section
+
+
+def test_config_find_help_uses_directory_metavar(capsys):
+    """Config discovery help should label the start directory as a directory."""
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["config", "find", "--help"])
+    assert excinfo.value.code == 0
+    help_text = capsys.readouterr().out
+    assert "[--start-dir DIR]" in help_text
+    assert "START_DIR" not in help_text
 
 
 def test_cli_metrics_workflow_help_exposes_artifact_aliases(capsys):

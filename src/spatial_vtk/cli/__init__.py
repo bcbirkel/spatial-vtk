@@ -488,7 +488,7 @@ def _add_config_commands(subparsers: argparse._SubParsersAction[argparse.Argumen
 
     find = config_sub.add_parser("find", help="Print the resolved config path.")
     find.add_argument("--config", default=None, help="Explicit config file.")
-    find.add_argument("--start-dir", default=None, help="Directory used for config discovery.")
+    find.add_argument("--start-dir", metavar="DIR", default=None, help="Directory used for config discovery.")
     find.set_defaults(handler=_cmd_config_find)
 
     set_config = config_sub.add_parser("set", help="Save the default config path for future svtk commands.")
@@ -572,11 +572,13 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     inventory = io_sub.add_parser("inventory", help="Build a lightweight observed/synthetic file inventory.")
     inventory.add_argument(
         "--observed-root",
+        metavar="PATH",
         default=None,
         help="Observed waveform directory or path template. Defaults to paths.observed_root or paths.observed_template from config.",
     )
     inventory.add_argument(
         "--synthetic-root",
+        metavar="PATH",
         default=None,
         help="Synthetic waveform directory or path template. Defaults to paths.synthetic_root or paths.synthetic_template from config.",
     )
@@ -584,7 +586,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     inventory.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default roots and output path.")
     inventory.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     inventory.add_argument("--suffix", action="append", default=None, help="Waveform suffix to include. May be repeated.")
-    inventory.add_argument("--relative-to", default=None, help="Base path used for relative inventory paths.")
+    inventory.add_argument("--relative-to", metavar="DIR", default=None, help="Base path used for relative inventory paths.")
     inventory.add_argument("--no-sha256", action="store_true", help="Skip SHA-256 hashing.")
     inventory.set_defaults(handler=_cmd_io_inventory)
 
