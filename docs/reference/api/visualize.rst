@@ -248,7 +248,8 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
    * - ``prepare_configured_dashboard_datasets_from_notebook_settings``
      - Own the Step 7 notebook branch that checks readiness, optionally writes
        tutorial-sized dashboard datasets, and returns compact readiness,
-       status, and written-output frames.
+       status, written-output frames, and bounded output previews through the
+       returned ``DashboardDatasetPreparationResult``.
    * - ``display_dashboard_preparation_result``
      - Return and optionally display the standard dashboard preparation frames
        with bounded row counts and summary-table contracts.
@@ -288,7 +289,10 @@ current artifact status, and written paths without requiring notebooks to loop
 over output dictionaries or repeat ``should_run`` branches. Large-run notebooks
 set ``prepare_locally=False`` and pass the returned ``readiness`` object to the
 Slurm-aware preparation cell, so preflight and postflight displays stay on the
-same package helper path.
+same package helper path. The returned result also retains the config used for
+readiness checks, so notebooks can call ``display_output_previews(nrows=...)``
+instead of resolving dashboard summary paths or passing ``cfg`` into lower-level
+preview helpers.
 
 ``dashboard_summary_table_contracts`` documents which summary table feeds each
 dashboard tab and the required columns for that table. Use it in notebooks next

@@ -1666,8 +1666,9 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     assert "trace_summary_table" not in source
     assert "Launch options:" not in source
     assert "server_port=notebook_overrides" not in source
-    assert "display_dashboard_output_previews," in source
-    assert "display_dashboard_output_previews(" in source
+    assert "display_dashboard_output_previews," not in source
+    assert "display_dashboard_output_previews(" not in source
+    assert "dashboard_preparation.display_output_previews(" in source
     assert "dashboard_outputs = output_group(\"step_07_dashboards\", cfg=cfg)" not in source
     assert "dashboard_outputs.preview_table(" not in source
     assert "dashboard_outputs.qc_trace_summary_path" not in source
@@ -1711,7 +1712,8 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=OVERWRITE)" not in source
     assert "run_notebook_step_if_needed(" in source
     assert "write_configured_dashboard_datasets," in source
-    assert "display_dashboard_output_previews," in source
+    assert "display_dashboard_output_previews," not in source
+    assert "post_dashboard_preparation.display_output_previews(nrows=PREVIEW_ROWS, missing=\"skip\")" in source
     assert "preview_dashboard_summary_tables," not in source
     assert '"spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets"' not in source
     assert "launch_configured_dashboards_from_notebook_settings(" in source
@@ -1738,7 +1740,7 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "dashboard_outputs.preview_table(" not in source
     assert "post_dashboard_readiness = dashboard_readiness_summary_frame(cfg=cfg, overwrite=False)" not in source
     assert "post_dashboard_status = dashboard_output_status_frame(cfg=cfg)" not in source
-    assert "display_dashboard_output_previews(cfg=cfg, nrows=PREVIEW_ROWS, missing=\"skip\")" in source
+    assert "post_dashboard_preparation.display_output_previews(nrows=PREVIEW_ROWS, missing=\"skip\")" in source
     assert "preview_output_table(" not in source
     assert "dashboard_output_namespace" not in source
     assert "dashboard_summary_root" not in source

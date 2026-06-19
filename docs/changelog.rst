@@ -234,6 +234,9 @@ Changelog
   - Let Step 6 additional-plotting status helpers retain their config for
     metric-source preview calls, keeping the large-run plotting notebook
     focused on workflow steps instead of preview plumbing.
+  - Added dashboard output previews to the Step 7 preparation result so
+    large-run dashboard notebooks inspect bounded dashboard products without
+    lower-level config/path preview calls.
   - Reused the standard ingest output helper inside record-coverage
     readiness/build workflows so script and notebook path fallback behavior
     stays aligned.

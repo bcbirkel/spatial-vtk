@@ -536,7 +536,8 @@ Step 7: Dashboard Datasets
        notebooks pass the same readiness object to
        ``run_notebook_step_if_needed`` for Slurm/local execution.
    * - Preview dashboard outputs without loading full tab inputs
-     - ``spatial_vtk.visualize.dashboard.display_dashboard_output_previews``
+     - ``DashboardDatasetPreparationResult.display_output_previews()``,
+       ``spatial_vtk.visualize.dashboard.display_dashboard_output_previews``,
        and ``spatial_vtk.visualize.dashboard.preview_dashboard_summary_tables``
      - bounded samples from the configured ``dashboard_summaries`` directory
        and ``metrics_long`` table after readiness checks pass, so notebooks can

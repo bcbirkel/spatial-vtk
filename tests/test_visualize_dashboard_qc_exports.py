@@ -15,6 +15,7 @@ from spatial_vtk.visualize.dashboard import (
     dashboard_row_level_columns,
     load_dashboard_metric_dataset,
     load_dashboard_summary_tables,
+    prepare_configured_dashboard_datasets_from_notebook_settings,
     preview_dashboard_summary_tables,
     validate_dashboard_tables,
     write_configured_dashboard_datasets,
@@ -839,6 +840,52 @@ outputs:
 
     displayed: list[pd.DataFrame] = []
     previews = display_dashboard_output_previews(cfg=cfg, nrows=2, display_fn=displayed.append)
+
+    output = capsys.readouterr().out
+    assert "dashboard_summary:model_metric_band preview:" in output
+    assert "metrics_long preview:" in output
+    assert set(previews) == {"dashboard_summary:model_metric_band", "metrics_long"}
+    assert len(previews["dashboard_summary:model_metric_band"]) == 2
+    assert len(previews["metrics_long"]) == 2
+    assert [len(frame) for frame in displayed] == [2, 2]
+
+
+def test_dashboard_preparation_result_displays_outputs_from_stored_config(tmp_path, capsys) -> None:
+    """Step 7 result objects should preview outputs without notebook config plumbing."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+  metrics_long: metrics_long.parquet
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    tables_root = tmp_path / "outputs" / "tables"
+    summary_root = tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
+    tables_root.mkdir(parents=True)
+    summary_root.mkdir(parents=True)
+    pd.DataFrame({"event_id": ["e1", "e2", "e3"], "metric": ["PGA", "PGV", "CAV"]}).to_parquet(
+        tables_root / "metrics_long.parquet",
+        index=False,
+    )
+    pd.DataFrame(
+        {
+            "model": ["m1", "m2", "m3"],
+            "metric": ["PGA", "PGV", "CAV"],
+            "band": ["1-2 sec", "2-3 sec", "3-5 sec"],
+            "n": [1, 2, 3],
+        }
+    ).to_parquet(summary_root / "model_metric_band.parquet", index=False)
+
+    result = prepare_configured_dashboard_datasets_from_notebook_settings(cfg=cfg, prepare_locally=False)
+    displayed: list[pd.DataFrame] = []
+    previews = result.display_output_previews(nrows=2, display_fn=displayed.append)
 
     output = capsys.readouterr().out
     assert "dashboard_summary:model_metric_band preview:" in output

@@ -41,6 +41,7 @@ class DashboardDatasetPreparationResult:
     status: str
     message: str
     current_status: pd.DataFrame | None = None
+    cfg: SpatialVTKConfig | str | Path | None = None
 
     def summary_frame(self) -> pd.DataFrame:
         """Return the dashboard readiness summary captured before preparation."""
@@ -66,6 +67,32 @@ class DashboardDatasetPreparationResult:
             for name, path in self.written_paths.items()
         ]
         return pd.DataFrame(rows, columns=["name", "resolved_path", "path"])
+
+    def display_output_previews(
+        self,
+        *,
+        nrows: int = 5,
+        include_metrics_long: bool = True,
+        missing: str = "skip",
+        display_fn: Any | None = None,
+    ) -> dict[str, pd.DataFrame]:
+        """Display bounded dashboard summary and source-table previews.
+
+        The preparation result retains the config used for readiness checks, so
+        large-run notebooks can preview dashboard outputs without repeating
+        config or path resolution in the cell.
+        """
+
+        from spatial_vtk.visualize.dashboard.contracts import display_dashboard_output_previews
+
+        config = _coerce_dashboard_config(self.cfg)
+        return display_dashboard_output_previews(
+            cfg=config,
+            nrows=nrows,
+            include_metrics_long=include_metrics_long,
+            missing=missing,
+            display_fn=display_fn,
+        )
 
 
 def display_dashboard_preparation_result(
@@ -986,6 +1013,7 @@ def prepare_configured_dashboard_datasets_from_notebook_settings(
             status="skipped",
             message="Skipping in-notebook dashboard writes. Use the Slurm-aware dashboard preparation cell for large datasets.",
             current_status=dashboard_output_status_frame(cfg=cfg),
+            cfg=cfg,
         )
     if not readiness.should_run:
         return DashboardDatasetPreparationResult(
@@ -994,6 +1022,7 @@ def prepare_configured_dashboard_datasets_from_notebook_settings(
             status="current",
             message=readiness.message,
             current_status=dashboard_output_status_frame(cfg=cfg),
+            cfg=cfg,
         )
 
     write_func = write_configured_dashboard_datasets if writer is None else writer
@@ -1014,6 +1043,7 @@ def prepare_configured_dashboard_datasets_from_notebook_settings(
         status="wrote",
         message=f"Wrote {len(written_paths)} dashboard output artifact(s).",
         current_status=dashboard_output_status_frame(cfg=cfg),
+        cfg=cfg,
     )
 
 
