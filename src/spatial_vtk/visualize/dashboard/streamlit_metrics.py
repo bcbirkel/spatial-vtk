@@ -79,6 +79,7 @@ METRIC_DATASET_READINESS_DISPLAY_COLUMNS = (
 )
 DEFAULT_METRICS_DASHBOARD_MAX_ROWS = 200_000
 DEFAULT_METRICS_DASHBOARD_DOWNLOAD_ROWS = 100_000
+DEFAULT_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS = 5_000
 
 
 def main() -> None:
@@ -184,6 +185,7 @@ def _render_metrics_dashboard(
         max_markers = st.number_input("Maximum map markers", min_value=100, max_value=50000, value=3000, step=100)
         configured_row_limit = _metrics_dashboard_row_limit()
         download_limit = _metrics_dashboard_download_limit()
+        summary_display_limit = _metrics_dashboard_summary_display_limit()
         row_limit = st.number_input(
             "Maximum row-level records",
             min_value=1_000,
@@ -301,7 +303,7 @@ def _render_metrics_dashboard(
             st.info(_empty_rows_message("model/metric/passband-or-period"))
         else:
             st.plotly_chart(build_metric_heatmap_figure(heat, value_col=value_col), width="stretch")
-        st.dataframe(_display_table(heat), width="stretch")
+        _render_summary_dataframe(heat, limit=summary_display_limit)
     with station_tab:
         station_ready_message = _summary_readiness_message(readiness, "station_rollup")
         station_map_status = dashboard_map_readiness(stations, "station_rollup")
@@ -317,7 +319,7 @@ def _render_metrics_dashboard(
             station_map = build_station_folium_map(stations, value_col=value_col, basemap=basemap, marker_cluster=marker_cluster, max_markers=int(max_markers))
             st_folium(station_map, use_container_width=True, height=620)
             st.download_button("Download station map HTML", render_folium_html(station_map), file_name="station_metric_map.html")
-        st.dataframe(_display_table(stations), width="stretch")
+        _render_summary_dataframe(stations, limit=summary_display_limit)
     with event_tab:
         event_ready_message = _summary_readiness_message(readiness, "event_rollup")
         event_map_status = dashboard_map_readiness(events, "event_rollup")
@@ -331,7 +333,7 @@ def _render_metrics_dashboard(
             st.info(str(event_map_status["message"]))
         else:
             st_folium(build_event_folium_map(events, value_col=value_col, basemap=basemap, marker_cluster=marker_cluster, max_markers=int(max_markers)), use_container_width=True, height=560)
-        st.dataframe(_display_table(events), width="stretch")
+        _render_summary_dataframe(events, limit=summary_display_limit)
     with path_tab:
         path_ready_message = _summary_readiness_message(readiness, "path_hex")
         if path_ready_message:
@@ -342,7 +344,7 @@ def _render_metrics_dashboard(
             st.info(_empty_rows_message("path"))
         else:
             st.plotly_chart(build_path_heatmap_figure(paths, value_col=value_col), width="stretch")
-        st.dataframe(_display_table(paths), width="stretch")
+        _render_summary_dataframe(paths, limit=summary_display_limit)
     with distribution_tab:
         if rows is None:
             st.info(row_value_message or "Load the long metrics dataset to view row-level distributions.")
@@ -361,7 +363,7 @@ def _render_metrics_dashboard(
             st.info(_empty_rows_message("model comparison"))
         else:
             st.plotly_chart(build_metric_heatmap_figure(heat, value_col=value_col, title="Model Comparison"), width="stretch")
-        st.dataframe(_display_table(heat), width="stretch")
+        _render_summary_dataframe(heat, limit=summary_display_limit)
     with status_tab:
         _render_data_status_tab(
             readiness,
@@ -672,6 +674,15 @@ def _metrics_dashboard_download_limit(default: int | None = DEFAULT_METRICS_DASH
     )
 
 
+def _metrics_dashboard_summary_display_limit(default: int | None = DEFAULT_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS) -> int | None:
+    """Return the maximum summary rows displayed in dashboard dataframes."""
+
+    return _env_optional_positive_int(
+        ("SVTK_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS", "SVTK_DASHBOARD_DISPLAY_ROWS"),
+        default=default,
+    )
+
+
 def _env_optional_positive_int(names: tuple[str, ...], *, default: int | None) -> int | None:
     """Read the first configured positive integer, or ``None`` for all rows."""
 
@@ -704,6 +715,24 @@ def _bounded_metric_download_frame(df: pd.DataFrame, limit: int | None) -> tuple
     if limit is None or len(df) <= limit:
         return df, None
     message = f"Download is limited to the first {int(limit):,} of {len(df):,} filtered loaded row(s)."
+    return df.head(int(limit)).copy(), message
+
+
+def _render_summary_dataframe(df: pd.DataFrame, *, limit: int | None) -> None:
+    """Render a bounded dashboard summary dataframe."""
+
+    shown, message = _bounded_summary_display_frame(df, limit)
+    if message:
+        st.caption(message)
+    st.dataframe(_display_table(shown), width="stretch")
+
+
+def _bounded_summary_display_frame(df: pd.DataFrame, limit: int | None) -> tuple[pd.DataFrame, str | None]:
+    """Return bounded summary rows and a caption when dashboard display is truncated."""
+
+    if limit is None or len(df) <= limit:
+        return df, None
+    message = f"Table display is limited to the first {int(limit):,} of {len(df):,} filtered summary row(s)."
     return df.head(int(limit)).copy(), message
 
 

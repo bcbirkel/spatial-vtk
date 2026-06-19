@@ -44,7 +44,9 @@ from spatial_vtk.visualize.dashboard.streamlit_metrics import _empty_rows_messag
 import spatial_vtk.visualize.dashboard.streamlit_metrics as streamlit_metrics
 import spatial_vtk.visualize.dashboard.contracts as dashboard_contracts
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard_startup_blocker
+from spatial_vtk.visualize.dashboard.streamlit_metrics import _bounded_summary_display_frame
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metric_dataset_readiness_message
+from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard_summary_display_limit
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _row_level_dataset_notice_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _select_readiness_columns
 from spatial_vtk.visualize.dashboard.streamlit_metrics import METRIC_DATASET_READINESS_DISPLAY_COLUMNS
@@ -1110,6 +1112,32 @@ def test_metrics_dashboard_download_frame_is_bounded():
     assert "first 2 of 3" in str(message)
 
     unbounded, unbounded_message = streamlit_metrics._bounded_metric_download_frame(rows, None)
+
+    assert len(unbounded) == 3
+    assert unbounded_message is None
+
+
+def test_metrics_dashboard_summary_display_limits_from_environment(monkeypatch):
+    """Metrics dashboard summary table displays should be separately bounded."""
+
+    monkeypatch.setenv("SVTK_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS", "321")
+    assert _metrics_dashboard_summary_display_limit() == 321
+
+    monkeypatch.setenv("SVTK_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS", "all")
+    assert _metrics_dashboard_summary_display_limit() is None
+
+
+def test_metrics_dashboard_summary_display_frame_is_bounded():
+    """Summary tables should not serialize every filtered row by default."""
+
+    rows = pd.DataFrame({"station": ["STA1", "STA2", "STA3"], "value": [1.0, 2.0, 3.0]})
+
+    bounded, message = _bounded_summary_display_frame(rows, 2)
+
+    assert bounded["station"].tolist() == ["STA1", "STA2"]
+    assert "first 2 of 3" in str(message)
+
+    unbounded, unbounded_message = _bounded_summary_display_frame(rows, None)
 
     assert len(unbounded) == 3
     assert unbounded_message is None

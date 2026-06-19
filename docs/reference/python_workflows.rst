@@ -534,10 +534,13 @@ Step 7: Dashboard Datasets
        full dashboard metric dataset. Dashboard startup/readiness checks inspect
        summary value and map-coordinate columns with projected chunk scans, so
        they can report schema/value/map readiness without materializing complete
-       summary tables. The metrics dashboard also caps row-level CSV downloads
-       separately through ``SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS`` or the shared
-       ``SVTK_DASHBOARD_DOWNLOAD_ROWS`` setting so filtered distributions do not
-       serialize more rows than intended.
+       summary tables. The metrics dashboard caps summary-table dataframe
+       displays through ``SVTK_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS`` or the
+       shared ``SVTK_DASHBOARD_DISPLAY_ROWS`` setting, and caps row-level CSV
+       downloads separately through
+       ``SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS`` or the shared
+       ``SVTK_DASHBOARD_DOWNLOAD_ROWS`` setting so dashboard tabs and downloads
+       do not serialize more rows than intended.
    * - Launch dashboards from Python
      - ``spatial_vtk.config.notebook_dashboard_launch_commands``,
        ``spatial_vtk.visualize.dashboard.launch_configured_dashboards_from_notebook_settings``,

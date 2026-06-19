@@ -96,6 +96,9 @@ Changelog
     - Made metrics-dashboard summary readiness checks scan value and
       map-coordinate columns in projected chunks instead of materializing full
       summary tables during startup.
+    - Added a separate metrics-dashboard summary-table display row cap so large
+      station, event, path, or model-summary tables are not fully serialized to
+      the browser by default.
     - Added a separate metrics-dashboard download row cap so filtered row-level
       CSV downloads do not serialize every loaded distribution row by default.
     - Reused the standard ingest output helper inside record-coverage
