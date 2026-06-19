@@ -1398,10 +1398,16 @@ outputs:
 
     table_registry = configured_output_registry_frame(cfg=cfg, kinds=("table",))
     by_key = table_registry.set_index("key")
-    assert {"kind", "filename", "description", "path"} <= set(table_registry.columns)
+    assert {"kind", "artifact_label", "filename", "description", "resolved_path", "path"} <= set(
+        table_registry.columns
+    )
     assert by_key.loc["metrics_long", "kind"] == "table"
+    assert by_key.loc["metrics_long", "artifact_label"] == "metrics long table"
     assert by_key.loc["metrics_long", "filename"] == "metrics_long.parquet"
-    assert by_key.loc["metrics_long", "path"] == str(tmp_path / "run_outputs" / "tables" / "metrics_long.parquet")
+    assert by_key.loc["metrics_long", "resolved_path"] == str(
+        tmp_path / "run_outputs" / "tables" / "metrics_long.parquet"
+    )
+    assert by_key.loc["metrics_long", "path"] == by_key.loc["metrics_long", "resolved_path"]
     assert "Long metrics table" in by_key.loc["metrics_long", "description"]
 
     figure_registry = configured_output_registry_frame(cfg=cfg, kinds=("figure",))
@@ -1409,7 +1415,7 @@ outputs:
     assert "metrics_long" not in set(figure_registry["key"])
 
     compact = configured_output_registry_frame(include_paths=False, kinds=("dashboard",))
-    assert list(compact.columns) == ["kind", "key", "filename", "description"]
+    assert list(compact.columns) == ["kind", "key", "artifact_label", "filename", "description"]
     assert "dashboard_summaries" in set(compact["key"])
 
     preview = configured_output_registry_preview_frame(

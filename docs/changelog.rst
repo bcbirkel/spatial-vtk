@@ -199,6 +199,8 @@ Changelog
 
 - **Workflow large-run resilience** *(Hardened)*
 
+  - Added ``artifact_label`` and clear ``resolved_path`` columns to configured
+    output-registry frames while preserving the existing ``path`` alias.
   - Reused the standard ingest output helper inside record-coverage
     readiness/build workflows so script and notebook path fallback behavior
     stays aligned.

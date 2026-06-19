@@ -1653,7 +1653,8 @@ def test_config_api_docs_cover_output_registry_preview_helpers():
 
     assert "``configured_output_registry_frame``" in text
     assert "``configured_output_registry_preview_frame``" in text
-    assert "Use the preview helper in notebooks when only a bounded path listing is\n       needed" in text
+    assert "``artifact_label`` and ``resolved_path`` columns" in text
+    assert "Use the preview helper\n       in notebooks when only a bounded path listing is needed" in text
 
 
 def test_notebook_cli_compat_helper_is_not_top_level_config_api():

@@ -87,7 +87,9 @@ def configured_output_registry_frame(
         Optional config used to resolve artifact paths. When omitted and
         ``include_paths`` is true, the active/discoverable config is used.
     include_paths
-        Whether to include a resolved ``path`` column.
+        Whether to include resolved path columns. ``resolved_path`` is the
+        clear notebook-facing column; ``path`` is preserved as a compatibility
+        alias for existing code.
     kinds
         Optional artifact kinds to include. When omitted, all registered tables,
         figures, and dashboard roots are returned.
@@ -97,8 +99,9 @@ def configured_output_registry_frame(
     Returns
     -------
     pandas.DataFrame
-        Columns include ``kind``, ``key``, ``filename``, ``description``, and
-        optionally ``path``.
+        Columns include ``kind``, ``key``, ``artifact_label``, ``filename``,
+        ``description``, and optionally ``resolved_path`` plus compatibility
+        alias ``path``.
     """
 
     import pandas as pd
@@ -113,11 +116,12 @@ def configured_output_registry_frame(
             row: dict[str, object] = {
                 "kind": spec.kind,
                 "key": spec.key,
+                "artifact_label": _artifact_label(spec),
                 "filename": spec.filename,
                 "description": spec.description,
             }
             if include_paths:
-                row["path"] = str(
+                resolved = str(
                     resolve_output_path(
                         spec.key,
                         kind=spec.kind,
@@ -125,8 +129,15 @@ def configured_output_registry_frame(
                         create_parent=create_parent,
                     )
                 )
+                row["resolved_path"] = resolved
+                row["path"] = resolved
             rows.append(row)
-    return pd.DataFrame(rows, columns=["kind", "key", "filename", "description", "path"] if include_paths else ["kind", "key", "filename", "description"])
+    columns = (
+        ["kind", "key", "artifact_label", "filename", "description", "resolved_path", "path"]
+        if include_paths
+        else ["kind", "key", "artifact_label", "filename", "description"]
+    )
+    return pd.DataFrame(rows, columns=columns)
 
 
 def configured_output_registry_preview_frame(
@@ -307,6 +318,14 @@ def _fallback_filename(key: str, kind: OutputKind) -> str:
 
     suffix = ".png" if kind == "figure" else ".parquet" if kind == "dashboard" else ".csv"
     return f"{_clean_key(key)}{suffix}"
+
+
+def _artifact_label(spec: OutputSpec) -> str:
+    """Return a compact human-facing label for one registered artifact."""
+
+    text = spec.key.replace("_", " ").strip()
+    suffix = "figure" if spec.kind == "figure" else "dashboard directory" if spec.kind == "dashboard" else "table"
+    return text if text.endswith(suffix) else f"{text} {suffix}"
 
 
 def _clean_key(key: str) -> str:

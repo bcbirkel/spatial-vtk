@@ -106,9 +106,9 @@ the stable package surface below.
        repeating path-resolution code in notebooks.
    * - ``configured_output_registry_frame`` and
        ``configured_output_registry_preview_frame``
-     - Inspect the configured table, figure, and dashboard output registry.
-       Use the preview helper in notebooks when only a bounded path listing is
-       needed.
+     - Inspect the configured table, figure, and dashboard output registry with
+       ``artifact_label`` and ``resolved_path`` columns. Use the preview helper
+       in notebooks when only a bounded path listing is needed.
    * - ``prepare_notebook_geospatial_environment``
      - Set conservative geospatial/threading defaults for notebook and docs
        execution.
