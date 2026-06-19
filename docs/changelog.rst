@@ -299,13 +299,13 @@ Changelog
      ``figure_dir`` is supplied. Standard tutorial notebooks now rely on that
      package helper instead of assigning ``figure_dir = context.figures_dir`` and
      creating the directory in setup cells.
-     Registered missing waveform visualization figure defaults for record
+   - Registered missing waveform visualization figure defaults for record
      sections, observed/synthetic record sections, waveform overlay matrices,
      and event radial trace sections. Rewired the standard Step 5 GeoJSON and
      corridor notebook to use ``OutputGroup.figure_path()`` for GeoJSON maps,
      regional boxplots, station residual maps, corridor maps, and boundary
      record-section outputs instead of hand-joining ``figure_dir`` paths.
-     Registered the standard Step 6 plotting figures on the ``step_06_plotting``
+   - Registered the standard Step 6 plotting figures on the ``step_06_plotting``
      output group and rewired the Step 6 additional plotting notebook to use
      ``OutputGroup.figure_path()`` for waveform maps, pattern similarity,
      scatterplot, boxplot, and heatmap outputs instead of hand-joining
@@ -458,15 +458,15 @@ Changelog
      those Python package helpers directly instead of notebook-local manifest and
      metric-row path checks, keeping the notebook focused on workflow steps while
      package code owns the large-run readiness logic.
-     Large-run Step 3 metric figure cells now gate plotting through
+   - Large-run Step 3 metric figure cells now gate plotting through
      ``metric_plot_context.ready`` instead of repeating metric-table existence,
      figure-enable, and value-column checks in every cell.
-     Large-run Step 2 compact QC summaries now rely on
+   - Large-run Step 2 compact QC summaries now rely on
      ``OutputGroup.readiness()`` to report a missing overlap inventory, and
      large-run Step 5 optional corridor-map rendering now uses
      ``OutputGroup.load_tables(..., missing="skip")`` instead of direct
      ``Path.exists()`` checks in notebook cells.
-     Standard Step 7 now checks ``dashboard_output_readiness`` before preparing
+   - Standard Step 7 now checks ``dashboard_output_readiness`` before preparing
      dashboard datasets locally, displays the same readiness summary/status used
      by the large-run dashboard driver, and skips dataset writes when dashboard
      outputs are current.
@@ -475,19 +475,19 @@ Changelog
      previews. Large-run Steps 3, 6, and 7 now preview metric tables through
      output groups instead of direct ``preview_table`` or ``preview_output_table``
      calls in notebook cells.
-     Large-run Steps 1 and 5 now also avoid stale direct preview imports and
+   - Large-run Steps 1 and 5 now also avoid stale direct preview imports and
      direct metric-source fallback expressions in favor of output-group helpers.
-     Standard tutorial Steps 2 and 7 now preview configured QC and dashboard
+   - Standard tutorial Steps 2 and 7 now preview configured QC and dashboard
      tables through ``OutputGroup.preview_tables()`` instead of raw table-preview
      helpers.
-     Standard Step 2 now lets the QC inventory helper resolve configured output
+   - Standard Step 2 now lets the QC inventory helper resolve configured output
      paths directly and reuses the manual-review queue written by the compact QC
      summary workflow, avoiding a redundant notebook-local export call.
-     Standard Step 2 now also uses ``OutputGroup.readiness()`` with
+   - Standard Step 2 now also uses ``OutputGroup.readiness()`` with
      ``run_notebook_step_if_needed(..., run_local=True)`` for the full QC,
      overlap sidecar, and compact summary table steps, matching the large-run
      package-runner pattern while keeping the small tutorial local.
-     Standard Step 7 now uses ``dashboard_outputs`` attributes directly in
+   - Standard Step 7 now uses ``dashboard_outputs`` attributes directly in
      dashboard status and preview cells instead of assigning throwaway local path
      aliases.
    - Added a tutorial notebook hygiene regression requiring committed examples to
@@ -511,19 +511,19 @@ Changelog
      notebooks can display the record-coverage rebuild decision without
      duplicating the preprocessed/base event-station fallback used by the build
      helper.
-     Metrics dashboards now show an explicit row-level dataset notice in the
+   - Metrics dashboards now show an explicit row-level dataset notice in the
      dashboard body when summary tabs can render but distribution/download tabs
      cannot load filtered metric rows.
-     QC dashboards now show explicit empty-state messages in the Trace Table and
+   - QC dashboards now show explicit empty-state messages in the Trace Table and
      Manual Review Queue tabs when active filters remove all loaded trace rows.
-     ``svtk dashboard metrics`` now labels launch output as the metrics
+   - ``svtk dashboard metrics`` now labels launch output as the metrics
      dashboard row dataset and dashboard summary tables, matching the clearer
      ``--metrics-dataset-dir`` and ``--dashboard-summary-table-dir`` option
      names.
-     ``dashboard_output_status_frame()`` now includes ``artifact_role`` and
+   - ``dashboard_output_status_frame()`` now includes ``artifact_role`` and
      ``artifact_label`` columns so notebook status tables can show human-readable
      dashboard artifact names alongside configured path keys.
-     Tutorial docs now show the editable source-checkout install command with
+   - Tutorial docs now show the editable source-checkout install command with
      ``notebooks`` and ``waveforms`` extras immediately before the clean
      notebook execution commands, so fresh-checkout verification does not depend
      on an implicit runtime setup step.
@@ -590,7 +590,7 @@ Changelog
      ``distance_bin_correlations`` table by default, matching the large-run
      spatial figure context and avoiding an unnecessary raw ``--input`` path for
      standard spatial outputs.
-     Reworked ``svtk plot ... list``, ``svtk map ... list``, and
+   - Reworked ``svtk plot ... list``, ``svtk map ... list``, and
      ``svtk visualize ... list`` output as compact tables that show whether each
      command uses a ``config:<key>`` input/output, requires ``--input`` or
      ``--output``, or has optional extra table arguments.
@@ -852,7 +852,7 @@ Changelog
      metric workflows. The command now defaults its input to ``metrics_long`` and
      the plotting function falls back from summary-only ``med_resid`` to common
      long-table value columns such as ``log2_residual`` when needed.
-     Registered the standard ``pattern_similarity_station_anomalies`` table and
+   - Registered the standard ``pattern_similarity_station_anomalies`` table and
      made ``svtk plot spatial pattern-similarity`` resolve that input and the
      ``pattern_similarity`` figure path from config. The plot CLI also exposes
      ``--bin-label`` as a first-class option for helpers that require a named
@@ -914,7 +914,7 @@ Changelog
      preprocessing workflow now prefers canonical config-generated waveform
      columns over legacy format-specific metadata columns when both exist, so
      ignored local MiniSEED files cannot mask the committed NPZ tutorial subset.
-     Standard metric and map tutorials now make external basemap fetching opt-in
+   - Standard metric and map tutorials now make external basemap fetching opt-in
      with ``SVTK_ADD_BASEMAP=1``, avoiding warning output in fresh checkouts
      without ``contextily`` or tile access. The tutorial notebook executor now
      keeps Jupyter/IPython runtime files under ignored tutorial outputs and
@@ -981,10 +981,10 @@ Changelog
      ``spatial_vtk.metrics.plot`` and ``spatial_vtk.spatial.map``. Updated the
      metrics-dashboard CLI help to describe config-backed dashboard output roots
      rather than stale table-directory examples.
-     Trimmed the metrics API plotting reference to the stable
+   - Trimmed the metrics API plotting reference to the stable
      ``spatial_vtk.metrics.plot`` entry point so docs no longer direct notebook
      users to plotting implementation modules.
-     Trimmed the spatial API plotting and map references to the stable
+   - Trimmed the spatial API plotting and map references to the stable
      ``spatial_vtk.spatial.plot`` and ``spatial_vtk.spatial.map`` entry points,
      including path-map helpers, so public docs no longer point users at
      implementation modules.
@@ -1056,7 +1056,7 @@ Changelog
      pairs. Station coordinates are now summarized separately and optional
      figure sidecars record coordinate multiplicity, source row counts, and
      source event counts for auditing.
-     Figure row-provenance sidecar metadata now records ``plot_rows_role`` and
+   - Figure row-provenance sidecar metadata now records ``plot_rows_role`` and
      ``source_rows_role`` consistently, so users can tell whether each CSV
      contains plotted rows, post-aggregation station summaries, or raw
      pre-aggregation metric rows.
@@ -1085,16 +1085,16 @@ Changelog
      report whether each summary table is missing, empty, schema-invalid,
      missing finite value data, or ready, so notebooks can explain blank
      dashboard tabs before Streamlit is launched.
-     The metrics Streamlit dashboard now displays those readiness diagnostics
+   - The metrics Streamlit dashboard now displays those readiness diagnostics
      and stops before building sidebar filters when the primary
      ``model_metric_band`` summary is not usable.
-     Optional metrics-dashboard station, event, and path tabs now handle summary
+   - Optional metrics-dashboard station, event, and path tabs now handle summary
      tables that lack the selected value column by showing a clear empty-state
      message instead of raising during dashboard rendering.
-     Dashboard long-metric loading now accepts either a dashboard dataset
+   - Dashboard long-metric loading now accepts either a dashboard dataset
      directory or a direct CSV/Parquet metrics table, and the dashboard CLI help
      documents both accepted forms.
-     Metrics-dashboard row-level distribution plots now use a shared
+   - Metrics-dashboard row-level distribution plots now use a shared
      summary-to-row value-column resolver for median/mean summary columns, and
      show a clear message when the loaded long metric table lacks the requested
      row-level value.
@@ -1102,22 +1102,22 @@ Changelog
      reference and added an import regression test so dashboard readiness/filter
      helpers and figure sidecar helpers remain available without importing the
      optional Streamlit app modules.
-     Figure sidecar metadata now counts common event, station, passband, metric,
+   - Figure sidecar metadata now counts common event, station, passband, metric,
      model, component, and PSA-period column aliases so JSON provenance remains
      informative for both ``band``/``passband`` and canonicalized station/event
      table variants.
-     ``plot_event_residual_map()`` now supports the shared
+   - ``plot_event_residual_map()`` now supports the shared
      ``write_sidecar``/``sidecar_rows``/``sidecar_dir`` plotting options so
      event-map provenance works consistently for direct Python calls, CLI-routed
      plotting, and large-run notebook wrappers.
-     GitHub CI and docs workflows now install the ``notebooks`` extra wherever
+   - GitHub CI and docs workflows now install the ``notebooks`` extra wherever
      tutorial execution or notebook-backed docs checks are part of the public
      source-checkout validation path.
-     Registered ``svtk plot`` and ``svtk map`` commands now resolve plotting
+   - Registered ``svtk plot`` and ``svtk map`` commands now resolve plotting
      functions through the stable public ``spatial_vtk.metrics.plot``,
      ``spatial_vtk.spatial.plot``, and ``spatial_vtk.spatial.map`` import
      surfaces instead of implementation submodules.
-     Public metric trend, Vs30, score-map, and model-improvement plotting
+   - Public metric trend, Vs30, score-map, and model-improvement plotting
      wrappers now expose ``write_sidecar``, ``sidecar_rows``, and
      ``sidecar_dir`` directly in their signatures so generated docs and
      interactive help show the row-provenance controls.
@@ -1196,11 +1196,11 @@ Changelog
      metadata preview with rows derived from actual LA Basin metadata products,
      and simplified the dashboard output section to show the dashboard screenshot
      without a mismatched CSV preview.
-     Rebuilt the Installation page from the public-release checklist, separating
+   - Rebuilt the Installation page from the public-release checklist, separating
      conda environment creation from source/PyPI package installation, and made
      ``svtk_environment.yaml`` dependency-only so it can be downloaded and used
      before installing the package.
-     Revised the Installation page so the primary install path is
+   - Revised the Installation page so the primary install path is
      ``python -m pip install spatial-vtk``, moved PyPI installation before source
      installation, moved development extras into a collapsible advanced section,
      and made dashboard dependencies part of the default package install.
@@ -1210,13 +1210,13 @@ Changelog
    - Added the Configuration page with a commented downloadable YAML example,
      config discovery instructions, config precedence rules, and concise checks
      for active config sections and named bounds.
-     Revised configuration handling and docs so metric selection is explicit:
+   - Revised configuration handling and docs so metric selection is explicit:
      choose either metric groups or specific metrics, with ``all`` accepted for
      either mode. Added a shared public metric catalog, normalized legacy C-code
      config selections to public metric names, added reusable ``run_scenarios``
      config overlays, and exposed scenario/one-run overrides through Python and
      relevant ``svtk`` commands.
-     Reworked the Package Overview page from a dense module inventory into a
+   - Reworked the Package Overview page from a dense module inventory into a
      workflow-oriented guide with a step table, short module sections, grouped
      task lists, and clear links to data formats, configuration, examples, and
      reference pages.
@@ -1226,11 +1226,11 @@ Changelog
      output path manifests. Added zipped notebook downloads to the rendered docs
      pages, hardened lazy import surfaces for metric plotting and spatial maps,
      and fixed post-QC event-coordinate handling for the QC map workflow.
-     Further simplified tutorial notebook setup by adding ``read_config_table``
+   - Further simplified tutorial notebook setup by adding ``read_config_table``
      and ``load_output_table``, letting metric settings resolve from the active
      config, and giving QC, metric-workflow, and dashboard helpers active-config
      defaults for common paths.
-     Let metadata preparation helpers read station, event, and event-station
+   - Let metadata preparation helpers read station, event, and event-station
      tables from the active config when no dataframe is passed, so tutorials can
      use concise calls like ``prepare_station_metadata()``.
    - Removed final written-file manifest blocks from the tutorial notebooks.
@@ -1289,7 +1289,7 @@ Changelog
      now emit explicit PNG payloads when ``showfig=True`` is used in a notebook
      kernel, and the Step 5 and Step 6 tutorial pages now render their saved
      map and figure outputs in the Sphinx HTML.
-     Reorganized the Python API reference into grouped module/submodule pages
+   - Reorganized the Python API reference into grouped module/submodule pages
      for configuration, I/O, quality control, metrics, spatial analysis, and
      visualization so the reference section can be browsed by workflow area
      instead of as one long function list.
