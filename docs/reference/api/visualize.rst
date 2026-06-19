@@ -24,9 +24,11 @@ Public helpers exposed by ``spatial_vtk.visualize``:
    * - ``plot_station_event_beachball_map`` and
        ``plot_station_event_network_map``
      - Render station/event context maps from prepared metadata.
-   * - ``write_large_run_context_figures_from_outputs``
-     - Render the standard large-run Step 1 context figure suite from
-       configured metadata and record-coverage outputs.
+   * - ``write_context_figures_from_outputs`` and
+       ``write_large_run_context_figures_from_outputs``
+     - Render the standard Step 1 context figure suite from configured
+       metadata and record-coverage outputs without notebook-local readiness
+       checks, table loading, basemap kwargs, or sidecar kwargs.
    * - ``plot_retention_summary`` and
        ``plot_event_station_retention_heatmap``
      - Render compact QC retention figures from summary tables instead of full

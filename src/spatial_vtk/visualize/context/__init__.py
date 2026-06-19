@@ -15,6 +15,7 @@ from spatial_vtk.visualize.context.figures import (
     plot_station_event_context,
     plot_study_domain_map,
     summarize_coverage,
+    write_context_figures_from_outputs,
     write_large_run_context_figures_from_outputs,
 )
 from spatial_vtk.visualize.context.maps import (
@@ -39,5 +40,6 @@ __all__ = [
     "plot_station_event_network_map",
     "plot_study_domain_map",
     "summarize_coverage",
+    "write_context_figures_from_outputs",
     "write_large_run_context_figures_from_outputs",
 ]

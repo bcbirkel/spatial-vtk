@@ -624,6 +624,7 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Public helpers exposed by ``spatial_vtk.visualize``" in text
     for helper in (
         "plot_station_event_beachball_map",
+        "write_context_figures_from_outputs",
         "write_large_run_context_figures_from_outputs",
         "plot_retention_summary",
         "plot_event_station_retention_heatmap",

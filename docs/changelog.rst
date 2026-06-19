@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Added ``spatial_vtk.visualize.context.write_context_figures_from_outputs()``
+   as the generic Step 1 context figure writer and rewired the standard Step 1
+   ingest notebook to use it. The notebook no longer imports individual
+   context plotting functions or repeats basemap, ``showfig``/``savefig``,
+   close, and sidecar kwargs for each context figure.
    Added ``NotebookFigureSettings.plot_selection_kwargs()`` for
    context-managed notebook plotting calls and rewired the large-run Step 3
    metric plotting notebook to use it. The notebook no longer defines separate

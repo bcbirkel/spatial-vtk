@@ -1025,12 +1025,14 @@ def test_standard_step01_uses_configured_io_workflows() -> None:
     assert "build_record_coverage_from_config(" in source
     assert 'step_outputs = output_group("step_01_ingest", cfg=cfg)' in source
     assert "preprocessed_outputs = preprocessed_waveform_output_group(config=cfg)" in source
-    assert "metadata_tables = step_outputs.load_tables(" in source
+    assert "write_context_figures_from_outputs(" in source
+    assert "context_figure_result.status_frame()" in source
     assert 'step_outputs.display_table_previews({"stations": "prepared_stations_path"}, cfg=cfg, nrows=5)' in source
     assert 'step_outputs.display_table_previews({"events": "prepared_events_path"}, cfg=cfg, nrows=5)' in source
+    assert "metadata_tables = step_outputs.load_tables(" not in source
+    assert "context_tables = step_outputs.load_tables(" not in source
     assert "stations.head(" not in source
     assert "events[[\"event_id\"" not in source
-    assert "context_tables = step_outputs.load_tables(" in source
     assert 'preprocessed_outputs.preview_path_table("preprocessed_manifest_path"' in source
     assert "continue_on_error=False" in source
     assert 'component="Z"' in source
@@ -1041,6 +1043,15 @@ def test_standard_step01_uses_configured_io_workflows() -> None:
     assert "build_record_coverage_table_from_trace_metadata(" not in source
     assert "write_output_tables(" not in source
     assert "read_table(" not in source
+    assert "plot_station_event_context(" not in source
+    assert "plot_station_event_beachball_map(" not in source
+    assert "plot_station_coverage(" not in source
+    assert "plot_event_coverage(" not in source
+    assert "plot_record_coverage(" not in source
+    assert "context_sidecars" not in source
+    assert "add_basemap =" not in source
+    assert "savefig=True" not in source
+    assert "showfig=True" not in source
 
 
 def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:

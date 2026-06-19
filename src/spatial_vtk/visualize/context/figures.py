@@ -1747,18 +1747,18 @@ def plot_distance_amplitude_diagnostics(
     )
 
 
-def write_large_run_context_figures_from_outputs(
+def write_context_figures_from_outputs(
     outputs: Any,
     settings: Any,
     *,
     cfg: SpatialVTKConfig | None = None,
     overwrite: bool = False,
 ) -> ContextFigureResult:
-    """Write standard large-run Step 1 context figures from configured outputs.
+    """Write standard Step 1 context figures from configured outputs.
 
-    The helper keeps large-run notebooks from repeating readiness checks, table
-    loading, basemap keyword selection, figure-output resolution, and plotting
-    calls for the small Step 1 context products.
+    The helper keeps notebooks from repeating readiness checks, table loading,
+    basemap keyword selection, figure-output resolution, sidecar keyword
+    expansion, and plotting calls for the small Step 1 context products.
     """
 
     from spatial_vtk.visualize.context.maps import plot_station_event_beachball_map
@@ -1935,6 +1935,18 @@ def write_large_run_context_figures_from_outputs(
                 )
             )
     return ContextFigureResult(tuple(rows))
+
+
+def write_large_run_context_figures_from_outputs(
+    outputs: Any,
+    settings: Any,
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    overwrite: bool = False,
+) -> ContextFigureResult:
+    """Backward-compatible alias for :func:`write_context_figures_from_outputs`."""
+
+    return write_context_figures_from_outputs(outputs, settings, cfg=cfg, overwrite=overwrite)
 
 
 def _context_output_group_path(outputs: Any, name: str) -> Path | None:

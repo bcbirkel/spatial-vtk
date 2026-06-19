@@ -55,6 +55,7 @@ from spatial_vtk.visualize.context import (
     plot_event_magnitude_map,
     plot_station_event_beachball_map,
     plot_station_event_network_map,
+    write_context_figures_from_outputs,
     write_large_run_context_figures_from_outputs,
 )
 from spatial_vtk.visualize.fit import draw_scatter_fit
@@ -491,8 +492,8 @@ def test_qc_figures_write_optional_row_sidecars(tmp_path: Path) -> None:
     assert trace_metadata["written_row_count"] == 2
 
 
-def test_write_large_run_context_figures_from_outputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Large-run context figure helper should own table loading and plotting."""
+def test_write_context_figures_from_outputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Context figure helper should own table loading and plotting."""
 
     clear_active_config()
     config_path = tmp_path / "spatial-vtk.yaml"
@@ -555,7 +556,7 @@ outputs:
         monkeypatch.setattr(context_figures, name, _fake_plot)
     monkeypatch.setattr(context_maps, "plot_station_event_beachball_map", _fake_plot)
 
-    result = write_large_run_context_figures_from_outputs(Outputs(), Settings(), cfg=cfg, overwrite=True)
+    result = write_context_figures_from_outputs(Outputs(), Settings(), cfg=cfg, overwrite=True)
     status = result.status_frame()
 
     assert isinstance(result, ContextFigureResult)
@@ -572,7 +573,7 @@ outputs:
 
 
 def test_write_large_run_context_figures_skips_existing(tmp_path: Path) -> None:
-    """Large-run context helper should not load tables when figures are current."""
+    """Context helper should not load tables when figures are current."""
 
     clear_active_config()
     config_path = tmp_path / "spatial-vtk.yaml"
@@ -621,7 +622,7 @@ outputs:
 
 
 def test_write_large_run_context_figures_reports_missing_inputs(tmp_path: Path) -> None:
-    """Large-run context helper should return status rows when inputs are missing."""
+    """Context helper should return status rows when inputs are missing."""
 
     class Outputs:
         prepared_stations_path = tmp_path / "missing_stations.csv"

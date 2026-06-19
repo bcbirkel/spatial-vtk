@@ -49,6 +49,7 @@ _EXPORT_MODULES = {
     "plot_event_magnitude_map": "spatial_vtk.visualize.context",
     "plot_station_event_beachball_map": "spatial_vtk.visualize.context",
     "plot_station_event_network_map": "spatial_vtk.visualize.context",
+    "write_context_figures_from_outputs": "spatial_vtk.visualize.context",
     "write_large_run_context_figures_from_outputs": "spatial_vtk.visualize.context",
     "build_record_section_rows": "spatial_vtk.visualize.record_sections",
     "plot_observed_synthetic_record_section": "spatial_vtk.visualize.record_sections",
