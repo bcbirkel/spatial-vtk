@@ -644,6 +644,10 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     ):
         assert f"``{helper}``" in text
     assert "from spatial_vtk.metrics.plot import (" in text
+    import_block = text.split("from spatial_vtk.metrics.plot import (", 1)[1].split(")", 1)[0]
+    assert "write_large_run_metric_figure_suite_from_notebook_settings," in import_block
+    assert "write_standard_metric_diagnostic_figures," in import_block
+    assert "metric_rows_for_metrics," not in import_block
     assert ".. automodule:: spatial_vtk.metrics.plot\n" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureSuiteResult" in text
@@ -661,6 +665,8 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "older output table contains PSA rows repeated under passband labels" in text
     assert ".. autoclass:: spatial_vtk.metrics.workflow.StandardMetricWorkflowOutputResult" in text
     assert ".. autofunction:: spatial_vtk.metrics.workflow.load_standard_metric_workflow_outputs" in text
+    assert "Advanced row-selection helper for scripts" in text
+    assert "New notebook cells should prefer\n       ``write_large_run_metric_figure_suite_from_notebook_settings``" in text
     forbidden_modules = (
         "spatial_vtk.metrics.calculate.amplitudes",
         "spatial_vtk.metrics.calculate.arrival_picks",

@@ -172,6 +172,8 @@ Changelog
   - Updated Spatial API examples so large-run plotting starts from the
     package-owned spatial figure-suite wrapper, with context builders described
     as advanced helpers.
+  - Updated Metrics API examples so plotting starts from package-owned figure
+    wrappers, with row-selection helpers described as advanced script APIs.
   - Documented notebook-facing and script-facing waveform-comparison and
     region-boxplot helpers.
   - Updated generated CLI reference examples to use the committed example

@@ -131,10 +131,11 @@ part of the tutorial-facing API.
 .. code-block:: python
 
    from spatial_vtk.metrics.plot import (
-       metric_rows_for_metrics,
        plot_band_score_distribution,
        plot_period_spectra,
        plot_residuals_vs_distance,
+       write_large_run_metric_figure_suite_from_notebook_settings,
+       write_standard_metric_diagnostic_figures,
    )
 
 .. automodule:: spatial_vtk.metrics.plot
@@ -160,8 +161,12 @@ Public plotting helpers exposed by ``spatial_vtk.metrics.plot``:
    * - ``plot_psa_period_curve``
      - Plot PSA values or residuals across oscillator periods.
    * - ``metric_rows_for_metrics``
-     - Select metric rows by metric names, display labels, keys, or aliases
-       without notebook-local dataframe filtering.
+     - Advanced row-selection helper for scripts that need selected metric
+       rows by metric names, display labels, keys, or aliases before calling
+       lower-level plotting functions. New notebook cells should prefer
+       ``write_large_run_metric_figure_suite_from_notebook_settings`` or
+       ``write_standard_metric_diagnostic_figures`` so the package owns row
+       filtering, render gates, output paths, and sidecars.
    * - ``write_large_run_metric_figure_suite_from_notebook_settings``
      - Render the full Step 3 large-run metric figure suite from notebook
        settings without notebook-local plot-function imports, per-family
