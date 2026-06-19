@@ -462,7 +462,12 @@ def dashboard_output_status_frame(
     include_summary_tables: bool = True,
     summary_format: str = "parquet",
 ) -> pd.DataFrame:
-    """Return file readiness for standard dashboard inputs and summaries."""
+    """Return file readiness for standard dashboard inputs and summaries.
+
+    ``resolved_path`` is the clear notebook-facing path column. ``path`` is
+    retained as a compatibility alias for existing dashboard code and user
+    notebooks.
+    """
 
     status = pd.DataFrame(
         _status_rows(
@@ -522,6 +527,7 @@ def dashboard_readiness_summary_frame(
                 "map_ready": "",
                 "message": f"{name} is ready." if exists else f"{name} is missing.",
                 "suggested_action": "" if exists else _dashboard_suggested_action({"name": name, "readiness": "missing"}),
+                "resolved_path": row.get("resolved_path", row.get("path", "")),
                 "path": row.get("path", ""),
             }
         )
@@ -550,6 +556,7 @@ def dashboard_readiness_summary_frame(
         "message",
         "map_message",
         "suggested_action",
+        "resolved_path",
         "path",
     ]
     return pd.DataFrame(rows, columns=columns)
@@ -569,6 +576,7 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
         "name": "metrics_dashboard_root",
         "artifact_role": "dashboard_dataset",
         "artifact_label": "metrics dashboard row dataset",
+        "resolved_path": str(path),
         "path": str(path),
         "exists": path.exists(),
         "ready": False,
@@ -847,12 +855,14 @@ def _status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
     for name, raw_path in paths.items():
         path = Path(raw_path)
+        resolved = str(path)
         artifact_role, artifact_label = _dashboard_artifact_role_and_label(str(name))
         row: dict[str, object] = {
             "name": str(name),
             "artifact_role": artifact_role,
             "artifact_label": artifact_label,
-            "path": str(path),
+            "resolved_path": resolved,
+            "path": resolved,
             "exists": path.exists(),
             "size_gb": None,
             "modified": None,
@@ -913,6 +923,7 @@ def _dashboard_summary_row(row: dict[str, object], *, item_type: str) -> dict[st
         "message": message,
         "map_message": map_message,
         "suggested_action": _blank_if_missing(row.get("suggested_action")),
+        "resolved_path": _blank_if_missing(row.get("resolved_path", row.get("path"))),
         "path": _blank_if_missing(row.get("path")),
     }
 

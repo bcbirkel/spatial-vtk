@@ -194,6 +194,8 @@ Changelog
     preserving ``metrics_root`` and ``summary_root``.
   - Added ``qc_trace_summary_table`` to notebook dashboard launch status
     frames while preserving ``trace_summary_table`` for existing code.
+  - Added ``resolved_path`` to dashboard output status, readiness summary, and
+    written-output frames while preserving ``path`` for existing notebooks.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 

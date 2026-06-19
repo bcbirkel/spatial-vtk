@@ -2469,11 +2469,13 @@ outputs:
     by_item = summary.set_index("item")
 
     assert metric_status["readiness"].iloc[0] == "missing_dataset_files"
+    assert metric_status["resolved_path"].iloc[0] == metric_status["path"].iloc[0]
     assert readiness.should_run is True
     assert readiness.reason == "missing_outputs"
     assert "recognized files" in readiness.message
     assert "metrics_dashboard_root" in set(readiness.status_frame()["name"])
     assert by_item.loc["metrics_dashboard_dataset", "readiness"] == "missing_dataset_files"
+    assert by_item.loc["metrics_dashboard_dataset", "resolved_path"] == by_item.loc["metrics_dashboard_dataset", "path"]
     assert by_item.loc["model_metric_band", "readiness"] == "missing"
     assert by_item.loc["qc_trace_summary", "readiness"] == "missing"
     assert readiness.summary_frame().equals(summary)
@@ -2556,6 +2558,7 @@ outputs:
     assert not result.summary_frame().empty
     written = result.written_frame().set_index("name")
     assert "dashboard_summary_root" in written.index
+    assert written.loc["dashboard_summary_root", "resolved_path"] == written.loc["dashboard_summary_root", "path"]
 
 
 def test_display_dashboard_preparation_result_returns_named_frames(tmp_path):

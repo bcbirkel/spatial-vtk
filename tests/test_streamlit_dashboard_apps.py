@@ -217,6 +217,7 @@ outputs:
     assert "name" in status.columns
     assert "artifact_role" in status.columns
     assert "artifact_label" in status.columns
+    assert "resolved_path" in status.columns
     assert "suggested_action" in status.columns
     assert "metrics_dashboard_root" in set(status["name"])
     assert "qc_trace_summary_path" in set(status["name"])
@@ -225,6 +226,7 @@ outputs:
     metrics_dataset_status = status.loc[status["name"].eq("metrics_dashboard_root")].iloc[0]
     assert metrics_dataset_status["artifact_role"] == "dashboard_dataset"
     assert metrics_dataset_status["artifact_label"] == "metrics dashboard row dataset"
+    assert metrics_dataset_status["resolved_path"] == metrics_dataset_status["path"]
     assert metrics_dataset_status["dashboard_table"] == "metrics_dashboard_dataset"
     assert metrics_dataset_status["dashboard_tabs"] == "Overview, Compare Models, Stations, Events, Paths"
     assert metrics_dataset_status["ready"] is False
@@ -236,6 +238,7 @@ outputs:
     station_status = status.loc[status["name"].eq("station_rollup_summary_path")].iloc[0]
     assert station_status["artifact_role"] == "dashboard_summary_table"
     assert station_status["artifact_label"] == "station_rollup dashboard summary table"
+    assert station_status["resolved_path"] == station_status["path"]
     assert station_status["dashboard_table"] == "station_rollup"
     assert station_status["dashboard_tabs"] == "Stations"
     assert "station" in station_status["required_columns"]
@@ -288,6 +291,7 @@ outputs:
     summary = dashboard_readiness_summary_frame(cfg=cfg)
     assert "artifact_role" in summary.columns
     assert "artifact_label" in summary.columns
+    assert "resolved_path" in summary.columns
     assert "suggested_action" in summary.columns
     labels = set(summary["artifact_label"])
     assert "metrics_long source table" in labels

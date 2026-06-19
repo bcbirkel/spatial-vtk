@@ -1488,6 +1488,7 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "dashboard_summary_table_contracts" in text
     assert "The readiness and status frames are intentionally small" in text
     assert "``artifact_label``" in text
+    assert "``resolved_path`` as the clear path column" in text
     assert "``dashboard_tabs``" in text
     assert "``suggested_action``" in text
     assert "``required_columns`` / ``missing_columns`` / ``map_message``" in text

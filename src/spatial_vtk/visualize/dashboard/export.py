@@ -61,8 +61,11 @@ class DashboardDatasetPreparationResult:
     def written_frame(self) -> pd.DataFrame:
         """Return paths written by this preparation step."""
 
-        rows = [{"name": name, "path": str(path)} for name, path in self.written_paths.items()]
-        return pd.DataFrame(rows, columns=["name", "path"])
+        rows = [
+            {"name": name, "resolved_path": str(path), "path": str(path)}
+            for name, path in self.written_paths.items()
+        ]
+        return pd.DataFrame(rows, columns=["name", "resolved_path", "path"])
 
 
 def display_dashboard_preparation_result(

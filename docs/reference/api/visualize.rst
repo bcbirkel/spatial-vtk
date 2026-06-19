@@ -168,13 +168,15 @@ intentionally bounded checks: they inspect paths, schemas, row counts,
 map-coordinate availability, and recognized dashboard value columns without
 loading the full large-run metric inventory.
 The detailed status table includes both the configured path key in ``name``
-and user-facing ``artifact_role`` / ``artifact_label`` columns, so notebooks
-can display "metrics dashboard row dataset" or "station_rollup dashboard
-summary table" instead of relying on lower-level output registry names.
+and user-facing ``artifact_role`` / ``artifact_label`` columns, plus
+``resolved_path`` as the clear path column. The legacy ``path`` column remains
+available as an alias. Notebooks can display "metrics dashboard row dataset" or
+"station_rollup dashboard summary table" instead of relying on lower-level
+output registry names.
 The compact dashboard readiness summary carries the same
-``artifact_role`` / ``artifact_label`` columns, and the metrics/QC dashboard
-Data Status tabs show those labels while keeping readiness displays bounded to
-small status metadata.
+``artifact_role`` / ``artifact_label`` and ``resolved_path`` columns, and the
+metrics/QC dashboard Data Status tabs show those labels while keeping
+readiness displays bounded to small status metadata.
 The Streamlit apps also accept clear URL query keys for explicit path
 overrides: ``metrics_dataset_dir`` and ``dashboard_summary_table_dir`` for the
 metrics dashboard, and ``qc_trace_summary`` for the QC dashboard. The older
