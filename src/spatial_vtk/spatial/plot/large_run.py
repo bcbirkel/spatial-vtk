@@ -1455,6 +1455,29 @@ class StandardSpatialMapFigureResult:
         )
 
 
+@dataclass(frozen=True)
+class SpatialFigureSuiteResult:
+    """Result from rendering the full large-run Step 4 spatial figure suite."""
+
+    context: SpatialFigureContext
+    rows: tuple[dict[str, Any], ...]
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return one row per spatial figure family rendered or skipped."""
+
+        return pd.DataFrame(
+            self.rows,
+            columns=[
+                "artifact",
+                "status",
+                "figure_count",
+                "first_figure_path",
+                "figure_paths_preview",
+                "message",
+            ],
+        )
+
+
 def prepare_spatial_figure_context(**kwargs: Any) -> SpatialFigureContext:
     """Return a reusable spatial figure context for large-run notebooks."""
 
@@ -1483,6 +1506,176 @@ def prepare_spatial_figure_context_from_notebook_settings(
         overwrite=overwrite,
         **context_kwargs,
     )
+
+
+def _spatial_suite_status_row(artifact: str, outputs: Sequence[Path]) -> dict[str, Any]:
+    """Return one notebook status row for a spatial figure family."""
+
+    paths = [Path(path) for path in outputs]
+    preview = ", ".join(str(path) for path in paths[:3])
+    if len(paths) > 3:
+        preview += f", ... (+{len(paths) - 3} more)"
+    return {
+        "artifact": artifact,
+        "status": "written" if paths else "skipped",
+        "figure_count": int(len(paths)),
+        "first_figure_path": None if not paths else str(paths[0]),
+        "figure_paths_preview": preview,
+        "message": "" if paths else "No figures were written; check context status and missing-table messages above.",
+    }
+
+
+def write_large_run_spatial_figure_suite_from_notebook_settings(
+    settings: Any,
+    *,
+    overwrite: bool = False,
+    station_metric_map_func: Callable[..., Any] | None = None,
+    station_metric_map_by_period_func: Callable[..., Any] | None = None,
+    residual_grid_func: Callable[..., Any] | None = None,
+    metric_by_model_map_func: Callable[..., Any] | None = None,
+    event_residual_map_func: Callable[..., Any] | None = None,
+    azimuthal_residuals_func: Callable[..., Any] | None = None,
+    polar_residuals_func: Callable[..., Any] | None = None,
+    pca_summary_func: Callable[..., Any] | None = None,
+) -> SpatialFigureSuiteResult:
+    """Render the full large-run Step 4 spatial figure suite.
+
+    This helper keeps the large-run spatial notebook as a lightweight driver:
+    it owns the public plotting-function imports, repeated selection keyword
+    expansion, PSA period-sheet handling, and station-aggregation source-row
+    sidecars while still returning the reusable context for status displays.
+    """
+
+    if any(
+        func is None
+        for func in (
+            station_metric_map_func,
+            station_metric_map_by_period_func,
+            residual_grid_func,
+            metric_by_model_map_func,
+            event_residual_map_func,
+            pca_summary_func,
+        )
+    ):
+        from spatial_vtk.spatial.map import (
+            plot_event_residual_map,
+            plot_metric_map_by_model,
+            plot_pca_summary,
+            plot_residual_grid,
+            plot_station_metric_map,
+            plot_station_metric_map_by_period,
+        )
+
+        station_metric_map_func = station_metric_map_func or plot_station_metric_map
+        station_metric_map_by_period_func = station_metric_map_by_period_func or plot_station_metric_map_by_period
+        residual_grid_func = residual_grid_func or plot_residual_grid
+        metric_by_model_map_func = metric_by_model_map_func or plot_metric_map_by_model
+        event_residual_map_func = event_residual_map_func or plot_event_residual_map
+        pca_summary_func = pca_summary_func or plot_pca_summary
+    if azimuthal_residuals_func is None or polar_residuals_func is None:
+        from spatial_vtk.spatial.plot import plot_azimuthal_residuals, plot_polar_residuals
+
+        azimuthal_residuals_func = azimuthal_residuals_func or plot_azimuthal_residuals
+        polar_residuals_func = polar_residuals_func or plot_polar_residuals
+
+    context = prepare_spatial_figure_context_from_notebook_settings(
+        settings,
+        overwrite=overwrite,
+        include_station_aggregation=True,
+    )
+    rows: list[dict[str, Any]] = []
+    if not settings.make_figures:
+        rows.append(
+            {
+                "artifact": "spatial_figure_suite",
+                "status": "skipped",
+                "figure_count": 0,
+                "first_figure_path": None,
+                "figure_paths_preview": "",
+                "message": "Set SVTK_MAKE_SPATIAL_FIGURES=1 or SVTK_MAKE_FIGURES=1 to render spatial figures.",
+            }
+        )
+        return SpatialFigureSuiteResult(context=context, rows=tuple(rows))
+
+    metric_value_col = context.metric_value_col
+    event_value_col = context.event_value_col
+
+    metric_kwargs = settings.plot_selection_kwargs(value_col=metric_value_col)
+    rows.append(
+        _spatial_suite_status_row(
+            "station_metric_maps",
+            context.write_station_metric_maps(
+                station_metric_map_func,
+                station_metric_map_by_period_func,
+                **metric_kwargs,
+            ),
+        )
+    )
+    rows.append(
+        _spatial_suite_status_row(
+            "residual_grid_maps",
+            context.write_residual_grid_maps(
+                residual_grid_func,
+                **metric_kwargs,
+            ),
+        )
+    )
+    rows.append(
+        _spatial_suite_status_row(
+            "metric_by_model_maps",
+            context.write_metric_by_model_maps(
+                metric_by_model_map_func,
+                **settings.plot_selection_kwargs(value_col=metric_value_col, model=None),
+            ),
+        )
+    )
+    rows.append(
+        _spatial_suite_status_row(
+            "event_residual_maps",
+            context.write_event_residual_maps(
+                event_residual_map_func,
+                **metric_kwargs,
+            ),
+        )
+    )
+    rows.append(
+        _spatial_suite_status_row(
+            "event_centered_azimuthal_plots",
+            context.write_event_centered_azimuthal_plots(
+                azimuthal_residuals_func,
+                **settings.plot_selection_kwargs(value_col=event_value_col, include_robust_axis_percentile=True),
+            ),
+        )
+    )
+    rows.append(
+        _spatial_suite_status_row(
+            "event_centered_polar_plots",
+            context.write_event_centered_polar_plots(
+                polar_residuals_func,
+                **settings.plot_selection_kwargs(value_col=event_value_col),
+            ),
+        )
+    )
+    rows.append(
+        _spatial_suite_status_row(
+            "pca_summary_plots",
+            context.write_pca_summary_plots(
+                pca_summary_func,
+                mode=settings.pca_mode,
+                **settings.plot_selection_kwargs(),
+            ),
+        )
+    )
+    rows.append(
+        _spatial_suite_status_row(
+            "overview_plots",
+            context.write_overview_plots(
+                event_value_col=event_value_col,
+                **settings.plot_selection_kwargs(value_col=metric_value_col, include_robust_axis_percentile=True),
+            ),
+        )
+    )
+    return SpatialFigureSuiteResult(context=context, rows=tuple(rows))
 
 
 def write_large_run_spatial_summary_figures_from_outputs(
@@ -2536,6 +2729,7 @@ __all__ = [
     "RegionFigureResult",
     "SPATIAL_FIGURE_TABLE_KEYS",
     "SpatialSummaryFigureResult",
+    "SpatialFigureSuiteResult",
     "SpatialFigureContext",
     "StandardSpatialMapFigureResult",
     "prepare_spatial_figure_context",
@@ -2547,4 +2741,5 @@ __all__ = [
     "write_large_run_region_boxplot_from_outputs",
     "write_large_run_region_boxplot_from_notebook_settings",
     "write_large_run_spatial_summary_figures_from_outputs",
+    "write_large_run_spatial_figure_suite_from_notebook_settings",
 ]

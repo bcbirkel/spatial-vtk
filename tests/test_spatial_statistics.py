@@ -95,6 +95,7 @@ from spatial_vtk.spatial.plot.large_run import (
     write_large_run_region_boxplot,
     write_large_run_region_boxplot_from_outputs,
     write_large_run_region_boxplot_from_notebook_settings,
+    write_large_run_spatial_figure_suite_from_notebook_settings,
     write_large_run_spatial_summary_figures_from_outputs,
 )
 from spatial_vtk.spatial.plot.metrics import plot_geology_contrast
@@ -1213,6 +1214,120 @@ def test_prepare_spatial_figure_context_from_notebook_settings_delegates(
         "default_model": "override-model",
         "station_aggregation": "median",
     }
+
+
+def test_write_large_run_spatial_figure_suite_from_notebook_settings_delegates(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    """Full Step 4 figure suite helper should keep plotting orchestration out of notebooks."""
+
+    import spatial_vtk.spatial.plot.large_run as large_run_module
+
+    calls: list[tuple[str, tuple[object, ...], dict[str, object]]] = []
+
+    class Settings:
+        figure_dir = tmp_path / "figures"
+        make_figures = True
+        pca_mode = "PC2"
+
+        def context_kwargs(self, *, include_station_aggregation: bool = False) -> dict[str, object]:
+            assert include_station_aggregation is True
+            return {
+                "make_figures": True,
+                "default_model": "m1",
+                "station_aggregation": "mean",
+            }
+
+        def plot_selection_kwargs(self, **kwargs: object) -> dict[str, object]:
+            out: dict[str, object] = {
+                "passband": "1-2 sec",
+                "components": ["Z"],
+                "model": "m1",
+                "showfig": False,
+            }
+            out.update(kwargs)
+            return out
+
+    class FakeContext:
+        metric_value_col = "log2_residual"
+        event_value_col = "event_centered_residual"
+
+        def __init__(self, figure_dir: Path) -> None:
+            self.figure_dir = figure_dir
+
+        def _record(self, name: str, *args: object, **kwargs: object) -> list[Path]:
+            calls.append((name, args, kwargs))
+            return [self.figure_dir / f"{name}.png"]
+
+        def write_station_metric_maps(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("station_metric_maps", *args, **kwargs)
+
+        def write_residual_grid_maps(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("residual_grid_maps", *args, **kwargs)
+
+        def write_metric_by_model_maps(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("metric_by_model_maps", *args, **kwargs)
+
+        def write_event_residual_maps(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("event_residual_maps", *args, **kwargs)
+
+        def write_event_centered_azimuthal_plots(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("event_centered_azimuthal_plots", *args, **kwargs)
+
+        def write_event_centered_polar_plots(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("event_centered_polar_plots", *args, **kwargs)
+
+        def write_pca_summary_plots(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("pca_summary_plots", *args, **kwargs)
+
+        def write_overview_plots(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("overview_plots", *args, **kwargs)
+
+    fake_context = FakeContext(tmp_path / "figures")
+
+    monkeypatch.setattr(
+        large_run_module,
+        "prepare_spatial_figure_context_from_notebook_settings",
+        lambda *args, **kwargs: fake_context,
+    )
+
+    def _dummy_plot(*_args: object, **_kwargs: object) -> None:
+        return None
+
+    result = write_large_run_spatial_figure_suite_from_notebook_settings(
+        Settings(),
+        overwrite=True,
+        station_metric_map_func=_dummy_plot,
+        station_metric_map_by_period_func=_dummy_plot,
+        residual_grid_func=_dummy_plot,
+        metric_by_model_map_func=_dummy_plot,
+        event_residual_map_func=_dummy_plot,
+        azimuthal_residuals_func=_dummy_plot,
+        polar_residuals_func=_dummy_plot,
+        pca_summary_func=_dummy_plot,
+    )
+
+    assert result.context is fake_context
+    assert [call[0] for call in calls] == [
+        "station_metric_maps",
+        "residual_grid_maps",
+        "metric_by_model_maps",
+        "event_residual_maps",
+        "event_centered_azimuthal_plots",
+        "event_centered_polar_plots",
+        "pca_summary_plots",
+        "overview_plots",
+    ]
+    assert calls[0][2]["value_col"] == "log2_residual"
+    assert calls[2][2]["model"] is None
+    assert calls[4][2]["value_col"] == "event_centered_residual"
+    assert calls[4][2]["include_robust_axis_percentile"] is True
+    assert calls[6][2]["mode"] == "PC2"
+    status = result.status_frame()
+    assert status["artifact"].tolist() == [call[0] for call in calls]
+    assert status["status"].tolist() == ["written"] * 8
+    assert status["figure_count"].tolist() == [1] * 8
 
 
 def test_write_large_run_spatial_summary_figures_from_outputs(tmp_path: Path) -> None:

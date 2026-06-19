@@ -1324,20 +1324,22 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "run_or_submit_notebook_cli_command(" not in source
     assert '"svtk", "spatial"' not in source
     assert "should_rebuild_paths(" not in source
-    assert "spatial_figures.write_station_metric_maps(" in source
-    assert "spatial_figures.write_residual_grid_maps(" in source
-    assert "spatial_figures.write_metric_by_model_maps(" in source
-    assert "spatial_figures.write_event_residual_maps(" in source
-    assert "spatial_figures.write_event_centered_azimuthal_plots(" in source
-    assert "spatial_figures.write_event_centered_polar_plots(" in source
+    assert "write_large_run_spatial_figure_suite_from_notebook_settings(" in source
+    assert "spatial_figure_suite.status_frame()" in source
+    assert "spatial_figures.write_station_metric_maps(" not in source
+    assert "spatial_figures.write_residual_grid_maps(" not in source
+    assert "spatial_figures.write_metric_by_model_maps(" not in source
+    assert "spatial_figures.write_event_residual_maps(" not in source
+    assert "spatial_figures.write_event_centered_azimuthal_plots(" not in source
+    assert "spatial_figures.write_event_centered_polar_plots(" not in source
     assert "station_summary_for_item = spatial_figures.station_summary_for_item" not in source
     assert "item_source_rows = spatial_figures.item_source_rows" not in source
     assert "for item in iter_metric_frames(" not in source
-    assert "plot_pca_summary" in source
-    assert "spatial_figures.write_pca_summary_plots(" in source
-    assert "prepare_spatial_figure_context_from_notebook_settings(" in source
-    assert "mode=SPATIAL_FIGURE_SETTINGS.pca_mode" in source
-    assert "SPATIAL_FIGURE_SETTINGS.plot_selection_kwargs(" in source
+    assert "plot_pca_summary" not in source
+    assert "spatial_figures.write_pca_summary_plots(" not in source
+    assert "prepare_spatial_figure_context_from_notebook_settings(" not in source
+    assert "mode=SPATIAL_FIGURE_SETTINGS.pca_mode" not in source
+    assert "SPATIAL_FIGURE_SETTINGS.plot_selection_kwargs(" not in source
     assert "PLOT_PASSBAND =" not in source
     assert "PLOT_COMPONENTS =" not in source
     assert "PLOT_SHOWFIG =" not in source
@@ -1352,11 +1354,18 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "source_df_factory=item_source_rows" not in source
     assert "source_df=item[\"df\"]" not in source
     assert "source_df_factory=lambda period_item" not in source
-    assert "spatial_figures.write_overview_plots(" in source
+    assert "spatial_figures.write_overview_plots(" not in source
     assert "write_large_run_spatial_summary_figures_from_outputs(" in source
     assert "quick_spatial_result.status_frame()" in source
-    assert "### Spatial Event-Centered Azimuthal Residuals" in source
-    assert "### Spatial Event-Centered Polar Residuals" in source
+    assert "### Spatial Event-Centered Azimuthal Residuals" not in source
+    assert "### Spatial Event-Centered Polar Residuals" not in source
+    assert "plot_station_metric_map" not in source
+    assert "plot_station_metric_map_by_period" not in source
+    assert "plot_residual_grid" not in source
+    assert "plot_metric_map_by_model" not in source
+    assert "plot_event_residual_map" not in source
+    assert "plot_azimuthal_residuals" not in source
+    assert "plot_polar_residuals" not in source
     assert 'write_spatial_plot("spatial_correlogram"' not in source
     assert "plot_correlogram" not in source
     assert "preview_output_table(" not in source
@@ -1989,7 +1998,8 @@ def test_large_run_step04_spatial_figures_show_spectral_contract_status() -> Non
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "spatial_figures = prepare_spatial_figure_context_from_notebook_settings(" in source
+    assert "spatial_figure_suite = write_large_run_spatial_figure_suite_from_notebook_settings(" in source
+    assert "spatial_figures = spatial_figure_suite.context" in source
     assert 'figure_subdir="metrics"' in source
     assert "SPATIAL_FIGURE_SETTINGS.figure_dir" not in source
     assert "METRICS_FIGURE_DIR" not in source
@@ -1997,6 +2007,7 @@ def test_large_run_step04_spatial_figures_show_spectral_contract_status() -> Non
     assert "display(spatial_figures.status_frame())" in source
     assert "display(spatial_figures.dimension_summary_frame())" in source
     assert "display(spatial_figures.spectral_metric_contract_status())" in source
+    assert "display(spatial_figure_suite.status_frame())" in source
 
 
 def test_tutorial_figure_sidecar_calls_include_directory_control() -> None:
@@ -2195,9 +2206,9 @@ def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> 
             "metric_plot_context.write_metric_by_model_maps(",
         ),
         "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": (
-            "spatial_figures.write_station_metric_maps(",
-            "spatial_figures.write_residual_grid_maps(",
-            "spatial_figures.write_metric_by_model_maps(",
+            "write_large_run_spatial_figure_suite_from_notebook_settings(",
+            "spatial_figure_suite.status_frame()",
+            "spatial_figures = spatial_figure_suite.context",
         ),
     }
     for relative_path, snippets in requirements.items():

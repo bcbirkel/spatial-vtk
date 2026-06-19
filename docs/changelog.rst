@@ -2,6 +2,13 @@ Changelog
 =========
 
 2026-06-18
+   Added
+   ``write_large_run_spatial_figure_suite_from_notebook_settings()`` and
+   rewired the large-run Step 4 spatial notebook to call it for the full
+   spatial figure suite. The notebook no longer imports individual map/plot
+   functions or repeats per-family plotting cells; package code owns the
+   figure-function imports, selection kwargs, PSA period sheets, station
+   aggregation, and source-row sidecars.
    Expanded ``StationMetricMapResult.status_frame()`` so focused tutorial
    station-map cells surface sidecar JSON audit fields directly, including the
    aggregation contract, source-row role/filter, input and finite row/event
