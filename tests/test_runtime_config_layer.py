@@ -1881,6 +1881,15 @@ outputs:
 
     step_outputs.trace_qc_path.write_text("source,event_id,station,component,passband,qc_status\n", encoding="utf-8")
     step_outputs.qc_inventory_path.write_text("source,event_id,station,component,passband,qc_status\n", encoding="utf-8")
+    inventory_current = qc_inventory_readiness_from_config(
+        config_path=config_path,
+        current_message="Full QC outputs are current.",
+    )
+    assert inventory_current.reason == "current"
+    assert inventory_current.message == "Full QC outputs are current."
+    inventory_forced = qc_inventory_readiness_from_config(config_path=config_path, overwrite=True)
+    assert inventory_forced.reason == "overwrite"
+
     overlap_ready_to_run = qc_overlap_readiness_from_config(config_path=config_path)
     assert overlap_ready_to_run.reason == "missing_outputs"
     assert dict(overlap_ready_to_run.output_items)["qc_inventory_overlap_path"] == step_outputs.qc_inventory_overlap_path

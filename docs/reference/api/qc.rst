@@ -46,20 +46,23 @@ Public helpers exposed by ``spatial_vtk.qc``:
        checkpointed outputs for large datasets.
    * - ``qc_inventory_readiness_from_config``
      - Check whether configured event-station records, trace QC, and full QC
-       inventory outputs are ready without loading large tables.
+       inventory outputs are ready without loading large tables, with
+       ``overwrite`` and message pass-throughs for notebook rerun controls.
    * - ``write_qc_inventory_overlap_from_config``
      - Write the observed/synthetic event-station overlap inventory used by
        pairwise metric planning.
    * - ``qc_overlap_readiness_from_config``
      - Check whether the configured full QC inventory and event-station table
-       are ready before writing the overlap inventory sidecar.
+       are ready before writing the overlap inventory sidecar, with
+       ``overwrite`` and message pass-throughs for notebook rerun controls.
    * - ``run_qc_summary_workflow_from_config``
      - Build compact retention, drop-cause, post-QC record, and availability
        tables for figures and dashboards without loading the full inventory in a
        notebook.
    * - ``qc_summary_readiness_from_config``
      - Check whether compact QC summary/review outputs are missing or stale
-       from configured QC inventories without loading the inventories.
+       from configured QC inventories without loading the inventories, with
+       ``overwrite`` and message pass-throughs for notebook rerun controls.
    * - ``load_standard_qc_inputs``
      - Load standard Step 2 prepared metadata tables and the configured QC
        output group without notebook-local Step 1 output-group table mapping.

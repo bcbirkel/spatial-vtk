@@ -208,6 +208,9 @@ def qc_inventory_readiness_from_config(
     config_path: str | Path | None = None,
     run_scenario: str | None = None,
     qc_group_name: str = "step_02_qc",
+    overwrite: bool = False,
+    current_message: str | None = "Full QC outputs are current; skipping rebuild.",
+    rebuild_message: str | None = None,
 ) -> OutputReadiness:
     """Return readiness for configured full QC trace and inventory tables.
 
@@ -215,7 +218,9 @@ def qc_inventory_readiness_from_config(
     large-run notebooks before they call
     :func:`spatial_vtk.config.run_notebook_step_if_needed`. It checks only
     configured paths and file freshness; it does not load waveform or QC
-    tables.
+    tables. ``overwrite`` and message parameters are passed through to the
+    output readiness decision so notebooks can keep a single visible control for
+    reruns without rebuilding the input/output contract locally.
     """
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
@@ -224,7 +229,10 @@ def qc_inventory_readiness_from_config(
         ("trace_qc_path", "qc_inventory_path"),
         inputs=("event_station_path",),
         sources=("event_station_path",),
+        overwrite=overwrite,
         missing_input_message="Event-station records are not ready yet.",
+        current_message=current_message,
+        rebuild_message=rebuild_message,
     )
 
 
@@ -233,6 +241,9 @@ def qc_overlap_readiness_from_config(
     config_path: str | Path | None = None,
     run_scenario: str | None = None,
     qc_group_name: str = "step_02_qc",
+    overwrite: bool = False,
+    current_message: str | None = "Overlap QC sidecar is current; skipping rebuild.",
+    rebuild_message: str | None = None,
 ) -> OutputReadiness:
     """Return readiness for the configured observed/synthetic overlap QC sidecar."""
 
@@ -242,7 +253,10 @@ def qc_overlap_readiness_from_config(
         "qc_inventory_overlap_path",
         inputs=("qc_inventory_path", "event_station_path"),
         sources=("qc_inventory_path", "event_station_path"),
+        overwrite=overwrite,
         missing_input_message="Full QC inventory or event-station records are not ready yet.",
+        current_message=current_message,
+        rebuild_message=rebuild_message,
     )
 
 
@@ -251,6 +265,9 @@ def qc_summary_readiness_from_config(
     config_path: str | Path | None = None,
     run_scenario: str | None = None,
     qc_group_name: str = "step_02_qc",
+    overwrite: bool = False,
+    current_message: str | None = "Compact QC summary tables are current; skipping rebuild.",
+    rebuild_message: str | None = None,
 ) -> OutputReadiness:
     """Return readiness for configured compact QC summary and review tables."""
 
@@ -269,7 +286,10 @@ def qc_summary_readiness_from_config(
         ),
         inputs=("qc_inventory_overlap_path",),
         sources=("qc_inventory_overlap_path", "qc_inventory_path"),
+        overwrite=overwrite,
         missing_input_message="Overlap QC sidecar is not ready yet.",
+        current_message=current_message,
+        rebuild_message=rebuild_message,
     )
 
 

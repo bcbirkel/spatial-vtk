@@ -17,6 +17,9 @@ Changelog
     cells that need QC output status without loading prepared metadata tables.
   - Added config-backed Step 2 QC readiness helpers for full QC inventory,
     observed/synthetic overlap inventory, and compact QC summary workflows.
+  - Added ``overwrite`` and readiness-message pass-throughs to Step 2 QC
+    readiness helpers so notebooks keep rerun controls without local readiness
+    contracts.
   - Added lightweight Step 4, Step 5, and Step 6 output-status loaders for
     large-run driver notebooks that need configured status tables and bounded
     previews without loading large plotting inputs.
@@ -47,6 +50,9 @@ Changelog
     metadata dependencies through the standard metric output helper.
   - Rewired the large-run Step 2 notebook to resolve QC output status through
     the lightweight QC workflow output helper.
+  - Rewired standard and large-run Step 2 notebooks to use package-owned QC
+    readiness helpers for full inventory, overlap sidecar, and compact summary
+    gates.
   - Rewired the large-run Step 1 notebook to resolve ingest and preprocessing
     outputs through the same package helper as the standard tutorial.
   - Rewired large-run Step 4, Step 5, and Step 6 status/preview cells to call

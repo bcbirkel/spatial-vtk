@@ -695,14 +695,18 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "run_qc_summary_workflow_from_config(" in standard_text
     assert "run_notebook_step_if_needed(" in standard_text
     assert "notebook_step_result(" in standard_text
-    assert "qc_readiness = qc_outputs.readiness(" in standard_text
-    assert "overlap_readiness = qc_outputs.readiness(" in standard_text
-    assert "summary_readiness = qc_outputs.readiness(" in standard_text
+    assert "qc_readiness = qc_inventory_readiness_from_config(" in standard_text
+    assert "overlap_readiness = qc_overlap_readiness_from_config(" in standard_text
+    assert "summary_readiness = qc_summary_readiness_from_config(" in standard_text
+    assert "qc_outputs.readiness(" not in standard_text
     assert '"reused": not qc_readiness.should_run' not in standard_text
     assert '"reused": not overlap_readiness.should_run' not in standard_text
     assert '"reused": not summary_readiness.should_run' not in standard_text
     assert "run_local=True" in standard_text
     assert "load_standard_qc_inputs," in standard_text
+    assert "qc_inventory_readiness_from_config," in standard_text
+    assert "qc_overlap_readiness_from_config," in standard_text
+    assert "qc_summary_readiness_from_config," in standard_text
     assert "qc_inputs = load_standard_qc_inputs(cfg=cfg)" in standard_text
     assert "qc_inputs.status_frame()" in standard_text
     assert "ingest_outputs.load_tables(" not in standard_text
@@ -1762,12 +1766,11 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
 
 
 def test_large_run_grouped_steps_use_output_group_readiness() -> None:
-    """Grouped large-run steps should keep path-readiness plumbing in OutputGroup."""
+    """Grouped large-run steps should keep remaining path-readiness plumbing in OutputGroup."""
 
     repo_root = Path(__file__).resolve().parents[1]
     for relative in (
         "large_run/step_01_large_run_ingest_and_prepare_data.ipynb",
-        "large_run/step_02_large_run_quality_control.ipynb",
         "large_run/step_03_large_run_calculate_metrics.ipynb",
     ):
         notebook_path = repo_root / "docs" / "examples" / relative
@@ -1971,8 +1974,14 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     assert "run_qc_inventory_from_config," in source
     assert "write_qc_inventory_overlap_from_config," in source
     assert "run_qc_summary_workflow_from_config," in source
+    assert "qc_inventory_readiness_from_config," in source
+    assert "qc_overlap_readiness_from_config," in source
+    assert "qc_summary_readiness_from_config," in source
     assert "write_large_run_qc_figures_from_outputs(" in source
-    assert "summary_readiness = step_outputs.readiness(" in source
+    assert "qc_readiness = qc_inventory_readiness_from_config(" in source
+    assert "overlap_readiness = qc_overlap_readiness_from_config(" in source
+    assert "summary_readiness = qc_summary_readiness_from_config(" in source
+    assert "step_outputs.readiness(" not in source
     assert "qc_figure_tables = step_outputs.load_tables(" not in source
     assert "step_outputs.qc_inventory_overlap_path.exists()" not in source
     assert '"spatial_vtk.qc.run_qc_inventory_from_config"' not in source
@@ -2024,10 +2033,9 @@ def test_large_run_step02_overlap_sidecar_has_separate_rebuild_gate() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "qc_readiness = step_outputs.readiness(" in source
-    assert '("trace_qc_path", "qc_inventory_path")' in source
-    assert 'inputs=("event_station_path",)' in source
-    assert 'sources=("event_station_path",)' in source
+    assert "qc_readiness = qc_inventory_readiness_from_config(" in source
+    assert "config_path=config_path" in source
+    assert "overwrite=OVERWRITE" in source
     assert "run_notebook_step_if_needed(" in source
     assert "Full QC outputs are current; skipping QC Slurm submission." in source
     assert '"event_station_records": str(step_outputs.event_station_path)' not in source
@@ -2036,7 +2044,9 @@ def test_large_run_step02_overlap_sidecar_has_separate_rebuild_gate() -> None:
     assert '"qc_inventory_overlap_output": str(step_outputs.qc_inventory_overlap_path)' not in source
     assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, overwrite=OVERWRITE)" not in source
     assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, qc_inventory_overlap_path" not in source
-    assert "overlap_readiness = step_outputs.readiness(" in source
+    assert "overlap_readiness = qc_overlap_readiness_from_config(" in source
+    assert "summary_readiness = qc_summary_readiness_from_config(" in source
+    assert "step_outputs.readiness(" not in source
     assert "qc_readiness = output_readiness(" not in source
     assert "overlap_readiness = output_readiness(" not in source
 
