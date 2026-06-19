@@ -2569,8 +2569,131 @@ def _cmd_spatial_status(args: argparse.Namespace) -> int:
     if status.empty:
         print("No configured spatial paths were resolved.")
     else:
-        print(status.to_string(index=False))
+        print("Spatial readiness summary:")
+        shown = _spatial_cli_readiness_columns(
+            status,
+            group="step_04_spatial",
+            reason=readiness.reason,
+        )
+        print(shown.to_string(index=False))
     return 0
+
+
+def _spatial_cli_readiness_columns(status: Any, *, group: str, reason: str = "") -> Any:
+    """Return user-facing spatial status columns for CLI output."""
+
+    try:
+        from spatial_vtk.io import output_group_artifacts
+
+        artifacts = {artifact.name: artifact for artifact in output_group_artifacts(group)}
+    except Exception:
+        artifacts = {}
+
+    rows: list[dict[str, object]] = []
+    for row in status.astype(object).to_dict("records"):
+        name = str(row.get("name", ""))
+        artifact = artifacts.get(name)
+        output_key = getattr(artifact, "key", "") if artifact is not None else ""
+        kind = getattr(artifact, "kind", "") if artifact is not None else ""
+        required = getattr(artifact, "required", "") if artifact is not None else ""
+        role = str(row.get("role", ""))
+        state = str(row.get("state", ""))
+        artifact_label = _spatial_artifact_label(name, output_key=output_key, kind=kind, role=role)
+        rows.append(
+            {
+                "role": role,
+                "artifact": artifact_label,
+                "output_key": output_key or "",
+                "kind": kind or "",
+                "required": required,
+                "state": state,
+                "exists": row.get("exists", ""),
+                "message": _spatial_status_message(
+                    artifact_label,
+                    role=role,
+                    state=state,
+                    reason=reason,
+                ),
+                "suggested_action": _spatial_suggested_action(
+                    output_key or name,
+                    role=role,
+                    state=state,
+                    reason=reason,
+                ),
+                "path": row.get("path", ""),
+            }
+        )
+    return status.__class__(
+        rows,
+        columns=[
+            "role",
+            "artifact",
+            "output_key",
+            "kind",
+            "required",
+            "state",
+            "exists",
+            "message",
+            "suggested_action",
+            "path",
+        ],
+    )
+
+
+def _spatial_artifact_label(name: str, *, output_key: str = "", kind: str = "", role: str = "") -> str:
+    """Return a readable label for one spatial status row."""
+
+    key = output_key or name
+    text = key.removesuffix("_path").replace("_", " ").strip()
+    if not text:
+        text = name.replace("_", " ").strip()
+    if kind == "figure":
+        suffix = "figure"
+    elif kind == "table":
+        suffix = "table"
+    elif role == "input":
+        suffix = "input table"
+    elif role == "source":
+        suffix = "source table"
+    elif role == "output":
+        suffix = "table"
+    else:
+        suffix = "artifact"
+    if text.endswith(suffix):
+        return text
+    return f"{text} {suffix}"
+
+
+def _spatial_status_message(artifact: str, *, role: str, state: str, reason: str) -> str:
+    """Return one concise spatial status message."""
+
+    if state == "ready":
+        return f"{artifact} is ready."
+    if state == "missing" and role == "input":
+        return f"{artifact} is missing; Step 4 spatial summaries cannot run until its input exists."
+    if state == "missing" and role == "output":
+        return f"{artifact} is missing; Step 4 spatial summaries should be rebuilt."
+    if state == "stale":
+        return f"{artifact} is older than a source dependency; Step 4 spatial summaries should be rebuilt."
+    if state == "unconfigured":
+        return f"{artifact} is not configured."
+    if reason == "current":
+        return f"{artifact} is current."
+    return f"{artifact} status is {state or 'unknown'}."
+
+
+def _spatial_suggested_action(output_key: str, *, role: str, state: str, reason: str) -> str:
+    """Return a bounded remediation hint for one spatial status row."""
+
+    if state == "ready" or reason == "current":
+        return ""
+    if role == "input" or output_key == "metrics_long":
+        return "Finish Step 3 metric outputs so the configured metrics_long table exists."
+    if state == "unconfigured":
+        return "Set the corresponding output artifact in the active config or use the standard output registry defaults."
+    if role == "output":
+        return "Run svtk spatial summaries with the active config, or run the Step 4 spatial workflow notebook cell."
+    return "Inspect the active Spatial-VTK config and rebuild the Step 4 spatial outputs if needed."
 
 
 def _cmd_dashboard_metrics(args: argparse.Namespace) -> int:

@@ -107,6 +107,9 @@ Changelog
   - Made ``svtk dashboard status`` print artifact labels, dashboard-tab
     readiness, and suggested rebuild actions in its human-readable output
     instead of the lower-level configured path table.
+  - Made ``svtk spatial status`` print artifact labels, output keys, and
+    Step 3/Step 4 rebuild guidance in its human-readable output instead of
+    the lower-level path-key readiness table.
 
 - **Large-run resilience** *(Hardened)*
 

@@ -438,8 +438,12 @@ outputs:
     assert "Spatial outputs current: False" in captured.out
     assert "Spatial summaries run recommended: True" in captured.out
     assert "Reason: missing_outputs" in captured.out
-    assert "metric_field_path" in captured.out
-    assert "redcap_clusters_path" in captured.out
+    assert "Spatial readiness summary:" in captured.out
+    assert "metric field table" in captured.out
+    assert "redcap clusters table" in captured.out
+    assert "Step 4 spatial summaries should be rebuilt" in captured.out
+    assert "Run svtk spatial summaries with the active config" in captured.out
+    assert "metric_field_path" not in captured.out
 
 
 def test_cli_spatial_geojson_and_corridor_help(capsys):
