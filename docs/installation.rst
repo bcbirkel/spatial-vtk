@@ -119,9 +119,10 @@ example data, install the notebook extra and run:
 The tutorial checker first verifies that the committed five-event metadata,
 snapshot tables, and observed/synthetic NPZ waveform subset are present. It
 stops before cleaning ``outputs/tutorials`` if the example data is incomplete.
-The ``--runtime-check-only`` command performs the same source/data preflight
-plus notebook-runtime dependency checks without deleting outputs or executing
-notebooks.
+The ``--runtime-check-only`` command performs the same source/data preflight,
+makes the source checkout importable, and verifies the Jupyter,
+``spatial_vtk``, scientific Python, mapping, dashboard, and waveform modules
+used by the tutorial cells without deleting outputs or executing notebooks.
 
 You are ready to continue once the import prints a version, ``svtk --help``
 shows the command groups, and the tests or tutorial notebook check pass if you

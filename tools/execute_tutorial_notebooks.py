@@ -4,7 +4,9 @@
 This is a lightweight release/source-check helper. It runs the committed
 standard tutorial notebooks against the committed example data, optionally
 clears the tutorial output directory first, and writes a JSON execution report.
-The script does not save executed notebooks back to the repository.
+The runtime check verifies both Jupyter execution modules and the package
+runtime modules the notebooks import. The script does not save executed
+notebooks back to the repository.
 """
 
 from __future__ import annotations
@@ -50,10 +52,33 @@ WARNING_PATTERN = re.compile(
     re.IGNORECASE,
 )
 NOTEBOOK_RUNTIME_MODULES = {
+    "spatial_vtk": "spatial_vtk",
     "nbformat": "nbformat",
     "nbclient": "nbclient",
     "ipykernel": "ipykernel",
     "IPython": "IPython",
+    "branca": "branca",
+    "contextily": "contextily",
+    "folium": "folium",
+    "geopandas": "geopandas",
+    "gmprocess": "gmprocess",
+    "h5py": "h5py",
+    "matplotlib": "matplotlib",
+    "numpy": "numpy",
+    "obspy": "obspy",
+    "pandas": "pandas",
+    "plotly": "plotly",
+    "pyarrow": "pyarrow",
+    "pyasdf": "pyasdf",
+    "pyproj": "pyproj",
+    "PyYAML": "yaml",
+    "rasterio": "rasterio",
+    "scikit-learn": "sklearn",
+    "scipy": "scipy",
+    "shapely": "shapely",
+    "statsmodels": "statsmodels",
+    "streamlit": "streamlit",
+    "streamlit-folium": "streamlit_folium",
 }
 KERNEL_EXTRA_ARGUMENTS = ("--IPKernelApp.log_level=ERROR",)
 TUTORIAL_EXAMPLE_ROOT = Path("data/examples/example_five_event_subset")
@@ -141,6 +166,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.preflight_only:
         print(f"Notebook preflight clean for {len(notebooks)} notebook(s).")
         return 0
+    configure_source_checkout_imports(repo_root)
     check_notebook_runtime()
     if args.runtime_check_only:
         print(f"Notebook runtime dependencies available for {len(notebooks)} notebook(s).")
@@ -220,10 +246,21 @@ def check_notebook_runtime(required: dict[str, str] | None = None) -> None:
         return
     missing_text = ", ".join(missing)
     raise SystemExit(
-        "Notebook execution requires the notebook runtime modules: "
+        "Notebook execution requires these importable tutorial runtime modules: "
         f"{missing_text}. Install the tutorial extras with "
         'python -m pip install -e ".[notebooks,waveforms]".'
     )
+
+
+def configure_source_checkout_imports(repo_root: Path) -> None:
+    """Make the source tree importable for runtime checks run from a checkout."""
+
+    src_path = repo_root / "src"
+    if not src_path.exists():
+        return
+    src_text = str(src_path)
+    if src_text not in sys.path:
+        sys.path.insert(0, src_text)
 
 
 def configure_notebook_runtime_environment(tutorial_output: Path) -> None:

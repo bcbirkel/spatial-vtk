@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Strengthened ``tools/execute_tutorial_notebooks.py --runtime-check-only`` so
+   it makes the source checkout importable and verifies the tutorial execution
+   environment beyond Jupyter packages, including ``spatial_vtk``, scientific
+   Python, mapping, dashboard, and waveform modules before any notebook
+   outputs are cleaned or cells are executed.
    Added explicit QC dashboard Data Status messages for loaded and filtered
    trace-summary scopes, including bounded-prefix loads and filters that remove
    all currently loaded rows.

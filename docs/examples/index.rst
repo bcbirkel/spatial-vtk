@@ -37,7 +37,8 @@ runtime dependencies or output cleanup:
    python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run
 
 To verify that the current environment also has the notebook execution runtime
-installed, without cleaning outputs or starting the notebooks:
+and package dependencies installed, without cleaning outputs or starting the
+notebooks:
 
 .. code-block:: bash
 
@@ -48,6 +49,10 @@ writes ``outputs/tutorials/notebook_execution_report.json``, and fails if a
 notebook raises an error or emits warning-like cell output. It also checks the
 notebook source contract, committed five-event metadata, snapshot tables, and
 observed/synthetic NPZ waveform subset before cleaning ``outputs/tutorials``.
+The runtime check makes the source tree importable and verifies the Jupyter,
+``spatial_vtk``, scientific Python, mapping, dashboard, and waveform modules
+that tutorial cells import, so missing dependency extras are reported before
+execution starts.
 The source contract catches saved execution state, private absolute paths,
 shell/CLI workflow cells, implementation plotting imports, fixed run-layout
 paths, raw output-path/table reads, and notebook-local dataframe filtering or

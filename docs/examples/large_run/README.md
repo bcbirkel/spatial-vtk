@@ -43,8 +43,9 @@ Run `python tools/execute_tutorial_notebooks.py --preflight-only --include-large
 for the same source-contract and example-data checks without notebook runtime
 dependencies.
 Run `python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run`
-to also verify that the current environment has the notebook execution runtime
-installed, without cleaning outputs or starting the notebooks.
+to also verify that the current environment can import the Jupyter,
+`spatial_vtk`, scientific Python, mapping, dashboard, and waveform modules used
+by the notebooks, without cleaning outputs or starting execution.
 
 Environment switches:
 

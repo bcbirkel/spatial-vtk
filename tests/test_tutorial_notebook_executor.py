@@ -86,6 +86,35 @@ def test_tutorial_notebook_runtime_preflight_reports_missing_modules() -> None:
         module.check_notebook_runtime({"demo": "definitely_missing_svtk_module"})
 
 
+def test_tutorial_notebook_runtime_preflight_includes_package_runtime_modules() -> None:
+    """The runtime check should cover more than the Jupyter kernel packages."""
+
+    module = _load_executor_module()
+
+    assert module.NOTEBOOK_RUNTIME_MODULES["spatial_vtk"] == "spatial_vtk"
+    assert module.NOTEBOOK_RUNTIME_MODULES["pandas"] == "pandas"
+    assert module.NOTEBOOK_RUNTIME_MODULES["PyYAML"] == "yaml"
+    assert module.NOTEBOOK_RUNTIME_MODULES["gmprocess"] == "gmprocess"
+    assert module.NOTEBOOK_RUNTIME_MODULES["h5py"] == "h5py"
+    assert module.NOTEBOOK_RUNTIME_MODULES["obspy"] == "obspy"
+    assert module.NOTEBOOK_RUNTIME_MODULES["plotly"] == "plotly"
+    assert module.NOTEBOOK_RUNTIME_MODULES["streamlit-folium"] == "streamlit_folium"
+
+
+def test_tutorial_notebook_runtime_preflight_supports_source_checkouts(monkeypatch) -> None:
+    """Runtime checks should find spatial_vtk from src without requiring editable install state."""
+
+    module = _load_executor_module()
+    repo_root = Path(__file__).resolve().parents[1]
+    src_text = str(repo_root / "src")
+    monkeypatch.setattr(sys, "path", [item for item in sys.path if item != src_text])
+
+    module.configure_source_checkout_imports(repo_root)
+
+    assert sys.path[0] == src_text
+    assert importlib.util.find_spec("spatial_vtk") is not None
+
+
 def test_tutorial_notebook_executor_isolates_runtime_dirs_and_quiets_kernel(monkeypatch, tmp_path: Path) -> None:
     """The notebook runner should avoid user-level runtime files and noisy kernel logs."""
 
@@ -556,6 +585,7 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in combined
     assert "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run" in combined
     assert "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run" in combined
+    assert "scientific Python, mapping, dashboard, and waveform modules" in combined
     assert "SVTK_FIGURE_SIDECARS=1" in combined
     assert "SVTK_FIGURE_SIDECAR_ROWS=all" in combined
     assert "*.source.csv" in combined

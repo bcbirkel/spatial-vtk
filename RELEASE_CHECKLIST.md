@@ -31,6 +31,7 @@ Use Python 3.10, 3.11, or 3.12. The package currently declares
 MPLCONFIGDIR=/tmp/mplconfig_svtk python -m pytest -q
 python -m compileall -q src tests
 MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run
+MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run
 MPLCONFIGDIR=/tmp/mplconfig_svtk python -m sphinx -W -b html docs docs/_build/html
 ```
 
