@@ -94,6 +94,8 @@ Changelog
     traceback.
   - Made config-required workflow commands report missing config before
     importing optional runtime modules.
+  - Made IO, QC, spatial, and dashboard commands validate missing configured
+    defaults before importing optional workflow modules.
 
 - **Large-run resilience** *(Hardened)*
 

@@ -1761,8 +1761,6 @@ def _resolve_metrics_dashboard_paths(
         resolved_config_path = _effective_config_path(config_path)
         return Path(metrics_root).expanduser(), Path(summary_root).expanduser(), resolved_config_path
 
-    from spatial_vtk.visualize.dashboard.contracts import dashboard_output_paths
-
     config = _optional_cli_config(config_path, run_scenario=run_scenario)
     if config is None:
         raise ValueError(
@@ -1771,6 +1769,8 @@ def _resolve_metrics_dashboard_paths(
             "--dashboard-summary-table-dir for the dashboard_summaries table directory, "
             "pass --config, or run 'svtk config set PATH'."
         )
+    from spatial_vtk.visualize.dashboard.contracts import dashboard_output_paths
+
     paths = dashboard_output_paths(cfg=config, include_summary_tables=False)
     resolved_metrics_root = Path(metrics_root).expanduser() if metrics_root else paths["metrics_dashboard_root"]
     resolved_summary_root = Path(summary_root).expanduser() if summary_root else paths["dashboard_summary_root"]
@@ -1789,14 +1789,14 @@ def _resolve_qc_dashboard_path(
     if trace_summary:
         return Path(trace_summary).expanduser(), _effective_config_path(config_path)
 
-    from spatial_vtk.config import resolve_output_path
-
     config = _optional_cli_config(config_path, run_scenario=run_scenario)
     if config is None:
         raise ValueError(
             "No trace-summary path was provided and no Spatial-VTK config was found. "
             "Pass --qc-trace-summary, pass --config, or run 'svtk config set PATH'."
         )
+    from spatial_vtk.config import resolve_output_path
+
     resolved_config_path = str(config.config_path) if config.config_path is not None else None
     return resolve_output_path("qc_trace_summary", kind="table", cfg=config), resolved_config_path
 
@@ -1804,14 +1804,14 @@ def _resolve_qc_dashboard_path(
 def _cmd_io_prepare_stations(args: argparse.Namespace) -> int:
     """Run ``svtk io prepare-stations``."""
 
-    from spatial_vtk.io import prepare_station_metadata
-
     needs_config = args.input is None or args.output is None
     config = (
         _required_cli_config(args.config, run_scenario=args.run_scenario)
         if needs_config
         else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     )
+    from spatial_vtk.io import prepare_station_metadata
+
     input_path = (
         Path(args.input).expanduser()
         if args.input is not None
@@ -1830,14 +1830,14 @@ def _cmd_io_prepare_stations(args: argparse.Namespace) -> int:
 def _cmd_io_prepare_events(args: argparse.Namespace) -> int:
     """Run ``svtk io prepare-events``."""
 
-    from spatial_vtk.io import prepare_event_metadata
-
     needs_config = args.input is None or args.output is None
     config = (
         _required_cli_config(args.config, run_scenario=args.run_scenario)
         if needs_config
         else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     )
+    from spatial_vtk.io import prepare_event_metadata
+
     input_path = (
         Path(args.input).expanduser()
         if args.input is not None
@@ -1856,8 +1856,6 @@ def _cmd_io_prepare_events(args: argparse.Namespace) -> int:
 def _cmd_io_prepare_event_stations(args: argparse.Namespace) -> int:
     """Run ``svtk io prepare-event-stations``."""
 
-    from spatial_vtk.io import prepare_event_station_table
-
     needs_config = any(
         value is None
         for value in (args.input, args.stations, args.events, args.output)
@@ -1867,6 +1865,8 @@ def _cmd_io_prepare_event_stations(args: argparse.Namespace) -> int:
         if needs_config
         else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     )
+    from spatial_vtk.io import prepare_event_station_table
+
     input_path = (
         Path(args.input).expanduser()
         if args.input is not None
@@ -1926,14 +1926,14 @@ def _cmd_io_master_events(args: argparse.Namespace) -> int:
 def _cmd_io_inventory(args: argparse.Namespace) -> int:
     """Run ``svtk io inventory``."""
 
-    from spatial_vtk.io import DEFAULT_WAVEFORM_SUFFIXES, build_observed_synthetic_inventory
-
     needs_config = args.observed_root is None or args.synthetic_root is None or args.output is None
     config = (
         _required_cli_config(args.config, run_scenario=args.run_scenario)
         if needs_config
         else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     )
+    from spatial_vtk.io import DEFAULT_WAVEFORM_SUFFIXES, build_observed_synthetic_inventory
+
     observed_root = (
         Path(args.observed_root).expanduser()
         if args.observed_root is not None
@@ -1960,13 +1960,13 @@ def _cmd_io_inventory(args: argparse.Namespace) -> int:
 def _cmd_io_preprocess_waveforms(args: argparse.Namespace) -> int:
     """Run ``svtk io preprocess-waveforms``."""
 
-    from spatial_vtk.io import preprocess_waveform_files, waveform_preprocessing_from_config
-
     config = (
         _required_cli_config(args.config, run_scenario=args.run_scenario)
         if args.records is None
         else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     )
+    from spatial_vtk.io import preprocess_waveform_files, waveform_preprocessing_from_config
+
     settings = waveform_preprocessing_from_config(config)
     overrides = {
         "lowpass_hz": args.lowpass_hz,
@@ -2015,11 +2015,11 @@ def _cmd_io_preprocess_waveforms(args: argparse.Namespace) -> int:
 def _cmd_qc_manual_queue(args: argparse.Namespace) -> int:
     """Run ``svtk qc manual-queue``."""
 
+    needs_config = args.trace_summary is None or args.output is None
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.visualize.dashboard import filter_qc_dashboard_rows, write_manual_review_queue
     from spatial_vtk.visualize.qc import load_trace_qc_summary
 
-    needs_config = args.trace_summary is None or args.output is None
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
     trace_summary = (
         Path(args.trace_summary).expanduser()
         if args.trace_summary
@@ -2046,9 +2046,9 @@ def _cmd_qc_manual_queue(args: argparse.Namespace) -> int:
 def _cmd_qc_build(args: argparse.Namespace) -> int:
     """Run ``svtk qc build``."""
 
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.qc import run_qc_inventory_job
 
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
     event_stations = (
         Path(args.event_stations).expanduser()
         if args.event_stations is not None
@@ -2069,14 +2069,14 @@ def _cmd_qc_build(args: argparse.Namespace) -> int:
 def _cmd_qc_slurm(args: argparse.Namespace) -> int:
     """Run ``svtk qc slurm``."""
 
+    config_path = _required_config_path(args.config)
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.qc import (
         slurm_settings_from_config,
         submit_qc_slurm_job,
         write_qc_slurm_script,
     )
 
-    config_path = _required_config_path(args.config)
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
     event_stations = Path(args.event_stations).expanduser() if args.event_stations else _default_event_station_records_path(config)
     output = Path(args.output).expanduser() if args.output else _qc_slurm_script_path(config)
     settings = slurm_settings_from_config(config)
@@ -2110,10 +2110,9 @@ def _cmd_qc_slurm(args: argparse.Namespace) -> int:
 def _cmd_qc_summaries(args: argparse.Namespace) -> int:
     """Run ``svtk qc summaries``."""
 
-    from spatial_vtk.config import SpatialVTKConfig
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.qc import run_qc_summary_workflow
 
-    config = SpatialVTKConfig.from_file(_required_config_path(args.config), run_scenario=args.run_scenario)
     result = run_qc_summary_workflow(
         cfg=config,
         chunksize=args.chunksize,
@@ -2428,9 +2427,9 @@ def _cmd_metrics_slurm(args: argparse.Namespace) -> int:
 def _cmd_spatial_summaries(args: argparse.Namespace) -> int:
     """Run ``svtk spatial summaries``."""
 
+    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.spatial import run_spatial_statistics_workflow
 
-    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     result = run_spatial_statistics_workflow(
         args.metrics,
         cfg=cfg,
@@ -2455,9 +2454,9 @@ def _cmd_spatial_summaries(args: argparse.Namespace) -> int:
 def _cmd_spatial_derived_outputs(args: argparse.Namespace) -> int:
     """Run ``svtk spatial derived-outputs``."""
 
+    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.spatial import run_spatial_derived_outputs_workflow
 
-    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     result = run_spatial_derived_outputs_workflow(
         args.metrics,
         metric_field=args.metric_field,
@@ -2489,9 +2488,9 @@ def _cmd_spatial_derived_outputs(args: argparse.Namespace) -> int:
 def _cmd_spatial_geojson_summaries(args: argparse.Namespace) -> int:
     """Run ``svtk spatial geojson-summaries``."""
 
+    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.spatial import run_geojson_region_summary_workflow
 
-    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     result = run_geojson_region_summary_workflow(
         args.metrics,
         geojson_path=args.geojson,
@@ -2511,9 +2510,9 @@ def _cmd_spatial_geojson_summaries(args: argparse.Namespace) -> int:
 def _cmd_spatial_corridors(args: argparse.Namespace) -> int:
     """Run ``svtk spatial corridors``."""
 
+    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.spatial import run_boundary_corridor_workflow
 
-    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     result = run_boundary_corridor_workflow(
         geojson_path=args.geojson,
         station_table=args.stations,
@@ -2532,9 +2531,9 @@ def _cmd_spatial_corridors(args: argparse.Namespace) -> int:
 def _cmd_spatial_status(args: argparse.Namespace) -> int:
     """Run ``svtk spatial status``."""
 
+    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.io import output_group_paths, output_readiness
 
-    cfg = _required_cli_config(args.config, run_scenario=args.run_scenario)
     outputs = output_group_paths(
         "step_04_spatial",
         cfg=cfg,
@@ -2576,14 +2575,14 @@ def _cmd_spatial_status(args: argparse.Namespace) -> int:
 def _cmd_dashboard_metrics(args: argparse.Namespace) -> int:
     """Run ``svtk dashboard metrics``."""
 
-    from spatial_vtk.visualize.dashboard import launch_metrics_dashboard
-
     metrics_root, summary_root, config_path = _resolve_metrics_dashboard_paths(
         metrics_root=args.metrics_root,
         summary_root=args.summary_root,
         config_path=args.config,
         run_scenario=args.run_scenario,
     )
+    from spatial_vtk.visualize.dashboard import launch_metrics_dashboard
+
     process = launch_metrics_dashboard(
         metrics_root=metrics_root,
         summary_root=summary_root,
@@ -2617,9 +2616,9 @@ def _cmd_dashboard_metrics(args: argparse.Namespace) -> int:
 def _cmd_dashboard_status(args: argparse.Namespace) -> int:
     """Run ``svtk dashboard status``."""
 
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
     from spatial_vtk.visualize.dashboard import dashboard_output_readiness, dashboard_output_status_frame
 
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario)
     readiness = dashboard_output_readiness(
         cfg=config,
         create_parent=False,
@@ -2656,13 +2655,13 @@ def _cmd_dashboard_status(args: argparse.Namespace) -> int:
 def _cmd_dashboard_qc(args: argparse.Namespace) -> int:
     """Run ``svtk dashboard qc``."""
 
-    from spatial_vtk.visualize.dashboard import launch_qc_dashboard
-
     trace_summary, config_path = _resolve_qc_dashboard_path(
         trace_summary=args.trace_summary,
         config_path=args.config,
         run_scenario=args.run_scenario,
     )
+    from spatial_vtk.visualize.dashboard import launch_qc_dashboard
+
     process = launch_qc_dashboard(
         trace_summary=trace_summary,
         config_path=config_path,

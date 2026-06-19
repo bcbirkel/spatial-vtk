@@ -55,6 +55,46 @@ def test_cli_missing_config_reports_config_before_optional_dependencies(tmp_path
     assert "Traceback" not in captured.err
 
 
+@pytest.mark.parametrize(
+    "command",
+    [
+        ["io", "prepare-stations"],
+        ["io", "prepare-events"],
+        ["io", "prepare-event-stations"],
+        ["io", "inventory"],
+        ["io", "preprocess-waveforms"],
+        ["qc", "build"],
+        ["qc", "manual-queue"],
+        ["qc", "slurm"],
+        ["qc", "summaries"],
+        ["spatial", "status"],
+        ["spatial", "summaries"],
+        ["spatial", "derived-outputs"],
+        ["spatial", "geojson-summaries"],
+        ["spatial", "corridors"],
+        ["dashboard", "status"],
+        ["dashboard", "metrics"],
+        ["dashboard", "qc"],
+    ],
+)
+def test_config_backed_cli_commands_validate_config_before_optional_imports(
+    command, tmp_path, monkeypatch, capsys
+):
+    """Config-backed workflow commands should fail on missing config before heavy imports."""
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("SVTK_CONFIG_FILE", raising=False)
+    monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(tmp_path / "missing-settings.json"))
+
+    assert main(command) == 2
+
+    captured = capsys.readouterr()
+    assert "Spatial-VTK config was found" in captured.err
+    assert "Missing Python dependency" not in captured.err
+    assert "No module named" not in captured.err
+    assert "Traceback" not in captured.err
+
+
 def test_cli_version(capsys):
     assert main(["--version"]) == 0
     captured = capsys.readouterr()
