@@ -48,19 +48,19 @@ Command Details
    * - ``--args``
      - No
      - Nargs: ``*``
-     - Value: ``args``. Positional arguments parsed as YAML scalars/sequences.
+     - Positional arguments parsed as YAML scalars/sequences.
    * - ``--args-json``
      - No
      -
-     - Value: ``args_json``. JSON/YAML list of positional arguments.
+     - JSON/YAML list of positional arguments.
    * - ``--kwargs``
      - No
      - Nargs: ``*``
-     - Value: ``kwargs``. Keyword arguments as key=value, parsed as YAML values.
+     - Keyword arguments as key=value, parsed as YAML values.
    * - ``--kwargs-json``
      - No
      -
-     - Value: ``kwargs_json``. JSON/YAML mapping of keyword arguments.
+     - JSON/YAML mapping of keyword arguments.
    * - ``--output``
      - No
      -

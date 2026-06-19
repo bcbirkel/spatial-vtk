@@ -71,7 +71,7 @@ svtk config bounds
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay before listing bounds.
+     - Apply one named run_scenarios overlay before listing bounds.
    * - ``--json``
      - No
      - Flag
@@ -145,11 +145,11 @@ svtk config outputs
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay before resolving paths.
+     - Apply one named run_scenarios overlay before resolving paths.
    * - ``--kind``
      - No
      - Default: ``all``; Choices: ``all``, ``table``, ``figure``, ``dashboard``
-     - Value: ``kind``. Limit output registry rows by artifact kind.
+     - Limit output registry rows by artifact kind.
    * - ``--no-paths``
      - No
      - Flag
@@ -222,11 +222,11 @@ svtk config show
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay before printing.
+     - Apply one named run_scenarios overlay before printing.
    * - ``--section``
      - No
      -
-     - Value: ``section``. Optional dotted section key.
+     - Optional dotted section key.
    * - ``--json``
      - No
      - Flag

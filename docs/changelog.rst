@@ -60,6 +60,9 @@ Changelog
   workflow commands so path-like options render as ``PATH`` or ``DIR`` with
   filesystem/directory descriptions instead of ambiguous argparse names such as
   ``INPUT``, ``OUTPUT``, ``TASKS``, or ``MANIFEST``.
+- Simplified generated CLI reference parameter descriptions so non-path options
+  use their parser help directly instead of repeating generic ``Value: ...``
+  prefixes.
 - Hardened release-check regression coverage so the public release checklist
   remains the authoritative source for the notebook extra and standard plus
   large-run tutorial preflight/runtime gates, while local agent guidance is

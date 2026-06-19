@@ -89,15 +89,15 @@ svtk io inventory
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--suffix``
      - No
      - Repeatable
-     - Value: ``suffix``. Waveform suffix to include. May be repeated.
+     - Waveform suffix to include. May be repeated.
    * - ``--relative-to``
      - No
      -
-     - Value: ``relative_to``. Base path used for relative inventory paths.
+     - Base path used for relative inventory paths.
    * - ``--no-sha256``
      - No
      - Flag
@@ -222,7 +222,7 @@ svtk io prepare-event-stations
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
 
 .. _cli-svtk-io-prepare-events:
 
@@ -265,7 +265,7 @@ svtk io prepare-events
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
 
 .. _cli-svtk-io-prepare-stations:
 
@@ -308,7 +308,7 @@ svtk io prepare-stations
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
 
 .. _cli-svtk-io-preprocess-waveforms:
 
@@ -363,43 +363,43 @@ svtk io preprocess-waveforms
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--observed-column``
      - No
      -
-     - Value: ``observed_column``. Observed waveform path column. Auto-detected when omitted.
+     - Observed waveform path column. Auto-detected when omitted.
    * - ``--synthetic-column``
      - No
      -
-     - Value: ``synthetic_column``. Synthetic waveform path column. Auto-detected when omitted.
+     - Synthetic waveform path column. Auto-detected when omitted.
    * - ``--event-id-col``
      - No
      - Default: ``event_id``
-     - Value: ``event_id_col``. Event ID column in --records.
+     - Event ID column in --records.
    * - ``--lowpass-hz``
      - No
      -
-     - Value: ``lowpass_hz``. Optional lowpass cutoff in Hz.
+     - Optional lowpass cutoff in Hz.
    * - ``--highpass-hz``
      - No
      -
-     - Value: ``highpass_hz``. Optional highpass cutoff in Hz.
+     - Optional highpass cutoff in Hz.
    * - ``--bandpass-low-hz``
      - No
      -
-     - Value: ``bandpass_low_hz``. Optional bandpass low corner in Hz.
+     - Optional bandpass low corner in Hz.
    * - ``--bandpass-high-hz``
      - No
      -
-     - Value: ``bandpass_high_hz``. Optional bandpass high corner in Hz.
+     - Optional bandpass high corner in Hz.
    * - ``--resample-hz``
      - No
      -
-     - Value: ``resample_hz``. Optional target sampling rate in Hz.
+     - Optional target sampling rate in Hz.
    * - ``--filter-order``
      - No
      -
-     - Value: ``filter_order``. Butterworth filter order.
+     - Butterworth filter order.
    * - ``--overwrite``
      - No
      - Flag

@@ -78,15 +78,15 @@ Build configured boundary corridor tables from region GeoJSON and prepared metad
    * - ``--stations``, ``--station-table``
      - No
      -
-     - Value: ``stations``. Prepared station metadata table. Defaults to configured output table 'prepared_stations'.
+     - Prepared station metadata table. Defaults to configured output table 'prepared_stations'.
    * - ``--events``, ``--event-table``
      - No
      -
-     - Value: ``events``. Prepared event metadata table. Defaults to configured output table 'prepared_events'.
+     - Prepared event metadata table. Defaults to configured output table 'prepared_events'.
    * - ``--records``, ``--records-table``
      - No
      -
-     - Value: ``records``. Event-station records used by max-records anchor strategies. Defaults to comparison_eligible_records when needed.
+     - Event-station records used by max-records anchor strategies. Defaults to comparison_eligible_records when needed.
    * - ``--config``
      - No
      -
@@ -94,11 +94,11 @@ Build configured boundary corridor tables from region GeoJSON and prepared metad
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--output-key``, ``--output-table-key``
      - No
      - Default: ``corridors``
-     - Value: ``output_key``. Registered output table key, not a filesystem path.
+     - Registered output table key, not a filesystem path.
    * - ``--verbose``
      - No
      - Flag
@@ -144,15 +144,15 @@ Build optional Step 4 spatial tables used by overview plots: block_holdout_predi
    * - ``--metrics``, ``--metrics-table``
      - No
      -
-     - Value: ``metrics``. Long metric rows table. Defaults to configured output table 'metrics_long'.
+     - Long metric rows table. Defaults to configured output table 'metrics_long'.
    * - ``--metric-field``, ``--metric-field-table``
      - No
      -
-     - Value: ``metric_field``. Metric-field table. Defaults to configured output table 'metric_field'.
+     - Metric-field table. Defaults to configured output table 'metric_field'.
    * - ``--station-bias``, ``--station-bias-table``
      - No
      -
-     - Value: ``station_bias``. Station-bias table. Defaults to configured output table 'station_bias'.
+     - Station-bias table. Defaults to configured output table 'station_bias'.
    * - ``--config``
      - No
      -
@@ -160,27 +160,27 @@ Build optional Step 4 spatial tables used by overview plots: block_holdout_predi
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric filter. Defaults to spatial.pattern_metric/spatial.metric; use 'all' for all available metrics.
+     - Metric filter. Defaults to spatial.pattern_metric/spatial.metric; use 'all' for all available metrics.
    * - ``--pattern-passband``
      - No
      -
-     - Value: ``pattern_passband``. Pattern-similarity passband filter. Defaults to spatial.pattern_passband; use 'all' for all passbands.
+     - Pattern-similarity passband filter. Defaults to spatial.pattern_passband; use 'all' for all passbands.
    * - ``--pattern-component``
      - No
      -
-     - Value: ``pattern_component``. Pattern-similarity component filter. Defaults to spatial.pattern_component; use 'all' for all components.
+     - Pattern-similarity component filter. Defaults to spatial.pattern_component; use 'all' for all components.
    * - ``--pattern-model``
      - No
      -
-     - Value: ``pattern_model``. Pattern-similarity model filter. Defaults to spatial.pattern_model; use 'all' for all models.
+     - Pattern-similarity model filter. Defaults to spatial.pattern_model; use 'all' for all models.
    * - ``--outputs``
      - No
      - Default: ``all``
-     - Value: ``outputs``. Comma-separated derived output keys to build. Defaults to all optional spatial derived outputs.
+     - Comma-separated derived output keys to build. Defaults to all optional spatial derived outputs.
    * - ``--overwrite``
      - No
      - Flag
@@ -225,7 +225,7 @@ Build configured GeoJSON region summary tables from metric outputs.
    * - ``--metrics``, ``--metrics-table``
      - No
      -
-     - Value: ``metrics``. Metric rows table. Defaults to configured output table 'metrics_long'.
+     - Metric rows table. Defaults to configured output table 'metrics_long'.
    * - ``--geojson``, ``--region-geojson``
      - No
      -
@@ -237,19 +237,19 @@ Build configured GeoJSON region summary tables from metric outputs.
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--selector``
      - No
      - Default: ``all``
-     - Value: ``selector``. GeoJSON polygon selector. Defaults to all polygons.
+     - GeoJSON polygon selector. Defaults to all polygons.
    * - ``--chunksize``
      - No
      - Default: ``1000000``
-     - Value: ``chunksize``. Rows per metric-table chunk.
+     - Rows per metric-table chunk.
    * - ``--output-key``, ``--output-table-key``
      - No
      - Default: ``geojson_region_summaries``
-     - Value: ``output_key``. Registered output table key, not a filesystem path.
+     - Registered output table key, not a filesystem path.
    * - ``--verbose``
      - No
      - Flag
@@ -290,7 +290,7 @@ Inspect configured spatial-statistics inputs and outputs without running calcula
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--include-optional``
      - No
      - Flag
@@ -334,7 +334,7 @@ Build standard spatial-statistics summary tables.
    * - ``--metrics``, ``--metrics-table``
      - No
      -
-     - Value: ``metrics``. Metric rows table. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Metric rows table. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -342,15 +342,15 @@ Build standard spatial-statistics summary tables.
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric override. Use 'all' to process each metric in the input table.
+     - Metric override. Use 'all' to process each metric in the input table.
    * - ``--station-metadata``, ``--station-metadata-table``
      - No
      -
-     - Value: ``station_metadata``. Prepared station metadata table for geology contrasts. Defaults to configured output table 'prepared_stations'.
+     - Prepared station metadata table for geology contrasts. Defaults to configured output table 'prepared_stations'.
    * - ``--checkpoint-dir``
      - No
      -

@@ -162,11 +162,11 @@ svtk map spatial block-holdout-error
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -174,115 +174,115 @@ svtk map spatial block-holdout-error
    * - ``--kwargs``
      - No
      - Nargs: ``*``
-     - Value: ``kwargs``. Extra function keyword arguments as key=value.
+     - Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
      -
-     - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+     - Extra function keyword arguments as a JSON/YAML mapping.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+     - Metric name passed to plotting functions that support metric filtering.
    * - ``--passband``
      - No
      - Repeatable
-     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+     - Passband filter/value. Repeat for multiple passbands.
    * - ``--bin-label``
      - No
      -
-     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
+     - Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
-     - Value: ``component``. Component filter/value. Repeat for multiple components.
+     - Component filter/value. Repeat for multiple components.
    * - ``--components``
      - No
      - Repeatable
-     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
+     - Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
-     - Value: ``model``. Model filter/value. Repeat for multiple models.
+     - Model filter/value. Repeat for multiple models.
    * - ``--value-col``
      - No
      -
-     - Value: ``value_col``. Column containing the plotted value.
+     - Column containing the plotted value.
    * - ``--score-col``
      - No
      -
-     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+     - Column containing scores or residual values for score-style plots.
    * - ``--x-col``
      - No
      -
-     - Value: ``x_col``. Column used on the x axis.
+     - Column used on the x axis.
    * - ``--y-col``
      - No
      -
-     - Value: ``y_col``. Column used on the y axis.
+     - Column used on the y axis.
    * - ``--group-col``
      - No
      -
-     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+     - Column used for grouping, coloring, or trend groups.
    * - ``--color-col``
      - No
      -
-     - Value: ``color_col``. Column used to color plot groups.
+     - Column used to color plot groups.
    * - ``--fit``
      - No
      -
-     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+     - Optional fit/trend method, such as 'linear' or 'lowess'.
    * - ``--connect-points``, ``--no-connect-points``
      - No
      -
-     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+     - Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
    * - ``--mode``
      - No
      -
-     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+     - Mode selector for figures that support named modes, such as PCA maps.
    * - ``--dep``
      - No
      - Repeatable
-     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+     - Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
    * - ``--indep``
      - No
      -
-     - Value: ``indep``. Independent column for flexible spatial plots.
+     - Independent column for flexible spatial plots.
    * - ``--colorby``
      - No
      -
-     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+     - Column or alias used for flexible spatial plot color grouping.
    * - ``--compare-to``
      - No
      - Repeatable
-     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+     - Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--station-region``
      - No
      - Repeatable
-     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+     - Station region filter. Repeat for multiple regions.
    * - ``--event-region``
      - No
      - Repeatable
-     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
+     - Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
-     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+     - Waveform plotting scale for record-section style figures.
    * - ``--time-limit-s``
      - No
      -
-     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+     - Upper time limit in seconds for waveform figures that support time_limit_s.
    * - ``--max-records``
      - No
      -
-     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+     - Maximum number of records for record-section style waveform figures.
    * - ``--max-traces``
      - No
      -
-     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
+     - Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
-     - Value: ``title``. Figure title.
+     - Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -290,7 +290,7 @@ svtk map spatial block-holdout-error
    * - ``--sidecar-rows``
      - No
      -
-     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+     - Maximum rows to write to each sidecar. Omit to write all rows.
    * - ``--sidecar-dir``
      - No
      -
@@ -298,7 +298,7 @@ svtk map spatial block-holdout-error
    * - ``--bounds``
      - No
      -
-     - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
+     - Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
      - Flag
@@ -306,7 +306,7 @@ svtk map spatial block-holdout-error
    * - ``--basemap-source``
      - No
      -
-     - Value: ``basemap_source``. Optional contextily basemap source.
+     - Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-cluster:
 
@@ -372,11 +372,11 @@ svtk map spatial cluster
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -384,115 +384,115 @@ svtk map spatial cluster
    * - ``--kwargs``
      - No
      - Nargs: ``*``
-     - Value: ``kwargs``. Extra function keyword arguments as key=value.
+     - Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
      -
-     - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+     - Extra function keyword arguments as a JSON/YAML mapping.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+     - Metric name passed to plotting functions that support metric filtering.
    * - ``--passband``
      - No
      - Repeatable
-     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+     - Passband filter/value. Repeat for multiple passbands.
    * - ``--bin-label``
      - No
      -
-     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
+     - Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
-     - Value: ``component``. Component filter/value. Repeat for multiple components.
+     - Component filter/value. Repeat for multiple components.
    * - ``--components``
      - No
      - Repeatable
-     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
+     - Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
-     - Value: ``model``. Model filter/value. Repeat for multiple models.
+     - Model filter/value. Repeat for multiple models.
    * - ``--value-col``
      - No
      -
-     - Value: ``value_col``. Column containing the plotted value.
+     - Column containing the plotted value.
    * - ``--score-col``
      - No
      -
-     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+     - Column containing scores or residual values for score-style plots.
    * - ``--x-col``
      - No
      -
-     - Value: ``x_col``. Column used on the x axis.
+     - Column used on the x axis.
    * - ``--y-col``
      - No
      -
-     - Value: ``y_col``. Column used on the y axis.
+     - Column used on the y axis.
    * - ``--group-col``
      - No
      -
-     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+     - Column used for grouping, coloring, or trend groups.
    * - ``--color-col``
      - No
      -
-     - Value: ``color_col``. Column used to color plot groups.
+     - Column used to color plot groups.
    * - ``--fit``
      - No
      -
-     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+     - Optional fit/trend method, such as 'linear' or 'lowess'.
    * - ``--connect-points``, ``--no-connect-points``
      - No
      -
-     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+     - Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
    * - ``--mode``
      - No
      -
-     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+     - Mode selector for figures that support named modes, such as PCA maps.
    * - ``--dep``
      - No
      - Repeatable
-     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+     - Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
    * - ``--indep``
      - No
      -
-     - Value: ``indep``. Independent column for flexible spatial plots.
+     - Independent column for flexible spatial plots.
    * - ``--colorby``
      - No
      -
-     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+     - Column or alias used for flexible spatial plot color grouping.
    * - ``--compare-to``
      - No
      - Repeatable
-     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+     - Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--station-region``
      - No
      - Repeatable
-     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+     - Station region filter. Repeat for multiple regions.
    * - ``--event-region``
      - No
      - Repeatable
-     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
+     - Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
-     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+     - Waveform plotting scale for record-section style figures.
    * - ``--time-limit-s``
      - No
      -
-     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+     - Upper time limit in seconds for waveform figures that support time_limit_s.
    * - ``--max-records``
      - No
      -
-     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+     - Maximum number of records for record-section style waveform figures.
    * - ``--max-traces``
      - No
      -
-     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
+     - Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
-     - Value: ``title``. Figure title.
+     - Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -500,7 +500,7 @@ svtk map spatial cluster
    * - ``--sidecar-rows``
      - No
      -
-     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+     - Maximum rows to write to each sidecar. Omit to write all rows.
    * - ``--sidecar-dir``
      - No
      -
@@ -508,7 +508,7 @@ svtk map spatial cluster
    * - ``--bounds``
      - No
      -
-     - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
+     - Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
      - Flag
@@ -516,7 +516,7 @@ svtk map spatial cluster
    * - ``--basemap-source``
      - No
      -
-     - Value: ``basemap_source``. Optional contextily basemap source.
+     - Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-corridor:
 
@@ -583,11 +583,11 @@ svtk map spatial corridor
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -595,115 +595,115 @@ svtk map spatial corridor
    * - ``--kwargs``
      - No
      - Nargs: ``*``
-     - Value: ``kwargs``. Extra function keyword arguments as key=value.
+     - Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
      -
-     - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+     - Extra function keyword arguments as a JSON/YAML mapping.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+     - Metric name passed to plotting functions that support metric filtering.
    * - ``--passband``
      - No
      - Repeatable
-     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+     - Passband filter/value. Repeat for multiple passbands.
    * - ``--bin-label``
      - No
      -
-     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
+     - Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
-     - Value: ``component``. Component filter/value. Repeat for multiple components.
+     - Component filter/value. Repeat for multiple components.
    * - ``--components``
      - No
      - Repeatable
-     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
+     - Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
-     - Value: ``model``. Model filter/value. Repeat for multiple models.
+     - Model filter/value. Repeat for multiple models.
    * - ``--value-col``
      - No
      -
-     - Value: ``value_col``. Column containing the plotted value.
+     - Column containing the plotted value.
    * - ``--score-col``
      - No
      -
-     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+     - Column containing scores or residual values for score-style plots.
    * - ``--x-col``
      - No
      -
-     - Value: ``x_col``. Column used on the x axis.
+     - Column used on the x axis.
    * - ``--y-col``
      - No
      -
-     - Value: ``y_col``. Column used on the y axis.
+     - Column used on the y axis.
    * - ``--group-col``
      - No
      -
-     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+     - Column used for grouping, coloring, or trend groups.
    * - ``--color-col``
      - No
      -
-     - Value: ``color_col``. Column used to color plot groups.
+     - Column used to color plot groups.
    * - ``--fit``
      - No
      -
-     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+     - Optional fit/trend method, such as 'linear' or 'lowess'.
    * - ``--connect-points``, ``--no-connect-points``
      - No
      -
-     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+     - Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
    * - ``--mode``
      - No
      -
-     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+     - Mode selector for figures that support named modes, such as PCA maps.
    * - ``--dep``
      - No
      - Repeatable
-     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+     - Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
    * - ``--indep``
      - No
      -
-     - Value: ``indep``. Independent column for flexible spatial plots.
+     - Independent column for flexible spatial plots.
    * - ``--colorby``
      - No
      -
-     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+     - Column or alias used for flexible spatial plot color grouping.
    * - ``--compare-to``
      - No
      - Repeatable
-     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+     - Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--station-region``
      - No
      - Repeatable
-     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+     - Station region filter. Repeat for multiple regions.
    * - ``--event-region``
      - No
      - Repeatable
-     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
+     - Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
-     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+     - Waveform plotting scale for record-section style figures.
    * - ``--time-limit-s``
      - No
      -
-     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+     - Upper time limit in seconds for waveform figures that support time_limit_s.
    * - ``--max-records``
      - No
      -
-     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+     - Maximum number of records for record-section style waveform figures.
    * - ``--max-traces``
      - No
      -
-     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
+     - Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
-     - Value: ``title``. Figure title.
+     - Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -711,7 +711,7 @@ svtk map spatial corridor
    * - ``--sidecar-rows``
      - No
      -
-     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+     - Maximum rows to write to each sidecar. Omit to write all rows.
    * - ``--sidecar-dir``
      - No
      -
@@ -731,7 +731,7 @@ svtk map spatial corridor
    * - ``--bounds``
      - No
      -
-     - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
+     - Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
      - Flag
@@ -739,7 +739,7 @@ svtk map spatial corridor
    * - ``--basemap-source``
      - No
      -
-     - Value: ``basemap_source``. Optional contextily basemap source.
+     - Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-event-residual:
 
@@ -809,11 +809,11 @@ svtk map spatial event-residual
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -821,115 +821,115 @@ svtk map spatial event-residual
    * - ``--kwargs``
      - No
      - Nargs: ``*``
-     - Value: ``kwargs``. Extra function keyword arguments as key=value.
+     - Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
      -
-     - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+     - Extra function keyword arguments as a JSON/YAML mapping.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+     - Metric name passed to plotting functions that support metric filtering.
    * - ``--passband``
      - No
      - Repeatable
-     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+     - Passband filter/value. Repeat for multiple passbands.
    * - ``--bin-label``
      - No
      -
-     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
+     - Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
-     - Value: ``component``. Component filter/value. Repeat for multiple components.
+     - Component filter/value. Repeat for multiple components.
    * - ``--components``
      - No
      - Repeatable
-     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
+     - Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
-     - Value: ``model``. Model filter/value. Repeat for multiple models.
+     - Model filter/value. Repeat for multiple models.
    * - ``--value-col``
      - No
      -
-     - Value: ``value_col``. Column containing the plotted value.
+     - Column containing the plotted value.
    * - ``--score-col``
      - No
      -
-     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+     - Column containing scores or residual values for score-style plots.
    * - ``--x-col``
      - No
      -
-     - Value: ``x_col``. Column used on the x axis.
+     - Column used on the x axis.
    * - ``--y-col``
      - No
      -
-     - Value: ``y_col``. Column used on the y axis.
+     - Column used on the y axis.
    * - ``--group-col``
      - No
      -
-     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+     - Column used for grouping, coloring, or trend groups.
    * - ``--color-col``
      - No
      -
-     - Value: ``color_col``. Column used to color plot groups.
+     - Column used to color plot groups.
    * - ``--fit``
      - No
      -
-     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+     - Optional fit/trend method, such as 'linear' or 'lowess'.
    * - ``--connect-points``, ``--no-connect-points``
      - No
      -
-     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+     - Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
    * - ``--mode``
      - No
      -
-     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+     - Mode selector for figures that support named modes, such as PCA maps.
    * - ``--dep``
      - No
      - Repeatable
-     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+     - Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
    * - ``--indep``
      - No
      -
-     - Value: ``indep``. Independent column for flexible spatial plots.
+     - Independent column for flexible spatial plots.
    * - ``--colorby``
      - No
      -
-     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+     - Column or alias used for flexible spatial plot color grouping.
    * - ``--compare-to``
      - No
      - Repeatable
-     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+     - Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--station-region``
      - No
      - Repeatable
-     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+     - Station region filter. Repeat for multiple regions.
    * - ``--event-region``
      - No
      - Repeatable
-     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
+     - Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
-     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+     - Waveform plotting scale for record-section style figures.
    * - ``--time-limit-s``
      - No
      -
-     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+     - Upper time limit in seconds for waveform figures that support time_limit_s.
    * - ``--max-records``
      - No
      -
-     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+     - Maximum number of records for record-section style waveform figures.
    * - ``--max-traces``
      - No
      -
-     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
+     - Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
-     - Value: ``title``. Figure title.
+     - Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -937,7 +937,7 @@ svtk map spatial event-residual
    * - ``--sidecar-rows``
      - No
      -
-     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+     - Maximum rows to write to each sidecar. Omit to write all rows.
    * - ``--sidecar-dir``
      - No
      -
@@ -945,7 +945,7 @@ svtk map spatial event-residual
    * - ``--bounds``
      - No
      -
-     - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
+     - Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
      - Flag
@@ -953,7 +953,7 @@ svtk map spatial event-residual
    * - ``--basemap-source``
      - No
      -
-     - Value: ``basemap_source``. Optional contextily basemap source.
+     - Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-list:
 
@@ -1052,11 +1052,11 @@ svtk map spatial metric-by-model
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1064,115 +1064,115 @@ svtk map spatial metric-by-model
    * - ``--kwargs``
      - No
      - Nargs: ``*``
-     - Value: ``kwargs``. Extra function keyword arguments as key=value.
+     - Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
      -
-     - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+     - Extra function keyword arguments as a JSON/YAML mapping.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+     - Metric name passed to plotting functions that support metric filtering.
    * - ``--passband``
      - No
      - Repeatable
-     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+     - Passband filter/value. Repeat for multiple passbands.
    * - ``--bin-label``
      - No
      -
-     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
+     - Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
-     - Value: ``component``. Component filter/value. Repeat for multiple components.
+     - Component filter/value. Repeat for multiple components.
    * - ``--components``
      - No
      - Repeatable
-     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
+     - Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
-     - Value: ``model``. Model filter/value. Repeat for multiple models.
+     - Model filter/value. Repeat for multiple models.
    * - ``--value-col``
      - No
      -
-     - Value: ``value_col``. Column containing the plotted value.
+     - Column containing the plotted value.
    * - ``--score-col``
      - No
      -
-     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+     - Column containing scores or residual values for score-style plots.
    * - ``--x-col``
      - No
      -
-     - Value: ``x_col``. Column used on the x axis.
+     - Column used on the x axis.
    * - ``--y-col``
      - No
      -
-     - Value: ``y_col``. Column used on the y axis.
+     - Column used on the y axis.
    * - ``--group-col``
      - No
      -
-     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+     - Column used for grouping, coloring, or trend groups.
    * - ``--color-col``
      - No
      -
-     - Value: ``color_col``. Column used to color plot groups.
+     - Column used to color plot groups.
    * - ``--fit``
      - No
      -
-     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+     - Optional fit/trend method, such as 'linear' or 'lowess'.
    * - ``--connect-points``, ``--no-connect-points``
      - No
      -
-     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+     - Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
    * - ``--mode``
      - No
      -
-     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+     - Mode selector for figures that support named modes, such as PCA maps.
    * - ``--dep``
      - No
      - Repeatable
-     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+     - Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
    * - ``--indep``
      - No
      -
-     - Value: ``indep``. Independent column for flexible spatial plots.
+     - Independent column for flexible spatial plots.
    * - ``--colorby``
      - No
      -
-     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+     - Column or alias used for flexible spatial plot color grouping.
    * - ``--compare-to``
      - No
      - Repeatable
-     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+     - Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--station-region``
      - No
      - Repeatable
-     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+     - Station region filter. Repeat for multiple regions.
    * - ``--event-region``
      - No
      - Repeatable
-     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
+     - Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
-     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+     - Waveform plotting scale for record-section style figures.
    * - ``--time-limit-s``
      - No
      -
-     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+     - Upper time limit in seconds for waveform figures that support time_limit_s.
    * - ``--max-records``
      - No
      -
-     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+     - Maximum number of records for record-section style waveform figures.
    * - ``--max-traces``
      - No
      -
-     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
+     - Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
-     - Value: ``title``. Figure title.
+     - Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -1180,7 +1180,7 @@ svtk map spatial metric-by-model
    * - ``--sidecar-rows``
      - No
      -
-     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+     - Maximum rows to write to each sidecar. Omit to write all rows.
    * - ``--sidecar-dir``
      - No
      -
@@ -1188,7 +1188,7 @@ svtk map spatial metric-by-model
    * - ``--bounds``
      - No
      -
-     - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
+     - Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
      - Flag
@@ -1196,7 +1196,7 @@ svtk map spatial metric-by-model
    * - ``--basemap-source``
      - No
      -
-     - Value: ``basemap_source``. Optional contextily basemap source.
+     - Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-model-improvement:
 
@@ -1269,11 +1269,11 @@ svtk map spatial model-improvement
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1281,115 +1281,115 @@ svtk map spatial model-improvement
    * - ``--kwargs``
      - No
      - Nargs: ``*``
-     - Value: ``kwargs``. Extra function keyword arguments as key=value.
+     - Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
      -
-     - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+     - Extra function keyword arguments as a JSON/YAML mapping.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+     - Metric name passed to plotting functions that support metric filtering.
    * - ``--passband``
      - No
      - Repeatable
-     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+     - Passband filter/value. Repeat for multiple passbands.
    * - ``--bin-label``
      - No
      -
-     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
+     - Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
-     - Value: ``component``. Component filter/value. Repeat for multiple components.
+     - Component filter/value. Repeat for multiple components.
    * - ``--components``
      - No
      - Repeatable
-     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
+     - Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
-     - Value: ``model``. Model filter/value. Repeat for multiple models.
+     - Model filter/value. Repeat for multiple models.
    * - ``--value-col``
      - No
      -
-     - Value: ``value_col``. Column containing the plotted value.
+     - Column containing the plotted value.
    * - ``--score-col``
      - No
      -
-     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+     - Column containing scores or residual values for score-style plots.
    * - ``--x-col``
      - No
      -
-     - Value: ``x_col``. Column used on the x axis.
+     - Column used on the x axis.
    * - ``--y-col``
      - No
      -
-     - Value: ``y_col``. Column used on the y axis.
+     - Column used on the y axis.
    * - ``--group-col``
      - No
      -
-     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+     - Column used for grouping, coloring, or trend groups.
    * - ``--color-col``
      - No
      -
-     - Value: ``color_col``. Column used to color plot groups.
+     - Column used to color plot groups.
    * - ``--fit``
      - No
      -
-     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+     - Optional fit/trend method, such as 'linear' or 'lowess'.
    * - ``--connect-points``, ``--no-connect-points``
      - No
      -
-     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+     - Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
    * - ``--mode``
      - No
      -
-     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+     - Mode selector for figures that support named modes, such as PCA maps.
    * - ``--dep``
      - No
      - Repeatable
-     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+     - Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
    * - ``--indep``
      - No
      -
-     - Value: ``indep``. Independent column for flexible spatial plots.
+     - Independent column for flexible spatial plots.
    * - ``--colorby``
      - No
      -
-     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+     - Column or alias used for flexible spatial plot color grouping.
    * - ``--compare-to``
      - No
      - Repeatable
-     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+     - Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--station-region``
      - No
      - Repeatable
-     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+     - Station region filter. Repeat for multiple regions.
    * - ``--event-region``
      - No
      - Repeatable
-     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
+     - Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
-     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+     - Waveform plotting scale for record-section style figures.
    * - ``--time-limit-s``
      - No
      -
-     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+     - Upper time limit in seconds for waveform figures that support time_limit_s.
    * - ``--max-records``
      - No
      -
-     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+     - Maximum number of records for record-section style waveform figures.
    * - ``--max-traces``
      - No
      -
-     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
+     - Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
-     - Value: ``title``. Figure title.
+     - Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -1397,7 +1397,7 @@ svtk map spatial model-improvement
    * - ``--sidecar-rows``
      - No
      -
-     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+     - Maximum rows to write to each sidecar. Omit to write all rows.
    * - ``--sidecar-dir``
      - No
      -
@@ -1405,7 +1405,7 @@ svtk map spatial model-improvement
    * - ``--bounds``
      - No
      -
-     - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
+     - Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
      - Flag
@@ -1413,7 +1413,7 @@ svtk map spatial model-improvement
    * - ``--basemap-source``
      - No
      -
-     - Value: ``basemap_source``. Optional contextily basemap source.
+     - Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-pca-mode:
 
@@ -1479,11 +1479,11 @@ svtk map spatial pca-mode
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1491,115 +1491,115 @@ svtk map spatial pca-mode
    * - ``--kwargs``
      - No
      - Nargs: ``*``
-     - Value: ``kwargs``. Extra function keyword arguments as key=value.
+     - Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
      -
-     - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+     - Extra function keyword arguments as a JSON/YAML mapping.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+     - Metric name passed to plotting functions that support metric filtering.
    * - ``--passband``
      - No
      - Repeatable
-     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+     - Passband filter/value. Repeat for multiple passbands.
    * - ``--bin-label``
      - No
      -
-     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
+     - Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
-     - Value: ``component``. Component filter/value. Repeat for multiple components.
+     - Component filter/value. Repeat for multiple components.
    * - ``--components``
      - No
      - Repeatable
-     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
+     - Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
-     - Value: ``model``. Model filter/value. Repeat for multiple models.
+     - Model filter/value. Repeat for multiple models.
    * - ``--value-col``
      - No
      -
-     - Value: ``value_col``. Column containing the plotted value.
+     - Column containing the plotted value.
    * - ``--score-col``
      - No
      -
-     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+     - Column containing scores or residual values for score-style plots.
    * - ``--x-col``
      - No
      -
-     - Value: ``x_col``. Column used on the x axis.
+     - Column used on the x axis.
    * - ``--y-col``
      - No
      -
-     - Value: ``y_col``. Column used on the y axis.
+     - Column used on the y axis.
    * - ``--group-col``
      - No
      -
-     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+     - Column used for grouping, coloring, or trend groups.
    * - ``--color-col``
      - No
      -
-     - Value: ``color_col``. Column used to color plot groups.
+     - Column used to color plot groups.
    * - ``--fit``
      - No
      -
-     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+     - Optional fit/trend method, such as 'linear' or 'lowess'.
    * - ``--connect-points``, ``--no-connect-points``
      - No
      -
-     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+     - Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
    * - ``--mode``
      - No
      -
-     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+     - Mode selector for figures that support named modes, such as PCA maps.
    * - ``--dep``
      - No
      - Repeatable
-     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+     - Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
    * - ``--indep``
      - No
      -
-     - Value: ``indep``. Independent column for flexible spatial plots.
+     - Independent column for flexible spatial plots.
    * - ``--colorby``
      - No
      -
-     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+     - Column or alias used for flexible spatial plot color grouping.
    * - ``--compare-to``
      - No
      - Repeatable
-     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+     - Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--station-region``
      - No
      - Repeatable
-     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+     - Station region filter. Repeat for multiple regions.
    * - ``--event-region``
      - No
      - Repeatable
-     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
+     - Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
-     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+     - Waveform plotting scale for record-section style figures.
    * - ``--time-limit-s``
      - No
      -
-     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+     - Upper time limit in seconds for waveform figures that support time_limit_s.
    * - ``--max-records``
      - No
      -
-     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+     - Maximum number of records for record-section style waveform figures.
    * - ``--max-traces``
      - No
      -
-     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
+     - Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
-     - Value: ``title``. Figure title.
+     - Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -1607,7 +1607,7 @@ svtk map spatial pca-mode
    * - ``--sidecar-rows``
      - No
      -
-     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+     - Maximum rows to write to each sidecar. Omit to write all rows.
    * - ``--sidecar-dir``
      - No
      -
@@ -1615,7 +1615,7 @@ svtk map spatial pca-mode
    * - ``--bounds``
      - No
      -
-     - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
+     - Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
      - Flag
@@ -1623,7 +1623,7 @@ svtk map spatial pca-mode
    * - ``--basemap-source``
      - No
      -
-     - Value: ``basemap_source``. Optional contextily basemap source.
+     - Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-redcap-cluster:
 
@@ -1693,11 +1693,11 @@ svtk map spatial redcap-cluster
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1705,115 +1705,115 @@ svtk map spatial redcap-cluster
    * - ``--kwargs``
      - No
      - Nargs: ``*``
-     - Value: ``kwargs``. Extra function keyword arguments as key=value.
+     - Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
      -
-     - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+     - Extra function keyword arguments as a JSON/YAML mapping.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+     - Metric name passed to plotting functions that support metric filtering.
    * - ``--passband``
      - No
      - Repeatable
-     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+     - Passband filter/value. Repeat for multiple passbands.
    * - ``--bin-label``
      - No
      -
-     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
+     - Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
-     - Value: ``component``. Component filter/value. Repeat for multiple components.
+     - Component filter/value. Repeat for multiple components.
    * - ``--components``
      - No
      - Repeatable
-     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
+     - Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
-     - Value: ``model``. Model filter/value. Repeat for multiple models.
+     - Model filter/value. Repeat for multiple models.
    * - ``--value-col``
      - No
      -
-     - Value: ``value_col``. Column containing the plotted value.
+     - Column containing the plotted value.
    * - ``--score-col``
      - No
      -
-     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+     - Column containing scores or residual values for score-style plots.
    * - ``--x-col``
      - No
      -
-     - Value: ``x_col``. Column used on the x axis.
+     - Column used on the x axis.
    * - ``--y-col``
      - No
      -
-     - Value: ``y_col``. Column used on the y axis.
+     - Column used on the y axis.
    * - ``--group-col``
      - No
      -
-     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+     - Column used for grouping, coloring, or trend groups.
    * - ``--color-col``
      - No
      -
-     - Value: ``color_col``. Column used to color plot groups.
+     - Column used to color plot groups.
    * - ``--fit``
      - No
      -
-     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+     - Optional fit/trend method, such as 'linear' or 'lowess'.
    * - ``--connect-points``, ``--no-connect-points``
      - No
      -
-     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+     - Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
    * - ``--mode``
      - No
      -
-     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+     - Mode selector for figures that support named modes, such as PCA maps.
    * - ``--dep``
      - No
      - Repeatable
-     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+     - Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
    * - ``--indep``
      - No
      -
-     - Value: ``indep``. Independent column for flexible spatial plots.
+     - Independent column for flexible spatial plots.
    * - ``--colorby``
      - No
      -
-     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+     - Column or alias used for flexible spatial plot color grouping.
    * - ``--compare-to``
      - No
      - Repeatable
-     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+     - Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--station-region``
      - No
      - Repeatable
-     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+     - Station region filter. Repeat for multiple regions.
    * - ``--event-region``
      - No
      - Repeatable
-     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
+     - Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
-     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+     - Waveform plotting scale for record-section style figures.
    * - ``--time-limit-s``
      - No
      -
-     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+     - Upper time limit in seconds for waveform figures that support time_limit_s.
    * - ``--max-records``
      - No
      -
-     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+     - Maximum number of records for record-section style waveform figures.
    * - ``--max-traces``
      - No
      -
-     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
+     - Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
-     - Value: ``title``. Figure title.
+     - Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -1821,7 +1821,7 @@ svtk map spatial redcap-cluster
    * - ``--sidecar-rows``
      - No
      -
-     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+     - Maximum rows to write to each sidecar. Omit to write all rows.
    * - ``--sidecar-dir``
      - No
      -
@@ -1829,7 +1829,7 @@ svtk map spatial redcap-cluster
    * - ``--bounds``
      - No
      -
-     - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
+     - Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
      - Flag
@@ -1837,7 +1837,7 @@ svtk map spatial redcap-cluster
    * - ``--basemap-source``
      - No
      -
-     - Value: ``basemap_source``. Optional contextily basemap source.
+     - Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-residual-grid:
 
@@ -1907,11 +1907,11 @@ svtk map spatial residual-grid
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1919,115 +1919,115 @@ svtk map spatial residual-grid
    * - ``--kwargs``
      - No
      - Nargs: ``*``
-     - Value: ``kwargs``. Extra function keyword arguments as key=value.
+     - Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
      -
-     - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+     - Extra function keyword arguments as a JSON/YAML mapping.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+     - Metric name passed to plotting functions that support metric filtering.
    * - ``--passband``
      - No
      - Repeatable
-     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+     - Passband filter/value. Repeat for multiple passbands.
    * - ``--bin-label``
      - No
      -
-     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
+     - Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
-     - Value: ``component``. Component filter/value. Repeat for multiple components.
+     - Component filter/value. Repeat for multiple components.
    * - ``--components``
      - No
      - Repeatable
-     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
+     - Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
-     - Value: ``model``. Model filter/value. Repeat for multiple models.
+     - Model filter/value. Repeat for multiple models.
    * - ``--value-col``
      - No
      -
-     - Value: ``value_col``. Column containing the plotted value.
+     - Column containing the plotted value.
    * - ``--score-col``
      - No
      -
-     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+     - Column containing scores or residual values for score-style plots.
    * - ``--x-col``
      - No
      -
-     - Value: ``x_col``. Column used on the x axis.
+     - Column used on the x axis.
    * - ``--y-col``
      - No
      -
-     - Value: ``y_col``. Column used on the y axis.
+     - Column used on the y axis.
    * - ``--group-col``
      - No
      -
-     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+     - Column used for grouping, coloring, or trend groups.
    * - ``--color-col``
      - No
      -
-     - Value: ``color_col``. Column used to color plot groups.
+     - Column used to color plot groups.
    * - ``--fit``
      - No
      -
-     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+     - Optional fit/trend method, such as 'linear' or 'lowess'.
    * - ``--connect-points``, ``--no-connect-points``
      - No
      -
-     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+     - Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
    * - ``--mode``
      - No
      -
-     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+     - Mode selector for figures that support named modes, such as PCA maps.
    * - ``--dep``
      - No
      - Repeatable
-     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+     - Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
    * - ``--indep``
      - No
      -
-     - Value: ``indep``. Independent column for flexible spatial plots.
+     - Independent column for flexible spatial plots.
    * - ``--colorby``
      - No
      -
-     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+     - Column or alias used for flexible spatial plot color grouping.
    * - ``--compare-to``
      - No
      - Repeatable
-     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+     - Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--station-region``
      - No
      - Repeatable
-     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+     - Station region filter. Repeat for multiple regions.
    * - ``--event-region``
      - No
      - Repeatable
-     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
+     - Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
-     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+     - Waveform plotting scale for record-section style figures.
    * - ``--time-limit-s``
      - No
      -
-     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+     - Upper time limit in seconds for waveform figures that support time_limit_s.
    * - ``--max-records``
      - No
      -
-     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+     - Maximum number of records for record-section style waveform figures.
    * - ``--max-traces``
      - No
      -
-     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
+     - Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
-     - Value: ``title``. Figure title.
+     - Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -2035,7 +2035,7 @@ svtk map spatial residual-grid
    * - ``--sidecar-rows``
      - No
      -
-     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+     - Maximum rows to write to each sidecar. Omit to write all rows.
    * - ``--sidecar-dir``
      - No
      -
@@ -2043,7 +2043,7 @@ svtk map spatial residual-grid
    * - ``--bounds``
      - No
      -
-     - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
+     - Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
      - Flag
@@ -2051,7 +2051,7 @@ svtk map spatial residual-grid
    * - ``--basemap-source``
      - No
      -
-     - Value: ``basemap_source``. Optional contextily basemap source.
+     - Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-score:
 
@@ -2115,11 +2115,11 @@ svtk map spatial score
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2127,115 +2127,115 @@ svtk map spatial score
    * - ``--kwargs``
      - No
      - Nargs: ``*``
-     - Value: ``kwargs``. Extra function keyword arguments as key=value.
+     - Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
      -
-     - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+     - Extra function keyword arguments as a JSON/YAML mapping.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+     - Metric name passed to plotting functions that support metric filtering.
    * - ``--passband``
      - No
      - Repeatable
-     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+     - Passband filter/value. Repeat for multiple passbands.
    * - ``--bin-label``
      - No
      -
-     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
+     - Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
-     - Value: ``component``. Component filter/value. Repeat for multiple components.
+     - Component filter/value. Repeat for multiple components.
    * - ``--components``
      - No
      - Repeatable
-     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
+     - Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
-     - Value: ``model``. Model filter/value. Repeat for multiple models.
+     - Model filter/value. Repeat for multiple models.
    * - ``--value-col``
      - No
      -
-     - Value: ``value_col``. Column containing the plotted value.
+     - Column containing the plotted value.
    * - ``--score-col``
      - No
      -
-     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+     - Column containing scores or residual values for score-style plots.
    * - ``--x-col``
      - No
      -
-     - Value: ``x_col``. Column used on the x axis.
+     - Column used on the x axis.
    * - ``--y-col``
      - No
      -
-     - Value: ``y_col``. Column used on the y axis.
+     - Column used on the y axis.
    * - ``--group-col``
      - No
      -
-     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+     - Column used for grouping, coloring, or trend groups.
    * - ``--color-col``
      - No
      -
-     - Value: ``color_col``. Column used to color plot groups.
+     - Column used to color plot groups.
    * - ``--fit``
      - No
      -
-     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+     - Optional fit/trend method, such as 'linear' or 'lowess'.
    * - ``--connect-points``, ``--no-connect-points``
      - No
      -
-     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+     - Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
    * - ``--mode``
      - No
      -
-     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+     - Mode selector for figures that support named modes, such as PCA maps.
    * - ``--dep``
      - No
      - Repeatable
-     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+     - Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
    * - ``--indep``
      - No
      -
-     - Value: ``indep``. Independent column for flexible spatial plots.
+     - Independent column for flexible spatial plots.
    * - ``--colorby``
      - No
      -
-     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+     - Column or alias used for flexible spatial plot color grouping.
    * - ``--compare-to``
      - No
      - Repeatable
-     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+     - Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--station-region``
      - No
      - Repeatable
-     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+     - Station region filter. Repeat for multiple regions.
    * - ``--event-region``
      - No
      - Repeatable
-     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
+     - Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
-     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+     - Waveform plotting scale for record-section style figures.
    * - ``--time-limit-s``
      - No
      -
-     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+     - Upper time limit in seconds for waveform figures that support time_limit_s.
    * - ``--max-records``
      - No
      -
-     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+     - Maximum number of records for record-section style waveform figures.
    * - ``--max-traces``
      - No
      -
-     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
+     - Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
-     - Value: ``title``. Figure title.
+     - Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -2243,7 +2243,7 @@ svtk map spatial score
    * - ``--sidecar-rows``
      - No
      -
-     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+     - Maximum rows to write to each sidecar. Omit to write all rows.
    * - ``--sidecar-dir``
      - No
      -
@@ -2251,7 +2251,7 @@ svtk map spatial score
    * - ``--bounds``
      - No
      -
-     - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
+     - Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
      - Flag
@@ -2259,7 +2259,7 @@ svtk map spatial score
    * - ``--basemap-source``
      - No
      -
-     - Value: ``basemap_source``. Optional contextily basemap source.
+     - Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-station-bias:
 
@@ -2329,11 +2329,11 @@ svtk map spatial station-bias
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2341,115 +2341,115 @@ svtk map spatial station-bias
    * - ``--kwargs``
      - No
      - Nargs: ``*``
-     - Value: ``kwargs``. Extra function keyword arguments as key=value.
+     - Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
      -
-     - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+     - Extra function keyword arguments as a JSON/YAML mapping.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+     - Metric name passed to plotting functions that support metric filtering.
    * - ``--passband``
      - No
      - Repeatable
-     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+     - Passband filter/value. Repeat for multiple passbands.
    * - ``--bin-label``
      - No
      -
-     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
+     - Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
-     - Value: ``component``. Component filter/value. Repeat for multiple components.
+     - Component filter/value. Repeat for multiple components.
    * - ``--components``
      - No
      - Repeatable
-     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
+     - Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
-     - Value: ``model``. Model filter/value. Repeat for multiple models.
+     - Model filter/value. Repeat for multiple models.
    * - ``--value-col``
      - No
      -
-     - Value: ``value_col``. Column containing the plotted value.
+     - Column containing the plotted value.
    * - ``--score-col``
      - No
      -
-     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+     - Column containing scores or residual values for score-style plots.
    * - ``--x-col``
      - No
      -
-     - Value: ``x_col``. Column used on the x axis.
+     - Column used on the x axis.
    * - ``--y-col``
      - No
      -
-     - Value: ``y_col``. Column used on the y axis.
+     - Column used on the y axis.
    * - ``--group-col``
      - No
      -
-     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+     - Column used for grouping, coloring, or trend groups.
    * - ``--color-col``
      - No
      -
-     - Value: ``color_col``. Column used to color plot groups.
+     - Column used to color plot groups.
    * - ``--fit``
      - No
      -
-     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+     - Optional fit/trend method, such as 'linear' or 'lowess'.
    * - ``--connect-points``, ``--no-connect-points``
      - No
      -
-     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+     - Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
    * - ``--mode``
      - No
      -
-     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+     - Mode selector for figures that support named modes, such as PCA maps.
    * - ``--dep``
      - No
      - Repeatable
-     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+     - Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
    * - ``--indep``
      - No
      -
-     - Value: ``indep``. Independent column for flexible spatial plots.
+     - Independent column for flexible spatial plots.
    * - ``--colorby``
      - No
      -
-     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+     - Column or alias used for flexible spatial plot color grouping.
    * - ``--compare-to``
      - No
      - Repeatable
-     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+     - Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--station-region``
      - No
      - Repeatable
-     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+     - Station region filter. Repeat for multiple regions.
    * - ``--event-region``
      - No
      - Repeatable
-     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
+     - Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
-     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+     - Waveform plotting scale for record-section style figures.
    * - ``--time-limit-s``
      - No
      -
-     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+     - Upper time limit in seconds for waveform figures that support time_limit_s.
    * - ``--max-records``
      - No
      -
-     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+     - Maximum number of records for record-section style waveform figures.
    * - ``--max-traces``
      - No
      -
-     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
+     - Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
-     - Value: ``title``. Figure title.
+     - Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -2457,7 +2457,7 @@ svtk map spatial station-bias
    * - ``--sidecar-rows``
      - No
      -
-     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+     - Maximum rows to write to each sidecar. Omit to write all rows.
    * - ``--sidecar-dir``
      - No
      -
@@ -2465,7 +2465,7 @@ svtk map spatial station-bias
    * - ``--bounds``
      - No
      -
-     - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
+     - Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
      - Flag
@@ -2473,7 +2473,7 @@ svtk map spatial station-bias
    * - ``--basemap-source``
      - No
      -
-     - Value: ``basemap_source``. Optional contextily basemap source.
+     - Optional contextily basemap source.
 
 .. _cli-svtk-map-spatial-station-metric:
 
@@ -2543,11 +2543,11 @@ svtk map spatial station-metric
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Value: ``table``. Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2555,115 +2555,115 @@ svtk map spatial station-metric
    * - ``--kwargs``
      - No
      - Nargs: ``*``
-     - Value: ``kwargs``. Extra function keyword arguments as key=value.
+     - Extra function keyword arguments as key=value.
    * - ``--kwargs-json``
      - No
      -
-     - Value: ``kwargs_json``. Extra function keyword arguments as a JSON/YAML mapping.
+     - Extra function keyword arguments as a JSON/YAML mapping.
    * - ``--metric``
      - No
      -
-     - Value: ``metric``. Metric name passed to plotting functions that support metric filtering.
+     - Metric name passed to plotting functions that support metric filtering.
    * - ``--passband``
      - No
      - Repeatable
-     - Value: ``passband``. Passband filter/value. Repeat for multiple passbands.
+     - Passband filter/value. Repeat for multiple passbands.
    * - ``--bin-label``
      - No
      -
-     - Value: ``bin_label``. Pattern or period-bin label passed to plotting functions that require one.
+     - Pattern or period-bin label passed to plotting functions that require one.
    * - ``--component``
      - No
      - Repeatable
-     - Value: ``component``. Component filter/value. Repeat for multiple components.
+     - Component filter/value. Repeat for multiple components.
    * - ``--components``
      - No
      - Repeatable
-     - Value: ``components``. Component list for waveform plots that use a components argument. Repeat for multiple components.
+     - Component list for waveform plots that use a components argument. Repeat for multiple components.
    * - ``--model``
      - No
      - Repeatable
-     - Value: ``model``. Model filter/value. Repeat for multiple models.
+     - Model filter/value. Repeat for multiple models.
    * - ``--value-col``
      - No
      -
-     - Value: ``value_col``. Column containing the plotted value.
+     - Column containing the plotted value.
    * - ``--score-col``
      - No
      -
-     - Value: ``score_col``. Column containing scores or residual values for score-style plots.
+     - Column containing scores or residual values for score-style plots.
    * - ``--x-col``
      - No
      -
-     - Value: ``x_col``. Column used on the x axis.
+     - Column used on the x axis.
    * - ``--y-col``
      - No
      -
-     - Value: ``y_col``. Column used on the y axis.
+     - Column used on the y axis.
    * - ``--group-col``
      - No
      -
-     - Value: ``group_col``. Column used for grouping, coloring, or trend groups.
+     - Column used for grouping, coloring, or trend groups.
    * - ``--color-col``
      - No
      -
-     - Value: ``color_col``. Column used to color plot groups.
+     - Column used to color plot groups.
    * - ``--fit``
      - No
      -
-     - Value: ``fit``. Optional fit/trend method, such as 'linear' or 'lowess'.
+     - Optional fit/trend method, such as 'linear' or 'lowess'.
    * - ``--connect-points``, ``--no-connect-points``
      - No
      -
-     - Value: ``connect_points``. Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
+     - Connect sorted points for trend plots that support line-style rendering. Use --no-connect-points for scatter-only rendering.
    * - ``--mode``
      - No
      -
-     - Value: ``mode``. Mode selector for figures that support named modes, such as PCA maps.
+     - Mode selector for figures that support named modes, such as PCA maps.
    * - ``--dep``
      - No
      - Repeatable
-     - Value: ``dep``. Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
+     - Dependent metric or column for flexible spatial plots. Repeat for multiple metrics.
    * - ``--indep``
      - No
      -
-     - Value: ``indep``. Independent column for flexible spatial plots.
+     - Independent column for flexible spatial plots.
    * - ``--colorby``
      - No
      -
-     - Value: ``colorby``. Column or alias used for flexible spatial plot color grouping.
+     - Column or alias used for flexible spatial plot color grouping.
    * - ``--compare-to``
      - No
      - Repeatable
-     - Value: ``compare_to``. Baseline category for categorical comparison plots. Repeat for multiple categories.
+     - Baseline category for categorical comparison plots. Repeat for multiple categories.
    * - ``--station-region``
      - No
      - Repeatable
-     - Value: ``station_regions``. Station region filter. Repeat for multiple regions.
+     - Station region filter. Repeat for multiple regions.
    * - ``--event-region``
      - No
      - Repeatable
-     - Value: ``event_regions``. Event region filter. Repeat for multiple regions.
+     - Event region filter. Repeat for multiple regions.
    * - ``--scale``
      - No
      -
-     - Value: ``scale``. Waveform plotting scale for record-section style figures.
+     - Waveform plotting scale for record-section style figures.
    * - ``--time-limit-s``
      - No
      -
-     - Value: ``time_limit_s``. Upper time limit in seconds for waveform figures that support time_limit_s.
+     - Upper time limit in seconds for waveform figures that support time_limit_s.
    * - ``--max-records``
      - No
      -
-     - Value: ``max_records``. Maximum number of records for record-section style waveform figures.
+     - Maximum number of records for record-section style waveform figures.
    * - ``--max-traces``
      - No
      -
-     - Value: ``max_traces``. Maximum number of traces for waveform map figures.
+     - Maximum number of traces for waveform map figures.
    * - ``--title``
      - No
      -
-     - Value: ``title``. Figure title.
+     - Figure title.
    * - ``--write-sidecar``
      - No
      - Flag
@@ -2671,7 +2671,7 @@ svtk map spatial station-metric
    * - ``--sidecar-rows``
      - No
      -
-     - Value: ``sidecar_rows``. Maximum rows to write to each sidecar. Omit to write all rows.
+     - Maximum rows to write to each sidecar. Omit to write all rows.
    * - ``--sidecar-dir``
      - No
      -
@@ -2679,7 +2679,7 @@ svtk map spatial station-metric
    * - ``--bounds``
      - No
      -
-     - Value: ``bounds``. Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
+     - Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.
    * - ``--no-basemap``
      - No
      - Flag
@@ -2687,4 +2687,4 @@ svtk map spatial station-metric
    * - ``--basemap-source``
      - No
      -
-     - Value: ``basemap_source``. Optional contextily basemap source.
+     - Optional contextily basemap source.

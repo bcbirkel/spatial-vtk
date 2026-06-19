@@ -82,11 +82,11 @@ svtk metrics batch-status
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--missing-limit``
      - No
      - Default: ``20``
-     - Value: ``missing_limit``. Maximum missing batch outputs to list. Use -1 for all.
+     - Maximum missing batch outputs to list. Use -1 for all.
    * - ``--json``
      - No
      - Flag
@@ -145,7 +145,7 @@ svtk metrics cache-waveforms
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--overwrite``
      - No
      - Flag
@@ -161,7 +161,7 @@ svtk metrics cache-waveforms
    * - ``--progress-interval``
      - No
      - Default: ``100``
-     - Value: ``progress_interval``. Task interval for verbose progress messages.
+     - Task interval for verbose progress messages.
 
 .. _cli-svtk-metrics-estimate:
 
@@ -209,7 +209,7 @@ svtk metrics estimate
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--output``
      - No
      -
@@ -217,19 +217,19 @@ svtk metrics estimate
    * - ``--seconds-per-task``
      - No
      - Default: ``60.0``
-     - Value: ``seconds_per_task``. Approximate runtime for one task in seconds.
+     - Approximate runtime for one task in seconds.
    * - ``--memory-gb-per-task``
      - No
      - Default: ``2.0``
-     - Value: ``memory_gb_per_task``. Approximate memory needed by one task.
+     - Approximate memory needed by one task.
    * - ``--cpus-per-task``
      - No
      - Default: ``1``
-     - Value: ``cpus_per_task``. CPU cores requested per task.
+     - CPU cores requested per task.
    * - ``--parallel-tasks``
      - No
      -
-     - Value: ``parallel_tasks``. Optional concurrent task count for wall-time estimates.
+     - Optional concurrent task count for wall-time estimates.
 
 .. _cli-svtk-metrics-inventories:
 
@@ -282,19 +282,19 @@ svtk metrics inventories
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--synthetic-model``
      - No
      -
-     - Value: ``synthetic_model``. Synthetic model label override.
+     - Synthetic model label override.
    * - ``--observed-path-column``
      - No
      - Default: ``output_file``
-     - Value: ``observed_path_column``. Trace metadata column used for observed waveform_path.
+     - Trace metadata column used for observed waveform_path.
    * - ``--synthetic-path-column``
      - No
      - Default: ``input_file``
-     - Value: ``synthetic_path_column``. Trace metadata column used for synthetic waveform_path.
+     - Trace metadata column used for synthetic waveform_path.
    * - ``--overwrite``
      - No
      - Flag
@@ -347,7 +347,7 @@ svtk metrics merge-batches
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--allow-missing``
      - No
      - Flag
@@ -398,7 +398,7 @@ svtk metrics outputs
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--events``, ``--event-table``
      - No
      -
@@ -410,15 +410,15 @@ svtk metrics outputs
    * - ``--residual-column``
      - No
      -
-     - Value: ``residual_column``. Column exposed as canonical residual.
+     - Column exposed as canonical residual.
    * - ``--score-column``
      - No
      -
-     - Value: ``score_column``. Column exposed as canonical score.
+     - Column exposed as canonical score.
    * - ``--format``
      - No
      - Default: ``parquet``; Choices: ``parquet``, ``csv``
-     - Value: ``format``. Table output format.
+     - Table output format.
    * - ``--dashboard-partitioned``
      - No
      - Flag
@@ -476,35 +476,35 @@ svtk metrics plan
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--metric``
      - No
      - Repeatable
-     - Value: ``metrics``. Metric override. Repeat or use 'all'.
+     - Metric override. Repeat or use 'all'.
    * - ``--metric-group``
      - No
      - Repeatable
-     - Value: ``metric_groups``. Metric-group override. Repeat or use 'all'.
+     - Metric-group override. Repeat or use 'all'.
    * - ``--component``
      - No
      - Repeatable
-     - Value: ``components``. Component override. Repeat for multiple components.
+     - Component override. Repeat for multiple components.
    * - ``--passband``
      - No
      - Repeatable
-     - Value: ``passbands``. Period passband override, such as 1-2. Repeat for multiple bands.
+     - Period passband override, such as 1-2. Repeat for multiple bands.
    * - ``--model``
      - No
      - Repeatable
-     - Value: ``models``. Synthetic model override. Repeat for multiple models.
+     - Synthetic model override. Repeat for multiple models.
    * - ``--transform``
      - No
      - Repeatable
-     - Value: ``transforms``. Metric transform override. Repeat for multiple transforms.
+     - Metric transform override. Repeat for multiple transforms.
    * - ``--output-mode``
      - No
      -
-     - Value: ``output_mode``. Metric output mode override.
+     - Metric output mode override.
    * - ``--require-source-overlap``
      - No
      - Flag
@@ -512,7 +512,7 @@ svtk metrics plan
    * - ``--source-overlap-scope``
      - No
      - Choices: ``event``, ``event_station``
-     - Value: ``source_overlap_scope``. Overlap scope for --require-source-overlap.
+     - Overlap scope for --require-source-overlap.
    * - ``--output``
      - No
      -
@@ -528,11 +528,11 @@ svtk metrics plan
    * - ``--batch-size``
      - No
      - Default: ``100``
-     - Value: ``batch_size``. Tasks per batch when writing a manifest.
+     - Tasks per batch when writing a manifest.
    * - ``--batch-count``
      - No
      -
-     - Value: ``batch_count``. Target number of batches when writing a manifest. Overrides --batch-size.
+     - Target number of batches when writing a manifest. Overrides --batch-size.
    * - ``--qc-table``
      - No
      -
@@ -587,7 +587,7 @@ svtk metrics run
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--qc-table``
      - No
      -
@@ -631,11 +631,11 @@ svtk metrics run-batch
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--batch-index``
      - Yes
      -
-     - Value: ``batch_index``. Batch index to run.
+     - Batch index to run.
    * - ``--overwrite``
      - No
      - Flag
@@ -683,7 +683,7 @@ svtk metrics slurm
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--submit``
      - No
      - Flag

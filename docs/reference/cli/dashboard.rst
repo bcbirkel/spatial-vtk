@@ -83,7 +83,7 @@ svtk dashboard qc
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--trace-summary``, ``--qc-trace-summary``
      - No
      -
@@ -91,11 +91,11 @@ svtk dashboard qc
    * - ``--port``
      - No
      - Default: ``8502``
-     - Value: ``port``. Streamlit server port.
+     - Streamlit server port.
    * - ``--address``
      - No
      - Default: ``127.0.0.1``
-     - Value: ``address``. Streamlit server address.
+     - Streamlit server address.
    * - ``--auto-port``
      - No
      - Flag
@@ -146,7 +146,7 @@ svtk dashboard metrics
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--metrics-dataset-dir``, ``--metrics-root``, ``--metrics-dataset``
      - No
      -
@@ -158,11 +158,11 @@ svtk dashboard metrics
    * - ``--port``
      - No
      - Default: ``8501``
-     - Value: ``port``. Streamlit server port.
+     - Streamlit server port.
    * - ``--address``
      - No
      - Default: ``127.0.0.1``
-     - Value: ``address``. Streamlit server address.
+     - Streamlit server address.
    * - ``--auto-port``
      - No
      - Flag
@@ -210,11 +210,11 @@ svtk dashboard status
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--summary-format``
      - No
      - Default: ``parquet``; Choices: ``parquet``, ``csv``
-     - Value: ``summary_format``. Expected dashboard summary table format for missing files.
+     - Expected dashboard summary table format for missing files.
    * - ``--json``
      - No
      - Flag

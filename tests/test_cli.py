@@ -949,6 +949,10 @@ def test_generated_cli_reference_names_plot_defaults():
     root = Path(__file__).resolve().parents[1]
     plot_text = (root / "docs" / "reference" / "cli" / "plot.rst").read_text(encoding="utf-8")
     map_text = (root / "docs" / "reference" / "cli" / "map.rst").read_text(encoding="utf-8")
+    cli_pages_text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in sorted((root / "docs" / "reference" / "cli").glob("*.rst"))
+    )
 
     assert "Primary figure input table (metrics long); accepts CSV or parquet" in plot_text
     assert "function argument 'df'" not in plot_text
@@ -993,6 +997,7 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Value: ``events``. Convenience prepared events table path" not in map_text
     assert "Value: ``records``. Convenience event station records table path" not in map_text
     assert "Value: ``stations``. Convenience prepared stations table path" not in map_text
+    assert "Value: ``" not in cli_pages_text
 
 
 def test_config_cli_help_marks_config_values_as_paths(capsys):

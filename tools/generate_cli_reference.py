@@ -435,10 +435,10 @@ def _argument_row(action: argparse.Action) -> tuple[str, str, str, str] | None:
     description = _rst_escape((action.help or "").replace("%(default)s", str(action.default))).strip()
     if action.metavar:
         prefix = _metavar_description_prefix(action.metavar)
-        description = f"{prefix} {description}".strip() if prefix else f"Value: ``{action.metavar}``. {description}".strip()
+        description = f"{prefix} {description}".strip() if prefix else description
     elif action.option_strings and not isinstance(action, (argparse._StoreTrueAction, argparse._StoreFalseAction, argparse._HelpAction)):
         prefix = _description_value_prefix(description)
-        description = f"{prefix} {description}".strip() if prefix else f"Value: ``{action.dest}``. {description}".strip()
+        description = f"{prefix} {description}".strip() if prefix else description
     return name, required, default, description or ""
 
 

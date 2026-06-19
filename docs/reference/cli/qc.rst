@@ -79,7 +79,7 @@ Build standard QC trace, inventory, and overlap tables from the active config.
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--trace-output``, ``--qc-trace-summary-output``
      - No
      -
@@ -87,11 +87,11 @@ Build standard QC trace, inventory, and overlap tables from the active config.
    * - ``--inventory-output``, ``--qc-inventory-output``
      - No
      -
-     - Value: ``inventory_output``. Output metric QC inventory path. Defaults to configured output table 'qc_inventory'.
+     - Output metric QC inventory path. Defaults to configured output table 'qc_inventory'.
    * - ``--overlap-inventory-output``, ``--qc-overlap-inventory-output``
      - No
      -
-     - Value: ``overlap_inventory_output``. Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'.
+     - Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'.
    * - ``--verbose``
      - No
      - Flag
@@ -143,27 +143,27 @@ svtk qc manual-queue
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--event-id``
      - No
      - Default: empty string
-     - Value: ``event_id``. Optional event id filter.
+     - Optional event id filter.
    * - ``--station-family``
      - No
      - Default: ``all``
-     - Value: ``station_family``. Optional station-family filter.
+     - Optional station-family filter.
    * - ``--component``
      - No
      - Default: ``all``
-     - Value: ``component``. Optional component filter.
+     - Optional component filter.
    * - ``--station-contains``
      - No
      - Default: empty string
-     - Value: ``station_contains``. Optional station substring filter.
+     - Optional station substring filter.
    * - ``--band``
      - No
      -
-     - Value: ``band``. Optional passband filter.
+     - Optional passband filter.
 
 .. _cli-svtk-qc-slurm:
 
@@ -208,7 +208,7 @@ svtk qc slurm
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--trace-output``, ``--qc-trace-summary-output``
      - No
      -
@@ -261,11 +261,11 @@ Build compact QC summary tables from configured QC inventories.
    * - ``--run-scenario``
      - No
      -
-     - Value: ``run_scenario``. Apply one named run_scenarios overlay.
+     - Apply one named run_scenarios overlay.
    * - ``--chunksize``
      - No
      - Default: ``1000000``
-     - Value: ``chunksize``. Rows per streamed QC chunk.
+     - Rows per streamed QC chunk.
    * - ``--overwrite``
      - No
      - Flag
