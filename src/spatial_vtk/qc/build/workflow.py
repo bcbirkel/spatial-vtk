@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 import time
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -152,7 +153,13 @@ def _load_qc_checkpoint(path: str | Path | None) -> pd.DataFrame:
         return pd.DataFrame()
     try:
         return _read_table(checkpoint)
-    except Exception:
+    except Exception as exc:
+        warnings.warn(
+            f"Could not read QC checkpoint {checkpoint}; starting from an empty checkpoint. "
+            f"Original error: {exc}",
+            RuntimeWarning,
+            stacklevel=2,
+        )
         return pd.DataFrame()
 
 

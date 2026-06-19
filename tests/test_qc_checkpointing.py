@@ -14,6 +14,46 @@ from spatial_vtk.qc.build.inventory import build_waveform_trace_qc_summary
 from spatial_vtk.qc.build.workflow import build_metric_qc_summary, build_waveform_qc_summary
 
 
+def test_waveform_qc_checkpoint_read_failure_warns_and_starts_empty(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Unreadable waveform QC checkpoints should not be silently discarded."""
+
+    checkpoint_path = tmp_path / "qc_trace_summary.observed.checkpoint.csv"
+    checkpoint_path.write_text("not-a-readable-checkpoint\n", encoding="utf-8")
+
+    def fail_read(path):
+        raise ValueError(f"cannot parse {path}")
+
+    monkeypatch.setattr(qc_inventory_module, "_read_table", fail_read)
+
+    with pytest.warns(RuntimeWarning, match="Could not read QC checkpoint"):
+        checkpoint = qc_inventory_module._load_qc_checkpoint(checkpoint_path)
+
+    assert checkpoint.empty
+
+
+def test_metric_qc_checkpoint_read_failure_warns_and_starts_empty(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Unreadable metric QC checkpoints should explain why resume is empty."""
+
+    checkpoint_path = tmp_path / "qc_inventory.csv"
+    checkpoint_path.write_text("not-a-readable-checkpoint\n", encoding="utf-8")
+
+    def fail_read(path):
+        raise ValueError(f"cannot parse {path}")
+
+    monkeypatch.setattr(qc_workflow_module, "_read_table", fail_read)
+
+    with pytest.warns(RuntimeWarning, match="Could not read QC checkpoint"):
+        checkpoint = qc_workflow_module._load_qc_checkpoint(checkpoint_path)
+
+    assert checkpoint.empty
+
+
 def test_waveform_trace_qc_resumes_from_checkpoint_without_reloading_waveforms(tmp_path: Path, monkeypatch, capsys) -> None:
     """Waveform QC checkpoints should skip completed source/event/station/component groups."""
 

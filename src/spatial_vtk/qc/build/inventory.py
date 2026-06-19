@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 import re
 import time
+import warnings
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
@@ -637,7 +638,13 @@ def _load_qc_checkpoint(path: str | Path | None) -> pd.DataFrame:
         return pd.DataFrame()
     try:
         return _read_table(checkpoint)
-    except Exception:
+    except Exception as exc:
+        warnings.warn(
+            f"Could not read QC checkpoint {checkpoint}; starting from an empty checkpoint. "
+            f"Original error: {exc}",
+            RuntimeWarning,
+            stacklevel=2,
+        )
         return pd.DataFrame()
 
 
