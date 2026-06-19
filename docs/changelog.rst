@@ -4,6 +4,9 @@ Changelog
 2026-06-19
 ----------
 
+- Updated the output-registry module example so notebook-facing guidance starts
+  with ``output_group()`` and reserves ``resolve_output_path()`` for lower-level
+  single-artifact helpers.
 - Updated the notebook helper implementation docstring so timing examples use
   the stable ``spatial_vtk.config`` import surface, with a regression that keeps
   implementation-module imports out of that user-facing example.

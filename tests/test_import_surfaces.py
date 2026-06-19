@@ -509,6 +509,22 @@ def test_notebook_helper_docstring_prefers_public_config_import():
     assert "from spatial_vtk.config.notebook import register_svtk_cell_timer" not in text
 
 
+def test_output_registry_docstring_prefers_output_group_for_notebooks():
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "config"
+        / "outputs.py"
+    )
+    text = source.read_text(encoding="utf-8")
+
+    assert "from spatial_vtk.io import output_group" in text
+    assert 'step_outputs = output_group("step_01_ingest")' in text
+    assert "Use ``resolve_output_path()`` directly for lower-level helpers" in text
+    assert 'path = resolve_output_path("record_coverage", kind="figure")' not in text
+
+
 def test_qc_api_docs_use_public_package_entry_point():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "qc.rst"
     text = docs.read_text(encoding="utf-8")
