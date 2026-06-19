@@ -231,6 +231,9 @@ Changelog
   - Let Step 4 spatial and Step 5 GeoJSON status helpers retain their config
     for bounded preview calls, removing repeated config plumbing from the
     large-run notebooks.
+  - Let Step 6 additional-plotting status helpers retain their config for
+    metric-source preview calls, keeping the large-run plotting notebook
+    focused on workflow steps instead of preview plumbing.
   - Reused the standard ingest output helper inside record-coverage
     readiness/build workflows so script and notebook path fallback behavior
     stays aligned.

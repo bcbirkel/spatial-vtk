@@ -1629,6 +1629,7 @@ class StandardAdditionalPlottingOutputStatusResult:
     """Configured Step 6 output status and bounded preview helpers."""
 
     outputs: Any
+    cfg: Any | None = None
 
     def status_frame(self) -> pd.DataFrame:
         """Return configured Step 6 output path status."""
@@ -1640,14 +1641,16 @@ class StandardAdditionalPlottingOutputStatusResult:
         *,
         cfg: Any | None = None,
         nrows: int = 5,
+        display_fn: Any | None = None,
         missing_message: str = "Metric plotting source is not ready yet.",
     ) -> dict[str, object]:
         """Display a bounded preview of the first available metric source table."""
 
         return self.outputs.display_first_existing_table_preview(
             ("metrics_enriched_path", "metrics_long_path"),
-            cfg=cfg,
+            cfg=cfg or self.cfg,
             nrows=nrows,
+            display_fn=display_fn,
             missing_message=missing_message,
         )
 
@@ -2971,7 +2974,7 @@ def load_standard_additional_plotting_output_status(
 
     from spatial_vtk.io import output_group
 
-    return StandardAdditionalPlottingOutputStatusResult(outputs=output_group(plotting_group_name, cfg=cfg))
+    return StandardAdditionalPlottingOutputStatusResult(outputs=output_group(plotting_group_name, cfg=cfg), cfg=cfg)
 
 
 def write_standard_additional_plotting_figures(

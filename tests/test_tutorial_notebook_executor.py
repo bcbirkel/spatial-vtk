@@ -2270,7 +2270,8 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     assert "load_comparison_eligible_records(" not in source
     assert "plot_event_trace_comparison(" not in source
     assert "event_stations = step_outputs.load_table(" not in source
-    assert "step_outputs.display_metric_source_preview(" in source
+    assert "step_outputs.display_metric_source_preview(nrows=PREVIEW_ROWS)" in source
+    assert "step_outputs.display_metric_source_preview(cfg=cfg" not in source
     assert "step_outputs.display_first_existing_table_preview(" not in source
     assert "step_outputs.preview_first_existing_table(" not in source
     assert "write_large_run_region_boxplot_from_notebook_settings(" in source

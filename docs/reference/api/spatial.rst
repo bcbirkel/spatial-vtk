@@ -253,7 +253,8 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
    * - ``load_standard_additional_plotting_output_status``
      - Resolve Step 6 output status and the first available metric-source
        preview for large-run driver notebooks without loading the plotting
-       inputs.
+       inputs. The status result retains its config for
+       ``display_metric_source_preview(nrows=...)`` calls.
    * - ``write_large_run_geojson_region_figures_from_outputs``
      - Write the Step 5 GeoJSON overview map, corridor map, and region boxplot
        from configured output groups without notebook-local table loading or

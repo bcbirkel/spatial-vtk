@@ -113,7 +113,11 @@ from spatial_vtk.metrics import (
     metric_inventories_readiness_from_config,
     metric_manifest_readiness_from_config,
 )
-from spatial_vtk.spatial.plot import load_standard_geojson_plotting_inputs, load_standard_geojson_workflow_output_status
+from spatial_vtk.spatial.plot import (
+    load_standard_additional_plotting_output_status,
+    load_standard_geojson_plotting_inputs,
+    load_standard_geojson_workflow_output_status,
+)
 
 
 def test_runtime_config_loads_paths_defaults_and_bounds(tmp_path, monkeypatch):
@@ -1508,6 +1512,15 @@ outputs:
         "scatterplot_figure_path",
         stem_parts=("step 06", "metric scatterplot"),
     ) == tmp_path / "run_outputs" / "figures" / "step_06_metric_scatterplot.png"
+    write_table(pd.DataFrame({"metric": ["PGA"], "log2_residual": [0.25]}), plotting_group.metrics_long_path)
+    plotting_status = load_standard_additional_plotting_output_status(cfg=cfg)
+    displayed_plotting: list[pd.DataFrame] = []
+    plotting_previews = plotting_status.display_metric_source_preview(
+        nrows=1,
+        display_fn=displayed_plotting.append,
+    )
+    assert plotting_previews["metrics_long"].to_dict("records") == [{"metric": "PGA", "log2_residual": 0.25}]
+    assert displayed_plotting[0].to_dict("records") == [{"metric": "PGA", "log2_residual": 0.25}]
 
     metric_paths = output_group_paths("step_03_metrics", cfg=cfg)
     assert metric_paths["prepared_events_path"] == tmp_path / "run_outputs" / "tables" / "prepared_events.csv"

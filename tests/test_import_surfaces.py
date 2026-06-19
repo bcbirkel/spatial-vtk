@@ -1065,6 +1065,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "remembers the config used to create it" in text
     assert "display_table_previews(nrows=...)" in text
     assert "status result retains its config" in text
+    assert "display_metric_source_preview(nrows=...)" in text
     assert "from spatial_vtk.spatial.plot import (" in text
     assert "from spatial_vtk.spatial.map import (" in text
     assert ".. automodule:: spatial_vtk.spatial.plot\n" in text
