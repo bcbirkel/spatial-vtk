@@ -431,6 +431,32 @@ def test_metrics_dashboard_filtered_summary_explains_blank_tabs():
     assert "not loaded" in summary.loc["Distributions", "message"]
 
 
+def test_metrics_dashboard_filtered_summary_uses_readiness_for_skipped_tabs():
+    """Data Status should report readiness causes for skipped optional summaries."""
+
+    readiness = pd.DataFrame(
+        {
+            "dashboard_table": ["station_rollup", "event_rollup", "path_hex"],
+            "dashboard_tabs": ["Stations", "Events", "Paths"],
+            "ready": [False, True, pd.NA],
+            "message": ["station_rollup summary file is missing.", "event_rollup summary is ready.", ""],
+        }
+    )
+
+    summary = streamlit_metrics._dashboard_filtered_row_summary(
+        heat=pd.DataFrame({"model": ["m1"], "metric": ["PGA"]}),
+        stations=pd.DataFrame(columns=["station", "model", "metric"]),
+        events=pd.DataFrame(columns=["event_id", "model", "metric"]),
+        paths=pd.DataFrame(columns=["model", "metric", "dist_bin_km", "az_bin_deg"]),
+        rows=None,
+        readiness=readiness,
+    ).set_index("dashboard_tab")
+
+    assert summary.loc["Stations", "message"] == "station_rollup summary file is missing."
+    assert summary.loc["Events", "message"] == "No rows match the current filters."
+    assert summary.loc["Paths", "message"] == "path_hex summary is not ready for Paths. Rebuild dashboard summaries for this run."
+
+
 def test_dashboard_qc_trace_readiness_is_bounded_and_schema_aware(tmp_path):
     ready_path = tmp_path / "qc_trace_summary.csv"
     ready_path.write_text("event_id,station,component,qc_status\nev1,STA,R,pass\n", encoding="utf-8")

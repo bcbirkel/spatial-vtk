@@ -366,6 +366,7 @@ def _render_metrics_dashboard(
                 events=events,
                 paths=paths,
                 rows=rows,
+                readiness=readiness,
             ),
         )
 
@@ -531,6 +532,7 @@ def _dashboard_filtered_row_summary(
     events: pd.DataFrame,
     paths: pd.DataFrame,
     rows: pd.DataFrame | None,
+    readiness: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """Return tab-level row counts for the active dashboard filters."""
 
@@ -557,6 +559,7 @@ def _dashboard_filtered_row_summary(
                 }
             )
             continue
+        readiness_message = _summary_readiness_message(readiness, table)
         result_rows.append(
             {
                 "dashboard_tab": tab,
@@ -566,7 +569,7 @@ def _dashboard_filtered_row_summary(
                 "station_count": _unique_count(frame, "station"),
                 "model_count": _unique_count(frame, "model"),
                 "metric_count": _unique_count(frame, "metric"),
-                "message": "Ready for current filters." if not frame.empty else "No rows match the current filters.",
+                "message": readiness_message or ("Ready for current filters." if not frame.empty else "No rows match the current filters."),
             }
         )
     return pd.DataFrame(result_rows)

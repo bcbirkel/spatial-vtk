@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-18
+   Updated the metrics dashboard Data Status current-filter summary so skipped
+   optional summary tables report their readiness cause, such as a missing
+   station or path summary, instead of a generic "no rows match" message.
    Added regression coverage for sampled station-map sidecars so source-row
    sidecars stay tied to the station groups actually plotted while aggregation
    metadata still reports the full selected event-station input.
