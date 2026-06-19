@@ -18,7 +18,6 @@ from typing import Any
 from spatial_vtk.config import SpatialVTKConfig, active_config, resolve_output_path
 from spatial_vtk.io.output_paths import OutputReadiness, output_group
 from spatial_vtk.io.preprocessing import (
-    preprocessed_waveform_metadata_paths,
     preprocessed_waveform_output_group,
     preprocess_waveform_files,
 )
@@ -272,14 +271,16 @@ def build_record_coverage_from_config(
     cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
     from spatial_vtk.visualize.context import build_record_coverage_table_from_trace_metadata
 
-    preprocessing_paths = preprocessed_waveform_metadata_paths(config=cfg)
+    ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)
+    step_outputs = ingest_outputs.outputs
+    preprocessed_outputs = ingest_outputs.preprocessed_outputs
     event_station_records = (
-        preprocessing_paths.event_station_path
-        if preprocessing_paths.event_station_path.exists()
-        else resolve_output_path("event_station_records", kind="table", cfg=cfg)
+        preprocessed_outputs.preprocessed_event_station_path
+        if preprocessed_outputs.preprocessed_event_station_path.exists()
+        else step_outputs.event_station_path
     )
     record_coverage = build_record_coverage_table_from_trace_metadata(
-        preprocessing_paths.trace_metadata_path,
+        preprocessed_outputs.preprocessed_trace_metadata_path,
         event_station_df=event_station_records,
         component=component,
         observed_source=observed_source,
@@ -291,10 +292,10 @@ def build_record_coverage_from_config(
     output_path = write_output_table("record_coverage", record_coverage, cfg=cfg)
     return {
         "record_coverage_path": str(output_path),
-        "preprocessed_trace_metadata_path": str(preprocessing_paths.trace_metadata_path),
+        "preprocessed_trace_metadata_path": str(preprocessed_outputs.preprocessed_trace_metadata_path),
         "event_station_records_path": str(event_station_records),
         "record_coverage": str(output_path),
-        "trace_metadata": str(preprocessing_paths.trace_metadata_path),
+        "trace_metadata": str(preprocessed_outputs.preprocessed_trace_metadata_path),
         "event_stations": str(event_station_records),
         "rows": int(len(record_coverage)),
     }
@@ -320,8 +321,9 @@ def record_coverage_readiness_from_config(
     """
 
     cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
-    step_outputs = output_group("step_01_ingest", cfg=cfg)
-    preprocessed_outputs = preprocessed_waveform_output_group(config=cfg)
+    ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)
+    step_outputs = ingest_outputs.outputs
+    preprocessed_outputs = ingest_outputs.preprocessed_outputs
     event_station_records = (
         preprocessed_outputs.preprocessed_event_station_path
         if preprocessed_outputs.preprocessed_event_station_path.exists()

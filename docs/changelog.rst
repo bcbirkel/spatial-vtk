@@ -55,6 +55,9 @@ Changelog
 
   - **Large-run resilience**
 
+    - Reused the standard ingest output helper inside record-coverage
+      readiness/build workflows so script and notebook path fallback behavior
+      stays aligned.
     - Added warnings when large-run QC or metric checkpoint reuse falls back to
       slower paths because an existing checkpoint cannot be read.
     - Updated readiness-aware notebook cells so they print why a package workflow
