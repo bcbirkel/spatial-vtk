@@ -23,7 +23,7 @@ import os
 from pathlib import Path
 import shlex
 from time import perf_counter
-from typing import Any, Callable, Iterator
+from typing import Any, Callable, Iterator, Sequence
 import warnings
 
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config, get_saved_config_path
@@ -281,6 +281,81 @@ class NotebookFigureSettings:
                 figures_enabled=True,
             )
         return NotebookFigureRenderGate(ready=True, message=ready_message, figures_enabled=True)
+
+
+def render_notebook_figure(
+    plot_func: Callable[..., Any],
+    outputs: Any,
+    figure_path_name: str,
+    settings: NotebookFigureSettings,
+    *args: Any,
+    stem: str | None = None,
+    stem_parts: Sequence[object] | None = None,
+    include_basemap: bool = False,
+    display_func: Callable[[Any], Any] | None = None,
+    display_result: bool | None = None,
+    close: bool = True,
+    savefig: bool = True,
+    **kwargs: Any,
+) -> Any:
+    """Render one notebook figure with configured output and sidecar defaults.
+
+    Parameters
+    ----------
+    plot_func
+        Plotting function to call.
+    outputs
+        Output group that owns the configured figure path.
+    figure_path_name
+        Figure artifact name in ``outputs``.
+    settings
+        Notebook figure settings that provide ``showfig``, optional basemap,
+        and sidecar keyword arguments.
+    *args
+        Positional arguments forwarded to ``plot_func``.
+    stem, stem_parts
+        Optional figure filename stem override passed to
+        ``outputs.figure_path``.
+    include_basemap
+        Whether to pass ``settings.add_basemap`` to ``plot_func``.
+    display_func
+        Optional display callable, such as IPython ``display``.
+    display_result
+        Whether to call ``display_func``. When omitted, the helper displays
+        only when ``settings.showfig`` is false, avoiding duplicate notebook
+        output when plotting functions are asked to show figures themselves.
+    close
+        Whether to close the returned Matplotlib figure after optional display.
+    savefig
+        Whether to request figure saving from ``plot_func``.
+    **kwargs
+        Additional keyword arguments forwarded to ``plot_func``. Explicit
+        values here override settings-derived defaults.
+
+    Returns
+    -------
+    object
+        The object returned by ``plot_func``.
+    """
+
+    output_path = outputs.figure_path(figure_path_name, stem=stem, stem_parts=stem_parts)
+    plot_kwargs = {
+        **settings.plot_kwargs(include_basemap=include_basemap),
+        "savefig": savefig,
+        "outpath": output_path,
+        **kwargs,
+    }
+    figure = plot_func(*args, **plot_kwargs)
+    should_display = display_func is not None and (
+        not settings.showfig if display_result is None else bool(display_result)
+    )
+    if should_display:
+        display_func(figure)
+    if close:
+        import matplotlib.pyplot as plt
+
+        plt.close(figure)
+    return figure
 
 
 @dataclass(frozen=True)
@@ -1693,6 +1768,7 @@ __all__ = [
     "print_notebook_context",
     "register_svtk_cell_timer",
     "register_svtk_time_magic",
+    "render_notebook_figure",
     "run_notebook_step_if_needed",
     "run_or_submit_notebook_function",
     "submit_notebook_slurm_script",

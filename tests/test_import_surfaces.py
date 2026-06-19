@@ -18,6 +18,7 @@ def test_public_imports():
         abbreviate_model,
         configured_output_registry_frame,
         display_output_table_previews,
+        render_notebook_figure,
         run_notebook_step_if_needed,
     )
     from spatial_vtk.metrics import (
@@ -99,6 +100,7 @@ def test_public_imports():
     assert callable(abbreviate_model)
     assert callable(configured_output_registry_frame)
     assert callable(display_output_table_previews)
+    assert callable(render_notebook_figure)
     assert callable(run_notebook_step_if_needed)
     assert callable(amplitude_spectrum)
     assert callable(calculate_metrics_for_pairs)
@@ -368,6 +370,7 @@ def test_config_api_docs_include_compute_helpers():
     assert "``NotebookRunContext`` and ``notebook_run_context``" in text
     assert "``run_notebook_step_if_needed``" in text
     assert "``NotebookFigureSettings`` and ``notebook_figure_settings``" in text
+    assert "``render_notebook_figure``" in text
     assert "``NotebookDashboardCommands`` and" in text
     assert "``notebook_dashboard_launch_commands``" in text
     assert "``display_output_table_previews``" in text
@@ -732,6 +735,7 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.visualize.dashboard.preview_dashboard_summary_tables",
         "spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets",
         "spatial_vtk.visualize.dashboard.prepare_configured_dashboard_datasets_from_notebook_settings",
+        "spatial_vtk.config.render_notebook_figure",
     ]
     for helper in required_helpers:
         assert helper in workflows
@@ -749,7 +753,9 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "Preview dashboard summary tables without loading full tab inputs" in workflows
     assert "without resolving dashboard summary paths in cells" in normalized_workflows
     assert "compatibility aliases" not in workflows
-    assert "from spatial_vtk.config import notebook_figure_settings" in workflows
+    assert "from spatial_vtk.config import (" in workflows
+    assert "notebook_figure_settings" in workflows
+    assert "render_notebook_figure" in workflows
     assert "from spatial_vtk.config.notebook import" not in workflows
     assert "Prefer direct attributes such as ``step_outputs.metrics_long_path``" in workflows
     assert "Use ``figure_path()`` for figure artifacts" in workflows

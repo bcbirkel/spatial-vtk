@@ -43,7 +43,12 @@ paths in cells.
 .. code-block:: python
 
    from spatial_vtk.config import configured_output_registry_frame
-   from spatial_vtk.config import notebook_figure_settings, notebook_run_context, run_notebook_step_if_needed
+   from spatial_vtk.config import (
+       notebook_figure_settings,
+       notebook_run_context,
+       render_notebook_figure,
+       run_notebook_step_if_needed,
+   )
    from spatial_vtk.io import event_rows_for_records, load_configured_input_paths, load_configured_input_tables, output_group
    from spatial_vtk.qc import run_qc_inventory_from_config
 
@@ -218,6 +223,12 @@ the large-run notebooks.
        ``spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context`` and
        gate plotting cells on ``metric_plot_context.ready`` rather than
        repeating metric-table existence and value-column checks in each cell.
+   * - ``spatial_vtk.config.render_notebook_figure``
+     - Call one plotting helper with a configured ``OutputGroup`` figure path,
+       the relevant ``NotebookFigureSettings`` object, optional basemap
+       settings, save/display/close behavior, and row-sidecar settings. Use it
+       in standard notebooks instead of repeating ``outpath``, ``savefig``,
+       ``showfig``, sidecar kwargs, and ``plt.close`` around every plot call.
    * - ``spatial_vtk.config.notebook_dashboard_launch_commands``
      - Return config-backed dashboard launch settings. Use
        ``metrics_launch_kwargs()`` and ``qc_launch_kwargs()`` with the package

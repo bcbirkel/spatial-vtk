@@ -1115,6 +1115,7 @@ def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
     assert "from spatial_vtk.spatial import (" in source
     assert "load_configured_input_paths(" in source
     assert "load_configured_input_tables(" in source
+    assert "render_notebook_figure(" in source
     assert "geojson_metric_region_frame(" in source
     assert "geojson_metric_subset_frame(" in source
     assert "corridor_record_pair_frame(" in source
@@ -1126,6 +1127,13 @@ def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
     assert '[[\"event_id\", \"station\"]].drop_duplicates()' not in source
     assert "drop_duplicates().head()" not in source
     assert "read_config_table(\"paths.metric_figure_snapshot\")" not in source
+    assert "step_outputs.figure_path(" not in source
+    assert "outpath=" not in source
+    assert "savefig=True" not in source
+    assert "showfig=False" not in source
+    assert "plt.close(" not in source
+    assert "spatial_sidecars" not in source
+    assert "waveform_sidecars" not in source
     assert 'metrics_table="paths.metric_figure_snapshot"' in source
     assert 'geojson_path="paths.region_geojson"' in source
     assert "from spatial_vtk.spatial.calculate import" not in source
@@ -1739,7 +1747,7 @@ def test_step05_uses_geojson_preview_helper() -> None:
     assert "from spatial_vtk.spatial.plot import" in source
     assert "step_outputs = output_group(\"step_05_geojson\", cfg=cfg)" in source
     assert "plotting_tables = step_outputs.load_tables(" in source
-    assert "step_outputs.figure_path(" in source
+    assert "render_notebook_figure(" in source
     assert "geojson_polygons_map_path" in source
     assert "region_boxplot_figure_path" in source
     assert "station_metric_map_path" in source

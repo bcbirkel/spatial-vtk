@@ -80,6 +80,9 @@ the stable package surface below.
    * - ``NotebookFigureSettings`` and ``notebook_figure_settings``
      - Parse figure controls, robust-axis settings, sidecar settings, and
        render gates from environment variables in one package-owned helper.
+   * - ``render_notebook_figure``
+     - Call one plotting helper with configured output path, ``showfig``,
+       basemap, sidecar, save, display, and close behavior.
    * - ``NotebookFigureSidecarSettings`` and
        ``notebook_figure_sidecar_settings``
      - Configure optional plotted-row and source-row CSV/JSON sidecars.

@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Added ``spatial_vtk.config.render_notebook_figure()`` and rewired the
+   standard Step 5 maps notebook to use it for configured plot rendering. The
+   notebook keeps the GeoJSON, corridor, waveform, and metric-selection logic
+   visible while no longer repeating ``outpath``, ``savefig``, ``showfig``,
+   sidecar kwargs, display, or ``plt.close`` plumbing around each plot call.
    Added ``spatial_vtk.spatial.plot.write_standard_spatial_map_figures()`` and
    rewired the standard Step 4 spatial notebook to use it for station-bias and
    residual-grid maps. The notebook no longer repeats per-metric map loops,

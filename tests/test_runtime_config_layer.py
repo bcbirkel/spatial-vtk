@@ -29,6 +29,7 @@ from spatial_vtk.config import (
     notebook_timing_enabled,
     prepare_notebook_geospatial_environment,
     register_svtk_cell_timer,
+    render_notebook_figure,
     resolve_output_path,
     resolve_run_defaults,
     run_notebook_step_if_needed,
@@ -616,6 +617,77 @@ def test_notebook_figure_settings_parse_common_controls(tmp_path, monkeypatch):
         "sidecar_dir": tmp_path / "figures" / "sidecars",
         "add_basemap": True,
     }
+
+
+def test_render_notebook_figure_owns_output_sidecar_display_and_close(tmp_path, monkeypatch):
+    """Notebook figure calls should not repeat path, sidecar, display, and close plumbing."""
+
+    monkeypatch.setenv("SVTK_MAKE_FIGURES", "1")
+    monkeypatch.setenv("SVTK_ADD_BASEMAP", "1")
+    monkeypatch.setenv("SVTK_FIGURE_SIDECARS", "1")
+    monkeypatch.setenv("SVTK_FIGURE_SIDECAR_ROWS", "5")
+    settings = notebook_figure_settings("spatial", figure_dir=tmp_path / "figures")
+    seen: dict[str, object] = {}
+    displayed: list[object] = []
+    closed: list[object] = []
+    monkeypatch.setattr(plt, "close", lambda figure: closed.append(figure))
+
+    class Outputs:
+        def figure_path(self, name, *, stem=None, stem_parts=None):
+            seen["path_name"] = name
+            seen["stem"] = stem
+            seen["stem_parts"] = tuple(stem_parts or ())
+            return tmp_path / "figures" / "step_05_geojson_regions.png"
+
+    def _plot_func(data, **kwargs):
+        seen["data"] = data
+        seen["kwargs"] = kwargs
+        return "figure-object"
+
+    result = render_notebook_figure(
+        _plot_func,
+        Outputs(),
+        "geojson_polygons_map_path",
+        settings,
+        "regions.geojson",
+        stem_parts=("step_05", "geojson_regions"),
+        include_basemap=True,
+        display_func=displayed.append,
+        title="Regions",
+    )
+
+    assert result == "figure-object"
+    assert displayed == ["figure-object"]
+    assert closed == ["figure-object"]
+    assert seen["path_name"] == "geojson_polygons_map_path"
+    assert seen["stem_parts"] == ("step_05", "geojson_regions")
+    assert seen["data"] == "regions.geojson"
+    assert seen["kwargs"] == {
+        "showfig": False,
+        "write_sidecar": True,
+        "sidecar_rows": 5,
+        "sidecar_dir": tmp_path / "figures" / "sidecars",
+        "add_basemap": True,
+        "savefig": True,
+        "outpath": tmp_path / "figures" / "step_05_geojson_regions.png",
+        "title": "Regions",
+    }
+
+    displayed.clear()
+    showing_settings = notebook_figure_settings("spatial", figure_dir=tmp_path / "figures")
+    object.__setattr__(showing_settings, "showfig", True)
+    render_notebook_figure(
+        _plot_func,
+        Outputs(),
+        "geojson_polygons_map_path",
+        showing_settings,
+        "regions.geojson",
+        stem_parts=("step_05", "geojson_regions"),
+        include_basemap=True,
+        display_func=displayed.append,
+        close=False,
+    )
+    assert displayed == []
 
 
 def test_notebook_figure_settings_default_to_configured_figure_dir(tmp_path, monkeypatch):
