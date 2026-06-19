@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 from spatial_vtk.cli import main
+from spatial_vtk.cli import _dashboard_cli_readiness_columns
 
 
 def test_cli_help(capsys):
@@ -99,6 +100,39 @@ def test_cli_version(capsys):
     assert main(["--version"]) == 0
     captured = capsys.readouterr()
     assert captured.out.strip()
+
+
+def test_dashboard_status_cli_keeps_rich_readiness_columns():
+    """Human dashboard status output should expose the same core readiness fields as notebooks."""
+
+    status = pd.DataFrame(
+        {
+            "item_type": ["summary_table"],
+            "item": ["station_rollup"],
+            "artifact_label": ["station_rollup dashboard summary table"],
+            "dashboard_tabs": ["Stations"],
+            "ready": [False],
+            "readiness": ["no_value_data"],
+            "row_count": [12],
+            "file_count": [""],
+            "map_ready": [True],
+            "value_families": ["residual, score/gof"],
+            "nonempty_value_families": ["residual"],
+            "message": ["station_rollup summary has rows but no finite dashboard value columns."],
+            "map_message": ["station_rollup map coordinates are ready."],
+            "suggested_action": ["Run write_configured_dashboard_datasets."],
+            "path": ["/tmp/station_rollup.parquet"],
+            "extra_private_column": ["not shown"],
+        }
+    )
+
+    shown = _dashboard_cli_readiness_columns(status)
+
+    assert "value_families" in shown.columns
+    assert "nonempty_value_families" in shown.columns
+    assert "map_message" in shown.columns
+    assert "extra_private_column" not in shown.columns
+    assert shown.loc[0, "nonempty_value_families"] == "residual"
 
 
 def test_cli_config_outputs_lists_registry_with_resolved_paths(tmp_path, capsys):

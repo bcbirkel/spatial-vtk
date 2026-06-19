@@ -2620,6 +2620,9 @@ outputs:
     assert len(displayed) == 4
     assert not frames["readiness"].empty
     assert not frames["status"].empty
+    assert "value_families" in frames["readiness"].columns
+    assert "nonempty_value_families" in frames["readiness"].columns
+    assert "value_families" in frames["status"].columns
     assert frames["written"].empty
     assert not frames["summary_contracts"].empty
 

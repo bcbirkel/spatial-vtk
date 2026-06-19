@@ -208,6 +208,9 @@ Changelog
   - Promoted dashboard tab empty-state, missing-column, chart-readiness, and
     value-selector messages into public package helpers so notebooks and CLI
     status output can share the same contracts as Streamlit tabs.
+  - Made ``svtk dashboard status`` include dashboard value-family and
+    map-readiness messages in its bounded human-readable status table, matching
+    the notebook and Streamlit Data Status displays.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 

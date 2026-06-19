@@ -2824,7 +2824,10 @@ def _dashboard_cli_readiness_columns(status: pd.DataFrame) -> pd.DataFrame:
         "row_count",
         "file_count",
         "map_ready",
+        "value_families",
+        "nonempty_value_families",
         "message",
+        "map_message",
         "suggested_action",
         "path",
     ]
