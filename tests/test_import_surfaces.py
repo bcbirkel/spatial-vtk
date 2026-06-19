@@ -432,10 +432,11 @@ def test_autodoc_fallback_parameter_docs_are_descriptive():
 def test_metrics_api_docs_use_public_plot_entry_point():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "metrics.rst"
     text = docs.read_text(encoding="utf-8")
+    assert ".. automodule:: spatial_vtk.metrics.calculate\n" in text
     assert ".. automodule:: spatial_vtk.metrics.workflow\n" in text
-    assert ".. automodule:: spatial_vtk.metrics.workflow.inventory\n" in text
-    assert ".. automodule:: spatial_vtk.metrics.workflow.cache\n" in text
     assert "helpers from the stable ``spatial_vtk.metrics`` package entry" in text
+    assert "lower-level calculation modules are implementation" in text
+    assert "lower-level workflow modules are implementation" in text
     assert "Public workflow helpers exposed by ``spatial_vtk.metrics``" in text
     for helper in (
         "build_metric_waveform_inventories_from_config",
@@ -468,6 +469,30 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "``PSA`` and ``FAS`` are broadband spectral metrics" in text
     assert "writes blank\n``passband`` values for spectral tasks" in text
     assert "older output table contains PSA rows repeated under passband labels" in text
+    forbidden_modules = (
+        "spatial_vtk.metrics.calculate.amplitudes",
+        "spatial_vtk.metrics.calculate.arrival_picks",
+        "spatial_vtk.metrics.calculate.bands",
+        "spatial_vtk.metrics.calculate.batch",
+        "spatial_vtk.metrics.calculate.enrich",
+        "spatial_vtk.metrics.calculate.gof",
+        "spatial_vtk.metrics.calculate.phasenet_adapter",
+        "spatial_vtk.metrics.calculate.records",
+        "spatial_vtk.metrics.calculate.spectra",
+        "spatial_vtk.metrics.calculate.summaries",
+        "spatial_vtk.metrics.calculate.transforms",
+        "spatial_vtk.metrics.calculate.waveforms",
+        "spatial_vtk.metrics.workflow.configured",
+        "spatial_vtk.metrics.workflow.inventory",
+        "spatial_vtk.metrics.workflow.cache",
+        "spatial_vtk.metrics.workflow.execution",
+        "spatial_vtk.metrics.workflow.outputs",
+        "spatial_vtk.metrics.workflow.run",
+        "spatial_vtk.metrics.workflow.slurm",
+        "spatial_vtk.metrics.workflow.tasks",
+    )
+    for module_name in forbidden_modules:
+        assert f".. automodule:: {module_name}" not in text
     assert "For PSA, large-run figure helpers compare oscillator periods instead of\nwaveform passbands" in text
     assert "``status_frame``\n   also includes ``spectral_contract_status``" in text
     assert "``spectral_metric_contract_status``" in text

@@ -28,6 +28,10 @@ Changelog
 
 **Changed and Rewired**
 
+- Updated the Metrics API reference to document metric calculation and
+  workflow helpers through ``spatial_vtk.metrics.calculate`` and
+  ``spatial_vtk.metrics.workflow`` instead of lower-level implementation
+  module autodoc blocks.
 - Updated the Installation check commands so source-checkout notebook
   verification includes ``--include-large-run``, matching the examples docs,
   release checklist, and CI tutorial gate.

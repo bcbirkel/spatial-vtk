@@ -44,40 +44,13 @@ stable package surface.
 Calculate
 ---------
 
-.. automodule:: spatial_vtk.metrics.calculate.amplitudes
-   :members:
+Use ``spatial_vtk.metrics.calculate`` for metric calculation utilities,
+waveform transforms, residual transforms, band helpers, and optional arrival
+pick adapters. The lower-level calculation modules are implementation
+organization. Import calculation helpers from ``spatial_vtk.metrics`` or
+``spatial_vtk.metrics.calculate`` in notebooks and scripts.
 
-.. automodule:: spatial_vtk.metrics.calculate.arrival_picks
-   :members:
-
-.. automodule:: spatial_vtk.metrics.calculate.bands
-   :members:
-
-.. automodule:: spatial_vtk.metrics.calculate.batch
-   :members:
-
-.. automodule:: spatial_vtk.metrics.calculate.enrich
-   :members:
-
-.. automodule:: spatial_vtk.metrics.calculate.gof
-   :members:
-
-.. automodule:: spatial_vtk.metrics.calculate.phasenet_adapter
-   :members:
-
-.. automodule:: spatial_vtk.metrics.calculate.records
-   :members:
-
-.. automodule:: spatial_vtk.metrics.calculate.spectra
-   :members:
-
-.. automodule:: spatial_vtk.metrics.calculate.summaries
-   :members:
-
-.. automodule:: spatial_vtk.metrics.calculate.transforms
-   :members:
-
-.. automodule:: spatial_vtk.metrics.calculate.waveforms
+.. automodule:: spatial_vtk.metrics.calculate
    :members:
 
 Workflow
@@ -85,8 +58,9 @@ Workflow
 
 Notebook and CLI workflows should import metric planning, execution, summary,
 and output helpers from the stable ``spatial_vtk.metrics`` package entry
-point. The implementation modules below document the lower-level organization
-for users who need narrower module references.
+point. ``spatial_vtk.metrics.workflow`` remains a public module for advanced
+workflow scripts, while lower-level workflow modules are implementation
+organization.
 
 Public workflow helpers exposed by ``spatial_vtk.metrics``:
 
@@ -132,30 +106,10 @@ older output table contains PSA rows repeated under passband labels.
    :members:
    :exclude-members: MetricWorkflowTask, SlurmSettings
 
-.. automodule:: spatial_vtk.metrics.workflow.configured
-   :members:
-
-.. automodule:: spatial_vtk.metrics.workflow.inventory
-   :members:
-
-.. automodule:: spatial_vtk.metrics.workflow.cache
-   :members:
-
-.. automodule:: spatial_vtk.metrics.workflow.execution
-   :members:
-
-.. automodule:: spatial_vtk.metrics.workflow.outputs
-   :members:
-
-.. automodule:: spatial_vtk.metrics.workflow.run
-   :members:
-
-.. automodule:: spatial_vtk.metrics.workflow.slurm
-   :members:
-   :exclude-members: SlurmSettings
-
-.. automodule:: spatial_vtk.metrics.workflow.tasks
-   :members:
+Import workflow helpers from ``spatial_vtk.metrics`` or
+``spatial_vtk.metrics.workflow``. The configured, inventory, cache,
+execution, output, run, Slurm, and task modules are implementation
+organization and are intentionally not listed as notebook-facing import paths.
 
 Plotting
 --------
