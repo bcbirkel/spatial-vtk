@@ -186,6 +186,9 @@ Changelog
     the browser by default.
   - Added a separate metrics-dashboard download row cap so filtered row-level
     CSV downloads do not serialize every loaded distribution row by default.
+  - Added clear Streamlit dashboard query aliases
+    ``metrics_dataset_dir``, ``dashboard_summary_table_dir``, and
+    ``qc_trace_summary`` while preserving legacy dashboard links.
 
 - **Workflow large-run resilience** *(Hardened)*
 

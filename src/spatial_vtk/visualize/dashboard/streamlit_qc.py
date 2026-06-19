@@ -37,7 +37,7 @@ def main() -> None:
 
     st.set_page_config(page_title="Spatial-VTK QC Explorer", layout="wide")
     st.title("Spatial-VTK QC Explorer")
-    trace_summary = _path_setting("trace_summary", "SVTK_TRACE_SUMMARY")
+    trace_summary = _path_setting("qc_trace_summary", "SVTK_TRACE_SUMMARY", aliases=("trace_summary",))
     config_path = _path_setting("config", "SVTK_CONFIG_FILE")
     if not trace_summary:
         trace_summary = st.text_input("Trace-summary table", value="")
@@ -402,13 +402,17 @@ def _qc_dashboard_startup_blocker(readiness: pd.DataFrame) -> str | None:
     return message or "The QC trace-summary table is not ready."
 
 
-def _path_setting(query_key: str, env_key: str) -> str:
+def _path_setting(query_key: str, env_key: str, *, aliases: tuple[str, ...] = ()) -> str:
     """Read one app path setting."""
 
-    value = st.query_params.get(query_key, "")
-    if isinstance(value, list):
-        value = value[0] if value else ""
-    return str(value or os.environ.get(env_key, "")).strip()
+    for key in (query_key, *aliases):
+        value = st.query_params.get(key, "")
+        if isinstance(value, list):
+            value = value[0] if value else ""
+        text = str(value or "").strip()
+        if text:
+            return text
+    return str(os.environ.get(env_key, "")).strip()
 
 
 def _load_optional_config(config_path: str) -> SpatialVTKConfig | None:

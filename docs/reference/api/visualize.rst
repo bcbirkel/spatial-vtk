@@ -176,6 +176,12 @@ The compact dashboard readiness summary carries the same
 ``artifact_role`` / ``artifact_label`` columns, and the metrics/QC dashboard
 Data Status tabs show those labels while keeping readiness displays bounded to
 small status metadata.
+The Streamlit apps also accept clear URL query keys for explicit path
+overrides: ``metrics_dataset_dir`` and ``dashboard_summary_table_dir`` for the
+metrics dashboard, and ``qc_trace_summary`` for the QC dashboard. The older
+``metrics_root``, ``summary_root``, and ``trace_summary`` query keys remain
+supported as compatibility aliases, but new links and docs should use the
+clearer names.
 
 When a dashboard tab is blank or unexpectedly sparse, diagnose the configured
 artifacts before loading full metric or QC inventories:

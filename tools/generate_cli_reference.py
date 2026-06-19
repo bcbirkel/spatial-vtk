@@ -246,7 +246,7 @@ def _command_page_notes(command_name: str) -> list[str]:
             "Config-Backed Dashboards",
             "------------------------",
             "",
-            "Dashboard commands can resolve their standard datasets from the active config. The metrics dashboard uses configured dashboard outputs such as ``metrics_dashboard`` and ``dashboard_summaries`` when you pass ``--config`` or set a default config with ``svtk config set``. Only pass explicit paths when you want to override those configured outputs. Prefer ``--metrics-dataset-dir`` and ``--dashboard-summary-table-dir`` for those overrides; ``--metrics-root``, ``--metrics-dataset``, ``--summary-root``, and ``--dashboard-summary-dir`` are legacy aliases.",
+            "Dashboard commands can resolve their standard datasets from the active config. The metrics dashboard uses configured dashboard outputs such as ``metrics_dashboard`` and ``dashboard_summaries`` when you pass ``--config`` or set a default config with ``svtk config set``. Only pass explicit paths when you want to override those configured outputs. Prefer ``--metrics-dataset-dir`` and ``--dashboard-summary-table-dir`` for those overrides; ``--metrics-root``, ``--metrics-dataset``, ``--summary-root``, and ``--dashboard-summary-dir`` are legacy aliases. Dashboard URLs follow the same vocabulary: use ``metrics_dataset_dir`` and ``dashboard_summary_table_dir`` for metrics-dashboard query parameters, and ``qc_trace_summary`` for QC-dashboard query parameters. Older ``metrics_root``, ``summary_root``, and ``trace_summary`` query parameters still work for existing links.",
             "",
             ".. code-block:: bash",
             "",

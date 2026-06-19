@@ -1045,6 +1045,10 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "Only pass explicit paths when you want to override those configured outputs" in dashboard_text
     assert "Prefer ``--metrics-dataset-dir`` and ``--dashboard-summary-table-dir``" in dashboard_text
     assert "are legacy aliases" in dashboard_text
+    assert "metrics_dataset_dir" in dashboard_text
+    assert "dashboard_summary_table_dir" in dashboard_text
+    assert "qc_trace_summary" in dashboard_text
+    assert "Older ``metrics_root``, ``summary_root``, and ``trace_summary`` query parameters still work" in dashboard_text
     assert "Config-Backed Plotting" in generator_text
     assert "Config-Backed Mapping" in generator_text
     assert "Config-Backed Visualization" in generator_text

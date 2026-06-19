@@ -915,6 +915,64 @@ def test_dashboard_empty_state_messages_are_explicit():
     assert _qc_missing_columns_message("timing") == "No timing columns are available in the loaded trace-summary table."
 
 
+def test_metrics_dashboard_path_setting_accepts_clear_and_legacy_query_keys(monkeypatch):
+    """Metrics dashboard URLs should prefer clear query keys but preserve legacy links."""
+
+    monkeypatch.setenv("SVTK_METRICS_ROOT", "env-metrics")
+    monkeypatch.setenv("SVTK_SUMMARY_ROOT", "env-summaries")
+
+    monkeypatch.setattr(
+        streamlit_metrics.st,
+        "query_params",
+        {
+            "metrics_dataset_dir": "clear-metrics",
+            "metrics_root": "legacy-metrics",
+            "dashboard_summary_table_dir": ["clear-summaries"],
+            "summary_root": "legacy-summaries",
+        },
+    )
+    assert (
+        streamlit_metrics._path_setting("metrics_dataset_dir", "SVTK_METRICS_ROOT", aliases=("metrics_root",))
+        == "clear-metrics"
+    )
+    assert (
+        streamlit_metrics._path_setting(
+            "dashboard_summary_table_dir",
+            "SVTK_SUMMARY_ROOT",
+            aliases=("summary_root", "dashboard_summary_dir"),
+        )
+        == "clear-summaries"
+    )
+
+    monkeypatch.setattr(streamlit_metrics.st, "query_params", {"metrics_root": "legacy-metrics", "summary_root": "legacy-summaries"})
+    assert (
+        streamlit_metrics._path_setting("metrics_dataset_dir", "SVTK_METRICS_ROOT", aliases=("metrics_root",))
+        == "legacy-metrics"
+    )
+    assert (
+        streamlit_metrics._path_setting("dashboard_summary_table_dir", "SVTK_SUMMARY_ROOT", aliases=("summary_root",))
+        == "legacy-summaries"
+    )
+
+    monkeypatch.setattr(streamlit_metrics.st, "query_params", {"metrics_dataset_dir": "", "metrics_root": ""})
+    assert streamlit_metrics._path_setting("metrics_dataset_dir", "SVTK_METRICS_ROOT", aliases=("metrics_root",)) == "env-metrics"
+
+
+def test_qc_dashboard_path_setting_accepts_clear_and_legacy_query_keys(monkeypatch):
+    """QC dashboard URLs should prefer qc_trace_summary but preserve trace_summary."""
+
+    monkeypatch.setenv("SVTK_TRACE_SUMMARY", "env-qc")
+
+    monkeypatch.setattr(streamlit_qc.st, "query_params", {"qc_trace_summary": "clear-qc", "trace_summary": "legacy-qc"})
+    assert streamlit_qc._path_setting("qc_trace_summary", "SVTK_TRACE_SUMMARY", aliases=("trace_summary",)) == "clear-qc"
+
+    monkeypatch.setattr(streamlit_qc.st, "query_params", {"trace_summary": ["legacy-qc"]})
+    assert streamlit_qc._path_setting("qc_trace_summary", "SVTK_TRACE_SUMMARY", aliases=("trace_summary",)) == "legacy-qc"
+
+    monkeypatch.setattr(streamlit_qc.st, "query_params", {"qc_trace_summary": " ", "trace_summary": ""})
+    assert streamlit_qc._path_setting("qc_trace_summary", "SVTK_TRACE_SUMMARY", aliases=("trace_summary",)) == "env-qc"
+
+
 def test_metrics_value_selector_reports_why_no_value_can_be_selected():
     empty = pd.DataFrame(columns=["model", "metric", "band", "med_log2_residual"])
     columns, message = _value_columns_or_message(empty)
@@ -950,8 +1008,14 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
     calls: list[str] = []
     rendered: dict[str, object] = {}
 
-    def fake_path_setting(query_key: str, env_key: str) -> str:  # noqa: ARG001
-        return {"metrics_root": "metrics-root", "summary_root": "summary-root", "config": ""}.get(query_key, "")
+    def fake_path_setting(query_key: str, env_key: str, **kwargs) -> str:  # noqa: ANN003, ARG001
+        return {
+            "metrics_dataset_dir": "metrics-root",
+            "metrics_root": "metrics-root",
+            "dashboard_summary_table_dir": "summary-root",
+            "summary_root": "summary-root",
+            "config": "",
+        }.get(query_key, "")
 
     def fake_cached_loader(summary_root: str, skip_tables: tuple[str, ...] = ()) -> dict[str, pd.DataFrame]:
         calls.append((summary_root, skip_tables))
@@ -1016,8 +1080,14 @@ def test_metrics_dashboard_main_preflights_before_summary_load(monkeypatch):
     warnings: list[str] = []
     rendered_readiness: list[pd.DataFrame] = []
 
-    def fake_path_setting(query_key: str, env_key: str) -> str:  # noqa: ARG001
-        return {"metrics_root": "metrics-root", "summary_root": "summary-root", "config": ""}.get(query_key, "")
+    def fake_path_setting(query_key: str, env_key: str, **kwargs) -> str:  # noqa: ANN003, ARG001
+        return {
+            "metrics_dataset_dir": "metrics-root",
+            "metrics_root": "metrics-root",
+            "dashboard_summary_table_dir": "summary-root",
+            "summary_root": "summary-root",
+            "config": "",
+        }.get(query_key, "")
 
     def fail_cached_loader(*args, **kwargs):  # noqa: ANN002, ANN003
         raise AssertionError("main should not load full summaries when readiness blocks startup")
@@ -1057,8 +1127,14 @@ def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
     calls: list[tuple[str, tuple[str, ...]]] = []
     rendered: dict[str, object] = {}
 
-    def fake_path_setting(query_key: str, env_key: str) -> str:  # noqa: ARG001
-        return {"metrics_root": "", "summary_root": "summary-root", "config": ""}.get(query_key, "")
+    def fake_path_setting(query_key: str, env_key: str, **kwargs) -> str:  # noqa: ANN003, ARG001
+        return {
+            "metrics_dataset_dir": "",
+            "metrics_root": "",
+            "dashboard_summary_table_dir": "summary-root",
+            "summary_root": "summary-root",
+            "config": "",
+        }.get(query_key, "")
 
     def fake_cached_loader(summary_root: str, skip_tables: tuple[str, ...] = ()) -> dict[str, pd.DataFrame]:
         calls.append((summary_root, skip_tables))

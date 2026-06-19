@@ -89,8 +89,16 @@ def main() -> None:
 
     st.set_page_config(page_title="Spatial-VTK Metrics Explorer", layout="wide")
     st.title("Spatial-VTK Metrics Explorer")
-    metrics_root = _path_setting("metrics_root", "SVTK_METRICS_ROOT")
-    summary_root = _path_setting("summary_root", "SVTK_SUMMARY_ROOT")
+    metrics_root = _path_setting(
+        "metrics_dataset_dir",
+        "SVTK_METRICS_ROOT",
+        aliases=("metrics_root", "metrics_dataset"),
+    )
+    summary_root = _path_setting(
+        "dashboard_summary_table_dir",
+        "SVTK_SUMMARY_ROOT",
+        aliases=("summary_root", "dashboard_summary_dir"),
+    )
     config_path = _path_setting("config", "SVTK_CONFIG_FILE")
     if not summary_root:
         st.info("Choose a dashboard summary directory to begin.")
@@ -748,13 +756,17 @@ def _summary_readiness_message(readiness: pd.DataFrame | None, table_name: str) 
     return f"{table_name} summary is not ready{tab_text}. Rebuild dashboard summaries for this run."
 
 
-def _path_setting(query_key: str, env_key: str) -> str:
+def _path_setting(query_key: str, env_key: str, *, aliases: tuple[str, ...] = ()) -> str:
     """Read one app path setting."""
 
-    value = st.query_params.get(query_key, "")
-    if isinstance(value, list):
-        value = value[0] if value else ""
-    return str(value or os.environ.get(env_key, "")).strip()
+    for key in (query_key, *aliases):
+        value = st.query_params.get(key, "")
+        if isinstance(value, list):
+            value = value[0] if value else ""
+        text = str(value or "").strip()
+        if text:
+            return text
+    return str(os.environ.get(env_key, "")).strip()
 
 
 def _metrics_dashboard_row_limit(default: int = DEFAULT_METRICS_DASHBOARD_MAX_ROWS) -> int:
