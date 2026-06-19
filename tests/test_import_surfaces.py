@@ -495,6 +495,20 @@ def test_config_api_docs_include_compute_helpers():
     assert ".. automodule:: spatial_vtk.config.notebook" not in text
 
 
+def test_notebook_helper_docstring_prefers_public_config_import():
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "config"
+        / "notebook.py"
+    )
+    text = source.read_text(encoding="utf-8")
+
+    assert "from spatial_vtk.config import register_svtk_cell_timer" in text
+    assert "from spatial_vtk.config.notebook import register_svtk_cell_timer" not in text
+
+
 def test_qc_api_docs_use_public_package_entry_point():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "qc.rst"
     text = docs.read_text(encoding="utf-8")

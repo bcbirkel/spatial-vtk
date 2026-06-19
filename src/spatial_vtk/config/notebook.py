@@ -9,7 +9,7 @@ toggled from the active Spatial-VTK configuration.
 Usage examples
 --------------
 Register automatic timing for later notebook cells:
-  ``from spatial_vtk.config.notebook import register_svtk_cell_timer``
+  ``from spatial_vtk.config import register_svtk_cell_timer``
   ``register_svtk_cell_timer()``
 """
 

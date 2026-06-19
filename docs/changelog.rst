@@ -4,6 +4,9 @@ Changelog
 2026-06-19
 ----------
 
+- Updated the notebook helper implementation docstring so timing examples use
+  the stable ``spatial_vtk.config`` import surface, with a regression that keeps
+  implementation-module imports out of that user-facing example.
 - Fixed a CLI workflow regression test so legacy plotting keyword checks run
   against the workflow tutorial text instead of referencing an undefined
   local variable.
