@@ -1110,6 +1110,33 @@ def test_visualize_api_docs_use_public_entry_points():
     assert ".. automodule:: spatial_vtk.visualize.dashboard\n" in text
     assert ".. automodule:: spatial_vtk.visualize.qc\n" in text
     assert ".. automodule:: spatial_vtk.visualize.waveforms\n" in text
+    assert "Import context helpers from ``spatial_vtk.visualize.context``" in text
+    assert "Import QC visualization helpers from ``spatial_vtk.visualize.qc``" in text
+    assert "Import waveform\nfigure helpers from ``spatial_vtk.visualize.waveforms``" in text
+    assert "Import dashboard helpers\nfrom ``spatial_vtk.visualize.dashboard``" in text
+    forbidden_modules = (
+        "spatial_vtk.visualize.context.figures",
+        "spatial_vtk.visualize.context.maps",
+        "spatial_vtk.visualize.qc.overview",
+        "spatial_vtk.visualize.qc.retention",
+        "spatial_vtk.visualize.qc.samples",
+        "spatial_vtk.visualize.waveforms.comparison",
+        "spatial_vtk.visualize.waveforms.overlays",
+        "spatial_vtk.visualize.waveforms.radial_sections",
+        "spatial_vtk.visualize.waveforms.record_sections",
+        "spatial_vtk.visualize.waveforms.station_event",
+        "spatial_vtk.visualize.dashboard.charts",
+        "spatial_vtk.visualize.dashboard.contracts",
+        "spatial_vtk.visualize.dashboard.export",
+        "spatial_vtk.visualize.dashboard.exports",
+        "spatial_vtk.visualize.dashboard.filters",
+        "spatial_vtk.visualize.dashboard.labels",
+        "spatial_vtk.visualize.dashboard.launch",
+        "spatial_vtk.visualize.dashboard.maps",
+        "spatial_vtk.visualize.dashboard.tables",
+    )
+    for module_name in forbidden_modules:
+        assert f".. automodule:: {module_name}" not in text
     assert "When a dashboard tab is blank or unexpectedly sparse" in text
     assert "from spatial_vtk.visualize.dashboard import (" in text
     assert "dashboard_output_status_frame" in text

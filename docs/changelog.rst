@@ -144,6 +144,9 @@ Changelog
   ``display_path_table_previews()`` alongside registered-table preview helpers,
   making path-backed preprocessing metadata previews discoverable from the
   public API docs.
+- Updated the Visualization API reference to document context, QC, waveform,
+  and dashboard helpers through their public subpackage entry points instead
+  of lower-level implementation-module autodoc blocks.
 - Python workflow docs now steer new notebooks to ``output_group()`` so
   readiness, previews, completion checks, and figure path helpers stay attached
   to one workflow object.

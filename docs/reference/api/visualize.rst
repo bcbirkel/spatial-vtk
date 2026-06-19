@@ -96,11 +96,9 @@ event, record-coverage, and study-domain context figures.
 .. automodule:: spatial_vtk.visualize.context
    :members:
 
-.. automodule:: spatial_vtk.visualize.context.figures
-   :members:
-
-.. automodule:: spatial_vtk.visualize.context.maps
-   :members:
+The lower-level context figure and map modules are implementation
+organization. Import context helpers from ``spatial_vtk.visualize.context`` in
+notebooks and scripts.
 
 Quality Control Figures
 -----------------------
@@ -111,14 +109,9 @@ drop-cause, waveform-sample, and post-QC map figures.
 .. automodule:: spatial_vtk.visualize.qc
    :members:
 
-.. automodule:: spatial_vtk.visualize.qc.overview
-   :members:
-
-.. automodule:: spatial_vtk.visualize.qc.retention
-   :members:
-
-.. automodule:: spatial_vtk.visualize.qc.samples
-   :members:
+The lower-level QC overview, retention, and sample modules are implementation
+organization. Import QC visualization helpers from ``spatial_vtk.visualize.qc``
+in notebooks and scripts.
 
 Waveform Figures
 ----------------
@@ -135,20 +128,10 @@ output group, filters, and plotting keyword arguments.
 .. automodule:: spatial_vtk.visualize.waveforms
    :members:
 
-.. automodule:: spatial_vtk.visualize.waveforms.comparison
-   :members:
-
-.. automodule:: spatial_vtk.visualize.waveforms.overlays
-   :members:
-
-.. automodule:: spatial_vtk.visualize.waveforms.radial_sections
-   :members:
-
-.. automodule:: spatial_vtk.visualize.waveforms.record_sections
-   :members:
-
-.. automodule:: spatial_vtk.visualize.waveforms.station_event
-   :members:
+The lower-level waveform comparison, overlay, radial-section, record-section,
+and station-event modules are implementation organization. Import waveform
+figure helpers from ``spatial_vtk.visualize.waveforms`` in notebooks and
+scripts.
 
 Dashboard Helpers
 -----------------
@@ -319,32 +302,9 @@ small enough for the dashboard process.
 .. automodule:: spatial_vtk.visualize.dashboard
    :members:
 
-.. automodule:: spatial_vtk.visualize.dashboard.charts
-   :members:
-
-.. automodule:: spatial_vtk.visualize.dashboard.contracts
-   :members:
-
-.. automodule:: spatial_vtk.visualize.dashboard.export
-   :members:
-
-.. automodule:: spatial_vtk.visualize.dashboard.exports
-   :members:
-
-.. automodule:: spatial_vtk.visualize.dashboard.filters
-   :members:
-
-.. automodule:: spatial_vtk.visualize.dashboard.labels
-   :members:
-
-.. automodule:: spatial_vtk.visualize.dashboard.launch
-   :members:
-
-.. automodule:: spatial_vtk.visualize.dashboard.maps
-   :members:
-
-.. automodule:: spatial_vtk.visualize.dashboard.tables
-   :members:
+The lower-level dashboard chart, contract, export, filter, label, launch, map,
+and table modules are implementation organization. Import dashboard helpers
+from ``spatial_vtk.visualize.dashboard`` in notebooks and scripts.
 
 Shared Figure Utilities
 -----------------------
