@@ -4,6 +4,9 @@ Changelog
 2026-06-19
 ----------
 
+- Updated the generated CLI reference tables to use explicit positional
+  metavars, so ``svtk config set`` documents the saved config argument as
+  ``PATH`` consistently in both usage and parameter rows.
 - Normalized ``--config`` CLI arguments to render as ``PATH`` values in live
   help and generated reference pages, including ``svtk config set``.
 - Added a public workflow-helper table to the Metrics API reference so

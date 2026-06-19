@@ -184,7 +184,7 @@ svtk config set
      - No
      -
      - show this help message and exit
-   * - ``config_path``
+   * - ``PATH``
      - Yes
      -
      - Filesystem path. Spatial-VTK config file to use by default.

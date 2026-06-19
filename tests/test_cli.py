@@ -995,9 +995,11 @@ def test_config_cli_help_marks_config_values_as_paths(capsys):
     config_reference = (root / "docs" / "reference" / "cli" / "config.rst").read_text(encoding="utf-8")
     assert "svtk config show [-h] [--config PATH]" in config_reference
     assert "svtk config set [-h] PATH" in config_reference
+    assert "   * - ``PATH``" in config_reference
     assert "Filesystem path. Explicit config file." in config_reference
     assert "Filesystem path. Spatial-VTK config file to use by default." in config_reference
     assert "[--config CONFIG]" not in config_reference
+    assert "   * - ``config_path``" not in config_reference
     assert "Value: ``config``. Explicit config file." not in config_reference
 
 

@@ -427,7 +427,7 @@ def _argument_row(action: argparse.Action) -> tuple[str, str, str, str] | None:
         required = "Yes" if getattr(action, "required", False) else "No"
         default = _default_text(action)
     else:
-        name = f"``{action.dest}``"
+        name = f"``{_render_metavar(action.metavar) if action.metavar else action.dest}``"
         required = "Yes"
         default = _default_text(action)
     description = _rst_escape((action.help or "").replace("%(default)s", str(action.default))).strip()
@@ -440,13 +440,21 @@ def _argument_row(action: argparse.Action) -> tuple[str, str, str, str] | None:
     return name, required, default, description or ""
 
 
+def _render_metavar(metavar: object) -> str:
+    """Render one argparse metavar for usage and table text."""
+
+    if isinstance(metavar, tuple):
+        return " ".join(str(item) for item in metavar)
+    return str(metavar)
+
+
 def _metavar_description_prefix(metavar: object) -> str:
     """Return a human-readable value prefix for common path metavars."""
 
     if isinstance(metavar, tuple):
-        rendered = " ".join(str(item) for item in metavar)
+        rendered = _render_metavar(metavar)
     else:
-        rendered = str(metavar)
+        rendered = _render_metavar(metavar)
     normalized = rendered.strip().upper()
     if normalized == "PATH":
         return "Filesystem path."
