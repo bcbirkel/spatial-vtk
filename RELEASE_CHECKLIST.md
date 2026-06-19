@@ -15,6 +15,10 @@ Do not publish with generated files staged. Keep `dist/`, `build/`,
 `src/spatial_vtk.egg-info/`, `docs/_build/`, `outputs/`, caches, and bytecode
 out of git.
 
+Keep local agent notes, execplans, and machine-specific instructions out of
+public commits. `AGENTS.md`, `.agents/`, `.codex/`, `EXECPLAN.md`,
+`execplan.md`, and `*_execplan.md` are ignored for that reason.
+
 ## 2. Install Release Dependencies
 
 ```bash

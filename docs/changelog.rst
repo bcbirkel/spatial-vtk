@@ -84,6 +84,9 @@ Changelog
 
     - Added regression coverage for public API import examples, committed
       tutorial data, CLI workflow examples, and changelog formatting.
+    - Added release guardrails so local agent notes, execplans, and machine-
+      specific instructions stay ignored and are called out before public
+      publishing.
     - Clarified tutorial runtime checks so missing importable modules are
       reported directly before the install command.
     - Aligned README, installation docs, source-checkout validation, and CI

@@ -298,6 +298,24 @@ def test_public_package_discovery_excludes_legacy_namespace():
     assert not (pyproject.parent / "src" / legacy_namespace).exists()
 
 
+def test_private_agent_plans_are_ignored_for_public_release():
+    """Local agent notes and execplans should stay out of public commits."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    gitignore = (root / ".gitignore").read_text(encoding="utf-8")
+    checklist = (root / "RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
+    for snippet in (
+        "AGENTS.md",
+        ".agents/",
+        ".codex/",
+        "EXECPLAN.md",
+        "execplan.md",
+        "*_execplan.md",
+    ):
+        assert snippet in gitignore
+        assert snippet in checklist
+
+
 def test_release_checklist_exists_and_matches_public_validation_gates():
     """The public release checklist should name the current validation gates."""
 
@@ -333,6 +351,33 @@ def test_release_checklist_exists_and_matches_public_validation_gates():
     assert "/pro" + "ject" not in text
     assert "jvi" + "dale" not in text
     assert "CA" + "RC" not in text
+
+
+def test_public_docs_avoid_private_paths_and_cluster_notes():
+    """Published docs should not mention local machines or private run paths."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    public_paths = [
+        root / "README.md",
+        root / "RELEASE_CHECKLIST.md",
+        *list((root / "docs").rglob("*.rst")),
+        *list((root / "docs").rglob("*.md")),
+    ]
+    text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in public_paths
+        if "_build" not in path.parts
+    )
+    forbidden = (
+        "/pro" + "ject2",
+        "jvi" + "dale",
+        "CA" + "RC",
+        "hpc" + ".usc",
+        "on" + "demand",
+        "/Users/",
+    )
+    matches = [token for token in forbidden if token in text]
+    assert not matches, f"Public docs contain private/local tokens: {matches}"
 
 
 def test_changelog_dated_sections_use_bulleted_entries():

@@ -11,6 +11,11 @@ htmlcov/
 .cache/
 .ipynb_checkpoints/
 AGENTS.md
+.agents/
+.codex/
+EXECPLAN.md
+execplan.md
+*_execplan.md
 inputs/basemaps/
 .DS_Store
 
