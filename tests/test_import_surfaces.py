@@ -75,6 +75,7 @@ def test_public_imports():
         run_boundary_corridor_workflow_from_config,
         boundary_corridor_readiness_from_config,
         geojson_region_summary_readiness_from_config,
+        load_standard_spatial_workflow_outputs,
         run_geojson_region_summary_workflow_from_config,
         run_spatial_derived_outputs_workflow_from_config,
         run_spatial_statistics_workflow_from_config,
@@ -88,6 +89,7 @@ def test_public_imports():
         spatial_summary_readiness_from_config,
         spatial_workflow_failure_frame,
         station_bias_preview_frame,
+        StandardSpatialWorkflowOutputResult,
         summarize_standard_spatial_products,
     )
     from spatial_vtk.visualize.dashboard import (
@@ -182,11 +184,13 @@ def test_public_imports():
     assert callable(run_boundary_corridor_workflow_from_config)
     assert callable(boundary_corridor_readiness_from_config)
     assert callable(geojson_region_summary_readiness_from_config)
+    assert callable(load_standard_spatial_workflow_outputs)
     assert callable(run_geojson_region_summary_workflow_from_config)
     assert callable(run_spatial_derived_outputs_workflow_from_config)
     assert callable(run_spatial_statistics_workflow_from_config)
     assert callable(spatial_derived_outputs_readiness_from_config)
     assert callable(StandardSpatialProductSummaryResult)
+    assert callable(StandardSpatialWorkflowOutputResult)
     assert callable(corridor_record_preview_frame)
     assert callable(corridor_record_pair_frame)
     assert callable(event_station_records_matching_pairs)
@@ -1526,6 +1530,7 @@ def test_package_overview_points_to_public_workflow_helpers():
         "``geojson_region_summary_readiness_from_config``",
         "``boundary_corridor_readiness_from_config``",
         "``run_spatial_statistics_workflow_from_config``",
+        "``load_standard_spatial_workflow_outputs``",
         "``run_geojson_region_summary_workflow_from_config``",
         "``run_boundary_corridor_workflow_from_config``",
         "``load_standard_geojson_plotting_inputs``",

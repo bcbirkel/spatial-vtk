@@ -30,6 +30,8 @@ Changelog
   helper.
 - Added ``load_standard_geojson_plotting_inputs()`` for standard Step 5
   GeoJSON tutorial inputs.
+- Added ``load_standard_spatial_workflow_outputs()`` for standard Step 4
+  spatial output loading and per-metric product summaries.
 
 **Changed and Rewired**
 
@@ -45,6 +47,8 @@ Changelog
   upstream table dependencies are resolved by package code.
 - Rewired the standard Step 5 GeoJSON notebook so configured region paths and
   upstream table loading are resolved by package code.
+- Rewired the standard Step 4 spatial notebook so configured output-table
+  mappings and per-metric product summaries are resolved by package code.
 - Updated the Metrics API reference to document metric calculation and
   workflow helpers through ``spatial_vtk.metrics.calculate`` and
   ``spatial_vtk.metrics.workflow`` instead of lower-level implementation

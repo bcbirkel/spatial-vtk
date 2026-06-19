@@ -163,6 +163,8 @@ Start with public helpers from ``spatial_vtk.spatial``:
 
 - ``run_spatial_statistics_workflow_from_config`` for standard spatial
   statistics tables
+- ``load_standard_spatial_workflow_outputs`` for standard Step 4 output-table
+  loading and per-metric product summaries
 - ``run_spatial_derived_outputs_workflow_from_config`` for optional REDCAP,
   block holdout, and pattern-similarity tables
 - ``geojson_region_summary_readiness_from_config`` and

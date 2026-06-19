@@ -1173,8 +1173,11 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     assert "run_spatial_statistics_workflow_from_config(" in source
     assert 'metrics="paths.metric_figure_snapshot"' in source
     assert 'station_metadata="paths.site_metadata"' in source
-    assert 'step_outputs = output_group("step_04_spatial", cfg=cfg)' in source
-    assert "spatial_tables = step_outputs.load_tables(" in source
+    assert "load_standard_spatial_workflow_outputs(" in source
+    assert "spatial_outputs = load_standard_spatial_workflow_outputs(spatial_result, cfg=cfg)" in source
+    assert "spatial_outputs.status_frame()" in source
+    assert 'step_outputs = output_group("step_04_spatial", cfg=cfg)' not in source
+    assert "spatial_tables = step_outputs.load_tables(" not in source
     assert "render_notebook_figure(" not in source
     assert "step_outputs.figure_path(" not in source
     assert "outpath=" not in source
@@ -1182,9 +1185,10 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     assert "showfig=True" not in source
     assert "spatial_sidecars" not in source
     assert "spatial_workflow_failure_frame(" in source
-    assert "summarize_standard_spatial_products(" in source
-    assert "spatial_product_summary.summary_frame()" in source
-    assert "spatial_product_summary.station_bias_preview_frame()" in source
+    assert "summarize_standard_spatial_products(" not in source
+    assert "summarize_standard_spatial_products," not in source
+    assert "spatial_outputs.summary_frame()" in source
+    assert "spatial_outputs.station_bias_preview_frame()" in source
     assert "spatial_metric_product_frames(" not in source
     assert "spatial_metric_product_summary_frame(" not in source
     assert "station_bias_preview_frame(bias" not in source

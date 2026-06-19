@@ -65,6 +65,7 @@ from spatial_vtk.io import (
     waveform_preprocessing_from_config,
     waveform_preprocessing_label,
     write_artifact_manifest,
+    write_table,
     write_output_table,
 )
 import spatial_vtk.visualize.figure_io as figure_io
@@ -1912,6 +1913,84 @@ outputs:
         "comparison_eligible",
     }
     assert status.loc[status["artifact"].eq("region_geojson"), "status"].iloc[0] == "ready"
+    clear_active_config()
+
+
+def test_standard_spatial_workflow_output_loader_owns_step04_table_mapping(tmp_path, monkeypatch):
+    """Standard Step 4 notebooks should not map spatial output tables by hand."""
+
+    from spatial_vtk.spatial import load_standard_spatial_workflow_outputs
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+  figures: run_outputs/figures
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    outputs = output_group("step_04_spatial", cfg=cfg)
+    metric_field = pd.DataFrame(
+        {
+            "metric": ["PGA"],
+            "event_id": ["E1"],
+            "station": ["STA"],
+            "field_value": [0.2],
+        }
+    )
+    event_centered = pd.DataFrame(
+        {
+            "metric": ["PGA"],
+            "event_id": ["E1"],
+            "station": ["STA"],
+            "mean_centered": [0.0],
+        }
+    )
+    station_bias = pd.DataFrame(
+        {
+            "metric": ["PGA"],
+            "station": ["STA"],
+            "mean_centered": [0.2],
+            "n_events": [1],
+        }
+    )
+    table_payloads = {
+        "metric_field_path": metric_field,
+        "event_centered_path": event_centered,
+        "station_bias_path": station_bias,
+        "morans_i_path": pd.DataFrame({"metric": ["PGA"], "I": [0.0]}),
+        "distance_corr_path": pd.DataFrame({"metric": ["PGA"], "distance_bin": ["0-10"], "correlation": [0.0]}),
+        "clusters_path": pd.DataFrame({"metric": ["PGA"], "station": ["STA"], "cluster": [0]}),
+        "cluster_scores_path": pd.DataFrame({"metric": ["PGA"], "score": [1.0]}),
+        "cluster_summary_path": pd.DataFrame({"metric": ["PGA"], "cluster": [0], "n": [1]}),
+        "pca_scores_path": pd.DataFrame({"metric": ["PGA"], "station": ["STA"], "PC1": [0.0]}),
+        "pca_loadings_path": pd.DataFrame({"metric": ["PGA"], "feature": ["mean_centered"], "loading": [1.0]}),
+        "pca_explained_path": pd.DataFrame({"metric": ["PGA"], "mode": ["PC1"], "explained_variance_ratio": [1.0]}),
+        "geology_path": pd.DataFrame({"metric": ["PGA"], "contrast": ["demo"], "effect": [0.0]}),
+    }
+    for path_name, frame in table_payloads.items():
+        write_table(frame, getattr(outputs, path_name))
+
+    loaded = load_standard_spatial_workflow_outputs({"metrics": ["PGA"]}, cfg=cfg)
+
+    assert loaded.outputs.name == "step_04_spatial"
+    assert all(not name.endswith("_path") for name in loaded.tables)
+    assert {"metric_field", "event_centered_residuals", "station_bias", "morans_i"}.issubset(loaded.tables)
+    assert loaded.metrics == ("PGA",)
+    assert len(loaded.metric_field) == 1
+    assert len(loaded.event_centered_residuals) == 1
+    assert len(loaded.station_bias) == 1
+    assert "PGA" in loaded.spatial_products
+    status = loaded.status_frame()
+    assert status.loc[status["table"].eq("metric_field"), "rows"].iloc[0] == 1
+    assert not loaded.summary_frame().empty
+    assert not loaded.station_bias_preview_frame().empty
     clear_active_config()
 
 

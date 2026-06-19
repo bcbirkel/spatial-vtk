@@ -354,6 +354,61 @@ class StandardSpatialProductSummaryResult:
 
 
 @dataclass(frozen=True)
+class StandardSpatialWorkflowOutputResult:
+    """Loaded Step 4 output tables and product summaries for standard notebooks."""
+
+    outputs: object
+    tables: dict[str, pd.DataFrame]
+    product_summary: StandardSpatialProductSummaryResult
+
+    @property
+    def metrics(self) -> tuple[str, ...]:
+        """Return metrics represented by the loaded spatial products."""
+
+        return self.product_summary.metrics
+
+    @property
+    def spatial_products(self) -> dict[str, dict[str, pd.DataFrame]]:
+        """Return per-metric spatial product frames."""
+
+        return self.product_summary.spatial_products
+
+    @property
+    def metric_field(self) -> pd.DataFrame:
+        """Return the loaded metric-field table."""
+
+        return self.tables["metric_field"]
+
+    @property
+    def event_centered_residuals(self) -> pd.DataFrame:
+        """Return the loaded event-centered residual table."""
+
+        return self.tables["event_centered_residuals"]
+
+    @property
+    def station_bias(self) -> pd.DataFrame:
+        """Return the loaded station-bias table."""
+
+        return self.tables["station_bias"]
+
+    def summary_frame(self) -> pd.DataFrame:
+        """Return compact per-metric spatial product summaries."""
+
+        return self.product_summary.summary_frame()
+
+    def station_bias_preview_frame(self) -> pd.DataFrame:
+        """Return bounded station-bias preview rows for all selected metrics."""
+
+        return self.product_summary.station_bias_preview_frame()
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact row-count table for loaded Step 4 outputs."""
+
+        rows = [{"table": name, "rows": len(frame)} for name, frame in self.tables.items()]
+        return pd.DataFrame(rows, columns=["table", "rows"])
+
+
+@dataclass(frozen=True)
 class _SpatialMetricCheckpoint:
     """Loaded checkpoint tables for one spatial metric."""
 
@@ -628,6 +683,67 @@ def summarize_standard_spatial_products(
         spatial_products=products_by_metric,
         summary_rows=tuple(summary_rows),
         station_bias_previews=tuple(preview_rows),
+    )
+
+
+def load_standard_spatial_workflow_outputs(
+    spatial_result: SpatialStatisticsWorkflowResult | dict[str, object] | Sequence[str],
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    output_group_name: str = "step_04_spatial",
+    station_bias_preview_rows: int = 5,
+) -> StandardSpatialWorkflowOutputResult:
+    """Load standard Step 4 workflow outputs and build product summaries.
+
+    Parameters
+    ----------
+    spatial_result
+        Spatial workflow result, configured-workflow summary dictionary, or
+        explicit metric sequence used to select per-metric product frames.
+    cfg
+        Active Spatial-VTK config. When omitted, the active config is used by
+        the underlying output-group helpers.
+    output_group_name
+        Configured output group that owns the standard Step 4 spatial tables.
+    station_bias_preview_rows
+        Maximum station-bias preview rows to retain per metric.
+
+    Returns
+    -------
+    StandardSpatialWorkflowOutputResult
+        Loaded tables, output group, and compact product summaries for Step 4
+        plotting cells.
+    """
+
+    outputs = output_group(output_group_name, cfg=cfg)
+    tables = outputs.load_tables(
+        {
+            "metric_field": "metric_field_path",
+            "event_centered_residuals": "event_centered_path",
+            "station_bias": "station_bias_path",
+            "morans_i": "morans_i_path",
+            "distance_bins": "distance_corr_path",
+            "clusters": "clusters_path",
+            "cluster_scores": "cluster_scores_path",
+            "cluster_summary": "cluster_summary_path",
+            "pca_station_scores": "pca_scores_path",
+            "pca_feature_loadings": "pca_loadings_path",
+            "pca_explained_variance": "pca_explained_path",
+            "geology_contrasts": "geology_path",
+        },
+        cfg=cfg,
+    )
+    product_summary = summarize_standard_spatial_products(
+        spatial_result,
+        metric_field=tables["metric_field"],
+        event_centered=tables["event_centered_residuals"],
+        station_bias=tables["station_bias"],
+        station_bias_preview_rows=station_bias_preview_rows,
+    )
+    return StandardSpatialWorkflowOutputResult(
+        outputs=outputs,
+        tables=tables,
+        product_summary=product_summary,
     )
 
 
@@ -1818,6 +1934,8 @@ __all__ = [
     "SpatialDerivedOutputsWorkflowResult",
     "SpatialStatisticsWorkflowResult",
     "StandardSpatialProductSummaryResult",
+    "StandardSpatialWorkflowOutputResult",
+    "load_standard_spatial_workflow_outputs",
     "run_spatial_derived_outputs_workflow",
     "run_spatial_derived_outputs_workflow_from_config",
     "run_spatial_statistics_workflow",

@@ -62,6 +62,9 @@ Public helpers exposed by ``spatial_vtk.spatial``:
      - Build the per-metric Step 4 product frame dictionary and compact
        summary/preview display tables from configured spatial workflow
        outputs, keeping metric-specific dataframe loops out of notebooks.
+   * - ``load_standard_spatial_workflow_outputs``
+     - Load the standard Step 4 output-table bundle and build per-metric
+       product summaries without notebook-local output-group table mappings.
    * - ``spatial_metric_table_frame``, ``spatial_metric_product_frames``, and
        ``spatial_pca_product_frames``
      - Select metric-specific rows from Step 4 output tables without repeating
@@ -129,6 +132,11 @@ import paths.
    :members:
 
 .. autofunction:: spatial_vtk.spatial.summarize_standard_spatial_products
+
+.. autoclass:: spatial_vtk.spatial.StandardSpatialWorkflowOutputResult
+   :members:
+
+.. autofunction:: spatial_vtk.spatial.load_standard_spatial_workflow_outputs
 
 .. autofunction:: spatial_vtk.spatial.spatial_metric_table_frame
 
