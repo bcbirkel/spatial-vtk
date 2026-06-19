@@ -996,7 +996,13 @@ def output_group_namespace(
     create_parent: bool = True,
     include_optional: bool = True,
 ) -> SimpleNamespace:
-    """Resolve one output group as an attribute namespace."""
+    """Resolve one output group as a legacy attribute namespace.
+
+    This compatibility wrapper returns only resolved path attributes. New
+    notebooks and workflow code should use :func:`output_group` so they also
+    get readiness, completion, table-loading, preview, and figure-path helpers
+    from the returned :class:`OutputGroup`.
+    """
 
     return SimpleNamespace(**output_group_paths(group, cfg=cfg, create_parent=create_parent, include_optional=include_optional))
 

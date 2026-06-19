@@ -1472,6 +1472,10 @@ outputs:
     assert namespace.qc_trace_summary_path == tmp_path / "run_outputs" / "tables" / "qc_trace_summary.csv"
     assert namespace.metrics_dashboard_root == tmp_path / "run_outputs" / "dashboards" / "metrics_dashboard"
     assert namespace.dashboard_summary_root == tmp_path / "run_outputs" / "dashboards" / "dashboard_summaries"
+    assert "legacy attribute namespace" in (output_group_namespace.__doc__ or "")
+    assert "New notebooks and workflow code should use :func:`output_group`" in (
+        output_group_namespace.__doc__ or ""
+    )
 
     preprocessed_group = preprocessed_waveform_output_group(config=cfg)
     assert preprocessed_group.name == "preprocessed_waveforms"

@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-19
+   - Clarified that ``output_group_namespace()`` is a legacy path-only
+     compatibility wrapper. Python workflow docs now steer new notebooks to
+     ``output_group()`` so readiness, previews, completion checks, and figure
+     path helpers stay attached to one workflow object.
    - Made ``spatial_vtk.cli`` defer pandas and PyYAML imports until table I/O or
      YAML parsing is actually needed. ``svtk --help`` and
      ``tools/generate_cli_reference.py`` can now build the parser in lightweight

@@ -119,6 +119,10 @@ the large-run notebooks.
        ``display_table_previews()`` handle multiple tables or display-label
        mappings. Pass ``missing="skip"`` when a figure can use an optional
        output if present but should continue without it.
+       Legacy helpers such as ``output_group_namespace()`` return only path
+       attributes; new notebooks should use ``output_group()`` so readiness,
+       previews, completion checks, and figure-path helpers stay attached to
+       the same object.
        For output groups that own table paths outside the configured output
        registry, such as preprocessing metadata, use ``load_path_table()`` or
        ``preview_path_table()`` with the group path name for one table, or

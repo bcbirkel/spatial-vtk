@@ -888,6 +888,8 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "Use ``figure_path()`` for figure artifacts" in workflows
     assert "``figure_dir / \"name.png\"``" in workflows
     assert "``bind()`` remains available for older notebooks" in workflows
+    assert "Legacy helpers such as ``output_group_namespace()`` return only path attributes" in workflows
+    assert "new notebooks should use ``output_group()``" in workflows
     assert "``PSA`` and\n``FAS`` are broadband spectral calculations" in workflows
     assert "one blank-passband spectral task" in workflows
     assert "PSA figures should use\noscillator-period sheets" in workflows
