@@ -1766,7 +1766,7 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
 
 
 def test_large_run_grouped_steps_use_output_group_readiness() -> None:
-    """Grouped large-run steps should keep remaining path-readiness plumbing in OutputGroup."""
+    """Large-run notebooks should not fall back to generic output_readiness calls."""
 
     repo_root = Path(__file__).resolve().parents[1]
     for relative in (
@@ -1775,7 +1775,6 @@ def test_large_run_grouped_steps_use_output_group_readiness() -> None:
         notebook_path = repo_root / "docs" / "examples" / relative
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-        assert "step_outputs.readiness(" in source, notebook_path.relative_to(repo_root)
         assert "output_readiness(" not in source, notebook_path.relative_to(repo_root)
         assert "output_readiness," not in source, notebook_path.relative_to(repo_root)
 
@@ -1789,15 +1788,20 @@ def test_large_run_step03_uses_metric_batch_status_before_submit_and_merge() -> 
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "metric_slurm_submission_readiness_from_config," in source
+    assert "metric_inventories_readiness_from_config," in source
+    assert "metric_manifest_readiness_from_config," in source
     assert "metric_batch_merge_readiness_from_config," in source
     assert "metric_outputs_readiness_from_config," in source
     assert "from spatial_vtk.metrics.workflow import metric_manifest_batch_status" not in source
     assert "from spatial_vtk.metrics import metric_manifest_batch_status" not in source
     assert "metric_manifest_batch_status(" not in source
     assert "metric_slurm_submission_readiness(" not in source
+    assert "inventory_readiness = metric_inventories_readiness_from_config(" in source
+    assert "manifest_readiness = metric_manifest_readiness_from_config(" in source
     assert "slurm_readiness = metric_slurm_submission_readiness_from_config(" in source
     assert "merge_readiness = metric_batch_merge_readiness_from_config(" in source
     assert "downstream_readiness = metric_outputs_readiness_from_config(" in source
+    assert "step_outputs.readiness(" not in source
     assert '"incomplete_only": not OVERWRITE' in source
     assert '"overwrite_batches": OVERWRITE' in source
     assert "metric_manifest_path.exists()" not in source
@@ -1825,6 +1829,8 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert 'step_outputs = output_group("step_03_metrics")' not in source
     assert "preprocessed_waveform_metadata_paths(config=cfg)" not in source
     assert "plan_metric_tasks_from_config," in source
+    assert "metric_inventories_readiness_from_config," in source
+    assert "metric_manifest_readiness_from_config," in source
     assert "write_metrics_slurm_script_from_config," in source
     assert "merge_metric_batches_from_config," in source
     assert "write_metric_outputs_from_config," in source

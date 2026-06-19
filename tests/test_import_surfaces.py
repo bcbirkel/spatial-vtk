@@ -30,6 +30,8 @@ def test_public_imports():
         compute_metrics_pair,
         load_standard_metric_workflow_outputs,
         metric_batch_merge_readiness_from_config,
+        metric_inventories_readiness_from_config,
+        metric_manifest_readiness_from_config,
         metric_manifest_batch_status,
         metric_outputs_readiness_from_config,
         metric_slurm_submission_readiness,
@@ -183,6 +185,8 @@ def test_public_imports():
     assert callable(metric_batch_merge_readiness_from_config)
     assert callable(metric_manifest_batch_status)
     assert callable(metric_outputs_readiness_from_config)
+    assert callable(metric_inventories_readiness_from_config)
+    assert callable(metric_manifest_readiness_from_config)
     assert callable(metric_slurm_submission_readiness)
     assert callable(metric_slurm_submission_readiness_from_config)
     assert callable(MetricFigureContext.from_frame)
@@ -664,7 +668,9 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "Public workflow helpers exposed by ``spatial_vtk.metrics``" in text
     for helper in (
         "build_metric_waveform_inventories_from_config",
+        "metric_inventories_readiness_from_config",
         "plan_metric_tasks_from_config",
+        "metric_manifest_readiness_from_config",
         "cache_metric_manifest_waveforms",
         "load_standard_metric_workflow_outputs",
         "metric_slurm_submission_readiness_from_config",
@@ -773,7 +779,9 @@ def test_metrics_api_docs_workflow_helpers_resolve_from_public_surface():
 
     helpers = (
         "build_metric_waveform_inventories_from_config",
+        "metric_inventories_readiness_from_config",
         "plan_metric_tasks_from_config",
+        "metric_manifest_readiness_from_config",
         "cache_metric_manifest_waveforms",
         "metric_slurm_submission_readiness_from_config",
         "write_metrics_slurm_script_from_config",
@@ -1542,7 +1550,9 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.qc.write_qc_inventory_overlap_from_config",
         "spatial_vtk.qc.run_qc_summary_workflow_from_config",
         "spatial_vtk.metrics.build_metric_waveform_inventories_from_config",
+        "spatial_vtk.metrics.metric_inventories_readiness_from_config",
         "spatial_vtk.metrics.plan_metric_tasks_from_config",
+        "spatial_vtk.metrics.metric_manifest_readiness_from_config",
         "spatial_vtk.metrics.summarize_metric_snapshot_tasks_from_config",
         "spatial_vtk.metrics.load_standard_metric_workflow_outputs",
         "spatial_vtk.metrics.metric_slurm_submission_readiness_from_config",

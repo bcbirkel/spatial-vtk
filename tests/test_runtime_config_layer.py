@@ -108,6 +108,10 @@ from spatial_vtk.qc import (
     qc_overlap_readiness_from_config,
     qc_summary_readiness_from_config,
 )
+from spatial_vtk.metrics import (
+    metric_inventories_readiness_from_config,
+    metric_manifest_readiness_from_config,
+)
 from spatial_vtk.spatial.plot import load_standard_geojson_plotting_inputs
 
 
@@ -1913,6 +1917,70 @@ outputs:
     assert "comparison_eligible_path" in output_names
     assert "manual_queue_path" in output_names
     assert dict(summary_ready_to_run.output_items)["drop_causes_overlap_path"] == step_outputs.drop_causes_overlap_path
+    clear_active_config()
+
+
+def test_metric_readiness_helpers_own_step03_inventory_and_manifest_contracts(tmp_path, monkeypatch):
+    """Step 3 notebooks should use package-owned metric inventory and manifest readiness."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+  preprocessed_waveforms: run_outputs/preprocessed_waveforms
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    metric_outputs = output_group("step_03_metrics", cfg=cfg)
+    preprocessed_outputs = preprocessed_waveform_output_group(config=cfg, create_parent=True)
+
+    inventories_missing = metric_inventories_readiness_from_config(config_path=config_path)
+    assert inventories_missing.reason == "missing_inputs"
+    assert dict(inventories_missing.input_items)["trace_metadata_path"] == preprocessed_outputs.preprocessed_trace_metadata_path
+    assert set(dict(inventories_missing.output_items)) == {"observed_inventory_path", "synthetic_inventory_path"}
+
+    preprocessed_outputs.preprocessed_trace_metadata_path.write_text("event_id,station\nE1,STA\n", encoding="utf-8")
+    inventories_ready_to_run = metric_inventories_readiness_from_config(config_path=config_path)
+    assert inventories_ready_to_run.reason == "missing_outputs"
+
+    for path in (metric_outputs.observed_inventory_path, metric_outputs.synthetic_inventory_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("event_id,station,component,path\nE1,STA,Z,file.npz\n", encoding="utf-8")
+    inventories_current = metric_inventories_readiness_from_config(
+        config_path=config_path,
+        current_message="Metric inventories are current.",
+    )
+    assert inventories_current.reason == "current"
+    assert inventories_current.message == "Metric inventories are current."
+    assert metric_inventories_readiness_from_config(config_path=config_path, overwrite=True).reason == "overwrite"
+
+    manifest_missing_overlap = metric_manifest_readiness_from_config(config_path=config_path)
+    assert manifest_missing_overlap.reason == "missing_inputs"
+    manifest_input_names = set(dict(manifest_missing_overlap.input_items))
+    assert {"observed_inventory_path", "synthetic_inventory_path", "qc_inventory_overlap_path"} == manifest_input_names
+
+    metric_outputs.qc_inventory_overlap_path.write_text(
+        "source,event_id,station,component,passband,qc_status\n",
+        encoding="utf-8",
+    )
+    manifest_ready_to_run = metric_manifest_readiness_from_config(config_path=config_path)
+    assert manifest_ready_to_run.reason == "missing_outputs"
+    assert dict(manifest_ready_to_run.output_items)["metric_manifest_path"] == metric_outputs.metric_manifest_path
+
+    metric_outputs.metric_manifest_path.write_text('{"batches":[]}\n', encoding="utf-8")
+    manifest_current = metric_manifest_readiness_from_config(
+        config_path=config_path,
+        current_message="Metric manifest is current.",
+    )
+    assert manifest_current.reason == "current"
+    assert manifest_current.message == "Metric manifest is current."
+    assert metric_manifest_readiness_from_config(config_path=config_path, overwrite=True).reason == "overwrite"
     clear_active_config()
 
 

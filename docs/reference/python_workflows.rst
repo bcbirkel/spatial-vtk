@@ -398,9 +398,17 @@ Step 3: Metric Calculation and Metric Figures
    * - Build metric-ready observed/synthetic waveform inventories
      - ``spatial_vtk.metrics.build_metric_waveform_inventories_from_config``
      - ``observed_metric_inventory`` and ``synthetic_metric_inventory``
+   * - Check metric inventory readiness
+     - ``spatial_vtk.metrics.metric_inventories_readiness_from_config``
+     - Readiness/status for observed and synthetic metric inventories and the
+       preprocessed trace-metadata dependency
    * - Plan metric tasks and write a manifest
      - ``spatial_vtk.metrics.plan_metric_tasks_from_config``
      - ``metric_manifest`` plus per-batch output paths
+   * - Check metric manifest readiness
+     - ``spatial_vtk.metrics.metric_manifest_readiness_from_config``
+     - Readiness/status for the metric manifest, metric inventories, and
+       observed/synthetic overlap QC inventory
    * - Preview task counts from a configured metric snapshot
      - ``spatial_vtk.metrics.summarize_metric_snapshot_tasks_from_config``
      - ``metric_tasks`` and ``metric_task_estimate``

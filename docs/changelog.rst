@@ -23,6 +23,9 @@ Changelog
   - Added config-backed Step 1 metadata and preprocessing readiness helpers so
     notebook cells no longer repeat prepared-table or preprocessed-metadata
     path contracts.
+  - Added config-backed Step 3 metric inventory and manifest readiness helpers
+    so metric notebooks no longer repeat trace-metadata or QC-overlap
+    dependency contracts.
   - Added lightweight Step 4, Step 5, and Step 6 output-status loaders for
     large-run driver notebooks that need configured status tables and bounded
     previews without loading large plotting inputs.
@@ -56,6 +59,8 @@ Changelog
   - Rewired standard and large-run Step 2 notebooks to use package-owned QC
     readiness helpers for full inventory, overlap sidecar, and compact summary
     gates.
+  - Rewired the large-run Step 3 notebook to use package-owned readiness
+    helpers for metric waveform inventories and metric manifest planning.
   - Rewired the large-run Step 1 notebook to resolve ingest and preprocessing
     outputs through the same package helper as the standard tutorial.
   - Rewired the large-run Step 1 notebook to use package-owned metadata and

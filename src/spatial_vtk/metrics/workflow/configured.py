@@ -171,6 +171,60 @@ def plan_metric_tasks_from_config(
     return payload
 
 
+def metric_inventories_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    overwrite: bool = False,
+    missing_input_message: str | None = None,
+    current_message: str | None = "Metric waveform inventories are current; skipping.",
+    rebuild_message: str | None = None,
+) -> OutputReadiness:
+    """Return readiness for configured observed/synthetic metric inventories.
+
+    The metric inventory workflow depends on preprocessing trace metadata,
+    which lives under the preprocessed waveform output root rather than the
+    standard metric table directory. This helper keeps that dependency and the
+    observed/synthetic inventory output contract in package code.
+    """
+
+    config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    metric_outputs = load_standard_metric_workflow_outputs(cfg=config, load_task_estimate=False)
+    trace_metadata_path = Path(metric_outputs.trace_metadata_path)
+    return metric_outputs.outputs.readiness(
+        ("observed_inventory_path", "synthetic_inventory_path"),
+        inputs={"trace_metadata_path": trace_metadata_path},
+        sources={"trace_metadata_path": trace_metadata_path},
+        overwrite=overwrite,
+        missing_input_message=missing_input_message or f"Trace metadata is not ready yet: {trace_metadata_path}",
+        current_message=current_message,
+        rebuild_message=rebuild_message,
+    )
+
+
+def metric_manifest_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    overwrite: bool = False,
+    current_message: str | None = "Metric manifest is current; skipping planning.",
+    rebuild_message: str | None = None,
+) -> OutputReadiness:
+    """Return readiness for planning the configured metric task manifest."""
+
+    config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    metric_outputs = load_standard_metric_workflow_outputs(cfg=config, load_task_estimate=False)
+    return metric_outputs.outputs.readiness(
+        "metric_manifest_path",
+        inputs=("observed_inventory_path", "synthetic_inventory_path", "qc_inventory_overlap_path"),
+        sources=("observed_inventory_path", "synthetic_inventory_path", "qc_inventory_overlap_path"),
+        overwrite=overwrite,
+        missing_input_message="Metric inventories or overlap QC are not ready yet.",
+        current_message=current_message,
+        rebuild_message=rebuild_message,
+    )
+
+
 def summarize_metric_snapshot_tasks_from_config(
     *,
     config_path: str | Path | None = None,
@@ -601,6 +655,8 @@ __all__ = [
     "build_metric_waveform_inventories_from_config",
     "load_standard_metric_workflow_outputs",
     "metric_batch_merge_readiness_from_config",
+    "metric_inventories_readiness_from_config",
+    "metric_manifest_readiness_from_config",
     "metric_outputs_readiness_from_config",
     "metric_slurm_submission_readiness_from_config",
     "merge_metric_batches_from_config",

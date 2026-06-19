@@ -28,6 +28,8 @@ stable package surface.
        merge_metric_batches_from_config,
        metric_manifest_batch_status,
        metric_batch_merge_readiness_from_config,
+       metric_inventories_readiness_from_config,
+       metric_manifest_readiness_from_config,
        metric_slurm_submission_readiness,
        metric_slurm_submission_readiness_from_config,
        load_standard_metric_workflow_outputs,
@@ -73,9 +75,16 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
    * - ``build_metric_waveform_inventories_from_config``
      - Build observed and synthetic metric-ready waveform inventories from the
        active config and preprocessed waveform metadata.
+   * - ``metric_inventories_readiness_from_config``
+     - Check whether metric-ready observed/synthetic waveform inventories are
+       missing, stale, current, or forced by ``overwrite`` without repeating the
+       preprocessed trace-metadata dependency in notebooks.
    * - ``plan_metric_tasks_from_config``
      - Plan metric tasks from configured inventories, QC overlap tables, and
        metric settings.
+   * - ``metric_manifest_readiness_from_config``
+     - Check whether configured metric inventories and the overlap QC table are
+       ready before planning the metric manifest.
    * - ``cache_metric_manifest_waveforms``
      - Materialize metric-ready waveform cache files for repeated large-run
        batch execution.

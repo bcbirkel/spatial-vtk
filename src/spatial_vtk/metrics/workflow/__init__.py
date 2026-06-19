@@ -38,6 +38,8 @@ _EXPORT_MODULES = {
     "merge_batch_outputs": "spatial_vtk.metrics.workflow.execution",
     "merge_metric_batches_from_config": "spatial_vtk.metrics.workflow.configured",
     "metric_batch_merge_readiness_from_config": "spatial_vtk.metrics.workflow.configured",
+    "metric_inventories_readiness_from_config": "spatial_vtk.metrics.workflow.configured",
+    "metric_manifest_readiness_from_config": "spatial_vtk.metrics.workflow.configured",
     "metric_group_for": "spatial_vtk.metrics.workflow.tasks",
     "metric_manifest_batch_status": "spatial_vtk.metrics.workflow.execution",
     "metric_outputs_readiness_from_config": "spatial_vtk.metrics.workflow.configured",

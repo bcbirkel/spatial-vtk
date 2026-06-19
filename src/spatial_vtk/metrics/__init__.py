@@ -86,6 +86,8 @@ _WORKFLOW_EXPORTS = {
     "chunk_tasks",
     "load_standard_metric_workflow_outputs",
     "metric_batch_merge_readiness_from_config",
+    "metric_inventories_readiness_from_config",
+    "metric_manifest_readiness_from_config",
     "merge_metric_batches_from_config",
     "merge_batch_outputs",
     "metric_manifest_batch_status",
