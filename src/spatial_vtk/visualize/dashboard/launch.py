@@ -70,8 +70,10 @@ def build_streamlit_command(
 
 def launch_metrics_dashboard(
     *,
-    metrics_root: str | Path,
-    summary_root: str | Path,
+    metrics_dataset_dir: str | Path | None = None,
+    dashboard_summary_table_dir: str | Path | None = None,
+    metrics_root: str | Path | None = None,
+    summary_root: str | Path | None = None,
     config_path: str | Path | None = None,
     server_address: str = "127.0.0.1",
     server_port: int = 8501,
@@ -83,11 +85,36 @@ def launch_metrics_dashboard(
     download_rows: int | str | None = None,
     extra_args: list[str] | None = None,
 ) -> subprocess.Popen[Any]:
-    """Launch the Streamlit Metrics Explorer."""
+    """Launch the Streamlit Metrics Explorer.
+
+    Parameters
+    ----------
+    metrics_dataset_dir, dashboard_summary_table_dir
+        Metrics dashboard row dataset and dashboard summary-table directory.
+        These names match the CLI flags and Streamlit query parameters.
+    metrics_root, summary_root
+        Backward-compatible aliases for ``metrics_dataset_dir`` and
+        ``dashboard_summary_table_dir``.
+    """
+
+    resolved_metrics_dataset = _coalesce_dashboard_launch_path(
+        metrics_dataset_dir,
+        metrics_root,
+        preferred_name="metrics_dataset_dir",
+        legacy_name="metrics_root",
+        artifact_label="metrics dashboard row dataset",
+    )
+    resolved_summary_tables = _coalesce_dashboard_launch_path(
+        dashboard_summary_table_dir,
+        summary_root,
+        preferred_name="dashboard_summary_table_dir",
+        legacy_name="summary_root",
+        artifact_label="dashboard summary-table directory",
+    )
 
     env = os.environ.copy()
-    env["SVTK_METRICS_ROOT"] = str(Path(metrics_root).expanduser())
-    env["SVTK_SUMMARY_ROOT"] = str(Path(summary_root).expanduser())
+    env["SVTK_METRICS_ROOT"] = str(Path(resolved_metrics_dataset).expanduser())
+    env["SVTK_SUMMARY_ROOT"] = str(Path(resolved_summary_tables).expanduser())
     _set_optional_env(env, "SVTK_METRICS_DASHBOARD_ROW_LIMIT", row_limit)
     _set_optional_env(env, "SVTK_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS", summary_display_rows)
     _set_optional_env(env, "SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS", download_rows)
@@ -137,8 +164,8 @@ def launch_configured_metrics_dashboard(
     config = _resolve_dashboard_config(cfg=cfg, config_path=config_path, run_scenario=run_scenario)
     paths = dashboard_output_paths(cfg=config, include_summary_tables=False)
     return launch_metrics_dashboard(
-        metrics_root=paths["metrics_dashboard_root"],
-        summary_root=paths["dashboard_summary_root"],
+        metrics_dataset_dir=paths["metrics_dashboard_root"],
+        dashboard_summary_table_dir=paths["dashboard_summary_root"],
         config_path=config.config_path,
         server_address=server_address,
         server_port=server_port,
@@ -150,6 +177,30 @@ def launch_configured_metrics_dashboard(
         download_rows=download_rows,
         extra_args=extra_args,
     )
+
+
+def _coalesce_dashboard_launch_path(
+    preferred: str | Path | None,
+    legacy: str | Path | None,
+    *,
+    preferred_name: str,
+    legacy_name: str,
+    artifact_label: str,
+) -> str | Path:
+    """Return one dashboard launch path from a clear keyword or legacy alias."""
+
+    if preferred is None and legacy is None:
+        raise ValueError(f"{preferred_name} is required for the {artifact_label}.")
+    if (
+        preferred is not None
+        and legacy is not None
+        and str(Path(preferred).expanduser()) != str(Path(legacy).expanduser())
+    ):
+        raise ValueError(
+            f"Pass either {preferred_name} or {legacy_name} for the {artifact_label}, "
+            "not two different paths."
+        )
+    return preferred if preferred is not None else legacy
 
 
 def launch_qc_dashboard(

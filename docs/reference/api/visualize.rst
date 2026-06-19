@@ -181,6 +181,10 @@ metrics dashboard, and ``qc_trace_summary`` for the QC dashboard. The older
 ``metrics_root``, ``summary_root``, and ``trace_summary`` query keys remain
 supported as compatibility aliases, but new links and docs should use the
 clearer names.
+For Python launch calls, pass ``metrics_dataset_dir`` and
+``dashboard_summary_table_dir`` to ``launch_metrics_dashboard``; the older
+``metrics_root`` and ``summary_root`` keyword arguments remain supported for
+existing scripts.
 
 When a dashboard tab is blank or unexpectedly sparse, diagnose the configured
 artifacts before loading full metric or QC inventories:

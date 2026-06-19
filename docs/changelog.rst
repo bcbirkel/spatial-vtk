@@ -189,6 +189,9 @@ Changelog
   - Added clear Streamlit dashboard query aliases
     ``metrics_dataset_dir``, ``dashboard_summary_table_dir``, and
     ``qc_trace_summary`` while preserving legacy dashboard links.
+  - Added clear Python launch keywords ``metrics_dataset_dir`` and
+    ``dashboard_summary_table_dir`` for ``launch_metrics_dashboard`` while
+    preserving ``metrics_root`` and ``summary_root``.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 

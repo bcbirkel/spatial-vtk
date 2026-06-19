@@ -1467,6 +1467,59 @@ outputs:
     assert launched[1]["auto_port"] is True
 
 
+def test_metrics_dashboard_launcher_accepts_clear_and_legacy_path_keywords(tmp_path, monkeypatch):
+    """Python callers should use clear dashboard path names, with legacy aliases preserved."""
+
+    launched: list[dict[str, object]] = []
+
+    class FakeProcess:
+        pid = 226
+
+    def fake_launch_streamlit_dashboard(entrypoint, **kwargs):
+        launched.append({"entrypoint": entrypoint, **kwargs})
+        return FakeProcess()
+
+    monkeypatch.setattr(dashboard_launch, "launch_streamlit_dashboard", fake_launch_streamlit_dashboard)
+
+    process = dashboard_launch.launch_metrics_dashboard(
+        metrics_dataset_dir=tmp_path / "metrics_dashboard",
+        dashboard_summary_table_dir=tmp_path / "dashboard_summaries",
+        show=False,
+    )
+    legacy_process = dashboard_launch.launch_metrics_dashboard(
+        metrics_root=tmp_path / "legacy_metrics_dashboard",
+        summary_root=tmp_path / "legacy_dashboard_summaries",
+        show=False,
+    )
+
+    assert process.pid == 226
+    assert legacy_process.pid == 226
+    clear_env = launched[0]["env"]
+    legacy_env = launched[1]["env"]
+    assert Path(clear_env["SVTK_METRICS_ROOT"]) == tmp_path / "metrics_dashboard"
+    assert Path(clear_env["SVTK_SUMMARY_ROOT"]) == tmp_path / "dashboard_summaries"
+    assert Path(legacy_env["SVTK_METRICS_ROOT"]) == tmp_path / "legacy_metrics_dashboard"
+    assert Path(legacy_env["SVTK_SUMMARY_ROOT"]) == tmp_path / "legacy_dashboard_summaries"
+
+
+def test_metrics_dashboard_launcher_rejects_conflicting_path_aliases(tmp_path):
+    """Passing clear and legacy names with different paths should fail early."""
+
+    with pytest.raises(ValueError, match="metrics_dataset_dir"):
+        dashboard_launch.launch_metrics_dashboard(
+            metrics_dataset_dir=tmp_path / "metrics_dashboard",
+            metrics_root=tmp_path / "other_metrics_dashboard",
+            dashboard_summary_table_dir=tmp_path / "dashboard_summaries",
+        )
+
+    with pytest.raises(ValueError, match="dashboard_summary_table_dir"):
+        dashboard_launch.launch_metrics_dashboard(
+            metrics_dataset_dir=tmp_path / "metrics_dashboard",
+            dashboard_summary_table_dir=tmp_path / "dashboard_summaries",
+            summary_root=tmp_path / "other_dashboard_summaries",
+        )
+
+
 def test_notebook_dashboard_launch_helper_returns_running_and_command_rows(monkeypatch):
     """Notebook launch orchestration should hide per-dashboard branching."""
 

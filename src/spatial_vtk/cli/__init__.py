@@ -2724,8 +2724,8 @@ def _cmd_dashboard_metrics(args: argparse.Namespace) -> int:
     from spatial_vtk.visualize.dashboard import launch_metrics_dashboard
 
     process = launch_metrics_dashboard(
-        metrics_root=metrics_root,
-        summary_root=summary_root,
+        metrics_dataset_dir=metrics_root,
+        dashboard_summary_table_dir=summary_root,
         config_path=config_path,
         server_address=args.address,
         server_port=args.port,

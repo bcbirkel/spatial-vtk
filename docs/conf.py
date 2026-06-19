@@ -88,6 +88,10 @@ _PARAMETER_DESCRIPTIONS = {
     "manifest": "Metric or QC manifest that lists resumable workflow work units, batch outputs, and checkpoint state.",
     "manifest_path": "Path to the metric or QC manifest file used for resumable planning, execution, or merging.",
     "metric": "Metric name or metric filter used for the calculation or figure.",
+    "metrics_dataset_dir": (
+        "Metrics dashboard row dataset directory or direct ``metrics_long`` CSV/parquet table; "
+        "standard dashboard workflows resolve this from the active config."
+    ),
     "metrics_root": (
         "Metrics dashboard row dataset directory or direct ``metrics_long`` CSV/parquet table; "
         "standard dashboard workflows resolve this from the active config."
@@ -108,6 +112,11 @@ _PARAMETER_DESCRIPTIONS = {
     "source": "Source table, path, configured artifact, or source label used by this workflow step.",
     "source_df": "Pre-aggregation rows used to produce the plotted or summarized rows.",
     "summary": "Summary table, dashboard summary dataset, or summary configuration consumed by this helper.",
+    "dashboard_summary_table_dir": (
+        "Dashboard summary-table directory containing ``model_metric_band``, ``station_rollup``, "
+        "``event_rollup``, and ``path_hex`` tables; standard dashboard workflows resolve this from "
+        "the active config."
+    ),
     "summary_root": (
         "Dashboard summary-table directory containing ``model_metric_band``, ``station_rollup``, "
         "``event_rollup``, and ``path_hex`` tables; standard dashboard workflows resolve this from "

@@ -3560,8 +3560,8 @@ outputs:
     captured = capsys.readouterr()
     assert "Metrics dashboard row dataset:" in captured.out
     assert "Metrics dashboard summary tables:" in captured.out
-    assert Path(launched["metrics_root"]) == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
-    assert Path(launched["summary_root"]) == tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
+    assert Path(launched["metrics_dataset_dir"]) == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    assert Path(launched["dashboard_summary_table_dir"]) == tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
     assert Path(launched["config_path"]) == config.resolve()
     assert launched["server_port"] == 8555
     assert launched["auto_port"] is False
@@ -3667,8 +3667,8 @@ def test_cli_dashboard_metrics_accepts_clear_path_aliases(tmp_path, monkeypatch,
     captured = capsys.readouterr()
     assert "Metrics dashboard row dataset:" in captured.out
     assert "Metrics dashboard summary tables:" in captured.out
-    assert Path(launched["metrics_root"]) == metrics_path
-    assert Path(launched["summary_root"]) == summary_path
+    assert Path(launched["metrics_dataset_dir"]) == metrics_path
+    assert Path(launched["dashboard_summary_table_dir"]) == summary_path
     assert launched["config_path"] is None
     assert launched["server_port"] == 8555
 

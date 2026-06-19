@@ -609,8 +609,12 @@ def test_autodoc_fallback_parameter_docs_are_descriptive():
     assert conf._parameter_description(parameter("input_path")).startswith("Path to the input table, file, or configured path artifact")
     assert conf._parameter_description(parameter("output")).startswith("Output table, figure, manifest, or configured artifact")
     assert conf._parameter_description(parameter("summary")).startswith("Summary table, dashboard summary dataset")
+    assert conf._parameter_description(parameter("metrics_dataset_dir")).startswith("Metrics dashboard row dataset directory")
+    assert "direct ``metrics_long`` CSV/parquet table" in conf._parameter_description(parameter("metrics_dataset_dir"))
     assert conf._parameter_description(parameter("metrics_root")).startswith("Metrics dashboard row dataset directory")
     assert "direct ``metrics_long`` CSV/parquet table" in conf._parameter_description(parameter("metrics_root"))
+    assert conf._parameter_description(parameter("dashboard_summary_table_dir")).startswith("Dashboard summary-table directory")
+    assert "``model_metric_band``" in conf._parameter_description(parameter("dashboard_summary_table_dir"))
     assert conf._parameter_description(parameter("summary_root")).startswith("Dashboard summary-table directory")
     assert "``model_metric_band``" in conf._parameter_description(parameter("summary_root"))
     assert conf._parameter_description(parameter("trace_summary")).startswith("QC trace-summary CSV/parquet table")
@@ -1446,6 +1450,8 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "metrics dashboard row dataset" in text
     assert "lower-level output registry names" in text
     assert "``metrics_dashboard_root``" not in text
+    assert "pass ``metrics_dataset_dir`` and\n``dashboard_summary_table_dir`` to ``launch_metrics_dashboard``" in text
+    assert "``metrics_root`` and ``summary_root`` keyword arguments remain supported" in text
     assert "Missing sidecar directories and existing empty sidecar directories" in text
     assert "``sidecar_dir_exists``" in text
     forbidden_modules = (
