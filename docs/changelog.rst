@@ -211,6 +211,8 @@ Changelog
     while preserving ``path`` for existing notebooks.
   - Added ``resolved_path`` to focused station metric-map status frames while
     preserving ``output_path`` for existing notebooks.
+  - Added exact ``figure_paths`` lists to Step 3 large-run metric figure-suite
+    status frames while preserving preview-oriented figure path fields.
   - Reused the standard ingest output helper inside record-coverage
     readiness/build workflows so script and notebook path fallback behavior
     stays aligned.
