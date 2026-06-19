@@ -129,6 +129,49 @@ class NotebookFigureSidecarSettings:
 
         return figure_sidecar_status_frame(self.directory)
 
+    def readiness_frame(self) -> Any:
+        """Return a compact notebook table describing sidecar readiness.
+
+        Unlike :meth:`status_frame`, this does not summarize individual figure
+        metadata. It tells users whether sidecars are enabled, which directory
+        will be inspected, how many JSON metadata files are present, and what
+        row-sampling policy is configured.
+        """
+
+        import pandas as pd
+
+        metadata_count = None
+        if self.directory is not None:
+            metadata_count = len(list(Path(self.directory).expanduser().glob("*.json")))
+        row_policy = "all_rows" if self.rows is None or int(self.rows) <= 0 else "deterministic_sample"
+        return pd.DataFrame(
+            [
+                ("enabled", bool(self.enabled)),
+                ("directory", None if self.directory is None else str(self.directory)),
+                ("metadata_file_count", metadata_count),
+                ("row_policy", row_policy),
+                ("row_limit", None if self.rows is None or int(self.rows) <= 0 else int(self.rows)),
+                (
+                    "message",
+                    self._readiness_message(metadata_count),
+                ),
+            ],
+            columns=["name", "value"],
+        )
+
+    def _readiness_message(self, metadata_count: int | None) -> str:
+        """Return a human-readable sidecar readiness message."""
+
+        if not self.enabled:
+            return "Figure sidecars are disabled. Set SVTK_FIGURE_SIDECARS=1 or the figure-family sidecar flag to enable row provenance."
+        if self.directory is None:
+            return "Figure sidecars are enabled, but no sidecar directory is configured."
+        if not Path(self.directory).expanduser().exists():
+            return "Figure sidecars are enabled, but the sidecar directory has not been created yet."
+        if metadata_count == 0:
+            return "Figure sidecars are enabled, but no figure metadata JSON files are present yet."
+        return "Figure sidecar metadata is available; inspect status_frame() for per-figure provenance."
+
 
 @dataclass(frozen=True)
 class NotebookFigureRenderGate:

@@ -2198,15 +2198,28 @@ def test_metric_and_spatial_notebooks_show_sidecar_status_frames() -> None:
 
     repo_root = Path(__file__).resolve().parents[1]
     expected = {
-        "docs/examples/step_03_calculate_metrics.ipynb": "metric_sidecars.status_frame()",
-        "docs/examples/step_04_spatial_statistics.ipynb": "spatial_sidecars.status_frame()",
-        "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": "METRIC_FIGURE_SETTINGS.status_frame()",
-        "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": "SPATIAL_FIGURE_SETTINGS.sidecars.status_frame()",
+        "docs/examples/step_03_calculate_metrics.ipynb": (
+            "metric_figure_settings.sidecars.readiness_frame()",
+            "metric_figure_settings.status_frame()",
+        ),
+        "docs/examples/step_04_spatial_statistics.ipynb": (
+            "spatial_figure_settings.sidecars.readiness_frame()",
+            "spatial_figure_settings.status_frame()",
+        ),
+        "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": (
+            "METRIC_FIGURE_SETTINGS.sidecars.readiness_frame()",
+            "METRIC_FIGURE_SETTINGS.status_frame()",
+        ),
+        "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": (
+            "SPATIAL_FIGURE_SETTINGS.sidecars.readiness_frame()",
+            "SPATIAL_FIGURE_SETTINGS.sidecars.status_frame()",
+        ),
     }
-    for relative_path, call in expected.items():
+    for relative_path, calls in expected.items():
         notebook = json.loads((repo_root / relative_path).read_text(encoding="utf-8"))
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-        assert call in source
+        for call in calls:
+            assert call in source
 
 
 def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> None:

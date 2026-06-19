@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-18
+   Added ``NotebookFigureSidecarSettings.readiness_frame()`` and updated the
+   metric/spatial provenance cells in the standard and large-run notebooks to
+   display sidecar readiness before the per-figure sidecar metadata table. The
+   readiness table tells users whether row-provenance sidecars are enabled,
+   which directory is being inspected, how many JSON metadata files exist, and
+   whether sidecar CSV rows are complete or deterministically sampled.
    Added
    ``write_large_run_metric_figure_suite_from_notebook_settings()`` and
    rewired the large-run Step 3 metric notebook to call it for the full metric

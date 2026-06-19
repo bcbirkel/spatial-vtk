@@ -427,6 +427,9 @@ def test_config_api_docs_include_compute_helpers():
     assert "``run_notebook_step_if_needed``" in text
     assert "``NotebookFigureSettings`` and ``notebook_figure_settings``" in text
     assert "``render_notebook_figure``" in text
+    assert "``NotebookFigureSidecarSettings`` and" in text
+    assert "``readiness_frame()`` reports whether sidecars are enabled" in text
+    assert "``status_frame()`` reports per-figure provenance" in text
     assert "``NotebookDashboardCommands`` and" in text
     assert "``notebook_dashboard_launch_commands``" in text
     assert "``display_output_table_previews``" in text

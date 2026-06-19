@@ -535,6 +535,13 @@ def test_notebook_figure_sidecar_settings_parse_env(tmp_path, monkeypatch):
     empty_status = explicit.status_frame()
     assert list(empty_status.columns) == list(figure_sidecar_status_frame(explicit.directory).columns)
     assert empty_status.empty
+    readiness = explicit.readiness_frame().set_index("name")
+    assert readiness.loc["enabled", "value"] is True
+    assert readiness.loc["directory", "value"] == str(tmp_path / "custom_sidecars")
+    assert readiness.loc["metadata_file_count", "value"] == 0
+    assert readiness.loc["row_policy", "value"] == "deterministic_sample"
+    assert readiness.loc["row_limit", "value"] == 10
+    assert "has not been created" in readiness.loc["message", "value"]
 
     write_figure_row_sidecar(
         tmp_path / "figures" / "station_metric_map.png",
@@ -552,9 +559,15 @@ def test_notebook_figure_sidecar_settings_parse_env(tmp_path, monkeypatch):
     assert "station_metric_map.png" in status.index
     assert status.loc["station_metric_map.png", "plot_row_count"] == 2
     assert status.loc["station_metric_map.png", "aggregation_contract"] == "station_event_rows_to_station_summary"
+    ready_after_write = explicit.readiness_frame().set_index("name")
+    assert ready_after_write.loc["metadata_file_count", "value"] == 1
+    assert "metadata is available" in ready_after_write.loc["message", "value"]
 
     no_directory = notebook_figure_sidecar_settings("metric")
     assert no_directory.status_frame().empty
+    disabled = no_directory.readiness_frame().set_index("name")
+    assert disabled.loc["enabled", "value"] is False
+    assert "disabled" in disabled.loc["message", "value"]
 
 
 def test_notebook_figure_settings_parse_common_controls(tmp_path, monkeypatch):
