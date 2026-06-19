@@ -955,6 +955,79 @@ def test_api_reference_import_examples_match_public_exports():
         assert not missing, f"{module_name} docs import non-public names: {sorted(missing)}"
 
 
+def test_committed_tutorial_scenario_uses_committed_lightweight_inputs():
+    """Fresh-clone tutorials should point at committed NPZ/dataframe inputs."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    config_path = root / "data" / "examples" / "configuration" / "example_spatial_vtk_config.yaml"
+    text = config_path.read_text(encoding="utf-8")
+    expected_snippets = (
+        'observed_template: "{root_dir}/data/examples/example_five_event_subset/'
+        'waveforms_npz/observed/{event_id}/{station}.npz"',
+        'synthetic_template: "{root_dir}/data/examples/example_five_event_subset/'
+        'waveforms_npz/synthetics/{model}/{event_id}/{station}.npz"',
+        'station_metadata: "{root_dir}/data/examples/example_five_event_subset/'
+        'metadata/selected_stations.csv"',
+        'event_metadata: "{root_dir}/data/examples/example_five_event_subset/'
+        'metadata/events.csv"',
+        'event_station_table: "{root_dir}/data/examples/example_five_event_subset/'
+        'metadata/selected_event_stations.csv"',
+        'site_metadata: "{root_dir}/data/examples/data_formats/'
+        'example_site_metadata.csv"',
+        'region_geojson: "{root_dir}/data/examples/example_five_event_subset/'
+        'metadata/example_path_regions.geojson"',
+        'metric_snapshot: "{root_dir}/data/examples/data_formats/'
+        'example_metrics_snapshot.csv"',
+        'metric_figure_snapshot: "{root_dir}/data/examples/data_formats/'
+        'example_metrics_large_qc_passed.parquet"',
+    )
+    for snippet in expected_snippets:
+        assert snippet in text
+
+    required_files = (
+        "data/examples/example_five_event_subset/metadata/selected_stations.csv",
+        "data/examples/example_five_event_subset/metadata/events.csv",
+        "data/examples/example_five_event_subset/metadata/selected_event_stations.csv",
+        "data/examples/example_five_event_subset/metadata/example_path_regions.geojson",
+        "data/examples/data_formats/example_site_metadata.csv",
+        "data/examples/data_formats/example_metrics_snapshot.csv",
+        "data/examples/data_formats/example_metrics_large_qc_passed.parquet",
+    )
+    tracked_files = set(
+        subprocess.run(
+            ["git", "ls-files"],
+            cwd=root,
+            text=True,
+            capture_output=True,
+            check=True,
+        ).stdout.splitlines()
+    )
+    for relative_path in required_files:
+        assert (root / relative_path).exists(), relative_path
+        assert relative_path in tracked_files, relative_path
+
+    observed_npz = sorted(
+        (root / "data/examples/example_five_event_subset/waveforms_npz/observed").glob("*/*.npz")
+    )
+    synthetic_npz = sorted(
+        (root / "data/examples/example_five_event_subset/waveforms_npz/synthetics").glob("*/*/*.npz")
+    )
+    assert len(observed_npz) >= 100
+    assert len(synthetic_npz) >= 100
+    missing_observed = [
+        str(path.relative_to(root))
+        for path in observed_npz
+        if str(path.relative_to(root)) not in tracked_files
+    ]
+    missing_synthetic = [
+        str(path.relative_to(root))
+        for path in synthetic_npz
+        if str(path.relative_to(root)) not in tracked_files
+    ]
+    assert not missing_observed
+    assert not missing_synthetic
+
+
 def test_spatial_package_docstring_describes_namespace_boundary():
     """The top-level spatial package should explain where plotting imports live."""
 

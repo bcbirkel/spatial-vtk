@@ -76,6 +76,9 @@ Changelog
 - Added a dependency-light API-reference regression that parses documented
   ``from spatial_vtk... import ...`` examples and verifies each imported name is
   declared by the matching public package surface.
+- Added a fresh-clone tutorial scenario regression that verifies the committed
+  example config uses lightweight NPZ waveform templates and points at tracked
+  metadata, GeoJSON, site, and metric snapshot inputs.
 - Made ``svtk plot metrics period-spectra`` use the configured ``metrics_long``
   table by default, and taught ``plot_period_spectra()`` to accept standard
   metric-table residual/value columns through ``value_col`` instead of
