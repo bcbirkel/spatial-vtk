@@ -4,6 +4,9 @@ Changelog
 2026-06-19
 ----------
 
+- Clarified the tutorial notebook runtime preflight failure message so it
+  reports the missing importable modules directly before the install command,
+  instead of wording the missing subset as a generic required-module list.
 - Updated the public example metric plotting module to import
   ``compute_metrics_pair`` through ``spatial_vtk.metrics``, keeping public
   plotting helpers aligned with the documented metric calculation surface.

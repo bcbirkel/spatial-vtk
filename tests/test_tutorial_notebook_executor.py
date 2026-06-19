@@ -82,7 +82,7 @@ def test_tutorial_notebook_runtime_preflight_reports_missing_modules() -> None:
     missing = module.missing_notebook_runtime_modules({"demo": "definitely_missing_svtk_module"})
 
     assert missing == ["demo"]
-    with pytest.raises(SystemExit, match=r"demo.*\[notebooks,waveforms\]"):
+    with pytest.raises(SystemExit, match=r"Missing tutorial runtime modules: demo.*\[notebooks,waveforms\]"):
         module.check_notebook_runtime({"demo": "definitely_missing_svtk_module"})
 
 

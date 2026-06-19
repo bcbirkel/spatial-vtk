@@ -246,8 +246,9 @@ def check_notebook_runtime(required: dict[str, str] | None = None) -> None:
         return
     missing_text = ", ".join(missing)
     raise SystemExit(
-        "Notebook execution requires these importable tutorial runtime modules: "
-        f"{missing_text}. Install the tutorial extras with "
+        "Missing tutorial runtime modules: "
+        f"{missing_text}. These modules are required before executing the "
+        "tutorial notebooks. Install the tutorial extras with "
         'python -m pip install -e ".[notebooks,waveforms]".'
     )
 
