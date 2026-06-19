@@ -591,6 +591,11 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert 'python -m pip install -e ".[notebooks,waveforms]"' in readme
     assert "\n    python -m pip install -e .\n" not in readme
     assert "notebook and waveform extras" in readme
+    assert "## Run the Tutorial Notebooks" in readme
+    assert "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run" in readme
+    assert "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run" in readme
+    assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in readme
+    assert "The runtime check does not execute notebooks or clean outputs." in readme
     assert 'python -m pip install -e ".[notebooks,waveforms]"' in examples_index
     assert 'python -m pip install -e ".[notebooks,waveforms]"' in large_run_readme
     assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in installation

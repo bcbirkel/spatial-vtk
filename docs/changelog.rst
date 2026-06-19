@@ -142,6 +142,8 @@ Changelog
     large-run preflight commands.
   - Aligned source-checkout validation and CI tutorial gates around the same
     notebook and large-run preflight commands.
+  - Added README quick-start verification commands for standard and large-run
+    tutorial notebook preflight, runtime checks, and clean execution.
 
 - **Config and plotting behavior** *(Fixed)*
 
