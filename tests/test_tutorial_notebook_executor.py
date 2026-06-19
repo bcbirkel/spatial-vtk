@@ -297,6 +297,11 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
                             "import spatial_vtk.spatial.map.metrics as metric_maps\n",
                             "metrics = pd.read_csv('/Users/example/project/metrics.csv')\n",
                             "path = resolve_output_path('metrics_long')\n",
+                            "write_output_table('metrics_long', metrics)\n",
+                            "write_output_tables(metric_field=metrics)\n",
+                            "metrics.to_csv('metrics.csv')\n",
+                            "metrics.to_parquet('metrics.parquet')\n",
+                            "subprocess.run(['svtk', 'metrics', 'plan'])\n",
                             "outputs = output_group_namespace('step_03_metrics')\n",
                             "step_outputs['metrics_long_path']\n",
                             "subset = metrics.loc[metrics['metric'].eq('PGA')]\n",
@@ -339,6 +344,11 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert "forbidden shell/CLI workflow pattern" in combined
     assert "pd.read_" in combined
     assert "resolve_output_path(" in combined
+    assert "write_output_table(" in combined
+    assert "write_output_tables(" in combined
+    assert ".to_csv(" in combined
+    assert ".to_parquet(" in combined
+    assert "subprocess.run(" in combined
     assert "from spatial_vtk.metrics.plot." in combined
     assert "forbidden implementation import pattern" in combined
     assert "spatial_vtk\\.spatial\\.map\\." in combined

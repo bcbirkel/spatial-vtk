@@ -81,6 +81,8 @@ NOTEBOOK_CONTRACT_FORBIDDEN_SNIPPETS = (
     "from spatial_vtk.spatial.plot.",
     "resolve_output_path(",
     "load_output_table(",
+    "write_output_table(",
+    "write_output_tables(",
     "preview_output_table(",
     "read_config_table(",
     "output_group_namespace",
@@ -92,6 +94,9 @@ NOTEBOOK_CONTRACT_FORBIDDEN_SNIPPETS = (
     "runs/outputs",
     "runs/spatial_vtk_config.yaml",
     "pd.read_",
+    ".to_csv(",
+    ".to_parquet(",
+    "subprocess.run(",
     ".loc[",
     ".merge(",
 )
