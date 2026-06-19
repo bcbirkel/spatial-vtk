@@ -73,6 +73,9 @@ Changelog
 - Fixed a CLI workflow regression test so legacy plotting keyword checks run
   against the workflow tutorial text instead of referencing an undefined local
   variable.
+- Added a dependency-light API-reference regression that parses documented
+  ``from spatial_vtk... import ...`` examples and verifies each imported name is
+  declared by the matching public package surface.
 - Made ``svtk plot metrics period-spectra`` use the configured ``metrics_long``
   table by default, and taught ``plot_period_spectra()`` to accept standard
   metric-table residual/value columns through ``value_col`` instead of

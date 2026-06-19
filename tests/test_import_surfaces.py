@@ -839,6 +839,122 @@ def test_core_api_docs_show_stable_start_here_imports():
             assert snippet in text, f"{filename} does not document {snippet!r}"
 
 
+def _documented_import_names(text: str, module_name: str) -> set[str]:
+    """Return names imported from one module in literal docs examples."""
+
+    names: set[str] = set()
+    block_pattern = re.compile(
+        rf"from {re.escape(module_name)} import \(\n(?P<body>.*?)\n\s*\)",
+        re.DOTALL,
+    )
+    for match in block_pattern.finditer(text):
+        for line in match.group("body").splitlines():
+            name = line.strip().rstrip(",")
+            if name and not name.startswith("#"):
+                names.add(name)
+
+    line_pattern = re.compile(
+        rf"^\s*from {re.escape(module_name)} import (?P<body>[A-Za-z0-9_, ]+)$",
+        re.MULTILINE,
+    )
+    for match in line_pattern.finditer(text):
+        for name in match.group("body").split(","):
+            name = name.strip()
+            if name:
+                names.add(name)
+    return names
+
+
+def _literal_export_names(source_path: pathlib.Path, assignment_names: tuple[str, ...]) -> set[str]:
+    """Read simple string export assignments without importing optional deps."""
+
+    tree = ast.parse(source_path.read_text(encoding="utf-8"))
+    exports: set[str] = set()
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(
+            isinstance(target, ast.Name) and target.id in assignment_names
+            for target in node.targets
+        ):
+            continue
+        value = node.value
+        if isinstance(value, (ast.List, ast.Set, ast.Tuple)):
+            exports.update(
+                str(elt.value)
+                for elt in value.elts
+                if isinstance(elt, ast.Constant) and isinstance(elt.value, str)
+            )
+        elif isinstance(value, ast.Dict):
+            exports.update(
+                str(key.value)
+                for key in value.keys
+                if isinstance(key, ast.Constant) and isinstance(key.value, str)
+            )
+    return exports
+
+
+def _public_exports_for_docs_module(root: pathlib.Path, module_name: str) -> set[str]:
+    """Return public exports for API-reference import examples."""
+
+    source_root = root / "src" / "spatial_vtk"
+    source_map = {
+        "spatial_vtk.io": (source_root / "io" / "__init__.py", ("__all__",)),
+        "spatial_vtk.metrics": (
+            source_root / "metrics" / "__init__.py",
+            ("_CALCULATE_EXPORTS", "_WORKFLOW_EXPORTS"),
+        ),
+        "spatial_vtk.metrics.plot": (
+            source_root / "metrics" / "plot" / "__init__.py",
+            ("_EXPORT_MODULES",),
+        ),
+        "spatial_vtk.qc": (
+            source_root / "qc" / "__init__.py",
+            ("_BUILD_EXPORTS", "_REVIEW_EXPORTS", "_SUMMARY_EXPORTS", "_SLURM_EXPORTS"),
+        ),
+        "spatial_vtk.spatial": (
+            source_root / "spatial" / "calculate" / "__init__.py",
+            ("__all__",),
+        ),
+        "spatial_vtk.spatial.plot": (
+            source_root / "spatial" / "plot" / "__init__.py",
+            ("_EXPORT_MODULES",),
+        ),
+        "spatial_vtk.spatial.map": (
+            source_root / "spatial" / "map" / "__init__.py",
+            ("_EXPORT_MODULES",),
+        ),
+    }
+    source_path, assignment_names = source_map[module_name]
+    return _literal_export_names(source_path, assignment_names)
+
+
+def test_api_reference_import_examples_match_public_exports():
+    """Start-here import examples should only name public package exports."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    docs_root = root / "docs" / "reference" / "api"
+    docs_text = "\n".join(
+        (docs_root / name).read_text(encoding="utf-8")
+        for name in ("io.rst", "metrics.rst", "qc.rst", "spatial.rst")
+    )
+    public_modules = (
+        "spatial_vtk.io",
+        "spatial_vtk.metrics",
+        "spatial_vtk.metrics.plot",
+        "spatial_vtk.qc",
+        "spatial_vtk.spatial",
+        "spatial_vtk.spatial.plot",
+        "spatial_vtk.spatial.map",
+    )
+    for module_name in public_modules:
+        documented = _documented_import_names(docs_text, module_name)
+        assert documented, f"{module_name} has no API-reference import example"
+        exports = _public_exports_for_docs_module(root, module_name)
+        missing = documented - exports
+        assert not missing, f"{module_name} docs import non-public names: {sorted(missing)}"
+
+
 def test_spatial_package_docstring_describes_namespace_boundary():
     """The top-level spatial package should explain where plotting imports live."""
 
