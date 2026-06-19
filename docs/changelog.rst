@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-18
+   Rewired large-run Step 4 spatial plotting cells to use
+   ``NotebookFigureSettings.plot_selection_kwargs()`` for shared passband,
+   component, model, ``showfig``, value-column, and robust-axis selections.
+   The notebook no longer repeats ``PLOT_PASSBAND``, ``PLOT_COMPONENTS``,
+   ``PLOT_MODEL``, ``PLOT_SHOWFIG``, ``PCA_MODE``, or robust-percentile
+   assignments around each spatial figure family.
    Added ``spatial_vtk.visualize.context.write_context_figures_from_outputs()``
    as the generic Step 1 context figure writer and rewired the standard Step 1
    ingest notebook to use it. The notebook no longer imports individual

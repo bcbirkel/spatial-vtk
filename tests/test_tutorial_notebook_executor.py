@@ -1273,7 +1273,14 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "plot_pca_summary" in source
     assert "spatial_figures.write_pca_summary_plots(" in source
     assert "prepare_spatial_figure_context_from_notebook_settings(" in source
-    assert "PCA_MODE = SPATIAL_FIGURE_SETTINGS.pca_mode" in source
+    assert "mode=SPATIAL_FIGURE_SETTINGS.pca_mode" in source
+    assert "SPATIAL_FIGURE_SETTINGS.plot_selection_kwargs(" in source
+    assert "PLOT_PASSBAND =" not in source
+    assert "PLOT_COMPONENTS =" not in source
+    assert "PLOT_SHOWFIG =" not in source
+    assert "PLOT_MODEL =" not in source
+    assert "PCA_MODE =" not in source
+    assert "robust_axis_percentile=SPATIAL_FIGURE_SETTINGS.robust_axis_percentile" not in source
     assert "DEFAULT_PCA_MODE =" not in source
     assert "DEFAULT_PLOT_PASSBAND =" not in source
     assert "SPATIAL_FIGURE_SIDECARS =" not in source
