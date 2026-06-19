@@ -58,11 +58,12 @@ Public helpers exposed by ``spatial_vtk.io``:
        earlier table, such as ``metrics_long``. Use ``figure_path()`` when a
        notebook needs a metric-specific figure filename beside a registered
        configured figure path. ``status_frame()`` and
-       ``output_group_status_frame()`` include ``output_key``, ``kind``,
-       ``required``, ``artifact_label``, ``readiness``, ``message``, and
-       ``suggested_action`` columns for registered artifacts, so notebooks can
-       display which configured table, figure, or dashboard output each path
-       row represents and what to rebuild next. For path-backed artifacts
+       ``output_group_status_frame()`` include clear ``resolved_path`` values
+       plus ``output_key``, ``kind``, ``required``, ``artifact_label``,
+       ``readiness``, ``message``, and ``suggested_action`` columns for
+       registered artifacts, so notebooks can display which configured table,
+       figure, or dashboard output each path row represents and what to rebuild
+       next. For path-backed artifacts
        outside the registered output table registry, such as preprocessing
        manifests, use
        ``display_path_table_previews()`` so notebooks still print the owning

@@ -1424,7 +1424,7 @@ outputs:
         include_paths=False,
         nrows=2,
     )
-    assert list(preview.columns) == ["kind", "key", "filename", "description"]
+    assert list(preview.columns) == ["kind", "key", "artifact_label", "filename", "description"]
     assert len(preview) == 2
     assert list(preview.index) == [0, 1]
 
@@ -1710,6 +1710,7 @@ outputs:
     input_row = unconfigured_rows.loc[
         unconfigured_rows["name"].eq("region_geojson_path") & unconfigured_rows["role"].eq("input")
     ].iloc[0]
+    assert input_row["resolved_path"] == "<not configured>"
     assert input_row["path"] == "<not configured>"
     assert input_row["state"] == "unconfigured"
     source_row = unconfigured_rows.loc[
@@ -1720,6 +1721,7 @@ outputs:
     assert unconfigured_status.to_dict("records") == [
         {
             "name": "region_geojson_path",
+            "resolved_path": "<not configured>",
             "path": "<not configured>",
             "exists": False,
             "size_gb": None,
@@ -1751,6 +1753,7 @@ outputs:
         extra_paths={"trace_metadata_path": extra_input},
     )
     extra_row = status_with_extra.loc[status_with_extra["name"].eq("trace_metadata_path")].iloc[0]
+    assert extra_row["resolved_path"] == str(extra_input)
     assert extra_row["path"] == str(extra_input)
     assert bool(extra_row["exists"]) is True
     assert "output_key" in status_with_extra.columns
@@ -1772,6 +1775,8 @@ outputs:
     assert should_rebuild_paths(paths["metrics_long_path"], sources=[source]) is True
     status_frame = output_status_frame({"metrics_long_path": paths["metrics_long_path"]})
     assert list(status_frame["name"]) == ["metrics_long_path"]
+    assert status_frame.loc[0, "resolved_path"] == str(paths["metrics_long_path"])
+    assert status_frame.loc[0, "path"] == status_frame.loc[0, "resolved_path"]
     assert "output_key" not in status_frame.columns
     namespace_status_frame = output_status_frame(
         types.SimpleNamespace(metrics_long_path=paths["metrics_long_path"], ignored=object())

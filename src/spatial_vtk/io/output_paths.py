@@ -1216,8 +1216,8 @@ def output_status_rows(paths: dict[str, str | Path | None]) -> list[dict[str, ob
     Returns
     -------
     list of dict
-        Rows with ``name``, ``path``, ``exists``, ``size_gb``, and
-        ``modified`` fields.
+        Rows with ``name``, clear ``resolved_path``, compatibility alias
+        ``path``, ``exists``, ``size_gb``, and ``modified`` fields.
     """
 
     rows: list[dict[str, object]] = []
@@ -1226,6 +1226,7 @@ def output_status_rows(paths: dict[str, str | Path | None]) -> list[dict[str, ob
             rows.append(
                 {
                     "name": str(name),
+                    "resolved_path": UNCONFIGURED_PATH_LABEL,
                     "path": UNCONFIGURED_PATH_LABEL,
                     "exists": False,
                     "size_gb": None,
@@ -1234,9 +1235,11 @@ def output_status_rows(paths: dict[str, str | Path | None]) -> list[dict[str, ob
             )
             continue
         path = Path(raw_path)
+        resolved = str(path)
         row: dict[str, object] = {
             "name": str(name),
-            "path": str(path),
+            "resolved_path": resolved,
+            "path": resolved,
             "exists": path.exists(),
             "size_gb": None,
             "modified": None,
