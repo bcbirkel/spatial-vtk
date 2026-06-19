@@ -26,12 +26,10 @@ import importlib
 import inspect
 import json
 import math
+import sys
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Iterable
-
-import pandas as pd
-import yaml
 
 
 @dataclass(frozen=True)
@@ -2908,16 +2906,47 @@ def _resolve_registered_plot_function(path: str):
     return _resolve_function(path)
 
 
-def _read_table(path: str | Path) -> pd.DataFrame:
+def _pandas():
+    """Import pandas only for CLI commands that read, write, or print tables."""
+
+    import pandas as pd
+
+    return pd
+
+
+def _yaml():
+    """Import PyYAML only for CLI commands that parse or write YAML."""
+
+    import yaml
+
+    return yaml
+
+
+def _is_pandas_dataframe(value: Any) -> bool:
+    """Return whether a value is a pandas DataFrame without importing pandas."""
+
+    cls = value.__class__
+    return cls.__name__ == "DataFrame" and cls.__module__.startswith("pandas.")
+
+
+def _is_pandas_series(value: Any) -> bool:
+    """Return whether a value is a pandas Series without importing pandas."""
+
+    cls = value.__class__
+    return cls.__name__ == "Series" and cls.__module__.startswith("pandas.")
+
+
+def _read_table(path: str | Path) -> Any:
     """Read one CSV or Parquet table."""
 
+    pd = _pandas()
     table_path = Path(path).expanduser()
     if table_path.suffix.lower() in {".parquet", ".pq"}:
         return pd.read_parquet(table_path)
     return pd.read_csv(table_path)
 
 
-def _write_table(df: pd.DataFrame, path: str | Path) -> Path:
+def _write_table(df: Any, path: str | Path) -> Path:
     """Write one CSV or Parquet table."""
 
     output = Path(path).expanduser()
@@ -2935,11 +2964,11 @@ def _write_result(result: Any, output: str | Path) -> None:
 
     path = Path(output).expanduser()
     path.parent.mkdir(parents=True, exist_ok=True)
-    if isinstance(result, pd.DataFrame):
+    if _is_pandas_dataframe(result):
         _write_table(result, path)
     elif isinstance(result, (dict, list, tuple)):
         if path.suffix.lower() in {".yaml", ".yml"}:
-            path.write_text(yaml.safe_dump(_jsonable(result), sort_keys=False), encoding="utf-8")
+            path.write_text(_yaml().safe_dump(_jsonable(result), sort_keys=False), encoding="utf-8")
         else:
             path.write_text(json.dumps(_jsonable(result), indent=2), encoding="utf-8")
         print(path)
@@ -2957,7 +2986,7 @@ def _write_result(result: Any, output: str | Path) -> None:
 def _print_result(result: Any) -> None:
     """Print a generic command result."""
 
-    if isinstance(result, pd.DataFrame):
+    if _is_pandas_dataframe(result):
         print(result.to_csv(index=False))
     elif isinstance(result, (dict, list, tuple)):
         print(json.dumps(_jsonable(result), indent=2))
@@ -2971,13 +3000,13 @@ def _print_payload(payload: Any, *, as_json: bool) -> None:
     if as_json:
         print(json.dumps(_jsonable(payload), indent=2))
     else:
-        print(yaml.safe_dump(_jsonable(payload), sort_keys=False).strip())
+        print(_yaml().safe_dump(_jsonable(payload), sort_keys=False).strip())
 
 
 def _parse_sequence(value: str) -> list[Any]:
     """Parse a JSON/YAML CLI sequence."""
 
-    parsed = yaml.safe_load(value)
+    parsed = _yaml().safe_load(value)
     if parsed is None:
         return []
     if not isinstance(parsed, list):
@@ -2988,7 +3017,7 @@ def _parse_sequence(value: str) -> list[Any]:
 def _parse_mapping(value: str) -> dict[str, Any]:
     """Parse a JSON/YAML CLI mapping."""
 
-    parsed = yaml.safe_load(value)
+    parsed = _yaml().safe_load(value)
     if parsed is None:
         return {}
     if not isinstance(parsed, dict):
@@ -3011,6 +3040,7 @@ def _parse_key_values(items: Iterable[str]) -> dict[str, Any]:
 def _parse_value(value: str) -> Any:
     """Parse one YAML scalar/list/dict value from CLI text."""
 
+    yaml = _yaml()
     try:
         return yaml.safe_load(value)
     except yaml.YAMLError:
@@ -3022,15 +3052,16 @@ def _jsonable(value: Any) -> Any:
 
     if isinstance(value, Path):
         return str(value)
-    if isinstance(value, pd.DataFrame):
+    if _is_pandas_dataframe(value):
         return [_jsonable(row) for row in value.astype(object).to_dict(orient="records")]
-    if isinstance(value, pd.Series):
+    if _is_pandas_series(value):
         return _jsonable(value.astype(object).to_dict())
     if isinstance(value, dict):
         return {str(key): _jsonable(item) for key, item in value.items()}
     if isinstance(value, (list, tuple, set)):
         return [_jsonable(item) for item in value]
-    if value is pd.NA or value is pd.NaT:
+    pandas_module = sys.modules.get("pandas")
+    if pandas_module is not None and (value is pandas_module.NA or value is pandas_module.NaT):
         return None
     if isinstance(value, float) and math.isnan(value):
         return None

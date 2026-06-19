@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-19
+   - Made ``spatial_vtk.cli`` defer pandas and PyYAML imports until table I/O or
+     YAML parsing is actually needed. ``svtk --help`` and
+     ``tools/generate_cli_reference.py`` can now build the parser in lightweight
+     documentation environments without scientific runtime dependencies.
    - Added ``configured_output_registry_preview_frame()`` and updated the
      Python workflow reference to use it for bounded output-registry examples
      instead of displaying ``configured_output_registry_frame(...).head()``.

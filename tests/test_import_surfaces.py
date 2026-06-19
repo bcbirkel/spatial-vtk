@@ -219,6 +219,29 @@ def test_public_imports():
     assert callable(plot_study_domain_map)
 
 
+def test_cli_parser_builds_without_optional_runtime_dependencies():
+    """CLI help/reference generation should not import pandas or PyYAML."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(root / "src")
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-S",
+            "-c",
+            "from spatial_vtk.cli import build_parser; build_parser(); print('ok')",
+        ],
+        cwd=root,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "ok"
+
+
 def test_public_package_discovery_excludes_legacy_namespace():
     pyproject = pathlib.Path(__file__).resolve().parents[1] / "pyproject.toml"
     text = pyproject.read_text(encoding="utf-8")
