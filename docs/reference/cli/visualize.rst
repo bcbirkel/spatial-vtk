@@ -15,7 +15,7 @@ If a config is active with ``svtk config set`` or passed with ``--config``, regi
    svtk visualize context station-event-context --bounds study_area
    svtk visualize waveforms observed-synthetic-record-section --components R --max-records 80
 
-These commands use configured outputs such as ``qc_metric_pair_retention``, ``event_station_records``, and the registered figure keys for the selected visualization unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk visualize qc list``, ``svtk visualize context list``, or ``svtk visualize waveforms list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:--input`` entries.
+These commands use configured outputs such as ``qc_metric_pair_retention``, ``event_station_records``, and the registered figure keys for the selected visualization unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk visualize qc list``, ``svtk visualize context list``, or ``svtk visualize waveforms list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries.
 
 Use ``svtk visualize sidecars status`` to inspect figure provenance sidecars written by commands that support ``--write-sidecar``.
 

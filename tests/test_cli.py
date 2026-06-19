@@ -905,7 +905,7 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "registered figure keys for the selected plot" in plot_text
     assert "svtk plot metrics list" in plot_text
     assert "config:<key>" in plot_text
-    assert "required:--input" in plot_text
+    assert "required:<role>" in plot_text
     assert "Config-Backed Mapping" in map_text
     assert "svtk map spatial station-metric --value-col log2_residual --metric PGA" in map_text
     assert "svtk map spatial list" in map_text
@@ -3742,8 +3742,9 @@ def test_cli_plot_list(capsys):
     assert "period-spectra" in captured.out
     period_line = next(line for line in captured.out.splitlines() if line.startswith("period-spectra"))
     assert "config:metrics_long" in period_line
-    assert "required:--input" not in period_line
-    assert "required:--input" in captured.out
+    assert "required:" not in period_line
+    assert "period-spectrogram" in captured.out
+    assert "required:spectrogram table" in captured.out
     assert "model-metric-heatmap" in captured.out
     assert "config:band_score_distribution" in captured.out
     assert "config:model_metric_heatmap" in captured.out

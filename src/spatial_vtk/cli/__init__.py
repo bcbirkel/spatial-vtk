@@ -2677,7 +2677,9 @@ def _registered_list_input(spec: PlotCommand) -> str:
         return "none"
     if spec.input_key:
         return f"config:{spec.input_key}"
-    return "required:--input"
+    role = _registered_table_role(spec.primary_arg, None, fallback="input")
+    suffix = "" if "table" in role else " table"
+    return f"required:{role}{suffix}"
 
 
 def _registered_list_output(spec: PlotCommand) -> str:
@@ -2685,7 +2687,7 @@ def _registered_list_output(spec: PlotCommand) -> str:
 
     if spec.output_key:
         return f"config:{spec.output_key}"
-    return "required:--output"
+    return "required:figure output"
 
 
 def _registered_list_extra_tables(spec: PlotCommand) -> str:
