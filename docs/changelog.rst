@@ -128,6 +128,8 @@ Changelog
   - Added a stable workflow import-surface table that maps notebook and
     large-run helper families to public package namespaces and directs new
     helpers to be re-exported before notebooks use them.
+  - Reworded the large-run notebook guidance to name stable public import
+    packages without showing obsolete implementation-submodule examples.
   - Updated workflow examples to prefer ``output_group()`` and configured
     output-registry helpers over raw ``resolve_output_path()`` snippets for
     normal notebook workflows.

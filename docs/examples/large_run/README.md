@@ -44,16 +44,12 @@ from spatial_vtk.visualize.dashboard import prepare_configured_dashboard_dataset
 
 Single-figure helpers remain available for ad-hoc Python scripts, but the
 large-run notebooks should not hand-wire individual plot calls, figure paths, or
-dataframe joins. Do not import from implementation submodules under public
-plotting, mapping, or visualization entry points. Imports from public packages
-such as `from spatial_vtk.metrics.plot import ...` are stable; imports that add
-another implementation segment after those packages are rejected by preflight.
-Examples of rejected patterns include:
-
-- `from spatial_vtk.metrics.plot.periods import ...`
-- `from spatial_vtk.spatial.map.station import ...`
-- `from spatial_vtk.visualize.context.figures import ...`
-- `import spatial_vtk.visualize.dashboard.streamlit_metrics`
+dataframe joins. Import from stable public packages such as
+`spatial_vtk.metrics.plot`, `spatial_vtk.spatial.plot`,
+`spatial_vtk.spatial.map`, and `spatial_vtk.visualize`. Do not import from
+deeper implementation modules below those packages in notebooks; preflight
+rejects those paths because they are internal organization, not the tutorial
+contract.
 
 Run `python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run`
 for the same source-contract and example-data checks without notebook runtime

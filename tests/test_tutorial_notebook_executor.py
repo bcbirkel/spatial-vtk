@@ -1168,15 +1168,22 @@ def test_large_run_readme_distinguishes_public_and_implementation_imports() -> N
         "prepare_configured_dashboard_datasets_from_notebook_settings",
     ):
         assert helper in readme
-    assert "Imports from public packages" in readme
-    assert "from spatial_vtk.metrics.plot import ..." in readme
+    assert "Import from stable public packages" in readme
+    assert "deeper implementation modules below those packages" in readme
+    for namespace in (
+        "spatial_vtk.metrics.plot",
+        "spatial_vtk.spatial.plot",
+        "spatial_vtk.spatial.map",
+        "spatial_vtk.visualize",
+    ):
+        assert namespace in readme
     for pattern in (
         "from spatial_vtk.metrics.plot.periods",
         "from spatial_vtk.spatial.map.station",
         "from spatial_vtk.visualize.context.figures",
         "import spatial_vtk.visualize.dashboard.streamlit_metrics",
     ):
-        assert pattern in readme
+        assert pattern not in readme
     for ambiguous_prefix in (
         "spatial_vtk.metrics.plot.*",
         "spatial_vtk.spatial.plot.*",
