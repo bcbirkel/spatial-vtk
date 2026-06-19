@@ -147,6 +147,9 @@ Changelog
 - Updated the Visualization API reference to document context, QC, waveform,
   and dashboard helpers through their public subpackage entry points instead
   of lower-level implementation-module autodoc blocks.
+- Added descriptive notebook workflow result keys for preprocessing manifests
+  and metric-manifest batch metadata, while retaining older aliases for
+  compatibility.
 - Python workflow docs now steer new notebooks to ``output_group()`` so
   readiness, previews, completion checks, and figure path helpers stay attached
   to one workflow object.

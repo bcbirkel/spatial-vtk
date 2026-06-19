@@ -1749,7 +1749,11 @@ metrics:
     manifest = read_task_manifest(manifest_path)
     assert manifest_path == tables / "metric_manifest.json"
     assert plan_result["metric_manifest_path"] == str(manifest_path)
+    assert plan_result["metric_manifest_path"] == plan_result["manifest_path"]
     assert plan_result["planned_output_path"] == str(manifest_path)
+    assert plan_result["metric_manifest_batch_count"] == plan_result["batch_count"] == 1
+    assert plan_result["metric_manifest_batch_size"] == plan_result["batch_size"] == 1
+    assert plan_result["metric_manifest_batch_output_dir"] == plan_result["batch_output_dir"]
     assert plan_result["observed_metric_inventory_path"] == str(tables / "observed_metric_inventory.parquet")
     assert plan_result["synthetic_metric_inventory_path"] == str(tables / "synthetic_metric_inventory.parquet")
     assert plan_result["metric_qc_table_path"] == str(tables / "qc_inventory_overlap.parquet")

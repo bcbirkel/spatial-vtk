@@ -132,6 +132,7 @@ def preprocess_waveforms_from_config(
     )
     return {
         "preprocessed_event_station_records_path": str(result.event_station_path),
+        "preprocessed_manifest_path": str(result.manifest_path),
         "preprocessing_manifest_path": str(result.manifest_path),
         "preprocessed_trace_metadata_path": str(result.trace_metadata_path),
         "event_station_records": str(result.event_station_path),

@@ -23,6 +23,7 @@ for terminal-oriented workflows and generated batch scripts.
 Workflow functions return JSON-ready dictionaries that are safe to display in
 notebooks or Slurm logs. New notebook code should prefer explicit keys such as
 ``metric_manifest_path``, ``observed_metric_inventory_path``,
+``metric_manifest_batch_output_dir``, ``preprocessed_manifest_path``,
 ``record_coverage_path``, and ``geojson_region_summaries_path``. These
 descriptive keys are the public notebook contract: they make status tables,
 logs, and downstream cells readable without checking each helper's

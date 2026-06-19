@@ -118,6 +118,7 @@ outputs:
     assert result["trace_metadata_rows"] == 2
     assert result["event_station_rows"] == 1
     assert result["preprocessed_event_station_records_path"] == result["event_station_records"]
+    assert result["preprocessed_manifest_path"] == result["manifest"]
     assert result["preprocessing_manifest_path"] == result["manifest"]
     assert result["preprocessed_trace_metadata_path"] == result["trace_metadata"]
 

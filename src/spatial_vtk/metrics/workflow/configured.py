@@ -164,6 +164,10 @@ def plan_metric_tasks_from_config(
         )
         payload.update(
             {
+                "metric_manifest_path": str(written.manifest_path),
+                "metric_manifest_batch_count": int(len(written.batches)),
+                "metric_manifest_batch_size": int(selected_batch_size),
+                "metric_manifest_batch_output_dir": str(batch_dir),
                 "manifest_path": str(written.manifest_path),
                 "batch_count": int(len(written.batches)),
                 "batch_size": int(selected_batch_size),
