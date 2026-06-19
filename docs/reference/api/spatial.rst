@@ -141,6 +141,10 @@ import paths.
 .. autoclass:: spatial_vtk.spatial.StandardSpatialWorkflowOutputStatusResult
    :members:
 
+The Step 4 status result remembers the config used to create it, so large-run
+notebooks can call ``display_table_previews(nrows=...)`` without repeating
+``cfg`` in each preview cell.
+
 .. autofunction:: spatial_vtk.spatial.load_standard_spatial_workflow_output_status
 
 .. autofunction:: spatial_vtk.spatial.spatial_metric_table_frame
@@ -235,7 +239,8 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
    * - ``load_standard_geojson_workflow_output_status``
      - Resolve Step 5 output status and bounded table previews for large-run
        driver notebooks without loading the full metrics or GeoJSON input
-       tables.
+       tables. The status result retains its config for
+       ``display_table_previews(nrows=...)`` calls.
    * - ``write_standard_additional_plotting_figures``
      - Write the standard Step 6 waveform map, pattern-similarity figure,
        residual scatterplot, region boxplot, and region heatmap while keeping

@@ -21,6 +21,7 @@ from pathlib import Path
 import re
 import time
 from types import SimpleNamespace
+from typing import Any
 
 import pandas as pd
 
@@ -418,13 +419,20 @@ class StandardSpatialWorkflowOutputStatusResult:
     """
 
     outputs: object
+    cfg: SpatialVTKConfig | None = None
 
     def status_frame(self) -> pd.DataFrame:
         """Return configured Step 4 output path status."""
 
         return self.outputs.status_frame()
 
-    def display_table_previews(self, *, cfg: SpatialVTKConfig | None = None, nrows: int = 5) -> dict[str, object]:
+    def display_table_previews(
+        self,
+        *,
+        cfg: SpatialVTKConfig | None = None,
+        nrows: int = 5,
+        display_fn: Any | None = None,
+    ) -> dict[str, object]:
         """Display bounded previews of the core Step 4 spatial output tables."""
 
         return self.outputs.display_table_previews(
@@ -433,8 +441,9 @@ class StandardSpatialWorkflowOutputStatusResult:
                 "event_centered_residuals": "event_centered_residuals",
                 "station_bias": "station_bias",
             },
-            cfg=cfg,
+            cfg=cfg or self.cfg,
             nrows=nrows,
+            display_fn=display_fn,
         )
 
 
@@ -800,7 +809,7 @@ def load_standard_spatial_workflow_output_status(
         large-run notebooks.
     """
 
-    return StandardSpatialWorkflowOutputStatusResult(outputs=output_group(output_group_name, cfg=cfg))
+    return StandardSpatialWorkflowOutputStatusResult(outputs=output_group(output_group_name, cfg=cfg), cfg=cfg)
 
 
 def spatial_metric_table_frame(

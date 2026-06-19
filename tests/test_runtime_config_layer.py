@@ -99,6 +99,7 @@ from spatial_vtk.visualize.dashboard.export import load_dashboard_metric_dataset
 from spatial_vtk.spatial import (
     boundary_corridor_readiness_from_config,
     geojson_region_summary_readiness_from_config,
+    load_standard_spatial_workflow_output_status,
     spatial_derived_outputs_readiness_from_config,
     spatial_summary_readiness_from_config,
 )
@@ -112,7 +113,7 @@ from spatial_vtk.metrics import (
     metric_inventories_readiness_from_config,
     metric_manifest_readiness_from_config,
 )
-from spatial_vtk.spatial.plot import load_standard_geojson_plotting_inputs
+from spatial_vtk.spatial.plot import load_standard_geojson_plotting_inputs, load_standard_geojson_workflow_output_status
 
 
 def test_runtime_config_loads_paths_defaults_and_bounds(tmp_path, monkeypatch):
@@ -1806,6 +1807,12 @@ outputs:
     )
     cfg = SpatialVTKConfig.from_file(config_path).activate()
     step_outputs = output_group("step_04_spatial", cfg=cfg)
+    write_table(pd.DataFrame({"metric": ["PGA"], "value": [0.1]}), step_outputs.metric_field_path)
+    spatial_status = load_standard_spatial_workflow_output_status(cfg=cfg)
+    displayed_spatial: list[pd.DataFrame] = []
+    spatial_previews = spatial_status.display_table_previews(nrows=1, display_fn=displayed_spatial.append)
+    assert spatial_previews["metric_field"].to_dict("records") == [{"metric": "PGA", "value": 0.1}]
+    assert displayed_spatial[0].to_dict("records") == [{"metric": "PGA", "value": 0.1}]
 
     summary_missing = spatial_summary_readiness_from_config(config_path=config_path)
 
@@ -2018,6 +2025,15 @@ outputs:
     )
     cfg = SpatialVTKConfig.from_file(config_path).activate()
     step_outputs = output_group("step_05_geojson", cfg=cfg)
+    write_table(pd.DataFrame({"region": ["A"], "count": [1]}), step_outputs.geojson_summaries_path)
+    geojson_output_status = load_standard_geojson_workflow_output_status(cfg=cfg)
+    displayed_geojson: list[pd.DataFrame] = []
+    geojson_previews = geojson_output_status.display_table_previews(
+        nrows=1,
+        display_fn=displayed_geojson.append,
+    )
+    assert geojson_previews["geojson_region_summaries"].to_dict("records") == [{"region": "A", "count": 1}]
+    assert displayed_geojson[0].to_dict("records") == [{"region": "A", "count": 1}]
     geojson_status = step_outputs.status_frame().set_index("name")
     assert geojson_status.loc["geojson_summaries_path", "artifact_label"] == "geojson region summaries table"
     assert geojson_status.loc["geojson_summaries_path", "readiness"] == "missing"

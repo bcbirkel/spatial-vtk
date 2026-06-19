@@ -1513,7 +1513,8 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "core_spatial_output_names" not in source
     assert "derived_spatial_output_names" not in source
     assert "step_outputs.readiness(" not in source
-    assert "step_outputs.display_table_previews(" in source
+    assert "step_outputs.display_table_previews(nrows=PREVIEW_ROWS)" in source
+    assert "step_outputs.display_table_previews(cfg=context.cfg" not in source
     assert 'step_outputs = output_group("step_04_spatial")' not in source
     assert "display_output_table_previews(" not in source
     assert '"spatial_vtk.spatial.run_spatial_statistics_workflow_from_config"' not in source
@@ -1589,7 +1590,8 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "run_boundary_corridor_workflow_from_config," in source
     assert "load_standard_geojson_workflow_output_status" in source
     assert "step_outputs = load_standard_geojson_workflow_output_status(cfg=cfg)" in source
-    assert "step_outputs.display_table_previews(" in source
+    assert "step_outputs.display_table_previews(nrows=PREVIEW_ROWS)" in source
+    assert "step_outputs.display_table_previews(cfg=cfg" not in source
     assert 'step_outputs = output_group("step_05_geojson")' not in source
     assert "display_output_table_previews(" not in source
     assert "write_large_run_geojson_region_figures_from_notebook_settings(" in source

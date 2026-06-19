@@ -1530,13 +1530,20 @@ class StandardGeoJSONWorkflowOutputStatusResult:
     """Configured Step 5 output status and bounded preview helpers."""
 
     outputs: Any
+    cfg: Any | None = None
 
     def status_frame(self) -> pd.DataFrame:
         """Return configured Step 5 output path status."""
 
         return self.outputs.status_frame()
 
-    def display_table_previews(self, *, cfg: Any | None = None, nrows: int = 5) -> dict[str, object]:
+    def display_table_previews(
+        self,
+        *,
+        cfg: Any | None = None,
+        nrows: int = 5,
+        display_fn: Any | None = None,
+    ) -> dict[str, object]:
         """Display bounded previews of the core Step 5 GeoJSON output tables."""
 
         return self.outputs.display_table_previews(
@@ -1544,8 +1551,9 @@ class StandardGeoJSONWorkflowOutputStatusResult:
                 "geojson_region_summaries": "geojson_region_summaries",
                 "corridors": "corridors",
             },
-            cfg=cfg,
+            cfg=cfg or self.cfg,
             nrows=nrows,
+            display_fn=display_fn,
         )
 
 
@@ -2633,7 +2641,7 @@ def load_standard_geojson_workflow_output_status(
 
     from spatial_vtk.io import output_group
 
-    return StandardGeoJSONWorkflowOutputStatusResult(outputs=output_group(geojson_group_name, cfg=cfg))
+    return StandardGeoJSONWorkflowOutputStatusResult(outputs=output_group(geojson_group_name, cfg=cfg), cfg=cfg)
 
 
 def write_standard_geojson_corridor_figures(

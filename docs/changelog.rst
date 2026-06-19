@@ -228,6 +228,9 @@ Changelog
   - Updated the large-run metric notebook to preview ``metrics_long`` through
     the package-owned metric workflow result helper instead of direct
     output-group calls.
+  - Let Step 4 spatial and Step 5 GeoJSON status helpers retain their config
+    for bounded preview calls, removing repeated config plumbing from the
+    large-run notebooks.
   - Reused the standard ingest output helper inside record-coverage
     readiness/build workflows so script and notebook path fallback behavior
     stays aligned.
