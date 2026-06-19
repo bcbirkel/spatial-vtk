@@ -78,6 +78,9 @@ def launch_metrics_dashboard(
     auto_port: bool = False,
     show: bool = True,
     proxy_mode: bool = False,
+    row_limit: int | str | None = None,
+    summary_display_rows: int | str | None = None,
+    download_rows: int | str | None = None,
     extra_args: list[str] | None = None,
 ) -> subprocess.Popen[Any]:
     """Launch the Streamlit Metrics Explorer."""
@@ -85,6 +88,9 @@ def launch_metrics_dashboard(
     env = os.environ.copy()
     env["SVTK_METRICS_ROOT"] = str(Path(metrics_root).expanduser())
     env["SVTK_SUMMARY_ROOT"] = str(Path(summary_root).expanduser())
+    _set_optional_env(env, "SVTK_METRICS_DASHBOARD_ROW_LIMIT", row_limit)
+    _set_optional_env(env, "SVTK_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS", summary_display_rows)
+    _set_optional_env(env, "SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS", download_rows)
     if config_path is not None:
         env["SVTK_CONFIG_FILE"] = str(Path(config_path).expanduser())
     return launch_streamlit_dashboard(
@@ -109,6 +115,9 @@ def launch_configured_metrics_dashboard(
     auto_port: bool = False,
     show: bool = True,
     proxy_mode: bool = False,
+    row_limit: int | str | None = None,
+    summary_display_rows: int | str | None = None,
+    download_rows: int | str | None = None,
     extra_args: list[str] | None = None,
 ) -> subprocess.Popen[Any]:
     """Launch the Metrics Explorer from configured dashboard output paths.
@@ -136,6 +145,9 @@ def launch_configured_metrics_dashboard(
         auto_port=auto_port,
         show=show,
         proxy_mode=proxy_mode,
+        row_limit=row_limit,
+        summary_display_rows=summary_display_rows,
+        download_rows=download_rows,
         extra_args=extra_args,
     )
 
@@ -424,6 +436,17 @@ def _require_streamlit() -> None:
 
     if importlib.util.find_spec("streamlit") is None:
         raise ImportError("Streamlit dashboards require the optional dashboard dependencies. Install spatial-vtk[dashboard] or use svtk_environment.yaml.")
+
+
+def _set_optional_env(env: dict[str, str], name: str, value: int | str | None) -> None:
+    """Set one dashboard runtime environment variable when a value is explicit."""
+
+    if value is None:
+        return
+    text = str(value).strip()
+    if not text:
+        return
+    env[name] = text
 
 
 def _resolve_dashboard_config(

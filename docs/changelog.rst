@@ -80,6 +80,8 @@ Changelog
     - Normalized generated CLI help text for dashboard, inventory, and waveform
       path arguments so usage strings show ``PATH`` or ``DIR`` where
       appropriate.
+    - Added first-class ``svtk dashboard metrics`` runtime-limit flags for
+      row-level loading, summary-table display, and CSV downloads.
     - Added a top-level CLI missing-dependency message so source-checkout
       commands report the missing package and install command instead of a raw
       traceback.

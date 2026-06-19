@@ -889,6 +889,11 @@ def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monke
     monkeypatch.delenv("SVTK_LAUNCH_QC_DASHBOARD", raising=False)
     monkeypatch.delenv("SVTK_DASHBOARD_AUTO_PORT", raising=False)
     monkeypatch.delenv("SVTK_DASHBOARD_PROXY_MODE", raising=False)
+    monkeypatch.delenv("SVTK_METRICS_DASHBOARD_ROW_LIMIT", raising=False)
+    monkeypatch.delenv("SVTK_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS", raising=False)
+    monkeypatch.delenv("SVTK_DASHBOARD_DISPLAY_ROWS", raising=False)
+    monkeypatch.delenv("SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS", raising=False)
+    monkeypatch.delenv("SVTK_DASHBOARD_DOWNLOAD_ROWS", raising=False)
 
     commands = notebook_dashboard_launch_commands(config_path)
 
@@ -949,6 +954,9 @@ run_scenarios:
     monkeypatch.setenv("SVTK_LAUNCH_QC_DASHBOARD", "1")
     monkeypatch.setenv("SVTK_DASHBOARD_AUTO_PORT", "0")
     monkeypatch.setenv("SVTK_DASHBOARD_PROXY_MODE", "1")
+    monkeypatch.setenv("SVTK_METRICS_DASHBOARD_ROW_LIMIT", "250000")
+    monkeypatch.setenv("SVTK_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS", "7500")
+    monkeypatch.setenv("SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS", "all")
 
     commands = notebook_dashboard_launch_commands(config_path, run_scenario="large-run")
 
@@ -958,13 +966,23 @@ run_scenarios:
     assert commands.launch_qc_dashboard is True
     assert commands.auto_port is False
     assert commands.proxy_mode is True
+    assert commands.metrics_row_limit == 250000
+    assert commands.metrics_summary_display_rows == 7500
+    assert commands.metrics_download_rows == "all"
     assert commands.run_scenario == "large-run"
     assert "--auto-port" not in commands.metrics_command
     assert "--proxy-mode" in commands.metrics_command
     assert "--run-scenario large-run" in commands.metrics_command
+    assert "--row-limit 250000" in commands.metrics_command
+    assert "--summary-display-rows 7500" in commands.metrics_command
+    assert "--download-rows all" in commands.metrics_command
     assert "--proxy-mode" in commands.qc_command
+    assert "--row-limit" not in commands.qc_command
     status = commands.status_frame().set_index("dashboard")
     assert status.loc["metrics", "run_scenario"] == "large-run"
+    assert status.loc["metrics", "metrics_row_limit"] == 250000
+    assert status.loc["metrics", "metrics_summary_display_rows"] == 7500
+    assert status.loc["metrics", "metrics_download_rows"] == "all"
     assert bool(status.loc["metrics", "launch_requested"]) is True
     assert bool(status.loc["qc", "launch_requested"]) is True
     assert "--run-scenario large-run" in status.loc["metrics", "terminal_command"]
@@ -975,6 +993,9 @@ run_scenarios:
         "proxy_mode": True,
         "show": False,
         "run_scenario": "large-run",
+        "row_limit": 250000,
+        "summary_display_rows": 7500,
+        "download_rows": "all",
     }
     assert commands.qc_launch_kwargs(show=False) == {
         "config_path": config_path.resolve(),

@@ -3410,7 +3410,26 @@ outputs:
         fake_launch_metrics_dashboard,
     )
 
-    assert main(["dashboard", "metrics", "--config", str(config), "--port", "8555", "--proxy-mode"]) == 0
+    assert (
+        main(
+            [
+                "dashboard",
+                "metrics",
+                "--config",
+                str(config),
+                "--port",
+                "8555",
+                "--proxy-mode",
+                "--row-limit",
+                "250000",
+                "--summary-display-rows",
+                "7500",
+                "--download-rows",
+                "all",
+            ]
+        )
+        == 0
+    )
 
     captured = capsys.readouterr()
     assert "Metrics dashboard row dataset:" in captured.out
@@ -3421,6 +3440,12 @@ outputs:
     assert launched["server_port"] == 8555
     assert launched["auto_port"] is False
     assert launched["proxy_mode"] is True
+    assert launched["row_limit"] == "250000"
+    assert launched["summary_display_rows"] == "7500"
+    assert launched["download_rows"] == "all"
+    assert "Metrics dashboard row-level record limit: 250000" in captured.out
+    assert "Metrics dashboard summary display rows: 7500" in captured.out
+    assert "Metrics dashboard download rows: all" in captured.out
 
 
 def test_cli_dashboard_help_exposes_clear_path_aliases(capsys):
@@ -3437,6 +3462,9 @@ def test_cli_dashboard_help_exposes_clear_path_aliases(capsys):
     assert "Metrics dashboard row dataset directory" in metrics_help
     assert "row-level data used by metric filters" in metrics_help
     assert "Dashboard summary-table directory" in metrics_help
+    assert "--row-limit" in metrics_help
+    assert "--summary-display-rows" in metrics_help
+    assert "--download-rows" in metrics_help
     assert "model_metric_band" in metrics_help
     assert "station_rollup" in metrics_help
     assert "metrics_dashboard" in metrics_help

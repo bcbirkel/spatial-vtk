@@ -1175,6 +1175,24 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     metrics.add_argument("--address", default="127.0.0.1", help="Streamlit server address.")
     metrics.add_argument("--auto-port", action="store_true", help="Use the first available port at or above --port.")
     metrics.add_argument("--proxy-mode", action="store_true", help="Allow access through reverse proxies.")
+    metrics.add_argument(
+        "--row-limit",
+        metavar="N",
+        default=None,
+        help="Maximum filtered row-level metric records loaded by distribution tabs. Defaults to the dashboard environment setting.",
+    )
+    metrics.add_argument(
+        "--summary-display-rows",
+        metavar="N",
+        default=None,
+        help="Maximum filtered summary-table rows displayed per dashboard tab, or 'all' for no display cap.",
+    )
+    metrics.add_argument(
+        "--download-rows",
+        metavar="N",
+        default=None,
+        help="Maximum filtered row-level metric records included in CSV downloads, or 'all' for no download cap.",
+    )
     metrics.add_argument("--show", action="store_true", help="Open Streamlit in a browser when supported.")
     metrics.set_defaults(handler=_cmd_dashboard_metrics)
 
@@ -2519,6 +2537,9 @@ def _cmd_dashboard_metrics(args: argparse.Namespace) -> int:
         server_port=args.port,
         auto_port=args.auto_port,
         proxy_mode=args.proxy_mode,
+        row_limit=args.row_limit,
+        summary_display_rows=args.summary_display_rows,
+        download_rows=args.download_rows,
         show=args.show,
     )
     resolved_port = getattr(process, "spatial_vtk_server_port", args.port)
@@ -2526,6 +2547,12 @@ def _cmd_dashboard_metrics(args: argparse.Namespace) -> int:
     print(f"Metrics dashboard summary tables: {summary_root}")
     if args.proxy_mode:
         print("Metrics dashboard proxy mode: enabled")
+    if args.row_limit is not None:
+        print(f"Metrics dashboard row-level record limit: {args.row_limit}")
+    if args.summary_display_rows is not None:
+        print(f"Metrics dashboard summary display rows: {args.summary_display_rows}")
+    if args.download_rows is not None:
+        print(f"Metrics dashboard download rows: {args.download_rows}")
     if args.auto_port and int(resolved_port) != int(args.port):
         print(f"Metrics dashboard auto-port: requested {args.port}, using {resolved_port}")
     print(f"Metrics dashboard running at http://{args.address}:{resolved_port} (pid {process.pid})")

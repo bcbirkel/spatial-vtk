@@ -1297,6 +1297,9 @@ outputs:
         server_port=8701,
         auto_port=True,
         show=False,
+        row_limit=250000,
+        summary_display_rows=7500,
+        download_rows=125000,
     )
     qc_process = dashboard_launch.launch_configured_qc_dashboard(
         config_path=config_path,
@@ -1312,6 +1315,9 @@ outputs:
     assert Path(metrics_env["SVTK_METRICS_ROOT"]) == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
     assert Path(metrics_env["SVTK_SUMMARY_ROOT"]) == tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
     assert Path(metrics_env["SVTK_CONFIG_FILE"]) == config_path.resolve()
+    assert metrics_env["SVTK_METRICS_DASHBOARD_ROW_LIMIT"] == "250000"
+    assert metrics_env["SVTK_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS"] == "7500"
+    assert metrics_env["SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS"] == "125000"
     assert launched[0]["server_port"] == 8701
     assert launched[0]["auto_port"] is True
     assert Path(qc_env["SVTK_TRACE_SUMMARY"]) == tmp_path / "outputs" / "tables" / "qc_trace_summary.csv"

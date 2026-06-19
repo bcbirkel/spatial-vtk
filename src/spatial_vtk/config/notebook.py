@@ -481,6 +481,9 @@ class NotebookDashboardCommands:
     proxy_mode
         Whether launch helpers use reverse-proxy settings for notebook
         environments.
+    metrics_row_limit, metrics_summary_display_rows, metrics_download_rows
+        Optional metrics-dashboard runtime limits forwarded to the Streamlit
+        process and terminal command fallback.
     config_path
         Resolved config path passed to package dashboard launch helpers.
     run_scenario
@@ -496,6 +499,9 @@ class NotebookDashboardCommands:
     auto_port: bool
     proxy_mode: bool
     config_path: Path
+    metrics_row_limit: int | str | None = None
+    metrics_summary_display_rows: int | str | None = None
+    metrics_download_rows: int | str | None = None
     run_scenario: str | None = None
 
     def metrics_launch_kwargs(self, *, show: bool = True) -> dict[str, object]:
@@ -508,6 +514,12 @@ class NotebookDashboardCommands:
             "proxy_mode": self.proxy_mode,
             "show": bool(show),
         }
+        if self.metrics_row_limit is not None:
+            kwargs["row_limit"] = self.metrics_row_limit
+        if self.metrics_summary_display_rows is not None:
+            kwargs["summary_display_rows"] = self.metrics_summary_display_rows
+        if self.metrics_download_rows is not None:
+            kwargs["download_rows"] = self.metrics_download_rows
         if self.run_scenario is not None:
             kwargs["run_scenario"] = self.run_scenario
         return kwargs
@@ -546,6 +558,11 @@ class NotebookDashboardCommands:
             "run_scenario": self.run_scenario or "",
             "auto_port": self.auto_port,
             "proxy_mode": self.proxy_mode,
+            "metrics_row_limit": self.metrics_row_limit if self.metrics_row_limit is not None else "",
+            "metrics_summary_display_rows": (
+                self.metrics_summary_display_rows if self.metrics_summary_display_rows is not None else ""
+            ),
+            "metrics_download_rows": self.metrics_download_rows if self.metrics_download_rows is not None else "",
         }
         rows = [
             {
@@ -1040,6 +1057,9 @@ def notebook_dashboard_launch_commands(
     launch_qc_dashboard: bool | None = None,
     auto_port: bool | None = None,
     proxy_mode: bool | None = None,
+    metrics_row_limit: int | str | None = None,
+    metrics_summary_display_rows: int | str | None = None,
+    metrics_download_rows: int | str | None = None,
     run_scenario: str | None = None,
 ) -> NotebookDashboardCommands:
     """Return config-backed dashboard launch settings for notebooks.
@@ -1061,6 +1081,13 @@ def notebook_dashboard_launch_commands(
     proxy_mode
         Whether to include ``--proxy-mode`` for reverse-proxy notebook
         sessions. Defaults to ``SVTK_DASHBOARD_PROXY_MODE``.
+    metrics_row_limit, metrics_summary_display_rows, metrics_download_rows
+        Optional metrics-dashboard runtime limits. When omitted, environment
+        defaults are read from ``SVTK_METRICS_DASHBOARD_ROW_LIMIT``,
+        ``SVTK_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS`` or
+        ``SVTK_DASHBOARD_DISPLAY_ROWS``, and
+        ``SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS`` or
+        ``SVTK_DASHBOARD_DOWNLOAD_ROWS``.
     run_scenario
         Optional run scenario forwarded to dashboard commands.
 
@@ -1091,6 +1118,27 @@ def notebook_dashboard_launch_commands(
     )
     resolved_auto_port = _env_bool("SVTK_DASHBOARD_AUTO_PORT", default=True) if auto_port is None else bool(auto_port)
     resolved_proxy_mode = _env_bool("SVTK_DASHBOARD_PROXY_MODE", default=False) if proxy_mode is None else bool(proxy_mode)
+    resolved_metrics_row_limit = (
+        _env_dashboard_limit_first(("SVTK_METRICS_DASHBOARD_ROW_LIMIT",), default=None)
+        if metrics_row_limit is None
+        else metrics_row_limit
+    )
+    resolved_metrics_summary_display_rows = (
+        _env_dashboard_limit_first(
+            ("SVTK_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS", "SVTK_DASHBOARD_DISPLAY_ROWS"),
+            default=None,
+        )
+        if metrics_summary_display_rows is None
+        else metrics_summary_display_rows
+    )
+    resolved_metrics_download_rows = (
+        _env_dashboard_limit_first(
+            ("SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS", "SVTK_DASHBOARD_DOWNLOAD_ROWS"),
+            default=None,
+        )
+        if metrics_download_rows is None
+        else metrics_download_rows
+    )
 
     def command(kind: str, port: int) -> str:
         parts = ["svtk", "dashboard", kind, "--config", str(resolved_config_path), "--port", str(port)]
@@ -1100,6 +1148,13 @@ def notebook_dashboard_launch_commands(
             parts.append("--auto-port")
         if resolved_proxy_mode:
             parts.append("--proxy-mode")
+        if kind == "metrics":
+            if resolved_metrics_row_limit is not None:
+                parts.extend(["--row-limit", str(resolved_metrics_row_limit)])
+            if resolved_metrics_summary_display_rows is not None:
+                parts.extend(["--summary-display-rows", str(resolved_metrics_summary_display_rows)])
+            if resolved_metrics_download_rows is not None:
+                parts.extend(["--download-rows", str(resolved_metrics_download_rows)])
         return shlex.join(parts)
 
     return NotebookDashboardCommands(
@@ -1112,6 +1167,9 @@ def notebook_dashboard_launch_commands(
         auto_port=resolved_auto_port,
         proxy_mode=resolved_proxy_mode,
         config_path=resolved_config_path,
+        metrics_row_limit=resolved_metrics_row_limit,
+        metrics_summary_display_rows=resolved_metrics_summary_display_rows,
+        metrics_download_rows=resolved_metrics_download_rows,
         run_scenario=run_scenario,
     )
 
@@ -1824,6 +1882,28 @@ def _env_optional_int_first(names: list[str] | tuple[str, ...], *, default: int 
             return int(text)
         except ValueError:
             return default
+    return default
+
+
+def _env_dashboard_limit_first(names: list[str] | tuple[str, ...], *, default: int | str | None) -> int | str | None:
+    """Read one dashboard runtime limit while preserving explicit unlimited tokens."""
+
+    for name in names:
+        if name not in os.environ:
+            continue
+        value = os.environ.get(name)
+        if value is None:
+            continue
+        text = str(value).strip().lower()
+        if text in {"", "0", "none", "null"}:
+            return None
+        if text in {"all", "unlimited", "full"}:
+            return "all"
+        try:
+            parsed = int(text)
+        except ValueError:
+            return default
+        return parsed if parsed > 0 else None
     return default
 
 

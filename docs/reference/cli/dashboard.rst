@@ -123,7 +123,9 @@ svtk dashboard metrics
                               [--metrics-dataset-dir PATH]
                               [--dashboard-summary-table-dir DIR]
                               [--port PORT] [--address ADDRESS] [--auto-port]
-                              [--proxy-mode] [--show]
+                              [--proxy-mode] [--row-limit N]
+                              [--summary-display-rows N] [--download-rows N]
+                              [--show]
 
 .. rubric:: Parameters
 
@@ -171,6 +173,18 @@ svtk dashboard metrics
      - No
      - Flag
      - Allow access through reverse proxies.
+   * - ``--row-limit``
+     - No
+     -
+     - Maximum filtered row-level metric records loaded by distribution tabs. Defaults to the dashboard environment setting.
+   * - ``--summary-display-rows``
+     - No
+     -
+     - Maximum filtered summary-table rows displayed per dashboard tab, or ``all`` for no display cap.
+   * - ``--download-rows``
+     - No
+     -
+     - Maximum filtered row-level metric records included in CSV downloads, or ``all`` for no download cap.
    * - ``--show``
      - No
      - Flag
