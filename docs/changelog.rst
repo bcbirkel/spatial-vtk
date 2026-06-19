@@ -98,6 +98,9 @@ Changelog
     defaults before importing optional workflow modules.
   - Normalized registered figure command help so advanced ``--table`` mappings,
     named table aliases, and sidecar directories use path-oriented metavars.
+  - Clarified CLI plotting notes so visualization list commands are included
+    with plot/map list commands, and ``required:<role>`` entries explain when
+    explicit input tables are still required.
 
 - **Large-run resilience** *(Hardened)*
 

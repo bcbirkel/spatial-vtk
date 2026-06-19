@@ -938,9 +938,15 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "``--no-connect-points``" in text
     assert "Registered table defaults may be CSV or Parquet" in text
     assert "commands that say they accept CSV or parquet read either suffix through the package table helpers" in text
+    assert "``svtk visualize qc list``" in text
+    assert "``svtk visualize context list``" in text
+    assert "``svtk visualize waveforms list``" in text
+    assert "A ``required:<role>`` entry means that command has no registered default table" in text
     assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
     assert "Prefer configured default tables and named table aliases such as ``--events`` or ``--stations``" in text
     assert "advanced ``--table function_argument=path``" in text
+    assert "``svtk visualize qc list``" in generator_text
+    assert "A ``required:<role>`` entry means that command has no registered default table" in generator_text
     assert "Prefer configured default tables and named table aliases such as ``--events`` or ``--stations``" in generator_text
     assert "advanced ``--table function_argument=path``" in generator_text
     assert "Registered table defaults may be CSV or Parquet" in generator_text
