@@ -307,6 +307,10 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
                             "subset = metrics.loc[metrics['metric'].eq('PGA')]\n",
                             "joined = subset.merge(metrics, on='event_id')\n",
                             "layout = 'runs/outputs/tables'\n",
+                            "def local_helper():\n",
+                            "    return joined\n",
+                            "class LocalNotebookHelper:\n",
+                            "    pass\n",
                         ],
                     },
                     {
@@ -357,6 +361,8 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert ".loc[" in combined
     assert ".merge(" in combined
     assert "runs/outputs" in combined
+    assert "notebook-local function 'local_helper' should move to an importable package helper" in combined
+    assert "notebook-local class 'LocalNotebookHelper' should move to an importable package helper" in combined
     assert "should receive an imported package callable" in combined
     assert "spatial_vtk.qc.run_qc_inventory_from_config" in combined
     assert "user-specific path or address" in combined

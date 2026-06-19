@@ -6,6 +6,10 @@ Changelog
    notebook execution, docs, build, wheel-inspection, and publish gates. The
    checklist keeps release steps in the repository instead of only in agent
    instructions and avoids private machine- or cluster-specific paths.
+   Tightened the tutorial notebook preflight so notebook-local function and
+   class definitions are rejected. Reusable logic now has an executable guard
+   that keeps it in importable package helpers instead of public notebook
+   cells.
    Added
    ``spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings()``
    and rewired the standard Step 3 metrics notebook to use it for the focused

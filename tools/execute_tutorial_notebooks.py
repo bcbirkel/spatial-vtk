@@ -354,7 +354,29 @@ def tutorial_notebook_contract_violations(notebooks: list[Path], *, repo_root: P
                 if match:
                     violations.append(f"{cell_label}: user-specific path or address {match.group(0)!r}")
             if cell.get("cell_type") == "code":
+                violations.extend(_notebook_local_definition_violations(source, cell_label))
                 violations.extend(_notebook_package_callable_violations(source, cell_label))
+    return violations
+
+
+def _notebook_local_definition_violations(source: str, cell_label: str) -> list[str]:
+    """Return notebook-local function/class definitions that should live in the package."""
+
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return []
+
+    violations: list[str] = []
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            violations.append(
+                f"{cell_label}: notebook-local function {node.name!r} should move to an importable package helper"
+            )
+        elif isinstance(node, ast.ClassDef):
+            violations.append(
+                f"{cell_label}: notebook-local class {node.name!r} should move to an importable package helper"
+            )
     return violations
 
 
