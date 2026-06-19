@@ -164,6 +164,9 @@ Changelog
   - Updated Python workflow guidance so large-run metric plotting points to the
     package-owned figure-suite wrapper rather than lower-level metric
     figure-context and row-selection helpers.
+  - Updated Python workflow guidance so large-run spatial plotting points to
+    the package-owned figure-suite wrapper rather than lower-level spatial
+    figure-context helpers.
   - Documented notebook-facing and script-facing waveform-comparison and
     region-boxplot helpers.
   - Updated generated CLI reference examples to use the committed example

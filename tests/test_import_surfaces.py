@@ -1640,6 +1640,19 @@ def test_python_workflow_docs_prefer_metric_figure_suite_wrapper():
     assert "``spatial_vtk.metrics.load_standard_metric_workflow_outputs``" in workflows
     assert "``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``" in workflows
     assert "``spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs``" in workflows
+
+
+def test_python_workflow_docs_prefer_spatial_figure_suite_wrapper():
+    """Spatial workflow docs should point notebook users at the task-level figure suite."""
+
+    workflows_path = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "python_workflows.rst"
+    workflows = workflows_path.read_text(encoding="utf-8")
+    normalized = " ".join(workflows.split())
+
+    assert "spatial_vtk.spatial.plot.write_large_run_spatial_figure_suite_from_notebook_settings" in workflows
+    assert "That wrapper owns spatial table readiness checks, figure settings" in workflows
+    assert "notebooks do not build spatial figure contexts or per-plot paths by hand" in normalized
+    assert "spatial_vtk.spatial.plot.prepare_spatial_figure_context_from_notebook_settings" not in workflows
     assert "``spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs``" in workflows
     assert "fallback path choices in the cell" in workflows
 
