@@ -101,6 +101,7 @@ from spatial_vtk.spatial import (
     spatial_summary_readiness_from_config,
 )
 from spatial_vtk.spatial.plot import load_standard_geojson_plotting_inputs
+from spatial_vtk.qc import load_standard_qc_inputs
 
 
 def test_runtime_config_loads_paths_defaults_and_bounds(tmp_path, monkeypatch):
@@ -1913,6 +1914,44 @@ outputs:
         "comparison_eligible",
     }
     assert status.loc[status["artifact"].eq("region_geojson"), "status"].iloc[0] == "ready"
+    clear_active_config()
+
+
+def test_standard_qc_input_loader_owns_step01_table_loading(tmp_path, monkeypatch):
+    """Standard Step 2 notebooks should load Step 1 metadata through one helper."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+  figures: run_outputs/figures
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    ingest_outputs = output_group("step_01_ingest", cfg=cfg)
+    for path, text in (
+        (ingest_outputs.prepared_stations_path, "station,lat,lon\nSTA,0,0\n"),
+        (ingest_outputs.prepared_events_path, "event_id,lat,lon\nE1,0,0\n"),
+        (ingest_outputs.event_station_path, "event_id,station\nE1,STA\n"),
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+    inputs = load_standard_qc_inputs(cfg=cfg)
+
+    assert inputs.outputs.name == "step_02_qc"
+    assert len(inputs.stations) == 1
+    assert len(inputs.events) == 1
+    assert len(inputs.event_stations) == 1
+    status = inputs.status_frame()
+    assert set(status["table"]) == {"stations", "events", "event_stations"}
+    assert status["rows"].tolist() == [1, 1, 1]
     clear_active_config()
 
 

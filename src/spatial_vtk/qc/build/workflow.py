@@ -22,6 +22,7 @@ from spatial_vtk.config.metric_catalog import metric_group_for
 from spatial_vtk.config.metrics import metrics_settings_from_config
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
+from spatial_vtk.io import output_group
 from spatial_vtk.io.inventory import build_file_inventory
 from spatial_vtk.io.tables import load_output_table, write_output_table, write_table
 from spatial_vtk.io.waveforms import WaveformPreprocessing, read_waveform_file, select_waveform_trace
@@ -91,6 +92,67 @@ class QCSummaryWorkflowResult:
     paths: dict[str, Path]
     rows: dict[str, int]
     elapsed_s: float
+
+
+@dataclass(frozen=True)
+class StandardQCInputResult:
+    """Configured Step 1 inputs and Step 2 outputs for the standard QC notebook."""
+
+    stations: pd.DataFrame
+    events: pd.DataFrame
+    event_stations: pd.DataFrame
+    outputs: object
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact row-count table for loaded QC inputs."""
+
+        rows = [
+            {"table": "stations", "rows": len(self.stations)},
+            {"table": "events", "rows": len(self.events)},
+            {"table": "event_stations", "rows": len(self.event_stations)},
+        ]
+        return pd.DataFrame(rows, columns=["table", "rows"])
+
+
+def load_standard_qc_inputs(
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    ingest_group_name: str = "step_01_ingest",
+    qc_group_name: str = "step_02_qc",
+) -> StandardQCInputResult:
+    """Load standard Step 2 QC notebook inputs through configured output groups.
+
+    Parameters
+    ----------
+    cfg
+        Active Spatial-VTK config. When omitted, the active config is used by
+        the underlying output-group helpers.
+    ingest_group_name, qc_group_name
+        Output-group names for Step 1 prepared metadata and Step 2 QC outputs.
+
+    Returns
+    -------
+    StandardQCInputResult
+        Loaded prepared station/event/event-station tables and the configured
+        Step 2 output group.
+    """
+
+    ingest_outputs = output_group(ingest_group_name, cfg=cfg)
+    qc_outputs = output_group(qc_group_name, cfg=cfg)
+    ingest_tables = ingest_outputs.load_tables(
+        {
+            "stations": "prepared_stations_path",
+            "events": "prepared_events_path",
+            "event_stations": "event_station_path",
+        },
+        cfg=cfg,
+    )
+    return StandardQCInputResult(
+        stations=ingest_tables["stations"],
+        events=ingest_tables["events"],
+        event_stations=ingest_tables["event_stations"],
+        outputs=qc_outputs,
+    )
 
 
 def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None) -> SpatialVTKConfig:
@@ -2589,8 +2651,10 @@ __all__ = [
     "export_manual_review_queue",
     "export_manual_review_queue_from_qc_inventory",
     "filter_event_station_records_for_source_overlap",
+    "load_standard_qc_inputs",
     "load_comparison_eligible_records",
     "QCSummaryWorkflowResult",
+    "StandardQCInputResult",
     "run_qc_summary_workflow",
     "run_qc_summary_workflow_from_config",
     "write_comparison_eligibility_from_qc_inventory",

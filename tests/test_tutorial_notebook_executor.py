@@ -697,7 +697,11 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert '"reused": not overlap_readiness.should_run' not in standard_text
     assert '"reused": not summary_readiness.should_run' not in standard_text
     assert "run_local=True" in standard_text
-    assert "ingest_outputs.load_tables(" in standard_text
+    assert "load_standard_qc_inputs," in standard_text
+    assert "qc_inputs = load_standard_qc_inputs(cfg=cfg)" in standard_text
+    assert "qc_inputs.status_frame()" in standard_text
+    assert "ingest_outputs.load_tables(" not in standard_text
+    assert 'qc_outputs = output_group("step_02_qc", cfg=cfg)' not in standard_text
     assert "write_qc_figures_from_outputs(" in standard_text
     assert "qc_figure_result.status_frame()" in standard_text
     assert '"availability_path"' in standard_text

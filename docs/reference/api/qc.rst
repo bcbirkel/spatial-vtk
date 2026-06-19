@@ -21,6 +21,7 @@ helpers without requiring notebooks to import lower-level builder modules.
    from spatial_vtk.qc import (
        build_metric_pair_retention_table_from_qc_inventory,
        build_qc_drop_cause_table_from_qc_inventory,
+       load_standard_qc_inputs,
        run_qc_inventory_from_config,
        run_qc_summary_workflow_from_config,
        write_qc_inventory_overlap_from_config,
@@ -46,6 +47,9 @@ Public helpers exposed by ``spatial_vtk.qc``:
      - Build compact retention, drop-cause, post-QC record, and availability
        tables for figures and dashboards without loading the full inventory in a
        notebook.
+   * - ``load_standard_qc_inputs``
+     - Load standard Step 2 prepared metadata tables and the configured QC
+       output group without notebook-local Step 1 output-group table mapping.
    * - ``build_metric_pair_retention_table_from_qc_inventory``
      - Stream the QC inventory into metric/passband/component retention counts.
    * - ``build_event_station_pair_retention_table_from_qc_inventory``

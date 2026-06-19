@@ -59,7 +59,12 @@ def test_public_imports():
         record_coverage_readiness_from_config,
         resolve_model_aliases,
     )
-    from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
+    from spatial_vtk.qc import (
+        StandardQCInputResult,
+        load_standard_qc_inputs,
+        load_trace_inventory_lookup,
+        slurm_settings_from_config,
+    )
     from spatial_vtk.qc.build import slurm_settings_from_config as build_slurm_settings_from_config
     from spatial_vtk.spatial import (
         annotate_points_with_geojson,
@@ -179,6 +184,8 @@ def test_public_imports():
     assert callable(record_coverage_readiness_from_config)
     assert callable(resolve_model_aliases)
     assert callable(load_trace_inventory_lookup)
+    assert callable(StandardQCInputResult)
+    assert callable(load_standard_qc_inputs)
     assert callable(slurm_settings_from_config)
     assert callable(build_slurm_settings_from_config)
     assert callable(run_boundary_corridor_workflow_from_config)
@@ -1519,6 +1526,7 @@ def test_package_overview_points_to_public_workflow_helpers():
         "``preprocess_waveforms_from_config``",
         "``output_group`` and ``output_readiness``",
         "Start with public helpers from ``spatial_vtk.qc``",
+        "``load_standard_qc_inputs``",
         "``run_qc_inventory_from_config``",
         "``write_qc_inventory_overlap_from_config``",
         "Start with public helpers from ``spatial_vtk.metrics``",

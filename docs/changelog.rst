@@ -32,6 +32,8 @@ Changelog
   GeoJSON tutorial inputs.
 - Added ``load_standard_spatial_workflow_outputs()`` for standard Step 4
   spatial output loading and per-metric product summaries.
+- Added ``load_standard_qc_inputs()`` for standard Step 2 prepared metadata
+  and QC output-group loading.
 
 **Changed and Rewired**
 
@@ -49,6 +51,8 @@ Changelog
   upstream table loading are resolved by package code.
 - Rewired the standard Step 4 spatial notebook so configured output-table
   mappings and per-metric product summaries are resolved by package code.
+- Rewired the standard Step 2 QC notebook so prepared metadata table loading
+  is resolved by package code.
 - Updated the Metrics API reference to document metric calculation and
   workflow helpers through ``spatial_vtk.metrics.calculate`` and
   ``spatial_vtk.metrics.workflow`` instead of lower-level implementation
