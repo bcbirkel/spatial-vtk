@@ -66,26 +66,23 @@ Public helpers exposed by ``spatial_vtk.qc``:
 Build
 -----
 
-.. automodule:: spatial_vtk.qc.build.filtering
-   :members:
-
-.. automodule:: spatial_vtk.qc.build.inventory
-   :members:
-
-.. automodule:: spatial_vtk.qc.build.spectral
-   :members:
-
-.. automodule:: spatial_vtk.qc.build.workflow
-   :members:
+Use ``spatial_vtk.qc`` for notebook-facing QC build helpers, including the
+config-backed inventory workflow, overlap inventory writer, streaming summary
+builders, and trace-inventory lookup utilities. ``spatial_vtk.qc.build`` is
+available for advanced scripts that need the narrower build subpackage, but
+the filtering, inventory, spectral, workflow, and Slurm modules are
+implementation organization and are intentionally not listed as public
+notebook import paths.
 
 Review
 ------
 
-.. automodule:: spatial_vtk.qc.review.tables
-   :members:
+Use ``spatial_vtk.qc`` or ``spatial_vtk.qc.review`` for manual-review table
+helpers. The lower-level review table module is implementation organization.
 
 Summary
 -------
 
-.. automodule:: spatial_vtk.qc.summary.rules
-   :members:
+Use ``spatial_vtk.qc`` or ``spatial_vtk.qc.summary`` for station-family and
+rejection-rule helpers. The lower-level summary rules module is implementation
+organization.

@@ -672,6 +672,9 @@ def test_qc_api_docs_use_public_package_entry_point():
     assert "Start with ``spatial_vtk.qc``" in text
     assert "Public helpers exposed by ``spatial_vtk.qc``" in text
     assert ".. automodule:: spatial_vtk.qc\n" in text
+    assert "Use ``spatial_vtk.qc`` for notebook-facing QC build helpers" in text
+    assert "lower-level review table module is implementation" in text
+    assert "lower-level summary rules module is implementation" in text
     for helper in (
         "run_qc_inventory_from_config",
         "write_qc_inventory_overlap_from_config",
@@ -685,6 +688,16 @@ def test_qc_api_docs_use_public_package_entry_point():
         "load_trace_inventory_lookup",
     ):
         assert helper in text
+    forbidden_modules = (
+        "spatial_vtk.qc.build.filtering",
+        "spatial_vtk.qc.build.inventory",
+        "spatial_vtk.qc.build.spectral",
+        "spatial_vtk.qc.build.workflow",
+        "spatial_vtk.qc.review.tables",
+        "spatial_vtk.qc.summary.rules",
+    )
+    for module_name in forbidden_modules:
+        assert f".. automodule:: {module_name}" not in text
 
 
 def test_io_api_docs_use_public_workflow_helpers():

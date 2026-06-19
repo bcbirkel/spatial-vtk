@@ -32,6 +32,9 @@ Changelog
   workflow helpers through ``spatial_vtk.metrics.calculate`` and
   ``spatial_vtk.metrics.workflow`` instead of lower-level implementation
   module autodoc blocks.
+- Updated the Quality Control API reference to keep build, review, and summary
+  guidance on ``spatial_vtk.qc`` and optional subpackage entry points instead
+  of lower-level implementation-module autodoc blocks.
 - Updated the Installation check commands so source-checkout notebook
   verification includes ``--include-large-run``, matching the examples docs,
   release checklist, and CI tutorial gate.
