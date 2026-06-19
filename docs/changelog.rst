@@ -2,6 +2,9 @@ Changelog
 =========
 
 2026-06-19
+   - Fixed a CLI workflow regression test so legacy plotting keyword checks run
+     against the workflow tutorial text instead of referencing an undefined
+     local variable.
    - Updated the CLI workflow tutorial so routine GeoJSON and metric plotting
      commands resolve ``metrics_long`` through the active config instead of
      teaching raw ``$TABLES/metrics_long.parquet`` inputs for standard

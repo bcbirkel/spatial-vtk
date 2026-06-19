@@ -1212,6 +1212,9 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert "event_region=" not in text
     assert "table=true" not in text
     assert "gain=2.0" not in text
+    assert "xlim_s=" not in text
+    assert "max_time_s=" not in text
+    assert "lowpass_hz=" not in text
     assert '--metrics "$TABLES/metrics_long.parquet"' not in text
     assert '--input "$TABLES/metrics_long.parquet"' not in text
     assert "svtk plot metrics scatterplot \\\n     --config \"$CONFIG\"" in text
@@ -1230,9 +1233,6 @@ def test_cli_reference_frames_svtk_call_as_advanced_escape_hatch():
     assert "Prefer the named ``config``, ``io``, ``qc``, ``metrics``" in index_text
     assert "Call any importable Spatial-VTK Python function." not in index_text
     assert "Call any importable Spatial-VTK Python function." not in call_text
-    assert "xlim_s=" not in text
-    assert "max_time_s=" not in text
-    assert "lowpass_hz=" not in text
 
 
 def test_metric_cli_commands_use_public_metrics_surface():
