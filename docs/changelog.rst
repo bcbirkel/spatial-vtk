@@ -7,6 +7,12 @@ Changelog
    contrast, and regional station residual map. The notebook no longer owns
    GeoJSON region annotation, summary-table generation, configured figure-path
    lookup, or sidecar keyword plumbing for those figures.
+   Added ``write_standard_additional_plotting_figures()`` and rewired the
+   standard Step 6 additional-plotting notebook to use it for the waveform
+   map, pattern-similarity figure, scatterplot, boxplot, and heatmap. The
+   notebook no longer imports individual plotting functions, calls
+   ``render_notebook_figure()`` directly, or owns waveform selection, GeoJSON
+   metric annotation, figure-path lookup, and preview-table construction.
    Added ``write_standard_metric_diagnostic_figures()`` and rewired the
    standard Step 3 metric notebook to use it for residual-distance,
    GOF-distance, and band-distribution diagnostics. The notebook no longer

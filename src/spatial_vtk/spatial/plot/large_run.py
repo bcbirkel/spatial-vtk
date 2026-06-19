@@ -1444,6 +1444,46 @@ class StandardGeoJSONFigureResult:
 
 
 @dataclass(frozen=True)
+class StandardAdditionalPlottingFigureResult:
+    """Result from writing standard Step 6 additional plotting figures."""
+
+    rows: tuple[dict[str, Any], ...]
+    metric_summary: pd.DataFrame
+    waveform_order: pd.DataFrame
+    region_metrics: pd.DataFrame
+    pattern_rows: pd.DataFrame
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return one row per Step 6 figure written or skipped."""
+
+        return pd.DataFrame(
+            self.rows,
+            columns=[
+                "artifact",
+                "status",
+                "row_count",
+                "figure_path",
+                "message",
+            ],
+        )
+
+    def metric_summary_frame(self) -> pd.DataFrame:
+        """Return a compact summary of the metric and comparison inputs."""
+
+        return self.metric_summary.copy()
+
+    def waveform_order_frame(self) -> pd.DataFrame:
+        """Return the plotted waveform station order preview."""
+
+        return self.waveform_order.copy()
+
+    def pattern_frame(self) -> pd.DataFrame:
+        """Return the pattern-similarity rows used by the figure."""
+
+        return self.pattern_rows.copy()
+
+
+@dataclass(frozen=True)
 class SpatialSummaryFigureResult:
     """Result from writing compact large-run spatial summary figures."""
 
@@ -2358,6 +2398,253 @@ def _first_nonempty_metric_value(df: pd.DataFrame, column: str, *, fallback: str
     return str(values.iloc[0]) if not values.empty else str(fallback)
 
 
+def write_standard_additional_plotting_figures(
+    *,
+    metrics: pd.DataFrame,
+    event_stations: pd.DataFrame,
+    events: pd.DataFrame,
+    comparison_eligible: pd.DataFrame,
+    outputs: Any,
+    waveform_settings: Any,
+    metric_settings: Any,
+    waveform_event_id: str = "ci38038071",
+    waveform_component: str = "R",
+    waveform_passband: str = "1-2 sec",
+    waveform_time_limit_s: float = 90.0,
+    model: str = "cvmsi",
+    value_col: str = "log2_residual",
+    passbands: Sequence[str] | str | None = ("1-2 sec", "2-3 sec"),
+    component: str | None = "Z",
+    pattern_metric: str = "PGA",
+    pattern_passband: str = "1-2 sec",
+    pattern_title: str = "PGA Observed/Synthetic Station Pattern Similarity",
+    station_region_col: str = "station_geojson_region",
+    display_func: Callable[[Any], Any] | None = None,
+    waveform_records_func: Callable[..., pd.DataFrame] | None = None,
+    event_label_func: Callable[..., str] | None = None,
+    metric_summary_func: Callable[..., pd.DataFrame] | None = None,
+    geojson_region_func: Callable[..., pd.DataFrame] | None = None,
+    pattern_rows_func: Callable[..., pd.DataFrame] | None = None,
+    waveform_order_func: Callable[..., pd.DataFrame] | None = None,
+    waveform_map_func: Callable[..., Any] | None = None,
+    pattern_plot_func: Callable[..., Any] | None = None,
+    scatterplot_func: Callable[..., Any] | None = None,
+    boxplot_func: Callable[..., Any] | None = None,
+    heatmap_func: Callable[..., Any] | None = None,
+) -> StandardAdditionalPlottingFigureResult:
+    """Write standard Step 6 waveform, pattern, scatter, boxplot, and heatmap figures.
+
+    The helper owns the figure-path lookup, sidecar/default plotting kwargs,
+    waveform-record selection, GeoJSON region annotation, pattern-similarity
+    table construction, and notebook preview tables used by the standard
+    additional-plotting tutorial.
+    """
+
+    from spatial_vtk.config import render_notebook_figure
+    from spatial_vtk.io import event_display_label
+    from spatial_vtk.metrics.plot import metric_plot_input_summary_frame
+    from spatial_vtk.qc import build_qc_waveform_comparison_records
+    from spatial_vtk.spatial import build_pattern_similarity_station_anomalies, geojson_metric_region_frame
+    from spatial_vtk.spatial.plot import boxplot, heatmap, plot_pattern_similarity, scatterplot
+    from spatial_vtk.visualize.waveforms import (
+        plot_station_event_waveform_map,
+        station_event_waveform_order_frame,
+    )
+
+    waveform_records_func = waveform_records_func or build_qc_waveform_comparison_records
+    event_label_func = event_label_func or event_display_label
+    metric_summary_func = metric_summary_func or metric_plot_input_summary_frame
+    geojson_region_func = geojson_region_func or geojson_metric_region_frame
+    pattern_rows_func = pattern_rows_func or build_pattern_similarity_station_anomalies
+    waveform_order_func = waveform_order_func or station_event_waveform_order_frame
+    waveform_map_func = waveform_map_func or plot_station_event_waveform_map
+    pattern_plot_func = pattern_plot_func or plot_pattern_similarity
+    scatterplot_func = scatterplot_func or scatterplot
+    boxplot_func = boxplot_func or boxplot
+    heatmap_func = heatmap_func or heatmap
+
+    waveform_records = waveform_records_func(
+        event_stations,
+        comparison_eligible=comparison_eligible,
+        component=waveform_component,
+        passband=waveform_passband,
+        event_id=waveform_event_id,
+        max_distance_km=None,
+        max_records=12,
+    )
+    waveform_event_name = event_label_func(events, waveform_event_id)
+    metric_summary = metric_summary_func(metrics, comparison_eligible=comparison_eligible)
+    region_metrics = geojson_region_func(
+        metrics,
+        target="station",
+        selector="all",
+        region_col=station_region_col,
+    )
+    waveform_order = waveform_order_func(waveform_records, max_traces=12)
+    pattern_rows = pattern_rows_func(
+        metrics,
+        metric=pattern_metric,
+        passband=pattern_passband,
+        component=component,
+        model=model,
+    )
+
+    rows: list[dict[str, Any]] = []
+    rows.append(
+        _write_standard_notebook_figure(
+            "station_event_waveform_map",
+            waveform_records,
+            render_notebook_figure,
+            waveform_map_func,
+            outputs,
+            "station_event_waveform_map_path",
+            waveform_settings,
+            waveform_records,
+            stem_parts=("step_06", "station_event_waveform_map"),
+            include_basemap=True,
+            display_func=display_func,
+            waveform_col="observed",
+            time_limit_s=waveform_time_limit_s,
+            normalize=True,
+            title=f"Observed Station-Event Waveform Map\n{waveform_event_name}",
+            filter_label=f"lowpass 1 Hz; {waveform_component} component; {waveform_passband} QC passband",
+        )
+    )
+    rows.append(
+        _write_standard_notebook_figure(
+            "pattern_similarity",
+            pattern_rows,
+            render_notebook_figure,
+            pattern_plot_func,
+            outputs,
+            "pattern_similarity_figure_path",
+            metric_settings,
+            pattern_rows,
+            stem_parts=("step_06", "pattern_similarity"),
+            display_func=display_func,
+            metric=pattern_metric,
+            bin_label=pattern_passband,
+            title=pattern_title,
+            fit="linear",
+        )
+    )
+    rows.append(
+        _write_standard_notebook_figure(
+            "metric_scatterplot",
+            metrics,
+            render_notebook_figure,
+            scatterplot_func,
+            outputs,
+            "scatterplot_figure_path",
+            metric_settings,
+            data=metrics,
+            indep="distance",
+            dep=["PGA", "PGV"],
+            value_col=value_col,
+            passband=passbands,
+            model=model,
+            component=component,
+            colorby="dep",
+            fit="lowess",
+            title="PGA and PGV Residuals vs Distance",
+            stem_parts=("step_06", "metric_scatterplot"),
+            display_func=display_func,
+        )
+    )
+    rows.append(
+        _write_standard_notebook_figure(
+            "metric_boxplot",
+            region_metrics,
+            render_notebook_figure,
+            boxplot_func,
+            outputs,
+            "boxplot_figure_path",
+            metric_settings,
+            data=region_metrics,
+            dep=["PGA", "PGV"],
+            indep=station_region_col,
+            value_col=value_col,
+            passband=passbands,
+            model=model,
+            component=component,
+            compare_to="LA Basin",
+            table=True,
+            title="PGA and PGV Residuals by GeoJSON Region",
+            stem_parts=("step_06", "metric_boxplot"),
+            display_func=display_func,
+        )
+    )
+    rows.append(
+        _write_standard_notebook_figure(
+            "metric_heatmap",
+            region_metrics,
+            render_notebook_figure,
+            heatmap_func,
+            outputs,
+            "heatmap_figure_path",
+            metric_settings,
+            data=region_metrics,
+            dep=["PGA", "PGV", "PGD"],
+            indep=station_region_col,
+            value_col=value_col,
+            passband=passbands,
+            model=model,
+            component=component,
+            aggfunc="mean",
+            title="Mean Residual by GeoJSON Region and Metric",
+            stem_parts=("step_06", "metric_heatmap"),
+            display_func=display_func,
+        )
+    )
+    return StandardAdditionalPlottingFigureResult(
+        rows=tuple(rows),
+        metric_summary=metric_summary,
+        waveform_order=waveform_order,
+        region_metrics=region_metrics,
+        pattern_rows=pattern_rows,
+    )
+
+
+def _write_standard_notebook_figure(
+    artifact: str,
+    frame: pd.DataFrame,
+    render_func: Callable[..., Any],
+    plot_func: Callable[..., Any],
+    outputs: Any,
+    figure_path_name: str,
+    settings: Any,
+    *args: Any,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """Render one standard tutorial figure and return a status row."""
+
+    try:
+        render_func(plot_func, outputs, figure_path_name, settings, *args, **kwargs)
+        path = outputs.figure_path(
+            figure_path_name,
+            stem=kwargs.get("stem"),
+            stem_parts=kwargs.get("stem_parts"),
+        )
+        status = "wrote"
+        message = f"wrote {path}"
+    except Exception as exc:
+        path = outputs.figure_path(
+            figure_path_name,
+            stem=kwargs.get("stem"),
+            stem_parts=kwargs.get("stem_parts"),
+        )
+        plt.close("all")
+        status = "plot_failed"
+        message = f"{type(exc).__name__}: {exc}"
+    return {
+        "artifact": artifact,
+        "status": status,
+        "row_count": len(frame),
+        "figure_path": str(path),
+        "message": message,
+    }
+
+
 def write_large_run_geojson_region_figures_from_outputs(
     outputs: Any,
     ingest_outputs: Any,
@@ -3205,6 +3492,7 @@ __all__ = [
     "RegionBoxplotResult",
     "RegionFigureResult",
     "SPATIAL_FIGURE_TABLE_KEYS",
+    "StandardAdditionalPlottingFigureResult",
     "StandardGeoJSONFigureResult",
     "SpatialSummaryFigureResult",
     "SpatialFigureSuiteResult",
@@ -3213,6 +3501,7 @@ __all__ = [
     "StandardSpatialMapFigureResult",
     "prepare_spatial_figure_context",
     "prepare_spatial_figure_context_from_notebook_settings",
+    "write_standard_additional_plotting_figures",
     "write_standard_spatial_diagnostic_figures",
     "write_standard_geojson_region_figures",
     "write_standard_spatial_map_figures",

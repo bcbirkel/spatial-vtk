@@ -1923,12 +1923,17 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" not in source
     assert "step_outputs = output_group(\"step_06_plotting\", cfg=cfg)" in source
     assert "plotting_tables = step_outputs.load_tables(" in source
-    assert "render_notebook_figure(" in source
-    assert "station_event_waveform_map_path" in source
-    assert "pattern_similarity_figure_path" in source
-    assert "scatterplot_figure_path" in source
-    assert "boxplot_figure_path" in source
-    assert "heatmap_figure_path" in source
+    assert "write_standard_additional_plotting_figures(" in source
+    assert "additional_plot_result.metric_summary_frame()" in source
+    assert "additional_plot_result.waveform_order_frame()" in source
+    assert "additional_plot_result.pattern_frame().head()" in source
+    assert "additional_plot_result.status_frame()" in source
+    assert "render_notebook_figure(" not in source
+    assert "station_event_waveform_map_path" not in source
+    assert "pattern_similarity_figure_path" not in source
+    assert "scatterplot_figure_path" not in source
+    assert "boxplot_figure_path" not in source
+    assert "heatmap_figure_path" not in source
     assert "step_outputs.figure_path(" not in source
     assert "outpath=" not in source
     assert "savefig=True" not in source
@@ -1937,11 +1942,17 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     assert "metric_sidecars" not in source
     assert "load_output_table(" not in source
     assert "figure_dir /" not in source
-    assert "geojson_metric_region_frame(" in source
+    assert "geojson_metric_region_frame(" not in source
     assert "from spatial_vtk.spatial import add_geojson_metadata_to_metrics" not in source
-    assert "metric_plot_input_summary_frame(" in source
-    assert "event_display_label(events, waveform_event_id)" in source
-    assert "station_event_waveform_order_frame(waveform_records, max_traces=12)" in source
+    assert "metric_plot_input_summary_frame(" not in source
+    assert "event_display_label(events, waveform_event_id)" not in source
+    assert "station_event_waveform_order_frame(waveform_records, max_traces=12)" not in source
+    assert "build_qc_waveform_comparison_records(" not in source
+    assert "plot_station_event_waveform_map(" not in source
+    assert "plot_pattern_similarity(" not in source
+    assert "scatterplot(" not in source
+    assert "boxplot(" not in source
+    assert "heatmap(" not in source
     assert 'waveform_records[["station", "distance_km"]].sort_values("distance_km").head(12)' not in source
     assert '.eq(waveform_event_id), "event_name"' not in source
     assert "pd.DataFrame(" not in source

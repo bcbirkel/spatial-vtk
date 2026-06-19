@@ -87,10 +87,12 @@ from spatial_vtk.spatial.plot.correlation import (
 from spatial_vtk.spatial.plot.large_run import (
     RegionBoxplotResult,
     SpatialFigureContext,
+    StandardAdditionalPlottingFigureResult,
     StandardGeoJSONFigureResult,
     StandardSpatialDiagnosticFigureResult,
     StandardSpatialMapFigureResult,
     prepare_spatial_figure_context_from_notebook_settings,
+    write_standard_additional_plotting_figures,
     write_standard_geojson_region_figures,
     write_standard_spatial_diagnostic_figures,
     write_standard_spatial_map_figures,
@@ -263,6 +265,101 @@ def test_write_standard_geojson_region_figures_returns_status_tables(monkeypatch
     assert status["artifact"].tolist() == ["geojson_regions", "pga_region_boxplot", "regional_pga_station_map"]
     assert len(calls) == 3
     assert calls[-1][2]["value_col"] == "mean_centered"
+
+
+def test_write_standard_additional_plotting_figures_returns_previews(tmp_path) -> None:
+    """Standard Step 6 plotting should be orchestrated by one package helper."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1"],
+            "station": ["STA1", "STA2"],
+            "metric": ["PGA", "PGV"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "passband": ["1-2 sec", "1-2 sec"],
+            "component": ["Z", "Z"],
+            "model": ["cvmsi", "cvmsi"],
+            "distance_km": [10.0, 20.0],
+            "log2_residual": [0.1, -0.2],
+            "value_obs": [1.1, 0.8],
+            "value_syn": [1.0, 1.0],
+        }
+    )
+    event_stations = pd.DataFrame({"event_id": ["e1"], "station": ["STA1"]})
+    events = pd.DataFrame({"event_id": ["e1"], "event_name": ["Example event"]})
+    comparison_eligible = pd.DataFrame({"event_id": ["e1"], "station": ["STA1"], "component": ["R"]})
+    waveform_records = pd.DataFrame(
+        {
+            "event_id": ["e1"],
+            "station": ["STA1"],
+            "distance_km": [10.0],
+            "component": ["R"],
+        }
+    )
+    pattern_rows = pd.DataFrame({"station_name": ["STA1"], "dataset": ["observed"], "metric": ["PGA"], "bin": ["1-2 sec"], "value": [0.0]})
+
+    class _Settings:
+        showfig = False
+
+        def plot_kwargs(self, *, include_basemap=False):
+            return {"showfig": False, "add_basemap": bool(include_basemap), "write_sidecar": False}
+
+    class _Outputs:
+        def figure_path(self, name, *, stem=None, stem_parts=None):
+            filename = stem or "_".join(str(part) for part in (stem_parts or (name,)))
+            return tmp_path / f"{name}__{filename}.png"
+
+    calls: list[tuple[str, str]] = []
+
+    def fake_waveform_records(*args, **kwargs):
+        return waveform_records.copy()
+
+    def fake_summary(frame, *, comparison_eligible=None):
+        return pd.DataFrame({"Input": ["Metric rows"], "Value": [len(frame)]})
+
+    def fake_region(frame, **kwargs):
+        result = frame.copy()
+        result["station_geojson_region"] = "LA Basin"
+        return result
+
+    def fake_pattern(*args, **kwargs):
+        return pattern_rows.copy()
+
+    def fake_order(frame, **kwargs):
+        return frame[["station", "distance_km", "component"]].copy()
+
+    def fake_plot(*args, outpath=None, **kwargs):
+        calls.append((Path(outpath).name, str(kwargs.get("title", ""))))
+        Path(outpath).write_text("figure", encoding="utf-8")
+
+    result = write_standard_additional_plotting_figures(
+        metrics=metrics,
+        event_stations=event_stations,
+        events=events,
+        comparison_eligible=comparison_eligible,
+        outputs=_Outputs(),
+        waveform_settings=_Settings(),
+        metric_settings=_Settings(),
+        waveform_records_func=fake_waveform_records,
+        event_label_func=lambda frame, event_id: "Example event",
+        metric_summary_func=fake_summary,
+        geojson_region_func=fake_region,
+        pattern_rows_func=fake_pattern,
+        waveform_order_func=fake_order,
+        waveform_map_func=fake_plot,
+        pattern_plot_func=fake_plot,
+        scatterplot_func=fake_plot,
+        boxplot_func=fake_plot,
+        heatmap_func=fake_plot,
+    )
+
+    assert isinstance(result, StandardAdditionalPlottingFigureResult)
+    assert result.status_frame()["status"].tolist() == ["wrote", "wrote", "wrote", "wrote", "wrote"]
+    assert result.metric_summary_frame().loc[0, "Value"] == 2
+    assert result.waveform_order_frame().loc[0, "station"] == "STA1"
+    assert result.pattern_frame().loc[0, "dataset"] == "observed"
+    assert set(result.region_metrics["station_geojson_region"]) == {"LA Basin"}
+    assert len(calls) == 5
 
 
 def test_spatial_metric_product_summary_frame_counts_rows_events_and_stations() -> None:

@@ -229,6 +229,11 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
        regional station residual map while keeping GeoJSON annotation, summary
        table generation, configured figure paths, and sidecar options in
        package code.
+   * - ``write_standard_additional_plotting_figures``
+     - Write the standard Step 6 waveform map, pattern-similarity figure,
+       residual scatterplot, region boxplot, and region heatmap while keeping
+       waveform selection, GeoJSON metric annotation, figure paths, sidecars,
+       and preview tables in package code.
    * - ``write_large_run_geojson_region_figures_from_outputs``
      - Write the Step 5 GeoJSON overview map, corridor map, and region boxplot
        from configured output groups without notebook-local table loading or
@@ -327,6 +332,11 @@ schemas.
    :members:
 
 .. autofunction:: spatial_vtk.spatial.plot.write_standard_geojson_region_figures
+
+.. autoclass:: spatial_vtk.spatial.plot.StandardAdditionalPlottingFigureResult
+   :members:
+
+.. autofunction:: spatial_vtk.spatial.plot.write_standard_additional_plotting_figures
 
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_outputs
 
