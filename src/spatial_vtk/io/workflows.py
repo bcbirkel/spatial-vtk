@@ -13,7 +13,9 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
+
+import pandas as pd
 
 from spatial_vtk.config import SpatialVTKConfig, active_config, resolve_output_path
 from spatial_vtk.io.output_paths import OutputReadiness, output_group
@@ -70,6 +72,47 @@ class StandardIngestWorkflowOutputResult:
             cfg=self.cfg,
             nrows=nrows,
             display_fn=display_fn,
+        )
+
+    def metadata_summary_frame(self, *, missing: Literal["raise", "skip"] = "skip") -> pd.DataFrame:
+        """Return row counts for the prepared Step 1 metadata tables.
+
+        This helper keeps tutorial notebooks from loading the prepared station,
+        event, and event-station tables only to print basic counts. The current
+        implementation still reads available tables through the configured
+        output group, so future row-count optimizations can happen here without
+        changing notebook cells.
+        """
+
+        rows: list[dict[str, object]] = []
+        table_specs = [
+            ("stations", "prepared_stations", "prepared_stations_path"),
+            ("events", "prepared_events", "prepared_events_path"),
+            ("event_stations", "event_station_records", "event_station_path"),
+        ]
+        for label, output_key, path_name in table_specs:
+            path = getattr(self.outputs, path_name, None)
+            path_text = None if path is None else str(path)
+            status = "missing"
+            row_count: int | None = None
+            table = self.outputs.load_table(path_name, cfg=self.cfg, missing=missing)
+            if table is not None:
+                row_count = int(len(table))
+                status = "ready"
+            rows.append(
+                {
+                    "table": label,
+                    "output_key": output_key,
+                    "output_path": path_text,
+                    "resolved_path": path_text,
+                    "path": path_text,
+                    "status": status,
+                    "row_count": row_count,
+                }
+            )
+        return pd.DataFrame(
+            rows,
+            columns=["table", "output_key", "resolved_path", "path", "output_path", "status", "row_count"],
         )
 
     def display_preprocessing_manifest_preview(

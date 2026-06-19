@@ -73,8 +73,8 @@ Public helpers exposed by ``spatial_vtk.io``:
        preprocessed-waveform metadata directory.
    * - ``load_standard_ingest_workflow_outputs``
      - Load the standard Step 1 ingest output group, preprocessing metadata
-       output group, combined status frame, and bounded station/event/manifest
-       preview helpers for tutorial notebooks.
+       output group, combined status frame, metadata row-count summary, and
+       bounded station/event/manifest preview helpers for tutorial notebooks.
    * - ``output_readiness`` and ``OutputReadiness``
      - Gate local or Slurm-backed work on missing, stale, blocked, or reusable
        outputs. Required input mappings may use ``None`` for an optional

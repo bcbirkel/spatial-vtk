@@ -995,6 +995,7 @@ def test_io_api_docs_use_public_workflow_helpers():
     ):
         assert helper in text
     assert "instead of repeating output-path variables" in text
+    assert "metadata row-count summary" in text
     assert "``status_frame()`` and\n       ``output_group_status_frame()`` include clear ``resolved_path`` values\n       plus ``output_key``, ``kind``, ``required``, ``artifact_label``" in text
     assert "``readiness``, ``message``, and ``suggested_action`` columns" in text
     assert "notebooks." in text

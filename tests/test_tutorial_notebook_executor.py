@@ -1964,7 +1964,11 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     assert "display(ingest_outputs.status_frame())" in source
     assert 'step_outputs = output_group("step_01_ingest")' not in source
     assert "preprocessed_outputs = preprocessed_waveform_output_group(config=cfg)" not in source
-    assert "metadata_tables = step_outputs.load_tables(" in source
+    assert "display(ingest_outputs.metadata_summary_frame())" in source
+    assert "metadata_tables = step_outputs.load_tables(" not in source
+    assert "stations = metadata_tables" not in source
+    assert "event_stations = metadata_tables" not in source
+    assert "print(f\"stations={len(stations):,}" not in source
     assert "write_large_run_context_figures_from_outputs(" in source
     assert "context_figure_result.status_frame()" in source
     assert "context_tables = step_outputs.load_tables(" not in source

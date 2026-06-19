@@ -219,6 +219,9 @@ Changelog
   - Updated the large-run dashboard notebook to use the package-owned
     dashboard preparation/display helper for preflight and postflight status,
     while keeping heavy dataset writes in the Slurm-aware notebook runner.
+  - Added a Step 1 ingest metadata summary helper and updated the large-run
+    ingest notebook to use it instead of loading prepared metadata tables only
+    to print row counts.
   - Reused the standard ingest output helper inside record-coverage
     readiness/build workflows so script and notebook path fallback behavior
     stays aligned.

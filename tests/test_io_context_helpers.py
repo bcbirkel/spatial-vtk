@@ -20,6 +20,7 @@ from spatial_vtk.io import (
     event_rows_for_records,
     first_nonempty_table_value,
     load_or_build_output_table,
+    load_standard_ingest_workflow_outputs,
     prepare_event_metadata,
     prepare_event_station_table,
     prepare_station_metadata,
@@ -305,6 +306,39 @@ def test_standard_output_table_helpers_use_active_config(tmp_path: Path) -> None
     assert written["record_coverage"].exists()
     assert stations.loc[0, "station"] == "STA01"
     assert preview.to_dict("records") == [{"station": "STA01"}]
+
+
+def test_standard_ingest_workflow_outputs_reports_metadata_summary(tmp_path: Path) -> None:
+    """Step 1 notebook helper should summarize prepared metadata row counts."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  root_dir: .",
+                "outputs:",
+                "  tables: outputs/tables",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    write_output_tables(
+        prepared_stations=pd.DataFrame({"station": ["STA01", "STA02"]}),
+        prepared_events=pd.DataFrame({"event_id": ["E01"]}),
+        event_station_records=pd.DataFrame({"event_id": ["E01", "E01"], "station": ["STA01", "STA02"]}),
+        cfg=cfg,
+    )
+
+    summary = load_standard_ingest_workflow_outputs(cfg=cfg).metadata_summary_frame()
+    by_table = summary.set_index("table")
+
+    assert by_table.loc["stations", "output_key"] == "prepared_stations"
+    assert by_table.loc["events", "row_count"] == 1
+    assert by_table.loc["event_stations", "row_count"] == 2
+    assert by_table.loc["stations", "resolved_path"] == by_table.loc["stations", "path"]
+    assert by_table.loc["event_stations", "status"] == "ready"
 
 
 def test_load_or_build_output_table_reuses_and_refreshes_stale_tables(tmp_path: Path) -> None:
