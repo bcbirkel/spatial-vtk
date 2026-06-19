@@ -12,6 +12,11 @@ Changelog
   ``write_waveform_comparison_from_notebook_settings()``, while scripts can use
   ``write_waveform_comparison_from_outputs()`` when plotting kwargs are already
   resolved.
+- Aligned region-boxplot workflow docs with the stabilized Step 6 notebook
+  pattern: notebooks use
+  ``write_large_run_region_boxplot_from_notebook_settings()``, while scripts
+  can use ``write_large_run_region_boxplot_from_outputs()`` once figure
+  settings are resolved.
 - Updated the generated CLI reference tables to use explicit positional
   metavars, so ``svtk config set`` documents the saved config argument as
   ``PATH`` consistently in both usage and parameter rows.
