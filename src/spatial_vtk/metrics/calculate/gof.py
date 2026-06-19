@@ -24,7 +24,7 @@ use consistent physical units.
 Usage examples
 --------------
 Compute one metrics bundle for aligned traces:
-  ``from spatial_vtk.metrics.calculate.gof import compute_metrics_pair``
+  ``from spatial_vtk.metrics import compute_metrics_pair``
 """
 
 from __future__ import annotations

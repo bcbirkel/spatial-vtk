@@ -525,6 +525,21 @@ def test_output_registry_docstring_prefers_output_group_for_notebooks():
     assert 'path = resolve_output_path("record_coverage", kind="figure")' not in text
 
 
+def test_metric_gof_docstring_prefers_public_metrics_import():
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "metrics"
+        / "calculate"
+        / "gof.py"
+    )
+    text = source.read_text(encoding="utf-8")
+
+    assert "from spatial_vtk.metrics import compute_metrics_pair" in text
+    assert "from spatial_vtk.metrics.calculate.gof import compute_metrics_pair" not in text
+
+
 def test_qc_api_docs_use_public_package_entry_point():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "qc.rst"
     text = docs.read_text(encoding="utf-8")

@@ -4,6 +4,9 @@ Changelog
 2026-06-19
 ----------
 
+- Updated the GOF metric calculation module example so ``compute_metrics_pair``
+  is imported from the public ``spatial_vtk.metrics`` package surface instead
+  of the lower-level implementation module.
 - Updated the output-registry module example so notebook-facing guidance starts
   with ``output_group()`` and reserves ``resolve_output_path()`` for lower-level
   single-artifact helpers.
