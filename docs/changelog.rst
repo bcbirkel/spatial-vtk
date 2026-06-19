@@ -90,6 +90,9 @@ Changelog
   - Rewired large-run Step 4, Step 5, and Step 6 status/preview cells to call
     package-owned output-status helpers instead of direct ``output_group(...)``
     methods.
+  - Rewired the standard Step 5 GeoJSON notebook to call configured input
+    result methods for region and corridor figure suites instead of unpacking
+    GeoJSON paths, loaded tables, and output groups into notebook variables.
   - Rewired standard Step 1 and Step 2 notebooks to call package helpers for
     table previews, readiness messages, and configured output loading.
   - Rewired standard Step 4, Step 5, and Step 6 notebooks to call package

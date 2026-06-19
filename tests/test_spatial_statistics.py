@@ -93,6 +93,7 @@ from spatial_vtk.spatial.plot.large_run import (
     StandardAdditionalPlottingInputResult,
     StandardGeoJSONCorridorFigureResult,
     StandardGeoJSONFigureResult,
+    StandardGeoJSONPlottingInputResult,
     StandardSpatialDiagnosticFigureResult,
     StandardSpatialMapFigureResult,
     prepare_spatial_figure_context_from_notebook_settings,
@@ -482,6 +483,98 @@ def test_write_standard_geojson_corridor_figures_returns_status_tables(monkeypat
     ]
     assert len(calls) == 4
     assert calls[-1][2]["records_df"]["station"].tolist() == ["STA1", "STA2"]
+
+
+def test_standard_geojson_plotting_inputs_write_figures_from_configured_inputs(monkeypatch, tmp_path) -> None:
+    """Standard Step 5 input results should own table/path wiring for figure writers."""
+
+    import spatial_vtk.spatial.plot.large_run as large_run
+
+    metrics = pd.DataFrame({"metric": ["PGA"], "station": ["STA1"], "event_id": ["e1"]})
+    stations = pd.DataFrame({"station": ["STA1"]})
+    events = pd.DataFrame({"event_id": ["e1"]})
+    event_stations = pd.DataFrame({"event_id": ["e1"], "station": ["STA1"]})
+    comparison_eligible = pd.DataFrame({"event_id": ["e1"], "station": ["STA1"]})
+    geojson_path = tmp_path / "regions.geojson"
+    outputs = object()
+    spatial_settings = object()
+    waveform_settings = object()
+    metrics_by_regions = pd.DataFrame({"metric": ["PGA"], "station": ["STA1"], "event_id": ["e1"]})
+    calls: list[tuple[str, dict[str, object]]] = []
+
+    def fake_region_writer(**kwargs):
+        calls.append(("region", kwargs))
+        return StandardGeoJSONFigureResult(
+            rows=(),
+            region_preview=pd.DataFrame(),
+            metrics_by_regions=metrics_by_regions,
+            model_name="m1",
+            summary={},
+        )
+
+    def fake_corridor_writer(**kwargs):
+        calls.append(("corridor", kwargs))
+        return StandardGeoJSONCorridorFigureResult(
+            rows=(),
+            boundary_crossing_preview=pd.DataFrame(),
+            outward_event_preview=pd.DataFrame(),
+            metrics_by_regions=metrics_by_regions,
+        )
+
+    monkeypatch.setattr(large_run, "write_standard_geojson_region_figures", fake_region_writer)
+    monkeypatch.setattr(large_run, "write_standard_geojson_corridor_figures", fake_corridor_writer)
+
+    inputs = StandardGeoJSONPlottingInputResult(
+        metrics=metrics,
+        stations=stations,
+        events=events,
+        event_stations=event_stations,
+        comparison_eligible=comparison_eligible,
+        geojson_path=geojson_path,
+        outputs=outputs,
+    )
+
+    region_result = inputs.write_region_figures(
+        settings=spatial_settings,
+        passbands=["1-2 sec"],
+        component="Z",
+        station_region="LA Basin",
+        event_region="Glendale",
+    )
+    corridor_result = inputs.write_corridor_figures(
+        metrics_by_regions=region_result.metrics_by_regions,
+        spatial_settings=spatial_settings,
+        waveform_settings=waveform_settings,
+        passbands=["1-2 sec"],
+        component="Z",
+        boundary_region="LA Basin",
+        through_anchor_station="OLI",
+        outward_event_id="e1",
+        corridor_station_region="LA Basin",
+    )
+
+    assert isinstance(region_result, StandardGeoJSONFigureResult)
+    assert isinstance(corridor_result, StandardGeoJSONCorridorFigureResult)
+    assert [kind for kind, _ in calls] == ["region", "corridor"]
+    region_kwargs = calls[0][1]
+    assert region_kwargs["metrics"] is metrics
+    assert region_kwargs["stations"] is stations
+    assert region_kwargs["events"] is events
+    assert region_kwargs["outputs"] is outputs
+    assert region_kwargs["settings"] is spatial_settings
+    assert region_kwargs["geojson_path"] == geojson_path
+    assert region_kwargs["summary_metrics_table"] == "paths.metric_figure_snapshot"
+    assert region_kwargs["summary_geojson_path"] == "paths.region_geojson"
+    corridor_kwargs = calls[1][1]
+    assert corridor_kwargs["metrics_by_regions"] is metrics_by_regions
+    assert corridor_kwargs["stations"] is stations
+    assert corridor_kwargs["event_stations"] is event_stations
+    assert corridor_kwargs["events"] is events
+    assert corridor_kwargs["comparison_eligible"] is comparison_eligible
+    assert corridor_kwargs["outputs"] is outputs
+    assert corridor_kwargs["spatial_settings"] is spatial_settings
+    assert corridor_kwargs["waveform_settings"] is waveform_settings
+    assert corridor_kwargs["geojson_path"] == geojson_path
 
 
 def test_load_standard_additional_plotting_inputs_uses_configured_groups(monkeypatch) -> None:

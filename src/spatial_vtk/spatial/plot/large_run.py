@@ -1524,6 +1524,85 @@ class StandardGeoJSONPlottingInputResult:
         ]
         return pd.DataFrame(rows, columns=["artifact", "status", "rows", "resolved_path", "path"])
 
+    def write_region_figures(
+        self,
+        *,
+        settings: Any,
+        value_col: str = "log2_residual",
+        passbands: Sequence[str] | str | None = ("1-2 sec", "2-3 sec"),
+        component: str | Sequence[str] | None = "Z",
+        station_region: str = "LA Basin",
+        event_region: str = "Glendale",
+        metric: str = "PGA",
+        compare_to: str = "LA Basin",
+        model: str | None = None,
+        summary_metrics_table: pd.DataFrame | str | Path | None = "paths.metric_figure_snapshot",
+        summary_geojson_path: str | Path | None = "paths.region_geojson",
+        summary_chunksize: int | None = 100_000,
+    ) -> "StandardGeoJSONFigureResult":
+        """Write standard Step 5 region figures from configured inputs."""
+
+        return write_standard_geojson_region_figures(
+            metrics=self.metrics,
+            stations=self.stations,
+            events=self.events,
+            outputs=self.outputs,
+            settings=settings,
+            geojson_path=self.geojson_path,
+            value_col=value_col,
+            passbands=passbands,
+            component=component,
+            station_region=station_region,
+            event_region=event_region,
+            metric=metric,
+            compare_to=compare_to,
+            model=model,
+            summary_metrics_table=summary_metrics_table,
+            summary_geojson_path=summary_geojson_path,
+            summary_chunksize=summary_chunksize,
+        )
+
+    def write_corridor_figures(
+        self,
+        *,
+        metrics_by_regions: pd.DataFrame,
+        spatial_settings: Any,
+        waveform_settings: Any,
+        value_col: str = "log2_residual",
+        passbands: Sequence[str] | str | None = ("1-2 sec", "2-3 sec"),
+        component: str | None = "Z",
+        boundary_region: str = "LA Basin",
+        through_anchor_station: str = "OLI",
+        outward_event_id: str = "ci38695658",
+        corridor_station_region: str = "LA Basin",
+        record_component: str = "R",
+        record_passband: str = "1-2 sec",
+        display_func: Callable[[Any], Any] | None = None,
+    ) -> "StandardGeoJSONCorridorFigureResult":
+        """Write standard Step 5 corridor figures from configured inputs."""
+
+        return write_standard_geojson_corridor_figures(
+            metrics_by_regions=metrics_by_regions,
+            stations=self.stations,
+            event_stations=self.event_stations,
+            events=self.events,
+            comparison_eligible=self.comparison_eligible,
+            outputs=self.outputs,
+            spatial_settings=spatial_settings,
+            waveform_settings=waveform_settings,
+            geojson_path=self.geojson_path,
+            value_col=value_col,
+            passbands=passbands,
+            component=component,
+            boundary_region=boundary_region,
+            through_anchor_station=through_anchor_station,
+            outward_event_id=outward_event_id,
+            corridor_station_region=corridor_station_region,
+            record_component=record_component,
+            record_passband=record_passband,
+            display_func=display_func,
+        )
+
 
 @dataclass(frozen=True)
 class StandardGeoJSONWorkflowOutputStatusResult:

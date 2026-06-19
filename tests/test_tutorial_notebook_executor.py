@@ -1330,17 +1330,26 @@ def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "write_standard_geojson_region_figures(" in source
-    assert "write_standard_geojson_corridor_figures(" in source
+    assert "geojson_inputs.write_region_figures(" in source
+    assert "geojson_inputs.write_corridor_figures(" in source
     assert "geojson_region_result.summary_frame()" in source
     assert "geojson_region_result.status_frame()" in source
     assert "geojson_corridor_result.boundary_crossing_frame()" in source
     assert "geojson_corridor_result.outward_event_frame()" in source
     assert "geojson_corridor_result.status_frame()" in source
+    assert "write_standard_geojson_region_figures," not in source
+    assert "write_standard_geojson_corridor_figures," not in source
     assert "from spatial_vtk.spatial import (" not in source
-    assert "load_standard_geojson_plotting_inputs," in source
+    assert "load_standard_geojson_plotting_inputs" in source
     assert "geojson_inputs = load_standard_geojson_plotting_inputs(cfg=cfg)" in source
     assert "geojson_inputs.status_frame()" in source
+    assert "geojson_path = geojson_inputs.geojson_path" not in source
+    assert "step_outputs = geojson_inputs.outputs" not in source
+    assert "metrics = geojson_inputs.metrics" not in source
+    assert "stations = geojson_inputs.stations" not in source
+    assert "events = geojson_inputs.events" not in source
+    assert "event_stations = geojson_inputs.event_stations" not in source
+    assert "comparison_eligible = geojson_inputs.comparison_eligible" not in source
     assert "load_configured_input_paths(" not in source
     assert "load_configured_input_tables(" not in source
     assert "output_group(" not in source
@@ -1377,8 +1386,8 @@ def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
     assert "plt.close(" not in source
     assert "spatial_sidecars" not in source
     assert "waveform_sidecars" not in source
-    assert 'metrics_table="paths.metric_figure_snapshot"' in source
-    assert 'geojson_path="paths.region_geojson"' in source
+    assert 'summary_metrics_table="paths.metric_figure_snapshot"' not in source
+    assert 'summary_geojson_path="paths.region_geojson"' not in source
     assert "from spatial_vtk.spatial.calculate import" not in source
     assert 'cfg.path("paths.region_geojson"' not in source
     assert 'cfg.path("paths.metric_figure_snapshot")' not in source
@@ -2170,7 +2179,10 @@ def test_step05_uses_geojson_preview_helper() -> None:
     assert "from spatial_vtk.spatial.calculate import" not in source
     assert "from spatial_vtk.spatial.map." not in source
     assert "from spatial_vtk.spatial.plot." not in source
-    assert "write_standard_geojson_region_figures(" in source
+    assert "geojson_inputs.write_region_figures(" in source
+    assert "geojson_inputs.write_corridor_figures(" in source
+    assert "write_standard_geojson_region_figures(" not in source
+    assert "write_standard_geojson_corridor_figures(" not in source
     assert "geojson_region_result.metrics_by_regions" in source
     assert "plot_geojson_polygons_map(" not in source
     assert "boxplot(" not in source

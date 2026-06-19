@@ -182,8 +182,9 @@ Start with public helpers from ``spatial_vtk.spatial``:
 - ``load_standard_geojson_workflow_output_status`` and
   ``load_standard_geojson_plotting_inputs`` for Step 5 output status and
   standard notebook inputs without notebook-local GeoJSON path or output-table
-  plumbing; status tables include ``resolved_path`` with ``path`` retained as
-  a compatibility alias
+  plumbing; the standard plotting input result writes region and corridor
+  figure suites from configured inputs, and status tables include
+  ``resolved_path`` with ``path`` retained as a compatibility alias
 - ``load_standard_additional_plotting_output_status`` and
   ``load_standard_additional_plotting_inputs`` for Step 6 output status,
   metric-source previews, and standard plotting inputs

@@ -368,8 +368,9 @@ fallbacks, and bounded previews stay in package code.
        and ``spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs``
      - Lightweight Step 5 output status/previews for large-run driver cells,
        plus prepared station/event/event-station metadata, metric tables,
-       configured GeoJSON paths, Step 5 outputs, and compact plotting input
-       summaries when figures need loaded inputs.
+       configured GeoJSON paths, Step 5 outputs, compact plotting input
+       summaries, and result methods that write the standard region and
+       corridor figure suites without notebook-local path unpacking.
    * - Step 6 additional plotting
      - ``spatial_vtk.spatial.plot.load_standard_additional_plotting_output_status``
        and ``spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs``

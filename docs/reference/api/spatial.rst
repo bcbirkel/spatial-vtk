@@ -235,7 +235,10 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
    * - ``load_standard_geojson_plotting_inputs``
      - Load the standard Step 5 metrics, prepared metadata, comparison-eligible
        records, configured GeoJSON path, and configured output group without
-       notebook-local output-group, config-path, or table-loading plumbing.
+       notebook-local output-group, config-path, or table-loading plumbing;
+       the returned result can write the standard region and corridor figure
+       suites through ``write_region_figures()`` and
+       ``write_corridor_figures()``.
    * - ``load_standard_geojson_workflow_output_status``
      - Resolve Step 5 output status and bounded table previews for large-run
        driver notebooks without loading the full metrics or GeoJSON input
