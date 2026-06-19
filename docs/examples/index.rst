@@ -44,15 +44,12 @@ notebooks:
 
    python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run
 
-The command executes the seven notebooks against the committed example data,
-writes ``outputs/tutorials/notebook_execution_report.json``, and fails if a
-notebook raises an error or emits warning-like cell output. It also checks the
+The runtime check does not execute notebooks or clean outputs. It checks the
 notebook source contract, committed five-event metadata, snapshot tables, and
-observed/synthetic NPZ waveform subset before cleaning ``outputs/tutorials``.
-The runtime check makes the source tree importable and verifies the Jupyter,
-``spatial_vtk``, scientific Python, mapping, dashboard, and waveform modules
-that tutorial cells import, so missing dependency extras are reported before
-execution starts.
+observed/synthetic NPZ waveform subset, then makes the source tree importable
+and verifies the Jupyter, ``spatial_vtk``, scientific Python, mapping,
+dashboard, and waveform modules that tutorial cells import. Missing dependency
+extras are reported before execution starts.
 The source contract catches saved execution state, private absolute paths,
 shell/CLI workflow cells, implementation plotting imports, fixed run-layout
 paths, raw output-path/table reads, and notebook-local dataframe filtering or
@@ -69,7 +66,10 @@ source checkout, run:
 The large-run notebooks still use the committed example data during this
 check, but their cells are structured for larger datasets: expensive work is
 chunked or submitted through package helpers, and notebook previews stay
-bounded. The same source-contract preflight runs before execution.
+bounded. The clean command executes the standard and large-run notebooks,
+writes ``outputs/tutorials/notebook_execution_report.json``, and fails if a
+notebook raises an error or emits warning-like cell output. The same
+source-contract preflight runs before execution.
 
 Large-Run Driver Notebooks
 --------------------------

@@ -4,6 +4,9 @@ Changelog
 2026-06-19
 ----------
 
+- Clarified the examples index so ``--runtime-check-only`` is described as a
+  non-executing environment check, while notebook execution and report writing
+  are attached to the ``--clean --include-large-run`` command.
 - Updated the Installation check commands so source-checkout notebook
   verification includes ``--include-large-run``, matching the examples docs,
   release checklist, and CI tutorial gate.

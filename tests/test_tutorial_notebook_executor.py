@@ -589,6 +589,10 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in combined
     assert "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run" in combined
     assert "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run" in combined
+    assert "The runtime check does not execute notebooks or clean outputs." in examples_index
+    assert "The command executes the seven notebooks" not in examples_index
+    assert "The clean command executes the standard and large-run notebooks" in examples_index
+    assert "outputs/tutorials/notebook_execution_report.json" in examples_index
     assert "scientific Python, mapping, dashboard, and waveform modules" in combined
     assert "SVTK_FIGURE_SIDECARS=1" in combined
     assert "SVTK_FIGURE_SIDECAR_ROWS=all" in combined
