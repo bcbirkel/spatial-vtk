@@ -4,6 +4,9 @@ Changelog
 2026-06-19
 ----------
 
+- Updated generated CLI reference examples for plotting, mapping,
+  visualization, and dashboards to use the committed example config path
+  instead of a project-local ``runs/spatial_vtk_config.yaml`` placeholder.
 - Updated the generated CLI reference tables to use explicit positional
   metavars, so ``svtk config set`` documents the saved config argument as
   ``PATH`` consistently in both usage and parameter rows.

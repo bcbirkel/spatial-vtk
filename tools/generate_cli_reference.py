@@ -28,6 +28,7 @@ CLI_INDEX = DOCS_ROOT / "reference" / "cli_api.rst"
 
 TOP_LEVEL_ORDER = ["config", "io", "qc", "metrics", "spatial", "plot", "map", "visualize", "dashboard", "call"]
 HEADING_CHARS = ["=", "-", "~", "^", '"']
+EXAMPLE_CONFIG = "data/examples/configuration/example_spatial_vtk_config.yaml"
 
 
 def main() -> int:
@@ -196,7 +197,7 @@ def _command_page_notes(command_name: str) -> list[str]:
             "",
             ".. code-block:: bash",
             "",
-            "   svtk config set runs/spatial_vtk_config.yaml",
+            f"   svtk config set {EXAMPLE_CONFIG}",
             "   svtk plot metrics band-score-distribution --score-col log2_residual",
             "   svtk plot metrics residuals-vs-distance --metric PGA --passband \"2-3 sec\" --score-col log2_residual",
             "",
@@ -212,7 +213,7 @@ def _command_page_notes(command_name: str) -> list[str]:
             "",
             ".. code-block:: bash",
             "",
-            "   svtk config set runs/spatial_vtk_config.yaml",
+            f"   svtk config set {EXAMPLE_CONFIG}",
             "   svtk map spatial station-metric --value-col log2_residual --metric PGA --passband \"2-3 sec\"",
             "   svtk map spatial event-residual --value-col log2_residual --metric PGA --bounds study_area",
             "",
@@ -230,7 +231,7 @@ def _command_page_notes(command_name: str) -> list[str]:
             "",
             ".. code-block:: bash",
             "",
-            "   svtk config set runs/spatial_vtk_config.yaml",
+            f"   svtk config set {EXAMPLE_CONFIG}",
             "   svtk visualize qc retention-summary",
             "   svtk visualize context station-event-context --bounds study_area",
             "   svtk visualize waveforms observed-synthetic-record-section --components R --max-records 80",
@@ -249,8 +250,8 @@ def _command_page_notes(command_name: str) -> list[str]:
             "",
             ".. code-block:: bash",
             "",
-            "   svtk dashboard status --config runs/spatial_vtk_config.yaml",
-            "   svtk dashboard metrics --config runs/spatial_vtk_config.yaml --auto-port --proxy-mode",
+            f"   svtk dashboard status --config {EXAMPLE_CONFIG}",
+            f"   svtk dashboard metrics --config {EXAMPLE_CONFIG} --auto-port --proxy-mode",
             "",
             "Use ``--auto-port`` when another Streamlit server may already be running and ``--proxy-mode`` when launching through a proxied notebook or remote desktop service.",
             "",

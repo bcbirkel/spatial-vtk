@@ -898,7 +898,20 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "svtk visualize sidecars status" in visualize_text
     assert "event_station_records" in visualize_text
     assert "Config-Backed Dashboards" in dashboard_text
-    assert "svtk dashboard metrics --config runs/spatial_vtk_config.yaml --auto-port --proxy-mode" in dashboard_text
+    example_config = "data/examples/configuration/example_spatial_vtk_config.yaml"
+    assert f"svtk config set {example_config}" in plot_text
+    assert f"svtk config set {example_config}" in map_text
+    assert f"svtk config set {example_config}" in visualize_text
+    assert f"svtk dashboard metrics --config {example_config} --auto-port --proxy-mode" in dashboard_text
+    cli_reference_preambles = [
+        plot_text.split("Command Tree", 1)[0],
+        map_text.split("Command Tree", 1)[0],
+        visualize_text.split("Command Tree", 1)[0],
+        dashboard_text.split("Command Tree", 1)[0],
+    ]
+    assert "runs/spatial_vtk_config.yaml" not in "\n".join(
+        cli_reference_preambles
+    )
     assert "--metrics-dataset-dir" in dashboard_text
     assert "--dashboard-summary-table-dir" in dashboard_text
     assert "row-level data used by metric filters" in dashboard_text

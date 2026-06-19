@@ -10,7 +10,7 @@ If a config is active with ``svtk config set`` or passed with ``--config``, regi
 
 .. code-block:: bash
 
-   svtk config set runs/spatial_vtk_config.yaml
+   svtk config set data/examples/configuration/example_spatial_vtk_config.yaml
    svtk map spatial station-metric --value-col log2_residual --metric PGA --passband "2-3 sec"
    svtk map spatial event-residual --value-col log2_residual --metric PGA --bounds study_area
 

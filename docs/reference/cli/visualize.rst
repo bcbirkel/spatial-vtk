@@ -10,7 +10,7 @@ If a config is active with ``svtk config set`` or passed with ``--config``, regi
 
 .. code-block:: bash
 
-   svtk config set runs/spatial_vtk_config.yaml
+   svtk config set data/examples/configuration/example_spatial_vtk_config.yaml
    svtk visualize qc retention-summary
    svtk visualize context station-event-context --bounds study_area
    svtk visualize waveforms observed-synthetic-record-section --components R --max-records 80
