@@ -256,6 +256,9 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Load the standard Step 6 metric snapshot, event metadata,
        event-station records, comparison-eligible pairs, and configured output
        group without notebook-local output-group or config-table plumbing.
+       The returned result writes the standard Step 6 waveform, pattern,
+       scatterplot, boxplot, and heatmap figure suite through
+       ``write_figures()``.
    * - ``load_standard_additional_plotting_output_status``
      - Resolve Step 6 output status and the first available metric-source
        preview for large-run driver notebooks without loading the plotting

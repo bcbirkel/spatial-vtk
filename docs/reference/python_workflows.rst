@@ -380,7 +380,9 @@ fallbacks, and bounded previews stay in package code.
      - Lightweight Step 6 output status and metric-source preview helpers for
        large-run driver cells, plus metric snapshot rows, event metadata,
        event-station records, comparison-eligible records, and the Step 6
-       plotting output group when figures need loaded inputs.
+       plotting output group when figures need loaded inputs; the loaded input
+       result writes the standard Step 6 figure suite without notebook-local
+       table or output-group aliases.
 
 These helpers should replace notebook-local blocks that create several
 ``output_group(...)`` objects, call ``load_tables(...)`` manually, or keep

@@ -2251,7 +2251,13 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" not in source
     assert "step_outputs = output_group(\"step_06_plotting\", cfg=cfg)" not in source
     assert "plotting_tables = step_outputs.load_tables(" not in source
-    assert "write_standard_additional_plotting_figures(" in source
+    assert "write_standard_additional_plotting_figures(" not in source
+    assert "plotting_inputs.write_figures(" in source
+    assert "metrics = plotting_inputs.metrics" not in source
+    assert "event_stations = plotting_inputs.event_stations" not in source
+    assert "events = plotting_inputs.events" not in source
+    assert "comparison_eligible = plotting_inputs.comparison_eligible" not in source
+    assert "step_outputs = plotting_inputs.outputs" not in source
     assert "additional_plot_result.metric_summary_frame()" in source
     assert "additional_plot_result.waveform_order_frame()" in source
     assert "additional_plot_result.pattern_preview_frame()" in source

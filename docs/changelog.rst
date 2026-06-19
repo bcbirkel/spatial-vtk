@@ -55,6 +55,9 @@ Changelog
     figure writing so notebooks no longer unpack spatial product tables or
     output groups before plotting.
   - Added standard notebook input/output loaders for GeoJSON plotting.
+  - Added standard Step 6 additional-plotting input result methods for figure
+    writing so notebooks no longer unpack metric, event, comparison, or output
+    aliases before plotting.
   - Added standard notebook input/output loaders for Step 5 readiness checks.
 
 - **Notebook preview helpers** *(Added)*

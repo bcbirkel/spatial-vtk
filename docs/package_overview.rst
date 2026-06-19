@@ -191,7 +191,8 @@ Start with public helpers from ``spatial_vtk.spatial``:
   ``resolved_path`` with ``path`` retained as a compatibility alias
 - ``load_standard_additional_plotting_output_status`` and
   ``load_standard_additional_plotting_inputs`` for Step 6 output status,
-  metric-source previews, and standard plotting inputs
+  metric-source previews, standard plotting inputs, and standard Step 6 figure
+  suite writing
 - ``add_geojson_metadata_to_metrics``, ``build_boundary_corridors``, and
   ``build_pattern_similarity_station_anomalies`` for focused spatial
   calculations

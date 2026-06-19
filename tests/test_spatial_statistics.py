@@ -728,6 +728,75 @@ def test_write_standard_additional_plotting_figures_returns_previews(tmp_path) -
     assert len(calls) == 5
 
 
+def test_standard_additional_plotting_input_result_writes_figures(tmp_path) -> None:
+    """The standard Step 6 input result should own figure writer arguments."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1"],
+            "station": ["STA1", "STA2"],
+            "metric": ["PGA", "PGV"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "passband": ["1-2 sec", "1-2 sec"],
+            "component": ["Z", "Z"],
+            "model": ["cvmsi", "cvmsi"],
+            "distance_km": [10.0, 20.0],
+            "log2_residual": [0.1, -0.2],
+        }
+    )
+    event_stations = pd.DataFrame({"event_id": ["e1"], "station": ["STA1"]})
+    events = pd.DataFrame({"event_id": ["e1"], "event_name": ["Example event"]})
+    comparison_eligible = pd.DataFrame({"event_id": ["e1"], "station": ["STA1"], "component": ["R"]})
+    waveform_records = pd.DataFrame({"event_id": ["e1"], "station": ["STA1"], "distance_km": [10.0], "component": ["R"]})
+    pattern_rows = pd.DataFrame(
+        {"station_name": ["STA1"], "dataset": ["observed"], "metric": ["PGA"], "bin": ["1-2 sec"], "value": [0.0]}
+    )
+    calls: list[str] = []
+
+    class _Settings:
+        showfig = False
+
+        def plot_kwargs(self, *, include_basemap=False):
+            return {"showfig": False, "add_basemap": bool(include_basemap), "write_sidecar": False}
+
+    class _Outputs:
+        def figure_path(self, name, *, stem=None, stem_parts=None):
+            filename = stem or "_".join(str(part) for part in (stem_parts or (name,)))
+            return tmp_path / f"{name}__{filename}.png"
+
+    def fake_plot(*args, outpath=None, **kwargs):
+        calls.append(Path(outpath).name)
+        Path(outpath).write_text("figure", encoding="utf-8")
+
+    result = StandardAdditionalPlottingInputResult(
+        metrics=metrics,
+        event_stations=event_stations,
+        events=events,
+        comparison_eligible=comparison_eligible,
+        outputs=_Outputs(),
+    ).write_figures(
+        waveform_settings=_Settings(),
+        metric_settings=_Settings(),
+        waveform_records_func=lambda *args, **kwargs: waveform_records.copy(),
+        event_label_func=lambda frame, event_id: "Example event",
+        metric_summary_func=lambda frame, *, comparison_eligible=None: pd.DataFrame({"Input": ["Metric rows"], "Value": [len(frame)]}),
+        geojson_region_func=lambda frame, **kwargs: frame.assign(station_geojson_region="LA Basin"),
+        pattern_rows_func=lambda *args, **kwargs: pattern_rows.copy(),
+        waveform_order_func=lambda frame, **kwargs: frame[["station", "distance_km", "component"]].copy(),
+        waveform_map_func=fake_plot,
+        pattern_plot_func=fake_plot,
+        scatterplot_func=fake_plot,
+        boxplot_func=fake_plot,
+        heatmap_func=fake_plot,
+    )
+
+    assert isinstance(result, StandardAdditionalPlottingFigureResult)
+    assert result.status_frame()["status"].tolist() == ["wrote", "wrote", "wrote", "wrote", "wrote"]
+    assert result.metric_summary_frame().loc[0, "Value"] == 2
+    assert result.waveform_order_frame().loc[0, "station"] == "STA1"
+    assert len(calls) == 5
+
+
 def test_spatial_metric_product_summary_frame_counts_rows_events_and_stations() -> None:
     """Per-metric spatial product summaries should come from package code."""
 

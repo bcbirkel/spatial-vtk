@@ -1702,6 +1702,33 @@ class StandardAdditionalPlottingInputResult:
         ]
         return pd.DataFrame(rows, columns=["table", "rows"])
 
+    def write_figures(
+        self,
+        *,
+        waveform_settings: Any,
+        metric_settings: Any,
+        **kwargs: Any,
+    ) -> "StandardAdditionalPlottingFigureResult":
+        """Write standard Step 6 figures from configured input tables.
+
+        The standard additional-plotting notebook uses this method so the
+        loaded input bundle owns metric rows, prepared event metadata,
+        comparison-eligible rows, and the Step 6 output group. Additional
+        keyword arguments are forwarded to
+        :func:`write_standard_additional_plotting_figures`.
+        """
+
+        return write_standard_additional_plotting_figures(
+            metrics=self.metrics,
+            event_stations=self.event_stations,
+            events=self.events,
+            comparison_eligible=self.comparison_eligible,
+            outputs=self.outputs,
+            waveform_settings=waveform_settings,
+            metric_settings=metric_settings,
+            **kwargs,
+        )
+
 
 @dataclass(frozen=True)
 class StandardAdditionalPlottingOutputStatusResult:
