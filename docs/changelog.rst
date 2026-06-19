@@ -8,6 +8,9 @@ Changelog
 
   - **Public workflow helpers**
 
+    - Added a standard Step 1 ingest output loader for combined ingest and
+      preprocessing output status plus bounded station, event, and preprocessing
+      manifest previews.
     - Added standard notebook input/output loaders for QC, spatial summaries,
       GeoJSON plotting, and Step 5 readiness checks so notebooks no longer
       duplicate config path plumbing.

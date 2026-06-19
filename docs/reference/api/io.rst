@@ -23,6 +23,7 @@ modules.
    from spatial_vtk.io import (
        load_configured_input_paths,
        load_configured_input_tables,
+       load_standard_ingest_workflow_outputs,
        output_group,
        prepare_event_metadata,
        prepare_event_station_table,
@@ -65,6 +66,10 @@ Public helpers exposed by ``spatial_vtk.io``:
    * - ``preprocessed_waveform_output_group``
      - Resolve preprocessing metadata outputs that live under the configured
        preprocessed-waveform metadata directory.
+   * - ``load_standard_ingest_workflow_outputs``
+     - Load the standard Step 1 ingest output group, preprocessing metadata
+       output group, combined status frame, and bounded station/event/manifest
+       preview helpers for tutorial notebooks.
    * - ``output_readiness`` and ``OutputReadiness``
      - Gate local or Slurm-backed work on missing, stale, blocked, or reusable
        outputs. Required input mappings may use ``None`` for an optional

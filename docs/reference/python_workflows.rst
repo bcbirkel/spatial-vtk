@@ -269,6 +269,11 @@ fallbacks, and bounded previews stay in package code.
    * - Step
      - Helper
      - What it owns
+   * - Step 1 ingest
+     - ``spatial_vtk.io.load_standard_ingest_workflow_outputs``
+     - The Step 1 output group, preprocessing metadata output group, combined
+       status frame, prepared station/event previews, and preprocessing
+       manifest preview.
    * - Step 2 QC
      - ``spatial_vtk.qc.load_standard_qc_inputs``
      - Prepared stations, events, event-station records, the Step 1 output

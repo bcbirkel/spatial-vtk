@@ -11,6 +11,7 @@ of embedding task-specific Python in notebook cells.
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +28,96 @@ from spatial_vtk.io.metadata import (
     prepare_event_station_table,
     prepare_station_metadata,
 )
+
+
+@dataclass(frozen=True)
+class StandardIngestWorkflowOutputResult:
+    """Configured Step 1 output groups and preview helpers."""
+
+    outputs: Any
+    preprocessed_outputs: Any
+    cfg: SpatialVTKConfig | None = None
+
+    def status_frame(self) -> Any:
+        """Return combined Step 1 ingest and preprocessing output status."""
+
+        return self.outputs.status_frame(extra_paths=self.preprocessed_outputs.as_dict())
+
+    def display_station_preview(
+        self,
+        *,
+        nrows: int = 5,
+        display_fn: Any | None = None,
+    ) -> dict[str, object]:
+        """Display a bounded preview of the prepared station table."""
+
+        return self.outputs.display_table_previews(
+            {"stations": "prepared_stations_path"},
+            cfg=self.cfg,
+            nrows=nrows,
+            display_fn=display_fn,
+        )
+
+    def display_event_preview(
+        self,
+        *,
+        nrows: int = 5,
+        display_fn: Any | None = None,
+    ) -> dict[str, object]:
+        """Display a bounded preview of the prepared event table."""
+
+        return self.outputs.display_table_previews(
+            {"events": "prepared_events_path"},
+            cfg=self.cfg,
+            nrows=nrows,
+            display_fn=display_fn,
+        )
+
+    def display_preprocessing_manifest_preview(
+        self,
+        *,
+        nrows: int = 5,
+        columns: Sequence[str] | None = ("source", "event_id", "status", "processing", "trace_count"),
+        display_fn: Any | None = None,
+    ) -> dict[str, object]:
+        """Display a bounded preview of the waveform preprocessing manifest."""
+
+        return self.preprocessed_outputs.display_path_table_previews(
+            {"preprocessing_manifest": "preprocessed_manifest_path"},
+            nrows=nrows,
+            columns=columns,
+            display_fn=display_fn,
+        )
+
+
+def load_standard_ingest_workflow_outputs(
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    ingest_group_name: str = "step_01_ingest",
+) -> StandardIngestWorkflowOutputResult:
+    """Load standard Step 1 ingest and preprocessing output handles.
+
+    Parameters
+    ----------
+    cfg
+        Active Spatial-VTK config. When omitted, the active config is used by
+        the underlying output-group helpers.
+    ingest_group_name
+        Configured output group that owns prepared metadata and context figure
+        outputs.
+
+    Returns
+    -------
+    StandardIngestWorkflowOutputResult
+        Configured Step 1 output group, preprocessed-waveform output group,
+        combined status frame, and common preview helpers.
+    """
+
+    return StandardIngestWorkflowOutputResult(
+        outputs=output_group(ingest_group_name, cfg=cfg),
+        preprocessed_outputs=preprocessed_waveform_output_group(config=cfg),
+        cfg=cfg,
+    )
 
 
 def prepare_metadata_tables_from_config(
@@ -394,7 +485,9 @@ __all__ = [
     "build_record_coverage_from_config",
     "load_configured_input_paths",
     "load_configured_input_tables",
+    "load_standard_ingest_workflow_outputs",
     "prepare_metadata_tables_from_config",
     "preprocess_waveforms_from_config",
     "record_coverage_readiness_from_config",
+    "StandardIngestWorkflowOutputResult",
 ]

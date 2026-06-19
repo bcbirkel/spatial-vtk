@@ -127,9 +127,11 @@ from spatial_vtk.io.waveforms import (
     write_trace_metadata_csv,
 )
 from spatial_vtk.io.workflows import (
+    StandardIngestWorkflowOutputResult,
     build_record_coverage_from_config,
     load_configured_input_paths,
     load_configured_input_tables,
+    load_standard_ingest_workflow_outputs,
     prepare_metadata_tables_from_config,
     preprocess_waveforms_from_config,
     record_coverage_readiness_from_config,
@@ -154,6 +156,7 @@ __all__ = [
     "PreprocessedWaveformMetadataPaths",
     "PreprocessedWaveform",
     "SyntheticFormatInfo",
+    "StandardIngestWorkflowOutputResult",
     "WaveformPreprocessing",
     "WaveformPreprocessingWorkflowResult",
     "atomic_write_csv",
@@ -187,6 +190,7 @@ __all__ = [
     "load_csv_bundle",
     "load_configured_input_paths",
     "load_configured_input_tables",
+    "load_standard_ingest_workflow_outputs",
     "load_or_build_output_table",
     "load_output_table",
     "metric_plan_from_config",

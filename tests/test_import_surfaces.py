@@ -46,6 +46,7 @@ def test_public_imports():
         write_station_metric_map_from_notebook_settings,
     )
     from spatial_vtk.io import (
+        StandardIngestWorkflowOutputResult,
         load_configured_input_paths,
         load_configured_input_tables,
         OutputGroup,
@@ -55,6 +56,7 @@ def test_public_imports():
         event_rows_for_records,
         first_nonempty_table_value,
         inspect_synthetic_format,
+        load_standard_ingest_workflow_outputs,
         output_group,
         prepare_metadata_tables_from_config,
         prepare_station_metadata,
@@ -174,8 +176,10 @@ def test_public_imports():
     assert callable(write_standard_metric_diagnostic_figures)
     assert callable(write_station_metric_map_from_notebook_settings)
     assert callable(inspect_synthetic_format)
+    assert callable(StandardIngestWorkflowOutputResult)
     assert callable(load_configured_input_paths)
     assert callable(load_configured_input_tables)
+    assert callable(load_standard_ingest_workflow_outputs)
     assert callable(event_display_label)
     assert callable(event_ids_from_records)
     assert callable(event_label_preview_frame)
@@ -828,6 +832,7 @@ def test_io_api_docs_use_public_workflow_helpers():
     for helper in (
         "output_group",
         "preprocessed_waveform_output_group",
+        "load_standard_ingest_workflow_outputs",
         "output_readiness",
         "OutputReadiness",
         "load_configured_input_paths",
@@ -1379,6 +1384,7 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.io.event_rows_for_records",
         "spatial_vtk.io.event_label_preview_frame",
         "spatial_vtk.io.output_group",
+        "spatial_vtk.io.load_standard_ingest_workflow_outputs",
         "spatial_vtk.io.prepare_metadata_tables_from_config",
         "spatial_vtk.io.preprocess_waveforms_from_config",
         "spatial_vtk.io.build_record_coverage_from_config",
@@ -1534,6 +1540,7 @@ def test_python_workflow_docs_prefer_region_boxplot_notebook_settings_wrapper():
     assert "Use\n``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs`` from\nscripts" in workflows
     assert "Standard Notebook Input Helpers" in workflows
     assert "the preferred pattern for standard notebooks" in workflows
+    assert "``spatial_vtk.io.load_standard_ingest_workflow_outputs``" in workflows
     assert "``spatial_vtk.qc.load_standard_qc_inputs``" in workflows
     assert "``spatial_vtk.metrics.load_standard_metric_workflow_outputs``" in workflows
     assert "``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``" in workflows

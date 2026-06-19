@@ -1133,17 +1133,23 @@ def test_standard_step01_uses_configured_io_workflows() -> None:
     assert "prepare_metadata_tables_from_config(" in source
     assert "preprocess_waveforms_from_config(" in source
     assert "build_record_coverage_from_config(" in source
-    assert 'step_outputs = output_group("step_01_ingest", cfg=cfg)' in source
-    assert "preprocessed_outputs = preprocessed_waveform_output_group(config=cfg)" in source
+    assert "load_standard_ingest_workflow_outputs," in source
+    assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in source
+    assert "display(ingest_outputs.status_frame())" in source
     assert "write_context_figures_from_outputs(" in source
+    assert "ingest_outputs.outputs," in source
     assert "context_figure_result.status_frame()" in source
-    assert 'step_outputs.display_table_previews({"stations": "prepared_stations_path"}, cfg=cfg, nrows=5)' in source
-    assert 'step_outputs.display_table_previews({"events": "prepared_events_path"}, cfg=cfg, nrows=5)' in source
+    assert "ingest_outputs.display_station_preview(nrows=5)" in source
+    assert "ingest_outputs.display_event_preview(nrows=5)" in source
+    assert "ingest_outputs.display_preprocessing_manifest_preview(nrows=5)" in source
+    assert 'step_outputs = output_group("step_01_ingest", cfg=cfg)' not in source
+    assert "preprocessed_outputs = preprocessed_waveform_output_group(config=cfg)" not in source
+    assert "step_outputs.display_table_previews(" not in source
     assert "metadata_tables = step_outputs.load_tables(" not in source
     assert "context_tables = step_outputs.load_tables(" not in source
     assert "stations.head(" not in source
     assert "events[[\"event_id\"" not in source
-    assert "preprocessed_outputs.display_path_table_previews(" in source
+    assert "preprocessed_outputs.display_path_table_previews(" not in source
     assert 'preprocessed_outputs.preview_path_table("preprocessed_manifest_path"' not in source
     assert "manifest_preview =" not in source
     assert "continue_on_error=False" in source
