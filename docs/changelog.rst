@@ -20,6 +20,9 @@ Changelog
   - Added ``overwrite`` and readiness-message pass-throughs to Step 2 QC
     readiness helpers so notebooks keep rerun controls without local readiness
     contracts.
+  - Added config-backed Step 1 metadata and preprocessing readiness helpers so
+    notebook cells no longer repeat prepared-table or preprocessed-metadata
+    path contracts.
   - Added lightweight Step 4, Step 5, and Step 6 output-status loaders for
     large-run driver notebooks that need configured status tables and bounded
     previews without loading large plotting inputs.
@@ -55,6 +58,8 @@ Changelog
     gates.
   - Rewired the large-run Step 1 notebook to resolve ingest and preprocessing
     outputs through the same package helper as the standard tutorial.
+  - Rewired the large-run Step 1 notebook to use package-owned metadata and
+    preprocessing readiness helpers before local or Slurm execution.
   - Rewired large-run Step 4, Step 5, and Step 6 status/preview cells to call
     package-owned output-status helpers instead of direct ``output_group(...)``
     methods.

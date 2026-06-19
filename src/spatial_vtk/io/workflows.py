@@ -179,6 +179,33 @@ def prepare_metadata_tables_from_config(
     }
 
 
+def metadata_tables_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    ingest_group_name: str = "step_01_ingest",
+    overwrite: bool = False,
+    current_message: str | None = "Prepared metadata tables are current; skipping.",
+    rebuild_message: str | None = None,
+) -> OutputReadiness:
+    """Return readiness for configured prepared station/event metadata tables.
+
+    This helper owns the Step 1 metadata output contract used before calling
+    :func:`prepare_metadata_tables_from_config`. It checks configured output
+    paths and freshness only; it does not load the potentially large prepared
+    tables.
+    """
+
+    cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    outputs = output_group(ingest_group_name, cfg=cfg)
+    return outputs.readiness(
+        ("prepared_stations_path", "prepared_events_path", "event_station_path"),
+        overwrite=overwrite,
+        current_message=current_message,
+        rebuild_message=rebuild_message,
+    )
+
+
 def preprocess_waveforms_from_config(
     *,
     config_path: str | Path | None = None,
@@ -232,6 +259,38 @@ def preprocess_waveforms_from_config(
         "trace_metadata_rows": int(len(result.trace_metadata)),
         "event_station_rows": int(len(result.event_station_records)),
     }
+
+
+def preprocessing_readiness_from_config(
+    *,
+    config_path: str | Path | None = None,
+    run_scenario: str | None = None,
+    overwrite: bool = False,
+    missing_input_message: str | None = "Event-station records are not ready yet.",
+    current_message: str | None = "Preprocessed waveform metadata is current; skipping preprocessing submission.",
+    rebuild_message: str | None = None,
+) -> OutputReadiness:
+    """Return readiness for configured waveform preprocessing metadata outputs.
+
+    Waveform preprocessing writes metadata under the preprocessed waveform root
+    instead of the standard output-table directory. This helper keeps that
+    location and the required ``event_station_records`` dependency in package
+    code so notebooks can stay focused on the workflow step.
+    """
+
+    cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
+    ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)
+    step_outputs = ingest_outputs.outputs
+    preprocessed_outputs = ingest_outputs.preprocessed_outputs
+    return preprocessed_outputs.readiness(
+        ("preprocessed_event_station_path", "preprocessed_trace_metadata_path", "preprocessed_manifest_path"),
+        inputs={"event_station_path": step_outputs.event_station_path},
+        sources={"event_station_path": step_outputs.event_station_path},
+        overwrite=overwrite,
+        missing_input_message=missing_input_message,
+        current_message=current_message,
+        rebuild_message=rebuild_message,
+    )
 
 
 def build_record_coverage_from_config(
@@ -488,7 +547,9 @@ __all__ = [
     "load_configured_input_paths",
     "load_configured_input_tables",
     "load_standard_ingest_workflow_outputs",
+    "metadata_tables_readiness_from_config",
     "prepare_metadata_tables_from_config",
+    "preprocessing_readiness_from_config",
     "preprocess_waveforms_from_config",
     "record_coverage_readiness_from_config",
     "StandardIngestWorkflowOutputResult",

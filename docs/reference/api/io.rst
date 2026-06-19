@@ -24,11 +24,13 @@ modules.
        load_configured_input_paths,
        load_configured_input_tables,
        load_standard_ingest_workflow_outputs,
+       metadata_tables_readiness_from_config,
        output_group,
        prepare_event_metadata,
        prepare_event_station_table,
        prepare_station_metadata,
        preprocessed_waveform_output_group,
+       preprocessing_readiness_from_config,
        preprocess_waveform_files,
        record_coverage_readiness_from_config,
        read_config_table,
@@ -100,9 +102,17 @@ Public helpers exposed by ``spatial_vtk.io``:
    * - ``prepare_metadata_tables_from_config``
      - Normalize station, event, and event-station metadata and write the
        standard Step 1 tables.
+   * - ``metadata_tables_readiness_from_config``
+     - Check whether configured prepared station, event, and event-station
+       metadata tables are missing, stale, current, or forced by ``overwrite``
+       without loading the tables in notebook cells.
    * - ``preprocess_waveforms_from_config``
      - Read configured waveform sources, reuse existing preprocessed files when
        possible, and write preprocessing metadata.
+   * - ``preprocessing_readiness_from_config``
+     - Check whether preprocessing metadata outputs and their
+       ``event_station_records`` dependency are ready without duplicating
+       preprocessed metadata path names in notebook cells.
    * - ``record_coverage_readiness_from_config``
      - Check whether record coverage should be rebuilt from preprocessed trace
        metadata.

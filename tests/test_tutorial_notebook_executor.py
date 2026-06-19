@@ -1770,7 +1770,6 @@ def test_large_run_grouped_steps_use_output_group_readiness() -> None:
 
     repo_root = Path(__file__).resolve().parents[1]
     for relative in (
-        "large_run/step_01_large_run_ingest_and_prepare_data.ipynb",
         "large_run/step_03_large_run_calculate_metrics.ipynb",
     ):
         notebook_path = repo_root / "docs" / "examples" / relative
@@ -1898,10 +1897,15 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "run_notebook_step_if_needed(" in source
-    assert "metadata_readiness = step_outputs.readiness(" in source
+    assert "metadata_readiness = metadata_tables_readiness_from_config(" in source
+    assert "preprocess_readiness = preprocessing_readiness_from_config(" in source
+    assert "step_outputs.readiness(" not in source
+    assert "preprocessed_outputs.readiness(" not in source
     assert "run_or_submit_notebook_function(" not in source
     assert "from spatial_vtk.io import (" in source
     assert "load_standard_ingest_workflow_outputs," in source
+    assert "metadata_tables_readiness_from_config," in source
+    assert "preprocessing_readiness_from_config," in source
     assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in source
     assert "step_outputs = ingest_outputs.outputs" in source
     assert "preprocessed_outputs = ingest_outputs.preprocessed_outputs" in source
@@ -2064,7 +2068,8 @@ def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:
         if notebook_path == step_01:
             assert "preprocessed_outputs = ingest_outputs.preprocessed_outputs" in source
             assert "preprocessed_waveform_output_group(config=cfg)" not in source
-            assert "preprocessed_outputs.readiness(" in source
+            assert "preprocess_readiness = preprocessing_readiness_from_config(" in source
+            assert "preprocessed_outputs.readiness(" not in source
             assert "record_coverage_readiness_from_config(" in source
             assert "source_event_station_path" not in source
             assert "preprocess_readiness = output_readiness(" not in source

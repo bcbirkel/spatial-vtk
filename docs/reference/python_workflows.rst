@@ -338,18 +338,30 @@ Step 1: Metadata, Waveforms, and Record Coverage
      - ``spatial_vtk.io.prepare_metadata_tables_from_config``
      - ``prepared_stations``, ``prepared_events``,
        ``event_station_records``
+   * - Check prepared metadata readiness
+     - ``spatial_vtk.io.metadata_tables_readiness_from_config``
+     - Readiness/status for ``prepared_stations``, ``prepared_events``, and
+       ``event_station_records`` without loading large prepared tables
    * - Preprocess observed/synthetic waveforms
      - ``spatial_vtk.io.preprocess_waveforms_from_config``
      - preprocessed waveform files, preprocessing manifest,
        trace metadata, preprocessed event-station records
+   * - Check preprocessing readiness
+     - ``spatial_vtk.io.preprocessing_readiness_from_config``
+     - Readiness/status for preprocessing metadata and its
+       ``event_station_records`` dependency without repeating path names
    * - Build record coverage from trace metadata
      - ``spatial_vtk.io.build_record_coverage_from_config``
      - ``record_coverage``
 
-Use ``spatial_vtk.io.record_coverage_readiness_from_config`` before the record
-coverage build step when a notebook needs a readiness table. It uses the same
-preprocessed-event-station fallback as ``build_record_coverage_from_config``,
-so notebooks do not need to duplicate that path-selection logic.
+Use ``spatial_vtk.io.metadata_tables_readiness_from_config``,
+``spatial_vtk.io.preprocessing_readiness_from_config``, and
+``spatial_vtk.io.record_coverage_readiness_from_config`` before the Step 1
+build steps when a notebook needs readiness tables. The preprocessing and
+record-coverage helpers own the non-standard preprocessing metadata paths and
+the same preprocessed-event-station fallback as
+``build_record_coverage_from_config``, so notebooks do not need to duplicate
+that path-selection logic.
 
 Step 2: Quality Control
 -----------------------

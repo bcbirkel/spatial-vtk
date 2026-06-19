@@ -57,8 +57,10 @@ def test_public_imports():
         first_nonempty_table_value,
         inspect_synthetic_format,
         load_standard_ingest_workflow_outputs,
+        metadata_tables_readiness_from_config,
         output_group,
         prepare_metadata_tables_from_config,
+        preprocessing_readiness_from_config,
         prepare_station_metadata,
         record_coverage_readiness_from_config,
         resolve_model_aliases,
@@ -196,6 +198,7 @@ def test_public_imports():
     assert callable(load_configured_input_paths)
     assert callable(load_configured_input_tables)
     assert callable(load_standard_ingest_workflow_outputs)
+    assert callable(metadata_tables_readiness_from_config)
     assert callable(event_display_label)
     assert callable(event_ids_from_records)
     assert callable(event_label_preview_frame)
@@ -204,6 +207,7 @@ def test_public_imports():
     assert callable(output_group)
     assert callable(OutputGroup)
     assert callable(prepare_metadata_tables_from_config)
+    assert callable(preprocessing_readiness_from_config)
     assert callable(prepare_station_metadata)
     assert callable(record_coverage_readiness_from_config)
     assert callable(resolve_model_aliases)
@@ -955,7 +959,9 @@ def test_io_api_docs_use_public_workflow_helpers():
         "event_label_preview_frame",
         "event_rows_for_records",
         "first_nonempty_table_value",
+        "metadata_tables_readiness_from_config",
         "prepare_metadata_tables_from_config",
+        "preprocessing_readiness_from_config",
         "preprocess_waveforms_from_config",
         "record_coverage_readiness_from_config",
         "build_record_coverage_from_config",
@@ -1138,6 +1144,8 @@ def test_core_api_docs_show_stable_start_here_imports():
             "from spatial_vtk.io import (",
             "output_group",
             "prepare_event_station_table",
+            "metadata_tables_readiness_from_config",
+            "preprocessing_readiness_from_config",
             "preprocess_waveform_files",
             "record_coverage_readiness_from_config",
         ],
@@ -1520,7 +1528,9 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.io.event_label_preview_frame",
         "spatial_vtk.io.output_group",
         "spatial_vtk.io.load_standard_ingest_workflow_outputs",
+        "spatial_vtk.io.metadata_tables_readiness_from_config",
         "spatial_vtk.io.prepare_metadata_tables_from_config",
+        "spatial_vtk.io.preprocessing_readiness_from_config",
         "spatial_vtk.io.preprocess_waveforms_from_config",
         "spatial_vtk.io.build_record_coverage_from_config",
         "spatial_vtk.qc.load_standard_qc_inputs",

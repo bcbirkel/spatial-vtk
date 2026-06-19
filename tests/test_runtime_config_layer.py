@@ -58,6 +58,8 @@ from spatial_vtk.io import (
     output_readiness,
     output_status_frame,
     preprocessed_waveform_output_group,
+    metadata_tables_readiness_from_config,
+    preprocessing_readiness_from_config,
     record_coverage_readiness_from_config,
     should_rebuild_paths,
     should_rebuild_outputs,
@@ -2178,6 +2180,62 @@ def test_record_coverage_readiness_uses_preprocessed_event_station_fallback(tmp_
         dict(readiness.input_items)["event_station_records_path"]
         == preprocessed_outputs.preprocessed_event_station_path
     )
+
+
+def test_step01_readiness_helpers_own_metadata_and_preprocessing_contracts(tmp_path):
+    """Step 1 notebooks should use package-owned metadata and preprocessing readiness."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text("project:\n  root_dir: .\n", encoding="utf-8")
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    ingest_outputs = output_group("step_01_ingest", cfg=cfg)
+    preprocessed_outputs = preprocessed_waveform_output_group(config=cfg, create_parent=True)
+
+    metadata_missing = metadata_tables_readiness_from_config(config_path=config_path)
+    assert metadata_missing.reason == "missing_outputs"
+    assert set(dict(metadata_missing.output_items)) == {
+        "prepared_stations_path",
+        "prepared_events_path",
+        "event_station_path",
+    }
+
+    for path in (
+        ingest_outputs.prepared_stations_path,
+        ingest_outputs.prepared_events_path,
+        ingest_outputs.event_station_path,
+    ):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("id\nx\n", encoding="utf-8")
+    metadata_current = metadata_tables_readiness_from_config(
+        config_path=config_path,
+        current_message="Prepared metadata tables are current.",
+    )
+    assert metadata_current.reason == "current"
+    assert metadata_current.message == "Prepared metadata tables are current."
+    assert metadata_tables_readiness_from_config(config_path=config_path, overwrite=True).reason == "overwrite"
+
+    preprocessing_missing = preprocessing_readiness_from_config(config_path=config_path)
+    assert preprocessing_missing.reason == "missing_outputs"
+    assert dict(preprocessing_missing.input_items)["event_station_path"] == ingest_outputs.event_station_path
+    assert set(dict(preprocessing_missing.output_items)) == {
+        "preprocessed_event_station_path",
+        "preprocessed_trace_metadata_path",
+        "preprocessed_manifest_path",
+    }
+
+    for path in (
+        preprocessed_outputs.preprocessed_event_station_path,
+        preprocessed_outputs.preprocessed_trace_metadata_path,
+        preprocessed_outputs.preprocessed_manifest_path,
+    ):
+        path.write_text("event_id,station\nE1,STA\n", encoding="utf-8")
+    preprocessing_current = preprocessing_readiness_from_config(
+        config_path=config_path,
+        current_message="Preprocessed waveform metadata is current.",
+    )
+    assert preprocessing_current.reason == "current"
+    assert preprocessing_current.message == "Preprocessed waveform metadata is current."
+    assert preprocessing_readiness_from_config(config_path=config_path, overwrite=True).reason == "overwrite"
 
 
 def test_display_output_table_previews_resolves_and_labels_registered_tables(tmp_path, capsys):
