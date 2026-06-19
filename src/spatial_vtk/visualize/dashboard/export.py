@@ -386,6 +386,57 @@ def dashboard_metric_dataset_paths(input_root: str | Path) -> list[Path]:
     return _dashboard_metric_parquet_paths(root)
 
 
+def build_dashboard_summaries_from_metric_dataset(
+    input_root: str | Path,
+    *,
+    hex_dist: float = 10.0,
+    hex_az: float = 10.0,
+) -> dict[str, pd.DataFrame]:
+    """Build dashboard summary tables from a metric dataset path.
+
+    Partitioned dashboard metric datasets are summarized one
+    ``model=*/band=*/metric=*`` directory at a time. This keeps large-run
+    dashboard preparation from loading every metric partition into memory at
+    once while preserving exact medians, IQRs, and unique counts because all
+    summary group keys include model, band, and metric.
+    """
+
+    root = Path(input_root).expanduser()
+    partition_groups = _dashboard_partitioned_metric_path_groups(root)
+    if not partition_groups:
+        metrics = load_dashboard_metric_dataset(
+            root,
+            columns=dashboard_summary_input_columns(),
+        )
+        return build_dashboard_summaries(metrics, hex_dist=hex_dist, hex_az=hex_az)
+
+    summary_frames: dict[str, list[pd.DataFrame]] = {
+        "model_metric_band": [],
+        "station_rollup": [],
+        "event_rollup": [],
+        "path_hex": [],
+    }
+    for paths in partition_groups:
+        frames = [
+            _read_dashboard_metric_table(path, columns=dashboard_summary_input_columns())
+            for path in paths
+        ]
+        frames = [frame for frame in frames if frame is not None and not frame.empty]
+        if not frames:
+            continue
+        partition_rows = pd.concat(frames, ignore_index=True, sort=False)
+        summaries = build_dashboard_summaries(partition_rows, hex_dist=hex_dist, hex_az=hex_az)
+        for name, frame in summaries.items():
+            summary_frames.setdefault(name, []).append(frame)
+
+    if not any(summary_frames.values()):
+        return _empty_dashboard_summaries()
+    return {
+        name: pd.concat(frames, ignore_index=True, sort=False) if frames else pd.DataFrame()
+        for name, frames in summary_frames.items()
+    }
+
+
 def _dashboard_metric_parquet_paths(root: Path) -> list[Path]:
     """Return recognized dashboard metric parquet files under ``root``."""
 
@@ -393,6 +444,29 @@ def _dashboard_metric_parquet_paths(root: Path) -> list[Path]:
     if direct.exists():
         return [direct]
     return sorted(path for path in root.glob("model=*/band=*/metric=*/part*.parquet") if path.is_file())
+
+
+def _dashboard_partitioned_metric_path_groups(root: Path) -> list[list[Path]]:
+    """Return partition file groups for one dashboard metric dataset root."""
+
+    if root.is_file() or (root / "metrics_long.parquet").exists():
+        return []
+    paths = sorted(path for path in root.glob("model=*/band=*/metric=*/part*.parquet") if path.is_file())
+    groups: dict[Path, list[Path]] = {}
+    for path in paths:
+        groups.setdefault(path.parent, []).append(path)
+    return [groups[parent] for parent in sorted(groups)]
+
+
+def _empty_dashboard_summaries() -> dict[str, pd.DataFrame]:
+    """Return empty dashboard summary tables with standard keys."""
+
+    return {
+        "model_metric_band": pd.DataFrame(),
+        "station_rollup": pd.DataFrame(),
+        "event_rollup": pd.DataFrame(),
+        "path_hex": pd.DataFrame(),
+    }
 
 
 def _all_path_backed_metric_tables(items: Sequence[pd.DataFrame | str | Path]) -> bool:
@@ -796,11 +870,11 @@ def write_dashboard_summary_dataset(
 
     resolved_input_root = input_root or resolve_output_path("metrics_dashboard", kind="dashboard")
     resolved_output_root = output_root or resolve_output_path("dashboard_summaries", kind="dashboard", create_parent=True)
-    metrics = load_dashboard_metric_dataset(
+    summaries = build_dashboard_summaries_from_metric_dataset(
         resolved_input_root,
-        columns=dashboard_summary_input_columns(),
+        hex_dist=hex_dist,
+        hex_az=hex_az,
     )
-    summaries = build_dashboard_summaries(metrics, hex_dist=hex_dist, hex_az=hex_az)
     return write_dashboard_summaries(summaries, resolved_output_root, format=format, replace_existing=replace_existing)
 
 
@@ -1092,6 +1166,7 @@ def _as_sequence(value: pd.DataFrame | str | Path | Sequence[pd.DataFrame | str 
 __all__ = [
     "DashboardDatasetPreparationResult",
     "add_dashboard_path_geometry",
+    "build_dashboard_summaries_from_metric_dataset",
     "dashboard_metric_dataset_paths",
     "forward_azimuth_deg",
     "haversine_km",

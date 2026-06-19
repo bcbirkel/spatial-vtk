@@ -529,7 +529,9 @@ Step 7: Dashboard Datasets
        path-backed metric inputs are streamed in ``SVTK_DASHBOARD_CHUNKSIZE``
        row batches so large-run dashboard preparation does not have to
        materialize the full ``metrics_long`` table before writing dashboard
-       partitions.
+       partitions. Summary tables are then built one dashboard partition at a
+       time so exact medians, IQRs, and unique counts do not require loading the
+       full dashboard metric dataset.
    * - Launch dashboards from Python
      - ``spatial_vtk.config.notebook_dashboard_launch_commands``,
        ``spatial_vtk.visualize.dashboard.launch_configured_dashboards_from_notebook_settings``,

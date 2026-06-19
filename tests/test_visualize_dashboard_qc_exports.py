@@ -7,6 +7,7 @@ import pytest
 from spatial_vtk.config import SpatialVTKConfig
 from spatial_vtk.visualize.dashboard import (
     build_dashboard_summaries,
+    build_dashboard_summaries_from_metric_dataset,
     display_dashboard_output_previews,
     dashboard_metric_dataset_readiness_frame,
     dashboard_output_readiness,
@@ -126,6 +127,45 @@ def test_dashboard_metric_dataset_export_streams_path_backed_partitions(tmp_path
     assert len(loaded) == 3
     assert loaded["event_id"].tolist() == ["ev1", "ev2", "ev3"]
     assert loaded["log2_residual"].tolist() == [0.1, 0.2, 0.3]
+
+
+def test_dashboard_summary_dataset_summarizes_partitioned_metrics_one_partition_at_a_time(tmp_path, monkeypatch) -> None:
+    """Partitioned dashboard summaries should avoid loading the full metric dataset."""
+
+    metrics_path = tmp_path / "metrics_long.parquet"
+    metric_root = tmp_path / "dashboard_data"
+    summary_root = tmp_path / "dashboard_summaries"
+    pd.DataFrame(
+        {
+            "model": ["m1", "m1", "m1", "m2"],
+            "metric": ["PGA", "PGA", "PGA", "PGV"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec", "2-3 sec"],
+            "event_id": ["ev1", "ev2", "ev3", "ev4"],
+            "station": ["STA1", "STA2", "STA3", "STA4"],
+            "component": ["Z", "Z", "Z", "R"],
+            "log2_residual": [0.1, 0.2, 0.3, -0.5],
+        }
+    ).to_parquet(metrics_path, index=False)
+    write_dashboard_metric_dataset(metrics_path, metric_root, partitioned=True, chunksize=2)
+
+    def fail_full_dataset_load(*args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        raise AssertionError("partitioned dashboard summary writer loaded the full dataset")
+
+    monkeypatch.setattr(dashboard_export, "load_dashboard_metric_dataset", fail_full_dataset_load)
+
+    written = write_dashboard_summary_dataset(metric_root, summary_root, format="parquet")
+    summaries = load_dashboard_summary_tables(summary_root)
+    helper_summaries = build_dashboard_summaries_from_metric_dataset(metric_root)
+    pga_row = summaries["model_metric_band"].loc[
+        summaries["model_metric_band"]["metric"].eq("PGA")
+    ].iloc[0]
+
+    assert written["model_metric_band"] == summary_root / "model_metric_band.parquet"
+    assert pga_row["n"] == 3
+    assert pga_row["event_count"] == 3
+    assert pga_row["station_count"] == 3
+    assert pga_row["med_log2_residual"] == pytest.approx(0.2)
+    assert helper_summaries["model_metric_band"]["n"].sum() == 4
 
 
 def test_dashboard_summary_dataset_replaces_stale_cross_format_files(tmp_path) -> None:

@@ -13,6 +13,7 @@ from typing import Any
 
 _EXPORT_MODULES = {
     "add_dashboard_path_geometry": "spatial_vtk.visualize.dashboard.export",
+    "build_dashboard_summaries_from_metric_dataset": "spatial_vtk.visualize.dashboard.export",
     "dashboard_metric_dataset_paths": "spatial_vtk.visualize.dashboard.export",
     "forward_azimuth_deg": "spatial_vtk.visualize.dashboard.export",
     "haversine_km": "spatial_vtk.visualize.dashboard.export",

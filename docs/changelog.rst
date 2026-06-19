@@ -90,6 +90,9 @@ Changelog
       or Parquet metric tables, using chunked partition files instead of
       materializing the full ``metrics_long`` table before writing dashboard
       partitions.
+    - Built dashboard summary tables from partitioned dashboard metric datasets
+      one partition directory at a time, preserving exact summary statistics
+      without loading all dashboard metric partitions at once.
     - Reused the standard ingest output helper inside record-coverage
       readiness/build workflows so script and notebook path fallback behavior
       stays aligned.
