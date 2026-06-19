@@ -1045,6 +1045,11 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings" in text
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_standard_spatial_map_figures" in text
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_standard_spatial_diagnostic_figures" in text
+    assert "write_large_run_spatial_figure_suite_from_notebook_settings," in text
+    assert "write_standard_spatial_map_figures," in text
+    assert "prepare_spatial_figure_context_from_notebook_settings," not in text
+    assert "Advanced lower-level context builder for scripts" in text
+    assert "New notebook cells should prefer\n       ``write_large_run_spatial_figure_suite_from_notebook_settings``" in text
     assert "station_summary_for_item" in text
     assert "item_source_rows" in text
     assert "internal owner tag" in text

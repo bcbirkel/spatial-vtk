@@ -175,8 +175,8 @@ tutorial-facing API.
    from spatial_vtk.spatial.plot import (
        plot_correlogram,
        plot_distance_correlation_by_metric,
-       prepare_spatial_figure_context,
-       prepare_spatial_figure_context_from_notebook_settings,
+       write_large_run_spatial_figure_suite_from_notebook_settings,
+       write_standard_spatial_map_figures,
    )
 
 .. automodule:: spatial_vtk.spatial.plot
@@ -190,14 +190,15 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
    * - Helper
      - Use
    * - ``prepare_spatial_figure_context`` and ``SpatialFigureContext``
-     - Render large-run spatial figures with the same filtering, station
-       aggregation, PSA-period handling, and sidecar metadata conventions used
-       by the metric figure context.
+     - Advanced lower-level context builder for scripts that need to control
+       large-run spatial filtering, station aggregation, PSA-period handling,
+       and sidecar metadata before rendering selected figure families.
    * - ``prepare_spatial_figure_context_from_notebook_settings``
-     - Build the same large-run spatial figure context directly from
-       ``notebook_figure_settings(...)`` so tutorial notebooks do not repeat
-       figure-directory, sidecar, basemap, filter, and sampling keyword
-       plumbing.
+     - Advanced compatibility helper for building a spatial figure context
+       from ``notebook_figure_settings(...)``. New notebook cells should prefer
+       ``write_large_run_spatial_figure_suite_from_notebook_settings`` so the
+       package owns render gates, output paths, sidecars, and per-family
+       keyword expansion.
    * - ``write_large_run_spatial_figure_suite_from_notebook_settings``
      - Render the full Step 4 large-run spatial figure suite from notebook
        settings without notebook-local plot-function imports, per-family

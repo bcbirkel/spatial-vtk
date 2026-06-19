@@ -169,6 +169,9 @@ Changelog
   - Updated Python workflow guidance so large-run spatial plotting points to
     the package-owned figure-suite wrapper rather than lower-level spatial
     figure-context helpers.
+  - Updated Spatial API examples so large-run plotting starts from the
+    package-owned spatial figure-suite wrapper, with context builders described
+    as advanced helpers.
   - Documented notebook-facing and script-facing waveform-comparison and
     region-boxplot helpers.
   - Updated generated CLI reference examples to use the committed example
