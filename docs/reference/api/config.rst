@@ -97,7 +97,10 @@ the stable package surface below.
        sidecars without loading large CSV row files.
    * - ``NotebookDashboardCommands`` and
        ``notebook_dashboard_launch_commands``
-     - Resolve dashboard launch settings from config-backed dashboard outputs.
+     - Resolve dashboard launch settings from config-backed dashboard outputs;
+       ``status_frame()`` reports ``metrics_dataset_dir``,
+       ``dashboard_summary_table_dir``, and ``qc_trace_summary_table`` without
+       notebooks resolving paths themselves.
    * - ``display_output_table_previews``
      - Print configured output-table paths and display bounded previews without
        repeating path-resolution code in notebooks.

@@ -1660,6 +1660,8 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     assert "dashboard_launch.qc_launch_kwargs(show=True)" not in source
     assert "display(dashboard_launch.status_frame())" in source
     assert "display(dashboard_launch_result.status_frame())" in source
+    assert "qc_trace_summary_table" not in source
+    assert "trace_summary_table" not in source
     assert "Launch options:" not in source
     assert "server_port=notebook_overrides" not in source
     assert "display_dashboard_output_previews," in source
@@ -1713,6 +1715,8 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "dashboard_launch.qc_launch_kwargs(show=True)" not in source
     assert "display(dashboard_launch.status_frame())" in source
     assert "display(dashboard_launch_result.status_frame())" in source
+    assert "qc_trace_summary_table" not in source
+    assert "trace_summary_table" not in source
     assert "Launch options:" not in source
     assert "server_port=dashboard_" not in source
     assert '"cfg": str(config_path)' in source

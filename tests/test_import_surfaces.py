@@ -850,6 +850,9 @@ def test_config_api_docs_include_compute_helpers():
     assert "``status_frame()`` reports per-figure provenance" in text
     assert "``NotebookDashboardCommands`` and" in text
     assert "``notebook_dashboard_launch_commands``" in text
+    assert "``metrics_dataset_dir``" in text
+    assert "``dashboard_summary_table_dir``" in text
+    assert "``qc_trace_summary_table``" in text
     assert "``display_output_table_previews``" in text
     assert ".. automodule:: spatial_vtk.config.notebook" not in text
 

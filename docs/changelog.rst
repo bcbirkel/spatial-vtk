@@ -192,6 +192,8 @@ Changelog
   - Added clear Python launch keywords ``metrics_dataset_dir`` and
     ``dashboard_summary_table_dir`` for ``launch_metrics_dashboard`` while
     preserving ``metrics_root`` and ``summary_root``.
+  - Added ``qc_trace_summary_table`` to notebook dashboard launch status
+    frames while preserving ``trace_summary_table`` for existing code.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 
