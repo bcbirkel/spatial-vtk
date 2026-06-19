@@ -125,6 +125,7 @@ METRICS_PLOT_COMMANDS = _with_registered_plot_defaults(
         "winner-heatmap": "metrics_long",
         "band-score-distribution": "metrics_long",
         "psa-period-curve": "metrics_long",
+        "period-spectra": "metrics_long",
         "vs30-scatter": "metrics_long",
         "geology-boxplot": "metrics_long",
         "metric-trend": "metrics_long",

@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-19
+   - Made ``svtk plot metrics period-spectra`` use the configured
+     ``metrics_long`` table by default, and taught ``plot_period_spectra()`` to
+     accept standard metric-table residual/value columns through ``value_col``
+     instead of requiring a bespoke ``amplitude`` column.
    - Added the configured output-registry display helpers to the Configuration
      API notebook-helper table, making ``configured_output_registry_frame()``
      and ``configured_output_registry_preview_frame()`` discoverable from the

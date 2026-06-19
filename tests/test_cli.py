@@ -1382,6 +1382,71 @@ outputs:
     assert captured.out.strip() == str(expected_output)
 
 
+def test_cli_period_spectra_uses_metrics_long_config_default(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    metrics = table_dir / "metrics_long.csv"
+    metrics.write_text(
+        "metric,period_s,model,log2_residual\n"
+        "PSA,1.0,m1,0.5\n"
+        "PSA,2.0,m1,0.2\n",
+        encoding="utf-8",
+    )
+    config.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+  artifacts:
+    metrics_long:
+      filename: metrics_long.csv
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.metrics.plot as metrics_plot
+
+    def fake_plot_period_spectra(spectra_df, output_path=None, **kwargs):
+        seen["rows"] = len(spectra_df)
+        seen["columns"] = list(spectra_df.columns)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(metrics_plot, "plot_period_spectra", fake_plot_period_spectra)
+
+    assert (
+        main(
+            [
+                "plot",
+                "metrics",
+                "period-spectra",
+                "--config",
+                str(config),
+                "--value-col",
+                "log2_residual",
+                "--group-col",
+                "model",
+            ]
+        )
+        == 0
+    )
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "period_spectra.png"
+    assert seen["rows"] == 2
+    assert "log2_residual" in seen["columns"]
+    assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["value_col"] == "log2_residual"
+    assert seen["kwargs"]["group_col"] == "model"
+    assert captured.out.strip() == str(expected_output)
+
+
 def test_cli_plot_uses_saved_config_defaults_without_path_flags(tmp_path, monkeypatch, capsys):
     """Registered plot commands should honor a saved default config."""
 
@@ -3498,6 +3563,9 @@ def test_cli_plot_list(capsys):
     assert "residuals-vs-distance" in captured.out
     assert "config:metrics_long" in captured.out
     assert "period-spectra" in captured.out
+    period_line = next(line for line in captured.out.splitlines() if line.startswith("period-spectra"))
+    assert "config:metrics_long" in period_line
+    assert "required:--input" not in period_line
     assert "required:--input" in captured.out
     assert "model-metric-heatmap" in captured.out
     assert "config:band_score_distribution" in captured.out

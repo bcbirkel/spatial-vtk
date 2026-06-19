@@ -1557,7 +1557,7 @@ svtk plot metrics period-spectra
 
 .. code-block:: bash
 
-   svtk plot metrics period-spectra [-h] --input PATH [--output PATH]
+   svtk plot metrics period-spectra [-h] [--input PATH] [--output PATH]
                                         [--config CONFIG]
                                         [--run-scenario RUN_SCENARIO]
                                         [--table [TABLE]] [--no-table]
@@ -1603,9 +1603,9 @@ svtk plot metrics period-spectra
      -
      - show this help message and exit
    * - ``--input``, ``--input-table``
-     - Yes
+     - No
      -
-     - Filesystem path. Primary figure input table (spectra); accepts CSV or parquet.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--output``, ``--figure-output``
      - No
      -

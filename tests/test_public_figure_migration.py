@@ -934,6 +934,43 @@ def test_period_spectra_accepts_non_psa_metric_column(tmp_path: Path) -> None:
     _assert_png(output)
 
 
+def test_period_spectra_accepts_metrics_long_residual_column(tmp_path: Path) -> None:
+    """Generic period spectra should work with standard metrics_long values."""
+
+    spectra = pd.DataFrame(
+        {
+            "metric": ["PSA", "PSA", "PSA", "PSA"],
+            "period_s": [1.0, 2.0, 1.0, 2.0],
+            "log2_residual": [0.4, 0.8, 0.3, 0.6],
+            "model": ["m1", "m1", "m2", "m2"],
+        }
+    )
+
+    output = plot_period_spectra(spectra, tmp_path / "metrics_long_period_spectra.png", group_col="model")
+
+    _assert_png(output)
+
+
+def test_period_spectra_accepts_value_col_alias(tmp_path: Path) -> None:
+    """CLI-friendly value_col should not collide with the amplitude_col alias."""
+
+    spectra = pd.DataFrame(
+        {
+            "period_s": [1.0, 2.0],
+            "custom_score": [0.4, 0.8],
+        }
+    )
+
+    output = plot_period_spectra(
+        spectra,
+        tmp_path / "period_spectra_value_col.png",
+        value_col="custom_score",
+        group_col=None,
+    )
+
+    _assert_png(output)
+
+
 def test_direct_psa_period_plots_reject_passband_duplicated_rows(tmp_path: Path) -> None:
     """Direct PSA period plots should not silently count passbanded PSA duplicates."""
 

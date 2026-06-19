@@ -293,6 +293,7 @@ def plot_period_spectra(
     *,
     period_col: str = "period_s",
     amplitude_col: str = "amplitude",
+    value_col: str | None = None,
     group_col: str | None = "series",
     title: str = "Period Spectra",
     showfig: bool | None = None,
@@ -306,12 +307,17 @@ def plot_period_spectra(
 ) -> plt.Figure:
     """Plot period spectra from a long spectra table."""
 
+    resolved_value_col = _resolve_period_spectra_value_col(
+        spectra_df,
+        amplitude_col=amplitude_col,
+        value_col=value_col,
+    )
     return plot_psa_period_curve(
         spectra_df,
         output_path,
         metric=None,
         period_col=period_col,
-        value_col=amplitude_col,
+        value_col=resolved_value_col,
         group_col=group_col,
         title=title,
         showfig=showfig,
@@ -323,6 +329,25 @@ def plot_period_spectra(
         sidecar_dir=sidecar_dir,
         **spatial_kwargs,
     )
+
+
+def _resolve_period_spectra_value_col(
+    spectra_df: pd.DataFrame,
+    *,
+    amplitude_col: str,
+    value_col: str | None,
+) -> str:
+    """Return the plotted value column for generic period spectra."""
+
+    if value_col:
+        return value_col
+    if amplitude_col in spectra_df.columns:
+        return amplitude_col
+    if amplitude_col == "amplitude":
+        for candidate in ("log2_residual", "residual", "score", "value", "value_obs"):
+            if candidate in spectra_df.columns:
+                return candidate
+    return amplitude_col
 
 
 def plot_period_spectrogram(
