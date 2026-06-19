@@ -1456,6 +1456,37 @@ class StandardSpatialMapFigureResult:
 
 
 @dataclass(frozen=True)
+class StandardSpatialDiagnosticFigureResult:
+    """Result from writing standard Step 4 diagnostic figures."""
+
+    rows: tuple[dict[str, Any], ...]
+    preview_rows: tuple[pd.DataFrame, ...] = ()
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return one row per diagnostic figure written or skipped."""
+
+        return pd.DataFrame(
+            self.rows,
+            columns=[
+                "artifact",
+                "metric",
+                "status",
+                "row_count",
+                "figure_path",
+                "message",
+            ],
+        )
+
+    def preview_frame(self) -> pd.DataFrame:
+        """Return compact diagnostic tables used by the plotted figures."""
+
+        frames = [frame for frame in self.preview_rows if frame is not None and not frame.empty]
+        if not frames:
+            return pd.DataFrame(columns=["artifact", "metric"])
+        return pd.concat(frames, ignore_index=True, sort=False)
+
+
+@dataclass(frozen=True)
 class SpatialFigureSuiteResult:
     """Result from rendering the full large-run Step 4 spatial figure suite."""
 
@@ -1879,6 +1910,195 @@ def write_standard_spatial_map_figures(
             )
 
     return StandardSpatialMapFigureResult(tuple(rows))
+
+
+def write_standard_spatial_diagnostic_figures(
+    spatial_products: Mapping[str, Mapping[str, pd.DataFrame]],
+    spatial_tables: Mapping[str, pd.DataFrame],
+    outputs: Any,
+    settings: Any,
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    site_metadata: pd.DataFrame | None = None,
+    metrics: Sequence[str] | None = None,
+    pca_mode: str | None = None,
+    distance_bin_rows: int = 5,
+    distance_correlation_path_name: str = "spatial_correlation_distance_figure_path",
+    pca_summary_path_name: str = "pca_summary_figure_path",
+    geology_contrast_path_name: str = "geology_contrast_figure_path",
+    distance_plot_func: Callable[..., Any] | None = None,
+    pca_plot_func: Callable[..., Any] | None = None,
+    geology_plot_func: Callable[..., Any] | None = None,
+) -> StandardSpatialDiagnosticFigureResult:
+    """Write standard Step 4 correlation, PCA, and geology diagnostic figures.
+
+    This helper owns the repeated per-metric table selection, figure naming,
+    sidecar keyword expansion, basemap settings, and compact preview tables
+    used by the standard spatial-statistics tutorial.
+    """
+
+    from spatial_vtk.config.labels import metric_display_name
+    from spatial_vtk.io import load_configured_input_tables
+    from spatial_vtk.spatial import (
+        spatial_correlation_preview_frame,
+        spatial_metric_table_frame,
+        spatial_pca_product_frames,
+    )
+
+    if distance_plot_func is None:
+        from spatial_vtk.spatial.plot import plot_distance_correlation_by_metric as distance_plot_func
+    if pca_plot_func is None:
+        from spatial_vtk.spatial.map import plot_pca_summary as pca_plot_func
+    if geology_plot_func is None:
+        from spatial_vtk.spatial.plot import plot_geology_contrast as geology_plot_func
+
+    metric_names = tuple(metrics or spatial_products.keys())
+    morans_i = spatial_tables.get("morans_i", pd.DataFrame())
+    distance_bins = spatial_tables.get("distance_bins", pd.DataFrame())
+    geology_contrasts = spatial_tables.get("geology_contrasts", pd.DataFrame())
+    pca_station_scores = spatial_tables.get("pca_station_scores", pd.DataFrame())
+    pca_feature_loadings = spatial_tables.get("pca_feature_loadings", pd.DataFrame())
+    pca_explained_variance = spatial_tables.get("pca_explained_variance", pd.DataFrame())
+    if site_metadata is None and cfg is not None:
+        try:
+            site_metadata = load_configured_input_tables({"site_metadata": "paths.site_metadata"}, cfg=cfg)["site_metadata"]
+        except Exception:
+            site_metadata = None
+
+    rows: list[dict[str, Any]] = []
+    previews: list[pd.DataFrame] = []
+    sidecar_kwargs = dict(settings.sidecars.kwargs())
+    showfig = bool(getattr(settings, "showfig", False))
+    add_basemap = bool(getattr(settings, "add_basemap", False))
+    resolved_pca_mode = pca_mode or getattr(settings, "pca_mode", "PC1")
+
+    for metric_name in metric_names:
+        preview = spatial_correlation_preview_frame(
+            morans_i=morans_i,
+            distance_bins=distance_bins,
+            metric=metric_name,
+            distance_bin_rows=distance_bin_rows,
+        )
+        if not preview.empty:
+            previews.append(_standard_spatial_preview_frame(preview, artifact="spatial_correlation", metric=metric_name))
+
+    distance_path = outputs.figure_path(
+        distance_correlation_path_name,
+        stem_parts=("step_04", "spatial_correlation_distance"),
+    )
+    rows.append(
+        _write_standard_spatial_diagnostic_figure(
+            "spatial_correlation_distance",
+            "all",
+            distance_bins,
+            distance_path,
+            distance_plot_func,
+            title="Spatial Correlation by Distance",
+            significance_df=morans_i,
+            showfig=showfig,
+            savefig=True,
+            **sidecar_kwargs,
+        )
+    )
+
+    for metric_name in metric_names:
+        label = metric_display_name(metric_name)
+        pca_products = spatial_pca_product_frames(
+            metric_name,
+            station_scores=pca_station_scores,
+            explained_variance=pca_explained_variance,
+            feature_loadings=pca_feature_loadings,
+        )
+        explained = pca_products["explained_variance"]
+        if not explained.empty:
+            previews.append(_standard_spatial_preview_frame(explained, artifact="pca_explained_variance", metric=metric_name))
+        pca_path = outputs.figure_path(
+            pca_summary_path_name,
+            stem_parts=("step_04", metric_name, "pca_summary"),
+        )
+        rows.append(
+            _write_standard_spatial_diagnostic_figure(
+                "pca_summary",
+                metric_name,
+                pca_products["station_scores"],
+                pca_path,
+                pca_plot_func,
+                explained,
+                pca_products["feature_loadings"],
+                mode=resolved_pca_mode,
+                title=f"{label} PCA Spatial Mode Summary",
+                add_basemap=add_basemap,
+                showfig=showfig,
+                savefig=True,
+                **sidecar_kwargs,
+            )
+        )
+
+        geology_contrast = spatial_metric_table_frame(geology_contrasts, metric_name)
+        if not geology_contrast.empty:
+            previews.append(_standard_spatial_preview_frame(geology_contrast, artifact="geology_contrast", metric=metric_name))
+        centered = spatial_products.get(metric_name, {}).get("centered", pd.DataFrame())
+        geology_path = outputs.figure_path(
+            geology_contrast_path_name,
+            stem_parts=("step_04", metric_name, "geology_contrast"),
+        )
+        rows.append(
+            _write_standard_spatial_diagnostic_figure(
+                "geology_contrast",
+                metric_name,
+                centered,
+                geology_path,
+                geology_plot_func,
+                station_metadata=site_metadata,
+                contrast_df=geology_contrast,
+                title=f"{label} Residuals by Geology Class",
+                showfig=showfig,
+                savefig=True,
+                **sidecar_kwargs,
+            )
+        )
+
+    return StandardSpatialDiagnosticFigureResult(tuple(rows), tuple(previews))
+
+
+def _standard_spatial_preview_frame(frame: pd.DataFrame, *, artifact: str, metric: str) -> pd.DataFrame:
+    """Tag a compact diagnostic preview with artifact and metric labels."""
+
+    preview = frame.copy()
+    preview["artifact"] = artifact
+    preview["metric"] = metric
+    leading = ["artifact", "metric"]
+    return preview.loc[:, leading + [column for column in preview.columns if column not in leading]]
+
+
+def _write_standard_spatial_diagnostic_figure(
+    artifact: str,
+    metric: str,
+    frame: pd.DataFrame,
+    figure_path: Path,
+    plot_func: Callable[..., Any],
+    *args: Any,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """Call one standard Step 4 diagnostic plot and return a status row."""
+
+    try:
+        plot_func(frame, *args, outpath=figure_path, **kwargs)
+        plt.close("all")
+        status = "wrote"
+        message = f"wrote {figure_path}"
+    except Exception as exc:
+        plt.close("all")
+        status = "plot_failed"
+        message = f"{type(exc).__name__}: {exc}"
+    return {
+        "artifact": artifact,
+        "metric": metric,
+        "status": status,
+        "row_count": len(frame),
+        "figure_path": str(figure_path),
+        "message": message,
+    }
 
 
 def write_large_run_geojson_region_figures_from_outputs(
@@ -2731,9 +2951,11 @@ __all__ = [
     "SpatialSummaryFigureResult",
     "SpatialFigureSuiteResult",
     "SpatialFigureContext",
+    "StandardSpatialDiagnosticFigureResult",
     "StandardSpatialMapFigureResult",
     "prepare_spatial_figure_context",
     "prepare_spatial_figure_context_from_notebook_settings",
+    "write_standard_spatial_diagnostic_figures",
     "write_standard_spatial_map_figures",
     "write_large_run_geojson_region_figures_from_outputs",
     "write_large_run_geojson_region_figures_from_notebook_settings",

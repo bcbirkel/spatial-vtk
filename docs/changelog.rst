@@ -2,6 +2,12 @@ Changelog
 =========
 
 2026-06-18
+   Added ``write_standard_spatial_diagnostic_figures()`` and rewired the
+   standard Step 4 spatial notebook to use it for spatial-correlation,
+   PCA-summary, and geology-contrast diagnostic figures. The notebook no
+   longer imports those plot functions directly or owns per-metric diagnostic
+   table filters; package code handles configured figure paths, sidecar
+   options, compact preview tables, and status reporting.
    Added ``NotebookFigureSidecarSettings.readiness_frame()`` and updated the
    metric/spatial provenance cells in the standard and large-run notebooks to
    display sidecar readiness before the per-figure sidecar metadata table. The

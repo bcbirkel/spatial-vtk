@@ -220,6 +220,10 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Write the standard Step 4 station-bias and residual-grid maps for each
        selected metric without notebook-local per-metric plot loops or output
        path construction.
+   * - ``write_standard_spatial_diagnostic_figures``
+     - Write the standard Step 4 spatial-correlation, PCA-summary, and
+       geology-contrast diagnostic figures without notebook-local plot imports,
+       per-metric table filters, or sidecar keyword plumbing.
    * - ``write_large_run_geojson_region_figures_from_outputs``
      - Write the Step 5 GeoJSON overview map, corridor map, and region boxplot
        from configured output groups without notebook-local table loading or
@@ -311,6 +315,8 @@ schemas.
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_spatial_summary_figures_from_outputs
 
 .. autofunction:: spatial_vtk.spatial.plot.write_standard_spatial_map_figures
+
+.. autofunction:: spatial_vtk.spatial.plot.write_standard_spatial_diagnostic_figures
 
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_outputs
 

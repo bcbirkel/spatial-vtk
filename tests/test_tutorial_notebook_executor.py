@@ -1125,23 +1125,29 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     assert 'station_metadata="paths.site_metadata"' in source
     assert 'step_outputs = output_group("step_04_spatial", cfg=cfg)' in source
     assert "spatial_tables = step_outputs.load_tables(" in source
-    assert "render_notebook_figure(" in source
+    assert "render_notebook_figure(" not in source
     assert "step_outputs.figure_path(" not in source
     assert "outpath=" not in source
     assert "savefig=True" not in source
     assert "showfig=True" not in source
     assert "spatial_sidecars" not in source
     assert "spatial_workflow_failure_frame(" in source
-    assert "spatial_correlation_preview_frame(" in source
     assert "spatial_metric_product_frames(" in source
     assert "spatial_metric_product_summary_frame(" in source
-    assert "spatial_metric_table_frame(" in source
-    assert "spatial_pca_product_frames(" in source
     assert "station_bias_preview_frame(" in source
     assert "write_standard_spatial_map_figures(" in source
+    assert "write_standard_spatial_diagnostic_figures(" in source
     assert "spatial_map_result.status_frame()" in source
+    assert "spatial_diagnostic_result.preview_frame()" in source
+    assert "spatial_diagnostic_result.status_frame()" in source
     assert "plot_station_bias_map(" not in source
     assert "plot_residual_grid(" not in source
+    assert "plot_distance_correlation_by_metric(" not in source
+    assert "plot_pca_summary(" not in source
+    assert "plot_geology_contrast(" not in source
+    assert "spatial_correlation_preview_frame(" not in source
+    assert "spatial_metric_table_frame(" not in source
+    assert "spatial_pca_product_frames(" not in source
     assert "display(bias.head())" not in source
     assert 'metric_field.loc[metric_field["metric"].astype(str).eq(metric_name)]' not in source
     assert 'event_centered_residuals.loc[event_centered_residuals["metric"].astype(str).eq(metric_name)]' not in source
@@ -1153,14 +1159,8 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     assert "figure_dir /" not in source
     assert "pd.DataFrame(" not in source
     assert "import pandas as pd" not in source
-    for figure_path_name in (
-        "spatial_correlation_distance_figure_path",
-        "pca_summary_figure_path",
-        "geology_contrast_figure_path",
-    ):
-        assert figure_path_name in source
     assert 'metric_field = spatial_tables["metric_field"]' in source
-    assert "load_configured_input_tables(" in source
+    assert "load_configured_input_tables(" not in source
     assert 'read_config_table("paths.site_metadata")' not in source
     assert 'load_output_table("metric_field")' not in source
     assert "run_spatial_statistics_workflow(" not in source

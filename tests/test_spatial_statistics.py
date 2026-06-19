@@ -87,8 +87,10 @@ from spatial_vtk.spatial.plot.correlation import (
 from spatial_vtk.spatial.plot.large_run import (
     RegionBoxplotResult,
     SpatialFigureContext,
+    StandardSpatialDiagnosticFigureResult,
     StandardSpatialMapFigureResult,
     prepare_spatial_figure_context_from_notebook_settings,
+    write_standard_spatial_diagnostic_figures,
     write_standard_spatial_map_figures,
     write_large_run_geojson_region_figures_from_outputs,
     write_large_run_geojson_region_figures_from_notebook_settings,
@@ -367,6 +369,137 @@ def test_write_standard_spatial_map_figures_reports_plot_failures(tmp_path: Path
     status = result.status_frame()
     assert status["status"].tolist() == ["plot_failed", "plot_failed"]
     assert status["message"].str.contains("ValueError: bad plot").all()
+
+
+def test_write_standard_spatial_diagnostic_figures_owns_step04_plot_loops(tmp_path: Path) -> None:
+    """Standard Step 4 diagnostic plotting should be package-owned."""
+
+    products = {
+        "PGA": {
+            "centered": pd.DataFrame(
+                {
+                    "event_id": ["E1"],
+                    "station": ["STA"],
+                    "field_centered": [0.1],
+                }
+            )
+        }
+    }
+    spatial_tables = {
+        "morans_i": pd.DataFrame({"metric": ["PGA"], "moran_i": [0.2], "p_two_sided": [0.04]}),
+        "distance_bins": pd.DataFrame(
+            {
+                "metric": ["PGA"],
+                "distance_center_km": [10.0],
+                "mean_pair_correlation": [0.3],
+                "pair_count": [12],
+            }
+        ),
+        "geology_contrasts": pd.DataFrame({"metric": ["PGA"], "contrast": ["basin-crust"], "p_value": [0.03]}),
+        "pca_station_scores": pd.DataFrame({"metric": ["PGA"], "station": ["STA"], "PC1_score": [0.5]}),
+        "pca_feature_loadings": pd.DataFrame({"metric": ["PGA"], "mode": ["PC1"], "feature": ["x"], "loading": [0.7]}),
+        "pca_explained_variance": pd.DataFrame({"metric": ["PGA"], "mode": ["PC1"], "variance_ratio": [0.8]}),
+    }
+    outputs = OutputGroup(
+        name="step_04_spatial",
+        paths={
+            "spatial_correlation_distance_figure_path": tmp_path / "figures" / "spatial_correlation_distance.png",
+            "pca_summary_figure_path": tmp_path / "figures" / "pca_summary.png",
+            "geology_contrast_figure_path": tmp_path / "figures" / "geology_contrast.png",
+        },
+    )
+    seen: list[tuple[str, Path, int, dict[str, object]]] = []
+
+    class Sidecars:
+        @staticmethod
+        def kwargs(**_kwargs) -> dict[str, object]:
+            return {
+                "write_sidecar": True,
+                "sidecar_rows": 15,
+                "sidecar_dir": tmp_path / "sidecars",
+            }
+
+    class Settings:
+        add_basemap = True
+        showfig = False
+        pca_mode = "PC1"
+        sidecars = Sidecars()
+
+    def _write(path: Path, text: str) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+    def _fake_distance(frame, *, outpath, significance_df, title, **kwargs):
+        output = Path(outpath)
+        _write(output, "distance")
+        seen.append(("distance", output, len(frame), {"significance_rows": len(significance_df), "title": title, **kwargs}))
+
+    def _fake_pca(station_scores, explained, loadings, *, outpath, title, add_basemap, mode, **kwargs):
+        output = Path(outpath)
+        _write(output, "pca")
+        seen.append(
+            (
+                "pca",
+                output,
+                len(station_scores),
+                {
+                    "explained_rows": len(explained),
+                    "loading_rows": len(loadings),
+                    "title": title,
+                    "add_basemap": add_basemap,
+                    "mode": mode,
+                    **kwargs,
+                },
+            )
+        )
+
+    def _fake_geology(frame, *, outpath, station_metadata, contrast_df, title, **kwargs):
+        output = Path(outpath)
+        _write(output, "geology")
+        seen.append(
+            (
+                "geology",
+                output,
+                len(frame),
+                {
+                    "station_rows": len(station_metadata),
+                    "contrast_rows": len(contrast_df),
+                    "title": title,
+                    **kwargs,
+                },
+            )
+        )
+
+    result = write_standard_spatial_diagnostic_figures(
+        products,
+        spatial_tables,
+        outputs,
+        Settings(),
+        metrics=("PGA",),
+        site_metadata=pd.DataFrame({"station": ["STA"], "geology": ["basin"]}),
+        distance_plot_func=_fake_distance,
+        pca_plot_func=_fake_pca,
+        geology_plot_func=_fake_geology,
+    )
+
+    assert isinstance(result, StandardSpatialDiagnosticFigureResult)
+    assert [item[0] for item in seen] == ["distance", "pca", "geology"]
+    assert seen[0][1].name == "step_04_spatial_correlation_distance.png"
+    assert seen[1][1].name == "step_04_pga_pca_summary.png"
+    assert seen[2][1].name == "step_04_pga_geology_contrast.png"
+    for _, _, _, kwargs in seen:
+        assert kwargs["showfig"] is False
+        assert kwargs["savefig"] is True
+        assert kwargs["write_sidecar"] is True
+        assert kwargs["sidecar_rows"] == 15
+        assert kwargs["sidecar_dir"] == tmp_path / "sidecars"
+    assert seen[1][3]["add_basemap"] is True
+    status = result.status_frame()
+    assert status["artifact"].tolist() == ["spatial_correlation_distance", "pca_summary", "geology_contrast"]
+    assert status["status"].tolist() == ["wrote", "wrote", "wrote"]
+    preview = result.preview_frame()
+    assert {"spatial_correlation", "pca_explained_variance", "geology_contrast"} <= set(preview["artifact"])
+    assert set(preview["metric"]) == {"PGA"}
 
 
 def test_spatial_pca_product_frames_selects_all_pca_products() -> None:

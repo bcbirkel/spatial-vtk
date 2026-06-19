@@ -94,8 +94,10 @@ def test_public_imports():
     from spatial_vtk.spatial.plot import (
         SpatialFigureSuiteResult,
         SpatialSummaryFigureResult,
+        StandardSpatialDiagnosticFigureResult,
         StandardSpatialMapFigureResult,
         prepare_spatial_figure_context_from_notebook_settings,
+        write_standard_spatial_diagnostic_figures,
         write_standard_spatial_map_figures,
         write_large_run_spatial_figure_suite_from_notebook_settings,
         write_large_run_spatial_summary_figures_from_outputs,
@@ -163,8 +165,10 @@ def test_public_imports():
     assert callable(build_station_edge_corridors)
     assert callable(classify_paths_with_geojson)
     assert callable(SpatialSummaryFigureResult)
+    assert callable(StandardSpatialDiagnosticFigureResult)
     assert callable(StandardSpatialMapFigureResult)
     assert callable(prepare_spatial_figure_context_from_notebook_settings)
+    assert callable(write_standard_spatial_diagnostic_figures)
     assert callable(write_standard_spatial_map_figures)
     assert callable(write_large_run_spatial_summary_figures_from_outputs)
     assert callable(geojson_polygon_preview_table)
@@ -570,6 +574,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
         "write_large_run_geojson_region_figures_from_notebook_settings",
         "write_large_run_region_boxplot_from_outputs",
         "write_large_run_region_boxplot_from_notebook_settings",
+        "write_standard_spatial_diagnostic_figures",
         "write_standard_spatial_map_figures",
     ):
         assert helper in text
@@ -603,6 +608,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs" in text
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings" in text
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_standard_spatial_map_figures" in text
+    assert ".. autofunction:: spatial_vtk.spatial.plot.write_standard_spatial_diagnostic_figures" in text
     assert "station_summary_for_item" in text
     assert "item_source_rows" in text
     assert "internal owner tag" in text
@@ -941,6 +947,7 @@ def test_spatial_plot_public_entry_point_is_lazy():
     assert "prepare_spatial_figure_context_from_notebook_settings" in spatial_plot.__all__
     assert "SpatialFigureSuiteResult" in spatial_plot.__all__
     assert "SpatialSummaryFigureResult" in spatial_plot.__all__
+    assert "StandardSpatialDiagnosticFigureResult" in spatial_plot.__all__
     assert "StandardSpatialMapFigureResult" in spatial_plot.__all__
     assert "write_large_run_geojson_region_figures_from_outputs" in spatial_plot.__all__
     assert "write_large_run_geojson_region_figures_from_notebook_settings" in spatial_plot.__all__
@@ -948,10 +955,12 @@ def test_spatial_plot_public_entry_point_is_lazy():
     assert "write_large_run_region_boxplot_from_notebook_settings" in spatial_plot.__all__
     assert "write_large_run_spatial_figure_suite_from_notebook_settings" in spatial_plot.__all__
     assert "write_large_run_spatial_summary_figures_from_outputs" in spatial_plot.__all__
+    assert "write_standard_spatial_diagnostic_figures" in spatial_plot.__all__
     assert "write_standard_spatial_map_figures" in spatial_plot.__all__
     assert callable(spatial_plot.plot_correlogram)
     assert callable(spatial_plot.SpatialFigureSuiteResult)
     assert callable(spatial_plot.SpatialSummaryFigureResult)
+    assert callable(spatial_plot.StandardSpatialDiagnosticFigureResult)
     assert callable(spatial_plot.StandardSpatialMapFigureResult)
     assert callable(spatial_plot.prepare_spatial_figure_context)
     assert callable(spatial_plot.prepare_spatial_figure_context_from_notebook_settings)
@@ -961,6 +970,7 @@ def test_spatial_plot_public_entry_point_is_lazy():
     assert callable(spatial_plot.write_large_run_region_boxplot_from_notebook_settings)
     assert callable(spatial_plot.write_large_run_spatial_figure_suite_from_notebook_settings)
     assert callable(spatial_plot.write_large_run_spatial_summary_figures_from_outputs)
+    assert callable(spatial_plot.write_standard_spatial_diagnostic_figures)
     assert callable(spatial_plot.write_standard_spatial_map_figures)
     assert spatial_plot.plot_correlogram is spatial_plot.plot_correlogram
 
