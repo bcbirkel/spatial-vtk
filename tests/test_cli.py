@@ -3847,6 +3847,50 @@ def test_cli_registered_plot_missing_input_names_required_table_role(capsys):
     assert "the following arguments are required" not in captured.err
 
 
+def test_cli_registered_plot_missing_output_names_figure_role():
+    """Shared registered-figure resolver should explain missing figure outputs clearly."""
+
+    import argparse
+    import spatial_vtk.cli as cli
+
+    args = argparse.Namespace(output=None)
+    spec = cli.PlotCommand("spatial_vtk.metrics.plot.plot_band_score_distribution", "df", "Plot.", output_key=None)
+
+    with pytest.raises(ValueError) as excinfo:
+        cli._registered_plot_output_path(args, spec, None)
+
+    message = str(excinfo.value)
+    assert "No figure output path was provided" in message
+    assert "Pass --output/--figure-output PATH" in message
+    assert "required output roles" in message
+
+
+def test_cli_registered_plot_missing_config_messages_name_clear_aliases():
+    """Config-backed registered figure errors should mention both path aliases."""
+
+    import argparse
+    import spatial_vtk.cli as cli
+
+    args = argparse.Namespace(input=None, output=None)
+    spec = cli.PlotCommand(
+        "spatial_vtk.metrics.plot.plot_band_score_distribution",
+        "df",
+        "Plot.",
+        input_key="metrics_long",
+        output_key="band_score_distribution",
+    )
+
+    with pytest.raises(ValueError) as input_exc:
+        cli._registered_plot_input_path(args, spec, None)
+    with pytest.raises(ValueError) as output_exc:
+        cli._registered_plot_output_path(args, spec, None)
+
+    assert "Pass --input/--input-table PATH" in str(input_exc.value)
+    assert "Pass --output/--figure-output PATH" in str(output_exc.value)
+    assert "svtk config set PATH" in str(input_exc.value)
+    assert "svtk config set PATH" in str(output_exc.value)
+
+
 def test_cli_spatial_plot_list_includes_pattern_similarity_defaults(capsys):
     assert main(["plot", "spatial", "list"]) == 0
     captured = capsys.readouterr()

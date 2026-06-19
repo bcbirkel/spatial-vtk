@@ -2930,7 +2930,7 @@ def _registered_plot_input_path(args: argparse.Namespace, spec: PlotCommand, con
     if config is None:
         raise ValueError(
             f"No --input was provided for '{spec.input_key}' and no Spatial-VTK config was found. "
-            "Pass --input, pass --config, or run 'svtk config set PATH'."
+            "Pass --input/--input-table PATH, pass --config, or run 'svtk config set PATH'."
         )
     from spatial_vtk.config import resolve_output_path
 
@@ -2943,11 +2943,14 @@ def _registered_plot_output_path(args: argparse.Namespace, spec: PlotCommand, co
     if getattr(args, "output", None):
         return Path(args.output).expanduser()
     if spec.output_key is None:
-        raise ValueError("No output path was provided. Pass --output.")
+        raise ValueError(
+            "No figure output path was provided. Pass --output/--figure-output PATH. "
+            "Run the corresponding 'list' command to see config-backed defaults and required output roles."
+        )
     if config is None:
         raise ValueError(
             f"No --output was provided for '{spec.output_key}' and no Spatial-VTK config was found. "
-            "Pass --output, pass --config, or run 'svtk config set PATH'."
+            "Pass --output/--figure-output PATH, pass --config, or run 'svtk config set PATH'."
         )
     from spatial_vtk.config import resolve_output_path
 

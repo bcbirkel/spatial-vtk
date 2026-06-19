@@ -101,6 +101,9 @@ Changelog
   - Clarified CLI plotting notes so visualization list commands are included
     with plot/map list commands, and ``required:<role>`` entries explain when
     explicit input tables are still required.
+  - Clarified registered figure missing-path messages so input and figure
+    output errors name both legacy and clearer path aliases before suggesting
+    config-backed defaults.
 
 - **Large-run resilience** *(Hardened)*
 
