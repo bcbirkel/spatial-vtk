@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Rewired the standard Step 6 additional plotting notebook to use
+   ``spatial_vtk.config.render_notebook_figure()`` for waveform maps, pattern
+   similarity, scatterplot, boxplot, and heatmap figures. The notebook no
+   longer repeats configured figure-path resolution, ``showfig``/``savefig``,
+   sidecar kwargs, or basemap kwargs in each plot cell.
    Added ``spatial_vtk.config.render_notebook_figure()`` and rewired the
    standard Step 5 maps notebook to use it for configured plot rendering. The
    notebook keeps the GeoJSON, corridor, waveform, and metric-selection logic

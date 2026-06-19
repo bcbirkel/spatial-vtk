@@ -1793,12 +1793,18 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" not in source
     assert "step_outputs = output_group(\"step_06_plotting\", cfg=cfg)" in source
     assert "plotting_tables = step_outputs.load_tables(" in source
-    assert "step_outputs.figure_path(" in source
+    assert "render_notebook_figure(" in source
     assert "station_event_waveform_map_path" in source
     assert "pattern_similarity_figure_path" in source
     assert "scatterplot_figure_path" in source
     assert "boxplot_figure_path" in source
     assert "heatmap_figure_path" in source
+    assert "step_outputs.figure_path(" not in source
+    assert "outpath=" not in source
+    assert "savefig=True" not in source
+    assert "showfig=True" not in source
+    assert "waveform_sidecars" not in source
+    assert "metric_sidecars" not in source
     assert "load_output_table(" not in source
     assert "figure_dir /" not in source
     assert "geojson_metric_region_frame(" in source
