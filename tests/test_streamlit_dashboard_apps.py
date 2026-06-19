@@ -42,6 +42,7 @@ from spatial_vtk.visualize.dashboard.tables import build_dashboard_summaries
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _available_nonempty_value_columns
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _empty_rows_message as _metrics_empty_rows_message
 import spatial_vtk.visualize.dashboard.streamlit_metrics as streamlit_metrics
+import spatial_vtk.visualize.dashboard.contracts as dashboard_contracts
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard_startup_blocker
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metric_dataset_readiness_message
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _row_level_dataset_notice_message
@@ -329,6 +330,46 @@ outputs:
     )
     assert station_map_status["ready"] is False
     assert "longitude" in station_map_status["missing_columns"]
+
+
+def test_dashboard_summary_readiness_uses_chunked_projected_scans(tmp_path, monkeypatch):
+    """Summary readiness should not materialize full value or coordinate tables."""
+
+    summary_root = tmp_path / "dashboard_summaries"
+    summary_root.mkdir()
+    pd.DataFrame(
+        {
+            "model": ["m1"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "n": [2],
+            "med_log2_residual": [0.25],
+        }
+    ).to_csv(summary_root / "model_metric_band.csv", index=False)
+    pd.DataFrame(
+        {
+            "station": ["STA1", "STA2"],
+            "model": ["m1", "m1"],
+            "metric": ["PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "n": [1, 1],
+            "sta_lon": [-118.1, -118.2],
+            "sta_lat": [34.0, 34.1],
+            "med_log2_residual": [0.1, 0.2],
+        }
+    ).to_csv(summary_root / "station_rollup.csv", index=False)
+
+    def fail_full_projected_read(*args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        raise AssertionError("readiness should use chunked projected scans")
+
+    monkeypatch.setattr(dashboard_contracts, "_read_dashboard_table_columns", fail_full_projected_read)
+
+    readiness = dashboard_summary_readiness_frame(summary_root)
+    station = readiness.loc[readiness["dashboard_table"].eq("station_rollup")].iloc[0]
+
+    assert station["ready"] is True
+    assert station["map_ready"] is True
+    assert station["nonempty_value_columns"] == "med_log2_residual"
 
 
 def test_metrics_dashboard_row_level_loader_uses_selected_filters(monkeypatch):

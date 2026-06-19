@@ -1095,9 +1095,12 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
     missing = sorted(column for column in required if column not in columns)
     schema_table = pd.DataFrame(columns=columns)
     value_columns = _dashboard_value_columns(schema_table)
-    value_table = _read_dashboard_table_columns(path, value_columns)
-    nonempty_value_columns = _nonempty_dashboard_value_columns(value_table, value_columns)
     map_status = _dashboard_map_readiness_from_path(path, table_name, columns)
+    nonempty_value_columns = (
+        []
+        if missing or row_count == 0
+        else _nonempty_dashboard_value_columns_from_path(path, value_columns)
+    )
     if missing:
         readiness = "missing_columns"
         ready = False
@@ -1298,6 +1301,39 @@ def _read_dashboard_table_columns(path: Path, columns: list[str] | tuple[str, ..
     raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
 
 
+def _iter_dashboard_table_column_chunks(
+    path: Path,
+    columns: list[str] | tuple[str, ...],
+    *,
+    chunksize: int = 50_000,
+):
+    """Yield projected dashboard table chunks for readiness scans."""
+
+    selected = [column for column in columns if column]
+    if not selected:
+        return
+    size = max(int(chunksize), 1)
+    suffix = path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        try:
+            import pyarrow.parquet as pq
+
+            parquet = pq.ParquetFile(path)
+            for batch in parquet.iter_batches(batch_size=size, columns=selected):
+                yield batch.to_pandas()
+            return
+        except Exception:
+            table = pd.read_parquet(path, columns=selected)
+            for start in range(0, len(table), size):
+                yield table.iloc[start : start + size].copy()
+            return
+    if suffix == ".csv":
+        wanted = set(selected)
+        yield from pd.read_csv(path, usecols=lambda column: column in wanted, chunksize=size, low_memory=False)
+        return
+    raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
+
+
 def _dashboard_map_readiness_from_path(path: Path, table_name: str, columns: list[str]) -> dict[str, object]:
     """Return map-readiness using only coordinate columns."""
 
@@ -1309,7 +1345,37 @@ def _dashboard_map_readiness_from_path(path: Path, table_name: str, columns: lis
     lat_col = next((column for column in lat_candidates if column in columns), None)
     if lon_col is None or lat_col is None:
         return dashboard_map_readiness(pd.DataFrame(columns=columns), table_name)
-    return dashboard_map_readiness(_read_dashboard_table_columns(path, [lon_col, lat_col]), table_name)
+    for chunk in _iter_dashboard_table_column_chunks(path, [lon_col, lat_col]):
+        coordinates = pd.DataFrame(
+            {
+                "lon": pd.to_numeric(chunk[lon_col], errors="coerce"),
+                "lat": pd.to_numeric(chunk[lat_col], errors="coerce"),
+            }
+        )
+        if not coordinates.dropna(subset=["lon", "lat"]).empty:
+            return {"ready": True, "missing_columns": "", "message": f"{table_name} map coordinates are ready."}
+    return {
+        "ready": False,
+        "missing_columns": "",
+        "message": f"{table_name} summary has coordinate columns but no finite longitude/latitude pairs for the map.",
+    }
+
+
+def _nonempty_dashboard_value_columns_from_path(path: Path, columns: list[str]) -> list[str]:
+    """Return value columns with finite values using chunked projected reads."""
+
+    if not columns:
+        return []
+    found: set[str] = set()
+    for chunk in _iter_dashboard_table_column_chunks(path, columns):
+        for column in columns:
+            if column in found or column not in chunk.columns:
+                continue
+            if pd.to_numeric(chunk[column], errors="coerce").notna().any():
+                found.add(column)
+        if len(found) == len(columns):
+            break
+    return [column for column in columns if column in found]
 
 
 def dashboard_map_readiness(table: pd.DataFrame, table_name: str) -> dict[str, object]:

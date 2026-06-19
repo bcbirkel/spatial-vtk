@@ -531,9 +531,11 @@ Step 7: Dashboard Datasets
        materialize the full ``metrics_long`` table before writing dashboard
        partitions. Summary tables are then built one dashboard partition at a
        time so exact medians, IQRs, and unique counts do not require loading the
-       full dashboard metric dataset. The metrics dashboard also caps
-       row-level CSV downloads separately through
-       ``SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS`` or the shared
+       full dashboard metric dataset. Dashboard startup/readiness checks inspect
+       summary value and map-coordinate columns with projected chunk scans, so
+       they can report schema/value/map readiness without materializing complete
+       summary tables. The metrics dashboard also caps row-level CSV downloads
+       separately through ``SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS`` or the shared
        ``SVTK_DASHBOARD_DOWNLOAD_ROWS`` setting so filtered distributions do not
        serialize more rows than intended.
    * - Launch dashboards from Python
