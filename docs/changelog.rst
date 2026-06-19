@@ -189,6 +189,8 @@ Changelog
   - Added clear Streamlit dashboard query aliases
     ``metrics_dataset_dir``, ``dashboard_summary_table_dir``, and
     ``qc_trace_summary`` while preserving legacy dashboard links.
+  - Clarified generated API parameter descriptions for dashboard row datasets,
+    summary-table directories, and QC trace-summary tables.
 
 - **Workflow large-run resilience** *(Hardened)*
 

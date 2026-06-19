@@ -88,7 +88,10 @@ _PARAMETER_DESCRIPTIONS = {
     "manifest": "Metric or QC manifest that lists resumable workflow work units, batch outputs, and checkpoint state.",
     "manifest_path": "Path to the metric or QC manifest file used for resumable planning, execution, or merging.",
     "metric": "Metric name or metric filter used for the calculation or figure.",
-    "metrics_root": "Directory containing dashboard-ready metric row datasets; standard dashboard workflows resolve this from the active config.",
+    "metrics_root": (
+        "Metrics dashboard row dataset directory or direct ``metrics_long`` CSV/parquet table; "
+        "standard dashboard workflows resolve this from the active config."
+    ),
     "metrics": "Metric names included in the calculation or figure.",
     "model": "Synthetic model name or model filter used for the calculation or figure.",
     "output": "Output table, figure, manifest, or configured artifact written by this workflow step.",
@@ -105,8 +108,16 @@ _PARAMETER_DESCRIPTIONS = {
     "source": "Source table, path, configured artifact, or source label used by this workflow step.",
     "source_df": "Pre-aggregation rows used to produce the plotted or summarized rows.",
     "summary": "Summary table, dashboard summary dataset, or summary configuration consumed by this helper.",
-    "summary_root": "Directory containing dashboard summary tables; standard dashboard workflows resolve this from the active config.",
+    "summary_root": (
+        "Dashboard summary-table directory containing ``model_metric_band``, ``station_rollup``, "
+        "``event_rollup``, and ``path_hex`` tables; standard dashboard workflows resolve this from "
+        "the active config."
+    ),
     "table": "Input table, output table, configured table key, or table selector used by this helper.",
+    "trace_summary": (
+        "QC trace-summary CSV/parquet table; standard QC dashboard workflows resolve this from "
+        "the configured ``qc_trace_summary`` output."
+    ),
     "value_col": "Column containing the value to plot, summarize, or validate.",
     "verbose": "Whether to print progress messages.",
     "write_sidecar": "Whether to write row-provenance sidecar files for the figure.",
