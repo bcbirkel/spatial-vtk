@@ -1407,6 +1407,43 @@ class RegionFigureResult:
 
 
 @dataclass(frozen=True)
+class StandardGeoJSONFigureResult:
+    """Result from writing standard Step 5 GeoJSON region figures."""
+
+    rows: tuple[dict[str, Any], ...]
+    region_preview: pd.DataFrame
+    metrics_by_regions: pd.DataFrame
+    model_name: str
+    summary: Mapping[str, Any] | None = None
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return one row per Step 5 region figure written or skipped."""
+
+        return pd.DataFrame(
+            self.rows,
+            columns=[
+                "artifact",
+                "status",
+                "row_count",
+                "figure_path",
+                "message",
+            ],
+        )
+
+    def preview_frame(self) -> pd.DataFrame:
+        """Return a compact table of configured GeoJSON regions."""
+
+        return self.region_preview.copy()
+
+    def summary_frame(self) -> pd.DataFrame:
+        """Return the configured GeoJSON summary workflow status as a table."""
+
+        if not self.summary:
+            return pd.DataFrame()
+        return pd.DataFrame([dict(self.summary)])
+
+
+@dataclass(frozen=True)
 class SpatialSummaryFigureResult:
     """Result from writing compact large-run spatial summary figures."""
 
@@ -2099,6 +2136,226 @@ def _write_standard_spatial_diagnostic_figure(
         "figure_path": str(figure_path),
         "message": message,
     }
+
+
+def write_standard_geojson_region_figures(
+    *,
+    metrics: pd.DataFrame,
+    stations: pd.DataFrame,
+    events: pd.DataFrame,
+    outputs: Any,
+    settings: Any,
+    geojson_path: str | Path,
+    value_col: str = "log2_residual",
+    passbands: Sequence[str] | str | None = ("1-2 sec", "2-3 sec"),
+    component: str | Sequence[str] | None = "Z",
+    station_region: str = "LA Basin",
+    event_region: str = "Glendale",
+    metric: str = "PGA",
+    compare_to: str = "LA Basin",
+    model: str | None = None,
+    summary_metrics_table: pd.DataFrame | str | Path | None = None,
+    summary_geojson_path: str | Path | None = None,
+    summary_chunksize: int | None = 100_000,
+    geojson_plot_func: Callable[..., Any] | None = None,
+    boxplot_func: Callable[..., Any] | None = None,
+    station_map_func: Callable[..., Any] | None = None,
+    summary_func: Callable[..., Mapping[str, Any]] | None = None,
+) -> StandardGeoJSONFigureResult:
+    """Write standard Step 5 GeoJSON overview, boxplot, and region map figures.
+
+    The helper owns the GeoJSON annotation, regional metric filtering, station
+    residual summary, configured figure naming, sidecar kwargs, and status
+    reporting used by the standard maps-and-figures tutorial.
+    """
+
+    from spatial_vtk.io import event_rows_for_records
+    from spatial_vtk.spatial import (
+        build_metric_field,
+        geojson_metric_region_frame,
+        geojson_metric_subset_frame,
+        geojson_polygon_preview_table,
+        run_geojson_region_summary_workflow_from_config,
+        summarize_station_bias,
+    )
+
+    if geojson_plot_func is None:
+        from spatial_vtk.spatial.map import plot_geojson_polygons_map as geojson_plot_func
+    if boxplot_func is None:
+        from spatial_vtk.spatial.plot import boxplot as boxplot_func
+    if station_map_func is None:
+        from spatial_vtk.spatial.map import plot_station_metric_map as station_map_func
+    if summary_func is None:
+        summary_func = run_geojson_region_summary_workflow_from_config
+
+    sidecar_kwargs = dict(settings.sidecars.kwargs())
+    showfig = bool(getattr(settings, "showfig", False))
+    add_basemap = bool(getattr(settings, "add_basemap", False))
+    model_name = model or _first_nonempty_metric_value(metrics, "model", fallback="model")
+    region_preview = geojson_polygon_preview_table(geojson_path)
+    rows: list[dict[str, Any]] = []
+    summary = summary_func(
+        metrics_table=summary_metrics_table,
+        geojson_path=summary_geojson_path,
+        chunksize=summary_chunksize,
+        verbose=False,
+    )
+
+    metrics_by_station_region = geojson_metric_region_frame(
+        metrics,
+        geojson_path,
+        target="station",
+        selector="all",
+        region_col="station_region",
+    )
+    metrics_by_regions = geojson_metric_region_frame(
+        metrics_by_station_region,
+        geojson_path,
+        target="event",
+        selector="all",
+        require_inside=False,
+        region_col="event_region",
+    )
+
+    geojson_path_out = outputs.figure_path(
+        "geojson_polygons_map_path",
+        stem_parts=("step_05", "geojson_regions"),
+    )
+    rows.append(
+        _write_standard_geojson_figure(
+            "geojson_regions",
+            pd.concat(
+                [stations.assign(_figure_layer="station"), events.assign(_figure_layer="event")],
+                ignore_index=True,
+                sort=False,
+            ),
+            geojson_path_out,
+            geojson_plot_func,
+            geojson_path,
+            stations_df=stations,
+            events_df=events,
+            title="Example GeoJSON Regions",
+            add_basemap=add_basemap,
+            showfig=showfig,
+            savefig=True,
+            **sidecar_kwargs,
+        )
+    )
+
+    boxplot_path = outputs.figure_path(
+        "region_boxplot_figure_path",
+        stem_parts=("step_05", "pga", "region_boxplot"),
+    )
+    rows.append(
+        _write_standard_geojson_figure(
+            "pga_region_boxplot",
+            metrics_by_station_region,
+            boxplot_path,
+            boxplot_func,
+            data=metrics_by_station_region,
+            dep=metric,
+            indep="station_region",
+            value_col=value_col,
+            passband=passbands,
+            model=model_name,
+            component=component,
+            compare_to=compare_to,
+            table=True,
+            title="PGA Residuals by Station Region",
+            showfig=showfig,
+            savefig=True,
+            **sidecar_kwargs,
+        )
+    )
+
+    regional_metric = geojson_metric_subset_frame(
+        metrics_by_regions,
+        metric=metric,
+        passband=passbands,
+        component=component,
+        event_region=event_region,
+        station_region=station_region,
+    )
+    regional_field = build_metric_field(regional_metric, metric, value_column=value_col)
+    regional_bias = summarize_station_bias(
+        regional_field,
+        value_col="field_value",
+        center_by_event=False,
+        min_events_per_station=1,
+    )
+    regional_event_points = event_rows_for_records(events, regional_metric)
+    station_map_path = outputs.figure_path(
+        "station_metric_map_path",
+        stem_parts=("step_05", "pga", "glendale_events", "la_basin_stations"),
+    )
+    rows.append(
+        _write_standard_geojson_figure(
+            "regional_pga_station_map",
+            regional_bias,
+            station_map_path,
+            station_map_func,
+            regional_bias,
+            value_col="mean_centered",
+            lon_col="lon",
+            lat_col="lat",
+            events_df=regional_event_points,
+            geojson_path=geojson_path,
+            polygon_selector=[event_region, station_region],
+            polygon_alpha=0.12,
+            label_polygons=True,
+            event_alpha=0.76,
+            title="Mean PGA log2(obs/syn) Residual\nEvents in Glendale; Stations in LA Basin",
+            add_basemap=add_basemap,
+            showfig=showfig,
+            savefig=True,
+            **sidecar_kwargs,
+        )
+    )
+    return StandardGeoJSONFigureResult(
+        rows=tuple(rows),
+        region_preview=region_preview,
+        metrics_by_regions=metrics_by_regions,
+        model_name=str(model_name),
+        summary=dict(summary),
+    )
+
+
+def _write_standard_geojson_figure(
+    artifact: str,
+    frame: pd.DataFrame,
+    figure_path: Path,
+    plot_func: Callable[..., Any],
+    *args: Any,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """Call one standard Step 5 GeoJSON plot and return a status row."""
+
+    try:
+        plot_func(*args, outpath=figure_path, **kwargs)
+        plt.close("all")
+        status = "wrote"
+        message = f"wrote {figure_path}"
+    except Exception as exc:
+        plt.close("all")
+        status = "plot_failed"
+        message = f"{type(exc).__name__}: {exc}"
+    return {
+        "artifact": artifact,
+        "status": status,
+        "row_count": len(frame),
+        "figure_path": str(figure_path),
+        "message": message,
+    }
+
+
+def _first_nonempty_metric_value(df: pd.DataFrame, column: str, *, fallback: str) -> str:
+    """Return the first non-empty dataframe value for a column."""
+
+    if column not in df.columns:
+        return str(fallback)
+    values = df[column].dropna().astype(str)
+    values = values.loc[values.str.strip().ne("")]
+    return str(values.iloc[0]) if not values.empty else str(fallback)
 
 
 def write_large_run_geojson_region_figures_from_outputs(
@@ -2948,6 +3205,7 @@ __all__ = [
     "RegionBoxplotResult",
     "RegionFigureResult",
     "SPATIAL_FIGURE_TABLE_KEYS",
+    "StandardGeoJSONFigureResult",
     "SpatialSummaryFigureResult",
     "SpatialFigureSuiteResult",
     "SpatialFigureContext",
@@ -2956,6 +3214,7 @@ __all__ = [
     "prepare_spatial_figure_context",
     "prepare_spatial_figure_context_from_notebook_settings",
     "write_standard_spatial_diagnostic_figures",
+    "write_standard_geojson_region_figures",
     "write_standard_spatial_map_figures",
     "write_large_run_geojson_region_figures_from_outputs",
     "write_large_run_geojson_region_figures_from_notebook_settings",

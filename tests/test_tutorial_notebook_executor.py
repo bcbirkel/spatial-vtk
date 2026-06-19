@@ -1185,12 +1185,14 @@ def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "run_geojson_region_summary_workflow_from_config(" in source
+    assert "write_standard_geojson_region_figures(" in source
+    assert "geojson_region_result.summary_frame()" in source
+    assert "geojson_region_result.status_frame()" in source
     assert "from spatial_vtk.spatial import (" in source
     assert "load_configured_input_paths(" in source
-    assert "load_configured_input_tables(" in source
+    assert "load_configured_input_tables(" not in source
     assert "render_notebook_figure(" in source
-    assert "geojson_metric_region_frame(" in source
+    assert "geojson_metric_region_frame(" not in source
     assert "geojson_metric_subset_frame(" in source
     assert "corridor_record_pair_frame(" in source
     assert "corridor_record_preview_frame(" in source
@@ -1874,15 +1876,17 @@ def test_step05_uses_geojson_preview_helper() -> None:
     assert "step_outputs = output_group(\"step_05_geojson\", cfg=cfg)" in source
     assert "plotting_tables = step_outputs.load_tables(" in source
     assert "render_notebook_figure(" in source
-    assert "geojson_polygons_map_path" in source
-    assert "region_boxplot_figure_path" in source
     assert "station_metric_map_path" in source
     assert "corridor_map_path" in source
     assert "record_section_figure_path" in source
     assert "from spatial_vtk.spatial.calculate import" not in source
     assert "from spatial_vtk.spatial.map." not in source
     assert "from spatial_vtk.spatial.plot." not in source
-    assert "first_nonempty_table_value(metrics, \"model\", fallback=\"model\")" in source
+    assert "write_standard_geojson_region_figures(" in source
+    assert "geojson_region_result.metrics_by_regions" in source
+    assert "plot_geojson_polygons_map(" not in source
+    assert "boxplot(" not in source
+    assert "first_nonempty_table_value(metrics, \"model\", fallback=\"model\")" not in source
     assert "metrics[\"model\"].dropna().astype(str).iloc[0]" not in source
     assert "event_ids_from_records(" in source
     assert "event_rows_for_records(" in source

@@ -87,9 +87,11 @@ from spatial_vtk.spatial.plot.correlation import (
 from spatial_vtk.spatial.plot.large_run import (
     RegionBoxplotResult,
     SpatialFigureContext,
+    StandardGeoJSONFigureResult,
     StandardSpatialDiagnosticFigureResult,
     StandardSpatialMapFigureResult,
     prepare_spatial_figure_context_from_notebook_settings,
+    write_standard_geojson_region_figures,
     write_standard_spatial_diagnostic_figures,
     write_standard_spatial_map_figures,
     write_large_run_geojson_region_figures_from_outputs,
@@ -161,6 +163,106 @@ def test_spatial_workflow_failure_frame_formats_result_failures() -> None:
     assert frame.loc[0, "metric"] == "PGA"
     assert frame.loc[0, "step"] == "geology_contrasts"
     assert spatial_workflow_failure_frame({"failures": []}).empty
+
+
+def test_write_standard_geojson_region_figures_returns_status_tables(monkeypatch, tmp_path) -> None:
+    """Standard Step 5 GeoJSON figures should be orchestrated by package code."""
+
+    import spatial_vtk.spatial as spatial_public
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1"],
+            "station": ["STA1", "STA2"],
+            "metric": ["PGA", "PGA"],
+            "passband": ["1-2 sec", "1-2 sec"],
+            "component": ["Z", "Z"],
+            "model": ["m1", "m1"],
+            "log2_residual": [0.5, -0.25],
+            "lon": [-118.1, -118.2],
+            "lat": [34.1, 34.2],
+            "event_lon": [-118.0, -118.0],
+            "event_lat": [34.0, 34.0],
+        }
+    )
+    stations = pd.DataFrame({"station": ["STA1", "STA2"], "lon": [-118.1, -118.2], "lat": [34.1, 34.2]})
+    events = pd.DataFrame({"event_id": ["e1"], "event_name": ["Example"], "event_lon": [-118.0], "event_lat": [34.0]})
+
+    def fake_preview(path):
+        return pd.DataFrame({"name": ["LA Basin", "Glendale"], "geometry_type": ["Polygon", "Polygon"]})
+
+    def fake_region_frame(frame, path, *, target, region_col, **kwargs):
+        result = frame.copy()
+        result[region_col] = "LA Basin" if target == "station" else "Glendale"
+        return result
+
+    def fake_subset(frame, **kwargs):
+        return frame.copy()
+
+    def fake_field(frame, metric, *, value_column):
+        result = frame.copy()
+        result["field_value"] = result[value_column]
+        return result
+
+    def fake_station_bias(frame, **kwargs):
+        return pd.DataFrame(
+            {
+                "station": ["STA1", "STA2"],
+                "lon": [-118.1, -118.2],
+                "lat": [34.1, 34.2],
+                "mean_centered": [0.5, -0.25],
+            }
+        )
+
+    monkeypatch.setattr(spatial_public, "geojson_polygon_preview_table", fake_preview)
+    monkeypatch.setattr(spatial_public, "geojson_metric_region_frame", fake_region_frame)
+    monkeypatch.setattr(spatial_public, "geojson_metric_subset_frame", fake_subset)
+    monkeypatch.setattr(spatial_public, "build_metric_field", fake_field)
+    monkeypatch.setattr(spatial_public, "summarize_station_bias", fake_station_bias)
+
+    class _Sidecars:
+        def kwargs(self):
+            return {"write_sidecar": False}
+
+    class _Settings:
+        showfig = False
+        add_basemap = True
+        sidecars = _Sidecars()
+
+    class _Outputs:
+        def figure_path(self, name, *, stem_parts):
+            return tmp_path / f"{name}__{'_'.join(str(part) for part in stem_parts)}.png"
+
+    calls: list[tuple[str, Path, dict[str, object]]] = []
+
+    def fake_plot(*args, outpath, **kwargs):
+        calls.append((str(kwargs.get("title", "")), Path(outpath), kwargs))
+        Path(outpath).write_text("figure", encoding="utf-8")
+
+    result = write_standard_geojson_region_figures(
+        metrics=metrics,
+        stations=stations,
+        events=events,
+        outputs=_Outputs(),
+        settings=_Settings(),
+        geojson_path=tmp_path / "regions.geojson",
+        geojson_plot_func=fake_plot,
+        boxplot_func=fake_plot,
+        station_map_func=fake_plot,
+        summary_func=lambda **kwargs: {"path": str(tmp_path / "geojson_region_summaries.csv"), "rows": 2},
+    )
+
+    assert isinstance(result, StandardGeoJSONFigureResult)
+    assert result.model_name == "m1"
+    assert list(result.preview_frame()["name"]) == ["LA Basin", "Glendale"]
+    assert len(result.metrics_by_regions) == 2
+    assert set(result.metrics_by_regions["event_region"]) == {"Glendale"}
+    assert result.summary_frame().loc[0, "rows"] == 2
+    status = result.status_frame()
+    assert status["status"].tolist() == ["wrote", "wrote", "wrote"]
+    assert status["artifact"].tolist() == ["geojson_regions", "pga_region_boxplot", "regional_pga_station_map"]
+    assert len(calls) == 3
+    assert calls[-1][2]["value_col"] == "mean_centered"
 
 
 def test_spatial_metric_product_summary_frame_counts_rows_events_and_stations() -> None:

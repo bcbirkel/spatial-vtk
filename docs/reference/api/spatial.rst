@@ -224,6 +224,11 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Write the standard Step 4 spatial-correlation, PCA-summary, and
        geology-contrast diagnostic figures without notebook-local plot imports,
        per-metric table filters, or sidecar keyword plumbing.
+   * - ``write_standard_geojson_region_figures``
+     - Write the standard Step 5 GeoJSON overview, regional PGA boxplot, and
+       regional station residual map while keeping GeoJSON annotation, summary
+       table generation, configured figure paths, and sidecar options in
+       package code.
    * - ``write_large_run_geojson_region_figures_from_outputs``
      - Write the Step 5 GeoJSON overview map, corridor map, and region boxplot
        from configured output groups without notebook-local table loading or
@@ -317,6 +322,11 @@ schemas.
 .. autofunction:: spatial_vtk.spatial.plot.write_standard_spatial_map_figures
 
 .. autofunction:: spatial_vtk.spatial.plot.write_standard_spatial_diagnostic_figures
+
+.. autoclass:: spatial_vtk.spatial.plot.StandardGeoJSONFigureResult
+   :members:
+
+.. autofunction:: spatial_vtk.spatial.plot.write_standard_geojson_region_figures
 
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_geojson_region_figures_from_outputs
 

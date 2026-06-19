@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Added ``write_standard_geojson_region_figures()`` and rewired the standard
+   Step 5 GeoJSON notebook to use it for the GeoJSON overview, regional PGA
+   contrast, and regional station residual map. The notebook no longer owns
+   GeoJSON region annotation, summary-table generation, configured figure-path
+   lookup, or sidecar keyword plumbing for those figures.
    Added ``write_standard_metric_diagnostic_figures()`` and rewired the
    standard Step 3 metric notebook to use it for residual-distance,
    GOF-distance, and band-distribution diagnostics. The notebook no longer

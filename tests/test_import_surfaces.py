@@ -96,9 +96,11 @@ def test_public_imports():
     from spatial_vtk.spatial.plot import (
         SpatialFigureSuiteResult,
         SpatialSummaryFigureResult,
+        StandardGeoJSONFigureResult,
         StandardSpatialDiagnosticFigureResult,
         StandardSpatialMapFigureResult,
         prepare_spatial_figure_context_from_notebook_settings,
+        write_standard_geojson_region_figures,
         write_standard_spatial_diagnostic_figures,
         write_standard_spatial_map_figures,
         write_large_run_spatial_figure_suite_from_notebook_settings,
@@ -111,6 +113,8 @@ def test_public_imports():
     assert "C1" in METRIC_NAMES
     assert callable(NotebookFigureRenderGate)
     assert callable(SpatialFigureSuiteResult)
+    assert callable(StandardGeoJSONFigureResult)
+    assert callable(write_standard_geojson_region_figures)
     assert callable(write_large_run_spatial_figure_suite_from_notebook_settings)
     assert callable(abbreviate_model)
     assert callable(configured_output_registry_frame)
