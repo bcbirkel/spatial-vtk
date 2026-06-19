@@ -288,6 +288,43 @@ def test_release_checklist_exists_and_matches_public_validation_gates():
     assert "CA" + "RC" not in text
 
 
+def test_changelog_dated_sections_use_bulleted_entries():
+    """Dated changelog sections should stay scannable as bullet lists."""
+
+    changelog_path = pathlib.Path(__file__).resolve().parents[1] / "docs" / "changelog.rst"
+    lines = changelog_path.read_text(encoding="utf-8").splitlines()
+    date_heading = re.compile(r"^20\d{2}-\d{2}-\d{2}$")
+    section_heading = re.compile(r"^\*\*.+\*\*$")
+
+    in_dated_section = False
+    in_subsection = False
+    violations: list[str] = []
+    for line_number, line in enumerate(lines, start=1):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if date_heading.match(stripped):
+            in_dated_section = True
+            in_subsection = False
+            continue
+        if in_dated_section and stripped == "Future Work":
+            in_dated_section = False
+            in_subsection = False
+            continue
+        if set(stripped) <= {"-"}:
+            continue
+        if in_dated_section and section_heading.match(stripped):
+            in_subsection = True
+            continue
+        if not in_dated_section or not in_subsection:
+            continue
+        if line.startswith("- ") or line.startswith("  "):
+            continue
+        violations.append(f"{line_number}: {line}")
+
+    assert not violations, "Changelog dated entries must be bullets:\n" + "\n".join(violations)
+
+
 def test_public_package_entry_points_keep_optional_imports_lazy():
     """Package entry points should not import heavy plotting/QC modules on inspection."""
 
