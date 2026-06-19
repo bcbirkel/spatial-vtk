@@ -1439,6 +1439,8 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Import QC visualization helpers from ``spatial_vtk.visualize.qc``" in text
     assert "Import waveform\nfigure helpers from ``spatial_vtk.visualize.waveforms``" in text
     assert "Import dashboard helpers\nfrom ``spatial_vtk.visualize.dashboard``" in text
+    assert "Missing sidecar directories and existing empty sidecar directories" in text
+    assert "``sidecar_dir_exists``" in text
     forbidden_modules = (
         "spatial_vtk.visualize.context.figures",
         "spatial_vtk.visualize.context.maps",

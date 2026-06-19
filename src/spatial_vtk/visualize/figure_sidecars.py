@@ -306,7 +306,10 @@ def figure_sidecar_status_frame(sidecar_dir: str | Path | None) -> pd.DataFrame:
     sidecar and includes exactness flags, plot/source row counts, source-sidecar
     availability, and station-aggregation metadata when present. The helper
     reads only the small JSON sidecars, not the potentially large CSV row
-    sidecars.
+    sidecars. Missing and existing-but-empty directories both return an empty
+    frame; use the ``svtk visualize sidecars status`` command when callers need
+    the additional ``sidecar_dir_exists`` field for notebook or script status
+    checks.
     """
 
     if sidecar_dir is None:

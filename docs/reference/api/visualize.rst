@@ -365,6 +365,10 @@ exactness flags, plot/source row counts, source-sidecar availability, and
 station-aggregation metadata when a figure was created from station summaries,
 including grouping columns, coordinate columns, collapsed dimensions, and
 aggregation row, station, event, and panel counts.
+Missing sidecar directories and existing empty sidecar directories both produce
+an empty status table; use ``svtk visualize sidecars status --sidecar-dir DIR``
+when a workflow needs the human-readable message or JSON
+``sidecar_dir_exists`` field that distinguishes those cases.
 ``read_figure_sidecar_metadata`` reads one JSON sidecar from a figure path,
 main sidecar CSV path, source sidecar CSV path, or JSON metadata path.
 

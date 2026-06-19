@@ -160,6 +160,8 @@ Changelog
   - Clarified ``svtk visualize sidecars status`` output so missing sidecar
     directories are reported separately from existing directories with no JSON
     sidecars.
+  - Documented the sidecar status JSON ``sidecar_dir_exists`` field so notebook
+    and script audits can tell missing sidecar directories from empty ones.
   - Made ``svtk spatial status`` print artifact labels, output keys, and
     Step 3/Step 4 rebuild guidance in its human-readable output instead of
     the lower-level path-key readiness table.
