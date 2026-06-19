@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-19
+   - Added ``OutputGroup.display_path_table_previews()`` and rewired standard
+     Step 1 and Step 2 path-backed preview cells to use it for preprocessing
+     manifests and comparison-eligible records. The notebooks no longer assign
+     one-off preview variables for output-group paths outside the standard table
+     registry.
    - Added ``notebook_step_result()`` and rewired the standard Step 2 QC
      notebook to use it for current/skipped workflow-step status. This keeps
      ``reused`` flags, readiness messages, and path string conversion in

@@ -687,7 +687,9 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "qc_figure_tables = qc_outputs.load_tables(" not in standard_text
     assert "qc_outputs.display_table_previews(" in standard_text
     assert "qc_outputs.preview_table(" not in standard_text
-    assert "qc_outputs.preview_path_table(" in standard_text
+    assert "qc_outputs.display_path_table_previews(" in standard_text
+    assert "qc_outputs.preview_path_table(" not in standard_text
+    assert "comparison_eligible_preview =" not in standard_text
     assert "qc_outputs.manual_queue_path" in standard_text
     assert "plot_retention_summary(" not in standard_text
     assert "plot_event_station_retention_heatmap(" not in standard_text
@@ -1095,7 +1097,9 @@ def test_standard_step01_uses_configured_io_workflows() -> None:
     assert "context_tables = step_outputs.load_tables(" not in source
     assert "stations.head(" not in source
     assert "events[[\"event_id\"" not in source
-    assert 'preprocessed_outputs.preview_path_table("preprocessed_manifest_path"' in source
+    assert "preprocessed_outputs.display_path_table_previews(" in source
+    assert 'preprocessed_outputs.preview_path_table("preprocessed_manifest_path"' not in source
+    assert "manifest_preview =" not in source
     assert "continue_on_error=False" in source
     assert 'component="Z"' in source
     assert "prepare_station_metadata(" not in source

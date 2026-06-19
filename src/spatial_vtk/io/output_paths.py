@@ -381,6 +381,48 @@ class OutputGroup:
                 print(preview)
         return previews
 
+    def display_path_table_previews(
+        self,
+        names: str | Iterable[str] | dict[str, str],
+        *,
+        nrows: int = 5,
+        columns: Sequence[str] | None = None,
+        missing: Literal["raise", "skip"] = "skip",
+        display_fn: Callable[[Any], Any] | None = None,
+        **kwargs,
+    ) -> dict[str, object]:
+        """Print paths and display bounded previews for resolved path tables.
+
+        Use this for output groups that own table paths outside the configured
+        output registry, such as preprocessed waveform metadata or compact
+        path artifacts. Registry-backed workflow tables should continue to use
+        :meth:`display_table_previews`.
+        """
+
+        from spatial_vtk.io.tables import preview_table
+
+        _validate_missing_policy(missing)
+        display = _notebook_display(display_fn)
+        selected = _selected_path_names(self.paths, names)
+        previews: dict[str, object] = {}
+        for label, path in selected:
+            print(f"\n{label}: {path}")
+            if not path.exists():
+                message = f"{label} is not ready yet."
+                if missing == "raise":
+                    raise FileNotFoundError(message)
+                print(message)
+                continue
+            preview = preview_table(path, nrows=nrows, columns=columns, **kwargs)
+            previews[label] = preview
+            if display is not None:
+                display(preview)
+            elif hasattr(preview, "to_string"):
+                print(preview.to_string(index=False))
+            else:
+                print(preview)
+        return previews
+
     def first_existing_path(
         self,
         names: str | Iterable[str],
@@ -1011,6 +1053,31 @@ def _selected_output_artifacts(
             raise KeyError(f"Unknown table artifact {name!r}. Choices: {', '.join(choices)}")
         label = str(raw_label) if raw_label is not None else artifact.key
         selected.append((label, artifact))
+    return selected
+
+
+def _selected_path_names(
+    paths: dict[str, Path],
+    names: str | Iterable[str] | dict[str, str],
+) -> list[tuple[str, Path]]:
+    """Resolve output-group path names to display labels and paths."""
+
+    if isinstance(names, str):
+        raw_items = ((None, names),)
+    elif isinstance(names, dict):
+        raw_items = names.items()
+    else:
+        raw_items = ((None, name) for name in names)
+    selected: list[tuple[str, Path]] = []
+    for raw_label, raw_name in raw_items:
+        name = str(raw_name)
+        try:
+            path = paths[name]
+        except KeyError as exc:
+            choices = ", ".join(sorted(paths))
+            raise KeyError(f"Unknown output-group path {name!r}. Choices: {choices}") from exc
+        label = str(raw_label) if raw_label is not None else name
+        selected.append((label, path))
     return selected
 
 

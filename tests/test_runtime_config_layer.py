@@ -1499,11 +1499,33 @@ outputs:
     preview = preprocessed_group.preview_path_table("preprocessed_manifest_path", nrows=1)
     assert manifest["source"].tolist() == ["observed", "synthetic"]
     assert preview["source"].tolist() == ["observed"]
+    displayed_path_previews: list[object] = []
+    path_previews = preprocessed_group.display_path_table_previews(
+        {"manifest": "preprocessed_manifest_path"},
+        nrows=1,
+        columns=("source", "event_id"),
+        display_fn=displayed_path_previews.append,
+    )
+    assert path_previews["manifest"].to_dict("records") == [
+        {"source": "observed", "event_id": "e1"}
+    ]
+    assert displayed_path_previews[0].to_dict("records") == [
+        {"source": "observed", "event_id": "e1"}
+    ]
     assert preprocessed_group.preview_path_table("preprocessed_trace_metadata_path", missing="skip") is None
+    assert (
+        preprocessed_group.display_path_table_previews(
+            {"trace_metadata": "preprocessed_trace_metadata_path"},
+            missing="skip",
+        )
+        == {}
+    )
     with pytest.raises(FileNotFoundError, match="preprocessed_trace_metadata_path is not ready yet"):
         preprocessed_group.preview_path_table("preprocessed_trace_metadata_path", missing="raise")
     with pytest.raises(KeyError, match="Unknown output-group path"):
         preprocessed_group.preview_path_table("missing_manifest_path")
+    with pytest.raises(KeyError, match="Unknown output-group path"):
+        preprocessed_group.display_path_table_previews("missing_manifest_path")
 
     group = output_group("step_03_metrics", cfg=cfg)
     assert group.name == "step_03_metrics"

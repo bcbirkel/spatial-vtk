@@ -121,8 +121,10 @@ the large-run notebooks.
        output if present but should continue without it.
        For output groups that own table paths outside the configured output
        registry, such as preprocessing metadata, use ``load_path_table()`` or
-       ``preview_path_table()`` with the group path name so notebook cells still
-       avoid direct ``read_table(...).head()`` calls.
+       ``preview_path_table()`` with the group path name for one table, or
+       ``display_path_table_previews()`` for display-label mappings and bounded
+       notebook previews. This keeps path-backed artifacts out of direct
+       ``read_table(...).head()`` calls.
        Use ``figure_path()`` for figure artifacts that need configured
        directories but metric-specific filenames; pass ``stem_parts`` instead
        of constructing ``figure_dir / "name.png"`` in notebook cells.
