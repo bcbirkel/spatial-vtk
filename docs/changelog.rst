@@ -207,6 +207,8 @@ Changelog
     ``path`` as a compatibility alias.
   - Added ``resolved_path`` to Step 5 GeoJSON plotting input and region-figure
     status tables while preserving ``path`` for existing notebooks.
+  - Added ``resolved_path`` to Step 4 spatial figure-context status frames
+    while preserving ``path`` for existing notebooks.
   - Reused the standard ingest output helper inside record-coverage
     readiness/build workflows so script and notebook path fallback behavior
     stays aligned.

@@ -1757,6 +1757,9 @@ outputs:
     )
 
     assert context.paths["metric_field"] == tmp_path / "outputs" / "tables" / "metric_field.parquet"
+    status = context.status_frame().set_index("name")
+    assert status.loc["metric_field", "resolved_path"] == str(metric_field_path)
+    assert status.loc["metric_field", "path"] == status.loc["metric_field", "resolved_path"]
     assert context.metric_field is not None
     assert context.event_context.metrics_for_figures is not None
     assert "unused_large_payload" not in context.metric_field.columns
@@ -3145,6 +3148,8 @@ def test_spatial_figure_context_writes_overview_plots_with_empty_missing_tables(
     assert status.loc["metric_field", "row_count"] == 1
     assert status.loc["metric_field", "value_col"] == "log2_residual"
     assert "event-station metric field" in status.loc["metric_field", "role"]
+    assert pd.isna(status.loc["metric_field", "resolved_path"])
+    assert pd.isna(status.loc["metric_field", "path"])
     dimensions = context.dimension_summary_frame()
     metric_dimensions = dimensions.loc[dimensions["table"].eq("metric_field")].set_index("dimension")
     assert metric_dimensions.loc["metric", "values_preview"] == "PGA"

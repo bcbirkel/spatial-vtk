@@ -255,13 +255,15 @@ class SpatialFigureContext:
         rows: list[dict[str, Any]] = []
         for key in SPATIAL_FIGURE_TABLE_KEYS:
             path = self.paths.get(key)
+            resolved_path = None if path is None else str(path)
             table = self.tables.get(key)
             loaded = table is not None
             rows.append(
                 {
                     "name": key,
                     "role": _spatial_table_role(key),
-                    "path": None if path is None else str(path),
+                    "resolved_path": resolved_path,
+                    "path": resolved_path,
                     "exists": bool(path.exists()) if path is not None else None,
                     "loaded": loaded,
                     "row_count": int(len(table)) if loaded else 0,
@@ -274,6 +276,7 @@ class SpatialFigureContext:
             {
                 "name": "prepared_stations",
                 "role": "site metadata for geology and station diagnostics",
+                "resolved_path": None,
                 "path": None,
                 "exists": None,
                 "loaded": station_table is not None,

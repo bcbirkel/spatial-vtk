@@ -309,7 +309,8 @@ schemas.
    metric/event-centered dimension coverage. Use them before rendering figures
    to confirm which spatial outputs exist, which value columns will be plotted,
    and how many metric/passband/component/model/event/station values are
-   represented.
+   represented. ``status_frame`` uses ``resolved_path`` as the clear path
+   column while preserving ``path`` for compatibility.
 
 ``spectral_metric_contract_status``
    Return a compact PSA/FAS audit table for both ``metric_field`` and
