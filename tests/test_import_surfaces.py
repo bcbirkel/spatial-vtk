@@ -403,6 +403,48 @@ def test_notebook_and_waveform_extras_include_runtime_dependencies():
         assert f"  - {dependency}" in environment_text
 
 
+def test_environment_file_covers_tutorial_runtime_modules():
+    """The public conda environment should cover the notebook runtime surface."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    environment_text = (root / "svtk_environment.yaml").read_text(encoding="utf-8")
+    conda_dependencies = (
+        "branca",
+        "contextily",
+        "folium",
+        "geopandas",
+        "h5py",
+        "ipykernel",
+        "ipython",
+        "matplotlib",
+        "nbclient",
+        "nbformat",
+        "numpy",
+        "obspy",
+        "pandas",
+        "plotly",
+        "pyarrow",
+        "pyproj",
+        "pyyaml",
+        "rasterio",
+        "scikit-learn",
+        "scipy",
+        "shapely",
+        "statsmodels",
+        "streamlit",
+    )
+    pip_dependencies = (
+        "gmprocess>=",
+        "phasenet>=",
+        "pyasdf>=",
+        "streamlit-folium>=",
+    )
+    for dependency in conda_dependencies:
+        assert f"  - {dependency}" in environment_text
+    for dependency in pip_dependencies:
+        assert f"      - {dependency}" in environment_text
+
+
 def test_autodoc_fallback_parameter_docs_are_descriptive():
     """Generated API docs should not fall back to placeholder parameter text."""
 

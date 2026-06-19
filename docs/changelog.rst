@@ -76,6 +76,9 @@ Changelog
   errors and installation docs explain that the tutorial runtime includes
   Jupyter, mapping, dashboard, and waveform-reader modules, with a shared
   source-checkout install command.
+- Aligned ``svtk_environment.yaml`` with the tutorial runtime preflight by
+  listing the mapping, geospatial, Parquet, statistics, dashboard, and
+  waveform-reader packages the committed notebooks import.
 - Clarified generated CLI help and reference pages for core IO, QC, and metric
   workflow commands so path-like options render as ``PATH`` or ``DIR`` with
   filesystem/directory descriptions instead of ambiguous argparse names such as

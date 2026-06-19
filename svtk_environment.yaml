@@ -3,7 +3,10 @@ channels:
   - conda-forge
 dependencies:
   - python>=3.10,<3.14
+  - branca
   - contextily
+  - folium
+  - geopandas
   - h5py
   - ipykernel
   - ipython
@@ -15,17 +18,22 @@ dependencies:
   - obspy
   - pandas
   - plotly
+  - pyarrow
   - pyproj
   - pytest
   - pyyaml
+  - rasterio
   - scikit-learn
   - scipy
   - shapely
   - sphinx
   - sphinx-rtd-theme
+  - statsmodels
   - streamlit
   - pip
   - pip:
       - build
+      - gmprocess>=2.4
       - phasenet>=0.2.5
+      - pyasdf>=0.8
       - streamlit-folium>=0.26
