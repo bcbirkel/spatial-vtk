@@ -55,7 +55,7 @@ class NotebookRunContext:
         Standard output directories resolved from the config.
     run_local, submit_slurm, overwrite
         Common notebook execution flags read from environment variables.
-    preview_rows, qc_chunksize, metric_batch_count
+    preview_rows, qc_chunksize, dashboard_chunksize, metric_batch_count
         Common notebook row/chunk controls read from environment variables.
     preprocess_continue_on_error
         Whether preprocessing should allow a partial event-station table when
@@ -77,6 +77,7 @@ class NotebookRunContext:
     overwrite: bool
     preview_rows: int
     qc_chunksize: int
+    dashboard_chunksize: int
     metric_batch_count: int
     preprocess_continue_on_error: bool
 
@@ -710,6 +711,7 @@ def notebook_run_context(
         overwrite=_env_bool("SVTK_OVERWRITE", default=False),
         preview_rows=_env_int("SVTK_PREVIEW_ROWS", default=5),
         qc_chunksize=_env_int("SVTK_QC_CHUNKSIZE", default=1_000_000),
+        dashboard_chunksize=_env_int("SVTK_DASHBOARD_CHUNKSIZE", default=100_000),
         metric_batch_count=_env_int("SVTK_METRIC_BATCH_COUNT", default=100),
         preprocess_continue_on_error=_env_bool("SVTK_PREPROCESS_CONTINUE_ON_ERROR", default=True),
     )
@@ -731,6 +733,7 @@ def print_notebook_context(context: NotebookRunContext) -> None:
     print(
         "PREVIEW_ROWS="
         f"{context.preview_rows} QC_CHUNKSIZE={context.qc_chunksize} "
+        f"DASHBOARD_CHUNKSIZE={context.dashboard_chunksize} "
         f"METRIC_BATCH_COUNT={context.metric_batch_count}"
     )
     print(f"PREPROCESS_CONTINUE_ON_ERROR={context.preprocess_continue_on_error}")

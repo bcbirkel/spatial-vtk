@@ -100,6 +100,34 @@ def test_dashboard_metric_dataset_export_replaces_stale_partitions(tmp_path) -> 
     assert loaded["value"].tolist() == [3.0]
 
 
+def test_dashboard_metric_dataset_export_streams_path_backed_partitions(tmp_path) -> None:
+    """Path-backed large-run dashboard exports should not materialize the full table first."""
+
+    metrics_path = tmp_path / "metrics_long.parquet"
+    output_root = tmp_path / "dashboard_data"
+    pd.DataFrame(
+        {
+            "model": ["m1", "m1", "m1", "m2", "m2"],
+            "metric": ["PGA", "PGA", "PGA", "PGV", "PGV"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec", "2-3 sec", "2-3 sec"],
+            "event_id": ["ev1", "ev2", "ev3", "ev4", "ev5"],
+            "station": ["STA1", "STA2", "STA3", "STA4", "STA5"],
+            "log2_residual": [0.1, 0.2, 0.3, -0.1, -0.2],
+        }
+    ).to_parquet(metrics_path, index=False)
+
+    root = write_dashboard_metric_dataset(metrics_path, output_root, partitioned=True, chunksize=2)
+
+    pga_root = root / "model=m1" / "band=1-2_sec" / "metric=PGA"
+    assert (pga_root / "part.parquet").exists()
+    assert (pga_root / "part-000001.parquet").exists()
+    loaded = load_dashboard_metric_dataset(root, metrics="PGA")
+
+    assert len(loaded) == 3
+    assert loaded["event_id"].tolist() == ["ev1", "ev2", "ev3"]
+    assert loaded["log2_residual"].tolist() == [0.1, 0.2, 0.3]
+
+
 def test_dashboard_summary_dataset_replaces_stale_cross_format_files(tmp_path) -> None:
     """New summary files should not be shadowed by stale files in another format."""
 

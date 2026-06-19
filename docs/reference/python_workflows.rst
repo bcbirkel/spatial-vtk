@@ -100,7 +100,7 @@ the large-run notebooks.
        when no scenario is passed and exposes the resolved value as
        ``context.run_scenario`` for downstream package helpers. It also owns
        common execution controls such as ``SVTK_QC_CHUNKSIZE``,
-       ``SVTK_METRIC_BATCH_COUNT``, and
+       ``SVTK_DASHBOARD_CHUNKSIZE``, ``SVTK_METRIC_BATCH_COUNT``, and
        ``SVTK_PREPROCESS_CONTINUE_ON_ERROR`` so cells can pass
        ``context.<field>`` values into package workflow functions.
    * - ``spatial_vtk.io.output_readiness``
@@ -525,7 +525,11 @@ Step 7: Dashboard Datasets
        dashboard artifacts are replaced so stale partitions or stale
        CSV/Parquet summary files do not mix with the current run. The notebook
        preparation helper owns local-skip/current/rebuild decisions and returns
-       readiness, status, and written-output frames for display.
+       readiness, status, and written-output frames for display. Partitioned
+       path-backed metric inputs are streamed in ``SVTK_DASHBOARD_CHUNKSIZE``
+       row batches so large-run dashboard preparation does not have to
+       materialize the full ``metrics_long`` table before writing dashboard
+       partitions.
    * - Launch dashboards from Python
      - ``spatial_vtk.config.notebook_dashboard_launch_commands``,
        ``spatial_vtk.visualize.dashboard.launch_configured_dashboards_from_notebook_settings``,

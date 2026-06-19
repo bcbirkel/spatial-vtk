@@ -104,6 +104,7 @@ def write_dashboard_metric_dataset(
     residual_mode: str = "logratio",
     partitioned: bool = False,
     replace_existing: bool = True,
+    chunksize: int = 100_000,
 ) -> Path:
     """Write dashboard-ready long metric data as Parquet.
 
@@ -123,6 +124,10 @@ def write_dashboard_metric_dataset(
         Remove previously written dashboard metric files under ``output_root``
         before writing new files. Only recognized dashboard files are removed,
         so unrelated files in the output directory are preserved.
+    chunksize
+        Row batch size used when writing partitioned datasets from path-backed
+        CSV or Parquet inputs. DataFrame inputs are already materialized and are
+        written with the in-memory path.
 
     Returns
     -------
@@ -130,26 +135,30 @@ def write_dashboard_metric_dataset(
         Dataset root directory.
     """
 
-    frames = [_read_metric_table(item) for item in _as_sequence(tables)]
-    if not frames:
+    items = _as_sequence(tables)
+    if not items:
         raise ValueError("At least one metric table is required.")
-    long_frames = [prepare_dashboard_metric_table(frame, residual_mode=residual_mode) for frame in frames]
-    long_df = pd.concat(long_frames, ignore_index=True)
-    long_df = add_dashboard_path_geometry(long_df)
     root = Path(output_root).expanduser() if output_root is not None else resolve_output_path("metrics_dashboard", kind="dashboard", create_parent=True)
     root.mkdir(parents=True, exist_ok=True)
     if replace_existing:
         _clear_dashboard_metric_dataset(root)
+    if partitioned and _all_path_backed_metric_tables(items):
+        _write_partitioned_dashboard_metric_dataset_streaming(
+            items,
+            root,
+            residual_mode=residual_mode,
+            chunksize=chunksize,
+        )
+        return root
+    frames = [_read_metric_table(item) for item in items]
+    long_frames = [prepare_dashboard_metric_table(frame, residual_mode=residual_mode) for frame in frames]
+    long_df = pd.concat(long_frames, ignore_index=True)
+    long_df = add_dashboard_path_geometry(long_df)
     if not partitioned:
         long_df.to_parquet(root / "metrics_long.parquet", index=False)
         return root
-    required = ["model", "band", "metric"]
-    for column in required:
-        if column not in long_df.columns:
-            long_df[column] = "unknown"
-    for keys, group in long_df.groupby(required, dropna=False):
-        model, band, metric = [safe_path_token(value) for value in keys]
-        out_path = root / f"model={model}" / f"band={band}" / f"metric={metric}" / "part.parquet"
+    for keys, group in _iter_dashboard_partition_groups(long_df):
+        out_path = _dashboard_partition_path(root, keys, part_index=0)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         group.to_parquet(out_path, index=False)
     return root
@@ -383,7 +392,64 @@ def _dashboard_metric_parquet_paths(root: Path) -> list[Path]:
     direct = root / "metrics_long.parquet"
     if direct.exists():
         return [direct]
-    return sorted(path for path in root.glob("model=*/band=*/metric=*/part.parquet") if path.is_file())
+    return sorted(path for path in root.glob("model=*/band=*/metric=*/part*.parquet") if path.is_file())
+
+
+def _all_path_backed_metric_tables(items: Sequence[pd.DataFrame | str | Path]) -> bool:
+    """Return whether every dashboard metric source can be streamed from disk."""
+
+    return all(not isinstance(item, pd.DataFrame) for item in items)
+
+
+def _write_partitioned_dashboard_metric_dataset_streaming(
+    items: Sequence[pd.DataFrame | str | Path],
+    root: Path,
+    *,
+    residual_mode: str,
+    chunksize: int,
+) -> None:
+    """Write partitioned dashboard rows from path-backed sources in chunks."""
+
+    partition_counts: dict[tuple[str, str, str], int] = {}
+    for item in items:
+        path = Path(item).expanduser()
+        for chunk in _iter_dashboard_metric_table_chunks(path, chunksize=chunksize):
+            if chunk.empty:
+                continue
+            long_chunk = prepare_dashboard_metric_table(chunk, residual_mode=residual_mode)
+            long_chunk = add_dashboard_path_geometry(long_chunk)
+            for keys, group in _iter_dashboard_partition_groups(long_chunk):
+                token_key = _dashboard_partition_tokens(keys)
+                part_index = partition_counts.get(token_key, 0)
+                partition_counts[token_key] = part_index + 1
+                out_path = _dashboard_partition_path(root, token_key, part_index=part_index)
+                out_path.parent.mkdir(parents=True, exist_ok=True)
+                group.to_parquet(out_path, index=False)
+
+
+def _iter_dashboard_partition_groups(df: pd.DataFrame):
+    """Yield dashboard partition keys and row groups with required labels."""
+
+    out = df.copy()
+    required = ["model", "band", "metric"]
+    for column in required:
+        if column not in out.columns:
+            out[column] = "unknown"
+    yield from out.groupby(required, dropna=False)
+
+
+def _dashboard_partition_tokens(keys: tuple[object, object, object]) -> tuple[str, str, str]:
+    """Return stable path tokens for one partition key tuple."""
+
+    return tuple(safe_path_token(value) for value in keys)
+
+
+def _dashboard_partition_path(root: Path, keys: tuple[object, object, object] | tuple[str, str, str], *, part_index: int) -> Path:
+    """Return the output path for one partition group and chunk index."""
+
+    model, band, metric = _dashboard_partition_tokens(keys)
+    filename = "part.parquet" if part_index == 0 else f"part-{part_index:06d}.parquet"
+    return root / f"model={model}" / f"band={band}" / f"metric={metric}" / filename
 
 
 def _dashboard_metric_filter_columns(
@@ -748,6 +814,7 @@ def write_configured_dashboard_datasets(
     hex_az: float = 10.0,
     format: str = "parquet",
     replace_existing: bool = True,
+    chunksize: int = 100_000,
 ) -> dict[str, Path]:
     """Write standard dashboard metric and summary datasets from config.
 
@@ -772,6 +839,9 @@ def write_configured_dashboard_datasets(
     replace_existing
         Replace previously written dashboard metric and summary artifacts before
         writing this run's outputs.
+    chunksize
+        Row batch size used when writing partitioned dashboard metric datasets
+        from configured path-backed inputs.
 
     Returns
     -------
@@ -789,6 +859,7 @@ def write_configured_dashboard_datasets(
         residual_mode=residual_mode,
         partitioned=partitioned,
         replace_existing=replace_existing,
+        chunksize=chunksize,
     )
     summary_paths = write_dashboard_summary_dataset(
         metric_root,
@@ -816,6 +887,7 @@ def prepare_configured_dashboard_datasets_from_notebook_settings(
     hex_az: float = 10.0,
     format: str = "parquet",
     replace_existing: bool = True,
+    chunksize: int = 100_000,
     writer: Any | None = None,
 ) -> DashboardDatasetPreparationResult:
     """Prepare dashboard datasets for notebooks using config-backed defaults.
@@ -857,6 +929,7 @@ def prepare_configured_dashboard_datasets_from_notebook_settings(
         hex_az=hex_az,
         format=format,
         replace_existing=replace_existing,
+        chunksize=chunksize,
     )
     written_paths = {str(name): Path(path) for name, path in dict(written).items()}
     return DashboardDatasetPreparationResult(
@@ -883,7 +956,7 @@ def _clear_dashboard_metric_dataset(root: Path) -> None:
         direct = root / direct_name
         if direct.exists():
             direct.unlink()
-    for part_path in sorted(root.glob("model=*/band=*/metric=*/part.parquet"), key=lambda path: len(path.parts), reverse=True):
+    for part_path in sorted(root.glob("model=*/band=*/metric=*/part*.parquet"), key=lambda path: len(path.parts), reverse=True):
         part_path.unlink()
         for parent in (part_path.parent, part_path.parent.parent, part_path.parent.parent.parent):
             if parent == root or root not in parent.parents:

@@ -32,6 +32,9 @@ Changelog
     - Added public Metrics API reference tables for inventory, manifest, Slurm,
       batch, merge, and output helpers exposed through stable package entry
       points.
+    - Added ``SVTK_DASHBOARD_CHUNKSIZE`` to notebook run contexts so dashboard
+      preparation chunking is configured once with the rest of the large-run
+      controls.
 
   - **Notebook-owned display cleanup**
 
@@ -83,6 +86,10 @@ Changelog
 
   - **Large-run resilience**
 
+    - Streamed partitioned dashboard metric dataset writes from path-backed CSV
+      or Parquet metric tables, using chunked partition files instead of
+      materializing the full ``metrics_long`` table before writing dashboard
+      partitions.
     - Reused the standard ingest output helper inside record-coverage
       readiness/build workflows so script and notebook path fallback behavior
       stays aligned.
