@@ -1518,6 +1518,28 @@ class StandardAdditionalPlottingFigureResult:
 
 
 @dataclass(frozen=True)
+class StandardAdditionalPlottingInputResult:
+    """Configured input tables and output group for the standard Step 6 notebook."""
+
+    metrics: pd.DataFrame
+    event_stations: pd.DataFrame
+    events: pd.DataFrame
+    comparison_eligible: pd.DataFrame
+    outputs: Any
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact row-count table for loaded Step 6 inputs."""
+
+        rows = [
+            {"table": "metrics", "rows": len(self.metrics)},
+            {"table": "event_stations", "rows": len(self.event_stations)},
+            {"table": "events", "rows": len(self.events)},
+            {"table": "comparison_eligible", "rows": len(self.comparison_eligible)},
+        ]
+        return pd.DataFrame(rows, columns=["table", "rows"])
+
+
+@dataclass(frozen=True)
 class SpatialSummaryFigureResult:
     """Result from writing compact large-run spatial summary figures."""
 
@@ -2697,6 +2719,59 @@ def write_standard_geojson_corridor_figures(
     )
 
 
+def load_standard_additional_plotting_inputs(
+    *,
+    cfg: Any | None = None,
+    metrics_config_key: str = "paths.metric_figure_snapshot",
+    ingest_group_name: str = "step_01_ingest",
+    plotting_group_name: str = "step_06_plotting",
+) -> StandardAdditionalPlottingInputResult:
+    """Load the standard Step 6 tutorial inputs through configured registries.
+
+    Parameters
+    ----------
+    cfg
+        Active Spatial-VTK config. When omitted, the active config is used by
+        the underlying IO helpers.
+    metrics_config_key
+        Config key for the compact QC-passed metric snapshot used by the
+        standard plotting tutorial.
+    ingest_group_name, plotting_group_name
+        Output-group names for Step 1 prepared metadata and Step 6 plotting
+        inputs/figures.
+
+    Returns
+    -------
+    StandardAdditionalPlottingInputResult
+        Loaded metrics, event/station records, events, comparison-eligible
+        pairs, and the configured Step 6 output group.
+    """
+
+    from spatial_vtk.io import load_configured_input_tables, output_group
+
+    ingest_outputs = output_group(ingest_group_name, cfg=cfg)
+    plotting_outputs = output_group(plotting_group_name, cfg=cfg)
+    ingest_tables = ingest_outputs.load_tables(
+        {
+            "events": "prepared_events_path",
+            "event_stations": "event_station_path",
+        },
+        cfg=cfg,
+    )
+    plotting_tables = plotting_outputs.load_tables(
+        {"comparison_eligible": "comparison_eligible_path"},
+        cfg=cfg,
+    )
+    configured_inputs = load_configured_input_tables({"metrics": metrics_config_key}, cfg=cfg)
+    return StandardAdditionalPlottingInputResult(
+        metrics=configured_inputs["metrics"],
+        event_stations=ingest_tables["event_stations"],
+        events=ingest_tables["events"],
+        comparison_eligible=plotting_tables["comparison_eligible"],
+        outputs=plotting_outputs,
+    )
+
+
 def write_standard_additional_plotting_figures(
     *,
     metrics: pd.DataFrame,
@@ -3792,6 +3867,7 @@ __all__ = [
     "RegionFigureResult",
     "SPATIAL_FIGURE_TABLE_KEYS",
     "StandardAdditionalPlottingFigureResult",
+    "StandardAdditionalPlottingInputResult",
     "StandardGeoJSONCorridorFigureResult",
     "StandardGeoJSONFigureResult",
     "SpatialSummaryFigureResult",
@@ -3799,6 +3875,7 @@ __all__ = [
     "SpatialFigureContext",
     "StandardSpatialDiagnosticFigureResult",
     "StandardSpatialMapFigureResult",
+    "load_standard_additional_plotting_inputs",
     "prepare_spatial_figure_context",
     "prepare_spatial_figure_context_from_notebook_settings",
     "write_standard_additional_plotting_figures",

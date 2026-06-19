@@ -90,6 +90,7 @@ from spatial_vtk.spatial.plot.large_run import (
     RegionBoxplotResult,
     SpatialFigureContext,
     StandardAdditionalPlottingFigureResult,
+    StandardAdditionalPlottingInputResult,
     StandardGeoJSONCorridorFigureResult,
     StandardGeoJSONFigureResult,
     StandardSpatialDiagnosticFigureResult,
@@ -107,6 +108,7 @@ from spatial_vtk.spatial.plot.large_run import (
     write_large_run_region_boxplot_from_notebook_settings,
     write_large_run_spatial_figure_suite_from_notebook_settings,
     write_large_run_spatial_summary_figures_from_outputs,
+    load_standard_additional_plotting_inputs,
 )
 from spatial_vtk.spatial.plot.metrics import plot_geology_contrast
 from spatial_vtk.spatial.plot.pca import plot_pca_explained_variance, plot_pca_feature_loadings
@@ -480,6 +482,52 @@ def test_write_standard_geojson_corridor_figures_returns_status_tables(monkeypat
     ]
     assert len(calls) == 4
     assert calls[-1][2]["records_df"]["station"].tolist() == ["STA1", "STA2"]
+
+
+def test_load_standard_additional_plotting_inputs_uses_configured_groups(monkeypatch) -> None:
+    """Standard Step 6 inputs should load through one package helper."""
+
+    import spatial_vtk.io as io_public
+
+    metrics = pd.DataFrame({"metric": ["PGA"], "event_id": ["e1"], "station": ["STA1"]})
+    events = pd.DataFrame({"event_id": ["e1"], "event_name": ["Example"]})
+    event_stations = pd.DataFrame({"event_id": ["e1"], "station": ["STA1"]})
+    comparison_eligible = pd.DataFrame({"event_id": ["e1"], "station": ["STA1"], "component": ["Z"]})
+    calls: list[str] = []
+
+    class _Group:
+        def __init__(self, name: str):
+            self.name = name
+
+        def load_tables(self, mapping, *, cfg=None):  # noqa: ANN001, ANN202
+            calls.append(self.name)
+            if self.name == "step_01_ingest":
+                assert mapping == {"events": "prepared_events_path", "event_stations": "event_station_path"}
+                return {"events": events, "event_stations": event_stations}
+            assert mapping == {"comparison_eligible": "comparison_eligible_path"}
+            return {"comparison_eligible": comparison_eligible}
+
+    def fake_output_group(name, *, cfg=None):  # noqa: ANN001, ANN202
+        return _Group(name)
+
+    def fake_load_configured_input_tables(mapping, *, cfg=None):  # noqa: ANN001, ANN202
+        assert mapping == {"metrics": "paths.metric_figure_snapshot"}
+        return {"metrics": metrics}
+
+    monkeypatch.setattr(io_public, "output_group", fake_output_group)
+    monkeypatch.setattr(io_public, "load_configured_input_tables", fake_load_configured_input_tables)
+
+    result = load_standard_additional_plotting_inputs(cfg=object())
+
+    assert isinstance(result, StandardAdditionalPlottingInputResult)
+    assert calls == ["step_01_ingest", "step_06_plotting"]
+    assert result.metrics is metrics
+    assert result.events is events
+    assert result.event_stations is event_stations
+    assert result.comparison_eligible is comparison_eligible
+    status = result.status_frame()
+    assert status["table"].tolist() == ["metrics", "event_stations", "events", "comparison_eligible"]
+    assert status["rows"].tolist() == [1, 1, 1, 1]
 
 
 def test_write_standard_additional_plotting_figures_returns_previews(tmp_path) -> None:

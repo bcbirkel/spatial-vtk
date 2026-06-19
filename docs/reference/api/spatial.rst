@@ -249,6 +249,10 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
        residual scatterplot, region boxplot, and region heatmap while keeping
        waveform selection, GeoJSON metric annotation, figure paths, sidecars,
        and preview tables in package code.
+   * - ``load_standard_additional_plotting_inputs``
+     - Load the standard Step 6 metric snapshot, event metadata,
+       event-station records, comparison-eligible pairs, and configured output
+       group without notebook-local output-group or config-table plumbing.
    * - ``write_large_run_geojson_region_figures_from_outputs``
      - Write the Step 5 GeoJSON overview map, corridor map, and region boxplot
        from configured output groups without notebook-local table loading or
@@ -352,6 +356,11 @@ schemas.
    :members:
 
 .. autofunction:: spatial_vtk.spatial.plot.write_standard_geojson_corridor_figures
+
+.. autoclass:: spatial_vtk.spatial.plot.StandardAdditionalPlottingInputResult
+   :members:
+
+.. autofunction:: spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs
 
 .. autoclass:: spatial_vtk.spatial.plot.StandardAdditionalPlottingFigureResult
    :members:

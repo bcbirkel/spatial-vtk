@@ -1941,11 +1941,13 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "ingest_outputs = output_group(\"step_01_ingest\", cfg=cfg)" in source
-    assert "ingest_tables = ingest_outputs.load_tables(" in source
+    assert "plotting_inputs = load_standard_additional_plotting_inputs(cfg=cfg)" in source
+    assert "plotting_inputs.status_frame()" in source
+    assert "ingest_outputs = output_group(\"step_01_ingest\", cfg=cfg)" not in source
+    assert "ingest_tables = ingest_outputs.load_tables(" not in source
     assert "output_group(\"step_01_ingest\", cfg=cfg).load_tables(" not in source
-    assert "step_outputs = output_group(\"step_06_plotting\", cfg=cfg)" in source
-    assert "plotting_tables = step_outputs.load_tables(" in source
+    assert "step_outputs = output_group(\"step_06_plotting\", cfg=cfg)" not in source
+    assert "plotting_tables = step_outputs.load_tables(" not in source
     assert "write_standard_additional_plotting_figures(" in source
     assert "additional_plot_result.metric_summary_frame()" in source
     assert "additional_plot_result.waveform_order_frame()" in source
@@ -1980,7 +1982,7 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     assert '.eq(waveform_event_id), "event_name"' not in source
     assert "pd.DataFrame(" not in source
     assert "from spatial_vtk.spatial.calculate import" not in source
-    assert "load_configured_input_tables(" in source
+    assert "load_configured_input_tables(" not in source
     assert 'read_config_table("paths.metric_figure_snapshot")' not in source
     assert 'cfg.path("paths.metric_figure_snapshot")' not in source
     assert "read_table(metric_source_path)" not in source

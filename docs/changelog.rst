@@ -2,6 +2,11 @@ Changelog
 =========
 
 2026-06-18
+   Added ``load_standard_additional_plotting_inputs()`` and rewired the
+   standard Step 6 additional-plotting notebook to use it for metric snapshot,
+   event metadata, event-station records, comparison-eligible pairs, and the
+   configured Step 6 output group. The notebook no longer mixes output-group
+   loading with direct config-table reads.
    Added ``summarize_standard_spatial_products()`` and rewired the standard
    Step 4 spatial notebook to use it for per-metric spatial product summaries
    and station-bias previews. The notebook no longer loops over metrics to

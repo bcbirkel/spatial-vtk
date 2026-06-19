@@ -100,10 +100,12 @@ def test_public_imports():
         SpatialFigureSuiteResult,
         SpatialSummaryFigureResult,
         StandardAdditionalPlottingFigureResult,
+        StandardAdditionalPlottingInputResult,
         StandardGeoJSONCorridorFigureResult,
         StandardGeoJSONFigureResult,
         StandardSpatialDiagnosticFigureResult,
         StandardSpatialMapFigureResult,
+        load_standard_additional_plotting_inputs,
         prepare_spatial_figure_context_from_notebook_settings,
         write_standard_additional_plotting_figures,
         write_standard_geojson_corridor_figures,
@@ -121,6 +123,8 @@ def test_public_imports():
     assert callable(NotebookFigureRenderGate)
     assert callable(SpatialFigureSuiteResult)
     assert callable(StandardAdditionalPlottingFigureResult)
+    assert callable(StandardAdditionalPlottingInputResult)
+    assert callable(load_standard_additional_plotting_inputs)
     assert callable(write_standard_additional_plotting_figures)
     assert callable(StandardGeoJSONCorridorFigureResult)
     assert callable(write_standard_geojson_corridor_figures)
