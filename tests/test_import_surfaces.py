@@ -345,6 +345,8 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "legacy passband-scoped row counts" in text
     assert "``write_station_metric_map_for_metric``" in text
     assert "``write_station_metric_map_from_notebook_settings``" in text
+    assert "``StationMetricMapResult.status_frame()`` includes the" in text
+    assert "source-row role/filter" in text
     assert "without hand-filtering\n   dataframes in the notebook" in text
     for helper in (
         "plot_band_score_distribution",

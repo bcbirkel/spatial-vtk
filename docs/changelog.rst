@@ -2,6 +2,10 @@ Changelog
 =========
 
 2026-06-18
+   Expanded ``StationMetricMapResult.status_frame()`` so focused tutorial
+   station-map cells surface sidecar JSON audit fields directly, including the
+   aggregation contract, source-row role/filter, input and finite row/event
+   counts, and sidecar exactness flags.
    Strengthened ``tools/execute_tutorial_notebooks.py --runtime-check-only`` so
    it makes the source checkout importable and verifies the tutorial execution
    environment beyond Jupyter packages, including ``spatial_vtk``, scientific

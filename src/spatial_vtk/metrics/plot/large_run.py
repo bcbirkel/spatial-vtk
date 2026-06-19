@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 from spatial_vtk.visualize.figure_context import value_requires_model
-from spatial_vtk.visualize.figure_sidecars import write_figure_row_sidecar
+from spatial_vtk.visualize.figure_sidecars import read_figure_sidecar_metadata, write_figure_row_sidecar
 
 
 TARGET_METRIC_SPECS = (
@@ -1915,7 +1915,13 @@ class StationMetricMapResult:
     preview: pd.DataFrame
 
     def status_frame(self) -> pd.DataFrame:
-        """Return a compact notebook status table for the rendered station map."""
+        """Return a compact notebook status table for the rendered station map.
+
+        When figure sidecars are enabled and metadata exists, the status table
+        includes the aggregation/source-row audit fields so notebook users can
+        confirm the map was built from the selected event-station metric rows
+        without opening the sidecar JSON by hand.
+        """
 
         rows = [
             ("output_path", None if self.output_path is None else str(self.output_path)),
@@ -1926,7 +1932,43 @@ class StationMetricMapResult:
             ("write_sidecars", bool(self.context.write_sidecars)),
             ("sidecar_dir", str(self.context.sidecar_output_dir) if self.context.write_sidecars else None),
         ]
+        metadata = self._sidecar_metadata()
+        metadata_keys = {
+            "aggregation_contract": ("aggregation_contract",),
+            "plot_rows_role": ("plot_rows_role",),
+            "source_rows_role": ("source_rows_role",),
+            "source_rows_filter": ("source_rows_filter",),
+            "aggregation_group_columns": ("aggregation_group_columns", "svtk_aggregation_group_columns"),
+            "aggregation_input_row_count": ("aggregation_input_row_count", "svtk_aggregation_input_row_count"),
+            "aggregation_finite_row_count": ("aggregation_finite_row_count", "svtk_aggregation_finite_row_count"),
+            "aggregation_dropped_nonfinite_row_count": (
+                "aggregation_dropped_nonfinite_row_count",
+                "svtk_aggregation_dropped_nonfinite_row_count",
+            ),
+            "aggregation_input_event_count": ("aggregation_input_event_count", "svtk_aggregation_input_event_count"),
+            "aggregation_finite_event_count": ("aggregation_finite_event_count", "svtk_aggregation_finite_event_count"),
+            "source_row_count": ("source_row_count",),
+            "source_written_row_count": ("source_written_row_count",),
+            "source_sidecar_exact": ("source_sidecar_exact",),
+            "source_sidecar_written": ("source_sidecar_written",),
+            "plot_sidecar_exact": ("plot_sidecar_exact",),
+        }
+        for display_key, candidate_keys in metadata_keys.items():
+            value = next((metadata[key] for key in candidate_keys if key in metadata), None)
+            if value is not None:
+                rows.append((display_key, value))
         return pd.DataFrame(rows, columns=["name", "value"])
+
+    def _sidecar_metadata(self) -> dict[str, Any]:
+        """Return sidecar metadata for the rendered figure when available."""
+
+        if self.output_path is None or not self.context.write_sidecars:
+            return {}
+        metadata_path = self.context.sidecar_output_dir / f"{self.output_path.stem}.json"
+        try:
+            return read_figure_sidecar_metadata(metadata_path)
+        except FileNotFoundError:
+            return {}
 
 
 def write_station_metric_map_from_notebook_settings(

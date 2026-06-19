@@ -203,7 +203,10 @@ standard row factories used by the large-run notebooks:
    Build the focused station-map context, render one named metric, and return
    both a status table and station-summary preview using notebook figure
    settings. Standard tutorials use this helper instead of constructing a
-   ``MetricFigureContext`` in the notebook.
+   ``MetricFigureContext`` in the notebook. When figure sidecars are enabled,
+   the returned ``StationMetricMapResult.status_frame()`` includes the
+   station-aggregation contract, source-row role/filter, input/finite row and
+   event counts, and sidecar exactness flags from the saved JSON metadata.
 
 ``station_grid_for_item`` and ``station_model_summary_for_item``
    Prepare station summaries for grid and model-map plotting while preserving

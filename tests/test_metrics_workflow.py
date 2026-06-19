@@ -650,6 +650,16 @@ def test_station_metric_map_notebook_helper_writes_preview_and_sidecar(tmp_path,
     assert source_sidecar.exists()
     assert metadata["aggregation_contract"] == "station_event_rows_to_station_summary"
     assert metadata["source_row_count"] == 3
+    assert status.loc["aggregation_contract", "value"] == "station_event_rows_to_station_summary"
+    assert status.loc["plot_rows_role", "value"] == "post_aggregation_station_summary"
+    assert status.loc["source_rows_role", "value"] == "pre_aggregation_metric_rows"
+    assert status.loc["source_rows_filter", "value"] == "aggregation_groups_present_in_plot_rows"
+    assert status.loc["aggregation_group_columns", "value"] == ["station"]
+    assert status.loc["aggregation_input_row_count", "value"] == 3
+    assert status.loc["aggregation_finite_row_count", "value"] == 3
+    assert status.loc["aggregation_input_event_count", "value"] == 3
+    assert status.loc["source_row_count", "value"] == 3
+    assert status.loc["source_sidecar_written", "value"] is True
 
 
 def test_metric_figure_context_orchestrates_large_run_plot_families(tmp_path) -> None:
