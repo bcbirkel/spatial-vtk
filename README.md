@@ -23,7 +23,10 @@ Or create the conda environment and install from a source checkout:
 
     conda env create -f svtk_environment.yaml
     conda activate spatial-vtk
-    python -m pip install -e .
+    python -m pip install -e ".[notebooks,waveforms]"
+
+The notebook and waveform extras install the Jupyter runtime and waveform
+reader modules needed by the committed tutorial notebooks.
 
 The package imports as `spatial_vtk` and installs the `svtk` command:
 

@@ -4,6 +4,9 @@ Changelog
 2026-06-19
 ----------
 
+- Aligned the README source-checkout install command with the tutorial runtime
+  docs so fresh clones install notebook and waveform extras needed by the
+  committed examples.
 - Clarified tutorial runtime-check install guidance so missing dependency
   errors and installation docs explain that the tutorial runtime includes
   Jupyter, mapping, dashboard, and waveform-reader modules, with a shared
