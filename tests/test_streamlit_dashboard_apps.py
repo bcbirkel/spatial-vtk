@@ -878,9 +878,9 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
     def fail_uncached_loader(summary_root: str):  # noqa: ANN001, ARG001
         raise AssertionError("main should use _load_summary_tables_cached")
 
-    def fake_render_dashboard(loaded, long_metrics, config, *, readiness, metric_dataset_readiness=None):  # noqa: ANN001
+    def fake_render_dashboard(loaded, metrics_root, config, *, readiness, metric_dataset_readiness=None):  # noqa: ANN001
         rendered["summaries"] = loaded
-        rendered["long_metrics"] = long_metrics
+        rendered["metrics_root"] = metrics_root
         rendered["config"] = config
         rendered["readiness"] = readiness
         rendered["metric_dataset_readiness"] = metric_dataset_readiness
@@ -889,7 +889,6 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
     monkeypatch.setattr(streamlit_metrics, "_load_summary_tables_cached", fake_cached_loader)
     monkeypatch.setattr(streamlit_metrics, "load_dashboard_summary_tables", fail_uncached_loader)
     monkeypatch.setattr(streamlit_metrics, "dashboard_summary_readiness_frame", lambda *args, **kwargs: readiness)
-    monkeypatch.setattr(streamlit_metrics, "_try_load_long_metrics", lambda metrics_root, *, readiness=None: pd.DataFrame({"metric": ["PGA"]}))
     monkeypatch.setattr(streamlit_metrics, "_load_optional_config", lambda config_path: None)
     monkeypatch.setattr(streamlit_metrics, "_render_dashboard_readiness", lambda frame: None)
     monkeypatch.setattr(streamlit_metrics, "_render_metric_dataset_readiness", lambda frame: None)
@@ -904,6 +903,7 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
 
     assert calls == [("summary-root", ())]
     assert rendered["summaries"] is summaries
+    assert rendered["metrics_root"] == "metrics-root"
     assert rendered["readiness"] is readiness
     assert list(rendered["metric_dataset_readiness"]["ready"]) == [True]
 
@@ -931,7 +931,6 @@ def test_metrics_dashboard_main_preflights_before_summary_load(monkeypatch):
     monkeypatch.setattr(streamlit_metrics, "dashboard_summary_readiness_frame", lambda *args, **kwargs: readiness)
     monkeypatch.setattr(streamlit_metrics, "_load_summary_tables_cached", fail_cached_loader)
     monkeypatch.setattr(streamlit_metrics, "_render_dashboard_readiness", lambda frame: rendered_readiness.append(frame))
-    monkeypatch.setattr(streamlit_metrics, "_try_load_long_metrics", lambda metrics_root, *, readiness=None: (_ for _ in ()).throw(AssertionError("long metrics should not load")))
     monkeypatch.setattr(streamlit_metrics, "_render_metrics_dashboard", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("dashboard should not render")))
     monkeypatch.setattr(streamlit_metrics.st, "set_page_config", lambda **kwargs: None)
     monkeypatch.setattr(streamlit_metrics.st, "title", lambda *args, **kwargs: None)
@@ -970,9 +969,9 @@ def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
         calls.append((summary_root, skip_tables))
         return summaries
 
-    def fake_render_dashboard(loaded, long_metrics, config, *, readiness, metric_dataset_readiness=None):  # noqa: ANN001
+    def fake_render_dashboard(loaded, metrics_root, config, *, readiness, metric_dataset_readiness=None):  # noqa: ANN001
         rendered["summaries"] = loaded
-        rendered["long_metrics"] = long_metrics
+        rendered["metrics_root"] = metrics_root
         rendered["config"] = config
         rendered["readiness"] = readiness
         rendered["metric_dataset_readiness"] = metric_dataset_readiness
@@ -991,7 +990,7 @@ def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
 
     assert calls == [("summary-root", ("path_hex", "station_rollup"))]
     assert rendered["summaries"] is summaries
-    assert rendered["long_metrics"] is None
+    assert rendered["metrics_root"] == ""
     assert rendered["readiness"] is readiness
     assert rendered["metric_dataset_readiness"].empty
 
