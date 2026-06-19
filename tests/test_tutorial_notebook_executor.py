@@ -2029,6 +2029,7 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in source
     assert "step_outputs = qc_outputs.outputs" in source
     assert "display(qc_outputs.status_frame())" in source
+    assert "qc_outputs.display_summary_previews(nrows=PREVIEW_ROWS)" in source
     assert 'from spatial_vtk.io import output_group' not in source
     assert 'step_outputs = output_group("step_02_qc")' not in source
     assert "run_qc_inventory_from_config," in source

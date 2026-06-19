@@ -222,6 +222,9 @@ Changelog
   - Added a Step 1 ingest metadata summary helper and updated the large-run
     ingest notebook to use it instead of loading prepared metadata tables only
     to print row counts.
+  - Added a Step 2 QC compact-summary preview helper and updated the large-run
+    QC notebook to preview summary products without touching full QC
+    inventories.
   - Reused the standard ingest output helper inside record-coverage
     readiness/build workflows so script and notebook path fallback behavior
     stays aligned.

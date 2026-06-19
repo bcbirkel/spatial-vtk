@@ -950,6 +950,8 @@ def test_qc_api_docs_use_public_package_entry_point():
         "load_trace_inventory_lookup",
     ):
         assert helper in text
+    assert "bounded compact-summary previews" in text
+    assert "full trace/QC inventory inspection" in text
     forbidden_modules = (
         "spatial_vtk.qc.build.filtering",
         "spatial_vtk.qc.build.inventory",

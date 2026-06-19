@@ -11,6 +11,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 import re
 import time
 import warnings
@@ -119,11 +120,40 @@ class StandardQCWorkflowOutputResult:
     """Configured Step 2 QC output handles without loading large input tables."""
 
     outputs: object
+    cfg: SpatialVTKConfig | None = None
 
     def status_frame(self) -> pd.DataFrame:
         """Return configured Step 2 QC output status."""
 
         return self.outputs.status_frame()
+
+    def display_summary_previews(
+        self,
+        *,
+        nrows: int = 5,
+        display_fn: Any | None = None,
+    ) -> dict[str, object]:
+        """Display bounded previews of compact Step 2 QC summary tables.
+
+        This intentionally excludes the full trace QC and metric QC inventory
+        tables, which can be large enough that notebooks should inspect them
+        through summary products or explicit streaming tools instead.
+        """
+
+        return self.outputs.display_table_previews(
+            {
+                "retention": "retention_path",
+                "event_station_retention": "event_station_retention_path",
+                "availability": "availability_path",
+                "post_qc_records": "post_qc_records_path",
+                "drop_causes": "drop_causes_path",
+                "drop_causes_overlap": "drop_causes_overlap_path",
+            },
+            cfg=self.cfg,
+            nrows=nrows,
+            missing="skip",
+            display_fn=display_fn,
+        )
 
 
 def load_standard_qc_workflow_outputs(
@@ -148,7 +178,7 @@ def load_standard_qc_workflow_outputs(
         notebooks that should not load Step 1 tables in setup cells.
     """
 
-    return StandardQCWorkflowOutputResult(outputs=output_group(qc_group_name, cfg=cfg))
+    return StandardQCWorkflowOutputResult(outputs=output_group(qc_group_name, cfg=cfg), cfg=cfg)
 
 
 def load_standard_qc_inputs(

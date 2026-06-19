@@ -7,11 +7,55 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from spatial_vtk.config import SpatialVTKConfig
+from spatial_vtk.io import write_output_table
 from spatial_vtk.io.tables import write_table
 from spatial_vtk.qc.build import inventory as qc_inventory_module
 from spatial_vtk.qc.build import workflow as qc_workflow_module
 from spatial_vtk.qc.build.inventory import build_waveform_trace_qc_summary
-from spatial_vtk.qc.build.workflow import build_metric_qc_summary, build_waveform_qc_summary
+from spatial_vtk.qc.build.workflow import (
+    build_metric_qc_summary,
+    build_waveform_qc_summary,
+    load_standard_qc_workflow_outputs,
+)
+
+
+def test_standard_qc_workflow_outputs_display_compact_summary_previews(tmp_path: Path) -> None:
+    """Step 2 notebook helper should preview compact QC summary tables only."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  root_dir: .",
+                "outputs:",
+                "  tables: outputs/tables",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    write_output_table(
+        "qc_metric_pair_retention",
+        pd.DataFrame({"metric": ["PGA"], "retained_pairs": [2]}),
+        cfg=cfg,
+    )
+    write_output_table(
+        "qc_availability",
+        pd.DataFrame({"event_id": ["E01"], "station": ["STA01"]}),
+        cfg=cfg,
+    )
+
+    displayed: list[pd.DataFrame] = []
+    previews = load_standard_qc_workflow_outputs(cfg=cfg).display_summary_previews(
+        nrows=1,
+        display_fn=displayed.append,
+    )
+
+    assert set(previews) == {"retention", "availability"}
+    assert previews["retention"]["metric"].tolist() == ["PGA"]
+    assert len(displayed) == 2
 
 
 def test_waveform_qc_checkpoint_read_failure_warns_and_starts_empty(

@@ -68,7 +68,9 @@ Public helpers exposed by ``spatial_vtk.qc``:
        output group without notebook-local Step 1 output-group table mapping.
    * - ``load_standard_qc_workflow_outputs``
      - Load the configured Step 2 QC output group and status frame without
-       reading large Step 1 tables in large-run setup cells.
+       reading large Step 1 tables in large-run setup cells. The returned
+       result also provides bounded compact-summary previews while leaving
+       full trace/QC inventory inspection to explicit streaming tools.
    * - ``build_metric_pair_retention_table_from_qc_inventory``
      - Stream the QC inventory into metric/passband/component retention counts.
    * - ``build_event_station_pair_retention_table_from_qc_inventory``
