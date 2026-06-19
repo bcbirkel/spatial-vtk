@@ -342,7 +342,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
 
 def test_public_docs_avoid_plot_implementation_import_paths():
     root = pathlib.Path(__file__).resolve().parents[1]
-    docs = list((root / "docs").rglob("*.rst")) + [root / "README.md"]
+    docs = list((root / "docs").rglob("*.rst")) + list((root / "docs").rglob("*.md")) + [root / "README.md"]
     notebooks = list((root / "docs" / "examples").rglob("*.ipynb"))
     text = "\n".join(
         path.read_text(encoding="utf-8")
