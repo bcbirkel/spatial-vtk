@@ -249,9 +249,11 @@ def write_large_run_waveform_comparison_from_outputs(
 ) -> WaveformComparisonFigureResult:
     """Compatibility wrapper for large-run notebooks.
 
-    Prefer :func:`write_waveform_comparison_from_outputs` in new notebooks and
-    docs. The older name remains public so existing large-run notebooks do not
-    break.
+    Prefer :func:`write_waveform_comparison_from_notebook_settings` in
+    notebook cells so package code owns render gates and environment-backed
+    figure options. Use :func:`write_waveform_comparison_from_outputs` from
+    scripts when explicit plotting keyword arguments are already resolved. The
+    older large-run name remains public so existing notebooks do not break.
     """
 
     return write_waveform_comparison_from_outputs(step_outputs, **kwargs)

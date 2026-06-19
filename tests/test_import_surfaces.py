@@ -1067,6 +1067,23 @@ def test_python_workflow_docs_reference_importable_entry_points():
     assert not missing
 
 
+def test_python_workflow_docs_prefer_waveform_notebook_settings_wrapper():
+    """Workflow docs should match the package-backed Step 2/6 notebook pattern."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    workflows = (root / "docs" / "reference" / "python_workflows.rst").read_text(encoding="utf-8")
+    comparison = (root / "src" / "spatial_vtk" / "visualize" / "waveforms" / "comparison.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert "Step 2 and Step 6 waveform-comparison cells should use" in workflows
+    assert "spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings" in workflows
+    assert "For\nscripts, use\n``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_outputs`` when" in workflows
+    assert "Prefer :func:`write_waveform_comparison_from_notebook_settings` in" in comparison
+    assert "notebook cells so package code owns render gates" in comparison
+    assert "Prefer :func:`write_waveform_comparison_from_outputs` in new notebooks" not in comparison
+
+
 def test_package_overview_points_to_public_workflow_helpers():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "package_overview.rst"
     text = docs.read_text(encoding="utf-8")

@@ -409,12 +409,16 @@ package code owns the ``metrics_enriched`` to ``metrics_long`` fallback and the
 notebook only supplies figure settings.
 
 Step 2 and Step 6 waveform-comparison cells should use
-``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_outputs``.
-That helper reads only a bounded comparison-eligible sample, builds the plotted
+``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings``.
+That helper owns the figure render gate and notebook figure settings, then
+reads only a bounded comparison-eligible sample, builds the plotted
 observed/synthetic trace records, writes the configured
-``event_trace_comparison`` figure, and returns a small status frame. Notebooks
-should not repeat the QC sample loading and waveform-record construction
-pipeline inline.
+``event_trace_comparison`` figure, and returns a small status frame. For
+scripts, use
+``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_outputs`` when
+explicit plotting keyword arguments are already resolved.
+Notebooks should not repeat the QC sample loading, figure-setting expansion,
+and waveform-record construction pipeline inline.
 
 Step 7: Dashboard Datasets
 --------------------------

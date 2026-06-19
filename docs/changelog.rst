@@ -7,6 +7,11 @@ Changelog
 - Updated generated CLI reference examples for plotting, mapping,
   visualization, and dashboards to use the committed example config path
   instead of a project-local ``runs/spatial_vtk_config.yaml`` placeholder.
+- Aligned waveform-comparison workflow docs and helper docstrings with the
+  stabilized notebook pattern: notebooks use
+  ``write_waveform_comparison_from_notebook_settings()``, while scripts can use
+  ``write_waveform_comparison_from_outputs()`` when plotting kwargs are already
+  resolved.
 - Updated the generated CLI reference tables to use explicit positional
   metavars, so ``svtk config set`` documents the saved config argument as
   ``PATH`` consistently in both usage and parameter rows.
