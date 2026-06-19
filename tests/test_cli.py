@@ -948,6 +948,7 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Advanced extra table mapping as function_argument=path" in plot_text
     assert "Prefer config-backed defaults and named table flags" in plot_text
     assert "Extra table as argument_name=path" not in plot_text
+    assert "Filesystem path. Advanced extra table mapping" not in plot_text
     assert "Primary figure input table (station bias); accepts CSV or parquet" in map_text
     assert "function argument 'station_df'" not in map_text
     assert "``--input``, ``--input-table``" in map_text
@@ -965,6 +966,12 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "``--compare-to``" in map_text
     assert "``--station-region``" in map_text
     assert "``--event-region``" in map_text
+    assert "Filesystem path. Convenience prepared events table path" in map_text
+    assert "Filesystem path. Convenience event station records table path" in map_text
+    assert "Filesystem path. Convenience prepared stations table path" in map_text
+    assert "Value: ``events``. Convenience prepared events table path" not in map_text
+    assert "Value: ``records``. Convenience event station records table path" not in map_text
+    assert "Value: ``stations``. Convenience prepared stations table path" not in map_text
 
 
 def test_generated_cli_reference_uses_role_based_table_help():

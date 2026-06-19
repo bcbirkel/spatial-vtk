@@ -83,7 +83,7 @@ Build standard QC trace, inventory, and overlap tables from the active config.
    * - ``--trace-output``, ``--qc-trace-summary-output``
      - No
      -
-     - Value: ``trace_output``. Output waveform QC table path. Defaults to configured output table 'qc_trace_summary'.
+     - Filesystem path. Output waveform QC table path. Defaults to configured output table 'qc_trace_summary'.
    * - ``--inventory-output``, ``--qc-inventory-output``
      - No
      -
@@ -139,7 +139,7 @@ svtk qc manual-queue
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config used to resolve default input/output paths.
+     - Filesystem path. Spatial-VTK config used to resolve default input/output paths.
    * - ``--run-scenario``
      - No
      -

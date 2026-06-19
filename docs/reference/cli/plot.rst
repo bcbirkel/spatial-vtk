@@ -178,7 +178,7 @@ svtk plot metrics band-score-distribution
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -314,7 +314,7 @@ svtk plot metrics band-score-distribution
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-boxplot:
 
@@ -375,7 +375,7 @@ svtk plot metrics boxplot
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -511,7 +511,7 @@ svtk plot metrics boxplot
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-example-metric-pairs:
 
@@ -577,7 +577,7 @@ svtk plot metrics example-metric-pairs
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -713,7 +713,7 @@ svtk plot metrics example-metric-pairs
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-geology-boxplot:
 
@@ -780,7 +780,7 @@ svtk plot metrics geology-boxplot
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -916,7 +916,7 @@ svtk plot metrics geology-boxplot
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-heatmap:
 
@@ -977,7 +977,7 @@ svtk plot metrics heatmap
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -1113,7 +1113,7 @@ svtk plot metrics heatmap
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-list:
 
@@ -1203,7 +1203,7 @@ svtk plot metrics metric-trend
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -1339,7 +1339,7 @@ svtk plot metrics metric-trend
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-model-metric-heatmap:
 
@@ -1410,7 +1410,7 @@ svtk plot metrics model-metric-heatmap
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -1546,7 +1546,7 @@ svtk plot metrics model-metric-heatmap
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-period-spectra:
 
@@ -1613,7 +1613,7 @@ svtk plot metrics period-spectra
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -1749,7 +1749,7 @@ svtk plot metrics period-spectra
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-period-spectrogram:
 
@@ -1818,7 +1818,7 @@ svtk plot metrics period-spectrogram
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -1954,7 +1954,7 @@ svtk plot metrics period-spectrogram
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-phase-delay-vs-distance:
 
@@ -2027,7 +2027,7 @@ svtk plot metrics phase-delay-vs-distance
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -2163,7 +2163,7 @@ svtk plot metrics phase-delay-vs-distance
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-psa-period-curve:
 
@@ -2230,7 +2230,7 @@ svtk plot metrics psa-period-curve
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -2366,7 +2366,7 @@ svtk plot metrics psa-period-curve
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-residuals-vs-depth:
 
@@ -2435,7 +2435,7 @@ svtk plot metrics residuals-vs-depth
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -2571,7 +2571,7 @@ svtk plot metrics residuals-vs-depth
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-residuals-vs-distance:
 
@@ -2642,7 +2642,7 @@ svtk plot metrics residuals-vs-distance
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -2778,7 +2778,7 @@ svtk plot metrics residuals-vs-distance
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-scatterplot:
 
@@ -2842,7 +2842,7 @@ svtk plot metrics scatterplot
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -2978,7 +2978,7 @@ svtk plot metrics scatterplot
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-score-trends:
 
@@ -3042,7 +3042,7 @@ svtk plot metrics score-trends
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -3178,7 +3178,7 @@ svtk plot metrics score-trends
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-vs30-scatter:
 
@@ -3242,7 +3242,7 @@ svtk plot metrics vs30-scatter
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -3378,7 +3378,7 @@ svtk plot metrics vs30-scatter
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-metrics-winner-heatmap:
 
@@ -3445,7 +3445,7 @@ svtk plot metrics winner-heatmap
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -3581,7 +3581,7 @@ svtk plot metrics winner-heatmap
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial:
 
@@ -3678,7 +3678,7 @@ svtk plot spatial azimuthal-residuals
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -3814,7 +3814,7 @@ svtk plot spatial azimuthal-residuals
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-block-holdout-scatter:
 
@@ -3885,7 +3885,7 @@ svtk plot spatial block-holdout-scatter
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -4021,7 +4021,7 @@ svtk plot spatial block-holdout-scatter
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-cluster-feature-heatmap:
 
@@ -4094,7 +4094,7 @@ svtk plot spatial cluster-feature-heatmap
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -4230,7 +4230,7 @@ svtk plot spatial cluster-feature-heatmap
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-cluster-solution-scores:
 
@@ -4303,7 +4303,7 @@ svtk plot spatial cluster-solution-scores
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -4439,7 +4439,7 @@ svtk plot spatial cluster-solution-scores
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-correlogram:
 
@@ -4503,7 +4503,7 @@ svtk plot spatial correlogram
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -4639,7 +4639,7 @@ svtk plot spatial correlogram
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-directional-correlogram:
 
@@ -4712,7 +4712,7 @@ svtk plot spatial directional-correlogram
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -4844,11 +4844,11 @@ svtk plot spatial directional-correlogram
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--fit``
      - No
      -
-     - Value: ``fit``. Convenience fit table path; accepts CSV or parquet.
+     - Filesystem path. Convenience fit table path; accepts CSV or parquet.
 
 .. _cli-svtk-plot-spatial-list:
 
@@ -4941,7 +4941,7 @@ svtk plot spatial path-bin-summary
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -5077,7 +5077,7 @@ svtk plot spatial path-bin-summary
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-pattern-similarity:
 
@@ -5146,7 +5146,7 @@ svtk plot spatial pattern-similarity
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -5282,7 +5282,7 @@ svtk plot spatial pattern-similarity
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-pca-explained-variance:
 
@@ -5354,7 +5354,7 @@ svtk plot spatial pca-explained-variance
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -5490,7 +5490,7 @@ svtk plot spatial pca-explained-variance
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-pca-feature-loadings:
 
@@ -5561,7 +5561,7 @@ svtk plot spatial pca-feature-loadings
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -5697,7 +5697,7 @@ svtk plot spatial pca-feature-loadings
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-polar-residuals:
 
@@ -5764,7 +5764,7 @@ svtk plot spatial polar-residuals
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -5900,7 +5900,7 @@ svtk plot spatial polar-residuals
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-residual-correlation:
 
@@ -5971,7 +5971,7 @@ svtk plot spatial residual-correlation
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -6107,7 +6107,7 @@ svtk plot spatial residual-correlation
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
 
 .. _cli-svtk-plot-spatial-semivariogram:
 
@@ -6171,7 +6171,7 @@ svtk plot spatial semivariogram
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -6307,4 +6307,4 @@ svtk plot spatial semivariogram
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.

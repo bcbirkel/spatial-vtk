@@ -73,11 +73,11 @@ svtk io inventory
    * - ``--observed-root``
      - No
      -
-     - Value: ``observed_root``. Observed waveform directory or path template. Defaults to paths.observed_root or paths.observed_template from config.
+     - Directory path. Observed waveform directory or path template. Defaults to paths.observed_root or paths.observed_template from config.
    * - ``--synthetic-root``
      - No
      -
-     - Value: ``synthetic_root``. Synthetic waveform directory or path template. Defaults to paths.synthetic_root or paths.synthetic_template from config.
+     - Directory path. Synthetic waveform directory or path template. Defaults to paths.synthetic_root or paths.synthetic_template from config.
    * - ``--output``
      - No
      -
@@ -85,7 +85,7 @@ svtk io inventory
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config file used to resolve default roots and output path.
+     - Filesystem path. Spatial-VTK config file used to resolve default roots and output path.
    * - ``--run-scenario``
      - No
      -
@@ -218,7 +218,7 @@ svtk io prepare-event-stations
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config file used to resolve default input/output paths.
+     - Filesystem path. Spatial-VTK config file used to resolve default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -261,7 +261,7 @@ svtk io prepare-events
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config file used to resolve default input/output paths.
+     - Filesystem path. Spatial-VTK config file used to resolve default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -305,7 +305,7 @@ svtk io prepare-stations
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config file used to resolve default input/output paths.
+     - Filesystem path. Spatial-VTK config file used to resolve default input/output paths.
    * - ``--run-scenario``
      - No
      -

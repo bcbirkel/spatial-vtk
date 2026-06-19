@@ -435,7 +435,8 @@ def _argument_row(action: argparse.Action) -> tuple[str, str, str, str] | None:
         prefix = _metavar_description_prefix(action.metavar)
         description = f"{prefix} {description}".strip() if prefix else f"Value: ``{action.metavar}``. {description}".strip()
     elif action.option_strings and not isinstance(action, (argparse._StoreTrueAction, argparse._StoreFalseAction, argparse._HelpAction)):
-        description = f"Value: ``{action.dest}``. {description}".strip()
+        prefix = _description_value_prefix(description)
+        description = f"{prefix} {description}".strip() if prefix else f"Value: ``{action.dest}``. {description}".strip()
     return name, required, default, description or ""
 
 
@@ -453,6 +454,30 @@ def _metavar_description_prefix(metavar: object) -> str:
         return "Directory path."
     if normalized in {"CONFIG", "CONFIG_PATH"}:
         return "Config file path."
+    return ""
+
+
+def _description_value_prefix(description: str) -> str:
+    """Infer a human-readable value prefix from one argument description."""
+
+    lowered = description.lower()
+    if "not a filesystem path" in lowered or "function_argument=path" in lowered:
+        return ""
+    if "directory" in lowered or "folder" in lowered:
+        return "Directory path."
+    path_phrases = (
+        "csv/parquet path",
+        "geojson path",
+        "manifest json",
+        "output path",
+        "input path",
+        "script path",
+        "figure path",
+        "table path",
+        "config file path",
+    )
+    if any(phrase in lowered for phrase in path_phrases):
+        return "Filesystem path."
     return ""
 
 

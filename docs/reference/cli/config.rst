@@ -109,7 +109,7 @@ svtk config find
    * - ``--start-dir``
      - No
      -
-     - Value: ``start_dir``. Directory used for config discovery.
+     - Directory path. Directory used for config discovery.
 
 .. _cli-svtk-config-outputs:
 
@@ -142,7 +142,7 @@ svtk config outputs
    * - ``--config``
      - No
      -
-     - Value: ``config``. Explicit config file used to resolve output paths.
+     - Filesystem path. Explicit config file used to resolve output paths.
    * - ``--run-scenario``
      - No
      -

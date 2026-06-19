@@ -205,7 +205,7 @@ svtk metrics estimate
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config used to resolve default manifest and output paths.
+     - Filesystem path. Spatial-VTK config used to resolve default manifest and output paths.
    * - ``--run-scenario``
      - No
      -
@@ -394,7 +394,7 @@ svtk metrics outputs
    * - ``--config``
      - No
      -
-     - Value: ``config``. Config file used to resolve standard output paths.
+     - Filesystem path. Config file used to resolve standard output paths.
    * - ``--run-scenario``
      - No
      -
@@ -583,7 +583,7 @@ svtk metrics run
    * - ``--config``
      - No
      -
-     - Value: ``config``. Spatial-VTK config used to resolve default task/output paths.
+     - Filesystem path. Spatial-VTK config used to resolve default task/output paths.
    * - ``--run-scenario``
      - No
      -

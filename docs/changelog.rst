@@ -4,6 +4,11 @@ Changelog
 2026-06-19
 ----------
 
+- Updated the generated CLI reference formatter so config files, figure
+  sidecar directories, named convenience table inputs, manifests, and other
+  path-like options are described as filesystem or directory paths, while
+  advanced ``--table function_argument=path`` mappings keep their mapping
+  wording.
 - Clarified generated CLI help and reference pages for core IO, QC, and
   metric workflow commands so path-like options render as ``PATH`` or ``DIR``
   with filesystem/directory descriptions instead of ambiguous argparse names

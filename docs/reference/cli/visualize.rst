@@ -179,7 +179,7 @@ svtk visualize qc data-synthetic-availability
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -315,7 +315,7 @@ svtk visualize qc data-synthetic-availability
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -402,7 +402,7 @@ svtk visualize qc drop-cause-diagnostics
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -538,7 +538,7 @@ svtk visualize qc drop-cause-diagnostics
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -626,7 +626,7 @@ svtk visualize qc event-station-retention
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -762,7 +762,7 @@ svtk visualize qc event-station-retention
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -876,7 +876,7 @@ svtk visualize qc post-qc-station-event-map
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -1012,7 +1012,7 @@ svtk visualize qc post-qc-station-event-map
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -1093,7 +1093,7 @@ svtk visualize qc retention-summary
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -1229,7 +1229,7 @@ svtk visualize qc retention-summary
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -1317,7 +1317,7 @@ svtk visualize qc trace-inventory-samples
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -1453,7 +1453,7 @@ svtk visualize qc trace-inventory-samples
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -1546,7 +1546,7 @@ svtk visualize context distance-amplitude-diagnostics
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -1682,7 +1682,7 @@ svtk visualize context distance-amplitude-diagnostics
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -1765,7 +1765,7 @@ svtk visualize context event-coverage
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -1901,7 +1901,7 @@ svtk visualize context event-coverage
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -1989,7 +1989,7 @@ svtk visualize context event-magnitude-map
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -2125,7 +2125,7 @@ svtk visualize context event-magnitude-map
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -2213,7 +2213,7 @@ svtk visualize context event-trace-comparison
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -2349,7 +2349,7 @@ svtk visualize context event-trace-comparison
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -2460,7 +2460,7 @@ svtk visualize context record-coverage
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -2596,7 +2596,7 @@ svtk visualize context record-coverage
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -2682,7 +2682,7 @@ svtk visualize context station-coverage
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -2818,7 +2818,7 @@ svtk visualize context station-coverage
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -2908,7 +2908,7 @@ svtk visualize context station-event-beachball
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -3044,11 +3044,11 @@ svtk visualize context station-event-beachball
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--stations``
      - No
      -
-     - Value: ``stations``. Convenience prepared stations table path; accepts CSV or parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Convenience prepared stations table path; accepts CSV or parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--bounds``
      - No
      -
@@ -3137,7 +3137,7 @@ svtk visualize context station-event-context
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -3273,11 +3273,11 @@ svtk visualize context station-event-context
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--events``
      - No
      -
-     - Value: ``events``. Convenience prepared events table path; accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Convenience prepared events table path; accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--bounds``
      - No
      -
@@ -3366,7 +3366,7 @@ svtk visualize context station-event-network
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -3502,11 +3502,11 @@ svtk visualize context station-event-network
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--events``
      - No
      -
-     - Value: ``events``. Convenience prepared events table path; accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Convenience prepared events table path; accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--bounds``
      - No
      -
@@ -3588,7 +3588,7 @@ svtk visualize context study-domain
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -3724,11 +3724,11 @@ svtk visualize context study-domain
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--events``
      - No
      -
-     - Value: ``events``. Convenience prepared events table path; accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Convenience prepared events table path; accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--bounds``
      - No
      -
@@ -3905,7 +3905,7 @@ svtk visualize waveforms event-radial-trace-section
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -4041,7 +4041,7 @@ svtk visualize waveforms event-radial-trace-section
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -4132,7 +4132,7 @@ svtk visualize waveforms observed-synthetic-record-section
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -4268,7 +4268,7 @@ svtk visualize waveforms observed-synthetic-record-section
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -4354,7 +4354,7 @@ svtk visualize waveforms record-section
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -4490,7 +4490,7 @@ svtk visualize waveforms record-section
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -4579,7 +4579,7 @@ svtk visualize waveforms station-event-waveform-map
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -4715,7 +4715,7 @@ svtk visualize waveforms station-event-waveform-map
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -
@@ -4804,7 +4804,7 @@ svtk visualize waveforms waveform-overlay-matrix
    * - ``--config``
      - No
      -
-     - Value: ``config``. Optional Spatial-VTK config for default input/output paths.
+     - Filesystem path. Optional Spatial-VTK config for default input/output paths.
    * - ``--run-scenario``
      - No
      -
@@ -4940,7 +4940,7 @@ svtk visualize waveforms waveform-overlay-matrix
    * - ``--sidecar-dir``
      - No
      -
-     - Value: ``sidecar_dir``. Directory for figure sidecars. Defaults next to the output figure.
+     - Directory path. Directory for figure sidecars. Defaults next to the output figure.
    * - ``--bounds``
      - No
      -

@@ -74,7 +74,7 @@ Build configured boundary corridor tables from region GeoJSON and prepared metad
    * - ``--geojson``, ``--region-geojson``
      - No
      -
-     - Value: ``geojson``. Region GeoJSON path. Defaults to paths.region_geojson.
+     - Filesystem path. Region GeoJSON path. Defaults to paths.region_geojson.
    * - ``--stations``, ``--station-table``
      - No
      -
@@ -229,7 +229,7 @@ Build configured GeoJSON region summary tables from metric outputs.
    * - ``--geojson``, ``--region-geojson``
      - No
      -
-     - Value: ``geojson``. Region GeoJSON path. Defaults to paths.region_geojson.
+     - Filesystem path. Region GeoJSON path. Defaults to paths.region_geojson.
    * - ``--config``
      - No
      -
@@ -355,7 +355,7 @@ Build standard spatial-statistics summary tables.
    * - ``--checkpoint-dir``
      - No
      -
-     - Value: ``checkpoint_dir``. Base directory for resumable per-metric checkpoints. Defaults to a hidden directory next to the configured spatial output tables.
+     - Directory path. Base directory for resumable per-metric checkpoints. Defaults to a hidden directory next to the configured spatial output tables.
    * - ``--no-resume``
      - No
      - Flag
