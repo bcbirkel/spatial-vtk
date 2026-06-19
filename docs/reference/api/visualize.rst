@@ -36,9 +36,11 @@ Public helpers exposed by ``spatial_vtk.visualize``:
    * - ``plot_post_qc_station_event_map`` and
        ``plot_qc_drop_cause_diagnostics``
      - Render post-QC maps and rejection-reason diagnostics.
-   * - ``write_large_run_qc_figures_from_outputs``
-     - Render the standard large-run QC figure suite from compact configured
-       QC outputs without notebook-local readiness checks or table loading.
+   * - ``write_qc_figures_from_outputs`` and
+       ``write_large_run_qc_figures_from_outputs``
+     - Render the standard QC figure suite from compact configured QC outputs
+       without notebook-local readiness checks, table loading, map kwargs, or
+       sidecar kwargs.
    * - ``plot_observed_synthetic_record_section`` and ``plot_record_section``
      - Render record-section waveform figures from prepared waveform tables.
    * - ``station_event_waveform_order_frame``

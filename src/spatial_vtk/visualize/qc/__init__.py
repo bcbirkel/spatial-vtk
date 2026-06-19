@@ -24,6 +24,7 @@ _EXPORT_MODULES = {
     "plot_qc_drop_cause_diagnostics": "spatial_vtk.visualize.qc.retention",
     "plot_retention_summary": "spatial_vtk.visualize.qc.retention",
     "plot_trace_inventory_samples": "spatial_vtk.visualize.qc.samples",
+    "write_qc_figures_from_outputs": "spatial_vtk.visualize.qc.retention",
     "write_large_run_qc_figures_from_outputs": "spatial_vtk.visualize.qc.retention",
 }
 

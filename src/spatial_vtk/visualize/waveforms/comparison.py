@@ -197,12 +197,17 @@ def write_waveform_comparison_from_notebook_settings(
     chunksize: int = 1_000_000,
     overwrite: bool = False,
     event_id: str | list[str] | tuple[str, ...] | None = None,
+    component: str | None = None,
+    passband: str | None = None,
+    plot_options: dict[str, Any] | None = None,
 ) -> WaveformComparisonFigureResult:
     """Write a bounded waveform comparison figure using notebook settings.
 
     This wrapper owns the notebook-facing render gate and settings-to-keyword
     translation so tutorial cells do not need to repeat input checks or
-    environment-backed figure options.
+    environment-backed figure options. Use ``plot_options`` for
+    figure-specific labels or trace-display options that should be forwarded to
+    :func:`plot_event_trace_comparison`.
     """
 
     event_station = Path(getattr(step_outputs, "event_station_path"))
@@ -222,16 +227,19 @@ def write_waveform_comparison_from_notebook_settings(
             status=status,
             message=gate.message,
         )
+    plot_kwargs = settings.plot_kwargs()
+    if plot_options:
+        plot_kwargs.update(plot_options)
     return write_waveform_comparison_from_outputs(
         step_outputs,
-        component=settings.component or "Z",
-        passband=settings.passband,
+        component=component if component is not None else (settings.component or "Z"),
+        passband=passband if passband is not None else settings.passband,
         event_id=event_id,
         max_records=max_records,
         max_distance_km=max_distance_km,
         chunksize=chunksize,
         overwrite=overwrite,
-        **settings.plot_kwargs(),
+        **plot_kwargs,
     )
 
 

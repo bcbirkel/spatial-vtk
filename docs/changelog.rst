@@ -2,6 +2,14 @@ Changelog
 =========
 
 2026-06-18
+   Added ``spatial_vtk.visualize.qc.write_qc_figures_from_outputs()`` as the
+   generic QC figure-suite writer and rewired the standard Step 2 QC notebook
+   to use it. The notebook no longer imports individual QC plotting functions,
+   loads compact QC figure tables manually, or repeats basemap,
+   ``showfig``/``savefig``, and sidecar kwargs for each QC figure. Extended
+   ``write_waveform_comparison_from_notebook_settings()`` with
+   ``plot_options`` and rewired the same notebook to use it for the bounded
+   waveform comparison preview.
    Rewired large-run Step 4 spatial plotting cells to use
    ``NotebookFigureSettings.plot_selection_kwargs()`` for shared passband,
    component, model, ``showfig``, value-column, and robust-axis selections.

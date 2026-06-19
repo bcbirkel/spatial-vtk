@@ -312,14 +312,14 @@ def plot_data_synthetic_availability(
     )
 
 
-def write_large_run_qc_figures_from_outputs(
+def write_qc_figures_from_outputs(
     outputs: Any,
     settings: Any,
     *,
     cfg: SpatialVTKConfig | None = None,
     overwrite: bool = False,
 ) -> QCFigureResult:
-    """Write standard large-run QC figures from configured output groups.
+    """Write standard QC figures from configured output groups.
 
     The helper keeps notebooks from repeating compact-table readiness checks,
     table loading, map/figure keyword selection, and figure-output plumbing.
@@ -344,21 +344,21 @@ def write_large_run_qc_figures_from_outputs(
             "table": "retention",
             "func": plot_retention_summary,
             "output_key": "retention_summary",
-            "title": "QC Pair Retention Summary (Observed/Synthetic Trace Overlap)",
+            "title": "QC Pair Retention Summary (Observed/Synthetic Event-Station Overlap)",
         },
         {
             "artifact": "event_station_retention",
             "table": "event_station_retention",
             "func": plot_event_station_retention_heatmap,
             "output_key": "event_station_retention",
-            "title": "Post-QC Pair Retention by Event and Station (Trace Overlap)",
+            "title": "Post-QC Pair Retention by Event and Station (Event-Station Overlap)",
         },
         {
             "artifact": "data_synthetic_availability",
             "table": "qc_availability",
             "func": plot_data_synthetic_availability,
             "output_key": "data_synthetic_availability",
-            "title": "Observed/Synthetic Availability (Post-QC Trace Overlap)",
+            "title": "Observed/Synthetic Availability (Post-QC Event-Station Overlap)",
         },
         {
             "artifact": "post_qc_station_event_map",
@@ -381,7 +381,7 @@ def write_large_run_qc_figures_from_outputs(
             "func": plot_qc_drop_cause_diagnostics,
             "path_name": "drop_causes_overlap_figure_path",
             "output_key": "qc_drop_cause_diagnostics_overlap",
-            "title": "QC Drop Causes (Observed/Synthetic Trace Overlap)",
+            "title": "QC Drop Causes (Observed/Synthetic Event-Station Overlap)",
             "kwargs": {"reason_col": "_reason", "status_col": None, "count_col": "count"},
         },
     )
@@ -499,6 +499,18 @@ def write_large_run_qc_figures_from_outputs(
                 )
             )
     return QCFigureResult(tuple(rows))
+
+
+def write_large_run_qc_figures_from_outputs(
+    outputs: Any,
+    settings: Any,
+    *,
+    cfg: SpatialVTKConfig | None = None,
+    overwrite: bool = False,
+) -> QCFigureResult:
+    """Backward-compatible alias for :func:`write_qc_figures_from_outputs`."""
+
+    return write_qc_figures_from_outputs(outputs, settings, cfg=cfg, overwrite=overwrite)
 
 
 def _output_group_path(outputs: Any, name: str) -> Path | None:
@@ -1072,5 +1084,6 @@ __all__ = [
     "plot_post_qc_station_event_map",
     "plot_qc_drop_cause_diagnostics",
     "plot_retention_summary",
+    "write_qc_figures_from_outputs",
     "write_large_run_qc_figures_from_outputs",
 ]

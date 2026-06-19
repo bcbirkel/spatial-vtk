@@ -269,15 +269,24 @@ def test_waveform_comparison_notebook_settings_delegates_options(tmp_path: Path,
 
     monkeypatch.setattr(comparison_helpers, "write_waveform_comparison_from_outputs", fake_write)
 
-    result = write_waveform_comparison_from_notebook_settings(outputs, Settings(), chunksize=25, overwrite=True)
+    result = write_waveform_comparison_from_notebook_settings(
+        outputs,
+        Settings(),
+        chunksize=25,
+        overwrite=True,
+        component="T",
+        plot_options={"title": "Custom title", "normalize": False},
+    )
 
     assert result.status == "written"
     assert calls["gate_paths"] == [comparison_eligible_path, event_station_path]
-    assert calls["kwargs"]["component"] == "R"
+    assert calls["kwargs"]["component"] == "T"
     assert calls["kwargs"]["passband"] == "2-3 sec"
     assert calls["kwargs"]["chunksize"] == 25
     assert calls["kwargs"]["overwrite"] is True
     assert calls["kwargs"]["write_sidecar"] is True
+    assert calls["kwargs"]["title"] == "Custom title"
+    assert calls["kwargs"]["normalize"] is False
 
 
 def test_record_coverage_table_from_waveform_qc(tmp_path: Path) -> None:

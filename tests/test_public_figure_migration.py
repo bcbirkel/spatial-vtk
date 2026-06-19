@@ -67,6 +67,7 @@ from spatial_vtk.visualize.qc import (
     plot_qc_drop_cause_diagnostics,
     plot_retention_summary,
     plot_trace_inventory_samples,
+    write_qc_figures_from_outputs,
     write_large_run_qc_figures_from_outputs,
 )
 from spatial_vtk.visualize import savefig
@@ -645,8 +646,8 @@ def test_write_large_run_context_figures_reports_missing_inputs(tmp_path: Path) 
     assert status["message"].str.contains("Step 1 context tables").all()
 
 
-def test_write_large_run_qc_figures_from_outputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Large-run QC figure helper should own table loading and plotting."""
+def test_write_qc_figures_from_outputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """QC figure helper should own table loading and plotting."""
 
     clear_active_config()
     config_path = tmp_path / "spatial-vtk.yaml"
@@ -713,7 +714,7 @@ outputs:
         monkeypatch.setattr(retention_module, name, _fake_plot)
 
     outputs = Outputs()
-    result = write_large_run_qc_figures_from_outputs(outputs, Settings(), cfg=cfg, overwrite=True)
+    result = write_qc_figures_from_outputs(outputs, Settings(), cfg=cfg, overwrite=True)
     status = result.status_frame()
 
     assert isinstance(result, QCFigureResult)
@@ -729,7 +730,7 @@ outputs:
 
 
 def test_write_large_run_qc_figures_skips_existing(tmp_path: Path) -> None:
-    """Large-run QC figure helper should not load tables when outputs are current."""
+    """QC figure helper should not load tables when outputs are current."""
 
     clear_active_config()
     config_path = tmp_path / "spatial-vtk.yaml"
@@ -783,7 +784,7 @@ outputs:
 
 
 def test_write_large_run_qc_figures_reports_missing_inputs(tmp_path: Path) -> None:
-    """Large-run QC figure helper should return status rows when inputs are missing."""
+    """QC figure helper should return status rows when inputs are missing."""
 
     class Outputs:
         retention_path = tmp_path / "missing_retention.csv"

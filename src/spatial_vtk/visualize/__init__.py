@@ -64,6 +64,7 @@ _EXPORT_MODULES = {
     "plot_trace_inventory_samples": "spatial_vtk.visualize.qc",
     "queue_rows_from_filtered_trace_df": "spatial_vtk.visualize.qc",
     "write_trace_qc_overview_html": "spatial_vtk.visualize.qc",
+    "write_qc_figures_from_outputs": "spatial_vtk.visualize.qc",
     "plot_event_radial_trace_section": "spatial_vtk.visualize.waveforms",
     "plot_event_trace_comparison": "spatial_vtk.visualize.waveforms",
     "plot_station_event_waveform_map": "spatial_vtk.visualize.waveforms",

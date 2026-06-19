@@ -631,12 +631,24 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "summary_readiness = qc_outputs.readiness(" in standard_text
     assert "run_local=True" in standard_text
     assert "ingest_outputs.load_tables(" in standard_text
-    assert "qc_figure_tables = qc_outputs.load_tables(" in standard_text
+    assert "write_qc_figures_from_outputs(" in standard_text
+    assert "qc_figure_result.status_frame()" in standard_text
+    assert '"availability_path"' in standard_text
+    assert "qc_figure_tables = qc_outputs.load_tables(" not in standard_text
     assert "qc_outputs.display_table_previews(" in standard_text
     assert "qc_outputs.preview_table(" not in standard_text
     assert "qc_outputs.preview_path_table(" in standard_text
     assert "qc_outputs.manual_queue_path" in standard_text
-    assert "write_waveform_comparison_from_outputs(" in standard_text
+    assert "plot_retention_summary(" not in standard_text
+    assert "plot_event_station_retention_heatmap(" not in standard_text
+    assert "plot_post_qc_station_event_map(" not in standard_text
+    assert "plot_qc_drop_cause_diagnostics(" not in standard_text
+    assert "qc_sidecars" not in standard_text
+    assert "savefig=True" not in standard_text
+    assert "showfig=True" not in standard_text
+    assert "write_waveform_comparison_from_notebook_settings(" in standard_text
+    assert "write_waveform_comparison_from_outputs(" not in standard_text
+    assert "waveform_sidecars" not in standard_text
     assert "build_qc_waveform_comparison_records(" not in standard_text
     assert "load_comparison_eligible_records(" not in standard_text
     assert "plot_event_trace_comparison(" not in standard_text
