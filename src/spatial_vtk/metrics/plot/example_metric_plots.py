@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from spatial_vtk.config.labels import metric_display_name
-from spatial_vtk.metrics.calculate.gof import compute_metrics_pair
+from spatial_vtk.metrics import compute_metrics_pair
 from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
 
 

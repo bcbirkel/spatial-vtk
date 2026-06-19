@@ -540,6 +540,21 @@ def test_metric_gof_docstring_prefers_public_metrics_import():
     assert "from spatial_vtk.metrics.calculate.gof import compute_metrics_pair" not in text
 
 
+def test_metric_example_plots_use_public_metric_imports():
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "metrics"
+        / "plot"
+        / "example_metric_plots.py"
+    )
+    text = source.read_text(encoding="utf-8")
+
+    assert "from spatial_vtk.metrics import compute_metrics_pair" in text
+    assert "from spatial_vtk.metrics.calculate.gof import compute_metrics_pair" not in text
+
+
 def test_qc_api_docs_use_public_package_entry_point():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "qc.rst"
     text = docs.read_text(encoding="utf-8")

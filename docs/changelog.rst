@@ -4,6 +4,9 @@ Changelog
 2026-06-19
 ----------
 
+- Updated the public example metric plotting module to import
+  ``compute_metrics_pair`` through ``spatial_vtk.metrics``, keeping public
+  plotting helpers aligned with the documented metric calculation surface.
 - Updated the GOF metric calculation module example so ``compute_metrics_pair``
   is imported from the public ``spatial_vtk.metrics`` package surface instead
   of the lower-level implementation module.
