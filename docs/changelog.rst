@@ -2,6 +2,13 @@ Changelog
 =========
 
 2026-06-18
+   Added ``write_standard_geojson_corridor_figures()`` and rewired the
+   standard Step 5 GeoJSON notebook to use it for boundary-corridor maps, the
+   boundary-crossing waveform record section, and the outward-corridor PGV
+   station map. The notebook no longer owns corridor construction,
+   selected-record joins, waveform-pair selection, corridor-specific metric
+   filtering, configured figure paths, or preview-table construction for those
+   figures.
    Added ``write_standard_geojson_region_figures()`` and rewired the standard
    Step 5 GeoJSON notebook to use it for the GeoJSON overview, regional PGA
    contrast, and regional station residual map. The notebook no longer owns

@@ -1186,16 +1186,31 @@ def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "write_standard_geojson_region_figures(" in source
+    assert "write_standard_geojson_corridor_figures(" in source
     assert "geojson_region_result.summary_frame()" in source
     assert "geojson_region_result.status_frame()" in source
-    assert "from spatial_vtk.spatial import (" in source
+    assert "geojson_corridor_result.boundary_crossing_frame()" in source
+    assert "geojson_corridor_result.outward_event_frame()" in source
+    assert "geojson_corridor_result.status_frame()" in source
+    assert "from spatial_vtk.spatial import (" not in source
     assert "load_configured_input_paths(" in source
     assert "load_configured_input_tables(" not in source
-    assert "render_notebook_figure(" in source
+    assert "render_notebook_figure(" not in source
     assert "geojson_metric_region_frame(" not in source
-    assert "geojson_metric_subset_frame(" in source
-    assert "corridor_record_pair_frame(" in source
-    assert "corridor_record_preview_frame(" in source
+    assert "geojson_metric_subset_frame(" not in source
+    assert "corridor_record_pair_frame(" not in source
+    assert "corridor_record_preview_frame(" not in source
+    assert "event_ids_from_records(" not in source
+    assert "event_rows_for_records(" not in source
+    assert "event_label_preview_frame(" not in source
+    assert "event_station_records_matching_pairs(" not in source
+    assert "geojson_matched_record_frame(" not in source
+    assert "classify_paths_with_geojson(" not in source
+    assert "build_boundary_corridors(" not in source
+    assert "build_qc_waveform_comparison_records(" not in source
+    assert "plot_corridor_map(" not in source
+    assert "plot_station_metric_map(" not in source
+    assert "plot_observed_synthetic_record_section(" not in source
     assert "metrics_by_station_region.loc[" not in source
     assert "metrics_by_regions.loc[" not in source
     assert 'metrics_by_regions["metric"].astype(str).eq' not in source

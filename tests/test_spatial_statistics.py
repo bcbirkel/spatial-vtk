@@ -88,11 +88,13 @@ from spatial_vtk.spatial.plot.large_run import (
     RegionBoxplotResult,
     SpatialFigureContext,
     StandardAdditionalPlottingFigureResult,
+    StandardGeoJSONCorridorFigureResult,
     StandardGeoJSONFigureResult,
     StandardSpatialDiagnosticFigureResult,
     StandardSpatialMapFigureResult,
     prepare_spatial_figure_context_from_notebook_settings,
     write_standard_additional_plotting_figures,
+    write_standard_geojson_corridor_figures,
     write_standard_geojson_region_figures,
     write_standard_spatial_diagnostic_figures,
     write_standard_spatial_map_figures,
@@ -265,6 +267,169 @@ def test_write_standard_geojson_region_figures_returns_status_tables(monkeypatch
     assert status["artifact"].tolist() == ["geojson_regions", "pga_region_boxplot", "regional_pga_station_map"]
     assert len(calls) == 3
     assert calls[-1][2]["value_col"] == "mean_centered"
+
+
+def test_write_standard_geojson_corridor_figures_returns_status_tables(monkeypatch, tmp_path) -> None:
+    """Standard Step 5 corridor figures should be orchestrated by package code."""
+
+    import spatial_vtk.config as config_public
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1"],
+            "station": ["STA1", "STA2"],
+            "metric": ["PGV", "PGV"],
+            "passband": ["1-2 sec", "2-3 sec"],
+            "component": ["Z", "Z"],
+            "model": ["m1", "m1"],
+            "log2_residual": [0.5, -0.25],
+            "station_region": ["LA Basin", "LA Basin"],
+            "lon": [-118.1, -118.2],
+            "lat": [34.1, 34.2],
+            "event_lon": [-118.0, -118.0],
+            "event_lat": [34.0, 34.0],
+        }
+    )
+    stations = pd.DataFrame({"station": ["STA1", "STA2"], "lon": [-118.1, -118.2], "lat": [34.1, 34.2]})
+    events = pd.DataFrame({"event_id": ["e1"], "event_name": ["Example"], "event_lon": [-118.0], "event_lat": [34.0]})
+    event_stations = pd.DataFrame(
+        {
+            "event_id": ["e1", "e1"],
+            "station": ["STA1", "STA2"],
+            "lon": [-118.1, -118.2],
+            "lat": [34.1, 34.2],
+            "event_lon": [-118.0, -118.0],
+            "event_lat": [34.0, 34.0],
+        }
+    )
+    comparison_eligible = event_stations.copy()
+
+    def fake_render(plot_func, outputs, figure_path_name, settings, *args, **kwargs):
+        path = outputs.figure_path(figure_path_name, stem=kwargs.get("stem"), stem_parts=kwargs.get("stem_parts"))
+        plot_func(*args, outpath=path, **kwargs)
+
+    monkeypatch.setattr(config_public, "render_notebook_figure", fake_render)
+
+    class _Sidecars:
+        def kwargs(self):
+            return {"write_sidecar": False}
+
+    class _Settings:
+        showfig = False
+        add_basemap = False
+        sidecars = _Sidecars()
+
+    class _Outputs:
+        def figure_path(self, name, *, stem=None, stem_parts=None):
+            parts = stem_parts or (stem or name,)
+            return tmp_path / f"{name}__{'_'.join(str(part) for part in parts)}.png"
+
+    calls: list[tuple[str, Path, dict[str, object]]] = []
+
+    def fake_plot(*args, outpath, **kwargs):
+        calls.append((str(kwargs.get("title", "")), Path(outpath), kwargs))
+        Path(outpath).write_text("figure", encoding="utf-8")
+
+    def fake_build_corridors(geojson_path, *, config, station_df=None, event_df=None):
+        return pd.DataFrame({"corridor_id": [config.mode], "selector": [config.selector], "geometry": [None]})
+
+    def fake_select_records(records, corridors, *, config):
+        result = records.copy()
+        result["corridor_id"] = str(corridors["corridor_id"].iloc[0])
+        return result
+
+    def fake_classify(records, geojson_path, **kwargs):
+        result = records.copy()
+        result["path_geojson_matches"] = True
+        return result
+
+    def fake_matched(records):
+        return records.copy()
+
+    def fake_comparison(left, right):
+        return left.copy()
+
+    def fake_waveform_records(records, **kwargs):
+        result = records.head(1).copy()
+        result["component"] = kwargs["component"]
+        result["passband"] = kwargs["passband"]
+        return result
+
+    def fake_event_ids(records):
+        return ["e1"]
+
+    def fake_event_rows(frame, *, event_ids):
+        return frame.loc[frame["event_id"].isin(event_ids)].copy()
+
+    def fake_event_preview(frame):
+        return frame[["event_id", "event_name"]].copy()
+
+    def fake_metric_subset(frame, **kwargs):
+        return frame.copy()
+
+    def fake_metric_field(frame, metric, *, value_column):
+        result = frame.copy()
+        result["field_value"] = result[value_column]
+        return result
+
+    def fake_station_bias(frame, **kwargs):
+        return pd.DataFrame(
+            {
+                "station": ["STA1", "STA2"],
+                "lon": [-118.1, -118.2],
+                "lat": [34.1, 34.2],
+                "mean_centered": [0.5, -0.25],
+            }
+        )
+
+    def fake_pair_frame(records):
+        return records[["event_id", "station"]].copy()
+
+    def fake_preview(records):
+        return records[["event_id", "station", "corridor_id"]].head(2).copy()
+
+    result = write_standard_geojson_corridor_figures(
+        metrics_by_regions=metrics,
+        stations=stations,
+        event_stations=event_stations,
+        events=events,
+        comparison_eligible=comparison_eligible,
+        outputs=_Outputs(),
+        spatial_settings=_Settings(),
+        waveform_settings=_Settings(),
+        geojson_path=tmp_path / "regions.geojson",
+        build_corridors_func=fake_build_corridors,
+        select_records_func=fake_select_records,
+        classify_paths_func=fake_classify,
+        matched_records_func=fake_matched,
+        comparison_records_func=fake_comparison,
+        waveform_records_func=fake_waveform_records,
+        event_ids_func=fake_event_ids,
+        event_rows_func=fake_event_rows,
+        event_preview_func=fake_event_preview,
+        metric_subset_func=fake_metric_subset,
+        metric_field_func=fake_metric_field,
+        station_bias_func=fake_station_bias,
+        corridor_pair_func=fake_pair_frame,
+        corridor_preview_func=fake_preview,
+        corridor_map_func=fake_plot,
+        record_section_func=fake_plot,
+        station_map_func=fake_plot,
+    )
+
+    assert isinstance(result, StandardGeoJSONCorridorFigureResult)
+    assert result.boundary_crossing_frame()["corridor_id"].tolist() == ["through_boundary", "through_boundary"]
+    assert result.outward_event_frame()["event_id"].tolist() == ["e1"]
+    status = result.status_frame()
+    assert status["status"].tolist() == ["wrote", "wrote", "wrote", "wrote"]
+    assert status["artifact"].tolist() == [
+        "through_boundary_corridor_map",
+        "outward_corridor_map",
+        "boundary_crossing_record_section",
+        "pgv_outward_corridor_station_map",
+    ]
+    assert len(calls) == 4
+    assert calls[-1][2]["records_df"]["station"].tolist() == ["STA1", "STA2"]
 
 
 def test_write_standard_additional_plotting_figures_returns_previews(tmp_path) -> None:

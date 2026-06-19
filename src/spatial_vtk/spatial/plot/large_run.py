@@ -1444,6 +1444,40 @@ class StandardGeoJSONFigureResult:
 
 
 @dataclass(frozen=True)
+class StandardGeoJSONCorridorFigureResult:
+    """Result from writing standard Step 5 corridor and record-section figures."""
+
+    rows: tuple[dict[str, Any], ...]
+    boundary_crossing_preview: pd.DataFrame
+    outward_event_preview: pd.DataFrame
+    metrics_by_regions: pd.DataFrame
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return one row per Step 5 corridor figure written or skipped."""
+
+        return pd.DataFrame(
+            self.rows,
+            columns=[
+                "artifact",
+                "status",
+                "row_count",
+                "figure_path",
+                "message",
+            ],
+        )
+
+    def boundary_crossing_frame(self) -> pd.DataFrame:
+        """Return a bounded preview of paths used by the record section."""
+
+        return self.boundary_crossing_preview.copy()
+
+    def outward_event_frame(self) -> pd.DataFrame:
+        """Return events selected by the outward corridor."""
+
+        return self.outward_event_preview.copy()
+
+
+@dataclass(frozen=True)
 class StandardAdditionalPlottingFigureResult:
     """Result from writing standard Step 6 additional plotting figures."""
 
@@ -2396,6 +2430,271 @@ def _first_nonempty_metric_value(df: pd.DataFrame, column: str, *, fallback: str
     values = df[column].dropna().astype(str)
     values = values.loc[values.str.strip().ne("")]
     return str(values.iloc[0]) if not values.empty else str(fallback)
+
+
+def write_standard_geojson_corridor_figures(
+    *,
+    metrics_by_regions: pd.DataFrame,
+    stations: pd.DataFrame,
+    event_stations: pd.DataFrame,
+    events: pd.DataFrame,
+    comparison_eligible: pd.DataFrame,
+    outputs: Any,
+    spatial_settings: Any,
+    waveform_settings: Any,
+    geojson_path: str | Path,
+    value_col: str = "log2_residual",
+    passbands: Sequence[str] | str | None = ("1-2 sec", "2-3 sec"),
+    component: str | None = "Z",
+    boundary_region: str = "LA Basin",
+    through_anchor_station: str = "OLI",
+    outward_event_id: str = "ci38695658",
+    corridor_station_region: str = "LA Basin",
+    record_component: str = "R",
+    record_passband: str = "1-2 sec",
+    display_func: Callable[[Any], Any] | None = None,
+    build_corridors_func: Callable[..., pd.DataFrame] | None = None,
+    select_records_func: Callable[..., pd.DataFrame] | None = None,
+    classify_paths_func: Callable[..., pd.DataFrame] | None = None,
+    matched_records_func: Callable[..., pd.DataFrame] | None = None,
+    comparison_records_func: Callable[..., pd.DataFrame] | None = None,
+    waveform_records_func: Callable[..., pd.DataFrame] | None = None,
+    event_ids_func: Callable[..., list[str]] | None = None,
+    event_rows_func: Callable[..., pd.DataFrame] | None = None,
+    event_preview_func: Callable[..., pd.DataFrame] | None = None,
+    metric_subset_func: Callable[..., pd.DataFrame] | None = None,
+    metric_field_func: Callable[..., pd.DataFrame] | None = None,
+    station_bias_func: Callable[..., pd.DataFrame] | None = None,
+    corridor_pair_func: Callable[..., pd.DataFrame] | None = None,
+    corridor_preview_func: Callable[..., pd.DataFrame] | None = None,
+    corridor_map_func: Callable[..., Any] | None = None,
+    record_section_func: Callable[..., Any] | None = None,
+    station_map_func: Callable[..., Any] | None = None,
+) -> StandardGeoJSONCorridorFigureResult:
+    """Write standard Step 5 corridor maps, record section, and corridor PGV map.
+
+    The helper keeps corridor geometry construction, selected-record joins,
+    waveform comparison selection, metric filtering, configured figure paths,
+    and notebook preview tables in package code.
+    """
+
+    from spatial_vtk.config import render_notebook_figure
+    from spatial_vtk.io import event_ids_from_records, event_label_preview_frame, event_rows_for_records
+    from spatial_vtk.qc import build_qc_waveform_comparison_records
+    from spatial_vtk.spatial import (
+        BoundaryCorridorConfig,
+        CorridorAnchorConfig,
+        CorridorSelectionConfig,
+        build_boundary_corridors,
+        build_metric_field,
+        classify_paths_with_geojson,
+        corridor_record_pair_frame,
+        corridor_record_preview_frame,
+        event_station_records_matching_pairs,
+        geojson_matched_record_frame,
+        geojson_metric_subset_frame,
+        select_records_by_corridors,
+        summarize_station_bias,
+    )
+    from spatial_vtk.spatial.map import plot_corridor_map, plot_station_metric_map
+    from spatial_vtk.visualize.waveforms import plot_observed_synthetic_record_section
+
+    build_corridors_func = build_corridors_func or build_boundary_corridors
+    select_records_func = select_records_func or select_records_by_corridors
+    classify_paths_func = classify_paths_func or classify_paths_with_geojson
+    matched_records_func = matched_records_func or geojson_matched_record_frame
+    comparison_records_func = comparison_records_func or event_station_records_matching_pairs
+    waveform_records_func = waveform_records_func or build_qc_waveform_comparison_records
+    event_ids_func = event_ids_func or event_ids_from_records
+    event_rows_func = event_rows_func or event_rows_for_records
+    event_preview_func = event_preview_func or event_label_preview_frame
+    metric_subset_func = metric_subset_func or geojson_metric_subset_frame
+    metric_field_func = metric_field_func or build_metric_field
+    station_bias_func = station_bias_func or summarize_station_bias
+    corridor_pair_func = corridor_pair_func or corridor_record_pair_frame
+    corridor_preview_func = corridor_preview_func or corridor_record_preview_frame
+    corridor_map_func = corridor_map_func or plot_corridor_map
+    record_section_func = record_section_func or plot_observed_synthetic_record_section
+    station_map_func = station_map_func or plot_station_metric_map
+
+    through_corridors = build_corridors_func(
+        geojson_path,
+        config=BoundaryCorridorConfig(
+            selector=boundary_region,
+            mode="through_boundary",
+            along_boundary_width_km=10,
+            inside_length_km=15,
+            outside_length_km=20,
+            anchor=CorridorAnchorConfig(source="station", strategy="id", id_value=through_anchor_station),
+        ),
+        station_df=stations,
+        event_df=events,
+    )
+    outward_corridors = build_corridors_func(
+        geojson_path,
+        config=BoundaryCorridorConfig(
+            selector=boundary_region,
+            mode="outward",
+            along_boundary_width_km=10,
+            inside_length_km=15,
+            outside_length_km=20,
+            anchor=CorridorAnchorConfig(source="event", strategy="id", id_value=outward_event_id),
+        ),
+        station_df=stations,
+        event_df=events,
+    )
+
+    through_corridor_paths = select_records_func(
+        event_stations,
+        through_corridors,
+        config=CorridorSelectionConfig(path_filter="passes_through_corridor", min_path_length_km=0.1),
+    )
+    outward_corridor_paths = select_records_func(
+        event_stations,
+        outward_corridors,
+        config=CorridorSelectionConfig(path_filter="passes_through_corridor", min_path_length_km=0.1),
+    )
+
+    rows: list[dict[str, Any]] = []
+    rows.append(
+        _write_standard_notebook_figure(
+            "through_boundary_corridor_map",
+            through_corridors,
+            render_notebook_figure,
+            corridor_map_func,
+            outputs,
+            "corridor_map_path",
+            spatial_settings,
+            through_corridors,
+            stem_parts=("step_05", "corridor", "through_boundary"),
+            include_basemap=True,
+            display_func=display_func,
+            stations_df=stations,
+            events_df=events,
+            records_df=corridor_pair_func(through_corridor_paths),
+            highlight_anchor=True,
+            title="Through-Boundary Corridor at the LA Basin Edge\nAnchor: station OLI",
+        )
+    )
+    rows.append(
+        _write_standard_notebook_figure(
+            "outward_corridor_map",
+            outward_corridors,
+            render_notebook_figure,
+            corridor_map_func,
+            outputs,
+            "corridor_map_path",
+            spatial_settings,
+            outward_corridors,
+            stem_parts=("step_05", "corridor", "outward"),
+            include_basemap=True,
+            display_func=display_func,
+            stations_df=stations,
+            events_df=events,
+            records_df=corridor_pair_func(outward_corridor_paths),
+            highlight_anchor=True,
+            title="Outward Corridor from the LA Basin Boundary\nAnchor: event ci38695658",
+        )
+    )
+
+    central_boundary_paths = classify_paths_func(
+        event_stations,
+        geojson_path,
+        relation="crosses_boundary",
+        selector=boundary_region,
+        direction="either",
+    )
+    boundary_crossing_paths = select_records_func(
+        matched_records_func(central_boundary_paths),
+        through_corridors,
+        config=CorridorSelectionConfig(path_filter="passes_through_corridor", min_path_length_km=0.1),
+    )
+    selected_eligible = comparison_records_func(comparison_eligible, boundary_crossing_paths)
+    boundary_waveforms = waveform_records_func(
+        event_stations,
+        comparison_eligible=selected_eligible,
+        component=record_component,
+        passband=record_passband,
+        max_distance_km=None,
+        max_records=12,
+    )
+    rows.append(
+        _write_standard_notebook_figure(
+            "boundary_crossing_record_section",
+            boundary_waveforms,
+            render_notebook_figure,
+            record_section_func,
+            outputs,
+            "record_section_figure_path",
+            waveform_settings,
+            boundary_waveforms,
+            stem_parts=("step_05", "boundary_crossing_record_section"),
+            display_func=display_func,
+            components=[record_component],
+            normalize=True,
+            scale=2.5,
+            title="Observed vs Synthetic Records for LA Basin Boundary-Crossing Paths",
+            filter_label=f"lowpass 1 Hz; {record_component} component; {record_passband} QC passband",
+            time_limit_s=60,
+        )
+    )
+
+    outward_event_paths = select_records_func(
+        event_stations,
+        outward_corridors,
+        config=CorridorSelectionConfig(event_filter="inside_corridor"),
+    )
+    outward_event_ids = event_ids_func(outward_event_paths)
+    events_in_outward_corridor = event_rows_func(events, event_ids=outward_event_ids)
+    selected_event_names = event_preview_func(events_in_outward_corridor)
+    pgv_corridor_rows = metric_subset_func(
+        metrics_by_regions,
+        metric="PGV",
+        passband=passbands,
+        component=component,
+        event_ids=outward_event_ids,
+        station_region=corridor_station_region,
+    )
+    pgv_corridor_field = metric_field_func(pgv_corridor_rows, "PGV", value_column=value_col)
+    pgv_corridor_bias = station_bias_func(
+        pgv_corridor_field,
+        value_col="field_value",
+        center_by_event=False,
+        min_events_per_station=1,
+    )
+    pgv_corridor_paths = comparison_records_func(outward_event_paths, pgv_corridor_rows)
+    rows.append(
+        _write_standard_notebook_figure(
+            "pgv_outward_corridor_station_map",
+            pgv_corridor_bias,
+            render_notebook_figure,
+            station_map_func,
+            outputs,
+            "station_metric_map_path",
+            spatial_settings,
+            pgv_corridor_bias,
+            stem_parts=("step_05", "pgv", "outward_corridor", "la_basin_stations"),
+            include_basemap=True,
+            display_func=display_func,
+            value_col="mean_centered",
+            lon_col="lon",
+            lat_col="lat",
+            geojson_path=geojson_path,
+            polygon_selector="all",
+            polygon_alpha=0.10,
+            label_polygons=True,
+            corridors_df=outward_corridors,
+            events_df=events_in_outward_corridor,
+            records_df=corridor_pair_func(pgv_corridor_paths),
+            title="Mean PGV log2(obs/syn) Residual\nEvents in Outward Corridor; Stations in LA Basin",
+        )
+    )
+    return StandardGeoJSONCorridorFigureResult(
+        rows=tuple(rows),
+        boundary_crossing_preview=corridor_preview_func(boundary_crossing_paths),
+        outward_event_preview=selected_event_names,
+        metrics_by_regions=metrics_by_regions,
+    )
 
 
 def write_standard_additional_plotting_figures(
@@ -3493,6 +3792,7 @@ __all__ = [
     "RegionFigureResult",
     "SPATIAL_FIGURE_TABLE_KEYS",
     "StandardAdditionalPlottingFigureResult",
+    "StandardGeoJSONCorridorFigureResult",
     "StandardGeoJSONFigureResult",
     "SpatialSummaryFigureResult",
     "SpatialFigureSuiteResult",
@@ -3502,6 +3802,7 @@ __all__ = [
     "prepare_spatial_figure_context",
     "prepare_spatial_figure_context_from_notebook_settings",
     "write_standard_additional_plotting_figures",
+    "write_standard_geojson_corridor_figures",
     "write_standard_spatial_diagnostic_figures",
     "write_standard_geojson_region_figures",
     "write_standard_spatial_map_figures",
