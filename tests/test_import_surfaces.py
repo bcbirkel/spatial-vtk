@@ -321,10 +321,8 @@ def test_changelog_dated_sections_use_bulleted_entries():
     changelog_path = pathlib.Path(__file__).resolve().parents[1] / "docs" / "changelog.rst"
     lines = changelog_path.read_text(encoding="utf-8").splitlines()
     date_heading = re.compile(r"^20\d{2}-\d{2}-\d{2}$")
-    section_heading = re.compile(r"^\*\*.+\*\*$")
 
     in_dated_section = False
-    in_subsection = False
     violations: list[str] = []
     for line_number, line in enumerate(lines, start=1):
         stripped = line.strip()
@@ -332,18 +330,13 @@ def test_changelog_dated_sections_use_bulleted_entries():
             continue
         if date_heading.match(stripped):
             in_dated_section = True
-            in_subsection = False
             continue
         if in_dated_section and stripped == "Future Work":
             in_dated_section = False
-            in_subsection = False
             continue
         if set(stripped) <= {"-"}:
             continue
-        if in_dated_section and section_heading.match(stripped):
-            in_subsection = True
-            continue
-        if not in_dated_section or not in_subsection:
+        if not in_dated_section:
             continue
         if line.startswith("- ") or line.startswith("  "):
             continue
