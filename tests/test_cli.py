@@ -178,9 +178,11 @@ def test_cli_spatial_summaries_help(capsys):
     assert "--metrics-table" in captured.out
     assert "--checkpoint-dir" in captured.out
     assert "--no-resume" in captured.out
-    assert "svtk spatial summaries [-h] [--metrics PATH] [--config PATH]" in captured.out
-    assert "[--station-metadata PATH] [--checkpoint-dir DIR]" in captured.out
+    assert "svtk spatial summaries [-h] [--metrics-table PATH] [--config PATH]" in captured.out
+    assert "[--station-metadata-table PATH] [--checkpoint-dir DIR]" in captured.out
     assert "default config is set with 'svtk config set'" in help_text
+    assert "Prefer --metrics-table; --metrics is a legacy alias" in help_text
+    assert "Prefer --station-metadata-table; --station-metadata is a legacy alias" in help_text
 
 
 def test_cli_spatial_summaries_use_saved_config_defaults(tmp_path, monkeypatch, capsys):
@@ -491,9 +493,10 @@ def test_cli_spatial_geojson_and_corridor_help(capsys):
     assert "--metrics-table" in geojson_help
     assert "--region-geojson" in geojson_help
     assert "--output-table-key" in geojson_help
-    assert "svtk spatial geojson-summaries [-h] [--metrics PATH] [--geojson PATH]" in geojson_help
+    assert "svtk spatial geojson-summaries [-h] [--metrics-table PATH]" in geojson_help
+    assert "[--region-geojson PATH]" in geojson_help
     assert "[--chunksize N]" in geojson_help
-    assert "[--output-key KEY]" in geojson_help
+    assert "[--output-table-key KEY]" in geojson_help
     assert "not a filesystem path" in geojson_help
     assert "--chunksize" in geojson_help
     assert "--selector" in geojson_help
@@ -510,9 +513,10 @@ def test_cli_spatial_geojson_and_corridor_help(capsys):
     assert "--station-table" in corridor_help
     assert "--event-table" in corridor_help
     assert "--output-table-key" in corridor_help
-    assert "svtk spatial corridors [-h] [--geojson PATH] [--stations PATH]" in corridor_help
-    assert "[--events PATH] [--records PATH] [--config PATH]" in corridor_help
-    assert "[--output-key KEY]" in corridor_help
+    assert "svtk spatial corridors [-h] [--region-geojson PATH]" in corridor_help
+    assert "[--station-table PATH]" in corridor_help
+    assert "[--event-table PATH] [--records-table PATH] [--config PATH]" in corridor_help
+    assert "[--output-table-key KEY]" in corridor_help
 
 
 def test_cli_spatial_geojson_and_corridors_dispatch_configured_workflows(tmp_path, monkeypatch, capsys):
@@ -1466,15 +1470,23 @@ def test_generated_cli_reference_names_spatial_geojson_aliases():
     corridor_section = text.split(".. _cli-svtk-spatial-corridors:", maxsplit=1)[1].split(
         ".. _cli-svtk-spatial-derived-outputs:", maxsplit=1
     )[0]
-    assert "``--metrics``, ``--metrics-table``" in geojson_section
-    assert "``--geojson``, ``--region-geojson``" in geojson_section
-    assert "``--output-key``, ``--output-table-key``" in geojson_section
+    assert "``--metrics-table``, ``--metrics``" in geojson_section
+    assert "``--region-geojson``, ``--geojson``" in geojson_section
+    assert "``--output-table-key``, ``--output-key``" in geojson_section
+    assert "Prefer --metrics-table; --metrics is a legacy alias." in geojson_section
+    assert "Prefer --region-geojson; --geojson is a legacy alias." in geojson_section
+    assert "Prefer --output-table-key; --output-key is a legacy alias." in geojson_section
     assert "Registered output table key, not a filesystem path" in geojson_section
-    assert "``--geojson``, ``--region-geojson``" in corridor_section
-    assert "``--stations``, ``--station-table``" in corridor_section
-    assert "``--events``, ``--event-table``" in corridor_section
-    assert "``--records``, ``--records-table``" in corridor_section
-    assert "``--output-key``, ``--output-table-key``" in corridor_section
+    assert "``--region-geojson``, ``--geojson``" in corridor_section
+    assert "``--station-table``, ``--stations``" in corridor_section
+    assert "``--event-table``, ``--events``" in corridor_section
+    assert "``--records-table``, ``--records``" in corridor_section
+    assert "``--output-table-key``, ``--output-key``" in corridor_section
+    assert "Prefer --region-geojson; --geojson is a legacy alias." in corridor_section
+    assert "Prefer --station-table; --stations is a legacy alias." in corridor_section
+    assert "Prefer --event-table; --events is a legacy alias." in corridor_section
+    assert "Prefer --records-table; --records is a legacy alias." in corridor_section
+    assert "Prefer --output-table-key; --output-key is a legacy alias." in corridor_section
     assert "prepared_stations" in corridor_section
     assert "prepared_events" in corridor_section
 
@@ -1489,17 +1501,22 @@ def test_generated_cli_reference_names_spatial_summary_aliases():
     )[0]
     summaries_section = text.split(".. _cli-svtk-spatial-summaries:", maxsplit=1)[1]
 
-    assert "``--metrics``, ``--metrics-table``" in derived_section
-    assert "``--metric-field``, ``--metric-field-table``" in derived_section
-    assert "``--station-bias``, ``--station-bias-table``" in derived_section
-    assert "svtk spatial derived-outputs [-h] [--metrics PATH]" in derived_section
-    assert "[--metric-field PATH]" in derived_section
-    assert "[--station-bias PATH] [--config PATH]" in derived_section
+    assert "``--metrics-table``, ``--metrics``" in derived_section
+    assert "``--metric-field-table``, ``--metric-field``" in derived_section
+    assert "``--station-bias-table``, ``--station-bias``" in derived_section
+    assert "Prefer --metrics-table; --metrics is a legacy alias." in derived_section
+    assert "Prefer --metric-field-table; --metric-field is a legacy alias." in derived_section
+    assert "Prefer --station-bias-table; --station-bias is a legacy alias." in derived_section
+    assert "svtk spatial derived-outputs [-h] [--metrics-table PATH]" in derived_section
+    assert "[--metric-field-table PATH]" in derived_section
+    assert "[--station-bias-table PATH] [--config PATH]" in derived_section
     assert "[--outputs KEYS]" in derived_section
-    assert "``--metrics``, ``--metrics-table``" in summaries_section
-    assert "``--station-metadata``, ``--station-metadata-table``" in summaries_section
-    assert "svtk spatial summaries [-h] [--metrics PATH] [--config PATH]" in summaries_section
-    assert "[--station-metadata PATH] [--checkpoint-dir DIR]" in summaries_section
+    assert "``--metrics-table``, ``--metrics``" in summaries_section
+    assert "``--station-metadata-table``, ``--station-metadata``" in summaries_section
+    assert "Prefer --metrics-table; --metrics is a legacy alias." in summaries_section
+    assert "Prefer --station-metadata-table; --station-metadata is a legacy alias." in summaries_section
+    assert "svtk spatial summaries [-h] [--metrics-table PATH] [--config PATH]" in summaries_section
+    assert "[--station-metadata-table PATH] [--checkpoint-dir DIR]" in summaries_section
     assert "metrics_long" in summaries_section
     assert "prepared_stations" in summaries_section
 

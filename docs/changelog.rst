@@ -25,6 +25,9 @@ Changelog
   - Metric inventory and downstream metric-output commands now present
     inventory/table-specific flags first in help and generated CLI docs while
     preserving shorter legacy aliases for existing scripts.
+  - Spatial summary, derived-output, GeoJSON, and corridor commands now present
+    table/path-specific flags first in help and generated CLI docs while
+    preserving older generic aliases for existing scripts.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

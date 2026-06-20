@@ -52,10 +52,11 @@ Build configured boundary corridor tables from region GeoJSON and prepared metad
 
 .. code-block:: bash
 
-   svtk spatial corridors [-h] [--geojson PATH] [--stations PATH]
-                              [--events PATH] [--records PATH] [--config PATH]
-                              [--run-scenario RUN_SCENARIO] [--output-key KEY]
-                              [--verbose]
+   svtk spatial corridors [-h] [--region-geojson PATH]
+                              [--station-table PATH] [--event-table PATH]
+                              [--records-table PATH] [--config PATH]
+                              [--run-scenario RUN_SCENARIO]
+                              [--output-table-key KEY] [--verbose]
 
 .. rubric:: Parameters
 
@@ -71,22 +72,22 @@ Build configured boundary corridor tables from region GeoJSON and prepared metad
      - No
      -
      - show this help message and exit
-   * - ``--geojson``, ``--region-geojson``
+   * - ``--region-geojson``, ``--geojson``
      - No
      -
-     - Filesystem path. Region GeoJSON path. Defaults to paths.region_geojson.
-   * - ``--stations``, ``--station-table``
+     - Filesystem path. Region GeoJSON path. Defaults to paths.region_geojson. Prefer --region-geojson; --geojson is a legacy alias.
+   * - ``--station-table``, ``--stations``
      - No
      -
-     - Filesystem path. Prepared station metadata table. Defaults to configured output table 'prepared_stations'.
-   * - ``--events``, ``--event-table``
+     - Filesystem path. Prepared station metadata table. Defaults to configured output table 'prepared_stations'. Prefer --station-table; --stations is a legacy alias.
+   * - ``--event-table``, ``--events``
      - No
      -
-     - Filesystem path. Prepared event metadata table. Defaults to configured output table 'prepared_events'.
-   * - ``--records``, ``--records-table``
+     - Filesystem path. Prepared event metadata table. Defaults to configured output table 'prepared_events'. Prefer --event-table; --events is a legacy alias.
+   * - ``--records-table``, ``--records``
      - No
      -
-     - Filesystem path. Event-station records used by max-records anchor strategies. Defaults to comparison_eligible_records when needed.
+     - Filesystem path. Event-station records used by max-records anchor strategies. Defaults to comparison_eligible_records when needed. Prefer --records-table; --records is a legacy alias.
    * - ``--config``
      - No
      -
@@ -95,10 +96,10 @@ Build configured boundary corridor tables from region GeoJSON and prepared metad
      - No
      -
      - Apply one named run_scenarios overlay.
-   * - ``--output-key``, ``--output-table-key``
+   * - ``--output-table-key``, ``--output-key``
      - No
      - Default: ``corridors``
-     - Registered output table key, not a filesystem path.
+     - Registered output table key, not a filesystem path. Prefer --output-table-key; --output-key is a legacy alias.
    * - ``--verbose``
      - No
      - Flag
@@ -115,9 +116,10 @@ Build optional Step 4 spatial tables used by overview plots: block_holdout_predi
 
 .. code-block:: bash
 
-   svtk spatial derived-outputs [-h] [--metrics PATH]
-                                    [--metric-field PATH]
-                                    [--station-bias PATH] [--config PATH]
+   svtk spatial derived-outputs [-h] [--metrics-table PATH]
+                                    [--metric-field-table PATH]
+                                    [--station-bias-table PATH]
+                                    [--config PATH]
                                     [--run-scenario RUN_SCENARIO]
                                     [--metric METRIC]
                                     [--pattern-passband PATTERN_PASSBAND]
@@ -139,18 +141,18 @@ Build optional Step 4 spatial tables used by overview plots: block_holdout_predi
      - No
      -
      - show this help message and exit
-   * - ``--metrics``, ``--metrics-table``
+   * - ``--metrics-table``, ``--metrics``
      - No
      -
-     - Filesystem path. Long metric rows table. Defaults to configured output table 'metrics_long'.
-   * - ``--metric-field``, ``--metric-field-table``
+     - Filesystem path. Long metric rows table. Defaults to configured output table 'metrics_long'. Prefer --metrics-table; --metrics is a legacy alias.
+   * - ``--metric-field-table``, ``--metric-field``
      - No
      -
-     - Filesystem path. Metric-field table. Defaults to configured output table 'metric_field'.
-   * - ``--station-bias``, ``--station-bias-table``
+     - Filesystem path. Metric-field table. Defaults to configured output table 'metric_field'. Prefer --metric-field-table; --metric-field is a legacy alias.
+   * - ``--station-bias-table``, ``--station-bias``
      - No
      -
-     - Filesystem path. Station-bias table. Defaults to configured output table 'station_bias'.
+     - Filesystem path. Station-bias table. Defaults to configured output table 'station_bias'. Prefer --station-bias-table; --station-bias is a legacy alias.
    * - ``--config``
      - No
      -
@@ -199,11 +201,11 @@ Build configured GeoJSON region summary tables from metric outputs.
 
 .. code-block:: bash
 
-   svtk spatial geojson-summaries [-h] [--metrics PATH] [--geojson PATH]
-                                      [--config PATH]
+   svtk spatial geojson-summaries [-h] [--metrics-table PATH]
+                                      [--region-geojson PATH] [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
                                       [--selector SELECTOR] [--chunksize N]
-                                      [--output-key KEY] [--verbose]
+                                      [--output-table-key KEY] [--verbose]
 
 .. rubric:: Parameters
 
@@ -219,14 +221,14 @@ Build configured GeoJSON region summary tables from metric outputs.
      - No
      -
      - show this help message and exit
-   * - ``--metrics``, ``--metrics-table``
+   * - ``--metrics-table``, ``--metrics``
      - No
      -
-     - Filesystem path. Metric rows table. Defaults to configured output table 'metrics_long'.
-   * - ``--geojson``, ``--region-geojson``
+     - Filesystem path. Metric rows table. Defaults to configured output table 'metrics_long'. Prefer --metrics-table; --metrics is a legacy alias.
+   * - ``--region-geojson``, ``--geojson``
      - No
      -
-     - Filesystem path. Region GeoJSON path. Defaults to paths.region_geojson.
+     - Filesystem path. Region GeoJSON path. Defaults to paths.region_geojson. Prefer --region-geojson; --geojson is a legacy alias.
    * - ``--config``
      - No
      -
@@ -243,10 +245,10 @@ Build configured GeoJSON region summary tables from metric outputs.
      - No
      - Default: ``1000000``
      - Rows per metric-table chunk.
-   * - ``--output-key``, ``--output-table-key``
+   * - ``--output-table-key``, ``--output-key``
      - No
      - Default: ``geojson_region_summaries``
-     - Registered output table key, not a filesystem path.
+     - Registered output table key, not a filesystem path. Prefer --output-table-key; --output-key is a legacy alias.
    * - ``--verbose``
      - No
      - Flag
@@ -308,10 +310,10 @@ Build standard spatial-statistics summary tables.
 
 .. code-block:: bash
 
-   svtk spatial summaries [-h] [--metrics PATH] [--config PATH]
+   svtk spatial summaries [-h] [--metrics-table PATH] [--config PATH]
                               [--run-scenario RUN_SCENARIO] [--metric METRIC]
-                              [--station-metadata PATH] [--checkpoint-dir DIR]
-                              [--no-resume] [--verbose]
+                              [--station-metadata-table PATH]
+                              [--checkpoint-dir DIR] [--no-resume] [--verbose]
 
 .. rubric:: Parameters
 
@@ -327,10 +329,10 @@ Build standard spatial-statistics summary tables.
      - No
      -
      - show this help message and exit
-   * - ``--metrics``, ``--metrics-table``
+   * - ``--metrics-table``, ``--metrics``
      - No
      -
-     - Filesystem path. Metric rows table. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Metric rows table. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'. Prefer --metrics-table; --metrics is a legacy alias.
    * - ``--config``
      - No
      -
@@ -343,10 +345,10 @@ Build standard spatial-statistics summary tables.
      - No
      -
      - Metric override. Use 'all' to process each metric in the input table.
-   * - ``--station-metadata``, ``--station-metadata-table``
+   * - ``--station-metadata-table``, ``--station-metadata``
      - No
      -
-     - Filesystem path. Prepared station metadata table for geology contrasts. Defaults to configured output table 'prepared_stations'.
+     - Filesystem path. Prepared station metadata table for geology contrasts. Defaults to configured output table 'prepared_stations'. Prefer --station-metadata-table; --station-metadata is a legacy alias.
    * - ``--checkpoint-dir``
      - No
      -
