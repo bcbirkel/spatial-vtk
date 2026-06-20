@@ -83,6 +83,10 @@ Changelog
   - ``svtk metrics estimate`` now exposes ``--metric-manifest`` and
     ``--metric-task-estimate-output`` as artifact-named flags while preserving
     ``--manifest`` and ``--output`` as legacy aliases.
+  - ``svtk metrics run-batch``, ``svtk metrics batch-status``, and
+    ``svtk metrics merge-batches`` now expose ``--metric-manifest`` for the
+    workflow manifest, and ``merge-batches`` exposes ``--metric-rows-output``
+    for the merged metric rows table while preserving legacy aliases.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

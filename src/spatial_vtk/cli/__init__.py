@@ -1043,7 +1043,17 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     run.set_defaults(handler=_cmd_metrics_run)
 
     batch = metrics_sub.add_parser("run-batch", help="Run one batch from a metric manifest.")
-    batch.add_argument("--manifest", metavar="PATH", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
+    batch.add_argument(
+        "--metric-manifest",
+        "--manifest",
+        dest="manifest",
+        metavar="PATH",
+        default=None,
+        help=(
+            "Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, "
+            "otherwise metric_manifest. Prefer --metric-manifest; --manifest is a legacy alias."
+        ),
+    )
     batch.add_argument("--config", default=None, help="Spatial-VTK config used to resolve the default manifest path.")
     batch.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     batch.add_argument("--batch-index", type=int, required=True, help="Batch index to run.")
@@ -1051,7 +1061,17 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     batch.set_defaults(handler=_cmd_metrics_run_batch)
 
     batch_status = metrics_sub.add_parser("batch-status", help="Summarize metric manifest batch output completion.")
-    batch_status.add_argument("--manifest", metavar="PATH", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
+    batch_status.add_argument(
+        "--metric-manifest",
+        "--manifest",
+        dest="manifest",
+        metavar="PATH",
+        default=None,
+        help=(
+            "Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, "
+            "otherwise metric_manifest. Prefer --metric-manifest; --manifest is a legacy alias."
+        ),
+    )
     batch_status.add_argument("--config", default=None, help="Spatial-VTK config used to resolve the default manifest path.")
     batch_status.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     batch_status.add_argument("--missing-limit", type=int, default=20, help="Maximum missing batch outputs to list. Use -1 for all.")
@@ -1092,14 +1112,27 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     cache.set_defaults(handler=_cmd_metrics_cache_waveforms)
 
     merge = metrics_sub.add_parser("merge-batches", help="Merge metric manifest batch outputs.")
-    merge.add_argument("--manifest", metavar="PATH", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
     merge.add_argument(
+        "--metric-manifest",
+        "--manifest",
+        dest="manifest",
+        metavar="PATH",
+        default=None,
+        help=(
+            "Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, "
+            "otherwise metric_manifest. Prefer --metric-manifest; --manifest is a legacy alias."
+        ),
+    )
+    merge.add_argument(
+        "--metric-rows-output",
         "--output",
+        dest="output",
         metavar="PATH",
         default=None,
         help=(
             "Merged output CSV/parquet path. If an existing directory or directory-style path is passed, "
-            "writes metric_rows.parquet inside it. Defaults to configured output table 'metric_rows'."
+            "writes metric_rows.parquet inside it. Defaults to configured output table 'metric_rows'. "
+            "Prefer --metric-rows-output; --output is a legacy alias."
         ),
     )
     merge.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default paths.")

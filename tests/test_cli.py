@@ -1433,8 +1433,16 @@ def test_cli_metrics_workflow_help_exposes_artifact_aliases(capsys):
         main(["metrics", "batch-status", "--help"])
     assert excinfo.value.code == 0
     batch_status_help = " ".join(capsys.readouterr().out.split())
+    assert "--metric-manifest" in batch_status_help
     assert "Metric workflow manifest JSON" in batch_status_help
     assert "--missing-limit" in batch_status_help
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["metrics", "merge-batches", "--help"])
+    assert excinfo.value.code == 0
+    merge_help = " ".join(capsys.readouterr().out.split())
+    assert "--metric-manifest" in merge_help
+    assert "--metric-rows-output" in merge_help
 
     with pytest.raises(SystemExit) as excinfo:
         main(["metrics", "cache-waveforms", "--help"])
@@ -1467,6 +1475,9 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     run_section = text.split(".. _cli-svtk-metrics-run:", maxsplit=1)[1].split(
         ".. _cli-svtk-metrics-run-batch:", maxsplit=1
     )[0]
+    run_batch_section = text.split(".. _cli-svtk-metrics-run-batch:", maxsplit=1)[1].split(
+        ".. _cli-svtk-metrics-slurm:", maxsplit=1
+    )[0]
     batch_status_section = text.split(".. _cli-svtk-metrics-batch-status:", maxsplit=1)[1].split(
         ".. _cli-svtk-metrics-cache-waveforms:", maxsplit=1
     )[0]
@@ -1475,6 +1486,9 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     )[0]
     estimate_section = text.split(".. _cli-svtk-metrics-estimate:", maxsplit=1)[1].split(
         ".. _cli-svtk-metrics-inventories:", maxsplit=1
+    )[0]
+    merge_section = text.split(".. _cli-svtk-metrics-merge-batches:", maxsplit=1)[1].split(
+        ".. _cli-svtk-metrics-outputs:", maxsplit=1
     )[0]
     slurm_section = text.split(".. _cli-svtk-metrics-slurm:", maxsplit=1)[1]
 
@@ -1493,7 +1507,9 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     assert "Metric row output CSV/parquet path" in run_section
     assert "Prefer --metric-rows; --output is a legacy alias." in run_section
     assert "``--missing-limit``" in batch_status_section
+    assert "``--metric-manifest``, ``--manifest``" in batch_status_section
     assert "Metric workflow manifest JSON" in batch_status_section
+    assert "Prefer --metric-manifest; --manifest is a legacy alias." in batch_status_section
     assert "``--metric-manifest``, ``--manifest``" in cache_section
     assert "``--cached-metric-manifest-output``, ``--output``" in cache_section
     assert "Prefer --metric-manifest; --manifest is a legacy alias." in cache_section
@@ -1503,6 +1519,12 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     assert "Metric task CSV/parquet path. Overrides --metric-manifest." in estimate_section
     assert "Prefer --metric-manifest; --manifest is a legacy alias." in estimate_section
     assert "Prefer --metric-task-estimate-output; --output is a legacy alias." in estimate_section
+    assert "``--metric-manifest``, ``--manifest``" in merge_section
+    assert "``--metric-rows-output``, ``--output``" in merge_section
+    assert "Prefer --metric-manifest; --manifest is a legacy alias." in merge_section
+    assert "Prefer --metric-rows-output; --output is a legacy alias." in merge_section
+    assert "``--metric-manifest``, ``--manifest``" in run_batch_section
+    assert "Prefer --metric-manifest; --manifest is a legacy alias." in run_batch_section
     assert "``--metric-manifest``, ``--manifest``" in slurm_section
     assert "``--metrics-slurm-script-output``, ``--output``" in slurm_section
     assert "Prefer --metric-manifest; --manifest is a legacy alias." in slurm_section
@@ -3695,7 +3717,7 @@ metrics:
     monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(settings))
     assert main(["config", "set", str(config)]) == 0
 
-    assert main(["metrics", "batch-status", "--manifest", str(manifest), "--missing-limit", "1"]) == 0
+    assert main(["metrics", "batch-status", "--metric-manifest", str(manifest), "--missing-limit", "1"]) == 0
 
     status_output = capsys.readouterr().out
     assert "total_batches: 3" in status_output

@@ -53,7 +53,7 @@ svtk metrics batch-status
 
 .. code-block:: bash
 
-   svtk metrics batch-status [-h] [--manifest PATH] [--config PATH]
+   svtk metrics batch-status [-h] [--metric-manifest PATH] [--config PATH]
                                  [--run-scenario RUN_SCENARIO]
                                  [--missing-limit MISSING_LIMIT] [--json]
 
@@ -71,10 +71,10 @@ svtk metrics batch-status
      - No
      -
      - show this help message and exit
-   * - ``--manifest``
+   * - ``--metric-manifest``, ``--manifest``
      - No
      -
-     - Filesystem path. Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.
+     - Filesystem path. Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest. Prefer --metric-manifest; --manifest is a legacy alias.
    * - ``--config``
      - No
      -
@@ -314,8 +314,8 @@ svtk metrics merge-batches
 
 .. code-block:: bash
 
-   svtk metrics merge-batches [-h] [--manifest PATH] [--output PATH]
-                                  [--config PATH]
+   svtk metrics merge-batches [-h] [--metric-manifest PATH]
+                                  [--metric-rows-output PATH] [--config PATH]
                                   [--run-scenario RUN_SCENARIO]
                                   [--allow-missing]
 
@@ -333,14 +333,14 @@ svtk metrics merge-batches
      - No
      -
      - show this help message and exit
-   * - ``--manifest``
+   * - ``--metric-manifest``, ``--manifest``
      - No
      -
-     - Filesystem path. Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.
-   * - ``--output``
+     - Filesystem path. Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest. Prefer --metric-manifest; --manifest is a legacy alias.
+   * - ``--metric-rows-output``, ``--output``
      - No
      -
-     - Filesystem path. Merged output CSV/parquet path. If an existing directory or directory-style path is passed, writes metric_rows.parquet inside it. Defaults to configured output table 'metric_rows'.
+     - Filesystem path. Merged output CSV/parquet path. If an existing directory or directory-style path is passed, writes metric_rows.parquet inside it. Defaults to configured output table 'metric_rows'. Prefer --metric-rows-output; --output is a legacy alias.
    * - ``--config``
      - No
      -
@@ -605,7 +605,7 @@ svtk metrics run-batch
 
 .. code-block:: bash
 
-   svtk metrics run-batch [-h] [--manifest PATH] [--config PATH]
+   svtk metrics run-batch [-h] [--metric-manifest PATH] [--config PATH]
                               [--run-scenario RUN_SCENARIO] --batch-index
                               BATCH_INDEX [--overwrite]
 
@@ -623,10 +623,10 @@ svtk metrics run-batch
      - No
      -
      - show this help message and exit
-   * - ``--manifest``
+   * - ``--metric-manifest``, ``--manifest``
      - No
      -
-     - Filesystem path. Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.
+     - Filesystem path. Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest. Prefer --metric-manifest; --manifest is a legacy alias.
    * - ``--config``
      - No
      -
