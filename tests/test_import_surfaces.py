@@ -11,6 +11,46 @@ import sys
 import textwrap
 
 
+def _first_list_table_after_marker(text: str, marker: str) -> str:
+    """Return the first reStructuredText list table after a section marker."""
+
+    rest = text.split(marker, 1)[1].split(".. list-table::", 1)[1]
+    lines = [".. list-table::"] + rest.splitlines()
+    table_lines: list[str] = []
+    table_started = False
+    for line in lines:
+        if line.startswith(".. list-table::") or line.startswith("   ") or not line.strip():
+            table_lines.append(line)
+            table_started = True
+        elif table_started:
+            break
+    return "\n".join(table_lines)
+
+
+def _public_helper_names_from_list_table(table_text: str) -> set[str]:
+    """Extract helper names from the first column of a docs list table."""
+
+    names: set[str] = set()
+    lines = table_text.splitlines()
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        if re.match(r"\s+\* - ``", line):
+            cell = line
+            index += 1
+            while index < len(lines) and re.match(r"\s+``", lines[index]):
+                cell += " " + lines[index].strip()
+                index += 1
+            for raw_name in re.findall(r"``([^`]+)``", cell):
+                for part in re.split(r"\s+and\s+|,\s*", raw_name):
+                    name = part.strip()
+                    if re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", name):
+                        names.add(name)
+        else:
+            index += 1
+    return names
+
+
 def test_public_imports():
     import spatial_vtk
     from spatial_vtk.config import (
@@ -1909,6 +1949,7 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "pass ``qc_trace_summary_table`` to ``launch_qc_dashboard``" in text
     assert "Missing sidecar directories and existing empty sidecar directories" in text
     assert "``sidecar_dir_exists``" in text
+
     forbidden_modules = (
         "spatial_vtk.visualize.context.figures",
         "spatial_vtk.visualize.context.maps",
@@ -1992,6 +2033,58 @@ def test_visualize_api_docs_use_public_entry_points():
         "figure_sidecar_dimension_counts",
     ):
         assert helper in text
+
+
+def test_public_helper_tables_match_package_exports():
+    """Public helper tables should not promise names absent from __all__."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    public_helper_tables = {
+        "spatial_vtk.io": (
+            root / "docs" / "reference" / "api" / "io.rst",
+            "Public helpers exposed by ``spatial_vtk.io``:",
+        ),
+        "spatial_vtk.qc": (
+            root / "docs" / "reference" / "api" / "qc.rst",
+            "Public helpers exposed by ``spatial_vtk.qc``:",
+        ),
+        "spatial_vtk.metrics.plot": (
+            root / "docs" / "reference" / "api" / "metrics.rst",
+            "Public plotting helpers exposed by ``spatial_vtk.metrics.plot``:",
+        ),
+        "spatial_vtk.spatial": (
+            root / "docs" / "reference" / "api" / "spatial.rst",
+            "Public helpers exposed by ``spatial_vtk.spatial``:",
+        ),
+        "spatial_vtk.spatial.plot": (
+            root / "docs" / "reference" / "api" / "spatial.rst",
+            "Public helpers exposed by ``spatial_vtk.spatial.plot``:",
+        ),
+        "spatial_vtk.spatial.map": (
+            root / "docs" / "reference" / "api" / "spatial.rst",
+            "Public helpers exposed by ``spatial_vtk.spatial.map``:",
+        ),
+        "spatial_vtk.visualize": (
+            root / "docs" / "reference" / "api" / "visualize.rst",
+            "Public helpers exposed by ``spatial_vtk.visualize``:",
+        ),
+        "spatial_vtk.visualize.dashboard": (
+            root / "docs" / "reference" / "api" / "visualize.rst",
+            "Public helpers exposed by ``spatial_vtk.visualize.dashboard``:",
+        ),
+    }
+
+    missing_by_module: dict[str, list[str]] = {}
+    for module_name, (docs_path, marker) in public_helper_tables.items():
+        text = docs_path.read_text(encoding="utf-8")
+        table = _first_list_table_after_marker(text, marker)
+        documented_helpers = _public_helper_names_from_list_table(table)
+        exported_helpers = set(importlib.import_module(module_name).__all__)
+        missing_helpers = sorted(documented_helpers - exported_helpers)
+        if missing_helpers:
+            missing_by_module[module_name] = missing_helpers
+
+    assert missing_by_module == {}
 
 
 def test_dashboard_export_docstring_starts_with_configured_helper():
