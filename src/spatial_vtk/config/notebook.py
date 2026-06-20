@@ -1296,14 +1296,14 @@ def run_or_submit_notebook_function(
 ) -> Any | SlurmSubmission | None:
     """Run an importable package function locally or through Slurm.
 
-    This lower-level helper powers :func:`run_notebook_step_if_needed`. New
-    notebooks should usually call that readiness-aware wrapper so each heavy
-    step displays its status table, skips current outputs, and then calls the
-    package function only when work is needed. Use this helper directly only
-    when a caller has already handled readiness and skip logic. Local execution
-    calls the Python function directly. Slurm execution writes a small worker
-    script that imports the same function and calls it with JSON-serializable
-    arguments.
+    This execution primitive is used by :func:`run_notebook_step_if_needed`.
+    New notebooks should usually call that readiness-aware wrapper so each
+    heavy step displays its status table, skips current outputs, and then calls
+    the package function only when work is needed. Use this helper directly
+    only when a caller has already handled readiness and skip logic. Local
+    execution calls the Python function directly. Slurm execution writes a
+    small worker script that imports the same function and calls it with
+    JSON-serializable arguments.
 
     Parameters
     ----------
@@ -1317,8 +1317,7 @@ def run_or_submit_notebook_function(
     args, kwargs
         JSON-serializable arguments passed to ``function``.
     script_name, job_name, walltime, memory, cpus, run_local, section
-        Slurm/local execution controls matching the lower-level notebook Slurm
-        helpers.
+        Slurm/local execution controls matching the notebook Slurm helpers.
 
     Returns
     -------

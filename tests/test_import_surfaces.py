@@ -2630,7 +2630,9 @@ def test_notebook_helper_docs_prefer_readiness_wrapper():
 
     assert "New notebooks should" in notebook_helpers
     assert "prefer :func:`run_notebook_step_if_needed`" in notebook_helpers
-    assert "This lower-level helper powers :func:`run_notebook_step_if_needed`" in notebook_helpers
+    assert "This execution primitive is used by :func:`run_notebook_step_if_needed`" in notebook_helpers
+    assert "This lower-level helper powers :func:`run_notebook_step_if_needed`" not in notebook_helpers
+    assert "matching the lower-level notebook Slurm" not in notebook_helpers
     assert "Large-run notebooks use this helper" not in notebook_helpers
     assert "Large-run notebooks should pass these helpers to" in metric_configured
     assert "``run_notebook_step_if_needed()``" in metric_configured

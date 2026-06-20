@@ -39,6 +39,10 @@ Changelog
     CLI presents named config-backed commands as the standard path and frames
     direct public-function calls or extra table/keyword mappings as one-off
     advanced usage.
+  - Reworded notebook execution-helper docstrings so the readiness-aware
+    wrapper remains the documented default for heavy notebook steps, while
+    direct function execution is described as an explicit primitive for callers
+    that already own readiness and skip logic.
   - Aligned API docs, generated CLI reference, workflow guides, README
     install guidance, and tutorial notebooks with the stabilized public import
     surfaces and result-object workflow.
