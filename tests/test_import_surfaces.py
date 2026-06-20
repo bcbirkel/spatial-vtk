@@ -2251,6 +2251,8 @@ def test_python_workflow_docs_prefer_metric_figure_suite_wrapper():
     assert "the result owns the Slurm/local execution branch" in workflows
     assert "spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context" not in workflows
     assert "spatial_vtk.metrics.plot.metric_rows_for_metrics" not in workflows
+    assert "metric row selectors" not in workflows
+    assert "tutorials should use the result-object figure-suite methods instead" in workflows
     assert "``spatial_vtk.io.load_standard_ingest_workflow_outputs``" in workflows
     assert "``spatial_vtk.qc.load_standard_qc_inputs``" in workflows
     assert "``spatial_vtk.qc.load_standard_qc_workflow_outputs``" in workflows

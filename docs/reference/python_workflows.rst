@@ -76,7 +76,9 @@ namespace.
        metric workflow result objects.
    * - ``spatial_vtk.metrics.plot``
      - Metric diagnostic plots, large-run metric figure suites, station metric
-       maps, metric row selectors, and metric figure result objects.
+       maps, and metric figure result objects. Advanced row-selection helpers
+       are documented in the Metrics API reference for custom scripts, but
+       tutorials should use the result-object figure-suite methods instead.
    * - ``spatial_vtk.spatial``
      - Step 4 spatial-statistics workflows, Step 5 GeoJSON/corridor
        workflows, spatial readiness checks, configured spatial settings,

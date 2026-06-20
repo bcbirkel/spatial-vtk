@@ -215,6 +215,9 @@ Changelog
   - Split notebook-facing metric figure-suite guidance from advanced metric
     row-selection/context helpers so tutorial authors have one clear plotting
     path while custom scripts can still find the extension APIs.
+  - Updated Python workflow guidance so the stable notebook import surface for
+    metric plotting points to figure suites and result objects, while keeping
+    row-selection helpers documented only as advanced script APIs.
   - Updated QC, Spatial, Visualization, I/O, and Configuration API pages to
     document stable package entry points instead of lower-level implementation
     modules.
