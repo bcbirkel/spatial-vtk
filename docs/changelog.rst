@@ -133,6 +133,8 @@ Changelog
   - Updated the Metrics API workflow result docs to reference the
     ``spatial_vtk.metrics`` package re-exports instead of lower-level
     workflow-module paths.
+  - Updated configuration examples to use standard workflow output helpers
+    instead of notebook-facing ``output_group(...).load_tables(...)`` blocks.
   - Updated workflow examples to prefer ``output_group()`` and configured
     output-registry helpers over raw ``resolve_output_path()`` snippets for
     normal notebook workflows.

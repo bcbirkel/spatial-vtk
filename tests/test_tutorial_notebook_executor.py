@@ -645,8 +645,10 @@ def test_public_docs_describe_committed_tutorial_waveforms() -> None:
     assert "ValidationToolkit_Workflow.png" not in combined
     assert "docs/_static/spatial_vtk_workflow.png" in readme
     assert "_static/spatial_vtk_workflow.png" in index
-    assert 'output_group("step_01_ingest").load_tables' in configuration
-    assert 'record_coverage = ingest_tables["record_coverage"]' in configuration
+    assert "load_standard_ingest_workflow_outputs" in configuration
+    assert "load_standard_metric_workflow_outputs" in configuration
+    assert "ingest_outputs.metadata_summary_frame()" in configuration
+    assert 'output_group("step_01_ingest").load_tables' not in configuration
     assert "load_output_table(" not in configuration
     assert "resolve_output_path(" not in configuration
 

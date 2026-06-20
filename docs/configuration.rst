@@ -262,30 +262,28 @@ will use that active config when you do not pass paths or config objects.
 
    from spatial_vtk.config import SpatialVTKConfig
    from spatial_vtk.config.metrics import metrics_settings_from_config
-   from spatial_vtk.io import output_group
-   from spatial_vtk.io import prepare_station_metadata
-   from spatial_vtk.visualize.context import plot_record_coverage
+   from spatial_vtk.io import load_standard_ingest_workflow_outputs
+   from spatial_vtk.metrics import load_standard_metric_workflow_outputs
 
    cfg = SpatialVTKConfig.from_file("spatial-vtk.yaml", run_scenario="tutorial").activate()
 
-   stations = prepare_station_metadata()
-   metric_tables = output_group("step_03_metrics").load_tables({"metrics": "metrics_enriched_path"})
-   ingest_tables = output_group("step_01_ingest").load_tables({"record_coverage": "record_coverage_path"})
-   metrics = metric_tables["metrics"]
-   record_coverage = ingest_tables["record_coverage"]
+   ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)
+   metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg, load_task_estimate=False)
    metric_settings = metrics_settings_from_config()
-   plot_record_coverage(record_coverage, showfig=True, savefig=True)
+   ingest_outputs.display_station_preview(nrows=5)
+   ingest_outputs.display_event_preview(nrows=5)
+   metric_outputs.display_metrics_preview(nrows=5)
 
 If you prefer each call to be self-contained, pass the config directly.
 
 .. code-block:: python
 
    from spatial_vtk.config import SpatialVTKConfig
-   from spatial_vtk.io import output_group
+   from spatial_vtk.io import load_standard_ingest_workflow_outputs
 
    cfg = SpatialVTKConfig.from_file("spatial-vtk.yaml", run_scenario="tutorial")
-   ingest_outputs = output_group("step_01_ingest", cfg=cfg)
-   record_coverage_figure = ingest_outputs.record_coverage_figure_path
+   ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)
+   ingest_outputs.status_frame()
 
 For CLI workflows, set ``SVTK_CONFIG_FILE`` in your shell and let commands
 discover it.
@@ -336,12 +334,13 @@ resolved paths from Python:
 
    configured_output_registry_frame(kinds=("table",), include_paths=True)
 
-When a workflow step creates several standard tables, write them by output key
-and let the next step read them the same way:
+When a workflow step creates several standard tables, write them by output key.
+Later notebook steps should normally read those products through their standard
+input/output helpers rather than loading individual paths:
 
 .. code-block:: python
 
-   from spatial_vtk.io import output_group, write_output_tables
+   from spatial_vtk.io import load_standard_ingest_workflow_outputs, write_output_tables
 
    write_output_tables(
        prepared_stations=stations,
@@ -349,8 +348,8 @@ and let the next step read them the same way:
        event_station_records=event_stations,
    )
 
-   ingest_tables = output_group("step_01_ingest").load_tables({"stations": "prepared_stations_path"})
-   stations = ingest_tables["stations"]
+   ingest_outputs = load_standard_ingest_workflow_outputs()
+   ingest_outputs.metadata_summary_frame()
 
 You can still override a single output directly:
 
