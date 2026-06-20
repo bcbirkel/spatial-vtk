@@ -198,11 +198,13 @@ should use the same Python package function locally and inside Slurm workers.
 Tables and Artifacts
 --------------------
 
-Routine notebooks should prefer ``output_group()``, standard workflow result
-loaders, bounded preview helpers, and registered ``read_output``/``write``
-helpers from ``spatial_vtk.io``. The lower-level table, output-path, artifact,
-manifest, and plan modules are documented for scripts and package extension
-points, not as notebook path-plumbing examples.
+Routine notebooks should start with standard workflow result loaders and
+bounded preview helpers from ``spatial_vtk.io``. Use ``output_group()`` only
+when no standard workflow result helper exists for the step yet, or when an
+advanced script needs direct access to a configured group of artifacts. The
+lower-level table, output-path, artifact, manifest, and plan modules are
+documented for scripts and package extension points, not as notebook
+path-plumbing examples.
 
 .. automodule:: spatial_vtk.io.tables
    :members:

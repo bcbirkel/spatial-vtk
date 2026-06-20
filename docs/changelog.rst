@@ -225,6 +225,10 @@ Changelog
   - Updated large-run README, package overview, and Python workflow guidance
     so common notebook examples point to result-object loaders and Step 4/5
     runner methods instead of lower-level readiness/build helper pairs.
+  - Updated I/O reference docs and the output-registry module docstring so
+    standard workflow result loaders are presented before ``output_group()``
+    for routine notebooks, with ``output_group()`` and ``resolve_output_path()``
+    framed as grouped-artifact and single-artifact script helpers.
 
 - **CLI examples and defaults** *(Changed)*
 

@@ -8,14 +8,16 @@ filenames stored in ``default_outputs.yaml``.
 
 Usage examples
 --------------
-Resolve workflow outputs from the active config:
-  ``from spatial_vtk.io import output_group``
-  ``step_outputs = output_group("step_01_ingest")``
-  ``path = step_outputs.record_coverage_figure``
+Load the standard ingest output status from the active config:
+  ``from spatial_vtk.io import load_standard_ingest_workflow_outputs``
+  ``result = load_standard_ingest_workflow_outputs()``
+  ``status = result.status_frame()``
 
-Use ``resolve_output_path()`` directly for scripts or single-artifact helpers
-that need one registered artifact path without the readiness and preview
-methods attached to an output group.
+Use ``output_group()`` for reusable helpers that need a configured group of
+artifacts when no standard workflow result helper exists yet. Use
+``resolve_output_path()`` directly for scripts or single-artifact helpers that
+need one registered artifact path without the readiness and preview methods
+attached to an output group.
 """
 
 from __future__ import annotations

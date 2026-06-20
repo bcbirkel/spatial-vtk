@@ -1028,7 +1028,8 @@ def test_io_api_docs_distinguish_public_entry_point_from_implementation_modules(
     assert "Start with ``spatial_vtk.io`` in notebooks and scripts" in text
     assert "documented for API completeness and advanced scripts" in text
     assert "implementation\norganization for tutorial notebooks" in text
-    assert "Routine notebooks should prefer ``output_group()``" in text
+    assert "Routine notebooks should start with standard workflow result loaders" in text
+    assert "Use ``output_group()`` only\nwhen no standard workflow result helper exists" in text
     assert "not as notebook path-plumbing examples" in text
     assert ".. automodule:: spatial_vtk.io.metadata\n" in text
     assert ".. automodule:: spatial_vtk.io.preprocessing\n" in text
@@ -1049,7 +1050,7 @@ def test_notebook_helper_docstring_prefers_public_config_import():
     assert "from spatial_vtk.config.notebook import register_svtk_cell_timer" not in text
 
 
-def test_output_registry_docstring_prefers_output_group_for_notebooks():
+def test_output_registry_docstring_prefers_standard_workflow_outputs_for_notebooks():
     source = (
         pathlib.Path(__file__).resolve().parents[1]
         / "src"
@@ -1059,8 +1060,10 @@ def test_output_registry_docstring_prefers_output_group_for_notebooks():
     )
     text = source.read_text(encoding="utf-8")
 
-    assert "from spatial_vtk.io import output_group" in text
-    assert 'step_outputs = output_group("step_01_ingest")' in text
+    assert "from spatial_vtk.io import load_standard_ingest_workflow_outputs" in text
+    assert "result = load_standard_ingest_workflow_outputs()" in text
+    assert "Use ``output_group()`` for reusable helpers" in text
+    assert 'step_outputs = output_group("step_01_ingest")' not in text
     assert "Use ``resolve_output_path()`` directly for scripts or single-artifact helpers" in text
     assert "Use ``resolve_output_path()`` directly for lower-level helpers" not in text
     assert 'path = resolve_output_path("record_coverage", kind="figure")' not in text
