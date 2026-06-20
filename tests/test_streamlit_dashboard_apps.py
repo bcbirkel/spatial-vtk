@@ -573,6 +573,30 @@ def test_metrics_dashboard_filtered_summary_uses_readiness_for_skipped_tabs():
     assert summary.loc["Paths", "message"] == "path_hex summary is not ready for Paths. Rebuild dashboard summaries for this run."
 
 
+def test_metrics_dashboard_filtered_summary_reports_metric_dataset_readiness():
+    """Data Status should report why row-level distributions are unavailable."""
+
+    metric_dataset_readiness = pd.DataFrame(
+        {
+            "name": ["metrics_long"],
+            "ready": [False],
+            "readiness": ["missing_dataset_files"],
+            "message": ["Dashboard metric dataset contains no recognized files."],
+        }
+    )
+
+    summary = streamlit_metrics._dashboard_filtered_row_summary(
+        heat=pd.DataFrame({"model": ["m1"], "metric": ["PGA"]}),
+        stations=pd.DataFrame({"station": ["STA1"], "model": ["m1"], "metric": ["PGA"]}),
+        events=pd.DataFrame({"event_id": ["ev1"], "model": ["m1"], "metric": ["PGA"]}),
+        paths=pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "dist_bin_km": [10.0], "az_bin_deg": [45.0]}),
+        rows=None,
+        metric_dataset_readiness=metric_dataset_readiness,
+    ).set_index("dashboard_tab")
+
+    assert summary.loc["Distributions", "message"] == "Dashboard metric dataset contains no recognized files."
+
+
 def test_dashboard_qc_trace_readiness_is_bounded_and_schema_aware(tmp_path):
     ready_path = tmp_path / "qc_trace_summary.csv"
     ready_path.write_text("event_id,station,component,qc_status\nev1,STA,R,pass\n", encoding="utf-8")

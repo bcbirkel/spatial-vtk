@@ -421,6 +421,7 @@ def _render_metrics_dashboard(
                 paths=paths,
                 rows=rows,
                 readiness=readiness,
+                metric_dataset_readiness=metric_dataset_readiness,
             ),
         )
 
@@ -653,6 +654,7 @@ def _dashboard_filtered_row_summary(
     paths: pd.DataFrame,
     rows: pd.DataFrame | None,
     readiness: pd.DataFrame | None = None,
+    metric_dataset_readiness: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """Return tab-level row counts for the active dashboard filters."""
 
@@ -664,6 +666,7 @@ def _dashboard_filtered_row_summary(
         ("Distributions", "metrics_dashboard_dataset", rows),
     ]
     result_rows: list[dict[str, object]] = []
+    metric_dataset_message = _metric_dataset_readiness_message(metric_dataset_readiness)
     for tab, table, frame in specs:
         if frame is None:
             result_rows.append(
@@ -675,7 +678,9 @@ def _dashboard_filtered_row_summary(
                     "station_count": "",
                     "model_count": "",
                     "metric_count": "",
-                    "message": "Row-level metrics are not loaded for the current selection.",
+                    "message": metric_dataset_message
+                    if table == "metrics_dashboard_dataset" and metric_dataset_message
+                    else "Row-level metrics are not loaded for the current selection.",
                 }
             )
             continue
