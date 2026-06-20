@@ -1186,6 +1186,24 @@ def test_figure_io_docstring_prefers_configured_output_key():
     assert 'outpath="retention_summary.png"' not in text
 
 
+def test_qc_retention_docstring_prefers_standard_step2_figure_helper():
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "visualize"
+        / "qc"
+        / "retention.py"
+    )
+    text = source.read_text(encoding="utf-8")
+
+    assert "from spatial_vtk.qc import load_standard_qc_workflow_outputs" in text
+    assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in text
+    assert "result = qc_outputs.write_figures(settings, cfg=cfg)" in text
+    assert "Use individual functions such as ``plot_retention_summary()`` directly only" in text
+    assert 'outpath="retention.png"' not in text
+
+
 def test_metric_gof_docstring_prefers_public_metrics_import():
     source = (
         pathlib.Path(__file__).resolve().parents[1]

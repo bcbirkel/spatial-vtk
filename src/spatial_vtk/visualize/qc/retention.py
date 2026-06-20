@@ -7,9 +7,13 @@ on private runtime profiles or production output layouts.
 
 Usage examples
 --------------
-Plot retention counts:
-  ``fig = plot_retention_summary(qc_summary)``
-  ``plot_retention_summary(qc_summary, savefig=True, outpath="retention.png")``
+Render configured Step 2 QC figures from a notebook or script:
+  ``from spatial_vtk.qc import load_standard_qc_workflow_outputs``
+  ``qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)``
+  ``result = qc_outputs.write_figures(settings, cfg=cfg)``
+
+Use individual functions such as ``plot_retention_summary()`` directly only
+for focused scripts that already own compact QC summary tables.
 """
 
 from __future__ import annotations
