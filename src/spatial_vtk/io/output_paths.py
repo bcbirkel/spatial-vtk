@@ -17,14 +17,19 @@ from __future__ import annotations
 from dataclasses import dataclass, fields, is_dataclass
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, Callable, Iterable, Literal, Sequence
+from typing import TYPE_CHECKING, Any, Callable, Iterable, Literal, Sequence
 
-from spatial_vtk.config.outputs import OutputKind, resolve_output_path
-from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.io.artifacts import slugify
 
+if TYPE_CHECKING:
+    from spatial_vtk.config.outputs import OutputKind
+    from spatial_vtk.config.runtime import SpatialVTKConfig
 
-ConfigInput = SpatialVTKConfig | str | Path
+
+if TYPE_CHECKING:
+    ConfigInput = SpatialVTKConfig | str | Path
+else:
+    ConfigInput = Any
 
 
 OutputGroupName = Literal[
@@ -1006,6 +1011,8 @@ def output_group_paths(
         Mapping from variable-style artifact names to resolved paths.
     """
 
+    from spatial_vtk.config.outputs import resolve_output_path
+
     paths: dict[str, Path] = {}
     for artifact in output_group_artifacts(group):
         if not include_optional and not artifact.required:
@@ -1352,6 +1359,8 @@ def output_group_status(
     list of dict
         Display-ready status rows.
     """
+
+    from spatial_vtk.config.outputs import resolve_output_path
 
     artifacts = output_group_artifacts(group)
     if not include_optional:

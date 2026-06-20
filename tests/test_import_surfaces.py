@@ -503,6 +503,7 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
 
         import spatial_vtk.qc
         import spatial_vtk.qc.build
+        import spatial_vtk.io
         import spatial_vtk.metrics.workflow
         import spatial_vtk.spatial
         import spatial_vtk.spatial.calculate
@@ -519,6 +520,11 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
             "spatial_vtk.metrics.workflow.execution",
             "spatial_vtk.metrics.workflow.outputs",
             "spatial_vtk.metrics.workflow.tasks",
+            "spatial_vtk.io.metadata",
+            "spatial_vtk.io.preprocessing",
+            "spatial_vtk.io.tables",
+            "spatial_vtk.io.waveforms",
+            "spatial_vtk.io.workflows",
             "spatial_vtk.qc.build.inventory",
             "spatial_vtk.spatial.calculate.workflow",
             "spatial_vtk.spatial.map.metrics",
@@ -536,6 +542,7 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
             raise SystemExit(f"unexpected eager imports: {sorted(loaded)}")
 
         from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
+        from spatial_vtk.io import OutputGroup, output_status_rows
         from spatial_vtk.metrics import StandardMetricWorkflowOutputResult, load_standard_metric_workflow_outputs
         from spatial_vtk.spatial import run_spatial_statistics_workflow
         from spatial_vtk.spatial.calculate import load_standard_spatial_workflow_output_status
@@ -545,6 +552,8 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
 
         assert StandardMetricWorkflowOutputResult.__module__ == "spatial_vtk.metrics.workflow.standard"
         assert load_standard_metric_workflow_outputs.__module__ == "spatial_vtk.metrics.workflow.standard"
+        assert OutputGroup.__module__ == "spatial_vtk.io.output_paths"
+        assert output_status_rows.__module__ == "spatial_vtk.io.output_paths"
         assert load_trace_inventory_lookup.__module__ == "spatial_vtk.qc.build.filtering"
         assert slurm_settings_from_config.__module__ == "spatial_vtk.qc.build.slurm"
         assert run_spatial_statistics_workflow.__module__ == "spatial_vtk.spatial.calculate.workflow"
@@ -564,6 +573,11 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
             "spatial_vtk.metrics.workflow.execution",
             "spatial_vtk.metrics.workflow.outputs",
             "spatial_vtk.metrics.workflow.tasks",
+            "spatial_vtk.io.metadata",
+            "spatial_vtk.io.preprocessing",
+            "spatial_vtk.io.tables",
+            "spatial_vtk.io.waveforms",
+            "spatial_vtk.io.workflows",
             "spatial_vtk.qc.build.inventory",
             "spatial_vtk.spatial.map.metrics",
             "spatial_vtk.spatial.plot.large_run",

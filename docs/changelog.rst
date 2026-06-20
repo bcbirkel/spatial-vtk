@@ -344,6 +344,12 @@ Changelog
   - Made ``spatial_vtk.spatial`` and ``spatial_vtk.spatial.calculate`` resolve
     public calculation helpers lazily so importing spatial package surfaces no
     longer imports every spatial calculation backend up front.
+  - Made ``spatial_vtk.io`` resolve public I/O helpers lazily so importing the
+    standard notebook I/O surface no longer imports table, waveform,
+    preprocessing, or workflow implementations up front.
+  - Kept lightweight output-status helpers importable without loading
+    YAML/config machinery; configured output-group path resolution still loads
+    config support only when a resolver is called.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 
