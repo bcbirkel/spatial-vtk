@@ -32,6 +32,9 @@ Changelog
     ``--input-table`` and ``--figure-output`` as their canonical explicit path
     overrides while preserving ``--input`` and ``--output`` for existing
     scripts.
+  - Human-readable spatial and dashboard status commands now label resolved
+    filesystem targets as ``resolved_path`` so terminal output matches the
+    notebook readiness tables.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

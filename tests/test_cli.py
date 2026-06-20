@@ -479,6 +479,7 @@ outputs:
     assert "Spatial readiness summary:" in captured.out
     assert "metric field table" in captured.out
     assert "redcap clusters table" in captured.out
+    assert "resolved_path" in captured.out
     assert "Step 4 spatial summaries should be rebuilt" in captured.out
     assert "Run svtk spatial summaries with the active config" in captured.out
     assert "metric_field_path" not in captured.out

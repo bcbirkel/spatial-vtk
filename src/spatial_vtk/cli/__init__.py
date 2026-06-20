@@ -2742,7 +2742,7 @@ def _spatial_cli_readiness_columns(status: Any, *, group: str, reason: str = "")
                     state=state,
                     reason=reason,
                 ),
-                "path": row.get("path", ""),
+                "resolved_path": row.get("resolved_path", row.get("path", "")),
             }
         )
     return status.__class__(
@@ -2757,7 +2757,7 @@ def _spatial_cli_readiness_columns(status: Any, *, group: str, reason: str = "")
             "exists",
             "message",
             "suggested_action",
-            "path",
+            "resolved_path",
         ],
     )
 
