@@ -1618,6 +1618,45 @@ def test_metrics_dashboard_launcher_rejects_conflicting_path_aliases(tmp_path):
         )
 
 
+def test_qc_dashboard_launcher_accepts_clear_and_legacy_path_keywords(tmp_path, monkeypatch):
+    """Python callers should use qc_trace_summary_table, with trace_summary preserved."""
+
+    launched: list[dict[str, object]] = []
+
+    class FakeProcess:
+        pid = 227
+
+    def fake_launch_streamlit_dashboard(entrypoint, **kwargs):
+        launched.append({"entrypoint": entrypoint, **kwargs})
+        return FakeProcess()
+
+    monkeypatch.setattr(dashboard_launch, "launch_streamlit_dashboard", fake_launch_streamlit_dashboard)
+
+    process = dashboard_launch.launch_qc_dashboard(
+        qc_trace_summary_table=tmp_path / "qc_trace_summary.parquet",
+        show=False,
+    )
+    legacy_process = dashboard_launch.launch_qc_dashboard(
+        trace_summary=tmp_path / "legacy_trace_summary.csv",
+        show=False,
+    )
+
+    assert process.pid == 227
+    assert legacy_process.pid == 227
+    assert Path(launched[0]["env"]["SVTK_TRACE_SUMMARY"]) == tmp_path / "qc_trace_summary.parquet"
+    assert Path(launched[1]["env"]["SVTK_TRACE_SUMMARY"]) == tmp_path / "legacy_trace_summary.csv"
+
+
+def test_qc_dashboard_launcher_rejects_conflicting_path_aliases(tmp_path):
+    """Passing clear and legacy QC trace-summary names with different paths should fail early."""
+
+    with pytest.raises(ValueError, match="qc_trace_summary_table"):
+        dashboard_launch.launch_qc_dashboard(
+            qc_trace_summary_table=tmp_path / "qc_trace_summary.parquet",
+            trace_summary=tmp_path / "other_trace_summary.csv",
+        )
+
+
 def test_dashboard_port_availability_detects_listening_socket() -> None:
     """Dashboard launch preflight should reject ports that already accept connections."""
 

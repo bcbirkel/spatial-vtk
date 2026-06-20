@@ -190,7 +190,9 @@ clearer names.
 For Python launch calls, pass ``metrics_dataset_dir`` and
 ``dashboard_summary_table_dir`` to ``launch_metrics_dashboard``; the older
 ``metrics_root`` and ``summary_root`` keyword arguments remain supported for
-existing scripts.
+existing scripts. For QC dashboard launch calls, pass
+``qc_trace_summary_table`` to ``launch_qc_dashboard``; the older
+``trace_summary`` keyword argument remains supported for existing scripts.
 
 When a dashboard tab is blank or unexpectedly sparse, diagnose the configured
 artifacts before loading full metric or QC inventories:

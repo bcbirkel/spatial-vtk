@@ -207,6 +207,7 @@ def _coalesce_dashboard_launch_path(
 
 def launch_qc_dashboard(
     *,
+    qc_trace_summary_table: str | Path | None = None,
     trace_summary: str | Path | None = None,
     config_path: str | Path | None = None,
     server_address: str = "127.0.0.1",
@@ -217,22 +218,38 @@ def launch_qc_dashboard(
     extra_args: list[str] | None = None,
     startup_timeout_s: float = 2.5,
 ) -> subprocess.Popen[Any]:
-    """Launch the Streamlit QC Explorer."""
+    """Launch the Streamlit QC Explorer.
 
+    Parameters
+    ----------
+    qc_trace_summary_table
+        QC trace-summary table used by the dashboard. This name matches the
+        CLI flag and configured ``qc_trace_summary`` output key.
+    trace_summary
+        Backward-compatible alias for ``qc_trace_summary_table``.
+    """
+
+    resolved_qc_trace_summary = _coalesce_dashboard_launch_path(
+        qc_trace_summary_table,
+        trace_summary,
+        preferred_name="qc_trace_summary_table",
+        legacy_name="trace_summary",
+        artifact_label="QC trace-summary table",
+    )
     config = None
-    if trace_summary is None or config_path is None:
+    if resolved_qc_trace_summary is None or config_path is None:
         try:
             config = _resolve_dashboard_config(config_path=config_path)
         except Exception:
             config = None
-    if trace_summary is None:
+    if resolved_qc_trace_summary is None:
         if config is None:
-            raise ValueError("trace_summary is required when no active Spatial-VTK config is available.")
+            raise ValueError("qc_trace_summary_table is required when no active Spatial-VTK config is available.")
         from spatial_vtk.config import resolve_output_path
 
         resolved_trace_summary = resolve_output_path("qc_trace_summary", kind="table", cfg=config)
     else:
-        resolved_trace_summary = trace_summary
+        resolved_trace_summary = resolved_qc_trace_summary
     resolved_config_path = config_path or (config.config_path if config is not None else None)
     env = os.environ.copy()
     env["SVTK_TRACE_SUMMARY"] = str(Path(resolved_trace_summary).expanduser())
@@ -270,7 +287,7 @@ def launch_configured_qc_dashboard(
     from spatial_vtk.config import resolve_output_path
 
     return launch_qc_dashboard(
-        trace_summary=resolve_output_path("qc_trace_summary", kind="table", cfg=config),
+        qc_trace_summary_table=resolve_output_path("qc_trace_summary", kind="table", cfg=config),
         config_path=config.config_path,
         server_address=server_address,
         server_port=server_port,

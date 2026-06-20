@@ -104,6 +104,10 @@ _PARAMETER_DESCRIPTIONS = {
     "overwrite": "Whether existing outputs should be replaced.",
     "passband": "Passband label or passband filter used for the calculation or figure.",
     "path": "Filesystem path or dotted config path key accepted by this helper.",
+    "qc_trace_summary_table": (
+        "QC trace-summary CSV/parquet table used by the QC dashboard; standard QC dashboard "
+        "workflows resolve this from the configured ``qc_trace_summary`` output."
+    ),
     "run_scenario": "Configured run scenario name used to resolve scenario-specific settings.",
     "savefig": "Whether to save the generated figure.",
     "showfig": "Whether to display the generated figure interactively.",
@@ -123,8 +127,8 @@ _PARAMETER_DESCRIPTIONS = {
     ),
     "table": "Input table, output table, configured table key, or table selector used by this helper.",
     "trace_summary": (
-        "QC trace-summary CSV/parquet table; standard QC dashboard workflows resolve this from "
-        "the configured ``qc_trace_summary`` output."
+        "Backward-compatible alias for ``qc_trace_summary_table``. Prefer "
+        "``qc_trace_summary_table`` in new Python code, CLI docs, and notebook helpers."
     ),
     "value_col": "Column containing the value to plot, summarize, or validate.",
     "verbose": "Whether to print progress messages.",

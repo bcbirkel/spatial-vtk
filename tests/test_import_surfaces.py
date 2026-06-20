@@ -771,8 +771,12 @@ def test_autodoc_fallback_parameter_docs_are_descriptive():
         "Backward-compatible alias for ``dashboard_summary_table_dir``"
     )
     assert "Prefer ``dashboard_summary_table_dir``" in conf._parameter_description(parameter("summary_root"))
-    assert conf._parameter_description(parameter("trace_summary")).startswith("QC trace-summary CSV/parquet table")
-    assert "``qc_trace_summary``" in conf._parameter_description(parameter("trace_summary"))
+    assert conf._parameter_description(parameter("qc_trace_summary_table")).startswith("QC trace-summary CSV/parquet table")
+    assert "``qc_trace_summary``" in conf._parameter_description(parameter("qc_trace_summary_table"))
+    assert conf._parameter_description(parameter("trace_summary")).startswith(
+        "Backward-compatible alias for ``qc_trace_summary_table``"
+    )
+    assert "Prefer ``qc_trace_summary_table``" in conf._parameter_description(parameter("trace_summary"))
     assert conf._parameter_description(parameter("dataset_root")).startswith("Directory root or configured output root")
     assert conf._parameter_description(parameter("batch_manifest")).startswith("Manifest value used to plan, resume, or merge workflow work units")
     assert conf._parameter_description(parameter("config_path")).startswith("Path to the Spatial-VTK YAML")
@@ -1831,6 +1835,7 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "``metrics_dashboard_root``" not in text
     assert "pass ``metrics_dataset_dir`` and\n``dashboard_summary_table_dir`` to ``launch_metrics_dashboard``" in text
     assert "``metrics_root`` and ``summary_root`` keyword arguments remain supported" in text
+    assert "pass ``qc_trace_summary_table`` to ``launch_qc_dashboard``" in text
     assert "Missing sidecar directories and existing empty sidecar directories" in text
     assert "``sidecar_dir_exists``" in text
     forbidden_modules = (

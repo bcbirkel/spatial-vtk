@@ -409,6 +409,9 @@ Changelog
   - Clarified generated API parameter descriptions so ``metrics_root`` and
     ``summary_root`` are documented as legacy aliases rather than the primary
     Python dashboard launch parameters.
+  - Added ``qc_trace_summary_table`` as the primary Python keyword for
+    ``launch_qc_dashboard(...)`` while preserving ``trace_summary`` as a
+    legacy alias.
 
 - **Workflow large-run resilience** *(Hardened)*
 
