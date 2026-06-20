@@ -360,6 +360,8 @@ def test_release_checklist_exists_and_matches_public_validation_gates():
         'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"',
         "python -m pytest -q",
         "PYTHONPYCACHEPREFIX=/tmp/svtk_pycache python -m compileall -q src tests",
+        "PYTHONPATH=src python tools/generate_cli_reference.py",
+        "git diff --exit-code docs/reference/cli docs/reference/cli_api.rst",
         "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run",
         "python tools/execute_tutorial_notebooks.py --clean --include-large-run",
         "python -m sphinx -W -b html docs docs/_build/html",
@@ -373,6 +375,17 @@ def test_release_checklist_exists_and_matches_public_validation_gates():
     assert "/pro" + "ject" not in text
     assert "jvi" + "dale" not in text
     assert "CA" + "RC" not in text
+
+
+def test_public_workflows_check_generated_cli_reference():
+    """Public CI should fail when generated CLI reference pages are stale."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    for workflow_name in ("ci.yml", "docs.yml"):
+        text = (root / ".github" / "workflows" / workflow_name).read_text(encoding="utf-8")
+        assert "Check generated CLI reference" in text
+        assert "PYTHONPATH=src python tools/generate_cli_reference.py" in text
+        assert "git diff --exit-code docs/reference/cli docs/reference/cli_api.rst" in text
 
 
 def test_public_docs_avoid_private_paths_and_cluster_notes():

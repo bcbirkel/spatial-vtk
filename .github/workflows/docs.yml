@@ -43,6 +43,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pandoc
 
+      - name: Check generated CLI reference
+        run: |
+          PYTHONPATH=src python tools/generate_cli_reference.py
+          git diff --exit-code docs/reference/cli docs/reference/cli_api.rst
+
       - name: Build docs with warnings as errors
         run: |
           MPLCONFIGDIR=/tmp/mplconfig_svtk python -m sphinx -W -b html docs docs/_build/html

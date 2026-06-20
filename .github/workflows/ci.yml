@@ -43,6 +43,11 @@ jobs:
         run: |
           PYTHONPYCACHEPREFIX=/tmp/svtk_pycache python -m compileall -q src tests
 
+      - name: Check generated CLI reference
+        run: |
+          PYTHONPATH=src python tools/generate_cli_reference.py
+          git diff --exit-code docs/reference/cli docs/reference/cli_api.rst
+
       - name: Import every public module
         run: |
           MPLCONFIGDIR=/tmp/mplconfig_svtk python - <<'PY'
