@@ -19,10 +19,10 @@ helpers without requiring notebooks to import lower-level builder modules.
 .. code-block:: python
 
    from spatial_vtk.qc import (
-       build_metric_pair_retention_table_from_qc_inventory,
-       build_qc_drop_cause_table_from_qc_inventory,
        load_standard_qc_inputs,
        load_standard_qc_workflow_outputs,
+       build_metric_pair_retention_table_from_qc_inventory,
+       build_qc_drop_cause_table_from_qc_inventory,
        qc_inventory_readiness_from_config,
        qc_overlap_readiness_from_config,
        qc_summary_readiness_from_config,
@@ -41,37 +41,6 @@ Public helpers exposed by ``spatial_vtk.qc``:
 
    * - Helper
      - Use
-   * - ``run_qc_inventory_from_config``
-     - Build or resume the configured waveform and metric QC inventory with
-       checkpointed outputs for large datasets.
-   * - ``qc_inventory_readiness_from_config``
-     - Check whether configured event-station records, trace QC, and full QC
-       inventory outputs are ready without loading large tables, with
-       ``overwrite`` and message pass-throughs for notebook rerun controls.
-   * - ``write_qc_inventory_overlap_from_config``
-     - Write the observed/synthetic event-station overlap inventory used by
-       pairwise metric planning.
-   * - ``qc_overlap_readiness_from_config``
-     - Check whether the configured full QC inventory and event-station table
-       are ready before writing the overlap inventory sidecar, with
-       ``overwrite`` and message pass-throughs for notebook rerun controls.
-   * - ``run_qc_summary_workflow_from_config``
-     - Build compact retention, drop-cause, post-QC record, and availability
-       tables for figures and dashboards without loading the full inventory in a
-       notebook.
-   * - ``qc_summary_readiness_from_config``
-     - Check whether compact QC summary/review outputs are missing or stale
-       from configured QC inventories without loading the inventories, with
-       ``overwrite`` and message pass-throughs for notebook rerun controls.
-   * - ``load_standard_qc_inputs``
-     - Load standard Step 2 prepared metadata tables and the configured QC
-       output group without notebook-local Step 1 output-group table mapping.
-       The returned result owns skipped-step fallback payloads through
-       ``qc_inventory_step_result()``, ``qc_overlap_step_result()``, and
-       ``qc_summary_step_result()``, plus compact output summaries, bounded QC
-       inventory/summary previews, standard QC figure rendering through
-       ``write_figures()``, and bounded post-QC waveform comparison rendering
-       through ``write_waveform_comparison()``.
    * - ``load_standard_qc_workflow_outputs``
      - Load the configured Step 2 QC output group and status frame without
        notebook-local path mapping. The returned result owns the full-QC,
@@ -83,6 +52,44 @@ Public helpers exposed by ``spatial_vtk.qc``:
        compact-summary previews plus compact QC figure rendering through
        ``write_figures()`` while leaving full trace/QC inventory inspection to
        explicit streaming tools.
+   * - ``load_standard_qc_inputs``
+     - Load standard Step 2 prepared metadata tables and the configured QC
+       output group without notebook-local Step 1 output-group table mapping.
+       The returned result owns skipped-step fallback payloads through
+       ``qc_inventory_step_result()``, ``qc_overlap_step_result()``, and
+       ``qc_summary_step_result()``, plus compact output summaries, bounded QC
+       inventory/summary previews, standard QC figure rendering through
+       ``write_figures()``, and bounded post-QC waveform comparison rendering
+       through ``write_waveform_comparison()``.
+   * - ``run_qc_inventory_from_config``
+     - Build or resume the configured waveform and metric QC inventory with
+       checkpointed outputs for large datasets. Routine notebooks should
+       usually call this through
+       ``load_standard_qc_workflow_outputs(...).run_inventory_step_if_needed(...)``
+       so skipped-step payloads, output status, and stale-output checks stay
+       consistent.
+   * - ``qc_inventory_readiness_from_config``
+     - Check whether configured event-station records, trace QC, and full QC
+       inventory outputs are ready without loading large tables, with
+       ``overwrite`` and message pass-throughs for notebook rerun controls.
+   * - ``write_qc_inventory_overlap_from_config``
+     - Write the observed/synthetic event-station overlap inventory used by
+       pairwise metric planning. Routine notebooks should usually call this
+       through
+       ``load_standard_qc_workflow_outputs(...).run_overlap_step_if_needed(...)``.
+   * - ``qc_overlap_readiness_from_config``
+     - Check whether the configured full QC inventory and event-station table
+       are ready before writing the overlap inventory sidecar, with
+       ``overwrite`` and message pass-throughs for notebook rerun controls.
+   * - ``run_qc_summary_workflow_from_config``
+     - Build compact retention, drop-cause, post-QC record, and availability
+       tables for figures and dashboards without loading the full inventory in a
+       notebook. Routine notebooks should usually call this through
+       ``load_standard_qc_workflow_outputs(...).run_summary_step_if_needed(...)``.
+   * - ``qc_summary_readiness_from_config``
+     - Check whether compact QC summary/review outputs are missing or stale
+       from configured QC inventories without loading the inventories, with
+       ``overwrite`` and message pass-throughs for notebook rerun controls.
    * - ``build_metric_pair_retention_table_from_qc_inventory``
      - Stream the QC inventory into metric/passband/component retention counts.
    * - ``build_event_station_pair_retention_table_from_qc_inventory``

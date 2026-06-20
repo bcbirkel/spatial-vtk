@@ -1282,6 +1282,21 @@ def test_qc_api_docs_use_public_package_entry_point():
     assert "Use ``spatial_vtk.qc`` for notebook-facing QC build helpers" in text
     assert "lower-level review table module is implementation" in text
     assert "lower-level summary rules module is implementation" in text
+    import_block = text.split(".. automodule:: spatial_vtk.qc", maxsplit=1)[0]
+    assert import_block.index("load_standard_qc_workflow_outputs") < import_block.index(
+        "run_qc_inventory_from_config"
+    )
+    helper_table = text.split("Public helpers exposed by ``spatial_vtk.qc``:", maxsplit=1)[1]
+    assert helper_table.index("load_standard_qc_workflow_outputs") < helper_table.index(
+        "run_qc_inventory_from_config"
+    )
+    assert helper_table.index("load_standard_qc_inputs") < helper_table.index(
+        "run_qc_inventory_from_config"
+    )
+    assert (
+        "Routine notebooks should usually call this through\n"
+        "       ``load_standard_qc_workflow_outputs(...).run_inventory_step_if_needed(...)``"
+    ) in text
     for helper in (
         "run_qc_inventory_from_config",
         "qc_inventory_readiness_from_config",
