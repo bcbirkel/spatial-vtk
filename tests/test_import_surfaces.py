@@ -359,7 +359,7 @@ def test_release_checklist_exists_and_matches_public_validation_gates():
     for snippet in (
         'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"',
         "python -m pytest -q",
-        "python -m compileall -q src tests",
+        "PYTHONPYCACHEPREFIX=/tmp/svtk_pycache python -m compileall -q src tests",
         "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run",
         "python tools/execute_tutorial_notebooks.py --clean --include-large-run",
         "python -m sphinx -W -b html docs docs/_build/html",

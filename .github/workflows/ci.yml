@@ -41,7 +41,7 @@ jobs:
 
       - name: Compile source and tests
         run: |
-          python -m compileall -q src tests
+          PYTHONPYCACHEPREFIX=/tmp/svtk_pycache python -m compileall -q src tests
 
       - name: Import every public module
         run: |
