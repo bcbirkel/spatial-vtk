@@ -88,6 +88,10 @@ Changelog
   - Updated the large-run Step 4 notebook so spatial summary and derived-output
     gate results are displayed through ``display_notebook_step_result(...)``
     instead of raw ``print(...)`` calls.
+  - Documented notebook-facing result status and summary frames for context,
+    QC, waveform comparison, dashboard preparation/launch, GeoJSON, and
+    additional plotting helpers so public API docs show the same package-owned
+    display methods used by the stabilized notebooks.
   - Extended ``display_notebook_step_result(...)`` to handle workflow results
     with ``summary_frame()`` and updated standard Steps 1-3 so metadata,
     preprocessing, QC, waveform, metric-task, and metric-output results render

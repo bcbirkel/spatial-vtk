@@ -1612,6 +1612,11 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "``spectral_metric_contract_status``" in text
     assert "legacy passband-scoped spectral rows" in text
     assert "without notebook-local plot-function imports" in text
+    assert "``StandardGeoJSONFigureResult`` exposes\n       ``summary_frame()`` and ``status_frame()``" in text
+    assert "``StandardGeoJSONCorridorFigureResult``\n       exposes ``status_frame()``" in text
+    assert "``StandardAdditionalPlottingFigureResult`` exposes\n       ``metric_summary_frame()``" in text
+    assert "``RegionFigureResult`` exposes ``status_frame()``" in text
+    assert "``RegionBoxplotResult`` exposes ``status_frame()``" in text
     forbidden = (
         "spatial_vtk.spatial.calculate.prepare_stats",
         "spatial_vtk.spatial.calculate.correlation",
@@ -2023,6 +2028,13 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "``run_if_needed(...)`` method" in text
     assert "display_output_previews(nrows=...)" in text
     assert "bounded output previews through the\n       returned ``DashboardDatasetPreparationResult``" in text
+    assert "The returned\n       ``ContextFigureResult`` exposes ``status_frame()``" in text
+    assert "The returned ``QCFigureResult`` exposes\n       ``status_frame()``" in text
+    assert "``WaveformComparisonFigureResult`` exposes ``status_frame()``" in text
+    assert "``DashboardDatasetPreparationResult`` exposes ``summary_frame()``" in text
+    assert "``display_output_previews(...)`` so notebooks can show readiness" in text
+    assert "Returned ``DashboardLaunchResult``\n       objects expose ``status_frame()``" in text
+    assert "``DashboardLaunchResult.status_frame()``" in text
     assert "Direct script helper for observed/synthetic trace-comparison" in text
     assert "Notebook-facing Step 2/6 waveform-comparison wrapper" in text
     assert "Backward-compatible alias for older large-run notebooks" in text

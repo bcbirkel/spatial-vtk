@@ -49,7 +49,9 @@ Public helpers exposed by ``spatial_vtk.visualize``:
        ``write_large_run_context_figures_from_outputs``
      - Render the standard Step 1 context figure suite from configured
        metadata and record-coverage outputs without notebook-local readiness
-       checks, table loading, basemap kwargs, or sidecar kwargs.
+       checks, table loading, basemap kwargs, or sidecar kwargs. The returned
+       ``ContextFigureResult`` exposes ``status_frame()`` for compact notebook
+       display of figure paths, statuses, messages, and sidecar paths.
    * - ``plot_retention_summary`` and
        ``plot_event_station_retention_heatmap``
      - Render compact QC retention figures from summary tables instead of full
@@ -61,7 +63,9 @@ Public helpers exposed by ``spatial_vtk.visualize``:
        ``write_large_run_qc_figures_from_outputs``
      - Render the standard QC figure suite from compact configured QC outputs
        without notebook-local readiness checks, table loading, map kwargs, or
-       sidecar kwargs.
+       sidecar kwargs. The returned ``QCFigureResult`` exposes
+       ``status_frame()`` for QC figure artifact paths, statuses, messages,
+       row counts, and sidecar metadata.
    * - ``plot_observed_synthetic_record_section`` and ``plot_record_section``
      - Render record-section waveform figures from prepared waveform tables.
    * - ``station_event_waveform_order_frame``
@@ -71,7 +75,10 @@ Public helpers exposed by ``spatial_vtk.visualize``:
      - Notebook-facing Step 2/6 waveform-comparison wrapper. It owns the
        ``notebook_figure_settings(...)`` render gate, sidecar controls,
        component, passband, and display settings before delegating to the
-       configured output writer.
+       configured output writer. The returned
+       ``WaveformComparisonFigureResult`` exposes ``status_frame()`` for the
+       selected comparison figure, status/message, row count, and provenance
+       sidecars.
    * - ``write_waveform_comparison_from_outputs``
      - Direct script helper for observed/synthetic trace-comparison
        figures when output paths and plotting keyword arguments are already
@@ -100,7 +107,11 @@ Public helpers exposed by ``spatial_vtk.visualize``:
        notebooks.
    * - ``prepare_configured_dashboard_datasets_from_notebook_settings``
      - Check dashboard readiness and optionally write configured dashboard
-       datasets from one notebook-facing helper.
+       datasets from one notebook-facing helper. The returned
+       ``DashboardDatasetPreparationResult`` exposes ``summary_frame()``,
+       ``status_frame()``, ``preparation_frame()``, and
+       ``display_output_previews(...)`` so notebooks can show readiness,
+       written outputs, and bounded previews without local formatting helpers.
    * - ``write_configured_dashboard_datasets``
      - Lower-level script helper that writes dashboard-ready row and summary
        datasets from configured metric outputs after the caller has decided a
@@ -111,7 +122,9 @@ Public helpers exposed by ``spatial_vtk.visualize``:
        code.
    * - ``launch_configured_dashboards_from_notebook_settings``
      - Launch requested dashboards or show terminal fallback commands from
-       config-backed notebook settings.
+       config-backed notebook settings. Returned ``DashboardLaunchResult``
+       objects expose ``status_frame()`` for URLs, fallback commands, process
+       ids, and launch-error messages.
    * - ``launch_configured_metrics_dashboard`` and
        ``launch_configured_qc_dashboard``
      - Lower-level launch helpers for scripts that already know which
@@ -284,7 +297,10 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
      - Own the Step 7 notebook branch that checks readiness, optionally writes
        tutorial-sized dashboard datasets, and returns compact readiness,
        status, written-output frames, and bounded output previews through the
-       returned ``DashboardDatasetPreparationResult``.
+       returned ``DashboardDatasetPreparationResult``. Use its
+       ``summary_frame()``, ``status_frame()``, ``preparation_frame()``, and
+       ``display_output_previews(...)`` methods instead of notebook-local
+       dataframe formatting.
    * - ``display_dashboard_preparation_result``
      - Return and optionally display the standard dashboard preparation frames
        with bounded row counts and summary-table contracts.
@@ -308,8 +324,9 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
      - Launch Streamlit dashboards from config-backed paths and launch options.
    * - ``launch_configured_dashboards_from_notebook_settings``
      - Use notebook launch settings to launch requested dashboards or return
-       terminal fallback commands and launch errors in one compact status
-       frame. Pass ``dashboards=("qc",)`` for QC-only notebook cells.
+       terminal fallback commands and launch errors in one compact
+       ``DashboardLaunchResult.status_frame()``. Pass ``dashboards=("qc",)``
+       for QC-only notebook cells.
    * - ``filter_dashboard_metrics`` and ``filter_qc_dashboard_rows``
      - Apply dashboard filters consistently in apps, tests, and exported tables.
 

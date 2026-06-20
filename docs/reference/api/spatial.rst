@@ -235,13 +235,17 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Write the standard Step 5 GeoJSON overview, regional PGA boxplot, and
        regional station residual map while keeping GeoJSON annotation, summary
        table generation, configured figure paths, and sidecar options in
-       package code.
+       package code. The returned ``StandardGeoJSONFigureResult`` exposes
+       ``summary_frame()`` and ``status_frame()`` for written region figures
+       and source-row sidecars.
    * - ``write_standard_geojson_corridor_figures``
      - Write the standard Step 5 boundary-corridor maps, boundary-crossing
        waveform record section, and outward-corridor PGV station map while
        keeping corridor construction, selected-record joins, waveform
        selection, metric filtering, figure paths, and preview tables in
-       package code.
+       package code. The returned ``StandardGeoJSONCorridorFigureResult``
+       exposes ``status_frame()`` for corridor figure paths, statuses,
+       messages, and sidecars.
    * - ``load_standard_geojson_plotting_inputs``
      - Load the standard Step 5 metrics, prepared metadata, comparison-eligible
        records, configured GeoJSON path, and configured output group without
@@ -264,7 +268,10 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Write the standard Step 6 waveform map, pattern-similarity figure,
        residual scatterplot, region boxplot, and region heatmap while keeping
        waveform selection, GeoJSON metric annotation, figure paths, sidecars,
-       and preview tables in package code.
+       and preview tables in package code. The returned
+       ``StandardAdditionalPlottingFigureResult`` exposes
+       ``metric_summary_frame()`` for selected metric coverage and
+       ``status_frame()`` for figure outputs.
    * - ``load_standard_additional_plotting_inputs``
      - Load the standard Step 6 metric snapshot, event metadata,
        event-station records, comparison-eligible pairs, and configured output
@@ -289,6 +296,8 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Write the same Step 5 GeoJSON/corridor figure family directly from
        ``notebook_figure_settings(...)`` so notebooks do not repeat render
        gates, sidecar options, figure-directory settings, or metric filters.
+       The returned ``RegionFigureResult`` exposes ``status_frame()`` for
+       compact figure-output display.
    * - ``write_large_run_region_boxplot_from_outputs``
      - Write a Step 5/6 region boxplot from an ``OutputGroup``, preferring an
        enriched metric table when available and falling back to the long metric
@@ -297,6 +306,8 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Write the Step 6 region boxplot directly from
        ``notebook_figure_settings(...)`` so notebooks do not repeat render
        gates, sidecar options, figure-directory settings, or metric filters.
+       The returned ``RegionBoxplotResult`` exposes ``status_frame()`` for
+       compact figure-output display.
    * - ``plot_correlogram``, ``plot_semivariogram``, and
        ``plot_directional_correlogram``
      - Plot spatial correlation diagnostics by distance or direction.
