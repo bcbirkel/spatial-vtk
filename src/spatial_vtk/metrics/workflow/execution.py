@@ -7,7 +7,13 @@ and merges batch outputs.
 
 Usage examples
 --------------
-Write a manifest and run the first batch:
+Run configured metric work through the standard Step 3 output helper:
+  ``from spatial_vtk.metrics import load_standard_metric_workflow_outputs``
+  ``metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)``
+  ``submission = metric_outputs.run_slurm_step_if_needed(context=context)``
+
+Write a manifest and run the first batch only in advanced scripts that own
+their task table directly:
   ``manifest = write_task_manifest(tasks, "metrics_manifest.json", output_dir="metric_batches")``
   ``run_manifest_batch(manifest, batch_index=0)``
 """

@@ -229,6 +229,10 @@ Changelog
     standard workflow result loaders are presented before ``output_group()``
     for routine notebooks, with ``output_group()`` and ``resolve_output_path()``
     framed as grouped-artifact and single-artifact script helpers.
+  - Updated metric workflow package docstrings so Step 3 examples start with
+    ``load_standard_metric_workflow_outputs(...)`` and result-owned
+    manifest/Slurm methods before documenting lower-level task manifest and
+    batch execution primitives for advanced scripts.
 
 - **CLI examples and defaults** *(Changed)*
 

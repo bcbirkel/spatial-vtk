@@ -9,9 +9,14 @@ inspect the package without importing pandas-heavy workflow modules.
 
 Usage examples
 --------------
-Plan and run metric tasks from Python:
-  ``tasks = plan_metric_tasks(observed_inventory, synthetic_inventory, plan=metric_plan)``
-  ``rows = run_metric_tasks(tasks)``
+Drive the configured Step 3 metric workflow from a notebook or script:
+  ``from spatial_vtk.metrics import load_standard_metric_workflow_outputs``
+  ``metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)``
+  ``result = metric_outputs.run_manifest_step_if_needed(context=context)``
+
+Use ``plan_metric_tasks()`` and ``run_metric_tasks()`` directly only for
+advanced scripts that intentionally build custom inventories outside the
+standard configured workflow.
 """
 
 from __future__ import annotations

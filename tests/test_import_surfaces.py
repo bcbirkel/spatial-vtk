@@ -1069,6 +1069,21 @@ def test_output_registry_docstring_prefers_standard_workflow_outputs_for_noteboo
     assert 'path = resolve_output_path("record_coverage", kind="figure")' not in text
 
 
+def test_metric_workflow_docstrings_prefer_standard_step3_output_helper():
+    root = pathlib.Path(__file__).resolve().parents[1] / "src" / "spatial_vtk" / "metrics" / "workflow"
+    workflow_text = (root / "__init__.py").read_text(encoding="utf-8")
+    execution_text = (root / "execution.py").read_text(encoding="utf-8")
+
+    assert "from spatial_vtk.metrics import load_standard_metric_workflow_outputs" in workflow_text
+    assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)" in workflow_text
+    assert "result = metric_outputs.run_manifest_step_if_needed(context=context)" in workflow_text
+    assert "advanced scripts that intentionally build custom inventories" in workflow_text
+    assert "tasks = plan_metric_tasks(observed_inventory, synthetic_inventory, plan=metric_plan)" not in workflow_text
+
+    assert "submission = metric_outputs.run_slurm_step_if_needed(context=context)" in execution_text
+    assert "only in advanced scripts that own\ntheir task table directly" in execution_text
+
+
 def test_metric_gof_docstring_prefers_public_metrics_import():
     source = (
         pathlib.Path(__file__).resolve().parents[1]
