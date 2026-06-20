@@ -182,6 +182,9 @@ the large-run notebooks.
        These aliases work consistently for direct access, ``bind()``, table
        preview/loading helpers, ``first_existing_path()``, and
        ``readiness()`` output/input/source checks.
+       Output-group helpers accept ``cfg=`` as either a config object or a
+       config file path, so generated workers and scripts can resolve the same
+       paths as notebooks without relying on active global config.
        Legacy helpers such as ``output_group_namespace()`` return only path
        attributes. New workflow notebooks should prefer the standard
        ``load_standard_*`` helpers listed below; use ``output_group()`` directly

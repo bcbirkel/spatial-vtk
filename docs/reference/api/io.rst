@@ -67,7 +67,9 @@ Public helpers exposed by ``spatial_vtk.io``:
        outside the registered output table registry, such as preprocessing
        manifests, use
        ``display_path_table_previews()`` so notebooks still print the owning
-       path and display bounded rows through the output group.
+       path and display bounded rows through the output group. ``cfg=`` may be
+       a ``SpatialVTKConfig`` object or a config file path, which keeps worker
+       scripts from activating global config before resolving output groups.
    * - ``preprocessed_waveform_output_group``
      - Resolve preprocessing metadata outputs that live under the configured
        preprocessed-waveform metadata directory.

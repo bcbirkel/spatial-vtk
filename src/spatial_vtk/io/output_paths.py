@@ -24,6 +24,9 @@ from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.io.artifacts import slugify
 
 
+ConfigInput = SpatialVTKConfig | str | Path
+
+
 OutputGroupName = Literal[
     "step_01_ingest",
     "step_02_qc",
@@ -184,7 +187,7 @@ class OutputGroup:
         self,
         names: str | Iterable[str] | dict[str, str] | None = None,
         *,
-        cfg: SpatialVTKConfig | None = None,
+        cfg: ConfigInput | None = None,
         missing: Literal["raise", "skip"] = "raise",
         **kwargs,
     ) -> dict[str, object]:
@@ -229,7 +232,7 @@ class OutputGroup:
         self,
         name: str,
         *,
-        cfg: SpatialVTKConfig | None = None,
+        cfg: ConfigInput | None = None,
         missing: Literal["raise", "skip"] = "raise",
         **kwargs,
     ) -> object | None:
@@ -250,7 +253,7 @@ class OutputGroup:
         self,
         names: str | Iterable[str] | dict[str, str] | None = None,
         *,
-        cfg: SpatialVTKConfig | None = None,
+        cfg: ConfigInput | None = None,
         nrows: int = 5,
         missing: Literal["raise", "skip"] = "skip",
         **kwargs,
@@ -275,7 +278,7 @@ class OutputGroup:
         self,
         name: str,
         *,
-        cfg: SpatialVTKConfig | None = None,
+        cfg: ConfigInput | None = None,
         nrows: int = 5,
         missing: Literal["raise", "skip"] = "skip",
         **kwargs,
@@ -342,7 +345,7 @@ class OutputGroup:
         self,
         names: str | Iterable[str] | dict[str, str] | None = None,
         *,
-        cfg: SpatialVTKConfig | None = None,
+        cfg: ConfigInput | None = None,
         nrows: int = 5,
         missing: Literal["raise", "skip"] = "skip",
         display_fn: Callable[[Any], Any] | None = None,
@@ -517,7 +520,7 @@ class OutputGroup:
         self,
         names: str | Iterable[str],
         *,
-        cfg: SpatialVTKConfig | None = None,
+        cfg: ConfigInput | None = None,
         nrows: int = 5,
         **kwargs,
     ) -> dict[str, object]:
@@ -543,7 +546,7 @@ class OutputGroup:
         self,
         names: str | Iterable[str],
         *,
-        cfg: SpatialVTKConfig | None = None,
+        cfg: ConfigInput | None = None,
         nrows: int = 5,
         display_fn: Callable[[Any], Any] | None = None,
         missing_message: str | None = None,
@@ -979,7 +982,7 @@ def output_group_artifacts(group: str) -> tuple[OutputArtifact, ...]:
 def output_group_paths(
     group: str,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     create_parent: bool = True,
     include_optional: bool = True,
 ) -> dict[str, Path]:
@@ -990,7 +993,8 @@ def output_group_paths(
     group
         Group name such as ``"step_03_metrics"``.
     cfg
-        Optional config object. When omitted, the active config is used.
+        Optional config object or config file path. When omitted, the active
+        config is used.
     create_parent
         Whether to create output parent directories.
     include_optional
@@ -1018,7 +1022,7 @@ def output_group_paths(
 def output_group_namespace(
     group: str,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     create_parent: bool = True,
     include_optional: bool = True,
 ) -> SimpleNamespace:
@@ -1036,7 +1040,7 @@ def output_group_namespace(
 def output_group(
     group: str,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     create_parent: bool = True,
     include_optional: bool = True,
 ) -> OutputGroup:
@@ -1320,7 +1324,7 @@ def output_status_frame(paths):
 def output_group_status(
     group: str,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     create_parent: bool = True,
     include_optional: bool = True,
     extra_paths=None,
@@ -1332,7 +1336,8 @@ def output_group_status(
     group
         Group name such as ``"step_03_metrics"``.
     cfg
-        Optional config object. When omitted, the active config is used.
+        Optional config object or config file path. When omitted, the active
+        config is used.
     create_parent
         Whether to create output parent directories.
     include_optional
@@ -1369,7 +1374,7 @@ def output_group_status(
 def output_group_status_frame(
     group: str,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     create_parent: bool = True,
     include_optional: bool = True,
     extra_paths=None,
@@ -1592,7 +1597,7 @@ def output_readiness(
 def output_group_completion(
     group: str,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     include_optional: bool = False,
 ) -> dict[str, object]:
     """Summarize completion for one output group."""

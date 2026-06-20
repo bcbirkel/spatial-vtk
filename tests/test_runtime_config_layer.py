@@ -1487,6 +1487,56 @@ outputs:
     assert list(preview.index) == [0, 1]
 
 
+def test_output_groups_accept_config_path_without_activation(tmp_path, monkeypatch):
+    """Output-group helpers should work in scripts that pass a config path."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+  figures: run_outputs/figures
+  dashboards: run_outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+
+    paths = output_group_paths("step_01_ingest", cfg=config_path)
+    assert paths["prepared_events_path"] == tmp_path / "run_outputs" / "tables" / "prepared_events.csv"
+
+    namespace = output_group_namespace("step_01_ingest", cfg=config_path)
+    assert namespace.event_station_path == tmp_path / "run_outputs" / "tables" / "event_station_records.csv"
+
+    group = output_group("step_01_ingest", cfg=config_path)
+    assert group.event_station_records_path == tmp_path / "run_outputs" / "tables" / "event_station_records.csv"
+    assert group.figure_path("record_coverage", stem_parts=("step 01", "record coverage")) == (
+        tmp_path / "run_outputs" / "figures" / "step_01_record_coverage.png"
+    )
+
+    group.prepared_events_path.write_text("event_id\nE01\n", encoding="utf-8")
+    loaded = group.load_table("prepared_events_path", cfg=config_path)
+    preview = group.preview_table("prepared_events_path", cfg=config_path, nrows=1)
+    assert loaded.to_dict("records") == [{"event_id": "E01"}]
+    assert preview.to_dict("records") == [{"event_id": "E01"}]
+
+    status = output_group_status("step_01_ingest", cfg=config_path)
+    by_name = {row["name"]: row for row in status}
+    assert by_name["prepared_events_path"]["exists"] is True
+    assert by_name["event_station_path"]["resolved_path"] == str(group.event_station_path)
+    status_frame = output_group_status_frame("step_01_ingest", cfg=config_path)
+    assert "prepared_events_path" in set(status_frame["name"])
+
+    completion = output_group_completion("step_01_ingest", cfg=config_path)
+    assert completion["complete"] is False
+    assert "prepared_stations_path" in completion["missing"]
+    clear_active_config()
+
+
 def test_output_groups_resolve_configured_paths(tmp_path, monkeypatch):
     """Workflow output groups should avoid repeated notebook path plumbing."""
 
