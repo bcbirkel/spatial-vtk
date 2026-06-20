@@ -675,6 +675,20 @@ def test_dashboard_extra_names_dashboard_runtime_dependencies():
         assert dependency in dashboard_section
 
 
+def test_example_tutorial_scenario_uses_event_station_metric_overlap():
+    """The public tutorial scenario should not plan metrics for event-only overlap."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    config_text = (root / "data" / "examples" / "configuration" / "example_spatial_vtk_config.yaml").read_text(
+        encoding="utf-8"
+    )
+    tutorial_section = config_text.split("  tutorial:", maxsplit=1)[1].split("  quick_amplitude_check:", maxsplit=1)[0]
+
+    assert "require_source_overlap: true" in tutorial_section
+    assert "source_overlap_scope: event_station" in tutorial_section
+    assert "source_overlap_scope: event\n" not in tutorial_section
+
+
 def test_environment_file_covers_tutorial_runtime_modules():
     """The public conda environment should cover the notebook runtime surface."""
 

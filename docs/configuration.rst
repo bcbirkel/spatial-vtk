@@ -171,7 +171,7 @@ QC Slurm jobs call the same checkpointed builders used in Python, so rerunning
 the job resumes from the saved ``qc_trace_summary`` and ``qc_inventory`` tables
 when those checkpoint paths already exist. After the full inventory is present,
 the job also writes or refreshes ``qc_inventory_overlap`` for observed/synthetic
-comparison workflows.
+event-station comparison workflows.
 
 Metric Slurm jobs run as task arrays from a manifest produced by the metric
 workflow. After creating the manifest, write or submit the array script. When

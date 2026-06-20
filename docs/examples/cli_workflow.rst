@@ -60,7 +60,8 @@ Step 2: Quality Control
 Build waveform and metric QC tables, export comparison-ready rows, make QC figures, and launch the QC dashboard.
 The full ``qc_inventory.csv`` is retained for observed-only and synthetic-only
 diagnostics. Comparison metrics should use ``qc_inventory_overlap.parquet``, a
-streamed sidecar restricted to events with both observed and synthetic data.
+streamed table restricted to event-station records with both observed and
+synthetic data.
 
 .. code-block:: bash
 
@@ -128,6 +129,8 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
      --component T \
      --passband 1-2 \
      --passband 2-3 \
+     --require-source-overlap \
+     --source-overlap-scope event_station \
      --manifest \
      --batch-count 1
 

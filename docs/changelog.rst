@@ -538,6 +538,8 @@ Changelog
     values.
   - Clarified API and workflow docs so stable public subpackages are not
     described as lower-level implementation modules.
+  - Updated the example tutorial scenario and CLI workflow to use
+    event-station observed/synthetic overlap for metric planning.
 
 - **Notebook simplification** *(Rewired)*
 
