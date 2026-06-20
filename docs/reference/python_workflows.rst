@@ -175,6 +175,10 @@ the large-run notebooks.
        ``display_table_previews()`` handle multiple tables or display-label
        mappings. Pass ``missing="skip"`` when a figure can use an optional
        output if present but should continue without it.
+       Standard public result-object names such as
+       ``event_station_records_path`` are accepted where older output groups
+       still expose the legacy ``event_station_path`` name, so scripts can use
+       the clearer public spelling while older notebooks continue to run.
        Legacy helpers such as ``output_group_namespace()`` return only path
        attributes. New workflow notebooks should prefer the standard
        ``load_standard_*`` helpers listed below; use ``output_group()`` directly

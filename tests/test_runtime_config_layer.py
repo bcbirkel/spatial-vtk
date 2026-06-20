@@ -1889,6 +1889,40 @@ outputs:
     clear_active_config()
 
 
+def test_output_group_accepts_public_event_station_records_alias(tmp_path, monkeypatch):
+    """Output-group helpers should accept public result-object path names."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    group = output_group("step_01_ingest", cfg=cfg)
+
+    assert group.event_station_records_path == group.event_station_path
+    assert group["event_station_records_path"] == group.event_station_path
+    assert "event_station_records_path" in group
+
+    bound = group.bind(names=("event_station_records_path",))
+    assert bound == {"event_station_records_path": group.event_station_path}
+
+    group.event_station_path.parent.mkdir(parents=True, exist_ok=True)
+    group.event_station_path.write_text("event_id,station\nE1,STA\n", encoding="utf-8")
+    loaded = group.load_table("event_station_records_path", cfg=cfg)
+
+    assert loaded.to_dict("records") == [{"event_id": "E1", "station": "STA"}]
+    assert "event_station_records_path" not in set(group.status_frame()["name"])
+    clear_active_config()
+
+
 def test_spatial_readiness_helpers_own_step04_output_contract(tmp_path, monkeypatch):
     """Large-run Step 4 notebooks should not duplicate spatial path-name lists."""
 

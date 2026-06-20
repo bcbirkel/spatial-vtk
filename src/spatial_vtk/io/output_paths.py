@@ -39,6 +39,10 @@ DEFAULT_OUTPUT_SUFFIXES: dict[str, str] = {
     "qc_inventory_overlap": ".parquet",
 }
 
+OUTPUT_GROUP_PATH_ALIASES: dict[str, str] = {
+    "event_station_records_path": "event_station_path",
+}
+
 
 @dataclass(frozen=True)
 class OutputArtifact:
@@ -88,19 +92,23 @@ class OutputGroup:
         """Return one resolved path by attribute name."""
 
         try:
-            return self.paths[name]
+            return self.paths[self._path_name(name)]
         except KeyError as exc:
             raise AttributeError(name) from exc
 
     def __getitem__(self, name: str) -> Path:
         """Return one resolved path by mapping key."""
 
-        return self.paths[name]
+        return self.paths[self._path_name(name)]
 
     def __contains__(self, name: object) -> bool:
         """Return whether one path name is present."""
 
-        return name in self.paths
+        try:
+            self._path_name(str(name))
+        except KeyError:
+            return False
+        return True
 
     def keys(self):
         """Return path names in display order."""
@@ -156,11 +164,21 @@ class OutputGroup:
         selected = (
             self.as_dict()
             if names is None
-            else {str(name): self.paths[str(name)] for name in names}
+            else {str(name): self.paths[self._path_name(str(name))] for name in names}
         )
         if namespace is not None:
             namespace.update(selected)
         return selected
+
+    def _path_name(self, name: str) -> str:
+        """Return the concrete output-group path name for a public or legacy name."""
+
+        if name in self.paths:
+            return name
+        alias = OUTPUT_GROUP_PATH_ALIASES.get(name)
+        if alias in self.paths:
+            return alias
+        raise KeyError(name)
 
     def load_tables(
         self,
@@ -1043,6 +1061,9 @@ def _selected_output_artifacts(
     """Resolve artifact names or output keys to display labels and artifacts."""
 
     by_name = {artifact.name: artifact for artifact in artifacts}
+    for public_name, concrete_name in OUTPUT_GROUP_PATH_ALIASES.items():
+        if concrete_name in by_name:
+            by_name[public_name] = by_name[concrete_name]
     by_key = {artifact.key: artifact for artifact in artifacts}
 
     if names is None:
@@ -1079,10 +1100,15 @@ def _selected_path_names(
     selected: list[tuple[str, Path]] = []
     for raw_label, raw_name in raw_items:
         name = str(raw_name)
+        concrete_name = name
+        if concrete_name not in paths:
+            alias = OUTPUT_GROUP_PATH_ALIASES.get(concrete_name)
+            if alias in paths:
+                concrete_name = alias
         try:
-            path = paths[name]
+            path = paths[concrete_name]
         except KeyError as exc:
-            choices = ", ".join(sorted(paths))
+            choices = ", ".join(sorted({*paths, *OUTPUT_GROUP_PATH_ALIASES}))
             raise KeyError(f"Unknown output-group path {name!r}. Choices: {choices}") from exc
         label = str(raw_label) if raw_label is not None else name
         selected.append((label, path))
