@@ -1762,7 +1762,7 @@ def _registered_input_help(argument_name: str, input_key: str | None) -> str:
     if input_key:
         help_text += f" Defaults to configured output table '{input_key}' when --config is passed or a default config is set with 'svtk config set'."
     else:
-        help_text += " No registered config default is available; pass --input-table or --input."
+        help_text += " This advanced figure requires an explicit table; pass --input-table or --input."
     return help_text
 
 

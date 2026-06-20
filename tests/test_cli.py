@@ -1033,7 +1033,7 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "``svtk visualize qc list``" in text
     assert "``svtk visualize context list``" in text
     assert "``svtk visualize waveforms list``" in text
-    assert "A ``required:<role>`` entry means that command has no registered default table" in text
+    assert "A ``required:<role>`` entry means that command works on a caller-supplied table" in text
     assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
     assert "that are not exposed as named flags" in text
     assert (
@@ -1043,7 +1043,7 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "advanced ``--table function_argument=path``" in text
     assert "that are not exposed as named table flags" in text
     assert "``svtk visualize qc list``" in generator_text
-    assert "A ``required:<role>`` entry means that command has no registered default table" in generator_text
+    assert "A ``required:<role>`` entry means that command works on a caller-supplied table" in generator_text
     assert (
         "Prefer configured default tables and named table flags such as ``--event-table``, "
         "``--station-table``, ``--events``, ``--stations``, or ``--records``"
@@ -1224,18 +1224,18 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Input table\n     - ``config:qc_metric_pair_retention``" in cli_pages_text
     assert "Input table\n     - ``required:sample table``" in cli_pages_text
     assert (
-        "No registered default table is available yet. Pass ``--input-table`` or ``--input`` "
+        "This advanced figure requires an explicit table. Pass ``--input-table`` or ``--input`` "
         "with a precomputed period-spectrogram table."
     ) in cli_pages_text
     assert "Plot a precomputed period-spectrogram table. This advanced figure does not" in cli_pages_text
     assert "have a standard config-backed input table; pass --input-table or" in cli_pages_text
     assert (
-        "No registered default table is available yet. Pass ``--input-table`` or ``--input`` "
+        "This advanced figure requires an explicit table. Pass ``--input-table`` or ``--input`` "
         "with a prepared trace-sample table."
     ) in cli_pages_text
     assert '"spectrogram_df": "a precomputed period-spectrogram table"' in generator_text
     assert '"sample_df": "a prepared trace-sample table"' in generator_text
-    assert "No registered config default is available; pass --input-table or --input." in cli_pages_text
+    assert "This advanced figure requires an explicit table; pass --input-table or --input." in cli_pages_text
 
 
 def test_config_cli_help_marks_config_values_as_paths(capsys):
@@ -4350,7 +4350,7 @@ def test_cli_registered_plot_help_names_required_input_without_config_default(ca
     assert excinfo.value.code == 0
     text = capsys.readouterr().out
     assert "precomputed period-spectrogram table" in text
-    assert "No registered config default is available; pass --input-table or --input." in text
+    assert "This advanced figure requires an explicit table; pass --input-table or --input." in text
 
 
 def test_cli_registered_plot_missing_output_names_figure_role():

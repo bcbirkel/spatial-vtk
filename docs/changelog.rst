@@ -365,6 +365,9 @@ Changelog
   - Made ``svtk spatial status`` print artifact labels, output keys, and
     Step 3/Step 4 rebuild guidance in its human-readable output instead of
     the lower-level path-key readiness table.
+  - Clarified ``required:<role>`` CLI figure guidance so commands that need
+    caller-supplied tables are documented as intentional advanced inputs
+    rather than missing registered defaults.
 
 - **Dashboard large-run resilience** *(Hardened)*
 

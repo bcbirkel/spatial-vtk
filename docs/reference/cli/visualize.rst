@@ -1410,7 +1410,7 @@ Plot sample QC traces.
      - Meaning
    * - Input table
      - ``required:sample table``
-     - No registered default table is available yet. Pass ``--input-table`` or ``--input`` with a prepared trace-sample table.
+     - This advanced figure requires an explicit table. Pass ``--input-table`` or ``--input`` with a prepared trace-sample table.
    * - Output figure
      - ``config:trace_inventory_samples``
      - Uses configured figure output ``trace_inventory_samples`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
@@ -1432,7 +1432,7 @@ Plot sample QC traces.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (sample); accepts CSV or parquet. No registered config default is available; pass --input-table or --input.
+     - Filesystem path. Primary figure input table (sample); accepts CSV or parquet. This advanced figure requires an explicit table; pass --input-table or --input.
    * - ``--figure-output``, ``--output``
      - No
      -

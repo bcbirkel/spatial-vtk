@@ -1967,7 +1967,7 @@ Plot a precomputed period-spectrogram table. This advanced figure does not have 
      - Meaning
    * - Input table
      - ``required:spectrogram table``
-     - No registered default table is available yet. Pass ``--input-table`` or ``--input`` with a precomputed period-spectrogram table.
+     - This advanced figure requires an explicit table. Pass ``--input-table`` or ``--input`` with a precomputed period-spectrogram table.
    * - Output figure
      - ``config:period_spectrogram``
      - Uses configured figure output ``period_spectrogram`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
@@ -1989,7 +1989,7 @@ Plot a precomputed period-spectrogram table. This advanced figure does not have 
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (spectrogram); accepts CSV or parquet. No registered config default is available; pass --input-table or --input.
+     - Filesystem path. Primary figure input table (spectrogram); accepts CSV or parquet. This advanced figure requires an explicit table; pass --input-table or --input.
    * - ``--figure-output``, ``--output``
      - No
      -
