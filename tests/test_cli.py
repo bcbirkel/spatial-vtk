@@ -1328,8 +1328,12 @@ def test_cli_metrics_workflow_help_exposes_artifact_aliases(capsys):
         main(["metrics", "inventories", "--help"])
     assert excinfo.value.code == 0
     inventory_help = " ".join(capsys.readouterr().out.split())
+    assert "[--observed-inventory-output PATH]" in inventory_help
+    assert "[--synthetic-inventory-output PATH]" in inventory_help
     assert "--observed-inventory-output" in inventory_help
     assert "--synthetic-inventory-output" in inventory_help
+    assert "Prefer --observed-inventory-output; --observed-output is a legacy alias." in inventory_help
+    assert "Prefer --synthetic-inventory-output; --synthetic-output is a legacy alias." in inventory_help
     assert "Preprocessed trace metadata" in inventory_help
     assert "observed_metric_inventory" in inventory_help
     assert "synthetic_metric_inventory" in inventory_help
@@ -1386,8 +1390,10 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     )[0]
     slurm_section = text.split(".. _cli-svtk-metrics-slurm:", maxsplit=1)[1]
 
-    assert "``--observed-output``, ``--observed-inventory-output``" in inventories_section
-    assert "``--synthetic-output``, ``--synthetic-inventory-output``" in inventories_section
+    assert "``--observed-inventory-output``, ``--observed-output``" in inventories_section
+    assert "``--synthetic-inventory-output``, ``--synthetic-output``" in inventories_section
+    assert "Prefer --observed-inventory-output; --observed-output is a legacy alias." in inventories_section
+    assert "Prefer --synthetic-inventory-output; --synthetic-output is a legacy alias." in inventories_section
     assert "Preprocessed trace metadata CSV/parquet path" in inventories_section
     assert "``--observed-inventory``, ``--observed-metric-inventory``" in plan_section
     assert "``--synthetic-inventory``, ``--synthetic-metric-inventory``" in plan_section
@@ -1415,10 +1421,13 @@ def test_generated_cli_reference_names_metrics_outputs_aliases():
     assert "``--metric-rows``, ``--metrics``" in section
     assert "Raw metric workflow rows CSV/parquet path" in section
     assert "Prefer --metric-rows; --metrics is a legacy alias." in section
-    assert "``--output-dir``, ``--metrics-output-dir``" in section
+    assert "``--metrics-output-dir``, ``--output-dir``" in section
     assert "configured output paths are used" in section
-    assert "``--events``, ``--event-table``" in section
-    assert "``--stations``, ``--station-table``" in section
+    assert "Prefer --metrics-output-dir; --output-dir is a legacy alias." in section
+    assert "``--event-table``, ``--events``" in section
+    assert "``--station-table``, ``--stations``" in section
+    assert "Prefer --event-table; --events is a legacy alias." in section
+    assert "Prefer --station-table; --stations is a legacy alias." in section
     assert "prepared_events" in section
     assert "prepared_stations" in section
 
@@ -2919,6 +2928,9 @@ def test_cli_metrics_outputs_help_exposes_clear_aliases(capsys):
     assert "--event-table" in captured.out
     assert "--station-table" in captured.out
     assert "Raw metric workflow rows" in captured.out
+    assert "Prefer --metrics-output-dir" in captured.out
+    assert "Prefer --event-table" in captured.out
+    assert "Prefer --station-table" in captured.out
     assert "prepared_events" in captured.out
     assert "prepared_stations" in captured.out
 

@@ -22,6 +22,9 @@ Changelog
   - QC build/Slurm and metric-row workflow commands now present artifact-named
     output flags first in help and generated CLI docs while preserving generic
     aliases for existing scripts.
+  - Metric inventory and downstream metric-output commands now present
+    inventory/table-specific flags first in help and generated CLI docs while
+    preserving shorter legacy aliases for existing scripts.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

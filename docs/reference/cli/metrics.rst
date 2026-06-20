@@ -241,9 +241,9 @@ svtk metrics inventories
 .. code-block:: bash
 
    svtk metrics inventories [-h] [--trace-metadata PATH]
-                                [--observed-output PATH]
-                                [--synthetic-output PATH] [--config PATH]
-                                [--run-scenario RUN_SCENARIO]
+                                [--observed-inventory-output PATH]
+                                [--synthetic-inventory-output PATH]
+                                [--config PATH] [--run-scenario RUN_SCENARIO]
                                 [--synthetic-model SYNTHETIC_MODEL]
                                 [--observed-path-column OBSERVED_PATH_COLUMN]
                                 [--synthetic-path-column SYNTHETIC_PATH_COLUMN]
@@ -267,14 +267,14 @@ svtk metrics inventories
      - No
      -
      - Filesystem path. Preprocessed trace metadata CSV/parquet path. Defaults to the configured preprocessing trace_metadata output.
-   * - ``--observed-output``, ``--observed-inventory-output``
+   * - ``--observed-inventory-output``, ``--observed-output``
      - No
      -
-     - Filesystem path. Observed metric waveform inventory output CSV/parquet path. Defaults to configured output table 'observed_metric_inventory'.
-   * - ``--synthetic-output``, ``--synthetic-inventory-output``
+     - Filesystem path. Observed metric waveform inventory output CSV/parquet path. Defaults to configured output table 'observed_metric_inventory'. Prefer --observed-inventory-output; --observed-output is a legacy alias.
+   * - ``--synthetic-inventory-output``, ``--synthetic-output``
      - No
      -
-     - Filesystem path. Synthetic metric waveform inventory output CSV/parquet path. Defaults to configured output table 'synthetic_metric_inventory'.
+     - Filesystem path. Synthetic metric waveform inventory output CSV/parquet path. Defaults to configured output table 'synthetic_metric_inventory'. Prefer --synthetic-inventory-output; --synthetic-output is a legacy alias.
    * - ``--config``
      - No
      -
@@ -362,9 +362,10 @@ svtk metrics outputs
 
 .. code-block:: bash
 
-   svtk metrics outputs [-h] [--metric-rows PATH] [--output-dir DIR]
-                            [--config PATH] [--run-scenario RUN_SCENARIO]
-                            [--events PATH] [--stations PATH]
+   svtk metrics outputs [-h] [--metric-rows PATH]
+                            [--metrics-output-dir DIR] [--config PATH]
+                            [--run-scenario RUN_SCENARIO] [--event-table PATH]
+                            [--station-table PATH]
                             [--residual-column RESIDUAL_COLUMN]
                             [--score-column SCORE_COLUMN]
                             [--format {parquet,csv}] [--dashboard-partitioned]
@@ -387,10 +388,10 @@ svtk metrics outputs
      - No
      -
      - Filesystem path. Raw metric workflow rows CSV/parquet path. Defaults to configured output table 'metric_rows'. Prefer --metric-rows; --metrics is a legacy alias.
-   * - ``--output-dir``, ``--metrics-output-dir``
+   * - ``--metrics-output-dir``, ``--output-dir``
      - No
      -
-     - Directory path. Ad hoc downstream metric output directory. When omitted, configured output paths are used.
+     - Directory path. Ad hoc downstream metric output directory. When omitted, configured output paths are used. Prefer --metrics-output-dir; --output-dir is a legacy alias.
    * - ``--config``
      - No
      -
@@ -399,14 +400,14 @@ svtk metrics outputs
      - No
      -
      - Apply one named run_scenarios overlay.
-   * - ``--events``, ``--event-table``
+   * - ``--event-table``, ``--events``
      - No
      -
-     - Filesystem path. Optional prepared event metadata CSV/parquet path. Defaults to configured output table 'prepared_events' when it exists.
-   * - ``--stations``, ``--station-table``
+     - Filesystem path. Optional prepared event metadata CSV/parquet path. Defaults to configured output table 'prepared_events' when it exists. Prefer --event-table; --events is a legacy alias.
+   * - ``--station-table``, ``--stations``
      - No
      -
-     - Filesystem path. Optional prepared station metadata CSV/parquet path. Defaults to configured output table 'prepared_stations' when it exists.
+     - Filesystem path. Optional prepared station metadata CSV/parquet path. Defaults to configured output table 'prepared_stations' when it exists. Prefer --station-table; --stations is a legacy alias.
    * - ``--residual-column``
      - No
      -

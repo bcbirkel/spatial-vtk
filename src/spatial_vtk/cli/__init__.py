@@ -786,20 +786,26 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     inventories = metrics_sub.add_parser("inventories", help="Build observed/synthetic metric waveform inventories from trace metadata.")
     inventories.add_argument("--trace-metadata", metavar="PATH", default=None, help="Preprocessed trace metadata CSV/parquet path. Defaults to the configured preprocessing trace_metadata output.")
     inventories.add_argument(
-        "--observed-output",
         "--observed-inventory-output",
+        "--observed-output",
         dest="observed_output",
         metavar="PATH",
         default=None,
-        help="Observed metric waveform inventory output CSV/parquet path. Defaults to configured output table 'observed_metric_inventory'.",
+        help=(
+            "Observed metric waveform inventory output CSV/parquet path. Defaults to configured output table "
+            "'observed_metric_inventory'. Prefer --observed-inventory-output; --observed-output is a legacy alias."
+        ),
     )
     inventories.add_argument(
-        "--synthetic-output",
         "--synthetic-inventory-output",
+        "--synthetic-output",
         dest="synthetic_output",
         metavar="PATH",
         default=None,
-        help="Synthetic metric waveform inventory output CSV/parquet path. Defaults to configured output table 'synthetic_metric_inventory'.",
+        help=(
+            "Synthetic metric waveform inventory output CSV/parquet path. Defaults to configured output table "
+            "'synthetic_metric_inventory'. Prefer --synthetic-inventory-output; --synthetic-output is a legacy alias."
+        ),
     )
     inventories.add_argument("--config", default=None, help="Optional Spatial-VTK config used to infer a single synthetic model.")
     inventories.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
@@ -947,30 +953,39 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         ),
     )
     outputs.add_argument(
-        "--output-dir",
         "--metrics-output-dir",
+        "--output-dir",
         dest="output_dir",
         metavar="DIR",
         default=None,
-        help="Ad hoc downstream metric output directory. When omitted, configured output paths are used.",
+        help=(
+            "Ad hoc downstream metric output directory. When omitted, configured output paths are used. "
+            "Prefer --metrics-output-dir; --output-dir is a legacy alias."
+        ),
     )
     outputs.add_argument("--config", default=None, help="Config file used to resolve standard output paths.")
     outputs.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     outputs.add_argument(
-        "--events",
         "--event-table",
+        "--events",
         dest="events",
         metavar="PATH",
         default=None,
-        help="Optional prepared event metadata CSV/parquet path. Defaults to configured output table 'prepared_events' when it exists.",
+        help=(
+            "Optional prepared event metadata CSV/parquet path. Defaults to configured output table "
+            "'prepared_events' when it exists. Prefer --event-table; --events is a legacy alias."
+        ),
     )
     outputs.add_argument(
-        "--stations",
         "--station-table",
+        "--stations",
         dest="stations",
         metavar="PATH",
         default=None,
-        help="Optional prepared station metadata CSV/parquet path. Defaults to configured output table 'prepared_stations' when it exists.",
+        help=(
+            "Optional prepared station metadata CSV/parquet path. Defaults to configured output table "
+            "'prepared_stations' when it exists. Prefer --station-table; --stations is a legacy alias."
+        ),
     )
     outputs.add_argument("--residual-column", default=None, help="Column exposed as canonical residual.")
     outputs.add_argument("--score-column", default=None, help="Column exposed as canonical score.")
