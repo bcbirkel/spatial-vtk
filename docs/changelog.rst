@@ -44,6 +44,9 @@ Changelog
   - Metrics dashboard Data Status now carries row-level metric dataset
     readiness messages into the Distributions row, so missing or stale
     dashboard metric datasets explain why distribution plots are unavailable.
+  - QC dashboard startup now emits a single readiness warning that includes the
+    specific trace-summary blocker, such as missing required columns, instead
+    of showing a generic warning plus a second detailed warning.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

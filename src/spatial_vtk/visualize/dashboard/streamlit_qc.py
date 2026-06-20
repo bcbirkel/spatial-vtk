@@ -51,10 +51,9 @@ def main() -> None:
             st.info("Choose a trace-summary Parquet or CSV file to begin.")
             return
     readiness = _qc_trace_readiness(trace_summary)
-    _render_qc_readiness(readiness)
     blocker = _qc_dashboard_startup_blocker(readiness)
+    _render_qc_readiness(readiness, message=blocker)
     if blocker:
-        st.warning(blocker)
         return
     try:
         row_limit = _qc_dashboard_row_limit()
@@ -214,7 +213,7 @@ def _qc_trace_readiness(trace_summary: str) -> pd.DataFrame:
     return dashboard_qc_trace_readiness_frame(trace_summary, create_parent=False)
 
 
-def _render_qc_readiness(readiness: pd.DataFrame) -> None:
+def _render_qc_readiness(readiness: pd.DataFrame, *, message: str | None = None) -> None:
     """Render QC trace-summary readiness when the dashboard cannot start."""
 
     if readiness.empty or "ready" not in readiness.columns:
@@ -222,7 +221,11 @@ def _render_qc_readiness(readiness: pd.DataFrame) -> None:
     ready = readiness["ready"].map(lambda value: dashboard_ready_value(value, default=False))
     if bool(ready.all()):
         return
-    st.warning("The QC trace-summary table is not ready. Rebuild QC outputs before using the QC dashboard.")
+    detail = str(message or "").strip()
+    warning = "The QC trace-summary table is not ready."
+    if detail and detail != warning:
+        warning = f"{warning} {detail}"
+    st.warning(warning)
     shown = _select_qc_readiness_columns(readiness)
     st.dataframe(display_table(shown), width="stretch")
 

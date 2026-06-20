@@ -665,7 +665,9 @@ def test_qc_dashboard_preflights_trace_summary_before_full_load(tmp_path, monkey
     streamlit_qc.main()
 
     assert calls == []
-    assert any("not ready" in message for message in fake_st.warnings)
+    assert len(fake_st.warnings) == 1
+    assert "not ready" in fake_st.warnings[0]
+    assert "station" in fake_st.warnings[0]
     assert fake_st.frames
     assert fake_st.frames[0].loc[0, "Readiness"] == "missing_columns"
     assert fake_st.frames[0].loc[0, "Missing Columns"] == "station"
