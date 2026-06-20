@@ -308,11 +308,15 @@ outputs:
     assert "artifact_label" in summary_display.columns
     assert "nonempty_value_families" in summary_display.columns
     assert "suggested_action" in summary_display.columns
+    assert "resolved_path" in summary_display.columns
+    assert "path" not in summary_display.columns
     assert "station_rollup dashboard summary table" in set(summary_display["artifact_label"])
     metric_display = _select_readiness_columns(status_with_dataset, METRIC_DATASET_READINESS_DISPLAY_COLUMNS)
     assert "artifact_label" in metric_display.columns
     assert "value_families" in metric_display.columns
     assert "suggested_action" in metric_display.columns
+    assert "resolved_path" in metric_display.columns
+    assert "path" not in metric_display.columns
     assert "metrics dashboard row dataset" in set(metric_display["artifact_label"])
     assert "QC trace-summary table is missing" in qc_status["message"]
 
@@ -669,7 +673,8 @@ def test_qc_dashboard_readiness_display_columns_are_bounded():
             "missing_columns": [""],
             "message": ["QC trace-summary table is ready."],
             "suggested_action": [""],
-            "path": ["/example/run/outputs/qc_trace_summary.parquet"],
+            "resolved_path": ["/example/run/outputs/qc_trace_summary.parquet"],
+            "path": ["/legacy/alias/should/not/display.csv"],
             "unexpected_large_column": ["not displayed"],
         }
     )
@@ -685,10 +690,12 @@ def test_qc_dashboard_readiness_display_columns_are_bounded():
         "missing_columns",
         "message",
         "suggested_action",
-        "path",
+        "resolved_path",
     ]
     assert display["artifact_label"].iloc[0] == "QC trace-summary table"
+    assert display["resolved_path"].iloc[0] == "/example/run/outputs/qc_trace_summary.parquet"
     assert "unexpected_large_column" not in display.columns
+    assert "path" not in display.columns
 
 
 def test_qc_dashboard_loaded_row_summary_reports_filtered_scope():

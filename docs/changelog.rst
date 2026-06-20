@@ -38,6 +38,9 @@ Changelog
   - Dashboard readiness attachments and stale-output checks now resolve
     summary-table, metric-dataset, and QC-trace paths from ``resolved_path``
     first, while retaining compatibility with the legacy ``path`` alias.
+  - Metrics and QC dashboard status tables now display ``resolved_path`` rather
+    than the legacy ``path`` alias, while keeping large-table status displays
+    bounded to the readiness columns users need.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

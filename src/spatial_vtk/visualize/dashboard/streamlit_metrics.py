@@ -70,6 +70,7 @@ SUMMARY_READINESS_DISPLAY_COLUMNS = (
     "message",
     "map_message",
     "suggested_action",
+    "resolved_path",
 )
 METRIC_DATASET_READINESS_DISPLAY_COLUMNS = (
     "artifact_label",
@@ -82,6 +83,7 @@ METRIC_DATASET_READINESS_DISPLAY_COLUMNS = (
     "value_columns",
     "message",
     "suggested_action",
+    "resolved_path",
 )
 DEFAULT_METRICS_DASHBOARD_MAX_ROWS = 200_000
 DEFAULT_METRICS_DASHBOARD_DOWNLOAD_ROWS = 100_000
