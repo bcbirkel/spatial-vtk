@@ -1038,8 +1038,28 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     batch_status.set_defaults(handler=_cmd_metrics_batch_status)
 
     cache = metrics_sub.add_parser("cache-waveforms", help="Write a metric manifest backed by lightweight cached waveform traces.")
-    cache.add_argument("--manifest", metavar="PATH", default=None, help="Source metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'.")
-    cache.add_argument("--output", metavar="PATH", default=None, help="Cached metric workflow manifest JSON. Defaults to configured output table 'metric_manifest_cached'.")
+    cache.add_argument(
+        "--metric-manifest",
+        "--manifest",
+        dest="manifest",
+        metavar="PATH",
+        default=None,
+        help=(
+            "Source metric workflow manifest JSON. Defaults to configured output table "
+            "'metric_manifest'. Prefer --metric-manifest; --manifest is a legacy alias."
+        ),
+    )
+    cache.add_argument(
+        "--cached-metric-manifest-output",
+        "--output",
+        dest="output",
+        metavar="PATH",
+        default=None,
+        help=(
+            "Cached metric workflow manifest JSON. Defaults to configured output table "
+            "'metric_manifest_cached'. Prefer --cached-metric-manifest-output; --output is a legacy alias."
+        ),
+    )
     cache.add_argument("--cache-root", metavar="DIR", default=None, help="Directory for cached metric-ready waveform .npz files. Defaults to outputs/metric_ready_waveform_cache.")
     cache.add_argument("--batch-output-dir", metavar="DIR", default=None, help="Batch output directory for the cached manifest. Defaults to outputs/metric_batches_cached.")
     cache.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default paths.")

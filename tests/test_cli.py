@@ -1430,6 +1430,13 @@ def test_cli_metrics_workflow_help_exposes_artifact_aliases(capsys):
     assert "--missing-limit" in batch_status_help
 
     with pytest.raises(SystemExit) as excinfo:
+        main(["metrics", "cache-waveforms", "--help"])
+    assert excinfo.value.code == 0
+    cache_help = " ".join(capsys.readouterr().out.split())
+    assert "--metric-manifest" in cache_help
+    assert "--cached-metric-manifest-output" in cache_help
+
+    with pytest.raises(SystemExit) as excinfo:
         main(["metrics", "slurm", "--help"])
     assert excinfo.value.code == 0
     slurm_help = " ".join(capsys.readouterr().out.split())
@@ -1456,6 +1463,9 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     batch_status_section = text.split(".. _cli-svtk-metrics-batch-status:", maxsplit=1)[1].split(
         ".. _cli-svtk-metrics-cache-waveforms:", maxsplit=1
     )[0]
+    cache_section = text.split(".. _cli-svtk-metrics-cache-waveforms:", maxsplit=1)[1].split(
+        ".. _cli-svtk-metrics-estimate:", maxsplit=1
+    )[0]
     slurm_section = text.split(".. _cli-svtk-metrics-slurm:", maxsplit=1)[1]
 
     assert "``--observed-inventory-output``, ``--observed-output``" in inventories_section
@@ -1474,6 +1484,10 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     assert "Prefer --metric-rows; --output is a legacy alias." in run_section
     assert "``--missing-limit``" in batch_status_section
     assert "Metric workflow manifest JSON" in batch_status_section
+    assert "``--metric-manifest``, ``--manifest``" in cache_section
+    assert "``--cached-metric-manifest-output``, ``--output``" in cache_section
+    assert "Prefer --metric-manifest; --manifest is a legacy alias." in cache_section
+    assert "Prefer --cached-metric-manifest-output; --output is a legacy alias." in cache_section
     assert "``--metric-manifest``, ``--manifest``" in slurm_section
     assert "``--metrics-slurm-script-output``, ``--output``" in slurm_section
     assert "Prefer --metric-manifest; --manifest is a legacy alias." in slurm_section
@@ -3452,9 +3466,9 @@ def test_cli_metrics_cache_waveforms_writes_cached_manifest(tmp_path):
             [
                 "metrics",
                 "cache-waveforms",
-                "--manifest",
+                "--metric-manifest",
                 str(manifest_path),
-                "--output",
+                "--cached-metric-manifest-output",
                 str(output_path),
                 "--cache-root",
                 str(cache_root),

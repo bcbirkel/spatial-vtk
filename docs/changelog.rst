@@ -77,6 +77,9 @@ Changelog
   - ``svtk metrics slurm`` now exposes ``--metric-manifest`` and
     ``--metrics-slurm-script-output`` as artifact-named flags while preserving
     ``--manifest`` and ``--output`` as legacy aliases.
+  - ``svtk metrics cache-waveforms`` now exposes ``--metric-manifest`` and
+    ``--cached-metric-manifest-output`` as artifact-named flags while
+    preserving ``--manifest`` and ``--output`` as legacy aliases.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

@@ -101,7 +101,8 @@ svtk metrics cache-waveforms
 
 .. code-block:: bash
 
-   svtk metrics cache-waveforms [-h] [--manifest PATH] [--output PATH]
+   svtk metrics cache-waveforms [-h] [--metric-manifest PATH]
+                                    [--cached-metric-manifest-output PATH]
                                     [--cache-root DIR]
                                     [--batch-output-dir DIR] [--config PATH]
                                     [--run-scenario RUN_SCENARIO]
@@ -122,14 +123,14 @@ svtk metrics cache-waveforms
      - No
      -
      - show this help message and exit
-   * - ``--manifest``
+   * - ``--metric-manifest``, ``--manifest``
      - No
      -
-     - Filesystem path. Source metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'.
-   * - ``--output``
+     - Filesystem path. Source metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'. Prefer --metric-manifest; --manifest is a legacy alias.
+   * - ``--cached-metric-manifest-output``, ``--output``
      - No
      -
-     - Filesystem path. Cached metric workflow manifest JSON. Defaults to configured output table 'metric_manifest_cached'.
+     - Filesystem path. Cached metric workflow manifest JSON. Defaults to configured output table 'metric_manifest_cached'. Prefer --cached-metric-manifest-output; --output is a legacy alias.
    * - ``--cache-root``
      - No
      -
