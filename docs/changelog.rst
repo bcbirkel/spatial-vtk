@@ -414,6 +414,10 @@ Changelog
   - Added a global tutorial-notebook import-boundary guard so notebooks cannot
     reintroduce implementation modules for config, I/O, QC, metrics, spatial,
     visualization, or dashboard workflows.
+  - Extended the tutorial notebook source-contract preflight so
+    ``tools/execute_tutorial_notebooks.py --preflight-only`` enforces the same
+    public import boundary before runtime dependencies, output cleanup, or
+    notebook execution.
   - Made large-run README guidance explicit about public plotting entry
     points.
   - Made large-run README guidance explicit about public mapping and
