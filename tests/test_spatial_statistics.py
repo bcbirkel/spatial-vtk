@@ -2380,6 +2380,12 @@ def test_write_large_run_region_boxplot_from_bounded_table(tmp_path: Path) -> No
     assert metadata["sampled"] is True
     assert metadata["category_col"] == "station_region"
     assert metadata["resolved_value_col"] == "log2_residual"
+    status = result.status_frame().iloc[0].to_dict()
+    assert status["artifact"] == "region_boxplot"
+    assert status["status"] == "wrote"
+    assert status["row_count"] == 4
+    assert status["figure_path"] == str(result.figure_path)
+    assert status["sidecar_path"] == str(result.sidecar_path)
 
     existing = write_large_run_region_boxplot(
         metrics_path,

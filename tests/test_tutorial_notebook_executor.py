@@ -2449,6 +2449,8 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     assert "plotting_outputs.display_first_existing_table_preview(" not in source
     assert "plotting_outputs.preview_first_existing_table(" not in source
     assert "plotting_outputs.write_region_boxplot(" in source
+    assert "display(region_result.status_frame())" in source
+    assert "print(region_result.message)" not in source
     assert "write_large_run_region_boxplot_from_notebook_settings(" not in source
     assert "write_large_run_region_boxplot_from_outputs(" not in source
     assert "region_figure_gate = REGION_FIGURE_SETTINGS.render_gate(" not in source

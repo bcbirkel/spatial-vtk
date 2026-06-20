@@ -1367,6 +1367,23 @@ class RegionBoxplotResult:
     status: str
     message: str
 
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact notebook status table for the region boxplot."""
+
+        return pd.DataFrame(
+            [
+                {
+                    "artifact": "region_boxplot",
+                    "status": self.status,
+                    "row_count": self.rows,
+                    "figure_path": None if self.figure_path is None else str(self.figure_path),
+                    "sidecar_path": None if self.sidecar_path is None else str(self.sidecar_path),
+                    "message": self.message,
+                }
+            ],
+            columns=["artifact", "status", "row_count", "figure_path", "sidecar_path", "message"],
+        )
+
 
 @dataclass(frozen=True)
 class RegionFigureResult:
