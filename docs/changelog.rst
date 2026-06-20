@@ -334,6 +334,9 @@ Changelog
   - Hardened Streamlit dashboard launch checks so occupied ports are detected
     before launch and delayed startup failures are reported before the CLI
     prints a running-dashboard URL.
+  - Kept dashboard launch helper imports config-lazy so lightweight dashboard
+    command builders and launch function objects remain importable without
+    loading YAML/config machinery.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 

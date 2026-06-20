@@ -12,8 +12,6 @@ import sys
 import time
 from typing import Any, Iterable
 
-from spatial_vtk.config import SpatialVTKConfig, active_config, resolve_output_path
-
 
 @dataclass(frozen=True)
 class DashboardLaunchResult:
@@ -230,6 +228,8 @@ def launch_qc_dashboard(
     if trace_summary is None:
         if config is None:
             raise ValueError("trace_summary is required when no active Spatial-VTK config is available.")
+        from spatial_vtk.config import resolve_output_path
+
         resolved_trace_summary = resolve_output_path("qc_trace_summary", kind="table", cfg=config)
     else:
         resolved_trace_summary = trace_summary
@@ -267,6 +267,8 @@ def launch_configured_qc_dashboard(
     """Launch the QC Explorer from the configured ``qc_trace_summary`` output."""
 
     config = _resolve_dashboard_config(cfg=cfg, config_path=config_path, run_scenario=run_scenario)
+    from spatial_vtk.config import resolve_output_path
+
     return launch_qc_dashboard(
         trace_summary=resolve_output_path("qc_trace_summary", kind="table", cfg=config),
         config_path=config.config_path,
@@ -536,6 +538,8 @@ def _resolve_dashboard_config(
     run_scenario: str | None = None,
 ) -> Any:
     """Resolve a dashboard config from an object, config path, or active config."""
+
+    from spatial_vtk.config import SpatialVTKConfig, active_config
 
     if cfg is not None:
         return cfg.with_run_scenario(run_scenario) if run_scenario and hasattr(cfg, "with_run_scenario") else cfg

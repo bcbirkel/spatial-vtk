@@ -486,6 +486,12 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
     """Package entry points should not import heavy plotting/QC modules on inspection."""
 
     root = pathlib.Path(__file__).resolve().parents[1]
+    launch_source = (root / "src" / "spatial_vtk" / "visualize" / "dashboard" / "launch.py").read_text(
+        encoding="utf-8"
+    )
+    assert not re.search(r"^from spatial_vtk\.config\b", launch_source, re.MULTILINE)
+    assert not re.search(r"^import spatial_vtk\.config\b", launch_source, re.MULTILINE)
+
     env = dict(os.environ)
     src_path = str(root / "src")
     env["PYTHONPATH"] = src_path if not env.get("PYTHONPATH") else f"{src_path}{os.pathsep}{env['PYTHONPATH']}"
