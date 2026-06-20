@@ -381,11 +381,15 @@ def test_public_workflows_check_generated_cli_reference():
     """Public CI should fail when generated CLI reference pages are stale."""
 
     root = pathlib.Path(__file__).resolve().parents[1]
-    for workflow_name in ("ci.yml", "docs.yml"):
-        text = (root / ".github" / "workflows" / workflow_name).read_text(encoding="utf-8")
+    workflows = {
+        workflow_name: (root / ".github" / "workflows" / workflow_name).read_text(encoding="utf-8")
+        for workflow_name in ("ci.yml", "docs.yml")
+    }
+    for text in workflows.values():
         assert "Check generated CLI reference" in text
         assert "PYTHONPATH=src python tools/generate_cli_reference.py" in text
         assert "git diff --exit-code docs/reference/cli docs/reference/cli_api.rst" in text
+    assert '      - "tools/generate_cli_reference.py"' in workflows["docs.yml"]
 
 
 def test_public_docs_avoid_private_paths_and_cluster_notes():

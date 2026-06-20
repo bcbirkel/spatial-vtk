@@ -9,6 +9,7 @@ on:
       - "README.md"
       - "pyproject.toml"
       - ".github/workflows/docs.yml"
+      - "tools/generate_cli_reference.py"
   workflow_dispatch:
 
 permissions:
