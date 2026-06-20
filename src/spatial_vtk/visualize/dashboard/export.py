@@ -71,6 +71,23 @@ class DashboardDatasetPreparationResult:
         ]
         return pd.DataFrame(rows, columns=["name", "resolved_path", "path"])
 
+    def preparation_frame(self) -> pd.DataFrame:
+        """Return the preparation decision as a one-row status table."""
+
+        readiness_reason = str(getattr(self.readiness, "reason", ""))
+        should_run = bool(getattr(self.readiness, "should_run", False))
+        return pd.DataFrame(
+            [
+                {
+                    "status": self.status,
+                    "should_run": should_run,
+                    "readiness_reason": readiness_reason,
+                    "message": self.message,
+                }
+            ],
+            columns=["status", "should_run", "readiness_reason", "message"],
+        )
+
     def display_output_previews(
         self,
         *,
@@ -171,6 +188,7 @@ def display_dashboard_preparation_result(
     from spatial_vtk.visualize.dashboard.labels import display_table
 
     frames = {
+        "preparation": display_table(result.preparation_frame(), max_rows=1),
         "readiness": display_table(result.summary_frame(), max_rows=readiness_rows),
         "status": display_table(result.status_frame(), max_rows=status_rows),
         "written": display_table(result.written_frame(), max_rows=written_rows),

@@ -56,6 +56,9 @@ Changelog
   - Large-run Step 6 region-boxplot results now expose ``status_frame()``, so
     notebook figure cells display structured output paths, sidecar paths, row
     counts, statuses, and messages instead of printing a bare string.
+  - Dashboard preparation results now expose ``preparation_frame()`` and the
+    shared display helper shows the preparation decision, removing bare
+    ``print(dashboard_preparation.message)`` cells from dashboard notebooks.
   - QC dashboard startup now emits a single readiness warning that includes the
     specific trace-summary blocker, such as missing required columns, instead
     of showing a generic warning plus a second detailed warning.

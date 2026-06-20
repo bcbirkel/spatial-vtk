@@ -1751,6 +1751,7 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     assert "display_dashboard_preparation_result," in source
     assert "dashboard_preparation = prepare_configured_dashboard_datasets_from_notebook_settings(" in source
     assert "display_dashboard_preparation_result(dashboard_preparation, display=display)" in source
+    assert "print(dashboard_preparation.message)" not in source
     assert "display(display_table(dashboard_preparation.summary_frame(), max_rows=20))" not in source
     assert "display(display_table(dashboard_preparation.status_frame(), max_rows=30))" not in source
     assert "display(display_table(dashboard_preparation.written_frame(), max_rows=20))" not in source
@@ -1810,6 +1811,7 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "dashboard_preparation = prepare_configured_dashboard_datasets_from_notebook_settings(" in source
     assert "prepare_locally=False" in source
     assert "display_dashboard_preparation_result(dashboard_preparation, display=display)" in source
+    assert "print(dashboard_preparation.message)" not in source
     assert "dashboard_preparation.run_if_needed(" in source
     assert "post_dashboard_preparation = prepare_configured_dashboard_datasets_from_notebook_settings(" in source
     assert "display_dashboard_preparation_result(post_dashboard_preparation, display=display, include_contracts=False)" in source

@@ -3631,6 +3631,14 @@ outputs:
     assert not result.summary_frame().empty
     assert not result.status_frame().empty
     assert result.written_frame().empty
+    preparation_frame = result.preparation_frame()
+    assert preparation_frame.loc[0, "status"] == "skipped"
+    assert bool(preparation_frame.loc[0, "should_run"]) is True
+    assert "Slurm-aware dashboard preparation cell" in preparation_frame.loc[0, "message"]
+    displayed_frames: list[pd.DataFrame] = []
+    display_frames = display_dashboard_preparation_result(result, display=displayed_frames.append)
+    assert "preparation" in display_frames
+    assert displayed_frames[0].loc[0, "status"] == "skipped"
 
     calls: list[dict[str, object]] = []
 
