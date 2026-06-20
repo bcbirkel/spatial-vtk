@@ -608,6 +608,10 @@ Changelog
   - Added explicit purpose/output notes to the remaining large-run figure and
     provenance cells so notebook section headers keep the same task-focused
     contract as the code cells they introduce.
+  - Aligned standard and large-run figure provenance review cells to call
+    ``settings.sidecars.status_frame()`` directly so the displayed table is
+    clearly the per-figure sidecar inventory rather than a generic render
+    settings table.
 
 2026-06-18
 ----------

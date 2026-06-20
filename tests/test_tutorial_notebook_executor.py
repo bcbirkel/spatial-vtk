@@ -2767,15 +2767,15 @@ def test_metric_and_spatial_notebooks_show_sidecar_status_frames() -> None:
     expected = {
         "docs/examples/step_03_calculate_metrics.ipynb": (
             "metric_figure_settings.sidecars.readiness_frame()",
-            "metric_figure_settings.status_frame()",
+            "metric_figure_settings.sidecars.status_frame()",
         ),
         "docs/examples/step_04_spatial_statistics.ipynb": (
             "spatial_figure_settings.sidecars.readiness_frame()",
-            "spatial_figure_settings.status_frame()",
+            "spatial_figure_settings.sidecars.status_frame()",
         ),
         "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": (
             "METRIC_FIGURE_SETTINGS.sidecars.readiness_frame()",
-            "METRIC_FIGURE_SETTINGS.status_frame()",
+            "METRIC_FIGURE_SETTINGS.sidecars.status_frame()",
         ),
         "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": (
             "SPATIAL_FIGURE_SETTINGS.sidecars.readiness_frame()",
@@ -2787,6 +2787,13 @@ def test_metric_and_spatial_notebooks_show_sidecar_status_frames() -> None:
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
         for call in calls:
             assert call in source
+        for forbidden in (
+            "metric_figure_settings.status_frame()",
+            "spatial_figure_settings.status_frame()",
+            "METRIC_FIGURE_SETTINGS.status_frame()",
+            "SPATIAL_FIGURE_SETTINGS.status_frame()",
+        ):
+            assert forbidden not in source
 
 
 def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> None:
