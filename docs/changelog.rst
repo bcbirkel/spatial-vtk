@@ -83,6 +83,9 @@ Changelog
   - CLI workflow examples now use canonical ``--event-table`` and
     ``--station-table`` metric-output flags instead of legacy ``--events`` and
     ``--stations`` aliases.
+  - Generated CLI reference and runtime figure-command help now describe
+    config-backed named table flags with canonical ``--event-table`` and
+    ``--station-table`` examples before legacy or command-specific names.
   - QC dashboard startup now emits a single readiness warning that includes the
     specific trace-summary blocker, such as missing required columns, instead
     of showing a generic warning plus a second detailed warning.

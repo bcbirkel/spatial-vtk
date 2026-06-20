@@ -185,7 +185,7 @@ Map block-holdout prediction errors.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --event-table, --station-table, --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -414,7 +414,7 @@ Map cluster assignments.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --event-table, --station-table, --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -647,7 +647,7 @@ Map corridor selections.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --event-table, --station-table, --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -891,7 +891,7 @@ Map event residual paths.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --event-table, --station-table, --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1165,7 +1165,7 @@ Map metric values by model.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --event-table, --station-table, --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1401,7 +1401,7 @@ Map model improvement values.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --event-table, --station-table, --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1630,7 +1630,7 @@ Map one PCA spatial mode.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --event-table, --station-table, --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -1862,7 +1862,7 @@ Map REDCAP cluster values.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --event-table, --station-table, --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2094,7 +2094,7 @@ Map residual grid values.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --event-table, --station-table, --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2320,7 +2320,7 @@ Map score values.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --event-table, --station-table, --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2552,7 +2552,7 @@ Map station bias values.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --event-table, --station-table, --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -
@@ -2784,7 +2784,7 @@ Map station metric values.
    * - ``--table``
      - No
      - Nargs: ``?``; Repeatable
-     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
+     - Advanced extra table mapping as function_argument=path. May be repeated. Prefer config-backed defaults and named table flags such as --event-table, --station-table, --events, --stations, or --records when this command lists them. For plotting functions with a boolean table option, omit the value to show the table.
    * - ``--no-table``
      - No
      -

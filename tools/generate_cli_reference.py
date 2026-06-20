@@ -186,9 +186,9 @@ def _render_cli_index(
             "Plotting and Mapping Notes",
             "--------------------------",
             "",
-            "Most plotting, mapping, and visualization commands can resolve their standard input tables and figure paths from the active config, so ``--input-table``/``--input`` and ``--figure-output``/``--output`` are optional for the usual tutorial/workflow outputs. Registered table defaults may be CSV or Parquet depending on the configured output key; commands that say they accept CSV or parquet read either suffix through the package table helpers. Use ``svtk plot metrics list``, ``svtk plot spatial list``, ``svtk map spatial list``, ``svtk visualize qc list``, ``svtk visualize context list``, or ``svtk visualize waveforms list`` to see which commands use ``config:<key>`` defaults and which still require explicit input tables, shown as ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to any of those list commands when you want to see the concrete configured paths that will be used. A ``required:<role>`` entry means that command has no registered default table for that role yet, so pass ``--input-table``/``--input`` or a named table alias for that invocation.",
+            "Most plotting, mapping, and visualization commands can resolve their standard input tables and figure paths from the active config, so ``--input-table``/``--input`` and ``--figure-output``/``--output`` are optional for the usual tutorial/workflow outputs. Registered table defaults may be CSV or Parquet depending on the configured output key; commands that say they accept CSV or parquet read either suffix through the package table helpers. Use ``svtk plot metrics list``, ``svtk plot spatial list``, ``svtk map spatial list``, ``svtk visualize qc list``, ``svtk visualize context list``, or ``svtk visualize waveforms list`` to see which commands use ``config:<key>`` defaults and which still require explicit input tables, shown as ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to any of those list commands when you want to see the concrete configured paths that will be used. A ``required:<role>`` entry means that command has no registered default table for that role yet, so pass ``--input-table``/``--input`` or a named table flag for that invocation.",
             "",
-            "Common figure controls such as ``--metric``, ``--passband``, ``--bin-label``, ``--component``, ``--components``, ``--model``, ``--mode``, ``--dep``, ``--indep``, ``--colorby``, ``--compare-to``, ``--value-col``, ``--score-col``, ``--scale``, ``--time-limit-s``, ``--max-records``, ``--max-traces``, ``--title``, ``--station-region``, ``--event-region``, ``--no-connect-points``, and sidecar options are first-class flags where they apply. Use ``--kwargs key=value`` only for advanced function-specific options that do not yet have curated flags. Prefer configured default tables and named table aliases such as ``--events`` or ``--stations`` when a command lists them; use advanced ``--table function_argument=path`` only for extra function tables that do not yet have named flags.",
+            "Common figure controls such as ``--metric``, ``--passband``, ``--bin-label``, ``--component``, ``--components``, ``--model``, ``--mode``, ``--dep``, ``--indep``, ``--colorby``, ``--compare-to``, ``--value-col``, ``--score-col``, ``--scale``, ``--time-limit-s``, ``--max-records``, ``--max-traces``, ``--title``, ``--station-region``, ``--event-region``, ``--no-connect-points``, and sidecar options are first-class flags where they apply. Use ``--kwargs key=value`` only for advanced function-specific options that do not yet have curated flags. Prefer configured default tables and named table flags such as ``--event-table``, ``--station-table``, ``--events``, ``--stations``, or ``--records`` when a command lists them; use advanced ``--table function_argument=path`` only for extra function tables that do not yet have named flags.",
             "",
             "Map commands also accept ``--config`` and ``--bounds`` so you can reuse named bounds from your project config. Basemaps are enabled by default for map figures; use ``--no-basemap`` only when you explicitly want a data-only map.",
             "",
@@ -497,13 +497,13 @@ def _registered_output_default_meaning(spec: PlotCommand) -> str:
 
 
 def _registered_extra_default_meaning(spec: PlotCommand) -> str:
-    """Return explanatory text for registered extra table aliases."""
+    """Return explanatory text for registered extra table flags."""
 
     defaults = spec.table_alias_defaults or {}
     if defaults:
         aliases = ", ".join(f"``--{name.replace('_', '-')}``" for name in sorted(defaults))
         return f"Uses configured table defaults for {aliases} when a config is active; override with the same named flags."
-    return "Optional named table aliases are available for this command."
+    return "Optional named table flags are available for this command."
 
 
 def _render_arguments(parser: argparse.ArgumentParser) -> list[str]:
