@@ -673,6 +673,9 @@ def test_public_docs_describe_committed_tutorial_waveforms() -> None:
     assert "write_output_table(" not in configuration
     assert "write_output_tables(" not in configuration
     assert "resolve_output_path(" not in configuration
+    assert "ingest_outputs.write_context_figures(...)" in configuration
+    assert "custom_record_coverage.png" not in configuration
+    assert 'outpath="figures/custom_record_coverage.png"' not in configuration
 
 
 def test_public_docs_describe_registered_table_formats() -> None:

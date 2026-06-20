@@ -261,6 +261,9 @@ Changelog
   - Updated spatial map package docstrings so notebook examples start with
     the standard map figure writer before documenting individual map functions
     for focused scripts.
+  - Updated the configuration guide so figure-output override guidance points
+    routine notebooks at result-owned figure writers instead of a literal
+    ``outpath="figures/..."`` example.
 
 - **CLI examples and defaults** *(Changed)*
 

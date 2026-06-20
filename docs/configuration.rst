@@ -347,13 +347,11 @@ paths:
    ingest_outputs.status_frame()
    ingest_outputs.metadata_summary_frame()
 
-You can still override a single output directly:
-
-.. code-block:: python
-
-   plot_record_coverage(record_coverage, savefig=True, outpath="figures/custom_record_coverage.png")
-
-The explicit ``outpath`` wins over the active config and package defaults.
+Advanced scripts can still pass an explicit ``outpath`` to individual plot
+helpers when they intentionally need a one-off destination. Routine notebooks
+should prefer result-owned figure writers, such as
+``ingest_outputs.write_context_figures(...)``, so the configured output
+registry owns figure destinations and sidecars.
 
 Use A Run Scenario
 ------------------
