@@ -12,11 +12,11 @@ Usage examples
 Create and display a figure in a notebook:
   ``fig = plot_retention_summary(retention_table)``
 
-Save a returned figure:
-  ``savefig(fig, outpath="retention_summary.png")``
+Save a returned figure through the configured output registry:
+  ``finish_figure(fig, output_key="retention_summary", cfg=cfg, savefig=True)``
 
-Show and save in one call:
-  ``plot_retention_summary(retention_table, showfig=True, savefig=True, outpath="retention_summary.png")``
+Use ``outpath=`` only when an advanced script intentionally overrides the
+configured figure destination.
 """
 
 from __future__ import annotations

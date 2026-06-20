@@ -252,6 +252,9 @@ Changelog
   - Updated context map docstrings so Step 1 context figure examples use the
     standard ingest workflow output result instead of literal ``*.png`` output
     filenames.
+  - Updated shared figure I/O docstrings so saving examples use configured
+    figure output keys through ``finish_figure(...)`` before mentioning
+    explicit ``outpath=`` overrides.
 
 - **CLI examples and defaults** *(Changed)*
 

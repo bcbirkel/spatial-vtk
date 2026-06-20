@@ -1171,6 +1171,21 @@ def test_context_map_docstring_prefers_standard_step1_context_figures():
     assert 'plot_event_magnitude_map(events, "event_magnitudes.png")' not in text
 
 
+def test_figure_io_docstring_prefers_configured_output_key():
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "visualize"
+        / "figure_io.py"
+    )
+    text = source.read_text(encoding="utf-8")
+
+    assert 'finish_figure(fig, output_key="retention_summary", cfg=cfg, savefig=True)' in text
+    assert "Use ``outpath=`` only when an advanced script intentionally overrides" in text
+    assert 'outpath="retention_summary.png"' not in text
+
+
 def test_metric_gof_docstring_prefers_public_metrics_import():
     source = (
         pathlib.Path(__file__).resolve().parents[1]
