@@ -74,7 +74,7 @@ def default_output_registry() -> dict[str, dict[str, OutputSpec]]:
 
 def configured_output_registry_frame(
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: SpatialVTKConfig | str | Path | None = None,
     include_paths: bool = True,
     kinds: Iterable[OutputKind] | None = None,
     create_parent: bool = False,
@@ -84,8 +84,9 @@ def configured_output_registry_frame(
     Parameters
     ----------
     cfg
-        Optional config used to resolve artifact paths. When omitted and
-        ``include_paths`` is true, the active/discoverable config is used.
+        Optional config object or config file path used to resolve artifact
+        paths. When omitted and ``include_paths`` is true, the
+        active/discoverable config is used.
     include_paths
         Whether to include resolved path columns. ``resolved_path`` is the
         clear notebook-facing column; ``path`` is preserved as a compatibility
@@ -142,7 +143,7 @@ def configured_output_registry_frame(
 
 def configured_output_registry_preview_frame(
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: SpatialVTKConfig | str | Path | None = None,
     include_paths: bool = True,
     kinds: Iterable[OutputKind] | None = None,
     create_parent: bool = False,
@@ -228,7 +229,7 @@ def resolve_output_path(
     *,
     kind: OutputKind | None = None,
     outpath: str | Path | None = None,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: SpatialVTKConfig | str | Path | None = None,
     create_parent: bool = False,
 ) -> Path:
     """Resolve an output path using explicit args, config, and defaults.
@@ -242,8 +243,8 @@ def resolve_output_path(
     outpath
         Explicit output path. This always wins.
     cfg
-        Optional config object. When omitted, the active/discoverable config is
-        used.
+        Optional config object or config file path. When omitted, the
+        active/discoverable config is used.
     create_parent
         Whether to create the resolved path parent directory.
 
@@ -253,7 +254,7 @@ def resolve_output_path(
         Resolved output path.
     """
 
-    config = cfg or active_config()
+    config = _coerce_output_config(cfg)
     if outpath is not None:
         path = config.path_from_value(outpath, create_parent=create_parent)
         if path is None:
@@ -274,6 +275,16 @@ def resolve_output_path(
     if create_parent:
         path.parent.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def _coerce_output_config(cfg: SpatialVTKConfig | str | Path | None) -> SpatialVTKConfig:
+    """Return a config object for output path resolution."""
+
+    if cfg is None:
+        return active_config()
+    if isinstance(cfg, SpatialVTKConfig):
+        return cfg
+    return SpatialVTKConfig.from_file(cfg)
 
 
 def output_description(key: str, *, kind: OutputKind | None = None) -> str:

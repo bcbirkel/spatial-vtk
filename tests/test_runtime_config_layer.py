@@ -1385,6 +1385,50 @@ outputs:
     clear_active_config()
 
 
+def test_output_path_resolution_accepts_config_path_without_activation(tmp_path, monkeypatch):
+    """Scripts and workers should resolve registered outputs from a config path."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/path_tables
+  figures: run_outputs/path_figures
+  dashboards: run_outputs/path_dashboards
+""",
+        encoding="utf-8",
+    )
+
+    assert resolve_output_path("prepared_events", kind="table", cfg=config_path) == (
+        tmp_path / "run_outputs" / "path_tables" / "prepared_events.csv"
+    )
+    assert resolve_output_path("record_coverage", kind="figure", cfg=config_path) == (
+        tmp_path / "run_outputs" / "path_figures" / "record_coverage.png"
+    )
+    assert resolve_output_path("metrics_dashboard", kind="dashboard", cfg=config_path) == (
+        tmp_path / "run_outputs" / "path_dashboards" / "metrics_dashboard"
+    )
+
+    fig, ax = plt.subplots()
+    ax.plot([0, 1], [0, 1])
+    finished = finish_figure(
+        fig,
+        output_key="record_coverage",
+        cfg=config_path,
+        savefig=True,
+        showfig=False,
+    )
+    figure_path = tmp_path / "run_outputs" / "path_figures" / "record_coverage.png"
+    assert finished.spatial_vtk_saved_path == figure_path
+    assert figure_path.exists()
+    clear_active_config()
+
+
 def test_configured_output_registry_frame_lists_keys_and_resolved_paths(tmp_path, monkeypatch):
     """Users should be able to discover output keys, filenames, and paths."""
 
@@ -1421,6 +1465,12 @@ outputs:
     figure_registry = configured_output_registry_frame(cfg=cfg, kinds=("figure",))
     assert "station_metric_map" in set(figure_registry["key"])
     assert "metrics_long" not in set(figure_registry["key"])
+
+    path_config_registry = configured_output_registry_frame(cfg=config_path, kinds=("dashboard",))
+    path_config_by_key = path_config_registry.set_index("key")
+    assert path_config_by_key.loc["metrics_dashboard", "resolved_path"] == str(
+        tmp_path / "run_outputs" / "dashboards" / "metrics_dashboard"
+    )
 
     compact = configured_output_registry_frame(include_paths=False, kinds=("dashboard",))
     assert list(compact.columns) == ["kind", "key", "artifact_label", "filename", "description"]

@@ -31,7 +31,10 @@ Paths and Outputs
 Use ``spatial_vtk.config`` and ``spatial_vtk.io`` output groups for normal
 notebook path/status handling. The path and output modules below document the
 lower-level registry and resolver APIs for scripts, CLIs, and helper
-implementation code.
+implementation code. ``resolve_output_path()`` accepts either a
+``SpatialVTKConfig`` object or a config file path through ``cfg=`` so worker
+scripts can resolve registered table, figure, and dashboard outputs without
+activating global config state.
 
 .. automodule:: spatial_vtk.config.paths
    :members:
