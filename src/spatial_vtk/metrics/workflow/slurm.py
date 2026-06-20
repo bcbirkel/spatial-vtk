@@ -1,10 +1,11 @@
-"""Generic SLURM support for metric workflow batches.
+"""Metric Slurm array support for manifest batches.
 
 Purpose
 -------
-This module writes portable SLURM array scripts for metric workflow manifests.
-It does not submit jobs unless a caller explicitly runs ``sbatch`` outside this
-module.
+This module writes portable Slurm array scripts for metric workflow manifests.
+Each array task runs one manifest batch and writes the batch's configured
+metric row output file. ``write_metrics_slurm_script`` only writes a script;
+``submit_metrics_slurm_job`` is the explicit submission helper.
 
 Usage examples
 --------------
@@ -161,7 +162,7 @@ def _slurm_array_spec(indices: tuple[int, ...], *, max_concurrent: int) -> str:
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
-    """Build the SLURM script CLI parser.
+    """Build the metric Slurm array script CLI parser.
 
     Parameters
     ----------
@@ -173,9 +174,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
         Parser for script-writing arguments.
     """
 
-    parser = argparse.ArgumentParser(description="Write a generic SLURM script for Spatial-VTK metric batches.")
-    parser.add_argument("--manifest", required=True, help="Metric workflow manifest JSON.")
-    parser.add_argument("--output", required=True, help="Output SLURM script path.")
+    parser = argparse.ArgumentParser(description="Write a metric Slurm array script from a Spatial-VTK manifest.")
+    parser.add_argument("--manifest", required=True, help="Metric workflow manifest JSON with batch output paths.")
+    parser.add_argument("--output", required=True, help="Output metric Slurm array script path.")
     parser.add_argument("--config", default=None, help="Spatial-VTK config with metrics.slurm settings.")
     parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     return parser

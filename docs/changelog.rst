@@ -30,6 +30,8 @@ Changelog
     routine dashboard helpers from ``spatial_vtk.visualize``.
   - Clarified metrics CLI help for manifest batch output directories,
     ``--batch-size``, and ``--batch-count`` so Slurm array sizing is explicit.
+  - Reworded metric workflow Slurm/task docs to describe metric manifest
+    arrays instead of generic Slurm scripts.
   - Aligned API docs, generated CLI reference, workflow guides, README
     install guidance, and tutorial notebooks with the stabilized public import
     surfaces and result-object workflow.

@@ -3,7 +3,7 @@
 Purpose
 -------
 This package turns prepared waveform inventories and QC inventories into
-metric task manifests, batch outputs, merged metric tables, and generic SLURM
+metric task manifests, batch outputs, merged metric tables, and metric Slurm
 array scripts. Public names are loaded lazily so documentation and CLI help can
 inspect the package without importing pandas-heavy workflow modules.
 

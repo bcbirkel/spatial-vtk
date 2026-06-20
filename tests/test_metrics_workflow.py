@@ -2013,6 +2013,27 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     assert "--batch-index $SLURM_ARRAY_TASK_ID --overwrite" in incomplete_text
 
 
+def test_metric_slurm_module_docs_name_manifest_array_contract() -> None:
+    """Metric Slurm help should describe manifest arrays, not a generic script."""
+
+    import spatial_vtk.metrics.workflow as workflow_package
+    import spatial_vtk.metrics.workflow.slurm as slurm_module
+    import spatial_vtk.metrics.workflow.tasks as task_module
+
+    assert "metric Slurm\narray scripts" in (workflow_package.__doc__ or "")
+    assert "Metric Slurm array support for manifest batches" in (slurm_module.__doc__ or "")
+    assert "metric Slurm array job" in (task_module.__doc__ or "")
+    assert "generic SLURM" not in (workflow_package.__doc__ or "")
+    assert "Generic SLURM" not in (slurm_module.__doc__ or "")
+    assert "generic SLURM" not in (task_module.__doc__ or "")
+
+    parser = slurm_module.build_arg_parser()
+    help_text = parser.format_help()
+    assert "Write a metric Slurm array script from a Spatial-VTK manifest." in help_text
+    assert "Metric workflow manifest JSON with batch output paths." in help_text
+    assert "Output metric Slurm array script path." in help_text
+
+
 def test_configured_metric_plan_slurm_and_merge_helpers_use_registered_paths(tmp_path) -> None:
     """Config-backed metric helpers should mirror CLI workflow defaults."""
 

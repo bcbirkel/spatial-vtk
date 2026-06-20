@@ -4,7 +4,7 @@ Purpose
 -------
 This module converts normalized observed/synthetic waveform inventories into
 explicit metric tasks that can be executed locally, in batches, or through a
-generic SLURM array job.
+metric Slurm array job.
 
 Usage examples
 --------------
