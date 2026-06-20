@@ -854,6 +854,10 @@ def test_config_api_docs_include_compute_helpers():
 
     assert "Compute and Slurm" in text
     assert ".. automodule:: spatial_vtk.config.compute\n" in text
+    assert "Start routine notebooks from ``spatial_vtk.config`` helpers" in text
+    assert "notebooks should avoid reaching into it directly" in text
+    assert "Use ``spatial_vtk.config`` and ``spatial_vtk.io`` output groups" in text
+    assert "lower-level registry and resolver APIs for scripts, CLIs, and helper\nimplementation code" in text
     assert "Import notebook helpers from ``spatial_vtk.config``" in text
     assert "``NotebookRunContext`` and ``notebook_run_context``" in text
     assert "``run_notebook_step_if_needed``" in text
@@ -869,6 +873,20 @@ def test_config_api_docs_include_compute_helpers():
     assert "``qc_trace_summary_table``" in text
     assert "``display_output_table_previews``" in text
     assert ".. automodule:: spatial_vtk.config.notebook" not in text
+
+
+def test_io_api_docs_distinguish_public_entry_point_from_implementation_modules():
+    docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "io.rst"
+    text = docs.read_text(encoding="utf-8")
+
+    assert "Start with ``spatial_vtk.io`` in notebooks and scripts" in text
+    assert "documented for API completeness and advanced scripts" in text
+    assert "implementation\norganization for tutorial notebooks" in text
+    assert "Routine notebooks should prefer ``output_group()``" in text
+    assert "not as notebook path-plumbing examples" in text
+    assert ".. automodule:: spatial_vtk.io.metadata\n" in text
+    assert ".. automodule:: spatial_vtk.io.preprocessing\n" in text
+    assert ".. automodule:: spatial_vtk.io.tables\n" in text
 
 
 def test_notebook_helper_docstring_prefers_public_config_import():

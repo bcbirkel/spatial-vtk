@@ -150,6 +150,11 @@ Public helpers exposed by ``spatial_vtk.io``:
 Metadata and Inventories
 ------------------------
 
+Routine notebooks should import metadata preparation, event/station matching,
+and configured table helpers from ``spatial_vtk.io``. The modules below are
+documented for API completeness and advanced scripts; they are implementation
+organization for tutorial notebooks.
+
 .. automodule:: spatial_vtk.io.metadata
    :members:
 
@@ -182,6 +187,12 @@ should use the same Python package function locally and inside Slurm workers.
 
 Tables and Artifacts
 --------------------
+
+Routine notebooks should prefer ``output_group()``, standard workflow result
+loaders, bounded preview helpers, and registered ``read_output``/``write``
+helpers from ``spatial_vtk.io``. The lower-level table, output-path, artifact,
+manifest, and plan modules are documented for scripts and package extension
+points, not as notebook path-plumbing examples.
 
 .. automodule:: spatial_vtk.io.tables
    :members:

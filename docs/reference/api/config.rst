@@ -17,11 +17,21 @@ Package Entry Point
 Runtime Configuration
 ---------------------
 
+Start routine notebooks from ``spatial_vtk.config`` helpers such as
+``notebook_run_context()`` and ``SpatialVTKConfig``. The runtime module remains
+documented for advanced configuration scripts and package extension work, but
+notebooks should avoid reaching into it directly.
+
 .. automodule:: spatial_vtk.config.runtime
    :members:
 
 Paths and Outputs
 -----------------
+
+Use ``spatial_vtk.config`` and ``spatial_vtk.io`` output groups for normal
+notebook path/status handling. The path and output modules below document the
+lower-level registry and resolver APIs for scripts, CLIs, and helper
+implementation code.
 
 .. automodule:: spatial_vtk.config.paths
    :members:
