@@ -7,8 +7,12 @@ entry point without importing every plot family at package import time.
 
 Usage examples
 --------------
-Create a spatial correlation plot:
-  ``from spatial_vtk.spatial.plot import plot_correlogram``
+Render the configured large-run spatial figure suite:
+  ``from spatial_vtk.spatial.plot import write_large_run_spatial_figure_suite_from_notebook_settings``
+  ``result = write_large_run_spatial_figure_suite_from_notebook_settings(settings)``
+
+Use individual functions such as ``plot_correlogram()`` directly only for
+focused scripts that already own filtered spatial summary tables.
 """
 
 from __future__ import annotations

@@ -1137,6 +1137,22 @@ def test_spatial_workflow_docstring_prefers_standard_step4_status_helper():
     assert 'spatial_statistics_output_paths("outputs/tutorials/step_04")' not in text
 
 
+def test_plot_package_docstrings_prefer_large_run_suite_helpers():
+    root = pathlib.Path(__file__).resolve().parents[1] / "src" / "spatial_vtk"
+    metric_text = (root / "metrics" / "plot" / "__init__.py").read_text(encoding="utf-8")
+    spatial_text = (root / "spatial" / "plot" / "__init__.py").read_text(encoding="utf-8")
+
+    assert "write_large_run_metric_figure_suite_from_notebook_settings" in metric_text
+    assert "result = write_large_run_metric_figure_suite_from_notebook_settings(metrics_long_path, settings)" in metric_text
+    assert "Use individual functions such as ``plot_psa_period_curve()`` directly only" in metric_text
+    assert "Plot PSA residuals by period" not in metric_text
+
+    assert "write_large_run_spatial_figure_suite_from_notebook_settings" in spatial_text
+    assert "result = write_large_run_spatial_figure_suite_from_notebook_settings(settings)" in spatial_text
+    assert "Use individual functions such as ``plot_correlogram()`` directly only" in spatial_text
+    assert "Create a spatial correlation plot" not in spatial_text
+
+
 def test_metric_gof_docstring_prefers_public_metrics_import():
     source = (
         pathlib.Path(__file__).resolve().parents[1]
@@ -1313,6 +1329,10 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "status result retains its config" in text
     assert "display_metric_source_preview(nrows=...)" in text
     assert "from spatial_vtk.spatial.plot import (" in text
+    first_plot_import = text.split("from spatial_vtk.spatial.plot import (", 1)[1].split(")", 1)[0]
+    assert "write_large_run_spatial_figure_suite_from_notebook_settings" in first_plot_import
+    assert "write_standard_spatial_map_figures" in first_plot_import
+    assert "plot_correlogram" not in first_plot_import
     assert "from spatial_vtk.spatial.map import (" in text
     assert ".. automodule:: spatial_vtk.spatial.plot\n" in text
     assert ".. automodule:: spatial_vtk.spatial.map\n" in text

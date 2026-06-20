@@ -7,8 +7,12 @@ helpers unless an example metric plot explicitly needs them.
 
 Usage examples
 --------------
-Plot PSA residuals by period:
-  ``from spatial_vtk.metrics.plot import plot_psa_period_curve``
+Render the configured large-run metric figure suite:
+  ``from spatial_vtk.metrics.plot import write_large_run_metric_figure_suite_from_notebook_settings``
+  ``result = write_large_run_metric_figure_suite_from_notebook_settings(metrics_long_path, settings)``
+
+Use individual functions such as ``plot_psa_period_curve()`` directly only
+for focused scripts that already own filtered metric rows.
 """
 
 from __future__ import annotations

@@ -28,7 +28,10 @@ module names.
        summarize_residuals_by_path_bin,
    )
 
-   from spatial_vtk.spatial.plot import plot_correlogram
+   from spatial_vtk.spatial.plot import (
+       write_large_run_spatial_figure_suite_from_notebook_settings,
+       write_standard_spatial_map_figures,
+   )
    from spatial_vtk.spatial.map import plot_station_metric_map
 
 .. automodule:: spatial_vtk.spatial

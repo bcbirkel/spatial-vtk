@@ -245,6 +245,10 @@ Changelog
     ``load_standard_spatial_workflow_output_status(...)`` and the
     result-owned summary runner before documenting custom output-directory
     helpers.
+  - Updated metric and spatial plotting package docstrings so examples start
+    with large-run figure-suite writers before documenting individual
+    low-level plot functions, and aligned the Spatial API entry-point example
+    with the same suite-first guidance.
 
 - **CLI examples and defaults** *(Changed)*
 
