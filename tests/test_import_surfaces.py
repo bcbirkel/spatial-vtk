@@ -1642,15 +1642,25 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "geojson_region_summaries_path" in workflows
     assert "descriptive keys are the public notebook contract" in workflows
     assert "docs should not depend on generic" in workflows
-    assert "tutorial notebook preflight fails cells that pass compatibility strings" in workflows
-    assert "imported callable ``run_qc_inventory_from_config``" in workflows
+    assert "Use lower-level ``run_notebook_step_if_needed`` directly only for custom" in workflows
+    assert "Advanced fallback for workflow steps that do not yet have a standard" in workflows
     assert "Preview dashboard summary tables without loading full tab inputs" in workflows
     assert "without resolving dashboard summary paths in cells" in normalized_workflows
     assert "compatibility aliases" not in workflows
     assert "from spatial_vtk.config import (" in workflows
     assert "qc_inventory_readiness_from_config" in workflows
     assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in workflows
-    assert "readiness = qc_inventory_readiness_from_config(config_path=context.config_path)" in workflows
+    assert "qc_outputs.run_inventory_step_if_needed(" in workflows
+    assert "readiness = qc_inventory_readiness_from_config(config_path=context.config_path)" not in workflows
+    assert "run_notebook_step_if_needed(\n       context,\n       readiness,\n       run_qc_inventory_from_config" not in workflows
+    assert "spatial_vtk.qc.load_standard_qc_workflow_outputs(...).run_inventory_step_if_needed(...)" in workflows
+    assert "spatial_vtk.qc.load_standard_qc_workflow_outputs(...).run_overlap_step_if_needed(...)" in workflows
+    assert "spatial_vtk.qc.load_standard_qc_workflow_outputs(...).run_summary_step_if_needed(...)" in workflows
+    assert "spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).run_manifest_step_if_needed(...)" in workflows
+    assert "spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).run_slurm_step_if_needed(...)" in workflows
+    assert "spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).run_downstream_outputs_step_if_needed(...)" in workflows
+    assert "spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).write_large_run_figure_suite(...)" in workflows
+    assert "notebooks should prefer the standard metric result-object methods above" in workflows
     assert "notebook_figure_settings" in workflows
     assert "render_notebook_figure" in workflows
     assert "from spatial_vtk.config.notebook import" not in workflows

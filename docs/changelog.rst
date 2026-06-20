@@ -171,6 +171,10 @@ Changelog
   - Updated workflow examples to prefer ``output_group()`` and configured
     output-registry helpers over raw ``resolve_output_path()`` snippets for
     normal notebook workflows.
+  - Updated Python workflow docs so Step 2 QC and Step 3 metrics list
+    result-object ``run_*_step_if_needed()`` methods as the notebook-facing
+    entry points, with lower-level configured functions reserved for scripts
+    and custom orchestration.
 
 - **CLI examples and defaults** *(Changed)*
 

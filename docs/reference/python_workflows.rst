@@ -12,12 +12,16 @@ Notebooks should use package functions for workflow work; reserve CLI commands
 for terminal-oriented workflows and generated batch scripts.
 
 1. Build or load small metadata tables locally.
-2. Use ``output_readiness`` or a dashboard readiness helper to decide whether a
-   heavy step is missing or stale.
-3. Call ``run_notebook_step_if_needed`` with one of the package workflow
-   functions below. The helper either runs locally or writes/submits a Slurm
-   script using the same Python function.
-4. Preview bounded tables after outputs exist; do not load full QC or metric
+2. Load the standard result object for the current step, such as
+   ``load_standard_ingest_workflow_outputs()``,
+   ``load_standard_qc_workflow_outputs()``, or
+   ``load_standard_metric_workflow_outputs()``.
+3. Call that result object's ``run_*_step_if_needed()`` methods. Those methods
+   own the readiness check plus the local/Slurm execution branch while the
+   notebook cell keeps resource controls visible.
+4. Use lower-level ``run_notebook_step_if_needed`` directly only for custom
+   orchestration that does not yet have a standard result-object method.
+5. Preview bounded tables after outputs exist; do not load full QC or metric
    inventories into the notebook just to check progress.
 
 Workflow functions return JSON-ready dictionaries that are safe to display in
@@ -103,28 +107,19 @@ notebooks should depend on the stable namespaces above.
        notebook_figure_settings,
        notebook_run_context,
        render_notebook_figure,
-       run_notebook_step_if_needed,
    )
    from spatial_vtk.io import event_rows_for_records, load_configured_input_paths, load_configured_input_tables
-   from spatial_vtk.qc import (
-       load_standard_qc_workflow_outputs,
-       qc_inventory_readiness_from_config,
-       run_qc_inventory_from_config,
-   )
+   from spatial_vtk.qc import load_standard_qc_workflow_outputs
 
    context = notebook_run_context()
    cfg = context.cfg
    qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)
-   step_outputs = qc_outputs.outputs
    display(configured_output_registry_preview_frame(cfg=cfg, kinds=("table",)))
    display(qc_outputs.status_frame())
-   readiness = qc_inventory_readiness_from_config(config_path=context.config_path)
-
-   run_notebook_step_if_needed(
+   qc_outputs.run_inventory_step_if_needed(
        context,
-       readiness,
-       run_qc_inventory_from_config,
-       kwargs={"config_path": str(context.config_path), "overwrite": False, "verbose": True},
+       overwrite=False,
+       verbose=True,
        script_name="build_qc_inventory.slurm",
        job_name="svtk-qc",
        walltime="24:00:00",
@@ -232,13 +227,12 @@ the large-run notebooks.
        ``events.loc[events["event_id"].isin(...)]`` or first-row label
        lookups in cells.
    * - ``spatial_vtk.config.run_notebook_step_if_needed``
-     - Display the readiness table, then run or submit a Python package
-       workflow function only when work is needed. Pass the imported package
-       function directly in notebooks; fully qualified import-path strings are
-       retained only for compatibility and generated Slurm workers. The
-       tutorial notebook preflight fails cells that pass compatibility strings
-       such as ``"spatial_vtk.qc.run_qc_inventory_from_config"`` instead of the
-       imported callable ``run_qc_inventory_from_config``.
+     - Advanced fallback for workflow steps that do not yet have a standard
+       result-object ``run_*_step_if_needed()`` method. Display the readiness
+       table, then run or submit a Python package workflow function only when
+       work is needed. Pass the imported package function directly; fully
+       qualified import-path strings are retained only for compatibility and
+       generated Slurm workers.
    * - ``spatial_vtk.config.notebook_step_result``
      - Return a compact JSON-friendly status dictionary for current/skipped
        notebook workflow steps. Use this with ``run_notebook_step_if_needed``
@@ -463,18 +457,23 @@ Step 2: Quality Control
      - Python entry point
      - Standard outputs
    * - Build full waveform and metric QC inventories
-     - ``spatial_vtk.qc.run_qc_inventory_from_config``
+     - ``spatial_vtk.qc.load_standard_qc_workflow_outputs(...).run_inventory_step_if_needed(...)``
      - ``qc_trace_summary`` and ``qc_inventory``
    * - Write the observed/synthetic event-station overlap inventory
-     - ``spatial_vtk.qc.write_qc_inventory_overlap_from_config``
+     - ``spatial_vtk.qc.load_standard_qc_workflow_outputs(...).run_overlap_step_if_needed(...)``
      - ``qc_inventory_overlap``
    * - Build compact QC summary tables for figures and dashboards
-     - ``spatial_vtk.qc.run_qc_summary_workflow_from_config``
+     - ``spatial_vtk.qc.load_standard_qc_workflow_outputs(...).run_summary_step_if_needed(...)``
      - retention, availability, post-QC record, and drop-cause tables
 
 The full QC inventory can be useful for observed-only or synthetic-only
 analysis, but metric calculations should normally use the overlap inventory so
 they only plan observed/synthetic pairs that can be compared.
+
+The lower-level ``spatial_vtk.qc.run_qc_inventory_from_config``,
+``spatial_vtk.qc.write_qc_inventory_overlap_from_config``, and
+``spatial_vtk.qc.run_qc_summary_workflow_from_config`` functions remain public
+for scripts or custom orchestration that needs direct control.
 
 Step 3: Metric Calculation and Metric Figures
 ---------------------------------------------
@@ -486,14 +485,14 @@ Step 3: Metric Calculation and Metric Figures
      - Python entry point
      - Standard outputs
    * - Build metric-ready observed/synthetic waveform inventories
-     - ``spatial_vtk.metrics.build_metric_waveform_inventories_from_config``
+     - ``spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).run_inventory_step_if_needed(...)``
      - ``observed_metric_inventory`` and ``synthetic_metric_inventory``
    * - Check metric inventory readiness
      - ``spatial_vtk.metrics.metric_inventories_readiness_from_config``
      - Readiness/status for observed and synthetic metric inventories and the
        preprocessed trace-metadata dependency
    * - Plan metric tasks and write a manifest
-     - ``spatial_vtk.metrics.plan_metric_tasks_from_config``
+     - ``spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).run_manifest_step_if_needed(...)``
      - ``metric_manifest`` plus per-batch output paths
    * - Check metric manifest readiness
      - ``spatial_vtk.metrics.metric_manifest_readiness_from_config``
@@ -503,24 +502,31 @@ Step 3: Metric Calculation and Metric Figures
      - ``spatial_vtk.metrics.summarize_metric_snapshot_tasks_from_config``
      - ``metric_tasks`` and ``metric_task_estimate``
    * - Write or submit a metric Slurm array script
-     - ``spatial_vtk.metrics.metric_slurm_submission_readiness_from_config`` plus
-       ``spatial_vtk.metrics.write_metrics_slurm_script_from_config``
+     - ``spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).run_slurm_step_if_needed(...)``
      - metric Slurm script; optionally submitted job metadata
    * - Merge completed metric batches
-     - ``spatial_vtk.metrics.metric_batch_merge_readiness_from_config`` plus
-       ``spatial_vtk.metrics.merge_metric_batches_from_config``
+     - ``spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).run_merge_step_if_needed(...)``
      - ``metric_rows``
    * - Write downstream long, enriched, summary, and dashboard metric tables
-     - ``spatial_vtk.metrics.metric_outputs_readiness_from_config`` plus
-       ``spatial_vtk.metrics.write_metric_outputs_from_config``
+     - ``spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).run_downstream_outputs_step_if_needed(...)``
      - ``metrics_long``, ``metrics_enriched``, path tables, dashboard metric
        datasets, dashboard summary tables
    * - Render many large-run metric figures with auditable row sidecars
-     - ``spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings``
+     - ``spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).write_large_run_figure_suite(...)``
      - saved metric figures, package-generated context status and dimension
        summary tables, spectral-contract status, and optional
        ``*.csv``/``*.source.csv``/``*.json`` sidecars without notebook-local
        row filtering, figure-context construction, or per-plot path plumbing
+
+Use lower-level metric helpers such as
+``spatial_vtk.metrics.build_metric_waveform_inventories_from_config``,
+``spatial_vtk.metrics.plan_metric_tasks_from_config``,
+``spatial_vtk.metrics.write_metrics_slurm_script_from_config``,
+``spatial_vtk.metrics.merge_metric_batches_from_config``,
+``spatial_vtk.metrics.write_metric_outputs_from_config``, and
+``spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings``
+from scripts or custom orchestration that needs direct control. Tutorial
+notebooks should prefer the standard metric result-object methods above.
 
 Spectral metrics are planned differently from passband metrics. ``PSA`` and
 ``FAS`` are broadband spectral calculations: the metric manifest should contain
