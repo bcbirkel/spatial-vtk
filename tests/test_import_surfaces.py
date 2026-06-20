@@ -621,13 +621,25 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         from spatial_vtk.spatial import run_spatial_statistics_workflow
         from spatial_vtk.spatial.calculate import load_standard_spatial_workflow_output_status
         from spatial_vtk.visualize import (
+            dashboard_chart_columns_or_message,
+            dashboard_empty_rows_message,
+            dashboard_metric_dataset_readiness_frame,
+            dashboard_missing_columns_message,
             dashboard_output_readiness,
             dashboard_output_status_frame,
+            dashboard_qc_trace_readiness_frame,
             dashboard_readiness_summary_frame,
+            dashboard_summary_table_contracts,
+            dashboard_summary_table_paths,
+            dashboard_value_columns_or_message,
             display_dashboard_output_previews,
             display_dashboard_preparation_result,
+            filter_dashboard_metrics,
+            filter_qc_dashboard_rows,
             figure_sidecar_status_frame,
             launch_configured_dashboards_from_notebook_settings,
+            load_dashboard_summary_tables,
+            load_filtered_dashboard_summary_table,
             preview_dashboard_summary_tables,
             read_figure_sidecar_metadata,
             write_figure_row_sidecar,
@@ -656,7 +668,19 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         assert load_trace_qc_summary.__module__ == "spatial_vtk.visualize.qc.overview"
         assert dashboard_output_readiness.__module__ == "spatial_vtk.visualize.dashboard.contracts"
         assert dashboard_output_status_frame.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert dashboard_metric_dataset_readiness_frame.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert dashboard_qc_trace_readiness_frame.__module__ == "spatial_vtk.visualize.dashboard.contracts"
         assert dashboard_readiness_summary_frame.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert dashboard_summary_table_contracts.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert dashboard_summary_table_paths.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert dashboard_empty_rows_message.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert dashboard_missing_columns_message.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert dashboard_chart_columns_or_message.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert dashboard_value_columns_or_message.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert load_dashboard_summary_tables.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert load_filtered_dashboard_summary_table.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert filter_dashboard_metrics.__module__ == "spatial_vtk.visualize.dashboard.filters"
+        assert filter_qc_dashboard_rows.__module__ == "spatial_vtk.visualize.dashboard.filters"
         assert dashboard_package_readiness_summary_frame.__module__ == "spatial_vtk.visualize.dashboard.contracts"
         assert display_dashboard_output_previews.__module__ == "spatial_vtk.visualize.dashboard.contracts"
         assert display_dashboard_preparation_result.__module__ == "spatial_vtk.visualize.dashboard.export"
@@ -1990,7 +2014,7 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Import context helpers from ``spatial_vtk.visualize.context``" in text
     assert "Import QC visualization helpers from ``spatial_vtk.visualize.qc``" in text
     assert "Import waveform\nfigure helpers from ``spatial_vtk.visualize.waveforms``" in text
-    assert "Import dashboard helpers\nfrom ``spatial_vtk.visualize.dashboard``" in text
+    assert "Import routine dashboard\nhelpers from ``spatial_vtk.visualize``" in text
     assert "metrics dashboard row dataset" in text
     assert "internal output registry names" in text
     assert "``metrics_dashboard_root``" not in text
@@ -2025,7 +2049,7 @@ def test_visualize_api_docs_use_public_entry_points():
     for module_name in forbidden_modules:
         assert f".. automodule:: {module_name}" not in text
     assert "When a dashboard tab is blank or unexpectedly sparse" in text
-    assert "from spatial_vtk.visualize.dashboard import (" in text
+    assert "from spatial_vtk.visualize import (" in text
     assert "dashboard_output_status_frame" in text
     assert "dashboard_readiness_summary_frame" in text
     assert "dashboard_summary_table_contracts" in text
@@ -2040,7 +2064,8 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Maximum row-level records" in text
     assert "SVTK_QC_DASHBOARD_MAX_ROWS" in text
     assert "Maximum trace-summary rows" in text
-    assert "Public helpers exposed by ``spatial_vtk.visualize.dashboard``" in text
+    assert "Public dashboard helpers exposed by ``spatial_vtk.visualize``" in text
+    assert "The same helpers remain available from ``spatial_vtk.visualize.dashboard``" in text
     assert "Large-run notebooks\nset ``prepare_locally=False``" in text
     assert "``run_if_needed(...)`` method" in text
     assert "display_output_previews(nrows=...)" in text
@@ -2062,6 +2087,10 @@ def test_visualize_api_docs_use_public_entry_points():
     for helper in (
         "dashboard_summary_table_contracts",
         "dashboard_summary_table_paths",
+        "dashboard_empty_rows_message",
+        "dashboard_missing_columns_message",
+        "dashboard_chart_columns_or_message",
+        "dashboard_value_columns_or_message",
         "display_dashboard_output_previews",
         "dashboard_metric_dataset_readiness_frame",
         "dashboard_qc_trace_readiness_frame",
@@ -2129,7 +2158,7 @@ def test_public_helper_tables_match_package_exports():
         ),
         "spatial_vtk.visualize.dashboard": (
             root / "docs" / "reference" / "api" / "visualize.rst",
-            "Public helpers exposed by ``spatial_vtk.visualize.dashboard``:",
+            "Public dashboard helpers exposed by ``spatial_vtk.visualize``:",
         ),
     }
 

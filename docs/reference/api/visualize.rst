@@ -180,10 +180,12 @@ Dashboard Helpers
 -----------------
 
 Dashboard helpers separate reusable data contracts from the Streamlit app
-entry points. Scripts and notebooks should prefer the public functions exposed
-by ``spatial_vtk.visualize.dashboard`` for readiness checks, summary filtering,
-dashboard dataset export, and dashboard launch commands. These helpers are safe
-to import without starting Streamlit.
+entry points. Routine notebooks should prefer the public functions exposed by
+``spatial_vtk.visualize`` for readiness checks, summary filtering, dashboard
+dataset export, and dashboard launch commands. Scripts that intentionally stay
+within the dashboard family can use the same helpers from
+``spatial_vtk.visualize.dashboard``. These helpers are safe to import without
+starting Streamlit.
 
 ``dashboard_readiness_summary_frame`` returns a compact preflight table for
 notebooks, while ``dashboard_output_status_frame`` returns the detailed
@@ -235,16 +237,19 @@ artifacts before loading full metric or QC inventories:
 
 .. code-block:: python
 
-   from spatial_vtk.visualize.dashboard import (
+   from spatial_vtk.visualize import (
+       dashboard_output_readiness,
        dashboard_output_status_frame,
        dashboard_readiness_summary_frame,
        dashboard_summary_table_contracts,
    )
 
+   readiness = dashboard_output_readiness(cfg=cfg)
    readiness_summary = dashboard_readiness_summary_frame(cfg=cfg)
    dashboard_status = dashboard_output_status_frame(cfg=cfg)
    dashboard_contracts = dashboard_summary_table_contracts()
 
+   print(f"dashboard rebuild needed: {readiness.should_run} ({readiness.reason})")
    display(readiness_summary)
    display(dashboard_status)
    display(dashboard_contracts)
@@ -262,7 +267,7 @@ config file path. Use ``cfg=config_path`` in generated workers or lightweight
 driver scripts when you need dashboard readiness, status, and bounded previews
 without activating global config state first.
 
-Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
+Public dashboard helpers exposed by ``spatial_vtk.visualize``:
 
 .. list-table::
    :header-rows: 1
@@ -336,6 +341,12 @@ Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
    * - ``filter_dashboard_metrics`` and ``filter_qc_dashboard_rows``
      - Apply dashboard filters consistently in apps, tests, and exported tables.
 
+The same helpers remain available from ``spatial_vtk.visualize.dashboard`` for
+scripts that intentionally import one visualization family. Routine notebooks
+should use ``spatial_vtk.visualize`` so dashboard readiness, figure sidecars,
+context figures, QC figures, waveform figures, and dashboard launch helpers
+come from one stable package surface.
+
 ``write_configured_dashboard_datasets`` replaces the standard dashboard metric
 dataset files and summary tables for the current run. It removes only
 recognized dashboard artifacts, so reruns cannot accidentally mix old metric
@@ -406,8 +417,10 @@ small enough for the dashboard process.
    :members:
 
 The dashboard chart, contract, export, filter, label, launch, map,
-and table modules are implementation organization. Import dashboard helpers
-from ``spatial_vtk.visualize.dashboard`` in notebooks and scripts.
+and table modules are implementation organization. Import routine dashboard
+helpers from ``spatial_vtk.visualize`` in notebooks; scripts that specifically
+need the dashboard family can import the same public helpers from
+``spatial_vtk.visualize.dashboard``.
 
 Shared Figure Utilities
 -----------------------

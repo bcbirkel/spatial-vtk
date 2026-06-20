@@ -22,6 +22,10 @@ Changelog
     Streamlit tabs, CLI status output, and Slurm logs expose missing schema,
     missing map coordinates, empty value columns, stale datasets, and rebuild
     guidance without loading full large-run tables.
+  - Promoted notebook-safe dashboard readiness, contract, filtering, preview,
+    and bounded loading helpers to ``spatial_vtk.visualize`` while preserving
+    the ``spatial_vtk.visualize.dashboard`` family import path for dashboard
+    scripts.
   - Aligned API docs, generated CLI reference, workflow guides, README
     install guidance, and tutorial notebooks with the stabilized public import
     surfaces and result-object workflow.
