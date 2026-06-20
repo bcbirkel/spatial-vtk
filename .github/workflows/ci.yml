@@ -45,8 +45,7 @@ jobs:
 
       - name: Check generated CLI reference
         run: |
-          PYTHONPATH=src python tools/generate_cli_reference.py
-          git diff --exit-code docs/reference/cli docs/reference/cli_api.rst
+          PYTHONPATH=src python tools/generate_cli_reference.py --check
 
       - name: Import every public module
         run: |
@@ -108,8 +107,7 @@ jobs:
 
       - name: Check generated CLI reference
         run: |
-          PYTHONPATH=src python tools/generate_cli_reference.py
-          git diff --exit-code docs/reference/cli docs/reference/cli_api.rst
+          PYTHONPATH=src python tools/generate_cli_reference.py --check
 
       - name: Build docs with warnings as errors
         run: |

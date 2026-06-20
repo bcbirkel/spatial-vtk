@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Sequence
 
 from spatial_vtk.cli import (
     PlotCommand,
@@ -41,12 +41,13 @@ REQUIRED_INPUT_TABLE_MEANINGS = {
 }
 
 
-def main() -> int:
-    """Write the generated CLI reference pages.
+def main(argv: Sequence[str] | None = None) -> int:
+    """Write or check the generated CLI reference pages.
 
     Parameters
     ----------
-    None
+    argv
+        Optional command-line arguments. When omitted, ``sys.argv`` is used.
 
     Returns
     -------
@@ -54,25 +55,72 @@ def main() -> int:
         Process-style exit code.
     """
 
-    parser = build_parser()
+    arg_parser = argparse.ArgumentParser(
+        description="Generate Spatial-VTK CLI reference pages from the argparse parser.",
+        epilog="Run without arguments to rewrite the generated reference files.",
+    )
+    arg_parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Check whether generated CLI reference files are current without rewriting them.",
+    )
+    args = arg_parser.parse_args(argv)
+
+    rendered = _render_cli_reference()
+    if args.check:
+        return _check_cli_reference(rendered)
+
     CLI_DIR.mkdir(parents=True, exist_ok=True)
-    top_subcommands = _subcommands(parser)
-    _write_cli_index(parser, top_subcommands)
-    for command_name in _ordered_names(top_subcommands):
-        page_path = CLI_DIR / f"{command_name}.rst"
-        page_path.write_text(
-            "\n".join(_render_command_page(command_name, top_subcommands[command_name])).rstrip() + "\n",
-            encoding="utf-8",
-        )
+    for path, text in rendered.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
     print(f"Wrote CLI reference pages under {CLI_DIR}")
     return 0
 
 
-def _write_cli_index(
+def _render_cli_reference() -> dict[Path, str]:
+    """Render every generated CLI reference file into memory."""
+
+    parser = build_parser()
+    top_subcommands = _subcommands(parser)
+    rendered: dict[Path, str] = {
+        CLI_INDEX: "\n".join(_render_cli_index(parser, top_subcommands)).rstrip() + "\n",
+    }
+    for command_name in _ordered_names(top_subcommands):
+        page_path = CLI_DIR / f"{command_name}.rst"
+        rendered[page_path] = (
+            "\n".join(_render_command_page(command_name, top_subcommands[command_name])).rstrip() + "\n"
+        )
+    return rendered
+
+
+def _check_cli_reference(rendered: dict[Path, str]) -> int:
+    """Return nonzero when generated CLI reference files are stale."""
+
+    stale: list[str] = []
+    for path, expected in rendered.items():
+        try:
+            current = path.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            stale.append(f"missing: {path.relative_to(ROOT)}")
+            continue
+        if current != expected:
+            stale.append(f"stale: {path.relative_to(ROOT)}")
+    if stale:
+        print("Generated CLI reference files are not current:")
+        for item in stale:
+            print(f"  {item}")
+        print("Run: PYTHONPATH=src python tools/generate_cli_reference.py")
+        return 1
+    print("Generated CLI reference files are current.")
+    return 0
+
+
+def _render_cli_index(
     parser: argparse.ArgumentParser,
     top_subcommands: dict[str, argparse.ArgumentParser],
-) -> None:
-    """Write the top-level CLI API landing page.
+) -> list[str]:
+    """Render the top-level CLI API landing page.
 
     Parameters
     ----------
@@ -83,7 +131,8 @@ def _write_cli_index(
 
     Returns
     -------
-    None
+    list[str]
+        RST lines for the top-level CLI API page.
     """
 
     top_help = _subcommand_help_map(parser)
@@ -150,7 +199,7 @@ def _write_cli_index(
             "",
         ]
     )
-    CLI_INDEX.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+    return lines
 
 
 def _render_command_page(command_name: str, parser: argparse.ArgumentParser) -> list[str]:

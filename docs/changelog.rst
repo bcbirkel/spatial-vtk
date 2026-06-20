@@ -357,6 +357,9 @@ Changelog
   - Made ``spatial_vtk.config`` resolve public config helpers lazily and
     decoupled display-label helpers from runtime config imports so lightweight
     label utilities remain importable without YAML or pandas.
+  - Added a no-write ``tools/generate_cli_reference.py --check`` mode and
+    rewired CI/release validation to use it for generated CLI-reference
+    freshness checks.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 
