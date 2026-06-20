@@ -389,6 +389,8 @@ def test_public_workflows_check_generated_cli_reference():
         assert "Check generated CLI reference" in text
         assert "PYTHONPATH=src python tools/generate_cli_reference.py" in text
         assert "git diff --exit-code docs/reference/cli docs/reference/cli_api.rst" in text
+    assert workflows["ci.yml"].count("Check generated CLI reference") >= 2
+    assert "Build docs with warnings as errors" in workflows["ci.yml"]
     assert '      - "tools/generate_cli_reference.py"' in workflows["docs.yml"]
 
 
