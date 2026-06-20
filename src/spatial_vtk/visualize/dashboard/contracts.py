@@ -1056,7 +1056,7 @@ def _attach_metric_dataset_readiness(status: pd.DataFrame) -> pd.DataFrame:
     out.loc[mask, "required_columns"] = "recognized residual/score/value column"
     out.loc[mask, "purpose"] = "Partitioned or single-file long metric dataset used by all metrics dashboard tabs."
     for index, row in out.loc[mask].iterrows():
-        readiness = dashboard_metric_dataset_readiness_frame(Path(str(row["path"]))).iloc[0].to_dict()
+        readiness = dashboard_metric_dataset_readiness_frame(_dashboard_status_path(row)).iloc[0].to_dict()
         for key in ("ready", "readiness", "file_count", "row_count", "value_columns", "value_families", "message", "suggested_action"):
             out.at[index, key] = readiness.get(key, pd.NA)
     return out
@@ -1091,10 +1091,23 @@ def _attach_qc_trace_readiness(status: pd.DataFrame) -> pd.DataFrame:
     out.loc[mask, "required_columns"] = ", ".join(REQUIRED_TRACE_QC_TABLE_COLUMNS)
     out.loc[mask, "purpose"] = "Trace-level QC decisions used by the QC dashboard and manual-review queue."
     for index, row in out.loc[mask].iterrows():
-        readiness = _inspect_qc_trace_summary_table(Path(str(row["path"])))
+        readiness = _inspect_qc_trace_summary_table(_dashboard_status_path(row))
         for key, value in readiness.items():
             out.at[index, key] = value
     return out
+
+
+def _dashboard_status_path(row: Any) -> Path:
+    """Return the configured path from one dashboard status row."""
+
+    value = row.get("resolved_path", None)
+    try:
+        missing = bool(pd.isna(value))
+    except (TypeError, ValueError):
+        missing = False
+    if value is None or missing:
+        value = row.get("path", "")
+    return Path(str(value))
 
 
 def _inspect_qc_trace_summary_table(path: Path) -> dict[str, object]:

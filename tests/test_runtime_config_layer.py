@@ -3497,6 +3497,64 @@ outputs:
     assert readiness.summary_frame().equals(summary)
 
 
+def test_dashboard_readiness_attachments_prefer_resolved_path_without_path_alias(tmp_path):
+    """Dashboard readiness attachments should not depend on the compatibility path column."""
+
+    import spatial_vtk.visualize.dashboard.contracts as contracts_module
+
+    metrics_root = tmp_path / "metrics_dashboard_dataset.csv"
+    pd.DataFrame(
+        {
+            "model": ["m1"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "log2_residual": [0.25],
+        }
+    ).to_csv(metrics_root, index=False)
+    qc_trace_summary = tmp_path / "qc_trace_summary.csv"
+    pd.DataFrame(
+        {
+            "source": ["observed"],
+            "event_id": ["ev1"],
+            "station": ["STA"],
+            "component": ["Z"],
+            "passband": ["1-2 sec"],
+            "qc_status": ["pass"],
+            "qc_reason": [""],
+        }
+    ).to_csv(qc_trace_summary, index=False)
+
+    metric_status = pd.DataFrame(
+        [
+            {
+                "name": "metrics_dashboard_root",
+                "resolved_path": str(metrics_root),
+                "exists": True,
+            }
+        ]
+    )
+    metric_attached = contracts_module._attach_metric_dataset_readiness(metric_status)
+    assert "path" not in metric_attached.columns
+    assert metric_attached.loc[0, "ready"] is True
+    assert metric_attached.loc[0, "readiness"] == "ready"
+    assert metric_attached.loc[0, "file_count"] == 1
+
+    qc_status = pd.DataFrame(
+        [
+            {
+                "name": "qc_trace_summary_path",
+                "resolved_path": str(qc_trace_summary),
+                "exists": True,
+            }
+        ]
+    )
+    qc_attached = contracts_module._attach_qc_trace_readiness(qc_status)
+    assert "path" not in qc_attached.columns
+    assert qc_attached.loc[0, "ready"] is True
+    assert qc_attached.loc[0, "readiness"] == "ready"
+    assert qc_attached.loc[0, "row_count"] == 1
+
+
 def test_notebook_dashboard_preparation_can_skip_local_writes(tmp_path, monkeypatch):
     """Standard notebooks should get readiness/status frames without writing large dashboards."""
 
