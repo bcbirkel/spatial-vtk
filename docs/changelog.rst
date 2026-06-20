@@ -106,6 +106,9 @@ Changelog
   - IO API and Python workflow docs now list ``metric_plan_from_config`` and
     ``MetricPlan`` as public helpers for inspecting resolved metric settings in
     notebooks.
+  - Config API docs now list ``notebook_step_result`` and
+    ``notebook_step_result_frame`` beside ``run_notebook_step_if_needed`` for
+    custom fallback workflow cells.
   - Spatial API guidance now presents the Step 4 output-status/result helpers
     before the direct spatial-statistics runner, keeping routine notebook docs
     aligned with the large-run driver pattern.

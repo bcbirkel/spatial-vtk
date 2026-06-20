@@ -90,6 +90,11 @@ the stable package surface below.
    * - ``run_notebook_step_if_needed``
      - Display readiness, skip current outputs, run a Python package function
        locally, or write/submit a Slurm script for the same function.
+   * - ``notebook_step_result`` and ``notebook_step_result_frame``
+     - Build compact current/skipped status payloads and labelled display
+       frames for custom fallback steps that do not yet have a standard
+       result-object method. Use these helpers instead of hand-written
+       dictionaries with generic ``path`` keys in notebook cells.
    * - ``display_notebook_step_result``
      - Display a compact table for skipped/current step dictionaries, Slurm
        submission results, and result objects with ``status_frame()`` or

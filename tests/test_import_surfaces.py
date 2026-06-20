@@ -1103,6 +1103,8 @@ def test_config_api_docs_include_compute_helpers():
     assert "Import notebook helpers from ``spatial_vtk.config``" in text
     assert "``NotebookRunContext`` and ``notebook_run_context``" in text
     assert "``run_notebook_step_if_needed``" in text
+    assert "``notebook_step_result`` and ``notebook_step_result_frame``" in text
+    assert "custom fallback steps that do not yet have a standard" in text
     assert "``display_notebook_step_result``" in text
     assert "``summary_frame()``" in text
     assert "``NotebookFigureSettings`` and ``notebook_figure_settings``" in text
