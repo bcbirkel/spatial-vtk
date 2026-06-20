@@ -2158,6 +2158,9 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     assert "run_or_submit_notebook_function(" not in source
     assert "from spatial_vtk.qc import (" in source
     assert "load_standard_qc_workflow_outputs," in source
+    assert "metrics_settings_from_config," in source
+    assert "QC_OVERLAP_SCOPE = metric_settings.source_overlap_scope" in source
+    assert 'print(f"QC overlap scope: {QC_OVERLAP_SCOPE}")' in source
     assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in source
     assert "step_outputs = qc_outputs.outputs" not in source
     assert "display(qc_outputs.status_frame())" in source
@@ -2172,6 +2175,7 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     assert "qc_summary_readiness_from_config," not in source
     assert "qc_outputs.run_inventory_step_if_needed(" in source
     assert "qc_outputs.run_overlap_step_if_needed(" in source
+    assert "scope=QC_OVERLAP_SCOPE" in source
     assert "qc_outputs.run_summary_step_if_needed(" in source
     assert "qc_outputs.write_figures(" in source
     assert "write_large_run_qc_figures_from_outputs(" not in source
@@ -2232,6 +2236,7 @@ def test_large_run_step02_overlap_sidecar_has_separate_rebuild_gate() -> None:
 
     assert "qc_outputs.run_inventory_step_if_needed(" in source
     assert "qc_outputs.run_overlap_step_if_needed(" in source
+    assert "scope=QC_OVERLAP_SCOPE" in source
     assert "qc_outputs.run_summary_step_if_needed(" in source
     assert "qc_readiness = qc_inventory_readiness_from_config(" not in source
     assert "config_path=config_path" not in source
