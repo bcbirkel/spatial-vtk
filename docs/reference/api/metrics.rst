@@ -179,13 +179,6 @@ Public plotting helpers exposed by ``spatial_vtk.metrics.plot``:
      - Plot period-by-record spectral intensity summaries.
    * - ``plot_psa_period_curve``
      - Plot PSA values or residuals across oscillator periods.
-   * - ``metric_rows_for_metrics``
-     - Advanced row-selection helper for scripts that need selected metric
-       rows by metric names, display labels, keys, or aliases before calling
-       lower-level plotting functions. New notebook cells should prefer
-       ``write_large_run_metric_figure_suite_from_notebook_settings`` or
-       ``write_standard_metric_diagnostic_figures`` so the package owns row
-       filtering, render gates, output paths, and sidecars.
    * - ``write_large_run_metric_figure_suite_from_notebook_settings``
      - Render the full Step 3 large-run metric figure suite from notebook
        settings without notebook-local plot-function imports, per-family
@@ -205,8 +198,13 @@ Public plotting helpers exposed by ``spatial_vtk.metrics.plot``:
    * - ``plot_example_metric_pairs``
      - Plot synthetic trace-pair examples for documentation and sanity checks.
 
-Large-Run Figure Context
-------------------------
+Large-Run Figure Suite
+----------------------
+
+Notebook-facing metric plotting should use the result-object and suite helpers
+below. These helpers keep row filtering, robust plot scaling, sidecar writing,
+render gates, and registered output paths in package code instead of notebook
+cells.
 
 Use ``MetricFigureContext`` when a notebook or script needs to render many
 metric figures from a large ``metrics_long`` table without loading unnecessary
@@ -298,6 +296,24 @@ waveform passbands. Station maps, model maps, residual grids, event maps,
 scatter plots, and distribution plots are written as PSA period sheets when the
 input rows contain multiple ``period_s`` values; period curves use the same
 ``period_s`` values directly.
+
+Advanced Figure Extension Helpers
+---------------------------------
+
+The functions in this section are public for custom scripts and extension
+code, but they are not the preferred tutorial or notebook entry points. New
+notebooks should call ``write_large_run_metric_figure_suite_from_notebook_settings``,
+``write_standard_metric_diagnostic_figures``, or
+``write_station_metric_map_from_notebook_settings`` so the package owns the
+data-selection contract and output bookkeeping.
+
+``metric_rows_for_metrics``
+   Select metric rows by metric names, display labels, keys, or aliases before
+   calling lower-level plotting functions.
+
+``prepare_large_run_metric_figure_context``
+   Build a reusable ``MetricFigureContext`` for scripts that need to customize
+   the standard large-run figure families programmatically.
 
 .. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext
    :members:

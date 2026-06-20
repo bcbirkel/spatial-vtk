@@ -867,6 +867,14 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert ".. autofunction:: spatial_vtk.metrics.plot.write_standard_metric_diagnostic_figures" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings" in text
     assert "Public plotting helpers exposed by ``spatial_vtk.metrics.plot``" in text
+    helper_table = text.split("Public plotting helpers exposed by ``spatial_vtk.metrics.plot``", 1)[1].split(
+        "Large-Run Figure Suite",
+        1,
+    )[0]
+    assert "metric_rows_for_metrics" not in helper_table
+    assert "Notebook-facing metric plotting should use the result-object and suite helpers" in text
+    assert "Advanced Figure Extension Helpers" in text
+    assert "not the preferred tutorial or notebook entry points" in text
     assert "``PSA`` and ``FAS`` are broadband spectral metrics" in text
     assert "writes blank\n``passband`` values for spectral tasks" in text
     assert "older output table contains PSA rows repeated under passband labels" in text
@@ -876,8 +884,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert ".. autofunction:: spatial_vtk.metrics.workflow.load_standard_metric_workflow_outputs" not in text
     assert "bounded preview helpers such as" in text
     assert "metrics_long`` display helper" in text
-    assert "Advanced row-selection helper for scripts" in text
-    assert "New notebook cells should prefer\n       ``write_large_run_metric_figure_suite_from_notebook_settings``" in text
+    assert "New\nnotebooks should call ``write_large_run_metric_figure_suite_from_notebook_settings``" in text
     forbidden_modules = (
         "spatial_vtk.metrics.calculate.amplitudes",
         "spatial_vtk.metrics.calculate.arrival_picks",

@@ -209,6 +209,9 @@ Changelog
 
   - Updated Metrics API pages to document stable package entry points instead
     of lower-level implementation modules.
+  - Split notebook-facing metric figure-suite guidance from advanced metric
+    row-selection/context helpers so tutorial authors have one clear plotting
+    path while custom scripts can still find the extension APIs.
   - Updated QC, Spatial, Visualization, I/O, and Configuration API pages to
     document stable package entry points instead of lower-level implementation
     modules.
