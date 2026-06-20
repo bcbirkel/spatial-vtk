@@ -540,6 +540,7 @@ def write_metric_outputs_from_config(
     written = write_metric_outputs(
         metric_rows_path,
         None,
+        cfg=config,
         events=events_path,
         stations=stations_path,
         residual_column=residual_column,

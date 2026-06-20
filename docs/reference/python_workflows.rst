@@ -537,7 +537,12 @@ Use lower-level metric helpers such as
 ``spatial_vtk.metrics.write_metric_outputs_from_config``, and
 ``spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings``
 from scripts or custom orchestration that needs direct control. Tutorial
-notebooks should prefer the standard metric result-object methods above.
+notebooks should prefer the standard metric result-object methods above. If a
+script calls the lower-level ``spatial_vtk.metrics.write_metric_outputs``
+writer directly, pass ``cfg=cfg`` when writing to registered output paths; this
+keeps the script independent of global active-config state. Passing an explicit
+``output_dir`` remains available for ad hoc exports outside the configured
+output registry.
 
 Spectral metrics are planned differently from passband metrics. ``PSA`` and
 ``FAS`` are broadband spectral calculations: the metric manifest should contain

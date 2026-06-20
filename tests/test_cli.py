@@ -2967,6 +2967,7 @@ outputs:
     assert seen["output_dir"] == output_dir
     assert seen["kwargs"]["events"] == prepared_events
     assert seen["kwargs"]["stations"] == prepared_stations
+    assert seen["kwargs"]["cfg"].root_dir == tmp_path
 
 
 def test_cli_metrics_plan_applies_scenario_and_overrides(tmp_path):

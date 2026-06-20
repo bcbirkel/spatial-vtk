@@ -2408,6 +2408,7 @@ def _cmd_metrics_outputs(args: argparse.Namespace) -> int:
     written = write_metric_outputs(
         metrics,
         args.output_dir,
+        cfg=config,
         events=events,
         stations=stations,
         residual_column=args.residual_column,

@@ -2570,6 +2570,7 @@ def test_metric_workflow_outputs_feed_downstream_modules(tmp_path) -> None:
 def test_write_metric_outputs_uses_registered_dashboard_paths_when_configured(tmp_path) -> None:
     """Config-backed metric output writing should not put dashboards under tables."""
 
+    clear_active_config()
     config_path = tmp_path / "spatial-vtk.yaml"
     config_path.write_text(
         f"""
@@ -2581,7 +2582,7 @@ outputs:
 """,
         encoding="utf-8",
     )
-    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    cfg = SpatialVTKConfig.from_file(config_path)
     metric_rows = pd.DataFrame(
         {
             "event_id": ["e1"],
@@ -2597,7 +2598,7 @@ outputs:
         }
     )
     try:
-        written = write_metric_outputs(metric_rows)
+        written = write_metric_outputs(metric_rows, cfg=cfg)
     finally:
         clear_active_config()
 
