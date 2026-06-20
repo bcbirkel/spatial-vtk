@@ -85,6 +85,9 @@ Changelog
   - Updated the large-run Step 7 notebook so dashboard dataset build/submission
     results are displayed through ``display_notebook_step_result(...)`` instead
     of being returned silently from the notebook cell.
+  - Updated the large-run Step 4 notebook so spatial summary and derived-output
+    gate results are displayed through ``display_notebook_step_result(...)``
+    instead of raw ``print(...)`` calls.
   - Spatial statistics settings now support configured ``metrics_table`` and
     ``station_metadata_table`` inputs plus metric lists, so Step 4 notebooks can
     run through the standard result/status wrapper without passing ad hoc

@@ -606,6 +606,11 @@ should build only a curated subset.
      - saved spatial figures, package-generated spatial table/dimension status
        summaries, and optional row-provenance sidecars
 
+Display results returned by the Step 4 ``run_*_step_if_needed(...)`` methods
+with ``spatial_vtk.config.display_notebook_step_result``. That keeps submitted,
+skipped, and local-run states visible as labelled notebook tables instead of
+raw dictionaries or Slurm dataclass output.
+
 Step 5: GeoJSON Regions and Corridors
 -------------------------------------
 

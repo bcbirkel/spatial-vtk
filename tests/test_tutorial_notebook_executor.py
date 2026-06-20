@@ -1600,6 +1600,7 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "run_notebook_step_if_needed(" not in source
+    assert "display_notebook_step_result," in source
     assert "from spatial_vtk.spatial import load_standard_spatial_workflow_output_status" in source
     assert "config_path = context.config_path" not in source
     assert "run_spatial_statistics_workflow_from_config," not in source
@@ -1613,6 +1614,10 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "spatial_outputs.run_derived_outputs_step_if_needed(" in source
     assert "spatial_summary_result = spatial_outputs.run_summary_step_if_needed(" in source
     assert "spatial_derived_result = spatial_outputs.run_derived_outputs_step_if_needed(" in source
+    assert 'display_notebook_step_result(spatial_summary_result, label="Spatial summary tables", display=display)' in source
+    assert 'display_notebook_step_result(spatial_derived_result, label="Spatial derived tables", display=display)' in source
+    assert "print(spatial_summary_result)" not in source
+    assert "print(spatial_derived_result)" not in source
     assert "core_spatial_output_names" not in source
     assert "derived_spatial_output_names" not in source
     assert "step_outputs.readiness(" not in source

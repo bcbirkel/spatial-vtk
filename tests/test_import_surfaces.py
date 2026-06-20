@@ -1476,6 +1476,8 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "from spatial_vtk.spatial import (" in text
     assert "load_standard_spatial_workflow_output_status" in text
     assert text.index("load_standard_spatial_workflow_output_status") < text.index("run_spatial_statistics_workflow_from_config")
+    assert "Display the run/skip/submission payload" in text
+    assert "``spatial_vtk.config.display_notebook_step_result``" in text
     assert "run_spatial_statistics_workflow_from_config" in text
     assert "run_geojson_region_summary_workflow_from_config" in text
     assert "run_boundary_corridor_workflow_from_config" in text
@@ -2464,6 +2466,8 @@ def test_python_workflow_docs_prefer_spatial_figure_suite_wrapper():
     assert "spatial_vtk.spatial.plot.write_large_run_spatial_figure_suite_from_notebook_settings" in workflows
     assert "That wrapper owns spatial table readiness checks, figure settings" in workflows
     assert "notebooks do not build spatial figure contexts or per-plot paths by hand" in normalized
+    assert "Display results returned by the Step 4 ``run_*_step_if_needed(...)`` methods" in workflows
+    assert "``spatial_vtk.config.display_notebook_step_result``" in workflows
     assert "spatial_vtk.spatial.plot.prepare_spatial_figure_context_from_notebook_settings" not in workflows
     assert "``spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs``" in workflows
     assert "fallback path choices in the cell" in workflows

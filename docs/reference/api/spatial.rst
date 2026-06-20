@@ -160,7 +160,10 @@ notebooks can call ``run_summary_step_if_needed(...)``,
 ``run_derived_outputs_step_if_needed(...)``,
 ``display_table_previews(nrows=...)``, and ``write_summary_figures(...)``
 without repeating readiness checks, Slurm submission plumbing, ``cfg``, or
-direct writer imports in each cell.
+direct writer imports in each cell. Display the run/skip/submission payload
+from the ``run_*_step_if_needed(...)`` methods with
+``spatial_vtk.config.display_notebook_step_result`` rather than printing the
+raw result object.
 
 .. autofunction:: spatial_vtk.spatial.load_standard_spatial_workflow_output_status
 
