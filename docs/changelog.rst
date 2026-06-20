@@ -338,8 +338,9 @@ Changelog
     command builders and launch function objects remain importable without
     loading YAML/config machinery.
   - Deferred dashboard status, contract, filter, label, and dataset-preparation
-    helper implementations until call time so public helper objects remain
-    importable without eager pandas or YAML imports.
+    function implementations until call time so public helper objects remain
+    importable without eager pandas or YAML imports while result classes still
+    resolve to real classes when explicitly imported.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 

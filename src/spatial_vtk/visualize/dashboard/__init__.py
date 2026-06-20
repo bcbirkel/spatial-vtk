@@ -93,10 +93,24 @@ __all__ = sorted(_EXPORT_MODULES)
 
 _DEFERRED_EXPORT_MODULES = {
     "spatial_vtk.visualize.dashboard.contracts",
-    "spatial_vtk.visualize.dashboard.export",
     "spatial_vtk.visualize.dashboard.filters",
     "spatial_vtk.visualize.dashboard.labels",
     "spatial_vtk.visualize.dashboard.tables",
+}
+
+_DEFERRED_EXPORT_NAMES = {
+    "add_dashboard_path_geometry",
+    "build_dashboard_summaries_from_metric_dataset",
+    "dashboard_metric_dataset_paths",
+    "display_dashboard_preparation_result",
+    "forward_azimuth_deg",
+    "haversine_km",
+    "load_dashboard_metric_dataset",
+    "prepare_configured_dashboard_datasets_from_notebook_settings",
+    "safe_path_token",
+    "write_configured_dashboard_datasets",
+    "write_dashboard_metric_dataset",
+    "write_dashboard_summary_dataset",
 }
 
 
@@ -106,7 +120,7 @@ def __getattr__(name: str) -> Any:
     module_name = _EXPORT_MODULES.get(name)
     if module_name is None:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-    if module_name in _DEFERRED_EXPORT_MODULES:
+    if module_name in _DEFERRED_EXPORT_MODULES or name in _DEFERRED_EXPORT_NAMES:
         value = _deferred_export(name, module_name)
         globals()[name] = value
         return value

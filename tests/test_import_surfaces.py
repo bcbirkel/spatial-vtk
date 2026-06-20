@@ -116,6 +116,7 @@ def test_public_imports():
         summarize_standard_spatial_products,
     )
     from spatial_vtk.visualize.dashboard import (
+        DashboardDatasetPreparationResult,
         build_dashboard_summaries,
         dashboard_readiness_summary_frame,
         display_dashboard_preparation_result,
@@ -269,6 +270,7 @@ def test_public_imports():
     assert callable(geojson_polygon_preview_table)
     assert callable(geojson_metric_region_frame)
     assert callable(geojson_metric_subset_frame)
+    assert inspect.isclass(DashboardDatasetPreparationResult)
     assert callable(build_dashboard_summaries)
     assert callable(dashboard_readiness_summary_frame)
     assert callable(launch_configured_dashboards_from_notebook_settings)
