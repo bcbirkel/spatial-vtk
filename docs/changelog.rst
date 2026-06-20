@@ -105,6 +105,10 @@ Changelog
   - Rewired large-run Step 4, Step 5, and Step 6 status/preview cells to call
     package-owned output-status helpers instead of direct ``output_group(...)``
     methods.
+  - Rewired large-run Step 4, Step 5, and Step 6 figure cells to call
+    result-object methods for quick spatial summaries, GeoJSON region figures,
+    waveform comparisons, and region boxplots instead of importing direct
+    writer functions in notebooks.
   - Rewired the standard Step 5 GeoJSON notebook to call configured input
     result methods for region and corridor figure suites instead of unpacking
     GeoJSON paths, loaded tables, and output groups into notebook variables.

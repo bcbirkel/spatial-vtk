@@ -1635,6 +1635,26 @@ class StandardGeoJSONWorkflowOutputStatusResult:
             display_fn=display_fn,
         )
 
+    def write_region_figures(
+        self,
+        ingest_outputs: Any,
+        settings: Any,
+        *,
+        geojson_path: str | Path,
+        cfg: Any | None = None,
+        overwrite: bool = False,
+    ) -> "RegionFigureResult":
+        """Write Step 5 GeoJSON/corridor figures from this output bundle."""
+
+        return write_large_run_geojson_region_figures_from_notebook_settings(
+            self,
+            ingest_outputs,
+            settings,
+            geojson_path=geojson_path,
+            cfg=cfg or self.cfg,
+            overwrite=overwrite,
+        )
+
 
 @dataclass(frozen=True)
 class StandardAdditionalPlottingFigureResult:
@@ -1758,6 +1778,56 @@ class StandardAdditionalPlottingOutputStatusResult:
             nrows=nrows,
             display_fn=display_fn,
             missing_message=missing_message,
+        )
+
+    def write_waveform_comparison(
+        self,
+        settings: Any,
+        *,
+        max_records: int | None = 12,
+        max_distance_km: float | None = 50.0,
+        chunksize: int = 1_000_000,
+        overwrite: bool = False,
+        event_id: str | list[str] | tuple[str, ...] | None = None,
+        component: str | None = None,
+        passband: str | None = None,
+        plot_options: dict[str, Any] | None = None,
+    ) -> object:
+        """Write a bounded Step 6 waveform comparison from this output bundle."""
+
+        from spatial_vtk.visualize.waveforms import write_waveform_comparison_from_notebook_settings
+
+        return write_waveform_comparison_from_notebook_settings(
+            self,
+            settings,
+            max_records=max_records,
+            max_distance_km=max_distance_km,
+            chunksize=chunksize,
+            overwrite=overwrite,
+            event_id=event_id,
+            component=component,
+            passband=passband,
+            plot_options=plot_options,
+        )
+
+    def write_region_boxplot(
+        self,
+        settings: Any,
+        *,
+        output_prefix: str = "additional_region_boxplot",
+        geojson_path: str | Path | None = None,
+        annotate_if_missing: bool = False,
+        overwrite: bool = False,
+    ) -> "RegionBoxplotResult":
+        """Write the Step 6 region boxplot from this output bundle."""
+
+        return write_large_run_region_boxplot_from_notebook_settings(
+            self,
+            settings,
+            output_prefix=output_prefix,
+            geojson_path=geojson_path,
+            annotate_if_missing=annotate_if_missing,
+            overwrite=overwrite,
         )
 
 

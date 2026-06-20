@@ -145,8 +145,9 @@ import paths.
    :members:
 
 The Step 4 status result remembers the config used to create it, so large-run
-notebooks can call ``display_table_previews(nrows=...)`` without repeating
-``cfg`` in each preview cell.
+notebooks can call ``display_table_previews(nrows=...)`` and
+``write_summary_figures(...)`` without repeating ``cfg`` or direct figure
+writer imports in each cell.
 
 .. autofunction:: spatial_vtk.spatial.load_standard_spatial_workflow_output_status
 
@@ -246,7 +247,9 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Resolve Step 5 output status and bounded table previews for large-run
        driver notebooks without loading the full metrics or GeoJSON input
        tables. The status result retains its config for
-       ``display_table_previews(nrows=...)`` calls.
+       ``display_table_previews(nrows=...)`` calls and writes the Step 5
+       large-run region/corridor figure family through
+       ``write_region_figures()``.
    * - ``write_standard_additional_plotting_figures``
      - Write the standard Step 6 waveform map, pattern-similarity figure,
        residual scatterplot, region boxplot, and region heatmap while keeping
@@ -263,7 +266,9 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Resolve Step 6 output status and the first available metric-source
        preview for large-run driver notebooks without loading the plotting
        inputs. The status result retains its config for
-       ``display_metric_source_preview(nrows=...)`` calls.
+       ``display_metric_source_preview(nrows=...)`` calls and writes bounded
+       waveform comparisons plus region boxplots through
+       ``write_waveform_comparison()`` and ``write_region_boxplot()``.
    * - ``write_large_run_geojson_region_figures_from_outputs``
      - Write the Step 5 GeoJSON overview map, corridor map, and region boxplot
        from configured output groups without notebook-local table loading or

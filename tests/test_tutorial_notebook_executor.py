@@ -1551,7 +1551,7 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "run_spatial_statistics_workflow_from_config," in source
     assert "run_spatial_derived_outputs_workflow_from_config," in source
     assert "load_standard_spatial_workflow_output_status," in source
-    assert "step_outputs = load_standard_spatial_workflow_output_status(cfg=context.cfg)" in source
+    assert "spatial_outputs = load_standard_spatial_workflow_output_status(cfg=context.cfg)" in source
     assert "spatial_summary_readiness_from_config," in source
     assert "spatial_derived_outputs_readiness_from_config," in source
     assert "spatial_summary_readiness = spatial_summary_readiness_from_config(" in source
@@ -1559,8 +1559,9 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "core_spatial_output_names" not in source
     assert "derived_spatial_output_names" not in source
     assert "step_outputs.readiness(" not in source
-    assert "step_outputs.display_table_previews(nrows=PREVIEW_ROWS)" in source
-    assert "step_outputs.display_table_previews(cfg=context.cfg" not in source
+    assert "spatial_outputs.display_table_previews(nrows=PREVIEW_ROWS)" in source
+    assert "spatial_outputs.display_table_previews(cfg=context.cfg" not in source
+    assert "step_outputs" not in source
     assert 'step_outputs = output_group("step_04_spatial")' not in source
     assert "display_output_table_previews(" not in source
     assert '"spatial_vtk.spatial.run_spatial_statistics_workflow_from_config"' not in source
@@ -1600,7 +1601,8 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "source_df=item[\"df\"]" not in source
     assert "source_df_factory=lambda period_item" not in source
     assert "spatial_figures.write_overview_plots(" not in source
-    assert "write_large_run_spatial_summary_figures_from_outputs(" in source
+    assert "spatial_outputs.write_summary_figures(" in source
+    assert "write_large_run_spatial_summary_figures_from_outputs(" not in source
     assert "quick_spatial_result.status_frame()" in source
     assert "### Spatial Event-Centered Azimuthal Residuals" not in source
     assert "### Spatial Event-Centered Polar Residuals" not in source
@@ -1615,7 +1617,7 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "plot_correlogram" not in source
     assert "preview_output_table(" not in source
     assert "for name, key in [" not in source
-    assert "step_outputs.load_table(" not in source
+    assert "spatial_outputs.load_table(" not in source
     assert "load_output_table(" not in source
 
 
@@ -1635,19 +1637,21 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "run_geojson_region_summary_workflow_from_config," in source
     assert "run_boundary_corridor_workflow_from_config," in source
     assert "load_standard_geojson_workflow_output_status" in source
-    assert "step_outputs = load_standard_geojson_workflow_output_status(cfg=cfg)" in source
-    assert "step_outputs.display_table_previews(nrows=PREVIEW_ROWS)" in source
-    assert "step_outputs.display_table_previews(cfg=cfg" not in source
+    assert "geojson_outputs = load_standard_geojson_workflow_output_status(cfg=cfg)" in source
+    assert "geojson_outputs.display_table_previews(nrows=PREVIEW_ROWS)" in source
+    assert "geojson_outputs.display_table_previews(cfg=cfg" not in source
+    assert "step_outputs" not in source
     assert 'step_outputs = output_group("step_05_geojson")' not in source
     assert "display_output_table_previews(" not in source
-    assert "write_large_run_geojson_region_figures_from_notebook_settings(" in source
+    assert "geojson_outputs.write_region_figures(" in source
+    assert "write_large_run_geojson_region_figures_from_notebook_settings(" not in source
     assert "region_figure_gate = REGION_FIGURE_SETTINGS.render_gate(" not in source
     assert "write_large_run_geojson_region_figures_from_outputs(" not in source
     assert "region_figure_result.status_frame()" in source
     assert "ingest_outputs.load_tables(" not in source
-    assert "step_outputs.load_table(" not in source
+    assert "geojson_outputs.load_table(" not in source
     assert "write_large_run_region_boxplot_from_outputs(" not in source
-    assert "step_outputs.first_existing_path(" not in source
+    assert "geojson_outputs.first_existing_path(" not in source
     assert "step_outputs.corridors_path.exists()" not in source
     assert "metrics_enriched_path if metrics_enriched_path.exists() else metrics_long_path" not in source
     assert 'cfg.path("paths.region_geojson"' not in source
@@ -2324,8 +2328,10 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "load_standard_additional_plotting_output_status" in source
-    assert "step_outputs = load_standard_additional_plotting_output_status(cfg=cfg)" in source
-    assert "write_waveform_comparison_from_notebook_settings(" in source
+    assert "plotting_outputs = load_standard_additional_plotting_output_status(cfg=cfg)" in source
+    assert "plotting_outputs.write_waveform_comparison(" in source
+    assert "write_waveform_comparison_from_notebook_settings(" not in source
+    assert "step_outputs" not in source
     assert "waveform_result.status_frame()" in source
     assert "waveform_figure_gate = WAVEFORM_FIGURE_SETTINGS.render_gate(" not in source
     assert "write_waveform_comparison_from_outputs(" not in source
@@ -2333,12 +2339,13 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     assert "build_qc_waveform_comparison_records(" not in source
     assert "load_comparison_eligible_records(" not in source
     assert "plot_event_trace_comparison(" not in source
-    assert "event_stations = step_outputs.load_table(" not in source
-    assert "step_outputs.display_metric_source_preview(nrows=PREVIEW_ROWS)" in source
-    assert "step_outputs.display_metric_source_preview(cfg=cfg" not in source
-    assert "step_outputs.display_first_existing_table_preview(" not in source
-    assert "step_outputs.preview_first_existing_table(" not in source
-    assert "write_large_run_region_boxplot_from_notebook_settings(" in source
+    assert "event_stations = plotting_outputs.load_table(" not in source
+    assert "plotting_outputs.display_metric_source_preview(nrows=PREVIEW_ROWS)" in source
+    assert "plotting_outputs.display_metric_source_preview(cfg=cfg" not in source
+    assert "plotting_outputs.display_first_existing_table_preview(" not in source
+    assert "plotting_outputs.preview_first_existing_table(" not in source
+    assert "plotting_outputs.write_region_boxplot(" in source
+    assert "write_large_run_region_boxplot_from_notebook_settings(" not in source
     assert "write_large_run_region_boxplot_from_outputs(" not in source
     assert "region_figure_gate = REGION_FIGURE_SETTINGS.render_gate(" not in source
     assert "step_outputs.first_existing_path(" not in source

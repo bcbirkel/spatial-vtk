@@ -1525,6 +1525,90 @@ outputs:
     assert plotting_previews["metrics_long"].to_dict("records") == [{"metric": "PGA", "log2_residual": 0.25}]
     assert displayed_plotting[0].to_dict("records") == [{"metric": "PGA", "log2_residual": 0.25}]
 
+    waveform_settings = types.SimpleNamespace(name="waveform")
+    waveform_calls: list[dict[str, object]] = []
+
+    def fake_write_waveform_comparison(outputs, settings, **kwargs):
+        waveform_calls.append({"outputs": outputs, "settings": settings, "kwargs": kwargs})
+        return "waveform-result"
+
+    monkeypatch.setattr(
+        "spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings",
+        fake_write_waveform_comparison,
+    )
+    assert plotting_status.write_waveform_comparison(
+        waveform_settings,
+        max_records=3,
+        max_distance_km=25.0,
+        chunksize=500,
+        overwrite=True,
+        component="Z",
+    ) == "waveform-result"
+    assert waveform_calls == [
+        {
+            "outputs": plotting_status,
+            "settings": waveform_settings,
+            "kwargs": {
+                "max_records": 3,
+                "max_distance_km": 25.0,
+                "chunksize": 500,
+                "overwrite": True,
+                "event_id": None,
+                "component": "Z",
+                "passband": None,
+                "plot_options": None,
+            },
+        }
+    ]
+
+    import spatial_vtk.spatial.plot.large_run as large_run_plot
+
+    region_settings = types.SimpleNamespace(name="region")
+    region_calls: list[dict[str, object]] = []
+
+    def fake_write_region_boxplot(
+        outputs,
+        settings,
+        *,
+        output_prefix,
+        geojson_path=None,
+        annotate_if_missing=False,
+        overwrite=False,
+    ):
+        region_calls.append(
+            {
+                "outputs": outputs,
+                "settings": settings,
+                "output_prefix": output_prefix,
+                "geojson_path": geojson_path,
+                "annotate_if_missing": annotate_if_missing,
+                "overwrite": overwrite,
+            }
+        )
+        return "region-boxplot-result"
+
+    monkeypatch.setattr(
+        large_run_plot,
+        "write_large_run_region_boxplot_from_notebook_settings",
+        fake_write_region_boxplot,
+    )
+    assert plotting_status.write_region_boxplot(
+        region_settings,
+        output_prefix="additional_region_boxplot",
+        annotate_if_missing=True,
+        overwrite=True,
+    ) == "region-boxplot-result"
+    assert region_calls == [
+        {
+            "outputs": plotting_status,
+            "settings": region_settings,
+            "output_prefix": "additional_region_boxplot",
+            "geojson_path": None,
+            "annotate_if_missing": True,
+            "overwrite": True,
+        }
+    ]
+
     metric_paths = output_group_paths("step_03_metrics", cfg=cfg)
     assert metric_paths["prepared_events_path"] == tmp_path / "run_outputs" / "tables" / "prepared_events.csv"
     assert metric_paths["prepared_stations_path"] == tmp_path / "run_outputs" / "tables" / "prepared_stations.csv"
@@ -1830,6 +1914,40 @@ outputs:
     assert spatial_previews["metric_field"].to_dict("records") == [{"metric": "PGA", "value": 0.1}]
     assert displayed_spatial[0].to_dict("records") == [{"metric": "PGA", "value": 0.1}]
 
+    spatial_figure_settings = types.SimpleNamespace(name="spatial")
+    spatial_figure_calls: list[dict[str, object]] = []
+
+    def fake_write_spatial_summary_figures(outputs, settings, *, cfg=None, overwrite=False, **kwargs):
+        spatial_figure_calls.append(
+            {
+                "outputs": outputs,
+                "settings": settings,
+                "cfg": cfg,
+                "overwrite": overwrite,
+                "kwargs": kwargs,
+            }
+        )
+        return "spatial-summary-result"
+
+    monkeypatch.setattr(
+        "spatial_vtk.spatial.plot.write_large_run_spatial_summary_figures_from_outputs",
+        fake_write_spatial_summary_figures,
+    )
+    assert spatial_status.write_summary_figures(
+        spatial_figure_settings,
+        overwrite=True,
+        sidecar_rows=10,
+    ) == "spatial-summary-result"
+    assert spatial_figure_calls == [
+        {
+            "outputs": spatial_status,
+            "settings": spatial_figure_settings,
+            "cfg": cfg,
+            "overwrite": True,
+            "kwargs": {"sidecar_rows": 10},
+        }
+    ]
+
     summary_missing = spatial_summary_readiness_from_config(config_path=config_path)
 
     assert summary_missing.reason == "missing_inputs"
@@ -2053,6 +2171,37 @@ outputs:
     )
     assert geojson_previews["geojson_region_summaries"].to_dict("records") == [{"region": "A", "count": 1}]
     assert displayed_geojson[0].to_dict("records") == [{"region": "A", "count": 1}]
+    import spatial_vtk.spatial.plot.large_run as large_run_plot
+
+    geojson_figure_settings = types.SimpleNamespace(name="geojson")
+    geojson_figure_calls: list[dict[str, object]] = []
+
+    def fake_write_geojson_region_figures(
+        outputs,
+        ingest_outputs,
+        settings,
+        *,
+        geojson_path,
+        cfg=None,
+        overwrite=False,
+    ):
+        geojson_figure_calls.append(
+            {
+                "outputs": outputs,
+                "ingest_outputs": ingest_outputs,
+                "settings": settings,
+                "geojson_path": geojson_path,
+                "cfg": cfg,
+                "overwrite": overwrite,
+            }
+        )
+        return "geojson-region-result"
+
+    monkeypatch.setattr(
+        large_run_plot,
+        "write_large_run_geojson_region_figures_from_notebook_settings",
+        fake_write_geojson_region_figures,
+    )
     geojson_status = step_outputs.status_frame().set_index("name")
     assert geojson_status.loc["geojson_summaries_path", "artifact_label"] == "geojson region summaries table"
     assert geojson_status.loc["geojson_summaries_path", "readiness"] == "missing"
@@ -2062,6 +2211,22 @@ outputs:
     ingest_outputs = output_group("step_01_ingest", cfg=cfg)
     region_geojson = tmp_path / "inputs" / "regions.geojson"
     region_geojson.parent.mkdir(parents=True, exist_ok=True)
+    assert geojson_output_status.write_region_figures(
+        ingest_outputs,
+        geojson_figure_settings,
+        geojson_path=region_geojson,
+        overwrite=True,
+    ) == "geojson-region-result"
+    assert geojson_figure_calls == [
+        {
+            "outputs": geojson_output_status,
+            "ingest_outputs": ingest_outputs,
+            "settings": geojson_figure_settings,
+            "geojson_path": region_geojson,
+            "cfg": cfg,
+            "overwrite": True,
+        }
+    ]
 
     geojson_missing = geojson_region_summary_readiness_from_config(config_path=config_path)
 

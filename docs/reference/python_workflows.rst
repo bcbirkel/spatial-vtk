@@ -365,6 +365,7 @@ fallbacks, and bounded previews stay in package code.
      - ``spatial_vtk.spatial.load_standard_spatial_workflow_output_status``
        and ``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``
      - Lightweight Step 4 output status/previews for large-run driver cells,
+       quick summary-figure writing through ``write_summary_figures()``,
        plus loaded spatial workflow tables, per-metric product summaries,
        station-bias previews, standard map/diagnostic figure methods, and
        failure/status frames when the standard tutorial needs in-memory
@@ -373,6 +374,8 @@ fallbacks, and bounded previews stay in package code.
      - ``spatial_vtk.spatial.plot.load_standard_geojson_workflow_output_status``
        and ``spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs``
      - Lightweight Step 5 output status/previews for large-run driver cells,
+       large-run region/corridor figure writing through
+       ``write_region_figures()``,
        plus prepared station/event/event-station metadata, metric tables,
        configured GeoJSON paths, Step 5 outputs, compact plotting input
        summaries, and result methods that write the standard region and
@@ -381,7 +384,9 @@ fallbacks, and bounded previews stay in package code.
      - ``spatial_vtk.spatial.plot.load_standard_additional_plotting_output_status``
        and ``spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs``
      - Lightweight Step 6 output status and metric-source preview helpers for
-       large-run driver cells, plus metric snapshot rows, event metadata,
+       large-run driver cells, bounded waveform and region-boxplot writers
+       through ``write_waveform_comparison()`` and ``write_region_boxplot()``,
+       plus metric snapshot rows, event metadata,
        event-station records, comparison-eligible records, and the Step 6
        plotting output group when figures need loaded inputs; the loaded input
        result writes the standard Step 6 figure suite without notebook-local

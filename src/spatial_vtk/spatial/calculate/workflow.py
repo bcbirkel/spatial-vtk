@@ -491,6 +491,26 @@ class StandardSpatialWorkflowOutputStatusResult:
             display_fn=display_fn,
         )
 
+    def write_summary_figures(
+        self,
+        settings: Any,
+        *,
+        cfg: SpatialVTKConfig | None = None,
+        overwrite: bool = False,
+        **kwargs: Any,
+    ) -> object:
+        """Write compact Step 4 spatial summary figures from this output bundle."""
+
+        from spatial_vtk.spatial.plot import write_large_run_spatial_summary_figures_from_outputs
+
+        return write_large_run_spatial_summary_figures_from_outputs(
+            self,
+            settings,
+            cfg=cfg or self.cfg,
+            overwrite=overwrite,
+            **kwargs,
+        )
+
 
 @dataclass(frozen=True)
 class _SpatialMetricCheckpoint:
