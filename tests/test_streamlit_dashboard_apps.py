@@ -300,6 +300,8 @@ outputs:
     assert "required_columns" in summary.columns
     assert "missing_columns" in summary.columns
     assert "missing_map_columns" in summary.columns
+    assert "tab_ready" in summary.columns
+    assert "tab_message" in summary.columns
     assert "value_columns" in summary.columns
     assert "nonempty_value_columns" in summary.columns
     assert "resolved_path" in summary.columns
@@ -315,6 +317,8 @@ outputs:
     assert "station" in summary_by_item.loc["station_rollup", "required_columns"]
     assert "coordinate columns" in summary_by_item.loc["station_rollup", "map_message"]
     assert "sta_lat" in summary_by_item.loc["station_rollup", "missing_map_columns"]
+    assert summary_by_item.loc["station_rollup", "tab_ready"] is False
+    assert summary_by_item.loc["station_rollup", "tab_message"] == summary_by_item.loc["station_rollup", "message"]
     assert summary_by_item.loc["model_metric_band", "value_columns"] == "med_log2_residual"
     assert summary_by_item.loc["model_metric_band", "nonempty_value_columns"] == "med_log2_residual"
     assert "dist_bin_km" in summary_by_item.loc["path_hex", "missing_columns"]
@@ -326,6 +330,8 @@ outputs:
     assert "required_columns" in summary_display.columns
     assert "missing_columns" in summary_display.columns
     assert "missing_map_columns" in summary_display.columns
+    assert "tab_ready" in summary_display.columns
+    assert "tab_message" in summary_display.columns
     assert "value_columns" in summary_display.columns
     assert "nonempty_value_families" in summary_display.columns
     assert "nonempty_value_columns" in summary_display.columns

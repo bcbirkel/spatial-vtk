@@ -114,6 +114,7 @@ def test_dashboard_status_cli_keeps_rich_readiness_columns():
             "required_columns": ["station, model, metric"],
             "ready": [False],
             "readiness": ["no_value_data"],
+            "tab_ready": [False],
             "row_count": [12],
             "file_count": [""],
             "map_ready": [True],
@@ -124,6 +125,7 @@ def test_dashboard_status_cli_keeps_rich_readiness_columns():
             "value_families": ["residual, score/gof"],
             "nonempty_value_families": ["residual"],
             "message": ["station_rollup summary has rows but no finite dashboard value columns."],
+            "tab_message": ["station_rollup summary has rows but no finite dashboard value columns."],
             "map_message": ["station_rollup map coordinates are ready."],
             "suggested_action": ["Run write_configured_dashboard_datasets."],
             "path": ["/tmp/station_rollup.parquet"],
@@ -136,6 +138,8 @@ def test_dashboard_status_cli_keeps_rich_readiness_columns():
     assert "required_columns" in shown.columns
     assert "missing_columns" in shown.columns
     assert "missing_map_columns" in shown.columns
+    assert "tab_ready" in shown.columns
+    assert "tab_message" in shown.columns
     assert "value_columns" in shown.columns
     assert "nonempty_value_columns" in shown.columns
     assert "value_families" in shown.columns

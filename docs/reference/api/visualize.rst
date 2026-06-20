@@ -190,10 +190,12 @@ notebooks, while ``dashboard_output_status_frame`` returns the detailed
 artifact status. Together they cover the row-level metric dataset root used by
 distribution/download tabs, the four metrics-dashboard summary tables used by
 the overview, station, event, path, and model-comparison tabs, and the trace-QC
-table used by the QC dashboard. ``ready`` and ``readiness`` values are
-intentionally bounded checks: they inspect paths, schemas, row counts,
-map-coordinate availability, and recognized dashboard value columns without
-loading the full large-run metric inventory.
+table used by the QC dashboard. ``ready`` and ``readiness`` values describe
+whether the underlying table data can be read and summarized. ``tab_ready`` and
+``tab_message`` add dashboard-tab readiness, including map-coordinate blockers
+for station and event summary tabs. These checks inspect paths, schemas, row
+counts, map-coordinate availability, and recognized dashboard value columns
+without loading the full large-run metric inventory.
 The detailed status table includes both the configured path key in ``name``
 and user-facing ``artifact_role`` / ``artifact_label`` columns, plus
 ``resolved_path`` as the clear path column. The legacy ``path`` column remains
@@ -208,9 +210,10 @@ The compact dashboard readiness summary carries the same
 ``artifact_role`` / ``artifact_label`` and ``resolved_path`` columns, and the
 metrics/QC dashboard Data Status tabs show those labels while keeping
 readiness displays bounded to small status metadata. Metrics Data Status also
-shows ``required_columns``, ``missing_columns``, ``value_columns``,
-``nonempty_value_columns``, and map-coordinate blockers so users can see the
-schema or value-family gap without opening large metric tables.
+shows ``required_columns``, ``missing_columns``, ``tab_ready``,
+``tab_message``, ``value_columns``, ``nonempty_value_columns``, and
+map-coordinate blockers so users can see the schema, value-family, or map-tab
+gap without opening large metric tables.
 The Streamlit apps also accept clear URL query keys for explicit path
 overrides: ``metrics_dataset_dir`` and ``dashboard_summary_table_dir`` for the
 metrics dashboard, and ``qc_trace_summary`` for the QC dashboard. The older
@@ -250,9 +253,9 @@ The readiness and status frames are intentionally small. Use ``artifact_label``
 to find the user-facing dataset, ``dashboard_tabs`` to see which dashboard tab
 uses it, ``readiness`` / ``message`` to identify the failure, and
 ``suggested_action`` to see the next rebuild step. Use
-``required_columns`` / ``missing_columns`` / ``map_message`` to decide whether
-the dashboard inputs need to be rebuilt because of missing schema or map
-coordinate data.
+``required_columns`` / ``missing_columns`` / ``tab_message`` /
+``map_message`` to decide whether the dashboard inputs need to be rebuilt
+because of missing schema, missing values, or missing map coordinate data.
 
 Dashboard contract helpers accept ``cfg=`` as either a config object or a
 config file path. Use ``cfg=config_path`` in generated workers or lightweight

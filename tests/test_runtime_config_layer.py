@@ -3443,6 +3443,27 @@ def test_dashboard_summary_readiness_reports_missing_empty_and_value_states(tmp_
     assert contracts.loc["model_metric_band", "map_coordinate_columns"] == ""
 
 
+def test_dashboard_summary_readiness_distinguishes_data_ready_from_map_ready(tmp_path):
+    """Map-tab blockers should be visible even when summary values are ready."""
+
+    summary_root = tmp_path / "dashboard_summaries"
+    summary_root.mkdir()
+    (summary_root / "station_rollup.csv").write_text(
+        "station,model,metric,band,n,med_log2_residual\nSTA,m1,PGA,1-2 sec,4,0.25\n",
+        encoding="utf-8",
+    )
+
+    readiness = dashboard_summary_readiness_frame(summary_root, create_parent=False)
+    station = readiness.set_index("dashboard_table").loc["station_rollup"]
+
+    assert station["ready"] is True
+    assert station["readiness"] == "ready"
+    assert station["map_ready"] is False
+    assert "coordinate columns" in station["map_message"]
+    assert station["tab_ready"] is False
+    assert station["tab_message"] == station["map_message"]
+
+
 def test_dashboard_summary_readiness_uses_schema_and_selected_columns(tmp_path, monkeypatch):
     """Dashboard preflight should not materialize whole large summary tables."""
 

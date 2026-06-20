@@ -529,6 +529,7 @@ def dashboard_readiness_summary_frame(
                 "required_columns": "",
                 "ready": exists,
                 "readiness": "ready" if exists else "missing",
+                "tab_ready": exists,
                 "row_count": "",
                 "file_count": "",
                 "map_ready": "",
@@ -539,6 +540,7 @@ def dashboard_readiness_summary_frame(
                 "value_families": "",
                 "nonempty_value_families": "",
                 "message": f"{name} is ready." if exists else f"{name} is missing.",
+                "tab_message": f"{name} is ready." if exists else f"{name} is missing.",
                 "suggested_action": "" if exists else _dashboard_suggested_action({"name": name, "readiness": "missing"}),
                 "resolved_path": row.get("resolved_path", row.get("path", "")),
                 "path": row.get("path", ""),
@@ -565,6 +567,7 @@ def dashboard_readiness_summary_frame(
         "required_columns",
         "ready",
         "readiness",
+        "tab_ready",
         "row_count",
         "file_count",
         "map_ready",
@@ -575,6 +578,7 @@ def dashboard_readiness_summary_frame(
         "value_families",
         "nonempty_value_families",
         "message",
+        "tab_message",
         "map_message",
         "suggested_action",
         "resolved_path",
@@ -948,11 +952,13 @@ def _dashboard_summary_row(row: dict[str, object], *, item_type: str) -> dict[st
         "map_ready": _blank_if_missing(row.get("map_ready")),
         "missing_columns": _blank_if_missing(row.get("missing_columns")),
         "missing_map_columns": _blank_if_missing(row.get("missing_map_columns")),
+        "tab_ready": _blank_if_missing(row.get("tab_ready")),
         "value_columns": _blank_if_missing(row.get("value_columns")),
         "nonempty_value_columns": _blank_if_missing(row.get("nonempty_value_columns")),
         "value_families": _blank_if_missing(row.get("value_families")),
         "nonempty_value_families": _blank_if_missing(row.get("nonempty_value_families")),
         "message": message,
+        "tab_message": _blank_if_missing(row.get("tab_message")),
         "map_message": map_message,
         "suggested_action": _blank_if_missing(row.get("suggested_action")),
         "resolved_path": _blank_if_missing(row.get("resolved_path", row.get("path"))),
@@ -1026,11 +1032,13 @@ def _attach_dashboard_readiness(status: pd.DataFrame) -> pd.DataFrame:
         "missing_columns",
         "map_ready",
         "missing_map_columns",
+        "tab_ready",
         "value_columns",
         "nonempty_value_columns",
         "value_families",
         "nonempty_value_families",
         "message",
+        "tab_message",
         "map_message",
         "suggested_action",
     ):
@@ -1191,16 +1199,19 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
 
     required = set(REQUIRED_METRICS_TABLE_COLUMNS[table_name])
     if not path.exists():
+        message = f"{table_name} summary file is missing."
         return {
             "ready": False,
             "readiness": "missing",
+            "tab_ready": False,
             "row_count": "",
             "missing_columns": ", ".join(sorted(required)),
             "value_columns": "",
             "nonempty_value_columns": "",
             "value_families": "",
             "nonempty_value_families": "",
-            "message": f"{table_name} summary file is missing.",
+            "message": message,
+            "tab_message": message,
             "suggested_action": _dashboard_suggested_action(
                 {"dashboard_table": table_name, "artifact_role": "dashboard_summary_table", "readiness": "missing"}
             ),
@@ -1209,16 +1220,19 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
         columns = _dashboard_table_columns(path)
         row_count = _dashboard_table_row_count(path)
     except Exception as exc:  # pragma: no cover - exercised by integration failures
+        message = f"{table_name} summary file could not be read: {exc}"
         return {
             "ready": False,
             "readiness": "read_error",
+            "tab_ready": False,
             "row_count": "",
             "missing_columns": "",
             "value_columns": "",
             "nonempty_value_columns": "",
             "value_families": "",
             "nonempty_value_families": "",
-            "message": f"{table_name} summary file could not be read: {exc}",
+            "message": message,
+            "tab_message": message,
             "suggested_action": _dashboard_suggested_action(
                 {"dashboard_table": table_name, "artifact_role": "dashboard_summary_table", "readiness": "read_error"}
             ),
@@ -1250,9 +1264,17 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
         readiness = "ready"
         ready = True
         message = f"{table_name} summary is ready."
+    tab_state = _dashboard_tab_state(
+        ready=ready,
+        table_name=table_name,
+        message=message,
+        map_ready=map_status["ready"],
+        map_message=map_status["message"],
+    )
     return {
         "ready": ready,
         "readiness": readiness,
+        "tab_ready": tab_state["ready"],
         "row_count": row_count,
         "missing_columns": ", ".join(missing),
         "map_ready": map_status["ready"],
@@ -1262,11 +1284,40 @@ def _inspect_dashboard_summary_table(path: Path, table_name: str) -> dict[str, o
         "value_families": ", ".join(value_families),
         "nonempty_value_families": ", ".join(nonempty_value_families),
         "message": message,
+        "tab_message": tab_state["message"],
         "map_message": map_status["message"],
         "suggested_action": _dashboard_suggested_action(
             {"dashboard_table": table_name, "artifact_role": "dashboard_summary_table", "readiness": readiness}
         ),
     }
+
+
+def _dashboard_tab_state(
+    *,
+    ready: bool,
+    table_name: str,
+    message: str,
+    map_ready: object,
+    map_message: object,
+) -> dict[str, object]:
+    """Return actual dashboard-tab readiness for one summary table.
+
+    ``ready`` tracks whether the summary data can populate tables/charts.
+    ``tab_ready`` also accounts for map-coordinate requirements so station and
+    event dashboard tabs do not appear ready when their tables have values but
+    their maps cannot render.
+    """
+
+    if not bool(ready):
+        return {"ready": False, "message": message}
+    has_map_requirement = str(table_name) in MAP_COORDINATE_CANDIDATES
+    if has_map_requirement and not dashboard_ready_value(map_ready, default=False):
+        detail = str(map_message or "").strip()
+        return {
+            "ready": False,
+            "message": detail or f"{table_name} summary data is ready, but the map is missing coordinates.",
+        }
+    return {"ready": True, "message": f"{table_name} dashboard tab is ready."}
 
 
 def _dashboard_table_columns(path: Path) -> list[str]:
