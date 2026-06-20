@@ -2339,6 +2339,8 @@ def test_package_overview_points_to_public_workflow_helpers():
         "``load_standard_qc_workflow_outputs``",
         "``run_qc_inventory_from_config``",
         "``write_qc_inventory_overlap_from_config``",
+        "Routine notebooks should use the standard QC result helpers first.",
+        "custom orchestration that need to bypass the\nresult-owned notebook status/skip wrapper",
         "Start with public helpers from ``spatial_vtk.metrics``",
         "``plan_metric_tasks_from_config``",
         "``summarize_metric_snapshot_tasks_from_config``",
@@ -2353,6 +2355,8 @@ def test_package_overview_points_to_public_workflow_helpers():
         "Step 5 GeoJSON/corridor",
         "``load_standard_geojson_plotting_inputs``",
         "``spatial_vtk.spatial.plot`` and ``spatial_vtk.spatial.map``",
+        "Routine notebooks should use the standard spatial and plotting result helpers\nfirst.",
+        "custom orchestration that need to bypass the\nresult-owned notebook status/skip wrappers",
     ]
     for snippet in required:
         assert snippet in text

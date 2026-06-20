@@ -74,6 +74,9 @@ Changelog
   - QC API guidance now presents the standard Step 2 workflow result and input
     helpers before direct inventory, overlap, and summary runners, keeping
     routine notebook docs aligned with the result-object workflow.
+  - Package overview guidance now marks direct QC, spatial, GeoJSON, and
+    corridor workflow runners as script/custom-orchestration helpers while
+    keeping standard result objects as the routine notebook path.
   - QC dashboard startup now emits a single readiness warning that includes the
     specific trace-summary blocker, such as missing required columns, instead
     of showing a generic warning plus a second detailed warning.

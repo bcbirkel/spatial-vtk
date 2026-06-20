@@ -112,6 +112,12 @@ Start with public helpers from ``spatial_vtk.qc``:
 - ``filter_trace_summary`` and ``queue_rows_from_filtered_trace_df`` for
   manual-review queues
 
+Routine notebooks should use the standard QC result helpers first. The direct
+``run_qc_inventory_from_config``, ``write_qc_inventory_overlap_from_config``,
+and ``run_qc_summary_workflow_from_config`` functions remain public for scripts,
+generated workers, and custom orchestration that need to bypass the
+result-owned notebook status/skip wrapper.
+
 ``metrics``
 -----------
 
@@ -186,8 +192,8 @@ Start with public helpers from ``spatial_vtk.spatial``:
   loading, per-metric product summaries, and standard Step 4 figure suites
 - ``run_spatial_statistics_workflow_from_config`` and
   ``run_spatial_derived_outputs_workflow_from_config`` for configured
-  spatial-statistics and optional derived-output tables in scripts or standard
-  workflows
+  spatial-statistics and optional derived-output tables in scripts or custom
+  orchestration
 - ``load_standard_geojson_workflow_output_status`` and
   ``load_standard_geojson_plotting_inputs`` for Step 5 output status and
   standard notebook inputs without notebook-local GeoJSON path or output-table
@@ -207,6 +213,11 @@ Start with public helpers from ``spatial_vtk.spatial``:
   calculations
 - ``spatial_vtk.spatial.plot`` and ``spatial_vtk.spatial.map`` for spatial
   figures and maps
+
+Routine notebooks should use the standard spatial and plotting result helpers
+first. Direct spatial, GeoJSON, and corridor runners remain public for scripts,
+generated workers, and custom orchestration that need to bypass the
+result-owned notebook status/skip wrappers.
 
 ``visualize``
 -------------
