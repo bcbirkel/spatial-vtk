@@ -254,6 +254,10 @@ standard row factories used by the large-run notebooks:
    status table includes exact ``figure_paths`` lists plus the existing
    ``first_figure_path`` and ``figure_paths_preview`` display fields so
    notebooks do not parse preview strings to inspect generated figures.
+   The returned ``MetricFigureSuiteResult`` also owns
+   ``context_status_frames()`` and ``display_context_status(...)`` so notebooks
+   can display metric-table readiness, spectral-contract checks, and dimension
+   summaries without branching on context readiness in notebook cells.
 
 ``station_grid_for_item`` and ``station_model_summary_for_item``
    Prepare station summaries for grid and model-map plotting while preserving

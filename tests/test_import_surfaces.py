@@ -1002,6 +1002,8 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "``write_large_run_metric_figure_suite_from_notebook_settings``" in text
     assert "exact ``figure_paths`` lists" in text
     assert "do not parse preview strings" in text
+    assert "``MetricFigureSuiteResult`` also owns" in text
+    assert "``context_status_frames()`` and ``display_context_status(...)``" in text
     assert "without notebook-local plot-function imports" in text
     assert "``StationMetricMapResult.status_frame()`` includes the" in text
     assert "``resolved_path`` row for the rendered figure" in text
@@ -1601,6 +1603,9 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "station_summary_for_item" in text
     assert "item_source_rows" in text
     assert "``status_frame`` uses ``resolved_path`` as the clear path\n   column while preserving ``path`` for compatibility" in text
+    assert "``SpatialFigureSuiteResult.context_status_frames``" in text
+    assert "``SpatialFigureSuiteResult.display_context_status(...)``" in text
+    assert "instead of branching in notebook cells" in text
     assert "GeoJSON and region plotting status tables use ``resolved_path``" in text
     assert "internal owner tag" in text
     assert "overlapping dataframe" in text

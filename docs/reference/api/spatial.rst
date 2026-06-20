@@ -351,6 +351,13 @@ schemas.
    represented. ``status_frame`` uses ``resolved_path`` as the clear path
    column while preserving ``path`` for compatibility.
 
+``SpatialFigureSuiteResult.context_status_frames`` and
+``SpatialFigureSuiteResult.display_context_status(...)``
+   Return or display the context status, dimension summary, and PSA/FAS
+   spectral-contract audit tables used by large-run Step 4 notebooks. Use
+   these result-owned methods instead of branching in notebook cells to decide
+   which readiness tables are safe to display.
+
 ``spectral_metric_contract_status``
    Return a compact PSA/FAS audit table for both ``metric_field`` and
    ``event_centered_residuals``. Use it before spatial figure rendering to
