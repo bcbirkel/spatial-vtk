@@ -1569,6 +1569,10 @@ def test_visualize_api_docs_use_public_entry_points():
     ):
         assert helper in text
     assert "Public sidecar helpers exposed by ``spatial_vtk.visualize``" in text
+    assert "Routine notebooks should use the public helpers listed above" in text
+    assert "family-specific ``spatial_vtk.visualize.context``" in text
+    assert "documented for advanced\nscripts and package extension points" in text
+    assert "not notebook workflow entry\npoints" in text
     assert "aggregation_contract" in text
     assert "aggregation_input_row_count" in text
     assert "source_rows_filter" in text

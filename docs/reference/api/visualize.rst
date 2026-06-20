@@ -427,6 +427,13 @@ Public sidecar helpers exposed by ``spatial_vtk.visualize``:
      - Record compact event, station, model, metric, passband, component, and
        PSA-period counts for figure audits.
 
+Routine notebooks should use the public helpers listed above and the
+family-specific ``spatial_vtk.visualize.context``, ``spatial_vtk.visualize.qc``,
+``spatial_vtk.visualize.waveforms``, and ``spatial_vtk.visualize.dashboard``
+entry points. The shared utility modules below are documented for advanced
+scripts and package extension points; they are not notebook workflow entry
+points.
+
 .. automodule:: spatial_vtk.visualize.figure_context
    :members:
 
