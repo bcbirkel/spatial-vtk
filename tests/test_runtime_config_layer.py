@@ -11,12 +11,14 @@ import pytest
 from spatial_vtk.config import (
     SVTK_CLI_CONFIG_ENV,
     SVTK_CONFIG_ENV,
+    SlurmSubmission,
     SpatialVTKConfig,
     active_config,
     clear_saved_config_path,
     clear_active_config,
     configured_output_registry_frame,
     configured_output_registry_preview_frame,
+    display_notebook_step_result,
     find_config_file,
     format_run_time,
     metric_display_name,
@@ -25,6 +27,7 @@ from spatial_vtk.config import (
     notebook_figure_sidecar_settings,
     notebook_run_context,
     notebook_step_result,
+    notebook_step_result_frame,
     display_output_table_previews,
     get_saved_config_path,
     load_config,
@@ -4144,6 +4147,39 @@ def test_notebook_step_result_reports_reuse_and_named_values(tmp_path):
     assert result["summary_path"] == str(output)
     assert result["nested"] == {"output": str(output)}
     assert result["row_count"] == 1
+
+
+def test_display_notebook_step_result_returns_labeled_display_frames(tmp_path):
+    """Notebook step result display should avoid raw dict and Slurm repr output."""
+
+    readiness = output_readiness({"summary": tmp_path / "summary.csv"})
+    skipped = notebook_step_result(readiness, summary_path=tmp_path / "summary.csv")
+    skipped_frame = notebook_step_result_frame(skipped, label="GeoJSON summaries")
+
+    assert skipped_frame.loc[0, "step"] == "GeoJSON summaries"
+    assert skipped_frame.loc[0, "status"] == "reused"
+    assert skipped_frame.loc[0, "summary_path"] == str(tmp_path / "summary.csv")
+
+    submission = SlurmSubmission(
+        script_path=tmp_path / "step05.slurm",
+        command=("sbatch", "step05.slurm"),
+        stdout="Submitted batch job 123\n",
+        stderr="",
+        returncode=0,
+        job_id="123",
+    )
+    displayed: list[pd.DataFrame] = []
+    submission_frame = display_notebook_step_result(
+        submission,
+        label="Boundary corridors",
+        display=displayed.append,
+    )
+
+    assert submission_frame.loc[0, "Step"] == "Boundary corridors"
+    assert submission_frame.loc[0, "Status"] == "submitted"
+    assert submission_frame.loc[0, "Job Id"] == "123"
+    assert len(displayed) == 1
+    assert displayed[0] is submission_frame
 
 
 def test_finish_figure_uses_rich_display_in_notebooks(monkeypatch):

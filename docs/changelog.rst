@@ -79,6 +79,9 @@ Changelog
   - Added ``SpatialFigureSuiteResult.display_context_status(...)`` so the
     large-run Step 4 notebook can display spatial figure context audit tables
     without extracting ``spatial_figure_suite.context`` in notebook code.
+  - Added ``display_notebook_step_result(...)`` and updated the large-run Step 5
+    notebook so GeoJSON and corridor step gates display compact labelled
+    status tables instead of raw dictionaries or Slurm dataclass output.
   - Spatial statistics settings now support configured ``metrics_table`` and
     ``station_metadata_table`` inputs plus metric lists, so Step 4 notebooks can
     run through the standard result/status wrapper without passing ad hoc

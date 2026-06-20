@@ -251,6 +251,11 @@ the large-run notebooks.
        fallbacks instead of writing inline dictionaries that repeat
        ``str(path)`` conversion, ``reused`` flags, or generic ``path`` keys in
        notebook cells.
+   * - ``spatial_vtk.config.display_notebook_step_result``
+     - Display current/skipped step dictionaries, Slurm submissions, and
+       result objects as compact labelled tables. Use this in workflow cells
+       instead of ``print(result)`` when a result-object gate returns the
+       output from ``run_notebook_step_if_needed``.
    * - ``spatial_vtk.metrics.metric_slurm_submission_readiness_from_config``
      - Report whether the configured metric Slurm array should be written or
        submitted, including missing manifests and already-complete batch

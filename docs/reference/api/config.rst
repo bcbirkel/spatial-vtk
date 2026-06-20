@@ -90,6 +90,10 @@ the stable package surface below.
    * - ``run_notebook_step_if_needed``
      - Display readiness, skip current outputs, run a Python package function
        locally, or write/submit a Slurm script for the same function.
+   * - ``display_notebook_step_result``
+     - Display a compact table for skipped/current step dictionaries, Slurm
+       submission results, and result objects with ``status_frame()`` so
+       notebooks do not print raw dictionaries or dataclass representations.
    * - ``NotebookFigureSettings`` and ``notebook_figure_settings``
      - Parse figure controls, robust-axis settings, sidecar settings, and
        render gates from environment variables in one package-owned helper.

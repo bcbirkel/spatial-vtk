@@ -1690,6 +1690,7 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "from spatial_vtk.spatial import (" not in source
     assert "config_path = context.config_path" not in source
     assert "load_configured_input_paths(" not in source
+    assert "display_notebook_step_result," in source
     assert "geojson_region_summary_readiness_from_config," not in source
     assert "boundary_corridor_readiness_from_config," not in source
     assert "run_geojson_region_summary_workflow_from_config," not in source
@@ -1700,6 +1701,10 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "geojson_outputs.run_corridor_step_if_needed(" in source
     assert "geojson_summary_result = geojson_outputs.run_geojson_summary_step_if_needed(" in source
     assert "corridor_result = geojson_outputs.run_corridor_step_if_needed(" in source
+    assert 'display_notebook_step_result(geojson_summary_result, label="GeoJSON region summaries", display=display)' in source
+    assert 'display_notebook_step_result(corridor_result, label="Boundary corridors", display=display)' in source
+    assert "print(geojson_summary_result)" not in source
+    assert "print(corridor_result)" not in source
     assert "geojson_outputs.display_table_previews(nrows=PREVIEW_ROWS)" in source
     assert "geojson_outputs.display_table_previews(cfg=cfg" not in source
     assert "step_outputs" not in source

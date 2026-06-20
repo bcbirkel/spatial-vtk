@@ -1463,6 +1463,85 @@ def notebook_step_result(readiness: Any, **values: Any) -> dict[str, Any]:
     return result
 
 
+def notebook_step_result_frame(result: Any, *, label: str | None = None) -> Any:
+    """Return one displayable dataframe for a notebook step result.
+
+    Parameters
+    ----------
+    result
+        Object returned by a notebook workflow gate. Dictionaries from
+        :func:`notebook_step_result`, ``SlurmSubmission`` objects, objects with
+        ``status_frame()``, and arbitrary values are supported.
+    label
+        Optional step label stored in the returned frame.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Compact display table suitable for notebook cells.
+    """
+
+    import pandas as pd
+
+    if hasattr(result, "status_frame"):
+        frame = result.status_frame()
+        if label is not None and "step" not in frame.columns:
+            frame.insert(0, "step", label)
+        return frame
+    if isinstance(result, SlurmSubmission):
+        row = {
+            "status": "submitted" if result.returncode == 0 else "submission_failed",
+            "job_id": result.job_id,
+            "script_path": str(result.script_path),
+            "returncode": result.returncode,
+            "stdout": result.stdout.strip(),
+            "stderr": result.stderr.strip(),
+        }
+    elif isinstance(result, dict):
+        row = dict(result)
+        if "status" not in row:
+            row["status"] = "reused" if row.get("reused") else "result"
+    elif result is None:
+        row = {"status": "no_result", "message": ""}
+    else:
+        row = {"status": "result", "result": str(result)}
+    if label is not None:
+        row = {"step": label, **row}
+    return pd.DataFrame([row])
+
+
+def display_notebook_step_result(
+    result: Any,
+    *,
+    label: str | None = None,
+    display: Callable[[Any], Any] | None = None,
+) -> Any:
+    """Display and return one compact notebook step-result frame.
+
+    This keeps public notebooks from printing raw dictionaries or Slurm
+    dataclass representations after package-owned run/skip gates. When
+    ``display`` is omitted, IPython display is used when available; otherwise
+    the frame is printed as text.
+    """
+
+    from spatial_vtk.config.labels import display_table
+
+    frame = display_table(notebook_step_result_frame(result, label=label))
+    display_fn = display
+    if display_fn is None:
+        try:
+            from IPython.display import display as ipython_display
+
+            display_fn = ipython_display
+        except Exception:
+            display_fn = None
+    if display_fn is not None:
+        display_fn(frame)
+    else:
+        print(frame.to_string(index=False))
+    return frame
+
+
 def _display_notebook_readiness_status(readiness: Any, *, display_fn: Callable[[Any], Any] | None = None) -> None:
     """Display one readiness status frame in notebooks or plain Python."""
 
@@ -1980,6 +2059,7 @@ __all__ = [
     "NotebookFigureSettings",
     "NotebookFigureSidecarSettings",
     "NotebookRunContext",
+    "display_notebook_step_result",
     "display_output_table_previews",
     "find_repo_root",
     "format_run_time",
@@ -1990,6 +2070,7 @@ __all__ = [
     "notebook_timing_enabled",
     "notebook_run_context",
     "notebook_step_result",
+    "notebook_step_result_frame",
     "prepare_notebook_geospatial_environment",
     "print_run_time",
     "print_notebook_context",

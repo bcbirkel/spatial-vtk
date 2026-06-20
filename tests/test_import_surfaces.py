@@ -58,7 +58,9 @@ def test_public_imports():
         abbreviate_model,
         configured_output_registry_frame,
         configured_output_registry_preview_frame,
+        display_notebook_step_result,
         display_output_table_previews,
+        notebook_step_result_frame,
         render_notebook_figure,
         run_notebook_step_if_needed,
     )
@@ -218,7 +220,9 @@ def test_public_imports():
     assert callable(abbreviate_model)
     assert callable(configured_output_registry_frame)
     assert callable(configured_output_registry_preview_frame)
+    assert callable(display_notebook_step_result)
     assert callable(display_output_table_previews)
+    assert callable(notebook_step_result_frame)
     assert callable(render_notebook_figure)
     assert callable(run_notebook_step_if_needed)
     assert callable(amplitude_spectrum)
@@ -1097,6 +1101,7 @@ def test_config_api_docs_include_compute_helpers():
     assert "Import notebook helpers from ``spatial_vtk.config``" in text
     assert "``NotebookRunContext`` and ``notebook_run_context``" in text
     assert "``run_notebook_step_if_needed``" in text
+    assert "``display_notebook_step_result``" in text
     assert "``NotebookFigureSettings`` and ``notebook_figure_settings``" in text
     assert "``render_notebook_figure``" in text
     assert "``NotebookFigureSidecarSettings`` and" in text
@@ -2182,6 +2187,8 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "``display_metric_source_preview()``" in workflows
     assert "``display_output_previews()``" in workflows
     assert "run_notebook_step_if_needed" in workflows
+    assert "display_notebook_step_result" in workflows
+    assert "instead of ``print(result)``" in workflows
     assert "notebooks should use package functions" in workflows.lower()
     assert "configured_output_registry_preview_frame" in workflows
     assert "configured_output_registry_frame(cfg=cfg, kinds=(\"table\",)).head()" not in workflows
