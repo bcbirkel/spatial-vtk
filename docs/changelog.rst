@@ -542,6 +542,8 @@ Changelog
     event-station observed/synthetic overlap for metric planning.
   - Made the large-run Step 2 notebook print and pass the configured QC
     overlap scope when writing the observed/synthetic overlap inventory.
+  - Made the large-run Step 3 notebook display the resolved metric settings
+    and batch count before metric manifest planning.
 
 - **Notebook simplification** *(Rewired)*
 

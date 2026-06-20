@@ -1982,7 +1982,11 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert "run_notebook_step_if_needed(" not in source
     assert "run_or_submit_notebook_function(" not in source
     assert "from spatial_vtk.metrics import (" in source
+    assert "metric_settings_summary," in source
+    assert "metrics_settings_from_config," in source
     assert "load_standard_metric_workflow_outputs," in source
+    assert "METRIC_BATCH_COUNT = context.metric_batch_count" in source
+    assert "metric_settings = metrics_settings_from_config(cfg)" in source
     assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg, load_task_estimate=False)" in source
     assert "metric_outputs.metrics_long_path" in source
     assert "step_outputs = metric_outputs.outputs" not in source
@@ -2003,12 +2007,14 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert "metric_outputs.run_merge_step_if_needed(" in source
     assert "metric_outputs.run_downstream_outputs_step_if_needed(" in source
     assert "metric_outputs.display_metrics_preview(nrows=PREVIEW_ROWS)" in source
+    assert "display(metric_settings_summary(metric_settings))" in source
     assert "step_outputs.display_table_previews(" not in source
     assert "step_outputs.preview_table(" not in source
     assert "metrics_preview =" not in source
     assert "Metric output is not ready yet" not in source
     assert "preview_output_table(" not in source
-    assert '"batch_count": context.metric_batch_count' in source
+    assert "batch_count=METRIC_BATCH_COUNT" in source
+    assert "batch_count=context.metric_batch_count" not in source
     assert 'os.environ.get("SVTK_METRIC_BATCH_COUNT"' not in source
     assert '"spatial_vtk.metrics.build_metric_waveform_inventories_from_config"' not in source
     assert '"spatial_vtk.metrics.plan_metric_tasks_from_config"' not in source
