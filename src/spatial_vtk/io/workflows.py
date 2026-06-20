@@ -131,6 +131,24 @@ class StandardIngestWorkflowOutputResult:
             display_fn=display_fn,
         )
 
+    def write_context_figures(
+        self,
+        settings: Any,
+        *,
+        cfg: SpatialVTKConfig | None = None,
+        overwrite: bool = False,
+    ) -> Any:
+        """Write Step 1 context figures from this configured output bundle."""
+
+        from spatial_vtk.visualize.context import write_context_figures_from_outputs
+
+        return write_context_figures_from_outputs(
+            self.outputs,
+            settings,
+            cfg=cfg or self.cfg,
+            overwrite=overwrite,
+        )
+
 
 class _SummaryMappingMixin(Mapping[str, Any]):
     """Mapping compatibility for result objects that expose ``as_dict``."""

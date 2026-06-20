@@ -186,6 +186,24 @@ class StandardQCInputResult:
             )
         return pd.DataFrame(records, columns=["artifact", "resolved_path", "path", "exists"])
 
+    def write_figures(
+        self,
+        settings: Any,
+        *,
+        cfg: SpatialVTKConfig | None = None,
+        overwrite: bool = False,
+    ) -> object:
+        """Write compact QC figures from this configured Step 2 output bundle."""
+
+        from spatial_vtk.visualize.qc import write_qc_figures_from_outputs
+
+        return write_qc_figures_from_outputs(
+            self.outputs,
+            settings,
+            cfg=cfg or self.cfg,
+            overwrite=overwrite,
+        )
+
 
 @dataclass(frozen=True)
 class StandardQCWorkflowOutputResult:
@@ -225,6 +243,24 @@ class StandardQCWorkflowOutputResult:
             nrows=nrows,
             missing="skip",
             display_fn=display_fn,
+        )
+
+    def write_figures(
+        self,
+        settings: Any,
+        *,
+        cfg: SpatialVTKConfig | None = None,
+        overwrite: bool = False,
+    ) -> object:
+        """Write compact QC figures from this configured Step 2 output bundle."""
+
+        from spatial_vtk.visualize.qc import write_qc_figures_from_outputs
+
+        return write_qc_figures_from_outputs(
+            self.outputs,
+            settings,
+            cfg=cfg or self.cfg,
+            overwrite=overwrite,
         )
 
 

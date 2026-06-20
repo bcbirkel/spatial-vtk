@@ -714,7 +714,8 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "qc_inputs.status_frame()" in standard_text
     assert "ingest_outputs.load_tables(" not in standard_text
     assert 'qc_outputs = output_group("step_02_qc", cfg=cfg)' not in standard_text
-    assert "write_qc_figures_from_outputs(" in standard_text
+    assert "qc_inputs.write_figures(" in standard_text
+    assert "write_qc_figures_from_outputs(" not in standard_text
     assert "qc_figure_result.status_frame()" in standard_text
     assert '"availability_path"' in standard_text
     assert "qc_figure_tables = qc_outputs.load_tables(" not in standard_text
@@ -763,14 +764,15 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "from spatial_vtk.qc import (" in large_run_text
     assert "load_standard_qc_workflow_outputs," in large_run_text
     assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in large_run_text
-    assert "step_outputs = qc_outputs.outputs" in large_run_text
+    assert "step_outputs = qc_outputs.outputs" not in large_run_text
     assert "display(qc_outputs.status_frame())" in large_run_text
     assert 'from spatial_vtk.io import output_group' not in large_run_text
     assert 'step_outputs = output_group("step_02_qc")' not in large_run_text
     assert "run_qc_inventory_from_config," in large_run_text
     assert "write_qc_inventory_overlap_from_config," in large_run_text
     assert "run_qc_summary_workflow_from_config," in large_run_text
-    assert "write_large_run_qc_figures_from_outputs(" in large_run_text
+    assert "qc_outputs.write_figures(" in large_run_text
+    assert "write_large_run_qc_figures_from_outputs(" not in large_run_text
     assert "qc_figure_result.status_frame()" in large_run_text
     assert "qc_figure_tables = step_outputs.load_tables(" not in large_run_text
     assert '"spatial_vtk.qc.run_qc_inventory_from_config"' not in large_run_text
@@ -1228,8 +1230,9 @@ def test_standard_step01_uses_configured_io_workflows() -> None:
     assert "load_standard_ingest_workflow_outputs," in source
     assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in source
     assert "display(ingest_outputs.status_frame())" in source
-    assert "write_context_figures_from_outputs(" in source
-    assert "ingest_outputs.outputs," in source
+    assert "ingest_outputs.write_context_figures(" in source
+    assert "write_context_figures_from_outputs(" not in source
+    assert "ingest_outputs.outputs," not in source
     assert "context_figure_result.status_frame()" in source
     assert "ingest_outputs.display_station_preview(nrows=5)" in source
     assert "ingest_outputs.display_event_preview(nrows=5)" in source
@@ -2009,8 +2012,8 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     assert "metadata_tables_readiness_from_config," in source
     assert "preprocessing_readiness_from_config," in source
     assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in source
-    assert "step_outputs = ingest_outputs.outputs" in source
-    assert "preprocessed_outputs = ingest_outputs.preprocessed_outputs" in source
+    assert "step_outputs = ingest_outputs.outputs" not in source
+    assert "preprocessed_outputs = ingest_outputs.preprocessed_outputs" not in source
     assert "display(ingest_outputs.status_frame())" in source
     assert 'step_outputs = output_group("step_01_ingest")' not in source
     assert "preprocessed_outputs = preprocessed_waveform_output_group(config=cfg)" not in source
@@ -2019,7 +2022,8 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     assert "stations = metadata_tables" not in source
     assert "event_stations = metadata_tables" not in source
     assert "print(f\"stations={len(stations):,}" not in source
-    assert "write_large_run_context_figures_from_outputs(" in source
+    assert "ingest_outputs.write_context_figures(" in source
+    assert "write_large_run_context_figures_from_outputs(" not in source
     assert "context_figure_result.status_frame()" in source
     assert "context_tables = step_outputs.load_tables(" not in source
     assert "load_output_table(" not in source
@@ -2044,8 +2048,8 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     assert "build_record_coverage_table_from_trace_metadata(" not in source
 
 
-def test_large_run_step02_uses_qc_availability_output() -> None:
-    """The large-run QC notebook should render the standard availability sidecar."""
+def test_large_run_step02_uses_qc_result_figure_writer() -> None:
+    """The large-run QC notebook should let the QC result own compact figures."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb"
@@ -2053,9 +2057,10 @@ def test_large_run_step02_uses_qc_availability_output() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "step_outputs.bind(globals())" not in source
-    assert "step_outputs.availability_path" in source
-    assert "availability_path," in source
-    assert "write_large_run_qc_figures_from_outputs(" in source
+    assert "step_outputs" not in source
+    assert "availability_path," not in source
+    assert "qc_outputs.write_figures(" in source
+    assert "write_large_run_qc_figures_from_outputs(" not in source
     assert "qc_figure_result.status_frame()" in source
     assert '"qc_availability": "availability_path"' not in source
     assert 'qc_availability = qc_figure_tables["qc_availability"]' not in source
@@ -2077,7 +2082,7 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     assert "from spatial_vtk.qc import (" in source
     assert "load_standard_qc_workflow_outputs," in source
     assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in source
-    assert "step_outputs = qc_outputs.outputs" in source
+    assert "step_outputs = qc_outputs.outputs" not in source
     assert "display(qc_outputs.status_frame())" in source
     assert "qc_outputs.display_summary_previews(nrows=PREVIEW_ROWS)" in source
     assert 'from spatial_vtk.io import output_group' not in source
@@ -2088,7 +2093,8 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     assert "qc_inventory_readiness_from_config," in source
     assert "qc_overlap_readiness_from_config," in source
     assert "qc_summary_readiness_from_config," in source
-    assert "write_large_run_qc_figures_from_outputs(" in source
+    assert "qc_outputs.write_figures(" in source
+    assert "write_large_run_qc_figures_from_outputs(" not in source
     assert "qc_readiness = qc_inventory_readiness_from_config(" in source
     assert "overlap_readiness = qc_overlap_readiness_from_config(" in source
     assert "summary_readiness = qc_summary_readiness_from_config(" in source
@@ -2173,7 +2179,8 @@ def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
         if notebook_path == step_01:
-            assert "preprocessed_outputs = ingest_outputs.preprocessed_outputs" in source
+            assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in source
+            assert "preprocessed_outputs = ingest_outputs.preprocessed_outputs" not in source
             assert "preprocessed_waveform_output_group(config=cfg)" not in source
             assert "preprocess_readiness = preprocessing_readiness_from_config(" in source
             assert "preprocessed_outputs.readiness(" not in source

@@ -58,6 +58,7 @@ from spatial_vtk.io import (
     output_readiness,
     output_status_frame,
     preprocessed_waveform_output_group,
+    load_standard_ingest_workflow_outputs,
     metadata_tables_readiness_from_config,
     preprocessing_readiness_from_config,
     record_coverage_readiness_from_config,
@@ -105,6 +106,7 @@ from spatial_vtk.spatial import (
 )
 from spatial_vtk.qc import (
     load_standard_qc_inputs,
+    load_standard_qc_workflow_outputs,
     qc_inventory_readiness_from_config,
     qc_overlap_readiness_from_config,
     qc_summary_readiness_from_config,
@@ -2207,6 +2209,67 @@ outputs:
     fallback = inputs.step_result(readiness, qc_inventory_path=qc_outputs.qc_inventory_path)
     assert fallback["reused"] is True
     assert fallback["qc_inventory_path"] == str(qc_outputs.qc_inventory_path)
+
+    qc_figure_calls: list[dict[str, object]] = []
+
+    def fake_write_qc_figures(outputs, settings, *, cfg=None, overwrite=False):  # noqa: ANN001, ANN202
+        qc_figure_calls.append({"outputs": outputs, "settings": settings, "cfg": cfg, "overwrite": overwrite})
+        return types.SimpleNamespace(status_frame=lambda: pd.DataFrame([{"status": "delegated"}]))
+
+    monkeypatch.setattr("spatial_vtk.visualize.qc.write_qc_figures_from_outputs", fake_write_qc_figures)
+    settings = object()
+    figure_result = inputs.write_figures(settings, overwrite=True)
+    assert figure_result.status_frame().to_dict("records") == [{"status": "delegated"}]
+    assert qc_figure_calls == [{"outputs": inputs.outputs, "settings": settings, "cfg": cfg, "overwrite": True}]
+    clear_active_config()
+
+
+def test_standard_output_results_own_context_and_qc_figure_calls(tmp_path, monkeypatch):
+    """Standard output result objects should wrap common figure writers."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+  figures: run_outputs/figures
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+
+    context_calls: list[dict[str, object]] = []
+    qc_calls: list[dict[str, object]] = []
+
+    def fake_write_context_figures(outputs, settings, *, cfg=None, overwrite=False):  # noqa: ANN001, ANN202
+        context_calls.append({"outputs": outputs, "settings": settings, "cfg": cfg, "overwrite": overwrite})
+        return types.SimpleNamespace(status_frame=lambda: pd.DataFrame([{"status": "context"}]))
+
+    def fake_write_qc_figures(outputs, settings, *, cfg=None, overwrite=False):  # noqa: ANN001, ANN202
+        qc_calls.append({"outputs": outputs, "settings": settings, "cfg": cfg, "overwrite": overwrite})
+        return types.SimpleNamespace(status_frame=lambda: pd.DataFrame([{"status": "qc"}]))
+
+    monkeypatch.setattr("spatial_vtk.visualize.context.write_context_figures_from_outputs", fake_write_context_figures)
+    monkeypatch.setattr("spatial_vtk.visualize.qc.write_qc_figures_from_outputs", fake_write_qc_figures)
+
+    ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)
+    qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)
+    context_settings = object()
+    qc_settings = object()
+
+    context_result = ingest_outputs.write_context_figures(context_settings, overwrite=True)
+    qc_result = qc_outputs.write_figures(qc_settings, overwrite=True)
+
+    assert context_result.status_frame().to_dict("records") == [{"status": "context"}]
+    assert qc_result.status_frame().to_dict("records") == [{"status": "qc"}]
+    assert context_calls == [
+        {"outputs": ingest_outputs.outputs, "settings": context_settings, "cfg": cfg, "overwrite": True}
+    ]
+    assert qc_calls == [{"outputs": qc_outputs.outputs, "settings": qc_settings, "cfg": cfg, "overwrite": True}]
     clear_active_config()
 
 

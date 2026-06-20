@@ -342,16 +342,19 @@ fallbacks, and bounded previews stay in package code.
      - ``spatial_vtk.io.load_standard_ingest_workflow_outputs``
      - The Step 1 output group, preprocessing metadata output group, combined
        status frame, prepared station/event previews, and preprocessing
-       manifest preview.
+       manifest preview, plus standard context figure rendering through
+       ``write_context_figures()``.
    * - Step 2 QC
      - ``spatial_vtk.qc.load_standard_qc_inputs``
      - Prepared stations, events, event-station records, the Step 1 output
        group, the Step 2 QC output group, skipped-step fallback payloads,
-       compact output summaries, and bounded QC inventory/summary previews.
+       compact output summaries, bounded QC inventory/summary previews, and
+       standard QC figure rendering through ``write_figures()``.
    * - Step 2 large-run QC setup
      - ``spatial_vtk.qc.load_standard_qc_workflow_outputs``
      - The Step 2 QC output group and status frame without eager reads of the
-       prepared station/event/event-station tables.
+       prepared station/event/event-station tables, plus compact QC summary
+       previews and figure rendering through ``write_figures()``.
    * - Step 3 metric calculation
      - ``spatial_vtk.metrics.load_standard_metric_workflow_outputs``
      - The Step 3 output group, preprocessed trace metadata dependency, status

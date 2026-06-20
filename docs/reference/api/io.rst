@@ -75,6 +75,8 @@ Public helpers exposed by ``spatial_vtk.io``:
      - Load the standard Step 1 ingest output group, preprocessing metadata
        output group, combined status frame, metadata row-count summary, and
        bounded station/event/manifest preview helpers for tutorial notebooks.
+       The returned result also writes the standard Step 1 context figure
+       suite through ``write_context_figures()``.
    * - ``MetadataPreparationResult``
      - Report prepared metadata output paths and row counts with
        mapping-compatible access plus ``summary_message()`` and

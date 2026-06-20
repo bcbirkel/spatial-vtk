@@ -113,6 +113,8 @@ Changelog
   - Rewired standard Step 4, Step 5, and Step 6 notebooks to call package
     helpers for table previews, readiness messages, and configured output
     loading.
+  - Rewired Step 1 context figures and Step 2 QC figures to call result-object
+    methods instead of unpacking output groups into notebook-local variables.
   - Kept reusable skip/rebuild decisions in package code rather than in
     notebook-local dictionaries.
   - Kept ``reused`` flags and path string conversion in package code rather
