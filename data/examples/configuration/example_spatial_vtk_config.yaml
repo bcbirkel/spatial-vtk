@@ -218,7 +218,9 @@ run_scenarios:
         min_end_after_origin_s: 60.0
         snr_threshold: 3.0
     spatial:
-      metric: all
+      metrics_table: paths.metric_figure_snapshot
+      station_metadata_table: paths.site_metadata
+      metric: [PGA, FAS]
       field_mode: log2_residual
       value_column: log2_residual
       min_stations_per_event: 2

@@ -1841,8 +1841,8 @@ spatial:
     assert Path(derived["paths"]["block_holdout_predictions"]).exists()
 
 
-def test_spatial_statistics_config_wrapper_resolves_dotted_path_arguments(tmp_path: Path) -> None:
-    """Config-backed spatial helpers should accept dotted config path keys."""
+def test_spatial_statistics_config_wrapper_uses_configured_input_tables(tmp_path: Path) -> None:
+    """Config-backed spatial helpers should resolve configured spatial input tables."""
 
     clear_active_config()
     metrics = normalize_metrics_table(_toy_metrics_table(), default_model="example_model")
@@ -1868,6 +1868,8 @@ paths:
 outputs:
   tables: outputs/tables
 spatial:
+  metrics_table: paths.metric_figure_snapshot
+  station_metadata_table: paths.site_metadata
   metric: C5
   value_column: log2_residual
   min_stations_per_event: 3
@@ -1883,12 +1885,7 @@ spatial:
         encoding="utf-8",
     )
 
-    summary = run_spatial_statistics_workflow_from_config(
-        config_path=config_path,
-        metrics="paths.metric_figure_snapshot",
-        station_metadata="paths.site_metadata",
-        verbose=True,
-    )
+    summary = run_spatial_statistics_workflow_from_config(config_path=config_path, verbose=True)
 
     assert summary["failure_count"] == 0
     assert summary["metrics"] == ["C5"]

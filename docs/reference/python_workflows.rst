@@ -572,6 +572,12 @@ Standard Step 4 helpers accept ``cfg=`` as either a config object or a config
 file path. Use ``cfg=config_path`` in generated workers and lightweight driver
 scripts when you want the spatial output bundle, readiness gates, and settings
 to resolve from one config file without activating global state first.
+Put non-default Step 4 inputs in the config under ``spatial.metrics_table`` and
+``spatial.station_metadata_table``. Those settings can point to dotted path keys
+such as ``paths.metric_figure_snapshot`` and ``paths.site_metadata``, which
+keeps notebooks from passing ad hoc table paths into workflow calls. Set
+``spatial.metric`` to ``all``, one metric name, or a metric list when a run
+should build only a curated subset.
 
 .. list-table::
    :header-rows: 1

@@ -34,6 +34,14 @@ class SpatialStatisticsSettings:
 
     Parameters
     ----------
+    metrics_table
+        Optional path or dotted config key for the long metric table used by
+        standard spatial workflows. When omitted, workflows use the configured
+        ``metrics_long`` output table.
+    station_metadata_table
+        Optional path or dotted config key for station metadata used by geology
+        contrasts. When omitted, workflows use the configured
+        ``prepared_stations`` output table when it exists.
     metric
         Metric name or ``"all"`` used when building a spatial field.
     value_column
@@ -73,7 +81,9 @@ class SpatialStatisticsSettings:
         Optional configured GeoJSON polygon path.
     """
 
-    metric: str = "all"
+    metrics_table: str | None = None
+    station_metadata_table: str | None = None
+    metric: str | tuple[str, ...] = "all"
     value_column: str = "log2_residual"
     remove_event_mean: bool = True
     min_stations_per_event: int = 2
@@ -125,7 +135,9 @@ def spatial_statistics_settings_from_config(cfg: ConfigInput | None = None) -> S
     section = config.section("spatial", {})
     region_path = config.path("paths.region_geojson", must_exist=False)
     return SpatialStatisticsSettings(
-        metric=str(section.get("metric", "all")),
+        metrics_table=_optional_str(section.get("metrics_table")),
+        station_metadata_table=_optional_str(section.get("station_metadata_table")),
+        metric=_metric_selection(section.get("metric", "all")),
         value_column=str(section.get("value_column", section.get("field_mode", "log2_residual"))),
         remove_event_mean=_as_bool(section.get("remove_event_mean", True)),
         min_stations_per_event=int(section.get("min_stations_per_event", 2)),
@@ -207,6 +219,16 @@ def _optional_str(value: Any) -> str | None:
     if not text or text.lower() in {"all", "*", "none", "null"}:
         return None
     return text
+
+
+def _metric_selection(value: Any) -> str | tuple[str, ...]:
+    """Return a metric selector while preserving configured metric lists."""
+
+    if value is None:
+        return "all"
+    if isinstance(value, str):
+        return value
+    return _as_tuple(value)
 
 
 __all__ = [

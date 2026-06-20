@@ -881,6 +881,8 @@ def summarize_standard_spatial_products(
         metrics = tuple(str(metric) for metric in spatial_result.get("metrics", ()) or ())
     else:
         metrics = tuple(str(metric) for metric in spatial_result)
+    if not metrics and metric_field is not None and not metric_field.empty and "metric" in metric_field.columns:
+        metrics = tuple(str(metric) for metric in pd.unique(metric_field["metric"].dropna()))
 
     products_by_metric: dict[str, dict[str, pd.DataFrame]] = {}
     summary_rows: list[pd.DataFrame] = []
@@ -1198,6 +1200,11 @@ def run_spatial_statistics_workflow(
         if verbose:
             elapsed = time.monotonic() - start
             print(f"Spatial statistics: {message} (elapsed {elapsed:.1f}s)", flush=True)
+
+    if metrics is None and settings.metrics_table:
+        metrics = _resolve_config_path_argument(settings.metrics_table, config)
+    if station_metadata is None and settings.station_metadata_table:
+        station_metadata = _resolve_config_path_argument(settings.station_metadata_table, config)
 
     metrics_path = None
     if metrics is None:

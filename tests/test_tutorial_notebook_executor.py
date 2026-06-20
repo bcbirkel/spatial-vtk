@@ -1335,10 +1335,13 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "run_spatial_statistics_workflow_from_config(" in source
-    assert 'metrics="paths.metric_figure_snapshot"' in source
-    assert 'station_metadata="paths.site_metadata"' in source
+    assert "load_standard_spatial_workflow_output_status(" in source
+    assert "run_spatial_statistics_workflow_from_config(" not in source
+    assert 'metrics="paths.metric_figure_snapshot"' not in source
+    assert 'station_metadata="paths.site_metadata"' not in source
     assert "load_standard_spatial_workflow_outputs(" in source
+    assert "spatial_status = load_standard_spatial_workflow_output_status(cfg=cfg)" in source
+    assert "spatial_result = spatial_status.run_summary_step_if_needed(" in source
     assert "spatial_outputs = load_standard_spatial_workflow_outputs(spatial_result, cfg=cfg)" in source
     assert "spatial_outputs.status_frame()" in source
     assert 'step_outputs = output_group("step_04_spatial", cfg=cfg)' not in source

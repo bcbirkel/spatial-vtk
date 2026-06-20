@@ -3059,17 +3059,21 @@ outputs:
     loaded = load_standard_spatial_workflow_outputs({"metrics": ["PGA"]}, cfg=cfg)
     clear_active_config()
     loaded_from_path = load_standard_spatial_workflow_outputs({"metrics": ["PGA"]}, cfg=config_path)
+    loaded_from_current_payload = load_standard_spatial_workflow_outputs({}, cfg=config_path)
     settings_from_path = spatial_statistics_settings_from_config(config_path)
 
     assert loaded.outputs.name == "step_04_spatial"
     assert loaded_from_path.outputs.name == "step_04_spatial"
     assert loaded_from_path.outputs.metric_field_path == outputs.metric_field_path
-    assert settings_from_path.metric == "all"
+    assert settings_from_path.metrics_table == "paths.metric_figure_snapshot"
+    assert settings_from_path.station_metadata_table == "paths.site_metadata"
+    assert settings_from_path.metric == ("PGA", "FAS")
     assert all(not name.endswith("_path") for name in loaded.tables)
     assert {"metric_field", "event_centered_residuals", "station_bias", "morans_i"}.issubset(loaded.tables)
     assert {"metric_field", "event_centered_residuals", "station_bias", "morans_i"}.issubset(loaded_from_path.tables)
     assert loaded.metrics == ("PGA",)
     assert loaded_from_path.metrics == ("PGA",)
+    assert loaded_from_current_payload.metrics == ("PGA",)
     assert len(loaded.metric_field) == 1
     assert len(loaded_from_path.metric_field) == 1
     assert len(loaded.event_centered_residuals) == 1
