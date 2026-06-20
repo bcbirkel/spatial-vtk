@@ -216,12 +216,14 @@ def _qc_trace_readiness(trace_summary: str) -> pd.DataFrame:
 def _render_qc_readiness(readiness: pd.DataFrame, *, message: str | None = None) -> None:
     """Render QC trace-summary readiness when the dashboard cannot start."""
 
+    detail = str(message or "").strip()
     if readiness.empty or "ready" not in readiness.columns:
+        if detail:
+            st.warning(detail)
         return
     ready = readiness["ready"].map(lambda value: dashboard_ready_value(value, default=False))
     if bool(ready.all()):
         return
-    detail = str(message or "").strip()
     warning = "The QC trace-summary table is not ready."
     if detail and detail != warning:
         warning = f"{warning} {detail}"

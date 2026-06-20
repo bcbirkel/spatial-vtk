@@ -465,6 +465,9 @@ Changelog
     legacy alias.
   - Updated ``svtk dashboard qc`` to call the QC dashboard launcher through
     the primary ``qc_trace_summary_table`` keyword.
+  - Made QC dashboard startup warnings render even when the bounded readiness
+    check itself returns an empty or malformed status frame, so failed
+    preflight checks do not silently leave a blank dashboard page.
 
 - **Workflow large-run resilience** *(Hardened)*
 

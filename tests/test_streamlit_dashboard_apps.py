@@ -752,6 +752,42 @@ def test_qc_dashboard_readiness_display_columns_are_bounded():
     assert "path" not in display.columns
 
 
+def test_qc_dashboard_readiness_renderer_warns_for_empty_status(monkeypatch):
+    """QC startup blockers should still render when readiness rows are missing."""
+
+    warnings: list[str] = []
+    rendered: list[pd.DataFrame] = []
+
+    monkeypatch.setattr(streamlit_qc.st, "warning", lambda message: warnings.append(str(message)))
+    monkeypatch.setattr(streamlit_qc.st, "dataframe", lambda frame, **kwargs: rendered.append(frame))
+
+    streamlit_qc._render_qc_readiness(
+        pd.DataFrame(),
+        message="The QC trace-summary readiness check did not return a status row.",
+    )
+
+    assert warnings == ["The QC trace-summary readiness check did not return a status row."]
+    assert rendered == []
+
+
+def test_qc_dashboard_readiness_renderer_warns_for_malformed_status(monkeypatch):
+    """QC startup blockers should render when readiness schema is malformed."""
+
+    warnings: list[str] = []
+    rendered: list[pd.DataFrame] = []
+
+    monkeypatch.setattr(streamlit_qc.st, "warning", lambda message: warnings.append(str(message)))
+    monkeypatch.setattr(streamlit_qc.st, "dataframe", lambda frame, **kwargs: rendered.append(frame))
+
+    streamlit_qc._render_qc_readiness(
+        pd.DataFrame({"readiness": ["unknown"]}),
+        message="QC readiness status is missing the ready column.",
+    )
+
+    assert warnings == ["QC readiness status is missing the ready column."]
+    assert rendered == []
+
+
 def test_qc_dashboard_loaded_row_summary_reports_filtered_scope():
     """QC Data Status should show both loaded and filtered row counts."""
 
