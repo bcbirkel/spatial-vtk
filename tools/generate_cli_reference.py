@@ -18,7 +18,13 @@ import argparse
 from pathlib import Path
 from typing import Iterable
 
-from spatial_vtk.cli import build_parser
+from spatial_vtk.cli import (
+    PlotCommand,
+    _registered_list_extra_tables,
+    _registered_list_input,
+    _registered_list_output,
+    build_parser,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -303,6 +309,7 @@ def _render_command_details(
     if summary and include_summary:
         lines.extend([_rst_escape(summary), ""])
     lines.extend(_render_usage(parser))
+    lines.extend(_render_configured_defaults(parser))
     argument_lines = _render_arguments(parser)
     if argument_lines:
         lines.extend(argument_lines)
@@ -355,6 +362,86 @@ def _render_usage(parser: argparse.ArgumentParser) -> list[str]:
 
     usage = parser.format_usage().replace("usage: ", "", 1).strip()
     return [".. rubric:: Usage", "", ".. code-block:: bash", "", f"   {usage}", ""]
+
+
+def _render_configured_defaults(parser: argparse.ArgumentParser) -> list[str]:
+    """Render command-specific config-backed defaults for registered figures."""
+
+    spec = parser.get_default("plot_spec")
+    if not isinstance(spec, PlotCommand):
+        return []
+    rows = _registered_default_rows(spec)
+    if not rows:
+        return []
+    lines = [
+        ".. rubric:: Configured defaults",
+        "",
+        ".. list-table::",
+        "   :header-rows: 1",
+        "   :widths: 20 26 54",
+        "",
+        "   * - Role",
+        "     - Source",
+        "     - Meaning",
+    ]
+    for role, source, meaning in rows:
+        lines.extend(
+            [
+                f"   * - {role}",
+                _table_cell(source),
+                _table_cell(meaning),
+            ]
+        )
+    lines.append("")
+    return lines
+
+
+def _registered_default_rows(spec: PlotCommand) -> list[tuple[str, str, str]]:
+    """Return human-readable default rows for one registered figure command."""
+
+    rows: list[tuple[str, str, str]] = []
+    rows.append(("Input table", f"``{_registered_list_input(spec)}``", _registered_input_default_meaning(spec)))
+    rows.append(("Output figure", f"``{_registered_list_output(spec)}``", _registered_output_default_meaning(spec)))
+    extra_tables = _registered_list_extra_tables(spec)
+    if extra_tables != "-":
+        rows.append(("Extra tables", f"``{extra_tables}``", _registered_extra_default_meaning(spec)))
+    return rows
+
+
+def _registered_input_default_meaning(spec: PlotCommand) -> str:
+    """Return explanatory text for one registered input default."""
+
+    if spec.primary_arg is None:
+        return "This command does not read a primary input table."
+    if spec.input_key:
+        return (
+            f"Uses configured output table ``{spec.input_key}`` when ``--config`` is passed "
+            "or a default config is set with ``svtk config set``. Override with "
+            "``--input`` or ``--input-table``."
+        )
+    return "No registered default table is available yet. Pass ``--input`` or ``--input-table``."
+
+
+def _registered_output_default_meaning(spec: PlotCommand) -> str:
+    """Return explanatory text for one registered output default."""
+
+    if spec.output_key:
+        return (
+            f"Uses configured figure output ``{spec.output_key}`` when ``--config`` is passed "
+            "or a default config is set with ``svtk config set``. Override with "
+            "``--output`` or ``--figure-output``."
+        )
+    return "No registered default figure path is available yet. Pass ``--output`` or ``--figure-output``."
+
+
+def _registered_extra_default_meaning(spec: PlotCommand) -> str:
+    """Return explanatory text for registered extra table aliases."""
+
+    defaults = spec.table_alias_defaults or {}
+    if defaults:
+        aliases = ", ".join(f"``--{name.replace('_', '-')}``" for name in sorted(defaults))
+        return f"Uses configured table defaults for {aliases} when a config is active; override with the same named flags."
+    return "Optional named table aliases are available for this command."
 
 
 def _render_arguments(parser: argparse.ArgumentParser) -> list[str]:

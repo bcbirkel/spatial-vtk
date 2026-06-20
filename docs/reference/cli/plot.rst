@@ -153,6 +153,22 @@ svtk plot metrics band-score-distribution
                                                  [--sidecar-rows SIDECAR_ROWS]
                                                  [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:band_score_distribution``
+     - Uses configured figure output ``band_score_distribution`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -348,6 +364,22 @@ svtk plot metrics boxplot
                                  [--write-sidecar]
                                  [--sidecar-rows SIDECAR_ROWS]
                                  [--sidecar-dir DIR]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:boxplot``
+     - Uses configured figure output ``boxplot`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -556,6 +588,22 @@ svtk plot metrics example-metric-pairs
                                               [--sidecar-rows SIDECAR_ROWS]
                                               [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``none``
+     - This command does not read a primary input table.
+   * - Output figure
+     - ``config:example_metric_pairs``
+     - Uses configured figure output ``example_metric_pairs`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -755,6 +803,22 @@ svtk plot metrics geology-boxplot
                                          [--sidecar-rows SIDECAR_ROWS]
                                          [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:geology_boxplot``
+     - Uses configured figure output ``geology_boxplot`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -950,6 +1014,22 @@ svtk plot metrics heatmap
                                  [--write-sidecar]
                                  [--sidecar-rows SIDECAR_ROWS]
                                  [--sidecar-dir DIR]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:heatmap``
+     - Uses configured figure output ``heatmap`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -1190,6 +1270,22 @@ svtk plot metrics metric-trend
                                       [--sidecar-rows SIDECAR_ROWS]
                                       [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:metric_trend``
+     - Uses configured figure output ``metric_trend`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -1397,6 +1493,22 @@ svtk plot metrics model-metric-heatmap
                                               [--sidecar-rows SIDECAR_ROWS]
                                               [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:model_metric_heatmap``
+     - Uses configured figure output ``model_metric_heatmap`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -1599,6 +1711,22 @@ svtk plot metrics period-spectra
                                         [--title TITLE] [--write-sidecar]
                                         [--sidecar-rows SIDECAR_ROWS]
                                         [--sidecar-dir DIR]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:period_spectra``
+     - Uses configured figure output ``period_spectra`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -1804,6 +1932,22 @@ svtk plot metrics period-spectrogram
                                             [--title TITLE] [--write-sidecar]
                                             [--sidecar-rows SIDECAR_ROWS]
                                             [--sidecar-dir DIR]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``required:spectrogram table``
+     - No registered default table is available yet. Pass ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:period_spectrogram``
+     - Uses configured figure output ``period_spectrogram`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -2014,6 +2158,22 @@ svtk plot metrics phase-delay-vs-distance
                                                  [--sidecar-rows SIDECAR_ROWS]
                                                  [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:phase_delay_vs_distance``
+     - Uses configured figure output ``phase_delay_vs_distance`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -2216,6 +2376,22 @@ svtk plot metrics psa-period-curve
                                           [--title TITLE] [--write-sidecar]
                                           [--sidecar-rows SIDECAR_ROWS]
                                           [--sidecar-dir DIR]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:psa_period_curve``
+     - Uses configured figure output ``psa_period_curve`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -2421,6 +2597,22 @@ svtk plot metrics residuals-vs-depth
                                             [--title TITLE] [--write-sidecar]
                                             [--sidecar-rows SIDECAR_ROWS]
                                             [--sidecar-dir DIR]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:residuals_vs_depth``
+     - Uses configured figure output ``residuals_vs_depth`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -2629,6 +2821,22 @@ svtk plot metrics residuals-vs-distance
                                                [--sidecar-rows SIDECAR_ROWS]
                                                [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:residuals_vs_distance``
+     - Uses configured figure output ``residuals_vs_distance`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -2828,6 +3036,22 @@ svtk plot metrics scatterplot
                                      [--write-sidecar]
                                      [--sidecar-rows SIDECAR_ROWS]
                                      [--sidecar-dir DIR]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:scatterplot``
+     - Uses configured figure output ``scatterplot`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -3029,6 +3253,22 @@ svtk plot metrics score-trends
                                       [--sidecar-rows SIDECAR_ROWS]
                                       [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:score_trends``
+     - Uses configured figure output ``score_trends`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -3228,6 +3468,22 @@ svtk plot metrics vs30-scatter
                                       [--title TITLE] [--write-sidecar]
                                       [--sidecar-rows SIDECAR_ROWS]
                                       [--sidecar-dir DIR]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:vs30_scatter``
+     - Uses configured figure output ``vs30_scatter`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -3431,6 +3687,22 @@ svtk plot metrics winner-heatmap
                                         [--title TITLE] [--write-sidecar]
                                         [--sidecar-rows SIDECAR_ROWS]
                                         [--sidecar-dir DIR]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:winner_heatmap``
+     - Uses configured figure output ``winner_heatmap`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -3665,6 +3937,22 @@ svtk plot spatial azimuthal-residuals
                                              [--sidecar-rows SIDECAR_ROWS]
                                              [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:event_centered_residuals``
+     - Uses configured output table ``event_centered_residuals`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:azimuthal_residuals``
+     - Uses configured figure output ``azimuthal_residuals`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -3871,6 +4159,22 @@ svtk plot spatial block-holdout-scatter
                                                [--write-sidecar]
                                                [--sidecar-rows SIDECAR_ROWS]
                                                [--sidecar-dir DIR]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:block_holdout_predictions``
+     - Uses configured output table ``block_holdout_predictions`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:block_holdout_scatter``
+     - Uses configured figure output ``block_holdout_scatter`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -4081,6 +4385,22 @@ svtk plot spatial cluster-feature-heatmap
                                                  [--sidecar-rows SIDECAR_ROWS]
                                                  [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:cluster_feature_summary``
+     - Uses configured output table ``cluster_feature_summary`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:cluster_feature_heatmap``
+     - Uses configured figure output ``cluster_feature_heatmap`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -4290,6 +4610,22 @@ svtk plot spatial cluster-solution-scores
                                                  [--sidecar-rows SIDECAR_ROWS]
                                                  [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:cluster_solution_scores``
+     - Uses configured output table ``cluster_solution_scores`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:cluster_solution_scores_plot``
+     - Uses configured figure output ``cluster_solution_scores_plot`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -4489,6 +4825,22 @@ svtk plot spatial correlogram
                                      [--write-sidecar]
                                      [--sidecar-rows SIDECAR_ROWS]
                                      [--sidecar-dir DIR]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:distance_bin_correlations``
+     - Uses configured output table ``distance_bin_correlations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:correlogram``
+     - Uses configured figure output ``correlogram`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -4698,6 +5050,25 @@ svtk plot spatial directional-correlogram
                                                  [--sidecar-rows SIDECAR_ROWS]
                                                  [--sidecar-dir DIR]
                                                  [--fit PATH]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:distance_bin_correlations``
+     - Uses configured output table ``distance_bin_correlations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:directional_correlogram``
+     - Uses configured figure output ``directional_correlogram`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+   * - Extra tables
+     - ``--fit(fit_df)=optional``
+     - Optional named table aliases are available for this command.
 
 .. rubric:: Parameters
 
@@ -4941,6 +5312,22 @@ svtk plot spatial path-bin-summary
                                           [--sidecar-rows SIDECAR_ROWS]
                                           [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:path_summary``
+     - Uses configured output table ``path_summary`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:path_bin_summary``
+     - Uses configured figure output ``path_bin_summary`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -5145,6 +5532,22 @@ svtk plot spatial pattern-similarity
                                             [--title TITLE] [--write-sidecar]
                                             [--sidecar-rows SIDECAR_ROWS]
                                             [--sidecar-dir DIR]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:pattern_similarity_station_anomalies``
+     - Uses configured output table ``pattern_similarity_station_anomalies`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:pattern_similarity``
+     - Uses configured figure output ``pattern_similarity`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -5355,6 +5758,22 @@ svtk plot spatial pca-explained-variance
                                                 [--sidecar-rows SIDECAR_ROWS]
                                                 [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:pca_explained_variance``
+     - Uses configured output table ``pca_explained_variance`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:pca_explained_variance``
+     - Uses configured figure output ``pca_explained_variance`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -5562,6 +5981,22 @@ svtk plot spatial pca-feature-loadings
                                               [--sidecar-rows SIDECAR_ROWS]
                                               [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:pca_feature_loadings``
+     - Uses configured output table ``pca_feature_loadings`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:pca_feature_loadings``
+     - Uses configured figure output ``pca_feature_loadings`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -5764,6 +6199,22 @@ svtk plot spatial polar-residuals
                                          [--title TITLE] [--write-sidecar]
                                          [--sidecar-rows SIDECAR_ROWS]
                                          [--sidecar-dir DIR]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:event_centered_residuals``
+     - Uses configured output table ``event_centered_residuals`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:polar_residuals``
+     - Uses configured figure output ``polar_residuals`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -5972,6 +6423,22 @@ svtk plot spatial residual-correlation
                                               [--sidecar-rows SIDECAR_ROWS]
                                               [--sidecar-dir DIR]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:distance_bin_correlations``
+     - Uses configured output table ``distance_bin_correlations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:residual_correlation``
+     - Uses configured figure output ``residual_correlation`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -6171,6 +6638,22 @@ svtk plot spatial semivariogram
                                        [--title TITLE] [--write-sidecar]
                                        [--sidecar-rows SIDECAR_ROWS]
                                        [--sidecar-dir DIR]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:distance_bin_correlations``
+     - Uses configured output table ``distance_bin_correlations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:semivariogram``
+     - Uses configured figure output ``semivariogram`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 

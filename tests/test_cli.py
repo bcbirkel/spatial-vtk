@@ -1087,6 +1087,8 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "Config-Backed Mapping" in generator_text
     assert "Config-Backed Visualization" in generator_text
     assert "Config-Backed Dashboards" in generator_text
+    assert "Configured defaults" in generator_text
+    assert "_render_configured_defaults(parser)" in generator_text
 
 
 def test_configuration_map_override_example_uses_first_class_flags():
@@ -1114,6 +1116,12 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "function argument 'df'" not in plot_text
     assert "``--input``, ``--input-table``" in plot_text
     assert "``--output``, ``--figure-output``" in plot_text
+    assert ".. rubric:: Configured defaults" in plot_text
+    assert "``config:metrics_long``" in plot_text
+    assert "Uses configured output table ``metrics_long`` when ``--config`` is passed" in plot_text
+    assert "Uses configured figure output ``band_score_distribution`` when ``--config`` is passed" in plot_text
+    assert "Override with ``--input`` or ``--input-table``." in plot_text
+    assert "Override with ``--output`` or ``--figure-output``." in plot_text
     assert "``--resolve-paths``" in plot_text
     assert "Add ``--resolve-paths --config PATH``" in plot_text
     assert "Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet" in plot_text
@@ -1139,6 +1147,10 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "function argument 'station_df'" not in map_text
     assert "``--input``, ``--input-table``" in map_text
     assert "``--output``, ``--figure-output``" in map_text
+    assert ".. rubric:: Configured defaults" in map_text
+    assert "``config:station_bias``" in map_text
+    assert "Uses configured output table ``station_bias`` when ``--config`` is passed" in map_text
+    assert "Uses configured figure output ``station_residual_map`` when ``--config`` is passed" in map_text
     assert "``--resolve-paths``" in map_text
     assert "Filesystem path. Primary figure input table (station bias); accepts CSV or parquet" in map_text
     assert "Filesystem path. Output figure path." in map_text
@@ -1162,6 +1174,9 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Value: ``records``. Convenience event station records table path" not in map_text
     assert "Value: ``stations``. Convenience prepared stations table path" not in map_text
     assert "Value: ``" not in cli_pages_text
+    assert "Input table\n     - ``config:qc_metric_pair_retention``" in cli_pages_text
+    assert "Input table\n     - ``required:sample table``" in cli_pages_text
+    assert "No registered default table is available yet. Pass ``--input`` or ``--input-table``." in cli_pages_text
 
 
 def test_config_cli_help_marks_config_values_as_paths(capsys):

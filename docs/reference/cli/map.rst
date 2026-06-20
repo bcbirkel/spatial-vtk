@@ -133,6 +133,22 @@ svtk map spatial block-holdout-error
                                             [--bounds BOUNDS] [--no-basemap]
                                             [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:block_holdout_predictions``
+     - Uses configured output table ``block_holdout_predictions`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:block_holdout_error``
+     - Uses configured figure output ``block_holdout_error`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -342,6 +358,22 @@ svtk map spatial cluster
                                 [--sidecar-dir DIR] [--bounds BOUNDS]
                                 [--no-basemap]
                                 [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:clusters``
+     - Uses configured output table ``clusters`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:cluster``
+     - Uses configured figure output ``cluster`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -553,6 +585,25 @@ svtk map spatial corridor
                                  [--records PATH] [--stations PATH]
                                  [--bounds BOUNDS] [--no-basemap]
                                  [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:corridors``
+     - Uses configured output table ``corridors`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:corridor_map``
+     - Uses configured figure output ``corridor_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+   * - Extra tables
+     - ``--events(events_df)=config:prepared_events, --records(records_df)=config:event_station_records, --stations(stations_df)=config:prepared_stations``
+     - Uses configured table defaults for ``--events``, ``--records``, ``--stations`` when a config is active; override with the same named flags.
 
 .. rubric:: Parameters
 
@@ -779,6 +830,22 @@ svtk map spatial event-residual
                                        [--sidecar-dir DIR] [--bounds BOUNDS]
                                        [--no-basemap]
                                        [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:path_table``
+     - Uses configured output table ``path_table`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:event_residual_map``
+     - Uses configured figure output ``event_residual_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -1036,6 +1103,22 @@ svtk map spatial metric-by-model
                                         [--no-basemap]
                                         [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:metric_map_by_model``
+     - Uses configured figure output ``metric_map_by_model`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -1253,6 +1336,22 @@ svtk map spatial model-improvement
                                           [--bounds BOUNDS] [--no-basemap]
                                           [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:model_improvement``
+     - Uses configured figure output ``model_improvement`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -1462,6 +1561,22 @@ svtk map spatial pca-mode
                                  [--sidecar-dir DIR] [--bounds BOUNDS]
                                  [--no-basemap]
                                  [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:pca_station_scores``
+     - Uses configured output table ``pca_station_scores`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:pca_mode_map``
+     - Uses configured figure output ``pca_mode_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -1677,6 +1792,22 @@ svtk map spatial redcap-cluster
                                        [--no-basemap]
                                        [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:redcap_clusters``
+     - Uses configured output table ``redcap_clusters`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:redcap_cluster_map``
+     - Uses configured figure output ``redcap_cluster_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -1891,6 +2022,22 @@ svtk map spatial residual-grid
                                       [--no-basemap]
                                       [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metric_field``
+     - Uses configured output table ``metric_field`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:residual_grid``
+     - Uses configured figure output ``residual_grid`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -2098,6 +2245,22 @@ svtk map spatial score
                               [--write-sidecar] [--sidecar-rows SIDECAR_ROWS]
                               [--sidecar-dir DIR] [--bounds BOUNDS]
                               [--no-basemap] [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:score``
+     - Uses configured figure output ``score`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -2313,6 +2476,22 @@ svtk map spatial station-bias
                                      [--no-basemap]
                                      [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:station_bias``
+     - Uses configured output table ``station_bias`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:station_residual_map``
+     - Uses configured figure output ``station_residual_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -2526,6 +2705,22 @@ svtk map spatial station-metric
                                        [--sidecar-dir DIR] [--bounds BOUNDS]
                                        [--no-basemap]
                                        [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:metrics_long``
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:station_metric_map``
+     - Uses configured figure output ``station_metric_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 

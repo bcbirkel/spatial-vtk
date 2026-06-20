@@ -154,6 +154,22 @@ svtk visualize qc data-synthetic-availability
                                                      [--no-basemap]
                                                      [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:qc_availability``
+     - Uses configured output table ``qc_availability`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:data_synthetic_availability``
+     - Uses configured figure output ``data_synthetic_availability`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -378,6 +394,22 @@ svtk visualize qc drop-cause-diagnostics
                                                 [--no-basemap]
                                                 [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:qc_drop_causes``
+     - Uses configured output table ``qc_drop_causes`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:drop_cause_diagnostics``
+     - Uses configured figure output ``drop_cause_diagnostics`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -601,6 +633,22 @@ svtk visualize qc event-station-retention
                                                  [--bounds BOUNDS]
                                                  [--no-basemap]
                                                  [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:qc_event_station_pair_retention``
+     - Uses configured output table ``qc_event_station_pair_retention`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:event_station_retention``
+     - Uses configured figure output ``event_station_retention`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -865,6 +913,22 @@ svtk visualize qc post-qc-station-event-map
                                                    [--no-basemap]
                                                    [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:post_qc_records``
+     - Uses configured output table ``post_qc_records`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:post_qc_station_event_map``
+     - Uses configured figure output ``post_qc_station_event_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -1081,6 +1145,22 @@ svtk visualize qc retention-summary
                                            [--sidecar-dir DIR]
                                            [--bounds BOUNDS] [--no-basemap]
                                            [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:qc_metric_pair_retention``
+     - Uses configured output table ``qc_metric_pair_retention`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:retention_summary``
+     - Uses configured figure output ``retention_summary`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -1305,6 +1385,22 @@ svtk visualize qc trace-inventory-samples
                                                  [--bounds BOUNDS]
                                                  [--no-basemap]
                                                  [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``required:sample table``
+     - No registered default table is available yet. Pass ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:trace_inventory_samples``
+     - Uses configured figure output ``trace_inventory_samples`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -1534,6 +1630,22 @@ svtk visualize context distance-amplitude-diagnostics
        [--write-sidecar] [--sidecar-rows SIDECAR_ROWS] [--sidecar-dir DIR]
        [--bounds BOUNDS] [--no-basemap] [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:event_station_records``
+     - Uses configured output table ``event_station_records`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:distance_amplitude_diagnostics``
+     - Uses configured figure output ``distance_amplitude_diagnostics`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -1752,6 +1864,22 @@ svtk visualize context event-coverage
                                              [--sidecar-dir DIR]
                                              [--bounds BOUNDS] [--no-basemap]
                                              [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:event_station_records``
+     - Uses configured output table ``event_station_records`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:event_coverage``
+     - Uses configured figure output ``event_coverage`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -1977,6 +2105,22 @@ svtk visualize context event-magnitude-map
                                                   [--no-basemap]
                                                   [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:prepared_events``
+     - Uses configured output table ``prepared_events`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:event_magnitude_map``
+     - Uses configured figure output ``event_magnitude_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -2200,6 +2344,22 @@ svtk visualize context event-trace-comparison
                                                      [--bounds BOUNDS]
                                                      [--no-basemap]
                                                      [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:event_station_records``
+     - Uses configured output table ``event_station_records`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:event_trace_comparison``
+     - Uses configured figure output ``event_trace_comparison`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -2462,6 +2622,22 @@ svtk visualize context record-coverage
                                               [--bounds BOUNDS] [--no-basemap]
                                               [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:record_coverage``
+     - Uses configured output table ``record_coverage`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:record_coverage``
+     - Uses configured figure output ``record_coverage`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -2683,6 +2859,22 @@ svtk visualize context station-coverage
                                                [--bounds BOUNDS]
                                                [--no-basemap]
                                                [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:event_station_records``
+     - Uses configured output table ``event_station_records`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:station_coverage``
+     - Uses configured figure output ``station_coverage`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -2909,6 +3101,25 @@ svtk visualize context station-event-beachball
                                                       [--bounds BOUNDS]
                                                       [--no-basemap]
                                                       [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:prepared_events``
+     - Uses configured output table ``prepared_events`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:station_event_beachball``
+     - Uses configured figure output ``station_event_beachball`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+   * - Extra tables
+     - ``--stations(stations_df)=config:prepared_stations``
+     - Uses configured table defaults for ``--stations`` when a config is active; override with the same named flags.
 
 .. rubric:: Parameters
 
@@ -3139,6 +3350,25 @@ svtk visualize context station-event-context
                                                     [--no-basemap]
                                                     [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:prepared_stations``
+     - Uses configured output table ``prepared_stations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:station_event_context``
+     - Uses configured figure output ``station_event_context`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+   * - Extra tables
+     - ``--events(events_df)=config:prepared_events``
+     - Uses configured table defaults for ``--events`` when a config is active; override with the same named flags.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -3368,6 +3598,25 @@ svtk visualize context station-event-network
                                                     [--no-basemap]
                                                     [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:prepared_stations``
+     - Uses configured output table ``prepared_stations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:station_event_network``
+     - Uses configured figure output ``station_event_network`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+   * - Extra tables
+     - ``--events(events_df)=config:prepared_events``
+     - Uses configured table defaults for ``--events`` when a config is active; override with the same named flags.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -3588,6 +3837,25 @@ svtk visualize context study-domain
                                            [--sidecar-dir DIR] [--events PATH]
                                            [--bounds BOUNDS] [--no-basemap]
                                            [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:prepared_stations``
+     - Uses configured output table ``prepared_stations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:study_domain``
+     - Uses configured figure output ``study_domain`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+   * - Extra tables
+     - ``--events(events_df)=config:prepared_events``
+     - Uses configured table defaults for ``--events`` when a config is active; override with the same named flags.
 
 .. rubric:: Parameters
 
@@ -3906,6 +4174,22 @@ svtk visualize waveforms event-radial-trace-section
                                                            [--no-basemap]
                                                            [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:event_station_records``
+     - Uses configured output table ``event_station_records`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:event_radial_trace_section``
+     - Uses configured figure output ``event_radial_trace_section`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -4146,6 +4430,22 @@ svtk visualize waveforms observed-synthetic-record-section
        [--write-sidecar] [--sidecar-rows SIDECAR_ROWS] [--sidecar-dir DIR]
        [--bounds BOUNDS] [--no-basemap] [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:event_station_records``
+     - Uses configured output table ``event_station_records`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:observed_synthetic_record_section``
+     - Uses configured figure output ``observed_synthetic_record_section`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -4367,6 +4667,22 @@ svtk visualize waveforms record-section
                                                [--bounds BOUNDS]
                                                [--no-basemap]
                                                [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:event_station_records``
+     - Uses configured output table ``event_station_records`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:record_section``
+     - Uses configured figure output ``record_section`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 
@@ -4593,6 +4909,22 @@ svtk visualize waveforms station-event-waveform-map
                                                            [--no-basemap]
                                                            [--basemap-source BASEMAP_SOURCE]
 
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:event_station_records``
+     - Uses configured output table ``event_station_records`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:station_event_waveform_map``
+     - Uses configured figure output ``station_event_waveform_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+
 .. rubric:: Parameters
 
 .. list-table::
@@ -4817,6 +5149,22 @@ svtk visualize waveforms waveform-overlay-matrix
                                                         [--bounds BOUNDS]
                                                         [--no-basemap]
                                                         [--basemap-source BASEMAP_SOURCE]
+
+.. rubric:: Configured defaults
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 26 54
+
+   * - Role
+     - Source
+     - Meaning
+   * - Input table
+     - ``config:event_station_records``
+     - Uses configured output table ``event_station_records`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+   * - Output figure
+     - ``config:waveform_overlay_matrix``
+     - Uses configured figure output ``waveform_overlay_matrix`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
 
 .. rubric:: Parameters
 

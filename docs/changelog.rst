@@ -185,6 +185,10 @@ Changelog
   - Added ``--resolve-paths`` to plot, map, and visualization ``list``
     commands so config-backed input, output, and extra-table keys can be
     expanded to concrete configured paths before running a figure command.
+  - Added command-specific ``Configured defaults`` sections to generated plot,
+    map, and visualization CLI reference pages so each command shows its
+    config-backed input table, output figure key, and required-table roles
+    before the long argument list.
   - Added first-class ``svtk dashboard metrics`` runtime-limit flags for
     row-level loading, summary-table display, and CSV downloads.
 
