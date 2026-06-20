@@ -356,7 +356,8 @@ fallbacks, and bounded previews stay in package code.
      - ``spatial_vtk.qc.load_standard_qc_workflow_outputs``
      - The Step 2 QC output group and status frame without eager reads of the
        prepared station/event/event-station tables, plus compact QC summary
-       previews and figure rendering through ``write_figures()``.
+       previews, figure rendering through ``write_figures()``, and large-run
+       full-QC, overlap-sidecar, and summary runner methods.
    * - Step 3 metric calculation
      - ``spatial_vtk.metrics.load_standard_metric_workflow_outputs``
      - The Step 3 output group, preprocessed trace metadata dependency, status

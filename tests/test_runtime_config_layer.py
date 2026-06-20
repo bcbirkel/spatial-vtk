@@ -2482,6 +2482,106 @@ outputs:
     clear_active_config()
 
 
+def test_qc_workflow_output_result_owns_large_run_step02_runners(tmp_path, monkeypatch):
+    """Large-run Step 2 cells should delegate QC orchestration through the result object."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+
+    class Context:
+        config_path = tmp_path / "fallback.yaml"
+        run_scenario = "fallback"
+
+    run_calls: list[dict[str, object]] = []
+
+    def fake_run_notebook_step_if_needed(context, readiness, function, **kwargs):  # noqa: ANN001, ANN202
+        run_calls.append(
+            {
+                "context": context,
+                "readiness": readiness,
+                "function": function,
+                "kwargs": kwargs,
+            }
+        )
+        return {"readiness": readiness}
+
+    monkeypatch.setattr("spatial_vtk.config.run_notebook_step_if_needed", fake_run_notebook_step_if_needed)
+
+    readiness_calls: list[tuple[str, dict[str, object]]] = []
+
+    def readiness_factory(name):
+        def _inner(**kwargs):  # noqa: ANN202
+            readiness_calls.append((name, kwargs))
+            return f"{name}-readiness"
+
+        return _inner
+
+    import spatial_vtk.qc.build.workflow as qc_workflow
+
+    monkeypatch.setattr(qc_workflow, "qc_inventory_readiness_from_config", readiness_factory("inventory"))
+    monkeypatch.setattr(qc_workflow, "qc_overlap_readiness_from_config", readiness_factory("overlap"))
+    monkeypatch.setattr(qc_workflow, "qc_summary_readiness_from_config", readiness_factory("summary"))
+
+    def fake_function(**_kwargs):  # noqa: ANN202
+        return {"ok": True}
+
+    monkeypatch.setattr("spatial_vtk.qc.run_qc_inventory_from_config", fake_function)
+    monkeypatch.setattr(qc_workflow, "write_qc_inventory_overlap_from_config", fake_function)
+    monkeypatch.setattr(qc_workflow, "run_qc_summary_workflow_from_config", fake_function)
+
+    qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)
+    context = Context()
+    assert qc_outputs.run_inventory_step_if_needed(context, overwrite=True, run_local=False) == {
+        "readiness": "inventory-readiness"
+    }
+    assert qc_outputs.run_overlap_step_if_needed(
+        context,
+        overwrite=True,
+        write_overwrite=False,
+        chunksize=123,
+    ) == {"readiness": "overlap-readiness"}
+    assert qc_outputs.run_summary_step_if_needed(
+        context,
+        overwrite=True,
+        write_overwrite=False,
+        chunksize=456,
+    ) == {"readiness": "summary-readiness"}
+
+    assert [name for name, _ in readiness_calls] == ["inventory", "overlap", "summary"]
+    for _, kwargs in readiness_calls:
+        assert kwargs["config_path"] == cfg.config_path
+        assert kwargs["run_scenario"] == cfg.run_scenario
+        assert kwargs["overwrite"] is True
+    assert len(run_calls) == 3
+    assert [call["readiness"] for call in run_calls] == [
+        "inventory-readiness",
+        "overlap-readiness",
+        "summary-readiness",
+    ]
+    assert run_calls[0]["kwargs"]["script_name"] == "step02_build_qc_inventory.slurm"
+    assert run_calls[0]["kwargs"]["memory"] == "64G"
+    assert run_calls[0]["kwargs"]["run_local"] is False
+    assert run_calls[0]["kwargs"]["kwargs"]["verbose"] is True
+    assert run_calls[1]["kwargs"]["script_name"] == "step02_qc_overlap_sidecar.slurm"
+    assert run_calls[1]["kwargs"]["kwargs"]["chunksize"] == 123
+    assert run_calls[1]["kwargs"]["kwargs"]["overwrite"] is False
+    assert run_calls[2]["kwargs"]["script_name"] == "step02_qc_summary_tables.slurm"
+    assert run_calls[2]["kwargs"]["kwargs"]["chunksize"] == 456
+    assert run_calls[2]["kwargs"]["kwargs"]["overwrite"] is False
+    clear_active_config()
+
+
 def test_standard_spatial_workflow_output_loader_owns_step04_table_mapping(tmp_path, monkeypatch):
     """Standard Step 4 notebooks should not map spatial output tables by hand."""
 

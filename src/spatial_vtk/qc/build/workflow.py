@@ -317,6 +317,156 @@ class StandardQCWorkflowOutputResult:
             overwrite=overwrite,
         )
 
+    def run_inventory_step_if_needed(
+        self,
+        context: Any,
+        *,
+        overwrite: bool = False,
+        verbose: bool = True,
+        current_message: str | None = "Full QC outputs are current; skipping QC Slurm submission.",
+        script_name: str = "step02_build_qc_inventory.slurm",
+        job_name: str = "svtk-step02-qc",
+        walltime: str = "24:00:00",
+        memory: str = "64G",
+        cpus: int = 1,
+        run_local: bool | None = None,
+        section: str | None = "compute.slurm",
+        display_fn: Any | None = None,
+    ) -> object:
+        """Run or submit full Step 2 QC inventory building when outputs are stale."""
+
+        from spatial_vtk.config import run_notebook_step_if_needed
+        from spatial_vtk.qc import run_qc_inventory_from_config
+
+        config_path = _qc_result_config_path(self.cfg, context)
+        run_scenario = _qc_result_run_scenario(self.cfg, context)
+        readiness = qc_inventory_readiness_from_config(
+            config_path=config_path,
+            run_scenario=run_scenario,
+            overwrite=overwrite,
+            current_message=current_message,
+        )
+        return run_notebook_step_if_needed(
+            context,
+            readiness,
+            run_qc_inventory_from_config,
+            kwargs={
+                "config_path": str(config_path) if config_path is not None else None,
+                "run_scenario": run_scenario,
+                "verbose": verbose,
+            },
+            script_name=script_name,
+            job_name=job_name,
+            walltime=walltime,
+            memory=memory,
+            cpus=cpus,
+            run_local=run_local,
+            section=section,
+            display_fn=display_fn,
+        )
+
+    def run_overlap_step_if_needed(
+        self,
+        context: Any,
+        *,
+        overwrite: bool = False,
+        write_overwrite: bool = True,
+        chunksize: int = 1_000_000,
+        verbose: bool = True,
+        current_message: str | None = "Overlap QC sidecar is current; skipping.",
+        script_name: str = "step02_qc_overlap_sidecar.slurm",
+        job_name: str = "svtk-step02-overlap",
+        walltime: str = "12:00:00",
+        memory: str = "32G",
+        cpus: int = 1,
+        run_local: bool | None = None,
+        section: str | None = "compute.slurm",
+        display_fn: Any | None = None,
+    ) -> object:
+        """Run or submit observed/synthetic overlap QC sidecar writing when stale."""
+
+        from spatial_vtk.config import run_notebook_step_if_needed
+
+        config_path = _qc_result_config_path(self.cfg, context)
+        run_scenario = _qc_result_run_scenario(self.cfg, context)
+        readiness = qc_overlap_readiness_from_config(
+            config_path=config_path,
+            run_scenario=run_scenario,
+            overwrite=overwrite,
+            current_message=current_message,
+        )
+        return run_notebook_step_if_needed(
+            context,
+            readiness,
+            write_qc_inventory_overlap_from_config,
+            kwargs={
+                "config_path": str(config_path) if config_path is not None else None,
+                "run_scenario": run_scenario,
+                "chunksize": chunksize,
+                "overwrite": write_overwrite,
+                "verbose": verbose,
+            },
+            script_name=script_name,
+            job_name=job_name,
+            walltime=walltime,
+            memory=memory,
+            cpus=cpus,
+            run_local=run_local,
+            section=section,
+            display_fn=display_fn,
+        )
+
+    def run_summary_step_if_needed(
+        self,
+        context: Any,
+        *,
+        overwrite: bool = False,
+        write_overwrite: bool = True,
+        chunksize: int = 1_000_000,
+        verbose: bool = True,
+        current_message: str | None = "Compact QC summary tables are current; skipping.",
+        script_name: str = "step02_qc_summary_tables.slurm",
+        job_name: str = "svtk-step02-summaries",
+        walltime: str = "12:00:00",
+        memory: str = "32G",
+        cpus: int = 1,
+        run_local: bool | None = None,
+        section: str | None = "compute.slurm",
+        display_fn: Any | None = None,
+    ) -> object:
+        """Run or submit compact Step 2 QC summary table writing when stale."""
+
+        from spatial_vtk.config import run_notebook_step_if_needed
+
+        config_path = _qc_result_config_path(self.cfg, context)
+        run_scenario = _qc_result_run_scenario(self.cfg, context)
+        readiness = qc_summary_readiness_from_config(
+            config_path=config_path,
+            run_scenario=run_scenario,
+            overwrite=overwrite,
+            current_message=current_message,
+        )
+        return run_notebook_step_if_needed(
+            context,
+            readiness,
+            run_qc_summary_workflow_from_config,
+            kwargs={
+                "config_path": str(config_path) if config_path is not None else None,
+                "run_scenario": run_scenario,
+                "chunksize": chunksize,
+                "overwrite": write_overwrite,
+                "verbose": verbose,
+            },
+            script_name=script_name,
+            job_name=job_name,
+            walltime=walltime,
+            memory=memory,
+            cpus=cpus,
+            run_local=run_local,
+            section=section,
+            display_fn=display_fn,
+        )
+
 
 def load_standard_qc_workflow_outputs(
     *,
@@ -383,6 +533,20 @@ def load_standard_qc_inputs(
         outputs=qc_outputs,
         cfg=cfg,
     )
+
+
+def _qc_result_config_path(cfg: Any | None, context: Any | None) -> object | None:
+    """Return the config path carried by a QC result or notebook context."""
+
+    value = getattr(cfg, "config_path", None)
+    return value if value is not None else getattr(context, "config_path", None)
+
+
+def _qc_result_run_scenario(cfg: Any | None, context: Any | None) -> str | None:
+    """Return the active run scenario carried by a QC result or context."""
+
+    value = getattr(cfg, "run_scenario", None)
+    return value if value is not None else getattr(context, "run_scenario", None)
 
 
 def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None) -> SpatialVTKConfig:

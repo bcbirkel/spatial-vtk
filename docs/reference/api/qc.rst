@@ -75,9 +75,12 @@ Public helpers exposed by ``spatial_vtk.qc``:
    * - ``load_standard_qc_workflow_outputs``
      - Load the configured Step 2 QC output group and status frame without
        reading large Step 1 tables in large-run setup cells. The returned
-       result also provides bounded compact-summary previews and compact QC
-       figure rendering through ``write_figures()`` while leaving full
-       trace/QC inventory inspection to explicit streaming tools.
+       result also owns large-run full-QC, overlap-sidecar, and compact-summary
+       execution gates through ``run_inventory_step_if_needed()``,
+       ``run_overlap_step_if_needed()``, and ``run_summary_step_if_needed()``,
+       and provides bounded compact-summary previews and compact QC figure
+       rendering through ``write_figures()`` while leaving full trace/QC
+       inventory inspection to explicit streaming tools.
    * - ``build_metric_pair_retention_table_from_qc_inventory``
      - Stream the QC inventory into metric/passband/component retention counts.
    * - ``build_event_station_pair_retention_table_from_qc_inventory``

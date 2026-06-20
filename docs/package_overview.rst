@@ -99,8 +99,8 @@ Start with public helpers from ``spatial_vtk.qc``:
   output-group loading, named skipped-step results, bounded preview display,
   standard QC figure rendering, and bounded waveform comparison rendering
 - ``load_standard_qc_workflow_outputs`` for large-run Step 2 QC output status
-  without eager prepared-table reads, plus compact QC summary previews and
-  figure rendering
+  without eager prepared-table reads, full/overlap/summary QC step runners,
+  compact QC summary previews, and figure rendering
 - ``run_qc_inventory_from_config`` for full waveform and metric QC inventories
 - ``write_qc_inventory_overlap_from_config`` for comparison-ready overlap rows
 - ``run_qc_summary_workflow_from_config`` for compact retention, availability,

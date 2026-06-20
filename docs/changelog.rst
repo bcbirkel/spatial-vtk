@@ -29,6 +29,10 @@ Changelog
   - Added ``overwrite`` and readiness-message pass-throughs to Step 2 QC
     readiness helpers so notebooks keep rerun controls without local readiness
     contracts.
+  - Added large-run Step 2 QC output result methods for full-QC inventory
+    building, overlap-sidecar writing, and compact-summary table writing so
+    the large-run QC notebook no longer imports or passes the lower-level
+    configured QC writer/readiness functions directly.
 
 - **Step 3 workflow helpers** *(Added)*
 

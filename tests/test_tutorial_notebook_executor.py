@@ -769,7 +769,7 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "launch_qc_dashboard(" not in standard_text
     assert 'os.environ.get("SVTK_QC_DASHBOARD_PORT"' not in standard_text
     assert 'os.environ.get("SVTK_LAUNCH_QC_DASHBOARD"' not in standard_text
-    assert "run_notebook_step_if_needed(" in large_run_text
+    assert "run_notebook_step_if_needed(" not in large_run_text
     assert "from spatial_vtk.qc import (" in large_run_text
     assert "load_standard_qc_workflow_outputs," in large_run_text
     assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in large_run_text
@@ -777,9 +777,12 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "display(qc_outputs.status_frame())" in large_run_text
     assert 'from spatial_vtk.io import output_group' not in large_run_text
     assert 'step_outputs = output_group("step_02_qc")' not in large_run_text
-    assert "run_qc_inventory_from_config," in large_run_text
-    assert "write_qc_inventory_overlap_from_config," in large_run_text
-    assert "run_qc_summary_workflow_from_config," in large_run_text
+    assert "run_qc_inventory_from_config," not in large_run_text
+    assert "write_qc_inventory_overlap_from_config," not in large_run_text
+    assert "run_qc_summary_workflow_from_config," not in large_run_text
+    assert "qc_outputs.run_inventory_step_if_needed(" in large_run_text
+    assert "qc_outputs.run_overlap_step_if_needed(" in large_run_text
+    assert "qc_outputs.run_summary_step_if_needed(" in large_run_text
     assert "qc_outputs.write_figures(" in large_run_text
     assert "write_large_run_qc_figures_from_outputs(" not in large_run_text
     assert "qc_figure_result.status_frame()" in large_run_text
@@ -1862,7 +1865,10 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
         "large_run/step_01_large_run_ingest_and_prepare_data.ipynb": [
             "run_notebook_step_if_needed(",
         ],
-        "large_run/step_02_large_run_quality_control.ipynb": ["run_notebook_step_if_needed("],
+        "large_run/step_02_large_run_quality_control.ipynb": [
+            "qc_outputs.run_inventory_step_if_needed(",
+            "qc_outputs.run_overlap_step_if_needed(",
+        ],
         "large_run/step_03_large_run_calculate_metrics.ipynb": [
             "metric_outputs.run_inventory_step_if_needed(",
             "metric_outputs.run_slurm_step_if_needed(",
@@ -2105,7 +2111,7 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "run_notebook_step_if_needed(" in source
+    assert "run_notebook_step_if_needed(" not in source
     assert "run_or_submit_notebook_function(" not in source
     assert "from spatial_vtk.qc import (" in source
     assert "load_standard_qc_workflow_outputs," in source
@@ -2115,17 +2121,20 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     assert "qc_outputs.display_summary_previews(nrows=PREVIEW_ROWS)" in source
     assert 'from spatial_vtk.io import output_group' not in source
     assert 'step_outputs = output_group("step_02_qc")' not in source
-    assert "run_qc_inventory_from_config," in source
-    assert "write_qc_inventory_overlap_from_config," in source
-    assert "run_qc_summary_workflow_from_config," in source
-    assert "qc_inventory_readiness_from_config," in source
-    assert "qc_overlap_readiness_from_config," in source
-    assert "qc_summary_readiness_from_config," in source
+    assert "run_qc_inventory_from_config," not in source
+    assert "write_qc_inventory_overlap_from_config," not in source
+    assert "run_qc_summary_workflow_from_config," not in source
+    assert "qc_inventory_readiness_from_config," not in source
+    assert "qc_overlap_readiness_from_config," not in source
+    assert "qc_summary_readiness_from_config," not in source
+    assert "qc_outputs.run_inventory_step_if_needed(" in source
+    assert "qc_outputs.run_overlap_step_if_needed(" in source
+    assert "qc_outputs.run_summary_step_if_needed(" in source
     assert "qc_outputs.write_figures(" in source
     assert "write_large_run_qc_figures_from_outputs(" not in source
-    assert "qc_readiness = qc_inventory_readiness_from_config(" in source
-    assert "overlap_readiness = qc_overlap_readiness_from_config(" in source
-    assert "summary_readiness = qc_summary_readiness_from_config(" in source
+    assert "qc_readiness = qc_inventory_readiness_from_config(" not in source
+    assert "overlap_readiness = qc_overlap_readiness_from_config(" not in source
+    assert "summary_readiness = qc_summary_readiness_from_config(" not in source
     assert "step_outputs.readiness(" not in source
     assert "qc_figure_tables = step_outputs.load_tables(" not in source
     assert "step_outputs.qc_inventory_overlap_path.exists()" not in source
@@ -2178,10 +2187,13 @@ def test_large_run_step02_overlap_sidecar_has_separate_rebuild_gate() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "qc_readiness = qc_inventory_readiness_from_config(" in source
-    assert "config_path=config_path" in source
+    assert "qc_outputs.run_inventory_step_if_needed(" in source
+    assert "qc_outputs.run_overlap_step_if_needed(" in source
+    assert "qc_outputs.run_summary_step_if_needed(" in source
+    assert "qc_readiness = qc_inventory_readiness_from_config(" not in source
+    assert "config_path=config_path" not in source
     assert "overwrite=OVERWRITE" in source
-    assert "run_notebook_step_if_needed(" in source
+    assert "run_notebook_step_if_needed(" not in source
     assert "Full QC outputs are current; skipping QC Slurm submission." in source
     assert '"event_station_records": str(step_outputs.event_station_path)' not in source
     assert '"trace_qc_output": str(step_outputs.trace_qc_path)' not in source
@@ -2189,8 +2201,8 @@ def test_large_run_step02_overlap_sidecar_has_separate_rebuild_gate() -> None:
     assert '"qc_inventory_overlap_output": str(step_outputs.qc_inventory_overlap_path)' not in source
     assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, overwrite=OVERWRITE)" not in source
     assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, qc_inventory_overlap_path" not in source
-    assert "overlap_readiness = qc_overlap_readiness_from_config(" in source
-    assert "summary_readiness = qc_summary_readiness_from_config(" in source
+    assert "overlap_readiness = qc_overlap_readiness_from_config(" not in source
+    assert "summary_readiness = qc_summary_readiness_from_config(" not in source
     assert "step_outputs.readiness(" not in source
     assert "qc_readiness = output_readiness(" not in source
     assert "overlap_readiness = output_readiness(" not in source
