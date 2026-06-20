@@ -27,6 +27,7 @@ import warnings
 
 import pandas as pd
 
+from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.io.tables import read_table, write_table
 from spatial_vtk.io.waveforms import (
     WaveformPreprocessing,
@@ -167,7 +168,7 @@ def preprocessed_waveform_metadata_paths(
         ``outputs.preprocessed_waveforms`` is read from ``config`` or the
         active Spatial-VTK config, matching :func:`preprocess_waveform_files`.
     config
-        Optional Spatial-VTK config object.
+        Optional Spatial-VTK config object or config file path.
     event_station_name, manifest_name, trace_metadata_name
         Metadata filenames under ``output_root/metadata``.
     create_parent
@@ -258,7 +259,9 @@ def preprocess_waveform_files(
         Explicit preprocessing settings. When omitted, settings are read from
         ``config`` or from the active Spatial-VTK config.
     config
-        Optional Spatial-VTK config used only when ``preprocessing`` is omitted.
+        Optional Spatial-VTK config object or config file path used to resolve
+        preprocessing settings, configured waveform templates, and the output
+        root.
     event_id_col
         Column containing event IDs.
     overwrite
@@ -287,6 +290,7 @@ def preprocess_waveform_files(
         Updated table, manifest, trace metadata, and their written paths.
     """
 
+    config = _coerce_preprocessing_config(config)
     records = read_table(event_station_records) if not isinstance(event_station_records, pd.DataFrame) else event_station_records.copy()
     records = _ensure_event_id_column(records, event_id_col=event_id_col)
     if event_id_col not in records.columns:
@@ -698,14 +702,7 @@ def _resolve_output_root(output_root: str | Path | None, config: Any | None) -> 
 
     if output_root is not None:
         return Path(output_root).expanduser()
-    cfg = config
-    if cfg is None:
-        try:
-            from spatial_vtk.config import SpatialVTKConfig
-
-            cfg = SpatialVTKConfig.active()
-        except Exception:
-            cfg = None
+    cfg = _coerce_preprocessing_config(config)
     if cfg is not None:
         value = cfg.section("outputs.preprocessed_waveforms")
         if value:
@@ -714,6 +711,21 @@ def _resolve_output_root(output_root: str | Path | None, config: Any | None) -> 
         if root_value:
             return cfg.path_from_value(root_value) / "preprocessed_waveforms"
     return Path("outputs") / "preprocessed_waveforms"
+
+
+def _coerce_preprocessing_config(config: Any | None) -> Any | None:
+    """Return a config object for preprocessing helpers when one is available."""
+
+    if config is None:
+        try:
+            return SpatialVTKConfig.active()
+        except Exception:
+            return None
+    if isinstance(config, SpatialVTKConfig):
+        return config
+    if isinstance(config, (str, Path)):
+        return SpatialVTKConfig.from_file(config)
+    return config
 
 
 def _preprocess_one_file(

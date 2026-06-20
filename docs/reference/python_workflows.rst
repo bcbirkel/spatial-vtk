@@ -542,10 +542,13 @@ Use lower-level metric helpers such as
 from scripts or custom orchestration that needs direct control. Tutorial
 notebooks should prefer the standard metric result-object methods above. If a
 script calls the lower-level ``spatial_vtk.metrics.write_metric_outputs``
-writer directly, pass ``cfg=cfg`` when writing to registered output paths; this
-keeps the script independent of global active-config state. Passing an explicit
-``output_dir`` remains available for ad hoc exports outside the configured
-output registry.
+writer directly, pass ``cfg=cfg`` or ``cfg=config_path`` when writing to
+registered output paths; this keeps the script independent of global
+active-config state. The standard metric result object also accepts either
+form, so ``load_standard_metric_workflow_outputs(cfg=config_path)`` resolves
+the Step 3 tables and preprocessing trace metadata from the same config.
+Passing an explicit ``output_dir`` remains available for ad hoc exports outside
+the configured output registry.
 
 Spectral metrics are planned differently from passband metrics. ``PSA`` and
 ``FAS`` are broadband spectral calculations: the metric manifest should contain

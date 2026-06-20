@@ -115,7 +115,9 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
        focused station-map rendering through ``write_station_metric_map()``,
        large-run Step 3 execution gates through the
        ``run_*_step_if_needed()`` methods, and large-run metric figure-suite
-       rendering through ``write_large_run_figure_suite()``.
+       rendering through ``write_large_run_figure_suite()``. Pass ``cfg=`` as
+       either a config object or a config file path; the result resolves
+       Step 3 outputs and preprocessing trace metadata from the same config.
 
 ``PSA`` and ``FAS`` are broadband spectral metrics in the file-based workflow.
 Task planning separates them from passband-dependent metrics, writes blank

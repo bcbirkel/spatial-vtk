@@ -24,6 +24,7 @@ from spatial_vtk.io.workflows import (
     preprocess_waveforms_from_config,
 )
 from spatial_vtk.io.preprocessing import preprocessed_waveform_metadata_paths, preprocess_waveform_files
+from spatial_vtk.io.waveforms import waveform_preprocessing_from_config
 
 
 @pytest.fixture(autouse=True)
@@ -63,6 +64,37 @@ def test_preprocessed_waveform_metadata_paths_match_preprocessing_defaults(tmp_p
     assert paths.manifest_path == paths.metadata_dir / "waveform_preprocessing_manifest.csv"
     assert paths.trace_metadata_path == paths.metadata_dir / "trace_metadata_preprocessed.csv"
     assert paths.as_dict()["preprocessed_manifest_path"] == paths.manifest_path
+
+
+def test_preprocessed_waveform_helpers_accept_config_paths(tmp_path: Path) -> None:
+    """Config-path calls should resolve preprocessing outputs and settings."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  root_dir: .",
+                "outputs:",
+                "  preprocessed_waveforms: run_outputs/preprocessed",
+                "waveforms:",
+                "  preprocessing:",
+                "    lowpass_hz: 1.5",
+                "    resample_hz: 20",
+                "    filter_order: 6",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    paths = preprocessed_waveform_metadata_paths(config=config_path)
+    settings = waveform_preprocessing_from_config(config_path)
+
+    assert paths.root == tmp_path / "run_outputs" / "preprocessed"
+    assert paths.trace_metadata_path == paths.root / "metadata" / "trace_metadata_preprocessed.csv"
+    assert settings.lowpass_hz == 1.5
+    assert settings.resample_hz == 20.0
+    assert settings.filter_order == 6
 
 
 def test_preprocess_waveforms_from_config_uses_registered_event_station_table(tmp_path: Path, monkeypatch) -> None:

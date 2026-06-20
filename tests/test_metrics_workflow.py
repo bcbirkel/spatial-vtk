@@ -375,6 +375,23 @@ def test_standard_metric_workflow_output_result_owns_outputs_and_station_map(mon
             "dashboard_partitioned": False,
         }
     ]
+    output_calls.clear()
+
+    path_result = StandardMetricWorkflowOutputResult(outputs=Outputs(), cfg=Config.config_path)
+    assert path_result.write_configured_outputs(table_format="csv") == {"metrics_long": "metrics_long.parquet"}
+    assert output_calls == [
+        {
+            "config_path": Config.config_path,
+            "run_scenario": None,
+            "metric_rows": None,
+            "events": None,
+            "stations": None,
+            "residual_column": None,
+            "score_column": None,
+            "table_format": "csv",
+            "dashboard_partitioned": True,
+        }
+    ]
 
     settings = object()
     assert result.write_station_metric_map(
@@ -2610,6 +2627,11 @@ outputs:
     assert (tmp_path / "outputs" / "dashboards" / "dashboard_summaries" / "model_metric_band.parquet").exists()
     assert not (tmp_path / "outputs" / "tables" / "dashboard_metrics").exists()
     assert cfg.root_dir == tmp_path
+
+    clear_active_config()
+    written_from_path = write_metric_outputs(metric_rows, cfg=config_path)
+    assert written_from_path["metrics_long"] == tmp_path / "outputs" / "tables" / "metrics_long.parquet"
+    assert written_from_path["dashboard_metrics"] == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
 
 
 def test_write_metric_outputs_from_config_uses_registered_inputs_and_outputs(tmp_path) -> None:

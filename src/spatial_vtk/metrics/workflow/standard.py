@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 
@@ -117,9 +118,10 @@ class StandardMetricWorkflowOutputResult:
 
         from spatial_vtk.metrics.workflow.configured import write_metric_outputs_from_config
 
+        config_path = _metric_result_config_path(self.cfg, None)
         return write_metric_outputs_from_config(
-            config_path=getattr(self.cfg, "config_path", None),
-            run_scenario=getattr(self.cfg, "run_scenario", None),
+            config_path=config_path,
+            run_scenario=_metric_result_run_scenario(self.cfg, None),
             metric_rows=metric_rows,
             events=events,
             stations=stations,
@@ -445,8 +447,8 @@ def load_standard_metric_workflow_outputs(
     Parameters
     ----------
     cfg
-        Active Spatial-VTK config. When omitted, the active config is used by
-        the underlying output-group helpers.
+        Spatial-VTK config object or config file path. When omitted, the active
+        config is used by the underlying output-group helpers.
     output_group_name
         Configured output group that owns the standard Step 3 metric tables.
     load_task_estimate
@@ -480,6 +482,8 @@ def load_standard_metric_workflow_outputs(
 def _metric_result_config_path(cfg: Any | None, context: Any | None) -> object | None:
     """Return the config path carried by a metric result or notebook context."""
 
+    if isinstance(cfg, (str, Path)):
+        return cfg
     value = getattr(cfg, "config_path", None)
     return value if value is not None else getattr(context, "config_path", None)
 

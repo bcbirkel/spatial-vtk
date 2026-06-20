@@ -33,6 +33,9 @@ from spatial_vtk.visualize.dashboard import (
 )
 
 
+ConfigInput = SpatialVTKConfig | str | Path
+
+
 def prepare_metric_workflow_outputs(
     metric_rows: pd.DataFrame | str | Path,
     *,
@@ -106,7 +109,7 @@ def write_metric_outputs(
     metric_rows: pd.DataFrame | str | Path,
     output_dir: str | Path | None = None,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     events: pd.DataFrame | str | Path | None = None,
     stations: pd.DataFrame | str | Path | None = None,
     residual_column: str | None = None,
@@ -129,9 +132,10 @@ def write_metric_outputs(
         registered table and dashboard output paths from ``cfg`` or the active
         config are used.
     cfg
-        Optional config used to resolve registered outputs when ``output_dir``
-        is omitted. Passing this explicitly avoids relying on global active
-        config state in scripts and configured workflow wrappers.
+        Optional config object or config file path used to resolve registered
+        outputs when ``output_dir`` is omitted. Passing this explicitly avoids
+        relying on global active config state in scripts and configured
+        workflow wrappers.
     events, stations
         Optional metadata tables joined before output.
     residual_column
@@ -198,7 +202,7 @@ def write_metric_outputs(
     return written
 
 
-def _metric_output_paths(root: Path | None, *, suffix: str, cfg: SpatialVTKConfig | None = None) -> dict[str, Path]:
+def _metric_output_paths(root: Path | None, *, suffix: str, cfg: ConfigInput | None = None) -> dict[str, Path]:
     """Return metric downstream output paths for explicit or config-backed roots."""
 
     if root is not None:

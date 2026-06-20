@@ -368,8 +368,8 @@ def waveform_preprocessing_from_config(config: Any | None = None) -> WaveformPre
     Parameters
     ----------
     config
-        Optional ``SpatialVTKConfig``. When omitted, the active or discovered
-        config is used when available.
+        Optional ``SpatialVTKConfig`` object or config file path. When omitted,
+        the active or discovered config is used when available.
 
     Returns
     -------
@@ -377,14 +377,7 @@ def waveform_preprocessing_from_config(config: Any | None = None) -> WaveformPre
         Parsed lowpass cutoff and filter order.
     """
 
-    cfg = config
-    if cfg is None:
-        try:
-            from spatial_vtk.config import SpatialVTKConfig
-
-            cfg = SpatialVTKConfig.active()
-        except Exception:
-            cfg = None
+    cfg = _coerce_waveform_config(config)
     section = {}
     if cfg is not None:
         try:
@@ -412,6 +405,23 @@ def waveform_preprocessing_from_config(config: Any | None = None) -> WaveformPre
         resample_hz=resample_hz,
         filter_order=filter_order,
     )
+
+
+def _coerce_waveform_config(config: Any | None) -> Any | None:
+    """Return a config object for waveform helpers when one is available."""
+
+    if config is None:
+        try:
+            from spatial_vtk.config import SpatialVTKConfig
+
+            return SpatialVTKConfig.active()
+        except Exception:
+            return None
+    if isinstance(config, (str, Path)):
+        from spatial_vtk.config import SpatialVTKConfig
+
+        return SpatialVTKConfig.from_file(config)
+    return config
 
 
 def apply_waveform_preprocessing(
