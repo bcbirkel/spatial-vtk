@@ -546,6 +546,8 @@ Changelog
     and batch count before metric manifest planning.
   - Clarified large-run Step 4 spatial status tables and event-centered plot
     titles so users can tell when event means have been removed.
+  - Updated the configuration guide so notebook examples use standard workflow
+    output helpers instead of registered table-write calls.
 
 - **Notebook simplification** *(Rewired)*
 

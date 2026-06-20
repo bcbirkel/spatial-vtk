@@ -670,6 +670,8 @@ def test_public_docs_describe_committed_tutorial_waveforms() -> None:
     assert "ingest_outputs.metadata_summary_frame()" in configuration
     assert 'output_group("step_01_ingest").load_tables' not in configuration
     assert "load_output_table(" not in configuration
+    assert "write_output_table(" not in configuration
+    assert "write_output_tables(" not in configuration
     assert "resolve_output_path(" not in configuration
 
 

@@ -309,9 +309,10 @@ Keep your main config focused on folders:
 Spatial-VTK keeps default table and figure filenames in its package defaults,
 so notebooks do not need long filename lists. For example,
 ``plot_record_coverage(..., savefig=True)`` writes
-``outputs/figures/record_coverage.png`` when that key is not overridden.
-Likewise, ``write_output_table("prepared_stations", stations)`` writes
-``outputs/tables/prepared_stations.csv``.
+``outputs/figures/record_coverage.png`` when that key is not overridden. The
+standard workflow result helpers use the same registry when they write and
+preview tables, so notebooks can work with named workflow outputs instead of
+hard-coded filenames.
 
 Registered table outputs also carry their default file format in the filename.
 Small metadata and summary handoff tables default to CSV because they are easy
@@ -322,8 +323,8 @@ Parquet, including ``qc_inventory_overlap``, ``observed_metric_inventory``,
 ``event_centered_residuals``, ``station_bias``, ``clusters``,
 ``pca_station_scores``, ``block_holdout_predictions``, ``corridors``, and
 ``redcap_clusters``. Prefer these registered names in notebooks and package
-calls; ``load_output_table`` and ``write_output_table`` choose CSV or Parquet
-from the configured suffix.
+calls. Script-level registered table readers and writers choose CSV or Parquet
+from each configured suffix.
 
 You can inspect the registered output keys, descriptions, default suffixes, and
 resolved paths from Python:
@@ -334,21 +335,16 @@ resolved paths from Python:
 
    configured_output_registry_frame(kinds=("table",), include_paths=True)
 
-When a workflow step creates several standard tables, write them by output key.
-Later notebook steps should normally read those products through their standard
-input/output helpers rather than loading individual paths:
+When a workflow step creates several standard tables, keep later notebook steps
+on the standard input/output helpers rather than loading or writing individual
+paths:
 
 .. code-block:: python
 
-   from spatial_vtk.io import load_standard_ingest_workflow_outputs, write_output_tables
-
-   write_output_tables(
-       prepared_stations=stations,
-       prepared_events=events,
-       event_station_records=event_stations,
-   )
+   from spatial_vtk.io import load_standard_ingest_workflow_outputs
 
    ingest_outputs = load_standard_ingest_workflow_outputs()
+   ingest_outputs.status_frame()
    ingest_outputs.metadata_summary_frame()
 
 You can still override a single output directly:
