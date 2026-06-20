@@ -63,6 +63,8 @@ Changelog
     ``station_metadata_table`` inputs plus metric lists, so Step 4 notebooks can
     run through the standard result/status wrapper without passing ad hoc
     metric snapshot paths in notebook cells.
+  - Configuration examples now use the registered ``metrics_long`` output table
+    helper instead of the stale generic ``outputs.metrics`` path example.
   - QC dashboard startup now emits a single readiness warning that includes the
     specific trace-summary blocker, such as missing required columns, instead
     of showing a generic warning plus a second detailed warning.

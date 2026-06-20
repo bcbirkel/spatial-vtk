@@ -11,7 +11,7 @@ Usage examples
 --------------
 Load a user config and resolve a configured path:
   ``cfg = SpatialVTKConfig.from_file("spatial-vtk.yaml")``
-  ``metrics_dir = cfg.path("outputs.metrics", create_parent=True)``
+  ``metrics_path = resolve_output_path("metrics_long", kind="table", cfg=cfg)``
 """
 
 from __future__ import annotations
@@ -219,7 +219,7 @@ def get_dotted(mapping: Mapping[str, Any], dotted_key: str | None, default: Any 
     mapping
         Source mapping.
     dotted_key
-        Key such as ``"outputs.metrics"``.
+        Key such as ``"outputs.tables"`` or ``"paths.station_metadata"``.
     default
         Returned when any key part is missing.
 

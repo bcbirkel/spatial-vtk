@@ -2175,6 +2175,19 @@ def test_config_api_docs_cover_output_registry_preview_helpers():
     assert "Use the preview helper\n       in notebooks when only a bounded path listing is needed" in text
 
 
+def test_configuration_examples_use_registered_output_keys():
+    """Configuration examples should not teach stale generic output path keys."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    configuration = (root / "docs" / "configuration.rst").read_text(encoding="utf-8")
+    runtime_doc = (root / "src" / "spatial_vtk" / "config" / "runtime.py").read_text(encoding="utf-8")
+
+    combined = configuration + "\n" + runtime_doc
+    assert 'cfg.path("outputs.metrics")' not in combined
+    assert "outputs.metrics" not in combined
+    assert 'resolve_output_path("metrics_long", kind="table", cfg=cfg)' in combined
+
+
 def test_notebook_cli_compat_helper_is_not_top_level_config_api():
     """Notebook CLI wrappers should not be advertised as the standard config API."""
 

@@ -243,10 +243,10 @@ In a notebook or script, load the same file with Python:
 
 .. code-block:: python
 
-   from spatial_vtk.config import SpatialVTKConfig
+   from spatial_vtk.config import SpatialVTKConfig, resolve_output_path
 
    cfg = SpatialVTKConfig.from_file("spatial-vtk.yaml")
-   metrics_path = cfg.path("outputs.metrics")
+   metrics_path = resolve_output_path("metrics_long", kind="table", cfg=cfg)
 
 Use Configs In Python
 ---------------------
