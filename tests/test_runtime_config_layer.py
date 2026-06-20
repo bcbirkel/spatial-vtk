@@ -2077,11 +2077,17 @@ outputs:
     cfg = SpatialVTKConfig.from_file(config_path).activate()
     step_outputs = output_group("step_04_spatial", cfg=cfg)
     write_table(pd.DataFrame({"metric": ["PGA"], "value": [0.1]}), step_outputs.metric_field_path)
+    write_table(pd.DataFrame({"metric": ["PGA"], "moran_i": [0.2]}), step_outputs.morans_i_path)
+    write_table(pd.DataFrame({"metric": ["PGA"], "contrast_label": ["basin-crust"]}), step_outputs.geology_path)
     spatial_status = load_standard_spatial_workflow_output_status(cfg=cfg)
     displayed_spatial: list[pd.DataFrame] = []
     spatial_previews = spatial_status.display_table_previews(nrows=1, display_fn=displayed_spatial.append)
     assert spatial_previews["metric_field"].to_dict("records") == [{"metric": "PGA", "value": 0.1}]
-    assert displayed_spatial[0].to_dict("records") == [{"metric": "PGA", "value": 0.1}]
+    assert spatial_previews["morans_i"].to_dict("records") == [{"metric": "PGA", "moran_i": 0.2}]
+    assert spatial_previews["geology_contrasts"].to_dict("records") == [
+        {"metric": "PGA", "contrast_label": "basin-crust"}
+    ]
+    assert [frame.to_dict("records")[0]["metric"] for frame in displayed_spatial] == ["PGA", "PGA", "PGA"]
 
     spatial_figure_settings = types.SimpleNamespace(name="spatial")
     spatial_figure_calls: list[dict[str, object]] = []

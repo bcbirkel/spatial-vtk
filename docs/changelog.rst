@@ -47,6 +47,9 @@ Changelog
   - Shared dashboard empty-state messages now distinguish filter-empty tables
     from stale schema/value-table problems and point users to the Data Status
     tab before rebuilding summaries.
+  - Large-run Step 4 spatial preview helpers now use the full standard spatial
+    table contract, so notebook previews include Moran, distance-bin, cluster,
+    PCA, and geology summaries when those outputs exist.
   - QC dashboard startup now emits a single readiness warning that includes the
     specific trace-summary blocker, such as missing required columns, instead
     of showing a generic warning plus a second detailed warning.

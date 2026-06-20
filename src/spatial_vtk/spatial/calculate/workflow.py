@@ -609,14 +609,10 @@ class StandardSpatialWorkflowOutputStatusResult:
         nrows: int = 5,
         display_fn: Any | None = None,
     ) -> dict[str, object]:
-        """Display bounded previews of the core Step 4 spatial output tables."""
+        """Display bounded previews of standard Step 4 spatial output tables."""
 
         return self.outputs.display_table_previews(
-            {
-                "metric_field": "metric_field",
-                "event_centered_residuals": "event_centered_residuals",
-                "station_bias": "station_bias",
-            },
+            SPATIAL_WORKFLOW_TABLE_KEYS,
             cfg=cfg or self.cfg,
             nrows=nrows,
             display_fn=display_fn,
