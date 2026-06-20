@@ -1335,6 +1335,45 @@ def test_generated_cli_reference_names_io_inventory_defaults():
     assert "``--run-scenario``" in section
 
 
+def test_generated_cli_reference_names_io_prepare_aliases():
+    """Generated IO CLI docs should expose artifact-named metadata prep flags."""
+
+    root = Path(__file__).resolve().parents[1]
+    text = (root / "docs" / "reference" / "cli" / "io.rst").read_text(encoding="utf-8")
+    stations = text.split(".. _cli-svtk-io-prepare-stations:", maxsplit=1)[1]
+    stations = stations.split(".. _cli-svtk-io-preprocess-waveforms:", maxsplit=1)[0]
+    events = text.split(".. _cli-svtk-io-prepare-events:", maxsplit=1)[1].split(
+        ".. _cli-svtk-io-prepare-stations:", maxsplit=1
+    )[0]
+    event_stations = text.split(".. _cli-svtk-io-prepare-event-stations:", maxsplit=1)[1].split(
+        ".. _cli-svtk-io-prepare-events:", maxsplit=1
+    )[0]
+
+    assert "[--station-metadata-table PATH]" in stations
+    assert "[--prepared-stations-output PATH]" in stations
+    assert "``--station-metadata-table``, ``--input``" in stations
+    assert "``--prepared-stations-output``, ``--output``" in stations
+    assert "Prefer --station-metadata-table; --input is a legacy alias." in stations
+    assert "Prefer --prepared-stations-output; --output is a legacy alias." in stations
+
+    assert "[--event-metadata-table PATH]" in events
+    assert "[--prepared-events-output PATH]" in events
+    assert "``--event-metadata-table``, ``--input``" in events
+    assert "``--prepared-events-output``, ``--output``" in events
+    assert "Prefer --event-metadata-table; --input is a legacy alias." in events
+    assert "Prefer --prepared-events-output; --output is a legacy alias." in events
+
+    assert "[--event-station-table PATH]" in event_stations
+    assert "[--station-table PATH]" in event_stations
+    assert "[--event-table PATH]" in event_stations
+    assert "[--event-station-records-output PATH]" in event_stations
+    assert "``--event-station-table``, ``--input``" in event_stations
+    assert "``--station-table``, ``--stations``" in event_stations
+    assert "``--event-table``, ``--events``" in event_stations
+    assert "``--event-station-records-output``, ``--output``" in event_stations
+    assert "Prefer --event-station-records-output; --output is a legacy alias." in event_stations
+
+
 def test_config_find_help_uses_directory_metavar(capsys):
     """Config discovery help should label the start directory as a directory."""
 
@@ -2711,6 +2750,30 @@ def test_cli_prepare_station_metadata(tmp_path):
     prepared = pd.read_csv(out)
     assert set(["station", "lat", "lon"]) <= set(prepared.columns)
     assert prepared.loc[0, "station"] == "STA1"
+
+
+def test_cli_prepare_station_metadata_accepts_artifact_flags(tmp_path):
+    src = tmp_path / "stations.csv"
+    out = tmp_path / "prepared.csv"
+    pd.DataFrame({"stationcode": ["sta2"], "station_latitude": [35.0], "station_longitude": [-119.0]}).to_csv(src, index=False)
+
+    assert (
+        main(
+            [
+                "io",
+                "prepare-stations",
+                "--station-metadata-table",
+                str(src),
+                "--prepared-stations-output",
+                str(out),
+            ]
+        )
+        == 0
+    )
+
+    prepared = pd.read_csv(out)
+    assert set(["station", "lat", "lon"]) <= set(prepared.columns)
+    assert prepared.loc[0, "station"] == "STA2"
 
 
 def test_cli_prepare_metadata_uses_configured_defaults(tmp_path):

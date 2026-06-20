@@ -64,6 +64,10 @@ Changelog
   - ``svtk qc manual-queue`` now exposes ``--qc-trace-summary`` and
     ``--manual-review-queue-output`` as artifact-named flags while preserving
     ``--trace-summary`` and ``--output`` as legacy aliases.
+  - ``svtk io prepare-stations``, ``svtk io prepare-events``, and
+    ``svtk io prepare-event-stations`` now expose metadata/output artifact
+    flags while preserving the older ``--input``, ``--output``,
+    ``--stations``, and ``--events`` aliases.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

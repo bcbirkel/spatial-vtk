@@ -574,29 +574,105 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     io_sub = io.add_subparsers(dest="io_command", required=True)
 
     stations = io_sub.add_parser("prepare-stations", help="Normalize station metadata column names.")
-    stations.add_argument("--input", metavar="PATH", default=None, help="Station CSV/parquet path. Defaults to config paths.station_metadata.")
-    stations.add_argument("--output", metavar="PATH", default=None, help="Output CSV/parquet path. Defaults to configured output table 'prepared_stations'.")
+    stations.add_argument(
+        "--station-metadata-table",
+        "--input",
+        metavar="PATH",
+        dest="input",
+        default=None,
+        help=(
+            "Station metadata CSV/parquet table. Defaults to config paths.station_metadata. "
+            "Prefer --station-metadata-table; --input is a legacy alias."
+        ),
+    )
+    stations.add_argument(
+        "--prepared-stations-output",
+        "--output",
+        metavar="PATH",
+        dest="output",
+        default=None,
+        help=(
+            "Prepared station metadata output CSV/parquet table. Defaults to configured output table "
+            "'prepared_stations'. Prefer --prepared-stations-output; --output is a legacy alias."
+        ),
+    )
     stations.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
     stations.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     stations.set_defaults(handler=_cmd_io_prepare_stations)
 
     events = io_sub.add_parser("prepare-events", help="Normalize event metadata column names.")
-    events.add_argument("--input", metavar="PATH", default=None, help="Event CSV/parquet path. Defaults to config paths.event_metadata.")
-    events.add_argument("--output", metavar="PATH", default=None, help="Output CSV/parquet path. Defaults to configured output table 'prepared_events'.")
+    events.add_argument(
+        "--event-metadata-table",
+        "--input",
+        metavar="PATH",
+        dest="input",
+        default=None,
+        help=(
+            "Event metadata CSV/parquet table. Defaults to config paths.event_metadata. "
+            "Prefer --event-metadata-table; --input is a legacy alias."
+        ),
+    )
+    events.add_argument(
+        "--prepared-events-output",
+        "--output",
+        metavar="PATH",
+        dest="output",
+        default=None,
+        help=(
+            "Prepared event metadata output CSV/parquet table. Defaults to configured output table "
+            "'prepared_events'. Prefer --prepared-events-output; --output is a legacy alias."
+        ),
+    )
     events.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
     events.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     events.set_defaults(handler=_cmd_io_prepare_events)
 
     event_stations = io_sub.add_parser("prepare-event-stations", help="Normalize or build event-station records.")
     event_stations.add_argument(
+        "--event-station-table",
         "--input",
         metavar="PATH",
+        dest="input",
         default=None,
-        help="Event-station CSV/parquet path. Defaults to config paths.event_station_table when that file exists; otherwise all station/event pairs are built.",
+        help=(
+            "Event-station CSV/parquet table. Defaults to config paths.event_station_table when that file "
+            "exists; otherwise all station/event pairs are built. Prefer --event-station-table; "
+            "--input is a legacy alias."
+        ),
     )
-    event_stations.add_argument("--stations", metavar="PATH", default=None, help="Station metadata table. Defaults to prepared_stations, then config paths.station_metadata.")
-    event_stations.add_argument("--events", metavar="PATH", default=None, help="Event metadata table. Defaults to prepared_events, then config paths.event_metadata.")
-    event_stations.add_argument("--output", metavar="PATH", default=None, help="Output CSV/parquet path. Defaults to configured output table 'event_station_records'.")
+    event_stations.add_argument(
+        "--station-table",
+        "--stations",
+        metavar="PATH",
+        dest="stations",
+        default=None,
+        help=(
+            "Station metadata table. Defaults to prepared_stations, then config paths.station_metadata. "
+            "Prefer --station-table; --stations is a legacy alias."
+        ),
+    )
+    event_stations.add_argument(
+        "--event-table",
+        "--events",
+        metavar="PATH",
+        dest="events",
+        default=None,
+        help=(
+            "Event metadata table. Defaults to prepared_events, then config paths.event_metadata. "
+            "Prefer --event-table; --events is a legacy alias."
+        ),
+    )
+    event_stations.add_argument(
+        "--event-station-records-output",
+        "--output",
+        metavar="PATH",
+        dest="output",
+        default=None,
+        help=(
+            "Event-station records output CSV/parquet table. Defaults to configured output table "
+            "'event_station_records'. Prefer --event-station-records-output; --output is a legacy alias."
+        ),
+    )
     event_stations.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
     event_stations.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     event_stations.set_defaults(handler=_cmd_io_prepare_event_stations)

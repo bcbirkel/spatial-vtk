@@ -179,8 +179,10 @@ svtk io prepare-event-stations
 
 .. code-block:: bash
 
-   svtk io prepare-event-stations [-h] [--input PATH] [--stations PATH]
-                                      [--events PATH] [--output PATH]
+   svtk io prepare-event-stations [-h] [--event-station-table PATH]
+                                      [--station-table PATH]
+                                      [--event-table PATH]
+                                      [--event-station-records-output PATH]
                                       [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
 
@@ -198,22 +200,22 @@ svtk io prepare-event-stations
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--event-station-table``, ``--input``
      - No
      -
-     - Filesystem path. Event-station CSV/parquet path. Defaults to config paths.event_station_table when that file exists; otherwise all station/event pairs are built.
-   * - ``--stations``
+     - Filesystem path. Event-station CSV/parquet table. Defaults to config paths.event_station_table when that file exists; otherwise all station/event pairs are built. Prefer --event-station-table; --input is a legacy alias.
+   * - ``--station-table``, ``--stations``
      - No
      -
-     - Filesystem path. Station metadata table. Defaults to prepared_stations, then config paths.station_metadata.
-   * - ``--events``
+     - Filesystem path. Station metadata table. Defaults to prepared_stations, then config paths.station_metadata. Prefer --station-table; --stations is a legacy alias.
+   * - ``--event-table``, ``--events``
      - No
      -
-     - Filesystem path. Event metadata table. Defaults to prepared_events, then config paths.event_metadata.
-   * - ``--output``
+     - Filesystem path. Event metadata table. Defaults to prepared_events, then config paths.event_metadata. Prefer --event-table; --events is a legacy alias.
+   * - ``--event-station-records-output``, ``--output``
      - No
      -
-     - Filesystem path. Output CSV/parquet path. Defaults to configured output table 'event_station_records'.
+     - Filesystem path. Event-station records output CSV/parquet table. Defaults to configured output table 'event_station_records'. Prefer --event-station-records-output; --output is a legacy alias.
    * - ``--config``
      - No
      -
@@ -232,8 +234,9 @@ svtk io prepare-events
 
 .. code-block:: bash
 
-   svtk io prepare-events [-h] [--input PATH] [--output PATH]
-                              [--config PATH] [--run-scenario RUN_SCENARIO]
+   svtk io prepare-events [-h] [--event-metadata-table PATH]
+                              [--prepared-events-output PATH] [--config PATH]
+                              [--run-scenario RUN_SCENARIO]
 
 .. rubric:: Parameters
 
@@ -249,14 +252,14 @@ svtk io prepare-events
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--event-metadata-table``, ``--input``
      - No
      -
-     - Filesystem path. Event CSV/parquet path. Defaults to config paths.event_metadata.
-   * - ``--output``
+     - Filesystem path. Event metadata CSV/parquet table. Defaults to config paths.event_metadata. Prefer --event-metadata-table; --input is a legacy alias.
+   * - ``--prepared-events-output``, ``--output``
      - No
      -
-     - Filesystem path. Output CSV/parquet path. Defaults to configured output table 'prepared_events'.
+     - Filesystem path. Prepared event metadata output CSV/parquet table. Defaults to configured output table 'prepared_events'. Prefer --prepared-events-output; --output is a legacy alias.
    * - ``--config``
      - No
      -
@@ -275,7 +278,8 @@ svtk io prepare-stations
 
 .. code-block:: bash
 
-   svtk io prepare-stations [-h] [--input PATH] [--output PATH]
+   svtk io prepare-stations [-h] [--station-metadata-table PATH]
+                                [--prepared-stations-output PATH]
                                 [--config PATH] [--run-scenario RUN_SCENARIO]
 
 .. rubric:: Parameters
@@ -292,14 +296,14 @@ svtk io prepare-stations
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--station-metadata-table``, ``--input``
      - No
      -
-     - Filesystem path. Station CSV/parquet path. Defaults to config paths.station_metadata.
-   * - ``--output``
+     - Filesystem path. Station metadata CSV/parquet table. Defaults to config paths.station_metadata. Prefer --station-metadata-table; --input is a legacy alias.
+   * - ``--prepared-stations-output``, ``--output``
      - No
      -
-     - Filesystem path. Output CSV/parquet path. Defaults to configured output table 'prepared_stations'.
+     - Filesystem path. Prepared station metadata output CSV/parquet table. Defaults to configured output table 'prepared_stations'. Prefer --prepared-stations-output; --output is a legacy alias.
    * - ``--config``
      - No
      -
