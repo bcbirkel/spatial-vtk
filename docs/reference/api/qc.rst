@@ -51,7 +51,10 @@ Public helpers exposed by ``spatial_vtk.qc``:
        configured outputs are already current, and provide bounded
        compact-summary previews plus compact QC figure rendering through
        ``write_figures()`` while leaving full trace/QC inventory inspection to
-       explicit streaming tools.
+       explicit streaming tools. Display
+       ``StandardQCWorkflowOutputResult.status_frame()`` in notebooks for the
+       compact configured-output readiness table instead of resolving QC paths
+       in cells.
    * - ``load_standard_qc_inputs``
      - Load standard Step 2 prepared metadata tables and the configured QC
        output group without notebook-local Step 1 output-group table mapping.
@@ -60,7 +63,10 @@ Public helpers exposed by ``spatial_vtk.qc``:
        ``qc_summary_step_result()``, plus compact output summaries, bounded QC
        inventory/summary previews, standard QC figure rendering through
        ``write_figures()``, and bounded post-QC waveform comparison rendering
-       through ``write_waveform_comparison()``.
+       through ``write_waveform_comparison()``. Display
+       ``StandardQCInputResult.status_frame()`` before running QC cells to
+       confirm input row counts and configured output paths without loading
+       full inventories.
    * - ``run_qc_inventory_from_config``
      - Build or resume the configured waveform and metric QC inventory with
        checkpointed outputs for large datasets. Routine notebooks should

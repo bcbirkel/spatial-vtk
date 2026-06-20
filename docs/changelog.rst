@@ -92,6 +92,10 @@ Changelog
     QC, waveform comparison, dashboard preparation/launch, GeoJSON, and
     additional plotting helpers so public API docs show the same package-owned
     display methods used by the stabilized notebooks.
+  - Documented workflow result display contracts for QC, metric, and spatial
+    output helpers so notebook examples can point users to package-owned
+    ``status_frame()``, ``summary_frame()``, and bounded-preview methods
+    instead of repeating config path variables.
   - Extended ``display_notebook_step_result(...)`` to handle workflow results
     with ``summary_frame()`` and updated standard Steps 1-3 so metadata,
     preprocessing, QC, waveform, metric-task, and metric-output results render

@@ -86,6 +86,10 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
        rendering through ``write_large_run_figure_suite()``. Pass ``cfg=`` as
        either a config object or a config file path; the result resolves
        Step 3 outputs and preprocessing trace metadata from the same config.
+       Display ``StandardMetricWorkflowOutputResult.status_frame()`` for
+       configured output readiness and use its preview/figure methods instead
+       of repeating manifest, metric-row, or output-table path variables in
+       notebook cells.
    * - ``build_metric_waveform_inventories_from_config``
      - Build observed and synthetic metric-ready waveform inventories from the
        active config and preprocessed waveform metadata.

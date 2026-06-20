@@ -967,6 +967,8 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert ".. autofunction:: spatial_vtk.metrics.workflow.load_standard_metric_workflow_outputs" not in text
     assert "bounded preview helpers such as" in text
     assert "metrics_long`` display helper" in text
+    assert "``StandardMetricWorkflowOutputResult.status_frame()``" in text
+    assert "instead of repeating manifest, metric-row, or output-table path variables" in text
     assert "New\nnotebooks should call ``write_large_run_metric_figure_suite_from_notebook_settings``" in text
     forbidden_modules = (
         "spatial_vtk.metrics.calculate.amplitudes",
@@ -1398,6 +1400,10 @@ def test_qc_api_docs_use_public_package_entry_point():
         assert helper in text
     assert "bounded compact-summary previews" in text
     assert "full trace/QC inventory inspection" in text
+    assert "``StandardQCWorkflowOutputResult.status_frame()``" in text
+    assert "configured-output readiness table instead of resolving QC paths" in text
+    assert "``StandardQCInputResult.status_frame()``" in text
+    assert "confirm input row counts and configured output paths" in text
     forbidden_modules = (
         "spatial_vtk.qc.build.filtering",
         "spatial_vtk.qc.build.inventory",
@@ -1488,6 +1494,10 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert text.index("load_standard_spatial_workflow_output_status") < text.index("run_spatial_statistics_workflow_from_config")
     assert "Display the run/skip/submission payload" in text
     assert "``spatial_vtk.config.display_notebook_step_result``" in text
+    assert "``StandardSpatialWorkflowOutputStatusResult.status_frame()``" in text
+    assert "``StandardSpatialWorkflowOutputStatusResult.display_table_previews(...)``" in text
+    assert "``StandardSpatialWorkflowOutputResult`` is the standard Step 4 output bundle" in text
+    assert "``status_frame()`` and\n``summary_frame()`` methods" in text
     assert "run_spatial_statistics_workflow_from_config" in text
     assert "run_geojson_region_summary_workflow_from_config" in text
     assert "run_boundary_corridor_workflow_from_config" in text

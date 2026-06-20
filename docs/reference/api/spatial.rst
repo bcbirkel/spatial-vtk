@@ -163,7 +163,17 @@ without repeating readiness checks, Slurm submission plumbing, ``cfg``, or
 direct writer imports in each cell. Display the run/skip/submission payload
 from the ``run_*_step_if_needed(...)`` methods with
 ``spatial_vtk.config.display_notebook_step_result`` rather than printing the
-raw result object.
+raw result object. Display
+``StandardSpatialWorkflowOutputStatusResult.status_frame()`` for the compact
+configured-output readiness table and
+``StandardSpatialWorkflowOutputStatusResult.display_table_previews(...)`` for
+bounded summaries of existing spatial outputs.
+
+``StandardSpatialWorkflowOutputResult`` is the standard Step 4 output bundle
+for already-loaded notebook workflows. Use its ``status_frame()`` and
+``summary_frame()`` methods for configured output status and product row-count
+summaries, and use its figure-writing helpers instead of repeating output-path
+variables or figure-function imports in notebook cells.
 
 .. autofunction:: spatial_vtk.spatial.load_standard_spatial_workflow_output_status
 
