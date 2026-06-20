@@ -1,4 +1,11 @@
-"""Input/output helpers for manifests and waveform format handling."""
+"""Stable input/output helpers for configured Spatial-VTK workflows.
+
+``spatial_vtk.io`` is the public import surface for metadata preparation,
+waveform preprocessing, output groups, registered table I/O, readiness checks,
+and bounded table previews. Routine notebooks should start here instead of
+reaching into lower-level metadata, preprocessing, table, output-path, or
+manifest modules for path plumbing.
+"""
 
 from __future__ import annotations
 

@@ -1445,6 +1445,28 @@ def test_spatial_package_docstring_describes_namespace_boundary():
     assert "spatial_vtk.spatial.map" in source
 
 
+def test_core_package_docstrings_describe_public_entry_points():
+    """Top-level package docs should steer notebooks to stable import surfaces."""
+
+    root = pathlib.Path(__file__).resolve().parents[1] / "src" / "spatial_vtk"
+    io_source = (root / "io" / "__init__.py").read_text(encoding="utf-8")
+    config_source = (root / "config" / "__init__.py").read_text(encoding="utf-8")
+    visualize_source = (root / "visualize" / "__init__.py").read_text(encoding="utf-8")
+
+    assert "``spatial_vtk.io`` is the public import surface" in io_source
+    assert "Routine notebooks should start here" in io_source
+    assert "lower-level metadata, preprocessing, table, output-path, or\nmanifest modules" in io_source
+
+    assert "``spatial_vtk.config`` is the public import surface" in config_source
+    assert "notebook run contexts" in config_source
+    assert "rather than reaching into runtime, output, or notebook\nimplementation modules directly" in config_source
+
+    assert "``spatial_vtk.visualize`` is the public import surface" in visualize_source
+    assert "``spatial_vtk.visualize.context``" in visualize_source
+    assert "lower-level utility modules" in visualize_source
+    assert "package remains lazy" in visualize_source
+
+
 def test_visualize_api_docs_use_public_entry_points():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "visualize.rst"
     text = docs.read_text(encoding="utf-8")

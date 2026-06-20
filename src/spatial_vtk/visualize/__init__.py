@@ -1,7 +1,13 @@
-"""Visualization and dashboard preparation modules.
+"""Stable visualization and dashboard helpers.
 
-The public visualization package is lazy so dashboard/config helpers can be
-imported without importing Matplotlib-backed plotting modules.
+``spatial_vtk.visualize`` is the public import surface for context figures, QC
+figures, waveform comparisons, dashboard preparation, dashboard launch helpers,
+and figure sidecars. Routine notebooks should use this package or the stable
+``spatial_vtk.visualize.context``, ``spatial_vtk.visualize.qc``,
+``spatial_vtk.visualize.waveforms``, and ``spatial_vtk.visualize.dashboard``
+families rather than lower-level utility modules. The package remains lazy so
+dashboard/config helpers can be imported without importing Matplotlib-backed
+plotting modules.
 """
 
 from __future__ import annotations

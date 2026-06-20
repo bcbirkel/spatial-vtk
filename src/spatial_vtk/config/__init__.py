@@ -1,4 +1,11 @@
-"""Configuration helpers for paths, bounds, and public runtime defaults."""
+"""Stable configuration helpers for Spatial-VTK notebooks and scripts.
+
+``spatial_vtk.config`` is the public import surface for runtime config
+objects, notebook run contexts, output-registry previews, Slurm settings,
+metric settings, labels, and figure controls. Routine notebooks should import
+from this package rather than reaching into runtime, output, or notebook
+implementation modules directly.
+"""
 
 from __future__ import annotations
 
