@@ -602,6 +602,9 @@ Changelog
   - Clarified that large-run notebooks may import stable public plotting and
     dashboard packages, while deeper implementation submodule imports remain
     blocked by preflight.
+  - Clarified the large-run dashboard notebook review step so blank or sparse
+    dashboard tabs point readers to package-owned readiness/Data Status
+    messages and dashboard table contracts instead of manual path inspection.
 
 2026-06-18
 ----------

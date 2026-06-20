@@ -1838,6 +1838,8 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "prepare_configured_dashboard_datasets_from_notebook_settings," in source
     assert "display_notebook_step_result," in source
     assert "display_dashboard_preparation_result," in source
+    assert "readiness/Data Status messages to diagnose blank or sparse tabs" in source
+    assert "dashboard table contracts" in source
     assert "dashboard_preparation = prepare_configured_dashboard_datasets_from_notebook_settings(" in source
     assert "prepare_locally=False" in source
     assert "display_dashboard_preparation_result(dashboard_preparation, display=display)" in source
