@@ -44,7 +44,7 @@ Command Details
    * - ``function``
      - Yes
      -
-     - Import path, for example spatial_vtk.config.labels.metric_display_name.
+     - Import path, for example spatial_vtk.config.metric_display_name.
    * - ``--args``
      - No
      - Nargs: ``*``

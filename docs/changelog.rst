@@ -360,6 +360,8 @@ Changelog
   - Added a no-write ``tools/generate_cli_reference.py --check`` mode and
     rewired CI/release validation to use it for generated CLI-reference
     freshness checks.
+  - Updated ``svtk call`` help and generated CLI docs to use a stable public
+    import-path example instead of a lower-level implementation module.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 

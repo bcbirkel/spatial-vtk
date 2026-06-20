@@ -1604,6 +1604,8 @@ def test_cli_reference_frames_svtk_call_as_advanced_escape_hatch():
     assert "Advanced escape hatch" in index_text
     assert "Advanced Escape Hatch" in call_text
     assert "Prefer the named ``config``, ``io``, ``qc``, ``metrics``" in index_text
+    assert "spatial_vtk.config.metric_display_name" in call_text
+    assert "spatial_vtk.config.labels.metric_display_name" not in call_text
     assert "Call any importable Spatial-VTK Python function." not in index_text
     assert "Call any importable Spatial-VTK Python function." not in call_text
 
@@ -3946,7 +3948,7 @@ outputs:
 
 
 def test_cli_call_importable_function(capsys):
-    assert main(["call", "spatial_vtk.config.labels.metric_display_name", "--args", "C5"]) == 0
+    assert main(["call", "spatial_vtk.config.metric_display_name", "--args", "C5"]) == 0
     captured = capsys.readouterr()
     assert "Peak acceleration" in captured.out
 

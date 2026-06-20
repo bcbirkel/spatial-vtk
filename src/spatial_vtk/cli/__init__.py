@@ -16,7 +16,7 @@ Prepare downstream metric outputs from configured workflow paths:
   ``svtk metrics outputs --config spatial-vtk.yaml``
 
 Run an advanced public-function call with JSON/YAML arguments:
-  ``svtk call spatial_vtk.config.labels.metric_display_name --args C5``
+  ``svtk call spatial_vtk.config.metric_display_name --args C5``
 """
 
 from __future__ import annotations
@@ -1567,7 +1567,7 @@ def _add_call_command(subparsers: argparse._SubParsersAction[argparse.ArgumentPa
             "that do not yet have curated workflow commands."
         ),
     )
-    call.add_argument("function", help="Import path, for example spatial_vtk.config.labels.metric_display_name.")
+    call.add_argument("function", help="Import path, for example spatial_vtk.config.metric_display_name.")
     call.add_argument("--args", nargs="*", default=(), help="Positional arguments parsed as YAML scalars/sequences.")
     call.add_argument("--args-json", default=None, help="JSON/YAML list of positional arguments.")
     call.add_argument("--kwargs", nargs="*", default=(), help="Keyword arguments as key=value, parsed as YAML values.")

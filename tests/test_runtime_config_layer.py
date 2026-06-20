@@ -1257,8 +1257,8 @@ compute:
     clear_active_config()
 
 
-def test_notebook_function_helper_accepts_top_level_callables(tmp_path, monkeypatch, capsys):
-    """Notebook helpers should prefer package callables while retaining Slurm importability."""
+def test_notebook_function_helper_accepts_public_reexport_callables(tmp_path, monkeypatch, capsys):
+    """Callable targets should run locally and keep worker imports executable."""
 
     monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
     monkeypatch.setenv(SVTK_CLI_CONFIG_ENV, str(tmp_path / "cli-config.json"))
@@ -1306,6 +1306,8 @@ compute:
     text = script.read_text(encoding="utf-8")
     printed = capsys.readouterr().out
     assert submission is None
+    # Function objects keep their implementation module; string targets can use
+    # the public ``spatial_vtk.config.metric_display_name`` import path.
     assert "spatial_vtk.config.labels.metric_display_name" in printed
     assert "spatial_vtk.config.labels.metric_display_name" in text
     assert "_run_notebook_function_worker" in text
