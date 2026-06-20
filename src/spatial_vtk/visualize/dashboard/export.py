@@ -184,6 +184,7 @@ def write_dashboard_metric_dataset(
     tables: pd.DataFrame | str | Path | Sequence[pd.DataFrame | str | Path],
     output_root: str | Path | None = None,
     *,
+    cfg: SpatialVTKConfig | str | Path | None = None,
     residual_mode: str = "logratio",
     partitioned: bool = False,
     replace_existing: bool = True,
@@ -198,7 +199,11 @@ def write_dashboard_metric_dataset(
     output_root
         Output directory for ``metrics_long.parquet`` or partitioned files.
         When omitted, the standard ``metrics_dashboard`` path is resolved from
-        the active config.
+        ``cfg`` or the active config.
+    cfg
+        Optional Spatial-VTK config or config file path used to resolve the
+        registered ``metrics_dashboard`` output when ``output_root`` is
+        omitted. Explicit ``output_root`` values take precedence.
     residual_mode
         Residual mode used when converting wide tables.
     partitioned
@@ -221,7 +226,12 @@ def write_dashboard_metric_dataset(
     items = _as_sequence(tables)
     if not items:
         raise ValueError("At least one metric table is required.")
-    root = Path(output_root).expanduser() if output_root is not None else resolve_output_path("metrics_dashboard", kind="dashboard", create_parent=True)
+    config = _coerce_dashboard_config(cfg)
+    root = (
+        Path(output_root).expanduser()
+        if output_root is not None
+        else resolve_output_path("metrics_dashboard", kind="dashboard", cfg=config, create_parent=True)
+    )
     root.mkdir(parents=True, exist_ok=True)
     if replace_existing:
         _clear_dashboard_metric_dataset(root)
@@ -919,6 +929,7 @@ def write_dashboard_summary_dataset(
     input_root: str | Path | None = None,
     output_root: str | Path | None = None,
     *,
+    cfg: SpatialVTKConfig | str | Path | None = None,
     hex_dist: float = 10.0,
     hex_az: float = 10.0,
     format: str = "parquet",
@@ -930,10 +941,16 @@ def write_dashboard_summary_dataset(
     ----------
     input_root
         Dashboard metric dataset root. When omitted, the standard
-        ``metrics_dashboard`` path is resolved from the active config.
+        ``metrics_dashboard`` path is resolved from ``cfg`` or the active
+        config.
     output_root
         Output directory for summary tables. When omitted, the standard
-        ``dashboard_summaries`` path is resolved from the active config.
+        ``dashboard_summaries`` path is resolved from ``cfg`` or the active
+        config.
+    cfg
+        Optional Spatial-VTK config or config file path used to resolve
+        registered dashboard outputs when ``input_root`` or ``output_root`` is
+        omitted. Explicit path arguments take precedence.
     hex_dist
         Distance-bin size in kilometers.
     hex_az
@@ -951,8 +968,14 @@ def write_dashboard_summary_dataset(
         Written summary paths by table name.
     """
 
-    resolved_input_root = input_root or resolve_output_path("metrics_dashboard", kind="dashboard")
-    resolved_output_root = output_root or resolve_output_path("dashboard_summaries", kind="dashboard", create_parent=True)
+    config = _coerce_dashboard_config(cfg)
+    resolved_input_root = input_root or resolve_output_path("metrics_dashboard", kind="dashboard", cfg=config)
+    resolved_output_root = output_root or resolve_output_path(
+        "dashboard_summaries",
+        kind="dashboard",
+        cfg=config,
+        create_parent=True,
+    )
     summaries = build_dashboard_summaries_from_metric_dataset(
         resolved_input_root,
         hex_dist=hex_dist,

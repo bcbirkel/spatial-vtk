@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 
 from spatial_vtk.config import SpatialVTKConfig
+from spatial_vtk.config.runtime import clear_active_config
 from spatial_vtk.visualize.dashboard import (
     build_dashboard_summaries,
     build_dashboard_summaries_from_metric_dataset,
@@ -287,6 +288,54 @@ outputs:
 
     assert written["metrics_dashboard_root"] == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
     assert written["dashboard_summary_model_metric_band"].exists()
+
+
+def test_dashboard_writers_accept_explicit_unactivated_config(tmp_path) -> None:
+    """Direct dashboard writers should not require global active-config state."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    rows = pd.DataFrame(
+        {
+            "model": ["m1", "m1"],
+            "metric": ["PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "component": ["Z", "R"],
+            "station": ["STA1", "STA2"],
+            "event_id": ["ev1", "ev1"],
+            "sta_lat": [34.1, 34.2],
+            "sta_lon": [-118.1, -118.2],
+            "event_lat": [34.0, 34.0],
+            "event_lon": [-118.0, -118.0],
+            "distance_km": [10.0, 20.0],
+            "azimuth_deg": [45.0, 90.0],
+            "log2_residual": [0.25, -0.5],
+        }
+    )
+
+    try:
+        metric_root = write_dashboard_metric_dataset(rows, cfg=cfg)
+        summary_paths = write_dashboard_summary_dataset(cfg=cfg)
+    finally:
+        clear_active_config()
+
+    assert metric_root == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    assert (metric_root / "metrics_long.parquet").exists()
+    assert summary_paths["model_metric_band"] == (
+        tmp_path / "outputs" / "dashboards" / "dashboard_summaries" / "model_metric_band.parquet"
+    )
+    assert summary_paths["model_metric_band"].exists()
 
 
 def test_dashboard_summaries_report_unique_event_and_station_counts() -> None:
