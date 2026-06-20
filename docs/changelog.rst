@@ -54,6 +54,10 @@ Changelog
     required columns, missing columns, missing map-coordinate columns, and
     non-empty value columns so notebooks can show the exact blocker for each
     dashboard artifact.
+  - Metrics dashboard Data Status now displays required schema columns and
+    recognized value columns alongside missing-column and non-empty-value
+    checks, so dashboard readiness gaps are visible without loading large
+    metric tables.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

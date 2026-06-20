@@ -180,7 +180,10 @@ coverage before opening plots that depend on one family.
 The compact dashboard readiness summary carries the same
 ``artifact_role`` / ``artifact_label`` and ``resolved_path`` columns, and the
 metrics/QC dashboard Data Status tabs show those labels while keeping
-readiness displays bounded to small status metadata.
+readiness displays bounded to small status metadata. Metrics Data Status also
+shows ``required_columns``, ``missing_columns``, ``value_columns``,
+``nonempty_value_columns``, and map-coordinate blockers so users can see the
+schema or value-family gap without opening large metric tables.
 The Streamlit apps also accept clear URL query keys for explicit path
 overrides: ``metrics_dataset_dir`` and ``dashboard_summary_table_dir`` for the
 metrics dashboard, and ``qc_trace_summary`` for the QC dashboard. The older

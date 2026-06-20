@@ -323,8 +323,10 @@ outputs:
     summary_display = _select_readiness_columns(summary, SUMMARY_READINESS_DISPLAY_COLUMNS)
     assert "artifact_label" in summary_display.columns
     assert "dashboard_table" in summary_display.columns
+    assert "required_columns" in summary_display.columns
     assert "missing_columns" in summary_display.columns
     assert "missing_map_columns" in summary_display.columns
+    assert "value_columns" in summary_display.columns
     assert "nonempty_value_families" in summary_display.columns
     assert "nonempty_value_columns" in summary_display.columns
     assert "suggested_action" in summary_display.columns
