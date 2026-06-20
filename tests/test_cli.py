@@ -1410,6 +1410,7 @@ def test_cli_metrics_workflow_help_exposes_artifact_aliases(capsys):
     plan_help = " ".join(capsys.readouterr().out.split())
     assert "--observed-metric-inventory" in plan_help
     assert "--synthetic-metric-inventory" in plan_help
+    assert "--metric-plan-output" in plan_help
     assert "Defaults to configured output table 'observed_metric_inventory'" in plan_help
     assert "Defaults to configured output table 'synthetic_metric_inventory'" in plan_help
 
@@ -1499,8 +1500,10 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     assert "Preprocessed trace metadata CSV/parquet path" in inventories_section
     assert "``--observed-inventory``, ``--observed-metric-inventory``" in plan_section
     assert "``--synthetic-inventory``, ``--synthetic-metric-inventory``" in plan_section
+    assert "``--metric-plan-output``, ``--output``" in plan_section
     assert "Defaults to configured output table 'observed_metric_inventory'" in plan_section
     assert "Defaults to configured output table 'synthetic_metric_inventory'" in plan_section
+    assert "Prefer --metric-plan-output; --output is a legacy alias." in plan_section
     assert "``--tasks``, ``--task-table``" in run_section
     assert "``--metric-rows``, ``--output``" in run_section
     assert "Metric task table CSV/parquet path" in run_section
@@ -3249,7 +3252,7 @@ run_scenarios:
                 "--synthetic-inventory",
                 str(syn),
                 "--no-qc",
-                "--output",
+                "--metric-plan-output",
                 str(out),
             ]
         )
@@ -3305,7 +3308,7 @@ metrics:
                 "2",
                 "--batch-output-dir",
                 str(tmp_path / "metric_batches"),
-                "--output",
+                "--metric-plan-output",
                 str(out),
             ]
         )

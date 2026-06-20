@@ -970,7 +970,18 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     plan.add_argument("--output-mode", default=None, help="Metric output mode override.")
     plan.add_argument("--require-source-overlap", action="store_true", help="Only plan metric tasks for events or event-station rows with both observed and synthetic data.")
     plan.add_argument("--source-overlap-scope", choices=("event", "event_station"), default=None, help="Overlap scope for --require-source-overlap.")
-    plan.add_argument("--output", metavar="PATH", default=None, help="Output task table or manifest path. Defaults to configured output table 'metric_manifest' with --manifest, otherwise 'metric_tasks'.")
+    plan.add_argument(
+        "--metric-plan-output",
+        "--output",
+        dest="output",
+        metavar="PATH",
+        default=None,
+        help=(
+            "Output metric task table or manifest path. Defaults to configured output table "
+            "'metric_manifest' with --manifest, otherwise 'metric_tasks'. Prefer --metric-plan-output; "
+            "--output is a legacy alias."
+        ),
+    )
     plan.add_argument("--manifest", action="store_true", help="Write a JSON manifest instead of a task table.")
     plan.add_argument("--batch-output-dir", metavar="DIR", default=None, help="Batch output directory when writing a manifest. Defaults to outputs/metric_batches.")
     plan.add_argument("--batch-size", type=int, default=100, help="Tasks per batch when writing a manifest.")

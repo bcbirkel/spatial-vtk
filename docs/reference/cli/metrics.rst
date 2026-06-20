@@ -444,10 +444,10 @@ svtk metrics plan
                          [--output-mode OUTPUT_MODE]
                          [--require-source-overlap]
                          [--source-overlap-scope {event,event_station}]
-                         [--output PATH] [--manifest] [--batch-output-dir DIR]
-                         [--batch-size BATCH_SIZE] [--batch-count BATCH_COUNT]
-                         [--qc-table PATH] [--no-qc]
-                         [--include-qc-failed-tasks]
+                         [--metric-plan-output PATH] [--manifest]
+                         [--batch-output-dir DIR] [--batch-size BATCH_SIZE]
+                         [--batch-count BATCH_COUNT] [--qc-table PATH]
+                         [--no-qc] [--include-qc-failed-tasks]
 
 .. rubric:: Parameters
 
@@ -515,10 +515,10 @@ svtk metrics plan
      - No
      - Choices: ``event``, ``event_station``
      - Overlap scope for --require-source-overlap.
-   * - ``--output``
+   * - ``--metric-plan-output``, ``--output``
      - No
      -
-     - Filesystem path. Output task table or manifest path. Defaults to configured output table 'metric_manifest' with --manifest, otherwise 'metric_tasks'.
+     - Filesystem path. Output metric task table or manifest path. Defaults to configured output table 'metric_manifest' with --manifest, otherwise 'metric_tasks'. Prefer --metric-plan-output; --output is a legacy alias.
    * - ``--manifest``
      - No
      - Flag

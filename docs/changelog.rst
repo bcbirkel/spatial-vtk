@@ -87,6 +87,9 @@ Changelog
     ``svtk metrics merge-batches`` now expose ``--metric-manifest`` for the
     workflow manifest, and ``merge-batches`` exposes ``--metric-rows-output``
     for the merged metric rows table while preserving legacy aliases.
+  - ``svtk metrics plan`` now exposes ``--metric-plan-output`` for its task
+    table or manifest destination while preserving ``--output`` as a legacy
+    alias.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.
