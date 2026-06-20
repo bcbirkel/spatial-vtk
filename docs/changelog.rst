@@ -350,6 +350,10 @@ Changelog
   - Kept lightweight output-status helpers importable without loading
     YAML/config machinery; configured output-group path resolution still loads
     config support only when a resolver is called.
+  - Made ``spatial_vtk.visualize.context`` and
+    ``spatial_vtk.visualize.waveforms`` resolve public figure helpers lazily so
+    importing the stable visualization subpackages no longer requires NumPy,
+    pandas, or plotting modules before a figure helper is used.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 

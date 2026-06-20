@@ -510,11 +510,14 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         import spatial_vtk.spatial.map
         import spatial_vtk.spatial.plot
         import spatial_vtk.visualize
+        import spatial_vtk.visualize.context
         import spatial_vtk.visualize.qc
         import spatial_vtk.visualize.dashboard
+        import spatial_vtk.visualize.waveforms
 
         forbidden_after_package_import = {
             "pandas",
+            "numpy",
             "yaml",
             "spatial_vtk.metrics.workflow.configured",
             "spatial_vtk.metrics.workflow.execution",
@@ -529,6 +532,8 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
             "spatial_vtk.spatial.calculate.workflow",
             "spatial_vtk.spatial.map.metrics",
             "spatial_vtk.spatial.plot.large_run",
+            "spatial_vtk.visualize.context.figures",
+            "spatial_vtk.visualize.context.maps",
             "spatial_vtk.visualize.figure_io",
             "spatial_vtk.visualize.qc.retention",
             "spatial_vtk.visualize.qc.samples",
@@ -536,6 +541,11 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
             "spatial_vtk.visualize.dashboard.maps",
             "spatial_vtk.visualize.dashboard.streamlit_metrics",
             "spatial_vtk.visualize.dashboard.streamlit_qc",
+            "spatial_vtk.visualize.waveforms.comparison",
+            "spatial_vtk.visualize.waveforms.overlays",
+            "spatial_vtk.visualize.waveforms.radial_sections",
+            "spatial_vtk.visualize.waveforms.record_sections",
+            "spatial_vtk.visualize.waveforms.station_event",
         }
         loaded = forbidden_after_package_import & set(sys.modules)
         if loaded:
@@ -568,6 +578,7 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
 
         forbidden_after_light_import = {
             "pandas",
+            "numpy",
             "yaml",
             "spatial_vtk.metrics.workflow.configured",
             "spatial_vtk.metrics.workflow.execution",
@@ -581,6 +592,8 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
             "spatial_vtk.qc.build.inventory",
             "spatial_vtk.spatial.map.metrics",
             "spatial_vtk.spatial.plot.large_run",
+            "spatial_vtk.visualize.context.figures",
+            "spatial_vtk.visualize.context.maps",
             "spatial_vtk.visualize.figure_io",
             "spatial_vtk.visualize.qc.retention",
             "spatial_vtk.visualize.qc.samples",
@@ -588,6 +601,11 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
             "spatial_vtk.visualize.dashboard.maps",
             "spatial_vtk.visualize.dashboard.streamlit_metrics",
             "spatial_vtk.visualize.dashboard.streamlit_qc",
+            "spatial_vtk.visualize.waveforms.comparison",
+            "spatial_vtk.visualize.waveforms.overlays",
+            "spatial_vtk.visualize.waveforms.radial_sections",
+            "spatial_vtk.visualize.waveforms.record_sections",
+            "spatial_vtk.visualize.waveforms.station_event",
         }
         loaded = forbidden_after_light_import & set(sys.modules)
         if loaded:
