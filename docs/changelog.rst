@@ -6,205 +6,28 @@ Changelog
 
 - **Config-path workflow stabilization** *(Changed)*
 
-  - Standard output resolvers, output groups, table IO helpers, preprocessing
-    helpers, metric result objects, Step 4 spatial workflow helpers, and
-    dashboard contract helpers now accept either config objects or config file
-    paths through ``cfg=``.
-  - Step 5 GeoJSON plotting/status helpers and Step 6 additional plotting
-    helpers now preserve path-valued ``cfg=`` inputs for output previews,
-    figure writers, and result-owned workflow runner methods.
-  - Tutorial notebook source preflight now rejects hard-coded
-    ``Path('../')`` repo-root setup cells so public notebooks keep using the
-    shared source-checkout bootstrap and config-context helpers.
-  - ``svtk dashboard qc`` now presents ``--qc-trace-summary`` as the canonical
-    override flag in help and generated CLI docs while preserving
-    ``--trace-summary`` as a legacy alias.
-  - QC build/Slurm and metric-row workflow commands now present artifact-named
-    output flags first in help and generated CLI docs while preserving generic
-    aliases for existing scripts.
-  - Metric inventory and downstream metric-output commands now present
-    inventory/table-specific flags first in help and generated CLI docs while
-    preserving shorter legacy aliases for existing scripts.
-  - Spatial summary, derived-output, GeoJSON, and corridor commands now present
-    table/path-specific flags first in help and generated CLI docs while
-    preserving older generic aliases for existing scripts.
-  - Registered plot, map, and visualization commands now present
-    ``--input-table`` and ``--figure-output`` as their canonical explicit path
-    overrides while preserving ``--input`` and ``--output`` for existing
-    scripts.
-  - Human-readable spatial and dashboard status commands now label resolved
-    filesystem targets as ``resolved_path`` so terminal output matches the
-    notebook readiness tables.
-  - Dashboard readiness attachments and stale-output checks now resolve
-    summary-table, metric-dataset, and QC-trace paths from ``resolved_path``
-    first, while retaining compatibility with the legacy ``path`` alias.
-  - Metrics and QC dashboard status tables now display ``resolved_path`` rather
-    than the legacy ``path`` alias, while keeping large-table status displays
-    bounded to the readiness columns users need.
-  - Metrics dashboard Data Status now carries row-level metric dataset
-    readiness messages into the Distributions row, so missing or stale
-    dashboard metric datasets explain why distribution plots are unavailable.
-  - Shared dashboard empty-state messages now distinguish filter-empty tables
-    from stale schema/value-table problems and point users to the Data Status
-    tab before rebuilding summaries.
-  - Large-run Step 4 spatial preview helpers now use the full standard spatial
-    table contract, so notebook previews include Moran, distance-bin, cluster,
-    PCA, and geology summaries when those outputs exist.
-  - Large-run Step 5 GeoJSON figure helpers now resolve the standard Step 1
-    ingest outputs and configured region GeoJSON path from the active config,
-    removing undefined notebook variables from the figure-rendering cell.
-  - Large-run Step 6 region-boxplot results now expose ``status_frame()``, so
-    notebook figure cells display structured output paths, sidecar paths, row
-    counts, statuses, and messages instead of printing a bare string.
-  - Dashboard preparation results now expose ``preparation_frame()`` and the
-    shared display helper shows the preparation decision, removing bare
-    notebook-side formatting logic and ``print(dashboard_preparation.message)``
-    cells from dashboard notebooks.
-  - ``spatial_vtk.visualize`` now exposes the notebook-facing dashboard
-    readiness/status, preparation-display, launch, and summary-preview helpers
-    that its API documentation already presents as part of the stable
-    visualization import surface.
-  - Added regression coverage that compares public API helper tables against
-    package ``__all__`` exports for IO, QC, metrics plotting, spatial,
-    spatial plotting/maps, visualization, and dashboard entry points.
-  - Expanded ``spatial_vtk.visualize`` to expose dashboard readiness decisions
-    and dashboard output-preview display helpers, then updated the Python
-    workflow guide to use those top-level notebook-facing dashboard imports.
-  - Updated standard and large-run dashboard notebook imports to use
-    ``spatial_vtk.visualize`` for routine dashboard preparation and launch
-    helpers instead of the focused dashboard subpackage.
-  - Added ``MetricFigureSuiteResult.display_context_status(...)`` so the
-    large-run Step 3 notebook can display metric figure context audit tables
-    without branching on ``metric_figure_suite.context.ready`` in notebook code.
-  - Added ``SpatialFigureSuiteResult.display_context_status(...)`` so the
-    large-run Step 4 notebook can display spatial figure context audit tables
-    without extracting ``spatial_figure_suite.context`` in notebook code.
-  - Added ``display_notebook_step_result(...)`` and updated the large-run Step 5
-    notebook so GeoJSON and corridor step gates display compact labelled
-    status tables instead of raw dictionaries or Slurm dataclass output.
-  - Updated the large-run Step 7 notebook so dashboard dataset build/submission
-    results are displayed through ``display_notebook_step_result(...)`` instead
-    of being returned silently from the notebook cell.
-  - Updated the large-run Step 4 notebook so spatial summary and derived-output
-    gate results are displayed through ``display_notebook_step_result(...)``
-    instead of raw ``print(...)`` calls.
-  - Documented notebook-facing result status and summary frames for context,
-    QC, waveform comparison, dashboard preparation/launch, GeoJSON, and
-    additional plotting helpers so public API docs show the same package-owned
-    display methods used by the stabilized notebooks.
-  - Documented workflow result display contracts for QC, metric, and spatial
-    output helpers so notebook examples can point users to package-owned
-    ``status_frame()``, ``summary_frame()``, and bounded-preview methods
-    instead of repeating config path variables.
-  - Aligned source-checkout tutorial install guidance across the notebook
-    executor, README, installation guide, and example docs with the full
-    validation/docs/dashboard/notebook/waveform extras used by CI and the
-    release checklist.
-  - Fixed ``launch_qc_dashboard(config_path=...)`` and active-config QC
-    dashboard launches so they resolve the configured ``qc_trace_summary``
-    output instead of requiring an explicit table path before config
-    resolution can run.
-  - Extended ``display_notebook_step_result(...)`` to handle workflow results
-    with ``summary_frame()`` and updated standard Steps 1-3 so metadata,
-    preprocessing, QC, waveform, metric-task, and metric-output results render
-    as labelled tables instead of raw print output.
-  - Clarified IO and workflow documentation so ``summary_frame()`` is the
-    notebook-display path for workflow results, while ``summary_message()`` is
-    described as the concise script/log string.
-  - Spatial statistics settings now support configured ``metrics_table`` and
-    ``station_metadata_table`` inputs plus metric lists, so Step 4 notebooks can
-    run through the standard result/status wrapper without passing ad hoc
-    metric snapshot paths in notebook cells.
-  - Configuration examples now use output-registry preview tables instead of
-    direct ``resolve_output_path(...)`` snippets and display resolved metric
-    plans through ``MetricPlan.summary_frame()`` instead of raw dataclass
-    printing.
-  - IO API and Python workflow docs now list ``metric_plan_from_config`` and
-    ``MetricPlan`` as public helpers for inspecting resolved metric settings in
-    notebooks.
-  - Config API docs now list ``notebook_step_result`` and
-    ``notebook_step_result_frame`` beside ``run_notebook_step_if_needed`` for
-    custom fallback workflow cells.
-  - Metric and spatial plotting API docs now describe figure-suite result
-    context-status display methods so notebooks can show readiness and
-    dimension tables without local branching.
-  - Spatial API guidance now presents the Step 4 output-status/result helpers
-    before the direct spatial-statistics runner, keeping routine notebook docs
-    aligned with the large-run driver pattern.
-  - Metrics API guidance now presents the standard Step 3 workflow result
-    helper before lower-level planning and batch-execution helpers, keeping
-    routine notebook docs aligned with the result-object workflow.
-  - QC API guidance now presents the standard Step 2 workflow result and input
-    helpers before direct inventory, overlap, and summary runners, keeping
-    routine notebook docs aligned with the result-object workflow.
-  - Package overview guidance now marks direct QC, spatial, GeoJSON, and
-    corridor workflow runners as script/custom-orchestration helpers while
-    keeping standard result objects as the routine notebook path.
-  - Configuration guide Slurm examples now use artifact-named
-    ``--qc-slurm-script-output`` and ``--metrics-slurm-script-output`` flags
-    instead of legacy ``--output`` wording.
-  - CLI workflow examples now use canonical ``--event-table`` and
-    ``--station-table`` metric-output flags instead of legacy ``--events`` and
-    ``--stations`` aliases.
-  - Generated CLI reference and runtime figure-command help now describe
-    config-backed named table flags with canonical ``--event-table`` and
-    ``--station-table`` examples before legacy or command-specific names.
-  - QC dashboard startup now emits a single readiness warning that includes the
-    specific trace-summary blocker, such as missing required columns, instead
-    of showing a generic warning plus a second detailed warning.
-  - Metrics dashboard startup now emits a single summary-readiness warning that
-    includes the specific primary summary-table blocker before full dashboard
-    summaries are loaded.
-  - Compact dashboard readiness summaries now preserve dashboard-table labels,
-    required columns, missing columns, missing map-coordinate columns, and
-    non-empty value columns so notebooks can show the exact blocker for each
-    dashboard artifact.
-  - Metrics dashboard Data Status now displays required schema columns and
-    recognized value columns alongside missing-column and non-empty-value
-    checks, so dashboard readiness gaps are visible without loading large
-    metric tables.
-  - ``svtk dashboard status`` now prints the same bounded schema, missing
-    column, map-coordinate, and value-column readiness fields for terminal and
-    Slurm-log diagnostics.
-  - ``svtk qc manual-queue`` now exposes ``--qc-trace-summary`` and
-    ``--manual-review-queue-output`` as artifact-named flags while preserving
-    ``--trace-summary`` and ``--output`` as legacy aliases.
-  - ``svtk io prepare-stations``, ``svtk io prepare-events``, and
-    ``svtk io prepare-event-stations`` now expose metadata/output artifact
-    flags while preserving the older ``--input``, ``--output``,
-    ``--stations``, and ``--events`` aliases.
-  - ``svtk io master-stations`` and ``svtk io master-events`` now expose
-    source-table and master-list output flags while preserving ``--input`` and
-    ``--output`` as legacy aliases.
-  - ``svtk io inventory`` now exposes ``--waveform-inventory-output`` for the
-    configured waveform inventory table while preserving ``--output`` as a
-    legacy alias.
-  - ``svtk qc slurm`` now exposes ``--event-station-records`` and
-    ``--qc-slurm-script-output`` as artifact-named flags while preserving
-    ``--event-stations`` and ``--output`` as legacy aliases.
-  - ``svtk metrics slurm`` now exposes ``--metric-manifest`` and
-    ``--metrics-slurm-script-output`` as artifact-named flags while preserving
-    ``--manifest`` and ``--output`` as legacy aliases.
-  - ``svtk metrics cache-waveforms`` now exposes ``--metric-manifest`` and
-    ``--cached-metric-manifest-output`` as artifact-named flags while
-    preserving ``--manifest`` and ``--output`` as legacy aliases.
-  - ``svtk metrics estimate`` now exposes ``--metric-manifest`` and
-    ``--metric-task-estimate-output`` as artifact-named flags while preserving
-    ``--manifest`` and ``--output`` as legacy aliases.
-  - ``svtk metrics run-batch``, ``svtk metrics batch-status``, and
-    ``svtk metrics merge-batches`` now expose ``--metric-manifest`` for the
-    workflow manifest, and ``merge-batches`` exposes ``--metric-rows-output``
-    for the merged metric rows table while preserving legacy aliases.
-  - ``svtk metrics plan`` now exposes ``--metric-plan-output`` for its task
-    table or manifest destination while preserving ``--output`` as a legacy
-    alias.
-  - This lets notebooks, generated workers, Slurm scripts, and lightweight
-    Python drivers resolve registered outputs from one explicit config file
-    without first activating global config state.
-  - Added regression coverage for config-path resolution across preprocessing,
-    Step 3 metric outputs, Step 4 spatial outputs, dashboard readiness and
-    preview helpers, large-run readiness helpers, and later plotting-status
-    helpers.
+  - Expanded config-path support across output resolvers, workflow helpers,
+    plotting/status helpers, dashboard contracts, and result objects so
+    notebooks and scripts can pass explicit config files without activating
+    global config state first.
+  - Standardized user-facing path/status tables around ``resolved_path`` while
+    preserving legacy ``path`` aliases for existing notebooks and scripts.
+  - Promoted artifact-named CLI flags for QC, metrics, spatial, GeoJSON,
+    dashboard, IO, plot, map, and visualization commands while preserving
+    legacy generic aliases for compatibility.
+  - Moved notebook display, readiness, summary, and result-status formatting
+    into package helpers so tutorial cells show labelled tables instead of
+    raw dictionaries, dataclasses, or repeated path variables.
+  - Hardened dashboard and figure readiness diagnostics so notebooks,
+    Streamlit tabs, CLI status output, and Slurm logs expose missing schema,
+    missing map coordinates, empty value columns, stale datasets, and rebuild
+    guidance without loading full large-run tables.
+  - Aligned API docs, generated CLI reference, workflow guides, README
+    install guidance, and tutorial notebooks with the stabilized public import
+    surfaces and result-object workflow.
+  - Added regression coverage for config-path resolution, public API exports,
+    notebook import boundaries, dashboard readiness fields, runtime install
+    guidance, and changelog formatting.
 
 - **Step 1 workflow helpers** *(Added)*
 
