@@ -352,7 +352,7 @@ class MetadataPreparationResult(_SummaryMappingMixin):
         }
 
     def summary_message(self) -> str:
-        """Return a concise notebook status message."""
+        """Return a concise status string for scripts and logs."""
 
         action = "Reused" if self.reused else "Prepared"
         return (
@@ -420,7 +420,7 @@ class WaveformPreprocessingSummaryResult(_SummaryMappingMixin):
         }
 
     def summary_message(self) -> str:
-        """Return a concise notebook status message."""
+        """Return a concise status string for scripts and logs."""
 
         return (
             f"Preprocessed waveforms: {self.event_station_rows:,} event-station row(s), "
@@ -479,7 +479,7 @@ class RecordCoverageWorkflowResult(_SummaryMappingMixin):
         }
 
     def summary_message(self) -> str:
-        """Return a concise notebook status message."""
+        """Return a concise status string for scripts and logs."""
 
         return f"Built record coverage: {self.rows:,} row(s)."
 
@@ -574,8 +574,8 @@ def prepare_metadata_tables_from_config(
     -------
     MetadataPreparationResult
         Summary with written output paths and row counts. The result supports
-        mapping-style access for existing scripts and ``summary_frame()`` /
-        ``summary_message()`` for notebooks.
+        mapping-style access for existing scripts, ``summary_frame()`` for
+        notebook display helpers, and ``summary_message()`` for scripts/logs.
     """
 
     cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
@@ -671,7 +671,8 @@ def preprocess_waveforms_from_config(
     WaveformPreprocessingSummaryResult
         Summary with event-station, manifest, trace-metadata paths and row
         counts. The result supports mapping-style access for existing scripts
-        and ``summary_frame()`` / ``summary_message()`` for notebooks.
+        and ``summary_frame()`` for notebook display helpers. Use
+        ``summary_message()`` only when a concise script/log string is needed.
     """
 
     cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
@@ -757,8 +758,9 @@ def build_record_coverage_from_config(
     -------
     RecordCoverageWorkflowResult
         Summary with input/output paths and row count. The result supports
-        mapping-style access for existing scripts and ``summary_frame()`` /
-        ``summary_message()`` for notebooks.
+        mapping-style access for existing scripts and ``summary_frame()`` for
+        notebook display helpers. Use ``summary_message()`` only when a concise
+        script/log string is needed.
     """
 
     cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)

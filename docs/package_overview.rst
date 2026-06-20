@@ -61,8 +61,10 @@ Start with public helpers from ``spatial_vtk.io``:
   ``prepare_event_station_table`` for prepared station/event tables
 - ``preprocess_waveforms_from_config`` and ``build_record_coverage_from_config``
   for config-backed waveform preprocessing and record coverage; their result
-  objects provide ``summary_message()`` and ``summary_frame()`` so notebooks do
-  not need to unpack path dictionaries just to report progress
+  objects provide ``summary_frame()`` for notebook display helpers, so
+  notebooks do not need to unpack path dictionaries just to report progress.
+  Scripts and logs can use the same result objects' ``summary_message()``
+  strings when a concise text line is more useful.
 - ``load_standard_ingest_workflow_outputs`` for Step 1 output status, previews,
   context figures, and large-run driver methods such as
   ``run_metadata_step_if_needed()``, ``run_preprocessing_step_if_needed()``,

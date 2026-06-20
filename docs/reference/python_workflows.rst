@@ -4,7 +4,7 @@ Python Workflow Entry Points
 Use these helpers when a notebook or Python script needs to run a configured
 Spatial-VTK workflow step. They resolve paths from the active config or from a
 ``config_path`` argument, write the standard output tables, and return compact
-metadata dictionaries that are safe to print in notebooks.
+metadata dictionaries or result frames that are safe to display in notebooks.
 
 For large datasets, keep notebook cells as lightweight drivers:
 
@@ -25,7 +25,8 @@ for terminal-oriented workflows and generated batch scripts.
    inventories into the notebook just to check progress.
 
 Workflow functions return JSON-ready dictionaries that are safe to display in
-notebooks or Slurm logs. New notebook code should prefer explicit keys such as
+notebooks or write to Slurm logs. New notebook code should prefer explicit
+keys such as
 ``metric_manifest_path``, ``observed_metric_inventory_path``,
 ``metric_manifest_batch_output_dir``, ``preprocessed_manifest_path``,
 ``record_coverage_path``, and ``geojson_region_summaries_path``. These

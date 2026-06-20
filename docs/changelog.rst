@@ -92,6 +92,9 @@ Changelog
     with ``summary_frame()`` and updated standard Steps 1-3 so metadata,
     preprocessing, QC, waveform, metric-task, and metric-output results render
     as labelled tables instead of raw print output.
+  - Clarified IO and workflow documentation so ``summary_frame()`` is the
+    notebook-display path for workflow results, while ``summary_message()`` is
+    described as the concise script/log string.
   - Spatial statistics settings now support configured ``metrics_table`` and
     ``station_metadata_table`` inputs plus metric lists, so Step 4 notebooks can
     run through the standard result/status wrapper without passing ad hoc
@@ -181,8 +184,9 @@ Changelog
   - Added a standard Step 1 ingest output loader for combined ingest and
     preprocessing output status.
   - Added typed Step 1 metadata, preprocessing, and record-coverage result
-    objects with mapping-compatible access plus ``summary_message()`` and
-    ``summary_frame()`` methods for notebooks.
+    objects with mapping-compatible access, ``summary_frame()`` methods for
+    notebook display helpers, and ``summary_message()`` strings for scripts and
+    logs.
   - Added bounded station, event, and preprocessing manifest previews for the
     standard Step 1 ingest output loader.
   - Added config-backed Step 1 metadata and preprocessing readiness helpers so

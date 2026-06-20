@@ -2193,6 +2193,8 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "display_notebook_step_result" in workflows
     assert "instead of ``print(result)``" in workflows
     assert "``print(result.summary_message())``" in workflows
+    assert "package helper returns a displayable workflow result" in workflows
+    assert "safe to print in notebooks" not in workflows
     assert "notebooks should use package functions" in workflows.lower()
     assert "configured_output_registry_preview_frame" in workflows
     assert "configured_output_registry_frame(cfg=cfg, kinds=(\"table\",)).head()" not in workflows

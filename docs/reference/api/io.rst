@@ -81,8 +81,8 @@ Public helpers exposed by ``spatial_vtk.io``:
        suite through ``write_context_figures()``.
    * - ``MetadataPreparationResult``
      - Report prepared metadata output paths and row counts with
-       mapping-compatible access plus ``summary_message()`` and
-       ``summary_frame()`` for notebooks.
+       mapping-compatible access, ``summary_message()`` for scripts and logs,
+       and ``summary_frame()`` for notebook display helpers.
    * - ``output_readiness`` and ``OutputReadiness``
      - Gate local or Slurm-backed work on missing, stale, blocked, or reusable
        outputs. Required input mappings may use ``None`` for an optional
