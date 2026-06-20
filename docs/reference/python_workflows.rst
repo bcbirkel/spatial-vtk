@@ -179,6 +179,9 @@ the large-run notebooks.
        ``event_station_records_path`` are accepted where older output groups
        still expose the legacy ``event_station_path`` name, so scripts can use
        the clearer public spelling while older notebooks continue to run.
+       These aliases work consistently for direct access, ``bind()``, table
+       preview/loading helpers, ``first_existing_path()``, and
+       ``readiness()`` output/input/source checks.
        Legacy helpers such as ``output_group_namespace()`` return only path
        attributes. New workflow notebooks should prefer the standard
        ``load_standard_*`` helpers listed below; use ``output_group()`` directly

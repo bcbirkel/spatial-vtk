@@ -1919,6 +1919,38 @@ outputs:
     loaded = group.load_table("event_station_records_path", cfg=cfg)
 
     assert loaded.to_dict("records") == [{"event_id": "E1", "station": "STA"}]
+    preview = group.preview_table("event_station_records_path", cfg=cfg, nrows=1)
+    assert preview.to_dict("records") == [{"event_id": "E1", "station": "STA"}]
+    assert group.load_path_table("event_station_records_path").to_dict("records") == [
+        {"event_id": "E1", "station": "STA"}
+    ]
+    assert group.preview_path_table("event_station_records_path", nrows=1).to_dict("records") == [
+        {"event_id": "E1", "station": "STA"}
+    ]
+    assert group.first_existing_path(("event_station_records_path",)) == group.event_station_path
+    assert (
+        group.first_existing_path(("prepared_stations_path",), default="event_station_records_path")
+        == group.event_station_path
+    )
+    first_preview = group.preview_first_existing_table(("event_station_records_path",), cfg=cfg, nrows=1)
+    assert first_preview["event_station_records"].to_dict("records") == [{"event_id": "E1", "station": "STA"}]
+    readiness = group.readiness(
+        "event_station_records_path",
+        inputs=("event_station_records_path",),
+        sources=("event_station_records_path",),
+        current_message="Event-station records are current.",
+    )
+    assert readiness.reason == "current"
+    assert dict(readiness.output_items)["event_station_records_path"] == group.event_station_path
+    assert dict(readiness.input_items)["event_station_records_path"] == group.event_station_path
+    assert dict(readiness.source_items)["event_station_records_path"] == group.event_station_path
+    single_string_readiness = group.readiness(
+        "event_station_records_path",
+        inputs="event_station_records_path",
+        sources="event_station_records_path",
+        current_message="Event-station records are current.",
+    )
+    assert single_string_readiness.reason == "current"
     assert "event_station_records_path" not in set(group.status_frame()["name"])
     clear_active_config()
 

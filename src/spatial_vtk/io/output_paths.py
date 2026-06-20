@@ -460,13 +460,16 @@ class OutputGroup:
 
         candidates = (names,) if isinstance(names, str) else tuple(names)
         for name in candidates:
-            path = self.paths[str(name)]
+            path = self.paths[self._path_name(str(name))]
             if path.exists():
                 return path
         if default is None:
             return None
-        if isinstance(default, str) and default in self.paths:
-            return self.paths[default]
+        if isinstance(default, str):
+            try:
+                return self.paths[self._path_name(default)]
+            except KeyError:
+                pass
         return Path(default)
 
     def figure_path(
@@ -580,9 +583,9 @@ class OutputGroup:
 
         key = str(name)
         try:
-            return self.paths[key]
+            return self.paths[self._path_name(key)]
         except KeyError as exc:
-            choices = ", ".join(sorted(self.paths))
+            choices = ", ".join(_path_name_choices(self.paths))
             raise KeyError(f"Unknown output-group path {key!r}. Choices: {choices}") from exc
 
     def _artifact_by_name_or_key(self, name: str, *, kind: OutputKind | None = None) -> OutputArtifact:
@@ -677,9 +680,9 @@ class OutputGroup:
         if outputs is None:
             selected = self.paths
         elif isinstance(outputs, str):
-            selected = {outputs: self.paths[outputs]}
+            selected = {outputs: self.paths[self._path_name(outputs)]}
         else:
-            selected = {name: self.paths[name] for name in outputs}
+            selected = {str(name): self.paths[self._path_name(str(name))] for name in outputs}
         return output_readiness(
             selected,
             inputs=self._resolve_path_references(inputs),
@@ -696,7 +699,7 @@ class OutputGroup:
         if paths is None:
             return None
         if _looks_like_path_value(paths):
-            return self.paths.get(str(paths), paths)
+            return self._resolve_path_reference(paths)
         if isinstance(paths, dict):
             return {str(name): self._resolve_path_reference(path) for name, path in paths.items()}
         if isinstance(paths, SimpleNamespace) or (is_dataclass(paths) and not isinstance(paths, type)):
@@ -711,8 +714,11 @@ class OutputGroup:
     def _resolve_path_reference(self, path):
         """Resolve one path-name string if it belongs to this group."""
 
-        if isinstance(path, str) and path in self.paths:
-            return self.paths[path]
+        if isinstance(path, str):
+            try:
+                return self.paths[self._path_name(path)]
+            except KeyError:
+                pass
         return path
 
 
@@ -1108,11 +1114,22 @@ def _selected_path_names(
         try:
             path = paths[concrete_name]
         except KeyError as exc:
-            choices = ", ".join(sorted({*paths, *OUTPUT_GROUP_PATH_ALIASES}))
+            choices = ", ".join(_path_name_choices(paths))
             raise KeyError(f"Unknown output-group path {name!r}. Choices: {choices}") from exc
         label = str(raw_label) if raw_label is not None else name
         selected.append((label, path))
     return selected
+
+
+def _path_name_choices(paths: dict[str, Path]) -> list[str]:
+    """Return valid concrete and public-alias path names for an output group."""
+
+    aliases = [
+        public_name
+        for public_name, concrete_name in OUTPUT_GROUP_PATH_ALIASES.items()
+        if concrete_name in paths
+    ]
+    return sorted({*paths, *aliases})
 
 
 def _validate_missing_policy(missing: str) -> None:
