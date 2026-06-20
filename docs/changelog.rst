@@ -49,6 +49,9 @@ Changelog
   - Reworded workflow-guide output-group guidance so standard result objects
     remain the default notebook object and reusable output groups are described
     as artifact-named helpers for custom or compatibility paths.
+  - Clarified dashboard readiness value-family wording so Visualize API docs
+    describe residual, GOF score, observed, synthetic, and other configured
+    metric-value coverage without vague generic terminology.
   - Aligned API docs, generated CLI reference, workflow guides, README
     install guidance, and tutorial notebooks with the stabilized public import
     surfaces and result-object workflow.

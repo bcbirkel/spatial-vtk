@@ -2022,6 +2022,8 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Import routine dashboard\nhelpers from ``spatial_vtk.visualize``" in text
     assert "metrics dashboard row dataset" in text
     assert "internal output registry names" in text
+    assert "other configured\nmetric-value coverage" in text
+    assert "generic metric-value\ncoverage" not in text
     assert "``metrics_dashboard_root``" not in text
     assert "pass ``metrics_dataset_dir`` and\n``dashboard_summary_table_dir`` to ``launch_metrics_dashboard``" in text
     assert "``metrics_root`` and ``summary_root`` keyword arguments remain supported" in text
