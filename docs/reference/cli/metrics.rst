@@ -362,7 +362,7 @@ svtk metrics outputs
 
 .. code-block:: bash
 
-   svtk metrics outputs [-h] [--metrics PATH] [--output-dir DIR]
+   svtk metrics outputs [-h] [--metric-rows PATH] [--output-dir DIR]
                             [--config PATH] [--run-scenario RUN_SCENARIO]
                             [--events PATH] [--stations PATH]
                             [--residual-column RESIDUAL_COLUMN]
@@ -383,10 +383,10 @@ svtk metrics outputs
      - No
      -
      - show this help message and exit
-   * - ``--metrics``, ``--metric-rows``
+   * - ``--metric-rows``, ``--metrics``
      - No
      -
-     - Filesystem path. Raw metric workflow rows CSV/parquet path. Defaults to configured output table 'metric_rows'.
+     - Filesystem path. Raw metric workflow rows CSV/parquet path. Defaults to configured output table 'metric_rows'. Prefer --metric-rows; --metrics is a legacy alias.
    * - ``--output-dir``, ``--metrics-output-dir``
      - No
      -
@@ -555,8 +555,9 @@ svtk metrics run
 
 .. code-block:: bash
 
-   svtk metrics run [-h] [--tasks PATH] [--output PATH] [--config PATH]
-                        [--run-scenario RUN_SCENARIO] [--qc-table PATH]
+   svtk metrics run [-h] [--tasks PATH] [--metric-rows PATH]
+                        [--config PATH] [--run-scenario RUN_SCENARIO]
+                        [--qc-table PATH]
 
 .. rubric:: Parameters
 
@@ -576,10 +577,10 @@ svtk metrics run
      - No
      -
      - Filesystem path. Metric task table CSV/parquet path. Defaults to configured output table 'metric_tasks'.
-   * - ``--output``, ``--metric-rows``
+   * - ``--metric-rows``, ``--output``
      - No
      -
-     - Filesystem path. Metric row output CSV/parquet path. Defaults to configured output table 'metric_rows'.
+     - Filesystem path. Metric row output CSV/parquet path. Defaults to configured output table 'metric_rows'. Prefer --metric-rows; --output is a legacy alias.
    * - ``--config``
      - No
      -

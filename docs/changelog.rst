@@ -19,6 +19,9 @@ Changelog
   - ``svtk dashboard qc`` now presents ``--qc-trace-summary`` as the canonical
     override flag in help and generated CLI docs while preserving
     ``--trace-summary`` as a legacy alias.
+  - QC build/Slurm and metric-row workflow commands now present artifact-named
+    output flags first in help and generated CLI docs while preserving generic
+    aliases for existing scripts.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

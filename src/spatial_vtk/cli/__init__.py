@@ -677,25 +677,35 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     build.add_argument("--config", default=None, help="Spatial-VTK config file.")
     build.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     build.add_argument(
-        "--trace-output",
         "--qc-trace-summary-output",
+        "--trace-output",
         dest="trace_output",
         default=None,
-        help="Output waveform QC table path. Defaults to configured output table 'qc_trace_summary'.",
+        help=(
+            "Output QC trace-summary table path. Defaults to configured output table "
+            "'qc_trace_summary'. Prefer --qc-trace-summary-output; --trace-output is a legacy alias."
+        ),
     )
     build.add_argument(
-        "--inventory-output",
         "--qc-inventory-output",
+        "--inventory-output",
         dest="inventory_output",
         default=None,
-        help="Output metric QC inventory path. Defaults to configured output table 'qc_inventory'.",
+        help=(
+            "Output metric QC inventory path. Defaults to configured output table "
+            "'qc_inventory'. Prefer --qc-inventory-output; --inventory-output is a legacy alias."
+        ),
     )
     build.add_argument(
-        "--overlap-inventory-output",
         "--qc-overlap-inventory-output",
+        "--overlap-inventory-output",
         dest="overlap_inventory_output",
         default=None,
-        help="Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'.",
+        help=(
+            "Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table "
+            "'qc_inventory_overlap'. Prefer --qc-overlap-inventory-output; "
+            "--overlap-inventory-output is a legacy alias."
+        ),
     )
     build.add_argument("--verbose", action="store_true", help="Print elapsed-time progress messages.")
     build.set_defaults(handler=_cmd_qc_build)
@@ -718,28 +728,38 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     slurm.add_argument("--config", default=None, help="Config file containing compute.slurm or qc.slurm settings.")
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     slurm.add_argument(
-        "--trace-output",
         "--qc-trace-summary-output",
+        "--trace-output",
         dest="trace_output",
         metavar="PATH",
         default=None,
-        help="Output waveform QC table path. Defaults to configured output table 'qc_trace_summary'.",
+        help=(
+            "Output QC trace-summary table path. Defaults to configured output table "
+            "'qc_trace_summary'. Prefer --qc-trace-summary-output; --trace-output is a legacy alias."
+        ),
     )
     slurm.add_argument(
-        "--inventory-output",
         "--qc-inventory-output",
+        "--inventory-output",
         dest="inventory_output",
         metavar="PATH",
         default=None,
-        help="Output metric QC inventory path. Defaults to configured output table 'qc_inventory'.",
+        help=(
+            "Output metric QC inventory path. Defaults to configured output table "
+            "'qc_inventory'. Prefer --qc-inventory-output; --inventory-output is a legacy alias."
+        ),
     )
     slurm.add_argument(
-        "--overlap-inventory-output",
         "--qc-overlap-inventory-output",
+        "--overlap-inventory-output",
         dest="overlap_inventory_output",
         metavar="PATH",
         default=None,
-        help="Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'.",
+        help=(
+            "Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table "
+            "'qc_inventory_overlap'. Prefer --qc-overlap-inventory-output; "
+            "--overlap-inventory-output is a legacy alias."
+        ),
     )
     slurm.add_argument("--submit", action="store_true", help="Submit the script with sbatch after writing it.")
     slurm.set_defaults(handler=_cmd_qc_slurm)
@@ -854,12 +874,15 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         help="Metric task table CSV/parquet path. Defaults to configured output table 'metric_tasks'.",
     )
     run.add_argument(
-        "--output",
         "--metric-rows",
+        "--output",
         dest="output",
         metavar="PATH",
         default=None,
-        help="Metric row output CSV/parquet path. Defaults to configured output table 'metric_rows'.",
+        help=(
+            "Metric row output CSV/parquet path. Defaults to configured output table "
+            "'metric_rows'. Prefer --metric-rows; --output is a legacy alias."
+        ),
     )
     run.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default task/output paths.")
     run.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
@@ -913,12 +936,15 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
 
     outputs = metrics_sub.add_parser("outputs", help="Write standard downstream metric outputs.")
     outputs.add_argument(
-        "--metrics",
         "--metric-rows",
+        "--metrics",
         dest="metrics",
         metavar="PATH",
         default=None,
-        help="Raw metric workflow rows CSV/parquet path. Defaults to configured output table 'metric_rows'.",
+        help=(
+            "Raw metric workflow rows CSV/parquet path. Defaults to configured output table "
+            "'metric_rows'. Prefer --metric-rows; --metrics is a legacy alias."
+        ),
     )
     outputs.add_argument(
         "--output-dir",

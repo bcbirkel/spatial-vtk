@@ -49,9 +49,9 @@ Build standard QC trace, inventory, and overlap tables from the active config.
 
    svtk qc build [-h] [--event-stations PATH] [--config PATH]
                      [--run-scenario RUN_SCENARIO]
-                     [--trace-output TRACE_OUTPUT]
-                     [--inventory-output INVENTORY_OUTPUT]
-                     [--overlap-inventory-output OVERLAP_INVENTORY_OUTPUT]
+                     [--qc-trace-summary-output TRACE_OUTPUT]
+                     [--qc-inventory-output INVENTORY_OUTPUT]
+                     [--qc-overlap-inventory-output OVERLAP_INVENTORY_OUTPUT]
                      [--verbose]
 
 .. rubric:: Parameters
@@ -80,18 +80,18 @@ Build standard QC trace, inventory, and overlap tables from the active config.
      - No
      -
      - Apply one named run_scenarios overlay.
-   * - ``--trace-output``, ``--qc-trace-summary-output``
+   * - ``--qc-trace-summary-output``, ``--trace-output``
      - No
      -
-     - Filesystem path. Output waveform QC table path. Defaults to configured output table 'qc_trace_summary'.
-   * - ``--inventory-output``, ``--qc-inventory-output``
+     - Filesystem path. Output QC trace-summary table path. Defaults to configured output table 'qc_trace_summary'. Prefer --qc-trace-summary-output; --trace-output is a legacy alias.
+   * - ``--qc-inventory-output``, ``--inventory-output``
      - No
      -
-     - Output metric QC inventory path. Defaults to configured output table 'qc_inventory'.
-   * - ``--overlap-inventory-output``, ``--qc-overlap-inventory-output``
+     - Output metric QC inventory path. Defaults to configured output table 'qc_inventory'. Prefer --qc-inventory-output; --inventory-output is a legacy alias.
+   * - ``--qc-overlap-inventory-output``, ``--overlap-inventory-output``
      - No
      -
-     - Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'.
+     - Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'. Prefer --qc-overlap-inventory-output; --overlap-inventory-output is a legacy alias.
    * - ``--verbose``
      - No
      - Flag
@@ -176,8 +176,9 @@ svtk qc slurm
 
    svtk qc slurm [-h] [--event-stations PATH] [--output PATH]
                      [--config PATH] [--run-scenario RUN_SCENARIO]
-                     [--trace-output PATH] [--inventory-output PATH]
-                     [--overlap-inventory-output PATH] [--submit]
+                     [--qc-trace-summary-output PATH]
+                     [--qc-inventory-output PATH]
+                     [--qc-overlap-inventory-output PATH] [--submit]
 
 .. rubric:: Parameters
 
@@ -209,18 +210,18 @@ svtk qc slurm
      - No
      -
      - Apply one named run_scenarios overlay.
-   * - ``--trace-output``, ``--qc-trace-summary-output``
+   * - ``--qc-trace-summary-output``, ``--trace-output``
      - No
      -
-     - Filesystem path. Output waveform QC table path. Defaults to configured output table 'qc_trace_summary'.
-   * - ``--inventory-output``, ``--qc-inventory-output``
+     - Filesystem path. Output QC trace-summary table path. Defaults to configured output table 'qc_trace_summary'. Prefer --qc-trace-summary-output; --trace-output is a legacy alias.
+   * - ``--qc-inventory-output``, ``--inventory-output``
      - No
      -
-     - Filesystem path. Output metric QC inventory path. Defaults to configured output table 'qc_inventory'.
-   * - ``--overlap-inventory-output``, ``--qc-overlap-inventory-output``
+     - Filesystem path. Output metric QC inventory path. Defaults to configured output table 'qc_inventory'. Prefer --qc-inventory-output; --inventory-output is a legacy alias.
+   * - ``--qc-overlap-inventory-output``, ``--overlap-inventory-output``
      - No
      -
-     - Filesystem path. Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'.
+     - Filesystem path. Output observed/synthetic-overlap metric QC inventory path. Defaults to configured output table 'qc_inventory_overlap'. Prefer --qc-overlap-inventory-output; --overlap-inventory-output is a legacy alias.
    * - ``--submit``
      - No
      - Flag

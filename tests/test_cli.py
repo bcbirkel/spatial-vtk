@@ -641,6 +641,9 @@ def test_cli_qc_build_help(capsys):
     assert "--qc-trace-summary-output" in captured.out
     assert "--qc-inventory-output" in captured.out
     assert "--qc-overlap-inventory-output" in captured.out
+    assert "[--qc-trace-summary-output QC_TRACE_SUMMARY_OUTPUT]" in captured.out
+    assert "Prefer --qc-trace-summary-output" in captured.out
+    assert "--trace-output is a legacy alias" in captured.out
     assert "qc_trace_summary" in captured.out
     assert "qc_inventory_overlap" in captured.out
 
@@ -1391,9 +1394,10 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     assert "Defaults to configured output table 'observed_metric_inventory'" in plan_section
     assert "Defaults to configured output table 'synthetic_metric_inventory'" in plan_section
     assert "``--tasks``, ``--task-table``" in run_section
-    assert "``--output``, ``--metric-rows``" in run_section
+    assert "``--metric-rows``, ``--output``" in run_section
     assert "Metric task table CSV/parquet path" in run_section
     assert "Metric row output CSV/parquet path" in run_section
+    assert "Prefer --metric-rows; --output is a legacy alias." in run_section
     assert "``--missing-limit``" in batch_status_section
     assert "Metric workflow manifest JSON" in batch_status_section
     assert "``--incomplete-only``" in slurm_section
@@ -1408,8 +1412,9 @@ def test_generated_cli_reference_names_metrics_outputs_aliases():
     section = text.split(".. _cli-svtk-metrics-outputs:", maxsplit=1)[1].split(
         ".. _cli-svtk-metrics-plan:", maxsplit=1
     )[0]
-    assert "``--metrics``, ``--metric-rows``" in section
+    assert "``--metric-rows``, ``--metrics``" in section
     assert "Raw metric workflow rows CSV/parquet path" in section
+    assert "Prefer --metric-rows; --metrics is a legacy alias." in section
     assert "``--output-dir``, ``--metrics-output-dir``" in section
     assert "configured output paths are used" in section
     assert "``--events``, ``--event-table``" in section
@@ -1430,9 +1435,12 @@ def test_generated_cli_reference_names_qc_output_aliases():
         ".. _cli-svtk-qc-summaries:", maxsplit=1
     )[0]
     for section in (build_section, slurm_section):
-        assert "``--trace-output``, ``--qc-trace-summary-output``" in section
-        assert "``--inventory-output``, ``--qc-inventory-output``" in section
-        assert "``--overlap-inventory-output``, ``--qc-overlap-inventory-output``" in section
+        assert "``--qc-trace-summary-output``, ``--trace-output``" in section
+        assert "``--qc-inventory-output``, ``--inventory-output``" in section
+        assert "``--qc-overlap-inventory-output``, ``--overlap-inventory-output``" in section
+        assert "Prefer --qc-trace-summary-output; --trace-output is a legacy alias." in section
+        assert "Prefer --qc-inventory-output; --inventory-output is a legacy alias." in section
+        assert "Prefer --qc-overlap-inventory-output; --overlap-inventory-output is a legacy alias." in section
         assert "qc_trace_summary" in section
         assert "qc_inventory" in section
         assert "qc_inventory_overlap" in section
