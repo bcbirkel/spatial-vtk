@@ -605,6 +605,9 @@ Changelog
   - Clarified the large-run dashboard notebook review step so blank or sparse
     dashboard tabs point readers to package-owned readiness/Data Status
     messages and dashboard table contracts instead of manual path inspection.
+  - Added explicit purpose/output notes to the remaining large-run figure and
+    provenance cells so notebook section headers keep the same task-focused
+    contract as the code cells they introduce.
 
 2026-06-18
 ----------

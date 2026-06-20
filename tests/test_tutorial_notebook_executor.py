@@ -1698,6 +1698,29 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "load_output_table(" not in source
 
 
+def test_large_run_markdown_sections_document_purpose_and_outputs() -> None:
+    """Large-run section cells should state the task and the produced artifact."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_dir = repo_root / "docs" / "examples" / "large_run"
+
+    missing: list[str] = []
+    for notebook_path in sorted(notebook_dir.glob("step_*.ipynb")):
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            if cell.get("cell_type") != "markdown":
+                continue
+            source = "".join(cell.get("source", []))
+            first_line = next((line.strip() for line in source.splitlines() if line.strip()), "")
+            if not first_line.startswith("##"):
+                continue
+            if first_line.startswith("# ") or ("Purpose:" in source and "Outputs:" in source):
+                continue
+            missing.append(f"{notebook_path.name} cell {index}: {first_line}")
+
+    assert not missing
+
+
 def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     """Large-run GeoJSON notebook should call package helpers, not CLI command cells."""
 
