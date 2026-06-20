@@ -1698,6 +1698,8 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert "--auto-port" in text
     assert "--require-source-overlap" in text
     assert "--source-overlap-scope event_station" in text
+    assert '--event-table "$TABLES/prepared_events.csv"' in text
+    assert '--station-table "$TABLES/prepared_stations.csv"' in text
     assert "SVTK_METRICS_DASHBOARD_ROW_LIMIT" in text
     assert "SVTK_QC_DASHBOARD_MAX_ROWS" in text
     assert "--kwargs dep=" not in text
@@ -1714,6 +1716,8 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert "lowpass_hz=" not in text
     assert '--metrics "$TABLES/metrics_long.parquet"' not in text
     assert '--input "$TABLES/metrics_long.parquet"' not in text
+    assert '--events "$TABLES/prepared_events.csv"' not in text
+    assert '--stations "$TABLES/prepared_stations.csv"' not in text
     assert "svtk plot metrics scatterplot \\\n     --config \"$CONFIG\"" in text
     assert "svtk plot metrics heatmap \\\n     --config \"$CONFIG\"" in text
 

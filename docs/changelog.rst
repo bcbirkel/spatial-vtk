@@ -80,6 +80,9 @@ Changelog
   - Configuration guide Slurm examples now use artifact-named
     ``--qc-slurm-script-output`` and ``--metrics-slurm-script-output`` flags
     instead of legacy ``--output`` wording.
+  - CLI workflow examples now use canonical ``--event-table`` and
+    ``--station-table`` metric-output flags instead of legacy ``--events`` and
+    ``--stations`` aliases.
   - QC dashboard startup now emits a single readiness warning that includes the
     specific trace-summary blocker, such as missing required columns, instead
     of showing a generic warning plus a second detailed warning.

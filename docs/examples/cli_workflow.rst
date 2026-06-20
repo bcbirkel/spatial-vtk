@@ -156,8 +156,8 @@ Plan a metric calculation, run it locally or in batches, and write the standard 
      --run-scenario "$SCENARIO"
 
    svtk metrics outputs \
-     --events "$TABLES/prepared_events.csv" \
-     --stations "$TABLES/prepared_stations.csv" \
+     --event-table "$TABLES/prepared_events.csv" \
+     --station-table "$TABLES/prepared_stations.csv" \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --residual-column log2_residual \
@@ -402,8 +402,8 @@ the source data supports them: ``n`` is the row count behind each summary row,
 .. code-block:: bash
 
    svtk metrics outputs \
-     --events "$TABLES/prepared_events.csv" \
-     --stations "$TABLES/prepared_stations.csv" \
+     --event-table "$TABLES/prepared_events.csv" \
+     --station-table "$TABLES/prepared_stations.csv" \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --residual-column log2_residual \
