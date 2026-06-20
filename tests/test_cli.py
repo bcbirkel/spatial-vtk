@@ -1775,17 +1775,22 @@ def test_cli_reference_frames_svtk_call_as_advanced_escape_hatch():
     root = Path(__file__).resolve().parents[1]
     index_text = (root / "docs" / "reference" / "cli_api.rst").read_text(encoding="utf-8")
     call_text = (root / "docs" / "reference" / "cli" / "call.rst").read_text(encoding="utf-8")
+    cli_source = (root / "src" / "spatial_vtk" / "cli" / "__init__.py").read_text(encoding="utf-8")
 
     assert "Advanced one-off escape hatch" in index_text
     assert "Advanced Escape Hatch" in call_text
     assert "Prefer the named ``config``, ``io``, ``qc``, ``metrics``" in index_text
     assert "one-off public Spatial-VTK functions outside the named workflow commands" in call_text
+    assert "Register the advanced one-off public-function CLI command" in cli_source
+    assert "advanced public-function call result" in cli_source
     assert "spatial_vtk.config.metric_display_name" in call_text
     assert "spatial_vtk.config.labels.metric_display_name" not in call_text
     assert "Call any importable Spatial-VTK Python function." not in index_text
     assert "Call any importable Spatial-VTK Python function." not in call_text
     assert "do not yet have curated" not in index_text
     assert "do not yet have curated" not in call_text
+    assert "generic Python-call CLI command" not in cli_source
+    assert "generic command result" not in cli_source
 
 
 def test_metric_cli_commands_use_public_metrics_surface():

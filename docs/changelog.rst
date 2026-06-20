@@ -43,6 +43,9 @@ Changelog
     wrapper remains the documented default for heavy notebook steps, while
     direct function execution is described as an explicit primitive for callers
     that already own readiness and skip logic.
+  - Aligned internal CLI call/result helper docstrings with the public
+    ``svtk call`` guidance so direct public-function calls are consistently
+    framed as advanced one-off usage rather than generic workflow commands.
   - Aligned API docs, generated CLI reference, workflow guides, README
     install guidance, and tutorial notebooks with the stabilized public import
     surfaces and result-object workflow.

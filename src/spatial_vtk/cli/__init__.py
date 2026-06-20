@@ -1842,7 +1842,7 @@ def _add_common_figure_options(parser: argparse.ArgumentParser, *, exclude: set[
 
 
 def _add_call_command(subparsers: argparse._SubParsersAction[argparse.ArgumentParser]) -> None:
-    """Register the generic Python-call CLI command."""
+    """Register the advanced one-off public-function CLI command."""
 
     call = subparsers.add_parser(
         "call",
@@ -3711,7 +3711,7 @@ def _write_table(df: Any, path: str | Path) -> Path:
 
 
 def _write_result(result: Any, output: str | Path) -> None:
-    """Write a generic command result to disk."""
+    """Write one advanced public-function call result to disk."""
 
     path = Path(output).expanduser()
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -3735,7 +3735,7 @@ def _write_result(result: Any, output: str | Path) -> None:
 
 
 def _print_result(result: Any) -> None:
-    """Print a generic command result."""
+    """Print one advanced public-function call result."""
 
     if _is_pandas_dataframe(result):
         print(result.to_csv(index=False))
