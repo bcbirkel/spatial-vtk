@@ -33,6 +33,9 @@ Changelog
     building, overlap-sidecar writing, and compact-summary table writing so
     the large-run QC notebook no longer imports or passes the lower-level
     configured QC writer/readiness functions directly.
+  - Rewired the standard Step 2 QC notebook to use the same QC output result
+    methods, including package-owned skipped-step payloads when configured
+    outputs are already current.
 
 - **Step 3 workflow helpers** *(Added)*
 

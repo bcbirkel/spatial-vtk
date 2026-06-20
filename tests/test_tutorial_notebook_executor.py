@@ -692,28 +692,34 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
         repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb"
     ).read_text(encoding="utf-8")
 
-    assert "run_qc_inventory_from_config(" in standard_text
-    assert "write_qc_inventory_overlap_from_config(" in standard_text
-    assert "run_qc_summary_workflow_from_config(" in standard_text
-    assert "run_notebook_step_if_needed(" in standard_text
+    assert "run_qc_inventory_from_config(" not in standard_text
+    assert "write_qc_inventory_overlap_from_config(" not in standard_text
+    assert "run_qc_summary_workflow_from_config(" not in standard_text
+    assert "run_notebook_step_if_needed(" not in standard_text
     assert "notebook_step_result(" not in standard_text
     assert "qc_inputs.step_result(" not in standard_text
-    assert "qc_inputs.qc_inventory_step_result(qc_readiness)" in standard_text
-    assert "qc_inputs.qc_overlap_step_result(overlap_readiness, scope=overlap_scope)" in standard_text
-    assert "qc_inputs.qc_summary_step_result(summary_readiness)" in standard_text
-    assert "qc_readiness = qc_inventory_readiness_from_config(" in standard_text
-    assert "overlap_readiness = qc_overlap_readiness_from_config(" in standard_text
-    assert "summary_readiness = qc_summary_readiness_from_config(" in standard_text
+    assert "qc_inputs.qc_inventory_step_result(" not in standard_text
+    assert "qc_inputs.qc_overlap_step_result(" not in standard_text
+    assert "qc_inputs.qc_summary_step_result(" not in standard_text
+    assert "qc_readiness = qc_inventory_readiness_from_config(" not in standard_text
+    assert "overlap_readiness = qc_overlap_readiness_from_config(" not in standard_text
+    assert "summary_readiness = qc_summary_readiness_from_config(" not in standard_text
     assert "qc_outputs.readiness(" not in standard_text
     assert '"reused": not qc_readiness.should_run' not in standard_text
     assert '"reused": not overlap_readiness.should_run' not in standard_text
     assert '"reused": not summary_readiness.should_run' not in standard_text
     assert "run_local=True" in standard_text
     assert "load_standard_qc_inputs," in standard_text
-    assert "qc_inventory_readiness_from_config," in standard_text
-    assert "qc_overlap_readiness_from_config," in standard_text
-    assert "qc_summary_readiness_from_config," in standard_text
+    assert "load_standard_qc_workflow_outputs," in standard_text
+    assert "qc_inventory_readiness_from_config," not in standard_text
+    assert "qc_overlap_readiness_from_config," not in standard_text
+    assert "qc_summary_readiness_from_config," not in standard_text
     assert "qc_inputs = load_standard_qc_inputs(cfg=cfg)" in standard_text
+    assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in standard_text
+    assert "qc_outputs.run_inventory_step_if_needed(" in standard_text
+    assert "qc_outputs.run_overlap_step_if_needed(" in standard_text
+    assert "qc_outputs.run_summary_step_if_needed(" in standard_text
+    assert "scope=overlap_scope" in standard_text
     assert "qc_inputs.status_frame()" in standard_text
     assert "ingest_outputs.load_tables(" not in standard_text
     assert 'qc_outputs = output_group("step_02_qc", cfg=cfg)' not in standard_text

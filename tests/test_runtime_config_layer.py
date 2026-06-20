@@ -2661,6 +2661,7 @@ outputs:
         overwrite=True,
         write_overwrite=False,
         chunksize=123,
+        scope="event_station",
     ) == {"readiness": "overlap-readiness"}
     assert qc_outputs.run_summary_step_if_needed(
         context,
@@ -2687,9 +2688,85 @@ outputs:
     assert run_calls[1]["kwargs"]["script_name"] == "step02_qc_overlap_sidecar.slurm"
     assert run_calls[1]["kwargs"]["kwargs"]["chunksize"] == 123
     assert run_calls[1]["kwargs"]["kwargs"]["overwrite"] is False
+    assert run_calls[1]["kwargs"]["kwargs"]["scope"] == "event_station"
     assert run_calls[2]["kwargs"]["script_name"] == "step02_qc_summary_tables.slurm"
     assert run_calls[2]["kwargs"]["kwargs"]["chunksize"] == 456
     assert run_calls[2]["kwargs"]["kwargs"]["overwrite"] is False
+    clear_active_config()
+
+
+def test_qc_workflow_output_result_returns_skipped_step_payloads(tmp_path, monkeypatch):
+    """Current Step 2 QC gates should still return displayable notebook payloads."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+
+    class Context:
+        config_path = tmp_path / "fallback.yaml"
+        run_scenario = "fallback"
+
+    class Ready:
+        should_run = False
+        reason = "current"
+        message = "Already current"
+
+        def status_frame(self):  # noqa: ANN202
+            return pd.DataFrame()
+
+    def fake_run_notebook_step_if_needed(*_args, **_kwargs):  # noqa: ANN202
+        return None
+
+    monkeypatch.setattr("spatial_vtk.config.run_notebook_step_if_needed", fake_run_notebook_step_if_needed)
+
+    import spatial_vtk.qc.build.workflow as qc_workflow
+
+    monkeypatch.setattr(qc_workflow, "qc_inventory_readiness_from_config", lambda **_kwargs: Ready())
+    monkeypatch.setattr(qc_workflow, "qc_overlap_readiness_from_config", lambda **_kwargs: Ready())
+    monkeypatch.setattr(qc_workflow, "qc_summary_readiness_from_config", lambda **_kwargs: Ready())
+
+    def fake_function(**_kwargs):  # noqa: ANN202
+        return {"ok": True}
+
+    monkeypatch.setattr("spatial_vtk.qc.run_qc_inventory_from_config", fake_function)
+    monkeypatch.setattr(qc_workflow, "write_qc_inventory_overlap_from_config", fake_function)
+    monkeypatch.setattr(qc_workflow, "run_qc_summary_workflow_from_config", fake_function)
+
+    qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)
+    context = Context()
+    inventory = qc_outputs.run_inventory_step_if_needed(context)
+    overlap = qc_outputs.run_overlap_step_if_needed(context, scope="event_station")
+    summary = qc_outputs.run_summary_step_if_needed(context)
+
+    assert inventory["reused"] is True
+    assert inventory["reason"] == "current"
+    assert inventory["message"] == "Already current"
+    assert inventory["qc_trace_summary_path"] == str(qc_outputs.outputs.trace_qc_path)
+    assert inventory["qc_inventory_path"] == str(qc_outputs.outputs.qc_inventory_path)
+    assert inventory["qc_inventory_overlap_path"] == str(qc_outputs.outputs.qc_inventory_overlap_path)
+    assert overlap == {
+        "reused": True,
+        "reason": "current",
+        "message": "Already current",
+        "qc_inventory_overlap_path": str(qc_outputs.outputs.qc_inventory_overlap_path),
+        "scope": "event_station",
+    }
+    assert summary == {
+        "reused": True,
+        "reason": "current",
+        "message": "Already current",
+        "comparison_eligible_path": str(qc_outputs.outputs.comparison_eligible_path),
+    }
     clear_active_config()
 
 

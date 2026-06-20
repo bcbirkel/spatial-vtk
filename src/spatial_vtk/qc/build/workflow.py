@@ -271,6 +271,39 @@ class StandardQCWorkflowOutputResult:
 
         return self.outputs.status_frame()
 
+    def step_result(self, readiness: OutputReadiness, **values: Any) -> dict[str, Any]:
+        """Return a standard fallback payload for a skipped Step 2 QC gate."""
+
+        from spatial_vtk.config import notebook_step_result
+
+        return notebook_step_result(readiness, **values)
+
+    def qc_inventory_step_result(self, readiness: OutputReadiness) -> dict[str, Any]:
+        """Return the standard fallback payload for the full QC inventory gate."""
+
+        return self.step_result(
+            readiness,
+            qc_trace_summary_path=self.outputs.trace_qc_path,
+            qc_inventory_path=self.outputs.qc_inventory_path,
+            qc_inventory_overlap_path=self.outputs.qc_inventory_overlap_path,
+        )
+
+    def qc_overlap_step_result(self, readiness: OutputReadiness, *, scope: str | None = None) -> dict[str, Any]:
+        """Return the standard fallback payload for the overlap QC sidecar gate."""
+
+        values: dict[str, Any] = {"qc_inventory_overlap_path": self.outputs.qc_inventory_overlap_path}
+        if scope is not None:
+            values["scope"] = scope
+        return self.step_result(readiness, **values)
+
+    def qc_summary_step_result(self, readiness: OutputReadiness) -> dict[str, Any]:
+        """Return the standard fallback payload for compact QC summary outputs."""
+
+        return self.step_result(
+            readiness,
+            comparison_eligible_path=self.outputs.comparison_eligible_path,
+        )
+
     def display_summary_previews(
         self,
         *,
@@ -346,7 +379,7 @@ class StandardQCWorkflowOutputResult:
             overwrite=overwrite,
             current_message=current_message,
         )
-        return run_notebook_step_if_needed(
+        result = run_notebook_step_if_needed(
             context,
             readiness,
             run_qc_inventory_from_config,
@@ -364,6 +397,7 @@ class StandardQCWorkflowOutputResult:
             section=section,
             display_fn=display_fn,
         )
+        return result or self.qc_inventory_step_result(readiness)
 
     def run_overlap_step_if_needed(
         self,
@@ -372,6 +406,7 @@ class StandardQCWorkflowOutputResult:
         overwrite: bool = False,
         write_overwrite: bool = True,
         chunksize: int = 1_000_000,
+        scope: str | None = None,
         verbose: bool = True,
         current_message: str | None = "Overlap QC sidecar is current; skipping.",
         script_name: str = "step02_qc_overlap_sidecar.slurm",
@@ -395,7 +430,7 @@ class StandardQCWorkflowOutputResult:
             overwrite=overwrite,
             current_message=current_message,
         )
-        return run_notebook_step_if_needed(
+        result = run_notebook_step_if_needed(
             context,
             readiness,
             write_qc_inventory_overlap_from_config,
@@ -405,6 +440,7 @@ class StandardQCWorkflowOutputResult:
                 "chunksize": chunksize,
                 "overwrite": write_overwrite,
                 "verbose": verbose,
+                "scope": scope,
             },
             script_name=script_name,
             job_name=job_name,
@@ -415,6 +451,7 @@ class StandardQCWorkflowOutputResult:
             section=section,
             display_fn=display_fn,
         )
+        return result or self.qc_overlap_step_result(readiness, scope=scope)
 
     def run_summary_step_if_needed(
         self,
@@ -446,7 +483,7 @@ class StandardQCWorkflowOutputResult:
             overwrite=overwrite,
             current_message=current_message,
         )
-        return run_notebook_step_if_needed(
+        result = run_notebook_step_if_needed(
             context,
             readiness,
             run_qc_summary_workflow_from_config,
@@ -466,6 +503,7 @@ class StandardQCWorkflowOutputResult:
             section=section,
             display_fn=display_fn,
         )
+        return result or self.qc_summary_step_result(readiness)
 
 
 def load_standard_qc_workflow_outputs(
