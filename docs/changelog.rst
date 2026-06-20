@@ -68,6 +68,9 @@ Changelog
   - Spatial API guidance now presents the Step 4 output-status/result helpers
     before the direct spatial-statistics runner, keeping routine notebook docs
     aligned with the large-run driver pattern.
+  - Metrics API guidance now presents the standard Step 3 workflow result
+    helper before lower-level planning and batch-execution helpers, keeping
+    routine notebook docs aligned with the result-object workflow.
   - QC dashboard startup now emits a single readiness warning that includes the
     specific trace-summary blocker, such as missing required columns, instead
     of showing a generic warning plus a second detailed warning.

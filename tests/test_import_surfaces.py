@@ -832,6 +832,14 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "lower-level calculation modules are implementation" in text
     assert "lower-level workflow modules are implementation" in text
     assert "Public workflow helpers exposed by ``spatial_vtk.metrics``" in text
+    assert text.index("load_standard_metric_workflow_outputs") < text.index("plan_metric_tasks_from_config")
+    workflow_table = text.split("Public workflow helpers exposed by ``spatial_vtk.metrics``", 1)[1].split(
+        "``PSA`` and ``FAS``",
+        1,
+    )[0]
+    assert workflow_table.index("``load_standard_metric_workflow_outputs``") < workflow_table.index(
+        "``build_metric_waveform_inventories_from_config``"
+    )
     for helper in (
         "build_metric_waveform_inventories_from_config",
         "metric_inventories_readiness_from_config",

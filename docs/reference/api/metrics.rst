@@ -21,6 +21,7 @@ stable package surface.
 .. code-block:: python
 
    from spatial_vtk.metrics import (
+       load_standard_metric_workflow_outputs,
        MetricWorkflowTask,
        build_metric_waveform_inventories_from_config,
        cache_metric_manifest_waveforms,
@@ -32,7 +33,6 @@ stable package surface.
        metric_manifest_readiness_from_config,
        metric_slurm_submission_readiness,
        metric_slurm_submission_readiness_from_config,
-       load_standard_metric_workflow_outputs,
        plan_metric_tasks_from_config,
        read_task_manifest,
        run_manifest_batch,
@@ -72,6 +72,20 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
 
    * - Helper
      - Use
+   * - ``load_standard_metric_workflow_outputs``
+     - Load configured Step 3 output handles, the preprocessed trace metadata
+       dependency, a status frame, and bounded preview helpers such as the
+       ``metrics_long`` display helper ``display_metrics_preview()`` for
+       standard metric notebooks. The returned result also owns task-estimate
+       loading through ``with_task_estimate()``, configured downstream output
+       writing through ``write_configured_outputs()``, standard diagnostic
+       figure rendering through ``write_standard_diagnostic_figures()``,
+       focused station-map rendering through ``write_station_metric_map()``,
+       large-run Step 3 execution gates through the
+       ``run_*_step_if_needed()`` methods, and large-run metric figure-suite
+       rendering through ``write_large_run_figure_suite()``. Pass ``cfg=`` as
+       either a config object or a config file path; the result resolves
+       Step 3 outputs and preprocessing trace metadata from the same config.
    * - ``build_metric_waveform_inventories_from_config``
      - Build observed and synthetic metric-ready waveform inventories from the
        active config and preprocessed waveform metadata.
@@ -104,21 +118,6 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
    * - ``write_metric_outputs_from_config``
      - Write downstream long, enriched, dashboard, and summary metric outputs
        from registered config paths.
-   * - ``load_standard_metric_workflow_outputs``
-     - Load configured Step 3 output handles, the preprocessed trace metadata
-       dependency, a status frame, and bounded preview helpers such as the
-       ``metrics_long`` display helper ``display_metrics_preview()`` for
-       standard metric notebooks. The returned result also owns task-estimate
-       loading through ``with_task_estimate()``, configured downstream output
-       writing through ``write_configured_outputs()``, standard diagnostic
-       figure rendering through ``write_standard_diagnostic_figures()``,
-       focused station-map rendering through ``write_station_metric_map()``,
-       large-run Step 3 execution gates through the
-       ``run_*_step_if_needed()`` methods, and large-run metric figure-suite
-       rendering through ``write_large_run_figure_suite()``. Pass ``cfg=`` as
-       either a config object or a config file path; the result resolves
-       Step 3 outputs and preprocessing trace metadata from the same config.
-
 ``PSA`` and ``FAS`` are broadband spectral metrics in the file-based workflow.
 Task planning separates them from passband-dependent metrics, writes blank
 ``passband`` values for spectral tasks, and stores oscillator-period outputs in
