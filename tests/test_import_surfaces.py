@@ -1757,6 +1757,25 @@ def test_visualize_api_docs_use_public_entry_points():
         assert helper in text
 
 
+def test_dashboard_export_docstring_starts_with_configured_helper():
+    """Dashboard export module docs should not lead notebooks to raw dataset writers."""
+
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "visualize"
+        / "dashboard"
+        / "export.py"
+    ).read_text(encoding="utf-8")
+
+    assert "prepare_configured_dashboard_datasets_from_notebook_settings(cfg=cfg)" in source
+    assert "write_dashboard_metric_dataset(metrics_df, \"dashboard_data\")" not in source
+    assert source.index("prepare_configured_dashboard_datasets_from_notebook_settings") < source.index(
+        "write_dashboard_metric_dataset(metrics_df, output_root)"
+    )
+
+
 def test_reference_docs_map_python_workflow_entry_points():
     """Docs should expose task-oriented Python workflow helpers for notebooks."""
 

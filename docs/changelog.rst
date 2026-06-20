@@ -548,6 +548,8 @@ Changelog
     titles so users can tell when event means have been removed.
   - Updated the configuration guide so notebook examples use standard workflow
     output helpers instead of registered table-write calls.
+  - Updated the dashboard export module docs so the configured dashboard
+    preparation helper appears before lower-level dataset writers.
 
 - **Notebook simplification** *(Rewired)*
 

@@ -7,8 +7,11 @@ datasets and reloads those datasets for summary generation.
 
 Usage examples
 --------------
-Write one dashboard dataset:
-  ``path = write_dashboard_metric_dataset(metrics_df, "dashboard_data")``
+Prepare configured dashboard datasets from a notebook or script:
+  ``result = prepare_configured_dashboard_datasets_from_notebook_settings(cfg=cfg)``
+
+Write one explicit dashboard row dataset in an advanced script:
+  ``path = write_dashboard_metric_dataset(metrics_df, output_root)``
 """
 
 from __future__ import annotations
