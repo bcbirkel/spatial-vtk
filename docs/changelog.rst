@@ -71,6 +71,9 @@ Changelog
   - ``svtk io inventory`` now exposes ``--waveform-inventory-output`` for the
     configured waveform inventory table while preserving ``--output`` as a
     legacy alias.
+  - ``svtk qc slurm`` now exposes ``--event-station-records`` and
+    ``--qc-slurm-script-output`` as artifact-named flags while preserving
+    ``--event-stations`` and ``--output`` as legacy aliases.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

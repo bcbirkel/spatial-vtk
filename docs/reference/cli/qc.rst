@@ -175,8 +175,9 @@ svtk qc slurm
 
 .. code-block:: bash
 
-   svtk qc slurm [-h] [--event-stations PATH] [--output PATH]
-                     [--config PATH] [--run-scenario RUN_SCENARIO]
+   svtk qc slurm [-h] [--event-station-records PATH]
+                     [--qc-slurm-script-output PATH] [--config PATH]
+                     [--run-scenario RUN_SCENARIO]
                      [--qc-trace-summary-output PATH]
                      [--qc-inventory-output PATH]
                      [--qc-overlap-inventory-output PATH] [--submit]
@@ -195,14 +196,14 @@ svtk qc slurm
      - No
      -
      - show this help message and exit
-   * - ``--event-stations``
+   * - ``--event-station-records``, ``--event-stations``
      - No
      -
-     - Filesystem path. Prepared event-station table. Defaults to configured output table 'event_station_records'.
-   * - ``--output``
+     - Filesystem path. Prepared event-station records table. Defaults to configured output table 'event_station_records'. Prefer --event-station-records; --event-stations is a legacy alias.
+   * - ``--qc-slurm-script-output``, ``--output``
      - No
      -
-     - Filesystem path. Output SLURM script path. Defaults to outputs/slurm/build_qc_inventory.slurm.
+     - Filesystem path. Output QC inventory SLURM script path. Defaults to outputs/slurm/build_qc_inventory.slurm. Prefer --qc-slurm-script-output; --output is a legacy alias.
    * - ``--config``
      - No
      -

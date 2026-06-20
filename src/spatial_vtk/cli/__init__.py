@@ -829,8 +829,28 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     queue.set_defaults(handler=_cmd_qc_manual_queue)
 
     slurm = qc_sub.add_parser("slurm", help="Write a SLURM script for QC inventory generation.")
-    slurm.add_argument("--event-stations", metavar="PATH", default=None, help="Prepared event-station table. Defaults to configured output table 'event_station_records'.")
-    slurm.add_argument("--output", metavar="PATH", default=None, help="Output SLURM script path. Defaults to outputs/slurm/build_qc_inventory.slurm.")
+    slurm.add_argument(
+        "--event-station-records",
+        "--event-stations",
+        dest="event_stations",
+        metavar="PATH",
+        default=None,
+        help=(
+            "Prepared event-station records table. Defaults to configured output table "
+            "'event_station_records'. Prefer --event-station-records; --event-stations is a legacy alias."
+        ),
+    )
+    slurm.add_argument(
+        "--qc-slurm-script-output",
+        "--output",
+        dest="output",
+        metavar="PATH",
+        default=None,
+        help=(
+            "Output QC inventory SLURM script path. Defaults to outputs/slurm/build_qc_inventory.slurm. "
+            "Prefer --qc-slurm-script-output; --output is a legacy alias."
+        ),
+    )
     slurm.add_argument("--config", default=None, help="Config file containing compute.slurm or qc.slurm settings.")
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     slurm.add_argument(

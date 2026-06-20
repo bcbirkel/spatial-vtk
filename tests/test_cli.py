@@ -1519,6 +1519,12 @@ def test_generated_cli_reference_names_qc_output_aliases():
     assert "Prefer --qc-trace-summary; --trace-summary is a legacy alias." in manual_queue_section
     assert "Prefer --manual-review-queue-output; --output is a legacy alias." in manual_queue_section
     assert "manual_review_queue" in manual_queue_section
+    assert "[--event-station-records PATH]" in slurm_section
+    assert "[--qc-slurm-script-output PATH]" in slurm_section
+    assert "``--event-station-records``, ``--event-stations``" in slurm_section
+    assert "``--qc-slurm-script-output``, ``--output``" in slurm_section
+    assert "Prefer --event-station-records; --event-stations is a legacy alias." in slurm_section
+    assert "Prefer --qc-slurm-script-output; --output is a legacy alias." in slurm_section
     for section in (build_section, slurm_section):
         assert "``--qc-trace-summary-output``, ``--trace-output``" in section
         assert "``--qc-inventory-output``, ``--inventory-output``" in section
