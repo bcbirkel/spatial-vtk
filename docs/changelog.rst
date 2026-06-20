@@ -46,6 +46,9 @@ Changelog
   - Aligned internal CLI call/result helper docstrings with the public
     ``svtk call`` guidance so direct public-function calls are consistently
     framed as advanced one-off usage rather than generic workflow commands.
+  - Reworded workflow-guide output-group guidance so standard result objects
+    remain the default notebook object and reusable output groups are described
+    as artifact-named helpers for custom or compatibility paths.
   - Aligned API docs, generated CLI reference, workflow guides, README
     install guidance, and tutorial notebooks with the stabilized public import
     surfaces and result-object workflow.

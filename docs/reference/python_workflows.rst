@@ -169,7 +169,7 @@ the large-run notebooks.
        Prefer direct attributes when a cell needs a resolved path; standard
        result objects expose common paths directly, such as
        ``metric_outputs.metrics_long_path`` for Step 3 metric figures, while
-       generic output groups expose paths such as
+       reusable output groups expose the same artifact-named paths, such as
        ``step_outputs.metrics_long_path``. ``bind()`` remains available for
        older notebooks but should not be the default pattern for new tutorial
        cells.

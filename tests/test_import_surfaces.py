@@ -2307,6 +2307,8 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "exact signatures, return contracts, and supporting public helpers" in workflows
     assert "exact signatures and lower-level utilities" not in workflows
     assert "``metric_outputs.metrics_long_path`` for Step 3 metric figures" in workflows
+    assert "reusable output groups expose the same artifact-named paths" in workflows
+    assert "generic output groups expose paths" not in workflows
     assert "``bind()`` remains available for older notebooks" in workflows
     assert "Use ``figure_path()`` for figure artifacts" in workflows
     assert "``figure_dir / \"name.png\"``" in workflows
