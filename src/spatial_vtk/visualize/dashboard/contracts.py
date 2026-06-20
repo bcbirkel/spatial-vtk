@@ -120,7 +120,7 @@ def read_dashboard_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
     if path.suffix.lower() in {".parquet", ".pq"}:
         return pd.read_parquet(path)
     if path.suffix.lower() == ".csv":
-        return pd.read_csv(path)
+        return pd.read_csv(path, low_memory=False)
     raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
 
 

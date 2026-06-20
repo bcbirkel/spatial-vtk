@@ -859,7 +859,7 @@ def _read_dashboard_metric_table(path: Path, *, columns: Sequence[str] | None = 
         return pd.read_parquet(path, columns=selected)
     if suffix == ".csv":
         if selected is None:
-            return pd.read_csv(path)
+            return pd.read_csv(path, low_memory=False)
         wanted = set(selected)
         return pd.read_csv(path, usecols=lambda column: column in wanted, low_memory=False)
     raise ValueError(f"Unsupported dashboard metric table format for {path}. Use Parquet or CSV.")
@@ -1277,7 +1277,7 @@ def _read_metric_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
     path = Path(table).expanduser()
     if path.suffix.lower() in {".parquet", ".pq"}:
         return pd.read_parquet(path)
-    return pd.read_csv(path)
+    return pd.read_csv(path, low_memory=False)
 
 
 def _as_sequence(value: pd.DataFrame | str | Path | Sequence[pd.DataFrame | str | Path]) -> list[pd.DataFrame | str | Path]:

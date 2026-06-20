@@ -47,6 +47,7 @@ from spatial_vtk.visualize.dashboard.tables import build_dashboard_summaries
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _available_nonempty_value_columns
 import spatial_vtk.visualize.dashboard.streamlit_metrics as streamlit_metrics
 import spatial_vtk.visualize.dashboard.contracts as dashboard_contracts
+import spatial_vtk.visualize.dashboard.export as dashboard_export
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metrics_dashboard_startup_blocker
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _bounded_summary_display_frame
 from spatial_vtk.visualize.dashboard.streamlit_metrics import _metric_dataset_readiness_message
@@ -775,6 +776,49 @@ def test_dashboard_summaries_do_not_require_residual_column():
     residual_columns = available_dashboard_value_columns(with_residual["model_metric_band"])
     assert "med_resid" in residual_columns
     assert "med_residual" in residual_columns
+
+
+def test_dashboard_csv_table_reads_disable_chunked_dtype_inference(tmp_path, monkeypatch):
+    """Dashboard full CSV reads should avoid mixed-type DtypeWarning surprises."""
+
+    csv_path = tmp_path / "summary.csv"
+    csv_path.write_text("station,value\n001,1\nSTA2,2\n", encoding="utf-8")
+    calls: list[dict[str, object]] = []
+
+    def fake_read_csv(path, **kwargs):  # noqa: ANN001
+        calls.append(dict(kwargs))
+        return pd.DataFrame({"station": ["001", "STA2"], "value": [1, 2]})
+
+    monkeypatch.setattr(dashboard_contracts.pd, "read_csv", fake_read_csv)
+
+    dashboard_contracts.read_dashboard_table(csv_path)
+
+    assert calls == [{"low_memory": False}]
+
+
+def test_dashboard_metric_csv_loads_disable_chunked_dtype_inference(tmp_path, monkeypatch):
+    """Metric dashboard CSV loaders should use stable dtype inference for full reads."""
+
+    csv_path = tmp_path / "metrics_long.csv"
+    csv_path.write_text("model,metric,station,value\nm1,PGA,001,1\nm1,PGA,STA2,2\n", encoding="utf-8")
+    calls: list[dict[str, object]] = []
+
+    def fake_read_csv(path, **kwargs):  # noqa: ANN001
+        calls.append(dict(kwargs))
+        return pd.DataFrame(
+            {
+                "model": ["m1", "m1"],
+                "metric": ["PGA", "PGA"],
+                "station": ["001", "STA2"],
+                "value": [1, 2],
+            }
+        )
+
+    monkeypatch.setattr(dashboard_export.pd, "read_csv", fake_read_csv)
+
+    dashboard_export.load_dashboard_metric_dataset(csv_path)
+
+    assert calls == [{"low_memory": False}]
 
 
 def test_dashboard_summaries_preserve_pair_only_value_column():
