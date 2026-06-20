@@ -604,7 +604,7 @@ def _render_dashboard_readiness(readiness: pd.DataFrame, *, message: str | None 
     ready = readiness[ready_column].map(lambda value: dashboard_ready_value(value, default=False))
     if bool(ready.all()):
         return
-    detail = str(message or "").strip()
+    detail = str(message or "").strip() or _dashboard_readiness_warning_detail(readiness, ready_column=ready_column)
     warning = "Some dashboard summary tables are not ready."
     if detail and detail != warning:
         warning = f"{warning} {detail}"
@@ -613,6 +613,25 @@ def _render_dashboard_readiness(readiness: pd.DataFrame, *, message: str | None 
     st.warning(warning)
     shown = _select_readiness_columns(readiness, SUMMARY_READINESS_DISPLAY_COLUMNS)
     st.dataframe(_display_table(shown), width="stretch")
+
+
+def _dashboard_readiness_warning_detail(readiness: pd.DataFrame, *, ready_column: str) -> str:
+    """Return a concise detail string for not-ready dashboard summary rows."""
+
+    if readiness.empty or ready_column not in readiness.columns:
+        return ""
+    not_ready = readiness.loc[~readiness[ready_column].map(lambda value: dashboard_ready_value(value, default=False))]
+    details: list[str] = []
+    for _, row in not_ready.iterrows():
+        message = str(row.get("tab_message") or row.get("message") or "").strip()
+        if message:
+            details.append(message)
+    unique = list(dict.fromkeys(details))
+    if not unique:
+        return ""
+    shown = unique[:3]
+    suffix = f" {len(unique) - len(shown)} more issue(s) are listed in Data Status." if len(unique) > len(shown) else ""
+    return " ".join(shown) + suffix
 
 
 def _render_data_status_tab(

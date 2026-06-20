@@ -1303,11 +1303,41 @@ def test_metrics_dashboard_readiness_warning_uses_tab_ready(monkeypatch):
     streamlit_metrics._render_dashboard_readiness(readiness)
 
     assert warnings == [
-        "Some dashboard summary tables are not ready. Affected tabs may be empty until those files are rebuilt."
+        "Some dashboard summary tables are not ready. station_rollup summary can populate its table, but its map needs coordinate columns."
     ]
     assert len(rendered) == 1
     assert rendered[0].loc[0, "Tab Ready"] is False
     assert "coordinate columns" in rendered[0].loc[0, "Tab Message"]
+
+
+def test_metrics_dashboard_readiness_warning_summarizes_multiple_tab_messages(monkeypatch):
+    """Readiness warnings should be specific but bounded for many broken tabs."""
+
+    readiness = pd.DataFrame(
+        {
+            "dashboard_table": ["station_rollup", "event_rollup", "path_hex", "extra"],
+            "ready": [True, True, False, False],
+            "tab_ready": [False, False, False, False],
+            "message": ["ready", "ready", "path_hex summary is missing.", "extra summary is missing."],
+            "tab_message": [
+                "station map needs coordinates.",
+                "event map needs coordinates.",
+                "path_hex summary is missing.",
+                "extra summary is missing.",
+            ],
+        }
+    )
+    warnings: list[str] = []
+
+    monkeypatch.setattr(streamlit_metrics.st, "warning", lambda message: warnings.append(str(message)))
+    monkeypatch.setattr(streamlit_metrics.st, "dataframe", lambda frame, **kwargs: None)
+
+    streamlit_metrics._render_dashboard_readiness(readiness)
+
+    assert warnings == [
+        "Some dashboard summary tables are not ready. station map needs coordinates. "
+        "event map needs coordinates. path_hex summary is missing. 1 more issue(s) are listed in Data Status."
+    ]
 
 
 def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):

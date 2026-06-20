@@ -420,6 +420,10 @@ Changelog
   - Made ``svtk dashboard status`` show the clearer ``resolved_path`` column in
     human-readable output while preserving ``path`` in machine-readable status
     frames.
+  - Made metrics-dashboard readiness warnings include specific tab blocker
+    messages, such as missing map-coordinate columns, while bounding long
+    warning banners and pointing users to the Data Status tab for the full
+    table.
   - Hardened Streamlit dashboard launch checks so occupied ports are detected
     before launch and delayed startup failures are reported before the CLI
     prints a running-dashboard URL.
