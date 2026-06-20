@@ -322,11 +322,13 @@ the large-run notebooks.
        value-column checks, settings resolution, and sidecar options so
        notebook cells do not repeat metric-table existence checks or build
        figure contexts by hand.
-       For large-run spatial figures, use
-       ``spatial_vtk.spatial.plot.write_large_run_spatial_figure_suite_from_notebook_settings``.
-       That wrapper owns spatial table readiness checks, figure settings,
-       configured output paths, and row-provenance sidecars so notebooks do
-       not build spatial figure contexts or per-plot paths by hand.
+       For large-run spatial figures, call
+       ``spatial_vtk.spatial.load_standard_spatial_workflow_output_status(...).write_figure_suite(...)``
+       with ``notebook_figure_settings("spatial", figure_subdir="metrics")``.
+       The result object owns the notebook-facing render path and delegates
+       table readiness checks, figure settings, configured output paths, and
+       row-provenance sidecars to package code, so notebooks do not build
+       spatial figure contexts or per-plot paths by hand.
    * - ``spatial_vtk.config.render_notebook_figure``
      - Call one plotting helper with a configured ``OutputGroup`` figure path,
        the relevant ``NotebookFigureSettings`` object, optional basemap
@@ -610,7 +612,7 @@ should build only a curated subset.
      - per-metric station-bias and residual-grid figures, compact write status
        table, and optional row-provenance sidecars
    * - Render large-run spatial figures
-     - ``spatial_vtk.spatial.plot.write_large_run_spatial_figure_suite_from_notebook_settings``
+     - ``spatial_vtk.spatial.load_standard_spatial_workflow_output_status(...).write_figure_suite(...)``
      - saved spatial figures, package-generated spatial table/dimension status
        summaries, and optional row-provenance sidecars
 

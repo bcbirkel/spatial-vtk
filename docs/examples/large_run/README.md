@@ -50,9 +50,16 @@ from spatial_vtk.qc import load_standard_qc_workflow_outputs
 from spatial_vtk.spatial import load_standard_spatial_workflow_output_status
 from spatial_vtk.spatial.plot import (
     load_standard_geojson_workflow_output_status,
-    write_large_run_spatial_figure_suite_from_notebook_settings,
 )
 from spatial_vtk.visualize.dashboard import prepare_configured_dashboard_datasets_from_notebook_settings
+```
+
+Step 4 large-run spatial figures should be rendered through the standard
+spatial output result:
+
+```python
+spatial_outputs = load_standard_spatial_workflow_output_status(cfg=context.cfg)
+spatial_figure_suite = spatial_outputs.write_figure_suite(spatial_figure_settings)
 ```
 
 Single-figure helpers remain available for ad-hoc Python scripts, but the

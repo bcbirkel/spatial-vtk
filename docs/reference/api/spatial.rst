@@ -158,7 +158,8 @@ import paths.
 The Step 4 status result remembers the config used to create it, so large-run
 notebooks can call ``run_summary_step_if_needed(...)``,
 ``run_derived_outputs_step_if_needed(...)``,
-``display_table_previews(nrows=...)``, and ``write_summary_figures(...)``
+``display_table_previews(nrows=...)``, ``write_summary_figures(...)``, and
+``write_figure_suite(...)``
 without repeating readiness checks, Slurm submission plumbing, ``cfg``, or
 direct writer imports in each cell. Display the run/skip/submission payload
 from the ``run_*_step_if_needed(...)`` methods with
@@ -396,9 +397,9 @@ Advanced Spatial Figure Extension Helpers
 The context builders in this section are public for custom scripts and
 extension code, but they are not the preferred tutorial or notebook entry
 points. New notebooks should call
-``write_large_run_spatial_figure_suite_from_notebook_settings`` or the standard
-workflow result-object figure methods so the package owns readiness checks,
-output bookkeeping, sidecars, and figure-family iteration.
+``load_standard_spatial_workflow_output_status(...).write_figure_suite(...)``
+or the standard workflow result-object figure methods so the package owns
+readiness checks, output bookkeeping, sidecars, and figure-family iteration.
 
 ``prepare_spatial_figure_context``
    Build a reusable ``SpatialFigureContext`` for scripts that need to control

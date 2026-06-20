@@ -1226,10 +1226,11 @@ def test_large_run_readme_distinguishes_public_and_implementation_imports() -> N
         "load_standard_qc_workflow_outputs",
         "load_standard_spatial_workflow_output_status",
         "load_standard_geojson_workflow_output_status",
-        "write_large_run_spatial_figure_suite_from_notebook_settings",
         "prepare_configured_dashboard_datasets_from_notebook_settings",
     ):
         assert helper in readme
+    assert "spatial_outputs.write_figure_suite(" in readme
+    assert "write_large_run_spatial_figure_suite_from_notebook_settings" not in readme
     assert "Import from stable public packages" in readme
     assert "deeper implementation modules below those packages" in readme
     for namespace in (
@@ -1644,7 +1645,8 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "run_or_submit_notebook_cli_command(" not in source
     assert '"svtk", "spatial"' not in source
     assert "should_rebuild_paths(" not in source
-    assert "write_large_run_spatial_figure_suite_from_notebook_settings(" in source
+    assert "spatial_outputs.write_figure_suite(" in source
+    assert "write_large_run_spatial_figure_suite_from_notebook_settings(" not in source
     assert "spatial_figure_suite.status_frame()" in source
     assert "spatial_figures.write_station_metric_maps(" not in source
     assert "spatial_figures.write_residual_grid_maps(" not in source
@@ -2544,7 +2546,8 @@ def test_large_run_step04_spatial_figures_show_spectral_contract_status() -> Non
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "spatial_figure_suite = write_large_run_spatial_figure_suite_from_notebook_settings(" in source
+    assert "spatial_figure_suite = spatial_outputs.write_figure_suite(" in source
+    assert "write_large_run_spatial_figure_suite_from_notebook_settings(" not in source
     assert "spatial_figures = spatial_figure_suite.context" not in source
     assert "spatial_figure_suite.display_context_status(display=display)" in source
     assert 'figure_subdir="metrics"' in source
@@ -2772,7 +2775,7 @@ def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> 
             "metric_figure_suite.display_context_status(display=display)",
         ),
         "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": (
-            "write_large_run_spatial_figure_suite_from_notebook_settings(",
+            "spatial_outputs.write_figure_suite(",
             "spatial_figure_suite.status_frame()",
             "spatial_figure_suite.display_context_status(display=display)",
         ),

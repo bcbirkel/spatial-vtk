@@ -521,13 +521,13 @@ Changelog
     package-owned figure-suite wrapper rather than lower-level metric
     figure-context and row-selection helpers.
   - Updated Python workflow guidance so large-run spatial plotting points to
-    the package-owned figure-suite wrapper rather than lower-level spatial
-    figure-context helpers.
+    the result-owned ``write_figure_suite(...)`` method rather than
+    lower-level spatial figure-context helpers.
   - Clarified dashboard API guidance so notebooks display user-facing artifact
     labels instead of internal dashboard output-registry names.
   - Updated Spatial API examples so large-run plotting starts from the
-    package-owned spatial figure-suite wrapper, with context builders described
-    as advanced helpers.
+    package-owned spatial workflow result, with context builders described as
+    advanced helpers.
   - Updated Metrics API examples so plotting starts from package-owned figure
     wrappers, with row-selection helpers described as advanced script APIs.
   - Updated Visualization API examples so notebook-facing waveform and

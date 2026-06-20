@@ -7,12 +7,14 @@ entry point without importing every plot family at package import time.
 
 Usage examples
 --------------
-Render the configured large-run spatial figure suite:
-  ``from spatial_vtk.spatial.plot import write_large_run_spatial_figure_suite_from_notebook_settings``
-  ``result = write_large_run_spatial_figure_suite_from_notebook_settings(settings)``
+Render the configured large-run spatial figure suite from a notebook:
+  ``from spatial_vtk.spatial import load_standard_spatial_workflow_output_status``
+  ``spatial_outputs = load_standard_spatial_workflow_output_status(cfg=cfg)``
+  ``result = spatial_outputs.write_figure_suite(settings)``
 
-Use individual functions such as ``plot_correlogram()`` directly only for
-focused scripts that already own filtered spatial summary tables.
+Import ``write_large_run_spatial_figure_suite_from_notebook_settings`` or
+individual functions such as ``plot_correlogram()`` directly only for focused
+scripts that already own settings and filtered spatial summary tables.
 """
 
 from __future__ import annotations

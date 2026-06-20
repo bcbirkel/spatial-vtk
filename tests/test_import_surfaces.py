@@ -1251,9 +1251,10 @@ def test_plot_package_docstrings_prefer_large_run_suite_helpers():
     assert "Use individual functions such as ``plot_psa_period_curve()`` directly only" in metric_text
     assert "Plot PSA residuals by period" not in metric_text
 
+    assert "load_standard_spatial_workflow_output_status" in spatial_text
+    assert "result = spatial_outputs.write_figure_suite(settings)" in spatial_text
     assert "write_large_run_spatial_figure_suite_from_notebook_settings" in spatial_text
-    assert "result = write_large_run_spatial_figure_suite_from_notebook_settings(settings)" in spatial_text
-    assert "Use individual functions such as ``plot_correlogram()`` directly only" in spatial_text
+    assert "individual functions such as ``plot_correlogram()`` directly only" in spatial_text
     assert "Create a spatial correlation plot" not in spatial_text
 
 
@@ -1607,7 +1608,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "Notebook-facing spatial plotting should use the result-object and suite helpers" in text
     assert "Advanced Spatial Figure Extension Helpers" in text
     assert "not the preferred tutorial or notebook entry\npoints" in text
-    assert "New notebooks should call\n``write_large_run_spatial_figure_suite_from_notebook_settings``" in text
+    assert "New notebooks should call\n``load_standard_spatial_workflow_output_status(...).write_figure_suite(...)``" in text
     assert "exact ``figure_paths`` lists" in text
     assert "preview-oriented path fields" in text
     assert "station_summary_for_item" in text
@@ -2509,9 +2510,10 @@ def test_python_workflow_docs_prefer_spatial_figure_suite_wrapper():
     workflows = workflows_path.read_text(encoding="utf-8")
     normalized = " ".join(workflows.split())
 
-    assert "spatial_vtk.spatial.plot.write_large_run_spatial_figure_suite_from_notebook_settings" in workflows
-    assert "That wrapper owns spatial table readiness checks, figure settings" in workflows
+    assert "spatial_vtk.spatial.load_standard_spatial_workflow_output_status(...).write_figure_suite(...)" in workflows
+    assert "The result object owns the notebook-facing render path" in workflows
     assert "notebooks do not build spatial figure contexts or per-plot paths by hand" in normalized
+    assert "``spatial_vtk.spatial.load_standard_spatial_workflow_output_status(...).write_figure_suite(...)``" in workflows
     assert "Display results returned by the Step 4 ``run_*_step_if_needed(...)`` methods" in workflows
     assert "``spatial_vtk.config.display_notebook_step_result``" in workflows
     assert "spatial_vtk.spatial.plot.prepare_spatial_figure_context_from_notebook_settings" not in workflows

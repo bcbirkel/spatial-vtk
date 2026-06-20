@@ -2126,6 +2126,35 @@ outputs:
         }
     ]
 
+    spatial_figure_suite_calls: list[dict[str, object]] = []
+
+    def fake_write_spatial_figure_suite(settings, *, overwrite=False, **kwargs):
+        spatial_figure_suite_calls.append(
+            {
+                "settings": settings,
+                "overwrite": overwrite,
+                "kwargs": kwargs,
+            }
+        )
+        return "spatial-suite-result"
+
+    monkeypatch.setattr(
+        "spatial_vtk.spatial.plot.write_large_run_spatial_figure_suite_from_notebook_settings",
+        fake_write_spatial_figure_suite,
+    )
+    assert spatial_status.write_figure_suite(
+        spatial_figure_settings,
+        overwrite=True,
+        pca_summary_func="custom-pca",
+    ) == "spatial-suite-result"
+    assert spatial_figure_suite_calls == [
+        {
+            "settings": spatial_figure_settings,
+            "overwrite": True,
+            "kwargs": {"pca_summary_func": "custom-pca"},
+        }
+    ]
+
     summary_missing = spatial_summary_readiness_from_config(config_path=config_path)
 
     assert summary_missing.reason == "missing_inputs"

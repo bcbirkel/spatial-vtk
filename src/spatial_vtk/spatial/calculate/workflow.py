@@ -638,6 +638,28 @@ class StandardSpatialWorkflowOutputStatusResult:
             **kwargs,
         )
 
+    def write_figure_suite(
+        self,
+        settings: Any,
+        *,
+        overwrite: bool = False,
+        **kwargs: Any,
+    ) -> object:
+        """Write the full large-run Step 4 spatial figure suite.
+
+        The status result owns the configured Step 4 output bundle used by the
+        large-run spatial notebook, so notebooks can render the full suite
+        without importing the lower-level plotting module directly.
+        """
+
+        from spatial_vtk.spatial.plot import write_large_run_spatial_figure_suite_from_notebook_settings
+
+        return write_large_run_spatial_figure_suite_from_notebook_settings(
+            settings,
+            overwrite=overwrite,
+            **kwargs,
+        )
+
 
 @dataclass(frozen=True)
 class _SpatialMetricCheckpoint:
