@@ -528,6 +528,9 @@ Changelog
   - Updated Spatial API examples so large-run plotting starts from the
     package-owned spatial workflow result, with context builders described as
     advanced helpers.
+  - Promoted Step 5 GeoJSON and Step 6 additional-plotting input/status
+    loaders to the top-level ``spatial_vtk.spatial`` import surface so
+    notebooks use one workflow namespace for Steps 4-6.
   - Updated Metrics API examples so plotting starts from package-owned figure
     wrappers, with row-selection helpers described as advanced script APIs.
   - Updated Visualization API examples so notebook-facing waveform and

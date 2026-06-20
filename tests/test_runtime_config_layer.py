@@ -120,7 +120,7 @@ from spatial_vtk.metrics import (
     metric_inventories_readiness_from_config,
     metric_manifest_readiness_from_config,
 )
-from spatial_vtk.spatial.plot import (
+from spatial_vtk.spatial import (
     load_standard_additional_plotting_output_status,
     load_standard_geojson_plotting_inputs,
     load_standard_geojson_workflow_output_status,
@@ -3214,7 +3214,7 @@ outputs:
 def test_geojson_workflow_output_status_owns_large_run_step05_runners(tmp_path, monkeypatch):
     """Large-run Step 5 cells should delegate GeoJSON/corridor orchestration through the result object."""
 
-    from spatial_vtk.spatial.plot import load_standard_geojson_workflow_output_status
+    from spatial_vtk.spatial import load_standard_geojson_workflow_output_status
 
     monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
     config_path = tmp_path / "spatial-vtk.yaml"

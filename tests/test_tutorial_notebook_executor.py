@@ -1439,7 +1439,8 @@ def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
     assert "geojson_corridor_result.status_frame()" in source
     assert "write_standard_geojson_region_figures," not in source
     assert "write_standard_geojson_corridor_figures," not in source
-    assert "from spatial_vtk.spatial import (" not in source
+    assert "from spatial_vtk.spatial import load_standard_geojson_workflow_output_status" in source
+    assert "from spatial_vtk.spatial.plot import load_standard_geojson_workflow_output_status" not in source
     assert "load_standard_geojson_plotting_inputs" in source
     assert "geojson_inputs = load_standard_geojson_plotting_inputs(cfg=cfg)" in source
     assert "geojson_inputs.status_frame()" in source
@@ -2355,8 +2356,9 @@ def test_step05_uses_geojson_preview_helper() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "from spatial_vtk.spatial.plot import" in source
-    assert "load_standard_geojson_plotting_inputs," in source
+    assert "from spatial_vtk.spatial import load_standard_geojson_plotting_inputs" in source
+    assert "from spatial_vtk.spatial.plot import load_standard_geojson_plotting_inputs" not in source
+    assert "load_standard_geojson_plotting_inputs" in source
     assert "geojson_inputs = load_standard_geojson_plotting_inputs(cfg=cfg)" in source
     assert "geojson_inputs.status_frame()" in source
     assert "from spatial_vtk.spatial import (" not in source
@@ -2410,6 +2412,8 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "plotting_inputs = load_standard_additional_plotting_inputs(cfg=cfg)" in source
+    assert "from spatial_vtk.spatial import load_standard_additional_plotting_inputs" in source
+    assert "from spatial_vtk.spatial.plot import load_standard_additional_plotting_inputs" not in source
     assert "plotting_inputs.status_frame()" in source
     assert "ingest_outputs = output_group(\"step_01_ingest\", cfg=cfg)" not in source
     assert "ingest_tables = ingest_outputs.load_tables(" not in source
@@ -2473,6 +2477,8 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "load_standard_additional_plotting_output_status" in source
+    assert "from spatial_vtk.spatial import load_standard_additional_plotting_output_status" in source
+    assert "from spatial_vtk.spatial.plot import load_standard_additional_plotting_output_status" not in source
     assert "plotting_outputs = load_standard_additional_plotting_output_status(cfg=cfg)" in source
     assert "plotting_outputs.write_waveform_comparison(" in source
     assert "write_waveform_comparison_from_notebook_settings(" not in source

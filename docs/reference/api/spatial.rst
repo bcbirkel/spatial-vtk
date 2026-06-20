@@ -23,6 +23,10 @@ module names.
    from spatial_vtk.spatial import (
        load_standard_spatial_workflow_output_status,
        load_standard_spatial_workflow_outputs,
+       load_standard_geojson_workflow_output_status,
+       load_standard_geojson_plotting_inputs,
+       load_standard_additional_plotting_output_status,
+       load_standard_additional_plotting_inputs,
        run_geojson_region_summary_workflow_from_config,
        run_boundary_corridor_workflow_from_config,
        build_path_table,
@@ -57,6 +61,22 @@ Public helpers exposed by ``spatial_vtk.spatial``:
        ``write_diagnostic_figures()``. Pass ``cfg=`` as either a config object
        or a config file path; the loader resolves all Step 4 paths from that
        config without requiring active global config state.
+   * - ``load_standard_geojson_workflow_output_status``
+     - Load lightweight Step 5 output status, region/corridor runner methods,
+       bounded previews, and large-run region figures without loading full
+       GeoJSON or metric tables in notebook driver cells.
+   * - ``load_standard_geojson_plotting_inputs``
+     - Load standard Step 5 plotting inputs and configured output groups for
+       region and corridor figure suites without notebook-local table/path
+       plumbing.
+   * - ``load_standard_additional_plotting_output_status``
+     - Load lightweight Step 6 output status, bounded metric-source previews,
+       waveform comparison writing, and region-boxplot writing for large-run
+       notebooks.
+   * - ``load_standard_additional_plotting_inputs``
+     - Load standard Step 6 plotting inputs and configured output groups for
+       waveform, pattern, scatterplot, boxplot, and heatmap figures without
+       notebook-local table/path plumbing.
    * - ``run_spatial_statistics_workflow_from_config``
      - Build the configured metric-field, event-centered residual,
        station-bias, Moran's I, distance-correlation, clustering, PCA, and
@@ -217,7 +237,7 @@ tutorial-facing API.
 .. automodule:: spatial_vtk.spatial.plot
    :members:
 
-Public helpers exposed by ``spatial_vtk.spatial.plot``:
+Public plotting helpers and notebook workflow loaders:
 
 .. list-table::
    :header-rows: 1
@@ -447,22 +467,22 @@ readiness checks, output bookkeeping, sidecars, and figure-family iteration.
 .. autoclass:: spatial_vtk.spatial.plot.StandardGeoJSONPlottingInputResult
    :members:
 
-.. autofunction:: spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs
+.. autofunction:: spatial_vtk.spatial.load_standard_geojson_plotting_inputs
 
 .. autoclass:: spatial_vtk.spatial.plot.StandardGeoJSONWorkflowOutputStatusResult
    :members:
 
-.. autofunction:: spatial_vtk.spatial.plot.load_standard_geojson_workflow_output_status
+.. autofunction:: spatial_vtk.spatial.load_standard_geojson_workflow_output_status
 
 .. autoclass:: spatial_vtk.spatial.plot.StandardAdditionalPlottingInputResult
    :members:
 
-.. autofunction:: spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs
+.. autofunction:: spatial_vtk.spatial.load_standard_additional_plotting_inputs
 
 .. autoclass:: spatial_vtk.spatial.plot.StandardAdditionalPlottingOutputStatusResult
    :members:
 
-.. autofunction:: spatial_vtk.spatial.plot.load_standard_additional_plotting_output_status
+.. autofunction:: spatial_vtk.spatial.load_standard_additional_plotting_output_status
 
 .. autoclass:: spatial_vtk.spatial.plot.StandardAdditionalPlottingFigureResult
    :members:

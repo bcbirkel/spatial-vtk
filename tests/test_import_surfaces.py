@@ -139,6 +139,10 @@ def test_public_imports():
         run_boundary_corridor_workflow_from_config,
         boundary_corridor_readiness_from_config,
         geojson_region_summary_readiness_from_config,
+        load_standard_additional_plotting_output_status,
+        load_standard_additional_plotting_inputs,
+        load_standard_geojson_workflow_output_status,
+        load_standard_geojson_plotting_inputs,
         load_standard_spatial_workflow_output_status,
         load_standard_spatial_workflow_outputs,
         run_geojson_region_summary_workflow_from_config,
@@ -183,10 +187,6 @@ def test_public_imports():
         StandardGeoJSONWorkflowOutputStatusResult,
         StandardSpatialDiagnosticFigureResult,
         StandardSpatialMapFigureResult,
-        load_standard_additional_plotting_output_status,
-        load_standard_additional_plotting_inputs,
-        load_standard_geojson_workflow_output_status,
-        load_standard_geojson_plotting_inputs,
         prepare_spatial_figure_context_from_notebook_settings,
         write_standard_additional_plotting_figures,
         write_standard_geojson_corridor_figures,
@@ -1506,6 +1506,10 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     for helper in (
         "load_standard_spatial_workflow_output_status",
         "load_standard_spatial_workflow_outputs",
+        "load_standard_geojson_workflow_output_status",
+        "load_standard_geojson_plotting_inputs",
+        "load_standard_additional_plotting_output_status",
+        "load_standard_additional_plotting_inputs",
         "run_spatial_derived_outputs_workflow_from_config",
         "spatial_workflow_failure_frame",
         "spatial_correlation_preview_frame",
@@ -1542,7 +1546,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "from spatial_vtk.spatial.map import (" in text
     assert ".. automodule:: spatial_vtk.spatial.plot\n" in text
     assert ".. automodule:: spatial_vtk.spatial.map\n" in text
-    assert "Public helpers exposed by ``spatial_vtk.spatial.plot``" in text
+    assert "Public plotting helpers and notebook workflow loaders" in text
     for helper in (
         "plot_correlogram",
         "plot_semivariogram",
@@ -1565,7 +1569,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
         "write_standard_spatial_map_figures",
     ):
         assert helper in text
-    helper_table = text.split("Public helpers exposed by ``spatial_vtk.spatial.plot``", 1)[1].split(
+    helper_table = text.split("Public plotting helpers and notebook workflow loaders", 1)[1].split(
         "Large-Run Spatial Figure Suite",
         1,
     )[0]
@@ -2113,7 +2117,7 @@ def test_public_helper_tables_match_package_exports():
         ),
         "spatial_vtk.spatial.plot": (
             root / "docs" / "reference" / "api" / "spatial.rst",
-            "Public helpers exposed by ``spatial_vtk.spatial.plot``:",
+            "Public plotting helpers and notebook workflow loaders:",
         ),
         "spatial_vtk.spatial.map": (
             root / "docs" / "reference" / "api" / "spatial.rst",
@@ -2210,7 +2214,7 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.spatial.load_standard_spatial_workflow_output_status",
         "run_summary_step_if_needed",
         "run_derived_outputs_step_if_needed",
-        "spatial_vtk.spatial.plot.load_standard_geojson_workflow_output_status",
+        "spatial_vtk.spatial.load_standard_geojson_workflow_output_status",
         "run_geojson_summary_step_if_needed",
         "run_corridor_step_if_needed",
         "spatial_vtk.visualize.dashboard_readiness_summary_frame",
@@ -2329,14 +2333,15 @@ def test_python_workflow_docs_define_stable_import_surfaces():
             "write_station_metric_map_from_notebook_settings",
         ],
         "spatial_vtk.spatial": [
+            "load_standard_additional_plotting_inputs",
+            "load_standard_additional_plotting_output_status",
+            "load_standard_geojson_plotting_inputs",
+            "load_standard_geojson_workflow_output_status",
             "load_standard_spatial_workflow_outputs",
             "load_standard_spatial_workflow_output_status",
             "run_spatial_statistics_workflow_from_config",
         ],
         "spatial_vtk.spatial.plot": [
-            "load_standard_geojson_workflow_output_status",
-            "load_standard_geojson_plotting_inputs",
-            "load_standard_additional_plotting_inputs",
             "write_large_run_spatial_figure_suite_from_notebook_settings",
             "write_standard_spatial_map_figures",
         ],
@@ -2500,7 +2505,7 @@ def test_python_workflow_docs_prefer_metric_figure_suite_wrapper():
     assert "``spatial_vtk.qc.load_standard_qc_workflow_outputs``" in workflows
     assert "``spatial_vtk.metrics.load_standard_metric_workflow_outputs``" in workflows
     assert "``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``" in workflows
-    assert "``spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs``" in workflows
+    assert "``spatial_vtk.spatial.load_standard_geojson_plotting_inputs``" in workflows
 
 
 def test_python_workflow_docs_prefer_spatial_figure_suite_wrapper():
@@ -2517,7 +2522,7 @@ def test_python_workflow_docs_prefer_spatial_figure_suite_wrapper():
     assert "Display results returned by the Step 4 ``run_*_step_if_needed(...)`` methods" in workflows
     assert "``spatial_vtk.config.display_notebook_step_result``" in workflows
     assert "spatial_vtk.spatial.plot.prepare_spatial_figure_context_from_notebook_settings" not in workflows
-    assert "``spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs``" in workflows
+    assert "``spatial_vtk.spatial.load_standard_additional_plotting_inputs``" in workflows
     assert "fallback path choices in the cell" in workflows
 
 
@@ -2623,6 +2628,24 @@ def test_spatial_plot_public_entry_point_is_lazy():
     assert callable(spatial_plot.write_large_run_region_boxplot_from_notebook_settings)
     assert callable(spatial_plot.write_large_run_spatial_figure_suite_from_notebook_settings)
     assert callable(spatial_plot.write_large_run_spatial_summary_figures_from_outputs)
+
+
+def test_spatial_workflow_loaders_are_top_level_and_lightweight():
+    import sys
+
+    sys.modules.pop("spatial_vtk.spatial.plot.large_run", None)
+
+    import spatial_vtk.spatial as spatial
+
+    for name in (
+        "load_standard_geojson_workflow_output_status",
+        "load_standard_geojson_plotting_inputs",
+        "load_standard_additional_plotting_output_status",
+        "load_standard_additional_plotting_inputs",
+    ):
+        assert name in spatial.__all__
+        assert callable(getattr(spatial, name))
+    assert "spatial_vtk.spatial.plot.large_run" not in sys.modules
     assert callable(spatial_plot.write_standard_spatial_diagnostic_figures)
     assert callable(spatial_plot.write_standard_spatial_map_figures)
     assert spatial_plot.plot_correlogram is spatial_plot.plot_correlogram

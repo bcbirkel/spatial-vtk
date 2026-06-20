@@ -399,8 +399,8 @@ fallbacks, and bounded previews stay in package code.
        map/diagnostic figure methods, and failure/status frames when the
        standard tutorial needs in-memory products.
    * - Step 5 GeoJSON regions and corridors
-     - ``spatial_vtk.spatial.plot.load_standard_geojson_workflow_output_status``
-       and ``spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs``
+     - ``spatial_vtk.spatial.load_standard_geojson_workflow_output_status``
+       and ``spatial_vtk.spatial.load_standard_geojson_plotting_inputs``
      - Lightweight Step 5 output status/previews for large-run driver cells,
        result-owned GeoJSON and corridor runners through
        ``run_geojson_summary_step_if_needed()`` and
@@ -412,8 +412,8 @@ fallbacks, and bounded previews stay in package code.
        suites without notebook-local path unpacking. Both helpers accept
        ``cfg=`` as a config object or config file path.
    * - Step 6 additional plotting
-     - ``spatial_vtk.spatial.plot.load_standard_additional_plotting_output_status``
-       and ``spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs``
+     - ``spatial_vtk.spatial.load_standard_additional_plotting_output_status``
+       and ``spatial_vtk.spatial.load_standard_additional_plotting_inputs``
      - Lightweight Step 6 output status and metric-source preview helpers for
        large-run driver cells, bounded waveform and region-boxplot writers
        through ``write_waveform_comparison()`` and ``write_region_boxplot()``,
@@ -631,10 +631,10 @@ Step 5: GeoJSON Regions and Corridors
      - Python entry point
      - Standard outputs
    * - Summarize configured GeoJSON regions
-     - ``spatial_vtk.spatial.plot.load_standard_geojson_workflow_output_status(...).run_geojson_summary_step_if_needed(...)``
+     - ``spatial_vtk.spatial.load_standard_geojson_workflow_output_status(...).run_geojson_summary_step_if_needed(...)``
      - GeoJSON region summary tables
    * - Build configured boundary corridors
-     - ``spatial_vtk.spatial.plot.load_standard_geojson_workflow_output_status(...).run_corridor_step_if_needed(...)``
+     - ``spatial_vtk.spatial.load_standard_geojson_workflow_output_status(...).run_corridor_step_if_needed(...)``
      - corridor definitions and corridor-selected records
 
 Step 5 plotting input helpers and direct configured workflow functions
