@@ -7,8 +7,12 @@ family at package import time.
 
 Usage examples
 --------------
-Create a station residual map:
-  ``from spatial_vtk.spatial.map import plot_station_metric_map``
+Render configured spatial map figures from a notebook or script:
+  ``from spatial_vtk.spatial.plot import write_standard_spatial_map_figures``
+  ``result = write_standard_spatial_map_figures(context, settings)``
+
+Use individual map functions such as ``plot_station_metric_map()`` directly
+only for focused scripts that already own filtered map rows and output paths.
 """
 
 from __future__ import annotations

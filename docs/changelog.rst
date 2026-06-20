@@ -258,6 +258,9 @@ Changelog
   - Updated QC retention figure docstrings so Step 2 QC figure examples use
     ``load_standard_qc_workflow_outputs(...)`` and the result-owned figure
     writer before documenting individual dataframe-driven plot functions.
+  - Updated spatial map package docstrings so notebook examples start with
+    the standard map figure writer before documenting individual map functions
+    for focused scripts.
 
 - **CLI examples and defaults** *(Changed)*
 

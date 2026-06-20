@@ -1204,6 +1204,23 @@ def test_qc_retention_docstring_prefers_standard_step2_figure_helper():
     assert 'outpath="retention.png"' not in text
 
 
+def test_spatial_map_docstring_prefers_standard_map_figure_writer():
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "spatial"
+        / "map"
+        / "__init__.py"
+    )
+    text = source.read_text(encoding="utf-8")
+
+    assert "from spatial_vtk.spatial.plot import write_standard_spatial_map_figures" in text
+    assert "result = write_standard_spatial_map_figures(context, settings)" in text
+    assert "Use individual map functions such as ``plot_station_metric_map()`` directly" in text
+    assert "Create a station residual map" not in text
+
+
 def test_metric_gof_docstring_prefers_public_metrics_import():
     source = (
         pathlib.Path(__file__).resolve().parents[1]
