@@ -193,10 +193,10 @@ outputs:
 """,
         encoding="utf-8",
     )
-    cfg = SpatialVTKConfig.from_file(config_path)
+    clear_active_config()
 
-    paths = dashboard_output_paths(cfg=cfg)
-    namespace = dashboard_output_namespace(cfg=cfg)
+    paths = dashboard_output_paths(cfg=config_path)
+    namespace = dashboard_output_namespace(cfg=config_path)
     assert paths["metrics_long_path"] == tmp_path / "outputs" / "tables" / "metrics_long.parquet"
     assert namespace.metrics_long_path == paths["metrics_long_path"]
     assert paths["metrics_dashboard_root"] == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
@@ -214,7 +214,7 @@ outputs:
     assert summary_paths["station_rollup_summary_path"] == existing
     paths["metrics_dashboard_root"].mkdir(parents=True, exist_ok=True)
 
-    status = dashboard_output_status_frame(cfg=cfg)
+    status = dashboard_output_status_frame(cfg=config_path)
     assert "name" in status.columns
     assert "artifact_role" in status.columns
     assert "artifact_label" in status.columns
@@ -259,7 +259,7 @@ outputs:
             "log2_residual": [0.25],
         }
     ).to_parquet(paths["metrics_dashboard_root"] / "metrics_long.parquet", index=False)
-    status_with_dataset = dashboard_output_status_frame(cfg=cfg)
+    status_with_dataset = dashboard_output_status_frame(cfg=config_path)
     ready_dataset_status = status_with_dataset.loc[status_with_dataset["name"].eq("metrics_dashboard_root")].iloc[0]
     assert ready_dataset_status["ready"] is True
     assert ready_dataset_status["readiness"] == "ready"

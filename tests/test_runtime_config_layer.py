@@ -3467,8 +3467,8 @@ outputs:
 """,
         encoding="utf-8",
     )
-    cfg = SpatialVTKConfig.from_file(config_path)
-    paths = dashboard_output_namespace(cfg=cfg)
+    clear_active_config()
+    paths = dashboard_output_namespace(cfg=config_path)
     paths.metrics_long_path.parent.mkdir(parents=True, exist_ok=True)
     pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "value": [0.5]}).to_parquet(
         paths.metrics_long_path,
@@ -3478,7 +3478,7 @@ outputs:
     paths.dashboard_summary_root.mkdir(parents=True, exist_ok=True)
 
     metric_status = dashboard_metric_dataset_readiness_frame(paths.metrics_dashboard_root)
-    readiness = dashboard_output_readiness(cfg=cfg)
+    readiness = dashboard_output_readiness(cfg=config_path)
     summary = dashboard_readiness_summary_frame(readiness=readiness)
     by_item = summary.set_index("item")
 

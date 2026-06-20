@@ -219,6 +219,11 @@ uses it, ``readiness`` / ``message`` to identify the failure, and
 the dashboard inputs need to be rebuilt because of missing schema or map
 coordinate data.
 
+Dashboard contract helpers accept ``cfg=`` as either a config object or a
+config file path. Use ``cfg=config_path`` in generated workers or lightweight
+driver scripts when you need dashboard readiness, status, and bounded previews
+without activating global config state first.
+
 Public helpers exposed by ``spatial_vtk.visualize.dashboard``:
 
 .. list-table::

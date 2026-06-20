@@ -305,7 +305,6 @@ outputs:
 """,
         encoding="utf-8",
     )
-    cfg = SpatialVTKConfig.from_file(config_path)
     rows = pd.DataFrame(
         {
             "model": ["m1", "m1"],
@@ -841,7 +840,7 @@ outputs:
         }
     ).to_csv(summary_root / "station_rollup.csv", index=False)
 
-    previews = preview_dashboard_summary_tables(cfg=cfg, nrows=2)
+    previews = preview_dashboard_summary_tables(cfg=config_path, nrows=2)
 
     assert set(previews) == {"model_metric_band", "station_rollup"}
     assert len(previews["model_metric_band"]) == 2
@@ -869,7 +868,6 @@ outputs:
 """,
         encoding="utf-8",
     )
-    cfg = SpatialVTKConfig.from_file(config_path)
     tables_root = tmp_path / "outputs" / "tables"
     summary_root = tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
     tables_root.mkdir(parents=True)
@@ -888,7 +886,8 @@ outputs:
     ).to_parquet(summary_root / "model_metric_band.parquet", index=False)
 
     displayed: list[pd.DataFrame] = []
-    previews = display_dashboard_output_previews(cfg=cfg, nrows=2, display_fn=displayed.append)
+    clear_active_config()
+    previews = display_dashboard_output_previews(cfg=config_path, nrows=2, display_fn=displayed.append)
 
     output = capsys.readouterr().out
     assert "dashboard_summary:model_metric_band preview:" in output

@@ -21,6 +21,9 @@ from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
 
 
+ConfigInput = SpatialVTKConfig | str | Path
+
+
 METRICS_TABLES: tuple[str, ...] = ("model_metric_band", "station_rollup", "event_rollup", "path_hex")
 METRICS_TABLE_TAB_LABELS: dict[str, tuple[str, ...]] = {
     "model_metric_band": ("Overview", "Compare Models"),
@@ -219,7 +222,7 @@ def load_filtered_dashboard_summary_table(
 def preview_dashboard_summary_tables(
     summary_root: str | Path | None = None,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     nrows: int = 5,
     missing: str = "skip",
     create_parent: bool = True,
@@ -238,7 +241,8 @@ def preview_dashboard_summary_tables(
         Optional dashboard summary directory. When omitted, the configured
         ``dashboard_summaries`` output path is used.
     cfg
-        Optional Spatial-VTK config used when ``summary_root`` is omitted.
+        Optional Spatial-VTK config object or config file path used when
+        ``summary_root`` is omitted.
     nrows
         Maximum rows to read from each existing summary table.
     missing
@@ -276,7 +280,7 @@ def preview_dashboard_summary_tables(
 
 def display_dashboard_output_previews(
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     nrows: int = 5,
     include_metrics_long: bool = True,
     missing: str = "skip",
@@ -292,8 +296,8 @@ def display_dashboard_output_previews(
     Parameters
     ----------
     cfg
-        Optional Spatial-VTK config. When omitted, the active config is used by
-        the output resolvers.
+        Optional Spatial-VTK config object or config file path. When omitted,
+        the active config is used by the output resolvers.
     nrows
         Maximum rows to read from each dashboard artifact.
     include_metrics_long
@@ -350,7 +354,7 @@ def display_dashboard_output_previews(
 def dashboard_summary_table_paths(
     summary_root: str | Path | None = None,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     create_parent: bool = True,
     format: str = "parquet",
 ) -> dict[str, Path]:
@@ -410,7 +414,7 @@ def _map_coordinate_contract_text(table_name: str) -> str:
 
 def dashboard_output_paths(
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     create_parent: bool = True,
     include_summary_tables: bool = True,
     summary_format: str = "parquet",
@@ -439,7 +443,7 @@ def dashboard_output_paths(
 
 def dashboard_output_namespace(
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     create_parent: bool = True,
     include_summary_tables: bool = True,
     summary_format: str = "parquet",
@@ -458,7 +462,7 @@ def dashboard_output_namespace(
 
 def dashboard_output_status_frame(
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     create_parent: bool = True,
     include_summary_tables: bool = True,
     summary_format: str = "parquet",
@@ -488,7 +492,7 @@ def dashboard_output_status_frame(
 
 def dashboard_readiness_summary_frame(
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     readiness: DashboardOutputReadiness | None = None,
     overwrite: bool = False,
     create_parent: bool = True,
@@ -680,7 +684,7 @@ def _rebuildable_dashboard_map_tables(summary_status: pd.DataFrame, metrics_long
 def dashboard_qc_trace_readiness_frame(
     trace_summary: str | Path | None = None,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     create_parent: bool = True,
 ) -> pd.DataFrame:
     """Return bounded readiness details for the QC dashboard trace table.
@@ -701,7 +705,7 @@ def dashboard_qc_trace_readiness_frame(
 
 def dashboard_output_readiness(
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     overwrite: bool = False,
     create_parent: bool = True,
     summary_format: str = "parquet",
@@ -830,7 +834,7 @@ def dashboard_output_readiness(
 def dashboard_summary_readiness_frame(
     summary_root: str | Path | None = None,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     create_parent: bool = True,
     summary_format: str = "parquet",
 ) -> pd.DataFrame:

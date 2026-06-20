@@ -639,6 +639,11 @@ and waveform-record construction pipeline inline.
 Step 7: Dashboard Datasets
 --------------------------
 
+Dashboard readiness, status, and preview helpers accept ``cfg=`` as either a
+config object or a config file path. This keeps Step 7 notebook cells and
+worker scripts on the same configured dashboard dataset and summary-table
+paths without requiring global config activation.
+
 .. list-table::
    :header-rows: 1
 
