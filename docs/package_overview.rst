@@ -97,7 +97,7 @@ Start with public helpers from ``spatial_vtk.qc``:
 
 - ``load_standard_qc_inputs`` for standard Step 2 prepared metadata, QC
   output-group loading, named skipped-step results, bounded preview display,
-  and standard QC figure rendering
+  standard QC figure rendering, and bounded waveform comparison rendering
 - ``load_standard_qc_workflow_outputs`` for large-run Step 2 QC output status
   without eager prepared-table reads, plus compact QC summary previews and
   figure rendering

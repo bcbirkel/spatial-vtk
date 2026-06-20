@@ -720,6 +720,8 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "qc_inputs.write_figures(" in standard_text
     assert "write_qc_figures_from_outputs(" not in standard_text
     assert "qc_figure_result.status_frame()" in standard_text
+    assert "qc_inputs.write_waveform_comparison(" in standard_text
+    assert "qc_outputs = qc_inputs.outputs" not in standard_text
     assert '"availability_path"' in standard_text
     assert "qc_figure_tables = qc_outputs.load_tables(" not in standard_text
     assert "qc_outputs.display_table_previews(" not in standard_text
@@ -744,7 +746,7 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "qc_sidecars" not in standard_text
     assert "savefig=True" not in standard_text
     assert "showfig=True" not in standard_text
-    assert "write_waveform_comparison_from_notebook_settings(" in standard_text
+    assert "write_waveform_comparison_from_notebook_settings(" not in standard_text
     assert "write_waveform_comparison_from_outputs(" not in standard_text
     assert "waveform_sidecars" not in standard_text
     assert "build_qc_waveform_comparison_records(" not in standard_text

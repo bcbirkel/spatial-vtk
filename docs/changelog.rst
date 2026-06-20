@@ -121,6 +121,9 @@ Changelog
   - Rewired the standard Step 2 notebook to use named QC skipped-step result
     methods for full inventory, overlap inventory, and compact summary
     fallbacks instead of passing individual QC output paths in notebook cells.
+  - Rewired the standard Step 2 waveform comparison cell to call
+    ``qc_inputs.write_waveform_comparison()`` instead of importing the
+    waveform writer and passing the Step 2 output group through the notebook.
   - Rewired standard Step 4, Step 5, and Step 6 notebooks to call package
     helpers for table previews, readiness messages, and configured output
     loading.

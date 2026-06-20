@@ -350,7 +350,8 @@ fallbacks, and bounded previews stay in package code.
        group, the Step 2 QC output group, named skipped-step fallback payloads
        for full QC, overlap QC, and compact QC summaries,
        compact output summaries, bounded QC inventory/summary previews, and
-       standard QC figure rendering through ``write_figures()``.
+       standard QC and waveform-comparison rendering through
+       ``write_figures()`` and ``write_waveform_comparison()``.
    * - Step 2 large-run QC setup
      - ``spatial_vtk.qc.load_standard_qc_workflow_outputs``
      - The Step 2 QC output group and status frame without eager reads of the

@@ -230,6 +230,34 @@ class StandardQCInputResult:
             overwrite=overwrite,
         )
 
+    def write_waveform_comparison(
+        self,
+        *,
+        component: str | None = "R",
+        max_records: int | None = 12,
+        max_distance_km: float | None = 50.0,
+        chunksize: int = 1_000_000,
+        overwrite: bool = False,
+        event_id: str | Sequence[str] | None = None,
+        passband: str | None = None,
+        plot_options: dict[str, Any] | None = None,
+    ) -> object:
+        """Write a bounded post-QC waveform comparison from this output bundle."""
+
+        from spatial_vtk.visualize.waveforms import write_waveform_comparison_from_notebook_settings
+
+        return write_waveform_comparison_from_notebook_settings(
+            self.outputs,
+            component=component,
+            max_records=max_records,
+            max_distance_km=max_distance_km,
+            chunksize=chunksize,
+            overwrite=overwrite,
+            event_id=event_id,
+            passband=passband,
+            plot_options=plot_options,
+        )
+
 
 @dataclass(frozen=True)
 class StandardQCWorkflowOutputResult:

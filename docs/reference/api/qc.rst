@@ -69,8 +69,9 @@ Public helpers exposed by ``spatial_vtk.qc``:
        The returned result owns skipped-step fallback payloads through
        ``qc_inventory_step_result()``, ``qc_overlap_step_result()``, and
        ``qc_summary_step_result()``, plus compact output summaries, bounded QC
-       inventory/summary previews, and standard QC figure rendering through
-       ``write_figures()``.
+       inventory/summary previews, standard QC figure rendering through
+       ``write_figures()``, and bounded post-QC waveform comparison rendering
+       through ``write_waveform_comparison()``.
    * - ``load_standard_qc_workflow_outputs``
      - Load the configured Step 2 QC output group and status frame without
        reading large Step 1 tables in large-run setup cells. The returned

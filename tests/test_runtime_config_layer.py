@@ -2395,6 +2395,41 @@ outputs:
     figure_result = inputs.write_figures(settings, overwrite=True)
     assert figure_result.status_frame().to_dict("records") == [{"status": "delegated"}]
     assert qc_figure_calls == [{"outputs": inputs.outputs, "settings": settings, "cfg": cfg, "overwrite": True}]
+
+    waveform_calls: list[dict[str, object]] = []
+
+    def fake_write_waveform_comparison(outputs, **kwargs):  # noqa: ANN001, ANN202
+        waveform_calls.append({"outputs": outputs, "kwargs": kwargs})
+        return "waveform-result"
+
+    monkeypatch.setattr(
+        "spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings",
+        fake_write_waveform_comparison,
+    )
+    assert inputs.write_waveform_comparison(
+        component="Z",
+        max_records=4,
+        max_distance_km=25.0,
+        chunksize=500,
+        overwrite=True,
+        passband="2-3 sec",
+        plot_options={"normalize": False},
+    ) == "waveform-result"
+    assert waveform_calls == [
+        {
+            "outputs": inputs.outputs,
+            "kwargs": {
+                "component": "Z",
+                "max_records": 4,
+                "max_distance_km": 25.0,
+                "chunksize": 500,
+                "overwrite": True,
+                "event_id": None,
+                "passband": "2-3 sec",
+                "plot_options": {"normalize": False},
+            },
+        }
+    ]
     clear_active_config()
 
 
