@@ -13,6 +13,9 @@ Changelog
   - Step 5 GeoJSON plotting/status helpers and Step 6 additional plotting
     helpers now preserve path-valued ``cfg=`` inputs for output previews,
     figure writers, and result-owned workflow runner methods.
+  - Tutorial notebook source preflight now rejects hard-coded
+    ``Path('../')`` repo-root setup cells so public notebooks keep using the
+    shared source-checkout bootstrap and config-context helpers.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

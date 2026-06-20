@@ -103,6 +103,8 @@ NOTEBOOK_CONTRACT_FORBIDDEN_SNIPPETS = (
     "os.popen(",
     "run_or_submit_notebook_cli_command(",
     "write_notebook_cli_slurm_script(",
+    "Path('../')",
+    'Path("../")',
     "from spatial_vtk.metrics.plot.",
     "from spatial_vtk.spatial.map.",
     "from spatial_vtk.spatial.plot.",
