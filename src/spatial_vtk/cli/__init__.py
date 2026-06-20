@@ -2919,7 +2919,7 @@ def _dashboard_cli_readiness_columns(status: pd.DataFrame) -> pd.DataFrame:
         "message",
         "map_message",
         "suggested_action",
-        "path",
+        "resolved_path",
     ]
     available = [column for column in columns if column in status.columns]
     return status.loc[:, available].copy()

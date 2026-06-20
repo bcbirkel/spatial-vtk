@@ -3946,7 +3946,9 @@ outputs:
     assert "Run the Step 2 QC workflow" in captured.out
     assert "Finish the metric workflow outputs" in captured.out
     assert "QC Overview, Charts, Review Queue" in captured.out
+    assert "resolved_path" in captured.out
     assert "metrics_long_path" not in captured.out
+    assert " path " not in captured.out
     assert "QC trace-summary table is missing" in captured.out
     assert "model_metric_band dashboard summary table" in captured.out
 

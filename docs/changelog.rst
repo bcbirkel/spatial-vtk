@@ -373,6 +373,9 @@ Changelog
   - Made ``svtk dashboard status`` include dashboard value-family and
     map-readiness messages in its bounded human-readable status table, matching
     the notebook and Streamlit Data Status displays.
+  - Made ``svtk dashboard status`` show the clearer ``resolved_path`` column in
+    human-readable output while preserving ``path`` in machine-readable status
+    frames.
   - Hardened Streamlit dashboard launch checks so occupied ports are detected
     before launch and delayed startup failures are reported before the CLI
     prints a running-dashboard URL.
