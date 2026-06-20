@@ -544,6 +544,8 @@ Changelog
     overlap scope when writing the observed/synthetic overlap inventory.
   - Made the large-run Step 3 notebook display the resolved metric settings
     and batch count before metric manifest planning.
+  - Clarified large-run Step 4 spatial status tables and event-centered plot
+    titles so users can tell when event means have been removed.
 
 - **Notebook simplification** *(Rewired)*
 

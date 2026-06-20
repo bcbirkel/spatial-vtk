@@ -272,6 +272,7 @@ class SpatialFigureContext:
                     "row_count": int(len(table)) if loaded else 0,
                     "column_count": int(len(table.columns)) if loaded else 0,
                     "value_col": _spatial_table_value_col(key, table, self),
+                    "value_role": _spatial_table_value_role(key),
                 }
             )
         station_table = self.site_metadata
@@ -286,6 +287,7 @@ class SpatialFigureContext:
                 "row_count": int(len(station_table)) if station_table is not None else 0,
                 "column_count": int(len(station_table.columns)) if station_table is not None else 0,
                 "value_col": None,
+                "value_role": None,
             }
         )
         return pd.DataFrame(rows)
@@ -447,8 +449,8 @@ class SpatialFigureContext:
         if context is not self.event_context or "title" in kwargs:
             return
         title = {
-            "spatial_azimuthal_residuals": "Event-Centered Azimuthal Residuals",
-            "spatial_polar_residuals": "Event-Centered Polar Residuals",
+            "spatial_azimuthal_residuals": "Event-Centered Azimuthal Residuals (Event Mean Removed)",
+            "spatial_polar_residuals": "Event-Centered Polar Residuals (Event Mean Removed)",
         }.get(base)
         if title:
             kwargs["title"] = title
@@ -4178,6 +4180,21 @@ def _spatial_table_value_col(
             "explained_variance_ratio",
         ],
     )
+
+
+def _spatial_table_value_role(key: str) -> str | None:
+    """Return a notebook-facing label for what one table value represents."""
+
+    roles = {
+        "metric_field": "raw event-station residuals; event means retained",
+        "event_centered_residuals": "event-centered residuals; event means removed",
+        "station_bias": "station summaries of event-centered residuals",
+        "path_summary": "path-binned residual summary",
+        "distance_bin_correlations": "distance-binned residual correlation summary",
+        "morans_i": "spatial autocorrelation statistic",
+        "geology_contrasts": "event-centered residual contrast by geologic group",
+    }
+    return roles.get(key)
 
 
 def _existing_columns(path: Path, columns: Sequence[str] | None) -> list[str] | None:

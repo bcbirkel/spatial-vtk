@@ -3405,7 +3405,9 @@ def test_spatial_figure_context_writes_overview_plots_with_empty_missing_tables(
     assert bool(status.loc["metric_field", "loaded"]) is True
     assert status.loc["metric_field", "row_count"] == 1
     assert status.loc["metric_field", "value_col"] == "log2_residual"
+    assert status.loc["metric_field", "value_role"] == "raw event-station residuals; event means retained"
     assert "event-station metric field" in status.loc["metric_field", "role"]
+    assert status.loc["event_centered_residuals", "value_role"] == "event-centered residuals; event means removed"
     assert pd.isna(status.loc["metric_field", "resolved_path"])
     assert pd.isna(status.loc["metric_field", "path"])
     dimensions = context.dimension_summary_frame()
@@ -3646,8 +3648,8 @@ def test_spatial_figure_context_labels_event_centered_path_plots(tmp_path: Path)
     context.write_spatial_plot("spatial_azimuthal_residuals", item, lambda *args, **kwargs: None)
     context.write_spatial_period_sheet("spatial_polar_residuals", item, lambda *args, **kwargs: None)
 
-    assert calls[0]["kwargs"]["title"] == "Event-Centered Azimuthal Residuals"
-    assert calls[1]["kwargs"]["title"] == "Event-Centered Polar Residuals"
+    assert calls[0]["kwargs"]["title"] == "Event-Centered Azimuthal Residuals (Event Mean Removed)"
+    assert calls[1]["kwargs"]["title"] == "Event-Centered Polar Residuals (Event Mean Removed)"
 
 
 def test_spatial_figure_context_writes_pca_summary_with_layered_sidecar(tmp_path: Path) -> None:
