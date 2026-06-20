@@ -1082,6 +1082,9 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "metrics_dataset_dir" in dashboard_text
     assert "dashboard_summary_table_dir" in dashboard_text
     assert "qc_trace_summary" in dashboard_text
+    assert "[--qc-trace-summary PATH]" in dashboard_text
+    assert "``--qc-trace-summary``, ``--trace-summary``" in dashboard_text
+    assert "Prefer --qc-trace-summary; --trace-summary is a legacy alias." in dashboard_text
     assert "Older ``metrics_root``, ``summary_root``, and ``trace_summary`` query parameters still work" in dashboard_text
     assert "Config-Backed Plotting" in generator_text
     assert "Config-Backed Mapping" in generator_text
@@ -3676,7 +3679,10 @@ def test_cli_dashboard_help_exposes_clear_path_aliases(capsys):
     assert excinfo.value.code == 0
     qc_help = capsys.readouterr().out
     assert "--qc-trace-summary" in qc_help
+    assert "[--qc-trace-summary PATH]" in qc_help
     assert "qc_trace_summary" in qc_help
+    assert "Prefer --qc-trace-summary" in qc_help
+    assert "--trace-summary is a legacy alias" in qc_help
 
 
 def test_cli_dashboard_missing_config_errors_name_dashboard_artifacts(tmp_path, monkeypatch, capsys):

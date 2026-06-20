@@ -16,6 +16,9 @@ Changelog
   - Tutorial notebook source preflight now rejects hard-coded
     ``Path('../')`` repo-root setup cells so public notebooks keep using the
     shared source-checkout bootstrap and config-context helpers.
+  - ``svtk dashboard qc`` now presents ``--qc-trace-summary`` as the canonical
+    override flag in help and generated CLI docs while preserving
+    ``--trace-summary`` as a legacy alias.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

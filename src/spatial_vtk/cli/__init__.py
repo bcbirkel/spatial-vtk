@@ -1235,12 +1235,15 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     qc.add_argument("--config", default=None, help="Spatial-VTK config used to find the default trace-summary output.")
     qc.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     qc.add_argument(
-        "--trace-summary",
         "--qc-trace-summary",
+        "--trace-summary",
         metavar="PATH",
         dest="trace_summary",
         default=None,
-        help="QC trace-summary CSV/parquet table. Defaults to the configured output table 'qc_trace_summary'.",
+        help=(
+            "QC trace-summary CSV/parquet table. Defaults to the configured output table "
+            "'qc_trace_summary'. Prefer --qc-trace-summary; --trace-summary is a legacy alias."
+        ),
     )
     qc.add_argument("--port", type=int, default=8502, help="Streamlit server port.")
     qc.add_argument("--address", default="127.0.0.1", help="Streamlit server address.")

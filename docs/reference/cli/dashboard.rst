@@ -58,7 +58,7 @@ svtk dashboard qc
 .. code-block:: bash
 
    svtk dashboard qc [-h] [--config PATH] [--run-scenario RUN_SCENARIO]
-                         [--trace-summary PATH] [--port PORT]
+                         [--qc-trace-summary PATH] [--port PORT]
                          [--address ADDRESS] [--auto-port] [--proxy-mode]
                          [--show]
 
@@ -84,10 +84,10 @@ svtk dashboard qc
      - No
      -
      - Apply one named run_scenarios overlay.
-   * - ``--trace-summary``, ``--qc-trace-summary``
+   * - ``--qc-trace-summary``, ``--trace-summary``
      - No
      -
-     - Filesystem path. QC trace-summary CSV/parquet table. Defaults to the configured output table 'qc_trace_summary'.
+     - Filesystem path. QC trace-summary CSV/parquet table. Defaults to the configured output table 'qc_trace_summary'. Prefer --qc-trace-summary; --trace-summary is a legacy alias.
    * - ``--port``
      - No
      - Default: ``8502``
