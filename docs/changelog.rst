@@ -70,6 +70,9 @@ Changelog
   - Expanded ``spatial_vtk.visualize`` to expose dashboard readiness decisions
     and dashboard output-preview display helpers, then updated the Python
     workflow guide to use those top-level notebook-facing dashboard imports.
+  - Updated standard and large-run dashboard notebook imports to use
+    ``spatial_vtk.visualize`` for routine dashboard preparation and launch
+    helpers instead of the focused dashboard subpackage.
   - Spatial statistics settings now support configured ``metrics_table`` and
     ``station_metadata_table`` inputs plus metric lists, so Step 4 notebooks can
     run through the standard result/status wrapper without passing ad hoc
