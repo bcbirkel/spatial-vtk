@@ -1176,7 +1176,17 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Value: ``" not in cli_pages_text
     assert "Input table\n     - ``config:qc_metric_pair_retention``" in cli_pages_text
     assert "Input table\n     - ``required:sample table``" in cli_pages_text
-    assert "No registered default table is available yet. Pass ``--input`` or ``--input-table``." in cli_pages_text
+    assert (
+        "No registered default table is available yet. Pass ``--input`` or ``--input-table`` "
+        "with a precomputed period-spectrogram table."
+    ) in cli_pages_text
+    assert "Plot a precomputed period-spectrogram table. This advanced figure does not" in cli_pages_text
+    assert "have a standard config-backed input table; pass ``--input`` or" in cli_pages_text
+    assert (
+        "No registered default table is available yet. Pass ``--input`` or ``--input-table`` "
+        "with a prepared trace-sample table."
+    ) in cli_pages_text
+    assert "No registered config default is available; pass --input or --input-table." in cli_pages_text
 
 
 def test_config_cli_help_marks_config_values_as_paths(capsys):
@@ -3955,6 +3965,7 @@ def test_cli_plot_list(capsys):
     assert "required:" not in period_line
     assert "period-spectrogram" in captured.out
     assert "required:spectrogram table" in captured.out
+    assert "precomputed period-spectrogram table" in captured.out
     assert "model-metric-heatmap" in captured.out
     assert "config:band_score_distribution" in captured.out
     assert "config:model_metric_heatmap" in captured.out
@@ -4020,6 +4031,17 @@ def test_cli_registered_plot_missing_input_names_required_table_role(capsys):
     assert "required table roles" in captured.err
     assert "Missing Python dependency" not in captured.err
     assert "the following arguments are required" not in captured.err
+
+
+def test_cli_registered_plot_help_names_required_input_without_config_default(capsys):
+    """Advanced registered plots should say when no config-backed input exists."""
+
+    with pytest.raises(SystemExit) as excinfo:
+        main(["plot", "metrics", "period-spectrogram", "--help"])
+    assert excinfo.value.code == 0
+    text = capsys.readouterr().out
+    assert "precomputed period-spectrogram table" in text
+    assert "No registered config default is available; pass --input or --input-table." in text
 
 
 def test_cli_registered_plot_missing_output_names_figure_role():

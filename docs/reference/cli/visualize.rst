@@ -1397,7 +1397,7 @@ svtk visualize qc trace-inventory-samples
      - Meaning
    * - Input table
      - ``required:sample table``
-     - No registered default table is available yet. Pass ``--input`` or ``--input-table``.
+     - No registered default table is available yet. Pass ``--input`` or ``--input-table`` with a prepared trace-sample table.
    * - Output figure
      - ``config:trace_inventory_samples``
      - Uses configured figure output ``trace_inventory_samples`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
@@ -1419,7 +1419,7 @@ svtk visualize qc trace-inventory-samples
    * - ``--input``, ``--input-table``
      - No
      -
-     - Filesystem path. Primary figure input table (sample); accepts CSV or parquet.
+     - Filesystem path. Primary figure input table (sample); accepts CSV or parquet. No registered config default is available; pass --input or --input-table.
    * - ``--output``, ``--figure-output``
      - No
      -

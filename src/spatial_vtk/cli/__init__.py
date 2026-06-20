@@ -120,7 +120,11 @@ METRICS_PLOT_COMMANDS: dict[str, PlotCommand] = {
     ),
     "psa-period-curve": PlotCommand("spatial_vtk.metrics.plot.plot_psa_period_curve", "df", "Plot PSA values by period."),
     "period-spectra": PlotCommand("spatial_vtk.metrics.plot.plot_period_spectra", "spectra_df", "Plot period spectra."),
-    "period-spectrogram": PlotCommand("spatial_vtk.metrics.plot.plot_period_spectrogram", "spectrogram_df", "Plot a period spectrogram."),
+    "period-spectrogram": PlotCommand(
+        "spatial_vtk.metrics.plot.plot_period_spectrogram",
+        "spectrogram_df",
+        "Plot a precomputed period-spectrogram table; no standard config input is registered.",
+    ),
     "vs30-scatter": PlotCommand("spatial_vtk.metrics.plot.plot_vs30_scatter", "df", "Plot metric values against Vs30."),
     "geology-boxplot": PlotCommand("spatial_vtk.metrics.plot.plot_geology_boxplot", "df", "Plot metric values by geologic class."),
     "metric-trend": PlotCommand("spatial_vtk.metrics.plot.plot_metric_trend", "df", "Plot a general metric trend."),
@@ -1319,7 +1323,7 @@ def _add_registered_command_group(
     )
     list_cmd.set_defaults(handler=_cmd_list_registered_plots, registry=commands)
     for command_name, spec in sorted(commands.items()):
-        command = group_sub.add_parser(command_name, help=spec.help)
+        command = group_sub.add_parser(command_name, help=spec.help, description=spec.help)
         _add_figure_io_arguments(command, spec, include_map_options=include_map_options)
         command.set_defaults(handler=_cmd_registered_plot, plot_spec=spec, parser=command)
 
@@ -1389,6 +1393,8 @@ def _registered_input_help(argument_name: str, input_key: str | None) -> str:
     help_text = f"Primary figure input table ({role}); accepts CSV or parquet."
     if input_key:
         help_text += f" Defaults to configured output table '{input_key}' when --config is passed or a default config is set with 'svtk config set'."
+    else:
+        help_text += " No registered config default is available; pass --input or --input-table."
     return help_text
 
 

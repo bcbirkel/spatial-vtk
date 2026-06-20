@@ -1896,6 +1896,10 @@ svtk plot metrics period-spectra
 svtk plot metrics period-spectrogram
 """"""""""""""""""""""""""""""""""""
 
+Plot a precomputed period-spectrogram table. This advanced figure does not
+have a standard config-backed input table; pass ``--input`` or
+``--input-table`` explicitly.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -1944,7 +1948,7 @@ svtk plot metrics period-spectrogram
      - Meaning
    * - Input table
      - ``required:spectrogram table``
-     - No registered default table is available yet. Pass ``--input`` or ``--input-table``.
+     - No registered default table is available yet. Pass ``--input`` or ``--input-table`` with a precomputed period-spectrogram table.
    * - Output figure
      - ``config:period_spectrogram``
      - Uses configured figure output ``period_spectrogram`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
@@ -1966,7 +1970,7 @@ svtk plot metrics period-spectrogram
    * - ``--input``, ``--input-table``
      - No
      -
-     - Filesystem path. Primary figure input table (spectrogram); accepts CSV or parquet.
+     - Filesystem path. Primary figure input table (spectrogram); accepts CSV or parquet. No registered config default is available; pass --input or --input-table.
    * - ``--output``, ``--figure-output``
      - No
      -
