@@ -140,7 +140,7 @@ def _render_cli_index(
         "CLI API",
         "=======",
         "",
-        "The public command is ``svtk``. It gives you file-based access to the same major Spatial-VTK workflows used from Python: configuration inspection, metadata and waveform preparation, QC queue export, metric planning and execution, plotting, mapping, dashboards, and advanced calls to public functions that do not yet have curated commands.",
+        "The public command is ``svtk``. It gives you file-based access to the same major Spatial-VTK workflows used from Python: configuration inspection, metadata and waveform preparation, QC queue export, metric planning and execution, plotting, mapping, dashboards, and advanced one-off public-function calls outside the named command groups.",
         "",
         "Run ``svtk --help`` to see the command tree from your installed environment.",
         "",
@@ -188,14 +188,14 @@ def _render_cli_index(
             "",
             "Most plotting, mapping, and visualization commands can resolve their standard input tables and figure paths from the active config, so ``--input-table``/``--input`` and ``--figure-output``/``--output`` are optional for the usual tutorial/workflow outputs. Registered table defaults may be CSV or Parquet depending on the configured output key; commands that say they accept CSV or parquet read either suffix through the package table helpers. Use ``svtk plot metrics list``, ``svtk plot spatial list``, ``svtk map spatial list``, ``svtk visualize qc list``, ``svtk visualize context list``, or ``svtk visualize waveforms list`` to see which commands use ``config:<key>`` defaults and which still require explicit input tables, shown as ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to any of those list commands when you want to see the concrete configured paths that will be used. A ``required:<role>`` entry means that command has no registered default table for that role yet, so pass ``--input-table``/``--input`` or a named table flag for that invocation.",
             "",
-            "Common figure controls such as ``--metric``, ``--passband``, ``--bin-label``, ``--component``, ``--components``, ``--model``, ``--mode``, ``--dep``, ``--indep``, ``--colorby``, ``--compare-to``, ``--value-col``, ``--score-col``, ``--scale``, ``--time-limit-s``, ``--max-records``, ``--max-traces``, ``--title``, ``--station-region``, ``--event-region``, ``--no-connect-points``, and sidecar options are first-class flags where they apply. Use ``--kwargs key=value`` only for advanced function-specific options that do not yet have curated flags. Prefer configured default tables and named table flags such as ``--event-table``, ``--station-table``, ``--events``, ``--stations``, or ``--records`` when a command lists them; use advanced ``--table function_argument=path`` only for extra function tables that do not yet have named flags.",
+            "Common figure controls such as ``--metric``, ``--passband``, ``--bin-label``, ``--component``, ``--components``, ``--model``, ``--mode``, ``--dep``, ``--indep``, ``--colorby``, ``--compare-to``, ``--value-col``, ``--score-col``, ``--scale``, ``--time-limit-s``, ``--max-records``, ``--max-traces``, ``--title``, ``--station-region``, ``--event-region``, ``--no-connect-points``, and sidecar options are first-class flags where they apply. Use ``--kwargs key=value`` only for advanced function-specific options that are not exposed as named flags. Prefer configured default tables and named table flags such as ``--event-table``, ``--station-table``, ``--events``, ``--stations``, or ``--records`` when a command lists them; use advanced ``--table function_argument=path`` only for extra function tables that are not exposed as named table flags.",
             "",
             "Map commands also accept ``--config`` and ``--bounds`` so you can reuse named bounds from your project config. Basemaps are enabled by default for map figures; use ``--no-basemap`` only when you explicitly want a data-only map.",
             "",
             "Advanced Python Calls",
             "---------------------",
             "",
-            "``svtk call`` is an advanced escape hatch for importable public functions that do not yet have curated workflow commands. Prefer the named ``config``, ``io``, ``qc``, ``metrics``, ``spatial``, ``plot``, ``map``, ``visualize``, and ``dashboard`` commands for standard workflows. ``svtk call`` only accepts import paths under ``spatial_vtk``.",
+            "``svtk call`` is an advanced one-off escape hatch for importable public functions outside the named workflow commands. Prefer the named ``config``, ``io``, ``qc``, ``metrics``, ``spatial``, ``plot``, ``map``, ``visualize``, and ``dashboard`` commands for standard workflows. ``svtk call`` only accepts import paths under ``spatial_vtk``.",
             "",
         ]
     )
@@ -329,7 +329,7 @@ def _command_page_notes(command_name: str) -> list[str]:
             "Advanced Escape Hatch",
             "---------------------",
             "",
-            "Use ``svtk call`` only for public Spatial-VTK functions that do not yet have a curated workflow command. Standard project workflows should use the named command groups because they resolve config-backed paths, expose stable flags, and document expected inputs directly.",
+            "Use ``svtk call`` only for one-off public Spatial-VTK functions outside the named workflow commands. Standard project workflows should use the named command groups because they resolve config-backed paths, expose stable flags, and document expected inputs directly.",
             "",
         ]
     return []

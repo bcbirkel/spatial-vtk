@@ -4,8 +4,8 @@ Purpose
 -------
 This module exposes the public ``svtk`` command. The curated subcommands cover
 file-based workflows that users commonly run outside notebooks, while
-``svtk call`` remains an advanced escape hatch for public Python functions that
-do not yet have a curated command.
+``svtk call`` remains an advanced one-off escape hatch for public Python
+functions outside the named workflow commands.
 
 Usage examples
 --------------
@@ -1846,10 +1846,10 @@ def _add_call_command(subparsers: argparse._SubParsersAction[argparse.ArgumentPa
 
     call = subparsers.add_parser(
         "call",
-        help="Advanced escape hatch for public Spatial-VTK Python functions without curated commands.",
+        help="Advanced one-off public-function calls outside the named command groups.",
         description=(
-            "Advanced escape hatch for importable public Spatial-VTK Python functions "
-            "that do not yet have curated workflow commands."
+            "Advanced one-off escape hatch for importable public Spatial-VTK "
+            "Python functions outside the named workflow commands."
         ),
     )
     call.add_argument("function", help="Import path, for example spatial_vtk.config.metric_display_name.")

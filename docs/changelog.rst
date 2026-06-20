@@ -35,6 +35,10 @@ Changelog
   - Clarified public workflow docs so lower-level notebook step helpers and
     custom plot helpers are described as explicit/custom-script tools, while
     standard notebooks are steered toward result-object methods.
+  - Clarified ``svtk call`` and advanced plotting/mapping option docs so the
+    CLI presents named config-backed commands as the standard path and frames
+    direct public-function calls or extra table/keyword mappings as one-off
+    advanced usage.
   - Aligned API docs, generated CLI reference, workflow guides, README
     install guidance, and tutorial notebooks with the stabilized public import
     surfaces and result-object workflow.

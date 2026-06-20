@@ -3,12 +3,12 @@
 svtk call
 =========
 
-Advanced escape hatch for importable public Spatial-VTK Python functions that do not yet have curated workflow commands.
+Advanced one-off escape hatch for importable public Spatial-VTK Python functions outside the named workflow commands.
 
 Advanced Escape Hatch
 ---------------------
 
-Use ``svtk call`` only for public Spatial-VTK functions that do not yet have a curated workflow command. Standard project workflows should use the named command groups because they resolve config-backed paths, expose stable flags, and document expected inputs directly.
+Use ``svtk call`` only for one-off public Spatial-VTK functions outside the named workflow commands. Standard project workflows should use the named command groups because they resolve config-backed paths, expose stable flags, and document expected inputs directly.
 
 Command Tree
 ------------

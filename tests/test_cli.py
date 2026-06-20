@@ -1035,11 +1035,13 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "``svtk visualize waveforms list``" in text
     assert "A ``required:<role>`` entry means that command has no registered default table" in text
     assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
+    assert "that are not exposed as named flags" in text
     assert (
         "Prefer configured default tables and named table flags such as ``--event-table``, "
         "``--station-table``, ``--events``, ``--stations``, or ``--records``"
     ) in text
     assert "advanced ``--table function_argument=path``" in text
+    assert "that are not exposed as named table flags" in text
     assert "``svtk visualize qc list``" in generator_text
     assert "A ``required:<role>`` entry means that command has no registered default table" in generator_text
     assert (
@@ -1047,8 +1049,11 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
         "``--station-table``, ``--events``, ``--stations``, or ``--records``"
     ) in generator_text
     assert "advanced ``--table function_argument=path``" in generator_text
+    assert "that are not exposed as named table flags" in generator_text
     assert "Registered table defaults may be CSV or Parquet" in generator_text
     assert "argument_name=path" not in generator_text
+    assert "do not yet have curated" not in text
+    assert "do not yet have curated" not in generator_text
 
 
 def test_generated_cli_reference_includes_config_backed_examples():
@@ -1771,13 +1776,16 @@ def test_cli_reference_frames_svtk_call_as_advanced_escape_hatch():
     index_text = (root / "docs" / "reference" / "cli_api.rst").read_text(encoding="utf-8")
     call_text = (root / "docs" / "reference" / "cli" / "call.rst").read_text(encoding="utf-8")
 
-    assert "Advanced escape hatch" in index_text
+    assert "Advanced one-off escape hatch" in index_text
     assert "Advanced Escape Hatch" in call_text
     assert "Prefer the named ``config``, ``io``, ``qc``, ``metrics``" in index_text
+    assert "one-off public Spatial-VTK functions outside the named workflow commands" in call_text
     assert "spatial_vtk.config.metric_display_name" in call_text
     assert "spatial_vtk.config.labels.metric_display_name" not in call_text
     assert "Call any importable Spatial-VTK Python function." not in index_text
     assert "Call any importable Spatial-VTK Python function." not in call_text
+    assert "do not yet have curated" not in index_text
+    assert "do not yet have curated" not in call_text
 
 
 def test_metric_cli_commands_use_public_metrics_surface():
