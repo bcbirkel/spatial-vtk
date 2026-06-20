@@ -314,6 +314,13 @@ def _command_page_notes(command_name: str) -> list[str]:
             f"   svtk dashboard qc --config {EXAMPLE_CONFIG} --run-scenario tutorial --auto-port --proxy-mode",
             "",
             "Use ``--auto-port`` when another Streamlit server may already be running and ``--proxy-mode`` when launching through a proxied notebook or remote desktop service.",
+            (
+                "Run ``svtk dashboard status`` before launching dashboards when outputs are missing, "
+                "stale, or unexpectedly sparse. The status table is bounded to metadata and shows the "
+                "configured artifact label, dashboard tabs, required columns, missing columns, "
+                "map-coordinate blockers, recognized value columns, non-empty value columns, suggested "
+                "action, and resolved path without loading large metric or QC inventories."
+            ),
             "",
         ]
     if command_name == "call":

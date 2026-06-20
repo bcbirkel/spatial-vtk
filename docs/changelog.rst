@@ -61,6 +61,9 @@ Changelog
   - ``svtk dashboard status`` now prints the same bounded schema, missing
     column, map-coordinate, and value-column readiness fields for terminal and
     Slurm-log diagnostics.
+  - ``svtk qc manual-queue`` now exposes ``--qc-trace-summary`` and
+    ``--manual-review-queue-output`` as artifact-named flags while preserving
+    ``--trace-summary`` and ``--output`` as legacy aliases.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

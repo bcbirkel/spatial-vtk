@@ -1097,6 +1097,8 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "row-level data used by metric filters" in dashboard_text
     assert "dashboard overview tabs" in dashboard_text
     assert "Only pass explicit paths when you want to override those configured outputs" in dashboard_text
+    assert "Run ``svtk dashboard status`` before launching dashboards" in dashboard_text
+    assert "without loading large metric or QC inventories" in dashboard_text
     assert "Prefer ``--metrics-dataset-dir`` and ``--dashboard-summary-table-dir``" in dashboard_text
     assert "are legacy aliases" in dashboard_text
     assert "metrics_dataset_dir" in dashboard_text
@@ -1466,6 +1468,16 @@ def test_generated_cli_reference_names_qc_output_aliases():
     slurm_section = text.split(".. _cli-svtk-qc-slurm:", maxsplit=1)[1].split(
         ".. _cli-svtk-qc-summaries:", maxsplit=1
     )[0]
+    manual_queue_section = text.split(".. _cli-svtk-qc-manual-queue:", maxsplit=1)[1].split(
+        ".. _cli-svtk-qc-slurm:", maxsplit=1
+    )[0]
+    assert "[--qc-trace-summary PATH]" in manual_queue_section
+    assert "[--manual-review-queue-output PATH]" in manual_queue_section
+    assert "``--qc-trace-summary``, ``--trace-summary``" in manual_queue_section
+    assert "``--manual-review-queue-output``, ``--output``" in manual_queue_section
+    assert "Prefer --qc-trace-summary; --trace-summary is a legacy alias." in manual_queue_section
+    assert "Prefer --manual-review-queue-output; --output is a legacy alias." in manual_queue_section
+    assert "manual_review_queue" in manual_queue_section
     for section in (build_section, slurm_section):
         assert "``--qc-trace-summary-output``, ``--trace-output``" in section
         assert "``--qc-inventory-output``, ``--inventory-output``" in section

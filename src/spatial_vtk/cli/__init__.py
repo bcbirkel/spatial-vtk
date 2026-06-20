@@ -711,8 +711,28 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     build.set_defaults(handler=_cmd_qc_build)
 
     queue = qc_sub.add_parser("manual-queue", help="Export a manual-QC review queue from trace summary rows.")
-    queue.add_argument("--trace-summary", metavar="PATH", default=None, help="Trace-summary CSV/parquet path. Defaults to configured output table 'qc_trace_summary'.")
-    queue.add_argument("--output", metavar="PATH", default=None, help="Output manual-review queue CSV. Defaults to configured output table 'manual_review_queue'.")
+    queue.add_argument(
+        "--qc-trace-summary",
+        "--trace-summary",
+        metavar="PATH",
+        dest="trace_summary",
+        default=None,
+        help=(
+            "QC trace-summary CSV/parquet table. Defaults to configured output table "
+            "'qc_trace_summary'. Prefer --qc-trace-summary; --trace-summary is a legacy alias."
+        ),
+    )
+    queue.add_argument(
+        "--manual-review-queue-output",
+        "--output",
+        metavar="PATH",
+        dest="output",
+        default=None,
+        help=(
+            "Output manual-review queue CSV. Defaults to configured output table "
+            "'manual_review_queue'. Prefer --manual-review-queue-output; --output is a legacy alias."
+        ),
+    )
     queue.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default input/output paths.")
     queue.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     queue.add_argument("--event-id", default="", help="Optional event id filter.")

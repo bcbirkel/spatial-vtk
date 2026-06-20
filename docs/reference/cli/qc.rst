@@ -106,7 +106,8 @@ svtk qc manual-queue
 
 .. code-block:: bash
 
-   svtk qc manual-queue [-h] [--trace-summary PATH] [--output PATH]
+   svtk qc manual-queue [-h] [--qc-trace-summary PATH]
+                            [--manual-review-queue-output PATH]
                             [--config PATH] [--run-scenario RUN_SCENARIO]
                             [--event-id EVENT_ID]
                             [--station-family STATION_FAMILY]
@@ -128,14 +129,14 @@ svtk qc manual-queue
      - No
      -
      - show this help message and exit
-   * - ``--trace-summary``
+   * - ``--qc-trace-summary``, ``--trace-summary``
      - No
      -
-     - Filesystem path. Trace-summary CSV/parquet path. Defaults to configured output table 'qc_trace_summary'.
-   * - ``--output``
+     - Filesystem path. QC trace-summary CSV/parquet table. Defaults to configured output table 'qc_trace_summary'. Prefer --qc-trace-summary; --trace-summary is a legacy alias.
+   * - ``--manual-review-queue-output``, ``--output``
      - No
      -
-     - Filesystem path. Output manual-review queue CSV. Defaults to configured output table 'manual_review_queue'.
+     - Filesystem path. Output manual-review queue CSV. Defaults to configured output table 'manual_review_queue'. Prefer --manual-review-queue-output; --output is a legacy alias.
    * - ``--config``
      - No
      -
