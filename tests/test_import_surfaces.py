@@ -2440,6 +2440,8 @@ def test_python_workflow_docs_prefer_metric_figure_suite_wrapper():
     assert "DashboardDatasetPreparationResult.display_output_previews()" in workflows
     assert "DashboardDatasetPreparationResult.run_if_needed()" in workflows
     assert "the result owns the Slurm/local execution branch" in workflows
+    assert "Display the result from\n       ``DashboardDatasetPreparationResult.run_if_needed(...)``" in workflows
+    assert "``spatial_vtk.config.display_notebook_step_result``" in workflows
     assert "spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context" not in workflows
     assert "spatial_vtk.metrics.plot.metric_rows_for_metrics" not in workflows
     assert "metric row selectors" not in workflows

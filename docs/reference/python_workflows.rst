@@ -702,7 +702,11 @@ paths without requiring global config activation.
        dashboard metric dataset. Dashboard startup/readiness checks inspect
        summary value and map-coordinate columns with projected chunk scans, so
        they can report schema/value/map readiness without materializing complete
-       summary tables. The metrics dashboard loads the primary
+       summary tables. Display the result from
+       ``DashboardDatasetPreparationResult.run_if_needed(...)`` with
+       ``spatial_vtk.config.display_notebook_step_result`` so submitted,
+       skipped, and local-run states appear as labelled notebook tables. The
+       metrics dashboard loads the primary
        ``model_metric_band`` summary at startup, then reads optional
        station/event/path summaries lazily in chunks after the active
        model/metric/passband/period/component filters are known. It caps

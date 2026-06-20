@@ -1816,12 +1816,14 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "prepare_configured_dashboard_datasets_from_notebook_settings," in source
+    assert "display_notebook_step_result," in source
     assert "display_dashboard_preparation_result," in source
     assert "dashboard_preparation = prepare_configured_dashboard_datasets_from_notebook_settings(" in source
     assert "prepare_locally=False" in source
     assert "display_dashboard_preparation_result(dashboard_preparation, display=display)" in source
     assert "print(dashboard_preparation.message)" not in source
-    assert "dashboard_preparation.run_if_needed(" in source
+    assert "dashboard_preparation_result = dashboard_preparation.run_if_needed(" in source
+    assert 'display_notebook_step_result(dashboard_preparation_result, label="Dashboard datasets", display=display)' in source
     assert "post_dashboard_preparation = prepare_configured_dashboard_datasets_from_notebook_settings(" in source
     assert "display_dashboard_preparation_result(post_dashboard_preparation, display=display, include_contracts=False)" in source
     assert "dashboard_output_status_frame," not in source
