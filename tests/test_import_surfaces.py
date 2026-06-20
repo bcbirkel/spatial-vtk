@@ -1119,6 +1119,24 @@ def test_master_list_docstring_prefers_standard_step1_metadata_helper():
     assert 'pd.read_csv("events.csv")' not in text
 
 
+def test_spatial_workflow_docstring_prefers_standard_step4_status_helper():
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "spatial"
+        / "calculate"
+        / "workflow.py"
+    )
+    text = source.read_text(encoding="utf-8")
+
+    assert "from spatial_vtk.spatial import load_standard_spatial_workflow_output_status" in text
+    assert "spatial_outputs = load_standard_spatial_workflow_output_status(cfg=cfg)" in text
+    assert "result = spatial_outputs.run_summary_step_if_needed(context=context)" in text
+    assert "only in advanced scripts\nthat intentionally own a custom output directory" in text
+    assert 'spatial_statistics_output_paths("outputs/tutorials/step_04")' not in text
+
+
 def test_metric_gof_docstring_prefers_public_metrics_import():
     source = (
         pathlib.Path(__file__).resolve().parents[1]

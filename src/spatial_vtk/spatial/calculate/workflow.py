@@ -7,8 +7,14 @@ scripts, and CLI wrappers can share the same file layout.
 
 Usage examples
 --------------
-Create standard paths for spatial outputs:
-  ``paths = spatial_statistics_output_paths("outputs/tutorials/step_04")``
+Run configured Step 4 spatial summaries from a notebook or script:
+  ``from spatial_vtk.spatial import load_standard_spatial_workflow_output_status``
+  ``spatial_outputs = load_standard_spatial_workflow_output_status(cfg=cfg)``
+  ``result = spatial_outputs.run_summary_step_if_needed(context=context)``
+
+Use ``spatial_statistics_output_paths()`` directly only in advanced scripts
+that intentionally own a custom output directory outside the configured
+workflow.
 """
 
 from __future__ import annotations

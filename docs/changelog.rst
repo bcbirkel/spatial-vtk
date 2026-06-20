@@ -241,6 +241,10 @@ Changelog
     start with the standard ingest workflow output helper and
     ``run_metadata_step_if_needed(...)`` before documenting dataframe-level
     master-list builders.
+  - Updated the spatial workflow docstring so Step 4 examples start with
+    ``load_standard_spatial_workflow_output_status(...)`` and the
+    result-owned summary runner before documenting custom output-directory
+    helpers.
 
 - **CLI examples and defaults** *(Changed)*
 
