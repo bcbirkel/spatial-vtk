@@ -237,6 +237,10 @@ Changelog
     with ``load_standard_ingest_workflow_outputs(...)`` and the
     result-owned preprocessing runner before documenting direct
     ``preprocess_waveform_files(...)`` calls for advanced scripts.
+  - Updated master station/event list docstrings so Step 1 metadata examples
+    start with the standard ingest workflow output helper and
+    ``run_metadata_step_if_needed(...)`` before documenting dataframe-level
+    master-list builders.
 
 - **CLI examples and defaults** *(Changed)*
 

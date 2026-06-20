@@ -7,9 +7,13 @@ stable public Spatial-VTK table schemas.
 
 Usage examples
 --------------
-Build lists from CSV files:
-  ``build_master_station_list(station_tables=[pd.read_csv("stations.csv")])``
-  ``build_master_event_list(event_tables=[pd.read_csv("events.csv")])``
+Run configured Step 1 metadata preparation from a notebook or script:
+  ``from spatial_vtk.io import load_standard_ingest_workflow_outputs``
+  ``ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)``
+  ``result = ingest_outputs.run_metadata_step_if_needed(context=context)``
+
+Call ``build_master_station_list()`` or ``build_master_event_list()`` directly
+only in advanced scripts that already own in-memory station or event tables.
 """
 
 from __future__ import annotations
@@ -323,4 +327,3 @@ __all__ = [
     "build_arg_parser",
     "main",
 ]
-

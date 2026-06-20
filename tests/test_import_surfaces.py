@@ -1101,6 +1101,24 @@ def test_preprocessing_docstring_prefers_standard_step1_output_helper():
     assert 'preprocess_waveform_files("event_stations.csv", "outputs/preprocessed", config=cfg)' not in text
 
 
+def test_master_list_docstring_prefers_standard_step1_metadata_helper():
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "io"
+        / "master_lists.py"
+    )
+    text = source.read_text(encoding="utf-8")
+
+    assert "from spatial_vtk.io import load_standard_ingest_workflow_outputs" in text
+    assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in text
+    assert "result = ingest_outputs.run_metadata_step_if_needed(context=context)" in text
+    assert "only in advanced scripts that already own in-memory station or event tables" in text
+    assert 'pd.read_csv("stations.csv")' not in text
+    assert 'pd.read_csv("events.csv")' not in text
+
+
 def test_metric_gof_docstring_prefers_public_metrics_import():
     source = (
         pathlib.Path(__file__).resolve().parents[1]
