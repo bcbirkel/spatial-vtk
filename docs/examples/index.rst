@@ -26,7 +26,7 @@ To verify the full standard tutorial from a clean output directory, run:
 
 .. code-block:: bash
 
-   python -m pip install -e ".[notebooks,waveforms]"
+   python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"
    python tools/execute_tutorial_notebooks.py --clean
 
 If pip has trouble solving compiled geospatial or waveform packages in an
@@ -36,7 +36,7 @@ existing environment, create the full source-checkout environment first:
 
    conda env create -f svtk_environment.yaml
    conda activate spatial-vtk
-   python -m pip install -e ".[notebooks,waveforms]"
+   python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"
 
 To run only the source-contract and example-data checks without notebook
 runtime dependencies or output cleanup:
@@ -70,7 +70,7 @@ source checkout, run:
 
 .. code-block:: bash
 
-   python -m pip install -e ".[notebooks,waveforms]"
+   python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"
    python tools/execute_tutorial_notebooks.py --clean --include-large-run
 
 The large-run notebooks still use the committed example data during this

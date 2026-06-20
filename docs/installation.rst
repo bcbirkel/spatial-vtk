@@ -77,14 +77,14 @@ notebooks, example data, tests, and editable source code.
    cd spatial-vtk
    conda env create -f svtk_environment.yaml
    conda activate spatial-vtk
-   python -m pip install -e ".[notebooks,waveforms]"
+   python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"
 
 If you are adding the package to an existing conda environment for interactive
-notebook work, include the notebook extra and register the kernel:
+notebook work, include the source-checkout extras and register the kernel:
 
 .. code-block:: bash
 
-   python -m pip install -e ".[notebooks,waveforms]"
+   python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"
    python -m ipykernel install --user --name spatial-vtk --display-name "spatial-vtk"
 
 The editable install means changes in the source checkout are picked up by the

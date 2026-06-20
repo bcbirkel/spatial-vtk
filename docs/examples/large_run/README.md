@@ -17,7 +17,7 @@ To verify the public notebooks from a clean checkout, install the tutorial
 extras and run:
 
 ```bash
-python -m pip install -e ".[notebooks,waveforms]"
+python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"
 python tools/execute_tutorial_notebooks.py --clean --include-large-run
 ```
 
@@ -27,7 +27,7 @@ existing environment, create the full source-checkout environment first:
 ```bash
 conda env create -f svtk_environment.yaml
 conda activate spatial-vtk
-python -m pip install -e ".[notebooks,waveforms]"
+python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"
 ```
 
 The checker executes the standard notebooks first, then these large-run

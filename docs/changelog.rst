@@ -96,6 +96,10 @@ Changelog
     output helpers so notebook examples can point users to package-owned
     ``status_frame()``, ``summary_frame()``, and bounded-preview methods
     instead of repeating config path variables.
+  - Aligned source-checkout tutorial install guidance across the notebook
+    executor, README, installation guide, and example docs with the full
+    validation/docs/dashboard/notebook/waveform extras used by CI and the
+    release checklist.
   - Extended ``display_notebook_step_result(...)`` to handle workflow results
     with ``summary_frame()`` and updated standard Steps 1-3 so metadata,
     preprocessing, QC, waveform, metric-task, and metric-output results render

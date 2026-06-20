@@ -82,7 +82,8 @@ def test_tutorial_notebook_runtime_preflight_reports_missing_modules() -> None:
     missing = module.missing_notebook_runtime_modules({"demo": "definitely_missing_svtk_module"})
 
     assert missing == ["demo"]
-    assert module.SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND == 'python -m pip install -e ".[notebooks,waveforms]"'
+    expected_install = 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
+    assert module.SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND == expected_install
     assert module.SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND == "conda env create -f svtk_environment.yaml"
     with pytest.raises(SystemExit) as excinfo:
         module.check_notebook_runtime({"demo": "definitely_missing_svtk_module"})
@@ -604,9 +605,9 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     combined = f"{readme}\n{installation}\n{examples_index}\n{large_run_readme}"
 
     assert "standard and large-run tutorial notebooks" in installation
-    assert 'python -m pip install -e ".[notebooks,waveforms]"' in readme
+    assert 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"' in readme
     assert "\n    python -m pip install -e .\n" not in readme
-    assert "notebook and waveform extras" in readme
+    assert "source-checkout extras" in readme
     assert "If pip has trouble solving compiled geospatial or waveform packages" in readme
     assert "conda env create -f svtk_environment.yaml" in readme
     assert "If pip has trouble solving compiled geospatial or waveform packages" in examples_index
@@ -616,8 +617,8 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run" in readme
     assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in readme
     assert "The runtime check does not execute notebooks or clean outputs." in readme
-    assert 'python -m pip install -e ".[notebooks,waveforms]"' in examples_index
-    assert 'python -m pip install -e ".[notebooks,waveforms]"' in large_run_readme
+    assert 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"' in examples_index
+    assert 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"' in large_run_readme
     assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in installation
     assert "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run" in installation
     assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in combined

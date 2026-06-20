@@ -80,7 +80,9 @@ NOTEBOOK_RUNTIME_MODULES = {
     "streamlit": "streamlit",
     "streamlit-folium": "streamlit_folium",
 }
-SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND = 'python -m pip install -e ".[notebooks,waveforms]"'
+SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND = (
+    'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
+)
 SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND = "conda env create -f svtk_environment.yaml"
 KERNEL_EXTRA_ARGUMENTS = ("--IPKernelApp.log_level=ERROR",)
 TUTORIAL_EXAMPLE_ROOT = Path("data/examples/example_five_event_subset")
