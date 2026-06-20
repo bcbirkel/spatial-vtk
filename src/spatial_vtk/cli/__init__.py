@@ -700,7 +700,17 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         default=None,
         help="Synthetic waveform directory or path template. Defaults to paths.synthetic_root or paths.synthetic_template from config.",
     )
-    inventory.add_argument("--output", metavar="PATH", default=None, help="Output CSV/parquet path. Defaults to configured output table 'waveform_inventory'.")
+    inventory.add_argument(
+        "--waveform-inventory-output",
+        "--output",
+        metavar="PATH",
+        dest="output",
+        default=None,
+        help=(
+            "Waveform inventory output CSV/parquet table. Defaults to configured output table "
+            "'waveform_inventory'. Prefer --waveform-inventory-output; --output is a legacy alias."
+        ),
+    )
     inventory.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default roots and output path.")
     inventory.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     inventory.add_argument("--suffix", action="append", default=None, help="Waveform suffix to include. May be repeated.")

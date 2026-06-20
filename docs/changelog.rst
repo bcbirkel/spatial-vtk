@@ -68,6 +68,9 @@ Changelog
     ``svtk io prepare-event-stations`` now expose metadata/output artifact
     flags while preserving the older ``--input``, ``--output``,
     ``--stations``, and ``--events`` aliases.
+  - ``svtk io inventory`` now exposes ``--waveform-inventory-output`` for the
+    configured waveform inventory table while preserving ``--output`` as a
+    legacy alias.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

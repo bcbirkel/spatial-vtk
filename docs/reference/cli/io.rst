@@ -51,7 +51,7 @@ svtk io inventory
 .. code-block:: bash
 
    svtk io inventory [-h] [--observed-root PATH] [--synthetic-root PATH]
-                         [--output PATH] [--config PATH]
+                         [--waveform-inventory-output PATH] [--config PATH]
                          [--run-scenario RUN_SCENARIO] [--suffix SUFFIX]
                          [--relative-to DIR] [--no-sha256]
 
@@ -77,10 +77,10 @@ svtk io inventory
      - No
      -
      - Filesystem path. Synthetic waveform directory or path template. Defaults to paths.synthetic_root or paths.synthetic_template from config.
-   * - ``--output``
+   * - ``--waveform-inventory-output``, ``--output``
      - No
      -
-     - Filesystem path. Output CSV/parquet path. Defaults to configured output table 'waveform_inventory'.
+     - Filesystem path. Waveform inventory output CSV/parquet table. Defaults to configured output table 'waveform_inventory'. Prefer --waveform-inventory-output; --output is a legacy alias.
    * - ``--config``
      - No
      -

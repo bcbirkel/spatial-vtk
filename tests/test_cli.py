@@ -1326,8 +1326,10 @@ def test_generated_cli_reference_names_io_inventory_defaults():
     assert "[--relative-to DIR]" in section
     assert "OBSERVED_ROOT" not in section
     assert "SYNTHETIC_ROOT" not in section
-    assert "[--output PATH]" in section
-    assert "Filesystem path. Output CSV/parquet path" in section
+    assert "[--waveform-inventory-output PATH]" in section
+    assert "``--waveform-inventory-output``, ``--output``" in section
+    assert "Filesystem path. Waveform inventory output CSV/parquet table" in section
+    assert "Prefer --waveform-inventory-output; --output is a legacy alias." in section
     assert "Defaults to paths.observed_root or paths.observed_template from config" in section
     assert "Defaults to paths.synthetic_root or paths.synthetic_template from config" in section
     assert "Defaults to configured output table 'waveform_inventory'" in section
@@ -2831,6 +2833,38 @@ outputs:
     assert main(["io", "inventory", "--config", str(config), "--no-sha256"]) == 0
 
     inventory = pd.read_csv(tmp_path / "outputs" / "tables" / "waveform_inventory.csv")
+    assert set(inventory["dataset"]) == {"observed", "synthetic"}
+    assert set(inventory["filename"]) == {"ev1.pkl", "ev1.mseed"}
+    assert "sha256" not in inventory.columns
+
+
+def test_cli_inventory_accepts_waveform_inventory_output_flag(tmp_path):
+    observed = tmp_path / "observed"
+    synthetic = tmp_path / "synthetic"
+    observed.mkdir()
+    synthetic.mkdir()
+    (observed / "ev1.pkl").write_bytes(b"observed")
+    (synthetic / "ev1.mseed").write_bytes(b"synthetic")
+    output = tmp_path / "waveform_inventory.csv"
+
+    assert (
+        main(
+            [
+                "io",
+                "inventory",
+                "--observed-root",
+                str(observed),
+                "--synthetic-root",
+                str(synthetic),
+                "--waveform-inventory-output",
+                str(output),
+                "--no-sha256",
+            ]
+        )
+        == 0
+    )
+
+    inventory = pd.read_csv(output)
     assert set(inventory["dataset"]) == {"observed", "synthetic"}
     assert set(inventory["filename"]) == {"ev1.pkl", "ev1.mseed"}
     assert "sha256" not in inventory.columns
