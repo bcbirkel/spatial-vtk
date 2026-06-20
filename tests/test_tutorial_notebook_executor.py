@@ -1472,7 +1472,8 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "write_large_run_metric_figure_suite_from_notebook_settings(" in source
+    assert "metric_outputs.write_large_run_figure_suite(" in source
+    assert "write_large_run_metric_figure_suite_from_notebook_settings(" not in source
     assert "metric_figure_suite.status_frame()" in source
     assert "metric_plot_context = metric_figure_suite.context" in source
     assert "metric_plot_context.write_station_metric_maps(" not in source
@@ -1863,8 +1864,8 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
         ],
         "large_run/step_02_large_run_quality_control.ipynb": ["run_notebook_step_if_needed("],
         "large_run/step_03_large_run_calculate_metrics.ipynb": [
-            "run_notebook_step_if_needed(",
-            "metric_slurm_submission_readiness_from_config(",
+            "metric_outputs.run_inventory_step_if_needed(",
+            "metric_outputs.run_slurm_step_if_needed(",
         ],
         "large_run/step_07_large_run_dashboards.ipynb": ["dashboard_preparation.run_if_needed("],
     }
@@ -1898,23 +1899,28 @@ def test_large_run_step03_uses_metric_batch_status_before_submit_and_merge() -> 
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "metric_slurm_submission_readiness_from_config," in source
-    assert "metric_inventories_readiness_from_config," in source
-    assert "metric_manifest_readiness_from_config," in source
-    assert "metric_batch_merge_readiness_from_config," in source
-    assert "metric_outputs_readiness_from_config," in source
+    assert "metric_outputs.run_inventory_step_if_needed(" in source
+    assert "metric_outputs.run_manifest_step_if_needed(" in source
+    assert "metric_outputs.run_slurm_step_if_needed(" in source
+    assert "metric_outputs.run_merge_step_if_needed(" in source
+    assert "metric_outputs.run_downstream_outputs_step_if_needed(" in source
+    assert "metric_slurm_submission_readiness_from_config," not in source
+    assert "metric_inventories_readiness_from_config," not in source
+    assert "metric_manifest_readiness_from_config," not in source
+    assert "metric_batch_merge_readiness_from_config," not in source
+    assert "metric_outputs_readiness_from_config," not in source
     assert "from spatial_vtk.metrics.workflow import metric_manifest_batch_status" not in source
     assert "from spatial_vtk.metrics import metric_manifest_batch_status" not in source
     assert "metric_manifest_batch_status(" not in source
     assert "metric_slurm_submission_readiness(" not in source
-    assert "inventory_readiness = metric_inventories_readiness_from_config(" in source
-    assert "manifest_readiness = metric_manifest_readiness_from_config(" in source
-    assert "slurm_readiness = metric_slurm_submission_readiness_from_config(" in source
-    assert "merge_readiness = metric_batch_merge_readiness_from_config(" in source
-    assert "downstream_readiness = metric_outputs_readiness_from_config(" in source
+    assert "inventory_readiness = metric_inventories_readiness_from_config(" not in source
+    assert "manifest_readiness = metric_manifest_readiness_from_config(" not in source
+    assert "slurm_readiness = metric_slurm_submission_readiness_from_config(" not in source
+    assert "merge_readiness = metric_batch_merge_readiness_from_config(" not in source
+    assert "downstream_readiness = metric_outputs_readiness_from_config(" not in source
     assert "step_outputs.readiness(" not in source
-    assert '"incomplete_only": not OVERWRITE' in source
-    assert '"overwrite_batches": OVERWRITE' in source
+    assert "incomplete_only=not OVERWRITE" in source
+    assert "overwrite_batches=OVERWRITE" in source
     assert "metric_manifest_path.exists()" not in source
     assert "metric_rows_path.exists()" not in source
     assert "sources=(metric_manifest_path, *batch_status.completed_outputs)" not in source
@@ -1928,10 +1934,9 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "run_notebook_step_if_needed(" in source
+    assert "run_notebook_step_if_needed(" not in source
     assert "run_or_submit_notebook_function(" not in source
     assert "from spatial_vtk.metrics import (" in source
-    assert "build_metric_waveform_inventories_from_config," in source
     assert "load_standard_metric_workflow_outputs," in source
     assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg, load_task_estimate=False)" in source
     assert "metric_outputs.metrics_long_path" in source
@@ -1940,12 +1945,18 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert "display(metric_outputs.status_frame())" in source
     assert 'step_outputs = output_group("step_03_metrics")' not in source
     assert "preprocessed_waveform_metadata_paths(config=cfg)" not in source
-    assert "plan_metric_tasks_from_config," in source
-    assert "metric_inventories_readiness_from_config," in source
-    assert "metric_manifest_readiness_from_config," in source
-    assert "write_metrics_slurm_script_from_config," in source
-    assert "merge_metric_batches_from_config," in source
-    assert "write_metric_outputs_from_config," in source
+    assert "build_metric_waveform_inventories_from_config," not in source
+    assert "plan_metric_tasks_from_config," not in source
+    assert "metric_inventories_readiness_from_config," not in source
+    assert "metric_manifest_readiness_from_config," not in source
+    assert "write_metrics_slurm_script_from_config," not in source
+    assert "merge_metric_batches_from_config," not in source
+    assert "write_metric_outputs_from_config," not in source
+    assert "metric_outputs.run_inventory_step_if_needed(" in source
+    assert "metric_outputs.run_manifest_step_if_needed(" in source
+    assert "metric_outputs.run_slurm_step_if_needed(" in source
+    assert "metric_outputs.run_merge_step_if_needed(" in source
+    assert "metric_outputs.run_downstream_outputs_step_if_needed(" in source
     assert "metric_outputs.display_metrics_preview(nrows=PREVIEW_ROWS)" in source
     assert "step_outputs.display_table_previews(" not in source
     assert "step_outputs.preview_table(" not in source
@@ -2382,7 +2393,8 @@ def test_large_run_step03_metric_figures_are_auditable_station_aggregations() ->
     assert "STATION_AGGREGATION = METRIC_FIGURE_SETTINGS.station_aggregation" not in source
     assert "**METRIC_FIGURE_SETTINGS.context_kwargs(include_station_aggregation=True)" not in source
     assert "METRIC_FIGURE_SETTINGS.plot_selection_kwargs(" not in source
-    assert "write_large_run_metric_figure_suite_from_notebook_settings(" in source
+    assert "metric_outputs.write_large_run_figure_suite(" in source
+    assert "write_large_run_metric_figure_suite_from_notebook_settings(" not in source
     assert "metric_plot_context = metric_figure_suite.context" in source
     assert "display(metric_figure_suite.status_frame())" in source
     assert "display(metric_plot_context.spectral_metric_contract_status())" in source
@@ -2632,7 +2644,7 @@ def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> 
     ).read_text(encoding="utf-8")
     requirements = {
         "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": (
-            "write_large_run_metric_figure_suite_from_notebook_settings(",
+            "metric_outputs.write_large_run_figure_suite(",
             "metric_figure_suite.status_frame()",
             "metric_plot_context = metric_figure_suite.context",
         ),

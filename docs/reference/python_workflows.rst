@@ -362,8 +362,9 @@ fallbacks, and bounded previews stay in package code.
      - The Step 3 output group, preprocessed trace metadata dependency, status
        frame, optional metric task estimate, task-preview display helper,
        ``metrics_long`` display helper, plotting-table loader, configured
-       downstream output writer, standard diagnostic figure writer, focused
-       station-map writer, and task-estimate reload helper.
+       downstream output writer, large-run inventory/manifest/Slurm/merge
+       step runners, standard diagnostic figure writer, focused station-map
+       writer, large-run figure-suite writer, and task-estimate reload helper.
    * - Step 4 spatial statistics
      - ``spatial_vtk.spatial.load_standard_spatial_workflow_output_status``
        and ``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``

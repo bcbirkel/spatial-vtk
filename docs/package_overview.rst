@@ -130,7 +130,9 @@ Start with public helpers from ``spatial_vtk.metrics``:
   task previews from already-calculated metric snapshots
 - ``load_standard_metric_workflow_outputs`` for Step 3 output status, bounded
   metric previews, task-estimate loading, configured downstream outputs,
-  standard diagnostic figures, and focused station metric maps
+  large-run inventory/manifest/Slurm/merge/output orchestration, standard
+  diagnostic figures, focused station metric maps, and large-run metric figure
+  suites
 - ``metric_manifest_batch_status`` and ``metric_slurm_submission_readiness`` for
   resumable large-run metric arrays
 - ``write_metrics_slurm_script_from_config`` and

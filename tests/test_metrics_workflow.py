@@ -405,6 +405,129 @@ def test_standard_metric_workflow_output_result_owns_outputs_and_station_map(mon
     }
 
 
+def test_standard_metric_workflow_output_result_owns_large_run_steps(monkeypatch, tmp_path) -> None:
+    """Large-run Step 3 cells should delegate orchestration through the result object."""
+
+    class Config:
+        config_path = tmp_path / "spatial-vtk.yaml"
+        run_scenario = "large"
+
+    class Context:
+        config_path = tmp_path / "fallback.yaml"
+        run_scenario = "fallback"
+
+    class Outputs:
+        metrics_long_path = tmp_path / "metrics_long.parquet"
+
+    def fake_function(**_kwargs):
+        return {"ok": True}
+
+    run_calls: list[dict[str, object]] = []
+
+    def fake_run_notebook_step_if_needed(context, readiness, function, **kwargs):
+        run_calls.append(
+            {
+                "context": context,
+                "readiness": readiness,
+                "function": function,
+                "kwargs": kwargs,
+            }
+        )
+        return {"readiness": readiness}
+
+    monkeypatch.setattr("spatial_vtk.config.run_notebook_step_if_needed", fake_run_notebook_step_if_needed)
+
+    readiness_calls: list[tuple[str, dict[str, object]]] = []
+
+    def readiness_factory(name):
+        def _inner(**kwargs):
+            readiness_calls.append((name, kwargs))
+            return f"{name}-readiness"
+
+        return _inner
+
+    for name in (
+        "build_metric_waveform_inventories_from_config",
+        "plan_metric_tasks_from_config",
+        "write_metrics_slurm_script_from_config",
+        "merge_metric_batches_from_config",
+        "write_metric_outputs_from_config",
+    ):
+        monkeypatch.setattr(f"spatial_vtk.metrics.workflow.configured.{name}", fake_function)
+    monkeypatch.setattr(
+        "spatial_vtk.metrics.workflow.configured.metric_inventories_readiness_from_config",
+        readiness_factory("inventory"),
+    )
+    monkeypatch.setattr(
+        "spatial_vtk.metrics.workflow.configured.metric_manifest_readiness_from_config",
+        readiness_factory("manifest"),
+    )
+    monkeypatch.setattr(
+        "spatial_vtk.metrics.workflow.configured.metric_slurm_submission_readiness_from_config",
+        readiness_factory("slurm"),
+    )
+    monkeypatch.setattr(
+        "spatial_vtk.metrics.workflow.configured.metric_batch_merge_readiness_from_config",
+        readiness_factory("merge"),
+    )
+    monkeypatch.setattr(
+        "spatial_vtk.metrics.workflow.configured.metric_outputs_readiness_from_config",
+        readiness_factory("outputs"),
+    )
+
+    result = StandardMetricWorkflowOutputResult(outputs=Outputs(), cfg=Config())
+    context = Context()
+    assert result.run_inventory_step_if_needed(context, overwrite=True, run_local=False) == {"readiness": "inventory-readiness"}
+    assert result.run_manifest_step_if_needed(context, batch_count=17) == {"readiness": "manifest-readiness"}
+    assert result.run_slurm_step_if_needed(context, overwrite=True, submit=True) == {"readiness": "slurm-readiness"}
+    assert result.run_merge_step_if_needed(context) == {"readiness": "merge-readiness"}
+    assert result.run_downstream_outputs_step_if_needed(context, table_format="csv") == {"readiness": "outputs-readiness"}
+
+    assert [name for name, _ in readiness_calls] == ["inventory", "manifest", "slurm", "merge", "outputs"]
+    for _, kwargs in readiness_calls:
+        assert kwargs["config_path"] == Config.config_path
+        assert kwargs["run_scenario"] == "large"
+    assert readiness_calls[0][1]["overwrite"] is True
+    assert readiness_calls[1][1]["current_message"] == "Metric manifest is current; skipping planning."
+    assert readiness_calls[2][1]["overwrite"] is True
+
+    assert len(run_calls) == 5
+    assert [call["readiness"] for call in run_calls] == [
+        "inventory-readiness",
+        "manifest-readiness",
+        "slurm-readiness",
+        "merge-readiness",
+        "outputs-readiness",
+    ]
+    assert run_calls[0]["kwargs"]["script_name"] == "step03_metric_inventories.slurm"
+    assert run_calls[0]["kwargs"]["run_local"] is False
+    assert run_calls[0]["kwargs"]["kwargs"]["overwrite"] is True
+    assert run_calls[1]["kwargs"]["kwargs"]["batch_count"] == 17
+    assert run_calls[1]["kwargs"]["run_local"] is True
+    assert run_calls[2]["kwargs"]["kwargs"]["incomplete_only"] is False
+    assert run_calls[2]["kwargs"]["kwargs"]["overwrite_batches"] is True
+    assert run_calls[2]["kwargs"]["kwargs"]["submit"] is True
+    assert run_calls[3]["kwargs"]["script_name"] == "step03_merge_metric_batches.slurm"
+    assert run_calls[4]["kwargs"]["kwargs"]["table_format"] == "csv"
+    assert run_calls[4]["kwargs"]["kwargs"]["dashboard_partitioned"] is True
+
+    figure_calls: list[dict[str, object]] = []
+
+    def fake_figure_suite(metrics_path, settings, **kwargs):
+        figure_calls.append({"metrics_path": metrics_path, "settings": settings, "kwargs": kwargs})
+        return "figures"
+
+    monkeypatch.setattr(
+        "spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings",
+        fake_figure_suite,
+    )
+    settings = object()
+    assert result.write_large_run_figure_suite(settings, overwrite=True) == "figures"
+    assert figure_calls == [
+        {"metrics_path": Outputs.metrics_long_path, "settings": settings, "kwargs": {"overwrite": True}}
+    ]
+
+
 def test_metric_inventories_from_config_resolve_standard_paths(tmp_path) -> None:
     """Config-backed inventory helper should use preprocessing and output defaults."""
 

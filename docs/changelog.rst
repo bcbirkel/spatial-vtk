@@ -44,6 +44,11 @@ Changelog
     ``metric_outputs.write_configured_outputs()`` and
     ``metric_outputs.write_station_metric_map()`` instead of importing
     lower-level metric-output and station-map writer functions.
+  - Added large-run Step 3 result methods for metric inventory building,
+    manifest planning, Slurm script writing/submission, batch merging,
+    downstream output writing, and metric figure-suite rendering so the
+    large-run notebook no longer imports or passes the lower-level configured
+    writer functions directly.
   - Added config-backed Step 3 metric inventory and manifest readiness helpers
     so metric notebooks no longer repeat trace-metadata or QC-overlap
     dependency contracts.
