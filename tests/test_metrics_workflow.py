@@ -42,6 +42,7 @@ from spatial_vtk.metrics.workflow import (
 )
 from spatial_vtk.metrics.plot import (
     MetricFigureContext,
+    MetricFigureSuiteResult,
     StandardMetricDiagnosticFigureResult,
     write_large_run_metric_figure_suite_from_notebook_settings,
     metric_plot_input_summary_frame,
@@ -1300,6 +1301,39 @@ def test_write_large_run_metric_figure_suite_from_notebook_settings_delegates(tm
     assert status["figure_count"].tolist() == [1] * len(expected)
     assert status["figure_paths"].tolist() == [[str(tmp_path / "figures" / f"{name}.png")] for name in expected]
     assert status["first_figure_path"].tolist() == [str(tmp_path / "figures" / f"{name}.png") for name in expected]
+
+
+def test_metric_figure_suite_result_displays_context_status_frames() -> None:
+    """Figure-suite results should own context readiness display branches."""
+
+    class FakeContext:
+        ready = False
+
+        def status_frame(self) -> pd.DataFrame:
+            return pd.DataFrame([{"frame": "status"}])
+
+        def spectral_metric_contract_status(self) -> pd.DataFrame:
+            return pd.DataFrame([{"frame": "spectral"}])
+
+        def dimension_summary_frame(self) -> pd.DataFrame:
+            raise AssertionError("dimension summary should not be read when context is not ready")
+
+    result = MetricFigureSuiteResult(context=FakeContext(), rows=())
+    displayed: list[pd.DataFrame] = []
+    frames = result.display_context_status(display=displayed.append)
+
+    assert list(frames) == ["context_status", "spectral_metric_contract"]
+    assert [frame["frame"].iloc[0] for frame in displayed] == ["status", "spectral"]
+
+    class ReadyContext(FakeContext):
+        ready = True
+
+        def dimension_summary_frame(self) -> pd.DataFrame:
+            return pd.DataFrame([{"frame": "dimension"}])
+
+    ready_result = MetricFigureSuiteResult(context=ReadyContext(), rows=())
+    ready_frames = ready_result.context_status_frames()
+    assert list(ready_frames) == ["context_status", "spectral_metric_contract", "dimension_summary"]
 
 
 def test_generic_metric_diagnostics_split_residuals_by_model(tmp_path) -> None:

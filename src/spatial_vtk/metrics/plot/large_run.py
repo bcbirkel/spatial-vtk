@@ -1913,6 +1913,35 @@ class MetricFigureSuiteResult:
     context: MetricFigureContext
     rows: tuple[dict[str, Any], ...]
 
+    def context_status_frames(self) -> dict[str, pd.DataFrame]:
+        """Return compact context audit frames for notebook display.
+
+        The dimension summary is included only when the underlying metric
+        figure context is ready. This keeps notebooks from branching on
+        ``context.ready`` before displaying the standard Step 3 audit tables.
+        """
+
+        frames = {
+            "context_status": self.context.status_frame(),
+            "spectral_metric_contract": self.context.spectral_metric_contract_status(),
+        }
+        if self.context.ready:
+            frames["dimension_summary"] = self.context.dimension_summary_frame()
+        return frames
+
+    def display_context_status(
+        self,
+        *,
+        display: Callable[[pd.DataFrame], Any] | None = None,
+    ) -> dict[str, pd.DataFrame]:
+        """Display and return the standard metric figure context audit frames."""
+
+        frames = self.context_status_frames()
+        if display is not None:
+            for frame in frames.values():
+                display(frame)
+        return frames
+
     def status_frame(self) -> pd.DataFrame:
         """Return one row per metric figure family rendered or skipped."""
 

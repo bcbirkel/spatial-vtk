@@ -73,6 +73,9 @@ Changelog
   - Updated standard and large-run dashboard notebook imports to use
     ``spatial_vtk.visualize`` for routine dashboard preparation and launch
     helpers instead of the focused dashboard subpackage.
+  - Added ``MetricFigureSuiteResult.display_context_status(...)`` so the
+    large-run Step 3 notebook can display metric figure context audit tables
+    without branching on ``metric_figure_suite.context.ready`` in notebook code.
   - Spatial statistics settings now support configured ``metrics_table`` and
     ``station_metadata_table`` inputs plus metric lists, so Step 4 notebooks can
     run through the standard result/status wrapper without passing ad hoc

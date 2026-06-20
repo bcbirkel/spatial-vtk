@@ -1516,7 +1516,8 @@ def test_large_run_step03_documents_metric_source_sidecars() -> None:
     assert "metric_outputs.write_large_run_figure_suite(" in source
     assert "write_large_run_metric_figure_suite_from_notebook_settings(" not in source
     assert "metric_figure_suite.status_frame()" in source
-    assert "metric_plot_context = metric_figure_suite.context" in source
+    assert "metric_figure_suite.display_context_status(display=display)" in source
+    assert "metric_plot_context = metric_figure_suite.context" not in source
     assert "metric_plot_context.write_station_metric_maps(" not in source
     assert "metric_plot_context.write_residual_grid_maps(" not in source
     assert "metric_plot_context.write_metric_by_model_maps(" not in source
@@ -2482,10 +2483,11 @@ def test_large_run_step03_metric_figures_are_auditable_station_aggregations() ->
     assert "METRIC_FIGURE_SETTINGS.plot_selection_kwargs(" not in source
     assert "metric_outputs.write_large_run_figure_suite(" in source
     assert "write_large_run_metric_figure_suite_from_notebook_settings(" not in source
-    assert "metric_plot_context = metric_figure_suite.context" in source
+    assert "metric_plot_context = metric_figure_suite.context" not in source
     assert "display(metric_figure_suite.status_frame())" in source
-    assert "display(metric_plot_context.spectral_metric_contract_status())" in source
-    assert "if metric_plot_context.ready:" in source
+    assert "metric_figure_suite.display_context_status(display=display)" in source
+    assert "display(metric_plot_context.spectral_metric_contract_status())" not in source
+    assert "if metric_plot_context.ready:" not in source
     assert "MAKE_METRIC_FIGURES and step_outputs.metrics_long_path.exists()" not in source
     assert "PLOT_VALUE_COL in metrics_for_figures.columns" not in source
     assert "MAKE_METRIC_FIGURES and metric_plot_context.ready" not in source
@@ -2733,7 +2735,7 @@ def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> 
         "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": (
             "metric_outputs.write_large_run_figure_suite(",
             "metric_figure_suite.status_frame()",
-            "metric_plot_context = metric_figure_suite.context",
+            "metric_figure_suite.display_context_status(display=display)",
         ),
         "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": (
             "write_large_run_spatial_figure_suite_from_notebook_settings(",
