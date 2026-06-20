@@ -112,6 +112,10 @@ Changelog
     outputs through the same package helper as the standard tutorial.
   - Rewired the large-run Step 1 notebook to use package-owned metadata and
     preprocessing readiness helpers before local or Slurm execution.
+  - Added result-object driver methods for large-run Step 1 metadata,
+    waveform preprocessing, and record-coverage stages so notebooks call
+    ``ingest_outputs.run_*_step_if_needed(...)`` instead of assembling
+    readiness checks and build functions inline.
 
 - **Notebook-owned display cleanup** *(Rewired)*
 

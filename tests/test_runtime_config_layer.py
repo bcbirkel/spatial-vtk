@@ -2482,6 +2482,117 @@ outputs:
     clear_active_config()
 
 
+def test_ingest_workflow_output_result_owns_large_run_step01_runners(tmp_path, monkeypatch):
+    """Large-run Step 1 cells should delegate ingest orchestration through the result object."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+
+    class Context:
+        config_path = tmp_path / "fallback.yaml"
+        run_scenario = "fallback"
+
+    run_calls: list[dict[str, object]] = []
+
+    def fake_run_notebook_step_if_needed(context, readiness, function, **kwargs):  # noqa: ANN001, ANN202
+        run_calls.append(
+            {
+                "context": context,
+                "readiness": readiness,
+                "function": function,
+                "kwargs": kwargs,
+            }
+        )
+        return {"readiness": readiness}
+
+    monkeypatch.setattr("spatial_vtk.config.run_notebook_step_if_needed", fake_run_notebook_step_if_needed)
+
+    readiness_calls: list[tuple[str, dict[str, object]]] = []
+
+    def readiness_factory(name):
+        def _inner(**kwargs):  # noqa: ANN202
+            readiness_calls.append((name, kwargs))
+            return f"{name}-readiness"
+
+        return _inner
+
+    monkeypatch.setattr("spatial_vtk.io.workflows.metadata_tables_readiness_from_config", readiness_factory("metadata"))
+    monkeypatch.setattr("spatial_vtk.io.workflows.preprocessing_readiness_from_config", readiness_factory("preprocess"))
+    monkeypatch.setattr("spatial_vtk.io.workflows.record_coverage_readiness_from_config", readiness_factory("coverage"))
+
+    def fake_function(**_kwargs):  # noqa: ANN202
+        return {"ok": True}
+
+    monkeypatch.setattr("spatial_vtk.io.workflows.prepare_metadata_tables_from_config", fake_function)
+    monkeypatch.setattr("spatial_vtk.io.workflows.preprocess_waveforms_from_config", fake_function)
+    monkeypatch.setattr("spatial_vtk.io.workflows.build_record_coverage_from_config", fake_function)
+
+    ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)
+    context = Context()
+    assert ingest_outputs.run_metadata_step_if_needed(context, overwrite=True, run_local=False) == {
+        "readiness": "metadata-readiness"
+    }
+    assert ingest_outputs.run_preprocessing_step_if_needed(
+        context,
+        overwrite=True,
+        continue_on_error=False,
+        verbose=False,
+    ) == {"readiness": "preprocess-readiness"}
+    assert ingest_outputs.run_record_coverage_step_if_needed(context, overwrite=True) == {
+        "readiness": "coverage-readiness"
+    }
+
+    assert [name for name, _ in readiness_calls] == ["metadata", "preprocess", "coverage"]
+    for _, kwargs in readiness_calls:
+        assert kwargs["config_path"] == cfg.config_path
+        assert kwargs["run_scenario"] == cfg.run_scenario
+        assert kwargs["overwrite"] is True
+    assert readiness_calls[0][1]["current_message"] == "Prepared metadata tables are current; skipping."
+    assert readiness_calls[1][1]["current_message"] == (
+        "Preprocessed waveform metadata is current; skipping preprocessing submission."
+    )
+    assert readiness_calls[2][1]["missing_input_message"] == (
+        "Trace metadata or event-station records are not ready yet."
+    )
+
+    assert [call["readiness"] for call in run_calls] == [
+        "metadata-readiness",
+        "preprocess-readiness",
+        "coverage-readiness",
+    ]
+    assert [call["kwargs"]["script_name"] for call in run_calls] == [
+        "step01_prepare_metadata.slurm",
+        "step01_preprocess_waveforms.slurm",
+        "step01_record_coverage.slurm",
+    ]
+    assert [call["kwargs"]["job_name"] for call in run_calls] == [
+        "svtk-step01-metadata",
+        "svtk-step01-preprocess",
+        "svtk-step01-coverage",
+    ]
+    assert run_calls[0]["kwargs"]["run_local"] is False
+    assert run_calls[1]["kwargs"]["run_local"] is None
+    assert run_calls[2]["kwargs"]["run_local"] is None
+    assert run_calls[1]["kwargs"]["kwargs"]["continue_on_error"] is False
+    assert run_calls[1]["kwargs"]["kwargs"]["verbose"] is False
+    assert run_calls[2]["kwargs"]["kwargs"] == {
+        "config_path": str(cfg.config_path),
+        "run_scenario": cfg.run_scenario,
+    }
+    clear_active_config()
+
+
 def test_qc_workflow_output_result_owns_large_run_step02_runners(tmp_path, monkeypatch):
     """Large-run Step 2 cells should delegate QC orchestration through the result object."""
 

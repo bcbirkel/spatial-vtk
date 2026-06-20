@@ -149,6 +149,149 @@ class StandardIngestWorkflowOutputResult:
             overwrite=overwrite,
         )
 
+    def run_metadata_step_if_needed(
+        self,
+        context: Any,
+        *,
+        overwrite: bool = False,
+        current_message: str | None = "Prepared metadata tables are current; skipping.",
+        script_name: str = "step01_prepare_metadata.slurm",
+        job_name: str = "svtk-step01-metadata",
+        walltime: str = "12:00:00",
+        memory: str = "32G",
+        cpus: int = 1,
+        run_local: bool | None = True,
+        section: str | None = "compute.slurm",
+        display_fn: Any | None = None,
+    ) -> object:
+        """Run Step 1 metadata preparation when configured outputs are stale."""
+
+        from spatial_vtk.config import run_notebook_step_if_needed
+
+        config_path = _ingest_result_config_path(self.cfg, context)
+        run_scenario = _ingest_result_run_scenario(self.cfg, context)
+        readiness = metadata_tables_readiness_from_config(
+            config_path=config_path,
+            run_scenario=run_scenario,
+            overwrite=overwrite,
+            current_message=current_message,
+        )
+        return run_notebook_step_if_needed(
+            context,
+            readiness,
+            prepare_metadata_tables_from_config,
+            kwargs={
+                "config_path": str(config_path) if config_path is not None else None,
+                "run_scenario": run_scenario,
+                "overwrite": overwrite,
+            },
+            script_name=script_name,
+            job_name=job_name,
+            walltime=walltime,
+            memory=memory,
+            cpus=cpus,
+            run_local=run_local,
+            section=section,
+            display_fn=display_fn,
+        )
+
+    def run_preprocessing_step_if_needed(
+        self,
+        context: Any,
+        *,
+        overwrite: bool = False,
+        continue_on_error: bool = True,
+        verbose: bool = True,
+        current_message: str | None = "Preprocessed waveform metadata is current; skipping preprocessing submission.",
+        script_name: str = "step01_preprocess_waveforms.slurm",
+        job_name: str = "svtk-step01-preprocess",
+        walltime: str = "24:00:00",
+        memory: str = "32G",
+        cpus: int = 1,
+        run_local: bool | None = None,
+        section: str | None = "compute.slurm",
+        display_fn: Any | None = None,
+    ) -> object:
+        """Run or submit waveform preprocessing when metadata outputs are stale."""
+
+        from spatial_vtk.config import run_notebook_step_if_needed
+
+        config_path = _ingest_result_config_path(self.cfg, context)
+        run_scenario = _ingest_result_run_scenario(self.cfg, context)
+        readiness = preprocessing_readiness_from_config(
+            config_path=config_path,
+            run_scenario=run_scenario,
+            overwrite=overwrite,
+            current_message=current_message,
+        )
+        return run_notebook_step_if_needed(
+            context,
+            readiness,
+            preprocess_waveforms_from_config,
+            kwargs={
+                "config_path": str(config_path) if config_path is not None else None,
+                "run_scenario": run_scenario,
+                "overwrite": overwrite,
+                "continue_on_error": continue_on_error,
+                "verbose": verbose,
+            },
+            script_name=script_name,
+            job_name=job_name,
+            walltime=walltime,
+            memory=memory,
+            cpus=cpus,
+            run_local=run_local,
+            section=section,
+            display_fn=display_fn,
+        )
+
+    def run_record_coverage_step_if_needed(
+        self,
+        context: Any,
+        *,
+        overwrite: bool = False,
+        missing_input_message: str = "Trace metadata or event-station records are not ready yet.",
+        current_message: str = "Record coverage table is current; skipping.",
+        script_name: str = "step01_record_coverage.slurm",
+        job_name: str = "svtk-step01-coverage",
+        walltime: str = "12:00:00",
+        memory: str = "32G",
+        cpus: int = 1,
+        run_local: bool | None = None,
+        section: str | None = "compute.slurm",
+        display_fn: Any | None = None,
+    ) -> object:
+        """Run or submit record-coverage table building when stale."""
+
+        from spatial_vtk.config import run_notebook_step_if_needed
+
+        config_path = _ingest_result_config_path(self.cfg, context)
+        run_scenario = _ingest_result_run_scenario(self.cfg, context)
+        readiness = record_coverage_readiness_from_config(
+            config_path=config_path,
+            run_scenario=run_scenario,
+            overwrite=overwrite,
+            missing_input_message=missing_input_message,
+            current_message=current_message,
+        )
+        return run_notebook_step_if_needed(
+            context,
+            readiness,
+            build_record_coverage_from_config,
+            kwargs={
+                "config_path": str(config_path) if config_path is not None else None,
+                "run_scenario": run_scenario,
+            },
+            script_name=script_name,
+            job_name=job_name,
+            walltime=walltime,
+            memory=memory,
+            cpus=cpus,
+            run_local=run_local,
+            section=section,
+            display_fn=display_fn,
+        )
+
 
 class _SummaryMappingMixin(Mapping[str, Any]):
     """Mapping compatibility for result objects that expose ``as_dict``."""
@@ -378,6 +521,20 @@ def load_standard_ingest_workflow_outputs(
         preprocessed_outputs=preprocessed_waveform_output_group(config=cfg),
         cfg=cfg,
     )
+
+
+def _ingest_result_config_path(cfg: Any | None, context: Any | None) -> object | None:
+    """Return the config path carried by an ingest result or notebook context."""
+
+    value = getattr(cfg, "config_path", None)
+    return value if value is not None else getattr(context, "config_path", None)
+
+
+def _ingest_result_run_scenario(cfg: Any | None, context: Any | None) -> str | None:
+    """Return the active run scenario carried by an ingest result or context."""
+
+    value = getattr(cfg, "run_scenario", None)
+    return value if value is not None else getattr(context, "run_scenario", None)
 
 
 def prepare_metadata_tables_from_config(

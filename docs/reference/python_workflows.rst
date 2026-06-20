@@ -420,7 +420,7 @@ Step 1: Metadata, Waveforms, and Record Coverage
      - Python entry point
      - Standard outputs
    * - Prepare stations, events, and event-station rows
-     - ``spatial_vtk.io.prepare_metadata_tables_from_config``
+     - ``spatial_vtk.io.load_standard_ingest_workflow_outputs(...).run_metadata_step_if_needed(...)``
      - ``prepared_stations``, ``prepared_events``,
        ``event_station_records``; returns ``MetadataPreparationResult`` with
        notebook summary helpers
@@ -429,7 +429,7 @@ Step 1: Metadata, Waveforms, and Record Coverage
      - Readiness/status for ``prepared_stations``, ``prepared_events``, and
        ``event_station_records`` without loading large prepared tables
    * - Preprocess observed/synthetic waveforms
-     - ``spatial_vtk.io.preprocess_waveforms_from_config``
+     - ``spatial_vtk.io.load_standard_ingest_workflow_outputs(...).run_preprocessing_step_if_needed(...)``
      - preprocessed waveform files, preprocessing manifest,
        trace metadata, preprocessed event-station records; returns
        ``WaveformPreprocessingSummaryResult``
@@ -438,18 +438,20 @@ Step 1: Metadata, Waveforms, and Record Coverage
      - Readiness/status for preprocessing metadata and its
        ``event_station_records`` dependency without repeating path names
    * - Build record coverage from trace metadata
-     - ``spatial_vtk.io.build_record_coverage_from_config``
+     - ``spatial_vtk.io.load_standard_ingest_workflow_outputs(...).run_record_coverage_step_if_needed(...)``
      - ``record_coverage``; returns ``RecordCoverageWorkflowResult`` with the
        exact trace metadata and event-station inputs used
 
-Use ``spatial_vtk.io.metadata_tables_readiness_from_config``,
-``spatial_vtk.io.preprocessing_readiness_from_config``, and
-``spatial_vtk.io.record_coverage_readiness_from_config`` before the Step 1
-build steps when a notebook needs readiness tables. The preprocessing and
-record-coverage helpers own the non-standard preprocessing metadata paths and
-the same preprocessed-event-station fallback as
-``build_record_coverage_from_config``, so notebooks do not need to duplicate
-that path-selection logic.
+The ``run_*_step_if_needed`` methods wrap
+``spatial_vtk.config.run_notebook_step_if_needed`` with the correct readiness
+helper and build function for each Step 1 stage. Use the lower-level
+``metadata_tables_readiness_from_config``,
+``preprocessing_readiness_from_config``,
+``record_coverage_readiness_from_config``,
+``prepare_metadata_tables_from_config``, ``preprocess_waveforms_from_config``,
+and ``build_record_coverage_from_config`` functions in tests, scripts, or
+custom orchestration that needs that extra control. Tutorial notebooks should
+prefer the result-object methods so they do not duplicate path-selection logic.
 
 Step 2: Quality Control
 -----------------------

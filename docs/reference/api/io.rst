@@ -106,6 +106,13 @@ Public helpers exposed by ``spatial_vtk.io``:
      - Return a safe first non-empty value from an optional table column for
        notebook titles, labels, and summaries, with a fallback when the column
        is missing or empty.
+   * - ``load_standard_ingest_workflow_outputs``
+     - Return the configured Step 1 output bundle. The result object owns
+       status frames, bounded previews, context figure writing, and the
+       notebook-facing large-run driver methods
+       ``run_metadata_step_if_needed()``,
+       ``run_preprocessing_step_if_needed()``, and
+       ``run_record_coverage_step_if_needed()``.
    * - ``prepare_metadata_tables_from_config``
      - Normalize station, event, and event-station metadata and write the
        standard Step 1 tables.

@@ -1863,7 +1863,9 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     required = {
         "large_run/step_01_large_run_ingest_and_prepare_data.ipynb": [
-            "run_notebook_step_if_needed(",
+            "ingest_outputs.run_metadata_step_if_needed(",
+            "ingest_outputs.run_preprocessing_step_if_needed(",
+            "ingest_outputs.run_record_coverage_step_if_needed(",
         ],
         "large_run/step_02_large_run_quality_control.ipynb": [
             "qc_outputs.run_inventory_step_if_needed(",
@@ -2035,16 +2037,20 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "run_notebook_step_if_needed(" in source
-    assert "metadata_readiness = metadata_tables_readiness_from_config(" in source
-    assert "preprocess_readiness = preprocessing_readiness_from_config(" in source
+    assert "run_notebook_step_if_needed(" not in source
+    assert "ingest_outputs.run_metadata_step_if_needed(" in source
+    assert "ingest_outputs.run_preprocessing_step_if_needed(" in source
+    assert "ingest_outputs.run_record_coverage_step_if_needed(" in source
+    assert "metadata_readiness = metadata_tables_readiness_from_config(" not in source
+    assert "preprocess_readiness = preprocessing_readiness_from_config(" not in source
+    assert "record_coverage_readiness = record_coverage_readiness_from_config(" not in source
     assert "step_outputs.readiness(" not in source
     assert "preprocessed_outputs.readiness(" not in source
     assert "run_or_submit_notebook_function(" not in source
     assert "from spatial_vtk.io import (" in source
     assert "load_standard_ingest_workflow_outputs," in source
-    assert "metadata_tables_readiness_from_config," in source
-    assert "preprocessing_readiness_from_config," in source
+    assert "metadata_tables_readiness_from_config," not in source
+    assert "preprocessing_readiness_from_config," not in source
     assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in source
     assert "step_outputs = ingest_outputs.outputs" not in source
     assert "preprocessed_outputs = ingest_outputs.preprocessed_outputs" not in source
@@ -2061,10 +2067,10 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     assert "context_figure_result.status_frame()" in source
     assert "context_tables = step_outputs.load_tables(" not in source
     assert "load_output_table(" not in source
-    assert "prepare_metadata_tables_from_config," in source
-    assert "preprocess_waveforms_from_config," in source
-    assert "build_record_coverage_from_config," in source
-    assert "record_coverage_readiness_from_config," in source
+    assert "prepare_metadata_tables_from_config," not in source
+    assert "preprocess_waveforms_from_config," not in source
+    assert "build_record_coverage_from_config," not in source
+    assert "record_coverage_readiness_from_config," not in source
     assert "PREPROCESS_CONTINUE_ON_ERROR = context.preprocess_continue_on_error" in source
     assert 'os.environ.get("SVTK_PREPROCESS_CONTINUE_ON_ERROR"' not in source
     assert "prepare_station_metadata(" not in source
@@ -2222,9 +2228,10 @@ def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:
             assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in source
             assert "preprocessed_outputs = ingest_outputs.preprocessed_outputs" not in source
             assert "preprocessed_waveform_output_group(config=cfg)" not in source
-            assert "preprocess_readiness = preprocessing_readiness_from_config(" in source
+            assert "ingest_outputs.run_preprocessing_step_if_needed(" in source
+            assert "preprocess_readiness = preprocessing_readiness_from_config(" not in source
             assert "preprocessed_outputs.readiness(" not in source
-            assert "record_coverage_readiness_from_config(" in source
+            assert "record_coverage_readiness_from_config(" not in source
             assert "source_event_station_path" not in source
             assert "preprocess_readiness = output_readiness(" not in source
             assert "record_coverage_readiness = output_readiness(" not in source
