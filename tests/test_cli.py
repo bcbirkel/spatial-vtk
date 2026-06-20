@@ -111,11 +111,16 @@ def test_dashboard_status_cli_keeps_rich_readiness_columns():
             "item": ["station_rollup"],
             "artifact_label": ["station_rollup dashboard summary table"],
             "dashboard_tabs": ["Stations"],
+            "required_columns": ["station, model, metric"],
             "ready": [False],
             "readiness": ["no_value_data"],
             "row_count": [12],
             "file_count": [""],
             "map_ready": [True],
+            "missing_columns": [""],
+            "missing_map_columns": [""],
+            "value_columns": ["med_log2_residual, med_gof_score"],
+            "nonempty_value_columns": ["med_log2_residual"],
             "value_families": ["residual, score/gof"],
             "nonempty_value_families": ["residual"],
             "message": ["station_rollup summary has rows but no finite dashboard value columns."],
@@ -128,10 +133,17 @@ def test_dashboard_status_cli_keeps_rich_readiness_columns():
 
     shown = _dashboard_cli_readiness_columns(status)
 
+    assert "required_columns" in shown.columns
+    assert "missing_columns" in shown.columns
+    assert "missing_map_columns" in shown.columns
+    assert "value_columns" in shown.columns
+    assert "nonempty_value_columns" in shown.columns
     assert "value_families" in shown.columns
     assert "nonempty_value_families" in shown.columns
     assert "map_message" in shown.columns
     assert "extra_private_column" not in shown.columns
+    assert shown.loc[0, "value_columns"] == "med_log2_residual, med_gof_score"
+    assert shown.loc[0, "nonempty_value_columns"] == "med_log2_residual"
     assert shown.loc[0, "nonempty_value_families"] == "residual"
 
 

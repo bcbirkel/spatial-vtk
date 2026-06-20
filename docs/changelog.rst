@@ -58,6 +58,9 @@ Changelog
     recognized value columns alongside missing-column and non-empty-value
     checks, so dashboard readiness gaps are visible without loading large
     metric tables.
+  - ``svtk dashboard status`` now prints the same bounded schema, missing
+    column, map-coordinate, and value-column readiness fields for terminal and
+    Slurm-log diagnostics.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

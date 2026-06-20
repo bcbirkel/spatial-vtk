@@ -15,6 +15,12 @@ Dashboard commands can resolve their standard datasets from the active config. T
    svtk dashboard qc --config data/examples/configuration/example_spatial_vtk_config.yaml --run-scenario tutorial --auto-port --proxy-mode
 
 Use ``--auto-port`` when another Streamlit server may already be running and ``--proxy-mode`` when launching through a proxied notebook or remote desktop service.
+Run ``svtk dashboard status`` before launching dashboards when outputs are
+missing, stale, or unexpectedly sparse. The status table is bounded to metadata
+and shows the configured artifact label, dashboard tabs, required columns,
+missing columns, map-coordinate blockers, recognized value columns, non-empty
+value columns, suggested action, and resolved path without loading large metric
+or QC inventories.
 
 Command Tree
 ------------
