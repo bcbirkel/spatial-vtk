@@ -678,13 +678,43 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     event_stations.set_defaults(handler=_cmd_io_prepare_event_stations)
 
     master_stations = io_sub.add_parser("master-stations", help="Build a master station list from one or more tables.")
-    master_stations.add_argument("--input", metavar="PATH", nargs="+", required=True, help="Station CSV/parquet paths.")
-    master_stations.add_argument("--output", metavar="PATH", required=True, help="Output CSV path.")
+    master_stations.add_argument(
+        "--station-tables",
+        "--input",
+        metavar="PATH",
+        nargs="+",
+        dest="input",
+        required=True,
+        help="Station CSV/parquet input tables. Prefer --station-tables; --input is a legacy alias.",
+    )
+    master_stations.add_argument(
+        "--master-station-output",
+        "--output",
+        metavar="PATH",
+        dest="output",
+        required=True,
+        help="Master station-list output CSV path. Prefer --master-station-output; --output is a legacy alias.",
+    )
     master_stations.set_defaults(handler=_cmd_io_master_stations)
 
     master_events = io_sub.add_parser("master-events", help="Build a master event list from one or more tables.")
-    master_events.add_argument("--input", metavar="PATH", nargs="+", required=True, help="Event CSV/parquet paths.")
-    master_events.add_argument("--output", metavar="PATH", required=True, help="Output CSV path.")
+    master_events.add_argument(
+        "--event-tables",
+        "--input",
+        metavar="PATH",
+        nargs="+",
+        dest="input",
+        required=True,
+        help="Event CSV/parquet input tables. Prefer --event-tables; --input is a legacy alias.",
+    )
+    master_events.add_argument(
+        "--master-event-output",
+        "--output",
+        metavar="PATH",
+        dest="output",
+        required=True,
+        help="Master event-list output CSV path. Prefer --master-event-output; --output is a legacy alias.",
+    )
     master_events.set_defaults(handler=_cmd_io_master_events)
 
     inventory = io_sub.add_parser("inventory", help="Build a lightweight observed/synthetic file inventory.")

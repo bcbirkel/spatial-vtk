@@ -111,7 +111,8 @@ svtk io master-events
 
 .. code-block:: bash
 
-   svtk io master-events [-h] --input PATH [PATH ...] --output PATH
+   svtk io master-events [-h] --event-tables PATH [PATH ...]
+                             --master-event-output PATH
 
 .. rubric:: Parameters
 
@@ -127,14 +128,14 @@ svtk io master-events
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--event-tables``, ``--input``
      - Yes
      - Nargs: ``+``
-     - Filesystem path. Event CSV/parquet paths.
-   * - ``--output``
+     - Filesystem path. Event CSV/parquet input tables. Prefer --event-tables; --input is a legacy alias.
+   * - ``--master-event-output``, ``--output``
      - Yes
      -
-     - Filesystem path. Output CSV path.
+     - Filesystem path. Master event-list output CSV path. Prefer --master-event-output; --output is a legacy alias.
 
 .. _cli-svtk-io-master-stations:
 
@@ -145,7 +146,8 @@ svtk io master-stations
 
 .. code-block:: bash
 
-   svtk io master-stations [-h] --input PATH [PATH ...] --output PATH
+   svtk io master-stations [-h] --station-tables PATH [PATH ...]
+                               --master-station-output PATH
 
 .. rubric:: Parameters
 
@@ -161,14 +163,14 @@ svtk io master-stations
      - No
      -
      - show this help message and exit
-   * - ``--input``
+   * - ``--station-tables``, ``--input``
      - Yes
      - Nargs: ``+``
-     - Filesystem path. Station CSV/parquet paths.
-   * - ``--output``
+     - Filesystem path. Station CSV/parquet input tables. Prefer --station-tables; --input is a legacy alias.
+   * - ``--master-station-output``, ``--output``
      - Yes
      -
-     - Filesystem path. Output CSV path.
+     - Filesystem path. Master station-list output CSV path. Prefer --master-station-output; --output is a legacy alias.
 
 .. _cli-svtk-io-prepare-event-stations:
 

@@ -68,6 +68,9 @@ Changelog
     ``svtk io prepare-event-stations`` now expose metadata/output artifact
     flags while preserving the older ``--input``, ``--output``,
     ``--stations``, and ``--events`` aliases.
+  - ``svtk io master-stations`` and ``svtk io master-events`` now expose
+    source-table and master-list output flags while preserving ``--input`` and
+    ``--output`` as legacy aliases.
   - ``svtk io inventory`` now exposes ``--waveform-inventory-output`` for the
     configured waveform inventory table while preserving ``--output`` as a
     legacy alias.

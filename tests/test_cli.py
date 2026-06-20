@@ -1342,6 +1342,12 @@ def test_generated_cli_reference_names_io_prepare_aliases():
 
     root = Path(__file__).resolve().parents[1]
     text = (root / "docs" / "reference" / "cli" / "io.rst").read_text(encoding="utf-8")
+    master_events = text.split(".. _cli-svtk-io-master-events:", maxsplit=1)[1].split(
+        ".. _cli-svtk-io-master-stations:", maxsplit=1
+    )[0]
+    master_stations = text.split(".. _cli-svtk-io-master-stations:", maxsplit=1)[1].split(
+        ".. _cli-svtk-io-prepare-event-stations:", maxsplit=1
+    )[0]
     stations = text.split(".. _cli-svtk-io-prepare-stations:", maxsplit=1)[1]
     stations = stations.split(".. _cli-svtk-io-preprocess-waveforms:", maxsplit=1)[0]
     events = text.split(".. _cli-svtk-io-prepare-events:", maxsplit=1)[1].split(
@@ -1374,6 +1380,15 @@ def test_generated_cli_reference_names_io_prepare_aliases():
     assert "``--event-table``, ``--events``" in event_stations
     assert "``--event-station-records-output``, ``--output``" in event_stations
     assert "Prefer --event-station-records-output; --output is a legacy alias." in event_stations
+
+    assert "``--station-tables``, ``--input``" in master_stations
+    assert "``--master-station-output``, ``--output``" in master_stations
+    assert "Prefer --station-tables; --input is a legacy alias." in master_stations
+    assert "Prefer --master-station-output; --output is a legacy alias." in master_stations
+    assert "``--event-tables``, ``--input``" in master_events
+    assert "``--master-event-output``, ``--output``" in master_events
+    assert "Prefer --event-tables; --input is a legacy alias." in master_events
+    assert "Prefer --master-event-output; --output is a legacy alias." in master_events
 
 
 def test_config_find_help_uses_directory_metavar(capsys):
