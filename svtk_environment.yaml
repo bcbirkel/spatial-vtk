@@ -5,6 +5,7 @@ dependencies:
   - python>=3.10,<3.14
   - branca
   - contextily
+  - coverage
   - folium
   - geopandas
   - h5py
@@ -30,6 +31,7 @@ dependencies:
   - sphinx-rtd-theme
   - statsmodels
   - streamlit
+  - twine
   - pip
   - pip:
       - build

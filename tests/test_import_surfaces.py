@@ -629,6 +629,20 @@ def test_environment_file_covers_tutorial_runtime_modules():
         assert f"      - {dependency}" in environment_text
 
 
+def test_environment_file_covers_release_validation_tools():
+    """The public conda environment should support documented local release checks."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    environment_text = (root / "svtk_environment.yaml").read_text(encoding="utf-8")
+    checklist = (root / "RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
+
+    assert "python -m pytest -q" in checklist
+    assert "python -m build --sdist --wheel" in checklist
+    assert "python -m twine check dist/*" in checklist
+    for dependency in ("build", "coverage", "pytest", "twine"):
+        assert f"  - {dependency}" in environment_text or f"      - {dependency}" in environment_text
+
+
 def test_autodoc_fallback_parameter_docs_are_descriptive():
     """Generated API docs should not fall back to placeholder parameter text."""
 

@@ -89,7 +89,9 @@ notebook work, include the notebook extra and register the kernel:
 
 The editable install means changes in the source checkout are picked up by the
 environment immediately. That is the most convenient setup while you are
-working through the tutorial notebooks or developing new analysis code.
+working through the tutorial notebooks or developing new analysis code. The
+source-checkout conda environment also includes the local validation utilities
+used by the release checklist, including ``pytest``, ``build``, and ``twine``.
 
 Check the Install
 -----------------
