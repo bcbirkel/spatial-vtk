@@ -1153,6 +1153,24 @@ def test_plot_package_docstrings_prefer_large_run_suite_helpers():
     assert "Create a spatial correlation plot" not in spatial_text
 
 
+def test_context_map_docstring_prefers_standard_step1_context_figures():
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "visualize"
+        / "context"
+        / "maps.py"
+    )
+    text = source.read_text(encoding="utf-8")
+
+    assert "from spatial_vtk.io import load_standard_ingest_workflow_outputs" in text
+    assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in text
+    assert "result = ingest_outputs.write_context_figures(settings, cfg=cfg)" in text
+    assert "Use individual map functions such as ``plot_event_magnitude_map()`` directly" in text
+    assert 'plot_event_magnitude_map(events, "event_magnitudes.png")' not in text
+
+
 def test_metric_gof_docstring_prefers_public_metrics_import():
     source = (
         pathlib.Path(__file__).resolve().parents[1]

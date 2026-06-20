@@ -249,6 +249,9 @@ Changelog
     with large-run figure-suite writers before documenting individual
     low-level plot functions, and aligned the Spatial API entry-point example
     with the same suite-first guidance.
+  - Updated context map docstrings so Step 1 context figure examples use the
+    standard ingest workflow output result instead of literal ``*.png`` output
+    filenames.
 
 - **CLI examples and defaults** *(Changed)*
 

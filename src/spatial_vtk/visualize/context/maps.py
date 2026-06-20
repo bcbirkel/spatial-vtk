@@ -7,8 +7,13 @@ focal mechanisms from explicit metadata tables.
 
 Usage examples
 --------------
-Plot event magnitudes:
-  ``plot_event_magnitude_map(events, "event_magnitudes.png")``
+Render configured Step 1 context figures from a notebook or script:
+  ``from spatial_vtk.io import load_standard_ingest_workflow_outputs``
+  ``ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)``
+  ``result = ingest_outputs.write_context_figures(settings, cfg=cfg)``
+
+Use individual map functions such as ``plot_event_magnitude_map()`` directly
+only in scripts that already own the event table and output path.
 """
 
 from __future__ import annotations
