@@ -35,9 +35,9 @@ Changelog
   - Human-readable spatial and dashboard status commands now label resolved
     filesystem targets as ``resolved_path`` so terminal output matches the
     notebook readiness tables.
-  - Dashboard readiness attachments now resolve metric-dataset and QC-trace
-    paths from ``resolved_path`` first, while retaining compatibility with the
-    legacy ``path`` alias.
+  - Dashboard readiness attachments and stale-output checks now resolve
+    summary-table, metric-dataset, and QC-trace paths from ``resolved_path``
+    first, while retaining compatibility with the legacy ``path`` alias.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.

@@ -1019,7 +1019,7 @@ def _attach_dashboard_readiness(status: pd.DataFrame) -> pd.DataFrame:
         table_name = str(row.get("dashboard_table", ""))
         if not table_name:
             continue
-        readiness = _inspect_dashboard_summary_table(Path(str(row["path"])), table_name)
+        readiness = _inspect_dashboard_summary_table(_dashboard_status_path(row), table_name)
         for key, value in readiness.items():
             out.at[index, key] = value
     return out
@@ -1303,8 +1303,12 @@ def _dashboard_outputs_stale(metrics_long_path: Path, metrics_root: Path, summar
         return False
     source_mtime = metrics_long_path.stat().st_mtime
     output_paths = [path for path in _dashboard_metric_files(metrics_root) if path.exists()]
-    if not summary_status.empty and "path" in summary_status.columns:
-        output_paths.extend(Path(str(path)) for path in summary_status["path"] if Path(str(path)).exists())
+    if not summary_status.empty:
+        output_paths.extend(
+            path
+            for path in (_dashboard_status_path(row) for _, row in summary_status.iterrows())
+            if path.exists()
+        )
     if not output_paths:
         return False
     return any(path.stat().st_mtime < source_mtime for path in output_paths)

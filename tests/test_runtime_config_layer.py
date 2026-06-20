@@ -3502,6 +3502,16 @@ def test_dashboard_readiness_attachments_prefer_resolved_path_without_path_alias
 
     import spatial_vtk.visualize.dashboard.contracts as contracts_module
 
+    summary_table = tmp_path / "model_metric_band.csv"
+    pd.DataFrame(
+        {
+            "model": ["m1"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "n": [3],
+            "med_log2_residual": [0.2],
+        }
+    ).to_csv(summary_table, index=False)
     metrics_root = tmp_path / "metrics_dashboard_dataset.csv"
     pd.DataFrame(
         {
@@ -3523,6 +3533,28 @@ def test_dashboard_readiness_attachments_prefer_resolved_path_without_path_alias
             "qc_reason": [""],
         }
     ).to_csv(qc_trace_summary, index=False)
+
+    summary_status = pd.DataFrame(
+        [
+            {
+                "name": "model_metric_band_path",
+                "dashboard_table": "model_metric_band",
+                "resolved_path": str(summary_table),
+                "exists": True,
+            }
+        ]
+    )
+    summary_attached = contracts_module._attach_dashboard_readiness(summary_status)
+    assert "path" not in summary_attached.columns
+    assert summary_attached.loc[0, "ready"] is True
+    assert summary_attached.loc[0, "readiness"] == "ready"
+    assert summary_attached.loc[0, "row_count"] == 1
+
+    metric_source = tmp_path / "metrics_long.csv"
+    metric_source.write_text("metric\nPGA\n", encoding="utf-8")
+    os.utime(summary_table, (1_000, 1_000))
+    os.utime(metric_source, (2_000, 2_000))
+    assert contracts_module._dashboard_outputs_stale(metric_source, tmp_path / "missing_metrics_root", summary_status) is True
 
     metric_status = pd.DataFrame(
         [
