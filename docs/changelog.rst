@@ -10,12 +10,16 @@ Changelog
     helpers, metric result objects, Step 4 spatial workflow helpers, and
     dashboard contract helpers now accept either config objects or config file
     paths through ``cfg=``.
+  - Step 5 GeoJSON plotting/status helpers and Step 6 additional plotting
+    helpers now preserve path-valued ``cfg=`` inputs for output previews,
+    figure writers, and result-owned workflow runner methods.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.
   - Added regression coverage for config-path resolution across preprocessing,
     Step 3 metric outputs, Step 4 spatial outputs, dashboard readiness and
-    preview helpers, and large-run readiness helpers.
+    preview helpers, large-run readiness helpers, and later plotting-status
+    helpers.
 
 - **Step 1 workflow helpers** *(Added)*
 

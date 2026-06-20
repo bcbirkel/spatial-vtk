@@ -392,7 +392,8 @@ fallbacks, and bounded previews stay in package code.
        station/event/event-station metadata, metric tables, configured
        GeoJSON paths, Step 5 outputs, compact plotting input summaries, and
        result methods that write the standard region and corridor figure
-       suites without notebook-local path unpacking.
+       suites without notebook-local path unpacking. Both helpers accept
+       ``cfg=`` as a config object or config file path.
    * - Step 6 additional plotting
      - ``spatial_vtk.spatial.plot.load_standard_additional_plotting_output_status``
        and ``spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs``
@@ -403,7 +404,8 @@ fallbacks, and bounded previews stay in package code.
        event-station records, comparison-eligible records, and the Step 6
        plotting output group when figures need loaded inputs; the loaded input
        result writes the standard Step 6 figure suite without notebook-local
-       table or output-group aliases.
+       table or output-group aliases. Both helpers accept ``cfg=`` as a
+       config object or config file path.
 
 These helpers should replace notebook-local blocks that create several
 ``output_group(...)`` objects, call ``load_tables(...)`` manually, or keep

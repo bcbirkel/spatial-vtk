@@ -21,6 +21,9 @@ from spatial_vtk.spatial.plot.metrics import _categorical_metric_plot_data, boxp
 from spatial_vtk.visualize.figure_sidecars import write_figure_row_sidecar
 
 
+ConfigInput = SpatialVTKConfig | str | Path
+
+
 SPATIAL_FIGURE_TABLE_KEYS: tuple[str, ...] = (
     "metric_field",
     "event_centered_residuals",
@@ -136,7 +139,7 @@ class SpatialFigureContext:
         *,
         figure_dir: str | Path,
         make_figures: bool,
-        cfg: SpatialVTKConfig | None = None,
+        cfg: ConfigInput | None = None,
         overwrite: bool = False,
         add_basemap: bool = False,
         default_passband: str | None = None,
@@ -2272,7 +2275,7 @@ def write_large_run_spatial_summary_figures_from_outputs(
     outputs: Any,
     settings: Any,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     overwrite: bool = False,
     plot_station_bias_map_func: Callable[..., Any] | None = None,
 ) -> SpatialSummaryFigureResult:
@@ -2477,7 +2480,7 @@ def write_standard_spatial_diagnostic_figures(
     outputs: Any,
     settings: Any,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     site_metadata: pd.DataFrame | None = None,
     metrics: Sequence[str] | None = None,
     pca_mode: str | None = None,
@@ -2893,8 +2896,8 @@ def load_standard_geojson_plotting_inputs(
     Parameters
     ----------
     cfg
-        Active Spatial-VTK config. When omitted, the active config is used by
-        the underlying IO helpers.
+        Spatial-VTK config object or config file path. When omitted, the
+        active config is used by the underlying IO helpers.
     geojson_config_key
         Dotted config key for the region GeoJSON file.
     ingest_group_name, metrics_group_name, geojson_group_name
@@ -2957,6 +2960,8 @@ def load_standard_geojson_workflow_output_status(
 def _geojson_result_config_path(cfg: Any | None, context: Any | None) -> object | None:
     """Return the configured path for result-owned Step 5 notebook runners."""
 
+    if isinstance(cfg, (str, Path)):
+        return cfg
     value = getattr(cfg, "config_path", None)
     return value if value is not None else getattr(context, "config_path", None)
 
@@ -3245,8 +3250,8 @@ def load_standard_additional_plotting_inputs(
     Parameters
     ----------
     cfg
-        Active Spatial-VTK config. When omitted, the active config is used by
-        the underlying IO helpers.
+        Spatial-VTK config object or config file path. When omitted, the
+        active config is used by the underlying IO helpers.
     metrics_config_key
         Config key for the compact QC-passed metric snapshot used by the
         standard plotting tutorial.
@@ -3551,7 +3556,7 @@ def write_large_run_geojson_region_figures_from_outputs(
     *,
     geojson_path: str | Path,
     figure_dir: str | Path,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     metric: str = "PGA",
     passband: str | Sequence[str] = "2-3 sec",
     component: str | Sequence[str] | None = None,
@@ -3729,7 +3734,7 @@ def write_large_run_geojson_region_figures_from_notebook_settings(
     settings: Any,
     *,
     geojson_path: str | Path,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     overwrite: bool = False,
 ) -> RegionFigureResult:
     """Write Step 5 GeoJSON/corridor figures using notebook figure settings.
@@ -4050,7 +4055,7 @@ def _resolve_region_figure_output(
     path_name: str,
     output_key: str,
     *,
-    cfg: SpatialVTKConfig | None,
+    cfg: ConfigInput | None,
     fallback_dir: Path,
 ) -> Path:
     """Resolve one region figure path from an output group or config."""
@@ -4069,7 +4074,7 @@ def _load_group_table_by_path(
     path_name: str,
     output_key: str,
     *,
-    cfg: SpatialVTKConfig | None,
+    cfg: ConfigInput | None,
 ) -> pd.DataFrame:
     """Load a table from an output group's explicit path before key fallback."""
 

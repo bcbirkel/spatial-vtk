@@ -1617,7 +1617,7 @@ outputs:
         stem_parts=("step 06", "metric scatterplot"),
     ) == tmp_path / "run_outputs" / "figures" / "step_06_metric_scatterplot.png"
     write_table(pd.DataFrame({"metric": ["PGA"], "log2_residual": [0.25]}), plotting_group.metrics_long_path)
-    plotting_status = load_standard_additional_plotting_output_status(cfg=cfg)
+    plotting_status = load_standard_additional_plotting_output_status(cfg=config_path)
     displayed_plotting: list[pd.DataFrame] = []
     plotting_previews = plotting_status.display_metric_source_preview(
         nrows=1,
@@ -3221,7 +3221,7 @@ outputs:
     monkeypatch.setattr(spatial_workflow, "run_geojson_region_summary_workflow_from_config", fake_function)
     monkeypatch.setattr(spatial_workflow, "run_boundary_corridor_workflow_from_config", fake_function)
 
-    outputs = load_standard_geojson_workflow_output_status(cfg=cfg)
+    outputs = load_standard_geojson_workflow_output_status(cfg=config_path)
     context = Context()
     assert outputs.run_geojson_summary_step_if_needed(context, overwrite=True, chunksize=123, run_local=False) == {
         "readiness": run_calls[0]["readiness"]
@@ -3232,7 +3232,7 @@ outputs:
 
     assert [name for name, _ in readiness_calls] == ["geojson", "corridor"]
     for _, kwargs in readiness_calls:
-        assert kwargs["config_path"] == cfg.config_path
+        assert kwargs["config_path"] == config_path
         assert kwargs["run_scenario"] == context.run_scenario
         assert kwargs["overwrite"] is True
     assert [call["kwargs"]["script_name"] for call in run_calls] == [

@@ -256,6 +256,8 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
        ``display_table_previews(nrows=...)`` calls and writes the Step 5
        large-run region/corridor figure family through
        ``write_region_figures()``.
+      ``cfg=`` may be either a config object or a config file path, so worker
+      scripts can resolve outputs without active global config state.
    * - ``write_standard_additional_plotting_figures``
      - Write the standard Step 6 waveform map, pattern-similarity figure,
        residual scatterplot, region boxplot, and region heatmap while keeping
@@ -275,6 +277,8 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
        ``display_metric_source_preview(nrows=...)`` calls and writes bounded
        waveform comparisons plus region boxplots through
        ``write_waveform_comparison()`` and ``write_region_boxplot()``.
+      ``cfg=`` may be either a config object or a config file path, so worker
+      scripts can resolve outputs without active global config state.
    * - ``write_large_run_geojson_region_figures_from_outputs``
      - Write the Step 5 GeoJSON overview map, corridor map, and region boxplot
        from configured output groups without notebook-local table loading or
