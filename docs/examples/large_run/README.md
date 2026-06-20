@@ -25,9 +25,9 @@ The checker executes the standard notebooks first, then these large-run
 drivers, using only committed example data. It fails if any notebook raises an
 error or emits warning-like output. Before execution or output cleanup, it also
 checks that tutorial notebooks have no saved execution state, private absolute
-paths, shell/CLI workflow cells, implementation plotting imports, fixed run
-layout paths, raw output-path/table reads, or notebook-local dataframe
-filtering and joins that should live in package helpers.
+paths, shell/CLI workflow cells, implementation plotting/workflow imports,
+fixed run layout paths, raw output-path/table reads, or notebook-local
+dataframe filtering and joins that should live in package helpers.
 Notebook driver cells should use package workflow helpers that own path
 resolution, skip/rebuild checks, chunking, Slurm script generation, figure
 sidecars, and bounded previews. Common large-run entry points include:

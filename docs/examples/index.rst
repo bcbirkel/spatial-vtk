@@ -51,9 +51,10 @@ and verifies the Jupyter, ``spatial_vtk``, scientific Python, mapping,
 dashboard, and waveform modules that tutorial cells import. Missing dependency
 extras are reported before execution starts.
 The source contract catches saved execution state, private absolute paths,
-shell/CLI workflow cells, implementation plotting imports, fixed run-layout
-paths, raw output-path/table reads, and notebook-local dataframe filtering or
-joins so public tutorials stay package-first and source-checkout safe.
+shell/CLI workflow cells, implementation plotting/workflow imports, fixed
+run-layout paths, raw output-path/table reads, and notebook-local dataframe
+filtering or joins so public tutorials stay package-first and source-checkout
+safe.
 
 To verify the standard and large-run tutorial drivers together from a fresh
 source checkout, run:

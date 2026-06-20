@@ -132,6 +132,18 @@ NOTEBOOK_CONTRACT_FORBIDDEN_LINE_PATTERNS = (
     re.compile(r"\[\s*['\"]svtk['\"]\s*,"),
 )
 NOTEBOOK_CONTRACT_FORBIDDEN_IMPORT_PATTERNS = (
+    re.compile(r"^\s*from\s+spatial_vtk\.io\.(metadata|preprocessing|tables)\b", re.MULTILINE),
+    re.compile(r"^\s*import\s+spatial_vtk\.io\.(metadata|preprocessing|tables)\b", re.MULTILINE),
+    re.compile(r"^\s*from\s+spatial_vtk\.config\.(outputs|runtime)\b", re.MULTILINE),
+    re.compile(r"^\s*import\s+spatial_vtk\.config\.(outputs|runtime)\b", re.MULTILINE),
+    re.compile(r"^\s*from\s+spatial_vtk\.qc\.build\b", re.MULTILINE),
+    re.compile(r"^\s*import\s+spatial_vtk\.qc\.build\.", re.MULTILINE),
+    re.compile(r"^\s*from\s+spatial_vtk\.metrics\.workflow\.(execution|outputs|run|tasks)\b", re.MULTILINE),
+    re.compile(r"^\s*import\s+spatial_vtk\.metrics\.workflow\.(execution|outputs|run|tasks)\b", re.MULTILINE),
+    re.compile(r"^\s*from\s+spatial_vtk\.spatial\.(calculate|map\.|plot\.)", re.MULTILINE),
+    re.compile(r"^\s*import\s+spatial_vtk\.spatial\.(calculate|map\.|plot\.)", re.MULTILINE),
+    re.compile(r"^\s*from\s+spatial_vtk\.visualize\.(context\.|dashboard\.|qc\.|waveforms\.)", re.MULTILINE),
+    re.compile(r"^\s*import\s+spatial_vtk\.visualize\.(context\.|dashboard\.|qc\.|waveforms\.)", re.MULTILINE),
     re.compile(r"^\s*from\s+spatial_vtk\.metrics\.plot\.[\w.]+\s+import\b", re.MULTILINE),
     re.compile(r"^\s*import\s+spatial_vtk\.metrics\.plot\.[\w.]+(?:\s+as\s+\w+)?", re.MULTILINE),
     re.compile(r"^\s*from\s+spatial_vtk\.spatial\.map\.[\w.]+\s+import\b", re.MULTILINE),

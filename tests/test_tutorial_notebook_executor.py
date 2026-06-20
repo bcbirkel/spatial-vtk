@@ -328,6 +328,10 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
                             "import subprocess\n",
                             "!svtk metrics plan\n",
                             "from spatial_vtk.metrics.plot.periods import plot_period_spectra\n",
+                            "from spatial_vtk.metrics.workflow.execution import run_manifest_batch\n",
+                            "from spatial_vtk.qc.build.workflow import run_qc_inventory_from_config\n",
+                            "from spatial_vtk.spatial.calculate.workflow import run_spatial_summaries_from_config\n",
+                            "from spatial_vtk.io.preprocessing import preprocess_waveform_files\n",
                             "import spatial_vtk.spatial.map.metrics as metric_maps\n",
                             "metrics = pd.read_csv('/Users/example/project/metrics.csv')\n",
                             "path = resolve_output_path('metrics_long')\n",
@@ -389,6 +393,14 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert "subprocess.run(" in combined
     assert "from spatial_vtk.metrics.plot." in combined
     assert "forbidden implementation import pattern" in combined
+    assert "metrics" in combined
+    assert "workflow" in combined
+    assert "qc" in combined
+    assert "build" in combined
+    assert "spatial" in combined
+    assert "calculate" in combined
+    assert "io" in combined
+    assert "preprocessing" in combined
     assert "spatial_vtk\\.spatial\\.map\\." in combined
     assert "output_group_namespace" in combined
     assert "step_outputs[" in combined
@@ -615,7 +627,7 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "committed example data" in combined
     assert "source-contract preflight" in combined
     assert "shell/CLI workflow cells" in combined
-    assert "implementation plotting imports" in combined
+    assert "implementation plotting/workflow imports" in combined
     assert "fixed run" in combined
     assert "raw output-path/table reads" in combined
     assert "notebook-local dataframe filtering" in combined
