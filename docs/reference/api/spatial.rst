@@ -67,7 +67,9 @@ Public helpers exposed by ``spatial_vtk.spatial``:
        product summaries without notebook-local output-group table mappings.
        The returned result also writes the standard Step 4 map and diagnostic
        figure suites through ``write_map_figures()`` and
-       ``write_diagnostic_figures()``.
+       ``write_diagnostic_figures()``. Pass ``cfg=`` as either a config object
+       or a config file path; the loader resolves all Step 4 paths from that
+       config without requiring active global config state.
    * - ``spatial_metric_table_frame``, ``spatial_metric_product_frames``, and
        ``spatial_pca_product_frames``
      - Select metric-specific rows from Step 4 output tables without repeating

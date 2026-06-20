@@ -564,6 +564,11 @@ metric rows before using the current large-run plotting helpers.
 Step 4: Spatial Statistics
 --------------------------
 
+Standard Step 4 helpers accept ``cfg=`` as either a config object or a config
+file path. Use ``cfg=config_path`` in generated workers and lightweight driver
+scripts when you want the spatial output bundle, readiness gates, and settings
+to resolve from one config file without activating global state first.
+
 .. list-table::
    :header-rows: 1
 

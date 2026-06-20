@@ -4,6 +4,18 @@ Changelog
 2026-06-19
 ----------
 
+- **Config-path workflow stabilization** *(Changed)*
+
+  - Standard output resolvers, output groups, table IO helpers, preprocessing
+    helpers, metric result objects, and Step 4 spatial workflow helpers now
+    accept either config objects or config file paths through ``cfg=``.
+  - This lets notebooks, generated workers, Slurm scripts, and lightweight
+    Python drivers resolve registered outputs from one explicit config file
+    without first activating global config state.
+  - Added regression coverage for config-path resolution across preprocessing,
+    Step 3 metric outputs, Step 4 spatial outputs, and large-run readiness
+    helpers.
+
 - **Step 1 workflow helpers** *(Added)*
 
   - Added a standard Step 1 ingest output loader for combined ingest and

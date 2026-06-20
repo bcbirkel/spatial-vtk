@@ -101,6 +101,7 @@ from spatial_vtk.spatial import (
     boundary_corridor_readiness_from_config,
     geojson_region_summary_readiness_from_config,
     load_standard_spatial_workflow_output_status,
+    spatial_statistics_settings_from_config,
     spatial_derived_outputs_readiness_from_config,
     spatial_summary_readiness_from_config,
 )
@@ -3037,12 +3038,21 @@ outputs:
         write_table(frame, getattr(outputs, path_name))
 
     loaded = load_standard_spatial_workflow_outputs({"metrics": ["PGA"]}, cfg=cfg)
+    clear_active_config()
+    loaded_from_path = load_standard_spatial_workflow_outputs({"metrics": ["PGA"]}, cfg=config_path)
+    settings_from_path = spatial_statistics_settings_from_config(config_path)
 
     assert loaded.outputs.name == "step_04_spatial"
+    assert loaded_from_path.outputs.name == "step_04_spatial"
+    assert loaded_from_path.outputs.metric_field_path == outputs.metric_field_path
+    assert settings_from_path.metric == "all"
     assert all(not name.endswith("_path") for name in loaded.tables)
     assert {"metric_field", "event_centered_residuals", "station_bias", "morans_i"}.issubset(loaded.tables)
+    assert {"metric_field", "event_centered_residuals", "station_bias", "morans_i"}.issubset(loaded_from_path.tables)
     assert loaded.metrics == ("PGA",)
+    assert loaded_from_path.metrics == ("PGA",)
     assert len(loaded.metric_field) == 1
+    assert len(loaded_from_path.metric_field) == 1
     assert len(loaded.event_centered_residuals) == 1
     assert len(loaded.station_bias) == 1
     assert "PGA" in loaded.spatial_products
@@ -3050,7 +3060,6 @@ outputs:
     assert status.loc[status["table"].eq("metric_field"), "rows"].iloc[0] == 1
     assert not loaded.summary_frame().empty
     assert not loaded.station_bias_preview_frame().empty
-    clear_active_config()
 
 
 def test_spatial_workflow_output_status_owns_large_run_step04_runners(tmp_path, monkeypatch):
@@ -3068,7 +3077,8 @@ outputs:
 """,
         encoding="utf-8",
     )
-    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    cfg = SpatialVTKConfig.from_file(config_path)
+    clear_active_config()
 
     class Context:
         config_path = tmp_path / "fallback.yaml"
@@ -3116,7 +3126,7 @@ outputs:
     monkeypatch.setattr(spatial_workflow, "run_spatial_statistics_workflow_from_config", fake_function)
     monkeypatch.setattr(spatial_workflow, "run_spatial_derived_outputs_workflow_from_config", fake_function)
 
-    outputs = load_standard_spatial_workflow_output_status(cfg=cfg)
+    outputs = load_standard_spatial_workflow_output_status(cfg=config_path)
     context = Context()
     assert outputs.run_summary_step_if_needed(context, overwrite=True, run_local=False) == {
         "readiness": run_calls[0]["readiness"]

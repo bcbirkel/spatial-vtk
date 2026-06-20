@@ -25,6 +25,9 @@ from spatial_vtk.spatial.calculate._common import (
 )
 
 
+ConfigInput = SpatialVTKConfig | str | Path
+
+
 @dataclass(frozen=True)
 class SpatialStatisticsSettings:
     """Resolved settings for spatial-statistics calculations.
@@ -103,13 +106,14 @@ class SpatialStatisticsSettings:
     region_geojson_path: Path | None = None
 
 
-def spatial_statistics_settings_from_config(cfg: SpatialVTKConfig | None = None) -> SpatialStatisticsSettings:
+def spatial_statistics_settings_from_config(cfg: ConfigInput | None = None) -> SpatialStatisticsSettings:
     """Resolve spatial-statistics settings from a config.
 
     Parameters
     ----------
     cfg
-        Optional config. When omitted, the active/discoverable config is used.
+        Optional config object or config file path. When omitted, the
+        active/discoverable config is used.
 
     Returns
     -------
@@ -117,7 +121,7 @@ def spatial_statistics_settings_from_config(cfg: SpatialVTKConfig | None = None)
         Resolved spatial settings with package defaults filled in.
     """
 
-    config = cfg or active_config()
+    config = _coerce_spatial_settings_config(cfg)
     section = config.section("spatial", {})
     region_path = config.path("paths.region_geojson", must_exist=False)
     return SpatialStatisticsSettings(
@@ -153,6 +157,16 @@ def spatial_statistics_settings_from_config(cfg: SpatialVTKConfig | None = None)
         random_seed=int(section.get("random_seed", 42)),
         region_geojson_path=region_path,
     )
+
+
+def _coerce_spatial_settings_config(cfg: ConfigInput | None) -> SpatialVTKConfig:
+    """Return a config object for spatial settings resolution."""
+
+    if cfg is None:
+        return active_config()
+    if isinstance(cfg, SpatialVTKConfig):
+        return cfg
+    return SpatialVTKConfig.from_file(cfg)
 
 
 def _as_tuple(value: Any) -> tuple[str, ...]:

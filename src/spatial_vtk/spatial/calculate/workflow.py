@@ -57,6 +57,9 @@ from spatial_vtk.spatial.calculate.prepare_stats import (
 from spatial_vtk.spatial.calculate.settings import SpatialStatisticsSettings, spatial_statistics_settings_from_config
 
 
+ConfigInput = SpatialVTKConfig | str | Path
+
+
 SPATIAL_STATISTICS_OUTPUT_NAMES: tuple[str, ...] = (
     "metric_field.parquet",
     "event_centered_residuals.parquet",
@@ -430,7 +433,7 @@ class StandardSpatialWorkflowOutputResult:
         self,
         settings: Any,
         *,
-        cfg: SpatialVTKConfig | None = None,
+        cfg: ConfigInput | None = None,
         metrics: Sequence[str] | None = None,
         **kwargs: Any,
     ) -> object:
@@ -464,7 +467,7 @@ class StandardSpatialWorkflowOutputStatusResult:
     """
 
     outputs: object
-    cfg: SpatialVTKConfig | None = None
+    cfg: ConfigInput | None = None
 
     def status_frame(self) -> pd.DataFrame:
         """Return configured Step 4 output path status."""
@@ -596,7 +599,7 @@ class StandardSpatialWorkflowOutputStatusResult:
     def display_table_previews(
         self,
         *,
-        cfg: SpatialVTKConfig | None = None,
+        cfg: ConfigInput | None = None,
         nrows: int = 5,
         display_fn: Any | None = None,
     ) -> dict[str, object]:
@@ -617,7 +620,7 @@ class StandardSpatialWorkflowOutputStatusResult:
         self,
         settings: Any,
         *,
-        cfg: SpatialVTKConfig | None = None,
+        cfg: ConfigInput | None = None,
         overwrite: bool = False,
         **kwargs: Any,
     ) -> object:
@@ -915,7 +918,7 @@ def summarize_standard_spatial_products(
 def load_standard_spatial_workflow_outputs(
     spatial_result: SpatialStatisticsWorkflowResult | dict[str, object] | Sequence[str],
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     output_group_name: str = "step_04_spatial",
     station_bias_preview_rows: int = 5,
 ) -> StandardSpatialWorkflowOutputResult:
@@ -927,8 +930,8 @@ def load_standard_spatial_workflow_outputs(
         Spatial workflow result, configured-workflow summary dictionary, or
         explicit metric sequence used to select per-metric product frames.
     cfg
-        Active Spatial-VTK config. When omitted, the active config is used by
-        the underlying output-group helpers.
+        Spatial-VTK config object or config file path. When omitted, the
+        active config is used by the underlying output-group helpers.
     output_group_name
         Configured output group that owns the standard Step 4 spatial tables.
     station_bias_preview_rows
@@ -975,7 +978,7 @@ def load_standard_spatial_workflow_outputs(
 
 def load_standard_spatial_workflow_output_status(
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     output_group_name: str = "step_04_spatial",
 ) -> StandardSpatialWorkflowOutputStatusResult:
     """Return configured Step 4 output status without loading large tables.
@@ -983,8 +986,8 @@ def load_standard_spatial_workflow_output_status(
     Parameters
     ----------
     cfg
-        Active Spatial-VTK config. When omitted, the active config is used by
-        the underlying output-group helpers.
+        Spatial-VTK config object or config file path. When omitted, the
+        active config is used by the underlying output-group helpers.
     output_group_name
         Configured output group that owns the standard Step 4 spatial tables
         and figures.
@@ -1142,7 +1145,7 @@ def spatial_correlation_preview_frame(
 def run_spatial_statistics_workflow(
     metrics: pd.DataFrame | str | Path | None = None,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     metric: str | Sequence[str] | None = None,
     station_metadata: pd.DataFrame | str | Path | None = None,
     resume: bool = True,
@@ -1157,8 +1160,9 @@ def run_spatial_statistics_workflow(
         Long metric table or path. When omitted, the configured
         ``metrics_long`` output table is used.
     cfg
-        Optional Spatial-VTK config. The config is activated during execution
-        because lower-level spatial helpers read active spatial settings.
+        Optional Spatial-VTK config object or config file path. The config is
+        activated during execution because lower-level spatial helpers read
+        active spatial settings.
     metric
         Optional metric override. Use ``"all"`` to process each available
         metric in the input table, or pass a sequence such as
@@ -1183,7 +1187,7 @@ def run_spatial_statistics_workflow(
         Written tables, output paths, non-fatal failures, and elapsed time.
     """
 
-    config = cfg or active_config()
+    config = _coerce_spatial_config(cfg)
     config.activate()
     settings = spatial_statistics_settings_from_config(config)
     start = time.monotonic()
@@ -1438,7 +1442,7 @@ def run_spatial_derived_outputs_workflow(
     *,
     metric_field: pd.DataFrame | str | Path | None = None,
     station_bias: pd.DataFrame | str | Path | None = None,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     metric: str | Sequence[str] | None = None,
     pattern_passband: str | Sequence[str] | None = None,
     pattern_component: str | Sequence[str] | None = None,
@@ -1457,7 +1461,7 @@ def run_spatial_derived_outputs_workflow(
     ``overwrite=True``.
     """
 
-    config = cfg or active_config()
+    config = _coerce_spatial_config(cfg)
     config.activate()
     settings = spatial_statistics_settings_from_config(config)
     start = time.monotonic()
@@ -1549,9 +1553,21 @@ def _spatial_workflow_config(
     return config.activate()
 
 
+def _coerce_spatial_config(cfg: ConfigInput | None) -> SpatialVTKConfig:
+    """Return a config object for spatial workflow helpers."""
+
+    if cfg is None:
+        return active_config()
+    if isinstance(cfg, SpatialVTKConfig):
+        return cfg
+    return SpatialVTKConfig.from_file(cfg)
+
+
 def _spatial_result_config_path(cfg: Any | None, context: Any | None) -> object | None:
     """Return the configured path for result-owned notebook runners."""
 
+    if isinstance(cfg, (str, Path)):
+        return cfg
     value = getattr(cfg, "config_path", None)
     return value if value is not None else getattr(context, "config_path", None)
 

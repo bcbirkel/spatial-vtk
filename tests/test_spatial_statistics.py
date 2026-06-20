@@ -1625,7 +1625,6 @@ spatial:
 """,
         encoding="utf-8",
     )
-    cfg = SpatialVTKConfig.from_file(config_path)
     metrics = normalize_metrics_table(_toy_metrics_table(), default_model="example")
     station_metadata = pd.DataFrame(
         {
@@ -1634,7 +1633,8 @@ spatial:
         }
     )
 
-    result = run_spatial_statistics_workflow(metrics, cfg=cfg, metric=("C5",), station_metadata=station_metadata, verbose=True)
+    clear_active_config()
+    result = run_spatial_statistics_workflow(metrics, cfg=config_path, metric=("C5",), station_metadata=station_metadata, verbose=True)
 
     assert result.metrics == ("C5",)
     assert not result.tables["metric_field"].empty
@@ -1719,9 +1719,9 @@ spatial:
 """,
         encoding="utf-8",
     )
-    cfg = SpatialVTKConfig.from_file(config_path)
     metrics = normalize_metrics_table(_toy_metrics_table(), default_model="example_model")
-    summaries = run_spatial_statistics_workflow(metrics, cfg=cfg, metric=("C5",))
+    clear_active_config()
+    summaries = run_spatial_statistics_workflow(metrics, cfg=config_path, metric=("C5",))
     pattern_metrics = summaries.tables["metric_field"][
         ["station", "metric", "band", "component", "model", "field_value"]
     ].copy()
@@ -1733,7 +1733,7 @@ spatial:
         pattern_metrics,
         metric_field=summaries.tables["metric_field"],
         station_bias=summaries.tables["station_bias"],
-        cfg=cfg,
+        cfg=config_path,
         verbose=True,
     )
 
@@ -1754,7 +1754,7 @@ spatial:
         pattern_metrics,
         metric_field=summaries.tables["metric_field"],
         station_bias=summaries.tables["station_bias"],
-        cfg=cfg,
+        cfg=config_path,
     )
     assert set(reused.reused) == {
         "block_holdout_predictions",
