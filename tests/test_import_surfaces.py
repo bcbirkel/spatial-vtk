@@ -1992,6 +1992,7 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "pass ``metrics_dataset_dir`` and\n``dashboard_summary_table_dir`` to ``launch_metrics_dashboard``" in text
     assert "``metrics_root`` and ``summary_root`` keyword arguments remain supported" in text
     assert "pass ``qc_trace_summary_table`` to ``launch_qc_dashboard``" in text
+    assert "resolve the configured ``qc_trace_summary`` output without an explicit\ntable path" in text
     assert "Missing sidecar directories and existing empty sidecar directories" in text
     assert "``sidecar_dir_exists``" in text
 

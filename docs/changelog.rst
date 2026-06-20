@@ -100,6 +100,10 @@ Changelog
     executor, README, installation guide, and example docs with the full
     validation/docs/dashboard/notebook/waveform extras used by CI and the
     release checklist.
+  - Fixed ``launch_qc_dashboard(config_path=...)`` and active-config QC
+    dashboard launches so they resolve the configured ``qc_trace_summary``
+    output instead of requiring an explicit table path before config
+    resolution can run.
   - Extended ``display_notebook_step_result(...)`` to handle workflow results
     with ``summary_frame()`` and updated standard Steps 1-3 so metadata,
     preprocessing, QC, waveform, metric-task, and metric-output results render

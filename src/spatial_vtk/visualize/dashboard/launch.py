@@ -188,10 +188,13 @@ def _coalesce_dashboard_launch_path(
     preferred_name: str,
     legacy_name: str,
     artifact_label: str,
-) -> str | Path:
+    allow_missing: bool = False,
+) -> str | Path | None:
     """Return one dashboard launch path from a clear keyword or legacy alias."""
 
     if preferred is None and legacy is None:
+        if allow_missing:
+            return None
         raise ValueError(f"{preferred_name} is required for the {artifact_label}.")
     if (
         preferred is not None
@@ -235,6 +238,7 @@ def launch_qc_dashboard(
         preferred_name="qc_trace_summary_table",
         legacy_name="trace_summary",
         artifact_label="QC trace-summary table",
+        allow_missing=True,
     )
     config = None
     if resolved_qc_trace_summary is None or config_path is None:

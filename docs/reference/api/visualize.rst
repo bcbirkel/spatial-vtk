@@ -223,6 +223,9 @@ For Python launch calls, pass ``metrics_dataset_dir`` and
 existing scripts. For QC dashboard launch calls, pass
 ``qc_trace_summary_table`` to ``launch_qc_dashboard``; the older
 ``trace_summary`` keyword argument remains supported for existing scripts.
+When a config path or active config is available, ``launch_qc_dashboard`` can
+also resolve the configured ``qc_trace_summary`` output without an explicit
+table path.
 
 When a dashboard tab is blank or unexpectedly sparse, diagnose the configured
 artifacts before loading full metric or QC inventories:
