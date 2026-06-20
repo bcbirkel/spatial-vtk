@@ -2379,10 +2379,12 @@ def test_python_workflow_docs_define_stable_import_surfaces():
             "plot_event_residual_map",
             "add_contextily_basemap",
         ],
-        "spatial_vtk.visualize.dashboard": [
+        "spatial_vtk.visualize": [
             "prepare_configured_dashboard_datasets_from_notebook_settings",
             "dashboard_readiness_summary_frame",
             "launch_configured_dashboards_from_notebook_settings",
+            "display_dashboard_output_previews",
+            "preview_dashboard_summary_tables",
         ],
         "spatial_vtk.visualize.waveforms": [
             "write_waveform_comparison_from_notebook_settings",

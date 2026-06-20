@@ -89,9 +89,12 @@ namespace.
        additional-plotting figure suites, and spatial figure result objects.
    * - ``spatial_vtk.spatial.map``
      - Geographic map helpers and basemap utilities.
-   * - ``spatial_vtk.visualize.dashboard``
-     - Dashboard dataset preparation, dashboard readiness/status previews, and
-       dashboard launch helpers.
+   * - ``spatial_vtk.visualize``
+     - Notebook-facing dashboard dataset preparation,
+       dashboard readiness/status previews, dashboard launch helpers, figure
+       sidecars, and standard context/QC/waveform visualization helpers.
+       Focused dashboard scripts can import the same dashboard helpers from
+       ``spatial_vtk.visualize.dashboard``.
    * - ``spatial_vtk.visualize.waveforms``
      - Waveform comparison helpers and waveform figure result objects.
 

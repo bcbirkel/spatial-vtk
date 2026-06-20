@@ -26,6 +26,8 @@ Changelog
     and bounded loading helpers to ``spatial_vtk.visualize`` while preserving
     the ``spatial_vtk.visualize.dashboard`` family import path for dashboard
     scripts.
+  - Updated workflow-guide and large-run README dashboard examples to import
+    routine dashboard helpers from ``spatial_vtk.visualize``.
   - Aligned API docs, generated CLI reference, workflow guides, README
     install guidance, and tutorial notebooks with the stabilized public import
     surfaces and result-object workflow.

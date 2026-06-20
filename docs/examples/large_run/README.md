@@ -51,7 +51,7 @@ from spatial_vtk.spatial import (
     load_standard_geojson_workflow_output_status,
     load_standard_spatial_workflow_output_status,
 )
-from spatial_vtk.visualize.dashboard import prepare_configured_dashboard_datasets_from_notebook_settings
+from spatial_vtk.visualize import prepare_configured_dashboard_datasets_from_notebook_settings
 ```
 
 Step 4 large-run spatial figures should be rendered through the standard
