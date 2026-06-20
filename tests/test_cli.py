@@ -1108,6 +1108,7 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "dashboard overview tabs" in dashboard_text
     assert "Only pass explicit paths when you want to override those configured outputs" in dashboard_text
     assert "Run ``svtk dashboard status`` before launching dashboards" in dashboard_text
+    assert "table readiness, tab readiness" in dashboard_text
     assert "without loading large metric or QC inventories" in dashboard_text
     assert "Prefer ``--metrics-dataset-dir`` and ``--dashboard-summary-table-dir``" in dashboard_text
     assert "are legacy aliases" in dashboard_text
