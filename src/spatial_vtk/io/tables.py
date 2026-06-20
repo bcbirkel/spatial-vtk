@@ -16,6 +16,8 @@ from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.outputs import output_description
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 
+ConfigInput = SpatialVTKConfig | str | Path
+
 
 RENAME_MAP = {
     "simulation_model": "model",
@@ -402,7 +404,7 @@ def read_table(path: str | Path, **kwargs: Any) -> pd.DataFrame:
 def load_output_table(
     key: str,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     **kwargs: Any,
 ) -> pd.DataFrame:
     """Load a standard output table by artifact key.
@@ -412,8 +414,8 @@ def load_output_table(
     key
         Registered output key such as ``"prepared_stations"``.
     cfg
-        Optional config object. When omitted, the active/discoverable config is
-        used.
+        Optional config object or config file path. When omitted, the
+        active/discoverable config is used.
     **kwargs
         Additional read options forwarded to ``read_table``.
 
@@ -459,7 +461,7 @@ def preview_table(
 def preview_output_table(
     key: str,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     nrows: int = 5,
     columns: Sequence[str] | None = None,
     **kwargs: Any,
@@ -475,7 +477,7 @@ def load_or_build_output_table(
     builder: Callable[[], pd.DataFrame],
     *,
     source_path: str | Path | Sequence[str | Path] | None = None,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     overwrite: bool = False,
     verbose: bool = True,
     index: bool = False,
@@ -497,8 +499,8 @@ def load_or_build_output_table(
         Optional source file path or paths. If any existing source is newer
         than the output, the table is rebuilt.
     cfg
-        Optional config object. When omitted, the active/discoverable config is
-        used.
+        Optional config object or config file path. When omitted, the
+        active/discoverable config is used.
     overwrite
         Force a rebuild even if the existing table is current.
     verbose
@@ -545,7 +547,7 @@ def load_or_build_output_table(
 def read_config_table(
     dotted_key: str,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     must_exist: bool = True,
     **kwargs: Any,
 ) -> pd.DataFrame:
@@ -556,8 +558,8 @@ def read_config_table(
     dotted_key
         Config key that points to a table, such as ``"paths.station_metadata"``.
     cfg
-        Optional config object. When omitted, the active/discoverable config is
-        used.
+        Optional config object or config file path. When omitted, the
+        active/discoverable config is used.
     must_exist
         Whether to raise an error if the configured path is missing.
     **kwargs
@@ -569,7 +571,7 @@ def read_config_table(
         Loaded table.
     """
 
-    config = cfg or active_config()
+    config = _coerce_table_config(cfg)
     path = config.path(dotted_key, must_exist=must_exist)
     if path is None:
         raise ValueError(f"No path is configured for {dotted_key!r}.")
@@ -590,7 +592,7 @@ def write_output_table(
     df: pd.DataFrame,
     *,
     outpath: str | Path | None = None,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     index: bool = False,
 ) -> Path:
     """Write a standard table using the output registry and config.
@@ -604,8 +606,8 @@ def write_output_table(
     outpath
         Optional explicit output path. This always wins.
     cfg
-        Optional config object. When omitted, the active/discoverable config is
-        used.
+        Optional config object or config file path. When omitted, the
+        active/discoverable config is used.
     index
         Whether to include the dataframe index.
 
@@ -622,7 +624,7 @@ def write_output_table(
 def write_output_tables(
     tables: dict[str, pd.DataFrame] | None = None,
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: ConfigInput | None = None,
     index: bool = False,
     **named_tables: pd.DataFrame,
 ) -> dict[str, Path]:
@@ -633,8 +635,8 @@ def write_output_tables(
     tables
         Optional mapping from registered output keys to dataframes.
     cfg
-        Optional config object. When omitted, the active/discoverable config is
-        used.
+        Optional config object or config file path. When omitted, the
+        active/discoverable config is used.
     index
         Whether to include dataframe indexes.
     **named_tables
@@ -651,6 +653,16 @@ def write_output_tables(
         combined.update(tables)
     combined.update(named_tables)
     return {key: write_output_table(key, table, cfg=cfg, index=index) for key, table in combined.items()}
+
+
+def _coerce_table_config(cfg: ConfigInput | None) -> SpatialVTKConfig:
+    """Return a config object for table path resolution."""
+
+    if cfg is None:
+        return active_config()
+    if isinstance(cfg, SpatialVTKConfig):
+        return cfg
+    return SpatialVTKConfig.from_file(cfg)
 
 
 def write_named_tables(

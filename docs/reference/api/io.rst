@@ -90,6 +90,14 @@ Public helpers exposed by ``spatial_vtk.io``:
    * - ``load_configured_input_tables``
      - Load optional input tables from dotted config path keys such as
        ``paths.metric_figure_snapshot`` or ``paths.site_metadata``.
+   * - ``load_output_table``, ``preview_output_table``,
+       ``write_output_table``, ``write_output_tables``, and
+       ``read_config_table``
+     - Read and write registered output tables or configured input tables.
+       Each helper accepts ``cfg=`` as either a ``SpatialVTKConfig`` object or
+       a config file path, so worker scripts can resolve configured paths
+       without activating global config state. Use ``preview_output_table`` for
+       bounded notebook previews of large CSV/Parquet outputs.
    * - ``load_configured_input_paths``
      - Resolve optional non-table inputs from dotted config path keys, such as
        ``paths.region_geojson``, without putting direct ``cfg.path`` calls in

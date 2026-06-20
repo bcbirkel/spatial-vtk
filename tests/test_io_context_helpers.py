@@ -308,6 +308,59 @@ def test_standard_output_table_helpers_use_active_config(tmp_path: Path) -> None
     assert preview.to_dict("records") == [{"station": "STA01"}]
 
 
+def test_standard_output_table_helpers_accept_config_path_without_activation(tmp_path: Path) -> None:
+    """Table helpers should work in scripts that pass a config path directly."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    station_input = tmp_path / "inputs" / "stations.csv"
+    event_input = tmp_path / "inputs" / "events.csv"
+    station_input.parent.mkdir(parents=True)
+    pd.DataFrame({"station": ["STA01"], "lat": [34.1], "lon": [-118.2]}).to_csv(station_input, index=False)
+    pd.DataFrame({"event_title": ["E01"], "event_latitude": [34.0], "event_longitude": [-118.1]}).to_csv(
+        event_input,
+        index=False,
+    )
+    config_path.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  root_dir: .",
+                "paths:",
+                "  station_metadata: inputs/stations.csv",
+                "  event_metadata: inputs/events.csv",
+                "outputs:",
+                "  tables: outputs/tables",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    written = write_output_tables(
+        prepared_stations=pd.DataFrame({"station": ["STA01"], "lat": [34.1], "lon": [-118.2]}),
+        record_coverage=pd.DataFrame({"event_id": ["E01"], "station": ["STA01"], "source": ["observed"]}),
+        cfg=config_path,
+    )
+    stations = load_output_table("prepared_stations", cfg=config_path)
+    preview = preview_output_table("prepared_stations", cfg=config_path, nrows=1, columns=["station"])
+    events = read_config_table("paths.event_metadata", cfg=config_path)
+    rebuilt = load_or_build_output_table(
+        "event_station_records",
+        lambda: pd.DataFrame({"event_id": ["E01"], "station": ["STA01"]}),
+        cfg=config_path,
+        verbose=False,
+    )
+
+    assert written["prepared_stations"] == tmp_path / "outputs" / "tables" / "prepared_stations.csv"
+    assert written["record_coverage"].exists()
+    assert stations.to_dict("records") == [{"station": "STA01", "lat": 34.1, "lon": -118.2}]
+    assert preview.to_dict("records") == [{"station": "STA01"}]
+    assert events.to_dict("records") == [{"event_id": "E01", "event_lat": 34.0, "event_lon": -118.1}]
+    assert rebuilt.to_dict("records") == [{"event_id": "E01", "station": "STA01"}]
+    assert (tmp_path / "outputs" / "tables" / "event_station_records.csv").exists()
+    clear_active_config()
+
+
 def test_standard_ingest_workflow_outputs_reports_metadata_summary(tmp_path: Path) -> None:
     """Step 1 notebook helper should summarize prepared metadata row counts."""
 
