@@ -155,7 +155,7 @@ Write a QC inventory Slurm script:
    svtk qc slurm \
      --config spatial-vtk.yaml \
      --event-stations outputs/tables/event_station_records.csv \
-     --output outputs/slurm/build_qc.slurm
+     --qc-slurm-script-output outputs/slurm/build_qc_inventory.slurm
 
 Submit it in the same command when your login node can run ``sbatch``:
 
@@ -164,7 +164,7 @@ Submit it in the same command when your login node can run ``sbatch``:
    svtk qc slurm \
      --config spatial-vtk.yaml \
      --event-stations outputs/tables/event_station_records.csv \
-     --output outputs/slurm/build_qc.slurm \
+     --qc-slurm-script-output outputs/slurm/build_qc_inventory.slurm \
      --submit
 
 QC Slurm jobs call the same checkpointed builders used in Python, so rerunning
@@ -175,9 +175,9 @@ event-station comparison workflows.
 
 Metric Slurm jobs run as task arrays from a manifest produced by the metric
 workflow. After creating the manifest, write or submit the array script. When
-``--manifest`` and ``--output`` are omitted, Spatial-VTK uses the configured
-``metric_manifest_cached`` or ``metric_manifest`` table and writes
-``outputs/slurm/step03_run_metrics.slurm``:
+``--manifest`` and ``--metrics-slurm-script-output`` are omitted, Spatial-VTK
+uses the configured ``metric_manifest_cached`` or ``metric_manifest`` table and
+writes ``outputs/slurm/step03_run_metrics.slurm``:
 
 .. code-block:: bash
 

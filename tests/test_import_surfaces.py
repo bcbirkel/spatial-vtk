@@ -2214,6 +2214,10 @@ def test_configuration_examples_use_registered_output_keys():
     assert 'cfg.path("outputs.metrics")' not in combined
     assert "outputs.metrics" not in combined
     assert 'resolve_output_path("metrics_long", kind="table", cfg=cfg)' in combined
+    assert "--qc-slurm-script-output outputs/slurm/build_qc_inventory.slurm" in configuration
+    assert "--metrics-slurm-script-output`` are omitted" in configuration
+    assert "--output outputs/slurm/build_qc.slurm" not in configuration
+    assert "``--manifest`` and ``--output`` are omitted" not in configuration
 
 
 def test_notebook_cli_compat_helper_is_not_top_level_config_api():

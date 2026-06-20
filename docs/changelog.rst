@@ -77,6 +77,9 @@ Changelog
   - Package overview guidance now marks direct QC, spatial, GeoJSON, and
     corridor workflow runners as script/custom-orchestration helpers while
     keeping standard result objects as the routine notebook path.
+  - Configuration guide Slurm examples now use artifact-named
+    ``--qc-slurm-script-output`` and ``--metrics-slurm-script-output`` flags
+    instead of legacy ``--output`` wording.
   - QC dashboard startup now emits a single readiness warning that includes the
     specific trace-summary blocker, such as missing required columns, instead
     of showing a generic warning plus a second detailed warning.
