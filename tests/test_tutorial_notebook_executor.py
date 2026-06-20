@@ -724,6 +724,7 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "run_qc_summary_workflow_from_config(" not in standard_text
     assert "run_notebook_step_if_needed(" not in standard_text
     assert "notebook_step_result(" not in standard_text
+    assert "display_notebook_step_result," in standard_text
     assert "qc_inputs.step_result(" not in standard_text
     assert "qc_inputs.qc_inventory_step_result(" not in standard_text
     assert "qc_inputs.qc_overlap_step_result(" not in standard_text
@@ -746,6 +747,12 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "qc_outputs.run_inventory_step_if_needed(" in standard_text
     assert "qc_outputs.run_overlap_step_if_needed(" in standard_text
     assert "qc_outputs.run_summary_step_if_needed(" in standard_text
+    assert 'display_notebook_step_result(qc_inventory_result, label="Full QC inventory", display=display)' in standard_text
+    assert 'display_notebook_step_result(qc_overlap_result, label="Overlap QC inventory", display=display)' in standard_text
+    assert 'display_notebook_step_result(qc_summary_workflow_result, label="QC summary tables", display=display)' in standard_text
+    assert "print(qc_inventory_result)" not in standard_text
+    assert "print(qc_overlap_result)" not in standard_text
+    assert "print(qc_summary_workflow_result)" not in standard_text
     assert "scope=overlap_scope" in standard_text
     assert "qc_inputs.status_frame()" in standard_text
     assert "ingest_outputs.load_tables(" not in standard_text
@@ -754,6 +761,9 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "write_qc_figures_from_outputs(" not in standard_text
     assert "qc_figure_result.status_frame()" in standard_text
     assert "qc_inputs.write_waveform_comparison(" in standard_text
+    assert "display(waveform_comparison_result.status_frame())" in standard_text
+    assert "print(waveform_comparison_result.message)" not in standard_text
+    assert 'print(f"Waveform pairs shown:' not in standard_text
     assert "qc_outputs = qc_inputs.outputs" not in standard_text
     assert '"availability_path"' in standard_text
     assert "qc_figure_tables = qc_outputs.load_tables(" not in standard_text
@@ -1274,6 +1284,7 @@ def test_standard_step01_uses_configured_io_workflows() -> None:
     assert "prepare_metadata_tables_from_config(" in source
     assert "preprocess_waveforms_from_config(" in source
     assert "build_record_coverage_from_config(" in source
+    assert "display_notebook_step_result," in source
     assert "load_standard_ingest_workflow_outputs," in source
     assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in source
     assert "display(ingest_outputs.status_frame())" in source
@@ -1284,12 +1295,12 @@ def test_standard_step01_uses_configured_io_workflows() -> None:
     assert "ingest_outputs.display_station_preview(nrows=5)" in source
     assert "ingest_outputs.display_event_preview(nrows=5)" in source
     assert "ingest_outputs.display_preprocessing_manifest_preview(nrows=5)" in source
-    assert "metadata_result.summary_message()" in source
-    assert "metadata_result.summary_frame()" in source
-    assert "preprocessing_result.summary_message()" in source
-    assert "preprocessing_result.summary_frame()" in source
-    assert "coverage_result.summary_message()" in source
-    assert "coverage_result.summary_frame()" in source
+    assert 'display_notebook_step_result(metadata_result, label="Metadata tables", display=display)' in source
+    assert 'display_notebook_step_result(preprocessing_result, label="Preprocessed waveforms", display=display)' in source
+    assert 'display_notebook_step_result(coverage_result, label="Record coverage", display=display)' in source
+    assert "print(metadata_result.summary_message())" not in source
+    assert "print(preprocessing_result.summary_message())" not in source
+    assert "print(coverage_result.summary_message())" not in source
     assert "metadata_result['station_rows']" not in source
     assert "metadata_result['event_rows']" not in source
     assert "metadata_result['event_station_rows']" not in source
@@ -2065,6 +2076,7 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
 
     assert "summarize_metric_snapshot_tasks_from_config(" in source
     assert "metric_outputs.write_configured_outputs(" in source
+    assert "display_notebook_step_result," in source
     assert "write_metric_outputs_from_config(" not in source
     assert "metric_settings_summary," in source
     assert "metrics_settings_from_config," in source
@@ -2081,6 +2093,10 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
     assert "metric_diagnostic_result.status_frame()" in source
     assert "metric_outputs.display_task_previews(nrows=12)" in source
     assert "metric_outputs.display_metrics_preview(nrows=5)" in source
+    assert 'display_notebook_step_result(task_preview_result, label="Metric task preview", display=display)' in source
+    assert 'display_notebook_step_result(metric_output_result, label="Metric output tables", display=display)' in source
+    assert "print(task_preview_result)" not in source
+    assert "print(metric_output_result)" not in source
     assert "figure_metrics = metric_outputs.load_metrics_long()" not in source
     assert "metric_outputs.outputs," not in source
     assert "step_outputs.display_table_previews(" not in source

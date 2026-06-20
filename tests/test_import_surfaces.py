@@ -1102,6 +1102,7 @@ def test_config_api_docs_include_compute_helpers():
     assert "``NotebookRunContext`` and ``notebook_run_context``" in text
     assert "``run_notebook_step_if_needed``" in text
     assert "``display_notebook_step_result``" in text
+    assert "``summary_frame()``" in text
     assert "``NotebookFigureSettings`` and ``notebook_figure_settings``" in text
     assert "``render_notebook_figure``" in text
     assert "``NotebookFigureSidecarSettings`` and" in text
@@ -2191,6 +2192,7 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "run_notebook_step_if_needed" in workflows
     assert "display_notebook_step_result" in workflows
     assert "instead of ``print(result)``" in workflows
+    assert "``print(result.summary_message())``" in workflows
     assert "notebooks should use package functions" in workflows.lower()
     assert "configured_output_registry_preview_frame" in workflows
     assert "configured_output_registry_frame(cfg=cfg, kinds=(\"table\",)).head()" not in workflows

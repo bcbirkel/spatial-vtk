@@ -94,6 +94,23 @@ class QCSummaryWorkflowResult:
     rows: dict[str, int]
     elapsed_s: float
 
+    def status_frame(self) -> pd.DataFrame:
+        """Return one compact row per compact QC summary output."""
+
+        records: list[dict[str, object]] = []
+        for name, path in self.paths.items():
+            records.append(
+                {
+                    "artifact": name,
+                    "status": "ready" if Path(path).exists() else "missing",
+                    "rows": self.rows.get(name),
+                    "resolved_path": str(path),
+                    "path": str(path),
+                    "elapsed_s": self.elapsed_s,
+                }
+            )
+        return pd.DataFrame(records, columns=["artifact", "status", "rows", "resolved_path", "path", "elapsed_s"])
+
 
 @dataclass(frozen=True)
 class StandardQCInputResult:

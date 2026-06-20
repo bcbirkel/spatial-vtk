@@ -1471,7 +1471,8 @@ def notebook_step_result_frame(result: Any, *, label: str | None = None) -> Any:
     result
         Object returned by a notebook workflow gate. Dictionaries from
         :func:`notebook_step_result`, ``SlurmSubmission`` objects, objects with
-        ``status_frame()``, and arbitrary values are supported.
+        ``status_frame()`` or ``summary_frame()``, and arbitrary values are
+        supported.
     label
         Optional step label stored in the returned frame.
 
@@ -1485,6 +1486,11 @@ def notebook_step_result_frame(result: Any, *, label: str | None = None) -> Any:
 
     if hasattr(result, "status_frame"):
         frame = result.status_frame()
+        if label is not None and "step" not in frame.columns:
+            frame.insert(0, "step", label)
+        return frame
+    if hasattr(result, "summary_frame"):
+        frame = result.summary_frame()
         if label is not None and "step" not in frame.columns:
             frame.insert(0, "step", label)
         return frame

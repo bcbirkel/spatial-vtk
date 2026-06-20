@@ -4160,6 +4160,14 @@ def test_display_notebook_step_result_returns_labeled_display_frames(tmp_path):
     assert skipped_frame.loc[0, "status"] == "reused"
     assert skipped_frame.loc[0, "summary_path"] == str(tmp_path / "summary.csv")
 
+    class SummaryResult:
+        def summary_frame(self) -> pd.DataFrame:
+            return pd.DataFrame([{"artifact": "metadata", "rows": 3}])
+
+    summary_frame = notebook_step_result_frame(SummaryResult(), label="Metadata tables")
+    assert summary_frame.loc[0, "step"] == "Metadata tables"
+    assert summary_frame.loc[0, "artifact"] == "metadata"
+
     submission = SlurmSubmission(
         script_path=tmp_path / "step05.slurm",
         command=("sbatch", "step05.slurm"),

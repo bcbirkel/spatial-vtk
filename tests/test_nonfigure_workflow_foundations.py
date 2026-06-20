@@ -800,6 +800,10 @@ outputs:
     assert result.paths["qc_drop_causes"].exists()
     assert result.paths["qc_drop_causes_overlap"].exists()
     assert result.paths["manual_review_queue"].exists()
+    status = result.status_frame().set_index("artifact")
+    assert status.loc["comparison_eligible_records", "status"] == "ready"
+    assert status.loc["post_qc_records", "rows"] == 2
+    assert "resolved_path" in status.columns
     eligible = pd.read_csv(result.paths["comparison_eligible_records"])
     assert eligible[["event_id", "station", "metric"]].to_dict("records") == [
         {"event_id": "e1", "station": "S1", "metric": "PGA"}

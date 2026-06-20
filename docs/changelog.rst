@@ -88,6 +88,10 @@ Changelog
   - Updated the large-run Step 4 notebook so spatial summary and derived-output
     gate results are displayed through ``display_notebook_step_result(...)``
     instead of raw ``print(...)`` calls.
+  - Extended ``display_notebook_step_result(...)`` to handle workflow results
+    with ``summary_frame()`` and updated standard Steps 1-3 so metadata,
+    preprocessing, QC, waveform, metric-task, and metric-output results render
+    as labelled tables instead of raw print output.
   - Spatial statistics settings now support configured ``metrics_table`` and
     ``station_metadata_table`` inputs plus metric lists, so Step 4 notebooks can
     run through the standard result/status wrapper without passing ad hoc
