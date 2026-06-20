@@ -1484,6 +1484,7 @@ class StandardGeoJSONFigureResult:
                 "status",
                 "row_count",
                 "figure_path",
+                "figure_exists",
                 "message",
             ],
         )
@@ -1520,6 +1521,7 @@ class StandardGeoJSONCorridorFigureResult:
                 "status",
                 "row_count",
                 "figure_path",
+                "figure_exists",
                 "message",
             ],
         )
@@ -1871,6 +1873,7 @@ class StandardAdditionalPlottingFigureResult:
                 "status",
                 "row_count",
                 "figure_path",
+                "figure_exists",
                 "message",
             ],
         )
@@ -2070,6 +2073,7 @@ class StandardSpatialMapFigureResult:
                 "status",
                 "row_count",
                 "figure_path",
+                "figure_exists",
                 "message",
             ],
         )
@@ -2093,6 +2097,7 @@ class StandardSpatialDiagnosticFigureResult:
                 "status",
                 "row_count",
                 "figure_path",
+                "figure_exists",
                 "message",
             ],
         )
@@ -2498,6 +2503,7 @@ def write_standard_spatial_map_figures(
                     "status": "wrote",
                     "row_count": len(station_df),
                     "figure_path": str(station_path),
+                    "figure_exists": station_path.exists(),
                     "message": f"wrote {station_path}",
                 }
             )
@@ -2510,6 +2516,7 @@ def write_standard_spatial_map_figures(
                     "status": "plot_failed",
                     "row_count": len(station_df),
                     "figure_path": str(station_path),
+                    "figure_exists": station_path.exists(),
                     "message": f"{type(exc).__name__}: {exc}",
                 }
             )
@@ -2538,6 +2545,7 @@ def write_standard_spatial_map_figures(
                     "status": "wrote",
                     "row_count": len(centered_df),
                     "figure_path": str(grid_path),
+                    "figure_exists": grid_path.exists(),
                     "message": f"wrote {grid_path}",
                 }
             )
@@ -2550,6 +2558,7 @@ def write_standard_spatial_map_figures(
                     "status": "plot_failed",
                     "row_count": len(centered_df),
                     "figure_path": str(grid_path),
+                    "figure_exists": grid_path.exists(),
                     "message": f"{type(exc).__name__}: {exc}",
                 }
             )
@@ -2742,6 +2751,7 @@ def _write_standard_spatial_diagnostic_figure(
         "status": status,
         "row_count": len(frame),
         "figure_path": str(figure_path),
+        "figure_exists": figure_path.exists(),
         "message": message,
     }
 
@@ -2952,6 +2962,7 @@ def _write_standard_geojson_figure(
         "status": status,
         "row_count": len(frame),
         "figure_path": str(figure_path),
+        "figure_exists": figure_path.exists(),
         "message": message,
     }
 
@@ -3629,6 +3640,7 @@ def _write_standard_notebook_figure(
         "status": status,
         "row_count": len(frame),
         "figure_path": str(path),
+        "figure_exists": path.exists(),
         "message": message,
     }
 

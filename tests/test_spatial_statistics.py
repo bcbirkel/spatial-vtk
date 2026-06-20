@@ -319,6 +319,7 @@ def test_write_standard_geojson_region_figures_returns_status_tables(monkeypatch
     assert result.summary_frame().loc[0, "rows"] == 2
     status = result.status_frame()
     assert status["status"].tolist() == ["wrote", "wrote", "wrote"]
+    assert status["figure_exists"].tolist() == [True, True, True]
     assert status["artifact"].tolist() == ["geojson_regions", "pga_region_boxplot", "regional_pga_station_map"]
     assert len(calls) == 3
     assert calls[-1][2]["value_col"] == "mean_centered"
@@ -477,6 +478,7 @@ def test_write_standard_geojson_corridor_figures_returns_status_tables(monkeypat
     assert result.outward_event_frame()["event_id"].tolist() == ["e1"]
     status = result.status_frame()
     assert status["status"].tolist() == ["wrote", "wrote", "wrote", "wrote"]
+    assert status["figure_exists"].tolist() == [True, True, True, True]
     assert status["artifact"].tolist() == [
         "through_boundary_corridor_map",
         "outward_corridor_map",
@@ -712,7 +714,9 @@ def test_write_standard_additional_plotting_figures_returns_previews(tmp_path) -
     )
 
     assert isinstance(result, StandardAdditionalPlottingFigureResult)
-    assert result.status_frame()["status"].tolist() == ["wrote", "wrote", "wrote", "wrote", "wrote"]
+    status = result.status_frame()
+    assert status["status"].tolist() == ["wrote", "wrote", "wrote", "wrote", "wrote"]
+    assert status["figure_exists"].tolist() == [True, True, True, True, True]
     assert result.metric_summary_frame().loc[0, "Value"] == 2
     assert result.waveform_order_frame().loc[0, "station"] == "STA1"
     assert result.pattern_frame().loc[0, "dataset"] == "observed"
@@ -792,7 +796,9 @@ def test_standard_additional_plotting_input_result_writes_figures(tmp_path) -> N
     )
 
     assert isinstance(result, StandardAdditionalPlottingFigureResult)
-    assert result.status_frame()["status"].tolist() == ["wrote", "wrote", "wrote", "wrote", "wrote"]
+    status = result.status_frame()
+    assert status["status"].tolist() == ["wrote", "wrote", "wrote", "wrote", "wrote"]
+    assert status["figure_exists"].tolist() == [True, True, True, True, True]
     assert result.metric_summary_frame().loc[0, "Value"] == 2
     assert result.waveform_order_frame().loc[0, "station"] == "STA1"
     assert len(calls) == 5
@@ -962,6 +968,7 @@ def test_write_standard_spatial_map_figures_owns_step04_map_calls(tmp_path: Path
     assert status["artifact"].tolist() == ["station_bias_map", "residual_grid_map"]
     assert set(status["status"]) == {"wrote"}
     assert status["row_count"].tolist() == [1, 1]
+    assert status["figure_exists"].tolist() == [True, True]
 
 
 def test_write_standard_spatial_map_figures_reports_plot_failures(tmp_path: Path) -> None:
@@ -1132,6 +1139,7 @@ def test_write_standard_spatial_diagnostic_figures_owns_step04_plot_loops(tmp_pa
     status = result.status_frame()
     assert status["artifact"].tolist() == ["spatial_correlation_distance", "pca_summary", "geology_contrast"]
     assert status["status"].tolist() == ["wrote", "wrote", "wrote"]
+    assert status["figure_exists"].tolist() == [True, True, True]
     preview = result.preview_frame()
     assert {"spatial_correlation", "pca_explained_variance", "geology_contrast"} <= set(preview["artifact"])
     assert set(preview["metric"]) == {"PGA"}
@@ -1227,7 +1235,9 @@ def test_standard_spatial_workflow_output_result_writes_figures(tmp_path: Path) 
     assert isinstance(diagnostic_result, StandardSpatialDiagnosticFigureResult)
     assert [item[0] for item in seen] == ["station_bias", "residual_grid", "distance", "pca", "geology"]
     assert map_result.status_frame()["status"].tolist() == ["wrote", "wrote"]
+    assert map_result.status_frame()["figure_exists"].tolist() == [True, True]
     assert diagnostic_result.status_frame()["status"].tolist() == ["wrote", "wrote", "wrote"]
+    assert diagnostic_result.status_frame()["figure_exists"].tolist() == [True, True, True]
 
 
 def test_spatial_pca_product_frames_selects_all_pca_products() -> None:

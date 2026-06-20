@@ -615,6 +615,9 @@ Changelog
   - Added explicit existence fields to large-run Step 5 region figure status
     tables so notebooks show whether GeoJSON, corridor, boxplot, and sidecar
     artifacts were actually written without requiring manual path checks.
+  - Added ``figure_exists`` fields to standard Step 3 metric diagnostics,
+    Step 4 spatial maps/diagnostics, Step 5 GeoJSON/corridor figures, and
+    Step 6 additional plotting status tables.
 
 2026-06-18
 ----------

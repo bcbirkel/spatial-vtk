@@ -242,6 +242,7 @@ def test_write_standard_metric_diagnostic_figures_owns_step03_plot_calls(tmp_pat
     status = result.status_frame()
     assert status["artifact"].tolist() == ["residuals_vs_distance", "score_trends", "band_score_distribution"]
     assert status["status"].tolist() == ["wrote", "wrote", "wrote"]
+    assert status["figure_exists"].tolist() == [True, True, True]
     preview = result.preview_frame().set_index("Input")
     assert preview.loc["Metric rows", "Value"] == 3
     assert preview.loc["Metrics", "Value"] == "PGA, PGV, PGD"
@@ -308,6 +309,7 @@ def test_standard_metric_workflow_output_result_writes_diagnostic_figures(tmp_pa
     assert [item[0] for item in seen] == ["residuals", "scores", "band"]
     assert {metric for _, _, metrics_seen in seen for metric in metrics_seen} == {"PGA", "PGV"}
     assert diagnostic_result.status_frame()["status"].tolist() == ["wrote", "wrote", "wrote"]
+    assert diagnostic_result.status_frame()["figure_exists"].tolist() == [True, True, True]
 
 
 def test_standard_metric_workflow_output_result_owns_outputs_and_station_map(monkeypatch, tmp_path) -> None:

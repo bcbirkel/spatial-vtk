@@ -2310,6 +2310,7 @@ class StandardMetricDiagnosticFigureResult:
                 "status",
                 "row_count",
                 "figure_path",
+                "figure_exists",
                 "message",
             ],
         )
@@ -2426,6 +2427,7 @@ def _write_standard_metric_diagnostic_figure(
         "status": status,
         "row_count": len(frame),
         "figure_path": str(figure_path),
+        "figure_exists": figure_path.exists(),
         "message": message,
     }
 
