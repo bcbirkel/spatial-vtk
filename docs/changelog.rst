@@ -331,6 +331,9 @@ Changelog
   - Made ``svtk dashboard status`` include dashboard value-family and
     map-readiness messages in its bounded human-readable status table, matching
     the notebook and Streamlit Data Status displays.
+  - Hardened Streamlit dashboard launch checks so occupied ports are detected
+    before launch and delayed startup failures are reported before the CLI
+    prints a running-dashboard URL.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 

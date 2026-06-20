@@ -84,6 +84,7 @@ def launch_metrics_dashboard(
     summary_display_rows: int | str | None = None,
     download_rows: int | str | None = None,
     extra_args: list[str] | None = None,
+    startup_timeout_s: float = 2.5,
 ) -> subprocess.Popen[Any]:
     """Launch the Streamlit Metrics Explorer.
 
@@ -129,6 +130,7 @@ def launch_metrics_dashboard(
         proxy_mode=proxy_mode,
         extra_args=extra_args,
         env=env,
+        startup_timeout_s=startup_timeout_s,
     )
 
 
@@ -146,6 +148,7 @@ def launch_configured_metrics_dashboard(
     summary_display_rows: int | str | None = None,
     download_rows: int | str | None = None,
     extra_args: list[str] | None = None,
+    startup_timeout_s: float = 2.5,
 ) -> subprocess.Popen[Any]:
     """Launch the Metrics Explorer from configured dashboard output paths.
 
@@ -176,6 +179,7 @@ def launch_configured_metrics_dashboard(
         summary_display_rows=summary_display_rows,
         download_rows=download_rows,
         extra_args=extra_args,
+        startup_timeout_s=startup_timeout_s,
     )
 
 
@@ -213,6 +217,7 @@ def launch_qc_dashboard(
     show: bool = True,
     proxy_mode: bool = False,
     extra_args: list[str] | None = None,
+    startup_timeout_s: float = 2.5,
 ) -> subprocess.Popen[Any]:
     """Launch the Streamlit QC Explorer."""
 
@@ -242,6 +247,7 @@ def launch_qc_dashboard(
         proxy_mode=proxy_mode,
         extra_args=extra_args,
         env=env,
+        startup_timeout_s=startup_timeout_s,
     )
 
 
@@ -256,6 +262,7 @@ def launch_configured_qc_dashboard(
     show: bool = True,
     proxy_mode: bool = False,
     extra_args: list[str] | None = None,
+    startup_timeout_s: float = 2.5,
 ) -> subprocess.Popen[Any]:
     """Launch the QC Explorer from the configured ``qc_trace_summary`` output."""
 
@@ -269,6 +276,7 @@ def launch_configured_qc_dashboard(
         show=show,
         proxy_mode=proxy_mode,
         extra_args=extra_args,
+        startup_timeout_s=startup_timeout_s,
     )
 
 
@@ -414,6 +422,7 @@ def launch_streamlit_dashboard(
     proxy_mode: bool = False,
     extra_args: list[str] | None = None,
     env: dict[str, str] | None = None,
+    startup_timeout_s: float = 2.5,
 ) -> subprocess.Popen[Any]:
     """Start one Streamlit dashboard process."""
 
@@ -430,12 +439,7 @@ def launch_streamlit_dashboard(
     )
     process = subprocess.Popen(command, env=env or os.environ.copy())
     setattr(process, "spatial_vtk_server_port", resolved_port)
-    time.sleep(0.75)
-    if process.poll() is not None:
-        raise RuntimeError(
-            f"Streamlit dashboard exited immediately with status {process.returncode}. "
-            f"Check the Streamlit output above, or try another port with --port {resolved_port + 1}."
-        )
+    _raise_if_streamlit_exited_early(process, server_port=resolved_port, startup_timeout_s=startup_timeout_s)
     return process
 
 
@@ -468,12 +472,37 @@ def _port_is_available(server_address: str, server_port: int) -> bool:
 
     host = "127.0.0.1" if str(server_address) in {"", "::"} else str(server_address)
     try:
+        with socket.create_connection((host, int(server_port)), timeout=0.2):
+            return False
+    except OSError:
+        pass
+    try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             sock.bind((host, int(server_port)))
     except OSError:
         return False
     return True
+
+
+def _raise_if_streamlit_exited_early(
+    process: subprocess.Popen[Any],
+    *,
+    server_port: int,
+    startup_timeout_s: float,
+) -> None:
+    """Raise if Streamlit reports a startup failure after process creation."""
+
+    deadline = time.monotonic() + max(float(startup_timeout_s), 0.0)
+    while True:
+        if process.poll() is not None:
+            raise RuntimeError(
+                f"Streamlit dashboard exited during startup with status {process.returncode}. "
+                f"Check the Streamlit output above, or try another port with --port {int(server_port) + 1} "
+                "or --auto-port."
+            )
+        if time.monotonic() >= deadline:
+            return
+        time.sleep(0.1)
 
 
 def _entrypoint(name: str) -> Path:

@@ -1574,6 +1574,51 @@ def test_metrics_dashboard_launcher_rejects_conflicting_path_aliases(tmp_path):
         )
 
 
+def test_dashboard_port_availability_detects_listening_socket() -> None:
+    """Dashboard launch preflight should reject ports that already accept connections."""
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
+        server.bind(("127.0.0.1", 0))
+        server.listen(1)
+        port = int(server.getsockname()[1])
+
+        assert dashboard_launch._port_is_available("127.0.0.1", port) is False
+        with pytest.raises(RuntimeError, match=f"Port {port} is already in use"):
+            dashboard_launch._raise_if_port_in_use("127.0.0.1", port)
+
+
+def test_streamlit_launcher_reports_delayed_startup_failure(monkeypatch) -> None:
+    """The launcher should not print a running dashboard after Streamlit exits during startup."""
+
+    class FakeProcess:
+        pid = 227
+        returncode = 1
+
+        def __init__(self) -> None:
+            self.polls = 0
+
+        def poll(self) -> int | None:
+            self.polls += 1
+            return None if self.polls == 1 else self.returncode
+
+    launched = {}
+
+    def fake_popen(command, env):
+        launched["command"] = command
+        launched["env"] = env
+        return FakeProcess()
+
+    monkeypatch.setattr(dashboard_launch, "_require_streamlit", lambda: None)
+    monkeypatch.setattr(dashboard_launch, "_raise_if_port_in_use", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(dashboard_launch.subprocess, "Popen", fake_popen)
+    monkeypatch.setattr(dashboard_launch.time, "sleep", lambda _seconds: None)
+
+    with pytest.raises(RuntimeError, match="exited during startup"):
+        dashboard_launch.launch_streamlit_dashboard("app.py", server_port=8765, show=False, startup_timeout_s=1.0)
+
+    assert launched["command"][:4] == [dashboard_launch.sys.executable, "-m", "streamlit", "run"]
+
+
 def test_notebook_dashboard_launch_helper_returns_running_and_command_rows(monkeypatch):
     """Notebook launch orchestration should hide per-dashboard branching."""
 
