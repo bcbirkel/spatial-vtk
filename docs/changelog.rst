@@ -221,6 +221,9 @@ Changelog
   - Updated Python workflow guidance so the stable notebook import surface for
     metric plotting points to figure suites and result objects, while keeping
     row-selection helpers documented only as advanced script APIs.
+  - Split notebook-facing spatial figure-suite guidance from advanced spatial
+    figure-context builders so Step 4 tutorials point at result-object figure
+    methods instead of context construction.
   - Updated QC, Spatial, Visualization, I/O, and Configuration API pages to
     document stable package entry points instead of lower-level implementation
     modules.

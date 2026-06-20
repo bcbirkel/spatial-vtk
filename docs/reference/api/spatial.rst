@@ -204,16 +204,6 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
 
    * - Helper
      - Use
-   * - ``prepare_spatial_figure_context`` and ``SpatialFigureContext``
-     - Advanced direct context builder for scripts that need to control
-       large-run spatial filtering, station aggregation, PSA-period handling,
-       and sidecar metadata before rendering selected figure families.
-   * - ``prepare_spatial_figure_context_from_notebook_settings``
-     - Advanced compatibility helper for building a spatial figure context
-       from ``notebook_figure_settings(...)``. New notebook cells should prefer
-       ``write_large_run_spatial_figure_suite_from_notebook_settings`` so the
-       package owns render gates, output paths, sidecars, and per-family
-       keyword expansion.
    * - ``write_large_run_spatial_figure_suite_from_notebook_settings``
      - Render the full Step 4 large-run spatial figure suite from notebook
        settings without notebook-local plot-function imports, per-family
@@ -315,8 +305,13 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
    * - ``plot_pca_explained_variance`` and ``plot_pca_feature_loadings``
      - Plot PCA spatial-mode diagnostics.
 
-Large-Run Spatial Figure Context
---------------------------------
+Large-Run Spatial Figure Suite
+------------------------------
+
+Notebook-facing spatial plotting should use the result-object and suite helpers
+below. These helpers keep table readiness checks, spatial filtering, PSA
+period-sheet handling, station aggregation, sidecar metadata, render gates, and
+registered output paths in package code instead of notebook cells.
 
 Use ``SpatialFigureContext`` for Step 4-style spatial diagnostics that should
 reuse the same filtering, PSA period-sheet handling, station aggregation, and
@@ -357,6 +352,25 @@ GeoJSON and region plotting status tables use ``resolved_path`` as the clear
 notebook-facing path column while preserving ``path`` as a compatibility alias.
 Figure-specific result tables that already expose ``figure_path`` keep that
 descriptive column.
+
+Advanced Spatial Figure Extension Helpers
+-----------------------------------------
+
+The context builders in this section are public for custom scripts and
+extension code, but they are not the preferred tutorial or notebook entry
+points. New notebooks should call
+``write_large_run_spatial_figure_suite_from_notebook_settings`` or the standard
+workflow result-object figure methods so the package owns readiness checks,
+output bookkeeping, sidecars, and figure-family iteration.
+
+``prepare_spatial_figure_context``
+   Build a reusable ``SpatialFigureContext`` for scripts that need to control
+   large-run spatial filtering, station aggregation, PSA-period handling, and
+   sidecar metadata before rendering selected figure families.
+
+``prepare_spatial_figure_context_from_notebook_settings``
+   Compatibility helper for scripts that need a ``SpatialFigureContext`` built
+   from ``notebook_figure_settings(...)``.
 
 .. autoclass:: spatial_vtk.spatial.plot.SpatialFigureContext
    :members:

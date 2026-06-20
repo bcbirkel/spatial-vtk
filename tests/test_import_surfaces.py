@@ -1440,6 +1440,12 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
         "write_standard_spatial_map_figures",
     ):
         assert helper in text
+    helper_table = text.split("Public helpers exposed by ``spatial_vtk.spatial.plot``", 1)[1].split(
+        "Large-Run Spatial Figure Suite",
+        1,
+    )[0]
+    assert "prepare_spatial_figure_context" not in helper_table
+    assert "SpatialFigureContext" not in helper_table
     assert "Public helpers exposed by ``spatial_vtk.spatial.map``" in text
     for helper in (
         "plot_station_metric_map",
@@ -1474,8 +1480,10 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "write_large_run_spatial_figure_suite_from_notebook_settings," in text
     assert "write_standard_spatial_map_figures," in text
     assert "prepare_spatial_figure_context_from_notebook_settings," not in text
-    assert "Advanced direct context builder for scripts" in text
-    assert "New notebook cells should prefer\n       ``write_large_run_spatial_figure_suite_from_notebook_settings``" in text
+    assert "Notebook-facing spatial plotting should use the result-object and suite helpers" in text
+    assert "Advanced Spatial Figure Extension Helpers" in text
+    assert "not the preferred tutorial or notebook entry\npoints" in text
+    assert "New notebooks should call\n``write_large_run_spatial_figure_suite_from_notebook_settings``" in text
     assert "exact ``figure_paths`` lists" in text
     assert "preview-oriented path fields" in text
     assert "station_summary_for_item" in text
