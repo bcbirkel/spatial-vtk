@@ -1192,7 +1192,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     text = docs.read_text(encoding="utf-8")
     assert ".. automodule:: spatial_vtk.spatial.calculate\n" in text
     assert "helpers from the stable ``spatial_vtk.spatial`` package entry" in text
-    assert "lower-level calculate modules are\nimplementation organization" in text
+    assert "calculate implementation modules are\nimplementation organization" in text
     assert "Start with ``spatial_vtk.spatial`` for spatial-statistics" in text
     assert "from spatial_vtk.spatial import (" in text
     assert "run_spatial_statistics_workflow_from_config" in text
@@ -1288,7 +1288,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "write_large_run_spatial_figure_suite_from_notebook_settings," in text
     assert "write_standard_spatial_map_figures," in text
     assert "prepare_spatial_figure_context_from_notebook_settings," not in text
-    assert "Advanced lower-level context builder for scripts" in text
+    assert "Advanced direct context builder for scripts" in text
     assert "New notebook cells should prefer\n       ``write_large_run_spatial_figure_suite_from_notebook_settings``" in text
     assert "exact ``figure_paths`` lists" in text
     assert "preview-oriented path fields" in text
@@ -1652,7 +1652,7 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Import waveform\nfigure helpers from ``spatial_vtk.visualize.waveforms``" in text
     assert "Import dashboard helpers\nfrom ``spatial_vtk.visualize.dashboard``" in text
     assert "metrics dashboard row dataset" in text
-    assert "lower-level output registry names" in text
+    assert "internal output registry names" in text
     assert "``metrics_dashboard_root``" not in text
     assert "pass ``metrics_dataset_dir`` and\n``dashboard_summary_table_dir`` to ``launch_metrics_dashboard``" in text
     assert "``metrics_root`` and ``summary_root`` keyword arguments remain supported" in text
@@ -1701,7 +1701,7 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "``run_if_needed(...)`` method" in text
     assert "display_output_previews(nrows=...)" in text
     assert "bounded output previews through the\n       returned ``DashboardDatasetPreparationResult``" in text
-    assert "Lower-level script helper for observed/synthetic trace-comparison" in text
+    assert "Direct script helper for observed/synthetic trace-comparison" in text
     assert "Notebook-facing Step 2/6 waveform-comparison wrapper" in text
     assert "Backward-compatible alias for older large-run notebooks" in text
     assert "Notebook cells should use\n``write_waveform_comparison_from_notebook_settings``" in text
@@ -1803,7 +1803,7 @@ def test_reference_docs_map_python_workflow_entry_points():
         assert helper in workflows
     assert "display_table_previews()" in workflows
     assert "display_first_existing_table_preview()" in workflows
-    assert "Notebook cells should call those methods instead\nof passing ``cfg`` into lower-level preview helpers" in workflows
+    assert "Notebook cells should call those methods instead\nof passing ``cfg`` into standalone preview helpers" in workflows
     assert "``display_summary_previews()``" in workflows
     assert "``display_metrics_preview()``" in workflows
     assert "``display_metric_source_preview()``" in workflows
@@ -1816,7 +1816,7 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "geojson_region_summaries_path" in workflows
     assert "descriptive keys are the public notebook contract" in workflows
     assert "docs should not depend on generic" in workflows
-    assert "Use lower-level ``run_notebook_step_if_needed`` directly only for custom" in workflows
+    assert "Use ``run_notebook_step_if_needed`` directly only for custom" in workflows
     assert "Advanced fallback for workflow steps that do not yet have a standard" in workflows
     assert "Preview dashboard summary tables without loading full tab inputs" in workflows
     assert "without resolving dashboard summary paths in cells" in normalized_workflows
