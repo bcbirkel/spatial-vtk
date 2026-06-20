@@ -44,6 +44,9 @@ Changelog
   - Metrics dashboard Data Status now carries row-level metric dataset
     readiness messages into the Distributions row, so missing or stale
     dashboard metric datasets explain why distribution plots are unavailable.
+  - Shared dashboard empty-state messages now distinguish filter-empty tables
+    from stale schema/value-table problems and point users to the Data Status
+    tab before rebuilding summaries.
   - QC dashboard startup now emits a single readiness warning that includes the
     specific trace-summary blocker, such as missing required columns, instead
     of showing a generic warning plus a second detailed warning.

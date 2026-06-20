@@ -1589,13 +1589,19 @@ def dashboard_value_column_families(columns: Iterable[object]) -> tuple[str, ...
 def dashboard_empty_rows_message(row_label: str) -> str:
     """Return a consistent filtered-empty dashboard message."""
 
-    return f"No {row_label} rows match the selected filters."
+    return (
+        f"No {row_label} rows match the selected filters. "
+        "Clear or broaden the dashboard filters; if this was unexpected, check the Data Status tab."
+    )
 
 
 def dashboard_missing_columns_message(column_label: str, *, table_label: str = "loaded table") -> str:
     """Return a consistent missing-column dashboard message."""
 
-    return f"No {column_label} columns are available in the {table_label}."
+    return (
+        f"No {column_label} columns are available in the {table_label}. "
+        "Check the Data Status tab and rebuild the dashboard summaries from the active config if the source schema is stale."
+    )
 
 
 def dashboard_chart_columns_or_message(

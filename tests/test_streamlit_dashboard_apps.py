@@ -817,7 +817,8 @@ def test_qc_dashboard_status_reports_empty_filtered_scope():
     summary = _qc_loaded_row_summary(loaded, filtered).set_index("scope")
 
     assert summary.loc["filtered", "trace_rows"] == 0
-    assert summary.loc["filtered", "message"] == "No trace QC rows match the selected filters."
+    assert summary.loc["filtered", "message"].startswith("No trace QC rows match the selected filters.")
+    assert "Data Status tab" in summary.loc["filtered", "message"]
 
 
 def test_dashboard_summaries_do_not_require_residual_column():
@@ -1037,12 +1038,18 @@ def test_streamlit_entrypoints_import_and_launch_command():
 
 
 def test_dashboard_empty_state_messages_are_explicit():
-    assert dashboard_empty_rows_message("station") == "No station rows match the selected filters."
-    assert dashboard_empty_rows_message("trace QC") == "No trace QC rows match the selected filters."
-    assert dashboard_empty_rows_message("manual review queue") == "No manual review queue rows match the selected filters."
+    assert dashboard_empty_rows_message("station").startswith("No station rows match the selected filters.")
+    assert "Data Status tab" in dashboard_empty_rows_message("station")
+    assert dashboard_empty_rows_message("trace QC").startswith("No trace QC rows match the selected filters.")
+    assert dashboard_empty_rows_message("manual review queue").startswith(
+        "No manual review queue rows match the selected filters."
+    )
     assert (
         dashboard_missing_columns_message("timing", table_label="loaded trace-summary table")
-        == "No timing columns are available in the loaded trace-summary table."
+    ).startswith("No timing columns are available in the loaded trace-summary table.")
+    assert (
+        "rebuild the dashboard summaries"
+        in dashboard_missing_columns_message("timing", table_label="loaded trace-summary table")
     )
 
     empty = pd.DataFrame(columns=["value"])
@@ -1054,7 +1061,9 @@ def test_dashboard_empty_state_messages_are_explicit():
         table_label="example table",
     )
     assert columns == []
-    assert message == "No example rows match the selected filters."
+    assert message is not None
+    assert message.startswith("No example rows match the selected filters.")
+    assert "Data Status tab" in message
 
     missing = pd.DataFrame({"event_id": ["ev1"]})
     columns, message = dashboard_chart_columns_or_message(
@@ -1065,7 +1074,9 @@ def test_dashboard_empty_state_messages_are_explicit():
         table_label="example table",
     )
     assert columns == []
-    assert message == "No timing columns are available in the example table."
+    assert message is not None
+    assert message.startswith("No timing columns are available in the example table.")
+    assert "rebuild the dashboard summaries" in message
 
 
 def test_metrics_dashboard_path_setting_accepts_clear_and_legacy_query_keys(monkeypatch):
@@ -1130,7 +1141,9 @@ def test_metrics_value_selector_reports_why_no_value_can_be_selected():
     empty = pd.DataFrame(columns=["model", "metric", "band", "med_log2_residual"])
     columns, message = dashboard_value_columns_or_message(empty)
     assert columns == []
-    assert message == "No model/metric/passband-or-period rows match the selected filters."
+    assert message is not None
+    assert message.startswith("No model/metric/passband-or-period rows match the selected filters.")
+    assert "Data Status tab" in message
 
     missing_values = pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["2-4"]})
     columns, message = dashboard_value_columns_or_message(missing_values)
@@ -1487,12 +1500,16 @@ def test_qc_chart_tab_state_prioritizes_empty_filtered_rows():
     empty = pd.DataFrame(columns=["raw_peak_abs", "dominant_band_label"])
     columns, message = _qc_chart_columns_or_message(empty, ["raw_peak_abs"], "amplitude")
     assert columns == []
-    assert message == "No trace QC rows match the selected filters."
+    assert message is not None
+    assert message.startswith("No trace QC rows match the selected filters.")
+    assert "Data Status tab" in message
 
     missing = pd.DataFrame({"event_id": ["ev1"]})
     columns, message = _qc_chart_columns_or_message(missing, [], "timing")
     assert columns == []
-    assert message == "No timing columns are available in the loaded trace-summary table."
+    assert message is not None
+    assert message.startswith("No timing columns are available in the loaded trace-summary table.")
+    assert "rebuild the dashboard summaries" in message
 
     ready = pd.DataFrame({"raw_peak_abs": [1.0]})
     columns, message = _qc_chart_columns_or_message(ready, ["raw_peak_abs"], "amplitude")
