@@ -2936,7 +2936,7 @@ def _cmd_dashboard_qc(args: argparse.Namespace) -> int:
     from spatial_vtk.visualize.dashboard import launch_qc_dashboard
 
     process = launch_qc_dashboard(
-        trace_summary=trace_summary,
+        qc_trace_summary_table=trace_summary,
         config_path=config_path,
         server_address=args.address,
         server_port=args.port,

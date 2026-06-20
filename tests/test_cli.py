@@ -3860,7 +3860,8 @@ outputs:
 
     captured = capsys.readouterr()
     assert "QC dashboard trace summary:" in captured.out
-    assert Path(launched["trace_summary"]) == tmp_path / "outputs" / "tables" / "qc_trace_summary.csv"
+    assert Path(launched["qc_trace_summary_table"]) == tmp_path / "outputs" / "tables" / "qc_trace_summary.csv"
+    assert "trace_summary" not in launched
     assert Path(launched["config_path"]) == config.resolve()
     assert launched["server_port"] == 8556
 
@@ -3885,7 +3886,8 @@ def test_cli_dashboard_qc_accepts_clear_trace_summary_alias(tmp_path, monkeypatc
 
     captured = capsys.readouterr()
     assert "QC dashboard trace summary:" in captured.out
-    assert Path(launched["trace_summary"]) == trace_summary
+    assert Path(launched["qc_trace_summary_table"]) == trace_summary
+    assert "trace_summary" not in launched
     assert launched["config_path"] is None
     assert launched["server_port"] == 8556
 

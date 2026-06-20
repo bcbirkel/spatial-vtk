@@ -412,6 +412,8 @@ Changelog
   - Added ``qc_trace_summary_table`` as the primary Python keyword for
     ``launch_qc_dashboard(...)`` while preserving ``trace_summary`` as a
     legacy alias.
+  - Updated ``svtk dashboard qc`` to call the QC dashboard launcher through
+    the primary ``qc_trace_summary_table`` keyword.
 
 - **Workflow large-run resilience** *(Hardened)*
 
