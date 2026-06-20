@@ -718,6 +718,8 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     ).read_text(encoding="utf-8")
 
     assert "run_qc_inventory_from_config(" not in standard_text
+    assert "metrics_settings_from_config," in standard_text
+    assert "from spatial_vtk.config.metrics import" not in standard_text
     assert "write_qc_inventory_overlap_from_config(" not in standard_text
     assert "run_qc_summary_workflow_from_config(" not in standard_text
     assert "run_notebook_step_if_needed(" not in standard_text
@@ -2043,6 +2045,9 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
     assert "summarize_metric_snapshot_tasks_from_config(" in source
     assert "metric_outputs.write_configured_outputs(" in source
     assert "write_metric_outputs_from_config(" not in source
+    assert "metric_settings_summary," in source
+    assert "metrics_settings_from_config," in source
+    assert "from spatial_vtk.config.metrics import" not in source
     assert "load_standard_metric_workflow_outputs," in source
     assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg, load_task_estimate=False)" in source
     assert "metric_outputs = metric_outputs.with_task_estimate()" in source

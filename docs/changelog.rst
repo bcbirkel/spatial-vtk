@@ -192,6 +192,9 @@ Changelog
     GeoJSON paths, loaded tables, and output groups into notebook variables.
   - Rewired standard Step 1 and Step 2 notebooks to call package helpers for
     table previews, readiness messages, and configured output loading.
+  - Rewired standard Step 2 and Step 3 notebooks to import metric settings
+    helpers from the stable ``spatial_vtk.config`` package surface, matching
+    the large-run notebooks.
   - Rewired the standard Step 2 notebook to use named QC skipped-step result
     methods for full inventory, overlap inventory, and compact summary
     fallbacks instead of passing individual QC output paths in notebook cells.
