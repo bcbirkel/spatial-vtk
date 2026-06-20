@@ -2383,7 +2383,9 @@ def test_write_large_run_region_boxplot_from_bounded_table(tmp_path: Path) -> No
     assert status["status"] == "wrote"
     assert status["row_count"] == 4
     assert status["figure_path"] == str(result.figure_path)
+    assert bool(status["figure_exists"]) is True
     assert status["sidecar_path"] == str(result.sidecar_path)
+    assert bool(status["sidecar_exists"]) is True
 
     existing = write_large_run_region_boxplot(
         metrics_path,
@@ -2681,6 +2683,8 @@ def test_write_large_run_geojson_region_figures_from_outputs_orchestrates_notebo
     assert status.loc[status["artifact"].eq("geojson_overview"), "path"].iloc[0] == status.loc[
         status["artifact"].eq("geojson_overview"), "resolved_path"
     ].iloc[0]
+    assert status["exists"].tolist() == [True, True, True]
+    assert bool(status.loc[status["artifact"].eq("region_boxplot"), "sidecar_exists"].iloc[0]) is True
 
 
 def test_write_large_run_geojson_region_figures_from_notebook_settings_disabled(tmp_path: Path, monkeypatch) -> None:
@@ -2729,6 +2733,7 @@ def test_write_large_run_geojson_region_figures_from_notebook_settings_disabled(
     status = result.status_frame()
     assert status["status"].tolist() == ["disabled", "disabled", "disabled"]
     assert status["resolved_path"].isna().all()
+    assert status["exists"].tolist() == [False, False, False]
 
 
 def test_write_large_run_geojson_region_figures_from_notebook_settings_delegates_options(

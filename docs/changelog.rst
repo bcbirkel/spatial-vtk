@@ -612,6 +612,9 @@ Changelog
     ``settings.sidecars.status_frame()`` directly so the displayed table is
     clearly the per-figure sidecar inventory rather than a generic render
     settings table.
+  - Added explicit existence fields to large-run Step 5 region figure status
+    tables so notebooks show whether GeoJSON, corridor, boxplot, and sidecar
+    artifacts were actually written without requiring manual path checks.
 
 2026-06-18
 ----------

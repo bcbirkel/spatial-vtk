@@ -1370,18 +1370,31 @@ class RegionBoxplotResult:
     def status_frame(self) -> pd.DataFrame:
         """Return a compact notebook status table for the region boxplot."""
 
+        figure_path = None if self.figure_path is None else str(self.figure_path)
+        sidecar_path = None if self.sidecar_path is None else str(self.sidecar_path)
         return pd.DataFrame(
             [
                 {
                     "artifact": "region_boxplot",
                     "status": self.status,
                     "row_count": self.rows,
-                    "figure_path": None if self.figure_path is None else str(self.figure_path),
-                    "sidecar_path": None if self.sidecar_path is None else str(self.sidecar_path),
+                    "figure_path": figure_path,
+                    "figure_exists": bool(self.figure_path is not None and self.figure_path.exists()),
+                    "sidecar_path": sidecar_path,
+                    "sidecar_exists": bool(self.sidecar_path is not None and self.sidecar_path.exists()),
                     "message": self.message,
                 }
             ],
-            columns=["artifact", "status", "row_count", "figure_path", "sidecar_path", "message"],
+            columns=[
+                "artifact",
+                "status",
+                "row_count",
+                "figure_path",
+                "figure_exists",
+                "sidecar_path",
+                "sidecar_exists",
+                "message",
+            ],
         )
 
 
@@ -1402,12 +1415,16 @@ class RegionFigureResult:
         geojson_path = None if self.geojson_overview_path is None else str(self.geojson_overview_path)
         corridor_path = None if self.corridor_map_path is None else str(self.corridor_map_path)
         boxplot_path = None if self.boxplot_result.figure_path is None else str(self.boxplot_result.figure_path)
+        boxplot_sidecar_path = None if self.boxplot_result.sidecar_path is None else str(self.boxplot_result.sidecar_path)
         rows = [
             {
                 "artifact": "geojson_overview",
                 "status": self.geojson_status,
                 "resolved_path": geojson_path,
                 "path": geojson_path,
+                "exists": bool(self.geojson_overview_path is not None and self.geojson_overview_path.exists()),
+                "sidecar_path": None,
+                "sidecar_exists": None,
                 "message": self._message_for("geojson_overview"),
             },
             {
@@ -1415,6 +1432,9 @@ class RegionFigureResult:
                 "status": self.corridor_status,
                 "resolved_path": corridor_path,
                 "path": corridor_path,
+                "exists": bool(self.corridor_map_path is not None and self.corridor_map_path.exists()),
+                "sidecar_path": None,
+                "sidecar_exists": None,
                 "message": self._message_for("corridor_map"),
             },
             {
@@ -1422,6 +1442,13 @@ class RegionFigureResult:
                 "status": self.boxplot_result.status,
                 "resolved_path": boxplot_path,
                 "path": boxplot_path,
+                "exists": bool(
+                    self.boxplot_result.figure_path is not None and self.boxplot_result.figure_path.exists()
+                ),
+                "sidecar_path": boxplot_sidecar_path,
+                "sidecar_exists": bool(
+                    self.boxplot_result.sidecar_path is not None and self.boxplot_result.sidecar_path.exists()
+                ),
                 "message": self.boxplot_result.message,
             },
         ]
