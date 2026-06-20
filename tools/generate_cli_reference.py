@@ -35,6 +35,10 @@ CLI_INDEX = DOCS_ROOT / "reference" / "cli_api.rst"
 TOP_LEVEL_ORDER = ["config", "io", "qc", "metrics", "spatial", "plot", "map", "visualize", "dashboard", "call"]
 HEADING_CHARS = ["=", "-", "~", "^", '"']
 EXAMPLE_CONFIG = "data/examples/configuration/example_spatial_vtk_config.yaml"
+REQUIRED_INPUT_TABLE_MEANINGS = {
+    "sample_df": "a prepared trace-sample table",
+    "spectrogram_df": "a precomputed period-spectrogram table",
+}
 
 
 def main() -> int:
@@ -419,7 +423,9 @@ def _registered_input_default_meaning(spec: PlotCommand) -> str:
             "or a default config is set with ``svtk config set``. Override with "
             "``--input`` or ``--input-table``."
         )
-    return "No registered default table is available yet. Pass ``--input`` or ``--input-table``."
+    table_meaning = REQUIRED_INPUT_TABLE_MEANINGS.get(str(spec.primary_arg))
+    suffix = f" with {table_meaning}" if table_meaning else ""
+    return f"No registered default table is available yet. Pass ``--input`` or ``--input-table``{suffix}."
 
 
 def _registered_output_default_meaning(spec: PlotCommand) -> str:

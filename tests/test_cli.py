@@ -1181,11 +1181,13 @@ def test_generated_cli_reference_names_plot_defaults():
         "with a precomputed period-spectrogram table."
     ) in cli_pages_text
     assert "Plot a precomputed period-spectrogram table. This advanced figure does not" in cli_pages_text
-    assert "have a standard config-backed input table; pass ``--input`` or" in cli_pages_text
+    assert "have a standard config-backed input table; pass --input or" in cli_pages_text
     assert (
         "No registered default table is available yet. Pass ``--input`` or ``--input-table`` "
         "with a prepared trace-sample table."
     ) in cli_pages_text
+    assert '"spectrogram_df": "a precomputed period-spectrogram table"' in generator_text
+    assert '"sample_df": "a prepared trace-sample table"' in generator_text
     assert "No registered config default is available; pass --input or --input-table." in cli_pages_text
 
 

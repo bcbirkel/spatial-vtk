@@ -23,19 +23,19 @@ Command Tree
 
 - :ref:`svtk map <cli-svtk-map>`
    - :ref:`svtk map spatial <cli-svtk-map-spatial>`
-      - :ref:`svtk map spatial block-holdout-error <cli-svtk-map-spatial-block-holdout-error>`
-      - :ref:`svtk map spatial cluster <cli-svtk-map-spatial-cluster>`
-      - :ref:`svtk map spatial corridor <cli-svtk-map-spatial-corridor>`
-      - :ref:`svtk map spatial event-residual <cli-svtk-map-spatial-event-residual>`
+      - :ref:`svtk map spatial block-holdout-error <cli-svtk-map-spatial-block-holdout-error>` - Map block-holdout prediction errors.
+      - :ref:`svtk map spatial cluster <cli-svtk-map-spatial-cluster>` - Map cluster assignments.
+      - :ref:`svtk map spatial corridor <cli-svtk-map-spatial-corridor>` - Map corridor selections.
+      - :ref:`svtk map spatial event-residual <cli-svtk-map-spatial-event-residual>` - Map event residual paths.
       - :ref:`svtk map spatial list <cli-svtk-map-spatial-list>`
-      - :ref:`svtk map spatial metric-by-model <cli-svtk-map-spatial-metric-by-model>`
-      - :ref:`svtk map spatial model-improvement <cli-svtk-map-spatial-model-improvement>`
-      - :ref:`svtk map spatial pca-mode <cli-svtk-map-spatial-pca-mode>`
-      - :ref:`svtk map spatial redcap-cluster <cli-svtk-map-spatial-redcap-cluster>`
-      - :ref:`svtk map spatial residual-grid <cli-svtk-map-spatial-residual-grid>`
-      - :ref:`svtk map spatial score <cli-svtk-map-spatial-score>`
-      - :ref:`svtk map spatial station-bias <cli-svtk-map-spatial-station-bias>`
-      - :ref:`svtk map spatial station-metric <cli-svtk-map-spatial-station-metric>`
+      - :ref:`svtk map spatial metric-by-model <cli-svtk-map-spatial-metric-by-model>` - Map metric values by model.
+      - :ref:`svtk map spatial model-improvement <cli-svtk-map-spatial-model-improvement>` - Map model improvement values.
+      - :ref:`svtk map spatial pca-mode <cli-svtk-map-spatial-pca-mode>` - Map one PCA spatial mode.
+      - :ref:`svtk map spatial redcap-cluster <cli-svtk-map-spatial-redcap-cluster>` - Map REDCAP cluster values.
+      - :ref:`svtk map spatial residual-grid <cli-svtk-map-spatial-residual-grid>` - Map residual grid values.
+      - :ref:`svtk map spatial score <cli-svtk-map-spatial-score>` - Map score values.
+      - :ref:`svtk map spatial station-bias <cli-svtk-map-spatial-station-bias>` - Map station bias values.
+      - :ref:`svtk map spatial station-metric <cli-svtk-map-spatial-station-metric>` - Map station metric values.
 
 Command Details
 ---------------
@@ -93,6 +93,8 @@ svtk map spatial
 
 svtk map spatial block-holdout-error
 """"""""""""""""""""""""""""""""""""
+
+Map block-holdout prediction errors.
 
 .. rubric:: Usage
 
@@ -329,6 +331,8 @@ svtk map spatial block-holdout-error
 svtk map spatial cluster
 """"""""""""""""""""""""
 
+Map cluster assignments.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -554,6 +558,8 @@ svtk map spatial cluster
 
 svtk map spatial corridor
 """""""""""""""""""""""""
+
+Map corridor selections.
 
 .. rubric:: Usage
 
@@ -796,6 +802,8 @@ svtk map spatial corridor
 
 svtk map spatial event-residual
 """""""""""""""""""""""""""""""
+
+Map event residual paths.
 
 .. rubric:: Usage
 
@@ -1066,6 +1074,8 @@ svtk map spatial list
 svtk map spatial metric-by-model
 """"""""""""""""""""""""""""""""
 
+Map metric values by model.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -1298,6 +1308,8 @@ svtk map spatial metric-by-model
 
 svtk map spatial model-improvement
 """"""""""""""""""""""""""""""""""
+
+Map model improvement values.
 
 .. rubric:: Usage
 
@@ -1532,6 +1544,8 @@ svtk map spatial model-improvement
 svtk map spatial pca-mode
 """""""""""""""""""""""""
 
+Map one PCA spatial mode.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -1757,6 +1771,8 @@ svtk map spatial pca-mode
 
 svtk map spatial redcap-cluster
 """""""""""""""""""""""""""""""
+
+Map REDCAP cluster values.
 
 .. rubric:: Usage
 
@@ -1988,6 +2004,8 @@ svtk map spatial redcap-cluster
 svtk map spatial residual-grid
 """"""""""""""""""""""""""""""
 
+Map residual grid values.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -2218,6 +2236,8 @@ svtk map spatial residual-grid
 svtk map spatial score
 """"""""""""""""""""""
 
+Map score values.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -2441,6 +2461,8 @@ svtk map spatial score
 
 svtk map spatial station-bias
 """""""""""""""""""""""""""""
+
+Map station bias values.
 
 .. rubric:: Usage
 
@@ -2671,6 +2693,8 @@ svtk map spatial station-bias
 
 svtk map spatial station-metric
 """""""""""""""""""""""""""""""
+
+Map station metric values.
 
 .. rubric:: Usage
 

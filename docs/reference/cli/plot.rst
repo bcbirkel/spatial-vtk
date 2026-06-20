@@ -21,39 +21,39 @@ Command Tree
 
 - :ref:`svtk plot <cli-svtk-plot>`
    - :ref:`svtk plot metrics <cli-svtk-plot-metrics>`
-      - :ref:`svtk plot metrics band-score-distribution <cli-svtk-plot-metrics-band-score-distribution>`
-      - :ref:`svtk plot metrics boxplot <cli-svtk-plot-metrics-boxplot>`
-      - :ref:`svtk plot metrics example-metric-pairs <cli-svtk-plot-metrics-example-metric-pairs>`
-      - :ref:`svtk plot metrics geology-boxplot <cli-svtk-plot-metrics-geology-boxplot>`
-      - :ref:`svtk plot metrics heatmap <cli-svtk-plot-metrics-heatmap>`
+      - :ref:`svtk plot metrics band-score-distribution <cli-svtk-plot-metrics-band-score-distribution>` - Plot score distributions by passband.
+      - :ref:`svtk plot metrics boxplot <cli-svtk-plot-metrics-boxplot>` - Plot metric distributions by categorical variables.
+      - :ref:`svtk plot metrics example-metric-pairs <cli-svtk-plot-metrics-example-metric-pairs>` - Plot synthetic trace-pair examples that illustrate metric behavior.
+      - :ref:`svtk plot metrics geology-boxplot <cli-svtk-plot-metrics-geology-boxplot>` - Plot metric values by geologic class.
+      - :ref:`svtk plot metrics heatmap <cli-svtk-plot-metrics-heatmap>` - Plot categorical metric summaries as a heatmap.
       - :ref:`svtk plot metrics list <cli-svtk-plot-metrics-list>`
-      - :ref:`svtk plot metrics metric-trend <cli-svtk-plot-metrics-metric-trend>`
-      - :ref:`svtk plot metrics model-metric-heatmap <cli-svtk-plot-metrics-model-metric-heatmap>`
-      - :ref:`svtk plot metrics period-spectra <cli-svtk-plot-metrics-period-spectra>`
-      - :ref:`svtk plot metrics period-spectrogram <cli-svtk-plot-metrics-period-spectrogram>`
-      - :ref:`svtk plot metrics phase-delay-vs-distance <cli-svtk-plot-metrics-phase-delay-vs-distance>`
-      - :ref:`svtk plot metrics psa-period-curve <cli-svtk-plot-metrics-psa-period-curve>`
-      - :ref:`svtk plot metrics residuals-vs-depth <cli-svtk-plot-metrics-residuals-vs-depth>`
-      - :ref:`svtk plot metrics residuals-vs-distance <cli-svtk-plot-metrics-residuals-vs-distance>`
-      - :ref:`svtk plot metrics scatterplot <cli-svtk-plot-metrics-scatterplot>`
-      - :ref:`svtk plot metrics score-trends <cli-svtk-plot-metrics-score-trends>`
-      - :ref:`svtk plot metrics vs30-scatter <cli-svtk-plot-metrics-vs30-scatter>`
-      - :ref:`svtk plot metrics winner-heatmap <cli-svtk-plot-metrics-winner-heatmap>`
+      - :ref:`svtk plot metrics metric-trend <cli-svtk-plot-metrics-metric-trend>` - Plot a general metric trend.
+      - :ref:`svtk plot metrics model-metric-heatmap <cli-svtk-plot-metrics-model-metric-heatmap>` - Plot a model-by-metric heatmap.
+      - :ref:`svtk plot metrics period-spectra <cli-svtk-plot-metrics-period-spectra>` - Plot period spectra.
+      - :ref:`svtk plot metrics period-spectrogram <cli-svtk-plot-metrics-period-spectrogram>` - Plot a precomputed period-spectrogram table. This advanced figure does not have a standard config-backed input table; pass --input or --input-table explicitly.
+      - :ref:`svtk plot metrics phase-delay-vs-distance <cli-svtk-plot-metrics-phase-delay-vs-distance>` - Plot phase delay against distance.
+      - :ref:`svtk plot metrics psa-period-curve <cli-svtk-plot-metrics-psa-period-curve>` - Plot PSA values by period.
+      - :ref:`svtk plot metrics residuals-vs-depth <cli-svtk-plot-metrics-residuals-vs-depth>` - Plot residuals against event depth.
+      - :ref:`svtk plot metrics residuals-vs-distance <cli-svtk-plot-metrics-residuals-vs-distance>` - Plot residuals against distance.
+      - :ref:`svtk plot metrics scatterplot <cli-svtk-plot-metrics-scatterplot>` - Plot any metric-table variable against another variable.
+      - :ref:`svtk plot metrics score-trends <cli-svtk-plot-metrics-score-trends>` - Plot score trends.
+      - :ref:`svtk plot metrics vs30-scatter <cli-svtk-plot-metrics-vs30-scatter>` - Plot metric values against Vs30.
+      - :ref:`svtk plot metrics winner-heatmap <cli-svtk-plot-metrics-winner-heatmap>` - Plot a winner/class heatmap.
    - :ref:`svtk plot spatial <cli-svtk-plot-spatial>`
-      - :ref:`svtk plot spatial azimuthal-residuals <cli-svtk-plot-spatial-azimuthal-residuals>`
-      - :ref:`svtk plot spatial block-holdout-scatter <cli-svtk-plot-spatial-block-holdout-scatter>`
-      - :ref:`svtk plot spatial cluster-feature-heatmap <cli-svtk-plot-spatial-cluster-feature-heatmap>`
-      - :ref:`svtk plot spatial cluster-solution-scores <cli-svtk-plot-spatial-cluster-solution-scores>`
-      - :ref:`svtk plot spatial correlogram <cli-svtk-plot-spatial-correlogram>`
-      - :ref:`svtk plot spatial directional-correlogram <cli-svtk-plot-spatial-directional-correlogram>`
+      - :ref:`svtk plot spatial azimuthal-residuals <cli-svtk-plot-spatial-azimuthal-residuals>` - Plot residuals by azimuth.
+      - :ref:`svtk plot spatial block-holdout-scatter <cli-svtk-plot-spatial-block-holdout-scatter>` - Plot observed versus held-out predictions.
+      - :ref:`svtk plot spatial cluster-feature-heatmap <cli-svtk-plot-spatial-cluster-feature-heatmap>` - Plot cluster feature summaries.
+      - :ref:`svtk plot spatial cluster-solution-scores <cli-svtk-plot-spatial-cluster-solution-scores>` - Plot clustering solution scores.
+      - :ref:`svtk plot spatial correlogram <cli-svtk-plot-spatial-correlogram>` - Plot a spatial correlogram.
+      - :ref:`svtk plot spatial directional-correlogram <cli-svtk-plot-spatial-directional-correlogram>` - Plot directional spatial correlations.
       - :ref:`svtk plot spatial list <cli-svtk-plot-spatial-list>`
-      - :ref:`svtk plot spatial path-bin-summary <cli-svtk-plot-spatial-path-bin-summary>`
-      - :ref:`svtk plot spatial pattern-similarity <cli-svtk-plot-spatial-pattern-similarity>`
-      - :ref:`svtk plot spatial pca-explained-variance <cli-svtk-plot-spatial-pca-explained-variance>`
-      - :ref:`svtk plot spatial pca-feature-loadings <cli-svtk-plot-spatial-pca-feature-loadings>`
-      - :ref:`svtk plot spatial polar-residuals <cli-svtk-plot-spatial-polar-residuals>`
-      - :ref:`svtk plot spatial residual-correlation <cli-svtk-plot-spatial-residual-correlation>`
-      - :ref:`svtk plot spatial semivariogram <cli-svtk-plot-spatial-semivariogram>`
+      - :ref:`svtk plot spatial path-bin-summary <cli-svtk-plot-spatial-path-bin-summary>` - Plot path-bin summary values.
+      - :ref:`svtk plot spatial pattern-similarity <cli-svtk-plot-spatial-pattern-similarity>` - Plot observed/synthetic pattern similarity.
+      - :ref:`svtk plot spatial pca-explained-variance <cli-svtk-plot-spatial-pca-explained-variance>` - Plot PCA explained variance.
+      - :ref:`svtk plot spatial pca-feature-loadings <cli-svtk-plot-spatial-pca-feature-loadings>` - Plot PCA feature loadings.
+      - :ref:`svtk plot spatial polar-residuals <cli-svtk-plot-spatial-polar-residuals>` - Plot residuals in polar coordinates.
+      - :ref:`svtk plot spatial residual-correlation <cli-svtk-plot-spatial-residual-correlation>` - Plot residual correlation values.
+      - :ref:`svtk plot spatial semivariogram <cli-svtk-plot-spatial-semivariogram>` - Plot a semivariogram.
 
 Command Details
 ---------------
@@ -111,6 +111,8 @@ svtk plot metrics
 
 svtk plot metrics band-score-distribution
 """""""""""""""""""""""""""""""""""""""""
+
+Plot score distributions by passband.
 
 .. rubric:: Usage
 
@@ -337,6 +339,8 @@ svtk plot metrics band-score-distribution
 svtk plot metrics boxplot
 """""""""""""""""""""""""
 
+Plot metric distributions by categorical variables.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -548,6 +552,8 @@ svtk plot metrics boxplot
 
 svtk plot metrics example-metric-pairs
 """"""""""""""""""""""""""""""""""""""
+
+Plot synthetic trace-pair examples that illustrate metric behavior.
 
 .. rubric:: Usage
 
@@ -768,6 +774,8 @@ svtk plot metrics example-metric-pairs
 svtk plot metrics geology-boxplot
 """""""""""""""""""""""""""""""""
 
+Plot metric values by geologic class.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -986,6 +994,8 @@ svtk plot metrics geology-boxplot
 
 svtk plot metrics heatmap
 """""""""""""""""""""""""
+
+Plot categorical metric summaries as a heatmap.
 
 .. rubric:: Usage
 
@@ -1238,6 +1248,8 @@ svtk plot metrics list
 svtk plot metrics metric-trend
 """"""""""""""""""""""""""""""
 
+Plot a general metric trend.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -1453,6 +1465,8 @@ svtk plot metrics metric-trend
 
 svtk plot metrics model-metric-heatmap
 """"""""""""""""""""""""""""""""""""""
+
+Plot a model-by-metric heatmap.
 
 .. rubric:: Usage
 
@@ -1677,6 +1691,8 @@ svtk plot metrics model-metric-heatmap
 svtk plot metrics period-spectra
 """"""""""""""""""""""""""""""""
 
+Plot period spectra.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -1896,9 +1912,7 @@ svtk plot metrics period-spectra
 svtk plot metrics period-spectrogram
 """"""""""""""""""""""""""""""""""""
 
-Plot a precomputed period-spectrogram table. This advanced figure does not
-have a standard config-backed input table; pass ``--input`` or
-``--input-table`` explicitly.
+Plot a precomputed period-spectrogram table. This advanced figure does not have a standard config-backed input table; pass --input or --input-table explicitly.
 
 .. rubric:: Usage
 
@@ -2120,6 +2134,8 @@ have a standard config-backed input table; pass ``--input`` or
 
 svtk plot metrics phase-delay-vs-distance
 """""""""""""""""""""""""""""""""""""""""
+
+Plot phase delay against distance.
 
 .. rubric:: Usage
 
@@ -2346,6 +2362,8 @@ svtk plot metrics phase-delay-vs-distance
 svtk plot metrics psa-period-curve
 """"""""""""""""""""""""""""""""""
 
+Plot PSA values by period.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -2564,6 +2582,8 @@ svtk plot metrics psa-period-curve
 
 svtk plot metrics residuals-vs-depth
 """"""""""""""""""""""""""""""""""""
+
+Plot residuals against event depth.
 
 .. rubric:: Usage
 
@@ -2785,6 +2805,8 @@ svtk plot metrics residuals-vs-depth
 
 svtk plot metrics residuals-vs-distance
 """""""""""""""""""""""""""""""""""""""
+
+Plot residuals against distance.
 
 .. rubric:: Usage
 
@@ -3009,6 +3031,8 @@ svtk plot metrics residuals-vs-distance
 svtk plot metrics scatterplot
 """""""""""""""""""""""""""""
 
+Plot any metric-table variable against another variable.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -3224,6 +3248,8 @@ svtk plot metrics scatterplot
 
 svtk plot metrics score-trends
 """"""""""""""""""""""""""""""
+
+Plot score trends.
 
 .. rubric:: Usage
 
@@ -3441,6 +3467,8 @@ svtk plot metrics score-trends
 svtk plot metrics vs30-scatter
 """"""""""""""""""""""""""""""
 
+Plot metric values against Vs30.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -3656,6 +3684,8 @@ svtk plot metrics vs30-scatter
 
 svtk plot metrics winner-heatmap
 """"""""""""""""""""""""""""""""
+
+Plot a winner/class heatmap.
 
 .. rubric:: Usage
 
@@ -3904,6 +3934,8 @@ svtk plot spatial
 svtk plot spatial azimuthal-residuals
 """""""""""""""""""""""""""""""""""""
 
+Plot residuals by azimuth.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -4124,6 +4156,8 @@ svtk plot spatial azimuthal-residuals
 
 svtk plot spatial block-holdout-scatter
 """""""""""""""""""""""""""""""""""""""
+
+Plot observed versus held-out predictions.
 
 .. rubric:: Usage
 
@@ -4347,6 +4381,8 @@ svtk plot spatial block-holdout-scatter
 
 svtk plot spatial cluster-feature-heatmap
 """""""""""""""""""""""""""""""""""""""""
+
+Plot cluster feature summaries.
 
 .. rubric:: Usage
 
@@ -4573,6 +4609,8 @@ svtk plot spatial cluster-feature-heatmap
 svtk plot spatial cluster-solution-scores
 """""""""""""""""""""""""""""""""""""""""
 
+Plot clustering solution scores.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -4798,6 +4836,8 @@ svtk plot spatial cluster-solution-scores
 svtk plot spatial correlogram
 """""""""""""""""""""""""""""
 
+Plot a spatial correlogram.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -5013,6 +5053,8 @@ svtk plot spatial correlogram
 
 svtk plot spatial directional-correlogram
 """""""""""""""""""""""""""""""""""""""""
+
+Plot directional spatial correlations.
 
 .. rubric:: Usage
 
@@ -5281,6 +5323,8 @@ svtk plot spatial list
 svtk plot spatial path-bin-summary
 """"""""""""""""""""""""""""""""""
 
+Plot path-bin summary values.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -5499,6 +5543,8 @@ svtk plot spatial path-bin-summary
 
 svtk plot spatial pattern-similarity
 """"""""""""""""""""""""""""""""""""
+
+Plot observed/synthetic pattern similarity.
 
 .. rubric:: Usage
 
@@ -5720,6 +5766,8 @@ svtk plot spatial pattern-similarity
 
 svtk plot spatial pca-explained-variance
 """"""""""""""""""""""""""""""""""""""""
+
+Plot PCA explained variance.
 
 .. rubric:: Usage
 
@@ -5946,6 +5994,8 @@ svtk plot spatial pca-explained-variance
 svtk plot spatial pca-feature-loadings
 """"""""""""""""""""""""""""""""""""""
 
+Plot PCA feature loadings.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -6169,6 +6219,8 @@ svtk plot spatial pca-feature-loadings
 svtk plot spatial polar-residuals
 """""""""""""""""""""""""""""""""
 
+Plot residuals in polar coordinates.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -6387,6 +6439,8 @@ svtk plot spatial polar-residuals
 
 svtk plot spatial residual-correlation
 """"""""""""""""""""""""""""""""""""""
+
+Plot residual correlation values.
 
 .. rubric:: Usage
 
@@ -6610,6 +6664,8 @@ svtk plot spatial residual-correlation
 
 svtk plot spatial semivariogram
 """""""""""""""""""""""""""""""
+
+Plot a semivariogram.
 
 .. rubric:: Usage
 

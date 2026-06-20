@@ -123,7 +123,7 @@ METRICS_PLOT_COMMANDS: dict[str, PlotCommand] = {
     "period-spectrogram": PlotCommand(
         "spatial_vtk.metrics.plot.plot_period_spectrogram",
         "spectrogram_df",
-        "Plot a precomputed period-spectrogram table; no standard config input is registered.",
+        "Plot a precomputed period-spectrogram table. This advanced figure does not have a standard config-backed input table; pass --input or --input-table explicitly.",
     ),
     "vs30-scatter": PlotCommand("spatial_vtk.metrics.plot.plot_vs30_scatter", "df", "Plot metric values against Vs30."),
     "geology-boxplot": PlotCommand("spatial_vtk.metrics.plot.plot_geology_boxplot", "df", "Plot metric values by geologic class."),

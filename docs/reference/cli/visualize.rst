@@ -24,34 +24,34 @@ Command Tree
 
 - :ref:`svtk visualize <cli-svtk-visualize>`
    - :ref:`svtk visualize qc <cli-svtk-visualize-qc>`
-      - :ref:`svtk visualize qc data-synthetic-availability <cli-svtk-visualize-qc-data-synthetic-availability>`
-      - :ref:`svtk visualize qc drop-cause-diagnostics <cli-svtk-visualize-qc-drop-cause-diagnostics>`
-      - :ref:`svtk visualize qc event-station-retention <cli-svtk-visualize-qc-event-station-retention>`
+      - :ref:`svtk visualize qc data-synthetic-availability <cli-svtk-visualize-qc-data-synthetic-availability>` - Plot observed/synthetic availability.
+      - :ref:`svtk visualize qc drop-cause-diagnostics <cli-svtk-visualize-qc-drop-cause-diagnostics>` - Plot QC drop-cause diagnostics.
+      - :ref:`svtk visualize qc event-station-retention <cli-svtk-visualize-qc-event-station-retention>` - Plot retained comparison-pair percentages by station and event.
       - :ref:`svtk visualize qc list <cli-svtk-visualize-qc-list>`
-      - :ref:`svtk visualize qc post-qc-station-event-map <cli-svtk-visualize-qc-post-qc-station-event-map>`
-      - :ref:`svtk visualize qc retention-summary <cli-svtk-visualize-qc-retention-summary>`
-      - :ref:`svtk visualize qc trace-inventory-samples <cli-svtk-visualize-qc-trace-inventory-samples>`
+      - :ref:`svtk visualize qc post-qc-station-event-map <cli-svtk-visualize-qc-post-qc-station-event-map>` - Map retained station/event records after QC.
+      - :ref:`svtk visualize qc retention-summary <cli-svtk-visualize-qc-retention-summary>` - Plot QC retention summary.
+      - :ref:`svtk visualize qc trace-inventory-samples <cli-svtk-visualize-qc-trace-inventory-samples>` - Plot sample QC traces.
    - :ref:`svtk visualize context <cli-svtk-visualize-context>`
-      - :ref:`svtk visualize context distance-amplitude-diagnostics <cli-svtk-visualize-context-distance-amplitude-diagnostics>`
-      - :ref:`svtk visualize context event-coverage <cli-svtk-visualize-context-event-coverage>`
-      - :ref:`svtk visualize context event-magnitude-map <cli-svtk-visualize-context-event-magnitude-map>`
-      - :ref:`svtk visualize context event-trace-comparison <cli-svtk-visualize-context-event-trace-comparison>`
+      - :ref:`svtk visualize context distance-amplitude-diagnostics <cli-svtk-visualize-context-distance-amplitude-diagnostics>` - Plot distance/amplitude diagnostics.
+      - :ref:`svtk visualize context event-coverage <cli-svtk-visualize-context-event-coverage>` - Plot event record coverage.
+      - :ref:`svtk visualize context event-magnitude-map <cli-svtk-visualize-context-event-magnitude-map>` - Map events by magnitude.
+      - :ref:`svtk visualize context event-trace-comparison <cli-svtk-visualize-context-event-trace-comparison>` - Plot event trace comparisons.
       - :ref:`svtk visualize context list <cli-svtk-visualize-context-list>`
-      - :ref:`svtk visualize context record-coverage <cli-svtk-visualize-context-record-coverage>`
-      - :ref:`svtk visualize context station-coverage <cli-svtk-visualize-context-station-coverage>`
-      - :ref:`svtk visualize context station-event-beachball <cli-svtk-visualize-context-station-event-beachball>`
-      - :ref:`svtk visualize context station-event-context <cli-svtk-visualize-context-station-event-context>`
-      - :ref:`svtk visualize context station-event-network <cli-svtk-visualize-context-station-event-network>`
-      - :ref:`svtk visualize context study-domain <cli-svtk-visualize-context-study-domain>`
+      - :ref:`svtk visualize context record-coverage <cli-svtk-visualize-context-record-coverage>` - Plot record-window coverage.
+      - :ref:`svtk visualize context station-coverage <cli-svtk-visualize-context-station-coverage>` - Plot station record coverage.
+      - :ref:`svtk visualize context station-event-beachball <cli-svtk-visualize-context-station-event-beachball>` - Map station/event context with beachballs.
+      - :ref:`svtk visualize context station-event-context <cli-svtk-visualize-context-station-event-context>` - Plot station and event context.
+      - :ref:`svtk visualize context station-event-network <cli-svtk-visualize-context-station-event-network>` - Map station/event network geometry.
+      - :ref:`svtk visualize context study-domain <cli-svtk-visualize-context-study-domain>` - Plot the study domain map.
    - :ref:`svtk visualize sidecars <cli-svtk-visualize-sidecars>`
       - :ref:`svtk visualize sidecars status <cli-svtk-visualize-sidecars-status>`
    - :ref:`svtk visualize waveforms <cli-svtk-visualize-waveforms>`
-      - :ref:`svtk visualize waveforms event-radial-trace-section <cli-svtk-visualize-waveforms-event-radial-trace-section>`
+      - :ref:`svtk visualize waveforms event-radial-trace-section <cli-svtk-visualize-waveforms-event-radial-trace-section>` - Plot event radial trace section.
       - :ref:`svtk visualize waveforms list <cli-svtk-visualize-waveforms-list>`
-      - :ref:`svtk visualize waveforms observed-synthetic-record-section <cli-svtk-visualize-waveforms-observed-synthetic-record-section>`
-      - :ref:`svtk visualize waveforms record-section <cli-svtk-visualize-waveforms-record-section>`
-      - :ref:`svtk visualize waveforms station-event-waveform-map <cli-svtk-visualize-waveforms-station-event-waveform-map>`
-      - :ref:`svtk visualize waveforms waveform-overlay-matrix <cli-svtk-visualize-waveforms-waveform-overlay-matrix>`
+      - :ref:`svtk visualize waveforms observed-synthetic-record-section <cli-svtk-visualize-waveforms-observed-synthetic-record-section>` - Plot observed/synthetic record sections.
+      - :ref:`svtk visualize waveforms record-section <cli-svtk-visualize-waveforms-record-section>` - Plot a waveform record section.
+      - :ref:`svtk visualize waveforms station-event-waveform-map <cli-svtk-visualize-waveforms-station-event-waveform-map>` - Map station/event waveforms.
+      - :ref:`svtk visualize waveforms waveform-overlay-matrix <cli-svtk-visualize-waveforms-waveform-overlay-matrix>` - Plot waveform overlay matrix.
 
 Command Details
 ---------------
@@ -109,6 +109,8 @@ svtk visualize qc
 
 svtk visualize qc data-synthetic-availability
 """""""""""""""""""""""""""""""""""""""""""""
+
+Plot observed/synthetic availability.
 
 .. rubric:: Usage
 
@@ -350,6 +352,8 @@ svtk visualize qc data-synthetic-availability
 svtk visualize qc drop-cause-diagnostics
 """"""""""""""""""""""""""""""""""""""""
 
+Plot QC drop-cause diagnostics.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -589,6 +593,8 @@ svtk visualize qc drop-cause-diagnostics
 
 svtk visualize qc event-station-retention
 """""""""""""""""""""""""""""""""""""""""
+
+Plot retained comparison-pair percentages by station and event.
 
 .. rubric:: Usage
 
@@ -869,6 +875,8 @@ svtk visualize qc list
 svtk visualize qc post-qc-station-event-map
 """""""""""""""""""""""""""""""""""""""""""
 
+Map retained station/event records after QC.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -1109,6 +1117,8 @@ svtk visualize qc post-qc-station-event-map
 svtk visualize qc retention-summary
 """""""""""""""""""""""""""""""""""
 
+Plot QC retention summary.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -1341,6 +1351,8 @@ svtk visualize qc retention-summary
 
 svtk visualize qc trace-inventory-samples
 """""""""""""""""""""""""""""""""""""""""
+
+Plot sample QC traces.
 
 .. rubric:: Usage
 
@@ -1610,6 +1622,8 @@ svtk visualize context
 svtk visualize context distance-amplitude-diagnostics
 """""""""""""""""""""""""""""""""""""""""""""""""""""
 
+Plot distance/amplitude diagnostics.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -1825,6 +1839,8 @@ svtk visualize context distance-amplitude-diagnostics
 
 svtk visualize context event-coverage
 """""""""""""""""""""""""""""""""""""
+
+Plot event record coverage.
 
 .. rubric:: Usage
 
@@ -2060,6 +2076,8 @@ svtk visualize context event-coverage
 
 svtk visualize context event-magnitude-map
 """"""""""""""""""""""""""""""""""""""""""
+
+Map events by magnitude.
 
 .. rubric:: Usage
 
@@ -2300,6 +2318,8 @@ svtk visualize context event-magnitude-map
 
 svtk visualize context event-trace-comparison
 """""""""""""""""""""""""""""""""""""""""""""
+
+Plot event trace comparisons.
 
 .. rubric:: Usage
 
@@ -2581,6 +2601,8 @@ svtk visualize context list
 svtk visualize context record-coverage
 """"""""""""""""""""""""""""""""""""""
 
+Plot record-window coverage.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -2817,6 +2839,8 @@ svtk visualize context record-coverage
 
 svtk visualize context station-coverage
 """""""""""""""""""""""""""""""""""""""
+
+Plot station record coverage.
 
 .. rubric:: Usage
 
@@ -3055,6 +3079,8 @@ svtk visualize context station-coverage
 
 svtk visualize context station-event-beachball
 """"""""""""""""""""""""""""""""""""""""""""""
+
+Map station/event context with beachballs.
 
 .. rubric:: Usage
 
@@ -3305,6 +3331,8 @@ svtk visualize context station-event-beachball
 svtk visualize context station-event-context
 """"""""""""""""""""""""""""""""""""""""""""
 
+Plot station and event context.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -3553,6 +3581,8 @@ svtk visualize context station-event-context
 svtk visualize context station-event-network
 """"""""""""""""""""""""""""""""""""""""""""
 
+Map station/event network geometry.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -3800,6 +3830,8 @@ svtk visualize context station-event-network
 
 svtk visualize context study-domain
 """""""""""""""""""""""""""""""""""
+
+Plot the study domain map.
 
 .. rubric:: Usage
 
@@ -4129,6 +4161,8 @@ svtk visualize waveforms
 svtk visualize waveforms event-radial-trace-section
 """""""""""""""""""""""""""""""""""""""""""""""""""
 
+Plot event radial trace section.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -4410,6 +4444,8 @@ svtk visualize waveforms list
 svtk visualize waveforms observed-synthetic-record-section
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+Plot observed/synthetic record sections.
+
 .. rubric:: Usage
 
 .. code-block:: bash
@@ -4625,6 +4661,8 @@ svtk visualize waveforms observed-synthetic-record-section
 
 svtk visualize waveforms record-section
 """""""""""""""""""""""""""""""""""""""
+
+Plot a waveform record section.
 
 .. rubric:: Usage
 
@@ -4863,6 +4901,8 @@ svtk visualize waveforms record-section
 
 svtk visualize waveforms station-event-waveform-map
 """""""""""""""""""""""""""""""""""""""""""""""""""
+
+Map station/event waveforms.
 
 .. rubric:: Usage
 
@@ -5104,6 +5144,8 @@ svtk visualize waveforms station-event-waveform-map
 
 svtk visualize waveforms waveform-overlay-matrix
 """"""""""""""""""""""""""""""""""""""""""""""""
+
+Plot waveform overlay matrix.
 
 .. rubric:: Usage
 
