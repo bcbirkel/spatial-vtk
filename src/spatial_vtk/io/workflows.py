@@ -86,16 +86,21 @@ class StandardIngestWorkflowOutputResult:
 
         rows: list[dict[str, object]] = []
         table_specs = [
-            ("stations", "prepared_stations", "prepared_stations_path"),
-            ("events", "prepared_events", "prepared_events_path"),
-            ("event_stations", "event_station_records", "event_station_path"),
+            ("stations", "prepared_stations", "prepared_stations_path", "prepared_stations_path"),
+            ("events", "prepared_events", "prepared_events_path", "prepared_events_path"),
+            (
+                "event_stations",
+                "event_station_records",
+                "event_station_records_path",
+                "event_station_path",
+            ),
         ]
-        for label, output_key, path_name in table_specs:
-            path = getattr(self.outputs, path_name, None)
+        for label, output_key, public_path_name, group_path_name in table_specs:
+            path = getattr(self.outputs, group_path_name, None)
             path_text = None if path is None else str(path)
             status = "missing"
             row_count: int | None = None
-            table = self.outputs.load_table(path_name, cfg=self.cfg, missing=missing)
+            table = self.outputs.load_table(group_path_name, cfg=self.cfg, missing=missing)
             if table is not None:
                 row_count = int(len(table))
                 status = "ready"
@@ -103,6 +108,7 @@ class StandardIngestWorkflowOutputResult:
                 {
                     "table": label,
                     "output_key": output_key,
+                    "name": public_path_name,
                     "output_path": path_text,
                     "resolved_path": path_text,
                     "path": path_text,
@@ -112,7 +118,16 @@ class StandardIngestWorkflowOutputResult:
             )
         return pd.DataFrame(
             rows,
-            columns=["table", "output_key", "resolved_path", "path", "output_path", "status", "row_count"],
+            columns=[
+                "table",
+                "output_key",
+                "name",
+                "resolved_path",
+                "path",
+                "output_path",
+                "status",
+                "row_count",
+            ],
         )
 
     def display_preprocessing_manifest_preview(

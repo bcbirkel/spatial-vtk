@@ -2482,6 +2482,42 @@ outputs:
     clear_active_config()
 
 
+def test_ingest_metadata_summary_uses_public_event_station_records_name(tmp_path, monkeypatch):
+    """Step 1 summary previews should expose public result-object path names."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+    ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)
+
+    ingest_outputs.outputs.prepared_stations_path.parent.mkdir(parents=True, exist_ok=True)
+    ingest_outputs.outputs.prepared_stations_path.write_text("station,lat,lon\nSTA,0,0\n", encoding="utf-8")
+    ingest_outputs.outputs.prepared_events_path.write_text("event_id,lat,lon\nE1,0,0\n", encoding="utf-8")
+    ingest_outputs.outputs.event_station_path.write_text("event_id,station\nE1,STA\n", encoding="utf-8")
+
+    summary = ingest_outputs.metadata_summary_frame()
+
+    assert summary["table"].tolist() == ["stations", "events", "event_stations"]
+    assert summary["name"].tolist() == [
+        "prepared_stations_path",
+        "prepared_events_path",
+        "event_station_records_path",
+    ]
+    assert "event_station_path" not in set(summary["name"])
+    assert summary.loc[summary["table"].eq("event_stations"), "row_count"].iloc[0] == 1
+    clear_active_config()
+
+
 def test_ingest_workflow_output_result_owns_large_run_step01_runners(tmp_path, monkeypatch):
     """Large-run Step 1 cells should delegate ingest orchestration through the result object."""
 
