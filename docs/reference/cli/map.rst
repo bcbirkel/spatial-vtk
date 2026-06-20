@@ -6,7 +6,7 @@ svtk map
 Config-Backed Mapping
 ----------------------
 
-If a config is active with ``svtk config set`` or passed with ``--config``, registered map commands resolve their standard input tables, figure outputs, and named map bounds automatically. For routine workflow maps, prefer the curated flags shown below instead of passing raw ``--input`` and ``--output`` paths.
+If a config is active with ``svtk config set`` or passed with ``--config``, registered map commands resolve their standard input tables, figure outputs, and named map bounds automatically. For routine workflow maps, prefer the curated flags shown below instead of passing legacy ``--input`` and ``--output`` paths.
 
 .. code-block:: bash
 
@@ -14,7 +14,7 @@ If a config is active with ``svtk config set`` or passed with ``--config``, regi
    svtk map spatial station-metric --value-col log2_residual --metric PGA --passband "2-3 sec"
    svtk map spatial event-residual --value-col log2_residual --metric PGA --bounds study_area
 
-These commands use configured outputs such as ``metrics_long`` and ``path_table`` plus the registered figure keys for the selected map unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk map spatial list`` to print a table showing each map command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.
+These commands use configured outputs such as ``metrics_long`` and ``path_table`` plus the registered figure keys for the selected map unless you supply ``--input-table``/``--input`` or ``--figure-output``/``--output`` explicitly. Run ``svtk map spatial list`` to print a table showing each map command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.
 
 Basemaps are enabled by default for map figures; use ``--no-basemap`` only when you explicitly want a data-only map.
 
@@ -100,8 +100,9 @@ Map block-holdout prediction errors.
 
 .. code-block:: bash
 
-   svtk map spatial block-holdout-error [-h] [--input PATH]
-                                            [--output PATH] [--config PATH]
+   svtk map spatial block-holdout-error [-h] [--input-table PATH]
+                                            [--figure-output PATH]
+                                            [--config PATH]
                                             [--run-scenario RUN_SCENARIO]
                                             [--table [ARG=PATH]] [--no-table]
                                             [--kwargs [KWARGS ...]]
@@ -146,10 +147,10 @@ Map block-holdout prediction errors.
      - Meaning
    * - Input table
      - ``config:block_holdout_predictions``
-     - Uses configured output table ``block_holdout_predictions`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``block_holdout_predictions`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:block_holdout_error``
-     - Uses configured figure output ``block_holdout_error`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``block_holdout_error`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -165,14 +166,14 @@ Map block-holdout prediction errors.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (block holdout predictions); accepts CSV or parquet. Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'block_holdout_error' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'block_holdout_error' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -337,8 +338,9 @@ Map cluster assignments.
 
 .. code-block:: bash
 
-   svtk map spatial cluster [-h] [--input PATH] [--output PATH]
-                                [--config PATH] [--run-scenario RUN_SCENARIO]
+   svtk map spatial cluster [-h] [--input-table PATH]
+                                [--figure-output PATH] [--config PATH]
+                                [--run-scenario RUN_SCENARIO]
                                 [--table [ARG=PATH]] [--no-table]
                                 [--kwargs [KWARGS ...]]
                                 [--kwargs-json KWARGS_JSON] [--metric METRIC]
@@ -374,10 +376,10 @@ Map cluster assignments.
      - Meaning
    * - Input table
      - ``config:clusters``
-     - Uses configured output table ``clusters`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``clusters`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:cluster``
-     - Uses configured figure output ``cluster`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``cluster`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -393,14 +395,14 @@ Map cluster assignments.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (clusters); accepts CSV or parquet. Defaults to configured output table 'clusters' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'cluster' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'cluster' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -565,8 +567,9 @@ Map corridor selections.
 
 .. code-block:: bash
 
-   svtk map spatial corridor [-h] [--input PATH] [--output PATH]
-                                 [--config PATH] [--run-scenario RUN_SCENARIO]
+   svtk map spatial corridor [-h] [--input-table PATH]
+                                 [--figure-output PATH] [--config PATH]
+                                 [--run-scenario RUN_SCENARIO]
                                  [--table [ARG=PATH]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
@@ -603,10 +606,10 @@ Map corridor selections.
      - Meaning
    * - Input table
      - ``config:corridors``
-     - Uses configured output table ``corridors`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``corridors`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:corridor_map``
-     - Uses configured figure output ``corridor_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``corridor_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
    * - Extra tables
      - ``--events(events_df)=config:prepared_events, --records(records_df)=config:event_station_records, --stations(stations_df)=config:prepared_stations``
      - Uses configured table defaults for ``--events``, ``--records``, ``--stations`` when a config is active; override with the same named flags.
@@ -625,14 +628,14 @@ Map corridor selections.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (corridors); accepts CSV or parquet. Defaults to configured output table 'corridors' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'corridor_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'corridor_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -809,8 +812,8 @@ Map event residual paths.
 
 .. code-block:: bash
 
-   svtk map spatial event-residual [-h] [--input PATH] [--output PATH]
-                                       [--config PATH]
+   svtk map spatial event-residual [-h] [--input-table PATH]
+                                       [--figure-output PATH] [--config PATH]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table [ARG=PATH]] [--no-table]
                                        [--kwargs [KWARGS ...]]
@@ -850,10 +853,10 @@ Map event residual paths.
      - Meaning
    * - Input table
      - ``config:path_table``
-     - Uses configured output table ``path_table`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``path_table`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:event_residual_map``
-     - Uses configured figure output ``event_residual_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``event_residual_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -869,14 +872,14 @@ Map event residual paths.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (path); accepts CSV or parquet. Defaults to configured output table 'path_table' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'event_residual_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'event_residual_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1080,8 +1083,8 @@ Map metric values by model.
 
 .. code-block:: bash
 
-   svtk map spatial metric-by-model [-h] [--input PATH] [--output PATH]
-                                        [--config PATH]
+   svtk map spatial metric-by-model [-h] [--input-table PATH]
+                                        [--figure-output PATH] [--config PATH]
                                         [--run-scenario RUN_SCENARIO]
                                         [--table [ARG=PATH]] [--no-table]
                                         [--kwargs [KWARGS ...]]
@@ -1124,10 +1127,10 @@ Map metric values by model.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:metric_map_by_model``
-     - Uses configured figure output ``metric_map_by_model`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``metric_map_by_model`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -1143,14 +1146,14 @@ Map metric values by model.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'metric_map_by_model' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'metric_map_by_model' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1315,7 +1318,8 @@ Map model improvement values.
 
 .. code-block:: bash
 
-   svtk map spatial model-improvement [-h] [--input PATH] [--output PATH]
+   svtk map spatial model-improvement [-h] [--input-table PATH]
+                                          [--figure-output PATH]
                                           [--config PATH]
                                           [--run-scenario RUN_SCENARIO]
                                           [--table [ARG=PATH]] [--no-table]
@@ -1359,10 +1363,10 @@ Map model improvement values.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:model_improvement``
-     - Uses configured figure output ``model_improvement`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``model_improvement`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -1378,14 +1382,14 @@ Map model improvement values.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'model_improvement' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'model_improvement' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1550,8 +1554,9 @@ Map one PCA spatial mode.
 
 .. code-block:: bash
 
-   svtk map spatial pca-mode [-h] [--input PATH] [--output PATH]
-                                 [--config PATH] [--run-scenario RUN_SCENARIO]
+   svtk map spatial pca-mode [-h] [--input-table PATH]
+                                 [--figure-output PATH] [--config PATH]
+                                 [--run-scenario RUN_SCENARIO]
                                  [--table [ARG=PATH]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
@@ -1587,10 +1592,10 @@ Map one PCA spatial mode.
      - Meaning
    * - Input table
      - ``config:pca_station_scores``
-     - Uses configured output table ``pca_station_scores`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``pca_station_scores`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:pca_mode_map``
-     - Uses configured figure output ``pca_mode_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``pca_mode_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -1606,14 +1611,14 @@ Map one PCA spatial mode.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (pca station scores); accepts CSV or parquet. Defaults to configured output table 'pca_station_scores' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'pca_mode_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'pca_mode_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1778,8 +1783,8 @@ Map REDCAP cluster values.
 
 .. code-block:: bash
 
-   svtk map spatial redcap-cluster [-h] [--input PATH] [--output PATH]
-                                       [--config PATH]
+   svtk map spatial redcap-cluster [-h] [--input-table PATH]
+                                       [--figure-output PATH] [--config PATH]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table [ARG=PATH]] [--no-table]
                                        [--kwargs [KWARGS ...]]
@@ -1819,10 +1824,10 @@ Map REDCAP cluster values.
      - Meaning
    * - Input table
      - ``config:redcap_clusters``
-     - Uses configured output table ``redcap_clusters`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``redcap_clusters`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:redcap_cluster_map``
-     - Uses configured figure output ``redcap_cluster_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``redcap_cluster_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -1838,14 +1843,14 @@ Map REDCAP cluster values.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (redcap clusters); accepts CSV or parquet. Defaults to configured output table 'redcap_clusters' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'redcap_cluster_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'redcap_cluster_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2010,8 +2015,8 @@ Map residual grid values.
 
 .. code-block:: bash
 
-   svtk map spatial residual-grid [-h] [--input PATH] [--output PATH]
-                                      [--config PATH]
+   svtk map spatial residual-grid [-h] [--input-table PATH]
+                                      [--figure-output PATH] [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
                                       [--table [ARG=PATH]] [--no-table]
                                       [--kwargs [KWARGS ...]]
@@ -2051,10 +2056,10 @@ Map residual grid values.
      - Meaning
    * - Input table
      - ``config:metric_field``
-     - Uses configured output table ``metric_field`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metric_field`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:residual_grid``
-     - Uses configured figure output ``residual_grid`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``residual_grid`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -2070,14 +2075,14 @@ Map residual grid values.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metric field); accepts CSV or parquet. Defaults to configured output table 'metric_field' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'residual_grid' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'residual_grid' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2242,7 +2247,7 @@ Map score values.
 
 .. code-block:: bash
 
-   svtk map spatial score [-h] [--input PATH] [--output PATH]
+   svtk map spatial score [-h] [--input-table PATH] [--figure-output PATH]
                               [--config PATH] [--run-scenario RUN_SCENARIO]
                               [--table [ARG=PATH]] [--no-table]
                               [--kwargs [KWARGS ...]]
@@ -2277,10 +2282,10 @@ Map score values.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:score``
-     - Uses configured figure output ``score`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``score`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -2296,14 +2301,14 @@ Map score values.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'score' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'score' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2468,8 +2473,8 @@ Map station bias values.
 
 .. code-block:: bash
 
-   svtk map spatial station-bias [-h] [--input PATH] [--output PATH]
-                                     [--config PATH]
+   svtk map spatial station-bias [-h] [--input-table PATH]
+                                     [--figure-output PATH] [--config PATH]
                                      [--run-scenario RUN_SCENARIO]
                                      [--table [ARG=PATH]] [--no-table]
                                      [--kwargs [KWARGS ...]]
@@ -2509,10 +2514,10 @@ Map station bias values.
      - Meaning
    * - Input table
      - ``config:station_bias``
-     - Uses configured output table ``station_bias`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``station_bias`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:station_residual_map``
-     - Uses configured figure output ``station_residual_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``station_residual_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -2528,14 +2533,14 @@ Map station bias values.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (station bias); accepts CSV or parquet. Defaults to configured output table 'station_bias' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_residual_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'station_residual_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2700,8 +2705,8 @@ Map station metric values.
 
 .. code-block:: bash
 
-   svtk map spatial station-metric [-h] [--input PATH] [--output PATH]
-                                       [--config PATH]
+   svtk map spatial station-metric [-h] [--input-table PATH]
+                                       [--figure-output PATH] [--config PATH]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table [ARG=PATH]] [--no-table]
                                        [--kwargs [KWARGS ...]]
@@ -2741,10 +2746,10 @@ Map station metric values.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:station_metric_map``
-     - Uses configured figure output ``station_metric_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``station_metric_map`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -2760,14 +2765,14 @@ Map station metric values.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'station_metric_map' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'station_metric_map' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -

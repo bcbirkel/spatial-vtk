@@ -1097,6 +1097,7 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "Config-Backed Mapping" in generator_text
     assert "Config-Backed Visualization" in generator_text
     assert "Config-Backed Dashboards" in generator_text
+    assert "``--input-table``/``--input`` and ``--figure-output``/``--output``" in generator_text
     assert "Configured defaults" in generator_text
     assert "_render_configured_defaults(parser)" in generator_text
 
@@ -1124,14 +1125,14 @@ def test_generated_cli_reference_names_plot_defaults():
 
     assert "Primary figure input table (metrics long); accepts CSV or parquet" in plot_text
     assert "function argument 'df'" not in plot_text
-    assert "``--input``, ``--input-table``" in plot_text
-    assert "``--output``, ``--figure-output``" in plot_text
+    assert "``--input-table``, ``--input``" in plot_text
+    assert "``--figure-output``, ``--output``" in plot_text
     assert ".. rubric:: Configured defaults" in plot_text
     assert "``config:metrics_long``" in plot_text
     assert "Uses configured output table ``metrics_long`` when ``--config`` is passed" in plot_text
     assert "Uses configured figure output ``band_score_distribution`` when ``--config`` is passed" in plot_text
-    assert "Override with ``--input`` or ``--input-table``." in plot_text
-    assert "Override with ``--output`` or ``--figure-output``." in plot_text
+    assert "Override with ``--input-table`` or ``--input``." in plot_text
+    assert "Override with ``--figure-output`` or ``--output``." in plot_text
     assert "``--resolve-paths``" in plot_text
     assert "Add ``--resolve-paths --config PATH``" in plot_text
     assert "Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet" in plot_text
@@ -1139,10 +1140,11 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Value: ``PATH``. Primary figure input table" not in plot_text
     assert "Value: ``PATH``. Output figure path" not in plot_text
     assert "configured output table 'metrics_long' when --config is passed" in plot_text
-    assert "svtk plot metrics winner-heatmap [-h] [--input PATH] [--output PATH]" in plot_text
+    assert "svtk plot metrics winner-heatmap [-h] [--input-table PATH]" in plot_text
+    assert "[--figure-output PATH]" in plot_text
     assert "Defaults to configured output table 'metrics_long'" in plot_text
-    assert "svtk plot spatial residual-correlation [-h] [--input PATH]" in plot_text
-    assert "svtk plot spatial directional-correlogram [-h] [--input PATH]" in plot_text
+    assert "svtk plot spatial residual-correlation [-h] [--input-table PATH]" in plot_text
+    assert "svtk plot spatial directional-correlogram [-h] [--input-table PATH]" in plot_text
     assert "svtk plot metrics list [-h] [--config PATH]" in plot_text
     assert "``--resolve-paths``" in plot_text
     assert "Add ``--resolve-paths --config PATH`` to show the concrete configured files." in plot_text
@@ -1155,8 +1157,8 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Filesystem path. Advanced extra table mapping" not in plot_text
     assert "Primary figure input table (station bias); accepts CSV or parquet" in map_text
     assert "function argument 'station_df'" not in map_text
-    assert "``--input``, ``--input-table``" in map_text
-    assert "``--output``, ``--figure-output``" in map_text
+    assert "``--input-table``, ``--input``" in map_text
+    assert "``--figure-output``, ``--output``" in map_text
     assert ".. rubric:: Configured defaults" in map_text
     assert "``config:station_bias``" in map_text
     assert "Uses configured output table ``station_bias`` when ``--config`` is passed" in map_text
@@ -1167,11 +1169,15 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Value: ``PATH``. Primary figure input table" not in map_text
     assert "Value: ``PATH``. Output figure path" not in map_text
     assert "configured output table 'station_bias' when --config is passed" in map_text
-    assert "svtk map spatial model-improvement [-h] [--input PATH] [--output PATH]" in map_text
+    assert "svtk map spatial model-improvement [-h] [--input-table PATH]" in map_text
     assert "svtk map spatial list [-h] [--config PATH]" in map_text
     assert "``--resolve-paths``" in map_text
     assert "Defaults to configured output table 'metrics_long'" in map_text
     assert "configured figure output 'station_residual_map' when --config is passed" in map_text
+    assert "``--input-table``, ``--input``" in visualize_text
+    assert "``--figure-output``, ``--output``" in visualize_text
+    assert "Override with ``--input-table`` or ``--input``." in visualize_text
+    assert "Override with ``--figure-output`` or ``--output``." in visualize_text
     assert "``--mode``" in map_text
     assert "``--dep``" in map_text
     assert "``--compare-to``" in map_text
@@ -1187,18 +1193,18 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Input table\n     - ``config:qc_metric_pair_retention``" in cli_pages_text
     assert "Input table\n     - ``required:sample table``" in cli_pages_text
     assert (
-        "No registered default table is available yet. Pass ``--input`` or ``--input-table`` "
+        "No registered default table is available yet. Pass ``--input-table`` or ``--input`` "
         "with a precomputed period-spectrogram table."
     ) in cli_pages_text
     assert "Plot a precomputed period-spectrogram table. This advanced figure does not" in cli_pages_text
-    assert "have a standard config-backed input table; pass --input or" in cli_pages_text
+    assert "have a standard config-backed input table; pass --input-table or" in cli_pages_text
     assert (
-        "No registered default table is available yet. Pass ``--input`` or ``--input-table`` "
+        "No registered default table is available yet. Pass ``--input-table`` or ``--input`` "
         "with a prepared trace-sample table."
     ) in cli_pages_text
     assert '"spectrogram_df": "a precomputed period-spectrogram table"' in generator_text
     assert '"sample_df": "a prepared trace-sample table"' in generator_text
-    assert "No registered config default is available; pass --input or --input-table." in cli_pages_text
+    assert "No registered config default is available; pass --input-table or --input." in cli_pages_text
 
 
 def test_config_cli_help_marks_config_values_as_paths(capsys):
@@ -4073,7 +4079,7 @@ def test_cli_registered_plot_missing_input_names_required_table_role(capsys):
     assert excinfo.value.code == 2
     captured = capsys.readouterr()
     assert "No spectrogram table was provided" in captured.err
-    assert "Pass --input/--input-table PATH" in captured.err
+    assert "Pass --input-table/--input PATH" in captured.err
     assert "required table roles" in captured.err
     assert "Missing Python dependency" not in captured.err
     assert "the following arguments are required" not in captured.err
@@ -4087,7 +4093,7 @@ def test_cli_registered_plot_help_names_required_input_without_config_default(ca
     assert excinfo.value.code == 0
     text = capsys.readouterr().out
     assert "precomputed period-spectrogram table" in text
-    assert "No registered config default is available; pass --input or --input-table." in text
+    assert "No registered config default is available; pass --input-table or --input." in text
 
 
 def test_cli_registered_plot_missing_output_names_figure_role():
@@ -4104,7 +4110,7 @@ def test_cli_registered_plot_missing_output_names_figure_role():
 
     message = str(excinfo.value)
     assert "No figure output path was provided" in message
-    assert "Pass --output/--figure-output PATH" in message
+    assert "Pass --figure-output/--output PATH" in message
     assert "required output roles" in message
 
 
@@ -4128,8 +4134,8 @@ def test_cli_registered_plot_missing_config_messages_name_clear_aliases():
     with pytest.raises(ValueError) as output_exc:
         cli._registered_plot_output_path(args, spec, None)
 
-    assert "Pass --input/--input-table PATH" in str(input_exc.value)
-    assert "Pass --output/--figure-output PATH" in str(output_exc.value)
+    assert "Pass --input-table/--input PATH" in str(input_exc.value)
+    assert "Pass --figure-output/--output PATH" in str(output_exc.value)
     assert "svtk config set PATH" in str(input_exc.value)
     assert "svtk config set PATH" in str(output_exc.value)
 

@@ -55,7 +55,7 @@ class PlotCommand:
     function
         Importable plotting function path.
     primary_arg
-        Function argument populated from ``--input``.
+        Function argument populated from ``--input-table``/``--input``.
     help
         Short command help text.
     table_aliases
@@ -64,9 +64,9 @@ class PlotCommand:
         Optional registered table output keys used when a table alias is
         omitted and a config is available.
     input_key
-        Optional registered table output key used when ``--input`` is omitted.
+        Optional registered table output key used when ``--input-table`` is omitted.
     output_key
-        Optional registered figure output key used when ``--output`` is omitted.
+        Optional registered figure output key used when ``--figure-output`` is omitted.
 
     Returns
     -------
@@ -123,7 +123,7 @@ METRICS_PLOT_COMMANDS: dict[str, PlotCommand] = {
     "period-spectrogram": PlotCommand(
         "spatial_vtk.metrics.plot.plot_period_spectrogram",
         "spectrogram_df",
-        "Plot a precomputed period-spectrogram table. This advanced figure does not have a standard config-backed input table; pass --input or --input-table explicitly.",
+        "Plot a precomputed period-spectrogram table. This advanced figure does not have a standard config-backed input table; pass --input-table or --input explicitly.",
     ),
     "vs30-scatter": PlotCommand("spatial_vtk.metrics.plot.plot_vs30_scatter", "df", "Plot metric values against Vs30."),
     "geology-boxplot": PlotCommand("spatial_vtk.metrics.plot.plot_geology_boxplot", "df", "Plot metric values by geologic class."),
@@ -1417,8 +1417,8 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
     if spec.primary_arg is not None:
         input_help = _registered_input_help(spec.primary_arg, spec.input_key)
         parser.add_argument(
-            "--input",
             "--input-table",
+            "--input",
             metavar="PATH",
             dest="input",
             required=False,
@@ -1426,8 +1426,8 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
         )
     output_help = _registered_output_help(spec.output_key)
     parser.add_argument(
-        "--output",
         "--figure-output",
+        "--output",
         metavar="PATH",
         dest="output",
         required=False,
@@ -1477,14 +1477,14 @@ def _registered_input_help(argument_name: str, input_key: str | None) -> str:
     if input_key:
         help_text += f" Defaults to configured output table '{input_key}' when --config is passed or a default config is set with 'svtk config set'."
     else:
-        help_text += " No registered config default is available; pass --input or --input-table."
+        help_text += " No registered config default is available; pass --input-table or --input."
     return help_text
 
 
 def _registered_output_help(output_key: str | None) -> str:
     """Return clear help for a registered plotting output figure."""
 
-    help_text = "Output figure path. The clearer alias --figure-output is equivalent to --output."
+    help_text = "Output figure path. Prefer --figure-output; --output is a legacy alias."
     if output_key:
         help_text += f" Defaults to configured figure output '{output_key}' when --config is passed or a default config is set with 'svtk config set'."
     return help_text
@@ -3216,13 +3216,13 @@ def _registered_plot_input_path(args: argparse.Namespace, spec: PlotCommand, con
         role = _registered_table_role(spec.primary_arg, None, fallback="input")
         suffix = "" if "table" in role else " table"
         raise ValueError(
-            f"No {role}{suffix} was provided. Pass --input/--input-table PATH. "
+            f"No {role}{suffix} was provided. Pass --input-table/--input PATH. "
             "Run the corresponding 'list' command to see config-backed defaults and required table roles."
         )
     if config is None:
         raise ValueError(
-            f"No --input was provided for '{spec.input_key}' and no Spatial-VTK config was found. "
-            "Pass --input/--input-table PATH, pass --config, or run 'svtk config set PATH'."
+            f"No --input-table was provided for '{spec.input_key}' and no Spatial-VTK config was found. "
+            "Pass --input-table/--input PATH, pass --config, or run 'svtk config set PATH'."
         )
     from spatial_vtk.config import resolve_output_path
 
@@ -3236,13 +3236,13 @@ def _registered_plot_output_path(args: argparse.Namespace, spec: PlotCommand, co
         return Path(args.output).expanduser()
     if spec.output_key is None:
         raise ValueError(
-            "No figure output path was provided. Pass --output/--figure-output PATH. "
+            "No figure output path was provided. Pass --figure-output/--output PATH. "
             "Run the corresponding 'list' command to see config-backed defaults and required output roles."
         )
     if config is None:
         raise ValueError(
-            f"No --output was provided for '{spec.output_key}' and no Spatial-VTK config was found. "
-            "Pass --output/--figure-output PATH, pass --config, or run 'svtk config set PATH'."
+            f"No --figure-output was provided for '{spec.output_key}' and no Spatial-VTK config was found. "
+            "Pass --figure-output/--output PATH, pass --config, or run 'svtk config set PATH'."
         )
     from spatial_vtk.config import resolve_output_path
 

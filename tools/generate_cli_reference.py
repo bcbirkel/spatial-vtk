@@ -137,7 +137,7 @@ def _write_cli_index(
             "Plotting and Mapping Notes",
             "--------------------------",
             "",
-            "Most plotting, mapping, and visualization commands can resolve their standard input tables and figure paths from the active config, so ``--input``/``--input-table`` and ``--output``/``--figure-output`` are optional for the usual tutorial/workflow outputs. Registered table defaults may be CSV or Parquet depending on the configured output key; commands that say they accept CSV or parquet read either suffix through the package table helpers. Use ``svtk plot metrics list``, ``svtk plot spatial list``, ``svtk map spatial list``, ``svtk visualize qc list``, ``svtk visualize context list``, or ``svtk visualize waveforms list`` to see which commands use ``config:<key>`` defaults and which still require explicit input tables, shown as ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to any of those list commands when you want to see the concrete configured paths that will be used. A ``required:<role>`` entry means that command has no registered default table for that role yet, so pass ``--input``/``--input-table`` or a named table alias for that invocation.",
+            "Most plotting, mapping, and visualization commands can resolve their standard input tables and figure paths from the active config, so ``--input-table``/``--input`` and ``--figure-output``/``--output`` are optional for the usual tutorial/workflow outputs. Registered table defaults may be CSV or Parquet depending on the configured output key; commands that say they accept CSV or parquet read either suffix through the package table helpers. Use ``svtk plot metrics list``, ``svtk plot spatial list``, ``svtk map spatial list``, ``svtk visualize qc list``, ``svtk visualize context list``, or ``svtk visualize waveforms list`` to see which commands use ``config:<key>`` defaults and which still require explicit input tables, shown as ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to any of those list commands when you want to see the concrete configured paths that will be used. A ``required:<role>`` entry means that command has no registered default table for that role yet, so pass ``--input-table``/``--input`` or a named table alias for that invocation.",
             "",
             "Common figure controls such as ``--metric``, ``--passband``, ``--bin-label``, ``--component``, ``--components``, ``--model``, ``--mode``, ``--dep``, ``--indep``, ``--colorby``, ``--compare-to``, ``--value-col``, ``--score-col``, ``--scale``, ``--time-limit-s``, ``--max-records``, ``--max-traces``, ``--title``, ``--station-region``, ``--event-region``, ``--no-connect-points``, and sidecar options are first-class flags where they apply. Use ``--kwargs key=value`` only for advanced function-specific options that do not yet have curated flags. Prefer configured default tables and named table aliases such as ``--events`` or ``--stations`` when a command lists them; use advanced ``--table function_argument=path`` only for extra function tables that do not yet have named flags.",
             "",
@@ -203,7 +203,7 @@ def _command_page_notes(command_name: str) -> list[str]:
             "Config-Backed Plotting",
             "-----------------------",
             "",
-            "If a config is active with ``svtk config set`` or passed with ``--config``, registered plotting commands resolve their standard input tables and figure outputs automatically. For routine workflow figures, prefer the curated flags shown below instead of passing raw ``--input`` and ``--output`` paths.",
+            "If a config is active with ``svtk config set`` or passed with ``--config``, registered plotting commands resolve their standard input tables and figure outputs automatically. For routine workflow figures, prefer the curated flags shown below instead of passing legacy ``--input`` and ``--output`` paths.",
             "",
             ".. code-block:: bash",
             "",
@@ -211,7 +211,7 @@ def _command_page_notes(command_name: str) -> list[str]:
             "   svtk plot metrics band-score-distribution --score-col log2_residual",
             "   svtk plot metrics residuals-vs-distance --metric PGA --passband \"2-3 sec\" --score-col log2_residual",
             "",
-            "These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk plot metrics list`` or ``svtk plot spatial list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.",
+            "These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input-table``/``--input`` or ``--figure-output``/``--output`` explicitly. Run ``svtk plot metrics list`` or ``svtk plot spatial list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.",
             "",
         ]
     if command_name == "map":
@@ -219,7 +219,7 @@ def _command_page_notes(command_name: str) -> list[str]:
             "Config-Backed Mapping",
             "----------------------",
             "",
-            "If a config is active with ``svtk config set`` or passed with ``--config``, registered map commands resolve their standard input tables, figure outputs, and named map bounds automatically. For routine workflow maps, prefer the curated flags shown below instead of passing raw ``--input`` and ``--output`` paths.",
+            "If a config is active with ``svtk config set`` or passed with ``--config``, registered map commands resolve their standard input tables, figure outputs, and named map bounds automatically. For routine workflow maps, prefer the curated flags shown below instead of passing legacy ``--input`` and ``--output`` paths.",
             "",
             ".. code-block:: bash",
             "",
@@ -227,7 +227,7 @@ def _command_page_notes(command_name: str) -> list[str]:
             "   svtk map spatial station-metric --value-col log2_residual --metric PGA --passband \"2-3 sec\"",
             "   svtk map spatial event-residual --value-col log2_residual --metric PGA --bounds study_area",
             "",
-            "These commands use configured outputs such as ``metrics_long`` and ``path_table`` plus the registered figure keys for the selected map unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk map spatial list`` to print a table showing each map command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.",
+            "These commands use configured outputs such as ``metrics_long`` and ``path_table`` plus the registered figure keys for the selected map unless you supply ``--input-table``/``--input`` or ``--figure-output``/``--output`` explicitly. Run ``svtk map spatial list`` to print a table showing each map command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.",
             "",
             "Basemaps are enabled by default for map figures; use ``--no-basemap`` only when you explicitly want a data-only map.",
             "",
@@ -237,7 +237,7 @@ def _command_page_notes(command_name: str) -> list[str]:
             "Config-Backed Visualization",
             "---------------------------",
             "",
-            "If a config is active with ``svtk config set`` or passed with ``--config``, registered visualization commands resolve their standard input tables and figure outputs automatically. For routine context, QC, and waveform figures, prefer the curated flags shown below instead of passing raw ``--input`` and ``--output`` paths.",
+            "If a config is active with ``svtk config set`` or passed with ``--config``, registered visualization commands resolve their standard input tables and figure outputs automatically. For routine context, QC, and waveform figures, prefer the curated flags shown below instead of passing legacy ``--input`` and ``--output`` paths.",
             "",
             ".. code-block:: bash",
             "",
@@ -246,7 +246,7 @@ def _command_page_notes(command_name: str) -> list[str]:
             "   svtk visualize context station-event-context --bounds study_area",
             "   svtk visualize waveforms observed-synthetic-record-section --components R --max-records 80",
             "",
-            "These commands use configured outputs such as ``qc_metric_pair_retention``, ``event_station_records``, and the registered figure keys for the selected visualization unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk visualize qc list``, ``svtk visualize context list``, or ``svtk visualize waveforms list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.",
+            "These commands use configured outputs such as ``qc_metric_pair_retention``, ``event_station_records``, and the registered figure keys for the selected visualization unless you supply ``--input-table``/``--input`` or ``--figure-output``/``--output`` explicitly. Run ``svtk visualize qc list``, ``svtk visualize context list``, or ``svtk visualize waveforms list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.",
             "",
             "Use ``svtk visualize sidecars status`` to inspect figure provenance sidecars written by commands that support ``--write-sidecar``.",
             "",
@@ -421,11 +421,11 @@ def _registered_input_default_meaning(spec: PlotCommand) -> str:
         return (
             f"Uses configured output table ``{spec.input_key}`` when ``--config`` is passed "
             "or a default config is set with ``svtk config set``. Override with "
-            "``--input`` or ``--input-table``."
+            "``--input-table`` or ``--input``."
         )
     table_meaning = REQUIRED_INPUT_TABLE_MEANINGS.get(str(spec.primary_arg))
     suffix = f" with {table_meaning}" if table_meaning else ""
-    return f"No registered default table is available yet. Pass ``--input`` or ``--input-table``{suffix}."
+    return f"No registered default table is available yet. Pass ``--input-table`` or ``--input``{suffix}."
 
 
 def _registered_output_default_meaning(spec: PlotCommand) -> str:
@@ -435,9 +435,9 @@ def _registered_output_default_meaning(spec: PlotCommand) -> str:
         return (
             f"Uses configured figure output ``{spec.output_key}`` when ``--config`` is passed "
             "or a default config is set with ``svtk config set``. Override with "
-            "``--output`` or ``--figure-output``."
+            "``--figure-output`` or ``--output``."
         )
-    return "No registered default figure path is available yet. Pass ``--output`` or ``--figure-output``."
+    return "No registered default figure path is available yet. Pass ``--figure-output`` or ``--output``."
 
 
 def _registered_extra_default_meaning(spec: PlotCommand) -> str:

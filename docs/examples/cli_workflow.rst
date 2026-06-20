@@ -92,8 +92,8 @@ streamed sidecar restricted to events with both observed and synthetic data.
      --run-scenario "$SCENARIO"
 
    svtk visualize waveforms observed-synthetic-record-section \
-     --input "$EVENT_STATIONS" \
-     --output "$FIGURES/event_trace_comparison.png" \
+     --input-table "$EVENT_STATIONS" \
+     --figure-output "$FIGURES/event_trace_comparison.png" \
      --components R \
      --scale 2.0 \
      --time-limit-s 60 \
@@ -193,8 +193,8 @@ submission after ``cache-waveforms``:
      --color-col metric
 
 The band-score plot defaults to the configured ``metrics_long`` table and
-``band_score_distribution`` figure path. Pass ``--input`` or ``--output``
-only when you want to override those paths.
+``band_score_distribution`` figure path. Pass ``--input-table`` or
+``--figure-output`` only when you want to override those paths.
 
 Add ``--write-sidecar`` to any ``svtk plot``, ``svtk map``, or
 ``svtk visualize`` figure command to write CSV/JSON provenance next to the
@@ -292,7 +292,7 @@ Work with region polygons and corridor selections, then make maps and waveform s
    svtk plot metrics boxplot \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
-     --output "$FIGURES/geojson_region_boxplot.png" \
+     --figure-output "$FIGURES/geojson_region_boxplot.png" \
      --value-col log2_residual \
      --passband "1-2 sec" \
      --model cvmsi_20260506_material_0p6x1p2_asdf \
@@ -316,8 +316,8 @@ Work with region polygons and corridor selections, then make maps and waveform s
      --bounds study_area
 
    svtk visualize waveforms observed-synthetic-record-section \
-     --input "$TABLES/corridor_waveform_records.csv" \
-     --output "$FIGURES/corridor_record_section.png" \
+     --input-table "$TABLES/corridor_waveform_records.csv" \
+     --figure-output "$FIGURES/corridor_record_section.png" \
      --components R \
      --scale 2.0 \
      --time-limit-s 60 \
@@ -332,11 +332,11 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
 .. code-block:: bash
 
    svtk visualize waveforms station-event-waveform-map \
-     --input "$EVENT_STATIONS" \
+     --input-table "$EVENT_STATIONS" \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
      --bounds study_area \
-     --output "$FIGURES/station_event_waveform_map.png" \
+     --figure-output "$FIGURES/station_event_waveform_map.png" \
      --time-limit-s 90 \
      --max-traces 12
 
@@ -349,7 +349,7 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
    svtk plot metrics scatterplot \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
-     --output "$FIGURES/scatterplot_distance.png" \
+     --figure-output "$FIGURES/scatterplot_distance.png" \
      --value-col log2_residual \
      --passband "1-2 sec" \
      --model cvmsi_20260506_material_0p6x1p2_asdf \
@@ -363,7 +363,7 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
    svtk plot metrics boxplot \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
-     --output "$FIGURES/boxplot_by_region.png" \
+     --figure-output "$FIGURES/boxplot_by_region.png" \
      --value-col log2_residual \
      --passband "1-2 sec" \
      --model cvmsi_20260506_material_0p6x1p2_asdf \
@@ -376,7 +376,7 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
    svtk plot metrics heatmap \
      --config "$CONFIG" \
      --run-scenario "$SCENARIO" \
-     --output "$FIGURES/heatmap_by_region.png" \
+     --figure-output "$FIGURES/heatmap_by_region.png" \
      --value-col log2_residual \
      --passband "1-2 sec" \
      --passband "2-3 sec" \

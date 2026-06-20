@@ -6,7 +6,7 @@ svtk plot
 Config-Backed Plotting
 -----------------------
 
-If a config is active with ``svtk config set`` or passed with ``--config``, registered plotting commands resolve their standard input tables and figure outputs automatically. For routine workflow figures, prefer the curated flags shown below instead of passing raw ``--input`` and ``--output`` paths.
+If a config is active with ``svtk config set`` or passed with ``--config``, registered plotting commands resolve their standard input tables and figure outputs automatically. For routine workflow figures, prefer the curated flags shown below instead of passing legacy ``--input`` and ``--output`` paths.
 
 .. code-block:: bash
 
@@ -14,7 +14,7 @@ If a config is active with ``svtk config set`` or passed with ``--config``, regi
    svtk plot metrics band-score-distribution --score-col log2_residual
    svtk plot metrics residuals-vs-distance --metric PGA --passband "2-3 sec" --score-col log2_residual
 
-These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input``/``--input-table`` or ``--output``/``--figure-output`` explicitly. Run ``svtk plot metrics list`` or ``svtk plot spatial list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.
+These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input-table``/``--input`` or ``--figure-output``/``--output`` explicitly. Run ``svtk plot metrics list`` or ``svtk plot spatial list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.
 
 Command Tree
 ------------
@@ -30,7 +30,7 @@ Command Tree
       - :ref:`svtk plot metrics metric-trend <cli-svtk-plot-metrics-metric-trend>` - Plot a general metric trend.
       - :ref:`svtk plot metrics model-metric-heatmap <cli-svtk-plot-metrics-model-metric-heatmap>` - Plot a model-by-metric heatmap.
       - :ref:`svtk plot metrics period-spectra <cli-svtk-plot-metrics-period-spectra>` - Plot period spectra.
-      - :ref:`svtk plot metrics period-spectrogram <cli-svtk-plot-metrics-period-spectrogram>` - Plot a precomputed period-spectrogram table. This advanced figure does not have a standard config-backed input table; pass --input or --input-table explicitly.
+      - :ref:`svtk plot metrics period-spectrogram <cli-svtk-plot-metrics-period-spectrogram>` - Plot a precomputed period-spectrogram table. This advanced figure does not have a standard config-backed input table; pass --input-table or --input explicitly.
       - :ref:`svtk plot metrics phase-delay-vs-distance <cli-svtk-plot-metrics-phase-delay-vs-distance>` - Plot phase delay against distance.
       - :ref:`svtk plot metrics psa-period-curve <cli-svtk-plot-metrics-psa-period-curve>` - Plot PSA values by period.
       - :ref:`svtk plot metrics residuals-vs-depth <cli-svtk-plot-metrics-residuals-vs-depth>` - Plot residuals against event depth.
@@ -118,8 +118,8 @@ Plot score distributions by passband.
 
 .. code-block:: bash
 
-   svtk plot metrics band-score-distribution [-h] [--input PATH]
-                                                 [--output PATH]
+   svtk plot metrics band-score-distribution [-h] [--input-table PATH]
+                                                 [--figure-output PATH]
                                                  [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [ARG=PATH]]
@@ -166,10 +166,10 @@ Plot score distributions by passband.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:band_score_distribution``
-     - Uses configured figure output ``band_score_distribution`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``band_score_distribution`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -185,14 +185,14 @@ Plot score distributions by passband.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'band_score_distribution' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'band_score_distribution' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -345,8 +345,9 @@ Plot metric distributions by categorical variables.
 
 .. code-block:: bash
 
-   svtk plot metrics boxplot [-h] [--input PATH] [--output PATH]
-                                 [--config PATH] [--run-scenario RUN_SCENARIO]
+   svtk plot metrics boxplot [-h] [--input-table PATH]
+                                 [--figure-output PATH] [--config PATH]
+                                 [--run-scenario RUN_SCENARIO]
                                  [--table [ARG=PATH]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
@@ -380,10 +381,10 @@ Plot metric distributions by categorical variables.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:boxplot``
-     - Uses configured figure output ``boxplot`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``boxplot`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -399,14 +400,14 @@ Plot metric distributions by categorical variables.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'boxplot' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'boxplot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -559,7 +560,7 @@ Plot synthetic trace-pair examples that illustrate metric behavior.
 
 .. code-block:: bash
 
-   svtk plot metrics example-metric-pairs [-h] [--output PATH]
+   svtk plot metrics example-metric-pairs [-h] [--figure-output PATH]
                                               [--config PATH]
                                               [--run-scenario RUN_SCENARIO]
                                               [--table [ARG=PATH]]
@@ -608,7 +609,7 @@ Plot synthetic trace-pair examples that illustrate metric behavior.
      - This command does not read a primary input table.
    * - Output figure
      - ``config:example_metric_pairs``
-     - Uses configured figure output ``example_metric_pairs`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``example_metric_pairs`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -624,10 +625,10 @@ Plot synthetic trace-pair examples that illustrate metric behavior.
      - No
      -
      - show this help message and exit
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'example_metric_pairs' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'example_metric_pairs' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -780,7 +781,8 @@ Plot metric values by geologic class.
 
 .. code-block:: bash
 
-   svtk plot metrics geology-boxplot [-h] [--input PATH] [--output PATH]
+   svtk plot metrics geology-boxplot [-h] [--input-table PATH]
+                                         [--figure-output PATH]
                                          [--config PATH]
                                          [--run-scenario RUN_SCENARIO]
                                          [--table [ARG=PATH]] [--no-table]
@@ -822,10 +824,10 @@ Plot metric values by geologic class.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:geology_boxplot``
-     - Uses configured figure output ``geology_boxplot`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``geology_boxplot`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -841,14 +843,14 @@ Plot metric values by geologic class.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'geology_boxplot' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'geology_boxplot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1001,8 +1003,9 @@ Plot categorical metric summaries as a heatmap.
 
 .. code-block:: bash
 
-   svtk plot metrics heatmap [-h] [--input PATH] [--output PATH]
-                                 [--config PATH] [--run-scenario RUN_SCENARIO]
+   svtk plot metrics heatmap [-h] [--input-table PATH]
+                                 [--figure-output PATH] [--config PATH]
+                                 [--run-scenario RUN_SCENARIO]
                                  [--table [ARG=PATH]] [--no-table]
                                  [--kwargs [KWARGS ...]]
                                  [--kwargs-json KWARGS_JSON] [--metric METRIC]
@@ -1036,10 +1039,10 @@ Plot categorical metric summaries as a heatmap.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:heatmap``
-     - Uses configured figure output ``heatmap`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``heatmap`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -1055,14 +1058,14 @@ Plot categorical metric summaries as a heatmap.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'heatmap' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1254,8 +1257,8 @@ Plot a general metric trend.
 
 .. code-block:: bash
 
-   svtk plot metrics metric-trend [-h] [--input PATH] [--output PATH]
-                                      [--config PATH]
+   svtk plot metrics metric-trend [-h] [--input-table PATH]
+                                      [--figure-output PATH] [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
                                       [--table [ARG=PATH]] [--no-table]
                                       [--kwargs [KWARGS ...]]
@@ -1293,10 +1296,10 @@ Plot a general metric trend.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:metric_trend``
-     - Uses configured figure output ``metric_trend`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``metric_trend`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -1312,14 +1315,14 @@ Plot a general metric trend.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'metric_trend' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'metric_trend' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1472,8 +1475,9 @@ Plot a model-by-metric heatmap.
 
 .. code-block:: bash
 
-   svtk plot metrics model-metric-heatmap [-h] [--input PATH]
-                                              [--output PATH] [--config PATH]
+   svtk plot metrics model-metric-heatmap [-h] [--input-table PATH]
+                                              [--figure-output PATH]
+                                              [--config PATH]
                                               [--run-scenario RUN_SCENARIO]
                                               [--table [ARG=PATH]]
                                               [--no-table]
@@ -1518,10 +1522,10 @@ Plot a model-by-metric heatmap.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:model_metric_heatmap``
-     - Uses configured figure output ``model_metric_heatmap`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``model_metric_heatmap`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -1537,14 +1541,14 @@ Plot a model-by-metric heatmap.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'model_metric_heatmap' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'model_metric_heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1697,8 +1701,8 @@ Plot period spectra.
 
 .. code-block:: bash
 
-   svtk plot metrics period-spectra [-h] [--input PATH] [--output PATH]
-                                        [--config PATH]
+   svtk plot metrics period-spectra [-h] [--input-table PATH]
+                                        [--figure-output PATH] [--config PATH]
                                         [--run-scenario RUN_SCENARIO]
                                         [--table [ARG=PATH]] [--no-table]
                                         [--kwargs [KWARGS ...]]
@@ -1739,10 +1743,10 @@ Plot period spectra.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:period_spectra``
-     - Uses configured figure output ``period_spectra`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``period_spectra`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -1758,14 +1762,14 @@ Plot period spectra.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'period_spectra' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'period_spectra' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -1912,14 +1916,15 @@ Plot period spectra.
 svtk plot metrics period-spectrogram
 """"""""""""""""""""""""""""""""""""
 
-Plot a precomputed period-spectrogram table. This advanced figure does not have a standard config-backed input table; pass --input or --input-table explicitly.
+Plot a precomputed period-spectrogram table. This advanced figure does not have a standard config-backed input table; pass --input-table or --input explicitly.
 
 .. rubric:: Usage
 
 .. code-block:: bash
 
-   svtk plot metrics period-spectrogram [-h] [--input PATH]
-                                            [--output PATH] [--config PATH]
+   svtk plot metrics period-spectrogram [-h] [--input-table PATH]
+                                            [--figure-output PATH]
+                                            [--config PATH]
                                             [--run-scenario RUN_SCENARIO]
                                             [--table [ARG=PATH]] [--no-table]
                                             [--kwargs [KWARGS ...]]
@@ -1962,10 +1967,10 @@ Plot a precomputed period-spectrogram table. This advanced figure does not have 
      - Meaning
    * - Input table
      - ``required:spectrogram table``
-     - No registered default table is available yet. Pass ``--input`` or ``--input-table`` with a precomputed period-spectrogram table.
+     - No registered default table is available yet. Pass ``--input-table`` or ``--input`` with a precomputed period-spectrogram table.
    * - Output figure
      - ``config:period_spectrogram``
-     - Uses configured figure output ``period_spectrogram`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``period_spectrogram`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -1981,14 +1986,14 @@ Plot a precomputed period-spectrogram table. This advanced figure does not have 
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (spectrogram); accepts CSV or parquet. No registered config default is available; pass --input or --input-table.
-   * - ``--output``, ``--figure-output``
+     - Filesystem path. Primary figure input table (spectrogram); accepts CSV or parquet. No registered config default is available; pass --input-table or --input.
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'period_spectrogram' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'period_spectrogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2141,8 +2146,8 @@ Plot phase delay against distance.
 
 .. code-block:: bash
 
-   svtk plot metrics phase-delay-vs-distance [-h] [--input PATH]
-                                                 [--output PATH]
+   svtk plot metrics phase-delay-vs-distance [-h] [--input-table PATH]
+                                                 [--figure-output PATH]
                                                  [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [ARG=PATH]]
@@ -2189,10 +2194,10 @@ Plot phase delay against distance.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:phase_delay_vs_distance``
-     - Uses configured figure output ``phase_delay_vs_distance`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``phase_delay_vs_distance`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -2208,14 +2213,14 @@ Plot phase delay against distance.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'phase_delay_vs_distance' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'phase_delay_vs_distance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2368,7 +2373,8 @@ Plot PSA values by period.
 
 .. code-block:: bash
 
-   svtk plot metrics psa-period-curve [-h] [--input PATH] [--output PATH]
+   svtk plot metrics psa-period-curve [-h] [--input-table PATH]
+                                          [--figure-output PATH]
                                           [--config PATH]
                                           [--run-scenario RUN_SCENARIO]
                                           [--table [ARG=PATH]] [--no-table]
@@ -2410,10 +2416,10 @@ Plot PSA values by period.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:psa_period_curve``
-     - Uses configured figure output ``psa_period_curve`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``psa_period_curve`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -2429,14 +2435,14 @@ Plot PSA values by period.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'psa_period_curve' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'psa_period_curve' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2589,8 +2595,9 @@ Plot residuals against event depth.
 
 .. code-block:: bash
 
-   svtk plot metrics residuals-vs-depth [-h] [--input PATH]
-                                            [--output PATH] [--config PATH]
+   svtk plot metrics residuals-vs-depth [-h] [--input-table PATH]
+                                            [--figure-output PATH]
+                                            [--config PATH]
                                             [--run-scenario RUN_SCENARIO]
                                             [--table [ARG=PATH]] [--no-table]
                                             [--kwargs [KWARGS ...]]
@@ -2633,10 +2640,10 @@ Plot residuals against event depth.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:residuals_vs_depth``
-     - Uses configured figure output ``residuals_vs_depth`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``residuals_vs_depth`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -2652,14 +2659,14 @@ Plot residuals against event depth.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'residuals_vs_depth' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'residuals_vs_depth' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -2812,8 +2819,9 @@ Plot residuals against distance.
 
 .. code-block:: bash
 
-   svtk plot metrics residuals-vs-distance [-h] [--input PATH]
-                                               [--output PATH] [--config PATH]
+   svtk plot metrics residuals-vs-distance [-h] [--input-table PATH]
+                                               [--figure-output PATH]
+                                               [--config PATH]
                                                [--run-scenario RUN_SCENARIO]
                                                [--table [ARG=PATH]]
                                                [--no-table]
@@ -2858,10 +2866,10 @@ Plot residuals against distance.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:residuals_vs_distance``
-     - Uses configured figure output ``residuals_vs_distance`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``residuals_vs_distance`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -2877,14 +2885,14 @@ Plot residuals against distance.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'residuals_vs_distance' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'residuals_vs_distance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3037,8 +3045,8 @@ Plot any metric-table variable against another variable.
 
 .. code-block:: bash
 
-   svtk plot metrics scatterplot [-h] [--input PATH] [--output PATH]
-                                     [--config PATH]
+   svtk plot metrics scatterplot [-h] [--input-table PATH]
+                                     [--figure-output PATH] [--config PATH]
                                      [--run-scenario RUN_SCENARIO]
                                      [--table [ARG=PATH]] [--no-table]
                                      [--kwargs [KWARGS ...]]
@@ -3076,10 +3084,10 @@ Plot any metric-table variable against another variable.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:scatterplot``
-     - Uses configured figure output ``scatterplot`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``scatterplot`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -3095,14 +3103,14 @@ Plot any metric-table variable against another variable.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'scatterplot' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'scatterplot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3255,8 +3263,8 @@ Plot score trends.
 
 .. code-block:: bash
 
-   svtk plot metrics score-trends [-h] [--input PATH] [--output PATH]
-                                      [--config PATH]
+   svtk plot metrics score-trends [-h] [--input-table PATH]
+                                      [--figure-output PATH] [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
                                       [--table [ARG=PATH]] [--no-table]
                                       [--kwargs [KWARGS ...]]
@@ -3294,10 +3302,10 @@ Plot score trends.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:score_trends``
-     - Uses configured figure output ``score_trends`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``score_trends`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -3313,14 +3321,14 @@ Plot score trends.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'score_trends' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'score_trends' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3473,8 +3481,8 @@ Plot metric values against Vs30.
 
 .. code-block:: bash
 
-   svtk plot metrics vs30-scatter [-h] [--input PATH] [--output PATH]
-                                      [--config PATH]
+   svtk plot metrics vs30-scatter [-h] [--input-table PATH]
+                                      [--figure-output PATH] [--config PATH]
                                       [--run-scenario RUN_SCENARIO]
                                       [--table [ARG=PATH]] [--no-table]
                                       [--kwargs [KWARGS ...]]
@@ -3512,10 +3520,10 @@ Plot metric values against Vs30.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:vs30_scatter``
-     - Uses configured figure output ``vs30_scatter`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``vs30_scatter`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -3531,14 +3539,14 @@ Plot metric values against Vs30.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'vs30_scatter' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'vs30_scatter' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3691,8 +3699,8 @@ Plot a winner/class heatmap.
 
 .. code-block:: bash
 
-   svtk plot metrics winner-heatmap [-h] [--input PATH] [--output PATH]
-                                        [--config PATH]
+   svtk plot metrics winner-heatmap [-h] [--input-table PATH]
+                                        [--figure-output PATH] [--config PATH]
                                         [--run-scenario RUN_SCENARIO]
                                         [--table [ARG=PATH]] [--no-table]
                                         [--kwargs [KWARGS ...]]
@@ -3733,10 +3741,10 @@ Plot a winner/class heatmap.
      - Meaning
    * - Input table
      - ``config:metrics_long``
-     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``metrics_long`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:winner_heatmap``
-     - Uses configured figure output ``winner_heatmap`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``winner_heatmap`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -3752,14 +3760,14 @@ Plot a winner/class heatmap.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'winner_heatmap' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'winner_heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -3940,8 +3948,9 @@ Plot residuals by azimuth.
 
 .. code-block:: bash
 
-   svtk plot spatial azimuthal-residuals [-h] [--input PATH]
-                                             [--output PATH] [--config PATH]
+   svtk plot spatial azimuthal-residuals [-h] [--input-table PATH]
+                                             [--figure-output PATH]
+                                             [--config PATH]
                                              [--run-scenario RUN_SCENARIO]
                                              [--table [ARG=PATH]] [--no-table]
                                              [--kwargs [KWARGS ...]]
@@ -3984,10 +3993,10 @@ Plot residuals by azimuth.
      - Meaning
    * - Input table
      - ``config:event_centered_residuals``
-     - Uses configured output table ``event_centered_residuals`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``event_centered_residuals`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:azimuthal_residuals``
-     - Uses configured figure output ``azimuthal_residuals`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``azimuthal_residuals`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -4003,14 +4012,14 @@ Plot residuals by azimuth.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (event centered residuals); accepts CSV or parquet. Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'azimuthal_residuals' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'azimuthal_residuals' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4163,8 +4172,9 @@ Plot observed versus held-out predictions.
 
 .. code-block:: bash
 
-   svtk plot spatial block-holdout-scatter [-h] [--input PATH]
-                                               [--output PATH] [--config PATH]
+   svtk plot spatial block-holdout-scatter [-h] [--input-table PATH]
+                                               [--figure-output PATH]
+                                               [--config PATH]
                                                [--run-scenario RUN_SCENARIO]
                                                [--table [ARG=PATH]]
                                                [--no-table]
@@ -4209,10 +4219,10 @@ Plot observed versus held-out predictions.
      - Meaning
    * - Input table
      - ``config:block_holdout_predictions``
-     - Uses configured output table ``block_holdout_predictions`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``block_holdout_predictions`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:block_holdout_scatter``
-     - Uses configured figure output ``block_holdout_scatter`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``block_holdout_scatter`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -4228,14 +4238,14 @@ Plot observed versus held-out predictions.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (block holdout predictions); accepts CSV or parquet. Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'block_holdout_scatter' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'block_holdout_scatter' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4388,8 +4398,8 @@ Plot cluster feature summaries.
 
 .. code-block:: bash
 
-   svtk plot spatial cluster-feature-heatmap [-h] [--input PATH]
-                                                 [--output PATH]
+   svtk plot spatial cluster-feature-heatmap [-h] [--input-table PATH]
+                                                 [--figure-output PATH]
                                                  [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [ARG=PATH]]
@@ -4436,10 +4446,10 @@ Plot cluster feature summaries.
      - Meaning
    * - Input table
      - ``config:cluster_feature_summary``
-     - Uses configured output table ``cluster_feature_summary`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``cluster_feature_summary`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:cluster_feature_heatmap``
-     - Uses configured figure output ``cluster_feature_heatmap`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``cluster_feature_heatmap`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -4455,14 +4465,14 @@ Plot cluster feature summaries.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (cluster feature summary); accepts CSV or parquet. Defaults to configured output table 'cluster_feature_summary' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'cluster_feature_heatmap' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'cluster_feature_heatmap' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4615,8 +4625,8 @@ Plot clustering solution scores.
 
 .. code-block:: bash
 
-   svtk plot spatial cluster-solution-scores [-h] [--input PATH]
-                                                 [--output PATH]
+   svtk plot spatial cluster-solution-scores [-h] [--input-table PATH]
+                                                 [--figure-output PATH]
                                                  [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [ARG=PATH]]
@@ -4663,10 +4673,10 @@ Plot clustering solution scores.
      - Meaning
    * - Input table
      - ``config:cluster_solution_scores``
-     - Uses configured output table ``cluster_solution_scores`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``cluster_solution_scores`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:cluster_solution_scores_plot``
-     - Uses configured figure output ``cluster_solution_scores_plot`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``cluster_solution_scores_plot`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -4682,14 +4692,14 @@ Plot clustering solution scores.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (cluster solution scores); accepts CSV or parquet. Defaults to configured output table 'cluster_solution_scores' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'cluster_solution_scores_plot' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'cluster_solution_scores_plot' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -4842,8 +4852,8 @@ Plot a spatial correlogram.
 
 .. code-block:: bash
 
-   svtk plot spatial correlogram [-h] [--input PATH] [--output PATH]
-                                     [--config PATH]
+   svtk plot spatial correlogram [-h] [--input-table PATH]
+                                     [--figure-output PATH] [--config PATH]
                                      [--run-scenario RUN_SCENARIO]
                                      [--table [ARG=PATH]] [--no-table]
                                      [--kwargs [KWARGS ...]]
@@ -4881,10 +4891,10 @@ Plot a spatial correlogram.
      - Meaning
    * - Input table
      - ``config:distance_bin_correlations``
-     - Uses configured output table ``distance_bin_correlations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``distance_bin_correlations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:correlogram``
-     - Uses configured figure output ``correlogram`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``correlogram`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -4900,14 +4910,14 @@ Plot a spatial correlogram.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'correlogram' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'correlogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -5060,8 +5070,8 @@ Plot directional spatial correlations.
 
 .. code-block:: bash
 
-   svtk plot spatial directional-correlogram [-h] [--input PATH]
-                                                 [--output PATH]
+   svtk plot spatial directional-correlogram [-h] [--input-table PATH]
+                                                 [--figure-output PATH]
                                                  [--config PATH]
                                                  [--run-scenario RUN_SCENARIO]
                                                  [--table [ARG=PATH]]
@@ -5108,10 +5118,10 @@ Plot directional spatial correlations.
      - Meaning
    * - Input table
      - ``config:distance_bin_correlations``
-     - Uses configured output table ``distance_bin_correlations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``distance_bin_correlations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:directional_correlogram``
-     - Uses configured figure output ``directional_correlogram`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``directional_correlogram`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
    * - Extra tables
      - ``--fit(fit_df)=optional``
      - Optional named table aliases are available for this command.
@@ -5130,14 +5140,14 @@ Plot directional spatial correlations.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'directional_correlogram' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'directional_correlogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -5329,7 +5339,8 @@ Plot path-bin summary values.
 
 .. code-block:: bash
 
-   svtk plot spatial path-bin-summary [-h] [--input PATH] [--output PATH]
+   svtk plot spatial path-bin-summary [-h] [--input-table PATH]
+                                          [--figure-output PATH]
                                           [--config PATH]
                                           [--run-scenario RUN_SCENARIO]
                                           [--table [ARG=PATH]] [--no-table]
@@ -5371,10 +5382,10 @@ Plot path-bin summary values.
      - Meaning
    * - Input table
      - ``config:path_summary``
-     - Uses configured output table ``path_summary`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``path_summary`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:path_bin_summary``
-     - Uses configured figure output ``path_bin_summary`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``path_bin_summary`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -5390,14 +5401,14 @@ Plot path-bin summary values.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (path summary); accepts CSV or parquet. Defaults to configured output table 'path_summary' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'path_bin_summary' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'path_bin_summary' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -5550,8 +5561,9 @@ Plot observed/synthetic pattern similarity.
 
 .. code-block:: bash
 
-   svtk plot spatial pattern-similarity [-h] [--input PATH]
-                                            [--output PATH] [--config PATH]
+   svtk plot spatial pattern-similarity [-h] [--input-table PATH]
+                                            [--figure-output PATH]
+                                            [--config PATH]
                                             [--run-scenario RUN_SCENARIO]
                                             [--table [ARG=PATH]] [--no-table]
                                             [--kwargs [KWARGS ...]]
@@ -5594,10 +5606,10 @@ Plot observed/synthetic pattern similarity.
      - Meaning
    * - Input table
      - ``config:pattern_similarity_station_anomalies``
-     - Uses configured output table ``pattern_similarity_station_anomalies`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``pattern_similarity_station_anomalies`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:pattern_similarity``
-     - Uses configured figure output ``pattern_similarity`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``pattern_similarity`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -5613,14 +5625,14 @@ Plot observed/synthetic pattern similarity.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (pattern similarity station anomalies); accepts CSV or parquet. Defaults to configured output table 'pattern_similarity_station_anomalies' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'pattern_similarity' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'pattern_similarity' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -5773,8 +5785,8 @@ Plot PCA explained variance.
 
 .. code-block:: bash
 
-   svtk plot spatial pca-explained-variance [-h] [--input PATH]
-                                                [--output PATH]
+   svtk plot spatial pca-explained-variance [-h] [--input-table PATH]
+                                                [--figure-output PATH]
                                                 [--config PATH]
                                                 [--run-scenario RUN_SCENARIO]
                                                 [--table [ARG=PATH]]
@@ -5821,10 +5833,10 @@ Plot PCA explained variance.
      - Meaning
    * - Input table
      - ``config:pca_explained_variance``
-     - Uses configured output table ``pca_explained_variance`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``pca_explained_variance`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:pca_explained_variance``
-     - Uses configured figure output ``pca_explained_variance`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``pca_explained_variance`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -5840,14 +5852,14 @@ Plot PCA explained variance.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (pca explained variance); accepts CSV or parquet. Defaults to configured output table 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -6000,8 +6012,9 @@ Plot PCA feature loadings.
 
 .. code-block:: bash
 
-   svtk plot spatial pca-feature-loadings [-h] [--input PATH]
-                                              [--output PATH] [--config PATH]
+   svtk plot spatial pca-feature-loadings [-h] [--input-table PATH]
+                                              [--figure-output PATH]
+                                              [--config PATH]
                                               [--run-scenario RUN_SCENARIO]
                                               [--table [ARG=PATH]]
                                               [--no-table]
@@ -6046,10 +6059,10 @@ Plot PCA feature loadings.
      - Meaning
    * - Input table
      - ``config:pca_feature_loadings``
-     - Uses configured output table ``pca_feature_loadings`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``pca_feature_loadings`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:pca_feature_loadings``
-     - Uses configured figure output ``pca_feature_loadings`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``pca_feature_loadings`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -6065,14 +6078,14 @@ Plot PCA feature loadings.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (pca feature loadings); accepts CSV or parquet. Defaults to configured output table 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -6225,7 +6238,8 @@ Plot residuals in polar coordinates.
 
 .. code-block:: bash
 
-   svtk plot spatial polar-residuals [-h] [--input PATH] [--output PATH]
+   svtk plot spatial polar-residuals [-h] [--input-table PATH]
+                                         [--figure-output PATH]
                                          [--config PATH]
                                          [--run-scenario RUN_SCENARIO]
                                          [--table [ARG=PATH]] [--no-table]
@@ -6267,10 +6281,10 @@ Plot residuals in polar coordinates.
      - Meaning
    * - Input table
      - ``config:event_centered_residuals``
-     - Uses configured output table ``event_centered_residuals`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``event_centered_residuals`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:polar_residuals``
-     - Uses configured figure output ``polar_residuals`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``polar_residuals`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -6286,14 +6300,14 @@ Plot residuals in polar coordinates.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (event centered residuals); accepts CSV or parquet. Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'polar_residuals' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'polar_residuals' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -6446,8 +6460,9 @@ Plot residual correlation values.
 
 .. code-block:: bash
 
-   svtk plot spatial residual-correlation [-h] [--input PATH]
-                                              [--output PATH] [--config PATH]
+   svtk plot spatial residual-correlation [-h] [--input-table PATH]
+                                              [--figure-output PATH]
+                                              [--config PATH]
                                               [--run-scenario RUN_SCENARIO]
                                               [--table [ARG=PATH]]
                                               [--no-table]
@@ -6492,10 +6507,10 @@ Plot residual correlation values.
      - Meaning
    * - Input table
      - ``config:distance_bin_correlations``
-     - Uses configured output table ``distance_bin_correlations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``distance_bin_correlations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:residual_correlation``
-     - Uses configured figure output ``residual_correlation`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``residual_correlation`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -6511,14 +6526,14 @@ Plot residual correlation values.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'residual_correlation' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'residual_correlation' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
@@ -6671,8 +6686,8 @@ Plot a semivariogram.
 
 .. code-block:: bash
 
-   svtk plot spatial semivariogram [-h] [--input PATH] [--output PATH]
-                                       [--config PATH]
+   svtk plot spatial semivariogram [-h] [--input-table PATH]
+                                       [--figure-output PATH] [--config PATH]
                                        [--run-scenario RUN_SCENARIO]
                                        [--table [ARG=PATH]] [--no-table]
                                        [--kwargs [KWARGS ...]]
@@ -6710,10 +6725,10 @@ Plot a semivariogram.
      - Meaning
    * - Input table
      - ``config:distance_bin_correlations``
-     - Uses configured output table ``distance_bin_correlations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input`` or ``--input-table``.
+     - Uses configured output table ``distance_bin_correlations`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--input-table`` or ``--input``.
    * - Output figure
      - ``config:semivariogram``
-     - Uses configured figure output ``semivariogram`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--output`` or ``--figure-output``.
+     - Uses configured figure output ``semivariogram`` when ``--config`` is passed or a default config is set with ``svtk config set``. Override with ``--figure-output`` or ``--output``.
 
 .. rubric:: Parameters
 
@@ -6729,14 +6744,14 @@ Plot a semivariogram.
      - No
      -
      - show this help message and exit
-   * - ``--input``, ``--input-table``
+   * - ``--input-table``, ``--input``
      - No
      -
      - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
-   * - ``--output``, ``--figure-output``
+   * - ``--figure-output``, ``--output``
      - No
      -
-     - Filesystem path. Output figure path. The clearer alias --figure-output is equivalent to --output. Defaults to configured figure output 'semivariogram' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Output figure path. Prefer --figure-output; --output is a legacy alias. Defaults to configured figure output 'semivariogram' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--config``
      - No
      -
