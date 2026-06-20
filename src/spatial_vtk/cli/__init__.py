@@ -985,11 +985,32 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     plan.set_defaults(handler=_cmd_metrics_plan)
 
     estimate = metrics_sub.add_parser("estimate", help="Summarize metric task counts and resource estimates.")
-    estimate.add_argument("--tasks", metavar="PATH", default=None, help="Metric task CSV/parquet path. Overrides --manifest.")
-    estimate.add_argument("--manifest", metavar="PATH", default=None, help="Metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'.")
+    estimate.add_argument("--tasks", metavar="PATH", default=None, help="Metric task CSV/parquet path. Overrides --metric-manifest.")
+    estimate.add_argument(
+        "--metric-manifest",
+        "--manifest",
+        dest="manifest",
+        metavar="PATH",
+        default=None,
+        help=(
+            "Metric workflow manifest JSON. Defaults to configured output table "
+            "'metric_manifest'. Prefer --metric-manifest; --manifest is a legacy alias."
+        ),
+    )
     estimate.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default manifest and output paths.")
     estimate.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
-    estimate.add_argument("--output", metavar="PATH", default=None, help="Optional output CSV/parquet path for the estimate table. Defaults to configured output table 'metric_task_estimate' when a config is available.")
+    estimate.add_argument(
+        "--metric-task-estimate-output",
+        "--output",
+        dest="output",
+        metavar="PATH",
+        default=None,
+        help=(
+            "Optional output CSV/parquet path for the metric task estimate table. Defaults to configured output "
+            "table 'metric_task_estimate' when a config is available. Prefer --metric-task-estimate-output; "
+            "--output is a legacy alias."
+        ),
+    )
     estimate.add_argument("--seconds-per-task", type=float, default=60.0, help="Approximate runtime for one task in seconds.")
     estimate.add_argument("--memory-gb-per-task", type=float, default=2.0, help="Approximate memory needed by one task.")
     estimate.add_argument("--cpus-per-task", type=int, default=1, help="CPU cores requested per task.")

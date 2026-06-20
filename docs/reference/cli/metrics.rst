@@ -173,9 +173,9 @@ svtk metrics estimate
 
 .. code-block:: bash
 
-   svtk metrics estimate [-h] [--tasks PATH] [--manifest PATH]
+   svtk metrics estimate [-h] [--tasks PATH] [--metric-manifest PATH]
                              [--config PATH] [--run-scenario RUN_SCENARIO]
-                             [--output PATH]
+                             [--metric-task-estimate-output PATH]
                              [--seconds-per-task SECONDS_PER_TASK]
                              [--memory-gb-per-task MEMORY_GB_PER_TASK]
                              [--cpus-per-task CPUS_PER_TASK]
@@ -198,11 +198,11 @@ svtk metrics estimate
    * - ``--tasks``
      - No
      -
-     - Filesystem path. Metric task CSV/parquet path. Overrides --manifest.
-   * - ``--manifest``
+     - Filesystem path. Metric task CSV/parquet path. Overrides --metric-manifest.
+   * - ``--metric-manifest``, ``--manifest``
      - No
      -
-     - Filesystem path. Metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'.
+     - Filesystem path. Metric workflow manifest JSON. Defaults to configured output table 'metric_manifest'. Prefer --metric-manifest; --manifest is a legacy alias.
    * - ``--config``
      - No
      -
@@ -211,10 +211,10 @@ svtk metrics estimate
      - No
      -
      - Apply one named run_scenarios overlay.
-   * - ``--output``
+   * - ``--metric-task-estimate-output``, ``--output``
      - No
      -
-     - Filesystem path. Optional output CSV/parquet path for the estimate table. Defaults to configured output table 'metric_task_estimate' when a config is available.
+     - Filesystem path. Optional output CSV/parquet path for the metric task estimate table. Defaults to configured output table 'metric_task_estimate' when a config is available. Prefer --metric-task-estimate-output; --output is a legacy alias.
    * - ``--seconds-per-task``
      - No
      - Default: ``60.0``

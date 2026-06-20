@@ -747,7 +747,7 @@ def test_cli_metrics_estimate_writes_summary(tmp_path, capsys):
                 "1.5",
                 "--parallel-tasks",
                 "2",
-                "--output",
+                "--metric-task-estimate-output",
                 str(output),
             ]
         )
@@ -787,7 +787,7 @@ def test_cli_metrics_estimate_reads_manifest(tmp_path, capsys):
             [
                 "metrics",
                 "estimate",
-                "--manifest",
+                "--metric-manifest",
                 str(manifest),
                 "--seconds-per-task",
                 "30",
@@ -1414,6 +1414,13 @@ def test_cli_metrics_workflow_help_exposes_artifact_aliases(capsys):
     assert "Defaults to configured output table 'synthetic_metric_inventory'" in plan_help
 
     with pytest.raises(SystemExit) as excinfo:
+        main(["metrics", "estimate", "--help"])
+    assert excinfo.value.code == 0
+    estimate_help = " ".join(capsys.readouterr().out.split())
+    assert "--metric-manifest" in estimate_help
+    assert "--metric-task-estimate-output" in estimate_help
+
+    with pytest.raises(SystemExit) as excinfo:
         main(["metrics", "run", "--help"])
     assert excinfo.value.code == 0
     run_help = " ".join(capsys.readouterr().out.split())
@@ -1466,6 +1473,9 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     cache_section = text.split(".. _cli-svtk-metrics-cache-waveforms:", maxsplit=1)[1].split(
         ".. _cli-svtk-metrics-estimate:", maxsplit=1
     )[0]
+    estimate_section = text.split(".. _cli-svtk-metrics-estimate:", maxsplit=1)[1].split(
+        ".. _cli-svtk-metrics-inventories:", maxsplit=1
+    )[0]
     slurm_section = text.split(".. _cli-svtk-metrics-slurm:", maxsplit=1)[1]
 
     assert "``--observed-inventory-output``, ``--observed-output``" in inventories_section
@@ -1488,6 +1498,11 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     assert "``--cached-metric-manifest-output``, ``--output``" in cache_section
     assert "Prefer --metric-manifest; --manifest is a legacy alias." in cache_section
     assert "Prefer --cached-metric-manifest-output; --output is a legacy alias." in cache_section
+    assert "``--metric-manifest``, ``--manifest``" in estimate_section
+    assert "``--metric-task-estimate-output``, ``--output``" in estimate_section
+    assert "Metric task CSV/parquet path. Overrides --metric-manifest." in estimate_section
+    assert "Prefer --metric-manifest; --manifest is a legacy alias." in estimate_section
+    assert "Prefer --metric-task-estimate-output; --output is a legacy alias." in estimate_section
     assert "``--metric-manifest``, ``--manifest``" in slurm_section
     assert "``--metrics-slurm-script-output``, ``--output``" in slurm_section
     assert "Prefer --metric-manifest; --manifest is a legacy alias." in slurm_section
