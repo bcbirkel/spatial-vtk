@@ -541,6 +541,8 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         assert load_trace_qc_summary.__module__ == "spatial_vtk.visualize.qc.overview"
         assert dashboard_readiness_summary_frame.__module__ == "spatial_vtk.visualize.dashboard.contracts"
         assert launch_configured_metrics_dashboard.__module__ == "spatial_vtk.visualize.dashboard.launch"
+        assert callable(dashboard_readiness_summary_frame)
+        assert "spatial_vtk.visualize.dashboard.contracts" not in sys.modules
 
         forbidden_after_light_import = {
             "pandas",

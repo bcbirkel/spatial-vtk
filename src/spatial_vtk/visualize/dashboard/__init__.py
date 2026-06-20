@@ -91,6 +91,14 @@ _EXPORT_MODULES = {
 
 __all__ = sorted(_EXPORT_MODULES)
 
+_DEFERRED_EXPORT_MODULES = {
+    "spatial_vtk.visualize.dashboard.contracts",
+    "spatial_vtk.visualize.dashboard.export",
+    "spatial_vtk.visualize.dashboard.filters",
+    "spatial_vtk.visualize.dashboard.labels",
+    "spatial_vtk.visualize.dashboard.tables",
+}
+
 
 def __getattr__(name: str) -> Any:
     """Load one dashboard helper on demand."""
@@ -98,6 +106,25 @@ def __getattr__(name: str) -> Any:
     module_name = _EXPORT_MODULES.get(name)
     if module_name is None:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    if module_name in _DEFERRED_EXPORT_MODULES:
+        value = _deferred_export(name, module_name)
+        globals()[name] = value
+        return value
     value = getattr(import_module(module_name), name)
     globals()[name] = value
     return value
+
+
+def _deferred_export(name: str, module_name: str) -> Any:
+    """Return a callable public helper that imports its implementation on use."""
+
+    def helper(*args: Any, **kwargs: Any) -> Any:
+        implementation = getattr(import_module(module_name), name)
+        globals()[name] = implementation
+        return implementation(*args, **kwargs)
+
+    helper.__name__ = name
+    helper.__qualname__ = name
+    helper.__module__ = module_name
+    helper.__doc__ = f"Deferred public wrapper for ``{module_name}.{name}``."
+    return helper

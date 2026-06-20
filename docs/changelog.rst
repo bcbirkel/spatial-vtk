@@ -337,6 +337,9 @@ Changelog
   - Kept dashboard launch helper imports config-lazy so lightweight dashboard
     command builders and launch function objects remain importable without
     loading YAML/config machinery.
+  - Deferred dashboard status, contract, filter, label, and dataset-preparation
+    helper implementations until call time so public helper objects remain
+    importable without eager pandas or YAML imports.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 
