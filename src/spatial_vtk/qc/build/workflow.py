@@ -129,6 +129,32 @@ class StandardQCInputResult:
 
         return notebook_step_result(readiness, **values)
 
+    def qc_inventory_step_result(self, readiness: OutputReadiness) -> dict[str, Any]:
+        """Return the standard fallback payload for the full QC inventory gate."""
+
+        return self.step_result(
+            readiness,
+            qc_trace_summary_path=self.outputs.trace_qc_path,
+            qc_inventory_path=self.outputs.qc_inventory_path,
+            qc_inventory_overlap_path=self.outputs.qc_inventory_overlap_path,
+        )
+
+    def qc_overlap_step_result(self, readiness: OutputReadiness, *, scope: str | None = None) -> dict[str, Any]:
+        """Return the standard fallback payload for the overlap QC sidecar gate."""
+
+        values: dict[str, Any] = {"qc_inventory_overlap_path": self.outputs.qc_inventory_overlap_path}
+        if scope is not None:
+            values["scope"] = scope
+        return self.step_result(readiness, **values)
+
+    def qc_summary_step_result(self, readiness: OutputReadiness) -> dict[str, Any]:
+        """Return the standard fallback payload for compact QC summary outputs."""
+
+        return self.step_result(
+            readiness,
+            comparison_eligible_path=self.outputs.comparison_eligible_path,
+        )
+
     def display_inventory_preview(
         self,
         *,

@@ -2374,6 +2374,15 @@ outputs:
     fallback = inputs.step_result(readiness, qc_inventory_path=qc_outputs.qc_inventory_path)
     assert fallback["reused"] is True
     assert fallback["qc_inventory_path"] == str(qc_outputs.qc_inventory_path)
+    inventory_fallback = inputs.qc_inventory_step_result(readiness)
+    assert inventory_fallback["qc_trace_summary_path"] == str(qc_outputs.trace_qc_path)
+    assert inventory_fallback["qc_inventory_path"] == str(qc_outputs.qc_inventory_path)
+    assert inventory_fallback["qc_inventory_overlap_path"] == str(qc_outputs.qc_inventory_overlap_path)
+    overlap_fallback = inputs.qc_overlap_step_result(readiness, scope="event_station")
+    assert overlap_fallback["qc_inventory_overlap_path"] == str(qc_outputs.qc_inventory_overlap_path)
+    assert overlap_fallback["scope"] == "event_station"
+    summary_fallback = inputs.qc_summary_step_result(readiness)
+    assert summary_fallback["comparison_eligible_path"] == str(qc_outputs.comparison_eligible_path)
 
     qc_figure_calls: list[dict[str, object]] = []
 

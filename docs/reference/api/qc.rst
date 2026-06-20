@@ -66,9 +66,11 @@ Public helpers exposed by ``spatial_vtk.qc``:
    * - ``load_standard_qc_inputs``
      - Load standard Step 2 prepared metadata tables and the configured QC
        output group without notebook-local Step 1 output-group table mapping.
-       The returned result owns skipped-step fallback payloads, compact output
-       summaries, bounded QC inventory/summary previews, and standard QC
-       figure rendering through ``write_figures()``.
+       The returned result owns skipped-step fallback payloads through
+       ``qc_inventory_step_result()``, ``qc_overlap_step_result()``, and
+       ``qc_summary_step_result()``, plus compact output summaries, bounded QC
+       inventory/summary previews, and standard QC figure rendering through
+       ``write_figures()``.
    * - ``load_standard_qc_workflow_outputs``
      - Load the configured Step 2 QC output group and status frame without
        reading large Step 1 tables in large-run setup cells. The returned

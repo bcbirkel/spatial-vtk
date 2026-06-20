@@ -697,7 +697,10 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "run_qc_summary_workflow_from_config(" in standard_text
     assert "run_notebook_step_if_needed(" in standard_text
     assert "notebook_step_result(" not in standard_text
-    assert "qc_inputs.step_result(" in standard_text
+    assert "qc_inputs.step_result(" not in standard_text
+    assert "qc_inputs.qc_inventory_step_result(qc_readiness)" in standard_text
+    assert "qc_inputs.qc_overlap_step_result(overlap_readiness, scope=overlap_scope)" in standard_text
+    assert "qc_inputs.qc_summary_step_result(summary_readiness)" in standard_text
     assert "qc_readiness = qc_inventory_readiness_from_config(" in standard_text
     assert "overlap_readiness = qc_overlap_readiness_from_config(" in standard_text
     assert "summary_readiness = qc_summary_readiness_from_config(" in standard_text
@@ -726,6 +729,10 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "qc_inputs.display_summary_previews(nrows=5)" in standard_text
     assert "qc_inputs.compact_output_summary_frame()" in standard_text
     assert "qc_outputs.preview_path_table(" not in standard_text
+    assert "qc_outputs.trace_qc_path" not in standard_text
+    assert "qc_outputs.qc_inventory_path" not in standard_text
+    assert "qc_outputs.qc_inventory_overlap_path" not in standard_text
+    assert "qc_outputs.comparison_eligible_path" not in standard_text
     assert "comparison_eligible_preview =" not in standard_text
     assert "manual-review queue:" not in standard_text
     assert "QC overlap inventory:" not in standard_text

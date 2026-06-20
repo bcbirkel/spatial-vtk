@@ -347,7 +347,8 @@ fallbacks, and bounded previews stay in package code.
    * - Step 2 QC
      - ``spatial_vtk.qc.load_standard_qc_inputs``
      - Prepared stations, events, event-station records, the Step 1 output
-       group, the Step 2 QC output group, skipped-step fallback payloads,
+       group, the Step 2 QC output group, named skipped-step fallback payloads
+       for full QC, overlap QC, and compact QC summaries,
        compact output summaries, bounded QC inventory/summary previews, and
        standard QC figure rendering through ``write_figures()``.
    * - Step 2 large-run QC setup
