@@ -406,6 +406,9 @@ Changelog
     import-path example instead of a lower-level implementation module.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
+  - Clarified generated API parameter descriptions so ``metrics_root`` and
+    ``summary_root`` are documented as legacy aliases rather than the primary
+    Python dashboard launch parameters.
 
 - **Workflow large-run resilience** *(Hardened)*
 

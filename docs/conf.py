@@ -93,8 +93,8 @@ _PARAMETER_DESCRIPTIONS = {
         "standard dashboard workflows resolve this from the active config."
     ),
     "metrics_root": (
-        "Metrics dashboard row dataset directory or direct ``metrics_long`` CSV/parquet table; "
-        "standard dashboard workflows resolve this from the active config."
+        "Backward-compatible alias for ``metrics_dataset_dir``. Prefer "
+        "``metrics_dataset_dir`` in new Python code, CLI docs, and notebook helpers."
     ),
     "metrics": "Metric names included in the calculation or figure.",
     "model": "Synthetic model name or model filter used for the calculation or figure.",
@@ -118,9 +118,8 @@ _PARAMETER_DESCRIPTIONS = {
         "the active config."
     ),
     "summary_root": (
-        "Dashboard summary-table directory containing ``model_metric_band``, ``station_rollup``, "
-        "``event_rollup``, and ``path_hex`` tables; standard dashboard workflows resolve this from "
-        "the active config."
+        "Backward-compatible alias for ``dashboard_summary_table_dir``. Prefer "
+        "``dashboard_summary_table_dir`` in new Python code, CLI docs, and notebook helpers."
     ),
     "table": "Input table, output table, configured table key, or table selector used by this helper.",
     "trace_summary": (

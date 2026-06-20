@@ -763,12 +763,14 @@ def test_autodoc_fallback_parameter_docs_are_descriptive():
     assert conf._parameter_description(parameter("summary")).startswith("Summary table, dashboard summary dataset")
     assert conf._parameter_description(parameter("metrics_dataset_dir")).startswith("Metrics dashboard row dataset directory")
     assert "direct ``metrics_long`` CSV/parquet table" in conf._parameter_description(parameter("metrics_dataset_dir"))
-    assert conf._parameter_description(parameter("metrics_root")).startswith("Metrics dashboard row dataset directory")
-    assert "direct ``metrics_long`` CSV/parquet table" in conf._parameter_description(parameter("metrics_root"))
+    assert conf._parameter_description(parameter("metrics_root")).startswith("Backward-compatible alias for ``metrics_dataset_dir``")
+    assert "Prefer ``metrics_dataset_dir``" in conf._parameter_description(parameter("metrics_root"))
     assert conf._parameter_description(parameter("dashboard_summary_table_dir")).startswith("Dashboard summary-table directory")
     assert "``model_metric_band``" in conf._parameter_description(parameter("dashboard_summary_table_dir"))
-    assert conf._parameter_description(parameter("summary_root")).startswith("Dashboard summary-table directory")
-    assert "``model_metric_band``" in conf._parameter_description(parameter("summary_root"))
+    assert conf._parameter_description(parameter("summary_root")).startswith(
+        "Backward-compatible alias for ``dashboard_summary_table_dir``"
+    )
+    assert "Prefer ``dashboard_summary_table_dir``" in conf._parameter_description(parameter("summary_root"))
     assert conf._parameter_description(parameter("trace_summary")).startswith("QC trace-summary CSV/parquet table")
     assert "``qc_trace_summary``" in conf._parameter_description(parameter("trace_summary"))
     assert conf._parameter_description(parameter("dataset_root")).startswith("Directory root or configured output root")
