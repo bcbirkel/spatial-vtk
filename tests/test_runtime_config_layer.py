@@ -4257,6 +4257,12 @@ run_defaults:
     assert plan.components == ("Z",)
     assert plan.models == ("model_a", "model_b")
     assert plan.output_path == tmp_path / "outputs" / "metrics" / "command.csv"
+    plan_summary = plan.summary_frame().set_index("setting")["value"]
+    assert plan_summary["metrics"] == "PGA, delay_corrected_cc"
+    assert plan_summary["passbands"] == "1-2 s, 2-4 s"
+    assert plan_summary["components"] == "Z"
+    assert plan_summary["models"] == "model_a, model_b"
+    assert plan_summary["output_path"] == str(tmp_path / "outputs" / "metrics" / "command.csv")
 
     spec = ArtifactSpec(
         kind="figure",

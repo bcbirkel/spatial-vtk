@@ -239,14 +239,18 @@ Clear the saved default with:
 
    svtk config unset
 
-In a notebook or script, load the same file with Python:
+In a notebook or script, load the same file with Python and preview the
+registered outputs without hard-coding individual path variables:
 
 .. code-block:: python
 
-   from spatial_vtk.config import SpatialVTKConfig, resolve_output_path
+   from spatial_vtk.config import (
+       SpatialVTKConfig,
+       configured_output_registry_preview_frame,
+   )
 
    cfg = SpatialVTKConfig.from_file("spatial-vtk.yaml")
-   metrics_path = resolve_output_path("metrics_long", kind="table", cfg=cfg)
+   configured_output_registry_preview_frame(cfg=cfg, kinds=("table",)).head()
 
 Use Configs In Python
 ---------------------
@@ -457,7 +461,7 @@ For metric workflows, you can also inspect the resolved plan in Python:
 
    cfg = SpatialVTKConfig.from_file("spatial-vtk.yaml")
    plan = metric_plan_from_config(cfg, command="metrics.calculate")
-   print(plan)
+   plan.summary_frame()
 
 If a value appears in ``svtk config show``, it came from your config file. If a
 value appears only after you add ``--run-scenario``, it came from that selected

@@ -90,6 +90,7 @@ def test_public_imports():
         write_station_metric_map_from_notebook_settings,
     )
     from spatial_vtk.io import (
+        MetricPlan,
         MetadataPreparationResult,
         RecordCoverageWorkflowResult,
         StandardIngestWorkflowOutputResult,
@@ -225,6 +226,7 @@ def test_public_imports():
     assert callable(notebook_step_result_frame)
     assert callable(render_notebook_figure)
     assert callable(run_notebook_step_if_needed)
+    assert callable(MetricPlan)
     assert callable(amplitude_spectrum)
     assert callable(calculate_metrics_for_pairs)
     assert callable(compute_metrics_pair)
@@ -2357,7 +2359,10 @@ def test_configuration_examples_use_registered_output_keys():
     combined = configuration + "\n" + runtime_doc
     assert 'cfg.path("outputs.metrics")' not in combined
     assert "outputs.metrics" not in combined
-    assert 'resolve_output_path("metrics_long", kind="table", cfg=cfg)' in combined
+    assert "configured_output_registry_preview_frame(cfg=cfg, kinds=(\"table\",)).head()" in configuration
+    assert "resolve_output_path(" not in configuration
+    assert "plan.summary_frame()" in configuration
+    assert "print(plan)" not in configuration
     assert "--qc-slurm-script-output outputs/slurm/build_qc_inventory.slurm" in configuration
     assert "--metrics-slurm-script-output`` are omitted" in configuration
     assert "--output outputs/slurm/build_qc.slurm" not in configuration

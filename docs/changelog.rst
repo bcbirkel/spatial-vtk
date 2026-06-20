@@ -99,8 +99,10 @@ Changelog
     ``station_metadata_table`` inputs plus metric lists, so Step 4 notebooks can
     run through the standard result/status wrapper without passing ad hoc
     metric snapshot paths in notebook cells.
-  - Configuration examples now use the registered ``metrics_long`` output table
-    helper instead of the stale generic ``outputs.metrics`` path example.
+  - Configuration examples now use output-registry preview tables instead of
+    direct ``resolve_output_path(...)`` snippets and display resolved metric
+    plans through ``MetricPlan.summary_frame()`` instead of raw dataclass
+    printing.
   - Spatial API guidance now presents the Step 4 output-status/result helpers
     before the direct spatial-statistics runner, keeping routine notebook docs
     aligned with the large-run driver pattern.

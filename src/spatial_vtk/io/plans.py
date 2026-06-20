@@ -68,6 +68,42 @@ class MetricPlan:
 
         return transform_columns(self.transforms)
 
+    def summary_frame(self) -> pd.DataFrame:
+        """Return a compact table of resolved metric-plan settings."""
+
+        rows = [
+            ("metrics", ", ".join(self.metrics)),
+            ("metric_groups", ", ".join(self.metric_groups)),
+            (
+                "passbands",
+                ", ".join(_format_passband(pair) for pair in self.passbands),
+            ),
+            ("components", ", ".join(self.components)),
+            ("models", ", ".join(self.models)),
+            ("transforms", ", ".join(self.transforms)),
+            (
+                "spectral_periods_s",
+                ", ".join(f"{float(period):g}" for period in self.spectral_periods_s),
+            ),
+            ("output_mode", self.output_mode),
+            ("require_source_overlap", self.require_source_overlap),
+            ("source_overlap_scope", self.source_overlap_scope),
+            ("synthetic_max_frequency_hz", self.synthetic_max_frequency_hz),
+            ("waveform_lowpass_hz", self.waveform_lowpass_hz),
+            ("waveform_resample_hz", self.waveform_resample_hz),
+            ("waveform_filter_order", self.waveform_filter_order),
+            ("output_path", str(self.output_path) if self.output_path is not None else None),
+        ]
+        return pd.DataFrame(
+            [
+                {
+                    "setting": setting,
+                    "value": "" if value is None else value,
+                }
+                for setting, value in rows
+            ]
+        )
+
 
 @dataclass(frozen=True)
 class MetricCompleteness:
@@ -275,6 +311,13 @@ def _format_period_token(value: object) -> str:
     if number.is_integer():
         return str(int(number))
     return f"{number:g}"
+
+
+def _format_passband(value: tuple[float, float]) -> str:
+    """Format one passband pair for display."""
+
+    start, end = value
+    return f"{_format_period_token(start)}-{_format_period_token(end)} s"
 
 
 def _parse_passbands(value: object) -> tuple[tuple[float, float], ...]:
