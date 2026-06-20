@@ -600,7 +600,8 @@ def _render_dashboard_readiness(readiness: pd.DataFrame, *, message: str | None 
 
     if readiness.empty or "ready" not in readiness.columns:
         return
-    ready = readiness["ready"].map(lambda value: dashboard_ready_value(value, default=False))
+    ready_column = "tab_ready" if "tab_ready" in readiness.columns else "ready"
+    ready = readiness[ready_column].map(lambda value: dashboard_ready_value(value, default=False))
     if bool(ready.all()):
         return
     detail = str(message or "").strip()
@@ -766,10 +767,10 @@ def _summary_readiness_message(readiness: pd.DataFrame | None, table_name: str) 
     if rows.empty:
         return None
     row = rows.iloc[0]
-    ready = row.get("ready")
+    ready = row.get("tab_ready", row.get("ready"))
     if dashboard_ready_value(ready, default=False):
         return None
-    message = str(row.get("message") or "").strip()
+    message = str(row.get("tab_message") or row.get("message") or "").strip()
     if message:
         return message
     tabs = str(row.get("dashboard_tabs") or "").strip()

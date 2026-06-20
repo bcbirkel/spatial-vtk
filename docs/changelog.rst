@@ -378,6 +378,9 @@ Changelog
   - Added tab-level dashboard readiness fields so station/event summaries that
     have finite values but lack map coordinates are reported as data-ready but
     tab-blocked.
+  - Made metrics-dashboard startup warnings and optional-tab messages honor
+    ``tab_ready`` / ``tab_message`` so map-blocked station or event tabs are
+    not treated as fully ready.
   - Made ``svtk dashboard status`` show the clearer ``resolved_path`` column in
     human-readable output while preserving ``path`` in machine-readable status
     frames.
