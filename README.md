@@ -27,6 +27,9 @@ Or create the conda environment and install from a source checkout:
 
 The notebook and waveform extras install the Jupyter runtime and waveform
 reader modules needed by the committed tutorial notebooks.
+If pip has trouble solving compiled geospatial or waveform packages in an
+existing environment, prefer the source-checkout conda environment above; it
+installs the same tutorial stack from `svtk_environment.yaml`.
 
 The package imports as `spatial_vtk` and installs the `svtk` command:
 

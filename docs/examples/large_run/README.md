@@ -21,6 +21,15 @@ python -m pip install -e ".[notebooks,waveforms]"
 python tools/execute_tutorial_notebooks.py --clean --include-large-run
 ```
 
+If pip has trouble solving compiled geospatial or waveform packages in an
+existing environment, create the full source-checkout environment first:
+
+```bash
+conda env create -f svtk_environment.yaml
+conda activate spatial-vtk
+python -m pip install -e ".[notebooks,waveforms]"
+```
+
 The checker executes the standard notebooks first, then these large-run
 drivers, using only committed example data. It fails if any notebook raises an
 error or emits warning-like output. Before execution or output cleanup, it also

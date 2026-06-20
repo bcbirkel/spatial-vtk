@@ -83,12 +83,14 @@ def test_tutorial_notebook_runtime_preflight_reports_missing_modules() -> None:
 
     assert missing == ["demo"]
     assert module.SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND == 'python -m pip install -e ".[notebooks,waveforms]"'
+    assert module.SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND == "conda env create -f svtk_environment.yaml"
     with pytest.raises(SystemExit) as excinfo:
         module.check_notebook_runtime({"demo": "definitely_missing_svtk_module"})
     message = str(excinfo.value)
     assert "Missing tutorial runtime modules: demo" in message
     assert "Jupyter, mapping, dashboard, and waveform readers" in message
     assert module.SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND in message
+    assert module.SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND in message
 
 
 def test_tutorial_notebook_runtime_preflight_includes_package_runtime_modules() -> None:
@@ -603,6 +605,10 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert 'python -m pip install -e ".[notebooks,waveforms]"' in readme
     assert "\n    python -m pip install -e .\n" not in readme
     assert "notebook and waveform extras" in readme
+    assert "If pip has trouble solving compiled geospatial or waveform packages" in readme
+    assert "conda env create -f svtk_environment.yaml" in readme
+    assert "If pip has trouble solving compiled geospatial or waveform packages" in examples_index
+    assert "If pip has trouble solving compiled geospatial or waveform packages" in large_run_readme
     assert "## Run the Tutorial Notebooks" in readme
     assert "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run" in readme
     assert "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run" in readme
