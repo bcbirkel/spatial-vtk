@@ -421,7 +421,9 @@ class SyntheticReader:
         if self.info.format == "salvus":
             if self.info.handling_mode == "on-the-fly":
                 raise NotImplementedError(
-                    "Raw Salvus on-the-fly XYZ rotation and metadata correction is not yet wired to a reader."
+                    "Raw Salvus on-the-fly XYZ rotation and metadata correction "
+                    "requires a project-specific reader adapter. Use convert-once "
+                    "or point the synthetic input at normalized MiniSEED/ASDF."
                 )
             if self.info.handling_mode == "convert-once" and self.info.converted_root:
                 converted = inspect_synthetic_format(self.info.converted_root)

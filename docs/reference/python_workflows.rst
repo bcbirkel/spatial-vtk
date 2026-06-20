@@ -209,7 +209,7 @@ the large-run notebooks.
        When a required input comes from an optional config value, pass the
        named mapping value as ``None``. The readiness/status table displays
        ``<not configured>`` and blocks the step cleanly instead of using a
-       fake placeholder path.
+       manufactured fallback path.
        ``first_existing_path()`` and ``preview_first_existing_table()`` cover
        common fallback cases such as
        preferring ``metrics_enriched`` when it exists and otherwise using
