@@ -117,10 +117,9 @@ def main() -> None:
     except Exception as exc:
         st.error(str(exc))
         return
-    _render_dashboard_readiness(readiness)
     blocker = _metrics_dashboard_startup_blocker(readiness)
+    _render_dashboard_readiness(readiness, message=blocker)
     if blocker:
-        st.warning(blocker)
         return
     metric_dataset_readiness = dashboard_metric_dataset_readiness_frame(metrics_root) if metrics_root else pd.DataFrame()
     skip_tables = _startup_skip_summary_tables(readiness)
@@ -592,7 +591,7 @@ def _row_level_dataset_notice_message(row_value_message: str | None, rows: pd.Da
     return "Row-level metric rows are not loaded. Summary tabs can still render, but distributions and filtered row downloads need the metrics dashboard dataset."
 
 
-def _render_dashboard_readiness(readiness: pd.DataFrame) -> None:
+def _render_dashboard_readiness(readiness: pd.DataFrame, *, message: str | None = None) -> None:
     """Render summary-table readiness when any dashboard input is incomplete."""
 
     if readiness.empty or "ready" not in readiness.columns:
@@ -600,7 +599,13 @@ def _render_dashboard_readiness(readiness: pd.DataFrame) -> None:
     ready = readiness["ready"].map(lambda value: dashboard_ready_value(value, default=False))
     if bool(ready.all()):
         return
-    st.warning("Some dashboard summary tables are not ready. Affected tabs may be empty until those files are rebuilt.")
+    detail = str(message or "").strip()
+    warning = "Some dashboard summary tables are not ready."
+    if detail and detail != warning:
+        warning = f"{warning} {detail}"
+    else:
+        warning = f"{warning} Affected tabs may be empty until those files are rebuilt."
+    st.warning(warning)
     shown = _select_readiness_columns(readiness, SUMMARY_READINESS_DISPLAY_COLUMNS)
     st.dataframe(_display_table(shown), width="stretch")
 

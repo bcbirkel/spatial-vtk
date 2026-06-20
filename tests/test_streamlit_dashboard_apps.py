@@ -1178,7 +1178,7 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
     monkeypatch.setattr(streamlit_metrics, "load_dashboard_summary_tables", fail_uncached_loader)
     monkeypatch.setattr(streamlit_metrics, "dashboard_summary_readiness_frame", lambda *args, **kwargs: readiness)
     monkeypatch.setattr(streamlit_metrics, "_load_optional_config", lambda config_path: None)
-    monkeypatch.setattr(streamlit_metrics, "_render_dashboard_readiness", lambda frame: None)
+    monkeypatch.setattr(streamlit_metrics, "_render_dashboard_readiness", lambda frame, **kwargs: None)
     monkeypatch.setattr(streamlit_metrics, "_render_metric_dataset_readiness", lambda frame: None)
     monkeypatch.setattr(streamlit_metrics, "dashboard_metric_dataset_readiness_frame", lambda metrics_root: pd.DataFrame({"ready": [True], "message": ["ready"]}))
     monkeypatch.setattr(streamlit_metrics, "_metrics_dashboard_startup_blocker", lambda frame: None)
@@ -1226,17 +1226,18 @@ def test_metrics_dashboard_main_preflights_before_summary_load(monkeypatch):
     monkeypatch.setattr(streamlit_metrics, "_path_setting", fake_path_setting)
     monkeypatch.setattr(streamlit_metrics, "dashboard_summary_readiness_frame", lambda *args, **kwargs: readiness)
     monkeypatch.setattr(streamlit_metrics, "_load_summary_tables_cached", fail_cached_loader)
-    monkeypatch.setattr(streamlit_metrics, "_render_dashboard_readiness", lambda frame: rendered_readiness.append(frame))
     monkeypatch.setattr(streamlit_metrics, "_render_metrics_dashboard", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("dashboard should not render")))
     monkeypatch.setattr(streamlit_metrics.st, "set_page_config", lambda **kwargs: None)
     monkeypatch.setattr(streamlit_metrics.st, "title", lambda *args, **kwargs: None)
     monkeypatch.setattr(streamlit_metrics.st, "warning", lambda message: warnings.append(str(message)))
+    monkeypatch.setattr(streamlit_metrics.st, "dataframe", lambda frame, **kwargs: rendered_readiness.append(frame))
     monkeypatch.setattr(streamlit_metrics.st, "error", lambda message: (_ for _ in ()).throw(AssertionError(message)))
 
     streamlit_metrics.main()
 
-    assert rendered_readiness == [readiness]
-    assert warnings == ["model_metric_band summary file is missing."]
+    assert len(rendered_readiness) == 1
+    assert rendered_readiness[0].loc[0, "Message"] == "model_metric_band summary file is missing."
+    assert warnings == ["Some dashboard summary tables are not ready. model_metric_band summary file is missing."]
 
 
 def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
@@ -1293,7 +1294,7 @@ def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
     monkeypatch.setattr(streamlit_metrics, "dashboard_summary_readiness_frame", lambda *args, **kwargs: readiness)
     monkeypatch.setattr(streamlit_metrics, "_load_summary_tables_cached", fake_cached_loader)
     monkeypatch.setattr(streamlit_metrics, "_load_optional_config", lambda config_path: None)
-    monkeypatch.setattr(streamlit_metrics, "_render_dashboard_readiness", lambda frame: None)
+    monkeypatch.setattr(streamlit_metrics, "_render_dashboard_readiness", lambda frame, **kwargs: None)
     monkeypatch.setattr(streamlit_metrics, "_render_metrics_dashboard", fake_render_dashboard)
     monkeypatch.setattr(streamlit_metrics.st, "set_page_config", lambda **kwargs: None)
     monkeypatch.setattr(streamlit_metrics.st, "title", lambda *args, **kwargs: None)

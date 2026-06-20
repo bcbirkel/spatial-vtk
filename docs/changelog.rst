@@ -47,6 +47,9 @@ Changelog
   - QC dashboard startup now emits a single readiness warning that includes the
     specific trace-summary blocker, such as missing required columns, instead
     of showing a generic warning plus a second detailed warning.
+  - Metrics dashboard startup now emits a single summary-readiness warning that
+    includes the specific primary summary-table blocker before full dashboard
+    summaries are loaded.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.
