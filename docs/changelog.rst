@@ -50,6 +50,9 @@ Changelog
   - Large-run Step 4 spatial preview helpers now use the full standard spatial
     table contract, so notebook previews include Moran, distance-bin, cluster,
     PCA, and geology summaries when those outputs exist.
+  - Large-run Step 5 GeoJSON figure helpers now resolve the standard Step 1
+    ingest outputs and configured region GeoJSON path from the active config,
+    removing undefined notebook variables from the figure-rendering cell.
   - QC dashboard startup now emits a single readiness warning that includes the
     specific trace-summary blocker, such as missing required columns, instead
     of showing a generic warning plus a second detailed warning.

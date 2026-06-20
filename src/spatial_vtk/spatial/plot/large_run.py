@@ -1774,20 +1774,35 @@ class StandardGeoJSONWorkflowOutputStatusResult:
     def write_region_figures(
         self,
         ingest_outputs: Any,
-        settings: Any,
+        settings: Any | None = None,
         *,
-        geojson_path: str | Path,
+        geojson_path: str | Path | None = None,
         cfg: Any | None = None,
         overwrite: bool = False,
     ) -> "RegionFigureResult":
         """Write Step 5 GeoJSON/corridor figures from this output bundle."""
+
+        resolved_cfg = cfg or self.cfg
+        if settings is None:
+            settings = ingest_outputs
+            from spatial_vtk.io import load_configured_input_paths, load_standard_ingest_workflow_outputs
+
+            ingest_outputs = load_standard_ingest_workflow_outputs(cfg=resolved_cfg).outputs
+            geojson_path = load_configured_input_paths({"region_geojson": "paths.region_geojson"}, cfg=resolved_cfg)[
+                "region_geojson"
+            ]
+        elif geojson_path is None:
+            raise ValueError(
+                "geojson_path is required when passing explicit ingest outputs. "
+                "Pass only settings to resolve standard Step 5 inputs from the active config."
+            )
 
         return write_large_run_geojson_region_figures_from_notebook_settings(
             self,
             ingest_outputs,
             settings,
             geojson_path=geojson_path,
-            cfg=cfg or self.cfg,
+            cfg=resolved_cfg,
             overwrite=overwrite,
         )
 

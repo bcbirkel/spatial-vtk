@@ -2389,10 +2389,21 @@ outputs:
     ingest_outputs = output_group("step_01_ingest", cfg=cfg)
     region_geojson = tmp_path / "inputs" / "regions.geojson"
     region_geojson.parent.mkdir(parents=True, exist_ok=True)
+
+    def fake_load_ingest_outputs(*, cfg=None):  # noqa: ANN001
+        assert cfg == config_path
+        return types.SimpleNamespace(outputs=ingest_outputs)
+
+    def fake_load_configured_paths(mapping, *, cfg=None):  # noqa: ANN001
+        assert mapping == {"region_geojson": "paths.region_geojson"}
+        assert cfg == config_path
+        return {"region_geojson": region_geojson}
+
+    monkeypatch.setattr("spatial_vtk.io.load_standard_ingest_workflow_outputs", fake_load_ingest_outputs)
+    monkeypatch.setattr("spatial_vtk.io.load_configured_input_paths", fake_load_configured_paths)
+
     assert geojson_output_status.write_region_figures(
-        ingest_outputs,
         geojson_figure_settings,
-        geojson_path=region_geojson,
         overwrite=True,
     ) == "geojson-region-result"
     assert geojson_figure_calls == [

@@ -1702,6 +1702,9 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert 'step_outputs = output_group("step_05_geojson")' not in source
     assert "display_output_table_previews(" not in source
     assert "geojson_outputs.write_region_figures(" in source
+    assert "    REGION_FIGURE_SETTINGS,\n" in source
+    assert "geojson_path=geojson_path" not in source
+    assert "ingest_outputs," not in source
     assert "write_large_run_geojson_region_figures_from_notebook_settings(" not in source
     assert "region_figure_gate = REGION_FIGURE_SETTINGS.render_gate(" not in source
     assert "write_large_run_geojson_region_figures_from_outputs(" not in source
