@@ -58,7 +58,12 @@ Changelog
     counts, statuses, and messages instead of printing a bare string.
   - Dashboard preparation results now expose ``preparation_frame()`` and the
     shared display helper shows the preparation decision, removing bare
-    ``print(dashboard_preparation.message)`` cells from dashboard notebooks.
+    notebook-side formatting logic and ``print(dashboard_preparation.message)``
+    cells from dashboard notebooks.
+  - ``spatial_vtk.visualize`` now exposes the notebook-facing dashboard
+    readiness/status, preparation-display, launch, and summary-preview helpers
+    that its API documentation already presents as part of the stable
+    visualization import surface.
   - Spatial statistics settings now support configured ``metrics_table`` and
     ``station_metadata_table`` inputs plus metric lists, so Step 4 notebooks can
     run through the standard result/status wrapper without passing ad hoc

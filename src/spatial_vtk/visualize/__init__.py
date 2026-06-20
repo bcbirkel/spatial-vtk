@@ -17,7 +17,10 @@ from typing import Any
 
 _EXPORT_MODULES = {
     "build_dashboard_summaries": "spatial_vtk.visualize.dashboard",
+    "dashboard_output_status_frame": "spatial_vtk.visualize.dashboard",
+    "dashboard_readiness_summary_frame": "spatial_vtk.visualize.dashboard",
     "dashboard_summary_input_columns": "spatial_vtk.visualize.dashboard",
+    "display_dashboard_preparation_result": "spatial_vtk.visualize.dashboard",
     "launch_configured_dashboards_from_notebook_settings": "spatial_vtk.visualize.dashboard",
     "launch_configured_metrics_dashboard": "spatial_vtk.visualize.dashboard",
     "launch_configured_qc_dashboard": "spatial_vtk.visualize.dashboard",
@@ -25,6 +28,7 @@ _EXPORT_MODULES = {
     "launch_qc_dashboard": "spatial_vtk.visualize.dashboard",
     "load_dashboard_metric_dataset": "spatial_vtk.visualize.dashboard",
     "prepare_dashboard_metric_table": "spatial_vtk.visualize.dashboard",
+    "preview_dashboard_summary_tables": "spatial_vtk.visualize.dashboard",
     "ContextFigureResult": "spatial_vtk.visualize.context",
     "QCFigureResult": "spatial_vtk.visualize.qc",
     "DashboardDatasetPreparationResult": "spatial_vtk.visualize.dashboard",

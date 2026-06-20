@@ -574,9 +574,21 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         from spatial_vtk.metrics import StandardMetricWorkflowOutputResult, load_standard_metric_workflow_outputs
         from spatial_vtk.spatial import run_spatial_statistics_workflow
         from spatial_vtk.spatial.calculate import load_standard_spatial_workflow_output_status
-        from spatial_vtk.visualize import read_figure_sidecar_metadata, write_figure_row_sidecar
+        from spatial_vtk.visualize import (
+            dashboard_output_status_frame,
+            dashboard_readiness_summary_frame,
+            display_dashboard_preparation_result,
+            figure_sidecar_status_frame,
+            launch_configured_dashboards_from_notebook_settings,
+            preview_dashboard_summary_tables,
+            read_figure_sidecar_metadata,
+            write_figure_row_sidecar,
+        )
         from spatial_vtk.visualize.qc import load_trace_qc_summary
-        from spatial_vtk.visualize.dashboard import dashboard_readiness_summary_frame, launch_configured_metrics_dashboard
+        from spatial_vtk.visualize.dashboard import (
+            dashboard_readiness_summary_frame as dashboard_package_readiness_summary_frame,
+            launch_configured_metrics_dashboard,
+        )
 
         assert abbreviate_model.__module__ == "spatial_vtk.config.naming"
         assert display_label.__module__ == "spatial_vtk.config.labels"
@@ -592,10 +604,21 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         assert load_standard_spatial_workflow_output_status.__module__ == "spatial_vtk.spatial.calculate.workflow"
         assert read_figure_sidecar_metadata.__module__ == "spatial_vtk.visualize.figure_sidecars"
         assert write_figure_row_sidecar.__module__ == "spatial_vtk.visualize.figure_sidecars"
+        assert figure_sidecar_status_frame.__module__ == "spatial_vtk.visualize.figure_sidecars"
         assert load_trace_qc_summary.__module__ == "spatial_vtk.visualize.qc.overview"
+        assert dashboard_output_status_frame.__module__ == "spatial_vtk.visualize.dashboard.contracts"
         assert dashboard_readiness_summary_frame.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert dashboard_package_readiness_summary_frame.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert display_dashboard_preparation_result.__module__ == "spatial_vtk.visualize.dashboard.export"
+        assert launch_configured_dashboards_from_notebook_settings.__module__ == "spatial_vtk.visualize.dashboard.launch"
         assert launch_configured_metrics_dashboard.__module__ == "spatial_vtk.visualize.dashboard.launch"
+        assert preview_dashboard_summary_tables.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert callable(dashboard_output_status_frame)
         assert callable(dashboard_readiness_summary_frame)
+        assert callable(dashboard_package_readiness_summary_frame)
+        assert callable(display_dashboard_preparation_result)
+        assert callable(launch_configured_dashboards_from_notebook_settings)
+        assert callable(preview_dashboard_summary_tables)
         assert "spatial_vtk.visualize.dashboard.contracts" not in sys.modules
 
         forbidden_after_light_import = {
@@ -1827,6 +1850,11 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Public helpers exposed by ``spatial_vtk.visualize``" in text
     assert "from spatial_vtk.visualize import (" in text
     import_block = text.split("from spatial_vtk.visualize import (", 1)[1].split(")", 1)[0]
+    assert "dashboard_output_status_frame," in import_block
+    assert "dashboard_readiness_summary_frame," in import_block
+    assert "display_dashboard_preparation_result," in import_block
+    assert "figure_sidecar_status_frame," in import_block
+    assert "launch_configured_dashboards_from_notebook_settings," in import_block
     assert "prepare_configured_dashboard_datasets_from_notebook_settings," in import_block
     assert "write_waveform_comparison_from_notebook_settings," in import_block
     assert "write_configured_dashboard_datasets," not in import_block

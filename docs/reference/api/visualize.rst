@@ -19,6 +19,11 @@ need one visualization family.
 .. code-block:: python
 
    from spatial_vtk.visualize import (
+       dashboard_output_status_frame,
+       dashboard_readiness_summary_frame,
+       display_dashboard_preparation_result,
+       figure_sidecar_status_frame,
+       launch_configured_dashboards_from_notebook_settings,
        prepare_configured_dashboard_datasets_from_notebook_settings,
        write_context_figures_from_outputs,
        write_qc_figures_from_outputs,
