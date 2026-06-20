@@ -557,6 +557,23 @@ def test_notebook_and_waveform_extras_include_runtime_dependencies():
         assert f"  - {dependency}" in environment_text
 
 
+def test_dashboard_extra_names_dashboard_runtime_dependencies():
+    """The advertised dashboard extra should not be empty package metadata."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    text = (root / "pyproject.toml").read_text(encoding="utf-8")
+    dashboard_section = text.split("dashboard = [", maxsplit=1)[1].split("]", maxsplit=1)[0]
+
+    for dependency in (
+        '"branca>=',
+        '"folium>=',
+        '"plotly>=',
+        '"streamlit>=',
+        '"streamlit-folium>=',
+    ):
+        assert dependency in dashboard_section
+
+
 def test_environment_file_covers_tutorial_runtime_modules():
     """The public conda environment should cover the notebook runtime surface."""
 
