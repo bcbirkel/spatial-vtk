@@ -103,6 +103,9 @@ Changelog
     direct ``resolve_output_path(...)`` snippets and display resolved metric
     plans through ``MetricPlan.summary_frame()`` instead of raw dataclass
     printing.
+  - IO API and Python workflow docs now list ``metric_plan_from_config`` and
+    ``MetricPlan`` as public helpers for inspecting resolved metric settings in
+    notebooks.
   - Spatial API guidance now presents the Step 4 output-status/result helpers
     before the direct spatial-statistics runner, keeping routine notebook docs
     aligned with the large-run driver pattern.

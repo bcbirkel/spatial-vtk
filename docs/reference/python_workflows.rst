@@ -239,6 +239,12 @@ the large-run notebooks.
        and corridor notebooks instead of repeating
        ``events.loc[events["event_id"].isin(...)]`` or first-row label
        lookups in cells.
+   * - ``spatial_vtk.io.metric_plan_from_config`` and
+       ``spatial_vtk.io.MetricPlan``
+     - Resolve metric calculation settings from a config, run scenario, and
+       optional overrides. Display ``MetricPlan.summary_frame()`` in notebooks
+       when checking the active metrics, passbands, components, models,
+       spectral periods, overlap settings, and metric output path.
    * - ``spatial_vtk.config.run_notebook_step_if_needed``
      - Advanced fallback for workflow steps that do not yet have a standard
        result-object ``run_*_step_if_needed()`` method. Display the readiness

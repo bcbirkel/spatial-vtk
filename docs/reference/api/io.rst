@@ -116,6 +116,13 @@ Public helpers exposed by ``spatial_vtk.io``:
      - Return a safe first non-empty value from an optional table column for
        notebook titles, labels, and summaries, with a fallback when the column
        is missing or empty.
+   * - ``metric_plan_from_config`` and ``MetricPlan``
+     - Resolve metric names, passbands, components, models, spectral periods,
+       waveform preprocessing choices, overlap settings, and the configured
+       metric output path from a config or run scenario.
+       ``MetricPlan.summary_frame()`` returns a compact notebook display table,
+       so configuration notebooks can inspect the active metric plan without
+       printing a raw dataclass.
    * - ``load_standard_ingest_workflow_outputs``
      - Return the configured Step 1 output bundle. The result object owns
        status frames, bounded previews, context figure writing, and the

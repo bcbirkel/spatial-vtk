@@ -1422,6 +1422,8 @@ def test_io_api_docs_use_public_workflow_helpers():
         "OutputReadiness",
         "load_configured_input_paths",
         "load_configured_input_tables",
+        "MetricPlan",
+        "metric_plan_from_config",
         "event_display_label",
         "event_ids_from_records",
         "event_label_preview_frame",
@@ -1443,6 +1445,7 @@ def test_io_api_docs_use_public_workflow_helpers():
         assert helper in text
     assert "instead of repeating output-path variables" in text
     assert "metadata row-count summary" in text
+    assert "``MetricPlan.summary_frame()``" in text
     assert "``status_frame()`` and\n       ``output_group_status_frame()`` include clear ``resolved_path`` values\n       plus ``output_key``, ``kind``, ``required``, ``artifact_label``" in text
     assert "``readiness``, ``message``, and ``suggested_action`` columns" in text
     assert "notebooks." in text
@@ -2152,6 +2155,8 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.io.preprocessing_readiness_from_config",
         "spatial_vtk.io.preprocess_waveforms_from_config",
         "spatial_vtk.io.build_record_coverage_from_config",
+        "spatial_vtk.io.metric_plan_from_config",
+        "spatial_vtk.io.MetricPlan",
         "spatial_vtk.qc.load_standard_qc_inputs",
         "spatial_vtk.qc.load_standard_qc_workflow_outputs",
         "spatial_vtk.qc.qc_inventory_readiness_from_config",
@@ -2193,6 +2198,7 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "``display_output_previews()``" in workflows
     assert "run_notebook_step_if_needed" in workflows
     assert "display_notebook_step_result" in workflows
+    assert "MetricPlan.summary_frame()" in workflows
     assert "instead of ``print(result)``" in workflows
     assert "``print(result.summary_message())``" in workflows
     assert "package helper returns a displayable workflow result" in workflows
