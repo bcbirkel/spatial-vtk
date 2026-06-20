@@ -1084,6 +1084,23 @@ def test_metric_workflow_docstrings_prefer_standard_step3_output_helper():
     assert "only in advanced scripts that own\ntheir task table directly" in execution_text
 
 
+def test_preprocessing_docstring_prefers_standard_step1_output_helper():
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "io"
+        / "preprocessing.py"
+    )
+    text = source.read_text(encoding="utf-8")
+
+    assert "from spatial_vtk.io import load_standard_ingest_workflow_outputs" in text
+    assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in text
+    assert "result = ingest_outputs.run_preprocessing_step_if_needed(context=context)" in text
+    assert "only in advanced scripts that\nalready own the event-station records" in text
+    assert 'preprocess_waveform_files("event_stations.csv", "outputs/preprocessed", config=cfg)' not in text
+
+
 def test_metric_gof_docstring_prefers_public_metrics_import():
     source = (
         pathlib.Path(__file__).resolve().parents[1]

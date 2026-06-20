@@ -233,6 +233,10 @@ Changelog
     ``load_standard_metric_workflow_outputs(...)`` and result-owned
     manifest/Slurm methods before documenting lower-level task manifest and
     batch execution primitives for advanced scripts.
+  - Updated the waveform preprocessing docstring so Step 1 examples start
+    with ``load_standard_ingest_workflow_outputs(...)`` and the
+    result-owned preprocessing runner before documenting direct
+    ``preprocess_waveform_files(...)`` calls for advanced scripts.
 
 - **CLI examples and defaults** *(Changed)*
 

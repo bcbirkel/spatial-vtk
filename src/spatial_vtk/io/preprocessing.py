@@ -9,10 +9,13 @@ QC, metric, and figure steps can consume directly.
 
 Usage examples
 --------------
-Preprocess observed and synthetic paths listed in an event-station table:
-  ``preprocess_waveform_files("event_stations.csv", "outputs/preprocessed", config=cfg)``
+Run configured Step 1 waveform preprocessing from a notebook or script:
+  ``from spatial_vtk.io import load_standard_ingest_workflow_outputs``
+  ``ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)``
+  ``result = ingest_outputs.run_preprocessing_step_if_needed(context=context)``
 
-Use explicit preprocessing settings:
+Call ``preprocess_waveform_files()`` directly only in advanced scripts that
+already own the event-station records and output location:
   ``preprocess_waveform_files(records, "outputs/preprocessed", preprocessing=WaveformPreprocessing(lowpass_hz=1.0, resample_hz=20.0))``
 """
 
