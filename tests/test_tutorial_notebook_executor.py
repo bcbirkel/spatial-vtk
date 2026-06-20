@@ -1749,7 +1749,7 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "dashboard_preparation = prepare_configured_dashboard_datasets_from_notebook_settings(" in source
     assert "prepare_locally=False" in source
     assert "display_dashboard_preparation_result(dashboard_preparation, display=display)" in source
-    assert "dashboard_preparation.readiness" in source
+    assert "dashboard_preparation.run_if_needed(" in source
     assert "post_dashboard_preparation = prepare_configured_dashboard_datasets_from_notebook_settings(" in source
     assert "display_dashboard_preparation_result(post_dashboard_preparation, display=display, include_contracts=False)" in source
     assert "dashboard_output_status_frame," not in source
@@ -1760,8 +1760,9 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "dashboard_readiness_summary = dashboard_readiness_summary_frame(cfg=cfg, overwrite=OVERWRITE)" not in source
     assert "display(dashboard_readiness_summary)" not in source
     assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=OVERWRITE)" not in source
-    assert "run_notebook_step_if_needed(" in source
-    assert "write_configured_dashboard_datasets," in source
+    assert "run_notebook_step_if_needed(" not in source
+    assert "write_configured_dashboard_datasets," not in source
+    assert "write_configured_dashboard_datasets(" not in source
     assert "display_dashboard_output_previews," not in source
     assert "post_dashboard_preparation.display_output_previews(nrows=PREVIEW_ROWS, missing=\"skip\")" in source
     assert "preview_dashboard_summary_tables," not in source
@@ -1785,7 +1786,7 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "trace_summary_table" not in source
     assert "Launch options:" not in source
     assert "server_port=dashboard_" not in source
-    assert '"cfg": str(config_path)' in source
+    assert '"cfg": str(config_path)' not in source
     assert "dashboard_outputs = output_group(\"step_07_dashboards\")" not in source
     assert "dashboard_outputs.preview_table(" not in source
     assert "post_dashboard_readiness = dashboard_readiness_summary_frame(cfg=cfg, overwrite=False)" not in source
@@ -1855,7 +1856,7 @@ def test_large_run_notebooks_display_output_readiness_tables() -> None:
             "run_notebook_step_if_needed(",
             "metric_slurm_submission_readiness_from_config(",
         ],
-        "large_run/step_07_large_run_dashboards.ipynb": ["run_notebook_step_if_needed("],
+        "large_run/step_07_large_run_dashboards.ipynb": ["dashboard_preparation.run_if_needed("],
     }
     for relative, snippets in required.items():
         notebook_path = repo_root / "docs" / "examples" / relative

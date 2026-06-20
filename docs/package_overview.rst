@@ -222,7 +222,9 @@ Main areas:
 - ``visualize.context`` for project overview figures
 - ``visualize.qc`` for QC and retention figures
 - ``visualize.waveforms`` for record sections and waveform comparisons
-- ``visualize.dashboard`` for dashboard tables and Streamlit apps
+- ``visualize.dashboard`` for dashboard tables and Streamlit apps, including
+  result-owned ``run_if_needed(...)`` helpers for large-run dashboard dataset
+  preparation
 
 ``cli``
 -------

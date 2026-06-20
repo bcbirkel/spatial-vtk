@@ -298,12 +298,13 @@ writer for notebooks: it calls the bounded dashboard readiness checks, skips
 local preparation when requested for large datasets, and reports the readiness,
 current artifact status, and written paths without requiring notebooks to loop
 over output dictionaries or repeat ``should_run`` branches. Large-run notebooks
-set ``prepare_locally=False`` and pass the returned ``readiness`` object to the
-Slurm-aware preparation cell, so preflight and postflight displays stay on the
-same package helper path. The returned result also retains the config used for
-readiness checks, so notebooks can call ``display_output_previews(nrows=...)``
-instead of resolving dashboard summary paths or passing ``cfg`` into lower-level
-preview helpers.
+set ``prepare_locally=False`` and call the returned result's
+``run_if_needed(...)`` method, so the result object owns the Slurm/local
+execution branch, serializable config argument, and standard dashboard resource
+defaults. The returned result also retains the config used for readiness
+checks, so notebooks can call ``display_output_previews(nrows=...)`` instead of
+resolving dashboard summary paths or passing ``cfg`` into lower-level preview
+helpers.
 
 ``dashboard_summary_table_contracts`` documents which summary table feeds each
 dashboard tab and the required columns for that table. Use it in notebooks next

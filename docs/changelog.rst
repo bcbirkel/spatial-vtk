@@ -109,6 +109,10 @@ Changelog
     result-object methods for quick spatial summaries, GeoJSON region figures,
     waveform comparisons, and region boxplots instead of importing direct
     writer functions in notebooks.
+  - Rewired the large-run Step 7 dashboard build cell to call
+    ``DashboardDatasetPreparationResult.run_if_needed()`` instead of importing
+    the configured dashboard writer and manually passing it to
+    ``run_notebook_step_if_needed``.
   - Rewired the standard Step 5 GeoJSON notebook to call configured input
     result methods for region and corridor figure suites instead of unpacking
     GeoJSON paths, loaded tables, and output groups into notebook variables.
@@ -268,7 +272,8 @@ Changelog
     fields.
   - Updated the large-run dashboard notebook to use the package-owned
     dashboard preparation/display helper for preflight and postflight status,
-    while keeping heavy dataset writes in the Slurm-aware notebook runner.
+    while letting the preparation result own the Slurm-aware dashboard dataset
+    write call.
   - Added a Step 1 ingest metadata summary helper and updated the large-run
     ingest notebook to use it instead of loading prepared metadata tables only
     to print row counts.

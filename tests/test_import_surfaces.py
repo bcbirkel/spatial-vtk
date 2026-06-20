@@ -1526,7 +1526,7 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Maximum trace-summary rows" in text
     assert "Public helpers exposed by ``spatial_vtk.visualize.dashboard``" in text
     assert "Large-run notebooks\nset ``prepare_locally=False``" in text
-    assert "Slurm-aware preparation cell" in text
+    assert "``run_if_needed(...)`` method" in text
     assert "display_output_previews(nrows=...)" in text
     assert "bounded output previews through the\n       returned ``DashboardDatasetPreparationResult``" in text
     assert "Lower-level script helper for observed/synthetic trace-comparison" in text
@@ -1857,6 +1857,8 @@ def test_python_workflow_docs_prefer_metric_figure_suite_wrapper():
     assert "That wrapper owns the figure render gate, metric-table readiness checks" in workflows
     assert "without notebook-local row filtering, figure-context construction, or per-plot path plumbing" in normalized
     assert "DashboardDatasetPreparationResult.display_output_previews()" in workflows
+    assert "DashboardDatasetPreparationResult.run_if_needed()" in workflows
+    assert "the result owns the Slurm/local execution branch" in workflows
     assert "spatial_vtk.metrics.plot.prepare_large_run_metric_figure_context" not in workflows
     assert "spatial_vtk.metrics.plot.metric_rows_for_metrics" not in workflows
     assert "``spatial_vtk.io.load_standard_ingest_workflow_outputs``" in workflows

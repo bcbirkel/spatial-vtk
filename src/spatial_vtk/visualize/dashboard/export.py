@@ -94,6 +94,59 @@ class DashboardDatasetPreparationResult:
             display_fn=display_fn,
         )
 
+    def run_if_needed(
+        self,
+        context: Any,
+        *,
+        residual_mode: str = "logratio",
+        partitioned: bool = True,
+        hex_dist: float = 10.0,
+        hex_az: float = 10.0,
+        format: str = "parquet",
+        replace_existing: bool = True,
+        chunksize: int = 100_000,
+        script_name: str = "step07_dashboard_outputs.slurm",
+        job_name: str = "svtk-step07-dashboards",
+        walltime: str = "04:00:00",
+        memory: str = "32G",
+        cpus: int = 1,
+        run_local: bool | None = None,
+        section: str | None = "compute.slurm",
+        display_fn: Any | None = None,
+    ) -> object:
+        """Run or submit dashboard dataset preparation when outputs are stale.
+
+        Large-run notebooks use this result method so the dashboard
+        preparation result owns the configured writer function, serializable
+        config argument, and standard Slurm defaults.
+        """
+
+        from spatial_vtk.config import run_notebook_step_if_needed
+
+        return run_notebook_step_if_needed(
+            context,
+            self.readiness,
+            write_configured_dashboard_datasets,
+            kwargs={
+                "cfg": _dashboard_config_payload(self.cfg, context),
+                "residual_mode": residual_mode,
+                "partitioned": partitioned,
+                "hex_dist": hex_dist,
+                "hex_az": hex_az,
+                "format": format,
+                "replace_existing": replace_existing,
+                "chunksize": chunksize,
+            },
+            script_name=script_name,
+            job_name=job_name,
+            walltime=walltime,
+            memory=memory,
+            cpus=cpus,
+            run_local=run_local,
+            section=section,
+            display_fn=display_fn,
+        )
+
 
 def display_dashboard_preparation_result(
     result: DashboardDatasetPreparationResult,
@@ -1053,6 +1106,20 @@ def _coerce_dashboard_config(cfg: SpatialVTKConfig | str | Path | None) -> Spati
     if cfg is None or isinstance(cfg, SpatialVTKConfig):
         return cfg
     return SpatialVTKConfig.from_file(cfg)
+
+
+def _dashboard_config_payload(cfg: SpatialVTKConfig | str | Path | None, context: Any | None = None) -> str | None:
+    """Return a JSON-serializable config argument for dashboard worker calls."""
+
+    context_path = getattr(context, "config_path", None)
+    if context_path is not None:
+        return str(context_path)
+    if isinstance(cfg, (str, Path)):
+        return str(cfg)
+    cfg_path = getattr(cfg, "config_path", None)
+    if cfg_path is not None:
+        return str(cfg_path)
+    return None
 
 
 def _clear_dashboard_metric_dataset(root: Path) -> None:

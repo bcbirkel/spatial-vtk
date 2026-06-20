@@ -2762,7 +2762,7 @@ outputs:
     assert readiness.summary_frame().equals(summary)
 
 
-def test_notebook_dashboard_preparation_can_skip_local_writes(tmp_path):
+def test_notebook_dashboard_preparation_can_skip_local_writes(tmp_path, monkeypatch):
     """Standard notebooks should get readiness/status frames without writing large dashboards."""
 
     config_path = tmp_path / "spatial-vtk.yaml"
@@ -2789,6 +2789,75 @@ outputs:
     assert not result.summary_frame().empty
     assert not result.status_frame().empty
     assert result.written_frame().empty
+
+    calls: list[dict[str, object]] = []
+
+    def fake_run_notebook_step_if_needed(
+        context,
+        readiness,
+        function,
+        *,
+        kwargs,
+        script_name,
+        job_name,
+        walltime,
+        memory,
+        cpus,
+        run_local,
+        section,
+        display_fn,
+    ):
+        calls.append(
+            {
+                "context": context,
+                "readiness": readiness,
+                "function": function,
+                "kwargs": kwargs,
+                "script_name": script_name,
+                "job_name": job_name,
+                "walltime": walltime,
+                "memory": memory,
+                "cpus": cpus,
+                "run_local": run_local,
+                "section": section,
+                "display_fn": display_fn,
+            }
+        )
+        return "dashboard-run-result"
+
+    monkeypatch.setattr("spatial_vtk.config.run_notebook_step_if_needed", fake_run_notebook_step_if_needed)
+    context = types.SimpleNamespace(config_path=config_path)
+
+    assert result.run_if_needed(
+        context,
+        partitioned=False,
+        format="csv",
+        chunksize=250,
+        memory="16G",
+    ) == "dashboard-run-result"
+
+    assert len(calls) == 1
+    call = calls[0]
+    assert call["context"] is context
+    assert call["readiness"] is result.readiness
+    assert call["function"].__name__ == "write_configured_dashboard_datasets"
+    assert call["kwargs"] == {
+        "cfg": str(config_path),
+        "residual_mode": "logratio",
+        "partitioned": False,
+        "hex_dist": 10.0,
+        "hex_az": 10.0,
+        "format": "csv",
+        "replace_existing": True,
+        "chunksize": 250,
+    }
+    assert call["script_name"] == "step07_dashboard_outputs.slurm"
+    assert call["job_name"] == "svtk-step07-dashboards"
+    assert call["walltime"] == "04:00:00"
+    assert call["memory"] == "16G"
+    assert call["cpus"] == 1
+    assert call["run_local"] is None
+    assert call["section"] == "compute.slurm"
 
 
 def test_notebook_dashboard_preparation_delegates_configured_writer(tmp_path):

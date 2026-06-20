@@ -616,8 +616,8 @@ Step 7: Dashboard Datasets
      - compact tab-level readiness plus detailed status frames. Standard
        tutorial notebooks should prefer the preparation helper below so they do
        not repeat ``should_run`` branches inline; large-run
-       notebooks pass the same readiness object to
-       ``run_notebook_step_if_needed`` for Slurm/local execution.
+       notebooks call ``DashboardDatasetPreparationResult.run_if_needed()`` so
+       the result owns the Slurm/local execution branch.
    * - Preview dashboard outputs without loading full tab inputs
      - ``DashboardDatasetPreparationResult.display_output_previews()``,
        ``spatial_vtk.visualize.dashboard.display_dashboard_output_previews``,
@@ -633,13 +633,17 @@ Step 7: Dashboard Datasets
        dashboard artifacts are replaced so stale partitions or stale
        CSV/Parquet summary files do not mix with the current run. The notebook
        preparation helper owns local-skip/current/rebuild decisions and returns
-       readiness, status, and written-output frames for display. Partitioned
-       path-backed metric inputs are streamed in ``SVTK_DASHBOARD_CHUNKSIZE``
-       row batches so large-run dashboard preparation does not have to
-       materialize the full ``metrics_long`` table before writing dashboard
-       partitions. Summary tables are then built one dashboard partition at a
-       time so exact medians, IQRs, and unique counts do not require loading the
-       full dashboard metric dataset. Dashboard startup/readiness checks inspect
+       readiness, status, and written-output frames for display. The returned
+       ``DashboardDatasetPreparationResult`` also owns the Slurm-aware
+       ``run_if_needed(...)`` call used by large-run notebooks, including the
+       configured writer function, serializable config path, and standard
+       dashboard resource defaults. Partitioned path-backed metric inputs are
+       streamed in ``SVTK_DASHBOARD_CHUNKSIZE`` row batches so large-run
+       dashboard preparation does not have to materialize the full
+       ``metrics_long`` table before writing dashboard partitions. Summary
+       tables are then built one dashboard partition at a time so exact
+       medians, IQRs, and unique counts do not require loading the full
+       dashboard metric dataset. Dashboard startup/readiness checks inspect
        summary value and map-coordinate columns with projected chunk scans, so
        they can report schema/value/map readiness without materializing complete
        summary tables. The metrics dashboard loads the primary
