@@ -501,6 +501,7 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         """
         import sys
 
+        import spatial_vtk.config
         import spatial_vtk.qc
         import spatial_vtk.qc.build
         import spatial_vtk.io
@@ -519,6 +520,11 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
             "pandas",
             "numpy",
             "yaml",
+            "spatial_vtk.config.compute",
+            "spatial_vtk.config.metrics",
+            "spatial_vtk.config.notebook",
+            "spatial_vtk.config.outputs",
+            "spatial_vtk.config.runtime",
             "spatial_vtk.metrics.workflow.configured",
             "spatial_vtk.metrics.workflow.execution",
             "spatial_vtk.metrics.workflow.outputs",
@@ -551,6 +557,7 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         if loaded:
             raise SystemExit(f"unexpected eager imports: {sorted(loaded)}")
 
+        from spatial_vtk.config import abbreviate_model, display_label, metric_display_name
         from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
         from spatial_vtk.io import OutputGroup, output_status_rows
         from spatial_vtk.metrics import StandardMetricWorkflowOutputResult, load_standard_metric_workflow_outputs
@@ -560,6 +567,10 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         from spatial_vtk.visualize.qc import load_trace_qc_summary
         from spatial_vtk.visualize.dashboard import dashboard_readiness_summary_frame, launch_configured_metrics_dashboard
 
+        assert abbreviate_model.__module__ == "spatial_vtk.config.naming"
+        assert display_label.__module__ == "spatial_vtk.config.labels"
+        assert metric_display_name.__module__ == "spatial_vtk.config.labels"
+        assert display_label("log2_residual") == "log2(observed / synthetic)"
         assert StandardMetricWorkflowOutputResult.__module__ == "spatial_vtk.metrics.workflow.standard"
         assert load_standard_metric_workflow_outputs.__module__ == "spatial_vtk.metrics.workflow.standard"
         assert OutputGroup.__module__ == "spatial_vtk.io.output_paths"
@@ -580,6 +591,11 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
             "pandas",
             "numpy",
             "yaml",
+            "spatial_vtk.config.compute",
+            "spatial_vtk.config.metrics",
+            "spatial_vtk.config.notebook",
+            "spatial_vtk.config.outputs",
+            "spatial_vtk.config.runtime",
             "spatial_vtk.metrics.workflow.configured",
             "spatial_vtk.metrics.workflow.execution",
             "spatial_vtk.metrics.workflow.outputs",

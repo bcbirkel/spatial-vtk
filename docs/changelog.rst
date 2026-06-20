@@ -354,6 +354,9 @@ Changelog
     ``spatial_vtk.visualize.waveforms`` resolve public figure helpers lazily so
     importing the stable visualization subpackages no longer requires NumPy,
     pandas, or plotting modules before a figure helper is used.
+  - Made ``spatial_vtk.config`` resolve public config helpers lazily and
+    decoupled display-label helpers from runtime config imports so lightweight
+    label utilities remain importable without YAML or pandas.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 

@@ -18,10 +18,10 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 import re
+from typing import TYPE_CHECKING
 
-import pandas as pd
-
-from spatial_vtk.config.metrics import VALID_TRANSFORMS
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 ACRONYM_LABELS: dict[str, str] = {
@@ -216,6 +216,14 @@ VALUE_COLUMN_ORDER: tuple[str, ...] = (
     "value_obs",
     "med_value_syn",
     "value_syn",
+)
+
+VALID_TRANSFORMS = (
+    "residual",
+    "log2_residual",
+    "ln_residual",
+    "anderson_2004_gof",
+    "olsen_mayhew_gof",
 )
 
 
