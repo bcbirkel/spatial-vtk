@@ -296,6 +296,12 @@ outputs:
     summary = dashboard_readiness_summary_frame(cfg=cfg)
     assert "artifact_role" in summary.columns
     assert "artifact_label" in summary.columns
+    assert "dashboard_table" in summary.columns
+    assert "required_columns" in summary.columns
+    assert "missing_columns" in summary.columns
+    assert "missing_map_columns" in summary.columns
+    assert "value_columns" in summary.columns
+    assert "nonempty_value_columns" in summary.columns
     assert "resolved_path" in summary.columns
     assert "suggested_action" in summary.columns
     labels = set(summary["artifact_label"])
@@ -304,9 +310,23 @@ outputs:
     assert "station_rollup dashboard summary table" in labels
     assert "QC trace-summary table" in labels
 
+    summary_by_item = summary.set_index("item")
+    assert summary_by_item.loc["station_rollup", "dashboard_table"] == "station_rollup"
+    assert "station" in summary_by_item.loc["station_rollup", "required_columns"]
+    assert "coordinate columns" in summary_by_item.loc["station_rollup", "map_message"]
+    assert "sta_lat" in summary_by_item.loc["station_rollup", "missing_map_columns"]
+    assert summary_by_item.loc["model_metric_band", "value_columns"] == "med_log2_residual"
+    assert summary_by_item.loc["model_metric_band", "nonempty_value_columns"] == "med_log2_residual"
+    assert "dist_bin_km" in summary_by_item.loc["path_hex", "missing_columns"]
+    assert "event_id" in summary_by_item.loc["qc_trace_summary", "missing_columns"]
+
     summary_display = _select_readiness_columns(summary, SUMMARY_READINESS_DISPLAY_COLUMNS)
     assert "artifact_label" in summary_display.columns
+    assert "dashboard_table" in summary_display.columns
+    assert "missing_columns" in summary_display.columns
+    assert "missing_map_columns" in summary_display.columns
     assert "nonempty_value_families" in summary_display.columns
+    assert "nonempty_value_columns" in summary_display.columns
     assert "suggested_action" in summary_display.columns
     assert "resolved_path" in summary_display.columns
     assert "path" not in summary_display.columns

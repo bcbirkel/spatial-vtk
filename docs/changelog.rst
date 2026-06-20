@@ -50,6 +50,10 @@ Changelog
   - Metrics dashboard startup now emits a single summary-readiness warning that
     includes the specific primary summary-table blocker before full dashboard
     summaries are loaded.
+  - Compact dashboard readiness summaries now preserve dashboard-table labels,
+    required columns, missing columns, missing map-coordinate columns, and
+    non-empty value columns so notebooks can show the exact blocker for each
+    dashboard artifact.
   - This lets notebooks, generated workers, Slurm scripts, and lightweight
     Python drivers resolve registered outputs from one explicit config file
     without first activating global config state.
