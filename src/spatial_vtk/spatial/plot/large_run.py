@@ -2086,6 +2086,28 @@ class SpatialFigureSuiteResult:
     context: SpatialFigureContext
     rows: tuple[dict[str, Any], ...]
 
+    def context_status_frames(self) -> dict[str, pd.DataFrame]:
+        """Return compact spatial figure context audit frames for notebooks."""
+
+        return {
+            "context_status": self.context.status_frame(),
+            "dimension_summary": self.context.dimension_summary_frame(),
+            "spectral_metric_contract": self.context.spectral_metric_contract_status(),
+        }
+
+    def display_context_status(
+        self,
+        *,
+        display: Callable[[pd.DataFrame], Any] | None = None,
+    ) -> dict[str, pd.DataFrame]:
+        """Display and return the standard spatial figure context audit frames."""
+
+        frames = self.context_status_frames()
+        if display is not None:
+            for frame in frames.values():
+                display(frame)
+        return frames
+
     def status_frame(self) -> pd.DataFrame:
         """Return one row per spatial figure family rendered or skipped."""
 

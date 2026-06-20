@@ -76,6 +76,9 @@ Changelog
   - Added ``MetricFigureSuiteResult.display_context_status(...)`` so the
     large-run Step 3 notebook can display metric figure context audit tables
     without branching on ``metric_figure_suite.context.ready`` in notebook code.
+  - Added ``SpatialFigureSuiteResult.display_context_status(...)`` so the
+    large-run Step 4 notebook can display spatial figure context audit tables
+    without extracting ``spatial_figure_suite.context`` in notebook code.
   - Spatial statistics settings now support configured ``metrics_table`` and
     ``station_metadata_table`` inputs plus metric lists, so Step 4 notebooks can
     run through the standard result/status wrapper without passing ad hoc

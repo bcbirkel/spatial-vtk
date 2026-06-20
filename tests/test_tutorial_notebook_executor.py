@@ -2512,14 +2512,15 @@ def test_large_run_step04_spatial_figures_show_spectral_contract_status() -> Non
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "spatial_figure_suite = write_large_run_spatial_figure_suite_from_notebook_settings(" in source
-    assert "spatial_figures = spatial_figure_suite.context" in source
+    assert "spatial_figures = spatial_figure_suite.context" not in source
+    assert "spatial_figure_suite.display_context_status(display=display)" in source
     assert 'figure_subdir="metrics"' in source
     assert "SPATIAL_FIGURE_SETTINGS.figure_dir" not in source
     assert "METRICS_FIGURE_DIR" not in source
     assert 'figures_dir / "metrics"' not in source
-    assert "display(spatial_figures.status_frame())" in source
-    assert "display(spatial_figures.dimension_summary_frame())" in source
-    assert "display(spatial_figures.spectral_metric_contract_status())" in source
+    assert "display(spatial_figures.status_frame())" not in source
+    assert "display(spatial_figures.dimension_summary_frame())" not in source
+    assert "display(spatial_figures.spectral_metric_contract_status())" not in source
     assert "display(spatial_figure_suite.status_frame())" in source
 
 
@@ -2740,7 +2741,7 @@ def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> 
         "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": (
             "write_large_run_spatial_figure_suite_from_notebook_settings(",
             "spatial_figure_suite.status_frame()",
-            "spatial_figures = spatial_figure_suite.context",
+            "spatial_figure_suite.display_context_status(display=display)",
         ),
     }
     for relative_path, snippets in requirements.items():

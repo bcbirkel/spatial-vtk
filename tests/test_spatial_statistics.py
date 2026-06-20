@@ -90,6 +90,7 @@ from spatial_vtk.spatial.plot.correlation import (
 from spatial_vtk.spatial.plot.large_run import (
     RegionBoxplotResult,
     SpatialFigureContext,
+    SpatialFigureSuiteResult,
     StandardAdditionalPlottingFigureResult,
     StandardAdditionalPlottingInputResult,
     StandardGeoJSONCorridorFigureResult,
@@ -3158,6 +3159,27 @@ def test_spatial_figure_context_reports_spectral_contract_by_table(tmp_path: Pat
     assert spectral.loc[("metric_field", "PSA"), "legacy_passband_row_count"] == 2
     assert spectral.loc[("event_centered_residuals", "PSA"), "status"] == "ok"
     assert spectral.loc[("event_centered_residuals", "PSA"), "broadband_row_count"] == 3
+
+
+def test_spatial_figure_suite_result_displays_context_status_frames() -> None:
+    """Spatial figure-suite results should own context status display plumbing."""
+
+    class FakeContext:
+        def status_frame(self) -> pd.DataFrame:
+            return pd.DataFrame([{"frame": "status"}])
+
+        def dimension_summary_frame(self) -> pd.DataFrame:
+            return pd.DataFrame([{"frame": "dimension"}])
+
+        def spectral_metric_contract_status(self) -> pd.DataFrame:
+            return pd.DataFrame([{"frame": "spectral"}])
+
+    result = SpatialFigureSuiteResult(context=FakeContext(), rows=())
+    displayed: list[pd.DataFrame] = []
+    frames = result.display_context_status(display=displayed.append)
+
+    assert list(frames) == ["context_status", "dimension_summary", "spectral_metric_contract"]
+    assert [frame["frame"].iloc[0] for frame in displayed] == ["status", "dimension", "spectral"]
 
 
 def test_psa_period_sheet_existing_file_writes_panel_source_sidecars(tmp_path: Path) -> None:
