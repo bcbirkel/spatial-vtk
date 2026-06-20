@@ -193,7 +193,7 @@ Public plotting helpers exposed by ``spatial_vtk.metrics.plot``:
    * - ``plot_phase_delay_vs_distance``
      - Plot traveltime or phase-delay residuals against distance.
    * - ``plot_metric_trend`` and ``plot_score_trends``
-     - Plot generic metric trends and optional GOF score diagnostics.
+     - Plot custom metric trends and optional GOF score diagnostics.
    * - ``plot_vs30_scatter`` and ``plot_geology_boxplot``
      - Plot site-condition diagnostics against Vs30 or geologic classes.
    * - ``plot_model_metric_heatmap`` and ``plot_winner_heatmap``

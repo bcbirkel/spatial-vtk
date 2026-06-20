@@ -979,6 +979,8 @@ def test_metrics_api_docs_use_public_plot_entry_point():
         1,
     )[0]
     assert "metric_rows_for_metrics" not in helper_table
+    assert "Plot custom metric trends and optional GOF score diagnostics." in helper_table
+    assert "Plot generic metric trends" not in helper_table
     assert "Notebook-facing metric plotting should use the result-object and suite helpers" in text
     assert "Advanced Figure Extension Helpers" in text
     assert "not the preferred tutorial or notebook entry points" in text
@@ -1132,7 +1134,8 @@ def test_config_api_docs_include_compute_helpers():
     assert "``NotebookRunContext`` and ``notebook_run_context``" in text
     assert "``run_notebook_step_if_needed``" in text
     assert "``notebook_step_result`` and ``notebook_step_result_frame``" in text
-    assert "custom fallback steps that do not yet have a standard" in text
+    assert "one-off custom steps outside the standard workflow result\n       objects" in text
+    assert "Prefer the standard result object's ``run_*_step_if_needed()``" in text
     assert "``display_notebook_step_result``" in text
     assert "``summary_frame()``" in text
     assert "``NotebookFigureSettings`` and ``notebook_figure_settings``" in text
@@ -1599,6 +1602,8 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     )[0]
     assert "prepare_spatial_figure_context" not in helper_table
     assert "SpatialFigureContext" not in helper_table
+    assert "Plot custom spatial metric distributions from prepared tables." in helper_table
+    assert "Plot generic spatial metric distributions" not in helper_table
     assert "Public helpers exposed by ``spatial_vtk.spatial.map``" in text
     for helper in (
         "plot_station_metric_map",
@@ -2275,8 +2280,10 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "geojson_region_summaries_path" in workflows
     assert "descriptive keys are the public notebook contract" in workflows
     assert "docs should not depend on generic" in workflows
-    assert "Use ``run_notebook_step_if_needed`` directly only for custom" in workflows
-    assert "Advanced fallback for workflow steps that do not yet have a standard" in workflows
+    assert "Use ``run_notebook_step_if_needed`` directly only for one-off custom" in workflows
+    assert "orchestration outside the standard result-object methods" in workflows
+    assert "Advanced helper for one-off custom workflow steps outside the standard" in workflows
+    assert "workflow steps that do not yet have a standard" not in workflows
     assert "Preview dashboard summary tables without loading full tab inputs" in workflows
     assert "without resolving dashboard summary paths in cells" in normalized_workflows
     assert "compatibility aliases" not in workflows
@@ -2578,6 +2585,7 @@ def test_package_overview_points_to_public_workflow_helpers():
         "``summarize_metric_snapshot_tasks_from_config``",
         "``metric_manifest_batch_status`` and ``metric_slurm_submission_readiness``",
         "``write_metric_outputs_from_config``",
+        "``write_metric_outputs_from_config`` for explicit downstream metric",
         "Start with public helpers from ``spatial_vtk.spatial``",
         "``load_standard_spatial_workflow_output_status``",
         "result-owned summary/derived-output runner gates",
@@ -2602,6 +2610,7 @@ def test_package_overview_points_to_public_workflow_helpers():
     )
     for snippet in forbidden:
         assert snippet not in text
+    assert "lower-level downstream metric" not in text
 
     future = (docs.parent / "future_features.rst").read_text(encoding="utf-8")
     assert "public ``spatial_vtk.spatial`` GeoJSON and corridor" in future

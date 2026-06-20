@@ -149,9 +149,9 @@ Start with public helpers from ``spatial_vtk.metrics``:
   resumable large-run metric arrays
 - ``write_metrics_slurm_script_from_config`` and
   ``merge_metric_batches_from_config`` for batch execution handoffs
-- ``write_metric_outputs_from_config`` for lower-level downstream metric,
-  dashboard, and spatial-statistics table exports when you are not using the
-  standard workflow result object
+- ``write_metric_outputs_from_config`` for explicit downstream metric,
+  dashboard, and spatial-statistics table exports in scripts that are not using
+  the standard workflow result object
 - ``spatial_vtk.metrics.plot`` for metric-specific diagnostic figures
 
 ``spatial``

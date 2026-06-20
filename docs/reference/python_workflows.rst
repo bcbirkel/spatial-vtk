@@ -19,8 +19,8 @@ for terminal-oriented workflows and generated batch scripts.
 3. Call that result object's ``run_*_step_if_needed()`` methods. Those methods
    own the readiness check plus the local/Slurm execution branch while the
    notebook cell keeps resource controls visible.
-4. Use ``run_notebook_step_if_needed`` directly only for custom
-   orchestration that does not yet have a standard result-object method.
+4. Use ``run_notebook_step_if_needed`` directly only for one-off custom
+   orchestration outside the standard result-object methods.
 5. Preview bounded tables after outputs exist; do not load full QC or metric
    inventories into the notebook just to check progress.
 
@@ -249,12 +249,13 @@ the large-run notebooks.
        when checking the active metrics, passbands, components, models,
        spectral periods, overlap settings, and metric output path.
    * - ``spatial_vtk.config.run_notebook_step_if_needed``
-     - Advanced fallback for workflow steps that do not yet have a standard
-       result-object ``run_*_step_if_needed()`` method. Display the readiness
-       table, then run or submit a Python package workflow function only when
-       work is needed. Pass the imported package function directly; fully
-       qualified import-path strings are retained only for compatibility and
-       generated Slurm workers.
+     - Advanced helper for one-off custom workflow steps outside the standard
+       result-object ``run_*_step_if_needed()`` methods. Prefer the standard
+       result object for tutorial workflows; use this helper when a custom
+       script still needs the same readiness table plus local/Slurm execution
+       branch. Pass the imported package function directly; fully qualified
+       import-path strings are retained only for compatibility and generated
+       Slurm workers.
    * - ``spatial_vtk.config.notebook_step_result``
      - Return a compact JSON-friendly status dictionary for current/skipped
        notebook workflow steps. Use this with ``run_notebook_step_if_needed``

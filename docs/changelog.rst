@@ -32,6 +32,9 @@ Changelog
     ``--batch-size``, and ``--batch-count`` so Slurm array sizing is explicit.
   - Reworded metric workflow Slurm/task docs to describe metric manifest
     arrays instead of generic Slurm scripts.
+  - Clarified public workflow docs so lower-level notebook step helpers and
+    custom plot helpers are described as explicit/custom-script tools, while
+    standard notebooks are steered toward result-object methods.
   - Aligned API docs, generated CLI reference, workflow guides, README
     install guidance, and tutorial notebooks with the stabilized public import
     surfaces and result-object workflow.

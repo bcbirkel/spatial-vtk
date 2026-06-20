@@ -92,8 +92,9 @@ the stable package surface below.
        locally, or write/submit a Slurm script for the same function.
    * - ``notebook_step_result`` and ``notebook_step_result_frame``
      - Build compact current/skipped status payloads and labelled display
-       frames for custom fallback steps that do not yet have a standard
-       result-object method. Use these helpers instead of hand-written
+       frames for one-off custom steps outside the standard workflow result
+       objects. Prefer the standard result object's ``run_*_step_if_needed()``
+       methods when they exist; use these helpers instead of hand-written
        dictionaries with generic ``path`` keys in notebook cells.
    * - ``display_notebook_step_result``
      - Display a compact table for skipped/current step dictionaries, Slurm

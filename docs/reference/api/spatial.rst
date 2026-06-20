@@ -350,7 +350,7 @@ Public plotting helpers and notebook workflow loaders:
    * - ``plot_cluster_solution_scores`` and ``plot_cluster_feature_heatmap``
      - Plot clustering diagnostics and feature summaries.
    * - ``boxplot``, ``scatterplot``, and ``heatmap``
-     - Plot generic spatial metric distributions from prepared tables.
+     - Plot custom spatial metric distributions from prepared tables.
    * - ``plot_geology_contrast`` and ``plot_path_bin_summary``
      - Plot geologic-class and path-bin diagnostic tables.
    * - ``plot_pca_explained_variance`` and ``plot_pca_feature_loadings``
