@@ -19,8 +19,10 @@ need one visualization family.
 .. code-block:: python
 
    from spatial_vtk.visualize import (
+       dashboard_output_readiness,
        dashboard_output_status_frame,
        dashboard_readiness_summary_frame,
+       display_dashboard_output_previews,
        display_dashboard_preparation_result,
        figure_sidecar_status_frame,
        launch_configured_dashboards_from_notebook_settings,
@@ -85,6 +87,17 @@ Public helpers exposed by ``spatial_vtk.visualize``:
    * - ``figure_sidecar_status_frame`` and
        ``read_figure_sidecar_metadata``
      - Inspect saved figure provenance without loading large sidecar CSV files.
+   * - ``dashboard_readiness_summary_frame``,
+       ``dashboard_output_status_frame``, and
+       ``dashboard_output_readiness``
+     - Inspect dashboard dataset readiness with bounded status tables and a
+       reusable rebuild decision object without loading full metric or QC
+       inventories.
+   * - ``display_dashboard_output_previews`` and
+       ``preview_dashboard_summary_tables``
+     - Display bounded previews of configured dashboard outputs without
+       resolving table paths or loading full large-run dashboard inputs in
+       notebooks.
    * - ``prepare_configured_dashboard_datasets_from_notebook_settings``
      - Check dashboard readiness and optionally write configured dashboard
        datasets from one notebook-facing helper.
@@ -96,10 +109,6 @@ Public helpers exposed by ``spatial_vtk.visualize``:
      - Display the standard dashboard preparation readiness, status, written
        output, and summary-contract tables without notebook-local formatting
        code.
-   * - ``dashboard_readiness_summary_frame`` and
-       ``dashboard_output_status_frame``
-     - Inspect dashboard readiness with bounded schema, row-count, and map-data
-       checks.
    * - ``launch_configured_dashboards_from_notebook_settings``
      - Launch requested dashboards or show terminal fallback commands from
        config-backed notebook settings.

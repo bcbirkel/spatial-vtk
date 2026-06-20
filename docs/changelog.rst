@@ -67,6 +67,9 @@ Changelog
   - Added regression coverage that compares public API helper tables against
     package ``__all__`` exports for IO, QC, metrics plotting, spatial,
     spatial plotting/maps, visualization, and dashboard entry points.
+  - Expanded ``spatial_vtk.visualize`` to expose dashboard readiness decisions
+    and dashboard output-preview display helpers, then updated the Python
+    workflow guide to use those top-level notebook-facing dashboard imports.
   - Spatial statistics settings now support configured ``metrics_table`` and
     ``station_metadata_table`` inputs plus metric lists, so Step 4 notebooks can
     run through the standard result/status wrapper without passing ad hoc

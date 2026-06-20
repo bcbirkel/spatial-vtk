@@ -661,9 +661,9 @@ paths without requiring global config activation.
      - Python entry point
      - Standard outputs
    * - Check dashboard dataset readiness without loading full inventories
-     - ``spatial_vtk.visualize.dashboard.dashboard_readiness_summary_frame``,
-       ``spatial_vtk.visualize.dashboard.dashboard_output_status_frame``, and
-       ``spatial_vtk.visualize.dashboard.dashboard_output_readiness``
+     - ``spatial_vtk.visualize.dashboard_readiness_summary_frame``,
+       ``spatial_vtk.visualize.dashboard_output_status_frame``, and
+       ``spatial_vtk.visualize.dashboard_output_readiness``
      - compact tab-level readiness plus detailed status frames. Standard
        tutorial notebooks should prefer the preparation helper below so they do
        not repeat ``should_run`` branches inline; large-run
@@ -671,15 +671,15 @@ paths without requiring global config activation.
        the result owns the Slurm/local execution branch.
    * - Preview dashboard outputs without loading full tab inputs
      - ``DashboardDatasetPreparationResult.display_output_previews()``,
-       ``spatial_vtk.visualize.dashboard.display_dashboard_output_previews``,
-       and ``spatial_vtk.visualize.dashboard.preview_dashboard_summary_tables``
+       ``spatial_vtk.visualize.display_dashboard_output_previews``, and
+       ``spatial_vtk.visualize.preview_dashboard_summary_tables``
      - bounded samples from the configured ``dashboard_summaries`` directory
        and ``metrics_long`` table after readiness checks pass, so notebooks can
        inspect dashboard inputs without resolving paths or repeating preview
        conditionals in cells
    * - Write dashboard-ready row and summary datasets
-     - ``spatial_vtk.visualize.dashboard.prepare_configured_dashboard_datasets_from_notebook_settings``
-       and ``spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets``
+     - ``spatial_vtk.visualize.prepare_configured_dashboard_datasets_from_notebook_settings``
+       and ``spatial_vtk.visualize.write_configured_dashboard_datasets``
      - dashboard metric dataset root and dashboard summary table root; standard
        dashboard artifacts are replaced so stale partitions or stale
        CSV/Parquet summary files do not mix with the current run. The notebook
@@ -710,11 +710,11 @@ paths without requiring global config activation.
        do not serialize more rows than intended.
    * - Launch dashboards from Python
      - ``spatial_vtk.config.notebook_dashboard_launch_commands``,
-       ``spatial_vtk.visualize.dashboard.launch_configured_dashboards_from_notebook_settings``,
-       ``spatial_vtk.visualize.dashboard.launch_configured_metrics_dashboard``,
-       ``spatial_vtk.visualize.dashboard.launch_configured_qc_dashboard``,
-       ``spatial_vtk.visualize.dashboard.launch_metrics_dashboard``, and
-       ``spatial_vtk.visualize.dashboard.launch_qc_dashboard``
+       ``spatial_vtk.visualize.launch_configured_dashboards_from_notebook_settings``,
+       ``spatial_vtk.visualize.launch_configured_metrics_dashboard``,
+       ``spatial_vtk.visualize.launch_configured_qc_dashboard``,
+       ``spatial_vtk.visualize.launch_metrics_dashboard``, and
+       ``spatial_vtk.visualize.launch_qc_dashboard``
      - local Streamlit processes configured from the same output registry,
        optional terminal fallback commands, and a bounded
        launch-settings status frame plus launch-result status frame showing

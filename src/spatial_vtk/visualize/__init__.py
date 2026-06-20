@@ -17,10 +17,12 @@ from typing import Any
 
 _EXPORT_MODULES = {
     "build_dashboard_summaries": "spatial_vtk.visualize.dashboard",
+    "dashboard_output_readiness": "spatial_vtk.visualize.dashboard",
     "dashboard_output_status_frame": "spatial_vtk.visualize.dashboard",
     "dashboard_readiness_summary_frame": "spatial_vtk.visualize.dashboard",
     "dashboard_summary_input_columns": "spatial_vtk.visualize.dashboard",
     "display_dashboard_preparation_result": "spatial_vtk.visualize.dashboard",
+    "display_dashboard_output_previews": "spatial_vtk.visualize.dashboard",
     "launch_configured_dashboards_from_notebook_settings": "spatial_vtk.visualize.dashboard",
     "launch_configured_metrics_dashboard": "spatial_vtk.visualize.dashboard",
     "launch_configured_qc_dashboard": "spatial_vtk.visualize.dashboard",

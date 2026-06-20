@@ -615,8 +615,10 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         from spatial_vtk.spatial import run_spatial_statistics_workflow
         from spatial_vtk.spatial.calculate import load_standard_spatial_workflow_output_status
         from spatial_vtk.visualize import (
+            dashboard_output_readiness,
             dashboard_output_status_frame,
             dashboard_readiness_summary_frame,
+            display_dashboard_output_previews,
             display_dashboard_preparation_result,
             figure_sidecar_status_frame,
             launch_configured_dashboards_from_notebook_settings,
@@ -646,16 +648,20 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         assert write_figure_row_sidecar.__module__ == "spatial_vtk.visualize.figure_sidecars"
         assert figure_sidecar_status_frame.__module__ == "spatial_vtk.visualize.figure_sidecars"
         assert load_trace_qc_summary.__module__ == "spatial_vtk.visualize.qc.overview"
+        assert dashboard_output_readiness.__module__ == "spatial_vtk.visualize.dashboard.contracts"
         assert dashboard_output_status_frame.__module__ == "spatial_vtk.visualize.dashboard.contracts"
         assert dashboard_readiness_summary_frame.__module__ == "spatial_vtk.visualize.dashboard.contracts"
         assert dashboard_package_readiness_summary_frame.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert display_dashboard_output_previews.__module__ == "spatial_vtk.visualize.dashboard.contracts"
         assert display_dashboard_preparation_result.__module__ == "spatial_vtk.visualize.dashboard.export"
         assert launch_configured_dashboards_from_notebook_settings.__module__ == "spatial_vtk.visualize.dashboard.launch"
         assert launch_configured_metrics_dashboard.__module__ == "spatial_vtk.visualize.dashboard.launch"
         assert preview_dashboard_summary_tables.__module__ == "spatial_vtk.visualize.dashboard.contracts"
+        assert callable(dashboard_output_readiness)
         assert callable(dashboard_output_status_frame)
         assert callable(dashboard_readiness_summary_frame)
         assert callable(dashboard_package_readiness_summary_frame)
+        assert callable(display_dashboard_output_previews)
         assert callable(display_dashboard_preparation_result)
         assert callable(launch_configured_dashboards_from_notebook_settings)
         assert callable(preview_dashboard_summary_tables)
@@ -1890,8 +1896,10 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Public helpers exposed by ``spatial_vtk.visualize``" in text
     assert "from spatial_vtk.visualize import (" in text
     import_block = text.split("from spatial_vtk.visualize import (", 1)[1].split(")", 1)[0]
+    assert "dashboard_output_readiness," in import_block
     assert "dashboard_output_status_frame," in import_block
     assert "dashboard_readiness_summary_frame," in import_block
+    assert "display_dashboard_output_previews," in import_block
     assert "display_dashboard_preparation_result," in import_block
     assert "figure_sidecar_status_frame," in import_block
     assert "launch_configured_dashboards_from_notebook_settings," in import_block
@@ -1922,8 +1930,10 @@ def test_visualize_api_docs_use_public_entry_points():
         "finish_figure_with_sidecar",
         "write_figure_row_sidecar",
         "figure_sidecar_status_frame",
+        "dashboard_output_readiness",
         "write_configured_dashboard_datasets",
         "prepare_configured_dashboard_datasets_from_notebook_settings",
+        "display_dashboard_output_previews",
         "display_dashboard_preparation_result",
         "dashboard_readiness_summary_frame",
         "dashboard_output_status_frame",
@@ -2156,10 +2166,10 @@ def test_reference_docs_map_python_workflow_entry_points():
         "spatial_vtk.spatial.plot.load_standard_geojson_workflow_output_status",
         "run_geojson_summary_step_if_needed",
         "run_corridor_step_if_needed",
-        "spatial_vtk.visualize.dashboard.dashboard_readiness_summary_frame",
-        "spatial_vtk.visualize.dashboard.preview_dashboard_summary_tables",
-        "spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets",
-        "spatial_vtk.visualize.dashboard.prepare_configured_dashboard_datasets_from_notebook_settings",
+        "spatial_vtk.visualize.dashboard_readiness_summary_frame",
+        "spatial_vtk.visualize.preview_dashboard_summary_tables",
+        "spatial_vtk.visualize.write_configured_dashboard_datasets",
+        "spatial_vtk.visualize.prepare_configured_dashboard_datasets_from_notebook_settings",
         "spatial_vtk.config.render_notebook_figure",
     ]
     for helper in required_helpers:
