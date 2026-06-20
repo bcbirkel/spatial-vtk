@@ -1377,11 +1377,15 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "calculate implementation modules are\nimplementation organization" in text
     assert "Start with ``spatial_vtk.spatial`` for spatial-statistics" in text
     assert "from spatial_vtk.spatial import (" in text
+    assert "load_standard_spatial_workflow_output_status" in text
+    assert text.index("load_standard_spatial_workflow_output_status") < text.index("run_spatial_statistics_workflow_from_config")
     assert "run_spatial_statistics_workflow_from_config" in text
     assert "run_geojson_region_summary_workflow_from_config" in text
     assert "run_boundary_corridor_workflow_from_config" in text
     assert "Public helpers exposed by ``spatial_vtk.spatial``" in text
     for helper in (
+        "load_standard_spatial_workflow_output_status",
+        "load_standard_spatial_workflow_outputs",
         "run_spatial_derived_outputs_workflow_from_config",
         "spatial_workflow_failure_frame",
         "spatial_correlation_preview_frame",
@@ -1405,6 +1409,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
         "select_records_by_corridors",
     ):
         assert helper in text
+    assert "Routine notebooks\n       should usually call this through the standard status result above" in text
     assert "remembers the config used to create it" in text
     assert "display_table_previews(nrows=...)" in text
     assert "status result retains its config" in text

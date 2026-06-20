@@ -21,7 +21,8 @@ module names.
 .. code-block:: python
 
    from spatial_vtk.spatial import (
-       run_spatial_statistics_workflow_from_config,
+       load_standard_spatial_workflow_output_status,
+       load_standard_spatial_workflow_outputs,
        run_geojson_region_summary_workflow_from_config,
        run_boundary_corridor_workflow_from_config,
        build_path_table,
@@ -44,10 +45,23 @@ Public helpers exposed by ``spatial_vtk.spatial``:
 
    * - Helper
      - Use
+   * - ``load_standard_spatial_workflow_output_status``
+     - Load lightweight Step 4 output status, readiness gates, Slurm/local
+       runner methods, bounded previews, and quick summary figures without
+       loading large spatial tables in notebook driver cells.
+   * - ``load_standard_spatial_workflow_outputs``
+     - Load the standard Step 4 output-table bundle and build per-metric
+       product summaries without notebook-local output-group table mappings.
+       The returned result also writes the standard Step 4 map and diagnostic
+       figure suites through ``write_map_figures()`` and
+       ``write_diagnostic_figures()``. Pass ``cfg=`` as either a config object
+       or a config file path; the loader resolves all Step 4 paths from that
+       config without requiring active global config state.
    * - ``run_spatial_statistics_workflow_from_config``
      - Build the configured metric-field, event-centered residual,
        station-bias, Moran's I, distance-correlation, clustering, PCA, and
-       geology tables.
+       geology tables from scripts or generated workers. Routine notebooks
+       should usually call this through the standard status result above.
    * - ``run_spatial_derived_outputs_workflow_from_config``
      - Rebuild downstream spatial outputs that depend on existing metric and
        spatial-statistics tables.
@@ -65,14 +79,6 @@ Public helpers exposed by ``spatial_vtk.spatial``:
      - Build the per-metric Step 4 product frame dictionary and compact
        summary/preview display tables from configured spatial workflow
        outputs, keeping metric-specific dataframe loops out of notebooks.
-   * - ``load_standard_spatial_workflow_outputs``
-     - Load the standard Step 4 output-table bundle and build per-metric
-       product summaries without notebook-local output-group table mappings.
-       The returned result also writes the standard Step 4 map and diagnostic
-       figure suites through ``write_map_figures()`` and
-       ``write_diagnostic_figures()``. Pass ``cfg=`` as either a config object
-       or a config file path; the loader resolves all Step 4 paths from that
-       config without requiring active global config state.
    * - ``spatial_metric_table_frame``, ``spatial_metric_product_frames``, and
        ``spatial_pca_product_frames``
      - Select metric-specific rows from Step 4 output tables without repeating
