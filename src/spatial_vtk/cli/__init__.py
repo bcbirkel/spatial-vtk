@@ -1013,9 +1013,25 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         ),
     )
     plan.add_argument("--manifest", action="store_true", help="Write a JSON manifest instead of a task table.")
-    plan.add_argument("--batch-output-dir", metavar="DIR", default=None, help="Batch output directory when writing a manifest. Defaults to outputs/metric_batches.")
-    plan.add_argument("--batch-size", type=int, default=100, help="Tasks per batch when writing a manifest.")
-    plan.add_argument("--batch-count", type=int, default=None, help="Target number of batches when writing a manifest. Overrides --batch-size.")
+    plan.add_argument(
+        "--batch-output-dir",
+        metavar="DIR",
+        default=None,
+        help=(
+            "Directory for per-batch metric row files recorded in the manifest. Defaults to "
+            "the configured outputs.root/metric_batches directory."
+        ),
+    )
+    plan.add_argument("--batch-size", type=int, default=100, help="Metric tasks per manifest batch.")
+    plan.add_argument(
+        "--batch-count",
+        type=int,
+        default=None,
+        help=(
+            "Target number of manifest batches and Slurm array tasks. Overrides --batch-size; "
+            "use this to cap array size, such as --batch-count 100 for a 100-task array."
+        ),
+    )
     plan.add_argument("--qc-table", metavar="PATH", default=None, help="Optional QC inventory recorded in a manifest. Defaults to configured output table 'qc_inventory_overlap' when QC is enabled.")
     plan.add_argument("--no-qc", action="store_true", help="Do not mark planned tasks as QC-filtered by default.")
     plan.add_argument(
@@ -1143,7 +1159,15 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         ),
     )
     cache.add_argument("--cache-root", metavar="DIR", default=None, help="Directory for cached metric-ready waveform .npz files. Defaults to outputs/metric_ready_waveform_cache.")
-    cache.add_argument("--batch-output-dir", metavar="DIR", default=None, help="Batch output directory for the cached manifest. Defaults to outputs/metric_batches_cached.")
+    cache.add_argument(
+        "--batch-output-dir",
+        metavar="DIR",
+        default=None,
+        help=(
+            "Directory for per-batch metric row files recorded in the cached manifest. Defaults to "
+            "the configured outputs.root/metric_batches_cached directory."
+        ),
+    )
     cache.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default paths.")
     cache.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     cache.add_argument("--overwrite", action="store_true", help="Rewrite existing cached waveform files.")

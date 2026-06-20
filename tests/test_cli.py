@@ -1527,6 +1527,10 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     assert "``--observed-inventory``, ``--observed-metric-inventory``" in plan_section
     assert "``--synthetic-inventory``, ``--synthetic-metric-inventory``" in plan_section
     assert "``--metric-plan-output``, ``--output``" in plan_section
+    assert "Directory for per-batch metric row files recorded in the manifest" in plan_section
+    assert "configured outputs.root/metric_batches directory" in plan_section
+    assert "Target number of manifest batches and Slurm array tasks" in plan_section
+    assert "use this to cap array size, such as --batch-count 100 for a 100-task array" in plan_section
     assert "Defaults to configured output table 'observed_metric_inventory'" in plan_section
     assert "Defaults to configured output table 'synthetic_metric_inventory'" in plan_section
     assert "Prefer --metric-plan-output; --output is a legacy alias." in plan_section
@@ -1541,6 +1545,8 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     assert "Prefer --metric-manifest; --manifest is a legacy alias." in batch_status_section
     assert "``--metric-manifest``, ``--manifest``" in cache_section
     assert "``--cached-metric-manifest-output``, ``--output``" in cache_section
+    assert "Directory for per-batch metric row files recorded in the cached manifest" in cache_section
+    assert "configured outputs.root/metric_batches_cached directory" in cache_section
     assert "Prefer --metric-manifest; --manifest is a legacy alias." in cache_section
     assert "Prefer --cached-metric-manifest-output; --output is a legacy alias." in cache_section
     assert "``--metric-manifest``, ``--manifest``" in estimate_section

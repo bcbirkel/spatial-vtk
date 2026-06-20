@@ -28,6 +28,8 @@ Changelog
     scripts.
   - Updated workflow-guide and large-run README dashboard examples to import
     routine dashboard helpers from ``spatial_vtk.visualize``.
+  - Clarified metrics CLI help for manifest batch output directories,
+    ``--batch-size``, and ``--batch-count`` so Slurm array sizing is explicit.
   - Aligned API docs, generated CLI reference, workflow guides, README
     install guidance, and tutorial notebooks with the stabilized public import
     surfaces and result-object workflow.

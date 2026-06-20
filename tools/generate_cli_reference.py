@@ -317,9 +317,10 @@ def _command_page_notes(command_name: str) -> list[str]:
             (
                 "Run ``svtk dashboard status`` before launching dashboards when outputs are missing, "
                 "stale, or unexpectedly sparse. The status table is bounded to metadata and shows the "
-                "configured artifact label, dashboard tabs, required columns, missing columns, "
-                "map-coordinate blockers, recognized value columns, non-empty value columns, suggested "
-                "action, and resolved path without loading large metric or QC inventories."
+                "configured artifact label, dashboard tabs, table readiness, tab readiness, required "
+                "columns, missing columns, map-coordinate blockers, recognized value columns, non-empty "
+                "value columns, suggested action, and resolved path without loading large metric or QC "
+                "inventories."
             ),
             "",
         ]

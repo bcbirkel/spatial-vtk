@@ -138,7 +138,7 @@ svtk metrics cache-waveforms
    * - ``--batch-output-dir``
      - No
      -
-     - Directory path. Batch output directory for the cached manifest. Defaults to outputs/metric_batches_cached.
+     - Directory path. Directory for per-batch metric row files recorded in the cached manifest. Defaults to the configured outputs.root/metric_batches_cached directory.
    * - ``--config``
      - No
      -
@@ -526,15 +526,15 @@ svtk metrics plan
    * - ``--batch-output-dir``
      - No
      -
-     - Directory path. Batch output directory when writing a manifest. Defaults to outputs/metric_batches.
+     - Directory path. Directory for per-batch metric row files recorded in the manifest. Defaults to the configured outputs.root/metric_batches directory.
    * - ``--batch-size``
      - No
      - Default: ``100``
-     - Tasks per batch when writing a manifest.
+     - Metric tasks per manifest batch.
    * - ``--batch-count``
      - No
      -
-     - Target number of batches when writing a manifest. Overrides --batch-size.
+     - Target number of manifest batches and Slurm array tasks. Overrides --batch-size; use this to cap array size, such as --batch-count 100 for a 100-task array.
    * - ``--qc-table``
      - No
      -
