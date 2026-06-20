@@ -112,7 +112,7 @@ Calculate
 Notebook and CLI workflows should import spatial statistics, GeoJSON, corridor,
 and geometry helpers from the stable ``spatial_vtk.spatial`` package entry
 point. ``spatial_vtk.spatial.calculate`` remains a public module for advanced
-calculation scripts, while the lower-level calculate modules are
+calculation scripts, while the calculate implementation modules are
 implementation organization and are intentionally not listed as notebook-facing
 import paths.
 
@@ -202,7 +202,7 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
    * - Helper
      - Use
    * - ``prepare_spatial_figure_context`` and ``SpatialFigureContext``
-     - Advanced lower-level context builder for scripts that need to control
+     - Advanced direct context builder for scripts that need to control
        large-run spatial filtering, station aggregation, PSA-period handling,
        and sidecar metadata before rendering selected figure families.
    * - ``prepare_spatial_figure_context_from_notebook_settings``

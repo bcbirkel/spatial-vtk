@@ -536,6 +536,8 @@ Changelog
   - Added public helpers for GeoJSON metric frames and event labels.
   - Added public helpers for spatial metric products and first non-empty table
     values.
+  - Clarified API and workflow docs so stable public subpackages are not
+    described as lower-level implementation modules.
 
 - **Notebook simplification** *(Rewired)*
 

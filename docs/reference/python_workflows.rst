@@ -19,7 +19,7 @@ for terminal-oriented workflows and generated batch scripts.
 3. Call that result object's ``run_*_step_if_needed()`` methods. Those methods
    own the readiness check plus the local/Slurm execution branch while the
    notebook cell keeps resource controls visible.
-4. Use lower-level ``run_notebook_step_if_needed`` directly only for custom
+4. Use ``run_notebook_step_if_needed`` directly only for custom
    orchestration that does not yet have a standard result-object method.
 5. Preview bounded tables after outputs exist; do not load full QC or metric
    inventories into the notebook just to check progress.
@@ -49,7 +49,7 @@ Stable Import Surfaces
 ----------------------
 
 Use these package namespaces as the public workflow import surface. If a
-notebook needs a helper that is only available from a lower-level module, add a
+notebook needs a helper that is only available from an implementation module, add a
 stable re-export first, then update the notebook to use the package-level
 namespace.
 
@@ -163,7 +163,7 @@ the large-run notebooks.
        Prefer direct attributes when a cell needs a resolved path; standard
        result objects expose common paths directly, such as
        ``metric_outputs.metrics_long_path`` for Step 3 metric figures, while
-       lower-level output groups expose paths such as
+       generic output groups expose paths such as
        ``step_outputs.metrics_long_path``. ``bind()`` remains available for
        older notebooks but should not be the default pattern for new tutorial
        cells.
@@ -417,7 +417,7 @@ The same rule applies to status and preview cells. Standard notebook result
 objects expose bounded display helpers such as ``display_summary_previews()``,
 ``display_metrics_preview()``, ``display_metric_source_preview()``, and
 ``display_output_previews()``. Notebook cells should call those methods instead
-of passing ``cfg`` into lower-level preview helpers, because the result object
+of passing ``cfg`` into standalone preview helpers, because the result object
 already owns the configured paths, missing-output policy, and display fallback.
 
 Step 1: Metadata, Waveforms, and Record Coverage
@@ -454,7 +454,7 @@ Step 1: Metadata, Waveforms, and Record Coverage
 
 The ``run_*_step_if_needed`` methods wrap
 ``spatial_vtk.config.run_notebook_step_if_needed`` with the correct readiness
-helper and build function for each Step 1 stage. Use the lower-level
+helper and build function for each Step 1 stage. Use the direct
 ``metadata_tables_readiness_from_config``,
 ``preprocessing_readiness_from_config``,
 ``record_coverage_readiness_from_config``,
@@ -486,7 +486,7 @@ The full QC inventory can be useful for observed-only or synthetic-only
 analysis, but metric calculations should normally use the overlap inventory so
 they only plan observed/synthetic pairs that can be compared.
 
-The lower-level ``spatial_vtk.qc.run_qc_inventory_from_config``,
+The direct ``spatial_vtk.qc.run_qc_inventory_from_config``,
 ``spatial_vtk.qc.write_qc_inventory_overlap_from_config``, and
 ``spatial_vtk.qc.run_qc_summary_workflow_from_config`` functions remain public
 for scripts or custom orchestration that needs direct control.
@@ -534,7 +534,7 @@ Step 3: Metric Calculation and Metric Figures
        ``*.csv``/``*.source.csv``/``*.json`` sidecars without notebook-local
        row filtering, figure-context construction, or per-plot path plumbing
 
-Use lower-level metric helpers such as
+Use direct metric helpers such as
 ``spatial_vtk.metrics.build_metric_waveform_inventories_from_config``,
 ``spatial_vtk.metrics.plan_metric_tasks_from_config``,
 ``spatial_vtk.metrics.write_metrics_slurm_script_from_config``,
@@ -543,7 +543,7 @@ Use lower-level metric helpers such as
 ``spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings``
 from scripts or custom orchestration that needs direct control. Tutorial
 notebooks should prefer the standard metric result-object methods above. If a
-script calls the lower-level ``spatial_vtk.metrics.write_metric_outputs``
+script calls the direct ``spatial_vtk.metrics.write_metric_outputs``
 writer directly, pass ``cfg=cfg`` or ``cfg=config_path`` when writing to
 registered output paths; this keeps the script independent of global
 active-config state. The standard metric result object also accepts either
@@ -609,7 +609,7 @@ Step 5: GeoJSON Regions and Corridors
      - ``spatial_vtk.spatial.plot.load_standard_geojson_workflow_output_status(...).run_corridor_step_if_needed(...)``
      - corridor definitions and corridor-selected records
 
-Step 5 plotting input helpers and lower-level configured workflow functions
+Step 5 plotting input helpers and direct configured workflow functions
 can receive configured path keys for optional inputs. For example, pass
 ``metrics_table="paths.metric_figure_snapshot"`` or
 ``geojson_path="paths.region_geojson"`` when a script or focused plotting

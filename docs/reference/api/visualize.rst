@@ -12,8 +12,8 @@ Package Entry Point
 -------------------
 
 Start with ``spatial_vtk.visualize`` for notebook-facing context, QC, waveform,
-dashboard, and sidecar helpers. Use lower-level ``context``, ``qc``,
-``waveforms``, and ``dashboard`` packages when writing focused scripts that
+dashboard, and sidecar helpers. Use the focused public ``context``, ``qc``,
+``waveforms``, and ``dashboard`` packages when writing scripts that
 need one visualization family.
 
 .. code-block:: python
@@ -64,9 +64,9 @@ Public helpers exposed by ``spatial_vtk.visualize``:
      - Notebook-facing Step 2/6 waveform-comparison wrapper. It owns the
        ``notebook_figure_settings(...)`` render gate, sidecar controls,
        component, passband, and display settings before delegating to the
-       lower-level output writer.
+       configured output writer.
    * - ``write_waveform_comparison_from_outputs``
-     - Lower-level script helper for observed/synthetic trace-comparison
+     - Direct script helper for observed/synthetic trace-comparison
        figures when output paths and plotting keyword arguments are already
        resolved. It reads bounded comparison-eligible rows from configured
        event-station and comparison-eligible outputs without loading full QC
@@ -112,7 +112,7 @@ event, record-coverage, and study-domain context figures.
 .. automodule:: spatial_vtk.visualize.context
    :members:
 
-The lower-level context figure and map modules are implementation
+The context figure and map submodules are implementation
 organization. Import context helpers from ``spatial_vtk.visualize.context`` in
 notebooks and scripts.
 
@@ -125,7 +125,7 @@ drop-cause, waveform-sample, and post-QC map figures.
 .. automodule:: spatial_vtk.visualize.qc
    :members:
 
-The lower-level QC overview, retention, and sample modules are implementation
+The QC overview, retention, and sample submodules are implementation
 organization. Import QC visualization helpers from ``spatial_vtk.visualize.qc``
 in notebooks and scripts.
 
@@ -144,7 +144,7 @@ output group, filters, and plotting keyword arguments.
 .. automodule:: spatial_vtk.visualize.waveforms
    :members:
 
-The lower-level waveform comparison, overlay, radial-section, record-section,
+The waveform comparison, overlay, radial-section, record-section,
 and station-event modules are implementation organization. Import waveform
 figure helpers from ``spatial_vtk.visualize.waveforms`` in notebooks and
 scripts.
@@ -171,7 +171,7 @@ The detailed status table includes both the configured path key in ``name``
 and user-facing ``artifact_role`` / ``artifact_label`` columns, plus
 ``resolved_path`` as the clear path column. The legacy ``path`` column remains
 available as an alias. Notebooks can display "metrics dashboard row dataset" or
-"station_rollup dashboard summary table" instead of relying on lower-level
+"station_rollup dashboard summary table" instead of relying on internal
 output registry names.
 Dashboard readiness also reports ``value_families`` and
 ``nonempty_value_families`` so notebooks and dashboard Data Status tabs can
@@ -313,7 +313,7 @@ set ``prepare_locally=False`` and call the returned result's
 execution branch, serializable config argument, and standard dashboard resource
 defaults. The returned result also retains the config used for readiness
 checks, so notebooks can call ``display_output_previews(nrows=...)`` instead of
-resolving dashboard summary paths or passing ``cfg`` into lower-level preview
+resolving dashboard summary paths or passing ``cfg`` into standalone preview
 helpers.
 
 ``dashboard_summary_table_contracts`` documents which summary table feeds each
@@ -363,7 +363,7 @@ small enough for the dashboard process.
 .. automodule:: spatial_vtk.visualize.dashboard
    :members:
 
-The lower-level dashboard chart, contract, export, filter, label, launch, map,
+The dashboard chart, contract, export, filter, label, launch, map,
 and table modules are implementation organization. Import dashboard helpers
 from ``spatial_vtk.visualize.dashboard`` in notebooks and scripts.
 
