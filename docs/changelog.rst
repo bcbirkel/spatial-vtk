@@ -70,7 +70,13 @@ Changelog
   - Added standard Step 4 spatial output result methods for map and diagnostic
     figure writing so notebooks no longer unpack spatial product tables or
     output groups before plotting.
+  - Added large-run Step 4 spatial status result methods for spatial-summary
+    and derived-output runner gates so notebooks no longer import
+    lower-level readiness or workflow functions directly.
   - Added standard notebook input/output loaders for GeoJSON plotting.
+  - Added large-run Step 5 GeoJSON status result methods for region-summary
+    and corridor runner gates so notebooks no longer import lower-level
+    readiness or workflow functions directly.
   - Added standard Step 6 additional-plotting input result methods for figure
     writing so notebooks no longer unpack metric, event, comparison, or output
     aliases before plotting.
@@ -178,6 +184,8 @@ Changelog
     result-object ``run_*_step_if_needed()`` methods as the notebook-facing
     entry points, with lower-level configured functions reserved for scripts
     and custom orchestration.
+  - Updated Spatial API docs so Step 4 spatial status and Step 5 GeoJSON
+    status result objects list their result-owned heavy-step runner methods.
 
 - **CLI examples and defaults** *(Changed)*
 

@@ -1566,16 +1566,20 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "run_notebook_step_if_needed(" in source
-    assert "from spatial_vtk.spatial import (" in source
-    assert "run_spatial_statistics_workflow_from_config," in source
-    assert "run_spatial_derived_outputs_workflow_from_config," in source
-    assert "load_standard_spatial_workflow_output_status," in source
+    assert "run_notebook_step_if_needed(" not in source
+    assert "from spatial_vtk.spatial import load_standard_spatial_workflow_output_status" in source
+    assert "config_path = context.config_path" not in source
+    assert "run_spatial_statistics_workflow_from_config," not in source
+    assert "run_spatial_derived_outputs_workflow_from_config," not in source
     assert "spatial_outputs = load_standard_spatial_workflow_output_status(cfg=context.cfg)" in source
-    assert "spatial_summary_readiness_from_config," in source
-    assert "spatial_derived_outputs_readiness_from_config," in source
-    assert "spatial_summary_readiness = spatial_summary_readiness_from_config(" in source
-    assert "derived_readiness = spatial_derived_outputs_readiness_from_config(" in source
+    assert "spatial_summary_readiness_from_config," not in source
+    assert "spatial_derived_outputs_readiness_from_config," not in source
+    assert "spatial_summary_readiness = spatial_summary_readiness_from_config(" not in source
+    assert "derived_readiness = spatial_derived_outputs_readiness_from_config(" not in source
+    assert "spatial_outputs.run_summary_step_if_needed(" in source
+    assert "spatial_outputs.run_derived_outputs_step_if_needed(" in source
+    assert "spatial_summary_result = spatial_outputs.run_summary_step_if_needed(" in source
+    assert "spatial_derived_result = spatial_outputs.run_derived_outputs_step_if_needed(" in source
     assert "core_spatial_output_names" not in source
     assert "derived_spatial_output_names" not in source
     assert "step_outputs.readiness(" not in source
@@ -1649,15 +1653,20 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "run_notebook_step_if_needed(" in source
-    assert "from spatial_vtk.spatial import (" in source
+    assert "run_notebook_step_if_needed(" not in source
+    assert "from spatial_vtk.spatial import (" not in source
+    assert "config_path = context.config_path" not in source
     assert "load_configured_input_paths(" not in source
-    assert "geojson_region_summary_readiness_from_config," in source
-    assert "boundary_corridor_readiness_from_config," in source
-    assert "run_geojson_region_summary_workflow_from_config," in source
-    assert "run_boundary_corridor_workflow_from_config," in source
+    assert "geojson_region_summary_readiness_from_config," not in source
+    assert "boundary_corridor_readiness_from_config," not in source
+    assert "run_geojson_region_summary_workflow_from_config," not in source
+    assert "run_boundary_corridor_workflow_from_config," not in source
     assert "load_standard_geojson_workflow_output_status" in source
     assert "geojson_outputs = load_standard_geojson_workflow_output_status(cfg=cfg)" in source
+    assert "geojson_outputs.run_geojson_summary_step_if_needed(" in source
+    assert "geojson_outputs.run_corridor_step_if_needed(" in source
+    assert "geojson_summary_result = geojson_outputs.run_geojson_summary_step_if_needed(" in source
+    assert "corridor_result = geojson_outputs.run_corridor_step_if_needed(" in source
     assert "geojson_outputs.display_table_previews(nrows=PREVIEW_ROWS)" in source
     assert "geojson_outputs.display_table_previews(cfg=cfg" not in source
     assert "step_outputs" not in source
@@ -1678,8 +1687,8 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "load_output_table(" not in source
     assert '"spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config"' not in source
     assert '"spatial_vtk.spatial.run_boundary_corridor_workflow_from_config"' not in source
-    assert "geojson_readiness = geojson_region_summary_readiness_from_config(" in source
-    assert "corridor_readiness = boundary_corridor_readiness_from_config(" in source
+    assert "geojson_readiness = geojson_region_summary_readiness_from_config(" not in source
+    assert "corridor_readiness = boundary_corridor_readiness_from_config(" not in source
     assert "geojson_readiness = step_outputs.readiness(" not in source
     assert "corridor_readiness = step_outputs.readiness(" not in source
     assert "geojson_input" not in source

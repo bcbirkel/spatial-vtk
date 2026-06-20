@@ -145,9 +145,11 @@ import paths.
    :members:
 
 The Step 4 status result remembers the config used to create it, so large-run
-notebooks can call ``display_table_previews(nrows=...)`` and
-``write_summary_figures(...)`` without repeating ``cfg`` or direct figure
-writer imports in each cell.
+notebooks can call ``run_summary_step_if_needed(...)``,
+``run_derived_outputs_step_if_needed(...)``,
+``display_table_previews(nrows=...)``, and ``write_summary_figures(...)``
+without repeating readiness checks, Slurm submission plumbing, ``cfg``, or
+direct writer imports in each cell.
 
 .. autofunction:: spatial_vtk.spatial.load_standard_spatial_workflow_output_status
 
@@ -247,6 +249,8 @@ Public helpers exposed by ``spatial_vtk.spatial.plot``:
      - Resolve Step 5 output status and bounded table previews for large-run
        driver notebooks without loading the full metrics or GeoJSON input
        tables. The status result retains its config for
+       ``run_geojson_summary_step_if_needed(...)``,
+       ``run_corridor_step_if_needed(...)``,
        ``display_table_previews(nrows=...)`` calls and writes the Step 5
        large-run region/corridor figure family through
        ``write_region_figures()``.

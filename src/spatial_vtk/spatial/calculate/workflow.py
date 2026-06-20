@@ -14,7 +14,7 @@ Create standard paths for spatial outputs:
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 import hashlib
 import json
 from pathlib import Path
@@ -470,6 +470,128 @@ class StandardSpatialWorkflowOutputStatusResult:
         """Return configured Step 4 output path status."""
 
         return self.outputs.status_frame()
+
+    def step_result(self, readiness: OutputReadiness, **values: Any) -> dict[str, Any]:
+        """Return a standard fallback payload for a skipped Step 4 gate."""
+
+        from spatial_vtk.config import notebook_step_result
+
+        return notebook_step_result(readiness, **values)
+
+    def spatial_summary_step_result(self, readiness: OutputReadiness) -> dict[str, Any]:
+        """Return the fallback payload for the core spatial-summary gate."""
+
+        return self.step_result(
+            readiness,
+            paths={name: getattr(self.outputs, name) for name in SPATIAL_SUMMARY_OUTPUT_PATH_NAMES},
+        )
+
+    def derived_outputs_step_result(self, readiness: OutputReadiness) -> dict[str, Any]:
+        """Return the fallback payload for optional Step 4 derived outputs."""
+
+        return self.step_result(
+            readiness,
+            paths={name: getattr(self.outputs, name) for name in SPATIAL_DERIVED_OUTPUT_PATH_NAMES},
+        )
+
+    def run_summary_step_if_needed(
+        self,
+        context: Any,
+        *,
+        overwrite: bool = False,
+        verbose: bool = True,
+        current_message: str | None = "All spatial summary tables are current; skipping.",
+        script_name: str = "step04_spatial_summaries.slurm",
+        job_name: str = "svtk-step04-spatial",
+        walltime: str = "12:00:00",
+        memory: str = "32G",
+        cpus: int = 4,
+        run_local: bool | None = None,
+        section: str | None = "compute.slurm",
+        display_fn: Any | None = None,
+    ) -> object:
+        """Run or submit core Step 4 spatial summaries when outputs are stale."""
+
+        from spatial_vtk.config import run_notebook_step_if_needed
+
+        config_path = _spatial_result_config_path(self.cfg, context)
+        run_scenario = _spatial_result_run_scenario(self.cfg, context)
+        readiness = spatial_summary_readiness_from_config(
+            config_path=config_path,
+            run_scenario=run_scenario,
+            overwrite=overwrite,
+        )
+        if current_message is not None and readiness.reason == "current":
+            readiness = replace(readiness, message=current_message)
+        result = run_notebook_step_if_needed(
+            context,
+            readiness,
+            run_spatial_statistics_workflow_from_config,
+            kwargs={
+                "config_path": str(config_path) if config_path is not None else None,
+                "run_scenario": run_scenario,
+                "verbose": verbose,
+            },
+            script_name=script_name,
+            job_name=job_name,
+            walltime=walltime,
+            memory=memory,
+            cpus=cpus,
+            run_local=run_local,
+            section=section,
+            display_fn=display_fn,
+        )
+        return result or self.spatial_summary_step_result(readiness)
+
+    def run_derived_outputs_step_if_needed(
+        self,
+        context: Any,
+        *,
+        overwrite: bool = False,
+        verbose: bool = True,
+        current_message: str | None = "Optional spatial plot-input tables are current; skipping.",
+        script_name: str = "step04_spatial_derived_outputs.slurm",
+        job_name: str = "svtk-step04-derived",
+        walltime: str = "04:00:00",
+        memory: str = "16G",
+        cpus: int = 2,
+        run_local: bool | None = None,
+        section: str | None = "compute.slurm",
+        display_fn: Any | None = None,
+    ) -> object:
+        """Run or submit optional Step 4 derived output tables when stale."""
+
+        from spatial_vtk.config import run_notebook_step_if_needed
+
+        config_path = _spatial_result_config_path(self.cfg, context)
+        run_scenario = _spatial_result_run_scenario(self.cfg, context)
+        readiness = spatial_derived_outputs_readiness_from_config(
+            config_path=config_path,
+            run_scenario=run_scenario,
+            overwrite=overwrite,
+        )
+        if current_message is not None and readiness.reason == "current":
+            readiness = replace(readiness, message=current_message)
+        result = run_notebook_step_if_needed(
+            context,
+            readiness,
+            run_spatial_derived_outputs_workflow_from_config,
+            kwargs={
+                "config_path": str(config_path) if config_path is not None else None,
+                "run_scenario": run_scenario,
+                "overwrite": overwrite,
+                "verbose": verbose,
+            },
+            script_name=script_name,
+            job_name=job_name,
+            walltime=walltime,
+            memory=memory,
+            cpus=cpus,
+            run_local=run_local,
+            section=section,
+            display_fn=display_fn,
+        )
+        return result or self.derived_outputs_step_result(readiness)
 
     def display_table_previews(
         self,
@@ -1425,6 +1547,20 @@ def _spatial_workflow_config(
     if run_scenario is not None and config.config_path is not None:
         return SpatialVTKConfig.from_file(config.config_path, run_scenario=run_scenario).activate()
     return config.activate()
+
+
+def _spatial_result_config_path(cfg: Any | None, context: Any | None) -> object | None:
+    """Return the configured path for result-owned notebook runners."""
+
+    value = getattr(cfg, "config_path", None)
+    return value if value is not None else getattr(context, "config_path", None)
+
+
+def _spatial_result_run_scenario(cfg: Any | None, context: Any | None) -> str | None:
+    """Return the run scenario for result-owned notebook runners."""
+
+    value = getattr(cfg, "run_scenario", None)
+    return value if value is not None else getattr(context, "run_scenario", None)
 
 
 def spatial_summary_readiness_from_config(

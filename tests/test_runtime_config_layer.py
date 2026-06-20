@@ -2556,7 +2556,7 @@ outputs:
     assert [name for name, _ in readiness_calls] == ["metadata", "preprocess", "coverage"]
     for _, kwargs in readiness_calls:
         assert kwargs["config_path"] == cfg.config_path
-        assert kwargs["run_scenario"] == cfg.run_scenario
+        assert kwargs["run_scenario"] == context.run_scenario
         assert kwargs["overwrite"] is True
     assert readiness_calls[0][1]["current_message"] == "Prepared metadata tables are current; skipping."
     assert readiness_calls[1][1]["current_message"] == (
@@ -2845,6 +2845,192 @@ outputs:
     assert status.loc[status["table"].eq("metric_field"), "rows"].iloc[0] == 1
     assert not loaded.summary_frame().empty
     assert not loaded.station_bias_preview_frame().empty
+    clear_active_config()
+
+
+def test_spatial_workflow_output_status_owns_large_run_step04_runners(tmp_path, monkeypatch):
+    """Large-run Step 4 cells should delegate heavy-step orchestration through the result object."""
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+
+    class Context:
+        config_path = tmp_path / "fallback.yaml"
+        run_scenario = "fallback"
+
+    class Ready:
+        should_run = True
+        reason = "missing_outputs"
+        message = "run"
+
+        def status_frame(self):  # noqa: ANN202
+            return pd.DataFrame()
+
+    run_calls: list[dict[str, object]] = []
+
+    def fake_run_notebook_step_if_needed(context, readiness, function, **kwargs):  # noqa: ANN001, ANN202
+        run_calls.append(
+            {
+                "context": context,
+                "readiness": readiness,
+                "function": function,
+                "kwargs": kwargs,
+            }
+        )
+        return {"readiness": readiness}
+
+    monkeypatch.setattr("spatial_vtk.config.run_notebook_step_if_needed", fake_run_notebook_step_if_needed)
+
+    import spatial_vtk.spatial.calculate.workflow as spatial_workflow
+
+    readiness_calls: list[tuple[str, dict[str, object]]] = []
+
+    def readiness_factory(name):
+        def _inner(**kwargs):  # noqa: ANN202
+            readiness_calls.append((name, kwargs))
+            return Ready()
+
+        return _inner
+
+    def fake_function(**_kwargs):  # noqa: ANN202
+        return {"ok": True}
+
+    monkeypatch.setattr(spatial_workflow, "spatial_summary_readiness_from_config", readiness_factory("summary"))
+    monkeypatch.setattr(spatial_workflow, "spatial_derived_outputs_readiness_from_config", readiness_factory("derived"))
+    monkeypatch.setattr(spatial_workflow, "run_spatial_statistics_workflow_from_config", fake_function)
+    monkeypatch.setattr(spatial_workflow, "run_spatial_derived_outputs_workflow_from_config", fake_function)
+
+    outputs = load_standard_spatial_workflow_output_status(cfg=cfg)
+    context = Context()
+    assert outputs.run_summary_step_if_needed(context, overwrite=True, run_local=False) == {
+        "readiness": run_calls[0]["readiness"]
+    }
+    assert outputs.run_derived_outputs_step_if_needed(context, overwrite=True, run_local=False) == {
+        "readiness": run_calls[1]["readiness"]
+    }
+
+    assert [name for name, _ in readiness_calls] == ["summary", "derived"]
+    for _, kwargs in readiness_calls:
+        assert kwargs["config_path"] == cfg.config_path
+        assert kwargs["run_scenario"] == context.run_scenario
+        assert kwargs["overwrite"] is True
+    assert [call["kwargs"]["script_name"] for call in run_calls] == [
+        "step04_spatial_summaries.slurm",
+        "step04_spatial_derived_outputs.slurm",
+    ]
+    assert run_calls[0]["kwargs"]["job_name"] == "svtk-step04-spatial"
+    assert run_calls[0]["kwargs"]["cpus"] == 4
+    assert run_calls[0]["kwargs"]["run_local"] is False
+    assert run_calls[0]["kwargs"]["kwargs"]["run_scenario"] == context.run_scenario
+    assert run_calls[0]["kwargs"]["kwargs"]["verbose"] is True
+    assert run_calls[1]["kwargs"]["job_name"] == "svtk-step04-derived"
+    assert run_calls[1]["kwargs"]["cpus"] == 2
+    assert run_calls[1]["kwargs"]["kwargs"]["overwrite"] is True
+    assert run_calls[1]["kwargs"]["kwargs"]["run_scenario"] == context.run_scenario
+    clear_active_config()
+
+
+def test_geojson_workflow_output_status_owns_large_run_step05_runners(tmp_path, monkeypatch):
+    """Large-run Step 5 cells should delegate GeoJSON/corridor orchestration through the result object."""
+
+    from spatial_vtk.spatial.plot import load_standard_geojson_workflow_output_status
+
+    monkeypatch.delenv(SVTK_CONFIG_ENV, raising=False)
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  root: run_outputs
+  tables: run_outputs/tables
+""",
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path).activate()
+
+    class Context:
+        config_path = tmp_path / "fallback.yaml"
+        run_scenario = "fallback"
+
+    class Ready:
+        should_run = True
+        reason = "missing_outputs"
+        message = "run"
+
+        def status_frame(self):  # noqa: ANN202
+            return pd.DataFrame()
+
+    run_calls: list[dict[str, object]] = []
+
+    def fake_run_notebook_step_if_needed(context, readiness, function, **kwargs):  # noqa: ANN001, ANN202
+        run_calls.append(
+            {
+                "context": context,
+                "readiness": readiness,
+                "function": function,
+                "kwargs": kwargs,
+            }
+        )
+        return {"readiness": readiness}
+
+    monkeypatch.setattr("spatial_vtk.config.run_notebook_step_if_needed", fake_run_notebook_step_if_needed)
+
+    import spatial_vtk.spatial.calculate.workflow as spatial_workflow
+
+    readiness_calls: list[tuple[str, dict[str, object]]] = []
+
+    def readiness_factory(name):
+        def _inner(**kwargs):  # noqa: ANN202
+            readiness_calls.append((name, kwargs))
+            return Ready()
+
+        return _inner
+
+    def fake_function(**_kwargs):  # noqa: ANN202
+        return {"ok": True}
+
+    monkeypatch.setattr(spatial_workflow, "geojson_region_summary_readiness_from_config", readiness_factory("geojson"))
+    monkeypatch.setattr(spatial_workflow, "boundary_corridor_readiness_from_config", readiness_factory("corridor"))
+    monkeypatch.setattr(spatial_workflow, "run_geojson_region_summary_workflow_from_config", fake_function)
+    monkeypatch.setattr(spatial_workflow, "run_boundary_corridor_workflow_from_config", fake_function)
+
+    outputs = load_standard_geojson_workflow_output_status(cfg=cfg)
+    context = Context()
+    assert outputs.run_geojson_summary_step_if_needed(context, overwrite=True, chunksize=123, run_local=False) == {
+        "readiness": run_calls[0]["readiness"]
+    }
+    assert outputs.run_corridor_step_if_needed(context, overwrite=True, run_local=False) == {
+        "readiness": run_calls[1]["readiness"]
+    }
+
+    assert [name for name, _ in readiness_calls] == ["geojson", "corridor"]
+    for _, kwargs in readiness_calls:
+        assert kwargs["config_path"] == cfg.config_path
+        assert kwargs["run_scenario"] == context.run_scenario
+        assert kwargs["overwrite"] is True
+    assert [call["kwargs"]["script_name"] for call in run_calls] == [
+        "step05_geojson_summaries.slurm",
+        "step05_corridors.slurm",
+    ]
+    assert run_calls[0]["kwargs"]["job_name"] == "svtk-step05-geojson"
+    assert run_calls[0]["kwargs"]["memory"] == "32G"
+    assert run_calls[0]["kwargs"]["kwargs"]["chunksize"] == 123
+    assert run_calls[0]["kwargs"]["kwargs"]["run_scenario"] == context.run_scenario
+    assert run_calls[1]["kwargs"]["job_name"] == "svtk-step05-corridors"
+    assert run_calls[1]["kwargs"]["memory"] == "8G"
+    assert run_calls[1]["kwargs"]["kwargs"]["run_scenario"] == context.run_scenario
     clear_active_config()
 
 

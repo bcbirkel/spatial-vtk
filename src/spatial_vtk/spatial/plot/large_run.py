@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
@@ -1616,6 +1616,137 @@ class StandardGeoJSONWorkflowOutputStatusResult:
 
         return self.outputs.status_frame()
 
+    def step_result(self, readiness: Any, **values: Any) -> dict[str, Any]:
+        """Return a standard fallback payload for a skipped Step 5 gate."""
+
+        from spatial_vtk.config import notebook_step_result
+
+        return notebook_step_result(readiness, **values)
+
+    def geojson_summary_step_result(self, readiness: Any) -> dict[str, Any]:
+        """Return the fallback payload for the GeoJSON summary gate."""
+
+        return self.step_result(
+            readiness,
+            geojson_summaries_path=self.outputs.geojson_summaries_path,
+        )
+
+    def corridor_step_result(self, readiness: Any) -> dict[str, Any]:
+        """Return the fallback payload for the corridor-table gate."""
+
+        return self.step_result(
+            readiness,
+            corridors_path=self.outputs.corridors_path,
+        )
+
+    def run_geojson_summary_step_if_needed(
+        self,
+        context: Any,
+        *,
+        overwrite: bool = False,
+        chunksize: int = 1_000_000,
+        verbose: bool = True,
+        current_message: str | None = "GeoJSON summary table is current; skipping.",
+        script_name: str = "step05_geojson_summaries.slurm",
+        job_name: str = "svtk-step05-geojson",
+        walltime: str = "08:00:00",
+        memory: str = "32G",
+        cpus: int = 1,
+        run_local: bool | None = None,
+        section: str | None = "compute.slurm",
+        display_fn: Any | None = None,
+    ) -> object:
+        """Run or submit configured Step 5 GeoJSON region summaries when stale."""
+
+        from spatial_vtk.config import run_notebook_step_if_needed
+        from spatial_vtk.spatial.calculate.workflow import (
+            geojson_region_summary_readiness_from_config,
+            run_geojson_region_summary_workflow_from_config,
+        )
+
+        config_path = _geojson_result_config_path(self.cfg, context)
+        run_scenario = _geojson_result_run_scenario(self.cfg, context)
+        readiness = geojson_region_summary_readiness_from_config(
+            config_path=config_path,
+            run_scenario=run_scenario,
+            overwrite=overwrite,
+        )
+        if current_message is not None and getattr(readiness, "reason", None) == "current":
+            readiness = replace(readiness, message=current_message)
+        result = run_notebook_step_if_needed(
+            context,
+            readiness,
+            run_geojson_region_summary_workflow_from_config,
+            kwargs={
+                "config_path": str(config_path) if config_path is not None else None,
+                "run_scenario": run_scenario,
+                "chunksize": chunksize,
+                "verbose": verbose,
+            },
+            script_name=script_name,
+            job_name=job_name,
+            walltime=walltime,
+            memory=memory,
+            cpus=cpus,
+            run_local=run_local,
+            section=section,
+            display_fn=display_fn,
+        )
+        return result or self.geojson_summary_step_result(readiness)
+
+    def run_corridor_step_if_needed(
+        self,
+        context: Any,
+        *,
+        overwrite: bool = False,
+        verbose: bool = True,
+        current_message: str | None = "Corridor table is current; skipping.",
+        script_name: str = "step05_corridors.slurm",
+        job_name: str = "svtk-step05-corridors",
+        walltime: str = "02:00:00",
+        memory: str = "8G",
+        cpus: int = 1,
+        run_local: bool | None = None,
+        section: str | None = "compute.slurm",
+        display_fn: Any | None = None,
+    ) -> object:
+        """Run or submit configured Step 5 corridor tables when stale."""
+
+        from spatial_vtk.config import run_notebook_step_if_needed
+        from spatial_vtk.spatial.calculate.workflow import (
+            boundary_corridor_readiness_from_config,
+            run_boundary_corridor_workflow_from_config,
+        )
+
+        config_path = _geojson_result_config_path(self.cfg, context)
+        run_scenario = _geojson_result_run_scenario(self.cfg, context)
+        readiness = boundary_corridor_readiness_from_config(
+            config_path=config_path,
+            run_scenario=run_scenario,
+            overwrite=overwrite,
+        )
+        if current_message is not None and getattr(readiness, "reason", None) == "current":
+            readiness = replace(readiness, message=current_message)
+        result = run_notebook_step_if_needed(
+            context,
+            readiness,
+            run_boundary_corridor_workflow_from_config,
+            kwargs={
+                "config_path": str(config_path) if config_path is not None else None,
+                "run_scenario": run_scenario,
+                "verbose": verbose,
+            },
+            script_name=script_name,
+            job_name=job_name,
+            walltime=walltime,
+            memory=memory,
+            cpus=cpus,
+            run_local=run_local,
+            section=section,
+            display_fn=display_fn,
+        )
+        return result or self.corridor_step_result(readiness)
+
     def display_table_previews(
         self,
         *,
@@ -2821,6 +2952,20 @@ def load_standard_geojson_workflow_output_status(
     from spatial_vtk.io import output_group
 
     return StandardGeoJSONWorkflowOutputStatusResult(outputs=output_group(geojson_group_name, cfg=cfg), cfg=cfg)
+
+
+def _geojson_result_config_path(cfg: Any | None, context: Any | None) -> object | None:
+    """Return the configured path for result-owned Step 5 notebook runners."""
+
+    value = getattr(cfg, "config_path", None)
+    return value if value is not None else getattr(context, "config_path", None)
+
+
+def _geojson_result_run_scenario(cfg: Any | None, context: Any | None) -> str | None:
+    """Return the run scenario for result-owned Step 5 notebook runners."""
+
+    value = getattr(cfg, "run_scenario", None)
+    return value if value is not None else getattr(context, "run_scenario", None)
 
 
 def write_standard_geojson_corridor_figures(
