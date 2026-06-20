@@ -341,6 +341,9 @@ Changelog
     function implementations until call time so public helper objects remain
     importable without eager pandas or YAML imports while result classes still
     resolve to real classes when explicitly imported.
+  - Made ``spatial_vtk.spatial`` and ``spatial_vtk.spatial.calculate`` resolve
+    public calculation helpers lazily so importing spatial package surfaces no
+    longer imports every spatial calculation backend up front.
   - Clarified generated API parameter descriptions for dashboard row datasets,
     summary-table directories, and QC trace-summary tables.
 

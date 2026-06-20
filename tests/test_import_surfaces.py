@@ -504,6 +504,10 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         import spatial_vtk.qc
         import spatial_vtk.qc.build
         import spatial_vtk.metrics.workflow
+        import spatial_vtk.spatial
+        import spatial_vtk.spatial.calculate
+        import spatial_vtk.spatial.map
+        import spatial_vtk.spatial.plot
         import spatial_vtk.visualize
         import spatial_vtk.visualize.qc
         import spatial_vtk.visualize.dashboard
@@ -516,6 +520,9 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
             "spatial_vtk.metrics.workflow.outputs",
             "spatial_vtk.metrics.workflow.tasks",
             "spatial_vtk.qc.build.inventory",
+            "spatial_vtk.spatial.calculate.workflow",
+            "spatial_vtk.spatial.map.metrics",
+            "spatial_vtk.spatial.plot.large_run",
             "spatial_vtk.visualize.figure_io",
             "spatial_vtk.visualize.qc.retention",
             "spatial_vtk.visualize.qc.samples",
@@ -530,6 +537,8 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
 
         from spatial_vtk.qc import load_trace_inventory_lookup, slurm_settings_from_config
         from spatial_vtk.metrics import StandardMetricWorkflowOutputResult, load_standard_metric_workflow_outputs
+        from spatial_vtk.spatial import run_spatial_statistics_workflow
+        from spatial_vtk.spatial.calculate import load_standard_spatial_workflow_output_status
         from spatial_vtk.visualize import read_figure_sidecar_metadata, write_figure_row_sidecar
         from spatial_vtk.visualize.qc import load_trace_qc_summary
         from spatial_vtk.visualize.dashboard import dashboard_readiness_summary_frame, launch_configured_metrics_dashboard
@@ -538,6 +547,8 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         assert load_standard_metric_workflow_outputs.__module__ == "spatial_vtk.metrics.workflow.standard"
         assert load_trace_inventory_lookup.__module__ == "spatial_vtk.qc.build.filtering"
         assert slurm_settings_from_config.__module__ == "spatial_vtk.qc.build.slurm"
+        assert run_spatial_statistics_workflow.__module__ == "spatial_vtk.spatial.calculate.workflow"
+        assert load_standard_spatial_workflow_output_status.__module__ == "spatial_vtk.spatial.calculate.workflow"
         assert read_figure_sidecar_metadata.__module__ == "spatial_vtk.visualize.figure_sidecars"
         assert write_figure_row_sidecar.__module__ == "spatial_vtk.visualize.figure_sidecars"
         assert load_trace_qc_summary.__module__ == "spatial_vtk.visualize.qc.overview"
@@ -554,6 +565,8 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
             "spatial_vtk.metrics.workflow.outputs",
             "spatial_vtk.metrics.workflow.tasks",
             "spatial_vtk.qc.build.inventory",
+            "spatial_vtk.spatial.map.metrics",
+            "spatial_vtk.spatial.plot.large_run",
             "spatial_vtk.visualize.figure_io",
             "spatial_vtk.visualize.qc.retention",
             "spatial_vtk.visualize.qc.samples",
