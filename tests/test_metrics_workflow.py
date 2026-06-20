@@ -309,6 +309,102 @@ def test_standard_metric_workflow_output_result_writes_diagnostic_figures(tmp_pa
     assert diagnostic_result.status_frame()["status"].tolist() == ["wrote", "wrote", "wrote"]
 
 
+def test_standard_metric_workflow_output_result_owns_outputs_and_station_map(monkeypatch, tmp_path) -> None:
+    """The standard Step 3 result should own configured outputs and station-map wiring."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1"],
+            "station": ["STA"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "distance_km": [10.0],
+            "log2_residual": [0.1],
+        }
+    )
+
+    class Config:
+        config_path = tmp_path / "spatial-vtk.yaml"
+        run_scenario = "tutorial"
+
+    class Outputs:
+        def load_table(self, name, **_kwargs):
+            if name == "metrics_long":
+                return metrics
+            raise KeyError(name)
+
+    output_calls: list[dict[str, object]] = []
+
+    def fake_write_metric_outputs_from_config(**kwargs):
+        output_calls.append(kwargs)
+        return {"metrics_long": "metrics_long.parquet"}
+
+    monkeypatch.setattr(
+        "spatial_vtk.metrics.workflow.configured.write_metric_outputs_from_config",
+        fake_write_metric_outputs_from_config,
+    )
+
+    map_calls: list[dict[str, object]] = []
+
+    def fake_write_station_metric_map_from_notebook_settings(frame, settings, **kwargs):
+        map_calls.append({"frame": frame, "settings": settings, "kwargs": kwargs})
+        return "station-map"
+
+    monkeypatch.setattr(
+        "spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings",
+        fake_write_station_metric_map_from_notebook_settings,
+    )
+
+    result = StandardMetricWorkflowOutputResult(outputs=Outputs(), cfg=Config())
+    assert result.write_configured_outputs(
+        residual_column="log2_residual",
+        score_column="anderson_2004_gof",
+        table_format="parquet",
+        dashboard_partitioned=False,
+    ) == {"metrics_long": "metrics_long.parquet"}
+    assert output_calls == [
+        {
+            "config_path": Config.config_path,
+            "run_scenario": "tutorial",
+            "metric_rows": None,
+            "events": None,
+            "stations": None,
+            "residual_column": "log2_residual",
+            "score_column": "anderson_2004_gof",
+            "table_format": "parquet",
+            "dashboard_partitioned": False,
+        }
+    ]
+
+    settings = object()
+    assert result.write_station_metric_map(
+        settings,
+        metric="PGA",
+        value_col="log2_residual",
+        passband="1-2 sec",
+        components=["R", "T"],
+        model="model_a",
+        title="Station PGA",
+        preview_rows=3,
+        make_figures=False,
+        overwrite=False,
+    ) == "station-map"
+    assert len(map_calls) == 1
+    assert map_calls[0]["frame"].equals(metrics)
+    assert map_calls[0]["settings"] is settings
+    assert map_calls[0]["kwargs"] == {
+        "metric": "PGA",
+        "value_col": "log2_residual",
+        "passband": "1-2 sec",
+        "components": ["R", "T"],
+        "model": "model_a",
+        "title": "Station PGA",
+        "preview_rows": 3,
+        "make_figures": False,
+        "overwrite": False,
+    }
+
+
 def test_metric_inventories_from_config_resolve_standard_paths(tmp_path) -> None:
     """Config-backed inventory helper should use preprocessing and output defaults."""
 

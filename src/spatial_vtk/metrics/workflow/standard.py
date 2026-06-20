@@ -102,6 +102,65 @@ class StandardMetricWorkflowOutputResult:
             **kwargs,
         )
 
+    def write_configured_outputs(
+        self,
+        *,
+        metric_rows: object | None = None,
+        events: object | None = None,
+        stations: object | None = None,
+        residual_column: str | None = None,
+        score_column: str | None = None,
+        table_format: str = "parquet",
+        dashboard_partitioned: bool = True,
+    ) -> dict[str, str]:
+        """Write downstream metric outputs using this result's active config."""
+
+        from spatial_vtk.metrics.workflow.configured import write_metric_outputs_from_config
+
+        return write_metric_outputs_from_config(
+            config_path=getattr(self.cfg, "config_path", None),
+            run_scenario=getattr(self.cfg, "run_scenario", None),
+            metric_rows=metric_rows,
+            events=events,
+            stations=stations,
+            residual_column=residual_column,
+            score_column=score_column,
+            table_format=table_format,
+            dashboard_partitioned=dashboard_partitioned,
+        )
+
+    def write_station_metric_map(
+        self,
+        settings: Any,
+        *,
+        metric: str,
+        value_col: str = "log2_residual",
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        title: str | None = None,
+        preview_rows: int = 5,
+        make_figures: bool = True,
+        overwrite: bool = True,
+    ) -> object:
+        """Load ``metrics_long`` and write one standard station metric map."""
+
+        from spatial_vtk.metrics.plot import write_station_metric_map_from_notebook_settings
+
+        return write_station_metric_map_from_notebook_settings(
+            self.load_metrics_long(),
+            settings,
+            metric=metric,
+            value_col=value_col,
+            passband=passband,
+            components=components,
+            model=model,
+            title=title,
+            preview_rows=preview_rows,
+            make_figures=make_figures,
+            overwrite=overwrite,
+        )
+
 
 def load_standard_metric_workflow_outputs(
     *,

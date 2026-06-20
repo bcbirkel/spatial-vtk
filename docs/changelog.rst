@@ -40,6 +40,10 @@ Changelog
   - Added standard Step 3 metric output result methods for task-estimate
     loading and diagnostic figure writing so notebooks no longer load
     ``metrics_long`` or pass output groups into figure writers directly.
+  - Rewired the standard Step 3 notebook to call
+    ``metric_outputs.write_configured_outputs()`` and
+    ``metric_outputs.write_station_metric_map()`` instead of importing
+    lower-level metric-output and station-map writer functions.
   - Added config-backed Step 3 metric inventory and manifest readiness helpers
     so metric notebooks no longer repeat trace-metadata or QC-overlap
     dependency contracts.

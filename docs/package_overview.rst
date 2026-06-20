@@ -129,13 +129,15 @@ Start with public helpers from ``spatial_vtk.metrics``:
 - ``summarize_metric_snapshot_tasks_from_config`` for tutorial and review
   task previews from already-calculated metric snapshots
 - ``load_standard_metric_workflow_outputs`` for Step 3 output status, bounded
-  metric previews, task-estimate loading, and standard diagnostic figures
+  metric previews, task-estimate loading, configured downstream outputs,
+  standard diagnostic figures, and focused station metric maps
 - ``metric_manifest_batch_status`` and ``metric_slurm_submission_readiness`` for
   resumable large-run metric arrays
 - ``write_metrics_slurm_script_from_config`` and
   ``merge_metric_batches_from_config`` for batch execution handoffs
-- ``write_metric_outputs_from_config`` for downstream metric, dashboard, and
-  spatial-statistics tables
+- ``write_metric_outputs_from_config`` for lower-level downstream metric,
+  dashboard, and spatial-statistics table exports when you are not using the
+  standard workflow result object
 - ``spatial_vtk.metrics.plot`` for metric-specific diagnostic figures
 
 ``spatial``

@@ -1448,7 +1448,8 @@ def test_step03_station_map_uses_package_aggregation_and_source_sidecar() -> Non
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "write_station_metric_map_from_notebook_settings(" in source
+    assert "metric_outputs.write_station_metric_map(" in source
+    assert "write_station_metric_map_from_notebook_settings(" not in source
     assert "station_metric_result.status_frame()" in source
     assert "station_metric_result.preview" in source
     assert "MetricFigureContext.from_frame(" not in source
@@ -1973,7 +1974,8 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "summarize_metric_snapshot_tasks_from_config(" in source
-    assert "write_metric_outputs_from_config(" in source
+    assert "metric_outputs.write_configured_outputs(" in source
+    assert "write_metric_outputs_from_config(" not in source
     assert "load_standard_metric_workflow_outputs," in source
     assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg, load_task_estimate=False)" in source
     assert "metric_outputs = metric_outputs.with_task_estimate()" in source
@@ -1981,6 +1983,7 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
     assert "render_notebook_figure(" not in source
     assert "write_standard_metric_diagnostic_figures(" not in source
     assert "metric_outputs.write_standard_diagnostic_figures(" in source
+    assert "metric_outputs.write_station_metric_map(" in source
     assert "metric_diagnostic_result.preview_frame()" in source
     assert "metric_diagnostic_result.status_frame()" in source
     assert "metric_outputs.display_task_previews(nrows=12)" in source
