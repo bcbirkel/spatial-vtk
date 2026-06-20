@@ -1433,6 +1433,8 @@ def test_cli_metrics_workflow_help_exposes_artifact_aliases(capsys):
         main(["metrics", "slurm", "--help"])
     assert excinfo.value.code == 0
     slurm_help = " ".join(capsys.readouterr().out.split())
+    assert "--metric-manifest" in slurm_help
+    assert "--metrics-slurm-script-output" in slurm_help
     assert "--incomplete-only" in slurm_help
     assert "--overwrite-batches" in slurm_help
 
@@ -1472,6 +1474,10 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     assert "Prefer --metric-rows; --output is a legacy alias." in run_section
     assert "``--missing-limit``" in batch_status_section
     assert "Metric workflow manifest JSON" in batch_status_section
+    assert "``--metric-manifest``, ``--manifest``" in slurm_section
+    assert "``--metrics-slurm-script-output``, ``--output``" in slurm_section
+    assert "Prefer --metric-manifest; --manifest is a legacy alias." in slurm_section
+    assert "Prefer --metrics-slurm-script-output; --output is a legacy alias." in slurm_section
     assert "``--incomplete-only``" in slurm_section
     assert "``--overwrite-batches``" in slurm_section
 
@@ -3604,7 +3610,19 @@ metrics:
     monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(settings))
     assert main(["config", "set", str(config)]) == 0
 
-    assert main(["metrics", "slurm", "--manifest", str(manifest), "--output", str(script)]) == 0
+    assert (
+        main(
+            [
+                "metrics",
+                "slurm",
+                "--metric-manifest",
+                str(manifest),
+                "--metrics-slurm-script-output",
+                str(script),
+            ]
+        )
+        == 0
+    )
 
     captured = capsys.readouterr()
     assert "Wrote metric Slurm script" in captured.out

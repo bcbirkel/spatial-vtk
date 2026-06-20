@@ -652,9 +652,10 @@ svtk metrics slurm
 
 .. code-block:: bash
 
-   svtk metrics slurm [-h] [--manifest PATH] [--output PATH]
-                          [--config PATH] [--run-scenario RUN_SCENARIO]
-                          [--submit] [--incomplete-only] [--overwrite-batches]
+   svtk metrics slurm [-h] [--metric-manifest PATH]
+                          [--metrics-slurm-script-output PATH] [--config PATH]
+                          [--run-scenario RUN_SCENARIO] [--submit]
+                          [--incomplete-only] [--overwrite-batches]
 
 .. rubric:: Parameters
 
@@ -670,14 +671,14 @@ svtk metrics slurm
      - No
      -
      - show this help message and exit
-   * - ``--manifest``
+   * - ``--metric-manifest``, ``--manifest``
      - No
      -
-     - Filesystem path. Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.
-   * - ``--output``
+     - Filesystem path. Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest. Prefer --metric-manifest; --manifest is a legacy alias.
+   * - ``--metrics-slurm-script-output``, ``--output``
      - No
      -
-     - Filesystem path. Output SLURM script path. Defaults to outputs/slurm/step03_run_metrics.slurm.
+     - Filesystem path. Output metric SLURM array script path. Defaults to outputs/slurm/step03_run_metrics.slurm. Prefer --metrics-slurm-script-output; --output is a legacy alias.
    * - ``--config``
      - No
      -

@@ -1120,8 +1120,28 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     outputs.set_defaults(handler=_cmd_metrics_outputs)
 
     slurm = metrics_sub.add_parser("slurm", help="Write a SLURM array script for a metric manifest.")
-    slurm.add_argument("--manifest", metavar="PATH", default=None, help="Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, otherwise metric_manifest.")
-    slurm.add_argument("--output", metavar="PATH", default=None, help="Output SLURM script path. Defaults to outputs/slurm/step03_run_metrics.slurm.")
+    slurm.add_argument(
+        "--metric-manifest",
+        "--manifest",
+        dest="manifest",
+        metavar="PATH",
+        default=None,
+        help=(
+            "Metric workflow manifest JSON. Defaults to metric_manifest_cached when it exists, "
+            "otherwise metric_manifest. Prefer --metric-manifest; --manifest is a legacy alias."
+        ),
+    )
+    slurm.add_argument(
+        "--metrics-slurm-script-output",
+        "--output",
+        dest="output",
+        metavar="PATH",
+        default=None,
+        help=(
+            "Output metric SLURM array script path. Defaults to outputs/slurm/step03_run_metrics.slurm. "
+            "Prefer --metrics-slurm-script-output; --output is a legacy alias."
+        ),
+    )
     slurm.add_argument("--config", default=None, help="Config file containing metrics.slurm settings.")
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     slurm.add_argument("--submit", action="store_true", help="Submit the script with sbatch after writing it.")
