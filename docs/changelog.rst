@@ -186,6 +186,9 @@ Changelog
     and custom orchestration.
   - Updated Spatial API docs so Step 4 spatial status and Step 5 GeoJSON
     status result objects list their result-owned heavy-step runner methods.
+  - Updated large-run README, package overview, and Python workflow guidance
+    so common notebook examples point to result-object loaders and Step 4/5
+    runner methods instead of lower-level readiness/build helper pairs.
 
 - **CLI examples and defaults** *(Changed)*
 

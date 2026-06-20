@@ -35,10 +35,14 @@ sidecars, and bounded previews. Common large-run entry points include:
 ```python
 from spatial_vtk.config import notebook_run_context, notebook_figure_settings
 from spatial_vtk.io import load_standard_ingest_workflow_outputs
-from spatial_vtk.metrics import plan_metric_tasks_from_config
+from spatial_vtk.metrics import load_standard_metric_workflow_outputs
 from spatial_vtk.metrics.plot import write_large_run_metric_figure_suite_from_notebook_settings
-from spatial_vtk.qc import run_qc_inventory_from_config
-from spatial_vtk.spatial.plot import write_large_run_spatial_figure_suite_from_notebook_settings
+from spatial_vtk.qc import load_standard_qc_workflow_outputs
+from spatial_vtk.spatial import load_standard_spatial_workflow_output_status
+from spatial_vtk.spatial.plot import (
+    load_standard_geojson_workflow_output_status,
+    write_large_run_spatial_figure_suite_from_notebook_settings,
+)
 from spatial_vtk.visualize.dashboard import prepare_configured_dashboard_datasets_from_notebook_settings
 ```
 

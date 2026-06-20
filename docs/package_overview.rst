@@ -179,28 +179,25 @@ Plot and map tools:
 
 Start with public helpers from ``spatial_vtk.spatial``:
 
-- ``run_spatial_statistics_workflow_from_config`` for standard spatial
-  statistics tables
 - ``load_standard_spatial_workflow_output_status`` for Step 4 large-run output
-  status, bounded table previews, and quick summary figures without loading
-  large tables
+  status, result-owned summary/derived-output runner gates, bounded table
+  previews, and quick summary figures without loading large tables
 - ``load_standard_spatial_workflow_outputs`` for standard Step 4 output-table
   loading, per-metric product summaries, and standard Step 4 figure suites
-- ``run_spatial_derived_outputs_workflow_from_config`` for optional REDCAP,
-  block holdout, and pattern-similarity tables
-- ``geojson_region_summary_readiness_from_config`` and
-  ``boundary_corridor_readiness_from_config`` for Step 5 readiness checks that
-  resolve configured region and upstream table paths
-- ``run_geojson_region_summary_workflow_from_config`` and
-  ``run_boundary_corridor_workflow_from_config`` for GeoJSON and corridor
-  tables
+- ``run_spatial_statistics_workflow_from_config`` and
+  ``run_spatial_derived_outputs_workflow_from_config`` for configured
+  spatial-statistics and optional derived-output tables in scripts or standard
+  workflows
 - ``load_standard_geojson_workflow_output_status`` and
   ``load_standard_geojson_plotting_inputs`` for Step 5 output status and
   standard notebook inputs without notebook-local GeoJSON path or output-table
-  plumbing; the standard plotting input result writes region and corridor
-  figure suites from configured inputs, the lightweight status result writes
-  large-run region/corridor figures, and status tables include
-  ``resolved_path`` with ``path`` retained as a compatibility alias
+  plumbing; the lightweight status result owns the Step 5 GeoJSON/corridor
+  runner gates and writes large-run region/corridor figures, while the
+  standard plotting input result writes region and corridor figure suites from
+  configured inputs
+- ``run_geojson_region_summary_workflow_from_config`` and
+  ``run_boundary_corridor_workflow_from_config`` for GeoJSON and corridor
+  tables in scripts or custom orchestration
 - ``load_standard_additional_plotting_output_status`` and
   ``load_standard_additional_plotting_inputs`` for Step 6 output status,
   metric-source previews, bounded waveform comparisons, region boxplots,

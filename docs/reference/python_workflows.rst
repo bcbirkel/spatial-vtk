@@ -364,21 +364,25 @@ fallbacks, and bounded previews stay in package code.
      - ``spatial_vtk.spatial.load_standard_spatial_workflow_output_status``
        and ``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``
      - Lightweight Step 4 output status/previews for large-run driver cells,
-       quick summary-figure writing through ``write_summary_figures()``,
-       plus loaded spatial workflow tables, per-metric product summaries,
-       station-bias previews, standard map/diagnostic figure methods, and
-       failure/status frames when the standard tutorial needs in-memory
-       products.
+       result-owned spatial summary and derived-output runners through
+       ``run_summary_step_if_needed()`` and
+       ``run_derived_outputs_step_if_needed()``, quick summary-figure writing
+       through ``write_summary_figures()``, plus loaded spatial workflow
+       tables, per-metric product summaries, station-bias previews, standard
+       map/diagnostic figure methods, and failure/status frames when the
+       standard tutorial needs in-memory products.
    * - Step 5 GeoJSON regions and corridors
      - ``spatial_vtk.spatial.plot.load_standard_geojson_workflow_output_status``
        and ``spatial_vtk.spatial.plot.load_standard_geojson_plotting_inputs``
      - Lightweight Step 5 output status/previews for large-run driver cells,
-       large-run region/corridor figure writing through
-       ``write_region_figures()``,
-       plus prepared station/event/event-station metadata, metric tables,
-       configured GeoJSON paths, Step 5 outputs, compact plotting input
-       summaries, and result methods that write the standard region and
-       corridor figure suites without notebook-local path unpacking.
+       result-owned GeoJSON and corridor runners through
+       ``run_geojson_summary_step_if_needed()`` and
+       ``run_corridor_step_if_needed()``, large-run region/corridor figure
+       writing through ``write_region_figures()``, plus prepared
+       station/event/event-station metadata, metric tables, configured
+       GeoJSON paths, Step 5 outputs, compact plotting input summaries, and
+       result methods that write the standard region and corridor figure
+       suites without notebook-local path unpacking.
    * - Step 6 additional plotting
      - ``spatial_vtk.spatial.plot.load_standard_additional_plotting_output_status``
        and ``spatial_vtk.spatial.plot.load_standard_additional_plotting_inputs``
@@ -549,14 +553,11 @@ Step 4: Spatial Statistics
      - Python entry point
      - Standard outputs
    * - Build spatial-statistics summary tables
-     - ``spatial_vtk.spatial.spatial_summary_readiness_from_config`` and
-       ``spatial_vtk.spatial.run_spatial_statistics_workflow_from_config``
+     - ``spatial_vtk.spatial.load_standard_spatial_workflow_output_status(...).run_summary_step_if_needed(...)``
      - metric field, event-centered residuals, station bias, Moran's I,
        distance correlation, cluster, PCA, and geology tables
    * - Build optional derived spatial outputs
-     - ``spatial_vtk.spatial.spatial_derived_outputs_readiness_from_config``
-       and
-       ``spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config``
+     - ``spatial_vtk.spatial.load_standard_spatial_workflow_output_status(...).run_derived_outputs_step_if_needed(...)``
      - block holdout, REDCAP, and pattern-similarity tables
    * - Render standard spatial station and grid maps
      - ``spatial_vtk.spatial.plot.write_standard_spatial_map_figures``
@@ -577,19 +578,18 @@ Step 5: GeoJSON Regions and Corridors
      - Python entry point
      - Standard outputs
    * - Summarize configured GeoJSON regions
-     - ``spatial_vtk.spatial.geojson_region_summary_readiness_from_config``
-       and
-       ``spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config``
+     - ``spatial_vtk.spatial.plot.load_standard_geojson_workflow_output_status(...).run_geojson_summary_step_if_needed(...)``
      - GeoJSON region summary tables
    * - Build configured boundary corridors
-     - ``spatial_vtk.spatial.boundary_corridor_readiness_from_config`` and
-       ``spatial_vtk.spatial.run_boundary_corridor_workflow_from_config``
+     - ``spatial_vtk.spatial.plot.load_standard_geojson_workflow_output_status(...).run_corridor_step_if_needed(...)``
      - corridor definitions and corridor-selected records
 
-Both Step 5 helpers can receive configured path keys for optional inputs. For
-example, pass ``metrics_table="paths.metric_figure_snapshot"`` or
-``geojson_path="paths.region_geojson"`` when a notebook needs to select a
-configured non-default input without adding path-resolution cells.
+Step 5 plotting input helpers and lower-level configured workflow functions
+can receive configured path keys for optional inputs. For example, pass
+``metrics_table="paths.metric_figure_snapshot"`` or
+``geojson_path="paths.region_geojson"`` when a script or focused plotting
+cell needs to select a configured non-default input without adding
+path-resolution cells.
 Use ``spatial_vtk.spatial.geojson_matched_record_frame`` and
 ``spatial_vtk.spatial.event_station_records_matching_pairs`` for corridor
 record filtering and event-station pair joins instead of notebook-local boolean

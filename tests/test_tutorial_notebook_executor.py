@@ -1183,9 +1183,11 @@ def test_large_run_readme_distinguishes_public_and_implementation_imports() -> N
     for helper in (
         "notebook_run_context",
         "load_standard_ingest_workflow_outputs",
-        "plan_metric_tasks_from_config",
+        "load_standard_metric_workflow_outputs",
         "write_large_run_metric_figure_suite_from_notebook_settings",
-        "run_qc_inventory_from_config",
+        "load_standard_qc_workflow_outputs",
+        "load_standard_spatial_workflow_output_status",
+        "load_standard_geojson_workflow_output_status",
         "write_large_run_spatial_figure_suite_from_notebook_settings",
         "prepare_configured_dashboard_datasets_from_notebook_settings",
     ):
