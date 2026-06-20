@@ -151,6 +151,9 @@ Changelog
     waveform preprocessing, and record-coverage stages so notebooks call
     ``ingest_outputs.run_*_step_if_needed(...)`` instead of assembling
     readiness checks and build functions inline.
+  - Removed remaining one-off setup-cell prints for preprocessing error
+    policy, QC overlap scope, and metric batch count so large-run notebooks
+    rely on the shared context and metric-settings displays.
 
 - **Notebook-owned display cleanup** *(Rewired)*
 

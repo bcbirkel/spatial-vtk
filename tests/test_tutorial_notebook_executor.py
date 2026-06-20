@@ -2048,6 +2048,7 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert "metric_outputs.run_downstream_outputs_step_if_needed(" in source
     assert "metric_outputs.display_metrics_preview(nrows=PREVIEW_ROWS)" in source
     assert "display(metric_settings_summary(metric_settings))" in source
+    assert 'print(f"Metric batch count: {METRIC_BATCH_COUNT}")' not in source
     assert "step_outputs.display_table_previews(" not in source
     assert "step_outputs.preview_table(" not in source
     assert "metrics_preview =" not in source
@@ -2163,6 +2164,7 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     assert "build_record_coverage_from_config," not in source
     assert "record_coverage_readiness_from_config," not in source
     assert "PREPROCESS_CONTINUE_ON_ERROR = context.preprocess_continue_on_error" in source
+    assert 'print(f"PREPROCESS_CONTINUE_ON_ERROR={PREPROCESS_CONTINUE_ON_ERROR}")' not in source
     assert 'os.environ.get("SVTK_PREPROCESS_CONTINUE_ON_ERROR"' not in source
     assert "prepare_station_metadata(" not in source
     assert "prepare_event_metadata(" not in source
@@ -2211,10 +2213,12 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     assert "run_notebook_step_if_needed(" not in source
     assert "run_or_submit_notebook_function(" not in source
     assert "from spatial_vtk.qc import (" in source
+    assert "metric_settings_summary," in source
     assert "load_standard_qc_workflow_outputs," in source
     assert "metrics_settings_from_config," in source
     assert "QC_OVERLAP_SCOPE = metric_settings.source_overlap_scope" in source
-    assert 'print(f"QC overlap scope: {QC_OVERLAP_SCOPE}")' in source
+    assert "display(metric_settings_summary(metric_settings))" in source
+    assert 'print(f"QC overlap scope: {QC_OVERLAP_SCOPE}")' not in source
     assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in source
     assert "step_outputs = qc_outputs.outputs" not in source
     assert "display(qc_outputs.status_frame())" in source
