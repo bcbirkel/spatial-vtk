@@ -3563,7 +3563,13 @@ outputs:
     assert readiness.should_run is True
     assert readiness.reason == "missing_outputs"
     assert "recognized files" in readiness.message
-    assert "metrics_dashboard_root" in set(readiness.status_frame()["name"])
+    readiness_status = readiness.status_frame()
+    assert "metrics_dashboard_root" in set(readiness_status["name"])
+    metrics_long_row = readiness_status.loc[readiness_status["name"].eq("metrics_long_path")].iloc[0]
+    assert metrics_long_row["ready"] is True
+    assert metrics_long_row["readiness"] == "ready"
+    assert metrics_long_row["message"] == "metrics_long source table is ready."
+    assert metrics_long_row["suggested_action"] == ""
     assert by_item.loc["metrics_dashboard_dataset", "readiness"] == "missing_dataset_files"
     assert by_item.loc["metrics_dashboard_dataset", "resolved_path"] == by_item.loc["metrics_dashboard_dataset", "path"]
     assert by_item.loc["model_metric_band", "readiness"] == "missing"

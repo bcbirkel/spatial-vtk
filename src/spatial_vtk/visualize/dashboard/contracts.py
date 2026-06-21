@@ -745,7 +745,7 @@ def dashboard_output_readiness(
     metrics_long_path = paths["metrics_long_path"]
     metrics_root = paths["metrics_dashboard_root"]
     summary_root = paths["dashboard_summary_root"]
-    input_status = pd.DataFrame(_status_rows({"metrics_long_path": metrics_long_path}))
+    input_status = _dashboard_input_status_frame({"metrics_long_path": metrics_long_path})
     qc_status = dashboard_qc_trace_readiness_frame(
         paths["qc_trace_summary_path"],
         cfg=cfg,
@@ -901,6 +901,29 @@ def _status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
             row["modified"] = _format_mtime(stat.st_mtime)
         rows.append(row)
     return rows
+
+
+def _dashboard_input_status_frame(paths: dict[str, str | Path]) -> pd.DataFrame:
+    """Return readiness rows for dashboard source inputs."""
+
+    status = pd.DataFrame(_status_rows(paths))
+    if status.empty:
+        return status
+    out = status.copy()
+    for column in ("ready", "readiness", "message", "suggested_action"):
+        if column not in out.columns:
+            out[column] = pd.Series([pd.NA] * len(out), index=out.index, dtype="object")
+    for index, row in out.iterrows():
+        exists = bool(row.get("exists", False))
+        name = str(row.get("name", ""))
+        label = str(row.get("artifact_label") or name)
+        out.at[index, "ready"] = exists
+        out.at[index, "readiness"] = "ready" if exists else "missing"
+        out.at[index, "message"] = f"{label} is ready." if exists else f"{label} is missing."
+        out.at[index, "suggested_action"] = "" if exists else _dashboard_suggested_action(
+            {"name": name, "artifact_role": row.get("artifact_role", ""), "readiness": "missing"}
+        )
+    return out
 
 
 def _dashboard_artifact_role_and_label(name: str) -> tuple[str, str]:

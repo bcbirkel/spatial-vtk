@@ -624,6 +624,9 @@ Changelog
   - Added ``table_exists`` and ``figure_exists`` fields to Step 1 context and
     Step 2 QC figure-suite status tables so notebooks show missing inputs and
     written artifacts without requiring manual path checks.
+  - Added source-input readiness fields to
+    ``DashboardOutputReadiness.status_frame()`` so dashboard rebuild decisions
+    show ``metrics_long`` readiness, messages, and suggested actions directly.
 
 2026-06-18
 ----------

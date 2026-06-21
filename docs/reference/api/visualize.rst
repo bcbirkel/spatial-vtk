@@ -262,6 +262,10 @@ uses it, ``readiness`` / ``message`` to identify the failure, and
 ``required_columns`` / ``missing_columns`` / ``tab_message`` /
 ``map_message`` to decide whether the dashboard inputs need to be rebuilt
 because of missing schema, missing values, or missing map coordinate data.
+The ``DashboardOutputReadiness.status_frame()`` method carries the same
+``ready`` / ``readiness`` / ``message`` / ``suggested_action`` fields for the
+source ``metrics_long`` input row, so notebooks can display the rebuild
+decision object directly without losing the first actionable blocker.
 
 Dashboard contract helpers accept ``cfg=`` as either a config object or a
 config file path. Use ``cfg=config_path`` in generated workers or lightweight
