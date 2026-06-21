@@ -3023,9 +3023,19 @@ def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -
     )
 
     assert result is not None
+    assert result.figure_path == figure_path
     assert result.sidecar_path == tmp_path / "figures" / "sidecars" / "station_map.csv"
     assert result.source_sidecar_path == tmp_path / "figures" / "sidecars" / "station_map.source.csv"
     assert result.metadata_path.exists()
+    result_status = result.status_frame()
+    assert result_status["name"].tolist() == ["figure_sidecar_path"]
+    assert result_status["figure_path"].tolist() == [str(figure_path)]
+    assert result_status["sidecar_path"].tolist() == [str(result.sidecar_path)]
+    assert result_status["metadata_path"].tolist() == [str(result.metadata_path)]
+    assert result_status["source_sidecar_path"].tolist() == [str(result.source_sidecar_path)]
+    assert result_status["sidecar_exists"].tolist() == [True]
+    assert result_status["metadata_exists"].tolist() == [True]
+    assert result_status["source_sidecar_exists"].tolist() == [True]
     written_rows = pd.read_csv(result.sidecar_path)
     written_source_rows = pd.read_csv(result.source_sidecar_path)
     metadata = json.loads(result.metadata_path.read_text(encoding="utf-8"))
@@ -3048,6 +3058,13 @@ def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -
     assert metadata["sidecar_random_state"] == 42
     assert metadata["plot_rows_role"] == "figure_plot_rows"
     assert metadata["source_rows_role"] == "figure_source_rows"
+    assert result_status["plot_row_count"].tolist() == [metadata["plot_row_count"]]
+    assert result_status["written_row_count"].tolist() == [metadata["written_row_count"]]
+    assert result_status["source_row_count"].tolist() == [metadata["source_row_count"]]
+    assert result_status["source_written_row_count"].tolist() == [metadata["source_written_row_count"]]
+    assert result_status["sidecar_row_policy"].tolist() == [metadata["sidecar_row_policy"]]
+    assert result_status["plot_rows_role"].tolist() == [metadata["plot_rows_role"]]
+    assert result_status["source_rows_role"].tolist() == [metadata["source_rows_role"]]
     assert metadata["plot_station_count"] == 3
     assert metadata["source_station_count"] == 3
     assert metadata["source_model_count"] == 2

@@ -21,6 +21,43 @@ class FigureSidecarResult:
     source_sidecar_path: Path | None
     metadata: dict[str, Any]
 
+    @property
+    def figure_path(self) -> Path:
+        """Path to the figure described by this sidecar."""
+
+        return Path(str(self.metadata.get("figure") or self.sidecar_path.with_suffix("")))
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact notebook status table for this sidecar result."""
+
+        source_sidecar = self.source_sidecar_path
+        return pd.DataFrame(
+            [
+                {
+                    "name": "figure_sidecar_path",
+                    "figure_path": str(self.figure_path),
+                    "figure_exists": self.figure_path.exists(),
+                    "sidecar_path": str(self.sidecar_path),
+                    "sidecar_exists": self.sidecar_path.exists(),
+                    "metadata_path": str(self.metadata_path),
+                    "metadata_exists": self.metadata_path.exists(),
+                    "source_sidecar_path": "" if source_sidecar is None else str(source_sidecar),
+                    "source_sidecar_exists": False if source_sidecar is None else source_sidecar.exists(),
+                    "plot_row_count": self.metadata.get("plot_row_count", ""),
+                    "written_row_count": self.metadata.get("written_row_count", ""),
+                    "plot_sidecar_exact": self.metadata.get("plot_sidecar_exact", ""),
+                    "source_row_count": self.metadata.get("source_row_count", ""),
+                    "source_written_row_count": self.metadata.get("source_written_row_count", ""),
+                    "source_sidecar_exact": self.metadata.get("source_sidecar_exact", ""),
+                    "source_sidecar_written": self.metadata.get("source_sidecar_written", ""),
+                    "sidecar_row_policy": self.metadata.get("sidecar_row_policy", ""),
+                    "sidecar_row_limit": self.metadata.get("sidecar_row_limit", ""),
+                    "plot_rows_role": self.metadata.get("plot_rows_role", ""),
+                    "source_rows_role": self.metadata.get("source_rows_role", ""),
+                }
+            ]
+        )
+
 
 def write_figure_row_sidecar(
     figure_path: str | Path,

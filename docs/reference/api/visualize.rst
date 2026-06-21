@@ -491,7 +491,8 @@ Public sidecar helpers exposed by ``spatial_vtk.visualize``:
        helper.
    * - ``write_figure_row_sidecar``
      - Write the plotted rows, optional source rows, and JSON metadata next to a
-       figure.
+       figure. The returned ``FigureSidecarResult`` owns the written paths and a
+       compact ``status_frame()`` for the single figure.
    * - ``layered_figure_rows`` and ``sidecar_rows_for_write``
      - Build deterministic row samples for large figures while preserving
        exactness metadata.

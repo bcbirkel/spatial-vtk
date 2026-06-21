@@ -996,6 +996,9 @@ Changelog
     contracts and exactness flags.
   - Expanded figure sidecar metadata and status frames with station/event
     counts and PSA/multi-panel counts.
+  - Added ``FigureSidecarResult.status_frame()`` so direct sidecar writes return
+    the same notebook-friendly path and exactness summary as directory-level
+    sidecar audits.
   - Added sampled station-map sidecar regression coverage so plotted station
     groups and source rows stay aligned.
 
