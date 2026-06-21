@@ -13,7 +13,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from spatial_vtk.io.tables import write_table
+from spatial_vtk.io.tables import read_table, write_table
 from spatial_vtk.io.waveforms import (
     WaveformPreprocessing,
     apply_waveform_preprocessing_with_metadata,
@@ -570,9 +570,7 @@ def _read_table(value: pd.DataFrame | str | Path) -> pd.DataFrame:
     if isinstance(value, pd.DataFrame):
         return value.copy()
     path = Path(value).expanduser()
-    if path.suffix.lower() in {".parquet", ".pq"}:
-        return pd.read_parquet(path)
-    return pd.read_csv(path, low_memory=False)
+    return read_table(path)
 
 
 def _path_cell_text(value: object) -> str:

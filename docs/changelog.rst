@@ -117,6 +117,9 @@ Changelog
   - Added workflow-doc regression coverage so notebook guidance keeps using
     stable package import surfaces and does not reintroduce metrics plotting
     implementation-module paths.
+  - Routed QC helper-local table loading through the shared I/O table reader so
+    CSV dtype handling and Parquet dispatch stay centralized for large-run
+    checkpoints and derived QC tables.
 
 - **Tutorial notebook hygiene** *(Fixed)*
 

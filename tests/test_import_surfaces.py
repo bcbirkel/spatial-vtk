@@ -3422,8 +3422,8 @@ def test_large_run_csv_readers_use_stable_dtype_inference():
 
     repo_root = pathlib.Path(__file__).resolve().parents[1]
     snippets = {
-        "src/spatial_vtk/qc/build/inventory.py": "return pd.read_csv(path, low_memory=False)",
-        "src/spatial_vtk/qc/build/workflow.py": "return pd.read_csv(path, low_memory=False)",
+        "src/spatial_vtk/qc/build/inventory.py": "return read_table(path)",
+        "src/spatial_vtk/qc/build/workflow.py": "return read_table(path)",
         "src/spatial_vtk/metrics/workflow/tasks.py": "return pd.read_csv(path, low_memory=False)",
         "src/spatial_vtk/metrics/workflow/outputs.py": "return pd.read_csv(path, low_memory=False)",
         "src/spatial_vtk/metrics/calculate/enrich.py": "return pd.read_csv(path, low_memory=False)",

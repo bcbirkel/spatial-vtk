@@ -25,7 +25,7 @@ from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io import OutputReadiness, output_group
 from spatial_vtk.io.inventory import build_file_inventory
-from spatial_vtk.io.tables import load_output_table, parquet_table_columns, write_output_table, write_table
+from spatial_vtk.io.tables import load_output_table, parquet_table_columns, read_table, write_output_table, write_table
 from spatial_vtk.io.waveforms import WaveformPreprocessing, read_waveform_file, select_waveform_trace
 from spatial_vtk.visualize.dashboard import write_manual_review_queue
 from spatial_vtk.visualize.dashboard.exports import QUEUE_COLUMNS
@@ -2741,9 +2741,7 @@ def _read_table(value: pd.DataFrame | str | Path) -> pd.DataFrame:
     if isinstance(value, pd.DataFrame):
         return value.copy()
     path = Path(value).expanduser()
-    if path.suffix.lower() in {".parquet", ".pq"}:
-        return pd.read_parquet(path)
-    return pd.read_csv(path, low_memory=False)
+    return read_table(path)
 
 
 def _table_columns(value: pd.DataFrame | str | Path) -> list[str]:
