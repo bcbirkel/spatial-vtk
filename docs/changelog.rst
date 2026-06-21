@@ -49,6 +49,9 @@ Changelog
   - Tightened tutorial notebook contract checks so brittle parent-directory
     bootstrap cells using ``Path("..")`` are rejected alongside
     ``Path("../")`` variants.
+  - Reworked the parent-directory notebook bootstrap check to use AST call
+    detection, so equivalent forms such as ``pathlib.Path("../docs")`` are
+    caught by the same source-contract preflight.
 
 2026-06-19
 ----------

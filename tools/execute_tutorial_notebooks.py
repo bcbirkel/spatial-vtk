@@ -112,10 +112,6 @@ NOTEBOOK_CONTRACT_FORBIDDEN_SNIPPETS = (
     "os.popen(",
     "run_or_submit_notebook_cli_command(",
     "write_notebook_cli_slurm_script(",
-    "Path('../')",
-    'Path("../")',
-    "Path('..')",
-    'Path("..")',
     "from spatial_vtk.metrics.plot.",
     "from spatial_vtk.spatial.map.",
     "from spatial_vtk.spatial.plot.",
@@ -479,6 +475,7 @@ def tutorial_notebook_contract_violations(notebooks: list[Path], *, repo_root: P
                     violations.append(f"{cell_label}: user-specific path or address {match.group(0)!r}")
             if cell.get("cell_type") == "code":
                 violations.extend(_notebook_local_definition_violations(source, cell_label))
+                violations.extend(_notebook_parent_path_violations(source, cell_label))
                 violations.extend(_notebook_package_callable_violations(source, cell_label))
     return violations
 
@@ -528,6 +525,32 @@ def _notebook_package_callable_violations(source: str, cell_label: str) -> list[
             violations.append(
                 f"{cell_label}: {call_name} should receive an imported package callable, "
                 f"not compatibility import path {function_node.value!r}"
+            )
+    return violations
+
+
+def _notebook_parent_path_violations(source: str, cell_label: str) -> list[str]:
+    """Return brittle ``Path("..")`` style source-checkout bootstrap paths."""
+
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return []
+
+    violations: list[str] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        if _ast_call_name(node.func) != "Path" or not node.args:
+            continue
+        first_arg = node.args[0]
+        if not (isinstance(first_arg, ast.Constant) and isinstance(first_arg.value, str)):
+            continue
+        path_text = first_arg.value.strip()
+        if path_text == ".." or path_text.startswith("../") or path_text.startswith("..\\"):
+            violations.append(
+                f"{cell_label}: parent-directory Path({path_text!r}) bootstrap should use "
+                "the shared _source_bootstrap.py helper"
             )
     return violations
 
