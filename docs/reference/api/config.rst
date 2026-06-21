@@ -122,7 +122,9 @@ the stable package surface below.
        ``notebook_figure_sidecar_settings``
      - Configure optional plotted-row and source-row CSV/JSON sidecars.
        ``readiness_frame()`` reports whether sidecars are enabled, where JSON
-       metadata will be read, and how row sampling is configured;
+       metadata will be read, how row sampling is configured, and normalized
+       ``resolved_path``/``path``/``exists`` columns for the sidecar
+       directory;
        ``status_frame()`` reports per-figure provenance from saved JSON
        sidecars without loading large CSV row files.
    * - ``NotebookDashboardCommands`` and

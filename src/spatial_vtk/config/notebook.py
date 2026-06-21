@@ -145,7 +145,7 @@ class NotebookFigureSidecarSettings:
         if self.directory is not None:
             metadata_count = len(list(Path(self.directory).expanduser().glob("*.json")))
         row_policy = "all_rows" if self.rows is None or int(self.rows) <= 0 else "deterministic_sample"
-        return pd.DataFrame(
+        frame = pd.DataFrame(
             [
                 ("enabled", bool(self.enabled)),
                 ("directory", None if self.directory is None else str(self.directory)),
@@ -159,6 +159,17 @@ class NotebookFigureSidecarSettings:
             ],
             columns=["name", "value"],
         )
+        frame["artifact_label"] = frame["name"].astype(str).map(lambda value: value.replace("_", " ").title())
+        frame["resolved_path"] = ""
+        frame["path"] = ""
+        frame["exists"] = pd.NA
+        directory_path = None if self.directory is None else Path(self.directory).expanduser()
+        directory_mask = frame["name"].eq("directory")
+        if directory_path is not None:
+            frame.loc[directory_mask, "resolved_path"] = str(directory_path)
+            frame.loc[directory_mask, "path"] = str(directory_path)
+            frame.loc[directory_mask, "exists"] = directory_path.exists()
+        return frame
 
     def _readiness_message(self, metadata_count: int | None) -> str:
         """Return a human-readable sidecar readiness message."""

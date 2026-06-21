@@ -645,6 +645,10 @@ def test_notebook_figure_settings_parse_common_controls(tmp_path, monkeypatch):
     assert settings.pca_mode == "PC2"
     assert settings.sidecars.enabled is True
     assert settings.sidecars.rows == 25
+    sidecar_readiness = settings.sidecars.readiness_frame().set_index("name")
+    assert {"artifact_label", "resolved_path", "path", "exists"} <= set(sidecar_readiness.columns)
+    assert sidecar_readiness.loc["directory", "path"] == str(tmp_path / "figures" / "sidecars")
+    assert bool(sidecar_readiness.loc["directory", "exists"]) is False
 
     context_kwargs = settings.context_kwargs(include_station_aggregation=True)
     assert context_kwargs["make_figures"] is False

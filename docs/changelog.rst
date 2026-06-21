@@ -60,6 +60,9 @@ Changelog
   - Added normalized first-figure path columns to metric and spatial
     multi-figure suite ``status_frame()`` outputs while preserving exact
     ``figure_paths`` lists and preview fields.
+  - Added normalized sidecar-directory path columns to
+    ``NotebookFigureSidecarSettings.readiness_frame()`` so notebooks show
+    whether figure provenance metadata can be inspected.
 
 - **CLI help and generated-reference wording** *(Changed)*
 
