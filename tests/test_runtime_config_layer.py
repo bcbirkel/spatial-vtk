@@ -818,6 +818,12 @@ def test_notebook_figure_settings_render_gate_reports_disabled_and_missing_input
     assert disabled_gate.figures_enabled is False
     assert disabled_gate.missing_paths == ()
     assert "SVTK_MAKE_FIGURES=1" in disabled_gate.message
+    disabled_status = disabled_gate.status_frame()
+    assert disabled_status.loc[0, "name"] == "figure_render_gate"
+    assert disabled_status.loc[0, "artifact"] == "figure_render_gate"
+    assert disabled_status.loc[0, "artifact_label"] == "figure render gate"
+    assert disabled_status.loc[0, "artifact_role"] == "notebook_render_gate"
+    assert disabled_status.loc[0, "status"] == "disabled"
 
     monkeypatch.setenv("SVTK_MAKE_FIGURES", "1")
     enabled = notebook_figure_settings("qc", figure_dir=tmp_path / "figures")
@@ -828,20 +834,27 @@ def test_notebook_figure_settings_render_gate_reports_disabled_and_missing_input
     assert missing_gate.missing_paths == (missing,)
     assert missing_gate.message == "QC inputs are missing."
     missing_status = missing_gate.status_frame()
+    assert missing_status.loc[0, "artifact"] == "figure_render_gate"
+    assert missing_status.loc[0, "artifact_role"] == "notebook_render_gate"
+    assert missing_status.loc[0, "status"] == "missing_inputs"
     assert list(missing_status["missing_path"]) == [str(missing)]
 
     unconfigured_gate = enabled.render_gate([None])
 
     assert unconfigured_gate.ready is False
     assert unconfigured_gate.missing_paths == (Path("<not configured>"),)
-    assert "<not configured>" in set(unconfigured_gate.status_frame()["missing_path"])
+    unconfigured_status = unconfigured_gate.status_frame()
+    assert unconfigured_status.loc[0, "status"] == "missing_inputs"
+    assert "<not configured>" in set(unconfigured_status["missing_path"])
 
     missing.write_text("ready\n", encoding="utf-8")
     ready_gate = enabled.render_gate([missing])
 
     assert ready_gate.ready is True
     assert ready_gate.message == "Figure inputs are ready."
-    assert bool(ready_gate.status_frame().loc[0, "ready"]) is True
+    ready_status = ready_gate.status_frame()
+    assert bool(ready_status.loc[0, "ready"]) is True
+    assert ready_status.loc[0, "status"] == "ready"
 
 
 def test_notebook_figure_settings_parse_region_legacy_controls(tmp_path, monkeypatch):

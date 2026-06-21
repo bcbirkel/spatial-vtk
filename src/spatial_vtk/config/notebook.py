@@ -215,9 +215,18 @@ class NotebookFigureRenderGate:
 
         import pandas as pd
 
+        status = self._status()
+        common = {
+            "name": "figure_render_gate",
+            "artifact": "figure_render_gate",
+            "artifact_label": "figure render gate",
+            "artifact_role": "notebook_render_gate",
+            "status": status,
+        }
         if self.missing_paths:
             rows = [
                 {
+                    **common,
                     "ready": self.ready,
                     "figures_enabled": self.figures_enabled,
                     "message": self.message,
@@ -228,6 +237,7 @@ class NotebookFigureRenderGate:
         else:
             rows = [
                 {
+                    **common,
                     "ready": self.ready,
                     "figures_enabled": self.figures_enabled,
                     "message": self.message,
@@ -235,6 +245,15 @@ class NotebookFigureRenderGate:
                 }
             ]
         return pd.DataFrame(rows)
+
+    def _status(self) -> str:
+        """Return a compact machine-readable render-gate status."""
+
+        if self.ready:
+            return "ready"
+        if not self.figures_enabled:
+            return "disabled"
+        return "missing_inputs"
 
 
 _PLOT_SELECTION_DEFAULT = object()

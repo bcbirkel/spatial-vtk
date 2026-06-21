@@ -99,6 +99,10 @@ Changelog
     provenance readiness cells expose sidecar artifact ids, labels, roles,
     compact status, configured directory paths, and existence checks while
     preserving the existing ``name``/``value`` display.
+  - Standardized ``NotebookFigureRenderGate.status_frame()`` so figure
+    prerequisite cells expose artifact ids, labels, roles, compact
+    ``ready``/``disabled``/``missing_inputs`` status, messages, and exact
+    missing input paths.
 
 - **CLI help and generated-reference wording** *(Changed)*
 

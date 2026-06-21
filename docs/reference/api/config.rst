@@ -114,7 +114,9 @@ the stable package surface below.
        ``plot_kwargs()`` for individual plotting functions, and
        ``plot_selection_kwargs()`` for context-managed plotting calls that
        need passband, component, model, value-column, basemap, or robust-axis
-       selections.
+       selections. ``render_gate(...).status_frame()`` reports artifact ids,
+       labels, roles, compact ``ready``/``disabled``/``missing_inputs``
+       status, the user-facing message, and exact missing input paths.
    * - ``render_notebook_figure``
      - Call one plotting helper with configured output path, ``showfig``,
        basemap, sidecar, save, display, and close behavior.
