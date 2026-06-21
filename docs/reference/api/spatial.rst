@@ -534,6 +534,13 @@ readiness checks, output bookkeeping, sidecars, and figure-family iteration.
 .. autoclass:: spatial_vtk.spatial.plot.StandardGeoJSONPlottingInputResult
    :members:
 
+``StandardGeoJSONPlottingInputResult.status_frame()`` reports loaded Step 5
+inputs with normalized ``name``, ``table``, ``artifact_label``,
+``artifact_role``, ``status``, ``exists``, ``resolved_path``, and ``path``
+columns. The GeoJSON row is path-backed; in-memory dataframes report
+``status="loaded"`` and preserve row counts without requiring notebooks to
+resolve paths.
+
 .. autofunction:: spatial_vtk.spatial.load_standard_geojson_plotting_inputs
 
 .. autoclass:: spatial_vtk.spatial.plot.StandardGeoJSONWorkflowOutputStatusResult
@@ -543,6 +550,11 @@ readiness checks, output bookkeeping, sidecars, and figure-family iteration.
 
 .. autoclass:: spatial_vtk.spatial.plot.StandardAdditionalPlottingInputResult
    :members:
+
+``StandardAdditionalPlottingInputResult.status_frame()`` uses the same
+normalized input-status schema for Step 6 metric, event-station, event, and
+comparison-eligible inputs while preserving the simple ``table`` and ``rows``
+columns used by existing notebooks.
 
 .. autofunction:: spatial_vtk.spatial.load_standard_additional_plotting_inputs
 

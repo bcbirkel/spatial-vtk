@@ -663,6 +663,21 @@ def test_load_standard_geojson_plotting_inputs_reads_metric_columns_only(monkeyp
     assert result.event_stations is event_stations
     assert result.comparison_eligible is comparison_eligible
     assert result.geojson_path == geojson_path
+    status = result.status_frame().set_index("table")
+    assert {"name", "artifact", "artifact_label", "artifact_role", "status", "exists", "resolved_path", "path"} <= set(
+        status.columns
+    )
+    assert status.loc["region_geojson", "artifact_label"] == "region geojson file"
+    assert status.loc["region_geojson", "artifact_role"] == "input_file"
+    assert status.loc["region_geojson", "status"] == "ready"
+    assert bool(status.loc["region_geojson", "exists"]) is True
+    assert status.loc["region_geojson", "resolved_path"] == str(geojson_path)
+    assert status.loc["region_geojson", "path"] == status.loc["region_geojson", "resolved_path"]
+    assert status.loc["metrics", "artifact_label"] == "metrics table"
+    assert status.loc["metrics", "artifact_role"] == "input_table"
+    assert status.loc["metrics", "status"] == "loaded"
+    assert bool(status.loc["metrics", "exists"]) is True
+    assert status.loc["metrics", "rows"] == 1
 
 
 def test_load_standard_additional_plotting_inputs_uses_configured_groups(monkeypatch) -> None:
@@ -709,6 +724,16 @@ def test_load_standard_additional_plotting_inputs_uses_configured_groups(monkeyp
     status = result.status_frame()
     assert status["table"].tolist() == ["metrics", "event_stations", "events", "comparison_eligible"]
     assert status["rows"].tolist() == [1, 1, 1, 1]
+    assert {"name", "artifact", "artifact_label", "artifact_role", "status", "exists", "resolved_path", "path"} <= set(
+        status.columns
+    )
+    status_by_table = status.set_index("table")
+    assert status_by_table.loc["comparison_eligible", "artifact_label"] == "comparison eligible table"
+    assert status_by_table.loc["comparison_eligible", "artifact_role"] == "input_table"
+    assert status_by_table.loc["comparison_eligible", "status"] == "loaded"
+    assert bool(status_by_table.loc["comparison_eligible", "exists"]) is True
+    assert status_by_table.loc["comparison_eligible", "resolved_path"] == ""
+    assert status_by_table.loc["comparison_eligible", "path"] == ""
 
 
 def test_write_standard_additional_plotting_figures_returns_previews(tmp_path) -> None:

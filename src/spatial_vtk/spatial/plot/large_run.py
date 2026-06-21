@@ -1568,6 +1568,48 @@ class StandardGeoJSONCorridorFigureResult:
         return self.outward_event_preview.copy()
 
 
+def _loaded_spatial_input_status_frame(
+    items: Sequence[tuple[str, pd.DataFrame | None, str | Path | None]],
+) -> pd.DataFrame:
+    """Return normalized notebook status rows for loaded spatial inputs."""
+
+    rows: list[dict[str, Any]] = []
+    for name, frame, path_value in items:
+        path = Path(path_value).expanduser() if path_value is not None else None
+        has_path = path is not None
+        exists = path.exists() if path is not None else True
+        status = ("ready" if exists else "missing") if has_path else "loaded"
+        rows.append(
+            {
+                "name": name,
+                "table": name,
+                "artifact": name,
+                "artifact_label": str(name).replace("_", " ") + (" file" if has_path else " table"),
+                "artifact_role": "input_file" if has_path else "input_table",
+                "status": status,
+                "exists": exists,
+                "rows": None if frame is None else len(frame),
+                "resolved_path": "" if path is None else str(path),
+                "path": "" if path is None else str(path),
+            }
+        )
+    return pd.DataFrame(
+        rows,
+        columns=[
+            "name",
+            "table",
+            "artifact",
+            "artifact_label",
+            "artifact_role",
+            "status",
+            "exists",
+            "rows",
+            "resolved_path",
+            "path",
+        ],
+    )
+
+
 @dataclass(frozen=True)
 class StandardGeoJSONPlottingInputResult:
     """Configured input tables and output group for the standard Step 5 notebook."""
@@ -1583,28 +1625,16 @@ class StandardGeoJSONPlottingInputResult:
     def status_frame(self) -> pd.DataFrame:
         """Return a compact row-count/path table for loaded Step 5 inputs."""
 
-        geojson_path = str(self.geojson_path)
-        rows = [
-            {
-                "artifact": "region_geojson",
-                "status": "ready" if self.geojson_path.exists() else "missing",
-                "rows": None,
-                "resolved_path": geojson_path,
-                "path": geojson_path,
-            },
-            {"artifact": "metrics", "status": "loaded", "rows": len(self.metrics), "resolved_path": None, "path": None},
-            {"artifact": "stations", "status": "loaded", "rows": len(self.stations), "resolved_path": None, "path": None},
-            {"artifact": "events", "status": "loaded", "rows": len(self.events), "resolved_path": None, "path": None},
-            {"artifact": "event_stations", "status": "loaded", "rows": len(self.event_stations), "resolved_path": None, "path": None},
-            {
-                "artifact": "comparison_eligible",
-                "status": "loaded",
-                "rows": len(self.comparison_eligible),
-                "resolved_path": None,
-                "path": None,
-            },
-        ]
-        return pd.DataFrame(rows, columns=["artifact", "status", "rows", "resolved_path", "path"])
+        return _loaded_spatial_input_status_frame(
+            [
+                ("region_geojson", None, self.geojson_path),
+                ("metrics", self.metrics, None),
+                ("stations", self.stations, None),
+                ("events", self.events, None),
+                ("event_stations", self.event_stations, None),
+                ("comparison_eligible", self.comparison_eligible, None),
+            ]
+        )
 
     def write_region_figures(
         self,
@@ -1948,13 +1978,14 @@ class StandardAdditionalPlottingInputResult:
     def status_frame(self) -> pd.DataFrame:
         """Return a compact row-count table for loaded Step 6 inputs."""
 
-        rows = [
-            {"table": "metrics", "rows": len(self.metrics)},
-            {"table": "event_stations", "rows": len(self.event_stations)},
-            {"table": "events", "rows": len(self.events)},
-            {"table": "comparison_eligible", "rows": len(self.comparison_eligible)},
-        ]
-        return pd.DataFrame(rows, columns=["table", "rows"])
+        return _loaded_spatial_input_status_frame(
+            [
+                ("metrics", self.metrics, None),
+                ("event_stations", self.event_stations, None),
+                ("events", self.events, None),
+                ("comparison_eligible", self.comparison_eligible, None),
+            ]
+        )
 
     def write_figures(
         self,
