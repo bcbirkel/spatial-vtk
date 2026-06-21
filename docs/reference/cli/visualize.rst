@@ -15,7 +15,7 @@ If a config is active with ``svtk config set`` or passed with ``--config``, regi
    svtk visualize context station-event-context --bounds study_area
    svtk visualize waveforms observed-synthetic-record-section --components R --max-records 80
 
-These commands use configured outputs such as ``qc_metric_pair_retention``, ``event_station_records``, and the registered figure keys for the selected visualization unless you supply ``--input-table``/``--input`` or ``--figure-output``/``--output`` explicitly. Run ``svtk visualize qc list``, ``svtk visualize context list``, or ``svtk visualize waveforms list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.
+These commands use configured outputs such as ``qc_metric_pair_retention``, ``event_station_records``, and the registered figure keys for the selected visualization unless you supply ``--input-table``/``--input`` or ``--figure-output``/``--output`` explicitly. Run ``svtk visualize qc list``, ``svtk visualize context list``, or ``svtk visualize waveforms list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role> (--input-table PATH)`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.
 
 Use ``svtk visualize sidecars status`` to inspect figure provenance sidecars written by commands that support ``--write-sidecar``.
 
@@ -1409,7 +1409,7 @@ Plot sample QC traces.
      - Source
      - Meaning
    * - Input table
-     - ``required:sample table``
+     - ``required:sample table (--input-table PATH)``
      - This advanced figure requires an explicit table. Pass ``--input-table`` or ``--input`` with a prepared trace-sample table.
    * - Output figure
      - ``config:trace_inventory_samples``

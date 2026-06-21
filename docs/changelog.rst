@@ -819,7 +819,8 @@ Changelog
     active config.
   - Updated ``svtk ... list`` discovery output for plot, map, and visualization
     commands so required explicit inputs name the table role, such as
-    ``required:spectrogram table``, instead of only naming a generic flag.
+    ``required:spectrogram table (--input-table PATH)``, instead of only
+    naming a generic flag.
   - Added ``--resolve-paths`` to plot, map, and visualization ``list``
     commands so config-backed input, output, and extra-table keys can be
     expanded to concrete configured paths before running a figure command.
@@ -856,8 +857,9 @@ Changelog
 - **CLI guidance output** *(Changed)*
 
   - Clarified CLI plotting notes so visualization list commands are included
-    with plot/map list commands, and ``required:<role>`` entries explain when
-    explicit input tables are still required.
+    with plot/map list commands, and
+    ``required:<role> (--input-table PATH)`` entries explain when explicit
+    input tables are still required.
   - Clarified registered figure missing-path messages so input and figure
     output errors name both legacy and clearer path aliases before suggesting
     config-backed defaults.
@@ -875,9 +877,9 @@ Changelog
   - Made ``svtk spatial status`` print artifact labels, output keys, and
     Step 3/Step 4 rebuild guidance in its human-readable output instead of
     the lower-level path-key readiness table.
-  - Clarified ``required:<role>`` CLI figure guidance so commands that need
-    caller-supplied tables are documented as intentional advanced inputs
-    rather than missing registered defaults.
+  - Clarified ``required:<role> (--input-table PATH)`` CLI figure guidance so
+    commands that need caller-supplied tables are documented as intentional
+    advanced inputs rather than missing registered defaults.
 
 - **Dashboard large-run resilience** *(Hardened)*
 

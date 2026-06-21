@@ -3342,7 +3342,7 @@ def _registered_list_input(spec: PlotCommand, *, config: Any | None = None) -> s
         return _registered_list_config_status(spec.input_key, kind="table", config=config)
     role = _registered_table_role(spec.primary_arg, None, fallback="input")
     suffix = "" if "table" in role else " table"
-    return f"required:{role}{suffix}"
+    return f"required:{role}{suffix} (--input-table PATH)"
 
 
 def _registered_list_output(spec: PlotCommand, *, config: Any | None = None) -> str:
@@ -3350,7 +3350,7 @@ def _registered_list_output(spec: PlotCommand, *, config: Any | None = None) -> 
 
     if spec.output_key:
         return _registered_list_config_status(spec.output_key, kind="figure", config=config)
-    return "required:figure output"
+    return "required:figure output (--figure-output PATH)"
 
 
 def _registered_list_extra_tables(spec: PlotCommand, *, config: Any | None = None) -> str:

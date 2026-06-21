@@ -1055,7 +1055,7 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "``svtk visualize qc list``" in text
     assert "``svtk visualize context list``" in text
     assert "``svtk visualize waveforms list``" in text
-    assert "A ``required:<role>`` entry means that command works on a caller-supplied table" in text
+    assert "A ``required:<role> (--input-table PATH)`` entry means that command works on a caller-supplied table" in text
     assert "Use ``--kwargs key=value`` only for advanced function-specific options" in text
     assert "that are not exposed as named flags" in text
     assert (
@@ -1065,7 +1065,10 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "advanced ``--table function_argument=path``" in text
     assert "that are not exposed as named table flags" in text
     assert "``svtk visualize qc list``" in generator_text
-    assert "A ``required:<role>`` entry means that command works on a caller-supplied table" in generator_text
+    assert (
+        "A ``required:<role> (--input-table PATH)`` entry means that command works on a caller-supplied table"
+        in generator_text
+    )
     assert (
         "Prefer configured default tables and named table flags such as ``--event-table``, "
         "``--station-table``, ``--events``, ``--stations``, or ``--records``"
@@ -1103,7 +1106,7 @@ def test_generated_cli_reference_includes_config_backed_examples():
     assert "registered figure keys for the selected plot" in plot_text
     assert "svtk plot metrics list" in plot_text
     assert "config:<key>" in plot_text
-    assert "required:<role>" in plot_text
+    assert "required:<role> (--input-table PATH)" in plot_text
     assert "Config-Backed Mapping" in map_text
     assert "svtk map spatial station-metric --value-col log2_residual --metric PGA" in map_text
     assert "svtk map spatial list" in map_text
@@ -1256,7 +1259,7 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Value: ``stations``. Convenience prepared stations table path" not in map_text
     assert "Value: ``" not in cli_pages_text
     assert "Input table\n     - ``config:qc_metric_pair_retention``" in cli_pages_text
-    assert "Input table\n     - ``required:sample table``" in cli_pages_text
+    assert "Input table\n     - ``required:sample table (--input-table PATH)``" in cli_pages_text
     assert (
         "This advanced figure requires an explicit table. Pass ``--input-table`` or ``--input`` "
         "with a precomputed period-spectrogram table."
@@ -4349,7 +4352,7 @@ def test_cli_plot_list(capsys):
     assert "config:metrics_long" in period_line
     assert "required:" not in period_line
     assert "period-spectrogram" in captured.out
-    assert "required:spectrogram table" in captured.out
+    assert "required:spectrogram table (--input-table PATH)" in captured.out
     assert "precomputed period-spectrogram table" in captured.out
     assert "model-metric-heatmap" in captured.out
     assert "config:band_score_distribution" in captured.out
@@ -4379,7 +4382,7 @@ outputs:
     assert str(tmp_path / "outputs" / "tables" / "metrics_long.parquet") in text
     assert "config:band_score_distribution ->" in text
     assert str(tmp_path / "outputs" / "figures" / "band_score_distribution.png") in text
-    assert "required:spectrogram table" in text
+    assert "required:spectrogram table (--input-table PATH)" in text
 
     assert main(["map", "spatial", "list", "--config", str(config), "--resolve-paths"]) == 0
     map_text = capsys.readouterr().out

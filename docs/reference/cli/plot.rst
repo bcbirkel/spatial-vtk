@@ -14,7 +14,7 @@ If a config is active with ``svtk config set`` or passed with ``--config``, regi
    svtk plot metrics band-score-distribution --score-col log2_residual
    svtk plot metrics residuals-vs-distance --metric PGA --passband "2-3 sec" --y-col log2_residual
 
-These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input-table``/``--input`` or ``--figure-output``/``--output`` explicitly. Run ``svtk plot metrics list`` or ``svtk plot spatial list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role>`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.
+These commands use configured outputs such as ``metrics_long`` plus the registered figure keys for the selected plot unless you supply ``--input-table``/``--input`` or ``--figure-output``/``--output`` explicitly. Run ``svtk plot metrics list`` or ``svtk plot spatial list`` to print a table showing each command's input and output source, including ``config:<key>`` defaults and ``required:<role> (--input-table PATH)`` entries. Add ``--resolve-paths --config PATH`` to show the concrete configured files.
 
 Command Tree
 ------------
@@ -1966,7 +1966,7 @@ Plot a precomputed period-spectrogram table. This advanced figure does not have 
      - Source
      - Meaning
    * - Input table
-     - ``required:spectrogram table``
+     - ``required:spectrogram table (--input-table PATH)``
      - This advanced figure requires an explicit table. Pass ``--input-table`` or ``--input`` with a precomputed period-spectrogram table.
    * - Output figure
      - ``config:period_spectrogram``
