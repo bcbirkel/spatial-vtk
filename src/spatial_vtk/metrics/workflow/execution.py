@@ -14,7 +14,7 @@ Run configured metric work through the standard Step 3 output helper:
 
 Write a manifest and run the first batch only in advanced scripts that own
 their task table directly:
-  ``manifest = write_task_manifest(tasks, "metrics_manifest.json", output_dir="metric_batches")``
+  ``manifest = write_task_manifest(tasks, manifest_path, output_dir=batch_output_dir)``
   ``run_manifest_batch(manifest, batch_index=0)``
 """
 

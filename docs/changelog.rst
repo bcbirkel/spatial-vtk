@@ -83,6 +83,9 @@ Changelog
   - Reworded dashboard export examples so notebooks start from configured
     dashboard dataset preparation and raw dataset writers are framed as
     custom-script APIs.
+  - Reworded metric manifest execution examples so advanced snippets use
+    caller-owned manifest and batch-output variables instead of hard-coded
+    filenames.
 
 - **Step 1 workflow helpers** *(Added)*
 

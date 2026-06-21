@@ -1276,6 +1276,8 @@ def test_metric_workflow_docstrings_prefer_standard_step3_output_helper():
 
     assert "submission = metric_outputs.run_slurm_step_if_needed(context=context)" in execution_text
     assert "only in advanced scripts that own\ntheir task table directly" in execution_text
+    assert "write_task_manifest(tasks, manifest_path, output_dir=batch_output_dir)" in execution_text
+    assert "write_task_manifest(tasks, \"metrics_manifest.json\"" not in execution_text
 
     assert "from spatial_vtk.metrics import load_standard_metric_workflow_outputs" in outputs_text
     assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)" in outputs_text
