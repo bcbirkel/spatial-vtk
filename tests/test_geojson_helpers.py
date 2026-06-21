@@ -233,6 +233,13 @@ outputs:
 
     assert result.path == tmp_path / "outputs" / "tables" / "geojson_region_summaries.csv"
     assert result.path.exists()
+    assert result.geojson_region_summaries_path == result.path
+    status = result.status_frame()
+    assert status["name"].tolist() == ["geojson_region_summaries_path"]
+    assert status["resolved_path"].tolist() == status["path"].tolist()
+    assert status["exists"].tolist() == [True]
+    assert status["rows"].tolist() == [result.rows]
+    assert status["source_rows"].tolist() == [result.source_rows]
     assert result.rows == len(pd.read_csv(result.path))
     assert result.source_rows == len(metrics)
 
@@ -382,6 +389,12 @@ outputs:
     )
 
     assert result.path == tmp_path / "outputs" / "tables" / "corridors.parquet"
+    assert result.corridors_path == result.path
+    status = result.status_frame()
+    assert status["name"].tolist() == ["corridors_path"]
+    assert status["resolved_path"].tolist() == status["path"].tolist()
+    assert status["exists"].tolist() == [True]
+    assert status["rows"].tolist() == [result.rows]
     stored = pd.read_parquet(result.path)
     assert result.rows == len(stored) == 1
     assert "corridor_geometry" not in stored.columns

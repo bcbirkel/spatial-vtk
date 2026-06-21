@@ -319,6 +319,8 @@ Changelog
   - Added large-run Step 5 GeoJSON status result methods for region-summary
     and corridor runner gates so notebooks no longer import lower-level
     readiness or workflow functions directly.
+  - Added artifact-specific path aliases and compact status frames to direct
+    GeoJSON region-summary and boundary-corridor workflow result objects.
   - Added standard Step 6 additional-plotting input result methods for figure
     writing so notebooks no longer unpack metric, event, comparison, or output
     aliases before plotting.

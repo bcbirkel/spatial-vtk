@@ -86,6 +86,30 @@ class GeoJSONRegionSummaryWorkflowResult:
     source_rows: int
     elapsed_s: float
 
+    @property
+    def geojson_region_summaries_path(self) -> Path:
+        """Path to the written GeoJSON region summary table."""
+
+        return self.path
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact summary of the GeoJSON region summary output."""
+
+        return pd.DataFrame(
+            [
+                {
+                    "name": "geojson_region_summaries_path",
+                    "artifact_label": "GeoJSON region summaries",
+                    "resolved_path": str(self.geojson_region_summaries_path),
+                    "path": str(self.geojson_region_summaries_path),
+                    "exists": self.geojson_region_summaries_path.exists(),
+                    "rows": self.rows,
+                    "source_rows": self.source_rows,
+                    "elapsed_s": self.elapsed_s,
+                }
+            ]
+        )
+
 
 def load_geojson_polygons(geojson_path: str | Path) -> list[PolygonFeature]:
     """Load Polygon and MultiPolygon features from a GeoJSON file.

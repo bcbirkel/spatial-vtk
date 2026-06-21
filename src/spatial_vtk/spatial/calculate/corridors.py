@@ -191,6 +191,29 @@ class BoundaryCorridorWorkflowResult:
     rows: int
     elapsed_s: float
 
+    @property
+    def corridors_path(self) -> Path:
+        """Path to the written boundary corridor table."""
+
+        return self.path
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact summary of the boundary corridor output."""
+
+        return pd.DataFrame(
+            [
+                {
+                    "name": "corridors_path",
+                    "artifact_label": "boundary corridors",
+                    "resolved_path": str(self.corridors_path),
+                    "path": str(self.corridors_path),
+                    "exists": self.corridors_path.exists(),
+                    "rows": self.rows,
+                    "elapsed_s": self.elapsed_s,
+                }
+            ]
+        )
+
 
 def corridor_record_preview_frame(
     records: pd.DataFrame | None,
