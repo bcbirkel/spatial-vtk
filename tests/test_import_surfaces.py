@@ -1802,6 +1802,8 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "SpatialFigureContext" not in helper_table
     assert "Plot custom spatial metric distributions from prepared tables." in helper_table
     assert "Plot generic spatial metric distributions" not in helper_table
+    assert "per-metric Step 4 product-frame mapping" in helper_table
+    assert "per-metric Step 4 product frame dictionary" not in helper_table
     assert "Public helpers exposed by ``spatial_vtk.spatial.map``" in text
     for helper in (
         "plot_station_metric_map",
@@ -2486,6 +2488,12 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "display_notebook_step_result" in workflows
     assert "MetricPlan.summary_frame()" in workflows
     assert "Standard result objects call this internally\n       for skipped ``run_*_step_if_needed()`` payloads" in workflows
+    assert "labeled mapping. Use this for tutorial figure inputs" in workflows
+    assert "labeled path mapping. Use this when plotting" in workflows
+    assert "JSON-friendly status payload for current/skipped" in workflows
+    assert "labeled dictionary. Use this for tutorial figure inputs" not in workflows
+    assert "labeled path dictionary. Use this when plotting" not in workflows
+    assert "JSON-friendly status dictionary for current/skipped" not in workflows
     assert "custom workflow cells\n       can call it directly when they already own the readiness object" in workflows
     assert "Use this with ``run_notebook_step_if_needed``\n       fallbacks" not in workflows
     assert "instead of ``print(result)``" in workflows

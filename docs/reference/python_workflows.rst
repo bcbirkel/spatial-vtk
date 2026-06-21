@@ -226,12 +226,12 @@ the large-run notebooks.
    * - ``spatial_vtk.io.load_configured_input_tables``
      - Load non-output input tables from dotted config path keys such as
        ``"paths.metric_figure_snapshot"`` or ``"paths.site_metadata"`` into a
-       labeled dictionary. Use this for tutorial figure inputs and optional
+       labeled mapping. Use this for tutorial figure inputs and optional
        spatial metadata instead of repeating direct ``read_config_table`` calls
        in notebook cells.
    * - ``spatial_vtk.io.load_configured_input_paths``
      - Resolve non-table configured inputs such as ``"paths.region_geojson"``
-       into a labeled path dictionary. Use this when plotting or spatial helper
+       into a labeled path mapping. Use this when plotting or spatial helper
        calls need a configured file path but should not own config path
        resolution in the notebook cell.
    * - ``spatial_vtk.io.event_ids_from_records``,
@@ -257,7 +257,7 @@ the large-run notebooks.
        import-path strings are retained only for compatibility and generated
        Slurm workers.
    * - ``spatial_vtk.config.notebook_step_result``
-     - Return a compact JSON-friendly status dictionary for current/skipped
+     - Return a compact JSON-friendly status payload for current/skipped
        notebook workflow steps. Standard result objects call this internally
        for skipped ``run_*_step_if_needed()`` payloads; custom workflow cells
        can call it directly when they already own the readiness object and

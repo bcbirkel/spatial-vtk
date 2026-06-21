@@ -118,7 +118,7 @@ Public helpers exposed by ``spatial_vtk.spatial``:
        event-centered residual, and station-bias rows with row, event, and
        station counts.
    * - ``summarize_standard_spatial_products``
-     - Build the per-metric Step 4 product frame dictionary and compact
+     - Build the per-metric Step 4 product-frame mapping and compact
        summary/preview display tables from configured spatial workflow
        outputs, keeping metric-specific dataframe loops out of notebooks.
    * - ``spatial_metric_table_frame``, ``spatial_metric_product_frames``, and

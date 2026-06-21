@@ -75,6 +75,9 @@ Changelog
   - Tightened generated API fallback parameter descriptions for generic path
     and table names so explicit overrides are distinguished from standard
     config-resolved workflow artifacts.
+  - Reworded remaining notebook-facing workflow/API docs from raw dictionary
+    phrasing to labeled mappings, status payloads, and product-frame mappings
+    where the package returns structured display data.
   - Aligned internal CLI call/result helper docstrings with the public
     ``svtk call`` guidance so direct public-function calls are consistently
     framed as advanced one-off usage rather than generic workflow commands.
