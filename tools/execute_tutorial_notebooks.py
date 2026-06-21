@@ -391,7 +391,15 @@ def missing_tutorial_example_data(repo_root: Path) -> list[str]:
         return missing
 
     with records_path.open("r", encoding="utf-8", newline="") as handle:
-        records = list(csv.DictReader(handle))
+        reader = csv.DictReader(handle)
+        fieldnames = set(reader.fieldnames or ())
+        missing_columns = sorted({"event_id", "station"} - fieldnames)
+        if missing_columns:
+            missing.append(
+                f"{records_path.relative_to(repo_root)} (missing columns: {', '.join(missing_columns)})"
+            )
+            return missing
+        records = list(reader)
     if not records:
         missing.append(str(records_path.relative_to(repo_root)) + " (empty)")
         return missing

@@ -193,6 +193,23 @@ def test_tutorial_example_data_preflight_matches_committed_checkout() -> None:
     assert module.missing_tutorial_example_data(repo_root) == []
 
 
+def test_tutorial_example_data_preflight_reports_malformed_event_station_table(tmp_path: Path) -> None:
+    """Malformed tutorial event-station metadata should fail before notebook execution."""
+
+    module = _load_executor_module()
+    records_dir = tmp_path / "data" / "examples" / "example_five_event_subset" / "metadata"
+    records_dir.mkdir(parents=True)
+    records_path = records_dir / "selected_event_stations.csv"
+    records_path.write_text("event_id,network\nci1,CI\n", encoding="utf-8")
+
+    missing = module.missing_tutorial_example_data(tmp_path)
+
+    assert (
+        "data/examples/example_five_event_subset/metadata/selected_event_stations.csv "
+        "(missing columns: station)"
+    ) in missing
+
+
 def test_tutorial_example_data_preflight_runs_before_clean(tmp_path: Path, monkeypatch) -> None:
     """Missing example data should be reported before tutorial outputs are cleaned."""
 

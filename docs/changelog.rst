@@ -52,6 +52,9 @@ Changelog
   - Reworked the parent-directory notebook bootstrap check to use AST call
     detection, so equivalent forms such as ``pathlib.Path("../docs")`` are
     caught by the same source-contract preflight.
+  - Hardened tutorial example-data preflight so malformed
+    ``selected_event_stations.csv`` files report missing ``event_id`` or
+    ``station`` columns before notebook execution.
 
 2026-06-19
 ----------
