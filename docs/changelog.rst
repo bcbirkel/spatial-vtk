@@ -34,6 +34,9 @@ Changelog
   - Cleaned the Spatial API focused-script plotting example so it shows
     individual plot functions instead of mixing direct suite writers into the
     first import block.
+
+- **Tutorial runtime and preview checks** *(Fixed)*
+
   - Improved tutorial runtime-check failures so missing-dependency messages
     include both the generic source-checkout commands and exact install/check
     commands for the Python executable that failed the runtime check.
@@ -46,6 +49,9 @@ Changelog
   - Fixed output status tables so user-home paths such as ``~/outputs`` are
     expanded before existence checks and displayed through the ``resolved_path``
     column.
+
+- **Notebook source-contract checks** *(Fixed)*
+
   - Tightened tutorial notebook contract checks so brittle parent-directory
     bootstrap cells using ``Path("..")`` are rejected alongside
     ``Path("../")`` variants.
@@ -58,6 +64,9 @@ Changelog
   - Hardened the same tutorial preflight to report row numbers when
     ``selected_event_stations.csv`` has blank ``event_id`` or ``station``
     values instead of silently skipping waveform-file checks for those rows.
+
+- **Workflow readiness and dashboard parsing** *(Fixed)*
+
   - Tightened QC and metrics dashboard row-limit, download-limit,
     display-limit, and summary-chunksize parsing so explicit
     ``all``/``none``/``unlimited`` values remain the only full-table opt-in
@@ -71,6 +80,9 @@ Changelog
   - Added workflow-doc regression coverage so notebook guidance keeps using
     stable package import surfaces and does not reintroduce metrics plotting
     implementation-module paths.
+
+- **Tutorial notebook hygiene** *(Fixed)*
+
   - Hardened tutorial notebook source-contract checks so saved widget/UI
     metadata state is rejected alongside execution counts and saved cell
     outputs.
@@ -84,6 +96,9 @@ Changelog
     under-documented section headings that omit Purpose/Outputs notes.
   - Improved CLI missing-dependency diagnostics so import aliases such as
     ``yaml`` name their installable package, for example ``PyYAML``.
+
+- **Notebook status-frame vocabulary** *(Changed)*
+
   - Normalized ``SlurmSubmission.status_frame()`` so notebook-displayed Slurm
     submissions include ``name``, ``artifact_label``, ``resolved_path``,
     ``path``, and ``exists`` columns while preserving ``script_path``.
@@ -105,6 +120,9 @@ Changelog
   - Normalized generic output path rows, output-group status rows, output
     readiness rows, and compact I/O workflow summary frames with
     ``artifact_label``, ``artifact_role``, and ``status`` columns.
+
+- **Dashboard launch and release checks** *(Fixed)*
+
   - Added dashboard launch port validation so invalid ports or impossible
     auto-port search ranges raise clear configuration errors before Streamlit
     startup.
@@ -171,6 +189,9 @@ Changelog
     ``status_frame()`` outputs so notebook tables expose ``name``,
     ``artifact_label``, ``resolved_path``, ``path``, and ``exists`` while
     preserving legacy figure/table path columns.
+
+- **Figure status-frame contracts** *(Changed)*
+
   - Added normalized path columns to ``MetricFigureContext.status_frame()`` for
     metric input, figure directory, and sidecar directory rows while preserving
     the existing scalar ``name``/``value`` notebook display.
@@ -192,6 +213,9 @@ Changelog
   - Added config and dashboard-output existence flags to
     ``NotebookDashboardCommands.status_frame()`` so dashboard launch cells show
     missing metrics, summary, or QC inputs before starting Streamlit.
+
+- **Dashboard and workflow status-frame contracts** *(Changed)*
+
   - Standardized ``MetricWaveformCacheResult.status_frame()`` so metric cache
     notebook status tables expose artifact names, roles, readiness status,
     normalized paths, row counts, and cache reuse counters.
@@ -425,6 +449,9 @@ Changelog
     while preserving legacy manifest-path aliases.
   - Reworded lazy I/O package loader docs so public API references describe
     resolved public helpers instead of implementation-module plumbing.
+
+- **Result-owned workflow runner guidance** *(Fixed)*
+
   - Reworded config-backed metric workflow module docs so large-run notebooks
     are steered to the standard metric result object instead of direct helper
     calls wrapped in notebook readiness plumbing.
