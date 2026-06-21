@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from spatial_vtk.io import parquet_table_columns
+from spatial_vtk.io import parquet_table_columns, table_columns
 from spatial_vtk.visualize.figure_context import value_requires_model
 from spatial_vtk.visualize.figure_sidecars import (
     normalize_figure_status_rows,
@@ -2773,10 +2773,7 @@ def _table_columns(path: str | Path) -> list[str]:
     """Return table columns without reading full row data when possible."""
 
     input_path = Path(path).expanduser()
-    suffix = input_path.suffix.lower()
-    if suffix in {".parquet", ".pq"}:
-        return parquet_table_columns(input_path)
-    return list(pd.read_csv(input_path, nrows=0).columns)
+    return table_columns(input_path)
 
 
 def _read_metric_figure_table(path: str | Path, *, columns: list[str]) -> pd.DataFrame:

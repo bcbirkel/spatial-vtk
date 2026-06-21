@@ -192,6 +192,18 @@ def parquet_table_columns(path: str | Path) -> list[str]:
         ) from exc
 
 
+def table_columns(path: str | Path) -> list[str]:
+    """Return CSV or Parquet column names without reading row data."""
+
+    input_path = Path(path).expanduser()
+    suffix = input_path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        return parquet_table_columns(input_path)
+    if suffix == ".csv":
+        return list(pd.read_csv(input_path, nrows=0, low_memory=False).columns)
+    raise ValueError(f"Unsupported table format for {input_path}. Use Parquet or CSV.")
+
+
 def parquet_table_row_count(path: str | Path) -> int:
     """Return a parquet row count without materializing table columns."""
 

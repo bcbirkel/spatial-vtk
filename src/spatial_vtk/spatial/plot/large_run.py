@@ -11,7 +11,7 @@ import pandas as pd
 
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
-from spatial_vtk.io import load_output_table, parquet_table_columns, read_bounded_table, read_table, slugify
+from spatial_vtk.io import load_output_table, read_bounded_table, read_table, slugify, table_columns
 from spatial_vtk.metrics.plot.large_run import (
     MetricFigureContext,
     first_existing,
@@ -4424,10 +4424,8 @@ def _table_columns(path: Path) -> list[str]:
     """Return table columns without loading row data."""
 
     suffix = path.suffix.lower()
-    if suffix in {".parquet", ".pq"}:
-        return parquet_table_columns(path)
-    if suffix == ".csv":
-        return list(pd.read_csv(path, nrows=0).columns)
+    if suffix in {".parquet", ".pq", ".csv"}:
+        return table_columns(path)
     raise ValueError(f"Unsupported table format for {path}. Use Parquet or CSV.")
 
 

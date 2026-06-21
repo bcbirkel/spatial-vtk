@@ -19,7 +19,7 @@ import pandas as pd
 
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
-from spatial_vtk.io import parquet_table_columns, table_row_count
+from spatial_vtk.io import table_columns, table_row_count
 from spatial_vtk.io.tables import read_table
 
 
@@ -1488,10 +1488,8 @@ def _dashboard_table_columns(path: Path) -> list[str]:
     """Return dashboard summary columns without loading row data."""
 
     suffix = path.suffix.lower()
-    if suffix in {".parquet", ".pq"}:
-        return parquet_table_columns(path)
-    if suffix == ".csv":
-        return list(pd.read_csv(path, nrows=0).columns)
+    if suffix in {".parquet", ".pq", ".csv"}:
+        return table_columns(path)
     raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
 
 

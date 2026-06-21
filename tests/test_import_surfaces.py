@@ -116,6 +116,7 @@ def test_public_imports():
         prepare_station_metadata,
         record_coverage_readiness_from_config,
         resolve_model_aliases,
+        table_columns,
         table_row_count,
     )
     from spatial_vtk.qc import (
@@ -271,6 +272,7 @@ def test_public_imports():
     assert callable(OutputGroup)
     assert callable(parquet_table_columns)
     assert callable(parquet_table_row_count)
+    assert callable(table_columns)
     assert callable(table_row_count)
     assert callable(prepare_metadata_tables_from_config)
     assert callable(preprocessing_readiness_from_config)

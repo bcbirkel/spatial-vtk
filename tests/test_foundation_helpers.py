@@ -17,6 +17,7 @@ from spatial_vtk.io import (
     read_bounded_table,
     resolve_model_aliases,
     slugify,
+    table_columns,
     table_row_count,
     wide_to_long_metrics,
     write_station_event_kml,
@@ -80,6 +81,15 @@ def test_table_helpers(tmp_path):
     long = wide_to_long_metrics(loaded)
     assert set(["metric", "value_obs", "value_syn", "residual"]).issubset(long.columns)
     assert long["metric"].tolist() == ["C1", "C1"]
+    assert table_columns(csv_path) == [
+        "simulation_model",
+        "event_title",
+        "station_name",
+        "station_latitude",
+        "station_longitude",
+        "C1_obs",
+        "C1_syn",
+    ]
 
     aggregated = aggregate_metric_by_station_over_events(long, metric_col="residual")
     assert aggregated.loc[0, "n_events"] == 2

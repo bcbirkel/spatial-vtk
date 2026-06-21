@@ -620,7 +620,7 @@ def test_dashboard_metric_schema_probe_uses_shared_parquet_helper() -> None:
 
     source = pathlib.Path(dashboard_export.__file__).read_text(encoding="utf-8")
     helper_source = source.split("def _dashboard_metric_table_columns", 1)[1].split("\ndef ", 1)[0]
-    assert "parquet_table_columns(path)" in helper_source
+    assert "table_columns(path)" in helper_source
     assert "pyarrow.parquet" not in helper_source
     assert "ParquetFile(path).schema" not in helper_source
 

@@ -31,6 +31,7 @@ from typing import Any, Sequence
 import pandas as pd
 
 from spatial_vtk.io.compute_manifest import read_json, write_json
+from spatial_vtk.io.tables import table_columns
 from spatial_vtk.metrics.workflow.run import METRIC_TEXT_COLUMNS, run_metric_tasks, write_metric_rows
 from spatial_vtk.metrics.workflow.tasks import MetricWorkflowTask
 
@@ -625,17 +626,7 @@ def _merged_batch_columns(paths: Sequence[Path]) -> list[str]:
 def _table_columns(path: Path) -> list[str]:
     """Return column names from one CSV or Parquet table."""
 
-    if path.suffix.lower() in {".parquet", ".pq"}:
-        try:
-            import pyarrow.parquet as pq
-
-            return list(pq.ParquetFile(path).schema.names)
-        except ImportError as exc:
-            raise RuntimeError(
-                f"Could not inspect metric batch parquet schema for {path}: pyarrow is required. "
-                "Install the package dependencies or rewrite metric batches as CSV before merging."
-            ) from exc
-    return list(pd.read_csv(path, nrows=0).columns)
+    return table_columns(path)
 
 
 def _merged_batch_schema_frame(paths: Sequence[Path], columns: Sequence[str], *, max_rows_per_batch: int = 100) -> pd.DataFrame:
