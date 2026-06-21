@@ -2397,8 +2397,15 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Direct script helper for observed/synthetic trace-comparison" in text
     assert "Notebook-facing Step 2/6 waveform-comparison wrapper" in text
     assert "Backward-compatible alias for older large-run notebooks" in text
-    assert "Notebook cells should use\n``write_waveform_comparison_from_notebook_settings``" in text
-    assert "Scripts can use\n``write_waveform_comparison_from_outputs``" in text
+    assert "Notebook cells should render the standard or large-run comparison figure\nthrough result-object methods" in text
+    assert "spatial_vtk.qc.load_standard_qc_inputs(...).write_waveform_comparison(...)" in text
+    assert (
+        "spatial_vtk.spatial.load_standard_additional_plotting_inputs(...).write_waveform_comparison(...)"
+        in text
+    )
+    assert "Those methods own the render gate, sidecar options, notebook figure settings" in text
+    assert "Scripts can use\n``write_waveform_comparison_from_notebook_settings``" in text
+    assert "or ``write_waveform_comparison_from_outputs``\nwhen they have already resolved" in text
     assert "Lower-level script helper that writes dashboard-ready row and summary" in text
     assert "Lower-level launch helpers for scripts" in text
     for helper in (

@@ -169,12 +169,17 @@ Waveform Figures
 
 Use ``spatial_vtk.visualize.waveforms`` as the public entry point for waveform
 comparison, overlay, record-section, and station-event waveform figures.
-Notebook cells should use
-``write_waveform_comparison_from_notebook_settings`` when rendering the
-standard or large-run comparison figure because that wrapper owns the render
-gate, sidecar options, and notebook figure settings. Scripts can use
-``write_waveform_comparison_from_outputs`` when they have already resolved the
-output group, filters, and plotting keyword arguments.
+Notebook cells should render the standard or large-run comparison figure
+through result-object methods such as
+``spatial_vtk.qc.load_standard_qc_inputs(...).write_waveform_comparison(...)``
+or
+``spatial_vtk.spatial.load_standard_additional_plotting_inputs(...).write_waveform_comparison(...)``.
+Those methods own the render gate, sidecar options, notebook figure settings,
+bounded comparison sampling, and configured figure path. Scripts can use
+``write_waveform_comparison_from_notebook_settings`` when notebook settings
+should still control rendering, or ``write_waveform_comparison_from_outputs``
+when they have already resolved the output group, filters, and plotting
+keyword arguments.
 
 .. automodule:: spatial_vtk.visualize.waveforms
    :members:

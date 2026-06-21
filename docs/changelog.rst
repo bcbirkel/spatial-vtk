@@ -13,6 +13,9 @@ Changelog
   - Reworded Step 2/6 waveform-comparison workflow guidance so notebooks use
     QC or additional-plotting result-object methods, with direct waveform
     writers framed as script/custom-orchestration helpers.
+  - Aligned the Visualize API waveform guidance with the same result-object
+    contract so direct waveform writers are no longer described as the primary
+    notebook path.
   - Updated regression coverage so workflow docs keep result-object methods
     as the notebook-facing path for spatial maps and waveform comparisons.
   - Cleaned the Spatial API focused-script plotting example so it shows
