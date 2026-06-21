@@ -69,8 +69,10 @@ Start with public helpers from ``spatial_vtk.io``:
   context figures, and large-run driver methods such as
   ``run_metadata_step_if_needed()``, ``run_preprocessing_step_if_needed()``,
   and ``run_record_coverage_step_if_needed()``
-- ``output_group`` and ``output_readiness`` for notebook-friendly output status
-  checks without hand-written path cells
+- ``output_group`` and ``output_readiness`` for custom helpers and scripts that
+  need grouped artifact paths or readiness checks before a standard workflow
+  result object exists. Routine notebooks should start with the standard
+  ``load_standard_*`` result helpers above.
 
 ``config``
 ----------

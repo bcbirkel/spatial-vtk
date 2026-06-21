@@ -3119,6 +3119,8 @@ def test_package_overview_points_to_public_workflow_helpers():
         "``preprocess_waveforms_from_config``",
         "notebooks do not need to unpack path mappings just to report progress",
         "``output_group`` and ``output_readiness``",
+        "custom helpers and scripts that\n  need grouped artifact paths or readiness checks",
+        "Routine notebooks should start with the standard\n  ``load_standard_*`` result helpers above.",
         "Start with public helpers from ``spatial_vtk.qc``",
         "``load_standard_qc_inputs``",
         "``load_standard_qc_workflow_outputs``",
@@ -3158,6 +3160,7 @@ def test_package_overview_points_to_public_workflow_helpers():
         assert snippet not in text
     assert "path dictionaries" not in text
     assert "lower-level downstream metric" not in text
+    assert "notebook-friendly output status\n  checks without hand-written path cells" not in text
 
     future = (docs.parent / "future_features.rst").read_text(encoding="utf-8")
     assert "public ``spatial_vtk.spatial`` GeoJSON and corridor" in future
