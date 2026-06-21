@@ -34,7 +34,7 @@ Use Python 3.10, 3.11, or 3.12. The package currently declares
 ```bash
 git diff --check
 MPLCONFIGDIR=/tmp/mplconfig_svtk python -m pytest -q
-PYTHONPYCACHEPREFIX=/tmp/svtk_pycache python -m compileall -q src tests
+PYTHONPYCACHEPREFIX=/tmp/svtk_pycache python -m compileall -q src tests tools
 PYTHONPATH=src python tools/generate_cli_reference.py --check
 MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run
 MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run

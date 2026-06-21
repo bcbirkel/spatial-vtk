@@ -45,7 +45,7 @@ jobs:
 
       - name: Compile source and tests
         run: |
-          PYTHONPYCACHEPREFIX=/tmp/svtk_pycache python -m compileall -q src tests
+          PYTHONPYCACHEPREFIX=/tmp/svtk_pycache python -m compileall -q src tests tools
 
       - name: Check generated CLI reference
         run: |

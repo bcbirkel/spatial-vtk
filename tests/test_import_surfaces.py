@@ -420,7 +420,7 @@ def test_release_checklist_exists_and_matches_public_validation_gates():
         'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"',
         "git diff --check",
         "python -m pytest -q",
-        "PYTHONPYCACHEPREFIX=/tmp/svtk_pycache python -m compileall -q src tests",
+        "PYTHONPYCACHEPREFIX=/tmp/svtk_pycache python -m compileall -q src tests tools",
         "PYTHONPATH=src python tools/generate_cli_reference.py --check",
         "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run",
         "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run",

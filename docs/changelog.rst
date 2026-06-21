@@ -140,6 +140,9 @@ Changelog
     package source, tooling, workflow files, and package metadata.
   - Added ``git diff --check`` as an explicit CI and release-checklist gate so
     whitespace regressions are caught before release validation continues.
+  - Expanded the CI and release-checklist compile gate to include ``tools`` so
+    notebook execution and CLI reference scripts are syntax-checked with the
+    package and tests.
   - Tightened release-checklist regression coverage so the documented notebook
     runtime dependency check remains part of the required validation sequence.
   - Added exact-set regression coverage for tutorial runtime module checks so
