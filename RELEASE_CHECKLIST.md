@@ -32,6 +32,7 @@ Use Python 3.10, 3.11, or 3.12. The package currently declares
 ## 3. Run Local Validation
 
 ```bash
+git diff --check
 MPLCONFIGDIR=/tmp/mplconfig_svtk python -m pytest -q
 PYTHONPYCACHEPREFIX=/tmp/svtk_pycache python -m compileall -q src tests
 PYTHONPATH=src python tools/generate_cli_reference.py --check

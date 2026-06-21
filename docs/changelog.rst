@@ -89,6 +89,8 @@ Changelog
   - Broadened public-release privacy regression coverage so private run paths
     and cluster-specific tokens are rejected across public docs, notebooks,
     package source, tooling, workflow files, and package metadata.
+  - Added ``git diff --check`` as an explicit CI and release-checklist gate so
+    whitespace regressions are caught before release validation continues.
 
 2026-06-19
 ----------

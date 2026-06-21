@@ -35,6 +35,10 @@ jobs:
         run: |
           python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run
 
+      - name: Check patch whitespace
+        run: |
+          git diff --check
+
       - name: Run tests
         run: |
           MPLCONFIGDIR=/tmp/mplconfig_svtk python -m pytest -q

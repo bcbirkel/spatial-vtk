@@ -418,6 +418,7 @@ def test_release_checklist_exists_and_matches_public_validation_gates():
         assert 'python -m pip install -e ".[validation,docs,dashboard,waveforms]"' not in agents
     for snippet in (
         'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"',
+        "git diff --check",
         "python -m pytest -q",
         "PYTHONPYCACHEPREFIX=/tmp/svtk_pycache python -m compileall -q src tests",
         "PYTHONPATH=src python tools/generate_cli_reference.py --check",
@@ -444,6 +445,8 @@ def test_public_workflows_check_generated_cli_reference():
         workflow_name: (root / ".github" / "workflows" / workflow_name).read_text(encoding="utf-8")
         for workflow_name in ("ci.yml", "docs.yml")
     }
+    assert "Check patch whitespace" in workflows["ci.yml"]
+    assert "git diff --check" in workflows["ci.yml"]
     for text in workflows.values():
         assert "Check generated CLI reference" in text
         assert "PYTHONPATH=src python tools/generate_cli_reference.py --check" in text
