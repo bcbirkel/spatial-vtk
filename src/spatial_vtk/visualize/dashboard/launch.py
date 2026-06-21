@@ -391,6 +391,10 @@ def _launch_one_dashboard_from_notebook_settings(
         "dashboard": dashboard_name,
         "launch_requested": launch_requested,
         "requested_port": requested_port,
+        "server_address": str(launch_kwargs.get("server_address", "127.0.0.1")),
+        "auto_port": bool(launch_kwargs.get("auto_port", False)),
+        "proxy_mode": bool(launch_kwargs.get("proxy_mode", False)),
+        "show": bool(launch_kwargs.get("show", True)),
         "terminal_command": terminal_command,
     }
     if not launch_requested:
@@ -428,11 +432,20 @@ def _launch_one_dashboard_from_notebook_settings(
             "status": "running",
             "pid": getattr(process, "pid", ""),
             "resolved_port": resolved_port,
-            "url": f"http://127.0.0.1:{resolved_port}",
+            "url": f"http://{_dashboard_display_host(common['server_address'])}:{resolved_port}",
             "message": f"{dashboard_name.capitalize()} dashboard running.",
         }
     )
     return process
+
+
+def _dashboard_display_host(server_address: str) -> str:
+    """Return a browser-friendly host for a dashboard status URL."""
+
+    address = str(server_address).strip()
+    if address in {"", "0.0.0.0", "::"}:
+        return "127.0.0.1"
+    return address
 
 
 def launch_streamlit_dashboard(

@@ -344,8 +344,10 @@ Public dashboard helpers exposed by ``spatial_vtk.visualize``:
    * - ``launch_configured_dashboards_from_notebook_settings``
      - Use notebook launch settings to launch requested dashboards or return
        terminal fallback commands and launch errors in one compact
-       ``DashboardLaunchResult.status_frame()``. Pass ``dashboards=("qc",)``
-       for QC-only notebook cells.
+       ``DashboardLaunchResult.status_frame()``. The status frame includes
+       requested port, resolved port, server address, auto-port, proxy-mode,
+       show/headless, terminal command, URL, process id, and error message
+       columns. Pass ``dashboards=("qc",)`` for QC-only notebook cells.
    * - ``launch_configured_metrics_dashboard`` and
        ``launch_configured_qc_dashboard``
      - Lower-level launch helpers for scripts that already know which

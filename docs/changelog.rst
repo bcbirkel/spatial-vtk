@@ -229,6 +229,9 @@ Changelog
   - Reworded the public release checklist so it refers to private planning
     files generically while ``.gitignore`` retains the concrete ignored
     patterns.
+  - Expanded notebook dashboard launch status frames with server address,
+    auto-port, proxy-mode, show/headless, and browser URL provenance so remote
+    dashboard launch cells are easier to debug.
   - Reworded lazy I/O package loader docs so public API references describe
     resolved public helpers instead of implementation-module plumbing.
   - Reworded config-backed metric workflow module docs so large-run notebooks

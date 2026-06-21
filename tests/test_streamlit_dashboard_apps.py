@@ -1904,7 +1904,14 @@ def test_notebook_dashboard_launch_helper_returns_running_and_command_rows(monke
         qc_command = "svtk dashboard qc --port 8752"
 
         def metrics_launch_kwargs(self, *, show=True):
-            return {"config_path": "config.yaml", "server_port": self.metrics_port, "show": show}
+            return {
+                "config_path": "config.yaml",
+                "server_address": "0.0.0.0",
+                "server_port": self.metrics_port,
+                "auto_port": True,
+                "proxy_mode": True,
+                "show": show,
+            }
 
         def qc_launch_kwargs(self, *, show=True):
             return {"config_path": "config.yaml", "server_port": self.qc_port, "show": show}
@@ -1924,7 +1931,16 @@ def test_notebook_dashboard_launch_helper_returns_running_and_command_rows(monke
     assert called["metrics"]["show"] is False
     assert status.loc[status["dashboard"].eq("metrics"), "status"].item() == "running"
     assert status.loc[status["dashboard"].eq("metrics"), "resolved_port"].item() == 8751
+    assert status.loc[status["dashboard"].eq("metrics"), "server_address"].item() == "0.0.0.0"
+    assert bool(status.loc[status["dashboard"].eq("metrics"), "auto_port"].item()) is True
+    assert bool(status.loc[status["dashboard"].eq("metrics"), "proxy_mode"].item()) is True
+    assert bool(status.loc[status["dashboard"].eq("metrics"), "show"].item()) is False
+    assert status.loc[status["dashboard"].eq("metrics"), "url"].item() == "http://127.0.0.1:8751"
     assert status.loc[status["dashboard"].eq("qc"), "status"].item() == "command"
+    assert status.loc[status["dashboard"].eq("qc"), "server_address"].item() == "127.0.0.1"
+    assert bool(status.loc[status["dashboard"].eq("qc"), "auto_port"].item()) is False
+    assert bool(status.loc[status["dashboard"].eq("qc"), "proxy_mode"].item()) is False
+    assert bool(status.loc[status["dashboard"].eq("qc"), "show"].item()) is False
     assert "svtk dashboard qc" in status.loc[status["dashboard"].eq("qc"), "terminal_command"].item()
 
 
