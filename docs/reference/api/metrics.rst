@@ -108,7 +108,9 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
        preprocessed trace-metadata dependency in notebooks.
    * - ``plan_metric_tasks_from_config``
      - Plan metric tasks from configured inventories, QC overlap tables, and
-       metric settings.
+       metric settings. When writing a manifest, the returned payload includes
+       task count, batch count, per-batch task range, batch output directory,
+       and first/last batch output paths for notebook display.
    * - ``metric_manifest_readiness_from_config``
      - Check whether configured metric inventories and the overlap QC table are
        ready before planning the metric manifest.
@@ -122,7 +124,10 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
        path plumbing.
    * - ``read_task_manifest`` and ``run_manifest_batch``
      - Load a manifest and execute one planned batch from Python or a generated
-       worker script.
+       worker script. ``MetricWorkflowManifest.status_frame()`` reports the
+       manifest path, task count, batch count, batch output directory, per-batch
+       task range, first/last batch outputs, and QC table without loading
+       waveform files.
    * - ``metric_manifest_batch_status`` and
        ``metric_batch_merge_readiness_from_config``
      - Report which metric batches are complete before merging outputs.

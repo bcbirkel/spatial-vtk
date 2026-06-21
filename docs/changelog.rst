@@ -301,6 +301,9 @@ Changelog
     downstream output writing, and metric figure-suite rendering so the
     large-run notebook no longer imports or passes the lower-level configured
     writer functions directly.
+  - Added ``MetricWorkflowManifest.status_frame()`` so metric planning exposes
+    task count, batch count, batch output directory, per-batch task range, and
+    first/last batch outputs before Slurm submission.
   - Added config-backed Step 3 metric inventory and manifest readiness helpers
     so metric notebooks no longer repeat trace-metadata or QC-overlap
     dependency contracts.

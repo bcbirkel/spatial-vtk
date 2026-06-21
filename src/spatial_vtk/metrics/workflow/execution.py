@@ -64,6 +64,29 @@ class MetricWorkflowManifest:
     batches: tuple[dict[str, Any], ...]
     qc_table: str = ""
 
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact summary of manifest planning outputs."""
+
+        output_paths = [Path(str(batch.get("output_path", ""))).expanduser() for batch in self.batches if batch.get("output_path")]
+        output_dirs = sorted({str(path.parent) for path in output_paths})
+        task_counts = [len(batch.get("task_indices", ())) for batch in self.batches]
+        return pd.DataFrame(
+            [
+                {
+                    "manifest_path": str(self.manifest_path),
+                    "manifest_exists": self.manifest_path.exists(),
+                    "task_count": len(self.tasks),
+                    "batch_count": len(self.batches),
+                    "batch_output_dir": output_dirs[0] if len(output_dirs) == 1 else ("mixed" if output_dirs else ""),
+                    "min_tasks_per_batch": min(task_counts) if task_counts else 0,
+                    "max_tasks_per_batch": max(task_counts) if task_counts else 0,
+                    "first_batch_output": str(output_paths[0]) if output_paths else "",
+                    "last_batch_output": str(output_paths[-1]) if output_paths else "",
+                    "qc_table": self.qc_table,
+                }
+            ]
+        )
+
 
 @dataclass(frozen=True)
 class MetricManifestBatchStatus:

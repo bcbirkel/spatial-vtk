@@ -2027,7 +2027,21 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     tasks = plan_metric_tasks(obs_inventory, syn_inventory, plan=plan)
 
     manifest = write_task_manifest(tasks, tmp_path / "manifest.json", output_dir=tmp_path / "batches", batch_size=1)
+    manifest_status = manifest.status_frame()
+    assert manifest_status.loc[0, "manifest_path"] == str(tmp_path / "manifest.json")
+    assert bool(manifest_status.loc[0, "manifest_exists"]) is True
+    assert manifest_status.loc[0, "task_count"] == len(tasks)
+    assert manifest_status.loc[0, "batch_count"] == 1
+    assert manifest_status.loc[0, "batch_output_dir"] == str(tmp_path / "batches")
+    assert manifest_status.loc[0, "min_tasks_per_batch"] == 1
+    assert manifest_status.loc[0, "max_tasks_per_batch"] == 1
+    assert manifest_status.loc[0, "first_batch_output"] == str(tmp_path / "batches" / "metrics_batch_0000.csv")
+    assert manifest_status.loc[0, "last_batch_output"] == str(tmp_path / "batches" / "metrics_batch_0000.csv")
+    assert manifest_status.loc[0, "qc_table"] == ""
     parsed = read_task_manifest(manifest.manifest_path)
+    parsed_status = parsed.status_frame()
+    assert parsed_status.loc[0, "task_count"] == len(tasks)
+    assert parsed_status.loc[0, "batch_count"] == 1
     assert len(parsed.batches) == 1
     initial_status = metric_manifest_batch_status(parsed)
     assert initial_status.total_batches == 1
@@ -2202,6 +2216,12 @@ metrics:
     assert plan_result["metric_manifest_batch_count"] == plan_result["batch_count"] == 1
     assert plan_result["metric_manifest_batch_size"] == plan_result["batch_size"] == 1
     assert plan_result["metric_manifest_batch_output_dir"] == plan_result["batch_output_dir"]
+    assert plan_result["metric_manifest_min_tasks_per_batch"] == plan_result["min_tasks_per_batch"] == 1
+    assert plan_result["metric_manifest_max_tasks_per_batch"] == plan_result["max_tasks_per_batch"] == 1
+    assert plan_result["metric_manifest_first_batch_output"] == plan_result["first_batch_output"]
+    assert plan_result["metric_manifest_last_batch_output"] == plan_result["last_batch_output"]
+    assert plan_result["first_batch_output"].endswith("outputs/metric_batches/metrics_batch_0000.csv")
+    assert plan_result["last_batch_output"].endswith("outputs/metric_batches/metrics_batch_0000.csv")
     assert plan_result["observed_metric_inventory_path"] == str(tables / "observed_metric_inventory.parquet")
     assert plan_result["synthetic_metric_inventory_path"] == str(tables / "synthetic_metric_inventory.parquet")
     assert plan_result["metric_qc_table_path"] == str(tables / "qc_inventory_overlap.parquet")

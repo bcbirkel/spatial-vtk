@@ -157,16 +157,25 @@ def plan_metric_tasks_from_config(
             batch_size=selected_batch_size,
             qc_table=qc_path,
         )
+        manifest_status = written.status_frame().iloc[0].to_dict()
         payload.update(
             {
                 "metric_manifest_path": str(written.manifest_path),
                 "metric_manifest_batch_count": int(len(written.batches)),
                 "metric_manifest_batch_size": int(selected_batch_size),
                 "metric_manifest_batch_output_dir": str(batch_dir),
+                "metric_manifest_min_tasks_per_batch": int(manifest_status["min_tasks_per_batch"]),
+                "metric_manifest_max_tasks_per_batch": int(manifest_status["max_tasks_per_batch"]),
+                "metric_manifest_first_batch_output": str(manifest_status["first_batch_output"]),
+                "metric_manifest_last_batch_output": str(manifest_status["last_batch_output"]),
                 "manifest_path": str(written.manifest_path),
                 "batch_count": int(len(written.batches)),
                 "batch_size": int(selected_batch_size),
                 "batch_output_dir": str(batch_dir),
+                "min_tasks_per_batch": int(manifest_status["min_tasks_per_batch"]),
+                "max_tasks_per_batch": int(manifest_status["max_tasks_per_batch"]),
+                "first_batch_output": str(manifest_status["first_batch_output"]),
+                "last_batch_output": str(manifest_status["last_batch_output"]),
             }
         )
     else:
