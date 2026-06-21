@@ -320,12 +320,14 @@ the large-run notebooks.
        spatial figure suites that should write under
        ``outputs.figures/metrics`` without hard-coding
        ``context.figures_dir / "metrics"`` in notebook cells.
-       For large-run metric figures, use
-       ``spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings``.
-       That wrapper owns the figure render gate, metric-table readiness checks,
-       value-column checks, settings resolution, and sidecar options so
-       notebook cells do not repeat metric-table existence checks or build
-       figure contexts by hand.
+       For large-run metric figures, call
+       ``spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).write_large_run_figure_suite(...)``
+       with ``notebook_figure_settings("metric", figure_subdir="metrics")``.
+       The result object owns the notebook-facing render path and delegates the
+       figure render gate, metric-table readiness checks, value-column checks,
+       settings resolution, and sidecar options to package code, so notebook
+       cells do not repeat metric-table existence checks or build figure
+       contexts by hand.
        For large-run spatial figures, call
        ``spatial_vtk.spatial.load_standard_spatial_workflow_output_status(...).write_figure_suite(...)``
        with ``notebook_figure_settings("spatial", figure_subdir="metrics")``.

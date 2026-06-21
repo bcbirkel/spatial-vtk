@@ -45,7 +45,6 @@ sidecars, and bounded previews. Common large-run entry points include:
 from spatial_vtk.config import notebook_run_context, notebook_figure_settings
 from spatial_vtk.io import load_standard_ingest_workflow_outputs
 from spatial_vtk.metrics import load_standard_metric_workflow_outputs
-from spatial_vtk.metrics.plot import write_large_run_metric_figure_suite_from_notebook_settings
 from spatial_vtk.qc import load_standard_qc_workflow_outputs
 from spatial_vtk.spatial import (
     load_standard_geojson_workflow_output_status,
@@ -60,6 +59,14 @@ spatial output result:
 ```python
 spatial_outputs = load_standard_spatial_workflow_output_status(cfg=context.cfg)
 spatial_figure_suite = spatial_outputs.write_figure_suite(spatial_figure_settings)
+```
+
+Step 3 large-run metric figures should use the standard metric output result
+for the same reason:
+
+```python
+metric_outputs = load_standard_metric_workflow_outputs(cfg=context.cfg)
+metric_figure_suite = metric_outputs.write_large_run_figure_suite(metric_figure_settings)
 ```
 
 Single-figure helpers remain available for custom Python scripts, but the

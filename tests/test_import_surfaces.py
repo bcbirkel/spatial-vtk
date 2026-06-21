@@ -2690,9 +2690,13 @@ def test_python_workflow_docs_prefer_metric_figure_suite_wrapper():
     workflows_path = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "python_workflows.rst"
     workflows = workflows_path.read_text(encoding="utf-8")
     normalized = " ".join(workflows.split())
+    driver_section = workflows.split("Core Driver Helpers", 1)[1].split("Standard Notebook Input Helpers", 1)[0]
 
+    assert "spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).write_large_run_figure_suite(...)" in workflows
+    assert "spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).write_large_run_figure_suite(...)" in driver_section
+    assert "spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings" not in driver_section
     assert "spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings" in workflows
-    assert "That wrapper owns the figure render gate, metric-table readiness checks" in workflows
+    assert "The result object owns the notebook-facing render path and delegates" in workflows
     assert "without notebook-local row filtering, figure-context construction, or per-plot path plumbing" in normalized
     assert "DashboardDatasetPreparationResult.display_output_previews()" in workflows
     assert "DashboardDatasetPreparationResult.run_if_needed()" in workflows

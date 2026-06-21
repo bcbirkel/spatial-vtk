@@ -1223,13 +1223,14 @@ def test_large_run_readme_distinguishes_public_and_implementation_imports() -> N
         "notebook_run_context",
         "load_standard_ingest_workflow_outputs",
         "load_standard_metric_workflow_outputs",
-        "write_large_run_metric_figure_suite_from_notebook_settings",
+        "metric_outputs.write_large_run_figure_suite(",
         "load_standard_qc_workflow_outputs",
         "load_standard_spatial_workflow_output_status",
         "load_standard_geojson_workflow_output_status",
         "prepare_configured_dashboard_datasets_from_notebook_settings",
     ):
         assert helper in readme
+    assert "from spatial_vtk.metrics.plot import write_large_run_metric_figure_suite_from_notebook_settings" not in readme
     assert "spatial_outputs.write_figure_suite(" in readme
     assert "write_large_run_spatial_figure_suite_from_notebook_settings" not in readme
     assert "Import from stable public packages" in readme
