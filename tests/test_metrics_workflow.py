@@ -97,6 +97,17 @@ def test_metric_inventories_from_trace_metadata_use_explicit_path_columns(tmp_pa
     synthetic = pd.read_parquet(result.synthetic_path)
     assert result.observed_rows == 1
     assert result.synthetic_rows == 1
+    assert result.observed_metric_inventory_path == result.observed_path
+    assert result.synthetic_metric_inventory_path == result.synthetic_path
+    status = result.status_frame()
+    assert status["name"].tolist() == [
+        "observed_metric_inventory_path",
+        "synthetic_metric_inventory_path",
+    ]
+    assert status["resolved_path"].tolist() == status["path"].tolist()
+    assert status["exists"].tolist() == [True, True]
+    assert status["rows"].tolist() == [1, 1]
+    assert status["reused"].tolist() == [False, False]
     assert observed.loc[0, "station"] == "ABC"
     assert observed.loc[0, "component"] == "Z"
     assert observed.loc[0, "waveform_path"] == "processed_obs.npz"
@@ -114,6 +125,7 @@ def test_metric_inventories_from_trace_metadata_use_explicit_path_columns(tmp_pa
     assert reused.reused
     assert reused.observed_rows is None
     assert reused.synthetic_rows is None
+    assert reused.status_frame()["reused"].tolist() == [True, True]
 
 
 def test_metric_plot_input_summary_frame_reports_notebook_inputs() -> None:

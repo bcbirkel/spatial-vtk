@@ -44,6 +44,43 @@ class MetricWaveformInventoryResult:
     synthetic_rows: int | None
     reused: bool = False
 
+    @property
+    def observed_metric_inventory_path(self) -> Path:
+        """Path to the observed metric waveform inventory table."""
+
+        return self.observed_path
+
+    @property
+    def synthetic_metric_inventory_path(self) -> Path:
+        """Path to the synthetic metric waveform inventory table."""
+
+        return self.synthetic_path
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact summary of metric inventory outputs."""
+
+        rows = [
+            {
+                "name": "observed_metric_inventory_path",
+                "artifact_label": "observed metric waveform inventory",
+                "resolved_path": str(self.observed_metric_inventory_path),
+                "path": str(self.observed_metric_inventory_path),
+                "exists": self.observed_metric_inventory_path.exists(),
+                "rows": self.observed_rows,
+                "reused": self.reused,
+            },
+            {
+                "name": "synthetic_metric_inventory_path",
+                "artifact_label": "synthetic metric waveform inventory",
+                "resolved_path": str(self.synthetic_metric_inventory_path),
+                "path": str(self.synthetic_metric_inventory_path),
+                "exists": self.synthetic_metric_inventory_path.exists(),
+                "rows": self.synthetic_rows,
+                "reused": self.reused,
+            },
+        ]
+        return pd.DataFrame(rows)
+
 
 def build_metric_waveform_inventories_from_trace_metadata(
     trace_metadata: pd.DataFrame | str | Path,

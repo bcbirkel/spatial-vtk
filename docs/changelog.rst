@@ -343,6 +343,9 @@ Changelog
   - Added ``SVTK_DASHBOARD_CHUNKSIZE`` to notebook run contexts so dashboard
     preparation chunking is configured once with the rest of the large-run
     controls.
+  - Added artifact-specific path aliases and a compact status frame to metric
+    waveform inventory result objects, and included those aliases in CLI JSON
+    output.
 
 - **Large-run notebook readiness** *(Rewired)*
 

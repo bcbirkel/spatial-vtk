@@ -2619,6 +2619,8 @@ def _cmd_metrics_inventories(args: argparse.Namespace) -> int:
         verbose=args.verbose,
     )
     payload = {
+        "observed_metric_inventory_path": str(result.observed_metric_inventory_path),
+        "synthetic_metric_inventory_path": str(result.synthetic_metric_inventory_path),
         "observed_path": str(result.observed_path),
         "synthetic_path": str(result.synthetic_path),
         "observed_rows": result.observed_rows,
