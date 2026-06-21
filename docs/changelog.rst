@@ -76,6 +76,11 @@ Changelog
   - Aligned Configuration API regression coverage with the current
     ``load_standard_*`` result-object guidance so stale output-group-first
     wording is not accepted as the notebook path contract.
+  - Reworded low-level metric Slurm readiness docstrings so routine notebooks
+    are directed to the standard metric workflow result object's
+    ``run_slurm_step_if_needed(...)`` method, while direct readiness objects
+    remain documented for custom orchestration that already owns manifest
+    status.
   - Reworded the I/O output-path module example so notebooks start from the
     standard ingest workflow result and direct ``output_group()`` or
     ``default_output_paths()`` usage is framed as custom-script/package-helper

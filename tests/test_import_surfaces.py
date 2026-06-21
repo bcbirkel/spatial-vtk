@@ -2906,6 +2906,9 @@ def test_notebook_helper_docs_prefer_standard_result_objects():
     metric_configured = (
         repo_root / "src" / "spatial_vtk" / "metrics" / "workflow" / "configured.py"
     ).read_text(encoding="utf-8")
+    metric_execution = (
+        repo_root / "src" / "spatial_vtk" / "metrics" / "workflow" / "execution.py"
+    ).read_text(encoding="utf-8")
     qc_workflow = (
         repo_root / "src" / "spatial_vtk" / "qc" / "build" / "workflow.py"
     ).read_text(encoding="utf-8")
@@ -2934,6 +2937,11 @@ def test_notebook_helper_docs_prefer_standard_result_objects():
         "The returned object is compatible with\n    ``spatial_vtk.config.run_notebook_step_if_needed``"
         not in metric_configured
     )
+    assert "Standard Step 3 notebooks normally get this status through" in metric_execution
+    assert "``load_standard_metric_workflow_outputs(...).run_slurm_step_if_needed(...)``" in metric_execution
+    assert "Routine notebooks should use the standard metric workflow result" in metric_execution
+    assert "object's ``run_slurm_step_if_needed(...)`` method" in metric_execution
+    assert "Readiness object compatible with\n        ``spatial_vtk.config.run_notebook_step_if_needed``" not in metric_execution
     assert "through\n``run_or_submit_notebook_function()``" not in metric_configured
     assert (
         "``load_standard_qc_workflow_outputs(...).run_inventory_step_if_needed(...)``"

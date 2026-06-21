@@ -143,11 +143,15 @@ class MetricManifestBatchStatus:
 
 @dataclass(frozen=True)
 class MetricSlurmSubmissionReadiness:
-    """Notebook readiness decision for metric Slurm array submission.
+    """Readiness decision for metric Slurm array submission.
 
-    This wraps :class:`MetricManifestBatchStatus` in the same minimal interface
-    used by ``run_notebook_step_if_needed``: ``should_run``, ``reason``,
-    ``message``, and ``status_frame()``.
+    Standard Step 3 notebooks normally get this status through
+    ``load_standard_metric_workflow_outputs(...).run_slurm_step_if_needed(...)``.
+    Custom orchestration can use this object directly when it already owns the
+    manifest path, batch-status calculation, and notebook/slurm execution
+    control. The object exposes the small readiness interface expected by the
+    package notebook runner: ``should_run``, ``reason``, ``message``, and
+    ``status_frame()``.
     """
 
     batch_status: MetricManifestBatchStatus
@@ -183,8 +187,10 @@ def metric_slurm_submission_readiness(
     Returns
     -------
     MetricSlurmSubmissionReadiness
-        Readiness object compatible with
-        ``spatial_vtk.config.run_notebook_step_if_needed``.
+        Readiness object for callers that directly manage manifest status.
+        Routine notebooks should use the standard metric workflow result
+        object's ``run_slurm_step_if_needed(...)`` method, which calls this
+        helper internally.
     """
 
     status = (
