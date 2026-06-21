@@ -102,6 +102,9 @@ Changelog
   - Normalized dashboard preparation and launch status frames so notebook
     dashboard cells expose the same ``resolved_path``, ``path``, and ``exists``
     columns as dashboard readiness and output status tables.
+  - Normalized generic output path rows, output-group status rows, output
+    readiness rows, and compact I/O workflow summary frames with
+    ``artifact_label``, ``artifact_role``, and ``status`` columns.
   - Added dashboard launch port validation so invalid ports or impossible
     auto-port search ranges raise clear configuration errors before Streamlit
     startup.

@@ -59,10 +59,14 @@ Public helpers exposed by ``spatial_vtk.io``:
    * - ``MetadataPreparationResult``
      - Report prepared metadata output paths and row counts with
        mapping-compatible access, ``summary_message()`` for scripts and logs,
-       and ``summary_frame()`` for notebook display helpers.
+       and ``summary_frame()`` for notebook display helpers. The summary frame
+       uses normalized ``artifact_label``, ``artifact_role``, ``status``,
+       ``exists``, ``resolved_path``, and ``path`` columns while preserving the
+       row-count and ``reused`` fields.
    * - ``WaveformPreprocessingSummaryResult``
      - Report preprocessed event-station, manifest, and trace-metadata outputs
-       with mapping-compatible access plus notebook summary helpers.
+       with mapping-compatible access plus notebook summary helpers using the
+       same normalized output-table status columns.
    * - ``WaveformPreprocessingWorkflowResult``
      - Return the full preprocessing dataframes and written path artifacts from
        direct preprocessing calls. ``status_frame()`` reports preprocessed
@@ -70,7 +74,9 @@ Public helpers exposed by ``spatial_vtk.io``:
        names, roles, readiness status, paths, and row counts.
    * - ``RecordCoverageWorkflowResult``
      - Report the record-coverage output and the exact trace metadata and
-       event-station inputs used to build it.
+       event-station inputs used to build it. ``summary_frame()`` keeps those
+       input path fields while exposing the normalized output-table status
+       columns for the written record-coverage table.
    * - ``output_group``
      - Lower-level configured output-group helper for custom scripts or new
        reusable package helpers when no standard workflow result object exists
@@ -88,8 +94,11 @@ Public helpers exposed by ``spatial_vtk.io``:
        configured figure path. ``status_frame()`` and
        ``output_group_status_frame()`` include clear ``resolved_path`` values
        plus ``output_key``, ``kind``, ``required``, ``artifact_label``,
-       ``readiness``, ``message``, and ``suggested_action`` columns for
-       registered artifacts. For path-backed artifacts outside the registered
+       ``artifact_role``, ``status``, ``readiness``, ``message``, and
+       ``suggested_action`` columns for registered artifacts. Generic
+       path-backed status rows from ``output_status_frame()`` also include
+       ``artifact_label``, ``artifact_role``, and ``status``. For path-backed
+       artifacts outside the registered
        output table registry, such as preprocessing manifests, use
        ``display_path_table_previews()`` so custom helpers still print the
        owning path and display bounded rows through the output group. ``cfg=``

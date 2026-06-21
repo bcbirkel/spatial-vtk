@@ -158,11 +158,16 @@ outputs:
     assert result["event_station_rows"] == 1
     assert isinstance(result, WaveformPreprocessingSummaryResult)
     assert "Preprocessed waveforms: 1 event-station row(s)" in result.summary_message()
-    assert result.summary_frame()["artifact"].tolist() == [
+    summary = result.summary_frame()
+    assert {"artifact_label", "artifact_role", "status", "exists", "resolved_path", "path"} <= set(
+        summary.columns
+    )
+    assert summary["artifact"].tolist() == [
         "preprocessed_event_station_records",
         "preprocessing_manifest",
         "preprocessed_trace_metadata",
     ]
+    assert summary["artifact_role"].tolist() == ["output_table", "output_table", "output_table"]
     assert result["preprocessed_event_station_records_path"] == result["event_station_records"]
     assert result["preprocessed_manifest_path"] == result["manifest"]
     assert result["preprocessing_manifest_path"] == result["manifest"]
@@ -205,11 +210,17 @@ outputs:
     assert result["event_station_rows"] == 1
     assert isinstance(result, MetadataPreparationResult)
     assert result.summary_message() == "Prepared metadata: 1 station(s), 1 event(s), 1 event-station row(s)."
-    assert result.summary_frame()["artifact"].tolist() == [
+    summary = result.summary_frame()
+    assert {"artifact_label", "artifact_role", "status", "exists", "resolved_path", "path"} <= set(
+        summary.columns
+    )
+    assert summary["artifact"].tolist() == [
         "prepared_stations",
         "prepared_events",
         "event_station_records",
     ]
+    assert summary["artifact_role"].tolist() == ["output_table", "output_table", "output_table"]
+    assert summary["reused"].tolist() == [False, False, False]
     assert result["reused"] is False
     assert Path(result["prepared_stations_path"]).exists()
     assert Path(result["prepared_events_path"]).exists()
@@ -346,7 +357,12 @@ outputs:
     records = pd.read_csv(output)
     assert isinstance(result, RecordCoverageWorkflowResult)
     assert result.summary_message() == "Built record coverage: 1 row(s)."
-    assert result.summary_frame().loc[0, "artifact"] == "record_coverage"
+    summary = result.summary_frame()
+    assert {"artifact_label", "artifact_role", "status", "exists", "resolved_path", "path"} <= set(
+        summary.columns
+    )
+    assert summary.loc[0, "artifact"] == "record_coverage"
+    assert summary.loc[0, "artifact_role"] == "output_table"
     assert result["record_coverage"] == str(output)
     assert result["record_coverage_path"] == str(output)
     assert result["preprocessed_trace_metadata_path"].endswith("trace_metadata_preprocessed.csv")

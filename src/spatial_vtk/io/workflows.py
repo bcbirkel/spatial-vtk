@@ -330,6 +330,45 @@ class _SummaryMappingMixin(Mapping[str, Any]):
         return len(self.as_dict())
 
 
+def _workflow_summary_frame(
+    rows: Sequence[tuple[str, int, str]],
+    *,
+    reused: bool | None = None,
+) -> pd.DataFrame:
+    """Return normalized notebook status rows for compact workflow summaries."""
+
+    records: list[dict[str, Any]] = []
+    for artifact, row_count, raw_path in rows:
+        path = Path(raw_path).expanduser()
+        exists = path.exists()
+        record: dict[str, Any] = {
+            "artifact": artifact,
+            "artifact_label": artifact.replace("_", " "),
+            "artifact_role": "output_table",
+            "status": "ready" if exists else "missing",
+            "exists": exists,
+            "rows": row_count,
+            "resolved_path": str(path),
+            "path": str(path),
+        }
+        if reused is not None:
+            record["reused"] = reused
+        records.append(record)
+    columns = [
+        "artifact",
+        "artifact_label",
+        "artifact_role",
+        "status",
+        "exists",
+        "rows",
+        "resolved_path",
+        "path",
+    ]
+    if reused is not None:
+        columns.append("reused")
+    return pd.DataFrame(records, columns=columns)
+
+
 @dataclass(frozen=True)
 class MetadataPreparationResult(_SummaryMappingMixin):
     """Summary returned by the configured Step 1 metadata workflow."""
@@ -368,31 +407,13 @@ class MetadataPreparationResult(_SummaryMappingMixin):
     def summary_frame(self) -> pd.DataFrame:
         """Return one row per prepared metadata output."""
 
-        return pd.DataFrame(
+        return _workflow_summary_frame(
             [
-                {
-                    "artifact": "prepared_stations",
-                    "rows": self.station_rows,
-                    "resolved_path": self.prepared_stations_path,
-                    "path": self.prepared_stations_path,
-                    "reused": self.reused,
-                },
-                {
-                    "artifact": "prepared_events",
-                    "rows": self.event_rows,
-                    "resolved_path": self.prepared_events_path,
-                    "path": self.prepared_events_path,
-                    "reused": self.reused,
-                },
-                {
-                    "artifact": "event_station_records",
-                    "rows": self.event_station_rows,
-                    "resolved_path": self.event_station_records_path,
-                    "path": self.event_station_records_path,
-                    "reused": self.reused,
-                },
+                ("prepared_stations", self.station_rows, self.prepared_stations_path),
+                ("prepared_events", self.event_rows, self.prepared_events_path),
+                ("event_station_records", self.event_station_rows, self.event_station_records_path),
             ],
-            columns=["artifact", "rows", "resolved_path", "path", "reused"],
+            reused=self.reused,
         )
 
 
@@ -435,28 +456,12 @@ class WaveformPreprocessingSummaryResult(_SummaryMappingMixin):
     def summary_frame(self) -> pd.DataFrame:
         """Return one row per preprocessing metadata output."""
 
-        return pd.DataFrame(
+        return _workflow_summary_frame(
             [
-                {
-                    "artifact": "preprocessed_event_station_records",
-                    "rows": self.event_station_rows,
-                    "resolved_path": self.preprocessed_event_station_records_path,
-                    "path": self.preprocessed_event_station_records_path,
-                },
-                {
-                    "artifact": "preprocessing_manifest",
-                    "rows": self.manifest_rows,
-                    "resolved_path": self.preprocessed_manifest_path,
-                    "path": self.preprocessed_manifest_path,
-                },
-                {
-                    "artifact": "preprocessed_trace_metadata",
-                    "rows": self.trace_metadata_rows,
-                    "resolved_path": self.preprocessed_trace_metadata_path,
-                    "path": self.preprocessed_trace_metadata_path,
-                },
-            ],
-            columns=["artifact", "rows", "resolved_path", "path"],
+                ("preprocessed_event_station_records", self.event_station_rows, self.preprocessed_event_station_records_path),
+                ("preprocessing_manifest", self.manifest_rows, self.preprocessed_manifest_path),
+                ("preprocessed_trace_metadata", self.trace_metadata_rows, self.preprocessed_trace_metadata_path),
+            ]
         )
 
 
@@ -490,26 +495,25 @@ class RecordCoverageWorkflowResult(_SummaryMappingMixin):
     def summary_frame(self) -> pd.DataFrame:
         """Return a compact record-coverage output status table."""
 
-        return pd.DataFrame(
+        frame = _workflow_summary_frame(
+            [("record_coverage", self.rows, self.record_coverage_path)]
+        )
+        frame["trace_metadata_path"] = self.preprocessed_trace_metadata_path
+        frame["event_station_records_path"] = self.event_station_records_path
+        return frame[
             [
-                {
-                    "artifact": "record_coverage",
-                    "rows": self.rows,
-                    "resolved_path": self.record_coverage_path,
-                    "path": self.record_coverage_path,
-                    "trace_metadata_path": self.preprocessed_trace_metadata_path,
-                    "event_station_records_path": self.event_station_records_path,
-                }
-            ],
-            columns=[
                 "artifact",
+                "artifact_label",
+                "artifact_role",
+                "status",
+                "exists",
                 "rows",
                 "resolved_path",
                 "path",
                 "trace_metadata_path",
                 "event_station_records_path",
-            ],
-        )
+            ]
+        ]
 
 
 def load_standard_ingest_workflow_outputs(

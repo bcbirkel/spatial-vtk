@@ -1992,6 +1992,9 @@ outputs:
     assert unconfigured_status.to_dict("records") == [
         {
             "name": "region_geojson_path",
+            "artifact_label": "region geojson path",
+            "artifact_role": "path",
+            "status": "unconfigured",
             "resolved_path": "<not configured>",
             "path": "<not configured>",
             "exists": False,
@@ -2012,6 +2015,8 @@ outputs:
     assert status[0]["required"] is True
     assert status[0]["exists"] is True
     assert status[0]["artifact_label"] == "metrics long table"
+    assert status[0]["artifact_role"] == "output_table"
+    assert status[0]["status"] == "ready"
     assert status[0]["readiness"] == "ready"
     assert status[0]["message"] == "metrics long table is ready."
     assert status[0]["suggested_action"] == ""
@@ -2030,7 +2035,9 @@ outputs:
     assert "output_key" in status_with_extra.columns
     assert pd.isna(extra_row["output_key"])
     assert "artifact_label" in status_with_extra.columns
-    assert pd.isna(extra_row["artifact_label"])
+    assert extra_row["artifact_label"] == "trace metadata path"
+    assert extra_row["artifact_role"] == "path"
+    assert extra_row["status"] == "ready"
 
     write_output_table("metrics_long", pd.DataFrame({"metric": ["PGA"]}), cfg=cfg)
     completion = output_group_completion("step_03_metrics", cfg=cfg)

@@ -1185,7 +1185,9 @@ def _output_group_status_rows_from_artifacts(
         row["kind"] = artifact.kind
         row["required"] = artifact.required
         row["artifact_label"] = _output_artifact_label(artifact)
+        row["artifact_role"] = _output_artifact_role(artifact)
         row["readiness"] = "ready" if row.get("exists") else "missing"
+        row["status"] = row["readiness"]
         row["message"] = _output_artifact_status_message(artifact, exists=bool(row.get("exists")))
         row["suggested_action"] = _output_artifact_suggested_action(
             artifact,
@@ -1208,6 +1210,16 @@ def _output_artifact_label(artifact: OutputArtifact) -> str:
     if text.endswith(suffix):
         return text
     return f"{text} {suffix}"
+
+
+def _output_artifact_role(artifact: OutputArtifact) -> str:
+    """Return the notebook-facing artifact role for one output-group artifact."""
+
+    if artifact.kind == "figure":
+        return "output_figure"
+    if artifact.kind == "dashboard":
+        return "output_dashboard"
+    return "output_table"
 
 
 def _output_artifact_status_message(artifact: OutputArtifact, *, exists: bool) -> str:
@@ -1284,6 +1296,9 @@ def output_status_rows(paths: dict[str, str | Path | None]) -> list[dict[str, ob
             rows.append(
                 {
                     "name": str(name),
+                    "artifact_label": _path_status_artifact_label(name),
+                    "artifact_role": "path",
+                    "status": "unconfigured",
                     "resolved_path": UNCONFIGURED_PATH_LABEL,
                     "path": UNCONFIGURED_PATH_LABEL,
                     "exists": False,
@@ -1296,6 +1311,9 @@ def output_status_rows(paths: dict[str, str | Path | None]) -> list[dict[str, ob
         resolved = str(path)
         row: dict[str, object] = {
             "name": str(name),
+            "artifact_label": _path_status_artifact_label(name),
+            "artifact_role": "path",
+            "status": "ready" if path.exists() else "missing",
             "resolved_path": resolved,
             "path": resolved,
             "exists": path.exists(),
@@ -1308,6 +1326,12 @@ def output_status_rows(paths: dict[str, str | Path | None]) -> list[dict[str, ob
             row["modified"] = _format_mtime(stat.st_mtime)
         rows.append(row)
     return rows
+
+
+def _path_status_artifact_label(name: object) -> str:
+    """Return a readable label for a generic named path status row."""
+
+    return str(name).replace("_", " ").strip()
 
 
 def output_status_frame(paths):
@@ -1797,6 +1821,8 @@ def _readiness_status_rows(
         else:
             state = "unknown"
         row["state"] = state
+        row["status"] = state
+        row["artifact_role"] = f"readiness_{role}"
         rows.append(row)
     return rows
 
