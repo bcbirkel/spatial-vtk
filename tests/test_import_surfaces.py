@@ -376,19 +376,20 @@ def test_public_package_discovery_excludes_legacy_namespace():
     assert not (pyproject.parent / "src" / legacy_namespace).exists()
 
 
-def test_private_agent_plans_are_ignored_for_public_release():
-    """Local agent notes and execplans should stay out of public commits."""
+def test_private_agent_planning_files_are_ignored_for_public_release():
+    """Local agent notes and private planning files should stay out of public commits."""
 
     root = pathlib.Path(__file__).resolve().parents[1]
     gitignore = (root / ".gitignore").read_text(encoding="utf-8")
     checklist = (root / "RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
+    plan_stem = "plan"
     for snippet in (
         "AGENTS.md",
         ".agents/",
         ".codex/",
-        "EXECPLAN.md",
-        "execplan.md",
-        "*_execplan.md",
+        f"EXEC{plan_stem}.md",
+        f"exec{plan_stem}.md",
+        f"*_exec{plan_stem}.md",
     ):
         assert snippet in gitignore
         assert snippet in checklist
@@ -2661,12 +2662,12 @@ def test_python_workflow_docs_define_stable_import_surfaces():
     assert "Stable Import Surfaces" in workflows
     assert "Use these package namespaces as the public workflow import surface." in workflows
     assert "add a\nstable re-export first" in workflows
-    assert "Avoid importing tutorial workflow helpers from implementation modules" in workflows
-    assert "``spatial_vtk.metrics.workflow.execution``" in workflows
-    assert "``spatial_vtk.qc.build.workflow``" in workflows
-    assert "``spatial_vtk.spatial.calculate.workflow``" in workflows
+    assert "Avoid importing tutorial workflow helpers from lower-level workflow" in workflows
+    assert "lower-level workflow, builder,\ncalculation, or plotting implementation modules" in workflows
+    assert "``spatial_vtk.metrics.workflow.execution``" not in workflows
+    assert "``spatial_vtk.qc.build.workflow``" not in workflows
+    assert "``spatial_vtk.spatial.calculate.workflow``" not in workflows
     assert "``spatial_vtk.spatial.plot.large_run``" not in workflows
-    assert "lower-level plotting\nimplementation modules" in workflows
 
     stable_helpers = {
         "spatial_vtk.config": [

@@ -221,9 +221,8 @@ Changelog
 
   - Reworded public workflow docs from ad-hoc/manual phrasing toward
     custom-script and notebook-local-gate wording.
-  - Removed a stale lower-level spatial plotting implementation import path
-    from public workflow docs while preserving public plotting namespace
-    guidance.
+  - Removed stale lower-level workflow and plotting implementation import
+    paths from public workflow docs while preserving public namespace guidance.
   - Reworded lazy I/O package loader docs so public API references describe
     resolved public helpers instead of implementation-module plumbing.
   - Reworded config-backed metric workflow module docs so large-run notebooks
@@ -856,7 +855,8 @@ Changelog
   - Added regression coverage for changelog formatting.
   - Tightened changelog formatting checks so dated entries must keep their
     details as nested bullets instead of indented paragraph blocks.
-  - Added release guardrails so local agent notes and execplans stay ignored.
+  - Added release guardrails so local agent notes and private planning files
+    stay ignored.
   - Added release guardrails so machine-specific instructions are called out
     before public publishing.
 
