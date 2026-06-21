@@ -22,7 +22,7 @@ from typing import Any
 import pandas as pd
 
 from spatial_vtk.config.labels import display_table
-from spatial_vtk.io.tables import read_bounded_table
+from spatial_vtk.io.tables import read_bounded_table, read_table as read_disk_table
 
 
 NUMERIC_COLUMNS: tuple[str, ...] = (
@@ -376,9 +376,7 @@ def _read_table(table: pd.DataFrame | str | Path, *, max_rows: int | None = None
     path = Path(table).expanduser()
     if max_rows is not None:
         return read_bounded_table(path, _bounded_max_rows(max_rows))
-    if path.suffix.lower() in {".parquet", ".pq"}:
-        return pd.read_parquet(path)
-    return pd.read_csv(path, low_memory=False)
+    return read_disk_table(path)
 
 
 def _bounded_max_rows(max_rows: int | None) -> int:

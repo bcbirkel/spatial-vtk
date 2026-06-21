@@ -21,6 +21,7 @@ from matplotlib.lines import Line2D
 from spatial_vtk.config.labels import display_label
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
+from spatial_vtk.io.tables import read_table as read_disk_table
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import title_with_subtitle
 from spatial_vtk.visualize.figure_io import finish_figure
@@ -1105,9 +1106,7 @@ def _read_table_like(value: pd.DataFrame | str | Path) -> pd.DataFrame:
     if isinstance(value, pd.DataFrame):
         return value.copy()
     path = Path(value).expanduser()
-    if path.suffix.lower() in {".parquet", ".pq"}:
-        return pd.read_parquet(path)
-    return pd.read_csv(path, low_memory=False)
+    return read_disk_table(path)
 
 
 def _coverage_label_key(value: object) -> str:

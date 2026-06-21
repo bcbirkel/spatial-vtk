@@ -131,6 +131,8 @@ Changelog
   - Routed metric enrichment metadata and master station/event list input
     readers through the shared table loader so metadata-side CSV/Parquet
     handling matches the rest of the workflow.
+  - Routed notebook-facing QC overview and context-figure full-table reads
+    through the shared loader while preserving bounded preview behavior.
 
 - **Tutorial notebook hygiene** *(Fixed)*
 
