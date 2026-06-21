@@ -745,6 +745,9 @@ Changelog
   - Reused the shared row-count helper in dashboard readiness checks so CSV
     dashboard datasets with quoted newlines report correct row counts without
     materializing the table.
+  - Scoped path-backed long metric-row reads during downstream metric output
+    preparation so enrichment, path summaries, and dashboard outputs do not
+    carry unused payload columns from large merged metric files.
   - Changed the Step 1 ingest metadata summary result to count prepared
     station, event, and event-station rows through lightweight table counters
     instead of loading full metadata tables.

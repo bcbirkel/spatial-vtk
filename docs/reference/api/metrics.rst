@@ -41,6 +41,7 @@ workers, and custom orchestration that already owns execution control:
        metric_manifest_readiness_from_config,
        metric_slurm_submission_readiness,
        metric_slurm_submission_readiness_from_config,
+       metric_workflow_output_input_columns,
        plan_metric_tasks_from_config,
        read_task_manifest,
        run_manifest_batch,
@@ -130,6 +131,9 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
    * - ``write_metric_outputs_from_config``
      - Write downstream long, enriched, dashboard, and summary metric outputs
        from registered config paths.
+   * - ``metric_workflow_output_input_columns``
+     - Return the long metric-row column projection used by downstream output
+       writers before enrichment and dashboard/path summary generation.
 ``PSA`` and ``FAS`` are broadband spectral metrics in the file-based workflow.
 Task planning separates them from passband-dependent metrics, writes blank
 ``passband`` values for spectral tasks, and stores oscillator-period outputs in

@@ -94,6 +94,7 @@ _WORKFLOW_EXPORTS = {
     "metric_outputs_readiness_from_config",
     "metric_slurm_submission_readiness",
     "metric_slurm_submission_readiness_from_config",
+    "metric_workflow_output_input_columns",
     "metric_group_for",
     "plan_metric_tasks",
     "plan_metric_tasks_from_config",

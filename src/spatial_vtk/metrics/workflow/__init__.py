@@ -50,6 +50,7 @@ _EXPORT_MODULES = {
     "metric_outputs_readiness_from_config": "spatial_vtk.metrics.workflow.configured",
     "metric_slurm_submission_readiness": "spatial_vtk.metrics.workflow.execution",
     "metric_slurm_submission_readiness_from_config": "spatial_vtk.metrics.workflow.configured",
+    "metric_workflow_output_input_columns": "spatial_vtk.metrics.workflow.outputs",
     "plan_metric_tasks": "spatial_vtk.metrics.workflow.tasks",
     "plan_metric_tasks_from_config": "spatial_vtk.metrics.workflow.configured",
     "prepare_metric_workflow_outputs": "spatial_vtk.metrics.workflow.outputs",

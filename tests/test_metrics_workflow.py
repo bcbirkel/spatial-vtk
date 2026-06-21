@@ -24,6 +24,7 @@ from spatial_vtk.metrics.workflow import (
     metric_outputs_readiness_from_config,
     metric_slurm_submission_readiness,
     metric_slurm_submission_readiness_from_config,
+    metric_workflow_output_input_columns,
     load_standard_metric_workflow_outputs,
     plan_metric_tasks,
     plan_metric_tasks_from_config,
@@ -2797,6 +2798,37 @@ def test_metric_workflow_outputs_feed_downstream_modules(tmp_path) -> None:
     figure = plot_event_residual_map(enriched, tmp_path / "workflow_residual_map.png", event_id="e1", metric="PGA", add_basemap=False)
     assert figure.exists()
     assert figure.stat().st_size > 0
+
+
+def test_metric_workflow_outputs_project_path_backed_long_rows(tmp_path) -> None:
+    """Downstream output prep should skip unused columns from long metric-row files."""
+
+    metric_rows_path = tmp_path / "metric_rows.csv"
+    pd.DataFrame(
+        {
+            "event_id": ["e1"],
+            "station": ["STA"],
+            "model": ["m1"],
+            "component": ["Z"],
+            "passband": ["1-2 sec"],
+            "metric": ["PGA"],
+            "value_obs": [4.0],
+            "value_syn": [2.0],
+            "log2_residual": [1.0],
+            "event_lat": [34.1],
+            "event_lon": [-118.3],
+            "station_lat": [34.0],
+            "station_lon": [-118.5],
+            "unused_large_payload": ["x" * 1000],
+        }
+    ).to_csv(metric_rows_path, index=False)
+
+    prepared = prepare_metric_workflow_outputs(metric_rows_path)
+    metrics_long = prepared["metrics_long"]
+
+    assert "unused_large_payload" not in metrics_long.columns
+    assert {"distance_km", "azimuth_deg", "sta_lat", "sta_lon"} <= set(metrics_long.columns)
+    assert "passband" in metric_workflow_output_input_columns()
 
 
 def test_write_metric_outputs_uses_registered_dashboard_paths_when_configured(tmp_path) -> None:

@@ -78,6 +78,7 @@ def test_public_imports():
         metric_outputs_readiness_from_config,
         metric_slurm_submission_readiness,
         metric_slurm_submission_readiness_from_config,
+        metric_workflow_output_input_columns,
     )
     from spatial_vtk.metrics.plot import (
         MetricFigureContext,
@@ -242,6 +243,7 @@ def test_public_imports():
     assert callable(metric_manifest_readiness_from_config)
     assert callable(metric_slurm_submission_readiness)
     assert callable(metric_slurm_submission_readiness_from_config)
+    assert callable(metric_workflow_output_input_columns)
     assert callable(MetricFigureContext.from_frame)
     assert callable(MetricFigureSuiteResult)
     assert callable(metric_plot_input_summary_frame)
@@ -1029,6 +1031,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
         "merge_batch_outputs",
         "merge_metric_batches_from_config",
         "write_metric_outputs_from_config",
+        "metric_workflow_output_input_columns",
     ):
         assert f"``{helper}``" in text
     assert "from spatial_vtk.metrics.plot import (" in text
@@ -1188,6 +1191,7 @@ def test_metrics_api_docs_workflow_helpers_resolve_from_public_surface():
         "merge_batch_outputs",
         "merge_metric_batches_from_config",
         "write_metric_outputs_from_config",
+        "metric_workflow_output_input_columns",
     )
     for helper in helpers:
         assert callable(getattr(metrics, helper))
@@ -1970,6 +1974,7 @@ def test_core_api_docs_show_stable_start_here_imports():
             "metric_slurm_submission_readiness_from_config",
             "load_standard_metric_workflow_outputs",
             "write_metric_outputs_from_config",
+            "metric_workflow_output_input_columns",
         ],
         "qc.rst": [
             "Start with ``spatial_vtk.qc``",
@@ -2657,6 +2662,7 @@ def test_python_workflow_docs_define_stable_import_surfaces():
             "metric_manifest_readiness_from_config",
             "plan_metric_tasks_from_config",
             "write_metric_outputs_from_config",
+            "metric_workflow_output_input_columns",
         ],
         "spatial_vtk.metrics.plot": [
             "write_large_run_metric_figure_suite_from_notebook_settings",

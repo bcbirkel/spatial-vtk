@@ -19,14 +19,15 @@ directly only in custom scripts that already own metric rows and output paths.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 import pandas as pd
 
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
+from spatial_vtk.io import parquet_table_columns
 from spatial_vtk.metrics.calculate.enrich import enrich_metric_table
-from spatial_vtk.metrics.workflow.run import write_metric_rows
+from spatial_vtk.metrics.workflow.run import METRIC_TEXT_COLUMNS, write_metric_rows
 from spatial_vtk.visualize.dashboard import (
     build_dashboard_summaries,
     prepare_dashboard_metric_table,
@@ -78,7 +79,7 @@ def prepare_metric_workflow_outputs(
 
     from spatial_vtk.spatial.calculate.paths import build_path_table, summarize_residuals_by_path_bin
 
-    raw = _read_metric_table(metric_rows)
+    raw = _read_metric_table(metric_rows, columns=_metric_workflow_output_input_columns(metric_rows))
     metrics_long = enrich_metric_table(
         raw,
         events=events,
@@ -228,7 +229,66 @@ def _metric_output_paths(root: Path | None, *, suffix: str, cfg: ConfigInput | N
     }
 
 
-def _read_metric_table(value: pd.DataFrame | str | Path) -> pd.DataFrame:
+def metric_workflow_output_input_columns() -> tuple[str, ...]:
+    """Return standard long metric-row columns needed for downstream outputs.
+
+    Path-backed metric workflow rows can use this as a safe projection before
+    enrichment, spatial path summaries, and dashboard exports. The list keeps
+    common legacy coordinate aliases so older metric-row files still enrich
+    correctly. Wide legacy metric matrices are detected separately and read in
+    full because their ``*_obs``/``*_syn`` metric columns are data-dependent.
+    """
+
+    return tuple(
+        dict.fromkeys(
+            [
+                *METRIC_TEXT_COLUMNS,
+                "band",
+                "period_s",
+                "value",
+                "value_obs",
+                "value_syn",
+                "residual",
+                "log2_residual",
+                "ln_residual",
+                "anderson_2004_gof",
+                "olsen_mayhew_gof",
+                "score",
+                "event_title",
+                "event",
+                "event_name",
+                "event_lat",
+                "event_lon",
+                "event_latitude",
+                "event_longitude",
+                "station_name",
+                "Station",
+                "network",
+                "sta_lat",
+                "sta_lon",
+                "station_lat",
+                "station_lon",
+                "station_latitude",
+                "station_longitude",
+                "lat",
+                "lon",
+                "latitude",
+                "longitude",
+                "distance_km",
+                "azimuth_deg",
+                "backazimuth_deg",
+                "magnitude",
+                "event_magnitude",
+                "depth_km",
+                "Vs30",
+                "vs30",
+                "geology_class",
+            ]
+        )
+    )
+
+
+def _read_metric_table(value: pd.DataFrame | str | Path, *, columns: Sequence[str] | None = None) -> pd.DataFrame:
     """Read metric rows from a dataframe, CSV, or Parquet path.
 
     Parameters
@@ -246,11 +306,54 @@ def _read_metric_table(value: pd.DataFrame | str | Path) -> pd.DataFrame:
         return value.copy()
     path = Path(value).expanduser()
     if path.suffix.lower() in {".parquet", ".pq"}:
-        return pd.read_parquet(path)
-    return pd.read_csv(path, low_memory=False)
+        selected = _selected_existing_columns(path, columns)
+        return pd.read_parquet(path, columns=selected)
+    if path.suffix.lower() == ".csv":
+        selected = _selected_existing_columns(path, columns)
+        if selected is None:
+            return pd.read_csv(path, low_memory=False)
+        wanted = set(selected)
+        return pd.read_csv(path, usecols=lambda column: column in wanted, low_memory=False)
+    raise ValueError(f"Unsupported metric workflow output table format for {path}. Use Parquet or CSV.")
+
+
+def _metric_workflow_output_input_columns(value: pd.DataFrame | str | Path) -> tuple[str, ...] | None:
+    """Return a projection for path-backed long metric rows."""
+
+    if isinstance(value, pd.DataFrame):
+        return None
+    path = Path(value).expanduser()
+    columns = _metric_table_columns(path)
+    if "metric" not in columns:
+        return None
+    return metric_workflow_output_input_columns()
+
+
+def _selected_existing_columns(path: Path, columns: Sequence[str] | None) -> list[str] | None:
+    """Return requested columns that exist in a metric table."""
+
+    if columns is None:
+        return None
+    requested = list(dict.fromkeys(str(column) for column in columns if str(column).strip()))
+    if not requested:
+        return []
+    available = set(_metric_table_columns(path))
+    return [column for column in requested if column in available]
+
+
+def _metric_table_columns(path: Path) -> list[str]:
+    """Return metric table columns without materializing row data."""
+
+    suffix = path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        return parquet_table_columns(path)
+    if suffix == ".csv":
+        return list(pd.read_csv(path, nrows=0).columns)
+    raise ValueError(f"Unsupported metric workflow output table format for {path}. Use Parquet or CSV.")
 
 
 __all__ = [
+    "metric_workflow_output_input_columns",
     "prepare_metric_workflow_outputs",
     "write_metric_outputs",
 ]
