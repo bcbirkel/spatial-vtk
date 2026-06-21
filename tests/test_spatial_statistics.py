@@ -1291,6 +1291,8 @@ def test_standard_spatial_workflow_output_result_writes_figures(tmp_path: Path) 
     outputs = OutputGroup(
         name="step_04_spatial",
         paths={
+            "metric_field_path": tmp_path / "tables" / "metric_field.csv",
+            "station_bias_path": tmp_path / "tables" / "station_bias.csv",
             "station_bias_figure_path": tmp_path / "figures" / "station_bias.png",
             "residual_grid_figure_path": tmp_path / "figures" / "residual_grid.png",
             "spatial_correlation_distance_figure_path": tmp_path / "figures" / "distance.png",
@@ -1298,6 +1300,8 @@ def test_standard_spatial_workflow_output_result_writes_figures(tmp_path: Path) 
             "geology_contrast_figure_path": tmp_path / "figures" / "geology.png",
         },
     )
+    outputs.metric_field_path.parent.mkdir(parents=True, exist_ok=True)
+    outputs.metric_field_path.write_text("metric,field_value\nPGA,0.1\n", encoding="utf-8")
     result = StandardSpatialWorkflowOutputResult(
         outputs=outputs,
         tables=spatial_tables,
@@ -1308,6 +1312,20 @@ def test_standard_spatial_workflow_output_result_writes_figures(tmp_path: Path) 
             station_bias_previews=(),
         ),
     )
+    status = result.status_frame().set_index("table")
+    assert {"name", "artifact", "artifact_label", "artifact_role", "status", "exists", "resolved_path", "path"} <= set(
+        status.columns
+    )
+    assert status.loc["metric_field", "artifact_label"] == "metric field table"
+    assert status.loc["metric_field", "artifact_role"] == "output_table"
+    assert status.loc["metric_field", "status"] == "ready"
+    assert bool(status.loc["metric_field", "exists"]) is True
+    assert status.loc["metric_field", "rows"] == 1
+    assert status.loc["metric_field", "resolved_path"] == str(outputs.metric_field_path)
+    assert status.loc["metric_field", "path"] == status.loc["metric_field", "resolved_path"]
+    assert status.loc["station_bias", "status"] == "missing"
+    assert bool(status.loc["station_bias", "exists"]) is False
+    assert status.loc["station_bias", "resolved_path"] == str(outputs.station_bias_path)
     seen: list[tuple[str, str, int]] = []
 
     class Sidecars:

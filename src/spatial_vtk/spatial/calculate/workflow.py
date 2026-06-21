@@ -425,10 +425,61 @@ class StandardSpatialWorkflowOutputResult:
         return self.product_summary.station_bias_preview_frame()
 
     def status_frame(self) -> pd.DataFrame:
-        """Return a compact row-count table for loaded Step 4 outputs."""
+        """Return a compact status table for loaded Step 4 outputs."""
 
-        rows = [{"table": name, "rows": len(frame)} for name, frame in self.tables.items()]
-        return pd.DataFrame(rows, columns=["table", "rows"])
+        path_names = {
+            "metric_field": "metric_field_path",
+            "event_centered_residuals": "event_centered_path",
+            "station_bias": "station_bias_path",
+            "morans_i": "morans_i_path",
+            "permutation_moran": "permutation_moran_path",
+            "distance_bins": "distance_corr_path",
+            "distance_bin_correlations": "distance_corr_path",
+            "clusters": "clusters_path",
+            "cluster_scores": "cluster_scores_path",
+            "cluster_summary": "cluster_summary_path",
+            "cluster_feature_summary": "cluster_features_path",
+            "pca_station_scores": "pca_scores_path",
+            "pca_feature_loadings": "pca_loadings_path",
+            "pca_explained_variance": "pca_explained_path",
+            "geology_contrasts": "geology_path",
+        }
+        rows: list[dict[str, Any]] = []
+        for name, frame in self.tables.items():
+            path_attr = path_names.get(name, f"{name}_path")
+            raw_path = getattr(self.outputs, path_attr, None)
+            path = Path(raw_path).expanduser() if raw_path is not None else None
+            exists = True if path is None else path.exists()
+            status = "loaded" if path is None else ("ready" if exists else "missing")
+            rows.append(
+                {
+                    "name": name,
+                    "table": name,
+                    "artifact": name,
+                    "artifact_label": f"{str(name).replace('_', ' ')} table",
+                    "artifact_role": "output_table",
+                    "status": status,
+                    "exists": exists,
+                    "rows": len(frame),
+                    "resolved_path": "" if path is None else str(path),
+                    "path": "" if path is None else str(path),
+                }
+            )
+        return pd.DataFrame(
+            rows,
+            columns=[
+                "name",
+                "table",
+                "artifact",
+                "artifact_label",
+                "artifact_role",
+                "status",
+                "exists",
+                "rows",
+                "resolved_path",
+                "path",
+            ],
+        )
 
     def write_map_figures(self, settings: Any, **kwargs: Any) -> object:
         """Write standard Step 4 map figures from loaded spatial products.
