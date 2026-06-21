@@ -950,17 +950,22 @@ def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monke
     status = commands.status_frame().set_index("dashboard")
     assert status.loc["metrics", "requested_port"] == 8501
     assert bool(status.loc["metrics", "launch_requested"]) is False
+    assert bool(status.loc["metrics", "config_exists"]) is True
     assert status.loc["metrics", "metrics_dataset_dir"] == str(
         tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
     )
+    assert bool(status.loc["metrics", "metrics_dataset_dir_exists"]) is False
     assert status.loc["metrics", "dashboard_summary_table_dir"] == str(
         tmp_path / "outputs" / "dashboards" / "dashboard_summaries"
     )
+    assert bool(status.loc["metrics", "dashboard_summary_table_dir_exists"]) is False
+    assert pd.isna(status.loc["metrics", "qc_trace_summary_table_exists"])
     assert status.loc["qc", "requested_port"] == 8502
     assert bool(status.loc["qc", "launch_requested"]) is False
     assert status.loc["qc", "qc_trace_summary_table"] == str(
         tmp_path / "outputs" / "tables" / "qc_trace_summary.csv"
     )
+    assert bool(status.loc["qc", "qc_trace_summary_table_exists"]) is False
     assert "trace_summary_table" not in status.columns
     assert "svtk dashboard metrics" in status.loc["metrics", "terminal_command"]
 
@@ -1014,6 +1019,7 @@ run_scenarios:
     assert status.loc["metrics", "metrics_summary_display_rows"] == 7500
     assert status.loc["metrics", "metrics_download_rows"] == "all"
     assert bool(status.loc["metrics", "launch_requested"]) is True
+    assert bool(status.loc["metrics", "config_exists"]) is True
     assert bool(status.loc["qc", "launch_requested"]) is True
     assert "--run-scenario large-run" in status.loc["metrics", "terminal_command"]
     assert commands.metrics_launch_kwargs(show=False) == {

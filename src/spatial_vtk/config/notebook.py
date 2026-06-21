@@ -564,8 +564,12 @@ class NotebookDashboardCommands:
 
         cfg = SpatialVTKConfig.from_file(self.config_path, run_scenario=self.run_scenario)
         paths = dashboard_output_paths(cfg=cfg, create_parent=False, include_summary_tables=False)
+        metrics_dataset_dir = paths["metrics_dashboard_root"]
+        dashboard_summary_table_dir = paths["dashboard_summary_root"]
+        qc_trace_summary_table = paths["qc_trace_summary_path"]
         common = {
             "config_path": str(self.config_path),
+            "config_exists": self.config_path.exists(),
             "run_scenario": self.run_scenario or "",
             "auto_port": self.auto_port,
             "proxy_mode": self.proxy_mode,
@@ -580,9 +584,12 @@ class NotebookDashboardCommands:
                 "dashboard": "metrics",
                 "requested_port": self.metrics_port,
                 "launch_requested": self.launch_metrics_dashboard,
-                "metrics_dataset_dir": str(paths["metrics_dashboard_root"]),
-                "dashboard_summary_table_dir": str(paths["dashboard_summary_root"]),
+                "metrics_dataset_dir": str(metrics_dataset_dir),
+                "metrics_dataset_dir_exists": metrics_dataset_dir.exists(),
+                "dashboard_summary_table_dir": str(dashboard_summary_table_dir),
+                "dashboard_summary_table_dir_exists": dashboard_summary_table_dir.exists(),
                 "qc_trace_summary_table": "",
+                "qc_trace_summary_table_exists": None,
                 "terminal_command": self.metrics_command,
                 **common,
             },
@@ -591,8 +598,11 @@ class NotebookDashboardCommands:
                 "requested_port": self.qc_port,
                 "launch_requested": self.launch_qc_dashboard,
                 "metrics_dataset_dir": "",
+                "metrics_dataset_dir_exists": None,
                 "dashboard_summary_table_dir": "",
-                "qc_trace_summary_table": str(paths["qc_trace_summary_path"]),
+                "dashboard_summary_table_dir_exists": None,
+                "qc_trace_summary_table": str(qc_trace_summary_table),
+                "qc_trace_summary_table_exists": qc_trace_summary_table.exists(),
                 "terminal_command": self.qc_command,
                 **common,
             },

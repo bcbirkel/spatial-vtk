@@ -348,7 +348,8 @@ the large-run notebooks.
        a terminal fallback for long-lived dashboard sessions. The returned
        settings also parse ``SVTK_LAUNCH_METRICS_DASHBOARD`` and
        ``SVTK_LAUNCH_QC_DASHBOARD`` so notebooks do not repeat dashboard
-       launch environment parsing in cells.
+       launch environment parsing in cells. ``status_frame()`` also reports
+       whether configured dashboard input paths exist.
 
 Standard Notebook Input Helpers
 -------------------------------

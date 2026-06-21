@@ -63,6 +63,9 @@ Changelog
   - Added normalized sidecar-directory path columns to
     ``NotebookFigureSidecarSettings.readiness_frame()`` so notebooks show
     whether figure provenance metadata can be inspected.
+  - Added config and dashboard-output existence flags to
+    ``NotebookDashboardCommands.status_frame()`` so dashboard launch cells show
+    missing metrics, summary, or QC inputs before starting Streamlit.
 
 - **CLI help and generated-reference wording** *(Changed)*
 
