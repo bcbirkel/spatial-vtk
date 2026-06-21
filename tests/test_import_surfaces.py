@@ -2529,6 +2529,8 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "``display_metrics_preview()``" in workflows
     assert "``display_metric_source_preview()``" in workflows
     assert "``display_output_previews()``" in workflows
+    assert "Use ``preview_table()`` or\n       ``display_table_previews()`` for bounded notebook previews" in workflows
+    assert "reserve\n       ``load_table()`` / ``load_tables()`` for package helpers or explicit\n       analysis steps" in workflows
     assert "run_notebook_step_if_needed" in workflows
     assert "display_notebook_step_result" in workflows
     assert "MetricPlan.summary_frame()" in workflows
@@ -2547,6 +2549,8 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "metadata dictionaries or result frames" not in workflows
     assert "Workflow functions return JSON-ready dictionaries" not in workflows
     assert "instead of cluttering notebooks with repeated path variables" not in workflows
+    assert "``read_table(...).head()``" not in workflows
+    assert "call ``load_tables(...)`` manually" not in workflows
     assert "custom workflow cells\n       can call it directly when they already own the readiness object" in workflows
     assert "Use this with ``run_notebook_step_if_needed``\n       fallbacks" not in workflows
     assert "instead of ``print(result)``" in workflows

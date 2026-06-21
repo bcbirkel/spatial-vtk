@@ -176,12 +176,12 @@ the large-run notebooks.
        cells.
        ``readiness()`` can receive registered output, input, and source path
        names such as ``"metrics_long_path"`` and resolves them to configured
-       paths before building the status table. ``load_table()`` and
-       ``preview_table()`` read one table artifact by group path name or output
-       key; ``load_tables()``, ``preview_tables()``, and
-       ``display_table_previews()`` handle multiple tables or display-label
-       mappings. Pass ``missing="skip"`` when a figure can use an optional
-       output if present but should continue without it.
+       paths before building the status table. Use ``preview_table()`` or
+       ``display_table_previews()`` for bounded notebook previews, and reserve
+       ``load_table()`` / ``load_tables()`` for package helpers or explicit
+       analysis steps that genuinely need full in-memory tables. Pass
+       ``missing="skip"`` when a figure can use an optional output if present
+       but should continue without it.
        Standard public result-object names such as
        ``event_station_records_path`` are accepted where older output groups
        still expose the legacy ``event_station_path`` name, so scripts can use
@@ -202,8 +202,8 @@ the large-run notebooks.
        registry, such as preprocessing metadata, use ``load_path_table()`` or
        ``preview_path_table()`` with the group path name for one table, or
        ``display_path_table_previews()`` for display-label mappings and bounded
-       notebook previews. This keeps path-backed artifacts out of direct
-       ``read_table(...).head()`` calls.
+       notebook previews. This keeps path-backed artifacts on the shared
+       bounded-preview path instead of ad hoc table reads in notebook cells.
        Use ``figure_path()`` for figure artifacts that need configured
        directories but metric-specific filenames; pass ``stem_parts`` instead
        of constructing ``figure_dir / "name.png"`` in notebook cells.
@@ -434,10 +434,10 @@ fallbacks, and bounded previews stay in package code.
        config object or config file path.
 
 These helpers should replace notebook-local blocks that create several
-``output_group(...)`` objects, call ``load_tables(...)`` manually, or keep
-fallback path choices in the cell. If a workflow step needs a new reusable
-input bundle, add the bundle as a package helper first, then keep the notebook
-cell focused on the analysis task.
+``output_group(...)`` objects, call table loaders manually, or keep fallback
+path choices in the cell. If a workflow step needs a new reusable input bundle,
+add the bundle as a package helper first, then keep the notebook cell focused
+on the analysis task.
 
 The same rule applies to status and preview cells. Standard notebook result
 objects expose bounded display helpers such as ``display_summary_previews()``,

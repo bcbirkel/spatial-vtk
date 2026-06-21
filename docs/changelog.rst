@@ -747,6 +747,9 @@ Changelog
   - Made Step 3 metric workflow outputs skip eager ``metric_task_estimate``
     loading by default and simplified tutorial calls to use
     ``load_standard_metric_workflow_outputs(cfg=cfg)``.
+  - Clarified Python workflow guidance so notebook preview cells use bounded
+    result-object display helpers and reserve full ``load_table()`` calls for
+    explicit analysis or package helpers.
   - Made configured metric-output and dashboard-output helpers write
     partitioned dashboard metric datasets by default, and changed
     ``svtk metrics outputs`` to default to that large-run-safe layout while
