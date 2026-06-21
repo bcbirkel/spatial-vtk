@@ -122,7 +122,7 @@ def plot_band_score_distribution(
     model_col: str = "model",
     metric_col: str = "metric",
     color_col: str | None = "metric",
-    title: str = "Band Score Distribution",
+    title: str = "Band Residual/Score Distribution",
     robust_axis_percentile: float | None = 95.0,
     showfig: bool | None = None,
     savefig: bool | None = None,
@@ -131,11 +131,12 @@ def plot_band_score_distribution(
     sidecar_rows: int | None = None,
     sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
-    """Plot score distributions grouped by period band.
+    """Plot residual or score distributions grouped by period band.
 
-    Inputs are a long metric table with one score column and a period-band
-    column. The output is a Matplotlib figure with adjacent colored boxplots
-    inside each passband group, plus visual separators between passbands.
+    Inputs are a long metric table with one residual, score, or other numeric
+    value column and a period-band column. The output is a Matplotlib figure
+    with adjacent colored boxplots inside each passband group, plus visual
+    separators between passbands.
     """
 
     _require(df, [band_col, score_col])

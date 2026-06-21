@@ -194,8 +194,8 @@ Public plotting helpers exposed by ``spatial_vtk.metrics.plot``:
      - Compare metric residual or score distributions by passband, component,
        model, or metric group.
    * - ``plot_period_score_distribution``
-     - Compare PSA and period-indexed metric distributions by oscillator
-       period.
+     - Compare PSA and period-indexed residual or score distributions by
+       oscillator period.
    * - ``plot_period_spectra``
      - Plot period spectra from prepared spectral summary tables.
    * - ``plot_period_spectrogram``

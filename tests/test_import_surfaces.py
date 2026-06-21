@@ -1017,6 +1017,13 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert ".. autofunction:: spatial_vtk.metrics.plot.write_standard_metric_diagnostic_figures" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings" in text
     assert "Public plotting helpers exposed by ``spatial_vtk.metrics.plot``" in text
+    model_comparison_source = (docs_root.parent / "src" / "spatial_vtk" / "metrics" / "plot" / "model_comparison.py").read_text(
+        encoding="utf-8"
+    )
+    period_source = (docs_root.parent / "src" / "spatial_vtk" / "metrics" / "plot" / "periods.py").read_text(encoding="utf-8")
+    assert "Plot residual or score distributions grouped by period band." in model_comparison_source
+    assert "Plot score distributions grouped by period band." not in model_comparison_source
+    assert "Plot spectral residual or score distributions by oscillator period." in period_source
     helper_table = text.split("Public plotting helpers exposed by ``spatial_vtk.metrics.plot``", 1)[1].split(
         "Large-Run Figure Suite",
         1,
@@ -1030,6 +1037,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "metric_rows_for_metrics" not in helper_table
     assert "Plot custom metric trends and optional GOF score diagnostics." in helper_table
     assert "Plot generic metric trends" not in helper_table
+    assert "Compare PSA and period-indexed residual or score distributions by" in helper_table
     assert "Render the standard Step 3 residual-distance, score-trend, and\n   band residual-distribution diagnostics" in text
     assert "Render the standard Step 3 residual-distance, GOF-distance" not in text
     assert "Notebook-facing metric plotting should use the result-object and suite helpers" in text

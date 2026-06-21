@@ -106,7 +106,7 @@ def plot_period_score_distribution(
     period_col: str = "period_s",
     score_col: str = "log2_residual",
     color_col: str | None = "component",
-    title: str = "Period Score Distribution",
+    title: str = "Period Residual/Score Distribution",
     robust_axis_percentile: float | None = 95.0,
     showfig: bool | None = None,
     savefig: bool | None = None,
@@ -115,7 +115,7 @@ def plot_period_score_distribution(
     sidecar_rows: int | None = None,
     sidecar_dir: str | Path | None = None,
 ) -> plt.Figure:
-    """Plot spectral metric distributions grouped by oscillator period.
+    """Plot spectral residual or score distributions by oscillator period.
 
     This is the period-domain counterpart to passband distribution plots. It is
     intended for broadband spectral metrics such as PSA and FAS, where

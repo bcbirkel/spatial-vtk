@@ -66,6 +66,9 @@ Changelog
   - Reworded the generated ``band-score-distribution`` CLI summary to describe
     residual or score distributions, matching the default ``log2_residual``
     example instead of implying the plot is GOF-score only.
+  - Aligned band and period distribution plot docstrings and default titles
+    with residual-or-score usage so Python API docs match the stabilized
+    large-run metric plotting workflow.
   - Aligned internal CLI call/result helper docstrings with the public
     ``svtk call`` guidance so direct public-function calls are consistently
     framed as advanced one-off usage rather than generic workflow commands.
