@@ -13,6 +13,7 @@ import pandas as pd
 from spatial_vtk.config.metric_catalog import metric_group_for
 from spatial_vtk.config.metrics import metrics_settings_from_config, transform_columns
 from spatial_vtk.config.runtime import SpatialVTKConfig
+from spatial_vtk.io.tables import read_table, write_table
 
 
 @dataclass(frozen=True)
@@ -364,10 +365,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
     """Build the module-level metric-plan CLI parser."""
 
     parser = argparse.ArgumentParser(description="Check expected metric rows against an existing metrics table.")
-    parser.add_argument("--inventory", required=True, help="QC inventory CSV.")
-    parser.add_argument("--metrics", required=True, help="Existing metrics CSV.")
+    parser.add_argument("--inventory", required=True, help="QC inventory CSV/parquet table.")
+    parser.add_argument("--metrics", required=True, help="Existing metrics CSV/parquet table.")
     parser.add_argument("--config", default=None, help="Spatial-VTK config YAML/JSON.")
-    parser.add_argument("--missing-output", default=None, help="Optional output CSV for missing rows.")
+    parser.add_argument("--missing-output", default=None, help="Optional output CSV/parquet table for missing rows.")
     return parser
 
 
@@ -377,11 +378,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_arg_parser().parse_args(argv)
     config = SpatialVTKConfig.from_file(args.config) if args.config else SpatialVTKConfig.empty(root_dir=Path.cwd())
     plan = metric_plan_from_config(config)
-    expected = expected_metric_rows_from_inventory(pd.read_csv(args.inventory, low_memory=False), plan)
-    missing, summary = compare_metric_plan_to_table(expected, pd.read_csv(args.metrics, low_memory=False))
+    expected = expected_metric_rows_from_inventory(read_table(args.inventory), plan)
+    missing, summary = compare_metric_plan_to_table(expected, read_table(args.metrics))
     if args.missing_output:
-        output = Path(args.missing_output).expanduser()
-        output.parent.mkdir(parents=True, exist_ok=True)
-        missing.to_csv(output, index=False)
+        write_table(missing, args.missing_output, index=False)
     print(f"expected={summary.expected} present={summary.present} missing={summary.missing}")
     return 0 if summary.missing == 0 else 1

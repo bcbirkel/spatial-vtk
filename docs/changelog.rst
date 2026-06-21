@@ -149,8 +149,8 @@ Changelog
     reader and updated catalog wrapper docstrings so public context helpers no
     longer imply CSV-only inputs.
   - Routed generic CLI input-table loading through the shared table reader so
-    ``svtk`` metadata, plot, map, and visualization commands use the same
-    CSV/Parquet behavior as package APIs.
+    ``svtk`` metadata, plot, map, visualization, and metric-plan completeness
+    commands use the same CSV/Parquet behavior as package APIs.
   - Routed generic CLI table-output writing through the shared table writer so
     ``svtk`` commands get the same atomic write and suffix handling as package
     APIs.

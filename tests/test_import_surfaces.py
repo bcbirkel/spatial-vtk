@@ -3442,7 +3442,7 @@ def test_large_run_csv_readers_use_stable_dtype_inference():
         "src/spatial_vtk/metrics/calculate/arrival_picks.py": "df = read_table(source)",
         "src/spatial_vtk/io/metadata.py": "prepare_event_station_table(read_table(path)",
         "src/spatial_vtk/io/catalogs.py": "return read_table(path or default_event_patch_csv(), **kwargs)",
-        "src/spatial_vtk/io/plans.py": "pd.read_csv(args.metrics, low_memory=False)",
+        "src/spatial_vtk/io/plans.py": "read_table(args.metrics)",
         "src/spatial_vtk/spatial/calculate/geojson.py": "pd.read_csv(path, usecols=columns, chunksize=chunksize, low_memory=False)",
     }
     for relative_path, snippet in snippets.items():
@@ -3461,6 +3461,23 @@ def test_cli_table_writes_use_shared_writer():
     assert "written = write_table(df, output, index=False)" in helper
     assert ".to_csv(" not in helper
     assert ".to_parquet(" not in helper
+
+
+def test_io_plan_cli_uses_shared_table_helpers():
+    """Metric completeness CLI wrapper should accept CSV or Parquet tables."""
+
+    source = (pathlib.Path(__file__).resolve().parents[1] / "src" / "spatial_vtk" / "io" / "plans.py").read_text(
+        encoding="utf-8"
+    )
+    helper = source.split("def main", 1)[1].split("\ndef ", 1)[0]
+    assert "from spatial_vtk.io.tables import read_table, write_table" in source
+    assert "expected_metric_rows_from_inventory(read_table(args.inventory), plan)" in helper
+    assert "compare_metric_plan_to_table(expected, read_table(args.metrics))" in helper
+    assert "write_table(missing, args.missing_output, index=False)" in helper
+    assert ".to_csv(" not in helper
+    assert ".to_parquet(" not in helper
+    assert "QC inventory CSV/parquet table." in source
+    assert "Existing metrics CSV/parquet table." in source
 
 
 def test_dashboard_summary_writes_use_shared_writer():
