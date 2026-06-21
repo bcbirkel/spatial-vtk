@@ -342,12 +342,18 @@ def test_tutorial_notebooks_have_stable_cell_ids() -> None:
 def test_tutorial_notebooks_are_committed_without_execution_state() -> None:
     """Committed notebooks should start clean for fresh-checkout users."""
 
+    module = _load_executor_module()
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
     assert notebooks
     dirty = []
     for notebook_path in notebooks:
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        metadata = notebook.get("metadata", {})
+        if isinstance(metadata, dict):
+            for key in module.NOTEBOOK_CONTRACT_FORBIDDEN_METADATA_KEYS:
+                if key in metadata:
+                    dirty.append(f"{notebook_path.relative_to(repo_root)} has saved metadata key {key}")
         for index, cell in enumerate(notebook.get("cells", []), start=1):
             if cell.get("cell_type") != "code":
                 continue
@@ -447,7 +453,7 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
                         ],
                     }
                 ],
-                "metadata": {},
+                "metadata": {"widgets": {"application/vnd.jupyter.widget-state+json": {}}},
                 "nbformat": 4,
                 "nbformat_minor": 5,
             }
@@ -461,6 +467,7 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert "missing shared source-checkout bootstrap cell" in combined
     assert "committed execution_count should be empty" in combined
     assert "committed outputs should be empty" in combined
+    assert "committed notebook metadata should not contain saved runtime state keys: widgets" in combined
     assert "import subprocess" in combined
     assert "forbidden shell/CLI workflow pattern" in combined
     assert "pd.read_" in combined

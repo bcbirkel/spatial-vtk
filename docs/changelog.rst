@@ -71,6 +71,9 @@ Changelog
   - Added workflow-doc regression coverage so notebook guidance keeps using
     stable package import surfaces and does not reintroduce metrics plotting
     implementation-module paths.
+  - Hardened tutorial notebook source-contract checks so saved widget/UI
+    metadata state is rejected alongside execution counts and saved cell
+    outputs.
 
 2026-06-19
 ----------

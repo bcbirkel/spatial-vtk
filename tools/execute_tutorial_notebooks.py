@@ -136,6 +136,14 @@ NOTEBOOK_CONTRACT_FORBIDDEN_SNIPPETS = (
     ".loc[",
     ".merge(",
 )
+NOTEBOOK_CONTRACT_FORBIDDEN_METADATA_KEYS = frozenset(
+    {
+        "widgets",
+        "widget_state",
+        "varInspector",
+        "toc",
+    }
+)
 NOTEBOOK_CONTRACT_FORBIDDEN_LINE_PATTERNS = (
     re.compile(r"^\s*![^\n]*\bsvtk\b", re.MULTILINE),
     re.compile(r"^\s*%%bash\b", re.MULTILINE),
@@ -453,6 +461,14 @@ def tutorial_notebook_contract_violations(notebooks: list[Path], *, repo_root: P
 
         cells = notebook.get("cells", [])
         source_text = "\n".join("".join(cell.get("source", [])) for cell in cells)
+        metadata = notebook.get("metadata", {})
+        if isinstance(metadata, dict):
+            saved_state_keys = sorted(NOTEBOOK_CONTRACT_FORBIDDEN_METADATA_KEYS & set(metadata))
+            if saved_state_keys:
+                violations.append(
+                    f"{label}: committed notebook metadata should not contain saved runtime state keys: "
+                    f"{', '.join(saved_state_keys)}"
+                )
         if _is_example_notebook(notebook_path, repo_root):
             if "_source_bootstrap.py" not in source_text or "runpy.run_path(str(_bootstrap))" not in source_text:
                 violations.append(f"{label}: missing shared source-checkout bootstrap cell")
