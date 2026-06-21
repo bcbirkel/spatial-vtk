@@ -626,13 +626,17 @@ def qc_inventory_readiness_from_config(
 ) -> OutputReadiness:
     """Return readiness for configured full QC trace and inventory tables.
 
-    This helper owns the Step 2 input/output contract used by tutorial and
-    large-run notebooks before they call
-    :func:`spatial_vtk.config.run_notebook_step_if_needed`. It checks only
-    configured paths and file freshness; it does not load waveform or QC
-    tables. ``overwrite`` and message parameters are passed through to the
-    output readiness decision so notebooks can keep a single visible control for
-    reruns without rebuilding the input/output contract locally.
+    Standard notebooks should normally call
+    ``load_standard_qc_workflow_outputs(...).run_inventory_step_if_needed(...)``
+    so stale-output checks, Slurm/local execution, and skipped-step payloads
+    stay on the configured Step 2 result object. Use this direct readiness
+    helper from scripts or custom orchestration that already owns execution
+    control.
+
+    The readiness check only inspects configured paths and file freshness; it
+    does not load waveform or QC tables. ``overwrite`` and message parameters
+    are passed through to the output readiness decision so callers can keep a
+    single visible rerun control without rebuilding the input/output contract.
     """
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
@@ -657,7 +661,14 @@ def qc_overlap_readiness_from_config(
     current_message: str | None = "Overlap QC sidecar is current; skipping rebuild.",
     rebuild_message: str | None = None,
 ) -> OutputReadiness:
-    """Return readiness for the configured observed/synthetic overlap QC sidecar."""
+    """Return readiness for the configured observed/synthetic overlap QC sidecar.
+
+    Standard notebooks should normally call
+    ``load_standard_qc_workflow_outputs(...).run_overlap_step_if_needed(...)``
+    so the Step 2 result object owns the readiness check and skipped-step
+    payload. Use this direct readiness helper from scripts or custom
+    orchestration that already owns execution control.
+    """
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
     outputs = output_group(qc_group_name, cfg=config)
@@ -681,7 +692,15 @@ def qc_summary_readiness_from_config(
     current_message: str | None = "Compact QC summary tables are current; skipping rebuild.",
     rebuild_message: str | None = None,
 ) -> OutputReadiness:
-    """Return readiness for configured compact QC summary and review tables."""
+    """Return readiness for configured compact QC summary and review tables.
+
+    Standard notebooks should normally call
+    ``load_standard_qc_workflow_outputs(...).run_summary_step_if_needed(...)``
+    so compact table freshness, local/Slurm execution, and skipped-step payloads
+    stay on the configured Step 2 result object. Use this direct readiness
+    helper from scripts or custom orchestration that already owns execution
+    control.
+    """
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
     outputs = output_group(qc_group_name, cfg=config)

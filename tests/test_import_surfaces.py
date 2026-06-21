@@ -2737,6 +2737,9 @@ def test_notebook_helper_docs_prefer_standard_result_objects():
     metric_configured = (
         repo_root / "src" / "spatial_vtk" / "metrics" / "workflow" / "configured.py"
     ).read_text(encoding="utf-8")
+    qc_workflow = (
+        repo_root / "src" / "spatial_vtk" / "qc" / "build" / "workflow.py"
+    ).read_text(encoding="utf-8")
     spatial_workflow = (
         repo_root / "src" / "spatial_vtk" / "spatial" / "calculate" / "workflow.py"
     ).read_text(encoding="utf-8")
@@ -2763,6 +2766,17 @@ def test_notebook_helper_docs_prefer_standard_result_objects():
         not in metric_configured
     )
     assert "through\n``run_or_submit_notebook_function()``" not in metric_configured
+    assert (
+        "``load_standard_qc_workflow_outputs(...).run_inventory_step_if_needed(...)``"
+        in qc_workflow
+    )
+    assert "``load_standard_qc_workflow_outputs(...).run_overlap_step_if_needed(...)``" in qc_workflow
+    assert "``load_standard_qc_workflow_outputs(...).run_summary_step_if_needed(...)``" in qc_workflow
+    assert "Use this direct readiness\n    helper from scripts or custom orchestration" in qc_workflow
+    assert (
+        "large-run notebooks before they call\n    :func:`spatial_vtk.config.run_notebook_step_if_needed`"
+        not in qc_workflow
+    )
     assert "Large-run notebooks should normally call" in spatial_workflow
     assert "``load_standard_spatial_workflow_output_status(...).run_summary_step_if_needed(...)``" in spatial_workflow
     assert "Use this direct readiness helper from\n    scripts or custom orchestration" in spatial_workflow

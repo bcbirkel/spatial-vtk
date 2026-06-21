@@ -102,6 +102,9 @@ Changelog
   - Expanded top-level Step 5/6 spatial workflow loader docs so API references
     show the result-owned runner, preview, waveform, and region-boxplot methods
     that keep large-run notebooks lightweight.
+  - Reworded Step 2 QC readiness docs so notebooks are steered to the standard
+    QC result object's inventory, overlap, and summary runners instead of
+    direct readiness-helper wiring.
 
 - **Step 1 workflow helpers** *(Added)*
 
