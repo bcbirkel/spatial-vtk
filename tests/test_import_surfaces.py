@@ -491,8 +491,10 @@ def test_changelog_dated_sections_use_bulleted_entries():
     in_dated_section = False
     topic_open = False
     current_entry_has_detail_bullet = False
+    current_entry_detail_count = 0
     previous_line_was_detail = False
     violations: list[str] = []
+    max_detail_bullets = 10
     for line_number, line in enumerate(lines, start=1):
         stripped = line.strip()
         if not stripped:
@@ -500,14 +502,25 @@ def test_changelog_dated_sections_use_bulleted_entries():
         if date_heading.match(stripped):
             if in_dated_section and topic_open and not current_entry_has_detail_bullet:
                 violations.append(f"{line_number}: previous changelog entry has no detail bullets")
+            if topic_open and current_entry_detail_count > max_detail_bullets:
+                violations.append(
+                    f"{line_number}: previous changelog entry has {current_entry_detail_count} detail bullets; "
+                    f"split entries above {max_detail_bullets}"
+                )
             in_dated_section = True
             topic_open = False
             current_entry_has_detail_bullet = False
+            current_entry_detail_count = 0
             previous_line_was_detail = False
             continue
         if in_dated_section and stripped == "Future Work":
             if topic_open and not current_entry_has_detail_bullet:
                 violations.append(f"{line_number}: previous changelog entry has no detail bullets")
+            if topic_open and current_entry_detail_count > max_detail_bullets:
+                violations.append(
+                    f"{line_number}: previous changelog entry has {current_entry_detail_count} detail bullets; "
+                    f"split entries above {max_detail_bullets}"
+                )
             in_dated_section = False
             continue
         if set(stripped) <= {"-"}:
@@ -517,16 +530,23 @@ def test_changelog_dated_sections_use_bulleted_entries():
         if line.startswith("- "):
             if topic_open and not current_entry_has_detail_bullet:
                 violations.append(f"{line_number}: previous changelog entry has no detail bullets")
+            if topic_open and current_entry_detail_count > max_detail_bullets:
+                violations.append(
+                    f"{line_number}: previous changelog entry has {current_entry_detail_count} detail bullets; "
+                    f"split entries above {max_detail_bullets}"
+                )
             if not topic_bullet.match(line):
                 violations.append(
                     f"{line_number}: top-level changelog bullets must include a topic and status: {line}"
                 )
             topic_open = True
             current_entry_has_detail_bullet = False
+            current_entry_detail_count = 0
             previous_line_was_detail = False
             continue
         if line.startswith("  - "):
             current_entry_has_detail_bullet = True
+            current_entry_detail_count += 1
             previous_line_was_detail = True
             continue
         if line.startswith("    ") and previous_line_was_detail:
@@ -537,6 +557,14 @@ def test_changelog_dated_sections_use_bulleted_entries():
             continue
         violations.append(f"{line_number}: {line}")
         previous_line_was_detail = False
+
+    if in_dated_section and topic_open and not current_entry_has_detail_bullet:
+        violations.append("EOF: previous changelog entry has no detail bullets")
+    if in_dated_section and topic_open and current_entry_detail_count > max_detail_bullets:
+        violations.append(
+            f"EOF: previous changelog entry has {current_entry_detail_count} detail bullets; "
+            f"split entries above {max_detail_bullets}"
+        )
 
     assert not violations, "Changelog dated entries must be bullets:\n" + "\n".join(violations)
 

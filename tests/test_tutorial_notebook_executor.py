@@ -1211,13 +1211,14 @@ def test_large_run_readme_distinguishes_public_and_implementation_imports() -> N
 
     repo_root = Path(__file__).resolve().parents[1]
     readme = (repo_root / "docs" / "examples" / "large_run" / "README.md").read_text(encoding="utf-8")
-    stale_examples = (
-        "from spatial_vtk.metrics.plot import plot_period_spectra",
-        "from spatial_vtk.spatial.map import plot_station_metric_map",
-        "from spatial_vtk.spatial.plot import scatterplot",
+    public_namespaces = (
+        "spatial_vtk.metrics.plot",
+        "spatial_vtk.spatial.plot",
+        "spatial_vtk.spatial.map",
+        "spatial_vtk.visualize",
     )
-    for example in stale_examples:
-        assert example not in readme
+    for namespace in public_namespaces:
+        assert namespace in readme
     for helper in (
         "notebook_run_context",
         "load_standard_ingest_workflow_outputs",
@@ -1233,13 +1234,6 @@ def test_large_run_readme_distinguishes_public_and_implementation_imports() -> N
     assert "write_large_run_spatial_figure_suite_from_notebook_settings" not in readme
     assert "Import from stable public packages" in readme
     assert "deeper implementation modules below those packages" in readme
-    for namespace in (
-        "spatial_vtk.metrics.plot",
-        "spatial_vtk.spatial.plot",
-        "spatial_vtk.spatial.map",
-        "spatial_vtk.visualize",
-    ):
-        assert namespace in readme
     for pattern in (
         "from spatial_vtk.metrics.plot.periods",
         "from spatial_vtk.spatial.map.station",

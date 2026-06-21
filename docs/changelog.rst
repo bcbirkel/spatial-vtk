@@ -15,6 +15,9 @@ Changelog
   - Promoted artifact-named CLI flags for QC, metrics, spatial, GeoJSON,
     dashboard, IO, plot, map, and visualization commands while preserving
     legacy generic aliases for compatibility.
+
+- **Notebook and dashboard workflow contracts** *(Changed)*
+
   - Moved notebook display, readiness, summary, and result-status formatting
     into package helpers so tutorial cells show labelled tables instead of
     raw dictionaries, dataclasses, or repeated path variables.
@@ -28,6 +31,9 @@ Changelog
     scripts.
   - Updated workflow-guide and large-run README dashboard examples to import
     routine dashboard helpers from ``spatial_vtk.visualize``.
+
+- **CLI and workflow wording** *(Changed)*
+
   - Clarified metrics CLI help for manifest batch output directories,
     ``--batch-size``, and ``--batch-count`` so Slurm array sizing is explicit.
   - Reworded metric workflow Slurm/task docs to describe metric manifest
@@ -52,6 +58,9 @@ Changelog
   - Clarified dashboard readiness value-family wording so Visualize API docs
     describe residual, GOF score, observed, synthetic, and other configured
     metric-value coverage without vague generic terminology.
+
+- **Public surface guardrails** *(Fixed)*
+
   - Aligned API docs, generated CLI reference, workflow guides, README
     install guidance, and tutorial notebooks with the stabilized public import
     surfaces and result-object workflow.
@@ -201,6 +210,9 @@ Changelog
   - Rewired the standard Step 5 GeoJSON notebook to call configured input
     result methods for region and corridor figure suites instead of unpacking
     GeoJSON paths, loaded tables, and output groups into notebook variables.
+
+- **Standard notebook display cleanup** *(Rewired)*
+
   - Rewired standard Step 1 and Step 2 notebooks to call package helpers for
     table previews, readiness messages, and configured output loading.
   - Rewired standard Step 2 and Step 3 notebooks to import metric settings
@@ -232,6 +244,9 @@ Changelog
   - Updated Python workflow guidance so the stable notebook import surface for
     metric plotting points to figure suites and result objects, while keeping
     row-selection helpers documented only as advanced script APIs.
+
+- **Spatial and workflow API documentation** *(Changed)*
+
   - Split notebook-facing spatial figure-suite guidance from advanced spatial
     figure-context builders so Step 4 tutorials point at result-object figure
     methods instead of context construction.
@@ -260,6 +275,9 @@ Changelog
   - Updated large-run README, package overview, and Python workflow guidance
     so common notebook examples point to result-object loaders and Step 4/5
     runner methods instead of lower-level readiness/build helper pairs.
+
+- **Output-registry and workflow docstrings** *(Changed)*
+
   - Updated I/O reference docs and the output-registry module docstring so
     standard workflow result loaders are presented before ``output_group()``
     for routine notebooks, with ``output_group()`` and ``resolve_output_path()``
@@ -280,6 +298,9 @@ Changelog
     ``load_standard_spatial_workflow_output_status(...)`` and the
     result-owned summary runner before documenting custom output-directory
     helpers.
+
+- **Figure and map docstrings** *(Changed)*
+
   - Updated metric and spatial plotting package docstrings so examples start
     with large-run figure-suite writers before documenting individual
     low-level plot functions, and aligned the Spatial API entry-point example
@@ -392,6 +413,9 @@ Changelog
     the browser by default.
   - Added a separate metrics-dashboard download row cap so filtered row-level
     CSV downloads do not serialize every loaded distribution row by default.
+
+- **Dashboard path and value contracts** *(Hardened)*
+
   - Added clear Streamlit dashboard query aliases
     ``metrics_dataset_dir``, ``dashboard_summary_table_dir``, and
     ``qc_trace_summary`` while preserving legacy dashboard links.
@@ -406,6 +430,9 @@ Changelog
   - Added dashboard value-family readiness metadata so status tables show
     whether row-level and summary datasets contain residuals, GOF scores,
     observed values, synthetic values, or only generic metric values.
+
+- **Dashboard readiness and startup checks** *(Hardened)*
+
   - Promoted dashboard tab empty-state, missing-column, chart-readiness, and
     value-selector messages into public package helpers so notebooks and CLI
     status output can share the same contracts as Streamlit tabs.
@@ -428,6 +455,9 @@ Changelog
   - Hardened Streamlit dashboard launch checks so occupied ports are detected
     before launch and delayed startup failures are reported before the CLI
     prints a running-dashboard URL.
+
+- **Lazy dashboard and workflow imports** *(Hardened)*
+
   - Kept dashboard launch helper imports config-lazy so lightweight dashboard
     command builders and launch function objects remain importable without
     loading YAML/config machinery.
@@ -451,6 +481,9 @@ Changelog
   - Made ``spatial_vtk.config`` resolve public config helpers lazily and
     decoupled display-label helpers from runtime config imports so lightweight
     label utilities remain importable without YAML or pandas.
+
+- **Dashboard CLI and API reference wording** *(Changed)*
+
   - Added a no-write ``tools/generate_cli_reference.py --check`` mode and
     rewired CI/release validation to use it for generated CLI-reference
     freshness checks.
@@ -487,6 +520,9 @@ Changelog
   - Added exact ``figure_paths`` lists to Step 4 large-run spatial
     figure-suite status frames while preserving preview-oriented figure path
     fields.
+
+- **Large-run notebook result objects** *(Hardened)*
+
   - Updated the large-run dashboard notebook to use the package-owned
     dashboard preparation/display helper for preflight and postflight status,
     while letting the preparation result own the Slurm-aware dashboard dataset
@@ -509,6 +545,9 @@ Changelog
   - Added dashboard output previews to the Step 7 preparation result so
     large-run dashboard notebooks inspect bounded dashboard products without
     lower-level config/path preview calls.
+
+- **Large-run workflow checks and logging** *(Hardened)*
+
   - Added broad notebook regression coverage and workflow docs requiring
     standard result-object preview methods instead of lower-level preview
     functions with repeated config arguments.
@@ -531,6 +570,9 @@ Changelog
   - Added release guardrails so local agent notes and execplans stay ignored.
   - Added release guardrails so machine-specific instructions are called out
     before public publishing.
+
+- **Tutorial install and runtime checks** *(Fixed)*
+
   - Clarified tutorial runtime checks so missing importable modules are
     reported directly before the install command.
   - Aligned README and installation docs around the same notebook and
@@ -564,6 +606,9 @@ Changelog
   - Updated Python workflow guidance so large-run spatial plotting points to
     the result-owned ``write_figure_suite(...)`` method rather than
     lower-level spatial figure-context helpers.
+
+- **Dashboard and spatial API guidance** *(Documented)*
+
   - Clarified dashboard API guidance so notebooks display user-facing artifact
     labels instead of internal dashboard output-registry names.
   - Updated Spatial API examples so large-run plotting starts from the
@@ -578,6 +623,9 @@ Changelog
     dashboard wrappers appear before lower-level script helpers.
   - Documented notebook-facing and script-facing waveform-comparison and
     region-boxplot helpers.
+
+- **Generated CLI example guidance** *(Documented)*
+
   - Updated generated CLI reference examples to use the committed example
     config.
   - Updated generated CLI reference examples to use the tutorial run scenario.
@@ -606,6 +654,9 @@ Changelog
   - Clarified the large-run dashboard notebook review step so blank or sparse
     dashboard tabs point readers to package-owned readiness/Data Status
     messages and dashboard table contracts instead of manual path inspection.
+
+- **Notebook figure provenance displays** *(Cleaned)*
+
   - Added explicit purpose/output notes to the remaining large-run figure and
     provenance cells so notebook section headers keep the same task-focused
     contract as the code cells they introduce.
@@ -678,6 +729,9 @@ Changelog
   - Added public helpers for GeoJSON metric frames and event labels.
   - Added public helpers for spatial metric products and first non-empty table
     values.
+
+- **Release and workflow documentation** *(Added)*
+
   - Clarified API and workflow docs so stable public subpackages are not
     described as lower-level implementation modules.
   - Updated the example tutorial scenario and CLI workflow to use
