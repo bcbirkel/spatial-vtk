@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import sys
+from types import ModuleType
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -557,6 +560,33 @@ def test_dashboard_metric_dataset_loader_pushes_down_large_run_filters(tmp_path)
     assert loaded["station"].tolist() == ["KEEP"]
     assert loaded["band"].fillna("").tolist() == [""]
     assert loaded["period_s"].tolist() == [1.0]
+
+
+def test_dashboard_metric_dataset_bounded_parquet_requires_streaming_reader(tmp_path, monkeypatch) -> None:
+    """Bounded dashboard parquet loads should not fall back to full materialization."""
+
+    parquet_path = tmp_path / "metrics_long.parquet"
+    parquet_path.write_bytes(b"not a real parquet file")
+
+    fake_pyarrow = ModuleType("pyarrow")
+    fake_parquet = ModuleType("pyarrow.parquet")
+
+    class BrokenParquetFile:
+        def __init__(self, path):  # noqa: ANN001
+            raise RuntimeError(f"cannot stream {path}")
+
+    fake_parquet.ParquetFile = BrokenParquetFile
+    fake_pyarrow.parquet = fake_parquet
+    monkeypatch.setitem(sys.modules, "pyarrow", fake_pyarrow)
+    monkeypatch.setitem(sys.modules, "pyarrow.parquet", fake_parquet)
+
+    def fail_full_parquet_read(*args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        raise AssertionError("bounded dashboard loads must not full-read parquet fallback data")
+
+    monkeypatch.setattr(dashboard_export.pd, "read_parquet", fail_full_parquet_read)
+
+    with pytest.raises(RuntimeError, match="Could not stream dashboard metric parquet table"):
+        load_dashboard_metric_dataset(parquet_path, max_rows=1, chunksize=1)
 
 
 def test_dashboard_metric_dataset_loader_treats_passband_as_band_alias(tmp_path) -> None:

@@ -602,6 +602,9 @@ Changelog
   - Made metrics-dashboard station, event, and path summary tabs load
     filtered summary rows lazily in chunks instead of loading every optional
     summary table at startup.
+  - Made bounded dashboard parquet readers fail with an actionable metadata or
+    batch-iteration error instead of falling back to full-table materialization
+    when streaming reads fail.
   - Made remaining full-table dashboard CSV reads use stable dtype inference
     so mixed station/event identifiers do not emit pandas ``DtypeWarning``
     messages or vary by chunk.

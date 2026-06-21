@@ -903,11 +903,12 @@ def _iter_dashboard_metric_table_chunks(
             for batch in parquet.iter_batches(batch_size=size, columns=selected):
                 yield batch.to_pandas()
             return
-        except Exception:
-            table = pd.read_parquet(path, columns=selected)
-            for start in range(0, len(table), size):
-                yield table.iloc[start : start + size].copy()
-            return
+        except Exception as exc:
+            raise RuntimeError(
+                f"Could not stream dashboard metric parquet table {path}. "
+                "Bounded dashboard reads require readable Parquet metadata and pyarrow batch iteration; "
+                "repair or rewrite the dashboard metric dataset before launching large-run dashboard tabs."
+            ) from exc
     if suffix == ".csv":
         if selected is None:
             reader = pd.read_csv(path, chunksize=size, low_memory=False)
@@ -940,8 +941,12 @@ def _dashboard_metric_table_columns(path: Path) -> list[str]:
             import pyarrow.parquet as pq
 
             return list(pq.ParquetFile(path).schema.names)
-        except Exception:
-            return list(pd.read_parquet(path).head(0).columns)
+        except Exception as exc:
+            raise RuntimeError(
+                f"Could not inspect dashboard metric parquet schema for {path}. "
+                "Dashboard readiness and bounded readers require readable Parquet metadata; "
+                "repair or rewrite the dashboard metric dataset."
+            ) from exc
     if suffix == ".csv":
         return list(pd.read_csv(path, nrows=0).columns)
     raise ValueError(f"Unsupported dashboard metric table format for {path}. Use Parquet or CSV.")
