@@ -29,6 +29,7 @@ from spatial_vtk.config.labels import normalize_metric_name
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.io import parquet_table_columns
+from spatial_vtk.io.tables import read_table
 from spatial_vtk.visualize.dashboard.tables import (
     build_dashboard_summaries,
     dashboard_summary_input_columns,
@@ -919,12 +920,12 @@ def _read_dashboard_metric_table(path: Path, *, columns: Sequence[str] | None = 
     suffix = path.suffix.lower()
     selected = _selected_existing_columns(path, columns)
     if suffix in {".parquet", ".pq"}:
-        return pd.read_parquet(path, columns=selected)
+        return read_table(path, columns=selected)
     if suffix == ".csv":
         if selected is None:
-            return pd.read_csv(path, low_memory=False)
+            return read_table(path)
         wanted = set(selected)
-        return pd.read_csv(path, usecols=lambda column: column in wanted, low_memory=False)
+        return read_table(path, usecols=lambda column: column in wanted)
     raise ValueError(f"Unsupported dashboard metric table format for {path}. Use Parquet or CSV.")
 
 
@@ -1337,13 +1338,13 @@ def _read_metric_table(table: pd.DataFrame | str | Path, *, columns: Sequence[st
     path = Path(table).expanduser()
     if path.suffix.lower() in {".parquet", ".pq"}:
         selected = _selected_existing_columns(path, columns)
-        return pd.read_parquet(path, columns=selected)
+        return read_table(path, columns=selected)
     if path.suffix.lower() == ".csv":
         selected = _selected_existing_columns(path, columns)
         if selected is None:
-            return pd.read_csv(path, low_memory=False)
+            return read_table(path)
         wanted = set(selected)
-        return pd.read_csv(path, usecols=lambda column: column in wanted, low_memory=False)
+        return read_table(path, usecols=lambda column: column in wanted)
     raise ValueError(f"Unsupported metric table format for {path}. Use Parquet or CSV.")
 
 

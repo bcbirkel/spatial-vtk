@@ -20,6 +20,7 @@ import pandas as pd
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.io import parquet_table_columns, table_row_count
+from spatial_vtk.io.tables import read_table
 
 
 ConfigInput = SpatialVTKConfig | str | Path
@@ -155,10 +156,8 @@ def read_dashboard_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
     path = Path(table).expanduser()
     if not path.exists():
         raise FileNotFoundError(f"Dashboard table does not exist: {path}")
-    if path.suffix.lower() in {".parquet", ".pq"}:
-        return pd.read_parquet(path)
-    if path.suffix.lower() == ".csv":
-        return pd.read_csv(path, low_memory=False)
+    if path.suffix.lower() in {".csv", ".parquet", ".pq"}:
+        return read_table(path)
     raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
 
 
@@ -1636,10 +1635,10 @@ def _read_dashboard_table_columns(path: Path, columns: list[str] | tuple[str, ..
         return pd.DataFrame()
     suffix = path.suffix.lower()
     if suffix in {".parquet", ".pq"}:
-        return pd.read_parquet(path, columns=selected)
+        return read_table(path, columns=selected)
     if suffix == ".csv":
         wanted = set(selected)
-        return pd.read_csv(path, usecols=lambda column: column in wanted, low_memory=False)
+        return read_table(path, usecols=lambda column: column in wanted)
     raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
 
 

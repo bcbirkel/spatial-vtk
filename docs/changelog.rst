@@ -142,6 +142,9 @@ Changelog
   - Routed public station, event, and event-station metadata loaders through
     the shared table reader and updated their docstrings so they are no longer
     described as CSV-only helpers.
+  - Routed dashboard summary and dashboard metric export readers through the
+    shared table reader while preserving supported-format validation and
+    selected-column loading.
 
 - **Tutorial notebook hygiene** *(Fixed)*
 
