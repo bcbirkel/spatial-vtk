@@ -128,6 +128,9 @@ Changelog
   - Routed unscoped metric input table normalization through the shared reader
     while preserving specialized scoped QC chunking and Parquet predicate
     pushdown for large inventories.
+  - Routed metric enrichment metadata and master station/event list input
+    readers through the shared table loader so metadata-side CSV/Parquet
+    handling matches the rest of the workflow.
 
 - **Tutorial notebook hygiene** *(Fixed)*
 

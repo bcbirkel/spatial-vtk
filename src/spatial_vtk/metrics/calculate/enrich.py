@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from spatial_vtk.io.tables import normalize_metric_table, wide_to_long_metrics
+from spatial_vtk.io.tables import normalize_metric_table, read_table as read_disk_table, wide_to_long_metrics
 
 
 def prepare_metric_residual_table(
@@ -233,10 +233,8 @@ def _load_table(value: pd.DataFrame | str | Path) -> pd.DataFrame:
 
     if isinstance(value, pd.DataFrame):
         return value.copy()
-    path = Path(value)
-    if path.suffix.lower() in {".parquet", ".pq"}:
-        return pd.read_parquet(path)
-    return pd.read_csv(path, low_memory=False)
+    path = Path(value).expanduser()
+    return read_disk_table(path)
 
 
 def _rename_if_present(df: pd.DataFrame, mapping: dict[str, str]) -> pd.DataFrame:

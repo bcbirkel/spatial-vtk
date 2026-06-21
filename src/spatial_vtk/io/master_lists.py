@@ -26,6 +26,7 @@ from typing import Any
 
 import pandas as pd
 
+from spatial_vtk.io.tables import read_table as read_disk_table
 from spatial_vtk.io.waveforms import stream_station_table
 
 
@@ -251,9 +252,7 @@ def _read_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
     if isinstance(table, pd.DataFrame):
         return table.copy()
     path = Path(table).expanduser()
-    if path.suffix.lower() in {".parquet", ".pq"}:
-        return pd.read_parquet(path)
-    return pd.read_csv(path, low_memory=False)
+    return read_disk_table(path)
 
 
 def _write_csv(df: pd.DataFrame, path: str | Path, *, overwrite: bool) -> Path:
