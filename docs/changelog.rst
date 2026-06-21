@@ -720,6 +720,9 @@ Changelog
   - Added exact ``figure_paths`` lists to Step 4 large-run spatial
     figure-suite status frames while preserving preview-oriented figure path
     fields.
+  - Made scoped metric-QC parquet reads fail with actionable PyArrow metadata
+    or streaming errors instead of falling back to full-table materialization
+    during metric manifest planning.
 
 - **Large-run notebook result objects** *(Hardened)*
 

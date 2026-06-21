@@ -257,9 +257,18 @@ def _read_parquet_qc_scoped(path: Path, scope: dict[str, set[str]]) -> pd.DataFr
 
     try:
         import pyarrow.parquet as pq
-    except Exception:
-        return _filter_qc_scope(pd.read_parquet(path), scope)
-    parquet = pq.ParquetFile(path)
+    except Exception as exc:
+        raise RuntimeError(
+            f"Could not stream scoped metric QC parquet table {path}: pyarrow is required. "
+            "Install the package dependencies or rewrite the QC inventory as CSV before planning metrics."
+        ) from exc
+    try:
+        parquet = pq.ParquetFile(path)
+    except Exception as exc:
+        raise RuntimeError(
+            f"Could not inspect scoped metric QC parquet table {path}. "
+            "Metric planning requires readable Parquet metadata to avoid materializing the full QC inventory."
+        ) from exc
     schema_names = set(parquet.schema.names)
     columns = [column for column in METRIC_QC_COLUMNS if column in schema_names]
     read_columns = columns or None
@@ -279,11 +288,17 @@ def _read_parquet_qc_scoped(path: Path, scope: dict[str, set[str]]) -> pd.DataFr
                 stacklevel=2,
             )
     frames: list[pd.DataFrame] = []
-    for batch in parquet.iter_batches(batch_size=500_000, columns=read_columns):
-        frame = batch.to_pandas()
-        filtered = _filter_qc_scope(frame, scope)
-        if not filtered.empty:
-            frames.append(filtered)
+    try:
+        for batch in parquet.iter_batches(batch_size=500_000, columns=read_columns):
+            frame = batch.to_pandas()
+            filtered = _filter_qc_scope(frame, scope)
+            if not filtered.empty:
+                frames.append(filtered)
+    except Exception as exc:
+        raise RuntimeError(
+            f"Could not stream scoped metric QC parquet rows from {path}. "
+            "Repair or rewrite the QC inventory before planning metric batches."
+        ) from exc
     return pd.concat(frames, ignore_index=True, sort=False) if frames else pd.DataFrame(columns=columns)
 
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import builtins
 import sys
 from types import ModuleType, SimpleNamespace
 
@@ -197,6 +198,29 @@ def test_metric_qc_lookup_warns_when_parquet_predicate_pushdown_falls_back(tmp_p
         ("observed", "e1", "ABC", "Z", "", "PGA", ""),
         ("synthetic", "e1", "ABC", "Z", "", "PGA", ""),
     ]
+
+
+def test_metric_qc_lookup_requires_pyarrow_for_scoped_parquet(tmp_path, monkeypatch) -> None:
+    """Scoped QC parquet reads should not fall back to full table materialization."""
+
+    qc_path = tmp_path / "qc_inventory.parquet"
+    qc_path.write_bytes(b"not a real parquet file")
+    tasks = [SimpleNamespace(event_id="e1", station="ABC", component="Z")]
+    real_import = builtins.__import__
+
+    def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):  # noqa: ANN001, ANN002
+        if name == "pyarrow.parquet" or name == "pyarrow":
+            raise ImportError("pyarrow unavailable for test")
+        return real_import(name, globals, locals, fromlist, level)
+
+    def fail_full_parquet_read(*args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        raise AssertionError("scoped metric QC parquet reads must not full-read fallback data")
+
+    monkeypatch.setattr(builtins, "__import__", guarded_import)
+    monkeypatch.setattr(pd, "read_parquet", fail_full_parquet_read)
+
+    with pytest.raises(RuntimeError, match="pyarrow is required"):
+        metric_qc_lookup(qc_path, tasks=tasks)
 
 
 def test_spectral_qc_uses_relative_support_and_synthetic_max_frequency() -> None:
