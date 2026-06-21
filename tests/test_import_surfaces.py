@@ -2742,6 +2742,16 @@ def test_notebook_helper_docs_prefer_standard_result_objects():
     assert "call that result object's\n``run_*_step_if_needed()`` methods" in metric_configured
     assert "Large-run notebooks should pass these helpers to" not in metric_configured
     assert "Use the direct\nhelpers in this module from scripts or custom orchestration" in metric_configured
+    assert (
+        "``load_standard_metric_workflow_outputs(...).run_slurm_step_if_needed(...)``"
+        in metric_configured
+    )
+    assert "metric result object owns this readiness check" in metric_configured
+    assert "Use this direct readiness\n    helper from scripts or custom orchestration" in metric_configured
+    assert (
+        "The returned object is compatible with\n    ``spatial_vtk.config.run_notebook_step_if_needed``"
+        not in metric_configured
+    )
     assert "through\n``run_or_submit_notebook_function()``" not in metric_configured
     assert "Large-run notebooks should normally call" in spatial_workflow
     assert "``load_standard_spatial_workflow_output_status(...).run_summary_step_if_needed(...)``" in spatial_workflow

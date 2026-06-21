@@ -96,6 +96,9 @@ Changelog
   - Reworded Step 4 spatial readiness docs so large-run notebooks are steered
     to the standard spatial result object's summary runner instead of direct
     readiness-helper wiring.
+  - Reworded metric Slurm readiness docs so Step 3 notebooks are steered to
+    the standard metric result object's Slurm runner instead of direct
+    readiness-helper wiring.
 
 - **Step 1 workflow helpers** *(Added)*
 

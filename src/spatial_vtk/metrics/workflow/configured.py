@@ -367,11 +367,15 @@ def metric_slurm_submission_readiness_from_config(
 ) -> OutputReadiness | Any:
     """Return readiness for writing or submitting configured metric Slurm work.
 
-    The returned object is compatible with
-    ``spatial_vtk.config.run_notebook_step_if_needed``. If the manifest is
-    missing, the decision is a non-running ``OutputReadiness`` with the manifest
-    shown as a missing input. Once the manifest exists, the decision reports
-    missing metric batch outputs through ``metric_slurm_submission_readiness``.
+    Standard Step 3 notebooks should call
+    ``load_standard_metric_workflow_outputs(...).run_slurm_step_if_needed(...)``
+    so the metric result object owns this readiness check and the Slurm script
+    writing/submission branch. If the manifest is missing, the decision is a
+    non-running ``OutputReadiness`` with the manifest shown as a missing input.
+    Once the manifest exists, the decision reports missing metric batch outputs
+    through ``metric_slurm_submission_readiness``. Use this direct readiness
+    helper from scripts or custom orchestration that already owns execution
+    control.
     """
 
     from spatial_vtk.metrics.workflow.execution import (
