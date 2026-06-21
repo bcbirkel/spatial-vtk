@@ -2500,10 +2500,14 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "labeled path mapping. Use this when plotting" in workflows
     assert "JSON-friendly status payload for current/skipped" in workflows
     assert "Display current/skipped step payloads, Slurm submissions" in workflows
+    assert "status payloads or result frames that are safe to display in notebooks" in workflows
+    assert "JSON-ready status payloads, result objects, or\nlabelled frames" in workflows
     assert "labeled dictionary. Use this for tutorial figure inputs" not in workflows
     assert "labeled path dictionary. Use this when plotting" not in workflows
     assert "JSON-friendly status dictionary for current/skipped" not in workflows
     assert "Display current/skipped step dictionaries" not in workflows
+    assert "metadata dictionaries or result frames" not in workflows
+    assert "Workflow functions return JSON-ready dictionaries" not in workflows
     assert "custom workflow cells\n       can call it directly when they already own the readiness object" in workflows
     assert "Use this with ``run_notebook_step_if_needed``\n       fallbacks" not in workflows
     assert "instead of ``print(result)``" in workflows

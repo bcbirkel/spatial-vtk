@@ -92,6 +92,9 @@ Changelog
     metric-value coverage without vague generic terminology.
   - Reworded Python workflow display-helper guidance to use skipped/current
     step payload terminology consistently with the config API docs.
+  - Reworded the Python workflow guide introduction so notebook-facing package
+    outputs are described as status payloads, result objects, or labelled
+    frames rather than generic metadata dictionaries.
 
 - **Public surface guardrails** *(Fixed)*
 
