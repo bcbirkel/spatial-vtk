@@ -372,6 +372,7 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
                             "from spatial_vtk.io.preprocessing import preprocess_waveform_files\n",
                             "import spatial_vtk.spatial.map.metrics as metric_maps\n",
                             "repo_root = Path('../')\n",
+                            "alternate_repo_root = Path(\"..\")\n",
                             "metrics = pd.read_csv('/Users/example/project/metrics.csv')\n",
                             "path = resolve_output_path('metrics_long')\n",
                             "write_output_table('metrics_long', metrics)\n",
@@ -432,6 +433,7 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert "subprocess.run(" in combined
     assert "from spatial_vtk.metrics.plot." in combined
     assert "Path('../')" in combined
+    assert 'Path("..")' in combined
     assert "forbidden implementation import pattern" in combined
     assert "metrics" in combined
     assert "workflow" in combined

@@ -46,6 +46,9 @@ Changelog
   - Fixed output status tables so user-home paths such as ``~/outputs`` are
     expanded before existence checks and displayed through the ``resolved_path``
     column.
+  - Tightened tutorial notebook contract checks so brittle parent-directory
+    bootstrap cells using ``Path("..")`` are rejected alongside
+    ``Path("../")`` variants.
 
 2026-06-19
 ----------

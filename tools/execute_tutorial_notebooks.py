@@ -114,6 +114,8 @@ NOTEBOOK_CONTRACT_FORBIDDEN_SNIPPETS = (
     "write_notebook_cli_slurm_script(",
     "Path('../')",
     'Path("../")',
+    "Path('..')",
+    'Path("..")',
     "from spatial_vtk.metrics.plot.",
     "from spatial_vtk.spatial.map.",
     "from spatial_vtk.spatial.plot.",
