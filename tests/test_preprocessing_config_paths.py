@@ -917,6 +917,38 @@ def test_cached_waveforms_without_metadata_do_not_read_processed_files(tmp_path:
     assert result.trace_metadata.empty
 
 
+def test_unreadable_cached_trace_metadata_warns_and_fast_resumes(tmp_path: Path, monkeypatch) -> None:
+    """Unreadable trace metadata cache should not silently disable fast-resume metadata reuse."""
+
+    raw_path = tmp_path / "raw" / "E01.pkl"
+    raw_path.parent.mkdir()
+    raw_path.write_bytes(b"raw")
+    output_root = tmp_path / "processed"
+    cached_path = output_root / "observed" / "E01" / "E01.pkl"
+    metadata_dir = output_root / "metadata"
+    cached_path.parent.mkdir(parents=True)
+    metadata_dir.mkdir(parents=True)
+    cached_path.write_bytes(b"cached waveform placeholder")
+    (metadata_dir / "trace_metadata_preprocessed.csv").write_text("not,a,usable,cache\n", encoding="utf-8")
+    records = pd.DataFrame({"event_id": ["E01"], "station": ["STA01"], "observed_waveform": [raw_path]})
+
+    def fail_read_table(path):
+        raise ValueError(f"cannot parse cached metadata: {path}")
+
+    def fail_read_waveform(path):
+        raise AssertionError(f"cached waveform should not be opened during fast resume: {path}")
+
+    monkeypatch.setattr(preprocessing_module, "read_table", fail_read_table)
+    monkeypatch.setattr(preprocessing_module, "read_waveform_file", fail_read_waveform)
+
+    with pytest.warns(RuntimeWarning, match="Could not read cached trace metadata"):
+        result = preprocess_waveform_files(records, output_root=output_root)
+
+    assert result.manifest.loc[0, "status"] == "cached_missing_metadata"
+    assert "trace metadata was not available" in result.manifest.loc[0, "message"]
+    assert result.trace_metadata.empty
+
+
 def test_cached_waveforms_reuse_existing_trace_metadata_without_reading_files(tmp_path: Path, monkeypatch) -> None:
     """Existing trace metadata should avoid reopening cached waveform files."""
 

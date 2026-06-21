@@ -112,6 +112,8 @@ Changelog
   - Replaced synthetic-format ``NotImplementedError`` cases with user-facing
     runtime or schema errors for unsupported HDF5 adapters and malformed
     Salvus receiver files.
+  - Added a warning when unreadable preprocessing trace-metadata caches force
+    fast-resume waveform reuse without cached trace metadata.
 
 - **Public surface guardrails** *(Fixed)*
 

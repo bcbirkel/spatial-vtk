@@ -802,7 +802,13 @@ def _index_cached_trace_metadata(trace_metadata_path: Path) -> dict[str, pd.Data
         return {}
     try:
         metadata = read_table(trace_metadata_path)
-    except Exception:
+    except Exception as exc:
+        warnings.warn(
+            f"Could not read cached trace metadata from {trace_metadata_path}: {exc}. "
+            "Cached waveform files will be reused without trace metadata.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
         return {}
     if metadata.empty or "output_file" not in metadata.columns:
         return {}
