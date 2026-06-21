@@ -52,6 +52,9 @@ Changelog
   - Reworded the Visualize API context, QC, and waveform family sections so
     routine notebooks use top-level re-exports or result-object figure methods,
     while family subpackage imports are framed for scripts and extensions.
+  - Reworded the Metrics API calculation section so routine notebooks start
+    from Step 3 workflow/result-object helpers, while calculation-level imports
+    are framed for scripts and custom extensions.
 
 - **Tutorial runtime and preview checks** *(Fixed)*
 

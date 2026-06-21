@@ -1095,6 +1095,9 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert ".. automodule:: spatial_vtk.metrics.workflow\n" in text
     assert "helpers from the stable ``spatial_vtk.metrics`` package entry" in text
     assert "lower-level calculation modules are implementation" in text
+    assert "Routine notebooks should start from ``spatial_vtk.metrics``\nworkflow helpers" in text
+    assert "custom extensions that intentionally work at calculation level can import\ncalculation helpers" in text
+    assert "``spatial_vtk.metrics.calculate`` in notebooks and scripts" not in text
     assert "lower-level workflow modules are implementation" in text
     assert "Public workflow helpers exposed by ``spatial_vtk.metrics``" in text
     assert "Direct config-backed metric helpers remain public for scripts, generated\nworkers, and custom orchestration" in text

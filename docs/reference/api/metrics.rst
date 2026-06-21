@@ -59,8 +59,11 @@ Calculate
 Use ``spatial_vtk.metrics.calculate`` for metric calculation utilities,
 waveform transforms, residual transforms, band helpers, and optional arrival
 pick adapters. The lower-level calculation modules are implementation
-organization. Import calculation helpers from ``spatial_vtk.metrics`` or
-``spatial_vtk.metrics.calculate`` in notebooks and scripts.
+organization. Routine notebooks should start from ``spatial_vtk.metrics``
+workflow helpers and the Step 3 result-object methods above. Scripts and
+custom extensions that intentionally work at calculation level can import
+calculation helpers from ``spatial_vtk.metrics`` or
+``spatial_vtk.metrics.calculate``.
 
 .. automodule:: spatial_vtk.metrics.calculate
    :members:
