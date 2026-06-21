@@ -58,6 +58,9 @@ Changelog
   - Hardened the same tutorial preflight to report row numbers when
     ``selected_event_stations.csv`` has blank ``event_id`` or ``station``
     values instead of silently skipping waveform-file checks for those rows.
+  - Tightened QC and metrics dashboard row-limit parsing so explicit
+    ``all``/``none``/``unlimited`` values remain the only full-table opt-in;
+    ``0`` or negative numeric limits now raise clear configuration errors.
 
 2026-06-19
 ----------

@@ -866,6 +866,18 @@ def test_qc_dashboard_row_and_download_limits_from_environment(monkeypatch):
     assert "SVTK_QC_DASHBOARD_MAX_ROWS=all" in source
 
 
+def test_qc_dashboard_numeric_limits_reject_unbounded_sentinels(monkeypatch):
+    """Mistyped numeric QC dashboard limits should not imply full-table loads."""
+
+    monkeypatch.setenv("SVTK_QC_DASHBOARD_MAX_ROWS", "0")
+    with pytest.raises(ValueError, match="positive integer or 'all'"):
+        _qc_dashboard_row_limit()
+
+    monkeypatch.setenv("SVTK_QC_DASHBOARD_MAX_ROWS", "-10")
+    with pytest.raises(ValueError, match="positive integer or 'all'"):
+        _qc_dashboard_row_limit()
+
+
 def test_qc_dashboard_status_reports_loaded_subset():
     """QC Data Status should say when filters/charts use a bounded table prefix."""
 
@@ -1552,6 +1564,18 @@ def test_metrics_dashboard_download_limits_from_environment(monkeypatch):
     monkeypatch.setenv("SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS", "all")
     assert streamlit_metrics._metrics_dashboard_download_limit() is None
     assert "all currently filtered" in streamlit_metrics._metrics_download_limit_message(None)
+
+
+def test_metrics_dashboard_numeric_limits_reject_unbounded_sentinels(monkeypatch):
+    """Mistyped numeric metrics dashboard limits should not imply full-table loads."""
+
+    monkeypatch.setenv("SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS", "0")
+    with pytest.raises(ValueError, match="positive integer or 'all'"):
+        streamlit_metrics._metrics_dashboard_download_limit()
+
+    monkeypatch.setenv("SVTK_METRICS_DASHBOARD_DOWNLOAD_ROWS", "-10")
+    with pytest.raises(ValueError, match="positive integer or 'all'"):
+        streamlit_metrics._metrics_dashboard_download_limit()
 
 
 def test_metrics_dashboard_download_frame_is_bounded():

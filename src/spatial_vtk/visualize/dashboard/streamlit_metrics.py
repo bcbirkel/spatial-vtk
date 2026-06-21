@@ -868,7 +868,9 @@ def _env_optional_positive_int(names: tuple[str, ...], *, default: int | None) -
             parsed = int(value)
         except ValueError as exc:
             raise ValueError(f"{name} must be a positive integer or 'all', got {raw!r}.") from exc
-        return parsed if parsed > 0 else None
+        if parsed <= 0:
+            raise ValueError(f"{name} must be a positive integer or 'all', got {raw!r}.")
+        return parsed
     return default
 
 
