@@ -122,24 +122,53 @@ def read_bounded_table(path: str | Path, max_rows: int) -> pd.DataFrame:
         return pd.DataFrame()
     suffix = input_path.suffix.lower()
     if suffix in {".parquet", ".pq"}:
-        try:
-            import pyarrow.parquet as pq
-
-            parquet_file = pq.ParquetFile(input_path)
-            frames: list[pd.DataFrame] = []
-            remaining = limit
-            for batch in parquet_file.iter_batches(batch_size=min(limit, 100_000)):
-                frame = batch.to_pandas()
-                bounded = frame.head(remaining)
-                if not bounded.empty:
-                    frames.append(bounded)
-                remaining -= len(bounded)
-                if remaining <= 0:
-                    break
-            return pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
-        except Exception:
-            return pd.read_parquet(input_path).head(limit)
+        return _read_parquet_prefix(input_path, max_rows=limit)
     return pd.read_csv(input_path, nrows=limit, low_memory=False)
+
+
+def _read_parquet_prefix(
+    path: Path,
+    *,
+    max_rows: int,
+    columns: Sequence[str] | None = None,
+) -> pd.DataFrame:
+    """Read a bounded prefix from a Parquet table without full materialization."""
+
+    try:
+        import pyarrow.parquet as pq
+    except Exception as exc:
+        raise RuntimeError(
+            f"Could not read bounded parquet preview for {path}: pyarrow is required. "
+            "Install the package dependencies or write the table as CSV before previewing it."
+        ) from exc
+    try:
+        parquet_file = pq.ParquetFile(path)
+    except Exception as exc:
+        raise RuntimeError(
+            f"Could not inspect parquet metadata for bounded preview {path}. "
+            "Repair or rewrite the table before using notebook preview helpers."
+        ) from exc
+    selected_columns = None if columns is None else list(dict.fromkeys(str(column) for column in columns))
+    frames: list[pd.DataFrame] = []
+    remaining = max(0, int(max_rows))
+    try:
+        for batch in parquet_file.iter_batches(batch_size=min(max(remaining, 1), 100_000), columns=selected_columns):
+            frame = batch.to_pandas()
+            bounded = frame.head(remaining)
+            if not bounded.empty:
+                frames.append(bounded)
+            remaining -= len(bounded)
+            if remaining <= 0:
+                break
+    except Exception as exc:
+        raise RuntimeError(
+            f"Could not stream bounded parquet preview rows from {path}. "
+            "Repair or rewrite the table before using notebook preview helpers."
+        ) from exc
+    if frames:
+        return pd.concat(frames, ignore_index=True)
+    output_columns = selected_columns if selected_columns is not None else list(parquet_file.schema.names)
+    return pd.DataFrame(columns=output_columns)
 
 
 def first_nonempty_table_value(
@@ -446,10 +475,13 @@ def preview_table(
     row_count = max(int(nrows), 0)
     suffix = input_path.suffix.lower()
     if suffix in {".parquet", ".pq"}:
-        parquet_kwargs = dict(kwargs)
-        if columns is not None:
-            parquet_kwargs["columns"] = list(columns)
-        return pd.read_parquet(input_path, **parquet_kwargs).head(row_count)
+        if kwargs:
+            extra = ", ".join(sorted(str(key) for key in kwargs))
+            raise ValueError(
+                "Parquet preview_table uses bounded PyArrow streaming and does not accept "
+                f"extra pandas read_parquet options: {extra}."
+            )
+        return _read_parquet_prefix(input_path, max_rows=row_count, columns=columns)
     csv_kwargs = {"low_memory": False, **kwargs}
     csv_kwargs["nrows"] = row_count
     if columns is not None:

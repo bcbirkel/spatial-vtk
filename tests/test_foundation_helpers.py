@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import builtins
 import json
 
 import numpy as np
@@ -12,6 +13,7 @@ from spatial_vtk.io import (
     classify_model_folder,
     inspect_station_event_layouts,
     load_csv_bundle,
+    preview_table,
     read_bounded_table,
     resolve_model_aliases,
     slugify,
@@ -80,6 +82,30 @@ def test_table_helpers(tmp_path):
 
     aggregated = aggregate_metric_by_station_over_events(long, metric_col="residual")
     assert aggregated.loc[0, "n_events"] == 2
+
+
+def test_bounded_parquet_previews_require_streaming_reader(tmp_path, monkeypatch):
+    """Generic parquet preview helpers should not full-read fallback data."""
+
+    parquet_path = tmp_path / "metrics.parquet"
+    parquet_path.write_bytes(b"not a real parquet file")
+    real_import = builtins.__import__
+
+    def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):  # noqa: ANN001, ANN002
+        if name == "pyarrow.parquet" or name == "pyarrow":
+            raise ImportError("pyarrow unavailable for test")
+        return real_import(name, globals, locals, fromlist, level)
+
+    def fail_full_parquet_read(*args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        raise AssertionError("bounded parquet previews must not full-read fallback data")
+
+    monkeypatch.setattr(builtins, "__import__", guarded_import)
+    monkeypatch.setattr(pd, "read_parquet", fail_full_parquet_read)
+
+    with pytest.raises(RuntimeError, match="pyarrow is required"):
+        read_bounded_table(parquet_path, max_rows=1)
+    with pytest.raises(RuntimeError, match="pyarrow is required"):
+        preview_table(parquet_path, nrows=1)
 
 
 def test_kml_and_layout_helpers(tmp_path):

@@ -726,6 +726,9 @@ Changelog
   - Made metric batch parquet merges fail with actionable PyArrow dependency
     errors instead of falling back to full-table pandas reads when inspecting
     schemas or bounded previews.
+  - Made shared parquet preview helpers stream bounded rows with PyArrow and
+    report actionable metadata/dependency errors instead of full-reading large
+    tables before taking ``head()``.
 
 - **Large-run notebook result objects** *(Hardened)*
 
