@@ -3153,6 +3153,26 @@ def test_python_workflow_docs_prefer_spatial_figure_suite_wrapper():
     assert "fallback path choices in the cell" in workflows
 
 
+def test_spatial_api_map_section_keeps_notebooks_on_result_objects():
+    """Map API docs should expose public maps without steering notebooks to direct imports."""
+
+    spatial_api = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "spatial.rst"
+    text = spatial_api.read_text(encoding="utf-8")
+    maps_section = text.split("Maps\n----", 1)[1].split(
+        "Public helpers exposed by ``spatial_vtk.spatial.map``:",
+        1,
+    )[0]
+
+    assert "Routine notebooks should use the standard spatial and plotting result helpers\nfirst" in maps_section
+    assert "the package owns output paths, figure families, render gates, and\nsidecars" in maps_section
+    assert (
+        "Use ``spatial_vtk.spatial.map`` for public map imports in focused\nscripts and custom extensions"
+        in maps_section
+    )
+    assert "path and corridor map helpers used by the tutorials" not in maps_section
+    assert maps_section.index("Routine notebooks should") < maps_section.index("from spatial_vtk.spatial.map import")
+
+
 def test_python_workflow_docs_prefer_geojson_result_methods():
     """Step 5 workflow docs should keep notebook orchestration on result objects."""
 

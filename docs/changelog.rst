@@ -46,6 +46,9 @@ Changelog
     implementation modules, with regression coverage for that public wording.
   - Aligned the ``spatial_vtk.config`` package docstring with the same
     re-export-first rule for notebook-facing config helpers.
+  - Reworded the Spatial API map section so public map imports are framed for
+    focused scripts and custom extensions, while routine notebooks are kept on
+    standard result-object figure helpers.
 
 - **Tutorial runtime and preview checks** *(Fixed)*
 

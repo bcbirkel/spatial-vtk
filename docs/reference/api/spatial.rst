@@ -590,8 +590,11 @@ columns used by existing notebooks.
 Maps
 ----
 
-Use ``spatial_vtk.spatial.map`` for public map imports. This entry point also
-contains the path and corridor map helpers used by the tutorials.
+Routine notebooks should use the standard spatial and plotting result helpers
+first so the package owns output paths, figure families, render gates, and
+sidecars. Use ``spatial_vtk.spatial.map`` for public map imports in focused
+scripts and custom extensions that already own filtered metric tables or
+resolved map inputs.
 
 .. code-block:: python
 
