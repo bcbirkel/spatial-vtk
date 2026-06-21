@@ -1678,6 +1678,23 @@ def test_io_api_docs_use_public_workflow_helpers():
     assert "Start with ``spatial_vtk.io``" in text
     assert "Public helpers exposed by ``spatial_vtk.io``" in text
     assert ".. automodule:: spatial_vtk.io\n" in text
+    import_block = text.split("from spatial_vtk.io import (", 1)[1].split(")", 1)[0]
+    for helper in (
+        "load_standard_ingest_workflow_outputs",
+        "prepare_metadata_tables_from_config",
+        "preprocess_waveforms_from_config",
+        "build_record_coverage_from_config",
+        "metric_plan_from_config",
+    ):
+        assert helper in import_block
+    for helper in (
+        "output_group",
+        "preprocessed_waveform_output_group",
+        "preprocess_waveform_files",
+        "read_config_table",
+        "write_output_table",
+    ):
+        assert helper not in import_block
     for helper in (
         "output_group",
         "preprocessed_waveform_output_group",

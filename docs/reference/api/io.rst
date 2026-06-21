@@ -25,16 +25,15 @@ modules.
        load_configured_input_tables,
        load_standard_ingest_workflow_outputs,
        metadata_tables_readiness_from_config,
-       output_group,
+       metric_plan_from_config,
        prepare_event_metadata,
        prepare_event_station_table,
        prepare_station_metadata,
-       preprocessed_waveform_output_group,
+       prepare_metadata_tables_from_config,
        preprocessing_readiness_from_config,
-       preprocess_waveform_files,
+       preprocess_waveforms_from_config,
        record_coverage_readiness_from_config,
-       read_config_table,
-       write_output_table,
+       build_record_coverage_from_config,
    )
 
 .. automodule:: spatial_vtk.io

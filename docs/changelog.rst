@@ -6,6 +6,9 @@ Changelog
 
 - **Workflow import guidance** *(Fixed)*
 
+  - Cleaned the I/O API entry-point import example so it starts with
+    task-level ingest/preprocessing/record-coverage helpers instead of
+    lower-level output-group and table-read/write utilities.
   - Reworded Metrics API figure-context guidance so ``MetricFigureContext`` is
     presented as a script/custom-extension tool, while notebooks stay on the
     Step 3 result object's figure methods.
