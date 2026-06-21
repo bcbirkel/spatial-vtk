@@ -71,6 +71,7 @@ from spatial_vtk.visualize.qc import (
     write_large_run_qc_figures_from_outputs,
 )
 from spatial_vtk.visualize import savefig
+from spatial_vtk.visualize.figure_sidecars import normalize_figure_status_rows
 from spatial_vtk.visualize.waveforms import (
     plot_event_radial_trace_section,
     plot_event_trace_comparison,
@@ -116,6 +117,31 @@ def test_public_plot_wrappers_expose_sidecar_controls() -> None:
     for wrapper in wrappers:
         parameters = inspect.signature(wrapper).parameters
         assert {"write_sidecar", "sidecar_rows", "sidecar_dir"} <= set(parameters), wrapper.__name__
+
+
+def test_normalized_figure_status_rows_include_artifact_role_and_status(tmp_path: Path) -> None:
+    """Figure result tables should expose a complete notebook status contract."""
+
+    figure = tmp_path / "context.png"
+    figure.write_text("png", encoding="utf-8")
+
+    status = normalize_figure_status_rows(
+        [
+            {"artifact": "context_figure", "figure_path": str(figure), "figure_exists": True},
+            {"name": "missing_figure", "figure_path": str(tmp_path / "missing.png")},
+        ]
+    ).set_index("name")
+
+    assert {"artifact_label", "artifact_role", "status", "exists", "resolved_path", "path"} <= set(
+        status.columns
+    )
+    assert status.loc["context_figure", "artifact_role"] == "figure"
+    assert status.loc["context_figure", "status"] == "ready"
+    assert status.loc["context_figure", "resolved_path"] == str(figure)
+    assert status.loc["context_figure", "path"] == str(figure)
+    assert bool(status.loc["context_figure", "exists"]) is True
+    assert status.loc["missing_figure", "status"] == "missing"
+    assert bool(status.loc["missing_figure", "exists"]) is False
 
 
 def test_scatterplot_keyword_normalization_and_errors(tmp_path: Path, capsys) -> None:

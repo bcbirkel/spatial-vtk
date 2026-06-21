@@ -21,19 +21,20 @@ def normalize_figure_status_rows(
 
     Existing figure helpers historically exposed different path column names.
     This helper preserves those columns while adding standard ``name``,
-    ``artifact_label``, ``resolved_path``, ``path``, and ``exists`` columns for
-    notebook status cells.
+    ``artifact_label``, ``artifact_role``, ``status``, ``resolved_path``,
+    ``path``, and ``exists`` columns for notebook status cells.
     """
 
     frame = pd.DataFrame(list(rows))
     if frame.empty:
         return frame
+    names = pd.Series([default_name] * len(frame), index=frame.index, dtype=object)
+    if "name" in frame.columns:
+        name_values = frame["name"].fillna("").astype(str)
+        names = names.where(name_values.str.len().eq(0), name_values)
     if "artifact" in frame.columns:
-        names = frame["artifact"].fillna(default_name).astype(str)
-    elif "name" in frame.columns:
-        names = frame["name"].fillna(default_name).astype(str)
-    else:
-        names = pd.Series([default_name] * len(frame), index=frame.index, dtype=object)
+        artifact_values = frame["artifact"].fillna("").astype(str)
+        names = names.where(artifact_values.str.len().eq(0), artifact_values)
     paths = pd.Series([""] * len(frame), index=frame.index, dtype=object)
     for candidate in ("figure_path", "first_figure_path", "path"):
         if candidate in frame.columns:
@@ -45,6 +46,9 @@ def normalize_figure_status_rows(
             "artifact_label": frame["artifact_label"].fillna("").astype(str)
             if "artifact_label" in frame.columns
             else names.map(lambda value: str(value).replace("_", " ").title()),
+            "artifact_role": frame["artifact_role"].fillna("").astype(str)
+            if "artifact_role" in frame.columns
+            else "figure",
             "resolved_path": paths.fillna("").astype(str),
             "path": paths.fillna("").astype(str),
         },
@@ -54,11 +58,21 @@ def normalize_figure_status_rows(
     normalized.loc[blank_labels, "artifact_label"] = names.loc[blank_labels].map(
         lambda value: str(value).replace("_", " ").title()
     )
+    blank_roles = normalized["artifact_role"].astype(str).str.len().eq(0)
+    normalized.loc[blank_roles, "artifact_role"] = "figure"
     normalized["exists"] = normalized["resolved_path"].map(lambda value: bool(value) and Path(value).exists())
     if "figure_exists" in frame.columns:
         figure_exists = frame["figure_exists"]
         has_figure_exists = figure_exists.notna()
         normalized.loc[has_figure_exists, "exists"] = figure_exists.loc[has_figure_exists].astype(bool)
+    if "status" in frame.columns:
+        status = frame["status"].fillna("").astype(str)
+    else:
+        status = pd.Series([""] * len(frame), index=frame.index, dtype=object)
+    blank_status = status.astype(str).str.len().eq(0)
+    status.loc[blank_status & normalized["exists"].astype(bool)] = "ready"
+    status.loc[blank_status & ~normalized["exists"].astype(bool)] = "missing"
+    normalized["status"] = status
     return pd.concat([normalized, frame.drop(columns=[col for col in normalized.columns if col in frame.columns])], axis=1)
 
 
@@ -81,10 +95,12 @@ class FigureSidecarResult:
         """Return a compact notebook status table for this sidecar result."""
 
         source_sidecar = self.source_sidecar_path
-        return pd.DataFrame(
+        return normalize_figure_status_rows(
             [
                 {
                     "name": "figure_sidecar_path",
+                    "artifact_label": "Figure sidecar",
+                    "artifact_role": "figure_sidecar",
                     "figure_path": str(self.figure_path),
                     "figure_exists": self.figure_path.exists(),
                     "sidecar_path": str(self.sidecar_path),
