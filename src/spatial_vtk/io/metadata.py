@@ -218,7 +218,7 @@ def read_station_metadata(path: str | Path, **kwargs) -> pd.DataFrame:
         Prepared station metadata table.
     """
 
-    return prepare_station_metadata(pd.read_csv(path), **kwargs)
+    return prepare_station_metadata(pd.read_csv(path, low_memory=False), **kwargs)
 
 
 def prepare_event_metadata(
@@ -281,7 +281,7 @@ def read_event_metadata(path: str | Path, **kwargs) -> pd.DataFrame:
         Prepared event metadata table.
     """
 
-    return prepare_event_metadata(pd.read_csv(path), **kwargs)
+    return prepare_event_metadata(pd.read_csv(path, low_memory=False), **kwargs)
 
 
 def event_display_label(
@@ -588,7 +588,7 @@ def read_event_station_table(path: str | Path, **kwargs) -> pd.DataFrame:
         Prepared event-station table.
     """
 
-    return prepare_event_station_table(pd.read_csv(path), **kwargs)
+    return prepare_event_station_table(pd.read_csv(path, low_memory=False), **kwargs)
 
 
 def _add_path_geometry(df: pd.DataFrame) -> pd.DataFrame:

@@ -120,6 +120,9 @@ Changelog
   - Updated metric API and notebook-setting docs so standard diagnostic figure
     controls use standard diagnostic wording instead of generic diagnostic
     terminology.
+  - Standardized package-local full-table CSV readers on stable dtype
+    inference to avoid mixed-type warnings in large-run QC, metric, metadata,
+    visualization, and CLI workflows.
 
 - **Public surface guardrails** *(Fixed)*
 

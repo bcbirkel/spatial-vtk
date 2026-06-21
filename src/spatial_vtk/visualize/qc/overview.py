@@ -378,7 +378,7 @@ def _read_table(table: pd.DataFrame | str | Path, *, max_rows: int | None = None
         return read_bounded_table(path, int(max_rows))
     if path.suffix.lower() in {".parquet", ".pq"}:
         return pd.read_parquet(path)
-    return pd.read_csv(path)
+    return pd.read_csv(path, low_memory=False)
 
 
 __all__ = [

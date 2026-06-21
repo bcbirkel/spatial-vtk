@@ -3698,7 +3698,7 @@ def _read_table(path: str | Path) -> Any:
     table_path = Path(path).expanduser()
     if table_path.suffix.lower() in {".parquet", ".pq"}:
         return pd.read_parquet(table_path)
-    return pd.read_csv(table_path)
+    return pd.read_csv(table_path, low_memory=False)
 
 
 def _write_table(df: Any, path: str | Path) -> Path:

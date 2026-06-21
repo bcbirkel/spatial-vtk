@@ -85,7 +85,7 @@ def load_csv_bundle(
     paths = _resolve_csv_sources(sources, Path(base_dir or "."))
     frames: list[pd.DataFrame] = []
     for path in paths:
-        df = pd.read_csv(path)
+        df = pd.read_csv(path, low_memory=False)
         if source_column:
             df[source_column] = str(path)
         frames.append(df)

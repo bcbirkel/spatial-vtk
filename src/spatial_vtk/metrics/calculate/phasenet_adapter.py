@@ -200,7 +200,7 @@ def normalize_phasenet_output(
 ) -> pd.DataFrame:
     """Convert PhaseNet picks into station-level Spatial-VTK catalog rows."""
 
-    picks = pd.read_csv(phasenet_csv)
+    picks = pd.read_csv(phasenet_csv, low_memory=False)
     by_file = {record.file_name: record for record in records}
     rows: list[dict[str, object]] = []
     if picks.empty:
@@ -432,7 +432,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Run the PhaseNet normalization CLI wrapper."""
 
     args = build_arg_parser().parse_args(argv)
-    records_df = pd.read_csv(args.records_csv)
+    records_df = pd.read_csv(args.records_csv, low_memory=False)
     records = [
         PhaseNetInputRecord(
             file_name=str(row.get("file_name", "")),

@@ -963,13 +963,13 @@ def _geojson_summary_input(
         if chunksize:
             source_rows = 0
             chunks: list[pd.DataFrame] = []
-            for index, chunk in enumerate(pd.read_csv(path, usecols=columns, chunksize=chunksize), start=1):
+            for index, chunk in enumerate(pd.read_csv(path, usecols=columns, chunksize=chunksize, low_memory=False), start=1):
                 source_rows += len(chunk)
                 chunks.append(_dedupe_geojson_summary_frame(chunk))
                 _progress(verbose, f"GeoJSON summary: read CSV chunk {index} ({source_rows} row(s) total)")
             frame = pd.concat(chunks, ignore_index=True, sort=False) if chunks else pd.DataFrame(columns=columns)
             return _dedupe_geojson_summary_frame(frame), source_rows
-        frame = pd.read_csv(path, usecols=columns)
+        frame = pd.read_csv(path, usecols=columns, low_memory=False)
         return _dedupe_geojson_summary_frame(frame), len(frame)
 
     from spatial_vtk.io import read_table

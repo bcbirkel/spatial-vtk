@@ -2667,7 +2667,7 @@ def _read_table(value: pd.DataFrame | str | Path) -> pd.DataFrame:
     path = Path(value).expanduser()
     if path.suffix.lower() in {".parquet", ".pq"}:
         return pd.read_parquet(path)
-    return pd.read_csv(path)
+    return pd.read_csv(path, low_memory=False)
 
 
 def _table_columns(value: pd.DataFrame | str | Path) -> list[str]:

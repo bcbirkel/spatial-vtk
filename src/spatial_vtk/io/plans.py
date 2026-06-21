@@ -377,8 +377,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_arg_parser().parse_args(argv)
     config = SpatialVTKConfig.from_file(args.config) if args.config else SpatialVTKConfig.empty(root_dir=Path.cwd())
     plan = metric_plan_from_config(config)
-    expected = expected_metric_rows_from_inventory(pd.read_csv(args.inventory), plan)
-    missing, summary = compare_metric_plan_to_table(expected, pd.read_csv(args.metrics))
+    expected = expected_metric_rows_from_inventory(pd.read_csv(args.inventory, low_memory=False), plan)
+    missing, summary = compare_metric_plan_to_table(expected, pd.read_csv(args.metrics, low_memory=False))
     if args.missing_output:
         output = Path(args.missing_output).expanduser()
         output.parent.mkdir(parents=True, exist_ok=True)

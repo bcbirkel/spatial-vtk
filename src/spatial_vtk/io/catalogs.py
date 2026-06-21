@@ -71,7 +71,8 @@ def read_event_patch_table(path: str | Path | None = None, **kwargs) -> pd.DataF
         Event patch table.
     """
 
-    return pd.read_csv(path or default_event_patch_csv(), **kwargs)
+    csv_kwargs = {"low_memory": False, **kwargs}
+    return pd.read_csv(path or default_event_patch_csv(), **csv_kwargs)
 
 
 def context_dataset_paths(root: str | Path | None = None) -> dict[str, Path]:

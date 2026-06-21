@@ -138,7 +138,7 @@ def load_manual_qc_decisions(path: str | Path | None) -> pd.DataFrame:
     source = Path(path).expanduser()
     if not source.exists():
         return pd.DataFrame(columns=DECISION_COLUMNS)
-    return normalize_manual_qc_decisions(pd.read_csv(source))
+    return normalize_manual_qc_decisions(pd.read_csv(source, low_memory=False))
 
 
 def write_manual_qc_decisions(df: pd.DataFrame, path: str | Path, *, overwrite: bool = True) -> Path:

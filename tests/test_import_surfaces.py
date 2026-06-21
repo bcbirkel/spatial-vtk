@@ -3138,3 +3138,31 @@ def test_waveform_large_run_helper_is_public():
     assert visualize.write_waveform_comparison_from_outputs is waveforms.write_waveform_comparison_from_outputs
     assert visualize.write_waveform_comparison_from_notebook_settings is waveforms.write_waveform_comparison_from_notebook_settings
     assert visualize.write_large_run_waveform_comparison_from_outputs is waveforms.write_large_run_waveform_comparison_from_outputs
+
+
+def test_large_run_csv_readers_use_stable_dtype_inference():
+    """Large-run full-table CSV readers should avoid mixed-type dtype warnings."""
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    snippets = {
+        "src/spatial_vtk/qc/build/inventory.py": "return pd.read_csv(path, low_memory=False)",
+        "src/spatial_vtk/qc/build/workflow.py": "return pd.read_csv(path, low_memory=False)",
+        "src/spatial_vtk/metrics/workflow/tasks.py": "return pd.read_csv(path, low_memory=False)",
+        "src/spatial_vtk/metrics/workflow/outputs.py": "return pd.read_csv(path, low_memory=False)",
+        "src/spatial_vtk/metrics/calculate/enrich.py": "return pd.read_csv(path, low_memory=False)",
+        "src/spatial_vtk/io/metric_inputs.py": "return pd.read_csv(path, low_memory=False)",
+        "src/spatial_vtk/io/master_lists.py": "return pd.read_csv(path, low_memory=False)",
+        "src/spatial_vtk/io/tables.py": "df = pd.read_csv(path, low_memory=False)",
+        "src/spatial_vtk/cli/__init__.py": "return pd.read_csv(table_path, low_memory=False)",
+        "src/spatial_vtk/visualize/qc/overview.py": "return pd.read_csv(path, low_memory=False)",
+        "src/spatial_vtk/visualize/context/figures.py": "return pd.read_csv(path, low_memory=False)",
+        "src/spatial_vtk/qc/review/tables.py": "pd.read_csv(source, low_memory=False)",
+        "src/spatial_vtk/metrics/calculate/phasenet_adapter.py": "picks = pd.read_csv(phasenet_csv, low_memory=False)",
+        "src/spatial_vtk/metrics/calculate/arrival_picks.py": "pd.read_csv(source, low_memory=False)",
+        "src/spatial_vtk/io/metadata.py": "prepare_event_station_table(pd.read_csv(path, low_memory=False)",
+        "src/spatial_vtk/io/plans.py": "pd.read_csv(args.metrics, low_memory=False)",
+        "src/spatial_vtk/spatial/calculate/geojson.py": "pd.read_csv(path, usecols=columns, chunksize=chunksize, low_memory=False)",
+    }
+    for relative_path, snippet in snippets.items():
+        text = (repo_root / relative_path).read_text(encoding="utf-8")
+        assert snippet in text, relative_path
