@@ -911,9 +911,11 @@ def summarize_metrics_by_geojson(
     group_cols
         Additional grouping columns.
     savecsv
-        Whether to write the summary as a CSV file.
+        Whether to write the summary table. This legacy flag name is retained
+        for compatibility; the output format follows ``outpath`` and can be
+        CSV or Parquet.
     outpath
-        Output path used when ``savecsv`` is true.
+        Output CSV or Parquet path used when ``savecsv`` is true.
 
     Returns
     -------
@@ -940,7 +942,7 @@ def summarize_metrics_by_geojson(
     work = work.loc[work["_geojson_label"].str.len() > 0].copy()
     if work.empty:
         out = pd.DataFrame(columns=[*group_cols, "geojson_label", "n", "mean", "median", "std", "iqr"])
-        _maybe_write_csv(out, savecsv=savecsv, outpath=outpath)
+        _maybe_write_table(out, savecsv=savecsv, outpath=outpath)
         return out
     work[selected_value_col] = pd.to_numeric(work[selected_value_col], errors="coerce")
     groups = [column for column in group_cols if column in work.columns] + ["_geojson_label"]
@@ -951,7 +953,7 @@ def summarize_metrics_by_geojson(
     )
     out["iqr"] = out["q75"] - out["q25"]
     out = out.drop(columns=["q25", "q75"]).rename(columns={"_geojson_label": "geojson_label"})
-    _maybe_write_csv(out, savecsv=savecsv, outpath=outpath)
+    _maybe_write_table(out, savecsv=savecsv, outpath=outpath)
     return out
 
 
@@ -1103,16 +1105,16 @@ def _progress(enabled: bool, message: str) -> None:
         print(message, flush=True)
 
 
-def _maybe_write_csv(df: pd.DataFrame, *, savecsv: bool, outpath: str | Path | None) -> None:
-    """Write a dataframe to CSV when requested."""
+def _maybe_write_table(df: pd.DataFrame, *, savecsv: bool, outpath: str | Path | None) -> None:
+    """Write a dataframe to CSV or Parquet when requested."""
 
     if not savecsv:
         return
     if outpath is None:
         raise ValueError("outpath is required when savecsv=True.")
-    path = Path(outpath).expanduser()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(path, index=False)
+    from spatial_vtk.io.tables import write_table
+
+    write_table(df, Path(outpath).expanduser(), index=False)
 
 
 def _coerce_filter_values(value: object) -> set[str]:
