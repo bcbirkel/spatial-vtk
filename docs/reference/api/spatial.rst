@@ -269,7 +269,7 @@ part of the tutorial-facing API.
    from spatial_vtk.spatial.plot import (
        plot_correlogram,
        plot_distance_correlation_by_metric,
-       write_standard_spatial_diagnostic_figures,
+       plot_semivariogram,
    )
 
 .. automodule:: spatial_vtk.spatial.plot

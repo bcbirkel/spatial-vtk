@@ -1849,6 +1849,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "plot_distance_correlation_by_metric" in first_plot_import
     assert "write_large_run_spatial_figure_suite_from_notebook_settings" not in first_plot_import
     assert "write_standard_spatial_map_figures" not in first_plot_import
+    assert "write_standard_spatial_diagnostic_figures" not in first_plot_import
     assert "from spatial_vtk.spatial.map import (" in text
     assert ".. automodule:: spatial_vtk.spatial.plot\n" in text
     assert ".. automodule:: spatial_vtk.spatial.map\n" in text

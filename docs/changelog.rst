@@ -15,6 +15,9 @@ Changelog
     writers framed as script/custom-orchestration helpers.
   - Updated regression coverage so workflow docs keep result-object methods
     as the notebook-facing path for spatial maps and waveform comparisons.
+  - Cleaned the Spatial API focused-script plotting example so it shows
+    individual plot functions instead of mixing direct suite writers into the
+    first import block.
 
 2026-06-19
 ----------
