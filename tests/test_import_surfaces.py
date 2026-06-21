@@ -2708,6 +2708,28 @@ def test_python_workflow_docs_prefer_dashboard_preparation_result_object():
     assert "with ``cfg=`` or explicit roots" in dashboard_row
 
 
+def test_python_workflow_docs_prefer_dashboard_launch_wrapper():
+    """Dashboard workflow docs should keep one-dashboard launch helpers script-facing."""
+
+    workflows_path = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "python_workflows.rst"
+    workflows = workflows_path.read_text(encoding="utf-8")
+    launch_row = workflows.split("* - Launch dashboards from Python", 1)[1].split("Related API Pages", 1)[0]
+
+    assert "spatial_vtk.config.notebook_dashboard_launch_commands" in launch_row
+    assert "spatial_vtk.visualize.launch_configured_dashboards_from_notebook_settings" in launch_row
+    entry_point_cell = launch_row.split("- local Streamlit processes", 1)[0]
+    for helper in (
+        "spatial_vtk.visualize.launch_configured_metrics_dashboard",
+        "spatial_vtk.visualize.launch_configured_qc_dashboard",
+        "spatial_vtk.visualize.launch_metrics_dashboard",
+        "spatial_vtk.visualize.launch_qc_dashboard",
+    ):
+        assert helper not in entry_point_cell
+        assert helper in launch_row
+    assert "Scripts that intentionally launch one dashboard can call" in launch_row
+    assert "when they own\nthe launch target and explicit options" in launch_row
+
+
 def test_python_workflow_docs_prefer_metric_figure_suite_wrapper():
     """Metric workflow docs should point notebook users at the task-level figure suite."""
 

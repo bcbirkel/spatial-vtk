@@ -752,16 +752,17 @@ paths without requiring global config activation.
        do not serialize more rows than intended.
    * - Launch dashboards from Python
      - ``spatial_vtk.config.notebook_dashboard_launch_commands``,
-       ``spatial_vtk.visualize.launch_configured_dashboards_from_notebook_settings``,
-       ``spatial_vtk.visualize.launch_configured_metrics_dashboard``,
-       ``spatial_vtk.visualize.launch_configured_qc_dashboard``,
-       ``spatial_vtk.visualize.launch_metrics_dashboard``, and
-       ``spatial_vtk.visualize.launch_qc_dashboard``
+       and ``spatial_vtk.visualize.launch_configured_dashboards_from_notebook_settings``
      - local Streamlit processes configured from the same output registry,
        optional terminal fallback commands, and a bounded
        launch-settings status frame plus launch-result status frame showing
        ports, process IDs, commands, launch errors, and configured dashboard
-       inputs
+       inputs. Scripts that intentionally launch one dashboard can call
+       ``spatial_vtk.visualize.launch_configured_metrics_dashboard``,
+       ``spatial_vtk.visualize.launch_configured_qc_dashboard``,
+       ``spatial_vtk.visualize.launch_metrics_dashboard``, or
+       ``spatial_vtk.visualize.launch_qc_dashboard`` directly when they own
+       the launch target and explicit options.
 
 Related API Pages
 -----------------

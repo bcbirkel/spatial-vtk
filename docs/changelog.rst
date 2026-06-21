@@ -95,6 +95,9 @@ Changelog
   - Reworded Step 7 dashboard-preparation workflow guidance so notebooks use
     the dashboard preparation result object, with direct dashboard dataset
     writers framed as script APIs.
+  - Reworded dashboard launch workflow guidance so notebooks use the
+    notebook dashboard launch settings plus the configured launch wrapper,
+    with one-dashboard launch helpers framed as script APIs.
   - Reworded the preprocessing direct-call example so advanced scripts prefer
     config-backed output resolution instead of a literal preprocessed-output
     directory.
