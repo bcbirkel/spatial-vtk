@@ -2770,6 +2770,8 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).run_slurm_step_if_needed(...)" in workflows
     assert "spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).run_downstream_outputs_step_if_needed(...)" in workflows
     assert "spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).write_large_run_figure_suite(...)" in workflows
+    assert "write_large_run_metric_figure_suite_from_notebook_settings`` imported from\n``spatial_vtk.metrics.plot``" in workflows
+    assert "spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings" not in workflows
     assert "notebooks should prefer the standard metric result-object methods above" in workflows
     assert "notebook_figure_settings" in workflows
     assert "render_notebook_figure" in workflows
@@ -2790,6 +2792,10 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "event_rows_for_records" not in starter_example
     assert "Building block for custom package helpers or focused scripts" in workflows
     assert "Standard tutorial notebooks should prefer workflow result-object figure\n       methods" in workflows
+    assert "write_large_run_region_boxplot_from_notebook_settings`` or\n``write_large_run_region_boxplot_from_outputs`` imported from\n``spatial_vtk.spatial.plot``" in workflows
+    assert "spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings" not in workflows
+    assert "write_waveform_comparison_from_notebook_settings`` or\n``write_waveform_comparison_from_outputs`` imported from\n``spatial_vtk.visualize``" in workflows
+    assert "spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings" not in workflows
     assert "Use it\n       in standard notebooks instead of repeating" not in workflows
     assert "from spatial_vtk.config.notebook import" not in workflows
     assert "exact signatures, return contracts, and supporting public helpers" in workflows

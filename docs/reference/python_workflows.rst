@@ -568,10 +568,11 @@ Use direct metric helpers such as
 ``spatial_vtk.metrics.write_metrics_slurm_script_from_config``,
 ``spatial_vtk.metrics.merge_metric_batches_from_config``,
 ``spatial_vtk.metrics.write_metric_outputs_from_config``, and
-``spatial_vtk.metrics.plot.write_large_run_metric_figure_suite_from_notebook_settings``
-from scripts or custom orchestration that needs direct control. Tutorial
-notebooks should prefer the standard metric result-object methods above. If a
-script calls the direct ``spatial_vtk.metrics.write_metric_outputs``
+``write_large_run_metric_figure_suite_from_notebook_settings`` imported from
+``spatial_vtk.metrics.plot`` from scripts or custom orchestration that needs
+direct control. Tutorial notebooks should prefer the standard metric
+result-object methods above. If a script calls the direct
+``spatial_vtk.metrics.write_metric_outputs``
 writer directly, pass ``cfg=cfg`` or ``cfg=config_path`` when writing to
 registered output paths; this keeps the script independent of global
 active-config state. The standard metric result object also accepts either
@@ -671,9 +672,10 @@ Region boxplot cells should use
 ``spatial_vtk.spatial.load_standard_additional_plotting_output_status(...).write_region_boxplot(...)``.
 The result object owns the figure render gate, notebook figure settings,
 sidecar options, and the ``metrics_enriched`` to ``metrics_long`` fallback.
-Use ``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings``
-or ``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs`` from
-scripts when explicit figure settings or output bundles are already resolved.
+Use ``write_large_run_region_boxplot_from_notebook_settings`` or
+``write_large_run_region_boxplot_from_outputs`` imported from
+``spatial_vtk.spatial.plot`` from scripts when explicit figure settings or
+output bundles are already resolved.
 
 Step 2 and Step 6 waveform-comparison cells should use
 ``spatial_vtk.qc.load_standard_qc_inputs(...).write_waveform_comparison(...)``
@@ -684,11 +686,10 @@ then read only a bounded comparison-eligible sample, build the plotted
 observed/synthetic trace records, write the configured
 ``event_trace_comparison`` figure, and return a small status frame with the
 figure row plus event-station and comparison-eligible input-table rows. For
-scripts, use
-``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings``
-when notebook settings should still control rendering, or
-``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_outputs`` when
-explicit plotting keyword arguments are already resolved.
+scripts, use ``write_waveform_comparison_from_notebook_settings`` or
+``write_waveform_comparison_from_outputs`` imported from
+``spatial_vtk.visualize`` when notebook settings should still control rendering
+or explicit plotting keyword arguments are already resolved.
 Notebooks should not repeat the QC sample loading, figure-setting expansion,
 and waveform-record construction pipeline inline.
 
