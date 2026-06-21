@@ -1648,7 +1648,10 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "run_boundary_corridor_workflow_from_config" not in notebook_spatial_import
     assert "run_geojson_region_summary_workflow_from_config" in direct_spatial_import
     assert "run_boundary_corridor_workflow_from_config" in direct_spatial_import
-    assert "Individual plot and map functions are available for focused scripts" in text
+    assert "Routine notebooks should render standard spatial figures through the result\nobjects" in text
+    assert "spatial_outputs = load_standard_spatial_workflow_output_status(cfg=cfg)" in text
+    assert "spatial_figure_suite = spatial_outputs.write_figure_suite(settings)" in text
+    assert "Individual plot and map functions are available for focused scripts that\nalready own filtered spatial tables" in text
     assert text.index("load_standard_spatial_workflow_output_status") < text.index("run_spatial_statistics_workflow_from_config")
     assert "Display the run/skip/submission payload" in text
     assert "``spatial_vtk.config.display_notebook_step_result``" in text
@@ -1704,9 +1707,10 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "without loading full metric tables" in workflow_source
     assert "from spatial_vtk.spatial.plot import (" in text
     first_plot_import = text.split("from spatial_vtk.spatial.plot import (", 1)[1].split(")", 1)[0]
-    assert "write_large_run_spatial_figure_suite_from_notebook_settings" in first_plot_import
-    assert "write_standard_spatial_map_figures" in first_plot_import
-    assert "plot_correlogram" not in first_plot_import
+    assert "plot_correlogram" in first_plot_import
+    assert "plot_distance_correlation_by_metric" in first_plot_import
+    assert "write_large_run_spatial_figure_suite_from_notebook_settings" not in first_plot_import
+    assert "write_standard_spatial_map_figures" not in first_plot_import
     assert "from spatial_vtk.spatial.map import (" in text
     assert ".. automodule:: spatial_vtk.spatial.plot\n" in text
     assert ".. automodule:: spatial_vtk.spatial.map\n" in text
@@ -1772,8 +1776,8 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings" in text
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_standard_spatial_map_figures" in text
     assert ".. autofunction:: spatial_vtk.spatial.plot.write_standard_spatial_diagnostic_figures" in text
-    assert "write_large_run_spatial_figure_suite_from_notebook_settings," in text
-    assert "write_standard_spatial_map_figures," in text
+    assert "write_large_run_spatial_figure_suite_from_notebook_settings" in text
+    assert ".. autofunction:: spatial_vtk.spatial.plot.write_standard_spatial_map_figures" in text
     assert "prepare_spatial_figure_context_from_notebook_settings," not in text
     assert "Notebook-facing spatial plotting should use the result-object and suite helpers" in text
     assert "Advanced Spatial Figure Extension Helpers" in text

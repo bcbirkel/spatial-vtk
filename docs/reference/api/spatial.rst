@@ -41,14 +41,23 @@ workers, and custom orchestration that already owns execution control:
        summarize_residuals_by_path_bin,
    )
 
-Individual plot and map functions are available for focused scripts; tutorial
-notebooks should prefer the result-object figure-suite methods listed below:
+Routine notebooks should render standard spatial figures through the result
+objects so readiness checks, output paths, sidecars, and figure-family
+iteration stay in package code:
+
+.. code-block:: python
+
+   spatial_outputs = load_standard_spatial_workflow_output_status(cfg=cfg)
+   spatial_figure_suite = spatial_outputs.write_figure_suite(settings)
+
+Individual plot and map functions are available for focused scripts that
+already own filtered spatial tables or resolved map inputs:
 
 .. code-block:: python
 
    from spatial_vtk.spatial.plot import (
-       write_large_run_spatial_figure_suite_from_notebook_settings,
-       write_standard_spatial_map_figures,
+       plot_correlogram,
+       plot_distance_correlation_by_metric,
    )
    from spatial_vtk.spatial.map import plot_station_metric_map
 
@@ -234,17 +243,26 @@ variables or figure-function imports in notebook cells.
 Plots
 -----
 
+Routine notebooks should render the standard Step 4 figure suite through the
+spatial workflow result object:
+
+.. code-block:: python
+
+   from spatial_vtk.spatial import load_standard_spatial_workflow_output_status
+
+   spatial_outputs = load_standard_spatial_workflow_output_status(cfg=cfg)
+   spatial_figure_suite = spatial_outputs.write_figure_suite(settings)
+
 Use ``spatial_vtk.spatial.plot`` for public non-map plotting imports in
-notebooks and scripts. The implementation submodules are not part of the
-tutorial-facing API.
+focused scripts and custom extensions. The implementation submodules are not
+part of the tutorial-facing API.
 
 .. code-block:: python
 
    from spatial_vtk.spatial.plot import (
        plot_correlogram,
        plot_distance_correlation_by_metric,
-       write_large_run_spatial_figure_suite_from_notebook_settings,
-       write_standard_spatial_map_figures,
+       write_standard_spatial_diagnostic_figures,
    )
 
 .. automodule:: spatial_vtk.spatial.plot

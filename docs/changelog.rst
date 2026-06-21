@@ -86,6 +86,9 @@ Changelog
   - Reworded the large-run README and workflow-guide metric-figure examples
     so notebook users start from the standard metric output result instead of
     importing direct plotting-suite helpers.
+  - Reworded Spatial API plotting examples so Step 4 notebooks start from the
+    standard spatial workflow result object, while direct spatial plotting
+    imports are framed as focused-script helpers.
   - Reworded the preprocessing direct-call example so advanced scripts prefer
     config-backed output resolution instead of a literal preprocessed-output
     directory.
