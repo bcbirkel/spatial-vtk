@@ -275,24 +275,73 @@ Public plotting helpers and notebook workflow loaders:
 
    * - Helper
      - Use
+   * - ``load_standard_spatial_workflow_output_status``
+     - Resolve Step 4 output status and retain config-backed methods for
+       ``run_summary_step_if_needed(...)``,
+       ``run_derived_outputs_step_if_needed(...)``,
+       ``display_table_previews(nrows=...)``, ``write_summary_figures(...)``,
+       and ``write_figure_suite(...)``. Routine Step 4 notebooks should start
+       here so Slurm/local gates, bounded previews, sidecars, and configured
+       figure paths stay on the result object.
+   * - ``load_standard_spatial_workflow_outputs``
+     - Load the standard Step 4 output-table bundle for tutorial-sized runs
+       and already-prepared workflows. The returned result writes standard
+       Step 4 map and diagnostic figures through ``write_map_figures()`` and
+       ``write_diagnostic_figures()`` without notebook-local output-group
+       mapping or plot-function imports.
+   * - ``load_standard_geojson_workflow_output_status``
+     - Resolve Step 5 output status and bounded table previews for large-run
+       driver notebooks without loading the full metrics or GeoJSON input
+       tables. The status result retains its config for
+       ``run_geojson_summary_step_if_needed(...)``,
+       ``run_corridor_step_if_needed(...)``,
+       ``display_table_previews(nrows=...)`` calls and writes the Step 5
+       large-run region/corridor figure family through
+       ``write_region_figures()``. ``cfg=`` may be either a config object or a
+       config file path, so worker scripts can resolve outputs without active
+       global config state.
+   * - ``load_standard_geojson_plotting_inputs``
+     - Load the standard Step 5 metrics, prepared metadata, comparison-eligible
+       records, configured GeoJSON path, and configured output group without
+       notebook-local output-group, config-path, or table-loading plumbing;
+       the returned result can write the standard region and corridor figure
+       suites through ``write_region_figures()`` and
+       ``write_corridor_figures()``.
+   * - ``load_standard_additional_plotting_output_status``
+     - Resolve Step 6 output status and the first available metric-source
+       preview for large-run driver notebooks without loading the plotting
+       inputs. The status result retains its config for
+       ``display_metric_source_preview(nrows=...)`` calls and writes bounded
+       waveform comparisons plus region boxplots through
+       ``write_waveform_comparison()`` and ``write_region_boxplot()``.
+       ``cfg=`` may be either a config object or a config file path, so worker
+       scripts can resolve outputs without active global config state.
+   * - ``load_standard_additional_plotting_inputs``
+     - Load the standard Step 6 metric snapshot, event metadata,
+       event-station records, comparison-eligible pairs, and configured output
+       group without notebook-local output-group or config-table plumbing.
+       The returned result writes the standard Step 6 waveform, pattern,
+       scatterplot, boxplot, and heatmap figure suite through
+       ``write_figures()``.
    * - ``write_large_run_spatial_figure_suite_from_notebook_settings``
-     - Render the full Step 4 large-run spatial figure suite from notebook
-       settings without notebook-local plot-function imports, per-family
-       keyword expansion, or repeated render gates. The returned status table
-       includes exact ``figure_paths`` lists plus preview-oriented path fields
-       for compact notebook display.
+     - Lower-level Step 4 figure-suite writer for scripts or compatibility
+       paths that already own notebook figure settings. New notebooks should
+       usually call
+       ``load_standard_spatial_workflow_output_status(...).write_figure_suite(...)``
+       so readiness, config, and output bookkeeping stay on the Step 4 result
+       object.
    * - ``write_large_run_spatial_summary_figures_from_outputs``
-     - Write compact Step 4 spatial summary figures from an ``OutputGroup``
-       without notebook-local input gating, table loading, output-path lookup,
-       or plotting keyword expansion.
+     - Lower-level script helper that writes compact Step 4 spatial summary
+       figures from an ``OutputGroup`` after the caller has already resolved
+       the configured outputs and plotting keyword arguments.
    * - ``write_standard_spatial_map_figures``
-     - Write the standard Step 4 station-bias and residual-grid maps for each
-       selected metric without notebook-local per-metric plot loops or output
-       path construction.
+     - Script-facing writer for the standard Step 4 station-bias and
+       residual-grid maps when a prepared ``SpatialFigureContext`` and
+       settings object are already available.
    * - ``write_standard_spatial_diagnostic_figures``
-     - Write the standard Step 4 spatial-correlation, PCA-summary, and
-       geology-contrast diagnostic figures without notebook-local plot imports,
-       per-metric table filters, or sidecar keyword plumbing.
+     - Script-facing writer for the standard Step 4 spatial-correlation,
+       PCA-summary, and geology-contrast diagnostic figures when the caller
+       already owns the figure context and settings.
    * - ``write_standard_geojson_region_figures``
      - Write the standard Step 5 GeoJSON overview, regional PGA boxplot, and
        regional station residual map while keeping GeoJSON annotation, summary
@@ -308,24 +357,6 @@ Public plotting helpers and notebook workflow loaders:
        package code. The returned ``StandardGeoJSONCorridorFigureResult``
        exposes ``status_frame()`` for corridor figure paths, statuses,
        messages, and sidecars.
-   * - ``load_standard_geojson_plotting_inputs``
-     - Load the standard Step 5 metrics, prepared metadata, comparison-eligible
-       records, configured GeoJSON path, and configured output group without
-       notebook-local output-group, config-path, or table-loading plumbing;
-       the returned result can write the standard region and corridor figure
-       suites through ``write_region_figures()`` and
-       ``write_corridor_figures()``.
-   * - ``load_standard_geojson_workflow_output_status``
-     - Resolve Step 5 output status and bounded table previews for large-run
-       driver notebooks without loading the full metrics or GeoJSON input
-       tables. The status result retains its config for
-       ``run_geojson_summary_step_if_needed(...)``,
-       ``run_corridor_step_if_needed(...)``,
-       ``display_table_previews(nrows=...)`` calls and writes the Step 5
-       large-run region/corridor figure family through
-       ``write_region_figures()``.
-      ``cfg=`` may be either a config object or a config file path, so worker
-      scripts can resolve outputs without active global config state.
    * - ``write_standard_additional_plotting_figures``
      - Write the standard Step 6 waveform map, pattern-similarity figure,
        residual scatterplot, region boxplot, and region heatmap while keeping
@@ -334,42 +365,26 @@ Public plotting helpers and notebook workflow loaders:
        ``StandardAdditionalPlottingFigureResult`` exposes
        ``metric_summary_frame()`` for selected metric coverage and
        ``status_frame()`` for figure outputs.
-   * - ``load_standard_additional_plotting_inputs``
-     - Load the standard Step 6 metric snapshot, event metadata,
-       event-station records, comparison-eligible pairs, and configured output
-       group without notebook-local output-group or config-table plumbing.
-       The returned result writes the standard Step 6 waveform, pattern,
-       scatterplot, boxplot, and heatmap figure suite through
-       ``write_figures()``.
-   * - ``load_standard_additional_plotting_output_status``
-     - Resolve Step 6 output status and the first available metric-source
-       preview for large-run driver notebooks without loading the plotting
-       inputs. The status result retains its config for
-       ``display_metric_source_preview(nrows=...)`` calls and writes bounded
-       waveform comparisons plus region boxplots through
-       ``write_waveform_comparison()`` and ``write_region_boxplot()``.
-      ``cfg=`` may be either a config object or a config file path, so worker
-      scripts can resolve outputs without active global config state.
    * - ``write_large_run_geojson_region_figures_from_outputs``
-     - Write the Step 5 GeoJSON overview map, corridor map, and region boxplot
-       from configured output groups without notebook-local table loading or
-       figure-path plumbing.
+     - Lower-level Step 5 script helper that writes the GeoJSON overview map,
+       corridor map, and region boxplot from configured output groups after
+       the caller has decided to bypass the standard plotting input/result
+       object.
    * - ``write_large_run_geojson_region_figures_from_notebook_settings``
-     - Write the same Step 5 GeoJSON/corridor figure family directly from
-       ``notebook_figure_settings(...)`` so notebooks do not repeat render
-       gates, sidecar options, figure-directory settings, or metric filters.
-       The returned ``RegionFigureResult`` exposes ``status_frame()`` for
-       compact figure-output display.
+     - Compatibility helper for scripts that need the Step 5 GeoJSON/corridor
+       figure family directly from ``notebook_figure_settings(...)``. New
+       notebooks should usually call
+       ``load_standard_geojson_workflow_output_status(...).write_region_figures(...)``
+       or ``load_standard_geojson_plotting_inputs(...).write_region_figures(...)``.
    * - ``write_large_run_region_boxplot_from_outputs``
-     - Write a Step 5/6 region boxplot from an ``OutputGroup``, preferring an
-       enriched metric table when available and falling back to the long metric
-       table without adding notebook-local path-selection logic.
+     - Lower-level Step 5/6 script helper that writes one region boxplot from
+       an ``OutputGroup``, preferring an enriched metric table when available
+       and falling back to the long metric table.
    * - ``write_large_run_region_boxplot_from_notebook_settings``
-     - Write the Step 6 region boxplot directly from
-       ``notebook_figure_settings(...)`` so notebooks do not repeat render
-       gates, sidecar options, figure-directory settings, or metric filters.
-       The returned ``RegionBoxplotResult`` exposes ``status_frame()`` for
-       compact figure-output display.
+     - Compatibility helper for scripts that need the Step 6 region boxplot
+       directly from ``notebook_figure_settings(...)``. New notebooks should
+       usually call
+       ``load_standard_additional_plotting_output_status(...).write_region_boxplot(...)``.
    * - ``plot_correlogram``, ``plot_semivariogram``, and
        ``plot_directional_correlogram``
      - Plot spatial correlation diagnostics by distance or direction.

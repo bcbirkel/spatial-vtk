@@ -1741,6 +1741,19 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
         "Large-Run Spatial Figure Suite",
         1,
     )[0]
+    assert helper_table.index("``load_standard_spatial_workflow_output_status``") < helper_table.index(
+        "``write_large_run_spatial_figure_suite_from_notebook_settings``"
+    )
+    assert helper_table.index("``load_standard_geojson_workflow_output_status``") < helper_table.index(
+        "``write_large_run_geojson_region_figures_from_notebook_settings``"
+    )
+    assert helper_table.index("``load_standard_additional_plotting_output_status``") < helper_table.index(
+        "``write_large_run_region_boxplot_from_notebook_settings``"
+    )
+    assert "Routine Step 4 notebooks should start\n       here" in helper_table
+    assert "Lower-level Step 4 figure-suite writer for scripts or compatibility\n       paths" in helper_table
+    assert "Lower-level Step 5 script helper" in helper_table
+    assert "Compatibility helper for scripts that need the Step 6 region boxplot" in helper_table
     assert "prepare_spatial_figure_context" not in helper_table
     assert "SpatialFigureContext" not in helper_table
     assert "Plot custom spatial metric distributions from prepared tables." in helper_table
