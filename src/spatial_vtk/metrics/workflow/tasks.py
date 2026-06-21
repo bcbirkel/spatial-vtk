@@ -359,16 +359,13 @@ def summarize_metric_tasks(
         Compact estimate table with human-readable values and notes.
     """
 
-    if isinstance(tasks, list):
-        task_table = tasks_to_frame(tasks)
-    else:
-        task_table = _read_table(tasks)
-    task_count = len(task_table)
+    task_summary = _metric_task_summary_stats(tasks)
+    task_count = int(task_summary["task_count"])
     seconds_per_task = max(float(seconds_per_task), 0.0)
     memory_gb_per_task = max(float(memory_gb_per_task), 0.0)
     cpus_per_task = max(int(cpus_per_task), 1)
     parallel_count = max(int(parallel_tasks), 1) if parallel_tasks is not None else None
-    metric_evaluations = _estimate_metric_evaluations(task_table)
+    metric_evaluations = int(task_summary["metric_evaluations"])
     serial_cpu_hours = task_count * seconds_per_task * cpus_per_task / 3600.0
 
     rows = [
@@ -384,27 +381,27 @@ def summarize_metric_tasks(
         },
         {
             "Estimate": "Unique events",
-            "Value": _unique_count_text(task_table, "event_id"),
+            "Value": _summary_unique_count_text(task_summary["event_ids"]),
             "Notes": "",
         },
         {
             "Estimate": "Unique stations",
-            "Value": _unique_count_text(task_table, "station"),
+            "Value": _summary_unique_count_text(task_summary["stations"]),
             "Notes": "",
         },
         {
             "Estimate": "Components",
-            "Value": _unique_values_text(task_table, "component"),
+            "Value": _summary_unique_values_text(task_summary["components"]),
             "Notes": "",
         },
         {
             "Estimate": "Models",
-            "Value": _unique_values_text(task_table, "model"),
+            "Value": _summary_unique_values_text(task_summary["models"]),
             "Notes": "",
         },
         {
             "Estimate": "Passbands",
-            "Value": _unique_values_text(task_table, "passband", fallback_column="band"),
+            "Value": _summary_unique_values_text(task_summary["passbands"]),
             "Notes": "Period-band labels, for example 1-2 sec.",
         },
         {
@@ -867,6 +864,55 @@ def _read_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
     return pd.read_csv(path, low_memory=False)
 
 
+def _metric_task_summary_columns() -> tuple[str, ...]:
+    """Return task-table columns needed for compact planning summaries."""
+
+    return ("event_id", "station", "component", "model", "passband", "band", "metrics", "metric")
+
+
+def _metric_task_summary_stats(tasks: list[MetricWorkflowTask] | pd.DataFrame | str | Path) -> dict[str, Any]:
+    """Aggregate metric task summary stats without full path-backed reads."""
+
+    if isinstance(tasks, list):
+        chunks = [tasks_to_frame(tasks)]
+    elif isinstance(tasks, pd.DataFrame):
+        chunks = [tasks]
+    else:
+        chunks = _iter_table_chunks(tasks, columns=list(_metric_task_summary_columns()))
+    summary: dict[str, Any] = {
+        "task_count": 0,
+        "metric_evaluations": 0,
+        "event_ids": set(),
+        "stations": set(),
+        "components": set(),
+        "models": set(),
+        "passbands": set(),
+    }
+    for chunk in chunks:
+        summary["task_count"] += int(len(chunk))
+        summary["metric_evaluations"] += _estimate_metric_evaluations(chunk)
+        _update_summary_values(summary["event_ids"], chunk, "event_id")
+        _update_summary_values(summary["stations"], chunk, "station")
+        _update_summary_values(summary["components"], chunk, "component")
+        _update_summary_values(summary["models"], chunk, "model")
+        before_passbands = len(summary["passbands"])
+        _update_summary_values(summary["passbands"], chunk, "passband")
+        if len(summary["passbands"]) == before_passbands:
+            _update_summary_values(summary["passbands"], chunk, "band")
+    return summary
+
+
+def _update_summary_values(values: set[str], frame: pd.DataFrame, column: str) -> None:
+    """Add normalized non-empty values from one optional summary column."""
+
+    if column not in frame.columns:
+        return
+    for value in frame[column].dropna():
+        text = str(value).strip()
+        if text:
+            values.add(text)
+
+
 def _estimate_metric_evaluations(task_table: pd.DataFrame) -> int:
     """Estimate the number of metric values requested by a task table."""
 
@@ -879,27 +925,23 @@ def _estimate_metric_evaluations(task_table: pd.DataFrame) -> int:
     return int(len(task_table))
 
 
-def _unique_count_text(task_table: pd.DataFrame, column: str) -> str:
-    """Return a formatted unique-count value for one task-table column."""
+def _summary_unique_count_text(values: set[str]) -> str:
+    """Return a formatted unique-count value for summary values."""
 
-    if column not in task_table.columns:
-        return "not available"
-    return f"{task_table[column].dropna().astype(str).nunique():,}"
-
-
-def _unique_values_text(task_table: pd.DataFrame, column: str, *, fallback_column: str | None = None, max_values: int = 6) -> str:
-    """Return compact unique values for one task-table column."""
-
-    active_column = column if column in task_table.columns else fallback_column
-    if active_column is None or active_column not in task_table.columns:
-        return "not available"
-    values = [str(value) for value in task_table[active_column].dropna().unique() if str(value).strip()]
     if not values:
         return "not available"
-    values = sorted(values)
-    if len(values) <= max_values:
-        return ", ".join(values)
-    return f"{len(values):,} values"
+    return f"{len(values):,}"
+
+
+def _summary_unique_values_text(values: set[str], *, max_values: int = 6) -> str:
+    """Return compact unique values for summary values."""
+
+    if not values:
+        return "not available"
+    ordered = sorted(values)
+    if len(ordered) <= max_values:
+        return ", ".join(ordered)
+    return f"{len(ordered):,} values"
 
 
 def _format_hours(hours: float) -> str:

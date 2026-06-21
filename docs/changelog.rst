@@ -733,6 +733,10 @@ Changelog
   - Changed metric batch merges to stream each CSV or Parquet batch in row
     chunks instead of full-reading one batch file at a time before writing the
     merged metric-row table.
+  - Changed metric task summary estimates to stream projected task columns
+    from path-backed task tables instead of full-reading serialized waveform
+    path and execution-parameter columns that are not needed for planning
+    counts.
   - Made shared parquet preview helpers stream bounded rows with PyArrow and
     report actionable metadata/dependency errors instead of full-reading large
     tables before taking ``head()``.

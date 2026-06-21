@@ -59,6 +59,7 @@ from spatial_vtk.spatial.map import plot_event_residual_map
 from spatial_vtk.spatial.plot import boxplot, heatmap, scatterplot
 from spatial_vtk.visualize.dashboard import available_dashboard_value_columns, build_dashboard_summaries, load_dashboard_metric_dataset
 import spatial_vtk.metrics.workflow.execution as metric_execution
+import spatial_vtk.metrics.workflow.tasks as metric_tasks_module
 
 
 def test_metric_inventories_from_trace_metadata_use_explicit_path_columns(tmp_path) -> None:
@@ -2725,6 +2726,37 @@ def test_summarize_metric_tasks_reports_task_and_resource_estimates() -> None:
     assert rows["Memory per task"] == "1.5 GB"
     assert rows["Wall time at 2 parallel tasks"] == "30 sec"
     assert rows["Peak memory at 2 parallel tasks"] == "3 GB"
+
+
+def test_summarize_metric_tasks_streams_path_backed_task_tables(tmp_path, monkeypatch) -> None:
+    """Path-backed metric task summaries should avoid full task-table reads."""
+
+    task_table = tmp_path / "metric_tasks.csv"
+    pd.DataFrame(
+        {
+            "event_id": ["e1", "e2"],
+            "station": ["STA1", "STA2"],
+            "component": ["R", "T"],
+            "model": ["m1", "m1"],
+            "passband": ["1-2 sec", "2-3 sec"],
+            "metrics": ["PGA,PGV", "PSA"],
+            "obs_waveform_path": ["unused-a", "unused-b"],
+            "syn_waveform_path": ["unused-a", "unused-b"],
+        }
+    ).to_csv(task_table, index=False)
+
+    def fail_full_task_read(*_args, **_kwargs):  # noqa: ANN202
+        raise AssertionError("summarize_metric_tasks should stream projected task columns")
+
+    monkeypatch.setattr(metric_tasks_module, "_read_table", fail_full_task_read)
+
+    summary = summarize_metric_tasks(task_table, seconds_per_task=10.0)
+    rows = dict(zip(summary["Estimate"], summary["Value"]))
+
+    assert rows["Metric tasks"] == "2"
+    assert rows["Approximate metric evaluations"] == "3"
+    assert rows["Unique events"] == "2"
+    assert rows["Components"] == "R, T"
 
 
 def test_metric_workflow_outputs_feed_downstream_modules(tmp_path) -> None:
