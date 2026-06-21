@@ -2714,6 +2714,11 @@ def test_python_workflow_docs_define_stable_import_surfaces():
     assert "``spatial_vtk.metrics.workflow.execution``" not in workflows
     assert "``spatial_vtk.qc.build.workflow``" not in workflows
     assert "``spatial_vtk.spatial.calculate.workflow``" not in workflows
+    assert "``spatial_vtk.metrics.plot.model_comparison``" not in workflows
+    assert "``spatial_vtk.metrics.plot.periods``" not in workflows
+    assert "``spatial_vtk.metrics.plot.site_terms``" not in workflows
+    assert "``spatial_vtk.metrics.plot.trends``" not in workflows
+    assert "``spatial_vtk.metrics.plot.large_run``" not in workflows
     assert "``spatial_vtk.spatial.plot.large_run``" not in workflows
 
     stable_helpers = {

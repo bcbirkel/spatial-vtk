@@ -68,6 +68,9 @@ Changelog
   - Applied the same empty-output guard to lower-level output-existence and
     rebuild helpers so path-based workflow checks cannot silently no-op when
     no targets are configured.
+  - Added workflow-doc regression coverage so notebook guidance keeps using
+    stable package import surfaces and does not reintroduce metrics plotting
+    implementation-module paths.
 
 2026-06-19
 ----------
