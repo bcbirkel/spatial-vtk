@@ -3847,8 +3847,10 @@ outputs:
 
     frames = display_dashboard_preparation_result(result, display=displayed.append)
 
-    assert list(frames) == ["readiness", "status", "written", "summary_contracts"]
-    assert len(displayed) == 4
+    assert list(frames) == ["preparation", "readiness", "status", "written", "summary_contracts"]
+    assert len(displayed) == 5
+    assert frames["preparation"].loc[0, "status"] == "skipped"
+    assert "Slurm-aware dashboard preparation cell" in frames["preparation"].loc[0, "message"]
     assert not frames["readiness"].empty
     assert not frames["status"].empty
     assert "value_families" in frames["readiness"].columns

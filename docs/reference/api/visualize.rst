@@ -118,9 +118,9 @@ Public helpers exposed by ``spatial_vtk.visualize``:
        datasets from configured metric outputs after the caller has decided a
        local write is appropriate.
    * - ``display_dashboard_preparation_result``
-     - Display the standard dashboard preparation readiness, status, written
-       output, and summary-contract tables without notebook-local formatting
-       code.
+     - Display the standard dashboard preparation decision, readiness, status,
+       written-output, and summary-contract tables without notebook-local
+       formatting code.
    * - ``launch_configured_dashboards_from_notebook_settings``
      - Launch requested dashboards or show terminal fallback commands from
        config-backed notebook settings. Returned ``DashboardLaunchResult``
@@ -322,7 +322,8 @@ Public dashboard helpers exposed by ``spatial_vtk.visualize``:
        dataframe formatting.
    * - ``display_dashboard_preparation_result``
      - Return and optionally display the standard dashboard preparation frames
-       with bounded row counts and summary-table contracts.
+       with the preparation decision, bounded row counts, and summary-table
+       contracts.
    * - ``load_dashboard_metric_dataset``,
        ``load_dashboard_summary_tables``, and
        ``load_filtered_dashboard_summary_table``

@@ -634,6 +634,9 @@ Changelog
   - Removed the legacy ``trace_summary_table`` alias column from notebook
     dashboard launch status frames; launch helpers still accept the legacy
     ``trace_summary`` keyword for existing Python callers.
+  - Aligned dashboard preparation display tests and API docs with the package
+    helper contract that includes a preparation-decision frame alongside
+    readiness, status, written-output, and summary-contract frames.
 
 2026-06-18
 ----------
