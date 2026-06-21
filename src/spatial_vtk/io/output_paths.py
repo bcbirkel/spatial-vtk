@@ -207,7 +207,7 @@ class OutputGroup:
         names
             Artifact names, output keys, or a ``label -> artifact/key`` mapping.
             When omitted, every table artifact in the group is loaded. Mapping
-            labels become the returned dictionary keys, which keeps notebook
+            labels become the returned mapping keys, which keeps notebook
             variables readable without repeating path-resolution code.
         cfg
             Optional config passed to :func:`spatial_vtk.io.load_output_table`.

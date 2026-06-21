@@ -62,7 +62,7 @@ Start with public helpers from ``spatial_vtk.io``:
 - ``preprocess_waveforms_from_config`` and ``build_record_coverage_from_config``
   for config-backed waveform preprocessing and record coverage; their result
   objects provide ``summary_frame()`` for notebook display helpers, so
-  notebooks do not need to unpack path dictionaries just to report progress.
+  notebooks do not need to unpack path mappings just to report progress.
   Scripts and logs can use the same result objects' ``summary_message()``
   strings when a concise text line is more useful.
 - ``load_standard_ingest_workflow_outputs`` for Step 1 output status, previews,

@@ -95,6 +95,8 @@ Changelog
   - Reworded the Python workflow guide introduction so notebook-facing package
     outputs are described as status payloads, result objects, or labelled
     frames rather than generic metadata dictionaries.
+  - Reworded package overview and output-group table-loader docs from path
+    dictionaries and dictionary keys to path mappings and mapping keys.
 
 - **Public surface guardrails** *(Fixed)*
 

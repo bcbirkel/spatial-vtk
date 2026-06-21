@@ -1299,6 +1299,8 @@ def test_output_paths_docstring_prefers_standard_workflow_results_for_notebooks(
     assert "from spatial_vtk.io import load_standard_ingest_workflow_outputs" in text
     assert "ingest_outputs = load_standard_ingest_workflow_outputs()" in text
     assert "Use ``output_group()`` or ``default_output_paths()`` directly only in custom" in text
+    assert "Mapping\n            labels become the returned mapping keys" in text
+    assert "returned dictionary keys" not in text
     assert "Create explicit CSV paths" not in text
     assert "stations.to_csv(tables.prepared_stations" not in text
 
@@ -2897,6 +2899,7 @@ def test_package_overview_points_to_public_workflow_helpers():
         "Start with public helpers from ``spatial_vtk.io``",
         "``prepare_event_station_table``",
         "``preprocess_waveforms_from_config``",
+        "notebooks do not need to unpack path mappings just to report progress",
         "``output_group`` and ``output_readiness``",
         "Start with public helpers from ``spatial_vtk.qc``",
         "``load_standard_qc_inputs``",
@@ -2935,6 +2938,7 @@ def test_package_overview_points_to_public_workflow_helpers():
     )
     for snippet in forbidden:
         assert snippet not in text
+    assert "path dictionaries" not in text
     assert "lower-level downstream metric" not in text
 
     future = (docs.parent / "future_features.rst").read_text(encoding="utf-8")
