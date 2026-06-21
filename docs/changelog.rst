@@ -632,6 +632,9 @@ Changelog
   - Added primary-name properties to dashboard path contract objects so
     ``metrics_dataset_dir``, ``dashboard_summary_table_dir``, and
     ``qc_trace_summary_table`` are available alongside legacy field names.
+  - Re-exported dashboard path/readiness contract classes from the stable
+    ``spatial_vtk.visualize.dashboard`` and ``spatial_vtk.visualize`` package
+    surfaces.
   - Added ``resolved_path`` to dashboard output status, readiness summary, and
     written-output frames while preserving ``path`` for existing notebooks.
   - Added dashboard value-family readiness metadata so status tables show

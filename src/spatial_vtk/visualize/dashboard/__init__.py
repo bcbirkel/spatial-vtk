@@ -32,6 +32,7 @@ _EXPORT_MODULES = {
     "build_value_histogram_figure": "spatial_vtk.visualize.dashboard.charts",
     "build_value_vs_distance_figure": "spatial_vtk.visualize.dashboard.charts",
     "dashboard_map_readiness": "spatial_vtk.visualize.dashboard.contracts",
+    "DashboardOutputReadiness": "spatial_vtk.visualize.dashboard.contracts",
     "dashboard_metric_dataset_readiness_frame": "spatial_vtk.visualize.dashboard.contracts",
     "dashboard_output_namespace": "spatial_vtk.visualize.dashboard.contracts",
     "dashboard_output_paths": "spatial_vtk.visualize.dashboard.contracts",
@@ -50,9 +51,11 @@ _EXPORT_MODULES = {
     "dashboard_value_columns_or_message": "spatial_vtk.visualize.dashboard.contracts",
     "dashboard_value_column_families": "spatial_vtk.visualize.dashboard.contracts",
     "display_dashboard_output_previews": "spatial_vtk.visualize.dashboard.contracts",
+    "MetricsDashboardPaths": "spatial_vtk.visualize.dashboard.contracts",
     "load_filtered_dashboard_summary_table": "spatial_vtk.visualize.dashboard.contracts",
     "load_dashboard_summary_tables": "spatial_vtk.visualize.dashboard.contracts",
     "preview_dashboard_summary_tables": "spatial_vtk.visualize.dashboard.contracts",
+    "QCDashboardPaths": "spatial_vtk.visualize.dashboard.contracts",
     "read_dashboard_table": "spatial_vtk.visualize.dashboard.contracts",
     "validate_dashboard_tables": "spatial_vtk.visualize.dashboard.contracts",
     "validate_trace_qc_dashboard_table": "spatial_vtk.visualize.dashboard.contracts",
@@ -113,6 +116,12 @@ _DEFERRED_EXPORT_NAMES = {
     "write_dashboard_summary_dataset",
 }
 
+_DIRECT_EXPORT_NAMES = {
+    "DashboardOutputReadiness",
+    "MetricsDashboardPaths",
+    "QCDashboardPaths",
+}
+
 
 def __getattr__(name: str) -> Any:
     """Load one dashboard helper on demand."""
@@ -120,6 +129,10 @@ def __getattr__(name: str) -> Any:
     module_name = _EXPORT_MODULES.get(name)
     if module_name is None:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    if name in _DIRECT_EXPORT_NAMES:
+        value = getattr(import_module(module_name), name)
+        globals()[name] = value
+        return value
     if module_name in _DEFERRED_EXPORT_MODULES or name in _DEFERRED_EXPORT_NAMES:
         value = _deferred_export(name, module_name)
         globals()[name] = value

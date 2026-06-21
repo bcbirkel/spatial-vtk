@@ -934,7 +934,16 @@ def test_autodoc_fallback_parameter_docs_are_descriptive():
 def test_dashboard_path_contracts_expose_primary_names(tmp_path):
     """Dashboard path objects should expose current public path vocabulary."""
 
-    from spatial_vtk.visualize.dashboard.contracts import MetricsDashboardPaths, QCDashboardPaths
+    from spatial_vtk.visualize import MetricsDashboardPaths as VisualizeMetricsDashboardPaths
+    from spatial_vtk.visualize import QCDashboardPaths as VisualizeQCDashboardPaths
+    from spatial_vtk.visualize.dashboard import MetricsDashboardPaths, QCDashboardPaths
+    from spatial_vtk.visualize.dashboard.contracts import MetricsDashboardPaths as ContractMetricsDashboardPaths
+    from spatial_vtk.visualize.dashboard.contracts import QCDashboardPaths as ContractQCDashboardPaths
+
+    assert MetricsDashboardPaths is ContractMetricsDashboardPaths
+    assert QCDashboardPaths is ContractQCDashboardPaths
+    assert VisualizeMetricsDashboardPaths is ContractMetricsDashboardPaths
+    assert VisualizeQCDashboardPaths is ContractQCDashboardPaths
 
     metrics_dataset = tmp_path / "metrics_dashboard"
     summary_tables = tmp_path / "dashboard_summaries"
