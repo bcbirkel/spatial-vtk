@@ -60,17 +60,44 @@ VALUE_COLUMN_FAMILY_ORDER: tuple[str, ...] = ("residual", "score/gof", "observed
 
 @dataclass(frozen=True)
 class MetricsDashboardPaths:
-    """Paths used by the metrics dashboard."""
+    """Paths used by the metrics dashboard.
+
+    ``metrics_dataset_dir`` and ``dashboard_summary_table_dir`` are the
+    preferred public names. ``metrics_root`` and ``summary_root`` remain as
+    dataclass fields for compatibility with earlier dashboard helpers.
+    """
 
     metrics_root: Path
     summary_root: Path
 
+    @property
+    def metrics_dataset_dir(self) -> Path:
+        """Metrics dashboard row dataset directory or direct row table."""
+
+        return self.metrics_root
+
+    @property
+    def dashboard_summary_table_dir(self) -> Path:
+        """Dashboard summary-table directory used by overview tabs."""
+
+        return self.summary_root
+
 
 @dataclass(frozen=True)
 class QCDashboardPaths:
-    """Paths used by the QC dashboard."""
+    """Paths used by the QC dashboard.
+
+    ``qc_trace_summary_table`` is the preferred public name. ``trace_summary``
+    remains as the dataclass field for compatibility with earlier helpers.
+    """
 
     trace_summary: Path
+
+    @property
+    def qc_trace_summary_table(self) -> Path:
+        """QC trace-summary CSV/parquet table."""
+
+        return self.trace_summary
 
 
 @dataclass(frozen=True)
