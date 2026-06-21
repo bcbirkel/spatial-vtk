@@ -110,6 +110,7 @@ NOTEBOOK_CONTRACT_FORBIDDEN_SNIPPETS = (
     "subprocess.",
     "os.system(",
     "os.popen(",
+    "get_ipython().system(",
     "run_or_submit_notebook_cli_command(",
     "write_notebook_cli_slurm_script(",
     "from spatial_vtk.metrics.plot.",

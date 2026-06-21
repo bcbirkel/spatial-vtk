@@ -74,6 +74,9 @@ Changelog
   - Hardened tutorial notebook source-contract checks so saved widget/UI
     metadata state is rejected alongside execution counts and saved cell
     outputs.
+  - Extended the tutorial notebook source-contract checks to reject
+    ``get_ipython().system(...)`` shell calls, closing the same CLI-workflow
+    escape path already blocked for ``!svtk`` and ``subprocess.run(...)``.
 
 2026-06-19
 ----------

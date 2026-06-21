@@ -409,6 +409,7 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
                         "source": [
                             "import subprocess\n",
                             "!svtk metrics plan\n",
+                            "get_ipython().system('svtk metrics plan')\n",
                             "from spatial_vtk.metrics.plot.periods import plot_period_spectra\n",
                             "from spatial_vtk.metrics.workflow.execution import run_manifest_batch\n",
                             "from spatial_vtk.qc.build.workflow import run_qc_inventory_from_config\n",
@@ -470,6 +471,7 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert "committed notebook metadata should not contain saved runtime state keys: widgets" in combined
     assert "import subprocess" in combined
     assert "forbidden shell/CLI workflow pattern" in combined
+    assert "get_ipython().system(" in combined
     assert "pd.read_" in combined
     assert "resolve_output_path(" in combined
     assert "write_output_table(" in combined
