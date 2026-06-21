@@ -1074,6 +1074,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "``PSA`` and ``FAS`` are broadband spectral metrics" in text
     assert "writes blank\n``passband`` values for spectral tasks" in text
     assert "older output table contains PSA rows repeated under passband labels" in text
+    assert "``write_standard_metric_diagnostic_plots``" in text
     assert ".. autoclass:: spatial_vtk.metrics.StandardMetricWorkflowOutputResult" in text
     assert ".. autofunction:: spatial_vtk.metrics.load_standard_metric_workflow_outputs" in text
     assert ".. autoclass:: spatial_vtk.metrics.workflow.StandardMetricWorkflowOutputResult" not in text
@@ -3002,6 +3003,8 @@ def test_notebook_helper_docs_prefer_standard_result_objects():
     assert "prefer :func:`run_notebook_step_if_needed`" in notebook_helpers
     assert "This execution primitive is used by :func:`run_notebook_step_if_needed`" in notebook_helpers
     assert "Standard workflow result objects use this helper internally" in notebook_helpers
+    assert "Optional standard diagnostic comparison settings to include" in notebook_helpers
+    assert "generic diagnostic settings to include" not in notebook_helpers
     assert "Custom workflow cells can call it\n    directly when they already own the readiness object" in notebook_helpers
     assert "Notebook workflow cells often call :func:`run_notebook_step_if_needed`" not in notebook_helpers
     assert "This lower-level helper powers :func:`run_notebook_step_if_needed`" not in notebook_helpers

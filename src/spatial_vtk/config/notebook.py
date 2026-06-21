@@ -300,10 +300,10 @@ class NotebookFigureSettings:
         include_robust_axis_percentile
             Include ``robust_axis_percentile`` in the returned kwargs.
         compare_to, table
-            Optional generic diagnostic settings to include. These are omitted
-            by default because not every plotting context accepts them. Pass
-            ``self.compare_to`` or ``self.comparison_table`` when calling a
-            generic diagnostic plot that supports those options.
+            Optional standard diagnostic comparison settings to include. These
+            are omitted by default because not every plotting context accepts
+            them. Pass ``self.compare_to`` or ``self.comparison_table`` when
+            calling a standard diagnostic plot that supports those options.
         """
 
         sentinel = _PLOT_SELECTION_DEFAULT

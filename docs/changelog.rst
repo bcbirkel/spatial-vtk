@@ -117,6 +117,9 @@ Changelog
   - Renamed the standard large-run scatter, box, and heatmap diagnostic suite
     artifact from generic metric diagnostics to standard metric diagnostics,
     while preserving the old method name as a compatibility wrapper.
+  - Updated metric API and notebook-setting docs so standard diagnostic figure
+    controls use standard diagnostic wording instead of generic diagnostic
+    terminology.
 
 - **Public surface guardrails** *(Fixed)*
 

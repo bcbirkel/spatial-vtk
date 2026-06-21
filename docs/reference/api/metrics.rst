@@ -319,8 +319,9 @@ standard row factories used by the large-run notebooks:
 ``write_residuals_vs_distance_plots``, ``write_residuals_vs_depth_plots``,
 ``write_vs30_scatter_plots``, ``write_station_metric_maps``,
 ``write_residual_grid_maps``, ``write_metric_by_model_maps``,
-``write_event_residual_maps``, ``write_log2_residual_distribution_plots``, and
-``write_psa_period_curve_plots``
+``write_event_residual_maps``, ``write_log2_residual_distribution_plots``,
+``write_psa_period_curve_plots``, and
+``write_standard_metric_diagnostic_plots``
    Render the standard large-run metric figure families from one context. These
    methods keep target-metric iteration, PSA period sheets, robust axis
    settings, station aggregation, and raw source-row sidecars in package code
