@@ -75,6 +75,9 @@ Changelog
   - Hardened the same tutorial preflight to report row numbers when
     ``selected_event_stations.csv`` has blank ``event_id`` or ``station``
     values instead of silently skipping waveform-file checks for those rows.
+  - Tightened tutorial notebook public-import checks so lower-level
+    ``spatial_vtk.config.metrics`` imports are rejected in favor of the public
+    ``spatial_vtk.config`` namespace already used by the notebooks.
 
 - **Workflow readiness and dashboard parsing** *(Fixed)*
 

@@ -454,6 +454,7 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
                             "get_ipython().system('svtk metrics plan')\n",
                             "from spatial_vtk.metrics.plot.periods import plot_period_spectra\n",
                             "import spatial_vtk.metrics.plot.periods\n",
+                            "from spatial_vtk.config.metrics import metrics_settings_from_config\n",
                             "from spatial_vtk.metrics.workflow.execution import run_manifest_batch\n",
                             "from spatial_vtk.qc.build.workflow import run_qc_inventory_from_config\n",
                             "from spatial_vtk.spatial.calculate.workflow import run_spatial_summaries_from_config\n",
@@ -1350,8 +1351,8 @@ def test_tutorial_notebooks_avoid_implementation_module_imports() -> None:
     forbidden_import_patterns = (
         re.compile(r"^\s*from\s+spatial_vtk\.io\.(metadata|preprocessing|tables)\b", re.MULTILINE),
         re.compile(r"^\s*import\s+spatial_vtk\.io\.(metadata|preprocessing|tables)\b", re.MULTILINE),
-        re.compile(r"^\s*from\s+spatial_vtk\.config\.(outputs|runtime)\b", re.MULTILINE),
-        re.compile(r"^\s*import\s+spatial_vtk\.config\.(outputs|runtime)\b", re.MULTILINE),
+        re.compile(r"^\s*from\s+spatial_vtk\.config\.(metrics|outputs|runtime)\b", re.MULTILINE),
+        re.compile(r"^\s*import\s+spatial_vtk\.config\.(metrics|outputs|runtime)\b", re.MULTILINE),
         re.compile(r"^\s*from\s+spatial_vtk\.qc\.build\b", re.MULTILINE),
         re.compile(r"^\s*import\s+spatial_vtk\.qc\.build\.", re.MULTILINE),
         re.compile(r"^\s*from\s+spatial_vtk\.metrics\.workflow\.(execution|outputs|run|tasks)\b", re.MULTILINE),
