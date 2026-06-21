@@ -1556,9 +1556,13 @@ def test_spatial_map_docstring_prefers_standard_map_figure_writer():
     )
     text = source.read_text(encoding="utf-8")
 
-    assert "from spatial_vtk.spatial.plot import write_standard_spatial_map_figures" in text
-    assert "result = write_standard_spatial_map_figures(context, settings)" in text
+    assert "from spatial_vtk.spatial import load_standard_spatial_workflow_outputs" in text
+    assert "spatial_outputs = load_standard_spatial_workflow_outputs(cfg=cfg)" in text
+    assert "result = spatial_outputs.write_map_figures(settings)" in text
+    assert "Use ``spatial_vtk.spatial.plot.write_standard_spatial_map_figures`` directly" in text
     assert "Use individual map functions such as ``plot_station_metric_map()`` directly" in text
+    assert "from spatial_vtk.spatial.plot import write_standard_spatial_map_figures" not in text
+    assert "result = write_standard_spatial_map_figures(context, settings)" not in text
     assert "Create a station residual map" not in text
 
 
@@ -2854,8 +2858,14 @@ def test_python_workflow_docs_prefer_waveform_notebook_settings_wrapper():
     )
 
     assert "Step 2 and Step 6 waveform-comparison cells should use" in workflows
-    assert "spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings" in workflows
-    assert "For\nscripts, use\n``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_outputs`` when" in workflows
+    assert "spatial_vtk.qc.load_standard_qc_inputs(...).write_waveform_comparison(...)" in workflows
+    assert (
+        "spatial_vtk.spatial.load_standard_additional_plotting_inputs(...).write_waveform_comparison(...)"
+        in workflows
+    )
+    assert "Those result methods own the figure render gate and notebook figure settings" in workflows
+    assert "For\nscripts, use\n``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings``" in workflows
+    assert "or\n``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_outputs`` when" in workflows
     assert "Prefer :func:`write_waveform_comparison_from_notebook_settings` in" in comparison
     assert "notebook cells so package code owns render gates" in comparison
     assert "Prefer :func:`write_waveform_comparison_from_outputs` in new notebooks" not in comparison
@@ -2956,6 +2966,7 @@ def test_python_workflow_docs_prefer_spatial_figure_suite_wrapper():
     normalized = " ".join(workflows.split())
 
     assert "spatial_vtk.spatial.load_standard_spatial_workflow_output_status(...).write_figure_suite(...)" in workflows
+    assert "spatial_vtk.spatial.load_standard_spatial_workflow_outputs(...).write_map_figures(...)" in workflows
     assert "The result object owns the notebook-facing render path" in workflows
     assert "notebooks do not build spatial figure contexts or per-plot paths by hand" in normalized
     assert "``spatial_vtk.spatial.load_standard_spatial_workflow_output_status(...).write_figure_suite(...)``" in workflows

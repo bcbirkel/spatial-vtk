@@ -615,7 +615,7 @@ should build only a curated subset.
      - ``spatial_vtk.spatial.load_standard_spatial_workflow_output_status(...).run_derived_outputs_step_if_needed(...)``
      - block holdout, REDCAP, and pattern-similarity tables
    * - Render standard spatial station and grid maps
-     - ``spatial_vtk.spatial.plot.write_standard_spatial_map_figures``
+     - ``spatial_vtk.spatial.load_standard_spatial_workflow_outputs(...).write_map_figures(...)``
      - per-metric station-bias and residual-grid figures, compact write status
        table, and optional row-provenance sidecars
    * - Render large-run spatial figures
@@ -672,13 +672,17 @@ or ``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs`` from
 scripts when explicit figure settings or output bundles are already resolved.
 
 Step 2 and Step 6 waveform-comparison cells should use
-``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings``.
-That helper owns the figure render gate and notebook figure settings, then
-reads only a bounded comparison-eligible sample, builds the plotted
-observed/synthetic trace records, writes the configured
-``event_trace_comparison`` figure, and returns a small status frame with the
+``spatial_vtk.qc.load_standard_qc_inputs(...).write_waveform_comparison(...)``
+or
+``spatial_vtk.spatial.load_standard_additional_plotting_inputs(...).write_waveform_comparison(...)``.
+Those result methods own the figure render gate and notebook figure settings,
+then read only a bounded comparison-eligible sample, build the plotted
+observed/synthetic trace records, write the configured
+``event_trace_comparison`` figure, and return a small status frame with the
 figure row plus event-station and comparison-eligible input-table rows. For
 scripts, use
+``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings``
+when notebook settings should still control rendering, or
 ``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_outputs`` when
 explicit plotting keyword arguments are already resolved.
 Notebooks should not repeat the QC sample loading, figure-setting expansion,

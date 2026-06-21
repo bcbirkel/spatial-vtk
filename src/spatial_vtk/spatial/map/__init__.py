@@ -7,9 +7,14 @@ family at package import time.
 
 Usage examples
 --------------
-Render configured spatial map figures from a notebook or script:
-  ``from spatial_vtk.spatial.plot import write_standard_spatial_map_figures``
-  ``result = write_standard_spatial_map_figures(context, settings)``
+Render configured spatial map figures from a notebook:
+  ``from spatial_vtk.spatial import load_standard_spatial_workflow_outputs``
+  ``spatial_outputs = load_standard_spatial_workflow_outputs(cfg=cfg)``
+  ``result = spatial_outputs.write_map_figures(settings)``
+
+Use ``spatial_vtk.spatial.plot.write_standard_spatial_map_figures`` directly
+only from scripts that already own loaded spatial products, output handles, and
+figure settings.
 
 Use individual map functions such as ``plot_station_metric_map()`` directly
 only for focused scripts that already own filtered map rows and output paths.

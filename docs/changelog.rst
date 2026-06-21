@@ -1,6 +1,21 @@
 Changelog
 =========
 
+2026-06-21
+----------
+
+- **Workflow import guidance** *(Fixed)*
+
+  - Reworded the Step 4 spatial map workflow guide and spatial-map package
+    docstring so notebooks start from the standard spatial workflow result
+    object's ``write_map_figures(...)`` method instead of direct plot-helper
+    imports.
+  - Reworded Step 2/6 waveform-comparison workflow guidance so notebooks use
+    QC or additional-plotting result-object methods, with direct waveform
+    writers framed as script/custom-orchestration helpers.
+  - Updated regression coverage so workflow docs keep result-object methods
+    as the notebook-facing path for spatial maps and waveform comparisons.
+
 2026-06-19
 ----------
 
