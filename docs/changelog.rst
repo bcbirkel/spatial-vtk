@@ -139,6 +139,9 @@ Changelog
   - Routed manual QC decision and arrival-pick catalog loading through the
     shared table reader so these small public helper paths use the same
     CSV/Parquet behavior as larger workflow artifacts.
+  - Routed public station, event, and event-station metadata loaders through
+    the shared table reader and updated their docstrings so they are no longer
+    described as CSV-only helpers.
 
 - **Tutorial notebook hygiene** *(Fixed)*
 

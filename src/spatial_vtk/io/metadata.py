@@ -16,7 +16,7 @@ import re
 
 import pandas as pd
 
-from spatial_vtk.io.tables import read_config_table
+from spatial_vtk.io.tables import read_config_table, read_table
 
 
 STATION_COLUMN_CANDIDATES: Mapping[str, tuple[str, ...]] = {
@@ -203,12 +203,12 @@ def prepare_station_metadata(
 
 
 def read_station_metadata(path: str | Path, **kwargs) -> pd.DataFrame:
-    """Read and prepare a station metadata CSV file.
+    """Read and prepare a station metadata table.
 
     Parameters
     ----------
     path
-        CSV path.
+        CSV or Parquet table path.
     **kwargs
         Extra arguments passed to ``prepare_station_metadata``.
 
@@ -218,7 +218,7 @@ def read_station_metadata(path: str | Path, **kwargs) -> pd.DataFrame:
         Prepared station metadata table.
     """
 
-    return prepare_station_metadata(pd.read_csv(path, low_memory=False), **kwargs)
+    return prepare_station_metadata(read_table(path), **kwargs)
 
 
 def prepare_event_metadata(
@@ -266,12 +266,12 @@ def prepare_event_metadata(
 
 
 def read_event_metadata(path: str | Path, **kwargs) -> pd.DataFrame:
-    """Read and prepare an event metadata CSV file.
+    """Read and prepare an event metadata table.
 
     Parameters
     ----------
     path
-        CSV path.
+        CSV or Parquet table path.
     **kwargs
         Extra arguments passed to ``prepare_event_metadata``.
 
@@ -281,7 +281,7 @@ def read_event_metadata(path: str | Path, **kwargs) -> pd.DataFrame:
         Prepared event metadata table.
     """
 
-    return prepare_event_metadata(pd.read_csv(path, low_memory=False), **kwargs)
+    return prepare_event_metadata(read_table(path), **kwargs)
 
 
 def event_display_label(
@@ -573,12 +573,12 @@ def _build_event_station_pairs(*, station_metadata: pd.DataFrame, event_metadata
 
 
 def read_event_station_table(path: str | Path, **kwargs) -> pd.DataFrame:
-    """Read and prepare an event-station metadata CSV file.
+    """Read and prepare an event-station metadata table.
 
     Parameters
     ----------
     path
-        CSV path.
+        CSV or Parquet table path.
     **kwargs
         Extra arguments passed to ``prepare_event_station_table``.
 
@@ -588,7 +588,7 @@ def read_event_station_table(path: str | Path, **kwargs) -> pd.DataFrame:
         Prepared event-station table.
     """
 
-    return prepare_event_station_table(pd.read_csv(path, low_memory=False), **kwargs)
+    return prepare_event_station_table(read_table(path), **kwargs)
 
 
 def _add_path_geometry(df: pd.DataFrame) -> pd.DataFrame:
