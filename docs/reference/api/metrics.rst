@@ -22,6 +22,14 @@ stable package surface.
 
    from spatial_vtk.metrics import (
        load_standard_metric_workflow_outputs,
+   )
+
+Direct config-backed metric helpers remain public for scripts, generated
+workers, and custom orchestration that already owns execution control:
+
+.. code-block:: python
+
+   from spatial_vtk.metrics import (
        MetricWorkflowTask,
        build_metric_waveform_inventories_from_config,
        cache_metric_manifest_waveforms,

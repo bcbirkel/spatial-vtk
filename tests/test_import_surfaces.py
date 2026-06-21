@@ -959,6 +959,18 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "lower-level calculation modules are implementation" in text
     assert "lower-level workflow modules are implementation" in text
     assert "Public workflow helpers exposed by ``spatial_vtk.metrics``" in text
+    assert "Direct config-backed metric helpers remain public for scripts, generated\nworkers, and custom orchestration" in text
+    notebook_metric_import = text.split("Direct config-backed metric helpers remain public", maxsplit=1)[0]
+    direct_metric_import = text.split("Direct config-backed metric helpers remain public", maxsplit=1)[1].split(
+        ".. automodule:: spatial_vtk.metrics",
+        maxsplit=1,
+    )[0]
+    assert "load_standard_metric_workflow_outputs" in notebook_metric_import
+    assert "plan_metric_tasks_from_config" not in notebook_metric_import
+    assert "write_metrics_slurm_script_from_config" not in notebook_metric_import
+    assert "MetricWorkflowTask" in direct_metric_import
+    assert "plan_metric_tasks_from_config" in direct_metric_import
+    assert "write_metrics_slurm_script_from_config" in direct_metric_import
     assert text.index("load_standard_metric_workflow_outputs") < text.index("plan_metric_tasks_from_config")
     workflow_table = text.split("Public workflow helpers exposed by ``spatial_vtk.metrics``", 1)[1].split(
         "``PSA`` and ``FAS``",

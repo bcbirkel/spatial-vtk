@@ -301,6 +301,12 @@ Changelog
     direct config-backed helpers for scripts, generated workers, and custom
     orchestration.
 
+- **Metrics API import guidance** *(Changed)*
+
+  - Split the Metrics API import example into notebook-facing workflow result
+    loaders and direct config-backed metric helpers for scripts, generated
+    workers, and custom orchestration.
+
 - **Spatial and workflow API documentation** *(Changed)*
 
   - Split notebook-facing spatial figure-suite guidance from advanced spatial
