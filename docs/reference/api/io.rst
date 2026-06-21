@@ -15,8 +15,9 @@ Package Entry Point
 Start with ``spatial_vtk.io`` in notebooks and scripts. Routine notebooks
 should begin with the standard result-object loaders and compact workflow
 helpers, then call methods on those result objects for status tables, previews,
-figures, and large-run drivers. Prefer these imports before reaching into
-implementation modules.
+figures, and large-run drivers. Prefer these imports instead of reaching into
+implementation modules; if a notebook needs a helper that is only available
+from an implementation module, add a stable re-export first.
 
 .. code-block:: python
 

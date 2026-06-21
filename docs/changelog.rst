@@ -39,6 +39,12 @@ Changelog
     individual plot functions instead of mixing direct suite writers into the
     first import block.
 
+- **API import-boundary wording** *(Changed)*
+
+  - Tightened the I/O API entry-point guidance so notebooks are told to use
+    stable ``spatial_vtk.io`` re-exports instead of reaching into
+    implementation modules, with regression coverage for that public wording.
+
 - **Tutorial runtime and preview checks** *(Fixed)*
 
   - Improved tutorial runtime-check failures so missing-dependency messages

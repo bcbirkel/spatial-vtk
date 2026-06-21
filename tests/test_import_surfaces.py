@@ -1384,6 +1384,9 @@ def test_io_api_docs_distinguish_public_entry_point_from_implementation_modules(
     text = docs.read_text(encoding="utf-8")
 
     assert "Start with ``spatial_vtk.io`` in notebooks and scripts" in text
+    assert "Prefer these imports instead of reaching into\nimplementation modules" in text
+    assert "if a notebook needs a helper that is only available\nfrom an implementation module, add a stable re-export first" in text
+    assert "Prefer these imports before reaching into\nimplementation modules" not in text
     assert "documented for API completeness and advanced scripts" in text
     assert "implementation\norganization for tutorial notebooks" in text
     assert "Routine notebooks should start with standard workflow result loaders" in text
