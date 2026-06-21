@@ -856,7 +856,7 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         dest="output",
         default=None,
         help=(
-            "Output manual-review queue CSV. Defaults to configured output table "
+            "Output manual-review queue CSV/parquet table. Defaults to configured output table "
             "'manual_review_queue'. Prefer --manual-review-queue-output; --output is a legacy alias."
         ),
     )

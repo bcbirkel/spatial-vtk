@@ -147,6 +147,7 @@ _EXPORT_MODULES = {
     "write_output_tables": "spatial_vtk.io.tables",
     "write_table": "spatial_vtk.io.tables",
     "write_trace_metadata_csv": "spatial_vtk.io.waveforms",
+    "write_trace_metadata_table": "spatial_vtk.io.waveforms",
     "written_files_table": "spatial_vtk.io.tables",
     "write_json": "spatial_vtk.io.compute_manifest",
     "load_waveform_collection": "spatial_vtk.io.waveforms",

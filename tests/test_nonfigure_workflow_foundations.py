@@ -13,7 +13,7 @@ from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.io.master_lists import build_master_event_list, build_master_station_list, write_master_station_list
 from spatial_vtk.io.metadata import prepare_event_station_table
 from spatial_vtk.io.plans import MetricPlan, compare_metric_plan_to_table, expected_metric_rows_from_inventory
-from spatial_vtk.io.waveforms import WaveformPreprocessing, read_waveform_file, trace_metadata_table
+from spatial_vtk.io.waveforms import WaveformPreprocessing, read_waveform_file, trace_metadata_table, write_trace_metadata_table
 from spatial_vtk.io.preprocessing import preprocess_waveform_files
 from spatial_vtk.metrics.calculate.arrival_picks import load_arrival_pick_catalog, write_arrival_pick_catalog
 from spatial_vtk.metrics.calculate.phasenet_adapter import (
@@ -49,6 +49,7 @@ from spatial_vtk.qc.build.workflow import (
     write_qc_inventory_overlap_from_full,
 )
 from spatial_vtk.qc.review.tables import apply_manual_qc_decisions, load_manual_qc_decisions, write_manual_qc_decisions
+from spatial_vtk.visualize.dashboard import write_manual_review_queue
 
 
 @dataclass
@@ -179,6 +180,14 @@ def test_small_public_table_writers_use_suffixless_csv_targets(tmp_path) -> None
     skipped_pick_path = write_arrival_pick_catalog(pick_rows.assign(phase=["S"]), pick_path, overwrite=False)
     assert skipped_pick_path == written_pick_path
     assert load_arrival_pick_catalog(written_pick_path).loc[0, "phase"] == "P"
+
+    metadata_path = write_trace_metadata_table([_trace()], tmp_path / "trace_metadata", event_id="ci123")
+    assert metadata_path == tmp_path / "trace_metadata.csv"
+    assert pd.read_csv(metadata_path).loc[0, "event_id"] == "ci123"
+
+    queue_path = write_manual_review_queue([{"event_id": "ci123", "station": "abc"}], tmp_path / "manual_queue")
+    assert queue_path == tmp_path / "manual_queue.csv"
+    assert pd.read_csv(queue_path).loc[0, "station"] == "ABC"
 
 
 def test_event_station_table_computes_path_geometry() -> None:

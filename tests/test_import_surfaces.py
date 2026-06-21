@@ -3498,6 +3498,14 @@ def test_small_public_table_writes_use_shared_writer():
             "def _write_table",
             "return write_table(df, output, index=False)",
         ),
+        "src/spatial_vtk/io/waveforms.py": (
+            "def write_trace_metadata_table",
+            "return write_table(trace_metadata_table(stream, source=source, event_id=event_id), output, index=False)",
+        ),
+        "src/spatial_vtk/visualize/dashboard/exports.py": (
+            "def write_manual_review_queue",
+            "path = write_table(pd.DataFrame(normalized, columns=list(QUEUE_COLUMNS)), path, index=False)",
+        ),
     }
     for relative_path, (function_marker, expected_write) in helpers.items():
         source = (repo_root / relative_path).read_text(encoding="utf-8")
@@ -3506,6 +3514,8 @@ def test_small_public_table_writes_use_shared_writer():
         assert expected_write in helper, relative_path
         assert ".to_csv(" not in helper, relative_path
         assert ".to_parquet(" not in helper, relative_path
+    io_source = (repo_root / "src" / "spatial_vtk" / "io" / "__init__.py").read_text(encoding="utf-8")
+    assert '"write_trace_metadata_table": "spatial_vtk.io.waveforms"' in io_source
 
 
 def test_large_run_parquet_metadata_helpers_do_not_full_read_fallbacks():

@@ -25,34 +25,43 @@ QUEUE_COLUMNS: tuple[str, ...] = (
 def write_dashboard_filtered_export(df: pd.DataFrame, output_path: str | Path) -> Path:
     """Write filtered dashboard rows to CSV, Parquet, or JSON."""
 
-    path = Path(output_path).expanduser()
-    path.parent.mkdir(parents=True, exist_ok=True)
+    path = _table_output_path(output_path)
     suffix = path.suffix.lower()
-    if suffix in {".parquet", ".pq"}:
-        df.to_parquet(path, index=False)
-    elif suffix == ".json":
+    if suffix == ".json":
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(df.to_json(orient="records", indent=2), encoding="utf-8")
     else:
-        df.to_csv(path, index=False)
+        from spatial_vtk.io.tables import write_table
+
+        path = write_table(df, path, index=False)
     return path
 
 
 def write_manual_review_queue(filtered_trace_df: pd.DataFrame | list[dict[str, object]], output_path: str | Path) -> Path:
     """Write a manual QC picker queue from filtered dashboard rows.
 
-    The output CSV uses the event/station queue columns consumed by the manual
-    QC picker. Additional missing columns are filled with blank strings.
+    The output table uses the event/station queue columns consumed by the
+    manual QC picker. Additional missing columns are filled with blank strings.
     """
 
     rows = filtered_trace_df if isinstance(filtered_trace_df, list) else _queue_rows_from_filtered_trace_df(filtered_trace_df)
     normalized = normalize_manual_review_queue(rows)
-    path = Path(output_path).expanduser()
-    path.parent.mkdir(parents=True, exist_ok=True)
+    path = _table_output_path(output_path)
     if path.suffix.lower() == ".json":
+        path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(normalized, indent=2), encoding="utf-8")
     else:
-        pd.DataFrame(normalized, columns=list(QUEUE_COLUMNS)).to_csv(path, index=False)
+        from spatial_vtk.io.tables import write_table
+
+        path = write_table(pd.DataFrame(normalized, columns=list(QUEUE_COLUMNS)), path, index=False)
     return path
+
+
+def _table_output_path(path: str | Path) -> Path:
+    """Return the on-disk table path used by the shared writer."""
+
+    output = Path(path).expanduser()
+    return output.with_suffix(".csv") if not output.suffix else output
 
 
 def normalize_manual_review_queue(rows: list[dict[str, object]]) -> list[dict[str, str]]:

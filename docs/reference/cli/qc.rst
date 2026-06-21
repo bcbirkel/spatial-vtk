@@ -136,7 +136,7 @@ svtk qc manual-queue
    * - ``--manual-review-queue-output``, ``--output``
      - No
      -
-     - Filesystem path. Output manual-review queue CSV. Defaults to configured output table 'manual_review_queue'. Prefer --manual-review-queue-output; --output is a legacy alias.
+     - Filesystem path. Output manual-review queue CSV/parquet table. Defaults to configured output table 'manual_review_queue'. Prefer --manual-review-queue-output; --output is a legacy alias.
    * - ``--config``
      - No
      -

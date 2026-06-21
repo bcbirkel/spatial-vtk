@@ -312,28 +312,46 @@ def trace_metadata_table(
     return pd.DataFrame(rows, columns=columns)
 
 
-def write_trace_metadata_csv(stream: Any, path: str | Path, *, source: str | Path | None = None, event_id: str | None = None) -> Path:
-    """Write trace metadata to CSV.
+def write_trace_metadata_table(stream: Any, path: str | Path, *, source: str | Path | None = None, event_id: str | None = None) -> Path:
+    """Write trace metadata to a CSV or Parquet table.
 
     Parameters
     ----------
     stream
         Stream-like object to inspect.
     path
-        Output CSV path.
+        Output CSV or Parquet path. Paths without an extension are written as
+        CSV with a ``.csv`` suffix.
     source, event_id
         Optional metadata copied into every row.
 
     Returns
     -------
     pathlib.Path
-        Written CSV path.
+        Written table path.
     """
 
+    from spatial_vtk.io.tables import write_table
+
+    output = _table_output_path(path)
+    return write_table(trace_metadata_table(stream, source=source, event_id=event_id), output, index=False)
+
+
+def write_trace_metadata_csv(stream: Any, path: str | Path, *, source: str | Path | None = None, event_id: str | None = None) -> Path:
+    """Write trace metadata to CSV.
+
+    This compatibility wrapper writes through :func:`write_trace_metadata_table`;
+    new code should call that clearer table-oriented helper directly.
+    """
+
+    return write_trace_metadata_table(stream, path, source=source, event_id=event_id)
+
+
+def _table_output_path(path: str | Path) -> Path:
+    """Return the on-disk table path used by the shared writer."""
+
     output = Path(path).expanduser()
-    output.parent.mkdir(parents=True, exist_ok=True)
-    trace_metadata_table(stream, source=source, event_id=event_id).to_csv(output, index=False)
-    return output
+    return output.with_suffix(".csv") if not output.suffix else output
 
 
 def stream_station_table(stream: Any) -> pd.DataFrame:
@@ -988,7 +1006,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("paths", nargs="+", help="Waveform files to inspect.")
     parser.add_argument("--format", default=None, help="Optional ObsPy format string.")
     parser.add_argument("--event-id", default="", help="Event ID copied into output rows.")
-    parser.add_argument("--output", required=True, help="Output trace metadata CSV.")
+    parser.add_argument("--output", required=True, help="Output trace metadata CSV/parquet table.")
     return parser
 
 
@@ -997,7 +1015,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     args = build_arg_parser().parse_args(argv)
     stream = load_waveform_collection(args.paths, format=args.format)
-    write_trace_metadata_csv(stream, args.output, event_id=args.event_id)
+    write_trace_metadata_table(stream, args.output, event_id=args.event_id)
     return 0
 
 
@@ -1014,6 +1032,7 @@ __all__ = [
     "preprocess_stream",
     "trace_metadata_table",
     "write_trace_metadata_csv",
+    "write_trace_metadata_table",
     "stream_station_table",
     "build_arg_parser",
     "main",
