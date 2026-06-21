@@ -37,6 +37,9 @@ Changelog
   - Improved tutorial runtime-check failures so missing-dependency messages
     include both the generic source-checkout commands and exact install/check
     commands for the Python executable that failed the runtime check.
+  - Added a tutorial runtime Python-version guard so source-checkout users see
+    the supported ``>=3.10,<3.14`` requirement before missing-dependency
+    diagnostics from an unsupported interpreter.
 
 2026-06-19
 ----------

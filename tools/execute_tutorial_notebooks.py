@@ -81,6 +81,9 @@ NOTEBOOK_RUNTIME_MODULES = {
     "streamlit": "streamlit",
     "streamlit-folium": "streamlit_folium",
 }
+SUPPORTED_TUTORIAL_PYTHON_RANGE = ">=3.10,<3.14"
+MIN_TUTORIAL_PYTHON = (3, 10)
+MAX_TUTORIAL_PYTHON = (3, 14)
 SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND = (
     'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
 )
@@ -263,6 +266,7 @@ def execute_notebook(notebook_path: Path, *, repo_root: Path, timeout: int) -> d
 def check_notebook_runtime(required: dict[str, str] | None = None) -> None:
     """Exit with an actionable message when notebook execution dependencies are missing."""
 
+    check_tutorial_python_version()
     missing = missing_notebook_runtime_modules(required)
     if not missing:
         return
@@ -282,6 +286,41 @@ def check_notebook_runtime(required: dict[str, str] | None = None) -> None:
         "If compiled mapping or waveform dependencies are difficult to solve "
         f"with pip, create the full conda environment with {SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND}."
     )
+
+
+def check_tutorial_python_version(version_info: Any | None = None) -> None:
+    """Exit with a clear message when the tutorial runner uses unsupported Python."""
+
+    info = sys.version_info if version_info is None else version_info
+    if tutorial_python_version_supported(info):
+        return
+    raise SystemExit(
+        "Spatial-VTK tutorial notebooks require Python "
+        f"{SUPPORTED_TUTORIAL_PYTHON_RANGE}. Current Python executable: {sys.executable}. "
+        f"Current Python version: {python_version_label(info)}. Activate a supported "
+        "environment before installing tutorial dependencies. From a source checkout, "
+        "create the full conda environment with "
+        f"{SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND}, or activate a supported Python "
+        f"environment and run {SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND}."
+    )
+
+
+def tutorial_python_version_supported(version_info: Any | None = None) -> bool:
+    """Return whether ``version_info`` satisfies the package tutorial Python range."""
+
+    info = sys.version_info if version_info is None else version_info
+    version = (int(info[0]), int(info[1]))
+    return MIN_TUTORIAL_PYTHON <= version < MAX_TUTORIAL_PYTHON
+
+
+def python_version_label(version_info: Any | None = None) -> str:
+    """Return a compact Python version label for runtime-check messages."""
+
+    info = sys.version_info if version_info is None else version_info
+    parts = [int(info[0]), int(info[1])]
+    if len(info) > 2:
+        parts.append(int(info[2]))
+    return ".".join(str(part) for part in parts)
 
 
 def configure_source_checkout_imports(repo_root: Path) -> None:

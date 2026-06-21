@@ -74,7 +74,30 @@ def test_tutorial_notebook_clean_guard_only_allows_tutorial_outputs(tmp_path: Pa
         module._clean_path(tmp_path / "outputs")
 
 
-def test_tutorial_notebook_runtime_preflight_reports_missing_modules() -> None:
+def test_tutorial_notebook_runtime_preflight_reports_unsupported_python() -> None:
+    """The notebook runner should report unsupported Python before dependency imports."""
+
+    module = _load_executor_module()
+
+    assert module.SUPPORTED_TUTORIAL_PYTHON_RANGE == ">=3.10,<3.14"
+    assert module.tutorial_python_version_supported((3, 10, 0)) is True
+    assert module.tutorial_python_version_supported((3, 13, 9)) is True
+    assert module.tutorial_python_version_supported((3, 9, 18)) is False
+    assert module.tutorial_python_version_supported((3, 14, 0)) is False
+    assert module.python_version_label((3, 9, 18)) == "3.9.18"
+    with pytest.raises(SystemExit) as excinfo:
+        module.check_tutorial_python_version((3, 9, 18))
+    message = str(excinfo.value)
+    assert "Spatial-VTK tutorial notebooks require Python >=3.10,<3.14" in message
+    assert "Current Python executable:" in message
+    assert "Current Python version: 3.9.18" in message
+    assert "Activate a supported environment before installing tutorial dependencies" in message
+    assert module.SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND in message
+    assert module.SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND in message
+    assert module.current_python_tutorial_install_command() not in message
+
+
+def test_tutorial_notebook_runtime_preflight_reports_missing_modules(monkeypatch) -> None:
     """The notebook runner should explain missing runtime dependencies up front."""
 
     module = _load_executor_module()
@@ -91,6 +114,7 @@ def test_tutorial_notebook_runtime_preflight_reports_missing_modules() -> None:
     )
     assert sys.executable in module.current_python_tutorial_install_command()
     assert sys.executable in module.current_python_tutorial_runtime_check_command()
+    monkeypatch.setattr(module, "check_tutorial_python_version", lambda: None)
     with pytest.raises(SystemExit) as excinfo:
         module.check_notebook_runtime({"demo": "definitely_missing_svtk_module"})
     message = str(excinfo.value)
