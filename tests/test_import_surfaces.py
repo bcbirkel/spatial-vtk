@@ -2271,7 +2271,7 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "figure_sidecar_status_frame," in import_block
     assert "launch_configured_dashboards_from_notebook_settings," in import_block
     assert "prepare_configured_dashboard_datasets_from_notebook_settings," in import_block
-    assert "write_waveform_comparison_from_notebook_settings," in import_block
+    assert "write_waveform_comparison_from_notebook_settings," not in import_block
     assert "write_configured_dashboard_datasets," not in import_block
     assert text.index("``write_waveform_comparison_from_notebook_settings``") < text.index(
         "``write_waveform_comparison_from_outputs``"
@@ -2395,8 +2395,10 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Returned ``DashboardLaunchResult``\n       objects expose ``status_frame()``" in text
     assert "``DashboardLaunchResult.status_frame()``" in text
     assert "Direct script helper for observed/synthetic trace-comparison" in text
-    assert "Notebook-facing Step 2/6 waveform-comparison wrapper" in text
+    assert "Lower-level Step 2/6 waveform-comparison delegate for result-object\n       methods or scripts" in text
     assert "Backward-compatible alias for older large-run notebooks" in text
+    assert "New notebook cells should use the QC or\n       additional-plotting result-object ``write_waveform_comparison(...)``\n       methods instead" in text
+    assert "Notebook-facing Step 2/6 waveform-comparison wrapper" not in text
     assert "Notebook cells should render the standard or large-run comparison figure\nthrough result-object methods" in text
     assert "spatial_vtk.qc.load_standard_qc_inputs(...).write_waveform_comparison(...)" in text
     assert (

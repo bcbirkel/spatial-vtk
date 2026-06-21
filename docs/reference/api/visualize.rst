@@ -29,7 +29,6 @@ need one visualization family.
        prepare_configured_dashboard_datasets_from_notebook_settings,
        write_context_figures_from_outputs,
        write_qc_figures_from_outputs,
-       write_waveform_comparison_from_notebook_settings,
    )
 
 .. automodule:: spatial_vtk.visualize
@@ -75,10 +74,11 @@ Public helpers exposed by ``spatial_vtk.visualize``:
      - Preview the bounded station/component order used by station-event
        waveform map panels without notebook-local sorting and slicing.
    * - ``write_waveform_comparison_from_notebook_settings``
-     - Notebook-facing Step 2/6 waveform-comparison wrapper. It owns the
-       ``notebook_figure_settings(...)`` render gate, sidecar controls,
-       component, passband, and display settings before delegating to the
-       configured output writer. The returned
+     - Lower-level Step 2/6 waveform-comparison delegate for result-object
+       methods or scripts that still want ``notebook_figure_settings(...)`` to
+       control the render gate, sidecar controls, component, passband, and
+       display settings before delegating to the configured output writer.
+       The returned
        ``WaveformComparisonFigureResult`` exposes ``status_frame()`` for the
        selected comparison figure, status/message, row count, provenance
        sidecars, and separate event-station/comparison-eligible input rows
@@ -91,8 +91,9 @@ Public helpers exposed by ``spatial_vtk.visualize``:
        inventories.
    * - ``write_large_run_waveform_comparison_from_outputs``
      - Backward-compatible alias for older large-run notebooks that used the
-       original helper name. New notebook cells should prefer
-       ``write_waveform_comparison_from_notebook_settings``.
+       original helper name. New notebook cells should use the QC or
+       additional-plotting result-object ``write_waveform_comparison(...)``
+       methods instead.
    * - ``finish_figure_with_sidecar`` and ``write_figure_row_sidecar``
      - Save figures with optional row-provenance CSV/JSON sidecars.
    * - ``figure_sidecar_status_frame`` and

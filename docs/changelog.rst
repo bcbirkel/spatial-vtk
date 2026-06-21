@@ -16,6 +16,9 @@ Changelog
   - Aligned the Visualize API waveform guidance with the same result-object
     contract so direct waveform writers are no longer described as the primary
     notebook path.
+  - Removed the direct waveform-comparison writer from the Visualize API
+    notebook-facing import example and relabelled it as a lower-level
+    result-object delegate or script helper.
   - Updated regression coverage so workflow docs keep result-object methods
     as the notebook-facing path for spatial maps and waveform comparisons.
   - Cleaned the Spatial API focused-script plotting example so it shows
