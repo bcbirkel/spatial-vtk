@@ -40,6 +40,9 @@ Changelog
   - Added a tutorial runtime Python-version guard so source-checkout users see
     the supported ``>=3.10,<3.14`` requirement before missing-dependency
     diagnostics from an unsupported interpreter.
+  - Hardened QC overview bounded reads so DataFrame previews clamp negative
+    row limits to zero and path-backed previews keep using the bounded table
+    reader instead of falling through to full-table parquet reads.
 
 2026-06-19
 ----------

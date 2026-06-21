@@ -368,17 +368,23 @@ def _json_value(value: object) -> object:
 
 
 def _read_table(table: pd.DataFrame | str | Path, *, max_rows: int | None = None) -> pd.DataFrame:
-    """Read a dataframe, CSV, or parquet path."""
+    """Read a dataframe, CSV, or parquet path with optional bounded previews."""
 
     if isinstance(table, pd.DataFrame):
         copied = table.copy()
-        return copied.head(int(max_rows)) if max_rows is not None else copied
+        return copied.head(_bounded_max_rows(max_rows)) if max_rows is not None else copied
     path = Path(table).expanduser()
     if max_rows is not None:
-        return read_bounded_table(path, int(max_rows))
+        return read_bounded_table(path, _bounded_max_rows(max_rows))
     if path.suffix.lower() in {".parquet", ".pq"}:
         return pd.read_parquet(path)
     return pd.read_csv(path, low_memory=False)
+
+
+def _bounded_max_rows(max_rows: int | None) -> int:
+    """Normalize preview row limits so negative values cannot expand reads."""
+
+    return max(int(max_rows or 0), 0)
 
 
 __all__ = [

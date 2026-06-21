@@ -68,6 +68,7 @@ from spatial_vtk.visualize.dashboard.streamlit_qc import _select_qc_readiness_co
 import spatial_vtk.visualize.dashboard.streamlit_qc as streamlit_qc
 import spatial_vtk.visualize.dashboard.launch as dashboard_launch
 from spatial_vtk.visualize.dashboard.launch import _raise_if_port_in_use
+import spatial_vtk.visualize.qc.overview as qc_overview
 from spatial_vtk.visualize.qc.overview import load_trace_qc_summary
 from spatial_vtk.visualize.selection import FigureSelection, configured_band_options
 
@@ -818,6 +819,37 @@ def test_load_trace_qc_summary_respects_csv_row_limit(tmp_path):
 
     assert len(loaded) == 2
     assert loaded["event_id"].tolist() == ["ev1", "ev1"]
+
+
+def test_load_trace_qc_summary_clamps_negative_dataframe_row_limit():
+    """Invalid negative preview limits should not expand in-memory QC tables."""
+
+    loaded = load_trace_qc_summary(_qc_rows(), max_rows=-1)
+
+    assert loaded.empty
+
+
+def test_load_trace_qc_summary_uses_bounded_path_preview(monkeypatch, tmp_path):
+    """Parquet previews should use the bounded table reader instead of full reads."""
+
+    path = tmp_path / "qc_trace_summary.parquet"
+    calls: dict[str, object] = {}
+
+    def fake_read_bounded_table(input_path: Path, max_rows: int) -> pd.DataFrame:
+        calls["path"] = Path(input_path)
+        calls["max_rows"] = max_rows
+        return pd.DataFrame({"event_id": ["ev1"], "distance_km": ["12.5"]})
+
+    def fail_full_parquet_read(*args: object, **kwargs: object) -> pd.DataFrame:
+        raise AssertionError("bounded preview unexpectedly performed a full parquet read")
+
+    monkeypatch.setattr(qc_overview, "read_bounded_table", fake_read_bounded_table)
+    monkeypatch.setattr(qc_overview.pd, "read_parquet", fail_full_parquet_read)
+
+    loaded = load_trace_qc_summary(path, max_rows=1)
+
+    assert calls == {"path": path, "max_rows": 1}
+    assert loaded["distance_km"].tolist() == [12.5]
 
 
 def test_qc_dashboard_row_and_download_limits_from_environment(monkeypatch):
