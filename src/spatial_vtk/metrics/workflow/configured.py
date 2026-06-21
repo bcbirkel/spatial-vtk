@@ -192,7 +192,7 @@ def metric_inventories_readiness_from_config(
     """
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
-    metric_outputs = load_standard_metric_workflow_outputs(cfg=config, load_task_estimate=False)
+    metric_outputs = load_standard_metric_workflow_outputs(cfg=config)
     trace_metadata_path = Path(metric_outputs.trace_metadata_path)
     return metric_outputs.outputs.readiness(
         ("observed_inventory_path", "synthetic_inventory_path"),
@@ -216,7 +216,7 @@ def metric_manifest_readiness_from_config(
     """Return readiness for planning the configured metric task manifest."""
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
-    metric_outputs = load_standard_metric_workflow_outputs(cfg=config, load_task_estimate=False)
+    metric_outputs = load_standard_metric_workflow_outputs(cfg=config)
     return metric_outputs.outputs.readiness(
         "metric_manifest_path",
         inputs=("observed_inventory_path", "synthetic_inventory_path", "qc_inventory_overlap_path"),

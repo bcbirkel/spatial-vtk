@@ -2300,8 +2300,8 @@ outputs:
     )
     cfg = SpatialVTKConfig.from_file(config_path).activate()
     metric_outputs = output_group("step_03_metrics", cfg=cfg)
-    standard_metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg, load_task_estimate=False)
-    standard_metric_outputs_from_path = load_standard_metric_workflow_outputs(cfg=config_path, load_task_estimate=False)
+    standard_metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)
+    standard_metric_outputs_from_path = load_standard_metric_workflow_outputs(cfg=config_path)
     preprocessed_outputs = preprocessed_waveform_output_group(config=cfg, create_parent=True)
 
     assert standard_metric_outputs.metrics_long_path == metric_outputs.metrics_long_path

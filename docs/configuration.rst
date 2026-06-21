@@ -272,7 +272,7 @@ will use that active config when you do not pass paths or config objects.
    cfg = SpatialVTKConfig.from_file("spatial-vtk.yaml", run_scenario="tutorial").activate()
 
    ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)
-   metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg, load_task_estimate=False)
+   metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)
    metric_settings = metrics_settings_from_config()
    ingest_outputs.display_station_preview(nrows=5)
    ingest_outputs.display_event_preview(nrows=5)

@@ -24,6 +24,7 @@ from spatial_vtk.metrics.workflow import (
     metric_outputs_readiness_from_config,
     metric_slurm_submission_readiness,
     metric_slurm_submission_readiness_from_config,
+    load_standard_metric_workflow_outputs,
     plan_metric_tasks,
     plan_metric_tasks_from_config,
     prepare_metric_workflow_outputs,
@@ -311,6 +312,31 @@ def test_standard_metric_workflow_output_result_writes_diagnostic_figures(tmp_pa
     assert {metric for _, _, metrics_seen in seen for metric in metrics_seen} == {"PGA", "PGV"}
     assert diagnostic_result.status_frame()["status"].tolist() == ["wrote", "wrote", "wrote"]
     assert diagnostic_result.status_frame()["figure_exists"].tolist() == [True, True, True]
+
+
+def test_standard_metric_workflow_outputs_do_not_load_task_estimate_by_default(monkeypatch, tmp_path) -> None:
+    """Step 3 output handles should not materialize task estimates unless requested."""
+
+    class Outputs:
+        metrics_long_path = tmp_path / "metrics_long.parquet"
+
+        def load_table(self, name, **_kwargs):  # noqa: ANN001
+            raise AssertionError(f"unexpected eager table load: {name}")
+
+    class Preprocessed:
+        trace_metadata_path = tmp_path / "trace_metadata.parquet"
+
+    monkeypatch.setattr("spatial_vtk.io.output_group", lambda *args, **kwargs: Outputs())
+    monkeypatch.setattr(
+        "spatial_vtk.io.preprocessed_waveform_metadata_paths",
+        lambda *args, **kwargs: Preprocessed(),
+    )
+
+    result = load_standard_metric_workflow_outputs(cfg=tmp_path / "config.yaml")
+
+    assert result.task_estimate is None
+    assert result.metrics_long_path == tmp_path / "metrics_long.parquet"
+    assert result.trace_metadata_path == tmp_path / "trace_metadata.parquet"
 
 
 def test_standard_metric_workflow_output_result_owns_outputs_and_station_map(monkeypatch, tmp_path) -> None:

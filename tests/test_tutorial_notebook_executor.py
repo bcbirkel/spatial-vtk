@@ -2050,7 +2050,8 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert "load_standard_metric_workflow_outputs," in source
     assert "METRIC_BATCH_COUNT = context.metric_batch_count" in source
     assert "metric_settings = metrics_settings_from_config(cfg)" in source
-    assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg, load_task_estimate=False)" in source
+    assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)" in source
+    assert "load_task_estimate=False" not in source
     assert "metric_outputs.metrics_long_path" in source
     assert "step_outputs = metric_outputs.outputs" not in source
     assert "trace_metadata_path = metric_outputs.trace_metadata_path" not in source
@@ -2107,7 +2108,8 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
     assert "metrics_settings_from_config," in source
     assert "from spatial_vtk.config.metrics import" not in source
     assert "load_standard_metric_workflow_outputs," in source
-    assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg, load_task_estimate=False)" in source
+    assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)" in source
+    assert "load_task_estimate=False" not in source
     assert "metric_outputs = metric_outputs.with_task_estimate()" in source
     assert 'step_outputs = output_group("step_03_metrics", cfg=cfg)' not in source
     assert "render_notebook_figure(" not in source

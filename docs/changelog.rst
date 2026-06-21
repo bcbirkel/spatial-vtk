@@ -744,6 +744,9 @@ Changelog
   - Changed the Step 1 ingest metadata summary result to count prepared
     station, event, and event-station rows through lightweight table counters
     instead of loading full metadata tables.
+  - Made Step 3 metric workflow outputs skip eager ``metric_task_estimate``
+    loading by default and simplified tutorial calls to use
+    ``load_standard_metric_workflow_outputs(cfg=cfg)``.
   - Made configured metric-output and dashboard-output helpers write
     partitioned dashboard metric datasets by default, and changed
     ``svtk metrics outputs`` to default to that large-run-safe layout while

@@ -440,9 +440,9 @@ def load_standard_metric_workflow_outputs(
     *,
     cfg: Any | None = None,
     output_group_name: str = "step_03_metrics",
-    load_task_estimate: bool = True,
+    load_task_estimate: bool = False,
 ) -> StandardMetricWorkflowOutputResult:
-    """Load standard Step 3 output handles and small preview tables.
+    """Load standard Step 3 output handles and bounded preview helpers.
 
     Parameters
     ----------
@@ -452,8 +452,10 @@ def load_standard_metric_workflow_outputs(
     output_group_name
         Configured output group that owns the standard Step 3 metric tables.
     load_task_estimate
-        Whether to load ``metric_task_estimate`` immediately. Set ``False`` in
-        setup cells before the task preview has been generated.
+        Whether to load ``metric_task_estimate`` immediately. The default is
+        ``False`` so large-run setup cells and scripts do not materialize the
+        estimate table unless they explicitly need it; call
+        ``with_task_estimate()`` for notebook display.
 
     Returns
     -------
