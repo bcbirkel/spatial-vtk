@@ -168,7 +168,9 @@ render gates, and sidecar settings stay in package code.
 Focused scripts and custom extensions can import plotting helpers from the
 stable ``spatial_vtk.metrics.plot`` package entry point when they already own
 the filtered metric rows or resolved table paths. The implementation submodules
-are not part of the tutorial-facing API.
+are not part of the tutorial-facing API. Direct suite writers remain documented
+below for scripts that intentionally bypass the standard Step 3 result object,
+but they are not the focused-script import starting point.
 
 .. code-block:: python
 
@@ -176,8 +178,6 @@ are not part of the tutorial-facing API.
        plot_band_score_distribution,
        plot_period_spectra,
        plot_residuals_vs_distance,
-       write_large_run_metric_figure_suite_from_notebook_settings,
-       write_standard_metric_diagnostic_figures,
    )
 
 .. automodule:: spatial_vtk.metrics.plot
@@ -203,9 +203,12 @@ Public plotting helpers exposed by ``spatial_vtk.metrics.plot``:
    * - ``plot_psa_period_curve``
      - Plot PSA values or residuals across oscillator periods.
    * - ``write_large_run_metric_figure_suite_from_notebook_settings``
-     - Render the full Step 3 large-run metric figure suite from notebook
-       settings without notebook-local plot-function imports, per-family
-       keyword expansion, score-trend gates, or repeated render cells.
+     - Lower-level Step 3 suite writer for scripts or compatibility paths
+       that already own notebook figure settings. New notebooks should
+       usually call
+       ``load_standard_metric_workflow_outputs(...).write_large_run_figure_suite(...)``
+       so readiness, config, metric-row selection, and output bookkeeping stay
+       on the Step 3 result object.
    * - ``plot_residuals_vs_distance``
      - Plot metric residuals against distance with optional trend overlays.
    * - ``plot_residuals_vs_depth``

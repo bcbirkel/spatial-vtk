@@ -83,6 +83,9 @@ Changelog
   - Reworded metric plotting package and API examples so Step 3 notebooks use
     the standard metric workflow result object's figure-suite method instead
     of passing ``metrics_long_path`` into direct plotting helpers.
+  - Reworded the Metrics API plotting import example so focused scripts start
+    with individual plotting functions, while direct Step 3 suite writers are
+    framed as lower-level script or compatibility helpers.
   - Reworded the large-run README and workflow-guide metric-figure examples
     so notebook users start from the standard metric output result instead of
     importing direct plotting-suite helpers.

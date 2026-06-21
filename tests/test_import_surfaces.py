@@ -999,8 +999,11 @@ def test_metrics_api_docs_use_public_plot_entry_point():
         assert f"``{helper}``" in text
     assert "from spatial_vtk.metrics.plot import (" in text
     import_block = text.split("from spatial_vtk.metrics.plot import (", 1)[1].split(")", 1)[0]
-    assert "write_large_run_metric_figure_suite_from_notebook_settings," in import_block
-    assert "write_standard_metric_diagnostic_figures," in import_block
+    assert "plot_band_score_distribution," in import_block
+    assert "plot_period_spectra," in import_block
+    assert "plot_residuals_vs_distance," in import_block
+    assert "write_large_run_metric_figure_suite_from_notebook_settings," not in import_block
+    assert "write_standard_metric_diagnostic_figures," not in import_block
     assert "metric_rows_for_metrics," not in import_block
     assert ".. automodule:: spatial_vtk.metrics.plot\n" in text
     assert ".. autoclass:: spatial_vtk.metrics.plot.MetricFigureContext" in text
@@ -1018,6 +1021,12 @@ def test_metrics_api_docs_use_public_plot_entry_point():
         "Large-Run Figure Suite",
         1,
     )[0]
+    assert "Direct suite writers remain documented\nbelow" in text
+    assert "Lower-level Step 3 suite writer for scripts or compatibility paths" in helper_table
+    assert (
+        "``load_standard_metric_workflow_outputs(...).write_large_run_figure_suite(...)``"
+        in helper_table
+    )
     assert "metric_rows_for_metrics" not in helper_table
     assert "Plot custom metric trends and optional GOF score diagnostics." in helper_table
     assert "Plot generic metric trends" not in helper_table
