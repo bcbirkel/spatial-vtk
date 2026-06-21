@@ -2199,6 +2199,7 @@ def test_write_large_run_spatial_figure_suite_from_notebook_settings_delegates(
     assert status["artifact"].tolist() == [call[0] for call in calls]
     assert status["status"].tolist() == ["written"] * 8
     assert status["figure_count"].tolist() == [1] * 8
+    assert status["existing_figure_count"].tolist() == [0] * 8
     assert status["figure_paths"].tolist() == [[str(fake_context.figure_dir / f"{call[0]}.png")] for call in calls]
     assert status["first_figure_path"].tolist() == [str(fake_context.figure_dir / f"{call[0]}.png") for call in calls]
 

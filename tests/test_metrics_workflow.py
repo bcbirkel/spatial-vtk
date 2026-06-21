@@ -1301,6 +1301,7 @@ def test_write_large_run_metric_figure_suite_from_notebook_settings_delegates(tm
     assert status["artifact"].tolist() == expected
     assert status["status"].tolist() == ["written"] * len(expected)
     assert status["figure_count"].tolist() == [1] * len(expected)
+    assert status["existing_figure_count"].tolist() == [0] * len(expected)
     assert status["figure_paths"].tolist() == [[str(tmp_path / "figures" / f"{name}.png")] for name in expected]
     assert status["first_figure_path"].tolist() == [str(tmp_path / "figures" / f"{name}.png") for name in expected]
 

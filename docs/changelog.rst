@@ -618,6 +618,9 @@ Changelog
   - Added ``figure_exists`` fields to standard Step 3 metric diagnostics,
     Step 4 spatial maps/diagnostics, Step 5 GeoJSON/corridor figures, and
     Step 6 additional plotting status tables.
+  - Added ``existing_figure_count`` fields to large-run metric and spatial
+    figure-suite status tables so notebooks distinguish planned figure paths
+    from artifacts that are already present on disk.
 
 2026-06-18
 ----------
