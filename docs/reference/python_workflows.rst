@@ -663,11 +663,12 @@ Use ``spatial_vtk.spatial.geojson_matched_record_frame`` and
 record filtering and event-station pair joins instead of notebook-local boolean
 masks or dataframe merges.
 Region boxplot cells should use
-``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings``.
-That wrapper owns the figure render gate, notebook figure settings, sidecar
-options, and the ``metrics_enriched`` to ``metrics_long`` fallback. Use
-``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs`` from
-scripts when explicit figure settings are already resolved.
+``spatial_vtk.spatial.load_standard_additional_plotting_output_status(...).write_region_boxplot(...)``.
+The result object owns the figure render gate, notebook figure settings,
+sidecar options, and the ``metrics_enriched`` to ``metrics_long`` fallback.
+Use ``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings``
+or ``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs`` from
+scripts when explicit figure settings or output bundles are already resolved.
 
 Step 2 and Step 6 waveform-comparison cells should use
 ``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_notebook_settings``.

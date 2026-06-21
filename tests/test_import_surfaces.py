@@ -2674,16 +2674,17 @@ def test_python_workflow_docs_prefer_waveform_notebook_settings_wrapper():
     assert "Prefer :func:`write_waveform_comparison_from_outputs` in new notebooks" not in comparison
 
 
-def test_python_workflow_docs_prefer_region_boxplot_notebook_settings_wrapper():
+def test_python_workflow_docs_prefer_region_boxplot_result_object_method():
     """Region boxplot workflow docs should match the Step 6 notebook pattern."""
 
     workflows_path = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "python_workflows.rst"
     workflows = workflows_path.read_text(encoding="utf-8")
 
     assert "Region boxplot cells should use" in workflows
-    assert "spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings" in workflows
-    assert "That wrapper owns the figure render gate, notebook figure settings, sidecar" in workflows
-    assert "Use\n``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs`` from\nscripts" in workflows
+    assert "spatial_vtk.spatial.load_standard_additional_plotting_output_status(...).write_region_boxplot(...)" in workflows
+    assert "The result object owns the figure render gate, notebook figure settings,\nsidecar options" in workflows
+    assert "Use ``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings``" in workflows
+    assert "or ``spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs`` from\nscripts" in workflows
     assert "Standard Notebook Input Helpers" in workflows
     assert "the preferred pattern for standard notebooks" in workflows
 

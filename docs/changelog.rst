@@ -89,6 +89,9 @@ Changelog
   - Reworded Spatial API plotting examples so Step 4 notebooks start from the
     standard spatial workflow result object, while direct spatial plotting
     imports are framed as focused-script helpers.
+  - Reworded Step 6 region-boxplot workflow guidance so notebooks use the
+    standard additional-plotting output result method, with direct region
+    boxplot helpers framed as script APIs.
   - Reworded the preprocessing direct-call example so advanced scripts prefer
     config-backed output resolution instead of a literal preprocessed-output
     directory.
