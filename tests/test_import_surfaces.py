@@ -2952,6 +2952,10 @@ def test_configuration_examples_use_registered_output_keys():
     assert "resolve_output_path(" not in configuration
     assert "plan.summary_frame()" in configuration
     assert "print(plan)" not in configuration
+    assert "from spatial_vtk.config import SpatialVTKConfig, metrics_settings_from_config" in configuration
+    assert "from spatial_vtk.config.metrics import metrics_settings_from_config" not in configuration
+    assert "Standard workflow result helpers, plotting helpers, dashboard\nhelpers, and metric-setting helpers" in configuration
+    assert "Plotting, table-reading, table-writing, and metric-setting helpers" not in configuration
     assert "--qc-slurm-script-output outputs/slurm/build_qc_inventory.slurm" in configuration
     assert "--metrics-slurm-script-output`` are omitted" in configuration
     assert "--output outputs/slurm/build_qc.slurm" not in configuration

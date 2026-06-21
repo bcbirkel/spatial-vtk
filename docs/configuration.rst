@@ -279,13 +279,13 @@ Spatial-VTK supports three Python patterns. Use the one that best matches how
 you are working.
 
 If you want short notebook cells, activate the config once near the top of the
-notebook. Plotting, table-reading, table-writing, and metric-setting helpers
-will use that active config when you do not pass paths or config objects.
+notebook. Standard workflow result helpers, plotting helpers, dashboard
+helpers, and metric-setting helpers will use that active config when you do not
+pass paths or config objects.
 
 .. code-block:: python
 
-   from spatial_vtk.config import SpatialVTKConfig
-   from spatial_vtk.config.metrics import metrics_settings_from_config
+   from spatial_vtk.config import SpatialVTKConfig, metrics_settings_from_config
    from spatial_vtk.io import load_standard_ingest_workflow_outputs
    from spatial_vtk.metrics import load_standard_metric_workflow_outputs
 

@@ -6,6 +6,10 @@ Changelog
 
 - **Workflow import guidance** *(Fixed)*
 
+  - Cleaned the configuration guide's Python examples so metric settings are
+    imported from the public ``spatial_vtk.config`` namespace and active-config
+    guidance points notebooks toward standard workflow result helpers instead
+    of direct table read/write patterns.
   - Reworded Config API figure-helper guidance so routine notebooks are
     directed to workflow result-object figure methods, while figure settings
     and ``render_notebook_figure`` are framed as package/custom-helper
