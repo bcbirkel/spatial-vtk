@@ -38,6 +38,7 @@ from spatial_vtk.io import (
     default_output_paths,
     load_output_table,
     output_group,
+    parquet_table_columns,
     read_table,
     table_row_count,
     write_output_table,
@@ -285,6 +286,17 @@ SPATIAL_SUMMARY_COLUMNS: dict[str, tuple[str, ...]] = {
         "value",
     ),
 }
+
+PATTERN_SIMILARITY_METRIC_COLUMNS: tuple[str, ...] = (
+    "metric",
+    "station",
+    "value_obs",
+    "value_syn",
+    "band",
+    "passband",
+    "component",
+    "model",
+)
 
 
 @dataclass(frozen=True)
@@ -1759,8 +1771,12 @@ def _load_metrics_for_derived(
     if isinstance(metrics, pd.DataFrame):
         return metrics.copy()
     path = resolve_output_path("metrics_long", kind="table", cfg=cfg, create_parent=True) if metrics is None else Path(metrics).expanduser()
-    progress(f"reading metrics {path}")
-    return read_table(path)
+    selected_columns = _available_table_columns(path, PATTERN_SIMILARITY_METRIC_COLUMNS)
+    progress(f"reading metrics {path} ({len(selected_columns)} pattern-similarity column(s))")
+    if path.suffix.lower() in {".parquet", ".pq"}:
+        return read_table(path, columns=selected_columns)
+    selected = set(selected_columns)
+    return read_table(path, usecols=lambda column: column in selected)
 
 
 def _load_metric_field_for_derived(
@@ -1791,6 +1807,17 @@ def _load_station_bias_for_derived(
     path = resolve_output_path("station_bias", kind="table", cfg=cfg, create_parent=True) if station_bias is None else Path(station_bias).expanduser()
     progress(f"reading station bias {path}")
     return read_table(path)
+
+
+def _available_table_columns(path: Path, requested: Sequence[str]) -> list[str]:
+    """Return requested columns present in a path-backed table without row reads."""
+
+    if path.suffix.lower() in {".parquet", ".pq"}:
+        available = set(parquet_table_columns(path))
+    else:
+        available = set(pd.read_csv(path, nrows=0).columns)
+    selected = [column for column in requested if column in available]
+    return selected or list(requested)
 
 
 def _build_block_holdout_predictions(

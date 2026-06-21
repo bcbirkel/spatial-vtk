@@ -17,7 +17,7 @@ matplotlib.use("Agg", force=True)
 
 from spatial_vtk.config import SpatialVTKConfig, clear_active_config
 from spatial_vtk.config.outputs import resolve_output_path
-from spatial_vtk.io import OutputGroup, write_table
+from spatial_vtk.io import OutputGroup, read_table, write_table
 from spatial_vtk.metrics.plot import MetricFigureContext, plot_score_trends
 from spatial_vtk.spatial.calculate.clustering import assign_redcap_clusters, run_residual_feature_clustering
 from spatial_vtk.spatial.calculate.correlation import (
@@ -1785,6 +1785,62 @@ def test_spatial_derived_reuse_counts_use_lightweight_table_counter() -> None:
     should_skip_source = source.split("def should_skip", 1)[1].split('if "block_holdout_predictions"', 1)[0]
     assert "table_row_count(path)" in should_skip_source
     assert "len(read_table(path))" not in should_skip_source
+
+
+def test_spatial_pattern_derived_csv_loads_only_required_metric_columns(tmp_path: Path) -> None:
+    """Pattern-similarity derived outputs should not materialize wide metric tables."""
+
+    import inspect
+
+    import spatial_vtk.spatial.calculate.workflow as workflow_module
+
+    source = inspect.getsource(workflow_module._load_metrics_for_derived)
+    assert "PATTERN_SIMILARITY_METRIC_COLUMNS" in source
+    assert "read_table(path, columns=selected_columns)" in source
+    assert "read_table(path, usecols=lambda column: column in selected)" in source
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+spatial:
+  metric: PGA
+  value_column: log2_residual
+""",
+        encoding="utf-8",
+    )
+    metrics = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGA", "PGA", "PGA"],
+            "station": ["STA01", "STA02", "STA01", "STA02"],
+            "passband": ["1-2 sec", "1-2 sec", "2-3 sec", "2-3 sec"],
+            "component": ["Z", "Z", "Z", "Z"],
+            "model": ["model_a", "model_a", "model_a", "model_a"],
+            "value_obs": [2.0, 4.0, 3.0, 5.0],
+            "value_syn": [1.0, 2.0, 1.5, 2.5],
+            "unused_large_blob": ["x" * 1000, "y" * 1000, "z" * 1000, "w" * 1000],
+        }
+    )
+    metrics_path = tmp_path / "inputs" / "metrics_wide.csv"
+    metrics_path.parent.mkdir(parents=True)
+    metrics.to_csv(metrics_path, index=False)
+
+    result = run_spatial_derived_outputs_workflow(
+        metrics_path,
+        cfg=config_path,
+        outputs=("pattern_similarity_station_anomalies",),
+        overwrite=True,
+        verbose=True,
+    )
+
+    assert not result.failures
+    assert result.rows["pattern_similarity_station_anomalies"] > 0
+    output = read_table(result.paths["pattern_similarity_station_anomalies"])
+    assert "unused_large_blob" not in output.columns
 
 
 def test_spatial_statistics_config_wrappers_return_json_ready_payloads(tmp_path: Path) -> None:

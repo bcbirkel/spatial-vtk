@@ -1750,6 +1750,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "run_spatial_statistics_workflow_from_config" in text
     assert "run_geojson_region_summary_workflow_from_config" in text
     assert "run_boundary_corridor_workflow_from_config" in text
+    assert "Pattern-similarity derived outputs read only\n       the metric columns they need" in text
     assert "Public helpers exposed by ``spatial_vtk.spatial``" in text
     for helper in (
         "load_standard_spatial_workflow_output_status",

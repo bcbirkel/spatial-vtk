@@ -754,6 +754,9 @@ Changelog
     ``preview_table()`` / ``preview_tables()`` calls by default and reserve
     full ``load_table()`` / ``load_tables()`` calls for explicit full-table
     reads.
+  - Scoped pattern-similarity derived-output metric reads to the required
+    columns for path-backed CSV and Parquet inputs so optional Step 4 derived
+    products do not materialize wide metric tables unnecessarily.
   - Made configured metric-output and dashboard-output helpers write
     partitioned dashboard metric datasets by default, and changed
     ``svtk metrics outputs`` to default to that large-run-safe layout while

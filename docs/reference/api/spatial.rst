@@ -106,7 +106,8 @@ Public helpers exposed by ``spatial_vtk.spatial``:
        should usually call this through the standard status result above.
    * - ``run_spatial_derived_outputs_workflow_from_config``
      - Rebuild downstream spatial outputs that depend on existing metric and
-       spatial-statistics tables.
+       spatial-statistics tables. Pattern-similarity derived outputs read only
+       the metric columns they need from path-backed CSV or Parquet inputs.
    * - ``spatial_workflow_failure_frame``
      - Convert non-fatal spatial workflow failures into a stable notebook
        display table without constructing dataframes in tutorial cells.
