@@ -285,9 +285,13 @@ factories used by the large-run figure suite:
    ``MetricFigureContext`` in the notebook. When figure sidecars are enabled,
    the returned ``StationMetricMapResult.status_frame()`` includes a clear
    ``resolved_path`` row for the rendered figure while preserving
-   ``output_path`` for compatibility. It also includes the station-aggregation
-   contract, source-row role/filter, input/finite row and event counts, and
-   sidecar exactness flags from the saved JSON metadata.
+   ``output_path`` for compatibility. The figure rows include normalized
+   ``artifact_label``, ``artifact_role``, ``status``, ``exists``,
+   ``resolved_path``, and ``path`` columns; audit rows preserve the same
+   ``name`` / ``value`` pattern used by existing notebooks. The status frame
+   also includes the station-aggregation contract, source-row role/filter,
+   input/finite row and event counts, and sidecar exactness flags from the
+   saved JSON metadata.
 
 ``write_standard_metric_diagnostic_figures``
    Render the standard Step 3 residual-distance, score-trend, and
@@ -296,9 +300,9 @@ factories used by the large-run figure suite:
    figure paths, sidecar keyword expansion, and per-figure status table so
    notebooks do not import individual plotting functions or call
    ``render_notebook_figure`` directly. The returned status frame includes
-   normalized ``name``, ``artifact_label``, ``resolved_path``, ``path``, and
-   ``exists`` columns while preserving the legacy ``figure_path`` and
-   ``figure_exists`` fields.
+   normalized ``name``, ``artifact_label``, ``artifact_role``, ``status``,
+   ``resolved_path``, ``path``, and ``exists`` columns while preserving the
+   legacy ``figure_path`` and ``figure_exists`` fields.
 
 ``write_large_run_metric_figure_suite_from_notebook_settings``
    Build the large-run metric figure context, render the standard Step 3
@@ -311,7 +315,8 @@ factories used by the large-run figure suite:
    ``first_figure_path`` and ``figure_paths_preview`` display fields so
    notebooks do not parse preview strings to inspect generated figures. It
    also includes normalized ``name``, ``artifact_label``, ``resolved_path``,
-   ``path``, and ``exists`` columns keyed to the first figure in each family.
+   ``path``, ``exists``, ``artifact_role``, and ``status`` columns keyed to
+   the first figure in each family.
    The returned ``MetricFigureSuiteResult`` also owns
    ``context_status_frames()`` and ``display_context_status(...)`` so notebooks
    can display metric-table readiness, spectral-contract checks, and dimension

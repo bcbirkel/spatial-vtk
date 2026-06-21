@@ -1986,6 +1986,7 @@ class MetricFigureSuiteResult:
             columns=[
                 "name",
                 "artifact_label",
+                "artifact_role",
                 "resolved_path",
                 "path",
                 "exists",
@@ -2291,9 +2292,29 @@ class StationMetricMapResult:
         """
 
         resolved_path = None if self.output_path is None else str(self.output_path)
+        figure_exists = bool(self.output_path is not None and self.output_path.exists())
+        figure_status = "ready" if figure_exists else "missing"
         rows = [
-            ("resolved_path", resolved_path),
-            ("output_path", resolved_path),
+            {
+                "name": "resolved_path",
+                "value": resolved_path,
+                "artifact_label": "Station metric map",
+                "artifact_role": "figure",
+                "status": figure_status,
+                "exists": figure_exists,
+                "resolved_path": resolved_path,
+                "path": resolved_path,
+            },
+            {
+                "name": "output_path",
+                "value": resolved_path,
+                "artifact_label": "Station metric map",
+                "artifact_role": "figure",
+                "status": figure_status,
+                "exists": figure_exists,
+                "resolved_path": resolved_path,
+                "path": resolved_path,
+            },
             ("ready", bool(self.context.ready)),
             ("selected_metric_rows", int(len(self.context.metrics_for_figures))),
             ("preview_rows", int(len(self.preview))),
@@ -2326,7 +2347,25 @@ class StationMetricMapResult:
             value = next((metadata[key] for key in candidate_keys if key in metadata), None)
             if value is not None:
                 rows.append((display_key, value))
-        return pd.DataFrame(rows, columns=["name", "value"])
+        normalized_rows: list[dict[str, Any]] = []
+        for row in rows:
+            if isinstance(row, dict):
+                normalized_rows.append(row)
+            else:
+                name, value = row
+                normalized_rows.append(
+                    {
+                        "name": name,
+                        "value": value,
+                        "artifact_label": str(name).replace("_", " ").title(),
+                        "artifact_role": "figure_audit_field",
+                        "status": "ready",
+                        "exists": "",
+                        "resolved_path": "",
+                        "path": "",
+                    }
+                )
+        return pd.DataFrame(normalized_rows)
 
     def _sidecar_metadata(self) -> dict[str, Any]:
         """Return sidecar metadata for the rendered figure when available."""
@@ -2355,6 +2394,7 @@ class StandardMetricDiagnosticFigureResult:
             columns=[
                 "name",
                 "artifact_label",
+                "artifact_role",
                 "resolved_path",
                 "path",
                 "exists",

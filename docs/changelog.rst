@@ -93,6 +93,9 @@ Changelog
   - Normalized figure result status tables so context, QC, waveform, and
     sidecar helpers expose ``artifact_role`` and a derived ``status`` alongside
     ``artifact_label``, ``resolved_path``, ``path``, and ``exists``.
+  - Kept the same normalized figure status vocabulary in Step 3 metric plotting
+    result objects, including focused station metric maps and standard metric
+    diagnostic/suite status frames.
   - Added dashboard launch port validation so invalid ports or impossible
     auto-port search ranges raise clear configuration errors before Streamlit
     startup.

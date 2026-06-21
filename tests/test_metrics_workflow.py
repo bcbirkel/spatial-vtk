@@ -336,7 +336,10 @@ def test_standard_metric_workflow_output_result_writes_diagnostic_figures(tmp_pa
     assert [item[0] for item in seen] == ["residuals", "scores", "band"]
     assert {metric for _, _, metrics_seen in seen for metric in metrics_seen} == {"PGA", "PGV"}
     diagnostic_status = diagnostic_result.status_frame()
-    assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(diagnostic_status.columns)
+    assert {"name", "artifact_label", "artifact_role", "resolved_path", "path", "exists"} <= set(
+        diagnostic_status.columns
+    )
+    assert diagnostic_status["artifact_role"].tolist() == ["figure", "figure", "figure"]
     assert diagnostic_status["status"].tolist() == ["wrote", "wrote", "wrote"]
     assert diagnostic_status["figure_exists"].tolist() == [True, True, True]
     assert diagnostic_status["exists"].tolist() == [True, True, True]
@@ -1083,6 +1086,12 @@ def test_station_metric_map_notebook_helper_writes_preview_and_sidecar(tmp_path,
     assert result.output_path.exists()
     assert result.preview["station"].tolist() == ["STA"]
     status = result.status_frame().set_index("name")
+    assert {"artifact_label", "artifact_role", "status", "exists", "resolved_path", "path", "value"} <= set(
+        status.columns
+    )
+    assert status.loc["resolved_path", "artifact_role"] == "figure"
+    assert status.loc["resolved_path", "status"] == "ready"
+    assert bool(status.loc["resolved_path", "exists"]) is True
     assert status.loc["resolved_path", "value"] == str(result.output_path)
     assert status.loc["output_path", "value"] == status.loc["resolved_path", "value"]
     assert bool(status.loc["ready", "value"]) is True
