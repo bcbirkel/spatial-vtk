@@ -86,6 +86,9 @@ Changelog
   - Hardened those dashboard CLI launch URLs for IPv6 literals by printing
     bracketed hosts such as ``[::1]`` while preserving the actual server bind
     address.
+  - Broadened public-release privacy regression coverage so private run paths
+    and cluster-specific tokens are rejected across public docs, notebooks,
+    package source, tooling, workflow files, and package metadata.
 
 2026-06-19
 ----------

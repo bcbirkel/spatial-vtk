@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import inspect
 import importlib
+import json
 import os
 import pathlib
 import re
@@ -464,31 +465,44 @@ def test_cli_reference_generator_has_no_write_check_mode():
     assert "Check whether generated CLI reference files are current without rewriting them." in generator
 
 
-def test_public_docs_avoid_private_paths_and_cluster_notes():
-    """Published docs should not mention local machines or private run paths."""
+def test_public_release_files_avoid_private_paths_and_cluster_notes():
+    """Published docs, notebooks, and package files should not contain private run details."""
 
     root = pathlib.Path(__file__).resolve().parents[1]
-    public_paths = [
+    text_paths = [
         root / "README.md",
         root / "RELEASE_CHECKLIST.md",
+        root / "pyproject.toml",
+        root / "svtk_environment.yaml",
+        *list((root / ".github" / "workflows").rglob("*.yml")),
+        *list((root / "src").rglob("*.py")),
+        *list((root / "tools").rglob("*.py")),
         *list((root / "docs").rglob("*.rst")),
         *list((root / "docs").rglob("*.md")),
+        *list((root / "docs" / "examples").rglob("*.py")),
     ]
-    text = "\n".join(
-        path.read_text(encoding="utf-8")
-        for path in public_paths
-        if "_build" not in path.parts
-    )
+    notebook_paths = list((root / "docs" / "examples").rglob("*.ipynb"))
+    texts: list[str] = []
+    for path in text_paths:
+        if "_build" not in path.parts:
+            texts.append(path.read_text(encoding="utf-8"))
+    for path in notebook_paths:
+        notebook = json.loads(path.read_text(encoding="utf-8"))
+        for cell in notebook.get("cells", []):
+            texts.append("".join(cell.get("source", [])))
+    text = "\n".join(texts)
     forbidden = (
         "/pro" + "ject2",
         "jvi" + "dale",
         "CA" + "RC",
+        "ca" + "rc",
         "hpc" + ".usc",
         "on" + "demand",
+        "vscode" + "-remote",
         "/Users/",
     )
     matches = [token for token in forbidden if token in text]
-    assert not matches, f"Public docs contain private/local tokens: {matches}"
+    assert not matches, f"Public release files contain private/local tokens: {matches}"
 
 
 def test_changelog_dated_sections_use_bulleted_entries():
