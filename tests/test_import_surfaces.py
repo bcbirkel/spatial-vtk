@@ -1245,6 +1245,19 @@ def test_output_paths_docstring_prefers_standard_workflow_results_for_notebooks(
     assert "stations.to_csv(tables.prepared_stations" not in text
 
 
+def test_config_api_docs_prefer_standard_workflow_results_for_notebooks():
+    """Configuration API docs should not make output groups the routine notebook path API."""
+
+    docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "config.rst"
+    text = docs.read_text(encoding="utf-8")
+
+    assert "Routine notebooks should start with the standard ``load_standard_*`` workflow\nresult loaders" in text
+    assert "those result objects own\nconfigured paths, status tables, bounded previews, and notebook\nskip/rebuild helpers" in text
+    assert "Use ``output_group()`` only for custom helpers" in text
+    assert "lower-level registry and\nresolver APIs for scripts, CLIs, generated workers, and package extension\ncode" in text
+    assert "Use ``spatial_vtk.config`` and ``spatial_vtk.io`` output groups for normal\nnotebook path/status handling" not in text
+
+
 def test_runtime_config_docstring_prefers_notebook_context_over_path_plumbing():
     source = (
         pathlib.Path(__file__).resolve().parents[1]

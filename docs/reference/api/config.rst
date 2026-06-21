@@ -28,13 +28,17 @@ notebooks should avoid reaching into it directly.
 Paths and Outputs
 -----------------
 
-Use ``spatial_vtk.config`` and ``spatial_vtk.io`` output groups for normal
-notebook path/status handling. The path and output modules below document the
-lower-level registry and resolver APIs for scripts, CLIs, and helper
-implementation code. ``resolve_output_path()`` accepts either a
-``SpatialVTKConfig`` object or a config file path through ``cfg=`` so worker
-scripts can resolve registered table, figure, and dashboard outputs without
-activating global config state.
+Routine notebooks should start with the standard ``load_standard_*`` workflow
+result loaders from ``spatial_vtk.io``, ``spatial_vtk.qc``,
+``spatial_vtk.metrics``, and ``spatial_vtk.spatial``; those result objects own
+configured paths, status tables, bounded previews, and notebook
+skip/rebuild helpers. Use ``output_group()`` only for custom helpers that need
+a reusable group of configured artifacts before a standard result object
+exists. The path and output modules below document lower-level registry and
+resolver APIs for scripts, CLIs, generated workers, and package extension
+code. ``resolve_output_path()`` accepts either a ``SpatialVTKConfig`` object or
+a config file path through ``cfg=`` so those scripts can resolve registered
+table, figure, and dashboard outputs without activating global config state.
 
 .. automodule:: spatial_vtk.config.paths
    :members:
