@@ -199,7 +199,7 @@ def table_columns(path: str | Path) -> list[str]:
     suffix = input_path.suffix.lower()
     if suffix in {".parquet", ".pq"}:
         return parquet_table_columns(input_path)
-    if suffix == ".csv":
+    if suffix in {"", ".csv"}:
         return list(pd.read_csv(input_path, nrows=0, low_memory=False).columns)
     raise ValueError(f"Unsupported table format for {input_path}. Use Parquet or CSV.")
 

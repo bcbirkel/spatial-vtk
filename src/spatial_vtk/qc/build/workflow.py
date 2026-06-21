@@ -25,7 +25,7 @@ from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io import OutputReadiness, output_group
 from spatial_vtk.io.inventory import build_file_inventory
-from spatial_vtk.io.tables import load_output_table, parquet_table_columns, read_table, write_output_table, write_table
+from spatial_vtk.io.tables import load_output_table, read_table, table_columns, write_output_table, write_table
 from spatial_vtk.io.waveforms import WaveformPreprocessing, read_waveform_file, select_waveform_trace
 from spatial_vtk.visualize.dashboard import write_manual_review_queue
 from spatial_vtk.visualize.dashboard.exports import QUEUE_COLUMNS
@@ -2750,11 +2750,7 @@ def _table_columns(value: pd.DataFrame | str | Path) -> list[str]:
     if isinstance(value, pd.DataFrame):
         return list(value.columns)
     path = Path(value).expanduser()
-    if path.suffix.lower() in {".parquet", ".pq"}:
-        import pyarrow.parquet as pq
-
-        return list(pq.ParquetFile(path).schema.names)
-    return list(pd.read_csv(path, nrows=0).columns)
+    return table_columns(path)
 
 
 def _waveform_path_records_and_column(
@@ -3007,11 +3003,10 @@ def _read_trace_qc_lookup_table(trace_qc_summary: pd.DataFrame | str | Path) -> 
     path = Path(trace_qc_summary).expanduser()
     wanted = set(_TRACE_QC_REQUIRED_COLUMNS) | set(_TRACE_QC_PAYLOAD_COLUMNS)
     if path.suffix.lower() in {".csv", ""}:
-        header = pd.read_csv(path, nrows=0)
-        columns = [column for column in header.columns if column in wanted]
+        columns = [column for column in table_columns(path) if column in wanted]
         return pd.read_csv(path, usecols=columns, low_memory=False)
     if path.suffix.lower() in {".parquet", ".pq"}:
-        available = set(parquet_table_columns(path))
+        available = set(table_columns(path))
         columns = [column for column in wanted if column in available]
         return pd.read_parquet(path, columns=columns)
     return _read_table(path)

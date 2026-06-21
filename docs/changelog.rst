@@ -148,6 +148,9 @@ Changelog
   - Added a shared ``table_columns()`` helper for schema-only CSV/Parquet
     inspection and routed dashboard, metric workflow, metric batch merge, and
     large-run plotting column probes through it.
+  - Routed QC lookup and spatial/GeoJSON schema probes through the same helper
+    so selected-column reads avoid duplicating CSV header and Parquet metadata
+    logic.
 
 - **Tutorial notebook hygiene** *(Fixed)*
 

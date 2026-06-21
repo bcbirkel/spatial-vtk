@@ -90,6 +90,17 @@ def test_table_helpers(tmp_path):
         "C1_obs",
         "C1_syn",
     ]
+    suffixless_path = tmp_path / "metrics_table"
+    suffixless_path.write_text(csv_path.read_text(encoding="utf-8"), encoding="utf-8")
+    assert table_columns(suffixless_path) == [
+        "simulation_model",
+        "event_title",
+        "station_name",
+        "station_latitude",
+        "station_longitude",
+        "C1_obs",
+        "C1_syn",
+    ]
 
     aggregated = aggregate_metric_by_station_over_events(long, metric_col="residual")
     assert aggregated.loc[0, "n_events"] == 2

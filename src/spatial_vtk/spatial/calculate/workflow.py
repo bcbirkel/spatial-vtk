@@ -38,8 +38,8 @@ from spatial_vtk.io import (
     default_output_paths,
     load_output_table,
     output_group,
-    parquet_table_columns,
     read_table,
+    table_columns,
     table_row_count,
     write_output_table,
     write_table,
@@ -1863,10 +1863,7 @@ def _load_station_bias_for_derived(
 def _available_table_columns(path: Path, requested: Sequence[str]) -> list[str]:
     """Return requested columns present in a path-backed table without row reads."""
 
-    if path.suffix.lower() in {".parquet", ".pq"}:
-        available = set(parquet_table_columns(path))
-    else:
-        available = set(pd.read_csv(path, nrows=0).columns)
+    available = set(table_columns(path))
     selected = [column for column in requested if column in available]
     return selected or list(requested)
 

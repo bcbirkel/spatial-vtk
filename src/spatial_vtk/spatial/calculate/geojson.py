@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from shapely.geometry import LineString, Point
 
-from spatial_vtk.io import parquet_table_columns, parquet_table_row_count
+from spatial_vtk.io import parquet_table_columns, parquet_table_row_count, table_columns
 from spatial_vtk.spatial.calculate.polygon_edges import PolygonFeature, load_polygon_features, safe_name_token
 from spatial_vtk.spatial.calculate.settings import spatial_statistics_settings_from_config
 
@@ -981,7 +981,7 @@ def _geojson_summary_input(
         return _dedupe_geojson_summary_frame(frame), row_count if row_count is not None else len(frame)
 
     if suffix in {".csv", ".txt"}:
-        available = list(pd.read_csv(path, nrows=0).columns)
+        available = table_columns(path) if suffix == ".csv" else list(pd.read_csv(path, nrows=0).columns)
         columns = _available_geojson_summary_columns(available)
         if not columns:
             raise KeyError(f"No GeoJSON summary coordinate columns were found in {path}")
