@@ -154,6 +154,9 @@ Changelog
   - Routed generic CLI table-output writing through the shared table writer so
     ``svtk`` commands get the same atomic write and suffix handling as package
     APIs.
+  - Routed dashboard summary-table writing through the shared table writer so
+    dashboard exports keep atomic-write behavior while preserving stale
+    cross-format cleanup.
   - Added a shared ``table_columns()`` helper for schema-only CSV/Parquet
     inspection and routed dashboard, metric workflow, metric batch merge, and
     large-run plotting column probes through it.
