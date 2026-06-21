@@ -111,14 +111,19 @@ and notebooks should depend on the stable namespaces above.
        notebook_figure_settings,
        notebook_run_context,
    )
-   from spatial_vtk.io import event_rows_for_records, load_configured_input_paths, load_configured_input_tables
+   from spatial_vtk.io import load_standard_ingest_workflow_outputs
+   from spatial_vtk.metrics import load_standard_metric_workflow_outputs
    from spatial_vtk.qc import load_standard_qc_workflow_outputs
 
    context = notebook_run_context()
    cfg = context.cfg
+   ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)
    qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)
+   metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)
    display(configured_output_registry_preview_frame(cfg=cfg, kinds=("table",)))
+   display(ingest_outputs.status_frame())
    display(qc_outputs.status_frame())
+   display(metric_outputs.status_frame())
    qc_outputs.run_inventory_step_if_needed(
        context,
        overwrite=False,
@@ -131,9 +136,8 @@ and notebooks should depend on the stable namespaces above.
    )
 
    metric_figure_settings = notebook_figure_settings("metric", figure_subdir="metrics")
-   # Pass metric_figure_settings.context_kwargs(...) into package plotting
-   # contexts instead of parsing SVTK_FIGURE_* variables in notebook cells.
-   configured_inputs = load_configured_input_tables({"metrics": "paths.metric_figure_snapshot"}, cfg=cfg)
+   # Pass metric_figure_settings to result-object figure methods instead of
+   # parsing SVTK_FIGURE_* variables or constructing figure paths in cells.
 
 Core Driver Helpers
 -------------------

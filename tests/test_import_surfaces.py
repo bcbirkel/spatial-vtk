@@ -2745,6 +2745,17 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "notebook_figure_settings" in starter_config_import
     assert "notebook_run_context" in starter_config_import
     assert "render_notebook_figure" not in starter_config_import
+    starter_example = workflows.split(".. code-block:: python", 1)[1].split("Core Driver Helpers", 1)[0]
+    assert "from spatial_vtk.io import load_standard_ingest_workflow_outputs" in starter_example
+    assert "from spatial_vtk.metrics import load_standard_metric_workflow_outputs" in starter_example
+    assert "from spatial_vtk.qc import load_standard_qc_workflow_outputs" in starter_example
+    assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in starter_example
+    assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)" in starter_example
+    assert "display(ingest_outputs.status_frame())" in starter_example
+    assert "display(metric_outputs.status_frame())" in starter_example
+    assert "load_configured_input_tables" not in starter_example
+    assert "load_configured_input_paths" not in starter_example
+    assert "event_rows_for_records" not in starter_example
     assert "Building block for custom package helpers or focused scripts" in workflows
     assert "Standard tutorial notebooks should prefer workflow result-object figure\n       methods" in workflows
     assert "Use it\n       in standard notebooks instead of repeating" not in workflows
