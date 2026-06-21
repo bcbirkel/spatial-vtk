@@ -63,6 +63,9 @@ Changelog
   - Reworded the ``svtk metrics outputs`` override-directory help from vague
     ``ad hoc`` wording to a clear custom downstream metric output directory
     description.
+  - Reworded the generated ``band-score-distribution`` CLI summary to describe
+    residual or score distributions, matching the default ``log2_residual``
+    example instead of implying the plot is GOF-score only.
   - Aligned internal CLI call/result helper docstrings with the public
     ``svtk call`` guidance so direct public-function calls are consistently
     framed as advanced one-off usage rather than generic workflow commands.

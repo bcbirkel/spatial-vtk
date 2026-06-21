@@ -21,7 +21,7 @@ Command Tree
 
 - :ref:`svtk plot <cli-svtk-plot>`
    - :ref:`svtk plot metrics <cli-svtk-plot-metrics>`
-      - :ref:`svtk plot metrics band-score-distribution <cli-svtk-plot-metrics-band-score-distribution>` - Plot score distributions by passband.
+      - :ref:`svtk plot metrics band-score-distribution <cli-svtk-plot-metrics-band-score-distribution>` - Plot residual or score distributions by passband.
       - :ref:`svtk plot metrics boxplot <cli-svtk-plot-metrics-boxplot>` - Plot metric distributions by categorical variables.
       - :ref:`svtk plot metrics example-metric-pairs <cli-svtk-plot-metrics-example-metric-pairs>` - Plot synthetic trace-pair examples that illustrate metric behavior.
       - :ref:`svtk plot metrics geology-boxplot <cli-svtk-plot-metrics-geology-boxplot>` - Plot metric values by geologic class.
@@ -112,7 +112,7 @@ svtk plot metrics
 svtk plot metrics band-score-distribution
 """""""""""""""""""""""""""""""""""""""""
 
-Plot score distributions by passband.
+Plot residual or score distributions by passband.
 
 .. rubric:: Usage
 

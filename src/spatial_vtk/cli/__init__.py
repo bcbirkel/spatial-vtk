@@ -114,7 +114,7 @@ METRICS_PLOT_COMMANDS: dict[str, PlotCommand] = {
     "band-score-distribution": PlotCommand(
         "spatial_vtk.metrics.plot.plot_band_score_distribution",
         "df",
-        "Plot score distributions by passband.",
+        "Plot residual or score distributions by passband.",
         input_key="metrics_long",
         output_key="band_score_distribution",
     ),

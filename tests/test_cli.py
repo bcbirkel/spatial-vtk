@@ -1068,6 +1068,8 @@ def test_generated_cli_reference_includes_config_backed_examples():
 
     assert "Config-Backed Plotting" in plot_text
     assert "svtk plot metrics band-score-distribution --score-col log2_residual" in plot_text
+    assert "Plot residual or score distributions by passband." in plot_text
+    assert "Plot score distributions by passband." not in plot_text
     assert (
         'svtk plot metrics residuals-vs-distance --metric PGA --passband "2-3 sec" --y-col log2_residual'
         in plot_text
