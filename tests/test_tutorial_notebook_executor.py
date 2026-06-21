@@ -210,6 +210,27 @@ def test_tutorial_example_data_preflight_reports_malformed_event_station_table(t
     ) in missing
 
 
+def test_tutorial_example_data_preflight_reports_blank_event_station_values(tmp_path: Path) -> None:
+    """Blank event-station identifiers should not silently skip waveform checks."""
+
+    module = _load_executor_module()
+    records_dir = tmp_path / "data" / "examples" / "example_five_event_subset" / "metadata"
+    records_dir.mkdir(parents=True)
+    records_path = records_dir / "selected_event_stations.csv"
+    records_path.write_text("event_id,station\nci1,\n,STA1\n", encoding="utf-8")
+
+    missing = module.missing_tutorial_example_data(tmp_path)
+
+    assert (
+        "data/examples/example_five_event_subset/metadata/selected_event_stations.csv "
+        "(row 2 missing values: station)"
+    ) in missing
+    assert (
+        "data/examples/example_five_event_subset/metadata/selected_event_stations.csv "
+        "(row 3 missing values: event_id)"
+    ) in missing
+
+
 def test_tutorial_example_data_preflight_runs_before_clean(tmp_path: Path, monkeypatch) -> None:
     """Missing example data should be reported before tutorial outputs are cleaned."""
 

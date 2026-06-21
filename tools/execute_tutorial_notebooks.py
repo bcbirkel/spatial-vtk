@@ -404,11 +404,15 @@ def missing_tutorial_example_data(repo_root: Path) -> list[str]:
         missing.append(str(records_path.relative_to(repo_root)) + " (empty)")
         return missing
 
-    for row in records:
+    for row_number, row in enumerate(records, start=2):
         event_id = str(row.get("event_id", "")).strip()
         station = str(row.get("station", "")).strip()
         model = str(row.get("synthetic_model", "")).strip() or TUTORIAL_SYNTHETIC_MODEL
-        if not event_id or not station:
+        missing_values = [name for name, value in (("event_id", event_id), ("station", station)) if not value]
+        if missing_values:
+            missing.append(
+                f"{records_path.relative_to(repo_root)} (row {row_number} missing values: {', '.join(missing_values)})"
+            )
             continue
         observed = TUTORIAL_EXAMPLE_ROOT / "waveforms_npz" / "observed" / event_id / f"{station}.npz"
         synthetic = TUTORIAL_EXAMPLE_ROOT / "waveforms_npz" / "synthetics" / model / event_id / f"{station}.npz"

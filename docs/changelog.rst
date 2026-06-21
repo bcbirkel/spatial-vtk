@@ -55,6 +55,9 @@ Changelog
   - Hardened tutorial example-data preflight so malformed
     ``selected_event_stations.csv`` files report missing ``event_id`` or
     ``station`` columns before notebook execution.
+  - Hardened the same tutorial preflight to report row numbers when
+    ``selected_event_stations.csv`` has blank ``event_id`` or ``station``
+    values instead of silently skipping waveform-file checks for those rows.
 
 2026-06-19
 ----------
