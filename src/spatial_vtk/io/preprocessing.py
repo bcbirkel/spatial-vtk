@@ -15,8 +15,8 @@ Run configured Step 1 waveform preprocessing from a notebook or script:
   ``result = ingest_outputs.run_preprocessing_step_if_needed(context=context)``
 
 Call ``preprocess_waveform_files()`` directly only in advanced scripts that
-already own the event-station records and output location:
-  ``preprocess_waveform_files(records, "outputs/preprocessed", preprocessing=WaveformPreprocessing(lowpass_hz=1.0, resample_hz=20.0))``
+already own the event-station records and preprocessing policy:
+  ``preprocess_waveform_files(records, config=cfg, preprocessing=WaveformPreprocessing(lowpass_hz=1.0, resample_hz=20.0))``
 """
 
 from __future__ import annotations

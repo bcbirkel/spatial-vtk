@@ -1297,8 +1297,9 @@ def test_preprocessing_docstring_prefers_standard_step1_output_helper():
     assert "from spatial_vtk.io import load_standard_ingest_workflow_outputs" in text
     assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in text
     assert "result = ingest_outputs.run_preprocessing_step_if_needed(context=context)" in text
-    assert "only in advanced scripts that\nalready own the event-station records" in text
+    assert "only in advanced scripts that\nalready own the event-station records and preprocessing policy" in text
     assert 'preprocess_waveform_files("event_stations.csv", "outputs/preprocessed", config=cfg)' not in text
+    assert 'preprocess_waveform_files(records, "outputs/preprocessed"' not in text
 
 
 def test_master_list_docstring_prefers_standard_step1_metadata_helper():

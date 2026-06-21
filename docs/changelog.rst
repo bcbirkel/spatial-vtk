@@ -77,6 +77,9 @@ Changelog
   - Reworded metric downstream-output module examples so Step 3 notebooks use
     the standard metric workflow result object and direct metric row writers
     are framed as custom-script helpers.
+  - Reworded the preprocessing direct-call example so advanced scripts prefer
+    config-backed output resolution instead of a literal preprocessed-output
+    directory.
 
 - **Step 1 workflow helpers** *(Added)*
 
