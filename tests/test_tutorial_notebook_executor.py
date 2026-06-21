@@ -384,9 +384,14 @@ def test_tutorial_notebooks_are_committed_without_execution_state() -> None:
                 if key in metadata:
                     dirty.append(f"{notebook_path.relative_to(repo_root)} has saved metadata key {key}")
         for index, cell in enumerate(notebook.get("cells", []), start=1):
+            cell_label = f"{notebook_path.relative_to(repo_root)} cell {index}"
+            metadata = cell.get("metadata", {})
+            if isinstance(metadata, dict):
+                for key in module.NOTEBOOK_CONTRACT_FORBIDDEN_CELL_METADATA_KEYS:
+                    if key in metadata:
+                        dirty.append(f"{cell_label} has saved cell metadata key {key}")
             if cell.get("cell_type") != "code":
                 continue
-            cell_label = f"{notebook_path.relative_to(repo_root)} cell {index}"
             if cell.get("execution_count") is not None:
                 dirty.append(f"{cell_label} has execution_count")
             if cell.get("outputs"):
@@ -439,7 +444,7 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
                         "cell_type": "code",
                         "id": "bad-cell",
                         "execution_count": 1,
-                        "metadata": {},
+                        "metadata": {"execution": {"iopub.status.busy": "stale"}},
                         "outputs": [{"output_type": "stream", "name": "stdout", "text": "stale"}],
                         "source": [
                             "import subprocess\n",
@@ -504,6 +509,7 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert "missing shared source-checkout bootstrap cell" in combined
     assert "committed execution_count should be empty" in combined
     assert "committed outputs should be empty" in combined
+    assert "committed cell metadata should not contain saved runtime state keys: execution" in combined
     assert "committed notebook metadata should not contain saved runtime state keys: widgets" in combined
     assert "markdown section should include Purpose: and Outputs:" in combined
     assert "import subprocess" in combined

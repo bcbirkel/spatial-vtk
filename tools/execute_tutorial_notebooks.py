@@ -156,6 +156,14 @@ NOTEBOOK_CONTRACT_FORBIDDEN_METADATA_KEYS = frozenset(
         "toc",
     }
 )
+NOTEBOOK_CONTRACT_FORBIDDEN_CELL_METADATA_KEYS = frozenset(
+    {
+        "execution",
+        "ExecuteTime",
+        "widgets",
+        "widget_state",
+    }
+)
 NOTEBOOK_CONTRACT_FORBIDDEN_LINE_PATTERNS = (
     re.compile(r"^\s*![^\n]*\bsvtk\b", re.MULTILINE),
     re.compile(r"^\s*%%bash\b", re.MULTILINE),
@@ -493,6 +501,14 @@ def tutorial_notebook_contract_violations(notebooks: list[Path], *, repo_root: P
         for index, cell in enumerate(cells, start=1):
             cell_label = f"{label} cell {index}"
             source = "".join(cell.get("source", []))
+            cell_metadata = cell.get("metadata", {})
+            if isinstance(cell_metadata, dict):
+                saved_cell_state_keys = sorted(NOTEBOOK_CONTRACT_FORBIDDEN_CELL_METADATA_KEYS & set(cell_metadata))
+                if saved_cell_state_keys:
+                    violations.append(
+                        f"{cell_label}: committed cell metadata should not contain saved runtime state keys: "
+                        f"{', '.join(saved_cell_state_keys)}"
+                    )
             if cell.get("cell_type") == "markdown":
                 violations.extend(_notebook_markdown_section_violations(source, cell_label))
             if not str(cell.get("id", "")).strip():
