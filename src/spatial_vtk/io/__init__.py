@@ -162,7 +162,7 @@ def __getattr__(name: str) -> Any:
     Returns
     -------
     object
-        The requested helper from its implementation module.
+        The requested public helper.
     """
 
     module_name = _EXPORT_MODULES.get(name)

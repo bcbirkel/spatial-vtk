@@ -88,6 +88,8 @@ Changelog
     filenames.
   - Reworded public workflow docs from ad-hoc/manual phrasing toward
     custom-script and notebook-local-gate wording.
+  - Reworded lazy I/O package loader docs so public API references describe
+    resolved public helpers instead of implementation-module plumbing.
 
 - **Step 1 workflow helpers** *(Added)*
 

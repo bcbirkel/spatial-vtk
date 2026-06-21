@@ -2020,6 +2020,8 @@ def test_core_package_docstrings_describe_public_entry_points():
     assert "``spatial_vtk.io`` is the public import surface" in io_source
     assert "Routine notebooks should start here" in io_source
     assert "lower-level metadata, preprocessing, table, output-path, or\nmanifest modules" in io_source
+    assert "The requested public helper." in io_source
+    assert "The requested helper from its implementation module." not in io_source
 
     assert "``spatial_vtk.config`` is the public import surface" in config_source
     assert "notebook run contexts" in config_source
