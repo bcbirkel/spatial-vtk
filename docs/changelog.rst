@@ -108,6 +108,9 @@ Changelog
   - Streamed metric batch merges directly into the merged CSV/Parquet output so
     large metric runs no longer need to materialize every batch table before
     writing ``metric_rows``.
+  - Hardened figure sidecar JSON metadata writing so numpy/pandas scalar
+    values, missing values, timestamps, non-finite floats, and sets from
+    aggregation audits serialize reliably for large-run figure provenance.
 
 - **Step 1 workflow helpers** *(Added)*
 

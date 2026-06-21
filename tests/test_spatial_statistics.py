@@ -2863,7 +2863,16 @@ def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -
         plot_rows,
         sidecar_rows=2,
         source_rows=source_rows,
-        metadata={"value_col": "log2_residual", "selection": ("PGA", "1-2 sec")},
+        metadata={
+            "value_col": "log2_residual",
+            "selection": ("PGA", "1-2 sec"),
+            "numpy_count": np.int64(4),
+            "numpy_value": np.float64(1.25),
+            "nonfinite_value": np.float64(np.nan),
+            "missing_value": pd.NA,
+            "created_at": pd.Timestamp("2026-06-21T12:30:00"),
+            "label_set": {"station", "event"},
+        },
     )
 
     assert result is not None
@@ -2898,6 +2907,12 @@ def test_write_figure_row_sidecar_records_plot_and_source_rows(tmp_path: Path) -
     assert metadata["plot_passband_count"] == 1
     assert metadata["source_passband_count"] == 2
     assert metadata["selection"] == ["PGA", "1-2 sec"]
+    assert metadata["numpy_count"] == 4
+    assert metadata["numpy_value"] == 1.25
+    assert metadata["nonfinite_value"] is None
+    assert metadata["missing_value"] is None
+    assert metadata["created_at"] == "2026-06-21T12:30:00"
+    assert metadata["label_set"] == ["event", "station"]
 
     assert figure_sidecar_metadata_path(figure_path) == result.metadata_path
     assert figure_sidecar_metadata_path(result.sidecar_path) == result.metadata_path

@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date, datetime
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -436,15 +438,38 @@ def figure_sidecar_dimension_counts(df: pd.DataFrame | None, *, prefix: str) -> 
 def _json_ready(value: Any) -> Any:
     """Return a JSON-serializable representation for common metadata values."""
 
+    if value is None or isinstance(value, (str, bool, int)):
+        return value
+    if isinstance(value, float):
+        return value if math.isfinite(value) else None
     if isinstance(value, Path):
         return str(value)
+    if isinstance(value, (datetime, date, pd.Timestamp)):
+        return value.isoformat()
     if isinstance(value, dict):
         return {str(key): _json_ready(item) for key, item in value.items()}
+    if isinstance(value, set):
+        return [_json_ready(item) for item in sorted(value, key=str)]
     if isinstance(value, tuple):
         return [_json_ready(item) for item in value]
     if isinstance(value, list):
         return [_json_ready(item) for item in value]
-    return value
+    if hasattr(value, "tolist"):
+        try:
+            return _json_ready(value.tolist())
+        except Exception:
+            pass
+    if hasattr(value, "item"):
+        try:
+            return _json_ready(value.item())
+        except Exception:
+            pass
+    try:
+        if pd.isna(value):
+            return None
+    except Exception:
+        pass
+    return str(value)
 
 
 __all__ = [
