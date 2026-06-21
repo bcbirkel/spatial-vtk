@@ -90,6 +90,8 @@ Changelog
   - Clarified dashboard readiness value-family wording so Visualize API docs
     describe residual, GOF score, observed, synthetic, and other configured
     metric-value coverage without vague generic terminology.
+  - Reworded Python workflow display-helper guidance to use skipped/current
+    step payload terminology consistently with the config API docs.
 
 - **Public surface guardrails** *(Fixed)*
 
