@@ -707,7 +707,7 @@ Changelog
     check itself returns an empty or malformed status frame, so failed
     preflight checks do not silently leave a blank dashboard page.
 
-- **Workflow large-run resilience** *(Hardened)*
+- **Workflow status-frame contracts** *(Hardened)*
 
   - Added ``artifact_label`` and clear ``resolved_path`` columns to configured
     output-registry frames while preserving the existing ``path`` alias.
@@ -724,6 +724,9 @@ Changelog
   - Added exact ``figure_paths`` lists to Step 4 large-run spatial
     figure-suite status frames while preserving preview-oriented figure path
     fields.
+
+- **Large-table read and merge paths** *(Hardened)*
+
   - Made scoped metric-QC parquet reads fail with actionable PyArrow metadata
     or streaming errors instead of falling back to full-table materialization
     during metric manifest planning.
@@ -752,6 +755,9 @@ Changelog
   - Reused the shared row-count helper in dashboard readiness checks so CSV
     dashboard datasets with quoted newlines report correct row counts without
     materializing the table.
+
+- **Bounded workflow previews and outputs** *(Hardened)*
+
   - Scoped path-backed long metric-row reads during downstream metric output
     preparation so enrichment, path summaries, and dashboard outputs do not
     carry unused payload columns from large merged metric files.
