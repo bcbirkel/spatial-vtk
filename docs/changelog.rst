@@ -69,6 +69,10 @@ Changelog
   - Standardized ``MetricWaveformCacheResult.status_frame()`` so metric cache
     notebook status tables expose artifact names, roles, readiness status,
     normalized paths, row counts, and cache reuse counters.
+  - Standardized ``DashboardLaunchResult.status_frame()`` so dashboard launch
+    cells expose artifact names, labels, roles, launch status, ports, fallback
+    commands, URLs, process ids, and error messages in the same status-table
+    vocabulary used by other notebook workflow helpers.
 
 - **CLI help and generated-reference wording** *(Changed)*
 

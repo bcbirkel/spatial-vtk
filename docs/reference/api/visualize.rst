@@ -351,6 +351,7 @@ Public dashboard helpers exposed by ``spatial_vtk.visualize``:
      - Use notebook launch settings to launch requested dashboards or return
        terminal fallback commands and launch errors in one compact
        ``DashboardLaunchResult.status_frame()``. The status frame includes
+       ``name``, ``artifact``, ``artifact_label``, ``artifact_role``,
        requested port, resolved port, server address, auto-port, proxy-mode,
        show/headless, terminal command, URL, process id, and error message
        columns. Pass ``dashboards=("qc",)`` for QC-only notebook cells.

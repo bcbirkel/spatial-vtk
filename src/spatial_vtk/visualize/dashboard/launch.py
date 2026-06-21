@@ -388,6 +388,10 @@ def _launch_one_dashboard_from_notebook_settings(
     """Append one dashboard launch status row and return the process if any."""
 
     common = {
+        "name": f"{dashboard_name}_dashboard",
+        "artifact": f"{dashboard_name}_dashboard",
+        "artifact_label": f"{dashboard_name} dashboard",
+        "artifact_role": "dashboard_process" if launch_requested else "dashboard_command",
         "dashboard": dashboard_name,
         "launch_requested": launch_requested,
         "requested_port": requested_port,

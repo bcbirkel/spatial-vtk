@@ -1929,6 +1929,10 @@ def test_notebook_dashboard_launch_helper_returns_running_and_command_rows(monke
     assert result.metrics_process is not None
     assert result.qc_process is None
     assert called["metrics"]["show"] is False
+    assert status.loc[status["dashboard"].eq("metrics"), "name"].item() == "metrics_dashboard"
+    assert status.loc[status["dashboard"].eq("metrics"), "artifact"].item() == "metrics_dashboard"
+    assert status.loc[status["dashboard"].eq("metrics"), "artifact_label"].item() == "metrics dashboard"
+    assert status.loc[status["dashboard"].eq("metrics"), "artifact_role"].item() == "dashboard_process"
     assert status.loc[status["dashboard"].eq("metrics"), "status"].item() == "running"
     assert status.loc[status["dashboard"].eq("metrics"), "resolved_port"].item() == 8751
     assert status.loc[status["dashboard"].eq("metrics"), "server_address"].item() == "0.0.0.0"
@@ -1942,6 +1946,10 @@ def test_notebook_dashboard_launch_helper_returns_running_and_command_rows(monke
     assert bool(status.loc[status["dashboard"].eq("qc"), "proxy_mode"].item()) is False
     assert bool(status.loc[status["dashboard"].eq("qc"), "show"].item()) is False
     assert "svtk dashboard qc" in status.loc[status["dashboard"].eq("qc"), "terminal_command"].item()
+    assert status.loc[status["dashboard"].eq("qc"), "name"].item() == "qc_dashboard"
+    assert status.loc[status["dashboard"].eq("qc"), "artifact"].item() == "qc_dashboard"
+    assert status.loc[status["dashboard"].eq("qc"), "artifact_label"].item() == "qc dashboard"
+    assert status.loc[status["dashboard"].eq("qc"), "artifact_role"].item() == "dashboard_command"
 
 
 def test_notebook_dashboard_launch_helper_reports_launch_errors(monkeypatch):
