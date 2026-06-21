@@ -1566,6 +1566,25 @@ def test_metrics_dashboard_download_limits_from_environment(monkeypatch):
     assert "all currently filtered" in streamlit_metrics._metrics_download_limit_message(None)
 
 
+def test_metrics_dashboard_row_limit_and_chunksize_validate_environment(monkeypatch):
+    """Metric dashboard row/chunk settings should reject invalid env values."""
+
+    monkeypatch.setenv("SVTK_METRICS_DASHBOARD_ROW_LIMIT", "500")
+    assert streamlit_metrics._metrics_dashboard_row_limit() == 1_000
+
+    monkeypatch.setenv("SVTK_METRICS_DASHBOARD_ROW_LIMIT", "all")
+    with pytest.raises(ValueError, match="must be a positive integer"):
+        streamlit_metrics._metrics_dashboard_row_limit()
+
+    monkeypatch.delenv("SVTK_METRICS_DASHBOARD_ROW_LIMIT")
+    monkeypatch.setenv("SVTK_METRICS_DASHBOARD_SUMMARY_CHUNKSIZE", "500")
+    assert streamlit_metrics._metrics_dashboard_summary_chunksize() == 1_000
+
+    monkeypatch.setenv("SVTK_METRICS_DASHBOARD_SUMMARY_CHUNKSIZE", "0")
+    with pytest.raises(ValueError, match="must be a positive integer"):
+        streamlit_metrics._metrics_dashboard_summary_chunksize()
+
+
 def test_metrics_dashboard_numeric_limits_reject_unbounded_sentinels(monkeypatch):
     """Mistyped numeric metrics dashboard limits should not imply full-table loads."""
 

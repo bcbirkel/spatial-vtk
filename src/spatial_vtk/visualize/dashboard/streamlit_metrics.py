@@ -813,14 +813,11 @@ def _path_setting(query_key: str, env_key: str, *, aliases: tuple[str, ...] = ()
 def _metrics_dashboard_row_limit(default: int = DEFAULT_METRICS_DASHBOARD_MAX_ROWS) -> int:
     """Return the row-level metrics cap for responsive dashboard rendering."""
 
-    raw = os.environ.get("SVTK_METRICS_DASHBOARD_ROW_LIMIT", "")
-    if not raw:
-        return int(default)
-    try:
-        value = int(raw)
-    except ValueError:
-        return int(default)
-    return max(value, 1_000)
+    return _env_minimum_positive_int(
+        ("SVTK_METRICS_DASHBOARD_ROW_LIMIT",),
+        default=default,
+        minimum=1_000,
+    )
 
 
 def _metrics_dashboard_download_limit(default: int | None = DEFAULT_METRICS_DASHBOARD_DOWNLOAD_ROWS) -> int | None:
@@ -835,14 +832,11 @@ def _metrics_dashboard_download_limit(default: int | None = DEFAULT_METRICS_DASH
 def _metrics_dashboard_summary_chunksize(default: int = 50_000) -> int:
     """Return the chunk size for lazy optional summary-table loads."""
 
-    raw = os.environ.get("SVTK_METRICS_DASHBOARD_SUMMARY_CHUNKSIZE") or os.environ.get("SVTK_DASHBOARD_CHUNKSIZE")
-    if not raw:
-        return int(default)
-    try:
-        value = int(raw)
-    except ValueError:
-        return int(default)
-    return max(value, 1_000)
+    return _env_minimum_positive_int(
+        ("SVTK_METRICS_DASHBOARD_SUMMARY_CHUNKSIZE", "SVTK_DASHBOARD_CHUNKSIZE"),
+        default=default,
+        minimum=1_000,
+    )
 
 
 def _metrics_dashboard_summary_display_limit(default: int | None = DEFAULT_METRICS_DASHBOARD_SUMMARY_DISPLAY_ROWS) -> int | None:
@@ -872,6 +866,24 @@ def _env_optional_positive_int(names: tuple[str, ...], *, default: int | None) -
             raise ValueError(f"{name} must be a positive integer or 'all', got {raw!r}.")
         return parsed
     return default
+
+
+def _env_minimum_positive_int(names: tuple[str, ...], *, default: int, minimum: int) -> int:
+    """Read the first configured positive integer and enforce a minimum value."""
+
+    for name in names:
+        raw = os.environ.get(name)
+        if raw is None or str(raw).strip() == "":
+            continue
+        value = str(raw).strip()
+        try:
+            parsed = int(value)
+        except ValueError as exc:
+            raise ValueError(f"{name} must be a positive integer, got {raw!r}.") from exc
+        if parsed <= 0:
+            raise ValueError(f"{name} must be a positive integer, got {raw!r}.")
+        return max(parsed, int(minimum))
+    return int(default)
 
 
 def _metrics_download_limit_message(download_limit: int | None) -> str:
