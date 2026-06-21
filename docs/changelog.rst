@@ -120,6 +120,9 @@ Changelog
   - Routed QC helper-local table loading through the shared I/O table reader so
     CSV dtype handling and Parquet dispatch stay centralized for large-run
     checkpoints and derived QC tables.
+  - Routed metric task-planning path reads through the same shared table reader
+    so task manifests, summaries, and fallback table inputs use consistent
+    CSV/Parquet behavior.
 
 - **Tutorial notebook hygiene** *(Fixed)*
 

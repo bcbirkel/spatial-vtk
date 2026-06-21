@@ -26,6 +26,7 @@ import pandas as pd
 from spatial_vtk.config.metric_catalog import DEFAULT_METRICS_BY_GROUP, LEGACY_METRIC_ALIASES, metric_group_for, resolve_metric_names
 from spatial_vtk.io.metric_inputs import normalize_metric_waveform_inventory
 from spatial_vtk.io.plans import MetricPlan
+from spatial_vtk.io.tables import read_table as read_disk_table
 
 
 @dataclass(frozen=True)
@@ -859,9 +860,7 @@ def _read_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
     if isinstance(table, pd.DataFrame):
         return table.copy()
     path = Path(table).expanduser()
-    if path.suffix.lower() in {".parquet", ".pq"}:
-        return pd.read_parquet(path)
-    return pd.read_csv(path, low_memory=False)
+    return read_disk_table(path)
 
 
 def _metric_task_summary_columns() -> tuple[str, ...]:
