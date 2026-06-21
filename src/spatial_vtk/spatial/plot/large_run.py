@@ -1372,7 +1372,7 @@ class RegionBoxplotResult:
 
         figure_path = None if self.figure_path is None else str(self.figure_path)
         sidecar_path = None if self.sidecar_path is None else str(self.sidecar_path)
-        return pd.DataFrame(
+        frame = normalize_figure_status_rows(
             [
                 {
                     "artifact": "region_boxplot",
@@ -1384,8 +1384,15 @@ class RegionBoxplotResult:
                     "sidecar_exists": bool(self.sidecar_path is not None and self.sidecar_path.exists()),
                     "message": self.message,
                 }
-            ],
+            ]
+        )
+        return frame.reindex(
             columns=[
+                "name",
+                "artifact_label",
+                "resolved_path",
+                "path",
+                "exists",
                 "artifact",
                 "status",
                 "row_count",
@@ -1394,7 +1401,7 @@ class RegionBoxplotResult:
                 "sidecar_path",
                 "sidecar_exists",
                 "message",
-            ],
+            ]
         )
 
 
@@ -1452,7 +1459,21 @@ class RegionFigureResult:
                 "message": self.boxplot_result.message,
             },
         ]
-        return pd.DataFrame(rows)
+        frame = normalize_figure_status_rows(rows)
+        return frame.reindex(
+            columns=[
+                "name",
+                "artifact_label",
+                "resolved_path",
+                "path",
+                "exists",
+                "artifact",
+                "status",
+                "sidecar_path",
+                "sidecar_exists",
+                "message",
+            ]
+        )
 
     def _message_for(self, artifact: str) -> str | None:
         """Return the first message tagged for one artifact."""
@@ -1876,16 +1897,21 @@ class StandardAdditionalPlottingFigureResult:
     def status_frame(self) -> pd.DataFrame:
         """Return one row per Step 6 figure written or skipped."""
 
-        return pd.DataFrame(
-            self.rows,
+        frame = normalize_figure_status_rows(self.rows)
+        return frame.reindex(
             columns=[
+                "name",
+                "artifact_label",
+                "resolved_path",
+                "path",
+                "exists",
                 "artifact",
                 "status",
                 "row_count",
                 "figure_path",
                 "figure_exists",
                 "message",
-            ],
+            ]
         )
 
     def metric_summary_frame(self) -> pd.DataFrame:

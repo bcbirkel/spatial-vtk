@@ -373,7 +373,8 @@ Public plotting helpers and notebook workflow loaders:
        and preview tables in package code. The returned
        ``StandardAdditionalPlottingFigureResult`` exposes
        ``metric_summary_frame()`` for selected metric coverage and
-       ``status_frame()`` for figure outputs.
+       ``status_frame()`` for figure outputs with normalized figure path
+       columns.
    * - ``write_large_run_geojson_region_figures_from_outputs``
      - Lower-level Step 5 script helper that writes the GeoJSON overview map,
        corridor map, and region boxplot from configured output groups after
@@ -484,6 +485,11 @@ readiness checks, output bookkeeping, sidecars, and figure-family iteration.
 ``prepare_spatial_figure_context_from_notebook_settings``
    Compatibility helper for scripts that need a ``SpatialFigureContext`` built
    from ``notebook_figure_settings(...)``.
+
+``RegionFigureResult`` and ``RegionBoxplotResult``
+   Return normalized ``status_frame()`` tables with ``name``,
+   ``artifact_label``, ``resolved_path``, ``path``, and ``exists`` columns
+   while preserving sidecar path fields for figure provenance.
 
 .. autoclass:: spatial_vtk.spatial.plot.SpatialFigureContext
    :members:

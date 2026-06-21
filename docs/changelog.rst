@@ -54,6 +54,9 @@ Changelog
   - Standardized standard Step 5 GeoJSON region and corridor figure
     ``status_frame()`` outputs so notebook tables expose normalized figure
     path columns while preserving legacy figure path fields.
+  - Standardized Step 6 additional plotting, region figure, and region boxplot
+    ``status_frame()`` outputs around normalized figure path columns and
+    preserved sidecar provenance fields.
 
 - **CLI help and generated-reference wording** *(Changed)*
 

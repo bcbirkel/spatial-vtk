@@ -799,8 +799,11 @@ def test_write_standard_additional_plotting_figures_returns_previews(tmp_path) -
 
     assert isinstance(result, StandardAdditionalPlottingFigureResult)
     status = result.status_frame()
+    assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
     assert status["status"].tolist() == ["wrote", "wrote", "wrote", "wrote", "wrote"]
     assert status["figure_exists"].tolist() == [True, True, True, True, True]
+    assert status["exists"].tolist() == [True, True, True, True, True]
+    assert status["path"].tolist() == status["figure_path"].tolist()
     assert result.metric_summary_frame().loc[0, "Value"] == 2
     assert result.waveform_order_frame().loc[0, "station"] == "STA1"
     assert result.pattern_frame().loc[0, "dataset"] == "observed"
@@ -2728,6 +2731,10 @@ def test_write_large_run_region_boxplot_from_notebook_settings_delegates_options
     )
 
     assert result.status == "wrote"
+    status = result.status_frame().iloc[0]
+    assert status["name"] == "region_boxplot"
+    assert status["path"] == str(tmp_path / "figures" / "boxplot.png")
+    assert bool(status["exists"]) is False
     assert seen["output_group"] is outputs
     kwargs = seen["kwargs"]
     assert kwargs["figure_dir"] == tmp_path / "figures"
@@ -2970,6 +2977,10 @@ def test_write_large_run_geojson_region_figures_from_notebook_settings_delegates
     )
 
     assert result.geojson_status == "wrote"
+    status = result.status_frame().set_index("name")
+    assert {"artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
+    assert "geojson_overview" in status.index
+    assert "region_boxplot" in status.index
     assert calls["gate_paths"] == [stations_path, events_path, geojson_path]
     assert calls["outputs"] is outputs
     assert calls["ingest_outputs"] is ingest_outputs
