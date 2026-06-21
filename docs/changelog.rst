@@ -6,6 +6,9 @@ Changelog
 
 - **Workflow import guidance** *(Fixed)*
 
+  - Reworded Metrics API figure-context guidance so ``MetricFigureContext`` is
+    presented as a script/custom-extension tool, while notebooks stay on the
+    Step 3 result object's figure methods.
   - Reworded the Step 4 spatial map workflow guide and spatial-map package
     docstring so notebooks start from the standard spatial workflow result
     object's ``write_map_figures(...)`` method instead of direct plot-helper

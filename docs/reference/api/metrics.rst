@@ -254,10 +254,12 @@ helpers below remain public for scripts and custom extensions. These helpers
 keep row filtering, robust plot scaling, sidecar writing, render gates, and
 registered output paths in package code instead of notebook cells.
 
-Use ``MetricFigureContext`` when a notebook or script needs to render many
-metric figures from a large ``metrics_long`` table without loading unnecessary
-columns or truncating station-map aggregation inputs. The context owns the
-standard row factories used by the large-run notebooks:
+Use ``MetricFigureContext`` in scripts or custom extensions that need to render
+many metric figures from a large ``metrics_long`` table without loading
+unnecessary columns or truncating station-map aggregation inputs. Standard
+notebooks should use the Step 3 result object's figure methods; those methods
+build and own the context internally. The context owns the standard row
+factories used by the large-run figure suite:
 
 ``item_source_rows``
    Return the selected metric rows for a figure item. These rows are written to

@@ -1112,6 +1112,9 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "Notebook-facing metric plotting should use the result-object and suite helpers" in text
     assert "Advanced Figure Extension Helpers" in text
     assert "not the preferred tutorial or notebook entry points" in text
+    assert "Use ``MetricFigureContext`` in scripts or custom extensions" in text
+    assert "Standard\nnotebooks should use the Step 3 result object's figure methods" in text
+    assert "Use ``MetricFigureContext`` when a notebook or script needs" not in text
     assert "``PSA`` and ``FAS`` are broadband spectral metrics" in text
     assert "writes blank\n``passband`` values for spectral tasks" in text
     assert "older output table contains PSA rows repeated under passband labels" in text
