@@ -3427,7 +3427,7 @@ def test_large_run_csv_readers_use_stable_dtype_inference():
         "src/spatial_vtk/metrics/workflow/tasks.py": "return read_disk_table(path)",
         "src/spatial_vtk/metrics/workflow/outputs.py": "return read_disk_table(path)",
         "src/spatial_vtk/metrics/calculate/enrich.py": "return pd.read_csv(path, low_memory=False)",
-        "src/spatial_vtk/io/metric_inputs.py": "return pd.read_csv(path, low_memory=False)",
+        "src/spatial_vtk/io/metric_inputs.py": "return read_disk_table(path)",
         "src/spatial_vtk/io/master_lists.py": "return pd.read_csv(path, low_memory=False)",
         "src/spatial_vtk/io/tables.py": "df = pd.read_csv(path, low_memory=False)",
         "src/spatial_vtk/cli/__init__.py": "return pd.read_csv(table_path, low_memory=False)",

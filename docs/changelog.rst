@@ -125,6 +125,9 @@ Changelog
     CSV/Parquet behavior.
   - Routed metric downstream-output table reads through the shared reader while
     preserving existing column projection for large metric tables.
+  - Routed unscoped metric input table normalization through the shared reader
+    while preserving specialized scoped QC chunking and Parquet predicate
+    pushdown for large inventories.
 
 - **Tutorial notebook hygiene** *(Fixed)*
 
