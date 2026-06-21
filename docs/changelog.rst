@@ -83,6 +83,10 @@ Changelog
   - Standardized ``MetricWaveformInventoryResult.status_frame()`` so observed
     and synthetic metric inventory rows expose artifact ids, labels, roles,
     readiness status, normalized paths, row counts, and reuse flags.
+  - Standardized ``WaveformPreprocessingWorkflowResult.status_frame()`` so
+    direct preprocessing calls expose preprocessed event-station, manifest, and
+    trace-metadata artifacts with ids, labels, roles, readiness status,
+    normalized paths, and row counts.
 
 - **CLI help and generated-reference wording** *(Changed)*
 

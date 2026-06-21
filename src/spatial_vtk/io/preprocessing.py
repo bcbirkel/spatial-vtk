@@ -140,7 +140,10 @@ class WaveformPreprocessingWorkflowResult:
         rows = [
             {
                 "name": "preprocessed_event_station_path",
+                "artifact": "preprocessed_event_station",
                 "artifact_label": "preprocessed event-station records",
+                "artifact_role": "preprocessing_output",
+                "status": "ready" if self.preprocessed_event_station_path.exists() else "missing",
                 "resolved_path": str(self.preprocessed_event_station_path),
                 "path": str(self.preprocessed_event_station_path),
                 "exists": self.preprocessed_event_station_path.exists(),
@@ -148,7 +151,10 @@ class WaveformPreprocessingWorkflowResult:
             },
             {
                 "name": "preprocessed_manifest_path",
+                "artifact": "preprocessed_manifest",
                 "artifact_label": "waveform preprocessing manifest",
+                "artifact_role": "preprocessing_output",
+                "status": "ready" if self.preprocessed_manifest_path.exists() else "missing",
                 "resolved_path": str(self.preprocessed_manifest_path),
                 "path": str(self.preprocessed_manifest_path),
                 "exists": self.preprocessed_manifest_path.exists(),
@@ -156,7 +162,10 @@ class WaveformPreprocessingWorkflowResult:
             },
             {
                 "name": "preprocessed_trace_metadata_path",
+                "artifact": "preprocessed_trace_metadata",
                 "artifact_label": "preprocessed trace metadata",
+                "artifact_role": "preprocessing_output",
+                "status": "ready" if self.preprocessed_trace_metadata_path.exists() else "missing",
                 "resolved_path": str(self.preprocessed_trace_metadata_path),
                 "path": str(self.preprocessed_trace_metadata_path),
                 "exists": self.preprocessed_trace_metadata_path.exists(),

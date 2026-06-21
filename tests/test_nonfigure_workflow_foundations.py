@@ -931,6 +931,22 @@ def test_waveform_preprocessing_workflow_writes_processed_files(tmp_path) -> Non
         "preprocessed_manifest_path",
         "preprocessed_trace_metadata_path",
     ]
+    assert status["artifact"].tolist() == [
+        "preprocessed_event_station",
+        "preprocessed_manifest",
+        "preprocessed_trace_metadata",
+    ]
+    assert status["artifact_role"].tolist() == [
+        "preprocessing_output",
+        "preprocessing_output",
+        "preprocessing_output",
+    ]
+    assert status["status"].tolist() == ["ready", "ready", "ready"]
+    assert status["artifact_label"].tolist() == [
+        "preprocessed event-station records",
+        "waveform preprocessing manifest",
+        "preprocessed trace metadata",
+    ]
     assert status["resolved_path"].tolist() == status["path"].tolist()
     assert status["exists"].tolist() == [True, True, True]
     assert status["rows"].tolist() == [1, 1, 1]
