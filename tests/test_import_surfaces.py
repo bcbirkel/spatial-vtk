@@ -1589,6 +1589,8 @@ def test_qc_api_docs_use_public_package_entry_point():
     assert "``StandardQCWorkflowOutputResult.status_frame()``" in text
     assert "configured-output readiness table instead of resolving QC paths" in text
     assert "``StandardQCInputResult.status_frame()``" in text
+    assert "output group without notebook-local Step 1 path/table plumbing" in text
+    assert "output-group table mapping" not in text
     assert "confirm input row counts and configured output paths" in text
     forbidden_modules = (
         "spatial_vtk.qc.build.filtering",

@@ -103,6 +103,8 @@ Changelog
     repeated path plumbing rather than repeated path variables.
   - Reworded Spatial API Step 4-6 helper descriptions so result loaders avoid
     notebook-local path/table plumbing instead of output-group table mappings.
+  - Reworded QC API standard-input guidance so Step 2 notebooks avoid Step 1
+    path/table plumbing rather than output-group table mapping.
 
 - **Public surface guardrails** *(Fixed)*
 
