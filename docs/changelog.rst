@@ -95,6 +95,10 @@ Changelog
     launch-plan cells expose dashboard artifact ids, labels, roles,
     command/requested-launch status, configured input paths, and existence
     checks without notebook-local path handling.
+  - Standardized ``NotebookFigureSidecarSettings.readiness_frame()`` so figure
+    provenance readiness cells expose sidecar artifact ids, labels, roles,
+    compact status, configured directory paths, and existence checks while
+    preserving the existing ``name``/``value`` display.
 
 - **CLI help and generated-reference wording** *(Changed)*
 

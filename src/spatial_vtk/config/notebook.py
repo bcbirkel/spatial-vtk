@@ -159,7 +159,10 @@ class NotebookFigureSidecarSettings:
             ],
             columns=["name", "value"],
         )
+        frame["artifact"] = frame["name"].astype(str).map(lambda value: f"figure_sidecar_{value}")
         frame["artifact_label"] = frame["name"].astype(str).map(lambda value: value.replace("_", " ").title())
+        frame["artifact_role"] = "figure_sidecar_setting"
+        frame["status"] = self._readiness_status(metadata_count)
         frame["resolved_path"] = ""
         frame["path"] = ""
         frame["exists"] = pd.NA
@@ -170,6 +173,19 @@ class NotebookFigureSidecarSettings:
             frame.loc[directory_mask, "path"] = str(directory_path)
             frame.loc[directory_mask, "exists"] = directory_path.exists()
         return frame
+
+    def _readiness_status(self, metadata_count: int | None) -> str:
+        """Return a compact machine-readable sidecar readiness status."""
+
+        if not self.enabled:
+            return "disabled"
+        if self.directory is None:
+            return "not_configured"
+        if not Path(self.directory).expanduser().exists():
+            return "missing_directory"
+        if metadata_count == 0:
+            return "empty"
+        return "ready"
 
     def _readiness_message(self, metadata_count: int | None) -> str:
         """Return a human-readable sidecar readiness message."""

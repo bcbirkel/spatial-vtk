@@ -573,7 +573,13 @@ def test_notebook_figure_sidecar_settings_parse_env(tmp_path, monkeypatch):
     assert list(empty_status.columns) == list(figure_sidecar_status_frame(explicit.directory).columns)
     assert empty_status.empty
     readiness = explicit.readiness_frame().set_index("name")
+    assert {"artifact", "artifact_label", "artifact_role", "status", "resolved_path", "path", "exists"} <= set(
+        readiness.columns
+    )
     assert readiness.loc["enabled", "value"] is True
+    assert readiness.loc["enabled", "artifact"] == "figure_sidecar_enabled"
+    assert readiness.loc["enabled", "artifact_role"] == "figure_sidecar_setting"
+    assert readiness.loc["enabled", "status"] == "missing_directory"
     assert readiness.loc["directory", "value"] == str(tmp_path / "custom_sidecars")
     assert readiness.loc["metadata_file_count", "value"] == 0
     assert readiness.loc["row_policy", "value"] == "deterministic_sample"
@@ -597,6 +603,7 @@ def test_notebook_figure_sidecar_settings_parse_env(tmp_path, monkeypatch):
     assert status.loc["station_metric_map.png", "plot_row_count"] == 2
     assert status.loc["station_metric_map.png", "aggregation_contract"] == "station_event_rows_to_station_summary"
     ready_after_write = explicit.readiness_frame().set_index("name")
+    assert ready_after_write.loc["enabled", "status"] == "ready"
     assert ready_after_write.loc["metadata_file_count", "value"] == 1
     assert "metadata is available" in ready_after_write.loc["message", "value"]
 
@@ -604,6 +611,7 @@ def test_notebook_figure_sidecar_settings_parse_env(tmp_path, monkeypatch):
     assert no_directory.status_frame().empty
     disabled = no_directory.readiness_frame().set_index("name")
     assert disabled.loc["enabled", "value"] is False
+    assert disabled.loc["enabled", "status"] == "disabled"
     assert "disabled" in disabled.loc["message", "value"]
 
 
@@ -646,7 +654,12 @@ def test_notebook_figure_settings_parse_common_controls(tmp_path, monkeypatch):
     assert settings.sidecars.enabled is True
     assert settings.sidecars.rows == 25
     sidecar_readiness = settings.sidecars.readiness_frame().set_index("name")
-    assert {"artifact_label", "resolved_path", "path", "exists"} <= set(sidecar_readiness.columns)
+    assert {"artifact", "artifact_label", "artifact_role", "status", "resolved_path", "path", "exists"} <= set(
+        sidecar_readiness.columns
+    )
+    assert sidecar_readiness.loc["directory", "artifact"] == "figure_sidecar_directory"
+    assert sidecar_readiness.loc["directory", "artifact_role"] == "figure_sidecar_setting"
+    assert sidecar_readiness.loc["directory", "status"] == "missing_directory"
     assert sidecar_readiness.loc["directory", "path"] == str(tmp_path / "figures" / "sidecars")
     assert bool(sidecar_readiness.loc["directory", "exists"]) is False
 
