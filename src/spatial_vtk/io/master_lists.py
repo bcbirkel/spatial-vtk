@@ -27,6 +27,7 @@ from typing import Any
 import pandas as pd
 
 from spatial_vtk.io.tables import read_table as read_disk_table
+from spatial_vtk.io.tables import write_table
 from spatial_vtk.io.waveforms import stream_station_table
 
 
@@ -182,15 +183,15 @@ def normalize_event_table(df: pd.DataFrame, *, extra_columns: Sequence[str] | No
 
 
 def write_master_station_list(df: pd.DataFrame, path: str | Path, *, overwrite: bool = True) -> Path:
-    """Write a master station list CSV."""
+    """Write a master station list table."""
 
-    return _write_csv(df.reindex(columns=[column for column in df.columns]), path, overwrite=overwrite)
+    return _write_table(df.reindex(columns=[column for column in df.columns]), path, overwrite=overwrite)
 
 
 def write_master_event_list(df: pd.DataFrame, path: str | Path, *, overwrite: bool = True) -> Path:
-    """Write a master event list CSV."""
+    """Write a master event list table."""
 
-    return _write_csv(df.reindex(columns=[column for column in df.columns]), path, overwrite=overwrite)
+    return _write_table(df.reindex(columns=[column for column in df.columns]), path, overwrite=overwrite)
 
 
 def _normalize_table(
@@ -255,15 +256,20 @@ def _read_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
     return read_disk_table(path)
 
 
-def _write_csv(df: pd.DataFrame, path: str | Path, *, overwrite: bool) -> Path:
-    """Write one CSV with explicit overwrite handling."""
+def _write_table(df: pd.DataFrame, path: str | Path, *, overwrite: bool) -> Path:
+    """Write one CSV or Parquet table with explicit overwrite handling."""
 
-    output = Path(path).expanduser()
+    output = _table_output_path(path)
     if output.exists() and not overwrite:
         return output
-    output.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(output, index=False)
-    return output
+    return write_table(df, output, index=False)
+
+
+def _table_output_path(path: str | Path) -> Path:
+    """Return the on-disk table path used by the shared writer."""
+
+    output = Path(path).expanduser()
+    return output.with_suffix(".csv") if not output.suffix else output
 
 
 def _normalize_station(value: Any) -> str:
@@ -296,10 +302,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
     stations = subparsers.add_parser("stations", help="Build a master station list.")
     stations.add_argument("--input", nargs="+", required=True, help="Station CSV/parquet paths.")
-    stations.add_argument("--output", required=True, help="Output station CSV.")
+    stations.add_argument("--output", required=True, help="Output station CSV/parquet table.")
     events = subparsers.add_parser("events", help="Build a master event list.")
     events.add_argument("--input", nargs="+", required=True, help="Event CSV/parquet paths.")
-    events.add_argument("--output", required=True, help="Output event CSV.")
+    events.add_argument("--output", required=True, help="Output event CSV/parquet table.")
     return parser
 
 

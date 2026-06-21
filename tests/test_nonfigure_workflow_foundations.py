@@ -10,11 +10,12 @@ import pytest
 
 from spatial_vtk.io.artifacts import ArtifactRegistry, ArtifactSpec
 from spatial_vtk.config import SpatialVTKConfig, clear_active_config
-from spatial_vtk.io.master_lists import build_master_event_list, build_master_station_list
+from spatial_vtk.io.master_lists import build_master_event_list, build_master_station_list, write_master_station_list
 from spatial_vtk.io.metadata import prepare_event_station_table
 from spatial_vtk.io.plans import MetricPlan, compare_metric_plan_to_table, expected_metric_rows_from_inventory
 from spatial_vtk.io.waveforms import WaveformPreprocessing, read_waveform_file, trace_metadata_table
 from spatial_vtk.io.preprocessing import preprocess_waveform_files
+from spatial_vtk.metrics.calculate.arrival_picks import load_arrival_pick_catalog, write_arrival_pick_catalog
 from spatial_vtk.metrics.calculate.phasenet_adapter import (
     PhaseNetInputRecord,
     normalize_phasenet_output,
@@ -143,6 +144,43 @@ def test_master_event_list_uses_common_aliases() -> None:
     assert events.loc[0, "magnitude"] == 4.2
 
 
+def test_small_public_table_writers_use_suffixless_csv_targets(tmp_path) -> None:
+    station_path = tmp_path / "stations"
+    station_rows = pd.DataFrame({"station": ["STA"], "network": ["XX"], "lat": [34.1], "lon": [-118.2]})
+    written_station_path = write_master_station_list(station_rows, station_path)
+
+    assert written_station_path == station_path.with_suffix(".csv")
+    assert pd.read_csv(written_station_path).loc[0, "station"] == "STA"
+    skipped_station_path = write_master_station_list(
+        pd.DataFrame({"station": ["NEW"], "network": ["XX"], "lat": [34.2], "lon": [-118.3]}),
+        station_path,
+        overwrite=False,
+    )
+    assert skipped_station_path == written_station_path
+    assert pd.read_csv(written_station_path).loc[0, "station"] == "STA"
+
+    pick_path = tmp_path / "picks"
+    pick_rows = pd.DataFrame(
+        {
+            "event_id": ["ci123"],
+            "station": ["STA"],
+            "component": ["Z"],
+            "phase": ["p"],
+            "pick_time_abs": ["2020-01-01T00:00:00Z"],
+            "pick_time_rel_s": [1.5],
+            "probability": [0.9],
+            "method": ["catalog"],
+        }
+    )
+    written_pick_path = write_arrival_pick_catalog(pick_rows, pick_path)
+
+    assert written_pick_path == pick_path.with_suffix(".csv")
+    assert load_arrival_pick_catalog(written_pick_path).loc[0, "phase"] == "P"
+    skipped_pick_path = write_arrival_pick_catalog(pick_rows.assign(phase=["S"]), pick_path, overwrite=False)
+    assert skipped_pick_path == written_pick_path
+    assert load_arrival_pick_catalog(written_pick_path).loc[0, "phase"] == "P"
+
+
 def test_event_station_table_computes_path_geometry() -> None:
     station_metadata = pd.DataFrame({"station": ["ABC"], "lat": [34.1], "lon": [-118.2]})
     event_metadata = pd.DataFrame({"event_id": ["ci123"], "event_lat": [34.0], "event_lon": [-118.0]})
@@ -182,8 +220,12 @@ def test_qc_inventory_companion_and_manual_decisions(tmp_path) -> None:
             }
         ]
     )
-    decision_path = write_manual_qc_decisions(decisions, tmp_path / "manual_qc.csv")
+    decision_path = write_manual_qc_decisions(decisions, tmp_path / "manual_qc")
+    assert decision_path == tmp_path / "manual_qc.csv"
     loaded = load_manual_qc_decisions(decision_path)
+    skipped_decision_path = write_manual_qc_decisions(decisions.assign(decision=["accept"]), tmp_path / "manual_qc", overwrite=False)
+    assert skipped_decision_path == decision_path
+    assert load_manual_qc_decisions(decision_path).loc[0, "decision"] == "reject"
     updated = apply_manual_qc_decisions(inventory, loaded)
     assert bool(updated.loc[0, "reject_1_3s"])
     assert updated.loc[0, "reject_reason_1_3s"] == "manual_bad_trace"

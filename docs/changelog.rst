@@ -157,6 +157,9 @@ Changelog
   - Routed dashboard summary-table writing through the shared table writer so
     dashboard exports keep atomic-write behavior while preserving stale
     cross-format cleanup.
+  - Routed manual QC decision, arrival-pick catalog, and master-list helper
+    writes through the shared table writer while preserving explicit
+    ``overwrite=False`` behavior.
   - Added a shared ``table_columns()`` helper for schema-only CSV/Parquet
     inspection and routed dashboard, metric workflow, metric batch merge, and
     large-run plotting column probes through it.

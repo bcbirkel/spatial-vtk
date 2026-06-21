@@ -3481,6 +3481,33 @@ def test_dashboard_summary_writes_use_shared_writer():
     assert ".to_parquet(" not in helper
 
 
+def test_small_public_table_writes_use_shared_writer():
+    """Small public helper outputs should use package table writer semantics."""
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    helpers = {
+        "src/spatial_vtk/qc/review/tables.py": (
+            "def write_manual_qc_decisions",
+            "return write_table(normalize_manual_qc_decisions(df), output, index=False)",
+        ),
+        "src/spatial_vtk/metrics/calculate/arrival_picks.py": (
+            "def write_arrival_pick_catalog",
+            "return write_table(normalize_pick_catalog(df), output, index=False)",
+        ),
+        "src/spatial_vtk/io/master_lists.py": (
+            "def _write_table",
+            "return write_table(df, output, index=False)",
+        ),
+    }
+    for relative_path, (function_marker, expected_write) in helpers.items():
+        source = (repo_root / relative_path).read_text(encoding="utf-8")
+        helper = source.split(function_marker, 1)[1].split("\ndef ", 1)[0]
+        assert "write_table" in source, relative_path
+        assert expected_write in helper, relative_path
+        assert ".to_csv(" not in helper, relative_path
+        assert ".to_parquet(" not in helper, relative_path
+
+
 def test_large_run_parquet_metadata_helpers_do_not_full_read_fallbacks():
     """Schema and bounded-read helpers must not full-read large parquet tables."""
 

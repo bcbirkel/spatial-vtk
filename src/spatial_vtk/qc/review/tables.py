@@ -14,7 +14,7 @@ from typing import Any
 
 import pandas as pd
 
-from spatial_vtk.io.tables import read_table
+from spatial_vtk.io.tables import read_table, write_table
 
 DECISION_COLUMNS: tuple[str, ...] = (
     "event_id",
@@ -144,14 +144,14 @@ def load_manual_qc_decisions(path: str | Path | None) -> pd.DataFrame:
 
 
 def write_manual_qc_decisions(df: pd.DataFrame, path: str | Path, *, overwrite: bool = True) -> Path:
-    """Write manual QC decisions to CSV.
+    """Write manual QC decisions to a CSV or Parquet table.
 
     Parameters
     ----------
     df
         Decision rows.
     path
-        Output CSV path.
+        Output CSV or Parquet path.
     overwrite
         Whether to replace an existing file.
 
@@ -161,12 +161,17 @@ def write_manual_qc_decisions(df: pd.DataFrame, path: str | Path, *, overwrite: 
         Written path.
     """
 
-    output = Path(path).expanduser()
+    output = _table_output_path(path)
     if output.exists() and not overwrite:
         return output
-    output.parent.mkdir(parents=True, exist_ok=True)
-    normalize_manual_qc_decisions(df).to_csv(output, index=False)
-    return output
+    return write_table(normalize_manual_qc_decisions(df), output, index=False)
+
+
+def _table_output_path(path: str | Path) -> Path:
+    """Return the on-disk table path used by the shared writer."""
+
+    output = Path(path).expanduser()
+    return output.with_suffix(".csv") if not output.suffix else output
 
 
 def apply_manual_qc_decisions(

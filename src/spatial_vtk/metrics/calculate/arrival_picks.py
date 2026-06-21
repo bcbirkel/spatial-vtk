@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from spatial_vtk.io.tables import read_table
+from spatial_vtk.io.tables import read_table, write_table
 
 DEFAULT_PICKER = "phasenet"
 
@@ -160,16 +160,17 @@ def load_arrival_pick_catalog(path: str | Path) -> pd.DataFrame:
 def write_arrival_pick_catalog(df: pd.DataFrame, path: str | Path, *, overwrite: bool = False) -> Path:
     """Write one normalized pick catalog to CSV or Parquet."""
 
-    output = Path(path)
+    output = _table_output_path(path)
     if output.exists() and not overwrite:
         return output
-    output.parent.mkdir(parents=True, exist_ok=True)
-    normalized = normalize_pick_catalog(df)
-    if output.suffix.lower() in {".parquet", ".pq"}:
-        normalized.to_parquet(output, index=False)
-    else:
-        normalized.to_csv(output, index=False)
-    return output
+    return write_table(normalize_pick_catalog(df), output, index=False)
+
+
+def _table_output_path(path: str | Path) -> Path:
+    """Return the on-disk table path used by the shared writer."""
+
+    output = Path(path).expanduser()
+    return output.with_suffix(".csv") if not output.suffix else output
 
 
 def _python_module_command_available(command: str) -> bool:
