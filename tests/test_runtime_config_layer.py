@@ -61,6 +61,7 @@ from spatial_vtk.io import (
     output_readiness,
     output_status_frame,
     preprocessed_waveform_output_group,
+    required_outputs_exist,
     load_standard_ingest_workflow_outputs,
     metadata_tables_readiness_from_config,
     preprocessing_readiness_from_config,
@@ -2024,6 +2025,12 @@ outputs:
 
     assert should_rebuild_outputs({"metrics_long_path": paths["metrics_long_path"]}) is False
     assert should_rebuild_paths(paths["metrics_long_path"]) is False
+    with pytest.raises(ValueError, match="At least one output path is required"):
+        required_outputs_exist({})
+    with pytest.raises(ValueError, match="At least one output path is required"):
+        should_rebuild_outputs({})
+    with pytest.raises(ValueError, match="At least one output path is required"):
+        should_rebuild_paths()
     source = tmp_path / "newer_source.csv"
     source.write_text("x\n1\n", encoding="utf-8")
     assert should_rebuild_outputs({"metrics_long_path": paths["metrics_long_path"]}, sources=[source]) is True

@@ -1414,6 +1414,8 @@ def output_group_status_frame(
 def required_outputs_exist(paths: dict[str, str | Path]) -> bool:
     """Return whether all named output paths exist."""
 
+    if not paths:
+        raise ValueError("At least one output path is required.")
     return all(Path(path).exists() for path in paths.values())
 
 
@@ -1429,6 +1431,8 @@ def should_rebuild_outputs(
     missing, or any existing source is newer than any output.
     """
 
+    if not paths:
+        raise ValueError("At least one output path is required to determine rebuild status.")
     output_paths = [Path(path) for path in paths.values()]
     if bool(overwrite) or not all(path.exists() for path in output_paths):
         return True

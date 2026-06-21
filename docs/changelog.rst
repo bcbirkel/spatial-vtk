@@ -65,6 +65,9 @@ Changelog
     configuration errors instead of silently changing load behavior.
   - Hardened notebook output-readiness checks so an empty output collection
     raises a clear error instead of reporting the step as current and skipped.
+  - Applied the same empty-output guard to lower-level output-existence and
+    rebuild helpers so path-based workflow checks cannot silently no-op when
+    no targets are configured.
 
 2026-06-19
 ----------
