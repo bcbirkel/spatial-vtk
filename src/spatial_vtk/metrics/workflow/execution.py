@@ -587,8 +587,11 @@ def _table_columns(path: Path) -> list[str]:
             import pyarrow.parquet as pq
 
             return list(pq.ParquetFile(path).schema.names)
-        except ImportError:
-            return list(pd.read_parquet(path).head(0).columns)
+        except ImportError as exc:
+            raise RuntimeError(
+                f"Could not inspect metric batch parquet schema for {path}: pyarrow is required. "
+                "Install the package dependencies or rewrite metric batches as CSV before merging."
+            ) from exc
     return list(pd.read_csv(path, nrows=0).columns)
 
 
@@ -628,8 +631,11 @@ def _read_table_preview(path: Path, *, max_rows: int) -> pd.DataFrame:
             if not records:
                 return pd.DataFrame(columns=parquet_file.schema.names)
             return pd.DataFrame.from_records(records, columns=parquet_file.schema.names)
-        except ImportError:
-            return pd.read_parquet(path).head(max_rows)
+        except ImportError as exc:
+            raise RuntimeError(
+                f"Could not read a bounded metric batch parquet preview for {path}: pyarrow is required. "
+                "Install the package dependencies or rewrite metric batches as CSV before merging."
+            ) from exc
     text_columns = _csv_text_columns(path)
     dtype = {column: str for column in text_columns}
     return pd.read_csv(path, dtype=dtype, nrows=max_rows, low_memory=False)

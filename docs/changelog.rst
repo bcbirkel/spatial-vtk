@@ -723,6 +723,9 @@ Changelog
   - Made scoped metric-QC parquet reads fail with actionable PyArrow metadata
     or streaming errors instead of falling back to full-table materialization
     during metric manifest planning.
+  - Made metric batch parquet merges fail with actionable PyArrow dependency
+    errors instead of falling back to full-table pandas reads when inspecting
+    schemas or bounded previews.
 
 - **Large-run notebook result objects** *(Hardened)*
 

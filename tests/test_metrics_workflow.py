@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import builtins
 import json
 from pathlib import Path
 
@@ -2357,6 +2358,40 @@ def test_metric_batch_merge_streams_without_dataframe_concat(tmp_path, monkeypat
     assert merged["station"].tolist() == ["ABC", "637"]
     assert pd.isna(merged.loc[0, "extra_note"])
     assert merged.loc[1, "extra_note"] == "later-column"
+
+
+def test_metric_batch_merge_requires_pyarrow_for_parquet_batches(tmp_path, monkeypatch) -> None:
+    """Parquet metric batch merges should not fall back to full pandas reads."""
+
+    batch = tmp_path / "batch.parquet"
+    batch.write_bytes(b"not a real parquet file")
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "manifest_version": 1,
+                "qc_table": "",
+                "tasks": [],
+                "batches": [{"batch_index": 0, "task_indices": [], "output_path": str(batch)}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    real_import = builtins.__import__
+
+    def guarded_import(name, globals=None, locals=None, fromlist=(), level=0):  # noqa: ANN001, ANN002
+        if name == "pyarrow.parquet" or name == "pyarrow":
+            raise ImportError("pyarrow unavailable for test")
+        return real_import(name, globals, locals, fromlist, level)
+
+    def fail_full_parquet_read(*args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        raise AssertionError("metric batch merges must not full-read parquet fallback data")
+
+    monkeypatch.setattr(builtins, "__import__", guarded_import)
+    monkeypatch.setattr(pd, "read_parquet", fail_full_parquet_read)
+
+    with pytest.raises(RuntimeError, match="pyarrow is required"):
+        merge_batch_outputs(manifest_path, tmp_path / "merged.csv")
 
 
 def test_metric_row_parquet_write_normalizes_mixed_text_columns(tmp_path) -> None:
