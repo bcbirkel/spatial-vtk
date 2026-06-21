@@ -721,7 +721,14 @@ def test_ci_runs_clean_tutorial_notebooks_with_notebook_extras() -> None:
     install = 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
     assert install in workflow
     assert install in docs_workflow
-    assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in workflow
+    assert (
+        "MPLCONFIGDIR=/tmp/mplconfig_svtk "
+        "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run"
+    ) in workflow
+    assert (
+        "MPLCONFIGDIR=/tmp/mplconfig_svtk "
+        "python tools/execute_tutorial_notebooks.py --clean --include-large-run"
+    ) in workflow
 
 
 def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() -> None:
@@ -745,16 +752,35 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "If pip has trouble solving compiled geospatial or waveform packages" in large_run_readme
     assert "## Run the Tutorial Notebooks" in readme
     assert "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run" in readme
-    assert "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run" in readme
-    assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in readme
+    assert (
+        "MPLCONFIGDIR=/tmp/mplconfig_svtk "
+        "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run"
+    ) in readme
+    assert (
+        "MPLCONFIGDIR=/tmp/mplconfig_svtk "
+        "python tools/execute_tutorial_notebooks.py --clean --include-large-run"
+    ) in readme
     assert "The runtime check does not execute notebooks or clean outputs." in readme
+    assert "keeps matplotlib font/cache files in a writable" in readme
     assert 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"' in examples_index
     assert 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"' in large_run_readme
-    assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in installation
-    assert "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run" in installation
-    assert "python tools/execute_tutorial_notebooks.py --clean --include-large-run" in combined
+    assert (
+        "MPLCONFIGDIR=/tmp/mplconfig_svtk "
+        "python tools/execute_tutorial_notebooks.py --clean --include-large-run"
+    ) in installation
+    assert (
+        "MPLCONFIGDIR=/tmp/mplconfig_svtk "
+        "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run"
+    ) in installation
+    assert (
+        "MPLCONFIGDIR=/tmp/mplconfig_svtk "
+        "python tools/execute_tutorial_notebooks.py --clean --include-large-run"
+    ) in combined
     assert "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run" in combined
-    assert "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run" in combined
+    assert (
+        "MPLCONFIGDIR=/tmp/mplconfig_svtk "
+        "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run"
+    ) in combined
     assert "The runtime check does not execute notebooks or clean outputs." in examples_index
     assert "active Python version plus the Jupyter" in examples_index
     assert "Unsupported Python versions and missing dependency extras are reported" in examples_index

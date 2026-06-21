@@ -115,12 +115,16 @@ the committed example data, install the tutorial runtime extras and run:
 
 .. code-block:: bash
 
-   python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run
-   python tools/execute_tutorial_notebooks.py --clean --include-large-run
+   python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run
+   MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run
+   MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --clean --include-large-run
 
-The runtime check first confirms that the active interpreter is supported by
-the package, then verifies the Jupyter, mapping, dashboard, and waveform
-modules used by the tutorial notebooks.
+The preflight check verifies source-contract rules and committed example data
+without importing notebook runtime dependencies. The runtime check then
+confirms that the active interpreter is supported by the package and verifies
+the Jupyter, mapping, dashboard, and waveform modules used by the tutorial
+notebooks. The ``MPLCONFIGDIR`` prefix keeps matplotlib font/cache files in a
+writable temporary directory and out of the repository.
 
 The tutorial checker first verifies that the committed five-event metadata,
 snapshot tables, and observed/synthetic NPZ waveform subset are present. It

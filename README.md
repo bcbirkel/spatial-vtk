@@ -44,13 +44,16 @@ From a source checkout, verify the committed example data and notebook imports
 before running the notebooks:
 
     python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run
-    python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run
+    MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run
 
 The runtime check does not execute notebooks or clean outputs. To execute the
 standard and large-run tutorial notebooks end to end from the committed example
 data, run:
 
-    python tools/execute_tutorial_notebooks.py --clean --include-large-run
+    MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --clean --include-large-run
+
+The `MPLCONFIGDIR` prefix keeps matplotlib font/cache files in a writable
+temporary directory and out of the repository.
 
 ## Structure
 

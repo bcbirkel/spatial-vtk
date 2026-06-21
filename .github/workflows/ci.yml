@@ -33,7 +33,7 @@ jobs:
 
       - name: Preflight tutorial notebook sources
         run: |
-          python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run
+          MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run
 
       - name: Check patch whitespace
         run: |

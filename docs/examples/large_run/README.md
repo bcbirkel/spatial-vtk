@@ -18,7 +18,7 @@ extras and run:
 
 ```bash
 python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"
-python tools/execute_tutorial_notebooks.py --clean --include-large-run
+MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --clean --include-large-run
 ```
 
 If pip has trouble solving compiled geospatial or waveform packages in an
@@ -81,7 +81,7 @@ contract.
 Run `python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run`
 for the same source-contract and example-data checks without notebook runtime
 dependencies.
-Run `python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run`
+Run `MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run`
 to also verify that the current environment can import the Jupyter,
 `spatial_vtk`, scientific Python, mapping, dashboard, and waveform modules used
 by the notebooks, without cleaning outputs or starting execution.

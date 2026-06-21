@@ -49,6 +49,10 @@ Changelog
   - Fixed output status tables so user-home paths such as ``~/outputs`` are
     expanded before existence checks and displayed through the ``resolved_path``
     column.
+  - Aligned public tutorial-check commands in the README, installation guide,
+    examples index, large-run README, and CI preflight so runtime notebook
+    checks use a writable ``MPLCONFIGDIR`` instead of relying on user-level
+    matplotlib cache locations.
 
 - **Notebook source-contract checks** *(Fixed)*
 
