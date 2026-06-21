@@ -84,6 +84,9 @@ Changelog
     under-documented section headings that omit Purpose/Outputs notes.
   - Improved CLI missing-dependency diagnostics so import aliases such as
     ``yaml`` name their installable package, for example ``PyYAML``.
+  - Normalized ``SlurmSubmission.status_frame()`` so notebook-displayed Slurm
+    submissions include ``name``, ``artifact_label``, ``resolved_path``,
+    ``path``, and ``exists`` columns while preserving ``script_path``.
   - Added dashboard launch port validation so invalid ports or impossible
     auto-port search ranges raise clear configuration errors before Streamlit
     startup.

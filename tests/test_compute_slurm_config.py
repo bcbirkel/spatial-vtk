@@ -163,7 +163,13 @@ def test_submit_slurm_script_splits_submit_command(
     assert submission.job_id == "12345"
     status = submission.status_frame()
     assert status.loc[0, "status"] == "submitted"
+    assert status.loc[0, "name"] == "slurm_script"
+    assert status.loc[0, "artifact_label"] == "SLURM submission script"
+    assert status.loc[0, "artifact_role"] == "script"
     assert status.loc[0, "job_id"] == "12345"
+    assert status.loc[0, "resolved_path"] == str(script)
+    assert status.loc[0, "path"] == str(script)
+    assert bool(status.loc[0, "exists"]) is True
     assert status.loc[0, "script_path"] == str(script)
     assert status.loc[0, "returncode"] == 0
     assert status.loc[0, "command"] == f"sbatch --parsable {script}"
@@ -187,6 +193,10 @@ def test_slurm_submission_status_frame_reports_failed_submission(tmp_path: Path)
 
     assert status.loc[0, "status"] == "submission_failed"
     assert status.loc[0, "job_id"] == ""
+    assert status.loc[0, "artifact_label"] == "SLURM submission script"
+    assert status.loc[0, "resolved_path"] == str(tmp_path / "failed.slurm")
+    assert status.loc[0, "path"] == str(tmp_path / "failed.slurm")
+    assert bool(status.loc[0, "exists"]) is False
     assert status.loc[0, "script_path"] == str(tmp_path / "failed.slurm")
     assert status.loc[0, "returncode"] == 1
     assert status.loc[0, "stderr"] == "invalid partition"

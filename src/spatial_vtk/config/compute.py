@@ -51,8 +51,14 @@ class SlurmSubmission:
         return pd.DataFrame(
             [
                 {
+                    "name": "slurm_script",
+                    "artifact_label": "SLURM submission script",
+                    "artifact_role": "script",
                     "status": "submitted" if self.returncode == 0 else "submission_failed",
                     "job_id": self.job_id,
+                    "resolved_path": str(self.script_path),
+                    "path": str(self.script_path),
+                    "exists": self.script_path.exists(),
                     "script_path": str(self.script_path),
                     "returncode": int(self.returncode),
                     "command": " ".join(self.command),

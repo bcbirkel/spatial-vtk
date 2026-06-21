@@ -1349,6 +1349,8 @@ def test_config_api_docs_include_compute_helpers():
     assert "``display_notebook_step_result``" in text
     assert "skipped/current step payloads" in text
     assert "skipped/current step dictionaries" not in text
+    assert "``SlurmSubmission`` owns\n       ``status_frame()`` with normalized ``name``, ``artifact_label``" in text
+    assert "``resolved_path``, ``path``, and ``exists`` columns plus the job id" in text
     notebook_source = (docs.parent.parent / "src" / "spatial_vtk" / "config" / "notebook.py").read_text(
         encoding="utf-8"
     )
