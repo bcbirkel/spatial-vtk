@@ -51,8 +51,9 @@ Public helpers exposed by ``spatial_vtk.visualize``:
        metadata and record-coverage outputs without notebook-local readiness
        checks, table loading, basemap kwargs, or sidecar kwargs. The returned
        ``ContextFigureResult`` exposes ``status_frame()`` for compact notebook
-       display of table paths, figure paths, existence flags, statuses, and
-       messages.
+       display of table paths, statuses, messages, and normalized figure path
+       columns: ``name``, ``artifact_label``, ``resolved_path``, ``path``,
+       and ``exists``.
    * - ``plot_retention_summary`` and
        ``plot_event_station_retention_heatmap``
      - Render compact QC retention figures from summary tables instead of full
@@ -65,8 +66,9 @@ Public helpers exposed by ``spatial_vtk.visualize``:
      - Render the standard QC figure suite from compact configured QC outputs
        without notebook-local readiness checks, table loading, map kwargs, or
        sidecar kwargs. The returned ``QCFigureResult`` exposes
-       ``status_frame()`` for QC table paths, figure paths, existence flags,
-       statuses, messages, and row counts.
+       ``status_frame()`` for QC table paths, statuses, messages, row counts,
+       and normalized figure path columns: ``name``, ``artifact_label``,
+       ``resolved_path``, ``path``, and ``exists``.
    * - ``plot_observed_synthetic_record_section`` and ``plot_record_section``
      - Render record-section waveform figures from prepared waveform tables.
    * - ``station_event_waveform_order_frame``
@@ -78,8 +80,9 @@ Public helpers exposed by ``spatial_vtk.visualize``:
        component, passband, and display settings before delegating to the
        configured output writer. The returned
        ``WaveformComparisonFigureResult`` exposes ``status_frame()`` for the
-       selected comparison figure, status/message, row count, and provenance
-       sidecars.
+       selected comparison figure, status/message, row count, provenance
+       sidecars, and the normalized path columns used by other figure status
+       tables.
    * - ``write_waveform_comparison_from_outputs``
      - Direct script helper for observed/synthetic trace-comparison
        figures when output paths and plotting keyword arguments are already

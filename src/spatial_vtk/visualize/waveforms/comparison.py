@@ -16,6 +16,7 @@ from typing import Any
 import pandas as pd
 
 from spatial_vtk.visualize.context.figures import plot_event_trace_comparison
+from spatial_vtk.visualize.figure_sidecars import normalize_figure_status_rows
 
 
 def _load_comparison_eligible_records(*args: Any, **kwargs: Any) -> pd.DataFrame:
@@ -48,9 +49,10 @@ class WaveformComparisonFigureResult:
     def status_frame(self) -> pd.DataFrame:
         """Return a notebook-friendly status table."""
 
-        return pd.DataFrame(
+        return normalize_figure_status_rows(
             [
                 {
+                    "name": "waveform_comparison_figure",
                     "status": self.status,
                     "message": self.message,
                     "figure_path": str(self.figure_path),

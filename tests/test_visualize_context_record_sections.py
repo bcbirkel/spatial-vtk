@@ -279,6 +279,10 @@ def test_waveform_comparison_notebook_settings_delegates_options(tmp_path: Path,
     )
 
     assert result.status == "written"
+    status = result.status_frame()
+    assert status.loc[0, "name"] == "waveform_comparison_figure"
+    assert status.loc[0, "path"] == str(figure_path)
+    assert bool(status.loc[0, "exists"]) is False
     assert calls["gate_paths"] == [comparison_eligible_path, event_station_path]
     assert calls["kwargs"]["component"] == "T"
     assert calls["kwargs"]["passband"] == "2-3 sec"

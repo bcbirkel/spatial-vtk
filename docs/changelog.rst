@@ -41,6 +41,10 @@ Changelog
   - Added ``SlurmSubmission.status_frame()`` so submitted notebook and workflow
     jobs expose job id, script path, command, stdout, stderr, and return code
     without printing raw dataclass representations.
+  - Standardized context, QC, and waveform-comparison figure result
+    ``status_frame()`` outputs so notebook tables expose ``name``,
+    ``artifact_label``, ``resolved_path``, ``path``, and ``exists`` while
+    preserving legacy figure/table path columns.
 
 - **CLI help and generated-reference wording** *(Changed)*
 

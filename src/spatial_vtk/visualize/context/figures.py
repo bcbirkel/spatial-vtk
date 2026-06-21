@@ -24,7 +24,7 @@ from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import title_with_subtitle
 from spatial_vtk.visualize.figure_io import finish_figure
-from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
+from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar, normalize_figure_status_rows
 from spatial_vtk.visualize.selection import FigureSelection
 
 
@@ -37,7 +37,7 @@ class ContextFigureResult:
     def status_frame(self) -> pd.DataFrame:
         """Return a compact notebook status table for context figures."""
 
-        return pd.DataFrame(list(self.rows))
+        return normalize_figure_status_rows(self.rows)
 
 
 def _apply_bounds(ax: plt.Axes, bounds: tuple[float, float, float, float] | None) -> None:

@@ -12,6 +12,50 @@ from typing import Any
 import pandas as pd
 
 
+def normalize_figure_status_rows(
+    rows: list[dict[str, object]] | tuple[dict[str, object], ...],
+    *,
+    default_name: str = "figure_path",
+) -> pd.DataFrame:
+    """Return figure status rows with a common notebook path contract.
+
+    Existing figure helpers historically exposed different path column names.
+    This helper preserves those columns while adding standard ``name``,
+    ``artifact_label``, ``resolved_path``, ``path``, and ``exists`` columns for
+    notebook status cells.
+    """
+
+    frame = pd.DataFrame(list(rows))
+    if frame.empty:
+        return frame
+    if "artifact" in frame.columns:
+        names = frame["artifact"].fillna(default_name).astype(str)
+    elif "name" in frame.columns:
+        names = frame["name"].fillna(default_name).astype(str)
+    else:
+        names = pd.Series([default_name] * len(frame), index=frame.index, dtype=object)
+    if "figure_path" in frame.columns:
+        paths = frame["figure_path"]
+    elif "path" in frame.columns:
+        paths = frame["path"]
+    else:
+        paths = pd.Series([""] * len(frame), index=frame.index, dtype=object)
+    normalized = pd.DataFrame(
+        {
+            "name": names,
+            "artifact_label": names.map(lambda value: str(value).replace("_", " ").title()),
+            "resolved_path": paths.fillna("").astype(str),
+            "path": paths.fillna("").astype(str),
+        },
+        index=frame.index,
+    )
+    if "figure_exists" in frame.columns:
+        normalized["exists"] = frame["figure_exists"].fillna(False).astype(bool)
+    else:
+        normalized["exists"] = normalized["resolved_path"].map(lambda value: bool(value) and Path(value).exists())
+    return pd.concat([normalized, frame.drop(columns=[col for col in normalized.columns if col in frame.columns])], axis=1)
+
+
 @dataclass(frozen=True)
 class FigureSidecarResult:
     """Paths and metadata written for one figure sidecar."""

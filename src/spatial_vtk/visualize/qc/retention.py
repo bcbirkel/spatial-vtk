@@ -32,7 +32,7 @@ from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_io import finish_figure
-from spatial_vtk.visualize.figure_sidecars import write_figure_row_sidecar
+from spatial_vtk.visualize.figure_sidecars import normalize_figure_status_rows, write_figure_row_sidecar
 
 
 @dataclass(frozen=True)
@@ -44,7 +44,7 @@ class QCFigureResult:
     def status_frame(self) -> pd.DataFrame:
         """Return a compact notebook status table for QC figure outputs."""
 
-        return pd.DataFrame(list(self.rows))
+        return normalize_figure_status_rows(self.rows)
 
 
 def plot_retention_summary(

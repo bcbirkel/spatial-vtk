@@ -563,6 +563,9 @@ outputs:
     assert isinstance(result, ContextFigureResult)
     assert set(status["status"]) == {"wrote"}
     assert len(status) == 5
+    assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
+    assert status["path"].tolist() == status["figure_path"].tolist()
+    assert status["exists"].tolist() == status["figure_exists"].tolist()
     assert all(path and Path(path).exists() for path in status["figure_path"])
     assert status["figure_exists"].tolist() == [True] * 5
     assert all(all(value is True for value in table_map.values()) for table_map in status["table_exists"])
@@ -727,6 +730,9 @@ outputs:
     assert isinstance(result, QCFigureResult)
     assert set(status["status"]) == {"wrote"}
     assert len(status) == 6
+    assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
+    assert status["path"].tolist() == status["figure_path"].tolist()
+    assert status["exists"].tolist() == status["figure_exists"].tolist()
     assert all(path and Path(path).exists() for path in status["figure_path"])
     assert status["figure_exists"].tolist() == [True] * 6
     assert status["table_exists"].tolist() == [True] * 6
