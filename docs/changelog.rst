@@ -86,6 +86,9 @@ Changelog
   - Tightened tutorial notebook public-import checks so lower-level
     ``spatial_vtk.config.metrics`` imports are rejected in favor of the public
     ``spatial_vtk.config`` namespace already used by the notebooks.
+  - Extended the same notebook preflight guardrail to
+    ``spatial_vtk.config.notebook`` imports so tutorial cells keep using the
+    public ``spatial_vtk.config`` namespace for notebook helpers.
 
 - **Workflow readiness and dashboard parsing** *(Fixed)*
 
