@@ -3155,7 +3155,7 @@ def _cmd_dashboard_metrics(args: argparse.Namespace) -> int:
         print(f"Metrics dashboard download rows: {args.download_rows}")
     if args.auto_port and int(resolved_port) != int(args.port):
         print(f"Metrics dashboard auto-port: requested {args.port}, using {resolved_port}")
-    print(f"Metrics dashboard running at http://{args.address}:{resolved_port} (pid {process.pid})")
+    print(f"Metrics dashboard running at http://{_dashboard_cli_display_host(args.address)}:{resolved_port} (pid {process.pid})")
     return 0
 
 
@@ -3257,8 +3257,17 @@ def _cmd_dashboard_qc(args: argparse.Namespace) -> int:
         print("QC dashboard proxy mode: enabled")
     if args.auto_port and int(resolved_port) != int(args.port):
         print(f"QC dashboard auto-port: requested {args.port}, using {resolved_port}")
-    print(f"QC dashboard running at http://{args.address}:{resolved_port} (pid {process.pid})")
+    print(f"QC dashboard running at http://{_dashboard_cli_display_host(args.address)}:{resolved_port} (pid {process.pid})")
     return 0
+
+
+def _dashboard_cli_display_host(server_address: str) -> str:
+    """Return a browser-friendly host for CLI dashboard URLs."""
+
+    address = str(server_address).strip()
+    if address in {"", "0.0.0.0", "::"}:
+        return "127.0.0.1"
+    return address
 
 
 def _cmd_visualize_sidecars_status(args: argparse.Namespace) -> int:

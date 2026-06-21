@@ -4066,6 +4066,8 @@ def test_cli_dashboard_metrics_accepts_clear_path_aliases(tmp_path, monkeypatch,
                 str(metrics_path),
                 "--dashboard-summary-table-dir",
                 str(summary_path),
+                "--address",
+                "0.0.0.0",
                 "--port",
                 "8555",
             ]
@@ -4079,7 +4081,9 @@ def test_cli_dashboard_metrics_accepts_clear_path_aliases(tmp_path, monkeypatch,
     assert Path(launched["metrics_dataset_dir"]) == metrics_path
     assert Path(launched["dashboard_summary_table_dir"]) == summary_path
     assert launched["config_path"] is None
+    assert launched["server_address"] == "0.0.0.0"
     assert launched["server_port"] == 8555
+    assert "Metrics dashboard running at http://127.0.0.1:8555" in captured.out
 
 
 def test_cli_dashboard_metrics_reports_auto_selected_port(tmp_path, monkeypatch, capsys):
@@ -4168,14 +4172,16 @@ def test_cli_dashboard_qc_accepts_clear_trace_summary_alias(tmp_path, monkeypatc
         fake_launch_qc_dashboard,
     )
 
-    assert main(["dashboard", "qc", "--qc-trace-summary", str(trace_summary), "--port", "8556"]) == 0
+    assert main(["dashboard", "qc", "--qc-trace-summary", str(trace_summary), "--address", "0.0.0.0", "--port", "8556"]) == 0
 
     captured = capsys.readouterr()
     assert "QC dashboard trace summary:" in captured.out
     assert Path(launched["qc_trace_summary_table"]) == trace_summary
     assert "trace_summary" not in launched
     assert launched["config_path"] is None
+    assert launched["server_address"] == "0.0.0.0"
     assert launched["server_port"] == 8556
+    assert "QC dashboard running at http://127.0.0.1:8556" in captured.out
 
 
 def test_cli_dashboard_status_reports_configured_paths_without_launching(tmp_path, capsys):

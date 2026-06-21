@@ -80,6 +80,9 @@ Changelog
   - Added dashboard launch port validation so invalid ports or impossible
     auto-port search ranges raise clear configuration errors before Streamlit
     startup.
+  - Made dashboard CLI launch messages print browser-friendly URLs for
+    wildcard bind addresses such as ``0.0.0.0`` while still passing the
+    requested bind address to Streamlit.
 
 2026-06-19
 ----------
