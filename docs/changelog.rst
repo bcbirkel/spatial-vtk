@@ -32,31 +32,12 @@ Changelog
   - Updated workflow-guide and large-run README dashboard examples to import
     routine dashboard helpers from ``spatial_vtk.visualize``.
 
-- **CLI and workflow wording** *(Changed)*
+- **CLI help and generated-reference wording** *(Changed)*
 
   - Clarified metrics CLI help for manifest batch output directories,
     ``--batch-size``, and ``--batch-count`` so Slurm array sizing is explicit.
   - Reworded metric workflow Slurm/task docs to describe metric manifest
     arrays instead of generic Slurm scripts.
-  - Clarified public workflow docs so lower-level notebook step helpers and
-    custom plot helpers are described as explicit/custom-script tools, while
-    standard notebooks are steered toward result-object methods.
-  - Clarified ``svtk call`` and advanced plotting/mapping option docs so the
-    CLI presents named config-backed commands as the standard path and frames
-    direct public-function calls or extra table/keyword mappings as one-off
-    advanced usage.
-  - Reworded notebook execution-helper docstrings so the readiness-aware
-    wrapper remains the documented default for heavy notebook steps, while
-    direct function execution is described as an explicit primitive for callers
-    that already own readiness and skip logic.
-  - Reworded skipped-step result helper guidance so standard workflow result
-    objects remain the default owner of skipped ``run_*_step_if_needed()``
-    payloads, while ``notebook_step_result`` is framed as a custom-workflow
-    fallback helper instead of notebook-local dictionary construction.
-  - Renamed the standard Step 3 diagnostic wording from ``GOF-distance`` and
-    generic band-distribution language to explicit residual-distance,
-    score-trend, and band residual-distribution diagnostics so tutorial text
-    matches the figure artifacts the package writes.
   - Corrected the generated config-backed plotting example for
     ``svtk plot metrics residuals-vs-distance`` to use ``--y-col
     log2_residual`` instead of the score-distribution ``--score-col`` flag.
@@ -75,21 +56,23 @@ Changelog
   - Tightened generated API fallback parameter descriptions for generic path
     and table names so explicit overrides are distinguished from standard
     config-resolved workflow artifacts.
-  - Reworded remaining notebook-facing workflow/API docs from raw dictionary
-    phrasing to labeled mappings, status payloads, and product-frame mappings
-    where the package returns structured display data.
-  - Aligned notebook-step result docstrings and config API docs around status
-    payload terminology so skipped/current workflow gates are not described as
-    raw dictionaries.
-  - Aligned internal CLI call/result helper docstrings with the public
-    ``svtk call`` guidance so direct public-function calls are consistently
-    framed as advanced one-off usage rather than generic workflow commands.
+
+- **Workflow result-object wording** *(Changed)*
+
+  - Clarified public workflow docs so lower-level notebook step helpers and
+    custom plot helpers are described as explicit/custom-script tools, while
+    standard notebooks are steered toward result-object methods.
+  - Reworded notebook execution-helper docstrings so the readiness-aware
+    wrapper remains the documented default for heavy notebook steps, while
+    direct function execution is described as an explicit primitive for callers
+    that already own readiness and skip logic.
+  - Reworded skipped-step result helper guidance so standard workflow result
+    objects remain the default owner of skipped ``run_*_step_if_needed()``
+    payloads, while ``notebook_step_result`` is framed as a custom-workflow
+    fallback helper instead of notebook-local dictionary construction.
   - Reworded workflow-guide output-group guidance so standard result objects
     remain the default notebook object and reusable output groups are described
     as artifact-named helpers for custom or compatibility paths.
-  - Clarified dashboard readiness value-family wording so Visualize API docs
-    describe residual, GOF score, observed, synthetic, and other configured
-    metric-value coverage without vague generic terminology.
   - Reworded Python workflow display-helper guidance to use skipped/current
     step payload terminology consistently with the config API docs.
   - Reworded the Python workflow guide introduction so notebook-facing package
@@ -103,6 +86,37 @@ Changelog
     repeated path plumbing rather than repeated path variables.
   - Reworded Spatial API Step 4-6 helper descriptions so result loaders avoid
     notebook-local path/table plumbing instead of output-group table mappings.
+
+- **Metric plotting and dashboard wording** *(Changed)*
+
+  - Renamed the standard Step 3 diagnostic wording from ``GOF-distance`` and
+    generic band-distribution language to explicit residual-distance,
+    score-trend, and band residual-distribution diagnostics so tutorial text
+    matches the figure artifacts the package writes.
+  - Aligned band and period distribution plot docstrings and default titles
+    with residual-or-score usage so Python API docs match the stabilized
+    large-run metric plotting workflow.
+  - Clarified dashboard readiness value-family wording so Visualize API docs
+    describe residual, GOF score, observed, synthetic, and other configured
+    metric-value coverage without vague generic terminology.
+  - Renamed the standard large-run scatter, box, and heatmap diagnostic suite
+    artifact from generic metric diagnostics to standard metric diagnostics,
+    while preserving the old method name as a compatibility wrapper.
+  - Updated metric API and notebook-setting docs so standard diagnostic figure
+    controls use standard diagnostic wording instead of generic diagnostic
+    terminology.
+
+- **Workflow API contract wording** *(Changed)*
+
+  - Reworded remaining notebook-facing workflow/API docs from raw dictionary
+    phrasing to labeled mappings, status payloads, and product-frame mappings
+    where the package returns structured display data.
+  - Aligned notebook-step result docstrings and config API docs around status
+    payload terminology so skipped/current workflow gates are not described as
+    raw dictionaries.
+  - Aligned internal CLI call/result helper docstrings with the public
+    ``svtk call`` guidance so direct public-function calls are consistently
+    framed as advanced one-off usage rather than generic workflow commands.
   - Reworded QC API standard-input guidance so Step 2 notebooks avoid Step 1
     path/table plumbing rather than output-group table mapping.
   - Reworded configuration output-registry guidance so notebooks and scripts
@@ -114,12 +128,6 @@ Changelog
     Salvus receiver files.
   - Added a warning when unreadable preprocessing trace-metadata caches force
     fast-resume waveform reuse without cached trace metadata.
-  - Renamed the standard large-run scatter, box, and heatmap diagnostic suite
-    artifact from generic metric diagnostics to standard metric diagnostics,
-    while preserving the old method name as a compatibility wrapper.
-  - Updated metric API and notebook-setting docs so standard diagnostic figure
-    controls use standard diagnostic wording instead of generic diagnostic
-    terminology.
   - Standardized package-local full-table CSV readers on stable dtype
     inference to avoid mixed-type warnings in large-run QC, metric, metadata,
     visualization, and CLI workflows.
@@ -133,7 +141,7 @@ Changelog
     notebook import boundaries, dashboard readiness fields, runtime install
     guidance, and changelog formatting.
 
-- **Public API example guardrails** *(Fixed)*
+- **Config and I/O API example guardrails** *(Fixed)*
 
   - Reworded the runtime configuration module example so scripts see the
     explicit ``SpatialVTKConfig`` load path while notebooks are steered toward
@@ -156,6 +164,9 @@ Changelog
   - Reworded metric downstream-output module examples so Step 3 notebooks use
     the standard metric workflow result object and direct metric row writers
     are framed as custom-script helpers.
+
+- **Plotting API example guardrails** *(Fixed)*
+
   - Reworded metric plotting package and API examples so Step 3 notebooks use
     the standard metric workflow result object's figure-suite method instead
     of passing ``metrics_long_path`` into direct plotting helpers.
@@ -174,6 +185,9 @@ Changelog
   - Reworded Step 6 region-boxplot workflow guidance so notebooks use the
     standard additional-plotting output result method, with direct region
     boxplot helpers framed as script APIs.
+
+- **Dashboard and workflow API example guardrails** *(Fixed)*
+
   - Reworded Step 7 dashboard-preparation workflow guidance so notebooks use
     the dashboard preparation result object, with direct dashboard dataset
     writers framed as script APIs.
