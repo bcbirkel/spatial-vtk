@@ -2352,12 +2352,15 @@ def test_write_large_run_spatial_figure_suite_from_notebook_settings_delegates(
     assert calls[4][2]["include_robust_axis_percentile"] is True
     assert calls[6][2]["mode"] == "PC2"
     status = result.status_frame()
+    assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
     assert status["artifact"].tolist() == [call[0] for call in calls]
     assert status["status"].tolist() == ["written"] * 8
     assert status["figure_count"].tolist() == [1] * 8
     assert status["existing_figure_count"].tolist() == [0] * 8
     assert status["figure_paths"].tolist() == [[str(fake_context.figure_dir / f"{call[0]}.png")] for call in calls]
     assert status["first_figure_path"].tolist() == [str(fake_context.figure_dir / f"{call[0]}.png") for call in calls]
+    assert status["path"].tolist() == status["first_figure_path"].tolist()
+    assert status["exists"].tolist() == [False] * 8
 
 
 def test_write_large_run_spatial_summary_figures_from_outputs(tmp_path: Path) -> None:

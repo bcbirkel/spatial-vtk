@@ -456,6 +456,12 @@ schemas.
    these result-owned methods instead of branching in notebook cells to decide
    which readiness tables are safe to display.
 
+``SpatialFigureSuiteResult.status_frame``
+   Returns one row per spatial figure family with exact ``figure_paths``,
+   ``first_figure_path``, ``figure_paths_preview``, and normalized ``name``,
+   ``artifact_label``, ``resolved_path``, ``path``, and ``exists`` columns
+   keyed to the first figure in each family.
+
 ``spectral_metric_contract_status``
    Return a compact PSA/FAS audit table for both ``metric_field`` and
    ``event_centered_residuals``. Use it before spatial figure rendering to

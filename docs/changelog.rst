@@ -57,6 +57,9 @@ Changelog
   - Standardized Step 6 additional plotting, region figure, and region boxplot
     ``status_frame()`` outputs around normalized figure path columns and
     preserved sidecar provenance fields.
+  - Added normalized first-figure path columns to metric and spatial
+    multi-figure suite ``status_frame()`` outputs while preserving exact
+    ``figure_paths`` lists and preview fields.
 
 - **CLI help and generated-reference wording** *(Changed)*
 

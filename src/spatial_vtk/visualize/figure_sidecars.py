@@ -36,6 +36,8 @@ def normalize_figure_status_rows(
         names = pd.Series([default_name] * len(frame), index=frame.index, dtype=object)
     if "figure_path" in frame.columns:
         paths = frame["figure_path"]
+    elif "first_figure_path" in frame.columns:
+        paths = frame["first_figure_path"]
     elif "path" in frame.columns:
         paths = frame["path"]
     else:

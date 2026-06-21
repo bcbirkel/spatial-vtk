@@ -1981,9 +1981,14 @@ class MetricFigureSuiteResult:
     def status_frame(self) -> pd.DataFrame:
         """Return one row per metric figure family rendered or skipped."""
 
-        return pd.DataFrame(
-            self.rows,
+        frame = normalize_figure_status_rows(self.rows)
+        return frame.reindex(
             columns=[
+                "name",
+                "artifact_label",
+                "resolved_path",
+                "path",
+                "exists",
                 "artifact",
                 "status",
                 "figure_count",
@@ -1992,7 +1997,7 @@ class MetricFigureSuiteResult:
                 "first_figure_path",
                 "figure_paths_preview",
                 "message",
-            ],
+            ]
         )
 
 
