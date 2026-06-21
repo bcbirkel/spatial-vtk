@@ -73,7 +73,10 @@ Public helpers exposed by ``spatial_vtk.io``:
        yet. It resolves a named workflow output group once and exposes
        attributes, ``status_frame()``, ``readiness()``, ``load_table()``,
        ``preview_table()``, ``load_tables()``, ``preview_tables()``, and
-       ``display_table_previews()``. Use
+       ``display_table_previews()``. Use ``preview_table()`` and
+       ``preview_tables()`` for bounded table previews; reserve
+       ``load_table()`` and ``load_tables()`` for explicit full-table reads in
+       package helpers or analysis cells. Use
        ``display_first_existing_table_preview()`` when a custom helper should
        prefer a derived table, such as ``metrics_enriched``, but fall back to
        an earlier table, such as ``metrics_long``. Use ``figure_path()`` when

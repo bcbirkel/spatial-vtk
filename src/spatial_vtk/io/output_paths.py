@@ -336,8 +336,8 @@ class OutputGroup:
         """Load a bounded preview from one resolved group path.
 
         This mirrors :meth:`preview_table` for non-registry path groups. It
-        keeps notebooks from calling ``read_table(...).head()`` for metadata
-        tables that already have a named owner in the output group.
+        keeps path-backed metadata tables on the shared bounded-preview path
+        whenever they already have a named owner in the output group.
         """
 
         from spatial_vtk.io.tables import preview_table

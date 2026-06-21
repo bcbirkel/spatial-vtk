@@ -750,6 +750,10 @@ Changelog
   - Clarified Python workflow guidance so notebook preview cells use bounded
     result-object display helpers and reserve full ``load_table()`` calls for
     explicit analysis or package helpers.
+  - Clarified output-group API guidance so custom helpers use bounded
+    ``preview_table()`` / ``preview_tables()`` calls by default and reserve
+    full ``load_table()`` / ``load_tables()`` calls for explicit full-table
+    reads.
   - Made configured metric-output and dashboard-output helpers write
     partitioned dashboard metric datasets by default, and changed
     ``svtk metrics outputs`` to default to that large-run-safe layout while

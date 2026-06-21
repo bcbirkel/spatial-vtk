@@ -1680,9 +1680,15 @@ def test_io_api_docs_use_public_workflow_helpers():
     assert "``run_preprocessing_step_if_needed()``" in helper_table
     assert "``run_record_coverage_step_if_needed()``" in helper_table
     assert "``MetricPlan.summary_frame()``" in text
+    assert "Use ``preview_table()`` and\n       ``preview_tables()`` for bounded table previews" in text
+    assert "reserve\n       ``load_table()`` and ``load_tables()`` for explicit full-table reads" in text
     assert "``status_frame()`` and\n       ``output_group_status_frame()`` include clear ``resolved_path`` values\n       plus ``output_key``, ``kind``, ``required``, ``artifact_label``" in text
     assert "``readiness``, ``message``, and ``suggested_action`` columns" in text
     assert "notebooks." in text
+    output_paths_text = (
+        pathlib.Path(__file__).resolve().parents[1] / "src/spatial_vtk/io/output_paths.py"
+    ).read_text(encoding="utf-8")
+    assert "read_table(...).head()" not in output_paths_text
 
 
 def test_metrics_package_reexports_workflow_surface():
