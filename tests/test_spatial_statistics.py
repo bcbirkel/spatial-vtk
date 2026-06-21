@@ -319,7 +319,10 @@ def test_write_standard_geojson_region_figures_returns_status_tables(monkeypatch
     assert set(result.metrics_by_regions["event_region"]) == {"Glendale"}
     assert result.summary_frame().loc[0, "rows"] == 2
     status = result.status_frame()
-    assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
+    assert {"name", "artifact_label", "artifact_role", "resolved_path", "path", "exists"} <= set(
+        status.columns
+    )
+    assert status["artifact_role"].tolist() == ["figure", "figure", "figure"]
     assert status["status"].tolist() == ["wrote", "wrote", "wrote"]
     assert status["figure_exists"].tolist() == [True, True, True]
     assert status["exists"].tolist() == [True, True, True]
@@ -481,7 +484,10 @@ def test_write_standard_geojson_corridor_figures_returns_status_tables(monkeypat
     assert result.boundary_crossing_frame()["corridor_id"].tolist() == ["through_boundary", "through_boundary"]
     assert result.outward_event_frame()["event_id"].tolist() == ["e1"]
     status = result.status_frame()
-    assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
+    assert {"name", "artifact_label", "artifact_role", "resolved_path", "path", "exists"} <= set(
+        status.columns
+    )
+    assert status["artifact_role"].tolist() == ["figure", "figure", "figure", "figure"]
     assert status["status"].tolist() == ["wrote", "wrote", "wrote", "wrote"]
     assert status["figure_exists"].tolist() == [True, True, True, True]
     assert status["exists"].tolist() == [True, True, True, True]
@@ -824,7 +830,10 @@ def test_write_standard_additional_plotting_figures_returns_previews(tmp_path) -
 
     assert isinstance(result, StandardAdditionalPlottingFigureResult)
     status = result.status_frame()
-    assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
+    assert {"name", "artifact_label", "artifact_role", "resolved_path", "path", "exists"} <= set(
+        status.columns
+    )
+    assert status["artifact_role"].tolist() == ["figure", "figure", "figure", "figure", "figure"]
     assert status["status"].tolist() == ["wrote", "wrote", "wrote", "wrote", "wrote"]
     assert status["figure_exists"].tolist() == [True, True, True, True, True]
     assert status["exists"].tolist() == [True, True, True, True, True]
@@ -1077,10 +1086,16 @@ def test_write_standard_spatial_map_figures_owns_step04_map_calls(tmp_path: Path
         assert kwargs["sidecar_rows"] == 25
         assert kwargs["sidecar_dir"] == tmp_path / "sidecars"
     status = result.status_frame()
+    assert {"name", "artifact_label", "artifact_role", "resolved_path", "path", "exists"} <= set(
+        status.columns
+    )
     assert status["artifact"].tolist() == ["station_bias_map", "residual_grid_map"]
+    assert status["artifact_role"].tolist() == ["figure", "figure"]
     assert set(status["status"]) == {"wrote"}
     assert status["row_count"].tolist() == [1, 1]
     assert status["figure_exists"].tolist() == [True, True]
+    assert status["exists"].tolist() == [True, True]
+    assert status["path"].tolist() == status["figure_path"].tolist()
 
 
 def test_write_standard_spatial_map_figures_reports_plot_failures(tmp_path: Path) -> None:
@@ -1249,9 +1264,15 @@ def test_write_standard_spatial_diagnostic_figures_owns_step04_plot_loops(tmp_pa
         assert kwargs["sidecar_dir"] == tmp_path / "sidecars"
     assert seen[1][3]["add_basemap"] is True
     status = result.status_frame()
+    assert {"name", "artifact_label", "artifact_role", "resolved_path", "path", "exists"} <= set(
+        status.columns
+    )
     assert status["artifact"].tolist() == ["spatial_correlation_distance", "pca_summary", "geology_contrast"]
+    assert status["artifact_role"].tolist() == ["figure", "figure", "figure"]
     assert status["status"].tolist() == ["wrote", "wrote", "wrote"]
     assert status["figure_exists"].tolist() == [True, True, True]
+    assert status["exists"].tolist() == [True, True, True]
+    assert status["path"].tolist() == status["figure_path"].tolist()
     preview = result.preview_frame()
     assert {"spatial_correlation", "pca_explained_variance", "geology_contrast"} <= set(preview["artifact"])
     assert set(preview["metric"]) == {"PGA"}
@@ -2395,7 +2416,10 @@ def test_write_large_run_spatial_figure_suite_from_notebook_settings_delegates(
     assert calls[4][2]["include_robust_axis_percentile"] is True
     assert calls[6][2]["mode"] == "PC2"
     status = result.status_frame()
-    assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
+    assert {"name", "artifact_label", "artifact_role", "resolved_path", "path", "exists"} <= set(
+        status.columns
+    )
+    assert status["artifact_role"].tolist() == ["figure"] * 8
     assert status["artifact"].tolist() == [call[0] for call in calls]
     assert status["status"].tolist() == ["written"] * 8
     assert status["figure_count"].tolist() == [1] * 8
@@ -2466,7 +2490,15 @@ def test_write_large_run_spatial_summary_figures_from_outputs(tmp_path: Path) ->
     assert calls["savefig"] is True
     assert calls["plot_kwargs"] == {"showfig": False, "write_sidecar": True}
     assert figure_path.read_text(encoding="utf-8") == "figure"
-    assert result.status_frame().loc[0, "status"] == "wrote"
+    status = result.status_frame()
+    assert {"name", "artifact_label", "artifact_role", "resolved_path", "path", "exists"} <= set(
+        status.columns
+    )
+    assert status.loc[0, "status"] == "wrote"
+    assert status.loc[0, "artifact_role"] == "figure"
+    assert status.loc[0, "resolved_path"] == str(figure_path)
+    assert status.loc[0, "path"] == str(figure_path)
+    assert bool(status.loc[0, "exists"]) is True
 
 
 def test_write_large_run_spatial_summary_figures_skips_existing(tmp_path: Path) -> None:

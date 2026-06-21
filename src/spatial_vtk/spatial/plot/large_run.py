@@ -1390,6 +1390,7 @@ class RegionBoxplotResult:
             columns=[
                 "name",
                 "artifact_label",
+                "artifact_role",
                 "resolved_path",
                 "path",
                 "exists",
@@ -1464,6 +1465,7 @@ class RegionFigureResult:
             columns=[
                 "name",
                 "artifact_label",
+                "artifact_role",
                 "resolved_path",
                 "path",
                 "exists",
@@ -1503,6 +1505,7 @@ class StandardGeoJSONFigureResult:
             columns=[
                 "name",
                 "artifact_label",
+                "artifact_role",
                 "resolved_path",
                 "path",
                 "exists",
@@ -1545,6 +1548,7 @@ class StandardGeoJSONCorridorFigureResult:
             columns=[
                 "name",
                 "artifact_label",
+                "artifact_role",
                 "resolved_path",
                 "path",
                 "exists",
@@ -1932,6 +1936,7 @@ class StandardAdditionalPlottingFigureResult:
             columns=[
                 "name",
                 "artifact_label",
+                "artifact_role",
                 "resolved_path",
                 "path",
                 "exists",
@@ -2109,7 +2114,7 @@ class SpatialSummaryFigureResult:
     def status_frame(self) -> pd.DataFrame:
         """Return a compact notebook status table for summary figures."""
 
-        return pd.DataFrame(
+        frame = normalize_figure_status_rows(
             [
                 {
                     "artifact": "station_bias_map",
@@ -2117,8 +2122,28 @@ class SpatialSummaryFigureResult:
                     "row_count": self.row_count,
                     "input_path": None if self.station_bias_path is None else str(self.station_bias_path),
                     "figure_path": None if self.station_bias_figure_path is None else str(self.station_bias_figure_path),
+                    "figure_exists": bool(
+                        self.station_bias_figure_path is not None and self.station_bias_figure_path.exists()
+                    ),
                     "message": self.message,
                 }
+            ]
+        )
+        return frame.reindex(
+            columns=[
+                "name",
+                "artifact_label",
+                "artifact_role",
+                "resolved_path",
+                "path",
+                "exists",
+                "artifact",
+                "status",
+                "row_count",
+                "input_path",
+                "figure_path",
+                "figure_exists",
+                "message",
             ]
         )
 
@@ -2132,9 +2157,15 @@ class StandardSpatialMapFigureResult:
     def status_frame(self) -> pd.DataFrame:
         """Return a compact notebook status table for written spatial figures."""
 
-        return pd.DataFrame(
-            self.rows,
+        frame = normalize_figure_status_rows(self.rows)
+        return frame.reindex(
             columns=[
+                "name",
+                "artifact_label",
+                "artifact_role",
+                "resolved_path",
+                "path",
+                "exists",
                 "artifact",
                 "metric",
                 "status",
@@ -2156,9 +2187,15 @@ class StandardSpatialDiagnosticFigureResult:
     def status_frame(self) -> pd.DataFrame:
         """Return one row per diagnostic figure written or skipped."""
 
-        return pd.DataFrame(
-            self.rows,
+        frame = normalize_figure_status_rows(self.rows)
+        return frame.reindex(
             columns=[
+                "name",
+                "artifact_label",
+                "artifact_role",
+                "resolved_path",
+                "path",
+                "exists",
                 "artifact",
                 "metric",
                 "status",
@@ -2215,6 +2252,7 @@ class SpatialFigureSuiteResult:
             columns=[
                 "name",
                 "artifact_label",
+                "artifact_role",
                 "resolved_path",
                 "path",
                 "exists",

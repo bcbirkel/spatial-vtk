@@ -96,6 +96,9 @@ Changelog
   - Kept the same normalized figure status vocabulary in Step 3 metric plotting
     result objects, including focused station metric maps and standard metric
     diagnostic/suite status frames.
+  - Applied the same normalized figure status vocabulary to Step 4 spatial,
+    Step 5 GeoJSON/corridor, Step 6 additional-plotting, and compact spatial
+    summary figure result objects.
   - Added dashboard launch port validation so invalid ports or impossible
     auto-port search ranges raise clear configuration errors before Streamlit
     startup.

@@ -359,8 +359,9 @@ Public plotting helpers and notebook workflow loaders:
        package code. The returned ``StandardGeoJSONFigureResult`` exposes
        ``summary_frame()`` and ``status_frame()`` for written region figures
        and source-row sidecars. Its status frame includes normalized
-       ``name``, ``artifact_label``, ``resolved_path``, ``path``, and
-       ``exists`` columns while preserving ``figure_path`` and
+       ``name``, ``artifact_label``, ``artifact_role``, ``status``,
+       ``resolved_path``, ``path``, and ``exists`` columns while preserving
+       ``figure_path`` and
        ``figure_exists``.
    * - ``write_standard_geojson_corridor_figures``
      - Write the standard Step 5 boundary-corridor maps, boundary-crossing
@@ -379,7 +380,7 @@ Public plotting helpers and notebook workflow loaders:
        ``StandardAdditionalPlottingFigureResult`` exposes
        ``metric_summary_frame()`` for selected metric coverage and
        ``status_frame()`` for figure outputs with normalized figure path
-       columns.
+       columns, including ``artifact_role`` and ``status``.
    * - ``write_large_run_geojson_region_figures_from_outputs``
      - Lower-level Step 5 script helper that writes the GeoJSON overview map,
        corridor map, and region boxplot from configured output groups after
@@ -464,8 +465,8 @@ schemas.
 ``SpatialFigureSuiteResult.status_frame``
    Returns one row per spatial figure family with exact ``figure_paths``,
    ``first_figure_path``, ``figure_paths_preview``, and normalized ``name``,
-   ``artifact_label``, ``resolved_path``, ``path``, and ``exists`` columns
-   keyed to the first figure in each family.
+   ``artifact_label``, ``artifact_role``, ``status``, ``resolved_path``,
+   ``path``, and ``exists`` columns keyed to the first figure in each family.
 
 ``spectral_metric_contract_status``
    Return a compact PSA/FAS audit table for both ``metric_field`` and
@@ -476,7 +477,11 @@ schemas.
 GeoJSON and region plotting status tables use ``resolved_path`` as the clear
 notebook-facing path column while preserving ``path`` as a compatibility alias.
 Figure-specific result tables that already expose ``figure_path`` keep that
-descriptive column.
+descriptive column. Standard Step 4 map/diagnostic/summary result tables,
+Step 5 GeoJSON/corridor result tables, Step 6 additional-plotting result
+tables, and region-specific result tables share the same normalized
+``artifact_label``, ``artifact_role``, ``status``, ``resolved_path``, ``path``,
+and ``exists`` vocabulary.
 
 Advanced Spatial Figure Extension Helpers
 -----------------------------------------
@@ -499,8 +504,9 @@ readiness checks, output bookkeeping, sidecars, and figure-family iteration.
 
 ``RegionFigureResult`` and ``RegionBoxplotResult``
    Return normalized ``status_frame()`` tables with ``name``,
-   ``artifact_label``, ``resolved_path``, ``path``, and ``exists`` columns
-   while preserving sidecar path fields for figure provenance.
+   ``artifact_label``, ``artifact_role``, ``status``, ``resolved_path``,
+   ``path``, and ``exists`` columns while preserving sidecar path fields for
+   figure provenance.
 
 .. autoclass:: spatial_vtk.spatial.plot.SpatialFigureContext
    :members:
