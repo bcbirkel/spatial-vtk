@@ -67,6 +67,9 @@ Changelog
   - Added regression coverage for config-path resolution, public API exports,
     notebook import boundaries, dashboard readiness fields, runtime install
     guidance, and changelog formatting.
+  - Reworded the runtime configuration module example so scripts see the
+    explicit ``SpatialVTKConfig`` load path while notebooks are steered toward
+    ``notebook_run_context()`` instead of individual path resolution.
 
 - **Step 1 workflow helpers** *(Added)*
 

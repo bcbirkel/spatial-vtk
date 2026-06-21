@@ -9,9 +9,14 @@ repository defaults.
 
 Usage examples
 --------------
-Load a user config and resolve a configured path:
+Load a user config for scripts:
+  ``from spatial_vtk.config import SpatialVTKConfig``
   ``cfg = SpatialVTKConfig.from_file("spatial-vtk.yaml")``
-  ``metrics_path = resolve_output_path("metrics_long", kind="table", cfg=cfg)``
+
+Routine notebooks should start from the public notebook context helper instead
+of resolving individual output paths:
+  ``from spatial_vtk.config import notebook_run_context``
+  ``context = notebook_run_context()``
 """
 
 from __future__ import annotations

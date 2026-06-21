@@ -1228,6 +1228,23 @@ def test_output_registry_docstring_prefers_standard_workflow_outputs_for_noteboo
     assert 'path = resolve_output_path("record_coverage", kind="figure")' not in text
 
 
+def test_runtime_config_docstring_prefers_notebook_context_over_path_plumbing():
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "config"
+        / "runtime.py"
+    )
+    text = source.read_text(encoding="utf-8")
+
+    assert "from spatial_vtk.config import SpatialVTKConfig" in text
+    assert "from spatial_vtk.config import notebook_run_context" in text
+    assert "context = notebook_run_context()" in text
+    assert "Routine notebooks should start from the public notebook context helper" in text
+    assert 'resolve_output_path("metrics_long", kind="table"' not in text
+
+
 def test_metric_workflow_docstrings_prefer_standard_step3_output_helper():
     root = pathlib.Path(__file__).resolve().parents[1] / "src" / "spatial_vtk" / "metrics" / "workflow"
     workflow_text = (root / "__init__.py").read_text(encoding="utf-8")
