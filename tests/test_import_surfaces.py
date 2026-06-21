@@ -1183,8 +1183,10 @@ def test_config_api_docs_include_compute_helpers():
     assert ".. automodule:: spatial_vtk.config.compute\n" in text
     assert "Start routine notebooks from ``spatial_vtk.config`` helpers" in text
     assert "notebooks should avoid reaching into it directly" in text
-    assert "Use ``spatial_vtk.config`` and ``spatial_vtk.io`` output groups" in text
-    assert "lower-level registry and resolver APIs for scripts, CLIs, and helper\nimplementation code" in text
+    assert "Routine notebooks should start with the standard ``load_standard_*`` workflow\nresult loaders" in text
+    assert "Use ``output_group()`` only for custom helpers" in text
+    assert "lower-level registry and\nresolver APIs for scripts, CLIs, generated workers, and package extension\ncode" in text
+    assert "Use ``spatial_vtk.config`` and ``spatial_vtk.io`` output groups" not in text
     assert "Import notebook helpers from ``spatial_vtk.config``" in text
     assert "``NotebookRunContext`` and ``notebook_run_context``" in text
     assert "``run_notebook_step_if_needed``" in text
