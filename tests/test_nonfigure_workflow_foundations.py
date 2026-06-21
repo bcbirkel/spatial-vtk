@@ -917,6 +917,18 @@ def test_waveform_preprocessing_workflow_writes_processed_files(tmp_path) -> Non
     assert result.event_station_path.exists()
     assert result.manifest_path.exists()
     assert result.trace_metadata_path.exists()
+    assert result.preprocessed_event_station_path == result.event_station_path
+    assert result.preprocessed_manifest_path == result.manifest_path
+    assert result.preprocessed_trace_metadata_path == result.trace_metadata_path
+    status = result.status_frame()
+    assert status["name"].tolist() == [
+        "preprocessed_event_station_path",
+        "preprocessed_manifest_path",
+        "preprocessed_trace_metadata_path",
+    ]
+    assert status["resolved_path"].tolist() == status["path"].tolist()
+    assert status["exists"].tolist() == [True, True, True]
+    assert status["rows"].tolist() == [1, 1, 1]
     assert result.event_station_records.loc[0, "observed_raw_waveform"] == waveform_path
     assert result.event_station_records.loc[0, "observed_waveform"] == processed_path
     assert result.manifest.loc[0, "status"] == "written"

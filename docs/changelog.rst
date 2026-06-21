@@ -35,6 +35,9 @@ Changelog
     export so large-run dashboard preparation streams only the columns needed
     by dashboard summaries while preserving full reads for wide legacy metric
     matrices.
+  - Added preprocessed-specific path aliases and a compact status frame to
+    waveform preprocessing result objects while preserving generic legacy path
+    fields.
 
 - **CLI help and generated-reference wording** *(Changed)*
 

@@ -116,6 +116,55 @@ class WaveformPreprocessingWorkflowResult:
     trace_metadata: pd.DataFrame
     trace_metadata_path: Path
 
+    @property
+    def preprocessed_event_station_path(self) -> Path:
+        """Path to event-station records with processed waveform columns."""
+
+        return self.event_station_path
+
+    @property
+    def preprocessed_manifest_path(self) -> Path:
+        """Path to the waveform preprocessing manifest table."""
+
+        return self.manifest_path
+
+    @property
+    def preprocessed_trace_metadata_path(self) -> Path:
+        """Path to trace metadata measured from processed waveforms."""
+
+        return self.trace_metadata_path
+
+    def status_frame(self) -> pd.DataFrame:
+        """Return a compact summary of written preprocessing outputs."""
+
+        rows = [
+            {
+                "name": "preprocessed_event_station_path",
+                "artifact_label": "preprocessed event-station records",
+                "resolved_path": str(self.preprocessed_event_station_path),
+                "path": str(self.preprocessed_event_station_path),
+                "exists": self.preprocessed_event_station_path.exists(),
+                "rows": len(self.event_station_records),
+            },
+            {
+                "name": "preprocessed_manifest_path",
+                "artifact_label": "waveform preprocessing manifest",
+                "resolved_path": str(self.preprocessed_manifest_path),
+                "path": str(self.preprocessed_manifest_path),
+                "exists": self.preprocessed_manifest_path.exists(),
+                "rows": len(self.manifest),
+            },
+            {
+                "name": "preprocessed_trace_metadata_path",
+                "artifact_label": "preprocessed trace metadata",
+                "resolved_path": str(self.preprocessed_trace_metadata_path),
+                "path": str(self.preprocessed_trace_metadata_path),
+                "exists": self.preprocessed_trace_metadata_path.exists(),
+                "rows": len(self.trace_metadata),
+            },
+        ]
+        return pd.DataFrame(rows)
+
 
 @dataclass(frozen=True)
 class PreprocessedWaveformMetadataPaths:
@@ -141,15 +190,33 @@ class PreprocessedWaveformMetadataPaths:
     manifest_path: Path
     trace_metadata_path: Path
 
+    @property
+    def preprocessed_event_station_path(self) -> Path:
+        """Path to event-station records with processed waveform columns."""
+
+        return self.event_station_path
+
+    @property
+    def preprocessed_manifest_path(self) -> Path:
+        """Path to the waveform preprocessing manifest table."""
+
+        return self.manifest_path
+
+    @property
+    def preprocessed_trace_metadata_path(self) -> Path:
+        """Path to trace metadata measured from processed waveforms."""
+
+        return self.trace_metadata_path
+
     def as_dict(self) -> dict[str, Path]:
         """Return a display-friendly mapping of path names to paths."""
 
         return {
             "preprocessed_root": self.root,
             "preprocessed_metadata_dir": self.metadata_dir,
-            "preprocessed_event_station_path": self.event_station_path,
-            "preprocessed_manifest_path": self.manifest_path,
-            "preprocessed_trace_metadata_path": self.trace_metadata_path,
+            "preprocessed_event_station_path": self.preprocessed_event_station_path,
+            "preprocessed_manifest_path": self.preprocessed_manifest_path,
+            "preprocessed_trace_metadata_path": self.preprocessed_trace_metadata_path,
         }
 
 

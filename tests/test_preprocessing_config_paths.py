@@ -63,6 +63,10 @@ def test_preprocessed_waveform_metadata_paths_match_preprocessing_defaults(tmp_p
     assert paths.event_station_path == paths.metadata_dir / "event_station_records_preprocessed.csv"
     assert paths.manifest_path == paths.metadata_dir / "waveform_preprocessing_manifest.csv"
     assert paths.trace_metadata_path == paths.metadata_dir / "trace_metadata_preprocessed.csv"
+    assert paths.preprocessed_event_station_path == paths.event_station_path
+    assert paths.preprocessed_manifest_path == paths.manifest_path
+    assert paths.preprocessed_trace_metadata_path == paths.trace_metadata_path
+    assert paths.as_dict()["preprocessed_event_station_path"] == paths.preprocessed_event_station_path
     assert paths.as_dict()["preprocessed_manifest_path"] == paths.manifest_path
 
 
