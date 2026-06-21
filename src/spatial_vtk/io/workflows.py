@@ -24,7 +24,7 @@ from spatial_vtk.io.preprocessing import (
     preprocessed_waveform_output_group,
     preprocess_waveform_files,
 )
-from spatial_vtk.io.tables import load_output_table, read_config_table, write_output_table
+from spatial_vtk.io.tables import load_output_table, read_config_table, table_row_count, write_output_table
 from spatial_vtk.io.metadata import (
     prepare_event_metadata,
     prepare_event_station_table,
@@ -79,12 +79,13 @@ class StandardIngestWorkflowOutputResult:
         """Return row counts for the prepared Step 1 metadata tables.
 
         This helper keeps tutorial notebooks from loading the prepared station,
-        event, and event-station tables only to print basic counts. The current
-        implementation still reads available tables through the configured
-        output group, so future row-count optimizations can happen here without
-        changing notebook cells.
+        event, and event-station tables only to print basic counts. Row counts
+        are read through lightweight CSV/Parquet counters instead of
+        materializing full metadata tables.
         """
 
+        if missing not in {"raise", "skip"}:
+            raise ValueError("missing must be 'raise' or 'skip'.")
         rows: list[dict[str, object]] = []
         table_specs = [
             ("stations", "prepared_stations", "prepared_stations_path", "prepared_stations_path"),
@@ -101,10 +102,11 @@ class StandardIngestWorkflowOutputResult:
             path_text = None if path is None else str(path)
             status = "missing"
             row_count: int | None = None
-            table = self.outputs.load_table(group_path_name, cfg=self.cfg, missing=missing)
-            if table is not None:
-                row_count = int(len(table))
+            if path is not None and path.exists():
+                row_count = table_row_count(path)
                 status = "ready"
+            elif missing == "raise":
+                raise FileNotFoundError(f"Configured output table does not exist: {path}")
             rows.append(
                 {
                     "table": label,

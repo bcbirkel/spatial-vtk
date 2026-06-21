@@ -741,6 +741,9 @@ Changelog
   - Reused the shared row-count helper in dashboard readiness checks so CSV
     dashboard datasets with quoted newlines report correct row counts without
     materializing the table.
+  - Changed the Step 1 ingest metadata summary result to count prepared
+    station, event, and event-station rows through lightweight table counters
+    instead of loading full metadata tables.
   - Made configured metric-output and dashboard-output helpers write
     partitioned dashboard metric datasets by default, and changed
     ``svtk metrics outputs`` to default to that large-run-safe layout while

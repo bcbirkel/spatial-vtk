@@ -361,7 +361,7 @@ def test_standard_output_table_helpers_accept_config_path_without_activation(tmp
     clear_active_config()
 
 
-def test_standard_ingest_workflow_outputs_reports_metadata_summary(tmp_path: Path) -> None:
+def test_standard_ingest_workflow_outputs_reports_metadata_summary(tmp_path: Path, monkeypatch) -> None:
     """Step 1 notebook helper should summarize prepared metadata row counts."""
 
     config_path = tmp_path / "spatial-vtk.yaml"
@@ -384,7 +384,13 @@ def test_standard_ingest_workflow_outputs_reports_metadata_summary(tmp_path: Pat
         cfg=cfg,
     )
 
-    summary = load_standard_ingest_workflow_outputs(cfg=cfg).metadata_summary_frame()
+    def fail_table_load(*args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        raise AssertionError("metadata_summary_frame must not materialize metadata tables for row counts")
+
+    ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)
+    monkeypatch.setattr(type(ingest_outputs.outputs), "load_table", fail_table_load)
+
+    summary = ingest_outputs.metadata_summary_frame()
     by_table = summary.set_index("table")
 
     assert by_table.loc["stations", "output_key"] == "prepared_stations"

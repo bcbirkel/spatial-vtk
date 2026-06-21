@@ -49,8 +49,9 @@ Public helpers exposed by ``spatial_vtk.io``:
      - Use
    * - ``load_standard_ingest_workflow_outputs``
      - Load the standard Step 1 ingest output group, preprocessing metadata
-       output group, combined status frame, metadata row-count summary, and
-       bounded station/event/manifest preview helpers for tutorial notebooks.
+       output group, combined status frame, lightweight metadata row-count
+       summary, and bounded station/event/manifest preview helpers for
+       tutorial notebooks.
        The returned result also writes the standard Step 1 context figure
        suite through ``write_context_figures()`` and owns the notebook-facing
        large-run driver methods ``run_metadata_step_if_needed()``,
