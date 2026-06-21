@@ -123,6 +123,8 @@ Changelog
   - Routed metric task-planning path reads through the same shared table reader
     so task manifests, summaries, and fallback table inputs use consistent
     CSV/Parquet behavior.
+  - Routed metric downstream-output table reads through the shared reader while
+    preserving existing column projection for large metric tables.
 
 - **Tutorial notebook hygiene** *(Fixed)*
 

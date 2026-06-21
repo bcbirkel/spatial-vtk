@@ -26,6 +26,7 @@ import pandas as pd
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io import parquet_table_columns
+from spatial_vtk.io.tables import read_table as read_disk_table
 from spatial_vtk.metrics.calculate.enrich import enrich_metric_table
 from spatial_vtk.metrics.workflow.run import METRIC_TEXT_COLUMNS, write_metric_rows
 from spatial_vtk.visualize.dashboard import (
@@ -305,16 +306,16 @@ def _read_metric_table(value: pd.DataFrame | str | Path, *, columns: Sequence[st
     if isinstance(value, pd.DataFrame):
         return value.copy()
     path = Path(value).expanduser()
-    if path.suffix.lower() in {".parquet", ".pq"}:
-        selected = _selected_existing_columns(path, columns)
-        return pd.read_parquet(path, columns=selected)
-    if path.suffix.lower() == ".csv":
-        selected = _selected_existing_columns(path, columns)
-        if selected is None:
-            return pd.read_csv(path, low_memory=False)
-        wanted = set(selected)
-        return pd.read_csv(path, usecols=lambda column: column in wanted, low_memory=False)
-    raise ValueError(f"Unsupported metric workflow output table format for {path}. Use Parquet or CSV.")
+    suffix = path.suffix.lower()
+    if suffix not in {".csv", ".parquet", ".pq"}:
+        raise ValueError(f"Unsupported metric workflow output table format for {path}. Use Parquet or CSV.")
+    selected = _selected_existing_columns(path, columns)
+    if selected is None:
+        return read_disk_table(path)
+    if suffix in {".parquet", ".pq"}:
+        return read_disk_table(path, columns=selected)
+    wanted = set(selected)
+    return read_disk_table(path, usecols=lambda column: column in wanted)
 
 
 def _metric_workflow_output_input_columns(value: pd.DataFrame | str | Path) -> tuple[str, ...] | None:
