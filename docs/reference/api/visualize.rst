@@ -217,6 +217,9 @@ shows ``required_columns``, ``missing_columns``, ``tab_ready``,
 ``tab_message``, ``value_columns``, ``nonempty_value_columns``, and
 map-coordinate blockers so users can see the schema, value-family, or map-tab
 gap without opening large metric tables.
+Input rows in the compact summary use the user-facing artifact label, such as
+``metrics_long source table``, as the ``item`` value so CLI and notebook
+status output do not expose internal path keys like ``metrics_long_path``.
 The Streamlit apps also accept clear URL query keys for explicit path
 overrides: ``metrics_dataset_dir`` and ``dashboard_summary_table_dir`` for the
 metrics dashboard, and ``qc_trace_summary`` for the QC dashboard. The older

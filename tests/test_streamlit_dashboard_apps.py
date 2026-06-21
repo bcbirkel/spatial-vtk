@@ -313,6 +313,9 @@ outputs:
     assert "QC trace-summary table" in labels
 
     summary_by_item = summary.set_index("item")
+    assert "metrics_long_path" not in summary_by_item.index
+    assert summary_by_item.loc["metrics_long source table", "artifact_label"] == "metrics_long source table"
+    assert summary_by_item.loc["metrics_long source table", "message"] == "metrics_long source table is missing."
     assert summary_by_item.loc["station_rollup", "dashboard_table"] == "station_rollup"
     assert "station" in summary_by_item.loc["station_rollup", "required_columns"]
     assert "coordinate columns" in summary_by_item.loc["station_rollup", "map_message"]

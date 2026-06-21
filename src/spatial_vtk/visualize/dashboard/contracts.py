@@ -518,18 +518,27 @@ def dashboard_readiness_summary_frame(
     for row in decision.input_status.astype(object).to_dict("records"):
         name = str(row.get("name", ""))
         exists = bool(row.get("exists", False))
+        label = str(_blank_if_missing(row.get("artifact_label")) or name)
+        ready = dashboard_ready_value(row.get("ready"), default=exists)
+        readiness = str(_blank_if_missing(row.get("readiness")) or ("ready" if ready else "missing"))
+        message = str(_blank_if_missing(row.get("message")) or (f"{label} is ready." if ready else f"{label} is missing."))
+        suggested_action = _blank_if_missing(row.get("suggested_action"))
+        if not ready and not suggested_action:
+            suggested_action = _dashboard_suggested_action(
+                {"name": name, "artifact_role": row.get("artifact_role", ""), "readiness": readiness}
+            )
         rows.append(
             {
                 "item_type": "input",
-                "item": name,
+                "item": label,
                 "artifact_role": _blank_if_missing(row.get("artifact_role")),
-                "artifact_label": _blank_if_missing(row.get("artifact_label")),
+                "artifact_label": label,
                 "dashboard_table": "",
                 "dashboard_tabs": "Dashboard preparation",
                 "required_columns": "",
-                "ready": exists,
-                "readiness": "ready" if exists else "missing",
-                "tab_ready": exists,
+                "ready": ready,
+                "readiness": readiness,
+                "tab_ready": ready,
                 "row_count": "",
                 "file_count": "",
                 "map_ready": "",
@@ -539,9 +548,9 @@ def dashboard_readiness_summary_frame(
                 "nonempty_value_columns": "",
                 "value_families": "",
                 "nonempty_value_families": "",
-                "message": f"{name} is ready." if exists else f"{name} is missing.",
-                "tab_message": f"{name} is ready." if exists else f"{name} is missing.",
-                "suggested_action": "" if exists else _dashboard_suggested_action({"name": name, "readiness": "missing"}),
+                "message": message,
+                "tab_message": message,
+                "suggested_action": suggested_action,
                 "resolved_path": row.get("resolved_path", row.get("path", "")),
                 "path": row.get("path", ""),
             }

@@ -627,6 +627,9 @@ Changelog
   - Added source-input readiness fields to
     ``DashboardOutputReadiness.status_frame()`` so dashboard rebuild decisions
     show ``metrics_long`` readiness, messages, and suggested actions directly.
+  - Changed compact dashboard readiness summaries to use user-facing input
+    labels such as ``metrics_long source table`` as displayed items instead of
+    internal path keys such as ``metrics_long_path``.
 
 2026-06-18
 ----------
