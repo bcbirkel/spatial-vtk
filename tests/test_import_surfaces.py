@@ -1585,6 +1585,9 @@ def test_metrics_package_reexports_workflow_surface():
 def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "spatial.rst"
     text = docs.read_text(encoding="utf-8")
+    workflow_source = (
+        pathlib.Path(__file__).resolve().parents[1] / "src" / "spatial_vtk" / "spatial" / "workflow.py"
+    ).read_text(encoding="utf-8")
     assert ".. automodule:: spatial_vtk.spatial.calculate\n" in text
     assert "helpers from the stable ``spatial_vtk.spatial`` package entry" in text
     assert "calculate implementation modules are\nimplementation organization" in text
@@ -1637,6 +1640,13 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "display_table_previews(nrows=...)" in text
     assert "status result retains its config" in text
     assert "display_metric_source_preview(nrows=...)" in text
+    assert "concrete loaders are imported lazily from ``spatial_vtk.spatial.plot``" in workflow_source
+    assert "run_geojson_summary_step_if_needed(...)" in workflow_source
+    assert "run_corridor_step_if_needed(...)" in workflow_source
+    assert "large-run notebooks do not need output-group or path plumbing" in workflow_source
+    assert "display_metric_source_preview(...)" in workflow_source
+    assert "write_waveform_comparison(...)" in workflow_source
+    assert "without loading full metric tables" in workflow_source
     assert "from spatial_vtk.spatial.plot import (" in text
     first_plot_import = text.split("from spatial_vtk.spatial.plot import (", 1)[1].split(")", 1)[0]
     assert "write_large_run_spatial_figure_suite_from_notebook_settings" in first_plot_import

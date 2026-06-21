@@ -99,6 +99,9 @@ Changelog
   - Reworded metric Slurm readiness docs so Step 3 notebooks are steered to
     the standard metric result object's Slurm runner instead of direct
     readiness-helper wiring.
+  - Expanded top-level Step 5/6 spatial workflow loader docs so API references
+    show the result-owned runner, preview, waveform, and region-boxplot methods
+    that keep large-run notebooks lightweight.
 
 - **Step 1 workflow helpers** *(Added)*
 
