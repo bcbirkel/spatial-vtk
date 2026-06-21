@@ -738,6 +738,9 @@ Changelog
   - Added a shared CSV/Parquet ``table_row_count`` helper and used it when
     reusing existing spatial derived-output tables, avoiding full-table reads
     just to report skip row counts.
+  - Reused the shared row-count helper in dashboard readiness checks so CSV
+    dashboard datasets with quoted newlines report correct row counts without
+    materializing the table.
   - Made configured metric-output and dashboard-output helpers write
     partitioned dashboard metric datasets by default, and changed
     ``svtk metrics outputs`` to default to that large-run-safe layout while

@@ -19,7 +19,7 @@ import pandas as pd
 
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
-from spatial_vtk.io import parquet_table_columns, parquet_table_row_count
+from spatial_vtk.io import parquet_table_columns, table_row_count
 
 
 ConfigInput = SpatialVTKConfig | str | Path
@@ -1491,11 +1491,8 @@ def _dashboard_table_row_count(path: Path) -> int:
     """Return dashboard summary row count without materializing all columns."""
 
     suffix = path.suffix.lower()
-    if suffix in {".parquet", ".pq"}:
-        return parquet_table_row_count(path)
-    if suffix == ".csv":
-        with path.open("r", encoding="utf-8", errors="replace") as handle:
-            return max(sum(1 for _ in handle) - 1, 0)
+    if suffix in {".parquet", ".pq", ".csv"}:
+        return table_row_count(path)
     raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
 
 

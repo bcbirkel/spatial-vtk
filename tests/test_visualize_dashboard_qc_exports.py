@@ -753,6 +753,24 @@ def test_dashboard_metric_dataset_readiness_uses_partition_column_union(tmp_path
     assert readiness["value_columns"] == "log2_residual"
 
 
+def test_dashboard_metric_dataset_readiness_counts_csv_with_quoted_newlines(tmp_path) -> None:
+    """Dashboard readiness row counts should use CSV parsing, not raw line counts."""
+
+    dataset = tmp_path / "metrics_long.csv"
+    dataset.write_text(
+        'model,band,metric,station,log2_residual,notes\n'
+        'm1,1-2 sec,PGA,STA,0.2,"line one\nline two"\n'
+        "m1,1-2 sec,PGA,STB,0.3,plain\n",
+        encoding="utf-8",
+    )
+
+    readiness = dashboard_metric_dataset_readiness_frame(dataset).iloc[0]
+
+    assert readiness["ready"] is True
+    assert readiness["readiness"] == "ready"
+    assert readiness["row_count"] == 2
+
+
 def test_dashboard_summary_loader_tolerates_missing_optional_tables(tmp_path) -> None:
     """Metrics dashboard should open when optional summary tabs are missing."""
 
