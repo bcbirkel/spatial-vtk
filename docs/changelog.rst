@@ -114,6 +114,9 @@ Changelog
     Salvus receiver files.
   - Added a warning when unreadable preprocessing trace-metadata caches force
     fast-resume waveform reuse without cached trace metadata.
+  - Renamed the standard large-run scatter, box, and heatmap diagnostic suite
+    artifact from generic metric diagnostics to standard metric diagnostics,
+    while preserving the old method name as a compatibility wrapper.
 
 - **Public surface guardrails** *(Fixed)*
 

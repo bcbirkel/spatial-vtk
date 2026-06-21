@@ -1442,6 +1442,58 @@ class MetricFigureContext:
                 outputs.append(output)
         return outputs
 
+    def write_standard_metric_diagnostic_plots(
+        self,
+        scatterplot_func: Callable[..., Any],
+        boxplot_func: Callable[..., Any],
+        heatmap_func: Callable[..., Any],
+        period_distribution_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        showfig: bool = False,
+        compare_to: str | Sequence[str] | None = None,
+        table: bool = False,
+    ) -> list[Path]:
+        """Write standard scatter, box, and heatmap diagnostics for target metrics.
+
+        PSA rows are handled by oscillator period: scatter plots are written as
+        period contact sheets, period distributions replace passband boxplots,
+        and passband heatmaps are skipped because PSA is no longer calculated
+        per band in the large-run workflow.
+        """
+
+        if not self.ready:
+            print("Skipping standard metric diagnostics: metric figure context is not ready.")
+            return []
+        resolved_value_col = self.value_col if value_col is None else value_col
+        outputs: list[Path] = []
+        for base_item in self.iter_metric_frames(
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            for item, item_model in self.diagnostic_model_items(base_item, value_col=resolved_value_col, model=model):
+                outputs.extend(
+                    self._write_standard_metric_diagnostic_item(
+                        item,
+                        scatterplot_func,
+                        boxplot_func,
+                        heatmap_func,
+                        period_distribution_func,
+                        passband=passband,
+                        model=item_model,
+                        value_col=resolved_value_col,
+                        showfig=showfig,
+                        compare_to=compare_to,
+                        table=table,
+                    )
+                )
+        return outputs
+
     def write_generic_metric_diagnostic_plots(
         self,
         scatterplot_func: Callable[..., Any],
@@ -1457,42 +1509,21 @@ class MetricFigureContext:
         compare_to: str | Sequence[str] | None = None,
         table: bool = False,
     ) -> list[Path]:
-        """Write generic scatter, box, and heatmap diagnostics for target metrics.
+        """Compatibility wrapper for :meth:`write_standard_metric_diagnostic_plots`."""
 
-        PSA rows are handled by oscillator period: scatter plots are written as
-        period contact sheets, period distributions replace passband boxplots,
-        and passband heatmaps are skipped because PSA is no longer calculated
-        per band in the large-run workflow.
-        """
-
-        if not self.ready:
-            print("Skipping generic metric diagnostics: metric figure context is not ready.")
-            return []
-        resolved_value_col = self.value_col if value_col is None else value_col
-        outputs: list[Path] = []
-        for base_item in self.iter_metric_frames(
+        return self.write_standard_metric_diagnostic_plots(
+            scatterplot_func,
+            boxplot_func,
+            heatmap_func,
+            period_distribution_func,
             passband=passband,
             components=components,
             model=model,
-            split_psa_period=False,
-        ):
-            for item, item_model in self.diagnostic_model_items(base_item, value_col=resolved_value_col, model=model):
-                outputs.extend(
-                    self._write_generic_metric_diagnostic_item(
-                        item,
-                        scatterplot_func,
-                        boxplot_func,
-                        heatmap_func,
-                        period_distribution_func,
-                        passband=passband,
-                        model=item_model,
-                        value_col=resolved_value_col,
-                        showfig=showfig,
-                        compare_to=compare_to,
-                        table=table,
-                    )
-                )
-        return outputs
+            value_col=value_col,
+            showfig=showfig,
+            compare_to=compare_to,
+            table=table,
+        )
 
     def diagnostic_model_items(
         self,
@@ -1520,7 +1551,7 @@ class MetricFigureContext:
             out.append((split_item, value))
         return out or [(item, None)]
 
-    def _write_generic_metric_diagnostic_item(
+    def _write_standard_metric_diagnostic_item(
         self,
         item: dict[str, Any],
         scatterplot_func: Callable[..., Any],
@@ -1535,7 +1566,7 @@ class MetricFigureContext:
         compare_to: str | Sequence[str] | None,
         table: bool,
     ) -> list[Path]:
-        """Write generic diagnostic figures for one already filtered metric item."""
+        """Write standard diagnostic figures for one already filtered metric item."""
 
         outputs: list[Path] = []
         metric_name = self.first_value(item["df"], self.metric_col) or item.get("metric", item["label"])
@@ -2215,8 +2246,8 @@ def write_large_run_metric_figure_suite_from_notebook_settings(
     )
     rows.append(
         _metric_suite_status_row(
-            "generic_metric_diagnostics",
-            context.write_generic_metric_diagnostic_plots(
+            "standard_metric_diagnostics",
+            context.write_standard_metric_diagnostic_plots(
                 scatterplot_func,
                 boxplot_func,
                 heatmap_func,

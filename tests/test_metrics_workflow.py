@@ -881,7 +881,7 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert psa_metadata["written_row_count"] == 2
     assert psa_metadata["sampled"] is False
 
-    generic_outputs = context.write_generic_metric_diagnostic_plots(
+    diagnostic_outputs = context.write_standard_metric_diagnostic_plots(
         _dummy_png_plot,
         _dummy_png_plot,
         _dummy_png_plot,
@@ -890,18 +890,18 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
         components=["Z"],
         model="m1",
     )
-    stems = {path.stem for path in generic_outputs}
+    stems = {path.stem for path in diagnostic_outputs}
     assert any(stem.startswith("scatterplot__pga") for stem in stems)
     assert any(stem.startswith("boxplot__pga") for stem in stems)
     assert any(stem.startswith("heatmap__pga") for stem in stems)
     assert any(stem.startswith("scatterplot__psa") for stem in stems)
     assert any(stem.startswith("boxplot__psa") for stem in stems)
-    for path in generic_outputs:
-        generic_sidecar = context.sidecar_output_dir / f"{path.stem}.csv"
-        generic_metadata = context.sidecar_output_dir / f"{path.stem}.json"
-        assert generic_sidecar.exists(), path.name
-        assert generic_metadata.exists(), path.name
-        metadata = json.loads(generic_metadata.read_text(encoding="utf-8"))
+    for path in diagnostic_outputs:
+        diagnostic_sidecar = context.sidecar_output_dir / f"{path.stem}.csv"
+        diagnostic_metadata = context.sidecar_output_dir / f"{path.stem}.json"
+        assert diagnostic_sidecar.exists(), path.name
+        assert diagnostic_metadata.exists(), path.name
+        metadata = json.loads(diagnostic_metadata.read_text(encoding="utf-8"))
         assert metadata["plot_row_count"] >= metadata["written_row_count"] > 0
         assert metadata["source_row_count"] >= metadata["written_row_count"]
 
@@ -1240,8 +1240,8 @@ def test_write_large_run_metric_figure_suite_from_notebook_settings_delegates(tm
         def write_psa_period_curve_plots(self, *args: object, **kwargs: object) -> list[Path]:
             return self._record("psa_period_curves", *args, **kwargs)
 
-        def write_generic_metric_diagnostic_plots(self, *args: object, **kwargs: object) -> list[Path]:
-            return self._record("generic_metric_diagnostics", *args, **kwargs)
+        def write_standard_metric_diagnostic_plots(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("standard_metric_diagnostics", *args, **kwargs)
 
     fake_context = FakeContext()
     monkeypatch.setattr(
@@ -1286,7 +1286,7 @@ def test_write_large_run_metric_figure_suite_from_notebook_settings_delegates(tm
         "event_residual_maps",
         "log2_residual_distributions",
         "psa_period_curves",
-        "generic_metric_diagnostics",
+        "standard_metric_diagnostics",
     ]
     assert result.context is fake_context
     assert [call[0] for call in calls] == expected
@@ -1339,8 +1339,8 @@ def test_metric_figure_suite_result_displays_context_status_frames() -> None:
     assert list(ready_frames) == ["context_status", "spectral_metric_contract", "dimension_summary"]
 
 
-def test_generic_metric_diagnostics_split_residuals_by_model(tmp_path) -> None:
-    """Generic residual diagnostics should not require notebook-local model loops."""
+def test_standard_metric_diagnostics_split_residuals_by_model(tmp_path) -> None:
+    """Standard residual diagnostics should not require notebook-local model loops."""
 
     metrics = pd.DataFrame(
         {
@@ -1365,7 +1365,7 @@ def test_generic_metric_diagnostics_split_residuals_by_model(tmp_path) -> None:
         value_col="log2_residual",
     )
 
-    outputs = context.write_generic_metric_diagnostic_plots(
+    outputs = context.write_standard_metric_diagnostic_plots(
         scatterplot,
         boxplot,
         heatmap,
@@ -1385,8 +1385,8 @@ def test_generic_metric_diagnostics_split_residuals_by_model(tmp_path) -> None:
     assert all(path.exists() for path in outputs)
 
 
-def test_generic_metric_diagnostics_forward_boxplot_comparison_options(tmp_path) -> None:
-    """Large-run generic diagnostics should expose tutorial comparison tables."""
+def test_standard_metric_diagnostics_forward_boxplot_comparison_options(tmp_path) -> None:
+    """Large-run standard diagnostics should expose tutorial comparison tables."""
 
     metrics = pd.DataFrame(
         {
@@ -1416,7 +1416,7 @@ def test_generic_metric_diagnostics_forward_boxplot_comparison_options(tmp_path)
 
         return _plot
 
-    outputs = context.write_generic_metric_diagnostic_plots(
+    outputs = context.write_standard_metric_diagnostic_plots(
         _spy_plot("scatter"),
         _spy_plot("box"),
         _spy_plot("heat"),
@@ -1435,6 +1435,49 @@ def test_generic_metric_diagnostics_forward_boxplot_comparison_options(tmp_path)
     assert all("compare_to" not in call and "table" not in call for call in seen["scatter"])
     assert all("compare_to" not in call and "table" not in call for call in seen["heat"])
     assert not seen["period"]
+
+
+def test_generic_metric_diagnostics_method_delegates_to_standard_name(tmp_path, monkeypatch) -> None:
+    """The old diagnostic method name should remain a compatibility wrapper."""
+
+    context = MetricFigureContext.from_frame(
+        pd.DataFrame({"metric": ["PGA"], "band": ["1-2 sec"], "component": ["Z"], "log2_residual": [0.1]}),
+        tmp_path / "figures",
+        make_figures=False,
+    )
+    seen: dict[str, object] = {}
+
+    def fake_standard(*args: object, **kwargs: object) -> list[Path]:
+        seen["args"] = args
+        seen["kwargs"] = kwargs
+        return [tmp_path / "figures" / "standard.png"]
+
+    monkeypatch.setattr(context, "write_standard_metric_diagnostic_plots", fake_standard)
+
+    result = context.write_generic_metric_diagnostic_plots(
+        _dummy_png_plot,
+        _dummy_png_plot,
+        _dummy_png_plot,
+        _dummy_png_plot,
+        passband="1-2 sec",
+        components=["Z"],
+        model="m1",
+        value_col="log2_residual",
+        compare_to="Z",
+        table=True,
+    )
+
+    assert result == [tmp_path / "figures" / "standard.png"]
+    assert len(seen["args"]) == 4
+    assert seen["kwargs"] == {
+        "passband": "1-2 sec",
+        "components": ["Z"],
+        "model": "m1",
+        "value_col": "log2_residual",
+        "showfig": False,
+        "compare_to": "Z",
+        "table": True,
+    }
 
 
 def test_metric_station_summary_uses_supported_station_and_event_aliases(tmp_path) -> None:
