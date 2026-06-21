@@ -364,7 +364,7 @@ Lower-level writers such as ``write_dashboard_metric_dataset`` and
 ``write_dashboard_summary_dataset`` also accept ``cfg=cfg`` when their output
 roots are omitted. Use that form in scripts that need registered dashboard
 paths without depending on global active-config state; pass explicit roots for
-ad hoc exports outside the configured run directory.
+custom exports outside the configured run directory.
 ``prepare_configured_dashboard_datasets_from_notebook_settings`` wraps that
 writer for notebooks: it calls the bounded dashboard readiness checks, skips
 local preparation when requested for large datasets, and reports the readiness,

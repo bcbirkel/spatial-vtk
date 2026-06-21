@@ -62,7 +62,7 @@ spatial_outputs = load_standard_spatial_workflow_output_status(cfg=context.cfg)
 spatial_figure_suite = spatial_outputs.write_figure_suite(spatial_figure_settings)
 ```
 
-Single-figure helpers remain available for ad-hoc Python scripts, but the
+Single-figure helpers remain available for custom Python scripts, but the
 large-run notebooks should not hand-wire individual plot calls, figure paths, or
 dataframe joins. Import from stable public packages such as
 `spatial_vtk.metrics.plot`, `spatial_vtk.spatial.plot`,

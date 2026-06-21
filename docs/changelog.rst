@@ -86,6 +86,8 @@ Changelog
   - Reworded metric manifest execution examples so advanced snippets use
     caller-owned manifest and batch-output variables instead of hard-coded
     filenames.
+  - Reworded public workflow docs from ad-hoc/manual phrasing toward
+    custom-script and notebook-local-gate wording.
 
 - **Step 1 workflow helpers** *(Added)*
 

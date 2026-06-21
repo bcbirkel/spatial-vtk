@@ -570,7 +570,7 @@ registered output paths; this keeps the script independent of global
 active-config state. The standard metric result object also accepts either
 form, so ``load_standard_metric_workflow_outputs(cfg=config_path)`` resolves
 the Step 3 tables and preprocessing trace metadata from the same config.
-Passing an explicit ``output_dir`` remains available for ad hoc exports outside
+Passing an explicit ``output_dir`` remains available for custom exports outside
 the configured output registry.
 
 Spectral metrics are planned differently from passband metrics. ``PSA`` and
@@ -594,7 +594,7 @@ to resolve from one config file without activating global state first.
 Put non-default Step 4 inputs in the config under ``spatial.metrics_table`` and
 ``spatial.station_metadata_table``. Those settings can point to dotted path keys
 such as ``paths.metric_figure_snapshot`` and ``paths.site_metadata``, which
-keeps notebooks from passing ad hoc table paths into workflow calls. Set
+keeps notebooks from passing one-off table paths into workflow calls. Set
 ``spatial.metric`` to ``all``, one metric name, or a metric list when a run
 should build only a curated subset.
 

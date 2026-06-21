@@ -254,7 +254,8 @@ standard row factories used by the large-run notebooks:
    Build the large-run metric figure context, render the standard Step 3
    figure families, and return a per-family status table. Large-run notebooks
    use this helper instead of importing individual plotting functions,
-   repeating selection kwargs, or manually gating optional score trends. The
+   repeating selection kwargs, or adding notebook-local gates for optional
+   score trends. The
    status table includes exact ``figure_paths`` lists plus the existing
    ``first_figure_path`` and ``figure_paths_preview`` display fields so
    notebooks do not parse preview strings to inspect generated figures.

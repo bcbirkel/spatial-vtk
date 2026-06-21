@@ -2566,6 +2566,26 @@ def test_python_workflow_docs_reference_importable_entry_points():
     assert not missing
 
 
+def test_public_docs_use_custom_workflow_wording_instead_of_ad_hoc():
+    """Public workflow docs should use precise custom-script wording."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    paths = [
+        root / "docs" / "reference" / "python_workflows.rst",
+        root / "docs" / "reference" / "api" / "visualize.rst",
+        root / "docs" / "reference" / "api" / "metrics.rst",
+        root / "docs" / "examples" / "large_run" / "README.md",
+    ]
+    text = "\n".join(path.read_text(encoding="utf-8") for path in paths)
+
+    assert "ad hoc" not in text.lower()
+    assert "ad-hoc" not in text.lower()
+    assert "manually gating optional score trends" not in text
+    assert "custom exports outside" in text
+    assert "custom Python scripts" in text
+    assert "notebook-local gates for optional\n   score trends" in text
+
+
 def test_python_workflow_docs_prefer_waveform_notebook_settings_wrapper():
     """Workflow docs should match the package-backed Step 2/6 notebook pattern."""
 
