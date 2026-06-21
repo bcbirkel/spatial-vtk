@@ -60,6 +60,9 @@ Changelog
   - Corrected the generated config-backed plotting example for
     ``svtk plot metrics residuals-vs-distance`` to use ``--y-col
     log2_residual`` instead of the score-distribution ``--score-col`` flag.
+  - Reworded the ``svtk metrics outputs`` override-directory help from vague
+    ``ad hoc`` wording to a clear custom downstream metric output directory
+    description.
   - Aligned internal CLI call/result helper docstrings with the public
     ``svtk call`` guidance so direct public-function calls are consistently
     framed as advanced one-off usage rather than generic workflow commands.

@@ -1224,7 +1224,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         metavar="DIR",
         default=None,
         help=(
-            "Ad hoc downstream metric output directory. When omitted, configured output paths are used. "
+            "Custom downstream metric output directory. When omitted, configured output paths are used. "
             "Prefer --metrics-output-dir; --output-dir is a legacy alias."
         ),
     )

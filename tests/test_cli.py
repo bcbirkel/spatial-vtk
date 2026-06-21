@@ -1593,6 +1593,8 @@ def test_generated_cli_reference_names_metrics_outputs_aliases():
     assert "Raw metric workflow rows CSV/parquet path" in section
     assert "Prefer --metric-rows; --metrics is a legacy alias." in section
     assert "``--metrics-output-dir``, ``--output-dir``" in section
+    assert "Custom downstream metric output directory" in section
+    assert "Ad hoc downstream metric output directory" not in section
     assert "configured output paths are used" in section
     assert "Prefer --metrics-output-dir; --output-dir is a legacy alias." in section
     assert "``--event-table``, ``--events``" in section
