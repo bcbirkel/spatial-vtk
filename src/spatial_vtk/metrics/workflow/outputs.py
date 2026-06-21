@@ -7,11 +7,13 @@ used by enrichment, spatial analysis, maps, dashboards, and tutorial notebooks.
 
 Usage examples
 --------------
-Prepare downstream tables:
-  ``tables = prepare_metric_workflow_outputs(metric_rows, events=events, stations=stations)``
+Write configured downstream outputs from Step 3 notebooks:
+  ``from spatial_vtk.metrics import load_standard_metric_workflow_outputs``
+  ``metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)``
+  ``result = metric_outputs.write_configured_outputs(context=context)``
 
-Write standard downstream files:
-  ``paths = write_metric_outputs(metric_rows, "outputs/metrics", events=events, stations=stations)``
+Use ``prepare_metric_workflow_outputs()`` and ``write_metric_outputs()``
+directly only in custom scripts that already own metric rows and output paths.
 """
 
 from __future__ import annotations

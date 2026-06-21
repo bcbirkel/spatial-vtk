@@ -1266,6 +1266,7 @@ def test_metric_workflow_docstrings_prefer_standard_step3_output_helper():
     root = pathlib.Path(__file__).resolve().parents[1] / "src" / "spatial_vtk" / "metrics" / "workflow"
     workflow_text = (root / "__init__.py").read_text(encoding="utf-8")
     execution_text = (root / "execution.py").read_text(encoding="utf-8")
+    outputs_text = (root / "outputs.py").read_text(encoding="utf-8")
 
     assert "from spatial_vtk.metrics import load_standard_metric_workflow_outputs" in workflow_text
     assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)" in workflow_text
@@ -1275,6 +1276,12 @@ def test_metric_workflow_docstrings_prefer_standard_step3_output_helper():
 
     assert "submission = metric_outputs.run_slurm_step_if_needed(context=context)" in execution_text
     assert "only in advanced scripts that own\ntheir task table directly" in execution_text
+
+    assert "from spatial_vtk.metrics import load_standard_metric_workflow_outputs" in outputs_text
+    assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)" in outputs_text
+    assert "result = metric_outputs.write_configured_outputs(context=context)" in outputs_text
+    assert "directly only in custom scripts" in outputs_text
+    assert 'write_metric_outputs(metric_rows, "outputs/metrics"' not in outputs_text
 
 
 def test_preprocessing_docstring_prefers_standard_step1_output_helper():

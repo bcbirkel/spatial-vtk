@@ -74,6 +74,9 @@ Changelog
     standard ingest workflow result and direct ``output_group()`` or
     ``default_output_paths()`` usage is framed as custom-script/package-helper
     access.
+  - Reworded metric downstream-output module examples so Step 3 notebooks use
+    the standard metric workflow result object and direct metric row writers
+    are framed as custom-script helpers.
 
 - **Step 1 workflow helpers** *(Added)*
 
