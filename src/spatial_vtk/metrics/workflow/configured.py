@@ -3,9 +3,12 @@
 Purpose
 -------
 This module mirrors the public metric CLI defaults as importable Python
-functions. Large-run notebooks should pass these helpers to
-``run_notebook_step_if_needed()`` so readiness display, skip logic, local
-execution, and Slurm script writing stay inside the package.
+functions. Large-run notebooks should normally start with
+``load_standard_metric_workflow_outputs()`` and call that result object's
+``run_*_step_if_needed()`` methods so readiness display, skip logic, local
+execution, and Slurm script writing stay inside the package. Use the direct
+helpers in this module from scripts or custom orchestration that already owns
+the configured inputs and output paths.
 """
 
 from __future__ import annotations

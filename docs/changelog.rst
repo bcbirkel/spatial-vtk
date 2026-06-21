@@ -90,6 +90,9 @@ Changelog
     custom-script and notebook-local-gate wording.
   - Reworded lazy I/O package loader docs so public API references describe
     resolved public helpers instead of implementation-module plumbing.
+  - Reworded config-backed metric workflow module docs so large-run notebooks
+    are steered to the standard metric result object instead of direct helper
+    calls wrapped in notebook readiness plumbing.
 
 - **Step 1 workflow helpers** *(Added)*
 

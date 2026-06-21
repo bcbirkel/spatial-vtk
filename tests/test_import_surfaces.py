@@ -2719,7 +2719,7 @@ def test_package_overview_points_to_public_workflow_helpers():
     assert "``spatial_vtk.spatial.calculate.corridors``" not in future
 
 
-def test_notebook_helper_docs_prefer_readiness_wrapper():
+def test_notebook_helper_docs_prefer_standard_result_objects():
     """API-facing docstrings should not steer notebooks to lower-level wrappers."""
 
     repo_root = pathlib.Path(__file__).resolve().parents[1]
@@ -2734,8 +2734,11 @@ def test_notebook_helper_docs_prefer_readiness_wrapper():
     assert "This lower-level helper powers :func:`run_notebook_step_if_needed`" not in notebook_helpers
     assert "matching the lower-level notebook Slurm" not in notebook_helpers
     assert "Large-run notebooks use this helper" not in notebook_helpers
-    assert "Large-run notebooks should pass these helpers to" in metric_configured
-    assert "``run_notebook_step_if_needed()``" in metric_configured
+    assert "Large-run notebooks should normally start with" in metric_configured
+    assert "``load_standard_metric_workflow_outputs()``" in metric_configured
+    assert "call that result object's\n``run_*_step_if_needed()`` methods" in metric_configured
+    assert "Large-run notebooks should pass these helpers to" not in metric_configured
+    assert "Use the direct\nhelpers in this module from scripts or custom orchestration" in metric_configured
     assert "through\n``run_or_submit_notebook_function()``" not in metric_configured
 
 
