@@ -236,6 +236,21 @@ def test_dashboard_find_available_port_skips_occupied_port(monkeypatch):
     assert find_available_port(server_address="127.0.0.1", start_port=8501, max_tries=3) == 8503
 
 
+def test_dashboard_port_helpers_validate_search_bounds():
+    """Dashboard launch helpers should report invalid port settings clearly."""
+
+    import spatial_vtk.visualize.dashboard.launch as dashboard_launch
+
+    with pytest.raises(ValueError, match="Dashboard port must be an integer from 1 to 65535"):
+        dashboard_launch.find_available_port(start_port=0)
+    with pytest.raises(ValueError, match="Dashboard port must be an integer from 1 to 65535"):
+        dashboard_launch.find_available_port(start_port=65536)
+    with pytest.raises(ValueError, match="max_tries must be a positive integer"):
+        dashboard_launch.find_available_port(start_port=8501, max_tries=0)
+    with pytest.raises(ValueError, match="exceeds port 65535"):
+        dashboard_launch.find_available_port(start_port=65535, max_tries=2)
+
+
 def test_saved_cli_config_path_is_used_after_env(tmp_path, monkeypatch):
     """A saved CLI config should be used when no explicit path/env config is set."""
 

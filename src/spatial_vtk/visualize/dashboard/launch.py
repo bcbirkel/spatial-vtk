@@ -467,7 +467,8 @@ def launch_streamlit_dashboard(
     """Start one Streamlit dashboard process."""
 
     _require_streamlit()
-    resolved_port = find_available_port(server_address=server_address, start_port=server_port) if auto_port else int(server_port)
+    requested_port = _validate_dashboard_port(server_port)
+    resolved_port = find_available_port(server_address=server_address, start_port=requested_port) if auto_port else requested_port
     _raise_if_port_in_use(server_address, resolved_port)
     command = build_streamlit_command(
         entrypoint,
@@ -486,18 +487,24 @@ def launch_streamlit_dashboard(
 def find_available_port(*, server_address: str = "127.0.0.1", start_port: int = 8501, max_tries: int = 100) -> int:
     """Return the first available dashboard port at or above ``start_port``."""
 
-    port = int(start_port)
-    for candidate in range(port, port + int(max_tries)):
+    port = _validate_dashboard_port(start_port)
+    tries = int(max_tries)
+    if tries < 1:
+        raise ValueError("max_tries must be a positive integer.")
+    if port + tries - 1 > 65535:
+        raise ValueError(f"Dashboard port search from {port} with max_tries={tries} exceeds port 65535.")
+    for candidate in range(port, port + tries):
         if _port_is_available(server_address, candidate):
             return candidate
     raise RuntimeError(
-        f"No available dashboard port found on {server_address} from {port} to {port + int(max_tries) - 1}."
+        f"No available dashboard port found on {server_address} from {port} to {port + tries - 1}."
     )
 
 
 def _raise_if_port_in_use(server_address: str, server_port: int) -> None:
     """Raise a clear error when the requested dashboard port is occupied."""
 
+    server_port = _validate_dashboard_port(server_port)
     if _port_is_available(server_address, server_port):
         return
     raise RuntimeError(
@@ -510,6 +517,7 @@ def _raise_if_port_in_use(server_address: str, server_port: int) -> None:
 def _port_is_available(server_address: str, server_port: int) -> bool:
     """Return whether a server can bind to one dashboard port."""
 
+    server_port = _validate_dashboard_port(server_port)
     host = "127.0.0.1" if str(server_address) in {"", "::"} else str(server_address)
     try:
         with socket.create_connection((host, int(server_port)), timeout=0.2):
@@ -522,6 +530,18 @@ def _port_is_available(server_address: str, server_port: int) -> bool:
     except OSError:
         return False
     return True
+
+
+def _validate_dashboard_port(server_port: int | str) -> int:
+    """Return a valid TCP port number for dashboard launch helpers."""
+
+    try:
+        port = int(server_port)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"Dashboard port must be an integer from 1 to 65535, got {server_port!r}.") from exc
+    if not 1 <= port <= 65535:
+        raise ValueError(f"Dashboard port must be an integer from 1 to 65535, got {server_port!r}.")
+    return port
 
 
 def _raise_if_streamlit_exited_early(

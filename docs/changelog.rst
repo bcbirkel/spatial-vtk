@@ -77,6 +77,9 @@ Changelog
   - Extended the tutorial notebook source-contract checks to reject
     ``get_ipython().system(...)`` shell calls, closing the same CLI-workflow
     escape path already blocked for ``!svtk`` and ``subprocess.run(...)``.
+  - Added dashboard launch port validation so invalid ports or impossible
+    auto-port search ranges raise clear configuration errors before Streamlit
+    startup.
 
 2026-06-19
 ----------
