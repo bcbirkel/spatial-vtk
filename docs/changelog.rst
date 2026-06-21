@@ -145,6 +145,9 @@ Changelog
   - Routed dashboard summary and dashboard metric export readers through the
     shared table reader while preserving supported-format validation and
     selected-column loading.
+  - Routed optional event patch/context table loading through the shared table
+    reader and updated catalog wrapper docstrings so public context helpers no
+    longer imply CSV-only inputs.
   - Added a shared ``table_columns()`` helper for schema-only CSV/Parquet
     inspection and routed dashboard, metric workflow, metric batch merge, and
     large-run plotting column probes through it.

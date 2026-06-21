@@ -3441,6 +3441,7 @@ def test_large_run_csv_readers_use_stable_dtype_inference():
         "src/spatial_vtk/metrics/calculate/phasenet_adapter.py": "picks = pd.read_csv(phasenet_csv, low_memory=False)",
         "src/spatial_vtk/metrics/calculate/arrival_picks.py": "df = read_table(source)",
         "src/spatial_vtk/io/metadata.py": "prepare_event_station_table(read_table(path)",
+        "src/spatial_vtk/io/catalogs.py": "return read_table(path or default_event_patch_csv(), **kwargs)",
         "src/spatial_vtk/io/plans.py": "pd.read_csv(args.metrics, low_memory=False)",
         "src/spatial_vtk/spatial/calculate/geojson.py": "pd.read_csv(path, usecols=columns, chunksize=chunksize, low_memory=False)",
     }

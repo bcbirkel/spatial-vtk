@@ -15,6 +15,7 @@ from spatial_vtk.io import (
     load_csv_bundle,
     preview_table,
     read_bounded_table,
+    read_event_patch_table,
     resolve_model_aliases,
     slugify,
     table_columns,
@@ -105,6 +106,17 @@ def test_table_helpers(tmp_path):
     aggregated = aggregate_metric_by_station_over_events(long, metric_col="residual")
     assert aggregated.loc[0, "n_events"] == 2
     assert table_row_count(csv_path) == 2
+
+
+def test_event_patch_reader_accepts_parquet_tables(tmp_path):
+    """Catalog patch readers should follow the same CSV/Parquet table contract as metadata readers."""
+
+    patch_path = tmp_path / "event_patches.parquet"
+    pd.DataFrame({"event_id": ["e1"], "region": ["north"]}).to_parquet(patch_path, index=False)
+
+    patches = read_event_patch_table(patch_path)
+
+    assert patches.to_dict("records") == [{"event_id": "e1", "region": "north"}]
 
 
 def test_table_row_count_streams_csv_without_materializing_rows(tmp_path, monkeypatch):

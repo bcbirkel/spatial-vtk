@@ -15,6 +15,7 @@ from spatial_vtk.config.paths import (
     default_subbasins_geojson,
 )
 from spatial_vtk.io.metadata import read_event_metadata, read_station_metadata
+from spatial_vtk.io.tables import read_table
 
 
 def read_events(path: str | Path | None = None, **kwargs) -> pd.DataFrame:
@@ -25,7 +26,7 @@ def read_events(path: str | Path | None = None, **kwargs) -> pd.DataFrame:
     path
         Event catalog path. When omitted, the public example path is used.
     **kwargs
-        Additional arguments forwarded to ``pandas.read_csv``.
+        Additional arguments forwarded to the shared CSV/Parquet metadata reader.
 
     Returns
     -------
@@ -44,7 +45,7 @@ def read_stations(path: str | Path, **kwargs) -> pd.DataFrame:
     path
         Station catalog path.
     **kwargs
-        Additional arguments forwarded to ``pandas.read_csv``.
+        Additional arguments forwarded to the shared CSV/Parquet metadata reader.
 
     Returns
     -------
@@ -63,7 +64,7 @@ def read_event_patch_table(path: str | Path | None = None, **kwargs) -> pd.DataF
     path
         Event patch table path. When omitted, the public example path is used.
     **kwargs
-        Additional arguments forwarded to ``pandas.read_csv``.
+        Additional arguments forwarded to the shared CSV/Parquet table reader.
 
     Returns
     -------
@@ -71,8 +72,7 @@ def read_event_patch_table(path: str | Path | None = None, **kwargs) -> pd.DataF
         Event patch table.
     """
 
-    csv_kwargs = {"low_memory": False, **kwargs}
-    return pd.read_csv(path or default_event_patch_csv(), **csv_kwargs)
+    return read_table(path or default_event_patch_csv(), **kwargs)
 
 
 def context_dataset_paths(root: str | Path | None = None) -> dict[str, Path]:
