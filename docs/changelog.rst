@@ -34,6 +34,9 @@ Changelog
   - Cleaned the Spatial API focused-script plotting example so it shows
     individual plot functions instead of mixing direct suite writers into the
     first import block.
+  - Improved tutorial runtime-check failures so missing-dependency messages
+    include both the generic source-checkout commands and exact install/check
+    commands for the Python executable that failed the runtime check.
 
 2026-06-19
 ----------

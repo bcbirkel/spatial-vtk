@@ -89,6 +89,8 @@ def test_tutorial_notebook_runtime_preflight_reports_missing_modules() -> None:
         module.SOURCE_CHECKOUT_TUTORIAL_RUNTIME_CHECK_COMMAND
         == "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run"
     )
+    assert sys.executable in module.current_python_tutorial_install_command()
+    assert sys.executable in module.current_python_tutorial_runtime_check_command()
     with pytest.raises(SystemExit) as excinfo:
         module.check_notebook_runtime({"demo": "definitely_missing_svtk_module"})
     message = str(excinfo.value)
@@ -98,6 +100,8 @@ def test_tutorial_notebook_runtime_preflight_reports_missing_modules() -> None:
     assert "Make sure the install command targets this environment" in message
     assert module.SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND in message
     assert module.SOURCE_CHECKOUT_TUTORIAL_RUNTIME_CHECK_COMMAND in message
+    assert module.current_python_tutorial_install_command() in message
+    assert module.current_python_tutorial_runtime_check_command() in message
     assert module.SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND in message
 
 

@@ -19,6 +19,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shlex
 import shutil
 import sys
 import time
@@ -274,8 +275,10 @@ def check_notebook_runtime(required: dict[str, str] | None = None) -> None:
         "Make sure the install command targets this environment, or activate "
         "the intended environment first. From a source checkout, install the "
         "package runtime plus tutorial extras with "
-        f"{SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND}. After installing, rerun "
-        f"{SOURCE_CHECKOUT_TUTORIAL_RUNTIME_CHECK_COMMAND}. "
+        f"{SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND}. For this exact Python "
+        f"environment, run {current_python_tutorial_install_command()}. "
+        f"After installing, rerun {SOURCE_CHECKOUT_TUTORIAL_RUNTIME_CHECK_COMMAND}. "
+        f"For this exact Python environment, rerun {current_python_tutorial_runtime_check_command()}. "
         "If compiled mapping or waveform dependencies are difficult to solve "
         f"with pip, create the full conda environment with {SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND}."
     )
@@ -308,6 +311,20 @@ def missing_notebook_runtime_modules(required: dict[str, str] | None = None) -> 
 
     modules = NOTEBOOK_RUNTIME_MODULES if required is None else required
     return [label for label, module in modules.items() if importlib.util.find_spec(module) is None]
+
+
+def current_python_tutorial_install_command() -> str:
+    """Return the tutorial install command for the currently running Python."""
+
+    executable = shlex.quote(sys.executable)
+    return f'{executable} -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
+
+
+def current_python_tutorial_runtime_check_command() -> str:
+    """Return the tutorial runtime-check command for the currently running Python."""
+
+    executable = shlex.quote(sys.executable)
+    return f"{executable} tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run"
 
 
 def check_tutorial_example_data(repo_root: Path) -> None:
