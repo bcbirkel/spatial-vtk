@@ -101,7 +101,10 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
        notebook cells.
    * - ``build_metric_waveform_inventories_from_config``
      - Build observed and synthetic metric-ready waveform inventories from the
-       active config and preprocessed waveform metadata.
+       active config and preprocessed waveform metadata. The returned
+       ``MetricWaveformInventoryResult.status_frame()`` reports observed and
+       synthetic inventory artifacts with normalized names, roles, readiness
+       status, paths, row counts, and reuse flags.
    * - ``metric_inventories_readiness_from_config``
      - Check whether metric-ready observed/synthetic waveform inventories are
        missing, stale, current, or forced by ``overwrite`` without repeating the

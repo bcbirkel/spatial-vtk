@@ -104,6 +104,16 @@ def test_metric_inventories_from_trace_metadata_use_explicit_path_columns(tmp_pa
         "observed_metric_inventory_path",
         "synthetic_metric_inventory_path",
     ]
+    assert status["artifact"].tolist() == [
+        "observed_metric_inventory",
+        "synthetic_metric_inventory",
+    ]
+    assert status["artifact_role"].tolist() == ["metric_inventory", "metric_inventory"]
+    assert status["status"].tolist() == ["ready", "ready"]
+    assert status["artifact_label"].tolist() == [
+        "observed metric waveform inventory",
+        "synthetic metric waveform inventory",
+    ]
     assert status["resolved_path"].tolist() == status["path"].tolist()
     assert status["exists"].tolist() == [True, True]
     assert status["rows"].tolist() == [1, 1]

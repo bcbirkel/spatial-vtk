@@ -62,7 +62,10 @@ class MetricWaveformInventoryResult:
         rows = [
             {
                 "name": "observed_metric_inventory_path",
+                "artifact": "observed_metric_inventory",
                 "artifact_label": "observed metric waveform inventory",
+                "artifact_role": "metric_inventory",
+                "status": "ready" if self.observed_metric_inventory_path.exists() else "missing",
                 "resolved_path": str(self.observed_metric_inventory_path),
                 "path": str(self.observed_metric_inventory_path),
                 "exists": self.observed_metric_inventory_path.exists(),
@@ -71,7 +74,10 @@ class MetricWaveformInventoryResult:
             },
             {
                 "name": "synthetic_metric_inventory_path",
+                "artifact": "synthetic_metric_inventory",
                 "artifact_label": "synthetic metric waveform inventory",
+                "artifact_role": "metric_inventory",
+                "status": "ready" if self.synthetic_metric_inventory_path.exists() else "missing",
                 "resolved_path": str(self.synthetic_metric_inventory_path),
                 "path": str(self.synthetic_metric_inventory_path),
                 "exists": self.synthetic_metric_inventory_path.exists(),

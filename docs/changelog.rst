@@ -80,6 +80,9 @@ Changelog
   - Added explicit ``artifact`` ids to ``DashboardOutputReadiness.status_frame()``
     rows so dashboard readiness displays line up with the artifact vocabulary
     used by workflow output, preparation, launch, and figure status tables.
+  - Standardized ``MetricWaveformInventoryResult.status_frame()`` so observed
+    and synthetic metric inventory rows expose artifact ids, labels, roles,
+    readiness status, normalized paths, row counts, and reuse flags.
 
 - **CLI help and generated-reference wording** *(Changed)*
 
