@@ -82,6 +82,8 @@ Changelog
     clearly as the large-run notebooks.
   - Extended tutorial notebook source-contract checks to reject
     under-documented section headings that omit Purpose/Outputs notes.
+  - Improved CLI missing-dependency diagnostics so import aliases such as
+    ``yaml`` name their installable package, for example ``PyYAML``.
   - Added dashboard launch port validation so invalid ports or impossible
     auto-port search ranges raise clear configuration errors before Streamlit
     startup.

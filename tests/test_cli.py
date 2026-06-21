@@ -39,6 +39,28 @@ def test_cli_main_reports_missing_runtime_dependency(monkeypatch, capsys):
     assert "Traceback" not in captured.err
 
 
+def test_cli_main_reports_install_name_for_import_alias(monkeypatch, capsys):
+    """Missing dependency messages should name install packages for import aliases."""
+
+    import argparse
+    import spatial_vtk.cli as cli
+
+    parser = argparse.ArgumentParser(prog="svtk")
+
+    def missing_dependency_handler(_args):
+        raise ModuleNotFoundError("No module named 'yaml'", name="yaml")
+
+    parser.set_defaults(handler=missing_dependency_handler)
+    monkeypatch.setattr(cli, "build_parser", lambda: parser)
+
+    assert cli.main([]) == 2
+    captured = capsys.readouterr()
+    assert "Missing Python dependency 'yaml' required by this command." in captured.err
+    assert "Install package 'PyYAML' for import module 'yaml'." in captured.err
+    assert "python -m pip install -e" in captured.err
+    assert "Traceback" not in captured.err
+
+
 def test_cli_missing_config_reports_config_before_optional_dependencies(tmp_path, monkeypatch, capsys):
     """Config-required workflow commands should report missing config before optional imports."""
 

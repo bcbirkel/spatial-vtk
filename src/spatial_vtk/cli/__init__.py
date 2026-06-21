@@ -44,6 +44,10 @@ _DEFAULT_CONFIG_FILENAMES = (
     "svtk.yml",
 )
 _DEFAULT_CLI_CONFIG_PATH = Path.home() / ".config" / "spatial-vtk" / "config.json"
+_MISSING_DEPENDENCY_INSTALL_NAMES = {
+    "yaml": "PyYAML",
+    "sklearn": "scikit-learn",
+}
 
 
 @dataclass(frozen=True)
@@ -458,8 +462,15 @@ def _missing_cli_dependency_message(exc: ModuleNotFoundError) -> str:
         module_name = str(exc).split("'")[1]
     else:
         module_name = str(exc)
+    package_name = _MISSING_DEPENDENCY_INSTALL_NAMES.get(module_name, module_name)
+    install_note = (
+        f"Install package {package_name!r} for import module {module_name!r}."
+        if package_name != module_name
+        else ""
+    )
     return (
         f"Missing Python dependency {module_name!r} required by this command. "
+        f"{install_note}{' ' if install_note else ''}"
         "Install Spatial-VTK with its runtime dependencies, for example: "
         "python -m pip install -e \".[validation,docs,dashboard,notebooks,waveforms]\" "
         "from a source checkout, or python -m pip install spatial-vtk for a published release."
