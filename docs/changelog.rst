@@ -87,6 +87,9 @@ Changelog
   - Normalized ``SlurmSubmission.status_frame()`` so notebook-displayed Slurm
     submissions include ``name``, ``artifact_label``, ``resolved_path``,
     ``path``, and ``exists`` columns while preserving ``script_path``.
+  - Expanded ``StandardQCInputResult.status_frame()`` so Step 2 notebooks show
+    loaded input row counts and configured QC output paths in one normalized
+    status table.
   - Added dashboard launch port validation so invalid ports or impossible
     auto-port search ranges raise clear configuration errors before Streamlit
     startup.

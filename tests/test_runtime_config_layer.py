@@ -2665,8 +2665,14 @@ outputs:
     assert len(inputs.events) == 1
     assert len(inputs.event_stations) == 1
     status = inputs.status_frame()
-    assert set(status["table"]) == {"stations", "events", "event_stations"}
-    assert status["rows"].tolist() == [1, 1, 1]
+    input_status = status.loc[status["artifact_role"].eq("input_table")].set_index("table")
+    assert set(input_status.index) == {"stations", "events", "event_stations"}
+    assert input_status["rows"].tolist() == [1, 1, 1]
+    assert input_status.loc["stations", "artifact_label"] == "prepared stations input table"
+    output_status = status.loc[status["artifact_role"].ne("input_table")].set_index("name")
+    assert "qc_inventory_path" in output_status.index
+    assert output_status.loc["qc_inventory_path", "resolved_path"] == str(qc_outputs.qc_inventory_path)
+    assert output_status.loc["qc_inventory_path", "path"] == str(qc_outputs.qc_inventory_path)
     displayed: list[pd.DataFrame] = []
     inventory_preview = inputs.display_inventory_preview(nrows=1, display_fn=displayed.append)
     assert inventory_preview["qc_inventory"].to_dict("records") == [

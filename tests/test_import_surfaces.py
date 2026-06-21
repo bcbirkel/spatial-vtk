@@ -1732,6 +1732,7 @@ def test_qc_api_docs_use_public_package_entry_point():
     assert "output group without notebook-local Step 1 path/table plumbing" in text
     assert "output-group table mapping" not in text
     assert "confirm input row counts and configured output paths" in text
+    assert "The frame uses normalized ``name``,\n       ``artifact_label``, ``artifact_role``, ``resolved_path``" in text
     forbidden_modules = (
         "spatial_vtk.qc.build.filtering",
         "spatial_vtk.qc.build.inventory",

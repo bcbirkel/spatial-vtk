@@ -77,7 +77,10 @@ Public helpers exposed by ``spatial_vtk.qc``:
        through ``write_waveform_comparison()``. Display
        ``StandardQCInputResult.status_frame()`` before running QC cells to
        confirm input row counts and configured output paths without loading
-       full inventories.
+       full inventories. The frame uses normalized ``name``,
+       ``artifact_label``, ``artifact_role``, ``resolved_path``, ``path``, and
+       ``exists`` columns for both loaded input tables and configured output
+       artifacts.
    * - ``run_qc_inventory_from_config``
      - Build or resume the configured waveform and metric QC inventory with
        checkpointed outputs for large datasets. Routine notebooks should

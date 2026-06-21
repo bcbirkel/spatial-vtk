@@ -142,14 +142,71 @@ class StandardQCInputResult:
     cfg: SpatialVTKConfig | None = None
 
     def status_frame(self) -> pd.DataFrame:
-        """Return a compact row-count table for loaded QC inputs."""
+        """Return loaded input row counts and configured QC output status."""
 
         rows = [
-            {"table": "stations", "rows": len(self.stations)},
-            {"table": "events", "rows": len(self.events)},
-            {"table": "event_stations", "rows": len(self.event_stations)},
+            {
+                "name": "stations",
+                "artifact": "stations",
+                "artifact_label": "prepared stations input table",
+                "artifact_role": "input_table",
+                "status": "loaded",
+                "exists": True,
+                "table": "stations",
+                "rows": len(self.stations),
+                "resolved_path": "",
+                "path": "",
+            },
+            {
+                "name": "events",
+                "artifact": "events",
+                "artifact_label": "prepared events input table",
+                "artifact_role": "input_table",
+                "status": "loaded",
+                "exists": True,
+                "table": "events",
+                "rows": len(self.events),
+                "resolved_path": "",
+                "path": "",
+            },
+            {
+                "name": "event_stations",
+                "artifact": "event_stations",
+                "artifact_label": "event-station records input table",
+                "artifact_role": "input_table",
+                "status": "loaded",
+                "exists": True,
+                "table": "event_stations",
+                "rows": len(self.event_stations),
+                "resolved_path": "",
+                "path": "",
+            },
         ]
-        return pd.DataFrame(rows, columns=["table", "rows"])
+        input_status = pd.DataFrame(
+            rows,
+            columns=[
+                "name",
+                "artifact",
+                "artifact_label",
+                "artifact_role",
+                "status",
+                "exists",
+                "table",
+                "rows",
+                "resolved_path",
+                "path",
+            ],
+        )
+        if not hasattr(self.outputs, "status_frame"):
+            return input_status
+        output_status = self.outputs.status_frame()
+        if output_status.empty:
+            return input_status
+        if "table" not in output_status.columns:
+            output_status = output_status.assign(table="")
+        if "rows" not in output_status.columns:
+            output_status = output_status.assign(rows=pd.NA)
+        return pd.concat([input_status, output_status], ignore_index=True, sort=False)
 
     def step_result(self, readiness: OutputReadiness, **values: Any) -> dict[str, Any]:
         """Return a JSON-friendly skipped-step result with path values encoded.
