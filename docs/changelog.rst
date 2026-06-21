@@ -80,6 +80,9 @@ Changelog
   - Reworded metric downstream-output module examples so Step 3 notebooks use
     the standard metric workflow result object and direct metric row writers
     are framed as custom-script helpers.
+  - Reworded metric plotting package and API examples so Step 3 notebooks use
+    the standard metric workflow result object's figure-suite method instead
+    of passing ``metrics_long_path`` into direct plotting helpers.
   - Reworded the preprocessing direct-call example so advanced scripts prefer
     config-backed output resolution instead of a literal preprocessed-output
     directory.

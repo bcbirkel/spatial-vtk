@@ -7,9 +7,10 @@ helpers unless an example metric plot explicitly needs them.
 
 Usage examples
 --------------
-Render the configured large-run metric figure suite:
-  ``from spatial_vtk.metrics.plot import write_large_run_metric_figure_suite_from_notebook_settings``
-  ``result = write_large_run_metric_figure_suite_from_notebook_settings(metrics_long_path, settings)``
+Render the configured large-run metric figure suite from a notebook:
+  ``from spatial_vtk.metrics import load_standard_metric_workflow_outputs``
+  ``metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)``
+  ``result = metric_outputs.write_large_run_figure_suite(settings)``
 
 Use individual functions such as ``plot_psa_period_curve()`` directly only
 for focused scripts that already own filtered metric rows.

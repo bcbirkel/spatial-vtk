@@ -154,9 +154,21 @@ organization and are intentionally not listed as notebook-facing import paths.
 Plotting
 --------
 
-Import plotting helpers from the stable ``spatial_vtk.metrics.plot`` package
-entry point in notebooks and scripts. The implementation submodules are not
-part of the tutorial-facing API.
+Routine notebooks should render the standard metric figure suite through the
+Step 3 result object so the configured ``metrics_long`` table, output paths,
+render gates, and sidecar settings stay in package code.
+
+.. code-block:: python
+
+   from spatial_vtk.metrics import load_standard_metric_workflow_outputs
+
+   metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)
+   metric_figure_suite = metric_outputs.write_large_run_figure_suite(settings)
+
+Focused scripts and custom extensions can import plotting helpers from the
+stable ``spatial_vtk.metrics.plot`` package entry point when they already own
+the filtered metric rows or resolved table paths. The implementation submodules
+are not part of the tutorial-facing API.
 
 .. code-block:: python
 
@@ -212,10 +224,13 @@ Public plotting helpers exposed by ``spatial_vtk.metrics.plot``:
 Large-Run Figure Suite
 ----------------------
 
-Notebook-facing metric plotting should use the result-object and suite helpers
-below. These helpers keep row filtering, robust plot scaling, sidecar writing,
-render gates, and registered output paths in package code instead of notebook
-cells.
+Notebook-facing metric plotting should use
+``load_standard_metric_workflow_outputs(...).write_large_run_figure_suite(...)``
+for the full configured suite, or the result object's focused figure methods
+for individual standard figures. The lower-level context and direct suite
+helpers below remain public for scripts and custom extensions. These helpers
+keep row filtering, robust plot scaling, sidecar writing, render gates, and
+registered output paths in package code instead of notebook cells.
 
 Use ``MetricFigureContext`` when a notebook or script needs to render many
 metric figures from a large ``metrics_long`` table without loading unnecessary
@@ -260,9 +275,10 @@ standard row factories used by the large-run notebooks:
 
 ``write_large_run_metric_figure_suite_from_notebook_settings``
    Build the large-run metric figure context, render the standard Step 3
-   figure families, and return a per-family status table. Large-run notebooks
-   use this helper instead of importing individual plotting functions,
-   repeating selection kwargs, or adding notebook-local gates for optional
+   figure families, and return a per-family status table. The standard metric
+   result object's ``write_large_run_figure_suite(...)`` method delegates to
+   this helper so large-run notebooks do not import individual plotting
+   functions, repeat selection kwargs, or add notebook-local gates for optional
    score trends. The
    status table includes exact ``figure_paths`` lists plus the existing
    ``first_figure_path`` and ``figure_paths_preview`` display fields so
@@ -318,10 +334,11 @@ Advanced Figure Extension Helpers
 
 The functions in this section are public for custom scripts and extension
 code, but they are not the preferred tutorial or notebook entry points. New
-notebooks should call ``write_large_run_metric_figure_suite_from_notebook_settings``,
-``write_standard_metric_diagnostic_figures``, or
-``write_station_metric_map_from_notebook_settings`` so the package owns the
-data-selection contract and output bookkeeping.
+notebooks should call
+``load_standard_metric_workflow_outputs(...).write_large_run_figure_suite(...)``,
+``load_standard_metric_workflow_outputs(...).write_standard_diagnostic_figures(...)``,
+or ``load_standard_metric_workflow_outputs(...).write_station_metric_map(...)``
+so the package owns the data-selection contract and output bookkeeping.
 
 ``metric_rows_for_metrics``
    Select metric rows by metric names, display labels, keys, or aliases before

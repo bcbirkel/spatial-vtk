@@ -1035,7 +1035,13 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "metrics_long`` display helper" in text
     assert "``StandardMetricWorkflowOutputResult.status_frame()``" in text
     assert "instead of repeating manifest, metric-row, or output-table path variables" in text
-    assert "New\nnotebooks should call ``write_large_run_metric_figure_suite_from_notebook_settings``" in text
+    assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)" in text
+    assert "metric_figure_suite = metric_outputs.write_large_run_figure_suite(settings)" in text
+    assert (
+        "New\nnotebooks should call\n"
+        "``load_standard_metric_workflow_outputs(...).write_large_run_figure_suite(...)``"
+    ) in text
+    assert "standard metric\n   result object's ``write_large_run_figure_suite(...)`` method delegates" in text
     forbidden_modules = (
         "spatial_vtk.metrics.calculate.amplitudes",
         "spatial_vtk.metrics.calculate.arrival_picks",
@@ -1370,8 +1376,10 @@ def test_plot_package_docstrings_prefer_large_run_suite_helpers():
     metric_text = (root / "metrics" / "plot" / "__init__.py").read_text(encoding="utf-8")
     spatial_text = (root / "spatial" / "plot" / "__init__.py").read_text(encoding="utf-8")
 
-    assert "write_large_run_metric_figure_suite_from_notebook_settings" in metric_text
-    assert "result = write_large_run_metric_figure_suite_from_notebook_settings(metrics_long_path, settings)" in metric_text
+    assert "from spatial_vtk.metrics import load_standard_metric_workflow_outputs" in metric_text
+    assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)" in metric_text
+    assert "result = metric_outputs.write_large_run_figure_suite(settings)" in metric_text
+    assert "write_large_run_metric_figure_suite_from_notebook_settings(metrics_long_path, settings)" not in metric_text
     assert "Use individual functions such as ``plot_psa_period_curve()`` directly only" in metric_text
     assert "Plot PSA residuals by period" not in metric_text
 
