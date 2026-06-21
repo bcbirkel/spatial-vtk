@@ -269,8 +269,8 @@ standard row factories used by the large-run notebooks:
    sidecar exactness flags from the saved JSON metadata.
 
 ``write_standard_metric_diagnostic_figures``
-   Render the standard Step 3 residual-distance, GOF-distance, and
-   band-distribution diagnostics from one metric dataframe and an
+   Render the standard Step 3 residual-distance, score-trend, and
+   band residual-distribution diagnostics from one metric dataframe and an
    ``OutputGroup``. The helper owns the tutorial metric filtering, configured
    figure paths, sidecar keyword expansion, and per-figure status table so
    notebooks do not import individual plotting functions or call

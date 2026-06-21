@@ -1030,6 +1030,8 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "metric_rows_for_metrics" not in helper_table
     assert "Plot custom metric trends and optional GOF score diagnostics." in helper_table
     assert "Plot generic metric trends" not in helper_table
+    assert "Render the standard Step 3 residual-distance, score-trend, and\n   band residual-distribution diagnostics" in text
+    assert "Render the standard Step 3 residual-distance, GOF-distance" not in text
     assert "Notebook-facing metric plotting should use the result-object and suite helpers" in text
     assert "Advanced Figure Extension Helpers" in text
     assert "not the preferred tutorial or notebook entry points" in text

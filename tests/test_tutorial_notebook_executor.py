@@ -2116,6 +2116,8 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
     assert "metric_outputs.write_station_metric_map(" in source
     assert "metric_diagnostic_result.preview_frame()" in source
     assert "metric_diagnostic_result.status_frame()" in source
+    assert "standard residual-distance, score-trend, and band residual-distribution diagnostics" in source
+    assert "standard residual-distance, GOF-distance, and band-distribution diagnostics" not in source
     assert "metric_outputs.display_task_previews(nrows=12)" in source
     assert "metric_outputs.display_metrics_preview(nrows=5)" in source
     assert 'display_notebook_step_result(task_preview_result, label="Metric task preview", display=display)' in source

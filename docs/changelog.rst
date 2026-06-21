@@ -53,6 +53,10 @@ Changelog
     objects remain the default owner of skipped ``run_*_step_if_needed()``
     payloads, while ``notebook_step_result`` is framed as a custom-workflow
     fallback helper instead of notebook-local dictionary construction.
+  - Renamed the standard Step 3 diagnostic wording from ``GOF-distance`` and
+    generic band-distribution language to explicit residual-distance,
+    score-trend, and band residual-distribution diagnostics so tutorial text
+    matches the figure artifacts the package writes.
   - Aligned internal CLI call/result helper docstrings with the public
     ``svtk call`` guidance so direct public-function calls are consistently
     framed as advanced one-off usage rather than generic workflow commands.
