@@ -77,6 +77,11 @@ Changelog
   - Extended the tutorial notebook source-contract checks to reject
     ``get_ipython().system(...)`` shell calls, closing the same CLI-workflow
     escape path already blocked for ``!svtk`` and ``subprocess.run(...)``.
+  - Added Purpose/Outputs notes to every standard tutorial notebook section so
+    the lightweight examples document each task and produced artifact as
+    clearly as the large-run notebooks.
+  - Extended tutorial notebook source-contract checks to reject
+    under-documented section headings that omit Purpose/Outputs notes.
   - Added dashboard launch port validation so invalid ports or impossible
     auto-port search ranges raise clear configuration errors before Streamlit
     startup.

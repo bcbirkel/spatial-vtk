@@ -430,6 +430,12 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
             {
                 "cells": [
                     {
+                        "cell_type": "markdown",
+                        "id": "undocumented-section",
+                        "metadata": {},
+                        "source": ["## Run Expensive Work\n", "\n", "Do the step.\n"],
+                    },
+                    {
                         "cell_type": "code",
                         "id": "bad-cell",
                         "execution_count": 1,
@@ -498,6 +504,7 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert "committed execution_count should be empty" in combined
     assert "committed outputs should be empty" in combined
     assert "committed notebook metadata should not contain saved runtime state keys: widgets" in combined
+    assert "markdown section should include Purpose: and Outputs:" in combined
     assert "import subprocess" in combined
     assert "forbidden shell/CLI workflow pattern" in combined
     assert "get_ipython().system(" in combined

@@ -482,6 +482,8 @@ def tutorial_notebook_contract_violations(notebooks: list[Path], *, repo_root: P
         for index, cell in enumerate(cells, start=1):
             cell_label = f"{label} cell {index}"
             source = "".join(cell.get("source", []))
+            if cell.get("cell_type") == "markdown":
+                violations.extend(_notebook_markdown_section_violations(source, cell_label))
             if not str(cell.get("id", "")).strip():
                 violations.append(f"{cell_label}: missing cell id")
             if cell.get("cell_type") == "code":
@@ -507,6 +509,17 @@ def tutorial_notebook_contract_violations(notebooks: list[Path], *, repo_root: P
                 violations.extend(_notebook_parent_path_violations(source, cell_label))
                 violations.extend(_notebook_package_callable_violations(source, cell_label))
     return violations
+
+
+def _notebook_markdown_section_violations(source: str, cell_label: str) -> list[str]:
+    """Return tutorial section headings that do not document task intent."""
+
+    first_line = next((line.strip() for line in source.splitlines() if line.strip()), "")
+    if not first_line.startswith("##"):
+        return []
+    if "Purpose:" in source and "Outputs:" in source:
+        return []
+    return [f"{cell_label}: markdown section should include Purpose: and Outputs:"]
 
 
 def _notebook_local_definition_violations(source: str, cell_label: str) -> list[str]:
