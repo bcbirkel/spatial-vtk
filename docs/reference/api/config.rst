@@ -130,7 +130,8 @@ the stable package surface below.
    * - ``NotebookDashboardCommands`` and
        ``notebook_dashboard_launch_commands``
      - Resolve dashboard launch settings from config-backed dashboard outputs;
-       ``status_frame()`` reports ``metrics_dataset_dir``,
+       ``status_frame()`` reports ``name``, ``artifact``, ``artifact_label``,
+       ``artifact_role``, launch-plan ``status``, ``metrics_dataset_dir``,
        ``dashboard_summary_table_dir``, and ``qc_trace_summary_table`` with
        existence flags, without notebooks resolving paths themselves.
    * - ``display_output_table_previews``

@@ -948,6 +948,11 @@ def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monke
         "show": False,
     }
     status = commands.status_frame().set_index("dashboard")
+    assert status.loc["metrics", "name"] == "metrics_dashboard"
+    assert status.loc["metrics", "artifact"] == "metrics_dashboard"
+    assert status.loc["metrics", "artifact_label"] == "metrics dashboard launch plan"
+    assert status.loc["metrics", "artifact_role"] == "dashboard_launch_plan"
+    assert status.loc["metrics", "status"] == "command"
     assert status.loc["metrics", "requested_port"] == 8501
     assert bool(status.loc["metrics", "launch_requested"]) is False
     assert bool(status.loc["metrics", "config_exists"]) is True
@@ -961,6 +966,11 @@ def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monke
     assert bool(status.loc["metrics", "dashboard_summary_table_dir_exists"]) is False
     assert pd.isna(status.loc["metrics", "qc_trace_summary_table_exists"])
     assert status.loc["qc", "requested_port"] == 8502
+    assert status.loc["qc", "name"] == "qc_dashboard"
+    assert status.loc["qc", "artifact"] == "qc_dashboard"
+    assert status.loc["qc", "artifact_label"] == "QC dashboard launch plan"
+    assert status.loc["qc", "artifact_role"] == "dashboard_launch_plan"
+    assert status.loc["qc", "status"] == "command"
     assert bool(status.loc["qc", "launch_requested"]) is False
     assert status.loc["qc", "qc_trace_summary_table"] == str(
         tmp_path / "outputs" / "tables" / "qc_trace_summary.csv"
@@ -1015,12 +1025,14 @@ run_scenarios:
     assert "--row-limit" not in commands.qc_command
     status = commands.status_frame().set_index("dashboard")
     assert status.loc["metrics", "run_scenario"] == "large-run"
+    assert status.loc["metrics", "status"] == "launch_requested"
     assert status.loc["metrics", "metrics_row_limit"] == 250000
     assert status.loc["metrics", "metrics_summary_display_rows"] == 7500
     assert status.loc["metrics", "metrics_download_rows"] == "all"
     assert bool(status.loc["metrics", "launch_requested"]) is True
     assert bool(status.loc["metrics", "config_exists"]) is True
     assert bool(status.loc["qc", "launch_requested"]) is True
+    assert status.loc["qc", "status"] == "launch_requested"
     assert "--run-scenario large-run" in status.loc["metrics", "terminal_command"]
     assert commands.metrics_launch_kwargs(show=False) == {
         "config_path": config_path.resolve(),

@@ -581,6 +581,11 @@ class NotebookDashboardCommands:
         }
         rows = [
             {
+                "name": "metrics_dashboard",
+                "artifact": "metrics_dashboard",
+                "artifact_label": "metrics dashboard launch plan",
+                "artifact_role": "dashboard_launch_plan",
+                "status": "launch_requested" if self.launch_metrics_dashboard else "command",
                 "dashboard": "metrics",
                 "requested_port": self.metrics_port,
                 "launch_requested": self.launch_metrics_dashboard,
@@ -594,6 +599,11 @@ class NotebookDashboardCommands:
                 **common,
             },
             {
+                "name": "qc_dashboard",
+                "artifact": "qc_dashboard",
+                "artifact_label": "QC dashboard launch plan",
+                "artifact_role": "dashboard_launch_plan",
+                "status": "launch_requested" if self.launch_qc_dashboard else "command",
                 "dashboard": "qc",
                 "requested_port": self.qc_port,
                 "launch_requested": self.launch_qc_dashboard,

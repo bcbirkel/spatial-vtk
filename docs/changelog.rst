@@ -91,6 +91,10 @@ Changelog
     planning, Slurm submission, and merge-readiness displays expose artifact
     ids, labels, roles, ready/missing or complete/incomplete status, normalized
     manifest paths, and completion counts.
+  - Standardized ``NotebookDashboardCommands.status_frame()`` so dashboard
+    launch-plan cells expose dashboard artifact ids, labels, roles,
+    command/requested-launch status, configured input paths, and existence
+    checks without notebook-local path handling.
 
 - **CLI help and generated-reference wording** *(Changed)*
 
