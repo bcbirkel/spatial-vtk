@@ -38,6 +38,9 @@ Changelog
   - Added preprocessed-specific path aliases and a compact status frame to
     waveform preprocessing result objects while preserving generic legacy path
     fields.
+  - Added ``SlurmSubmission.status_frame()`` so submitted notebook and workflow
+    jobs expose job id, script path, command, stdout, stderr, and return code
+    without printing raw dataclass representations.
 
 - **CLI help and generated-reference wording** *(Changed)*
 

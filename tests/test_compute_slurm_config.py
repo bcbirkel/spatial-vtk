@@ -7,6 +7,7 @@ import pytest
 from spatial_vtk.config import SpatialVTKConfig
 from spatial_vtk.config.compute import (
     SlurmSettings,
+    SlurmSubmission,
     slurm_header,
     slurm_settings_from_config,
     slurm_settings_with_overrides,
@@ -160,6 +161,35 @@ def test_submit_slurm_script_splits_submit_command(
 
     assert captured["command"] == ("sbatch", "--parsable", str(script))
     assert submission.job_id == "12345"
+    status = submission.status_frame()
+    assert status.loc[0, "status"] == "submitted"
+    assert status.loc[0, "job_id"] == "12345"
+    assert status.loc[0, "script_path"] == str(script)
+    assert status.loc[0, "returncode"] == 0
+    assert status.loc[0, "command"] == f"sbatch --parsable {script}"
+    assert status.loc[0, "stdout"] == "Submitted batch job 12345"
+    assert status.loc[0, "stderr"] == ""
+
+
+def test_slurm_submission_status_frame_reports_failed_submission(tmp_path: Path) -> None:
+    """Submission results should display failed sbatch attempts without raw dataclass reprs."""
+
+    submission = SlurmSubmission(
+        script_path=tmp_path / "failed.slurm",
+        command=("sbatch", str(tmp_path / "failed.slurm")),
+        stdout="",
+        stderr="invalid partition",
+        returncode=1,
+        job_id="",
+    )
+
+    status = submission.status_frame()
+
+    assert status.loc[0, "status"] == "submission_failed"
+    assert status.loc[0, "job_id"] == ""
+    assert status.loc[0, "script_path"] == str(tmp_path / "failed.slurm")
+    assert status.loc[0, "returncode"] == 1
+    assert status.loc[0, "stderr"] == "invalid partition"
 
 
 def test_write_inline_python_slurm_script_uses_shared_header(tmp_path: Path) -> None:

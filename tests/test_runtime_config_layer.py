@@ -4244,6 +4244,7 @@ def test_display_notebook_step_result_returns_labeled_display_frames(tmp_path):
     assert submission_frame.loc[0, "Step"] == "Boundary corridors"
     assert submission_frame.loc[0, "Status"] == "submitted"
     assert submission_frame.loc[0, "Job Id"] == "123"
+    assert submission_frame.loc[0, "Command"] == "sbatch step05.slurm"
     assert len(displayed) == 1
     assert displayed[0] is submission_frame
 

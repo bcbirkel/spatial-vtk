@@ -43,6 +43,25 @@ class SlurmSubmission:
     returncode: int
     job_id: str = ""
 
+    def status_frame(self) -> Any:
+        """Return a compact notebook status table for this submission."""
+
+        import pandas as pd
+
+        return pd.DataFrame(
+            [
+                {
+                    "status": "submitted" if self.returncode == 0 else "submission_failed",
+                    "job_id": self.job_id,
+                    "script_path": str(self.script_path),
+                    "returncode": int(self.returncode),
+                    "command": " ".join(self.command),
+                    "stdout": self.stdout.strip(),
+                    "stderr": self.stderr.strip(),
+                }
+            ]
+        )
+
 
 def slurm_settings_from_config(config: SpatialVTKConfig, *, section: str | None = None) -> SlurmSettings:
     """Read shared SLURM settings from a Spatial-VTK config.

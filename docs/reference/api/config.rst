@@ -104,7 +104,9 @@ the stable package surface below.
      - Display a compact table for skipped/current step payloads, Slurm
        submission results, and result objects with ``status_frame()`` or
        ``summary_frame()`` so notebooks do not print raw dictionaries,
-       summary strings, or dataclass representations.
+       summary strings, or dataclass representations. ``SlurmSubmission`` owns
+       ``status_frame()`` with the job id, script path, submit command, stdout,
+       stderr, and return code.
    * - ``NotebookFigureSettings`` and ``notebook_figure_settings``
      - Parse figure controls, robust-axis settings, sidecar settings, and
        render gates from environment variables in one package-owned helper.
