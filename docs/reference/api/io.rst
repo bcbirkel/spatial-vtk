@@ -47,42 +47,50 @@ Public helpers exposed by ``spatial_vtk.io``:
 
    * - Helper
      - Use
-   * - ``output_group``
-     - Resolve a named workflow output group once and use attributes,
-       ``status_frame()``, ``readiness()``, ``load_table()``,
-       ``preview_table()``, ``load_tables()``, ``preview_tables()``, and
-       ``display_table_previews()`` instead of repeating output-path variables
-       or preview loops in notebooks. Use
-       ``display_first_existing_table_preview()`` when a notebook should prefer
-       a derived table, such as ``metrics_enriched``, but fall back to an
-       earlier table, such as ``metrics_long``. Use ``figure_path()`` when a
-       notebook needs a metric-specific figure filename beside a registered
-       configured figure path. ``status_frame()`` and
-       ``output_group_status_frame()`` include clear ``resolved_path`` values
-       plus ``output_key``, ``kind``, ``required``, ``artifact_label``,
-       ``readiness``, ``message``, and ``suggested_action`` columns for
-       registered artifacts, so notebooks can display which configured table,
-       figure, or dashboard output each path row represents and what to rebuild
-       next. For path-backed artifacts
-       outside the registered output table registry, such as preprocessing
-       manifests, use
-       ``display_path_table_previews()`` so notebooks still print the owning
-       path and display bounded rows through the output group. ``cfg=`` may be
-       a ``SpatialVTKConfig`` object or a config file path, which keeps worker
-       scripts from activating global config before resolving output groups.
-   * - ``preprocessed_waveform_output_group``
-     - Resolve preprocessing metadata outputs that live under the configured
-       preprocessed-waveform metadata directory.
    * - ``load_standard_ingest_workflow_outputs``
      - Load the standard Step 1 ingest output group, preprocessing metadata
        output group, combined status frame, metadata row-count summary, and
        bounded station/event/manifest preview helpers for tutorial notebooks.
        The returned result also writes the standard Step 1 context figure
-       suite through ``write_context_figures()``.
+       suite through ``write_context_figures()`` and owns the notebook-facing
+       large-run driver methods ``run_metadata_step_if_needed()``,
+       ``run_preprocessing_step_if_needed()``, and
+       ``run_record_coverage_step_if_needed()``.
    * - ``MetadataPreparationResult``
      - Report prepared metadata output paths and row counts with
        mapping-compatible access, ``summary_message()`` for scripts and logs,
        and ``summary_frame()`` for notebook display helpers.
+   * - ``WaveformPreprocessingSummaryResult``
+     - Report preprocessed event-station, manifest, and trace-metadata outputs
+       with mapping-compatible access plus notebook summary helpers.
+   * - ``RecordCoverageWorkflowResult``
+     - Report the record-coverage output and the exact trace metadata and
+       event-station inputs used to build it.
+   * - ``output_group``
+     - Lower-level configured output-group helper for custom scripts or new
+       reusable package helpers when no standard workflow result object exists
+       yet. It resolves a named workflow output group once and exposes
+       attributes, ``status_frame()``, ``readiness()``, ``load_table()``,
+       ``preview_table()``, ``load_tables()``, ``preview_tables()``, and
+       ``display_table_previews()``. Use
+       ``display_first_existing_table_preview()`` when a custom helper should
+       prefer a derived table, such as ``metrics_enriched``, but fall back to
+       an earlier table, such as ``metrics_long``. Use ``figure_path()`` when
+       a helper needs a metric-specific figure filename beside a registered
+       configured figure path. ``status_frame()`` and
+       ``output_group_status_frame()`` include clear ``resolved_path`` values
+       plus ``output_key``, ``kind``, ``required``, ``artifact_label``,
+       ``readiness``, ``message``, and ``suggested_action`` columns for
+       registered artifacts. For path-backed artifacts outside the registered
+       output table registry, such as preprocessing manifests, use
+       ``display_path_table_previews()`` so custom helpers still print the
+       owning path and display bounded rows through the output group. ``cfg=``
+       may be a ``SpatialVTKConfig`` object or a config file path, which keeps
+       worker scripts from activating global config before resolving output
+       groups.
+   * - ``preprocessed_waveform_output_group``
+     - Resolve preprocessing metadata outputs that live under the configured
+       preprocessed-waveform metadata directory.
    * - ``output_readiness`` and ``OutputReadiness``
      - Gate local or Slurm-backed work on missing, stale, blocked, or reusable
        outputs. Required input mappings may use ``None`` for an optional
@@ -123,13 +131,6 @@ Public helpers exposed by ``spatial_vtk.io``:
        ``MetricPlan.summary_frame()`` returns a compact notebook display table,
        so configuration notebooks can inspect the active metric plan without
        printing a raw dataclass.
-   * - ``load_standard_ingest_workflow_outputs``
-     - Return the configured Step 1 output bundle. The result object owns
-       status frames, bounded previews, context figure writing, and the
-       notebook-facing large-run driver methods
-       ``run_metadata_step_if_needed()``,
-       ``run_preprocessing_step_if_needed()``, and
-       ``run_record_coverage_step_if_needed()``.
    * - ``prepare_metadata_tables_from_config``
      - Normalize station, event, and event-station metadata and write the
        standard Step 1 tables.
@@ -141,9 +142,6 @@ Public helpers exposed by ``spatial_vtk.io``:
      - Read configured waveform sources, reuse existing preprocessed files when
        possible, and write preprocessing metadata. Returns a
        ``WaveformPreprocessingSummaryResult`` with bounded display helpers.
-   * - ``WaveformPreprocessingSummaryResult``
-     - Report preprocessed event-station, manifest, and trace-metadata outputs
-       with mapping-compatible access plus notebook summary helpers.
    * - ``preprocessing_readiness_from_config``
      - Check whether preprocessing metadata outputs and their
        ``event_station_records`` dependency are ready without duplicating
@@ -155,9 +153,6 @@ Public helpers exposed by ``spatial_vtk.io``:
      - Build and write the configured record-coverage table. Returns a
        ``RecordCoverageWorkflowResult`` with input/output path provenance and
        row counts.
-   * - ``RecordCoverageWorkflowResult``
-     - Report the record-coverage output and the exact trace metadata and
-       event-station inputs used to build it.
    * - ``read_bounded_table`` and ``preview_table``
      - Inspect large CSV or Parquet tables without loading all rows.
    * - ``write_output_table`` and ``load_output_table``

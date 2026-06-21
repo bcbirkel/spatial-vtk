@@ -1604,8 +1604,20 @@ def test_io_api_docs_use_public_workflow_helpers():
         "load_output_table",
     ):
         assert helper in text
-    assert "instead of repeating output-path variables" in text
+    helper_table = text.split("Public helpers exposed by ``spatial_vtk.io``", 1)[1].split(
+        "Metadata and Inventories",
+        1,
+    )[0]
+    assert helper_table.index("``load_standard_ingest_workflow_outputs``") < helper_table.index(
+        "``output_group``"
+    )
+    assert helper_table.count("``load_standard_ingest_workflow_outputs``") == 1
+    assert "Lower-level configured output-group helper for custom scripts" in helper_table
+    assert "when no standard workflow result object exists\n       yet" in helper_table
     assert "metadata row-count summary" in text
+    assert "``run_metadata_step_if_needed()``" in helper_table
+    assert "``run_preprocessing_step_if_needed()``" in helper_table
+    assert "``run_record_coverage_step_if_needed()``" in helper_table
     assert "``MetricPlan.summary_frame()``" in text
     assert "``status_frame()`` and\n       ``output_group_status_frame()`` include clear ``resolved_path`` values\n       plus ``output_key``, ``kind``, ``required``, ``artifact_label``" in text
     assert "``readiness``, ``message``, and ``suggested_action`` columns" in text
