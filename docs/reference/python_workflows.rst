@@ -166,7 +166,7 @@ the large-run notebooks.
    * - ``spatial_vtk.io.output_group``
      - Resolve a named workflow output group once, then use attribute access,
        ``bind()``, ``status_frame()``, ``completion()``, and ``readiness()``
-       instead of cluttering notebooks with repeated path variables.
+       instead of cluttering notebooks with repeated path plumbing.
        Prefer direct attributes when a cell needs a resolved path; standard
        result objects expose common paths directly, such as
        ``metric_outputs.metrics_long_path`` for Step 3 metric figures, while

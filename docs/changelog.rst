@@ -99,6 +99,8 @@ Changelog
     dictionaries and dictionary keys to path mappings and mapping keys.
   - Reworded Metrics API result-object guidance to describe avoiding
     manifest, metric-row, and output-table path plumbing in notebook cells.
+  - Reworded Python workflow output-group guidance so notebook cells avoid
+    repeated path plumbing rather than repeated path variables.
 
 - **Public surface guardrails** *(Fixed)*
 

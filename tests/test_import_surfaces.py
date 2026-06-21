@@ -2502,6 +2502,7 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "Standard result objects call this internally\n       for skipped ``run_*_step_if_needed()`` payloads" in workflows
     assert "labeled mapping. Use this for tutorial figure inputs" in workflows
     assert "labeled path mapping. Use this when plotting" in workflows
+    assert "instead of cluttering notebooks with repeated path plumbing" in workflows
     assert "JSON-friendly status payload for current/skipped" in workflows
     assert "Display current/skipped step payloads, Slurm submissions" in workflows
     assert "status payloads or result frames that are safe to display in notebooks" in workflows
@@ -2512,6 +2513,7 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "Display current/skipped step dictionaries" not in workflows
     assert "metadata dictionaries or result frames" not in workflows
     assert "Workflow functions return JSON-ready dictionaries" not in workflows
+    assert "instead of cluttering notebooks with repeated path variables" not in workflows
     assert "custom workflow cells\n       can call it directly when they already own the readiness object" in workflows
     assert "Use this with ``run_notebook_step_if_needed``\n       fallbacks" not in workflows
     assert "instead of ``print(result)``" in workflows
