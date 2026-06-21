@@ -310,8 +310,6 @@ Public dashboard helpers exposed by ``spatial_vtk.visualize``:
        loading full inventories. For partitioned metric datasets, readiness
        checks row counts and the union of partition schemas, so one sparse
        partition does not hide value columns present in other partitions.
-   * - ``write_configured_dashboard_datasets``
-     - Rebuild dashboard row datasets and summary tables from the active config.
    * - ``prepare_configured_dashboard_datasets_from_notebook_settings``
      - Own the Step 7 notebook branch that checks readiness, optionally writes
        tutorial-sized dashboard datasets, and returns compact readiness,
@@ -320,6 +318,10 @@ Public dashboard helpers exposed by ``spatial_vtk.visualize``:
        ``summary_frame()``, ``status_frame()``, ``preparation_frame()``, and
        ``display_output_previews(...)`` methods instead of notebook-local
        dataframe formatting.
+   * - ``write_configured_dashboard_datasets``
+     - Lower-level script helper that rebuilds dashboard row datasets and
+       summary tables from configured metric outputs after the caller has
+       decided a local write is appropriate.
    * - ``display_dashboard_preparation_result``
      - Return and optionally display the standard dashboard preparation frames
        with the preparation decision, bounded row counts, and summary-table
@@ -339,14 +341,15 @@ Public dashboard helpers exposed by ``spatial_vtk.visualize``:
        table in chunks, which lets dashboard station, event, and path tabs load
        only the active selection instead of materializing every optional
        summary table at startup.
-   * - ``launch_configured_metrics_dashboard`` and
-       ``launch_configured_qc_dashboard``
-     - Launch Streamlit dashboards from config-backed paths and launch options.
    * - ``launch_configured_dashboards_from_notebook_settings``
      - Use notebook launch settings to launch requested dashboards or return
        terminal fallback commands and launch errors in one compact
        ``DashboardLaunchResult.status_frame()``. Pass ``dashboards=("qc",)``
        for QC-only notebook cells.
+   * - ``launch_configured_metrics_dashboard`` and
+       ``launch_configured_qc_dashboard``
+     - Lower-level launch helpers for scripts that already know which
+       dashboard should start and how launch options should be applied.
    * - ``filter_dashboard_metrics`` and ``filter_qc_dashboard_rows``
      - Apply dashboard filters consistently in apps, tests, and exported tables.
 

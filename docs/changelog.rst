@@ -98,6 +98,9 @@ Changelog
   - Reworded dashboard launch workflow guidance so notebooks use the
     notebook dashboard launch settings plus the configured launch wrapper,
     with one-dashboard launch helpers framed as script APIs.
+  - Reordered Visualize API dashboard-helper guidance so the notebook-facing
+    dashboard preparation and launch wrappers appear before lower-level script
+    helpers in both public helper tables.
   - Reworded the preprocessing direct-call example so advanced scripts prefer
     config-backed output resolution instead of a literal preprocessed-output
     directory.

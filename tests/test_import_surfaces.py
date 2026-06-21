@@ -2220,6 +2220,18 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "``run_if_needed(...)`` method" in text
     assert "display_output_previews(nrows=...)" in text
     assert "bounded output previews through the\n       returned ``DashboardDatasetPreparationResult``" in text
+    dashboard_helper_table = _first_list_table_after_marker(
+        text,
+        "Public dashboard helpers exposed by ``spatial_vtk.visualize``:",
+    )
+    assert dashboard_helper_table.index("``prepare_configured_dashboard_datasets_from_notebook_settings``") < (
+        dashboard_helper_table.index("``write_configured_dashboard_datasets``")
+    )
+    assert "Lower-level script helper that rebuilds dashboard row datasets" in dashboard_helper_table
+    assert dashboard_helper_table.index("``launch_configured_dashboards_from_notebook_settings``") < (
+        dashboard_helper_table.index("``launch_configured_metrics_dashboard``")
+    )
+    assert "Lower-level launch helpers for scripts that already know which" in dashboard_helper_table
     assert "The returned\n       ``ContextFigureResult`` exposes ``status_frame()``" in text
     assert "The returned ``QCFigureResult`` exposes\n       ``status_frame()``" in text
     assert "``WaveformComparisonFigureResult`` exposes ``status_frame()``" in text
