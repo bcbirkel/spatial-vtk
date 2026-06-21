@@ -3737,13 +3737,11 @@ def _write_table(df: Any, path: str | Path) -> Path:
     """Write one CSV or Parquet table."""
 
     output = Path(path).expanduser()
-    output.parent.mkdir(parents=True, exist_ok=True)
-    if output.suffix.lower() in {".parquet", ".pq"}:
-        df.to_parquet(output, index=False)
-    else:
-        df.to_csv(output, index=False)
-    print(output)
-    return output
+    from spatial_vtk.io.tables import write_table
+
+    written = write_table(df, output, index=False)
+    print(written)
+    return written
 
 
 def _write_result(result: Any, output: str | Path) -> None:

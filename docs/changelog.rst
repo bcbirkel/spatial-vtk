@@ -151,6 +151,9 @@ Changelog
   - Routed generic CLI input-table loading through the shared table reader so
     ``svtk`` metadata, plot, map, and visualization commands use the same
     CSV/Parquet behavior as package APIs.
+  - Routed generic CLI table-output writing through the shared table writer so
+    ``svtk`` commands get the same atomic write and suffix handling as package
+    APIs.
   - Added a shared ``table_columns()`` helper for schema-only CSV/Parquet
     inspection and routed dashboard, metric workflow, metric batch merge, and
     large-run plotting column probes through it.

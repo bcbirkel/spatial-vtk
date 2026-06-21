@@ -3450,6 +3450,19 @@ def test_large_run_csv_readers_use_stable_dtype_inference():
         assert snippet in text, relative_path
 
 
+def test_cli_table_writes_use_shared_writer():
+    """Generic CLI table writes should use package table writer semantics."""
+
+    source = (pathlib.Path(__file__).resolve().parents[1] / "src" / "spatial_vtk" / "cli" / "__init__.py").read_text(
+        encoding="utf-8"
+    )
+    helper = source.split("def _write_table", 1)[1].split("\ndef ", 1)[0]
+    assert "from spatial_vtk.io.tables import write_table" in helper
+    assert "written = write_table(df, output, index=False)" in helper
+    assert ".to_csv(" not in helper
+    assert ".to_parquet(" not in helper
+
+
 def test_large_run_parquet_metadata_helpers_do_not_full_read_fallbacks():
     """Schema and bounded-read helpers must not full-read large parquet tables."""
 
