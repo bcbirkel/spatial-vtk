@@ -35,6 +35,76 @@ class MetricWaveformCacheResult:
     in_memory_reuses: int
     source_references: int
 
+    @property
+    def metric_manifest_cached_path(self) -> Path:
+        """Path to the cached metric workflow manifest."""
+
+        return self.manifest.manifest_path
+
+    @property
+    def metric_ready_waveform_cache_root(self) -> Path:
+        """Directory containing cached metric-ready waveform arrays."""
+
+        return self.cache_root
+
+    @property
+    def metric_batches_cached_dir(self) -> Path | None:
+        """Directory containing cached-manifest batch output files, if present."""
+
+        if not self.manifest.batches:
+            return None
+        output_path = self.manifest.batches[0].get("output_path")
+        return Path(str(output_path)).expanduser().parent if output_path else None
+
+    def status_frame(self) -> Any:
+        """Return a compact summary of cached metric workflow outputs."""
+
+        import pandas as pd
+
+        rows = [
+            {
+                "name": "metric_manifest_cached_path",
+                "artifact_label": "cached metric manifest",
+                "resolved_path": str(self.metric_manifest_cached_path),
+                "path": str(self.metric_manifest_cached_path),
+                "exists": self.metric_manifest_cached_path.exists(),
+                "rows": len(self.manifest.tasks),
+                "materialized_files": self.materialized_files,
+                "reused_files": self.reused_files,
+                "in_memory_reuses": self.in_memory_reuses,
+                "source_references": self.source_references,
+            },
+            {
+                "name": "metric_ready_waveform_cache_root",
+                "artifact_label": "metric-ready waveform cache",
+                "resolved_path": str(self.metric_ready_waveform_cache_root),
+                "path": str(self.metric_ready_waveform_cache_root),
+                "exists": self.metric_ready_waveform_cache_root.exists(),
+                "rows": self.source_references,
+                "materialized_files": self.materialized_files,
+                "reused_files": self.reused_files,
+                "in_memory_reuses": self.in_memory_reuses,
+                "source_references": self.source_references,
+            },
+        ]
+        batch_dir = self.metric_batches_cached_dir
+        if batch_dir is not None:
+            rows.append(
+                {
+                    "name": "metric_batches_cached_dir",
+                    "artifact_label": "cached metric batch output directory",
+                    "resolved_path": str(batch_dir),
+                    "path": str(batch_dir),
+                    "exists": batch_dir.exists(),
+                    "rows": len(self.manifest.batches),
+                    "materialized_files": self.materialized_files,
+                    "reused_files": self.reused_files,
+                    "in_memory_reuses": self.in_memory_reuses,
+                    "source_references": self.source_references,
+                }
+            )
+        return pd.DataFrame(rows)
+
 
 def cache_metric_manifest_waveforms(
     manifest: MetricWorkflowManifest | str | Path,

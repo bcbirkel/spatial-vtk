@@ -2518,6 +2518,18 @@ def test_metric_manifest_waveform_cache_rewrites_paths_and_runs_batches(tmp_path
 
     assert result.materialized_files == 2
     assert result.in_memory_reuses == 2
+    assert result.metric_manifest_cached_path == tmp_path / "cached_manifest.json"
+    assert result.metric_ready_waveform_cache_root == tmp_path / "cache"
+    assert result.metric_batches_cached_dir == tmp_path / "cached_batches"
+    status = result.status_frame()
+    assert status["name"].tolist() == [
+        "metric_manifest_cached_path",
+        "metric_ready_waveform_cache_root",
+        "metric_batches_cached_dir",
+    ]
+    assert status["resolved_path"].tolist() == status["path"].tolist()
+    assert status["exists"].tolist() == [True, True, True]
+    assert status["rows"].tolist() == [2, 4, 1]
     cached_manifest = read_task_manifest(result.manifest.manifest_path)
     assert len(cached_manifest.tasks) == 2
     assert cached_manifest.tasks[0].obs_waveform_path.endswith(".npz")

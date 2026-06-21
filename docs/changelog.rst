@@ -346,6 +346,8 @@ Changelog
   - Added artifact-specific path aliases and a compact status frame to metric
     waveform inventory result objects, and included those aliases in CLI JSON
     output.
+  - Added artifact-specific path aliases and a compact status frame to
+    metric-ready waveform cache result objects.
 
 - **Large-run notebook readiness** *(Rewired)*
 
