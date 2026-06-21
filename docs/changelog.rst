@@ -329,6 +329,15 @@ Changelog
     so common notebook examples point to result-object loaders and Step 4/5
     runner methods instead of lower-level readiness/build helper pairs.
 
+- **Step 5 workflow guidance** *(Changed)*
+
+  - Clarified Python workflow guidance so Step 5 notebooks use the GeoJSON
+    output-status result for heavy summary/corridor gates and the plotting
+    input result for region/corridor figure suites.
+  - Framed direct configured GeoJSON workflow functions and configured path
+    keys as script/custom-orchestration APIs rather than routine notebook
+    cell patterns.
+
 - **Output-registry and workflow docstrings** *(Changed)*
 
   - Updated I/O reference docs and the output-registry module docstring so

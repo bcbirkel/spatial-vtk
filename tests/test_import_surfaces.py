@@ -2674,6 +2674,22 @@ def test_python_workflow_docs_prefer_spatial_figure_suite_wrapper():
     assert "fallback path choices in the cell" in workflows
 
 
+def test_python_workflow_docs_prefer_geojson_result_methods():
+    """Step 5 workflow docs should keep notebook orchestration on result objects."""
+
+    workflows_path = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "python_workflows.rst"
+    workflows = workflows_path.read_text(encoding="utf-8")
+
+    assert "Step 5 notebooks should keep heavy gates on the lightweight output-status\nresult" in workflows
+    assert "load_standard_geojson_workflow_output_status(...).run_geojson_summary_step_if_needed(...)" in workflows
+    assert "run_corridor_step_if_needed(...)" in workflows
+    assert "load_standard_geojson_plotting_inputs(...).write_region_figures(...)" in workflows
+    assert "write_corridor_figures(...)" in workflows
+    assert "notebook cells do not need to pass\nresolved table paths around" in workflows
+    assert "Direct configured workflow functions can still receive configured path keys\nfor optional inputs in scripts or custom orchestration" in workflows
+    assert "focused plotting\ncell needs to select a configured non-default input" not in workflows
+
+
 def test_package_overview_points_to_public_workflow_helpers():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "package_overview.rst"
     text = docs.read_text(encoding="utf-8")

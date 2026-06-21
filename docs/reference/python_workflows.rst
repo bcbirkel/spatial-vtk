@@ -641,12 +641,21 @@ Step 5: GeoJSON Regions and Corridors
      - ``spatial_vtk.spatial.load_standard_geojson_workflow_output_status(...).run_corridor_step_if_needed(...)``
      - corridor definitions and corridor-selected records
 
-Step 5 plotting input helpers and direct configured workflow functions
-can receive configured path keys for optional inputs. For example, pass
+Step 5 notebooks should keep heavy gates on the lightweight output-status
+result and keep loaded plotting inputs on the plotting-input result. Use
+``load_standard_geojson_workflow_output_status(...).run_geojson_summary_step_if_needed(...)``
+and ``run_corridor_step_if_needed(...)`` for the region-summary and corridor
+tables, then use ``load_standard_geojson_plotting_inputs(...).write_region_figures(...)``
+and ``write_corridor_figures(...)`` for the standard figure suites. These
+result methods own the configured output bundle, skip/rebuild decisions,
+bounded previews, and figure paths, so notebook cells do not need to pass
+resolved table paths around.
+
+Direct configured workflow functions can still receive configured path keys
+for optional inputs in scripts or custom orchestration. For example, pass
 ``metrics_table="paths.metric_figure_snapshot"`` or
-``geojson_path="paths.region_geojson"`` when a script or focused plotting
-cell needs to select a configured non-default input without adding
-path-resolution cells.
+``geojson_path="paths.region_geojson"`` when a script needs to select a
+configured non-default input without activating global config state first.
 Use ``spatial_vtk.spatial.geojson_matched_record_frame`` and
 ``spatial_vtk.spatial.event_station_records_matching_pairs`` for corridor
 record filtering and event-station pair joins instead of notebook-local boolean
