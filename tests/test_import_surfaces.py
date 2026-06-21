@@ -1750,6 +1750,8 @@ def test_io_api_docs_use_public_workflow_helpers():
     text = docs.read_text(encoding="utf-8")
 
     assert "Start with ``spatial_vtk.io``" in text
+    assert "standard result-object loaders and compact workflow\nhelpers" in text
+    assert "Direct configured-input, output-group, readiness, and table helpers remain\npublic" in text
     assert "Public helpers exposed by ``spatial_vtk.io``" in text
     assert ".. automodule:: spatial_vtk.io\n" in text
     import_block = text.split("from spatial_vtk.io import (", 1)[1].split(")", 1)[0]
@@ -1762,13 +1764,36 @@ def test_io_api_docs_use_public_workflow_helpers():
     ):
         assert helper in import_block
     for helper in (
+        "load_configured_input_paths",
+        "load_configured_input_tables",
+        "metadata_tables_readiness_from_config",
         "output_group",
         "preprocessed_waveform_output_group",
+        "preprocessing_readiness_from_config",
+        "record_coverage_readiness_from_config",
         "preprocess_waveform_files",
         "read_config_table",
         "write_output_table",
     ):
         assert helper not in import_block
+    direct_import_block = text.split(
+        "Direct configured-input, output-group, readiness, and table helpers remain",
+        1,
+    )[1].split(".. automodule:: spatial_vtk.io", 1)[0]
+    for helper in (
+        "load_configured_input_paths",
+        "load_configured_input_tables",
+        "metadata_tables_readiness_from_config",
+        "output_group",
+        "output_readiness",
+        "preprocessed_waveform_output_group",
+        "preprocessing_readiness_from_config",
+        "preview_output_table",
+        "read_config_table",
+        "record_coverage_readiness_from_config",
+        "write_output_table",
+    ):
+        assert helper in direct_import_block
     for helper in (
         "output_group",
         "preprocessed_waveform_output_group",

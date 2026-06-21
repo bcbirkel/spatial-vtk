@@ -12,28 +12,40 @@ rest of the workflow.
 Package Entry Point
 -------------------
 
-Start with ``spatial_vtk.io`` in notebooks and scripts. These helpers cover the
-routine workflow surface: metadata normalization, event-station table creation,
-preprocessing products, table I/O, output groups, readiness checks, and bounded
-table previews. Prefer these imports before reaching into implementation
-modules.
+Start with ``spatial_vtk.io`` in notebooks and scripts. Routine notebooks
+should begin with the standard result-object loaders and compact workflow
+helpers, then call methods on those result objects for status tables, previews,
+figures, and large-run drivers. Prefer these imports before reaching into
+implementation modules.
+
+.. code-block:: python
+
+   from spatial_vtk.io import (
+       load_standard_ingest_workflow_outputs,
+       metric_plan_from_config,
+       prepare_metadata_tables_from_config,
+       preprocess_waveforms_from_config,
+       build_record_coverage_from_config,
+   )
+
+Direct configured-input, output-group, readiness, and table helpers remain
+public for scripts, Slurm workers, and reusable package helpers that already own
+workflow orchestration.
 
 .. code-block:: python
 
    from spatial_vtk.io import (
        load_configured_input_paths,
        load_configured_input_tables,
-       load_standard_ingest_workflow_outputs,
        metadata_tables_readiness_from_config,
-       metric_plan_from_config,
-       prepare_event_metadata,
-       prepare_event_station_table,
-       prepare_station_metadata,
-       prepare_metadata_tables_from_config,
+       output_group,
+       output_readiness,
+       preprocessed_waveform_output_group,
        preprocessing_readiness_from_config,
-       preprocess_waveforms_from_config,
+       preview_output_table,
+       read_config_table,
        record_coverage_readiness_from_config,
-       build_record_coverage_from_config,
+       write_output_table,
    )
 
 .. automodule:: spatial_vtk.io
