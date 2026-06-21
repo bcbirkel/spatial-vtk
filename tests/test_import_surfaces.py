@@ -1750,6 +1750,13 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     ):
         assert helper in text
     assert "Routine notebooks\n       should usually call this through the standard status result above" in text
+    assert "product summaries without notebook-local path/table plumbing" in text
+    assert "region and corridor figure suites without notebook-local path/table\n       plumbing" in text
+    assert "boxplot, and heatmap figures without\n       notebook-local path/table plumbing" in text
+    assert "configured output\n       group without notebook-local output-group or config-table path\n       plumbing" in text
+    assert "output-group table mappings" not in text
+    assert "notebook-local table/path plumbing" not in text
+    assert "config-table plumbing" not in text
     assert "remembers the config used to create it" in text
     assert "display_table_previews(nrows=...)" in text
     assert "status result retains its config" in text

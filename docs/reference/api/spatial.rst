@@ -77,7 +77,7 @@ Public helpers exposed by ``spatial_vtk.spatial``:
        loading large spatial tables in notebook driver cells.
    * - ``load_standard_spatial_workflow_outputs``
      - Load the standard Step 4 output-table bundle and build per-metric
-       product summaries without notebook-local output-group table mappings.
+       product summaries without notebook-local path/table plumbing.
        The returned result also writes the standard Step 4 map and diagnostic
        figure suites through ``write_map_figures()`` and
        ``write_diagnostic_figures()``. Pass ``cfg=`` as either a config object
@@ -89,7 +89,7 @@ Public helpers exposed by ``spatial_vtk.spatial``:
        GeoJSON or metric tables in notebook driver cells.
    * - ``load_standard_geojson_plotting_inputs``
      - Load standard Step 5 plotting inputs and configured output groups for
-       region and corridor figure suites without notebook-local table/path
+       region and corridor figure suites without notebook-local path/table
        plumbing.
    * - ``load_standard_additional_plotting_output_status``
      - Load lightweight Step 6 output status, bounded metric-source previews,
@@ -98,7 +98,7 @@ Public helpers exposed by ``spatial_vtk.spatial``:
    * - ``load_standard_additional_plotting_inputs``
      - Load standard Step 6 plotting inputs and configured output groups for
        waveform, pattern, scatterplot, boxplot, and heatmap figures without
-       notebook-local table/path plumbing.
+       notebook-local path/table plumbing.
    * - ``run_spatial_statistics_workflow_from_config``
      - Build the configured metric-field, event-centered residual,
        station-bias, Moran's I, distance-correlation, clustering, PCA, and
@@ -319,7 +319,8 @@ Public plotting helpers and notebook workflow loaders:
    * - ``load_standard_additional_plotting_inputs``
      - Load the standard Step 6 metric snapshot, event metadata,
        event-station records, comparison-eligible pairs, and configured output
-       group without notebook-local output-group or config-table plumbing.
+       group without notebook-local output-group or config-table path
+       plumbing.
        The returned result writes the standard Step 6 waveform, pattern,
        scatterplot, boxplot, and heatmap figure suite through
        ``write_figures()``.

@@ -101,6 +101,8 @@ Changelog
     manifest, metric-row, and output-table path plumbing in notebook cells.
   - Reworded Python workflow output-group guidance so notebook cells avoid
     repeated path plumbing rather than repeated path variables.
+  - Reworded Spatial API Step 4-6 helper descriptions so result loaders avoid
+    notebook-local path/table plumbing instead of output-group table mappings.
 
 - **Public surface guardrails** *(Fixed)*
 
