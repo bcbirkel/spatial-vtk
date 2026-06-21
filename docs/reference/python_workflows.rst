@@ -102,10 +102,10 @@ namespace.
 Avoid importing tutorial workflow helpers from implementation modules such as
 ``spatial_vtk.metrics.workflow.execution``,
 ``spatial_vtk.qc.build.workflow``,
-``spatial_vtk.spatial.calculate.workflow``, or
-``spatial_vtk.spatial.plot.large_run`` in notebooks. Those modules remain
-available for package internals and advanced scripts, but standard docs and
-notebooks should depend on the stable namespaces above.
+``spatial_vtk.spatial.calculate.workflow``, or lower-level plotting
+implementation modules in notebooks. Those modules remain available for
+package internals and advanced scripts, but standard docs and notebooks should
+depend on the stable namespaces above.
 
 .. code-block:: python
 

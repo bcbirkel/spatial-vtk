@@ -221,6 +221,9 @@ Changelog
 
   - Reworded public workflow docs from ad-hoc/manual phrasing toward
     custom-script and notebook-local-gate wording.
+  - Removed a stale lower-level spatial plotting implementation import path
+    from public workflow docs while preserving public plotting namespace
+    guidance.
   - Reworded lazy I/O package loader docs so public API references describe
     resolved public helpers instead of implementation-module plumbing.
   - Reworded config-backed metric workflow module docs so large-run notebooks

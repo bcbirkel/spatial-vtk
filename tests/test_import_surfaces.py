@@ -2665,7 +2665,8 @@ def test_python_workflow_docs_define_stable_import_surfaces():
     assert "``spatial_vtk.metrics.workflow.execution``" in workflows
     assert "``spatial_vtk.qc.build.workflow``" in workflows
     assert "``spatial_vtk.spatial.calculate.workflow``" in workflows
-    assert "``spatial_vtk.spatial.plot.large_run``" in workflows
+    assert "``spatial_vtk.spatial.plot.large_run``" not in workflows
+    assert "lower-level plotting\nimplementation modules" in workflows
 
     stable_helpers = {
         "spatial_vtk.config": [
