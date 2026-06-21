@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pathlib
 import sys
 from types import ModuleType
 
@@ -588,6 +589,16 @@ def test_dashboard_metric_dataset_bounded_parquet_requires_streaming_reader(tmp_
 
     with pytest.raises(RuntimeError, match="Could not stream dashboard metric parquet table"):
         load_dashboard_metric_dataset(parquet_path, max_rows=1, chunksize=1)
+
+
+def test_dashboard_metric_schema_probe_uses_shared_parquet_helper() -> None:
+    """Dashboard metric schema probes should follow the shared large-table helper."""
+
+    source = pathlib.Path(dashboard_export.__file__).read_text(encoding="utf-8")
+    helper_source = source.split("def _dashboard_metric_table_columns", 1)[1].split("\ndef ", 1)[0]
+    assert "parquet_table_columns(path)" in helper_source
+    assert "pyarrow.parquet" not in helper_source
+    assert "ParquetFile(path).schema" not in helper_source
 
 
 def test_dashboard_metric_dataset_loader_treats_passband_as_band_alias(tmp_path) -> None:

@@ -28,6 +28,7 @@ import pandas as pd
 from spatial_vtk.config.labels import normalize_metric_name
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
+from spatial_vtk.io import parquet_table_columns
 from spatial_vtk.visualize.dashboard.tables import (
     build_dashboard_summaries,
     dashboard_summary_input_columns,
@@ -937,16 +938,7 @@ def _dashboard_metric_table_columns(path: Path) -> list[str]:
 
     suffix = path.suffix.lower()
     if suffix in {".parquet", ".pq"}:
-        try:
-            import pyarrow.parquet as pq
-
-            return list(pq.ParquetFile(path).schema.names)
-        except Exception as exc:
-            raise RuntimeError(
-                f"Could not inspect dashboard metric parquet schema for {path}. "
-                "Dashboard readiness and bounded readers require readable Parquet metadata; "
-                "repair or rewrite the dashboard metric dataset."
-            ) from exc
+        return parquet_table_columns(path)
     if suffix == ".csv":
         return list(pd.read_csv(path, nrows=0).columns)
     raise ValueError(f"Unsupported dashboard metric table format for {path}. Use Parquet or CSV.")

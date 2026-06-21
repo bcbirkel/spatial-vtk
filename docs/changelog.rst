@@ -732,6 +732,9 @@ Changelog
   - Reused shared parquet metadata helpers across metric figures, spatial
     figures, dashboard readiness checks, QC lookup loading, and GeoJSON
     summaries so schema/row-count probes do not fall back to full-table reads.
+  - Reused the same shared parquet schema helper inside dashboard metric
+    dataset exports so filtered dashboard readers and writers use one
+    large-table-safe schema path.
   - Made configured metric-output and dashboard-output helpers write
     partitioned dashboard metric datasets by default, and changed
     ``svtk metrics outputs`` to default to that large-run-safe layout while
