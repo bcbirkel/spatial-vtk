@@ -122,12 +122,13 @@ def normalize_manual_qc_decisions(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def load_manual_qc_decisions(path: str | Path | None) -> pd.DataFrame:
-    """Load manual QC decisions from CSV.
+    """Load manual QC decisions from a CSV or Parquet table.
 
     Parameters
     ----------
     path
-        Decision CSV path. Missing or ``None`` returns an empty table.
+        Decision CSV or Parquet path. Missing or ``None`` returns an empty
+        table.
 
     Returns
     -------
@@ -187,7 +188,7 @@ def apply_manual_qc_decisions(
     inventory_df
         Automated QC inventory.
     decisions
-        Decision table or CSV path.
+        Decision table or CSV/Parquet path.
     band_columns
         Optional reject-column suffixes. When omitted, columns named
         ``reject_*`` are inferred.

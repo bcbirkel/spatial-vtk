@@ -3450,6 +3450,48 @@ def test_large_run_csv_readers_use_stable_dtype_inference():
         assert snippet in text, relative_path
 
 
+def test_table_helper_docstrings_describe_csv_and_parquet_paths():
+    """Public helper docstrings should match shared CSV/Parquet table support."""
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    required = {
+        "src/spatial_vtk/qc/review/tables.py": [
+            "Load manual QC decisions from a CSV or Parquet table.",
+            "Decision CSV or Parquet path.",
+            "Decision table or CSV/Parquet path.",
+        ],
+        "src/spatial_vtk/io/master_lists.py": [
+            "Station metadata tables or CSV/Parquet paths.",
+            "Event metadata tables or CSV/Parquet paths.",
+        ],
+        "src/spatial_vtk/metrics/calculate/enrich.py": [
+            "Optional metadata tables or CSV/Parquet paths.",
+        ],
+    }
+    forbidden = {
+        "src/spatial_vtk/qc/review/tables.py": [
+            "Load manual QC decisions from CSV.",
+            "Decision CSV path.",
+            "Decision table or CSV path.",
+        ],
+        "src/spatial_vtk/io/master_lists.py": [
+            "Station metadata tables or CSV paths.",
+            "Event metadata tables or CSV paths.",
+        ],
+        "src/spatial_vtk/metrics/calculate/enrich.py": [
+            "Optional metadata tables or CSV paths.",
+        ],
+    }
+    for relative_path, snippets in required.items():
+        text = (repo_root / relative_path).read_text(encoding="utf-8")
+        for snippet in snippets:
+            assert snippet in text, (relative_path, snippet)
+    for relative_path, snippets in forbidden.items():
+        text = (repo_root / relative_path).read_text(encoding="utf-8")
+        for snippet in snippets:
+            assert snippet not in text, (relative_path, snippet)
+
+
 def test_cli_table_writes_use_shared_writer():
     """Generic CLI table writes should use package table writer semantics."""
 

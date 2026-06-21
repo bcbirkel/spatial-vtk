@@ -63,7 +63,7 @@ def build_master_station_list(
     Parameters
     ----------
     station_tables
-        Station metadata tables or CSV paths.
+        Station metadata tables or CSV/Parquet paths.
     streams
         Optional waveform streams whose trace metadata includes station fields.
     extra_columns
@@ -110,7 +110,7 @@ def build_master_event_list(
     Parameters
     ----------
     event_tables
-        Event metadata tables or CSV paths.
+        Event metadata tables or CSV/Parquet paths.
     event_records
         Optional mapping records.
     extra_columns

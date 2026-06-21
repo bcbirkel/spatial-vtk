@@ -74,7 +74,7 @@ def enrich_metric_table(
     metrics_df
         Metric table in wide or long form.
     events, stations
-        Optional metadata tables or CSV paths.
+        Optional metadata tables or CSV/Parquet paths.
     event_key, station_key
         Join columns.
     residual_column
