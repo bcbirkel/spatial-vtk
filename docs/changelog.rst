@@ -97,6 +97,8 @@ Changelog
     frames rather than generic metadata dictionaries.
   - Reworded package overview and output-group table-loader docs from path
     dictionaries and dictionary keys to path mappings and mapping keys.
+  - Reworded Metrics API result-object guidance to describe avoiding
+    manifest, metric-row, and output-table path plumbing in notebook cells.
 
 - **Public surface guardrails** *(Fixed)*
 

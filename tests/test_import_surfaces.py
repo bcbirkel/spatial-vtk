@@ -1064,7 +1064,9 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "bounded preview helpers such as" in text
     assert "metrics_long`` display helper" in text
     assert "``StandardMetricWorkflowOutputResult.status_frame()``" in text
-    assert "instead of repeating manifest, metric-row, or output-table path variables" in text
+    normalized_text = " ".join(text.split())
+    assert "instead of repeating manifest, metric-row, or output-table path plumbing" in normalized_text
+    assert "instead of repeating manifest, metric-row, or output-table path variables" not in normalized_text
     assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)" in text
     assert "metric_figure_suite = metric_outputs.write_large_run_figure_suite(settings)" in text
     assert (
