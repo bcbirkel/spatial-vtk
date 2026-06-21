@@ -135,6 +135,30 @@ def test_dashboard_metric_dataset_export_streams_path_backed_partitions(tmp_path
     assert loaded["log2_residual"].tolist() == [0.1, 0.2, 0.3]
 
 
+def test_dashboard_metric_dataset_export_projects_path_backed_long_sources(tmp_path) -> None:
+    """Path-backed long dashboard exports should skip unused source columns."""
+
+    metrics_path = tmp_path / "metrics_long.csv"
+    output_root = tmp_path / "dashboard_data"
+    pd.DataFrame(
+        {
+            "model": ["m1", "m1", "m2"],
+            "metric": ["PGA", "PGA", "PGV"],
+            "band": ["1-2 sec", "1-2 sec", "2-3 sec"],
+            "event_id": ["ev1", "ev2", "ev3"],
+            "station": ["STA1", "STA2", "STA3"],
+            "log2_residual": [0.1, 0.2, -0.1],
+            "unused_large_payload": ["x" * 1000, "y" * 1000, "z" * 1000],
+        }
+    ).to_csv(metrics_path, index=False)
+
+    root = write_dashboard_metric_dataset(metrics_path, output_root, partitioned=True, chunksize=2)
+    loaded = load_dashboard_metric_dataset(root)
+
+    assert loaded["event_id"].tolist() == ["ev1", "ev2", "ev3"]
+    assert "unused_large_payload" not in loaded.columns
+
+
 def test_dashboard_summary_dataset_summarizes_partitioned_metrics_one_partition_at_a_time(tmp_path, monkeypatch) -> None:
     """Partitioned dashboard summaries should avoid loading the full metric dataset."""
 

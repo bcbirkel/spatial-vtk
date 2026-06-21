@@ -31,6 +31,10 @@ Changelog
     scripts.
   - Updated workflow-guide and large-run README dashboard examples to import
     routine dashboard helpers from ``spatial_vtk.visualize``.
+  - Scoped path-backed long metric-table reads during dashboard metric dataset
+    export so large-run dashboard preparation streams only the columns needed
+    by dashboard summaries while preserving full reads for wide legacy metric
+    matrices.
 
 - **CLI help and generated-reference wording** *(Changed)*
 

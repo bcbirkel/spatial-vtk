@@ -266,7 +266,7 @@ def write_dashboard_metric_dataset(
             chunksize=chunksize,
         )
         return root
-    frames = [_read_metric_table(item) for item in items]
+    frames = [_read_metric_table(item, columns=_dashboard_metric_export_columns(item)) for item in items]
     long_frames = [prepare_dashboard_metric_table(frame, residual_mode=residual_mode) for frame in frames]
     long_df = pd.concat(long_frames, ignore_index=True)
     long_df = add_dashboard_path_geometry(long_df)
@@ -603,7 +603,8 @@ def _write_partitioned_dashboard_metric_dataset_streaming(
     partition_counts: dict[tuple[str, str, str], int] = {}
     for item in items:
         path = Path(item).expanduser()
-        for chunk in _iter_dashboard_metric_table_chunks(path, chunksize=chunksize):
+        columns = _dashboard_metric_export_columns(path)
+        for chunk in _iter_dashboard_metric_table_chunks(path, columns=columns, chunksize=chunksize):
             if chunk.empty:
                 continue
             long_chunk = prepare_dashboard_metric_table(chunk, residual_mode=residual_mode)
@@ -1286,15 +1287,34 @@ def safe_path_token(value: object) -> str:
     return "".join(char if char.isalnum() or char in "._=-" else "_" for char in text).strip("_") or "unknown"
 
 
-def _read_metric_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
+def _read_metric_table(table: pd.DataFrame | str | Path, *, columns: Sequence[str] | None = None) -> pd.DataFrame:
     """Read one metric table from dataframe, CSV, or parquet."""
 
     if isinstance(table, pd.DataFrame):
         return table.copy()
     path = Path(table).expanduser()
     if path.suffix.lower() in {".parquet", ".pq"}:
-        return pd.read_parquet(path)
-    return pd.read_csv(path, low_memory=False)
+        selected = _selected_existing_columns(path, columns)
+        return pd.read_parquet(path, columns=selected)
+    if path.suffix.lower() == ".csv":
+        selected = _selected_existing_columns(path, columns)
+        if selected is None:
+            return pd.read_csv(path, low_memory=False)
+        wanted = set(selected)
+        return pd.read_csv(path, usecols=lambda column: column in wanted, low_memory=False)
+    raise ValueError(f"Unsupported metric table format for {path}. Use Parquet or CSV.")
+
+
+def _dashboard_metric_export_columns(table: pd.DataFrame | str | Path) -> tuple[str, ...] | None:
+    """Return a safe column projection for dashboard metric export inputs."""
+
+    if isinstance(table, pd.DataFrame):
+        return None
+    path = Path(table).expanduser()
+    columns = _dashboard_metric_table_columns(path)
+    if "metric" not in columns:
+        return None
+    return dashboard_summary_input_columns()
 
 
 def _as_sequence(value: pd.DataFrame | str | Path | Sequence[pd.DataFrame | str | Path]) -> list[pd.DataFrame | str | Path]:
