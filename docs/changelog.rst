@@ -107,6 +107,8 @@ Changelog
     path/table plumbing rather than output-group table mapping.
   - Reworded configuration output-registry guidance so notebooks and scripts
     avoid hard-coded path plumbing rather than path variables.
+  - Made Step 1 summary-result mapping compatibility declare an explicit
+    abstract ``as_dict()`` contract with a descriptive implementation error.
 
 - **Public surface guardrails** *(Fixed)*
 

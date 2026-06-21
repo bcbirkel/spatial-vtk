@@ -10,6 +10,7 @@ of embedding task-specific Python in notebook cells.
 
 from __future__ import annotations
 
+from abc import abstractmethod
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -311,10 +312,11 @@ class StandardIngestWorkflowOutputResult:
 class _SummaryMappingMixin(Mapping[str, Any]):
     """Mapping compatibility for result objects that expose ``as_dict``."""
 
+    @abstractmethod
     def as_dict(self) -> dict[str, Any]:
         """Return a backward-compatible dictionary representation."""
 
-        raise NotImplementedError
+        raise NotImplementedError("Summary mapping result classes must implement as_dict().")
 
     def __getitem__(self, key: str) -> Any:
         return self.as_dict()[key]

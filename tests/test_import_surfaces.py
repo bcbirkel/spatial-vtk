@@ -959,6 +959,10 @@ def test_io_workflow_uses_public_context_visualization_entry_point():
     assert "from spatial_vtk.visualize.context.figures import build_record_coverage_table_from_trace_metadata" not in text
     assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in text
     assert "preprocessed_waveform_metadata_paths(config=cfg)" not in text
+    assert "from abc import abstractmethod" in text
+    assert "@abstractmethod\n    def as_dict" in text
+    assert 'raise NotImplementedError("Summary mapping result classes must implement as_dict().")' in text
+    assert "\n        raise NotImplementedError\n" not in text
 
 
 def test_metrics_api_docs_use_public_plot_entry_point():
