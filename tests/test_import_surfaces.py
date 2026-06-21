@@ -965,6 +965,19 @@ def test_io_workflow_uses_public_context_visualization_entry_point():
     assert "\n        raise NotImplementedError\n" not in text
 
 
+def test_synthetic_format_errors_are_user_facing():
+    """Synthetic format readers should not expose implementation-stub errors."""
+
+    source = pathlib.Path(__file__).resolve().parents[1] / "src" / "spatial_vtk" / "io" / "synthetic_formats.py"
+    text = source.read_text(encoding="utf-8")
+
+    assert "raise NotImplementedError" not in text
+    assert 'raise RuntimeError(\n                "Generic HDF5 synthetic reading requires a schema adapter.' in text
+    assert 'raise RuntimeError(\n                    "Raw Salvus on-the-fly XYZ rotation and metadata correction ' in text
+    assert "raise ValueError(f\"{path} is not a supported Salvus receivers.h5 file; missing {missing}.\")" in text
+    assert "raise ValueError(\"Salvus receivers.h5 point group is missing sampling_rate_in_hertz.\")" in text
+
+
 def test_metrics_api_docs_use_public_plot_entry_point():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "metrics.rst"
     text = docs.read_text(encoding="utf-8")

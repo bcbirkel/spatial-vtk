@@ -414,13 +414,13 @@ class SyntheticReader:
         if self.info.format == "asdf":
             return self._read_asdf(request)
         if self.info.format == "hdf5":
-            raise NotImplementedError(
+            raise RuntimeError(
                 "Generic HDF5 synthetic reading requires a schema adapter. "
                 "Point input-syn-path at normalized MiniSEED/ASDF, or add an HDF5 adapter."
             )
         if self.info.format == "salvus":
             if self.info.handling_mode == "on-the-fly":
-                raise NotImplementedError(
+                raise RuntimeError(
                     "Raw Salvus on-the-fly XYZ rotation and metadata correction "
                     "requires a project-specific reader adapter. Use convert-once "
                     "or point the synthetic input at normalized MiniSEED/ASDF."
@@ -719,13 +719,13 @@ def _validate_salvus_receivers_h5(handle: Any, path: Path) -> None:
 
     missing = [name for name in ("names_ELASTIC_point", "point") if name not in handle]
     if missing:
-        raise NotImplementedError(f"{path} is not a supported Salvus receivers.h5 file; missing {missing}.")
+        raise ValueError(f"{path} is not a supported Salvus receivers.h5 file; missing {missing}.")
     if "acceleration" not in handle["point"]:
-        raise NotImplementedError(f"{path} is not a supported Salvus receivers.h5 file; missing point/acceleration.")
+        raise ValueError(f"{path} is not a supported Salvus receivers.h5 file; missing point/acceleration.")
     names = handle["names_ELASTIC_point"]
     data = handle["point/acceleration"]
     if len(data.shape) != 3:
-        raise NotImplementedError(f"{path} point/acceleration must have shape (receiver, component, sample).")
+        raise ValueError(f"{path} point/acceleration must have shape (receiver, component, sample).")
     if int(data.shape[0]) != int(names.shape[0]):
         raise ValueError(f"{path} names_ELASTIC_point count does not match point/acceleration receiver count.")
 
@@ -735,7 +735,7 @@ def _salvus_sampling_rate(handle: Any) -> float:
 
     point = handle["point"]
     if "sampling_rate_in_hertz" not in point.attrs:
-        raise NotImplementedError("Salvus receivers.h5 point group is missing sampling_rate_in_hertz.")
+        raise ValueError("Salvus receivers.h5 point group is missing sampling_rate_in_hertz.")
     raw = point.attrs["sampling_rate_in_hertz"]
     return float(raw[0] if hasattr(raw, "__len__") else raw)
 

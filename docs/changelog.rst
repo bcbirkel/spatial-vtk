@@ -109,6 +109,9 @@ Changelog
     avoid hard-coded path plumbing rather than path variables.
   - Made Step 1 summary-result mapping compatibility declare an explicit
     abstract ``as_dict()`` contract with a descriptive implementation error.
+  - Replaced synthetic-format ``NotImplementedError`` cases with user-facing
+    runtime or schema errors for unsupported HDF5 adapters and malformed
+    Salvus receiver files.
 
 - **Public surface guardrails** *(Fixed)*
 
