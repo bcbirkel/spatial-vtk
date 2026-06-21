@@ -1761,6 +1761,9 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert "--max-records 80" in text
     assert "--max-traces 12" in text
     assert "--auto-port" in text
+    assert 'svtk config set "$CONFIG"' in text
+    assert 'Pass ``--config PATH`` only when a' in text
+    assert '--config "$CONFIG"' not in text
     assert "--require-source-overlap" in text
     assert "--source-overlap-scope event_station" in text
     assert '--event-table "$TABLES/prepared_events.csv"' in text
@@ -1783,30 +1786,24 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert '--input "$TABLES/metrics_long.parquet"' not in text
     assert '--events "$TABLES/prepared_events.csv"' not in text
     assert '--stations "$TABLES/prepared_stations.csv"' not in text
-    assert "svtk plot metrics scatterplot \\\n     --config \"$CONFIG\"" in text
-    assert "svtk plot metrics heatmap \\\n     --config \"$CONFIG\"" in text
 
 
 def test_cli_workflow_configured_commands_use_tutorial_scenario():
-    """The shell tutorial should keep commands on the committed tutorial inputs."""
+    """The shell tutorial should use the saved config and tutorial scenario."""
 
     root = Path(__file__).resolve().parents[1]
     text = (root / "docs" / "examples" / "cli_workflow.rst").read_text(encoding="utf-8")
     assert "export SCENARIO=tutorial" in text
+    assert '--config "$CONFIG"' not in text
     command_blocks = [
         block
         for block in text.split("\n\n")
         if block.lstrip().startswith("svtk ") or block.lstrip().startswith("   svtk ")
     ]
-    configured_commands = [
-        block
-        for block in command_blocks
-        if '--config "$CONFIG"' in block
-    ]
-    assert configured_commands
     missing_scenario = [
         block.splitlines()[0].strip()
-        for block in configured_commands
+        for block in command_blocks
+        if "svtk config set" not in block
         if '--run-scenario "$SCENARIO"' not in block
     ]
     assert not missing_scenario

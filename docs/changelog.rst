@@ -851,6 +851,9 @@ Changelog
   - Updated CLI workflow examples so routine metric plotting, mapping,
     visualization, and dashboard commands resolve standard inputs from the
     active config.
+  - Updated the shell workflow tutorial to rely on ``svtk config set`` instead
+    of repeating ``--config "$CONFIG"`` on every command, while keeping the
+    tutorial run scenario explicit.
   - Updated ``svtk ... list`` discovery output for plot, map, and visualization
     commands so required explicit inputs name the table role, such as
     ``required:spectrogram table (--input-table PATH)``, instead of only
