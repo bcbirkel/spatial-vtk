@@ -112,6 +112,7 @@ from spatial_vtk.spatial.plot.large_run import (
     write_large_run_spatial_figure_suite_from_notebook_settings,
     write_large_run_spatial_summary_figures_from_outputs,
     load_standard_additional_plotting_inputs,
+    load_standard_geojson_plotting_inputs,
 )
 from spatial_vtk.spatial.plot.metrics import plot_geology_contrast
 from spatial_vtk.spatial.plot.pca import plot_pca_explained_variance, plot_pca_feature_loadings
@@ -579,6 +580,83 @@ def test_standard_geojson_plotting_inputs_write_figures_from_configured_inputs(m
     assert corridor_kwargs["spatial_settings"] is spatial_settings
     assert corridor_kwargs["waveform_settings"] is waveform_settings
     assert corridor_kwargs["geojson_path"] == geojson_path
+
+
+def test_load_standard_geojson_plotting_inputs_reads_metric_columns_only(monkeypatch, tmp_path: Path) -> None:
+    """Standard Step 5 inputs should not materialize unused metrics_long columns."""
+
+    import inspect
+
+    import spatial_vtk.io as io_public
+    import spatial_vtk.spatial.plot.large_run as large_run_module
+
+    source = inspect.getsource(large_run_module.load_standard_geojson_plotting_inputs)
+    assert "_read_if_exists(metrics_path, columns=SPATIAL_EVENT_ROW_COLUMNS)" in source
+    assert 'metrics_outputs.load_table("metrics_long"' not in source
+
+    metrics_path = tmp_path / "metrics_long.csv"
+    pd.DataFrame(
+        {
+            "event_id": ["e1"],
+            "station": ["STA1"],
+            "metric": ["PGA"],
+            "passband": ["1-2 sec"],
+            "component": ["Z"],
+            "model": ["m1"],
+            "log2_residual": [0.2],
+            "unused_large_payload": ["x" * 1000],
+        }
+    ).to_csv(metrics_path, index=False)
+    stations = pd.DataFrame({"station": ["STA1"], "lon": [-118.1], "lat": [34.1]})
+    events = pd.DataFrame({"event_id": ["e1"], "event_name": ["Example"]})
+    event_stations = pd.DataFrame({"event_id": ["e1"], "station": ["STA1"]})
+    comparison_eligible = pd.DataFrame({"event_id": ["e1"], "station": ["STA1"], "component": ["Z"]})
+    geojson_path = tmp_path / "regions.geojson"
+    geojson_path.write_text('{"type":"FeatureCollection","features":[]}', encoding="utf-8")
+
+    class _Group:
+        def __init__(self, name: str):
+            self.name = name
+            if name == "step_03_metrics":
+                self.metrics_long_path = metrics_path
+
+        def load_tables(self, mapping, *, cfg=None):  # noqa: ANN001, ANN202
+            if self.name == "step_01_ingest":
+                assert mapping == {
+                    "stations": "prepared_stations_path",
+                    "events": "prepared_events_path",
+                    "event_stations": "event_station_path",
+                }
+                return {"stations": stations, "events": events, "event_stations": event_stations}
+            assert self.name == "step_05_geojson"
+            assert mapping == {"comparison_eligible": "comparison_eligible_path"}
+            return {"comparison_eligible": comparison_eligible}
+
+        def load_table(self, *args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+            raise AssertionError("Step 5 GeoJSON inputs should use column-projected path reads.")
+
+    def fake_output_group(name, *, cfg=None):  # noqa: ANN001, ANN202
+        return _Group(name)
+
+    def fake_load_configured_input_paths(mapping, *, cfg=None):  # noqa: ANN001, ANN202
+        assert mapping == {"region_geojson": "paths.region_geojson"}
+        return {"region_geojson": geojson_path}
+
+    monkeypatch.setattr(io_public, "output_group", fake_output_group)
+    monkeypatch.setattr(io_public, "load_configured_input_paths", fake_load_configured_input_paths)
+
+    result = load_standard_geojson_plotting_inputs(cfg=object())
+
+    assert isinstance(result, StandardGeoJSONPlottingInputResult)
+    assert "unused_large_payload" not in result.metrics.columns
+    assert result.metrics[["event_id", "station", "metric", "log2_residual"]].to_dict("records") == [
+        {"event_id": "e1", "station": "STA1", "metric": "PGA", "log2_residual": 0.2}
+    ]
+    assert result.stations is stations
+    assert result.events is events
+    assert result.event_stations is event_stations
+    assert result.comparison_eligible is comparison_eligible
+    assert result.geojson_path == geojson_path
 
 
 def test_load_standard_additional_plotting_inputs_uses_configured_groups(monkeypatch) -> None:

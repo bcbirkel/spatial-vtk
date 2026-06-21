@@ -757,6 +757,9 @@ Changelog
   - Scoped pattern-similarity derived-output metric reads to the required
     columns for path-backed CSV and Parquet inputs so optional Step 4 derived
     products do not materialize wide metric tables unnecessarily.
+  - Scoped Step 5 GeoJSON plotting input metric reads to spatial event-row
+    columns so region and corridor figure helpers do not materialize unused
+    ``metrics_long`` columns.
   - Made configured metric-output and dashboard-output helpers write
     partitioned dashboard metric datasets by default, and changed
     ``svtk metrics outputs`` to default to that large-run-safe layout while

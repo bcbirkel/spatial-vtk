@@ -2990,6 +2990,10 @@ def load_standard_geojson_plotting_inputs(
 ) -> StandardGeoJSONPlottingInputResult:
     """Load standard Step 5 GeoJSON tutorial inputs through configured registries.
 
+    The Step 3 ``metrics_long`` table is loaded with a spatial event-row column
+    projection so large path-backed metric tables do not have to materialize
+    unrelated metric output columns before Step 5 figures are rendered.
+
     Parameters
     ----------
     cfg
@@ -3027,7 +3031,8 @@ def load_standard_geojson_plotting_inputs(
         {"comparison_eligible": "comparison_eligible_path"},
         cfg=cfg,
     )
-    metrics = metrics_outputs.load_table("metrics_long", cfg=cfg)
+    metrics_path = getattr(metrics_outputs, "metrics_long_path", None)
+    metrics = _read_if_exists(metrics_path, columns=SPATIAL_EVENT_ROW_COLUMNS)
     if metrics is None:
         raise FileNotFoundError("Configured Step 3 metrics_long table is missing.")
 

@@ -1750,6 +1750,8 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "run_spatial_statistics_workflow_from_config" in text
     assert "run_geojson_region_summary_workflow_from_config" in text
     assert "run_boundary_corridor_workflow_from_config" in text
+    assert "The Step 3 metric table is read with a spatial event-row\n       column projection." in text
+    assert "the Step 3 metric table is read with only the columns needed by\n       spatial event-row GeoJSON figures" in text
     assert "Pattern-similarity derived outputs read only\n       the metric columns they need" in text
     assert "Public helpers exposed by ``spatial_vtk.spatial``" in text
     for helper in (

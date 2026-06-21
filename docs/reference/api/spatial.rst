@@ -90,7 +90,8 @@ Public helpers exposed by ``spatial_vtk.spatial``:
    * - ``load_standard_geojson_plotting_inputs``
      - Load standard Step 5 plotting inputs and configured output groups for
        region and corridor figure suites without notebook-local path/table
-       plumbing.
+       plumbing. The Step 3 metric table is read with a spatial event-row
+       column projection.
    * - ``load_standard_additional_plotting_output_status``
      - Load lightweight Step 6 output status, bounded metric-source previews,
        waveform comparison writing, and region-boxplot writing for large-run
@@ -305,6 +306,8 @@ Public plotting helpers and notebook workflow loaders:
      - Load the standard Step 5 metrics, prepared metadata, comparison-eligible
        records, configured GeoJSON path, and configured output group without
        notebook-local output-group, config-path, or table-loading plumbing;
+       the Step 3 metric table is read with only the columns needed by
+       spatial event-row GeoJSON figures;
        the returned result can write the standard region and corridor figure
        suites through ``write_region_figures()`` and
        ``write_corridor_figures()``.
