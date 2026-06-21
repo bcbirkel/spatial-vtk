@@ -676,7 +676,8 @@ Step 2 and Step 6 waveform-comparison cells should use
 That helper owns the figure render gate and notebook figure settings, then
 reads only a bounded comparison-eligible sample, builds the plotted
 observed/synthetic trace records, writes the configured
-``event_trace_comparison`` figure, and returns a small status frame. For
+``event_trace_comparison`` figure, and returns a small status frame with the
+figure row plus event-station and comparison-eligible input-table rows. For
 scripts, use
 ``spatial_vtk.visualize.waveforms.write_waveform_comparison_from_outputs`` when
 explicit plotting keyword arguments are already resolved.

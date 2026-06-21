@@ -81,8 +81,8 @@ Public helpers exposed by ``spatial_vtk.visualize``:
        configured output writer. The returned
        ``WaveformComparisonFigureResult`` exposes ``status_frame()`` for the
        selected comparison figure, status/message, row count, provenance
-       sidecars, and the normalized path columns used by other figure status
-       tables.
+       sidecars, and separate event-station/comparison-eligible input rows
+       with the normalized path columns used by other figure status tables.
    * - ``write_waveform_comparison_from_outputs``
      - Direct script helper for observed/synthetic trace-comparison
        figures when output paths and plotting keyword arguments are already

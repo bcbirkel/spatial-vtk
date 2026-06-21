@@ -53,6 +53,8 @@ class WaveformComparisonFigureResult:
             [
                 {
                     "name": "waveform_comparison_figure",
+                    "artifact_label": "Waveform comparison figure",
+                    "artifact_role": "figure",
                     "status": self.status,
                     "message": self.message,
                     "figure_path": str(self.figure_path),
@@ -62,6 +64,32 @@ class WaveformComparisonFigureResult:
                     "comparison_eligible_path": str(self.comparison_eligible_path),
                     "comparison_eligible_exists": self.comparison_eligible_path.exists(),
                     "record_count": len(self.records),
+                },
+                {
+                    "name": "event_station_records",
+                    "artifact_label": "Event-station record table",
+                    "artifact_role": "input_table",
+                    "status": "ready" if self.event_station_path.exists() else "missing",
+                    "message": (
+                        "Event-station record table is ready."
+                        if self.event_station_path.exists()
+                        else "Event-station record table is missing."
+                    ),
+                    "path": str(self.event_station_path),
+                    "record_count": "",
+                },
+                {
+                    "name": "comparison_eligible_records",
+                    "artifact_label": "Comparison-eligible record table",
+                    "artifact_role": "input_table",
+                    "status": "ready" if self.comparison_eligible_path.exists() else "missing",
+                    "message": (
+                        "Comparison-eligible record table is ready."
+                        if self.comparison_eligible_path.exists()
+                        else "Comparison-eligible record table is missing."
+                    ),
+                    "path": str(self.comparison_eligible_path),
+                    "record_count": "",
                 }
             ]
         )

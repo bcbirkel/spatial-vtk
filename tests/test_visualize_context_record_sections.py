@@ -177,7 +177,17 @@ def test_waveform_comparison_helper_uses_configured_outputs(tmp_path: Path, monk
 
     assert result.status == "written"
     assert result.figure_path == figure_path
-    assert result.status_frame().loc[0, "record_count"] == 1
+    status = result.status_frame().set_index("name")
+    assert status.loc["waveform_comparison_figure", "record_count"] == 1
+    assert status.loc["waveform_comparison_figure", "artifact_label"] == "Waveform comparison figure"
+    assert status.loc["waveform_comparison_figure", "path"] == str(figure_path)
+    assert status.loc["event_station_records", "artifact_label"] == "Event-station record table"
+    assert status.loc["event_station_records", "artifact_role"] == "input_table"
+    assert status.loc["event_station_records", "path"] == str(event_station_path)
+    assert bool(status.loc["event_station_records", "exists"]) is True
+    assert status.loc["comparison_eligible_records", "artifact_label"] == "Comparison-eligible record table"
+    assert status.loc["comparison_eligible_records", "path"] == str(comparison_eligible_path)
+    assert bool(status.loc["comparison_eligible_records", "exists"]) is True
     assert calls["event_station_records"] == event_station_path
     assert calls["component"] == "Z"
     assert calls["comparison_eligible"]["component"].tolist() == ["Z"]
@@ -283,6 +293,11 @@ def test_waveform_comparison_notebook_settings_delegates_options(tmp_path: Path,
     assert status.loc[0, "name"] == "waveform_comparison_figure"
     assert status.loc[0, "path"] == str(figure_path)
     assert bool(status.loc[0, "exists"]) is False
+    assert set(status["name"]) == {
+        "waveform_comparison_figure",
+        "event_station_records",
+        "comparison_eligible_records",
+    }
     assert calls["gate_paths"] == [comparison_eligible_path, event_station_path]
     assert calls["kwargs"]["component"] == "T"
     assert calls["kwargs"]["passband"] == "2-3 sec"

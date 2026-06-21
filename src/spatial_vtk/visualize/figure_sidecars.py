@@ -34,27 +34,31 @@ def normalize_figure_status_rows(
         names = frame["name"].fillna(default_name).astype(str)
     else:
         names = pd.Series([default_name] * len(frame), index=frame.index, dtype=object)
-    if "figure_path" in frame.columns:
-        paths = frame["figure_path"]
-    elif "first_figure_path" in frame.columns:
-        paths = frame["first_figure_path"]
-    elif "path" in frame.columns:
-        paths = frame["path"]
-    else:
-        paths = pd.Series([""] * len(frame), index=frame.index, dtype=object)
+    paths = pd.Series([""] * len(frame), index=frame.index, dtype=object)
+    for candidate in ("figure_path", "first_figure_path", "path"):
+        if candidate in frame.columns:
+            values = frame[candidate].fillna("").astype(str)
+            paths = paths.where(paths.astype(str).str.len().gt(0), values)
     normalized = pd.DataFrame(
         {
             "name": names,
-            "artifact_label": names.map(lambda value: str(value).replace("_", " ").title()),
+            "artifact_label": frame["artifact_label"].fillna("").astype(str)
+            if "artifact_label" in frame.columns
+            else names.map(lambda value: str(value).replace("_", " ").title()),
             "resolved_path": paths.fillna("").astype(str),
             "path": paths.fillna("").astype(str),
         },
         index=frame.index,
     )
+    blank_labels = normalized["artifact_label"].astype(str).str.len().eq(0)
+    normalized.loc[blank_labels, "artifact_label"] = names.loc[blank_labels].map(
+        lambda value: str(value).replace("_", " ").title()
+    )
+    normalized["exists"] = normalized["resolved_path"].map(lambda value: bool(value) and Path(value).exists())
     if "figure_exists" in frame.columns:
-        normalized["exists"] = frame["figure_exists"].fillna(False).astype(bool)
-    else:
-        normalized["exists"] = normalized["resolved_path"].map(lambda value: bool(value) and Path(value).exists())
+        figure_exists = frame["figure_exists"]
+        has_figure_exists = figure_exists.notna()
+        normalized.loc[has_figure_exists, "exists"] = figure_exists.loc[has_figure_exists].astype(bool)
     return pd.concat([normalized, frame.drop(columns=[col for col in normalized.columns if col in frame.columns])], axis=1)
 
 
