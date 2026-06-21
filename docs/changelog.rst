@@ -67,6 +67,9 @@ Changelog
   - Added regression coverage for config-path resolution, public API exports,
     notebook import boundaries, dashboard readiness fields, runtime install
     guidance, and changelog formatting.
+
+- **Public API example guardrails** *(Fixed)*
+
   - Reworded the runtime configuration module example so scripts see the
     explicit ``SpatialVTKConfig`` load path while notebooks are steered toward
     ``notebook_run_context()`` instead of individual path resolution.
@@ -86,6 +89,9 @@ Changelog
   - Reworded metric manifest execution examples so advanced snippets use
     caller-owned manifest and batch-output variables instead of hard-coded
     filenames.
+
+- **Workflow documentation guardrails** *(Fixed)*
+
   - Reworded public workflow docs from ad-hoc/manual phrasing toward
     custom-script and notebook-local-gate wording.
   - Reworded lazy I/O package loader docs so public API references describe
@@ -105,6 +111,9 @@ Changelog
   - Reworded Step 2 QC readiness docs so notebooks are steered to the standard
     QC result object's inventory, overlap, and summary runners instead of
     direct readiness-helper wiring.
+
+- **Large-run artifact guardrails** *(Fixed)*
+
   - Streamed metric batch merges directly into the merged CSV/Parquet output so
     large metric runs no longer need to materialize every batch table before
     writing ``metric_rows``.
