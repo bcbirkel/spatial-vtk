@@ -2727,6 +2727,9 @@ def test_notebook_helper_docs_prefer_standard_result_objects():
     metric_configured = (
         repo_root / "src" / "spatial_vtk" / "metrics" / "workflow" / "configured.py"
     ).read_text(encoding="utf-8")
+    spatial_workflow = (
+        repo_root / "src" / "spatial_vtk" / "spatial" / "calculate" / "workflow.py"
+    ).read_text(encoding="utf-8")
 
     assert "New notebooks should" in notebook_helpers
     assert "prefer :func:`run_notebook_step_if_needed`" in notebook_helpers
@@ -2740,6 +2743,10 @@ def test_notebook_helper_docs_prefer_standard_result_objects():
     assert "Large-run notebooks should pass these helpers to" not in metric_configured
     assert "Use the direct\nhelpers in this module from scripts or custom orchestration" in metric_configured
     assert "through\n``run_or_submit_notebook_function()``" not in metric_configured
+    assert "Large-run notebooks should normally call" in spatial_workflow
+    assert "``load_standard_spatial_workflow_output_status(...).run_summary_step_if_needed(...)``" in spatial_workflow
+    assert "Use this direct readiness helper from\n    scripts or custom orchestration" in spatial_workflow
+    assert "Large-run notebooks can pass this directly to\n    :func:`spatial_vtk.config.run_notebook_step_if_needed`" not in spatial_workflow
 
 
 def test_spatial_plot_public_entry_point_is_lazy():

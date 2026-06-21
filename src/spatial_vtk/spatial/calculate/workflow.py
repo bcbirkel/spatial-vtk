@@ -1618,9 +1618,11 @@ def spatial_summary_readiness_from_config(
 ) -> OutputReadiness:
     """Return readiness for configured core spatial summary tables.
 
-    Large-run notebooks can pass this directly to
-    :func:`spatial_vtk.config.run_notebook_step_if_needed` instead of keeping
-    the Step 4 output-name contract in notebook cells.
+    Large-run notebooks should normally call
+    ``load_standard_spatial_workflow_output_status(...).run_summary_step_if_needed(...)``
+    so the result object owns the readiness check, Step 4 output-name contract,
+    and local/Slurm execution branch. Use this direct readiness helper from
+    scripts or custom orchestration that already owns execution control.
     """
 
     config = _spatial_workflow_config(config_path=config_path, run_scenario=run_scenario)
