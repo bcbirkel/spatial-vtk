@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from shapely.geometry import LineString, Point
 
+from spatial_vtk.io import parquet_table_columns, parquet_table_row_count
 from spatial_vtk.spatial.calculate.polygon_edges import PolygonFeature, load_polygon_features, safe_name_token
 from spatial_vtk.spatial.calculate.settings import spatial_statistics_settings_from_config
 
@@ -981,13 +982,7 @@ def _geojson_summary_input(
 def _parquet_columns_and_rows(path: Path) -> tuple[list[str], int | None]:
     """Return parquet column names and row count without reading row groups."""
 
-    try:
-        import pyarrow.parquet as pq
-    except Exception:
-        frame = pd.read_parquet(path)
-        return list(frame.columns), len(frame)
-    metadata = pq.ParquetFile(path)
-    return list(metadata.schema.names), int(metadata.metadata.num_rows)
+    return parquet_table_columns(path), parquet_table_row_count(path)
 
 
 def _available_geojson_summary_columns(columns: Sequence[str]) -> list[str]:

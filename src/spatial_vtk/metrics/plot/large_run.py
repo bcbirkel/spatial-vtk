@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from spatial_vtk.io import parquet_table_columns
 from spatial_vtk.visualize.figure_context import value_requires_model
 from spatial_vtk.visualize.figure_sidecars import read_figure_sidecar_metadata, write_figure_row_sidecar
 
@@ -2720,12 +2721,7 @@ def _table_columns(path: str | Path) -> list[str]:
     input_path = Path(path).expanduser()
     suffix = input_path.suffix.lower()
     if suffix in {".parquet", ".pq"}:
-        try:
-            import pyarrow.parquet as pq
-
-            return list(pq.ParquetFile(input_path).schema.names)
-        except Exception:
-            return list(pd.read_parquet(input_path).head(0).columns)
+        return parquet_table_columns(input_path)
     return list(pd.read_csv(input_path, nrows=0).columns)
 
 
@@ -2735,11 +2731,9 @@ def _read_metric_figure_table(path: str | Path, *, columns: list[str]) -> pd.Dat
     input_path = Path(path).expanduser()
     suffix = input_path.suffix.lower()
     if suffix in {".parquet", ".pq"}:
-        try:
-            return pd.read_parquet(input_path, columns=columns)
-        except Exception:
-            frame = pd.read_parquet(input_path)
-            return frame.reindex(columns=[column for column in columns if column in frame.columns])
+        available = set(parquet_table_columns(input_path))
+        selected = [column for column in columns if column in available]
+        return pd.read_parquet(input_path, columns=selected)
     wanted = set(columns)
     return pd.read_csv(input_path, usecols=lambda column: column in wanted, low_memory=False)
 

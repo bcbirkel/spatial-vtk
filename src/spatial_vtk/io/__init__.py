@@ -95,6 +95,8 @@ _EXPORT_MODULES = {
     "output_readiness": "spatial_vtk.io.output_paths",
     "output_status_frame": "spatial_vtk.io.output_paths",
     "output_status_rows": "spatial_vtk.io.output_paths",
+    "parquet_table_columns": "spatial_vtk.io.tables",
+    "parquet_table_row_count": "spatial_vtk.io.tables",
     "prepare_event_metadata": "spatial_vtk.io.metadata",
     "prepare_event_station_table": "spatial_vtk.io.metadata",
     "prepare_station_metadata": "spatial_vtk.io.metadata",

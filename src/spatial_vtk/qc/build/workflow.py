@@ -25,7 +25,7 @@ from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io import OutputReadiness, output_group
 from spatial_vtk.io.inventory import build_file_inventory
-from spatial_vtk.io.tables import load_output_table, write_output_table, write_table
+from spatial_vtk.io.tables import load_output_table, parquet_table_columns, write_output_table, write_table
 from spatial_vtk.io.waveforms import WaveformPreprocessing, read_waveform_file, select_waveform_trace
 from spatial_vtk.visualize.dashboard import write_manual_review_queue
 from spatial_vtk.visualize.dashboard.exports import QUEUE_COLUMNS
@@ -2937,14 +2937,9 @@ def _read_trace_qc_lookup_table(trace_qc_summary: pd.DataFrame | str | Path) -> 
         columns = [column for column in header.columns if column in wanted]
         return pd.read_csv(path, usecols=columns, low_memory=False)
     if path.suffix.lower() in {".parquet", ".pq"}:
-        try:
-            import pyarrow.parquet as pq
-
-            available = set(pq.ParquetFile(path).schema.names)
-            columns = [column for column in wanted if column in available]
-            return pd.read_parquet(path, columns=columns)
-        except Exception:
-            return pd.read_parquet(path)
+        available = set(parquet_table_columns(path))
+        columns = [column for column in wanted if column in available]
+        return pd.read_parquet(path, columns=columns)
     return _read_table(path)
 
 

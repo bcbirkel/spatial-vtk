@@ -155,6 +155,10 @@ Public helpers exposed by ``spatial_vtk.io``:
        row counts.
    * - ``read_bounded_table`` and ``preview_table``
      - Inspect large CSV or Parquet tables without loading all rows.
+   * - ``parquet_table_columns`` and ``parquet_table_row_count``
+     - Inspect Parquet schemas and row counts through metadata only. These
+       helpers fail with actionable PyArrow/metadata errors instead of
+       materializing large tables as a fallback.
    * - ``write_output_table`` and ``load_output_table``
      - Read and write registered output tables when lower-level table access is
        required.

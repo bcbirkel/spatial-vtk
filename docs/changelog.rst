@@ -729,6 +729,9 @@ Changelog
   - Made shared parquet preview helpers stream bounded rows with PyArrow and
     report actionable metadata/dependency errors instead of full-reading large
     tables before taking ``head()``.
+  - Reused shared parquet metadata helpers across metric figures, spatial
+    figures, dashboard readiness checks, QC lookup loading, and GeoJSON
+    summaries so schema/row-count probes do not fall back to full-table reads.
 
 - **Large-run notebook result objects** *(Hardened)*
 

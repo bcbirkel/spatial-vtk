@@ -19,6 +19,7 @@ import pandas as pd
 
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
+from spatial_vtk.io import parquet_table_columns, parquet_table_row_count
 
 
 ConfigInput = SpatialVTKConfig | str | Path
@@ -1357,12 +1358,7 @@ def _dashboard_table_columns(path: Path) -> list[str]:
 
     suffix = path.suffix.lower()
     if suffix in {".parquet", ".pq"}:
-        try:
-            import pyarrow.parquet as pq
-
-            return list(pq.ParquetFile(path).schema.names)
-        except Exception:
-            return list(pd.read_parquet(path).head(0).columns)
+        return parquet_table_columns(path)
     if suffix == ".csv":
         return list(pd.read_csv(path, nrows=0).columns)
     raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
@@ -1496,12 +1492,7 @@ def _dashboard_table_row_count(path: Path) -> int:
 
     suffix = path.suffix.lower()
     if suffix in {".parquet", ".pq"}:
-        try:
-            import pyarrow.parquet as pq
-
-            return int(pq.ParquetFile(path).metadata.num_rows)
-        except Exception:
-            return int(len(pd.read_parquet(path, columns=[])))
+        return parquet_table_row_count(path)
     if suffix == ".csv":
         with path.open("r", encoding="utf-8", errors="replace") as handle:
             return max(sum(1 for _ in handle) - 1, 0)
@@ -1539,16 +1530,21 @@ def _iter_dashboard_table_column_chunks(
     if suffix in {".parquet", ".pq"}:
         try:
             import pyarrow.parquet as pq
-
+        except Exception as exc:
+            raise RuntimeError(
+                f"Could not stream dashboard parquet table {path}: pyarrow is required. "
+                "Install the package dependencies or write the table as CSV before dashboard readiness checks."
+            ) from exc
+        try:
             parquet = pq.ParquetFile(path)
             for batch in parquet.iter_batches(batch_size=size, columns=selected):
                 yield batch.to_pandas()
             return
-        except Exception:
-            table = pd.read_parquet(path, columns=selected)
-            for start in range(0, len(table), size):
-                yield table.iloc[start : start + size].copy()
-            return
+        except Exception as exc:
+            raise RuntimeError(
+                f"Could not stream dashboard parquet table {path}. "
+                "Repair or rewrite the table before dashboard readiness checks."
+            ) from exc
     if suffix == ".csv":
         wanted = set(selected)
         yield from pd.read_csv(path, usecols=lambda column: column in wanted, chunksize=size, low_memory=False)

@@ -171,6 +171,47 @@ def _read_parquet_prefix(
     return pd.DataFrame(columns=output_columns)
 
 
+def parquet_table_columns(path: str | Path) -> list[str]:
+    """Return parquet column names without reading row data."""
+
+    input_path = Path(path).expanduser()
+    try:
+        import pyarrow.parquet as pq
+    except Exception as exc:
+        raise RuntimeError(
+            f"Could not inspect parquet columns for {input_path}: pyarrow is required. "
+            "Install the package dependencies or write the table as CSV before using this workflow."
+        ) from exc
+    try:
+        return list(pq.ParquetFile(input_path).schema.names)
+    except Exception as exc:
+        raise RuntimeError(
+            f"Could not inspect parquet metadata for {input_path}. "
+            "Repair or rewrite the table before using this workflow."
+        ) from exc
+
+
+def parquet_table_row_count(path: str | Path) -> int:
+    """Return a parquet row count without materializing table columns."""
+
+    input_path = Path(path).expanduser()
+    try:
+        import pyarrow.parquet as pq
+    except Exception as exc:
+        raise RuntimeError(
+            f"Could not inspect parquet row count for {input_path}: pyarrow is required. "
+            "Install the package dependencies or write the table as CSV before using this workflow."
+        ) from exc
+    try:
+        metadata = pq.ParquetFile(input_path).metadata
+    except Exception as exc:
+        raise RuntimeError(
+            f"Could not inspect parquet metadata for {input_path}. "
+            "Repair or rewrite the table before using this workflow."
+        ) from exc
+    return int(metadata.num_rows)
+
+
 def first_nonempty_table_value(
     table: pd.DataFrame | None,
     column: str,

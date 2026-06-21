@@ -107,6 +107,8 @@ def test_public_imports():
         load_standard_ingest_workflow_outputs,
         metadata_tables_readiness_from_config,
         output_group,
+        parquet_table_columns,
+        parquet_table_row_count,
         prepare_metadata_tables_from_config,
         preprocessing_readiness_from_config,
         prepare_station_metadata,
@@ -263,6 +265,8 @@ def test_public_imports():
     assert callable(first_nonempty_table_value)
     assert callable(output_group)
     assert callable(OutputGroup)
+    assert callable(parquet_table_columns)
+    assert callable(parquet_table_row_count)
     assert callable(prepare_metadata_tables_from_config)
     assert callable(preprocessing_readiness_from_config)
     assert callable(prepare_station_metadata)
@@ -3166,3 +3170,26 @@ def test_large_run_csv_readers_use_stable_dtype_inference():
     for relative_path, snippet in snippets.items():
         text = (repo_root / relative_path).read_text(encoding="utf-8")
         assert snippet in text, relative_path
+
+
+def test_large_run_parquet_metadata_helpers_do_not_full_read_fallbacks():
+    """Schema and bounded-read helpers must not full-read large parquet tables."""
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    source_root = repo_root / "src" / "spatial_vtk"
+    offenders: list[str] = []
+    full_head_pattern = re.compile(r"pd\.read_parquet\([^\n]*\)\.head\(")
+    broad_fallback_pattern = re.compile(
+        r"except Exception:\n(?:[ \t]+[^\n]*\n){0,6}?[ \t]+(?:return\s+)?(?:\w+\s*=\s*)?pd\.read_parquet\(",
+        re.MULTILINE,
+    )
+    for path in sorted(source_root.rglob("*.py")):
+        text = path.read_text(encoding="utf-8")
+        matches = []
+        if full_head_pattern.search(text):
+            matches.append("pd.read_parquet(...).head(...)")
+        if broad_fallback_pattern.search(text):
+            matches.append("except Exception full-read fallback")
+        if matches:
+            offenders.append(f"{path.relative_to(repo_root)}: {', '.join(matches)}")
+    assert not offenders, "\n".join(offenders)

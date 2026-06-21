@@ -11,7 +11,7 @@ import pandas as pd
 
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
-from spatial_vtk.io import load_output_table, read_bounded_table, read_table, slugify
+from spatial_vtk.io import load_output_table, parquet_table_columns, read_bounded_table, read_table, slugify
 from spatial_vtk.metrics.plot.large_run import (
     MetricFigureContext,
     first_existing,
@@ -4310,12 +4310,7 @@ def _table_columns(path: Path) -> list[str]:
 
     suffix = path.suffix.lower()
     if suffix in {".parquet", ".pq"}:
-        try:
-            import pyarrow.parquet as pq
-
-            return list(pq.ParquetFile(path).schema.names)
-        except Exception:
-            return list(pd.read_parquet(path).head(0).columns)
+        return parquet_table_columns(path)
     if suffix == ".csv":
         return list(pd.read_csv(path, nrows=0).columns)
     raise ValueError(f"Unsupported table format for {path}. Use Parquet or CSV.")
