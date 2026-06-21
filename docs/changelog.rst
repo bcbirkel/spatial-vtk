@@ -63,6 +63,8 @@ Changelog
     ``all``/``none``/``unlimited`` values remain the only full-table opt-in
     where supported, while invalid numeric limits now raise clear
     configuration errors instead of silently changing load behavior.
+  - Hardened notebook output-readiness checks so an empty output collection
+    raises a clear error instead of reporting the step as current and skipped.
 
 2026-06-19
 ----------

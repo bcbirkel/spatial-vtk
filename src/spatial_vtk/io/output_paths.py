@@ -1496,6 +1496,8 @@ def output_readiness(
     """
 
     output_items = _coerce_named_path_mapping(outputs)
+    if not output_items:
+        raise ValueError("At least one output path is required to determine output readiness.")
     input_items = _coerce_named_optional_path_mapping(inputs)
     source_items = _coerce_named_optional_path_mapping(sources)
     output_paths = tuple(output_items.values())

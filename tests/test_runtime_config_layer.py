@@ -4171,6 +4171,9 @@ def test_output_readiness_reports_notebook_step_decisions(tmp_path):
     required_input = tmp_path / "inputs" / "metrics.parquet"
     output = tmp_path / "outputs" / "summary.csv"
 
+    with pytest.raises(ValueError, match="At least one output path is required"):
+        output_readiness({})
+
     missing_input = output_readiness(output, inputs=[required_input])
     assert missing_input.should_run is False
     assert missing_input.reason == "missing_inputs"
