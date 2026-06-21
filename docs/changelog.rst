@@ -134,6 +134,12 @@ Changelog
   - Routed notebook-facing QC overview and context-figure full-table reads
     through the shared loader while preserving bounded preview behavior.
 
+- **Table reader consistency** *(Changed)*
+
+  - Routed manual QC decision and arrival-pick catalog loading through the
+    shared table reader so these small public helper paths use the same
+    CSV/Parquet behavior as larger workflow artifacts.
+
 - **Tutorial notebook hygiene** *(Fixed)*
 
   - Hardened tutorial notebook source-contract checks so saved widget/UI

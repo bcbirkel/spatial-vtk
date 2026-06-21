@@ -10,6 +10,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from spatial_vtk.io.tables import read_table
+
 DEFAULT_PICKER = "phasenet"
 
 REQUIRED_PICK_COLUMNS = (
@@ -150,8 +152,8 @@ def normalize_pick_catalog(df: pd.DataFrame, *, default_method: str = DEFAULT_PI
 def load_arrival_pick_catalog(path: str | Path) -> pd.DataFrame:
     """Load one arrival-pick catalog from CSV or Parquet."""
 
-    source = Path(path)
-    df = pd.read_parquet(source) if source.suffix.lower() in {".parquet", ".pq"} else pd.read_csv(source, low_memory=False)
+    source = Path(path).expanduser()
+    df = read_table(source)
     return normalize_pick_catalog(df)
 
 
