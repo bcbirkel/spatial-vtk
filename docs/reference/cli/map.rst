@@ -229,7 +229,7 @@ Map block-holdout prediction errors.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -458,7 +458,7 @@ Map cluster assignments.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -691,7 +691,7 @@ Map corridor selections.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -935,7 +935,7 @@ Map event residual paths.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -1209,7 +1209,7 @@ Map metric values by model.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -1445,7 +1445,7 @@ Map model improvement values.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -1674,7 +1674,7 @@ Map one PCA spatial mode.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -1906,7 +1906,7 @@ Map REDCAP cluster values.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -2138,7 +2138,7 @@ Map residual grid values.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -2364,7 +2364,7 @@ Map score values.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -2596,7 +2596,7 @@ Map station bias values.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -2828,7 +2828,7 @@ Map station metric values.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -

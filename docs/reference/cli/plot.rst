@@ -248,7 +248,7 @@ Plot residual or score distributions by passband.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -463,7 +463,7 @@ Plot metric distributions by categorical variables.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -684,7 +684,7 @@ Plot synthetic trace-pair examples that illustrate metric behavior.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -906,7 +906,7 @@ Plot metric values by geologic class.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -1121,7 +1121,7 @@ Plot categorical metric summaries as a heatmap.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -1378,7 +1378,7 @@ Plot a general metric trend.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -1604,7 +1604,7 @@ Plot a model-by-metric heatmap.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -1825,7 +1825,7 @@ Plot period spectra.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -2049,7 +2049,7 @@ Plot a precomputed period-spectrogram table. This advanced figure does not have 
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -2276,7 +2276,7 @@ Plot phase delay against distance.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -2498,7 +2498,7 @@ Plot PSA values by period.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -2722,7 +2722,7 @@ Plot residuals against event depth.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -2948,7 +2948,7 @@ Plot residuals against distance.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -3166,7 +3166,7 @@ Plot any metric-table variable against another variable.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -3384,7 +3384,7 @@ Plot score trends.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -3602,7 +3602,7 @@ Plot metric values against Vs30.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -3823,7 +3823,7 @@ Plot a winner/class heatmap.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -4075,7 +4075,7 @@ Plot residuals by azimuth.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -4301,7 +4301,7 @@ Plot observed versus held-out predictions.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -4528,7 +4528,7 @@ Plot cluster feature summaries.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -4755,7 +4755,7 @@ Plot clustering solution scores.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -4973,7 +4973,7 @@ Plot a spatial correlogram.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -5203,7 +5203,7 @@ Plot directional spatial correlations.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -5464,7 +5464,7 @@ Plot path-bin summary values.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -5688,7 +5688,7 @@ Plot observed/synthetic pattern similarity.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -5915,7 +5915,7 @@ Plot PCA explained variance.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -6141,7 +6141,7 @@ Plot PCA feature loadings.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -6363,7 +6363,7 @@ Plot residuals in polar coordinates.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -6589,7 +6589,7 @@ Plot residual correlation values.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -6807,7 +6807,7 @@ Plot a semivariogram.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -

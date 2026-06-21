@@ -1815,7 +1815,11 @@ def _add_common_figure_options(parser: argparse.ArgumentParser, *, exclude: set[
     add("components", action="append", default=None, help="Component list for waveform plots that use a components argument. Repeat for multiple components.")
     add("model", action="append", default=None, help="Model filter/value. Repeat for multiple models.")
     add("value-col", default=None, help="Column containing the plotted value.")
-    add("score-col", default=None, help="Column containing scores or residual values for score-style plots.")
+    add(
+        "score-col",
+        default=None,
+        help="Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.",
+    )
     add("x-col", default=None, help="Column used on the x axis.")
     add("y-col", default=None, help="Column used on the y axis.")
     add("group-col", default=None, help="Column used for grouping, coloring, or trend groups.")

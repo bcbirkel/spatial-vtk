@@ -249,7 +249,7 @@ Plot observed/synthetic availability.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -491,7 +491,7 @@ Plot QC drop-cause diagnostics.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -733,7 +733,7 @@ Plot retained comparison-pair percentages by station and event.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -1014,7 +1014,7 @@ Map retained station/event records after QC.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -1250,7 +1250,7 @@ Plot QC retention summary.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -1492,7 +1492,7 @@ Plot sample QC traces.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -1738,7 +1738,7 @@ Plot distance/amplitude diagnostics.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -1976,7 +1976,7 @@ Plot event record coverage.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -2218,7 +2218,7 @@ Map events by magnitude.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -2460,7 +2460,7 @@ Plot event trace comparisons.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -2740,7 +2740,7 @@ Plot record-window coverage.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -2981,7 +2981,7 @@ Plot station record coverage.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -3229,7 +3229,7 @@ Map station/event context with beachballs.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -3479,7 +3479,7 @@ Plot station and event context.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -3729,7 +3729,7 @@ Map station/event network geometry.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -3972,7 +3972,7 @@ Plot the study domain map.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -4308,7 +4308,7 @@ Plot event radial trace section.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -4566,7 +4566,7 @@ Plot observed/synthetic record sections.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -4807,7 +4807,7 @@ Plot a waveform record section.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -5051,7 +5051,7 @@ Map station/event waveforms.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -
@@ -5295,7 +5295,7 @@ Plot waveform overlay matrix.
    * - ``--score-col``
      - No
      -
-     - Column containing scores or residual values for score-style plots.
+     - Column containing the numeric value for distribution or score-style plots, such as log2_residual or a GOF score.
    * - ``--x-col``
      - No
      -

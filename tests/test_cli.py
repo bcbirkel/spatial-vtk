@@ -1187,6 +1187,8 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "svtk plot spatial residual-correlation [-h] [--input-table PATH]" in plot_text
     assert "svtk plot spatial directional-correlogram [-h] [--input-table PATH]" in plot_text
     assert "svtk plot metrics list [-h] [--config PATH]" in plot_text
+    assert "Column containing the numeric value for distribution or score-style plots" in cli_pages_text
+    assert "Column containing scores or residual values for score-style plots." not in cli_pages_text
     assert "``--resolve-paths``" in plot_text
     assert "Add ``--resolve-paths --config PATH`` to show the concrete configured files." in plot_text
     assert "Defaults to configured output table 'distance_bin_correlations'" in plot_text

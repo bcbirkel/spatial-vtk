@@ -195,9 +195,12 @@ submission after ``cache-waveforms``:
      --score-col log2_residual \
      --color-col metric
 
-The band-score plot defaults to the configured ``metrics_long`` table and
-``band_score_distribution`` figure path. Pass ``--input-table`` or
-``--figure-output`` only when you want to override those paths.
+The band distribution plot defaults to the configured ``metrics_long`` table
+and ``band_score_distribution`` figure path. In this command, ``--score-col``
+selects the numeric value column to distribute, so ``log2_residual`` is the
+standard large-run residual column and GOF-score columns remain available for
+explicit score diagnostics. Pass ``--input-table`` or ``--figure-output`` only
+when you want to override those paths.
 
 Add ``--write-sidecar`` to any ``svtk plot``, ``svtk map``, or
 ``svtk visualize`` figure command to write CSV/JSON provenance next to the

@@ -69,6 +69,9 @@ Changelog
   - Aligned band and period distribution plot docstrings and default titles
     with residual-or-score usage so Python API docs match the stabilized
     large-run metric plotting workflow.
+  - Clarified ``--score-col`` CLI help and examples so distribution plots are
+    described as taking a numeric residual or score value column rather than a
+    score-only input.
   - Aligned internal CLI call/result helper docstrings with the public
     ``svtk call`` guidance so direct public-function calls are consistently
     framed as advanced one-off usage rather than generic workflow commands.
