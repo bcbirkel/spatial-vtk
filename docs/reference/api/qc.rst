@@ -62,7 +62,10 @@ Public helpers exposed by ``spatial_vtk.qc``:
        explicit streaming tools. Display
        ``StandardQCWorkflowOutputResult.status_frame()`` in notebooks for the
        compact configured-output readiness table instead of resolving QC paths
-       in cells.
+       in cells. Compact QC summary results also expose normalized
+       ``name``, ``artifact_label``, ``artifact_role``, ``exists``,
+       ``resolved_path``, and ``path`` columns while preserving the older
+       ``artifact`` column for existing notebooks.
    * - ``load_standard_qc_inputs``
      - Load standard Step 2 prepared metadata tables and the configured QC
        output group without notebook-local Step 1 path/table plumbing.

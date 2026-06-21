@@ -801,9 +801,14 @@ outputs:
     assert result.paths["qc_drop_causes_overlap"].exists()
     assert result.paths["manual_review_queue"].exists()
     status = result.status_frame().set_index("artifact")
+    assert {"name", "artifact_label", "artifact_role", "exists", "resolved_path", "path"} <= set(status.columns)
     assert status.loc["comparison_eligible_records", "status"] == "ready"
+    assert status.loc["comparison_eligible_records", "name"] == "comparison_eligible_records"
+    assert status.loc["comparison_eligible_records", "artifact_label"] == "comparison eligible records table"
+    assert status.loc["comparison_eligible_records", "artifact_role"] == "output_table"
+    assert bool(status.loc["comparison_eligible_records", "exists"]) is True
+    assert status.loc["comparison_eligible_records", "resolved_path"] == status.loc["comparison_eligible_records", "path"]
     assert status.loc["post_qc_records", "rows"] == 2
-    assert "resolved_path" in status.columns
     eligible = pd.read_csv(result.paths["comparison_eligible_records"])
     assert eligible[["event_id", "station", "metric"]].to_dict("records") == [
         {"event_id": "e1", "station": "S1", "metric": "PGA"}

@@ -99,17 +99,36 @@ class QCSummaryWorkflowResult:
 
         records: list[dict[str, object]] = []
         for name, path in self.paths.items():
+            exists = Path(path).exists()
             records.append(
                 {
+                    "name": name,
                     "artifact": name,
-                    "status": "ready" if Path(path).exists() else "missing",
+                    "artifact_label": f"{str(name).replace('_', ' ')} table",
+                    "artifact_role": "output_table",
+                    "status": "ready" if exists else "missing",
+                    "exists": exists,
                     "rows": self.rows.get(name),
                     "resolved_path": str(path),
                     "path": str(path),
                     "elapsed_s": self.elapsed_s,
                 }
             )
-        return pd.DataFrame(records, columns=["artifact", "status", "rows", "resolved_path", "path", "elapsed_s"])
+        return pd.DataFrame(
+            records,
+            columns=[
+                "name",
+                "artifact",
+                "artifact_label",
+                "artifact_role",
+                "status",
+                "exists",
+                "rows",
+                "resolved_path",
+                "path",
+                "elapsed_s",
+            ],
+        )
 
 
 @dataclass(frozen=True)
