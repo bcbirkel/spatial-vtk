@@ -1215,6 +1215,14 @@ def test_config_api_docs_include_compute_helpers():
     assert "one-off custom steps outside the standard workflow result\n       objects" in text
     assert "Prefer the standard result object's ``run_*_step_if_needed()``" in text
     assert "``display_notebook_step_result``" in text
+    assert "skipped/current step payloads" in text
+    assert "skipped/current step dictionaries" not in text
+    notebook_source = (docs.parent.parent / "src" / "spatial_vtk" / "config" / "notebook.py").read_text(
+        encoding="utf-8"
+    )
+    assert "JSON-friendly status payload containing" in notebook_source
+    assert "JSON-friendly status dictionary containing" not in notebook_source
+    assert "Payloads from\n        :func:`notebook_step_result`" in notebook_source
     assert "``summary_frame()``" in text
     assert "``NotebookFigureSettings`` and ``notebook_figure_settings``" in text
     assert "``render_notebook_figure``" in text

@@ -101,7 +101,7 @@ the stable package surface below.
        methods when they exist; use these helpers instead of hand-written
        dictionaries with generic ``path`` keys in notebook cells.
    * - ``display_notebook_step_result``
-     - Display a compact table for skipped/current step dictionaries, Slurm
+     - Display a compact table for skipped/current step payloads, Slurm
        submission results, and result objects with ``status_frame()`` or
        ``summary_frame()`` so notebooks do not print raw dictionaries,
        summary strings, or dataclass representations.

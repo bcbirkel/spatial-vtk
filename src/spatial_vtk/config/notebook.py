@@ -1446,7 +1446,7 @@ def notebook_step_result(readiness: Any, **values: Any) -> dict[str, Any]:
     Returns
     -------
     dict
-        JSON-friendly status dictionary containing ``reused``, ``reason``,
+        JSON-friendly status payload containing ``reused``, ``reason``,
         ``message``, and any supplied values.
     """
 
@@ -1466,7 +1466,7 @@ def notebook_step_result_frame(result: Any, *, label: str | None = None) -> Any:
     Parameters
     ----------
     result
-        Object returned by a notebook workflow gate. Dictionaries from
+        Object returned by a notebook workflow gate. Payloads from
         :func:`notebook_step_result`, ``SlurmSubmission`` objects, objects with
         ``status_frame()`` or ``summary_frame()``, and arbitrary values are
         supported.

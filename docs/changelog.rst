@@ -78,6 +78,9 @@ Changelog
   - Reworded remaining notebook-facing workflow/API docs from raw dictionary
     phrasing to labeled mappings, status payloads, and product-frame mappings
     where the package returns structured display data.
+  - Aligned notebook-step result docstrings and config API docs around status
+    payload terminology so skipped/current workflow gates are not described as
+    raw dictionaries.
   - Aligned internal CLI call/result helper docstrings with the public
     ``svtk call`` guidance so direct public-function calls are consistently
     framed as advanced one-off usage rather than generic workflow commands.
