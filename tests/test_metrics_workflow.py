@@ -325,8 +325,12 @@ def test_standard_metric_workflow_output_result_writes_diagnostic_figures(tmp_pa
     assert isinstance(diagnostic_result, StandardMetricDiagnosticFigureResult)
     assert [item[0] for item in seen] == ["residuals", "scores", "band"]
     assert {metric for _, _, metrics_seen in seen for metric in metrics_seen} == {"PGA", "PGV"}
-    assert diagnostic_result.status_frame()["status"].tolist() == ["wrote", "wrote", "wrote"]
-    assert diagnostic_result.status_frame()["figure_exists"].tolist() == [True, True, True]
+    diagnostic_status = diagnostic_result.status_frame()
+    assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(diagnostic_status.columns)
+    assert diagnostic_status["status"].tolist() == ["wrote", "wrote", "wrote"]
+    assert diagnostic_status["figure_exists"].tolist() == [True, True, True]
+    assert diagnostic_status["exists"].tolist() == [True, True, True]
+    assert diagnostic_status["path"].tolist() == diagnostic_status["figure_path"].tolist()
 
 
 def test_standard_metric_workflow_outputs_do_not_load_task_estimate_by_default(monkeypatch, tmp_path) -> None:

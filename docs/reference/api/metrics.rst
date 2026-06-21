@@ -284,7 +284,10 @@ standard row factories used by the large-run notebooks:
    ``OutputGroup``. The helper owns the tutorial metric filtering, configured
    figure paths, sidecar keyword expansion, and per-figure status table so
    notebooks do not import individual plotting functions or call
-   ``render_notebook_figure`` directly.
+   ``render_notebook_figure`` directly. The returned status frame includes
+   normalized ``name``, ``artifact_label``, ``resolved_path``, ``path``, and
+   ``exists`` columns while preserving the legacy ``figure_path`` and
+   ``figure_exists`` fields.
 
 ``write_large_run_metric_figure_suite_from_notebook_settings``
    Build the large-run metric figure context, render the standard Step 3

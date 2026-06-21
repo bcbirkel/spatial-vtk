@@ -48,6 +48,9 @@ Changelog
   - Added normalized path columns to ``MetricFigureContext.status_frame()`` for
     metric input, figure directory, and sidecar directory rows while preserving
     the existing scalar ``name``/``value`` notebook display.
+  - Standardized ``StandardMetricDiagnosticFigureResult.status_frame()`` so
+    Step 3 diagnostic figure rows include normalized figure path columns while
+    preserving ``figure_path`` and ``figure_exists``.
 
 - **CLI help and generated-reference wording** *(Changed)*
 
