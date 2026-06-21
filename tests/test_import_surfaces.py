@@ -2357,16 +2357,23 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Public helpers exposed by ``spatial_vtk.visualize``" in text
     assert "from spatial_vtk.visualize import (" in text
     import_block = text.split("from spatial_vtk.visualize import (", 1)[1].split(")", 1)[0]
-    assert "dashboard_output_readiness," in import_block
-    assert "dashboard_output_status_frame," in import_block
-    assert "dashboard_readiness_summary_frame," in import_block
     assert "display_dashboard_output_previews," in import_block
     assert "display_dashboard_preparation_result," in import_block
     assert "figure_sidecar_status_frame," in import_block
     assert "launch_configured_dashboards_from_notebook_settings," in import_block
     assert "prepare_configured_dashboard_datasets_from_notebook_settings," in import_block
+    assert "dashboard_output_readiness," not in import_block
+    assert "dashboard_output_status_frame," not in import_block
+    assert "dashboard_readiness_summary_frame," not in import_block
     assert "write_waveform_comparison_from_notebook_settings," not in import_block
     assert "write_configured_dashboard_datasets," not in import_block
+    diagnostics_block = text.split("When a dashboard tab is blank or unexpectedly sparse", 1)[1].split(
+        "The readiness and status frames are intentionally small.",
+        1,
+    )[0]
+    assert "dashboard_output_readiness," in diagnostics_block
+    assert "dashboard_output_status_frame," in diagnostics_block
+    assert "dashboard_readiness_summary_frame," in diagnostics_block
     assert text.index("``write_waveform_comparison_from_notebook_settings``") < text.index(
         "``write_waveform_comparison_from_outputs``"
     )
