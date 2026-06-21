@@ -208,7 +208,7 @@ def write_dashboard_metric_dataset(
     *,
     cfg: SpatialVTKConfig | str | Path | None = None,
     residual_mode: str = "logratio",
-    partitioned: bool = False,
+    partitioned: bool = True,
     replace_existing: bool = True,
     chunksize: int = 100_000,
 ) -> Path:
@@ -1038,7 +1038,8 @@ def write_configured_dashboard_datasets(
         Residual mode used when converting wide metric tables.
     partitioned
         Whether to partition the dashboard metric dataset by model, passband,
-        and metric.
+        and metric. Defaults to ``True`` so configured workflows use the
+        large-run-safe dashboard layout.
     hex_dist, hex_az
         Dashboard path-summary bin sizes.
     format

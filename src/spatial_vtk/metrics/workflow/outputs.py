@@ -117,7 +117,7 @@ def write_metric_outputs(
     residual_column: str | None = None,
     score_column: str | None = None,
     table_format: str = "parquet",
-    dashboard_partitioned: bool = False,
+    dashboard_partitioned: bool = True,
     distance_bin_km: float = 10.0,
     azimuth_bin_deg: float = 30.0,
     dashboard_distance_bin_km: float = 10.0,
@@ -148,7 +148,8 @@ def write_metric_outputs(
         ``"parquet"`` or ``"csv"`` for tabular outputs.
     dashboard_partitioned
         Whether the dashboard metric dataset should be partitioned by model,
-        band, and metric.
+        band, and metric. Defaults to ``True`` so configured and CLI workflows
+        use the large-run-safe dashboard layout.
     distance_bin_km, azimuth_bin_deg
         Binning used for path-summary output.
     dashboard_distance_bin_km, dashboard_azimuth_bin_deg

@@ -1255,7 +1255,16 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     outputs.add_argument("--residual-column", default=None, help="Column exposed as canonical residual.")
     outputs.add_argument("--score-column", default=None, help="Column exposed as canonical score.")
     outputs.add_argument("--format", choices=("parquet", "csv"), default="parquet", help="Table output format.")
-    outputs.add_argument("--dashboard-partitioned", action="store_true", help="Partition dashboard metric rows.")
+    outputs.add_argument(
+        "--dashboard-partitioned",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "Partition dashboard metric rows by model, passband, and metric. "
+            "Enabled by default for large-run dashboard reads; use --no-dashboard-partitioned "
+            "to write one direct metrics_long dashboard table."
+        ),
+    )
     outputs.set_defaults(handler=_cmd_metrics_outputs)
 
     slurm = metrics_sub.add_parser("slurm", help="Write a SLURM array script for a metric manifest.")

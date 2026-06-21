@@ -2812,7 +2812,9 @@ outputs:
     assert written["metrics_enriched"] == tmp_path / "outputs" / "tables" / "metrics_enriched.parquet"
     assert written["dashboard_metrics"] == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
     assert (tmp_path / "outputs" / "tables" / "metrics_enriched.parquet").exists()
-    assert (tmp_path / "outputs" / "dashboards" / "metrics_dashboard" / "metrics_long.parquet").exists()
+    dashboard_metric_root = tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
+    assert not (dashboard_metric_root / "metrics_long.parquet").exists()
+    assert list(dashboard_metric_root.glob("model=*/band=*/metric=*/part*.parquet"))
     assert (tmp_path / "outputs" / "dashboards" / "dashboard_summaries" / "model_metric_band.parquet").exists()
     assert not (tmp_path / "outputs" / "tables" / "dashboard_metrics").exists()
     assert cfg.root_dir == tmp_path

@@ -1607,6 +1607,10 @@ def test_generated_cli_reference_names_metrics_outputs_aliases():
     assert "Prefer --station-table; --stations is a legacy alias." in section
     assert "prepared_events" in section
     assert "prepared_stations" in section
+    assert "``--dashboard-partitioned``, ``--no-dashboard-partitioned``" in section
+    assert "Default: ``True``" in section
+    assert "Enabled by default for large-run dashboard reads" in section
+    assert "use --no-dashboard-partitioned to write one direct metrics_long dashboard table" in section
 
 
 def test_generated_cli_reference_names_qc_output_aliases():
@@ -3269,6 +3273,25 @@ outputs:
     assert seen["kwargs"]["events"] == prepared_events
     assert seen["kwargs"]["stations"] == prepared_stations
     assert seen["kwargs"]["cfg"].root_dir == tmp_path
+    assert seen["kwargs"]["dashboard_partitioned"] is True
+
+    output_dir_unpartitioned = tmp_path / "downstream_unpartitioned"
+    assert main(
+        [
+            "metrics",
+            "outputs",
+            "--config",
+            str(config),
+            "--metric-rows",
+            str(metric_rows),
+            "--metrics-output-dir",
+            str(output_dir_unpartitioned),
+            "--no-dashboard-partitioned",
+        ]
+    ) == 0
+
+    assert seen["output_dir"] == output_dir_unpartitioned
+    assert seen["kwargs"]["dashboard_partitioned"] is False
 
 
 def test_cli_metrics_plan_applies_scenario_and_overrides(tmp_path):

@@ -369,7 +369,8 @@ svtk metrics outputs
                             [--station-table PATH]
                             [--residual-column RESIDUAL_COLUMN]
                             [--score-column SCORE_COLUMN]
-                            [--format {parquet,csv}] [--dashboard-partitioned]
+                            [--format {parquet,csv}]
+                            [--dashboard-partitioned | --no-dashboard-partitioned]
 
 .. rubric:: Parameters
 
@@ -421,10 +422,10 @@ svtk metrics outputs
      - No
      - Default: ``parquet``; Choices: ``parquet``, ``csv``
      - Table output format.
-   * - ``--dashboard-partitioned``
+   * - ``--dashboard-partitioned``, ``--no-dashboard-partitioned``
      - No
-     - Flag
-     - Partition dashboard metric rows.
+     - Default: ``True``
+     - Partition dashboard metric rows by model, passband, and metric. Enabled by default for large-run dashboard reads; use --no-dashboard-partitioned to write one direct metrics_long dashboard table. (default: True)
 
 .. _cli-svtk-metrics-plan:
 

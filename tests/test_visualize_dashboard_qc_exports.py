@@ -333,7 +333,8 @@ outputs:
         clear_active_config()
 
     assert metric_root == tmp_path / "outputs" / "dashboards" / "metrics_dashboard"
-    assert (metric_root / "metrics_long.parquet").exists()
+    assert not (metric_root / "metrics_long.parquet").exists()
+    assert list(metric_root.glob("model=*/band=*/metric=*/part*.parquet"))
     assert summary_paths["model_metric_band"] == (
         tmp_path / "outputs" / "dashboards" / "dashboard_summaries" / "model_metric_band.parquet"
     )
