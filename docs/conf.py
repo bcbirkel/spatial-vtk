@@ -83,8 +83,14 @@ _PARAMETER_DESCRIPTIONS = {
     "config_path": "Path to the Spatial-VTK YAML configuration file.",
     "event_id": "Canonical event identifier used to select event-scoped records.",
     "figure_dir": "Directory where generated figures should be written; standard workflows resolve this from the active config.",
-    "input": "Input table, figure source, or configured path key read by this workflow step.",
-    "input_path": "Path to the input table, file, or configured path artifact read by this workflow step.",
+    "input": (
+        "Explicit input table, figure source, or configured artifact key for this workflow step; "
+        "standard notebooks usually resolve the matching named input from the active config."
+    ),
+    "input_path": (
+        "Explicit input table/file path or configured artifact path for this workflow step; "
+        "standard notebooks usually pass the config or result object instead of hard-coding this path."
+    ),
     "manifest": "Metric or QC manifest that lists resumable workflow work units, batch outputs, and checkpoint state.",
     "manifest_path": "Path to the metric or QC manifest file used for resumable planning, execution, or merging.",
     "metric": "Metric name or metric filter used for the calculation or figure.",
@@ -98,12 +104,18 @@ _PARAMETER_DESCRIPTIONS = {
     ),
     "metrics": "Metric names included in the calculation or figure.",
     "model": "Synthetic model name or model filter used for the calculation or figure.",
-    "output": "Output table, figure, manifest, or configured artifact written by this workflow step.",
+    "output": (
+        "Explicit output table, figure, manifest, or configured artifact override written by this workflow step; "
+        "omit it in standard workflows to use the registered output path from the active config."
+    ),
     "output_dir": "Directory where workflow outputs should be written; standard workflows resolve this from the active config.",
-    "output_path": "Path to the output table, figure, manifest, or configured artifact written by this workflow step.",
+    "output_path": (
+        "Explicit output table, figure, manifest, or artifact path written by this workflow step; "
+        "standard workflow result objects resolve registered output paths from the active config."
+    ),
     "overwrite": "Whether existing outputs should be replaced.",
     "passband": "Passband label or passband filter used for the calculation or figure.",
-    "path": "Filesystem path or dotted config path key accepted by this helper.",
+    "path": "Filesystem path, registered artifact key, or dotted config path key accepted by this helper.",
     "qc_trace_summary_table": (
         "QC trace-summary CSV/parquet table used by the QC dashboard; standard QC dashboard "
         "workflows resolve this from the configured ``qc_trace_summary`` output."
@@ -125,7 +137,7 @@ _PARAMETER_DESCRIPTIONS = {
         "Backward-compatible alias for ``dashboard_summary_table_dir``. Prefer "
         "``dashboard_summary_table_dir`` in new Python code, CLI docs, and notebook helpers."
     ),
-    "table": "Input table, output table, configured table key, or table selector used by this helper.",
+    "table": "Input table object, output table object, configured table key, or table selector used by this helper.",
     "trace_summary": (
         "Backward-compatible alias for ``qc_trace_summary_table``. Prefer "
         "``qc_trace_summary_table`` in new Python code, CLI docs, and notebook helpers."
@@ -140,12 +152,18 @@ _PARAMETER_NAME_PATTERNS = (
     ("config", "Configuration value used to resolve workflow settings."),
     ("manifest", "Manifest value used to plan, resume, or merge workflow work units and batch outputs."),
     ("sidecar", "Figure sidecar setting used for row-provenance outputs."),
-    ("output", "Output table, figure, manifest, or configured artifact written or resolved by this workflow step."),
-    ("input", "Input table, file, figure source, or configured artifact read or resolved by this workflow step."),
+    (
+        "output",
+        "Explicit output table, figure, manifest, or configured artifact override written or resolved by this workflow step.",
+    ),
+    (
+        "input",
+        "Explicit input table, file, figure source, or configured artifact read or resolved by this workflow step.",
+    ),
     ("summary", "Summary table, dashboard summary dataset, or summary setting read, written, or displayed by this workflow step."),
     ("figure", "Figure value used for plotting, sidecar writing, or figure output handling."),
-    ("table", "Table value, configured table key, or table selector read, written, or selected by this helper."),
-    ("path", "Filesystem path or dotted config path key used by this helper."),
+    ("table", "Input/output table value, configured table key, or table selector read, written, or selected by this helper."),
+    ("path", "Filesystem path, registered artifact key, or dotted config path key used by this helper."),
     ("root", "Directory root or configured output root used by this helper."),
 )
 

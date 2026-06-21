@@ -72,6 +72,9 @@ Changelog
   - Clarified ``--score-col`` CLI help and examples so distribution plots are
     described as taking a numeric residual or score value column rather than a
     score-only input.
+  - Tightened generated API fallback parameter descriptions for generic path
+    and table names so explicit overrides are distinguished from standard
+    config-resolved workflow artifacts.
   - Aligned internal CLI call/result helper docstrings with the public
     ``svtk call`` guidance so direct public-function calls are consistently
     framed as advanced one-off usage rather than generic workflow commands.
