@@ -89,6 +89,9 @@ Changelog
   - Extended the same notebook preflight guardrail to
     ``spatial_vtk.config.notebook`` imports so tutorial cells keep using the
     public ``spatial_vtk.config`` namespace for notebook helpers.
+  - Extended the same public-import guardrail to
+    ``spatial_vtk.config.paths`` so notebook path helpers also come through
+    the stable ``spatial_vtk.config`` namespace.
 
 - **Workflow readiness and dashboard parsing** *(Fixed)*
 

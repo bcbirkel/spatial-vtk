@@ -173,8 +173,8 @@ NOTEBOOK_CONTRACT_FORBIDDEN_LINE_PATTERNS = (
 NOTEBOOK_CONTRACT_FORBIDDEN_IMPORT_PATTERNS = (
     re.compile(r"^\s*from\s+spatial_vtk\.io\.(metadata|preprocessing|tables)\b", re.MULTILINE),
     re.compile(r"^\s*import\s+spatial_vtk\.io\.(metadata|preprocessing|tables)\b", re.MULTILINE),
-    re.compile(r"^\s*from\s+spatial_vtk\.config\.(metrics|notebook|outputs|runtime)\b", re.MULTILINE),
-    re.compile(r"^\s*import\s+spatial_vtk\.config\.(metrics|notebook|outputs|runtime)\b", re.MULTILINE),
+    re.compile(r"^\s*from\s+spatial_vtk\.config\.(metrics|notebook|outputs|paths|runtime)\b", re.MULTILINE),
+    re.compile(r"^\s*import\s+spatial_vtk\.config\.(metrics|notebook|outputs|paths|runtime)\b", re.MULTILINE),
     re.compile(r"^\s*from\s+spatial_vtk\.qc\.build\b", re.MULTILINE),
     re.compile(r"^\s*import\s+spatial_vtk\.qc\.build\.", re.MULTILINE),
     re.compile(r"^\s*from\s+spatial_vtk\.metrics\.workflow\.(execution|outputs|run|tasks)\b", re.MULTILINE),
