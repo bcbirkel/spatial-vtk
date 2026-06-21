@@ -3312,6 +3312,10 @@ def test_metric_figure_context_status_flags_legacy_psa_passband_rows(tmp_path: P
     assert status.loc["psa_broadband_rows"] == 1
     assert status.loc["psa_legacy_passband_rows"] == 2
     assert status.loc["psa_period_count"] == 2
+    status_rows = context.status_frame().set_index("name")
+    assert status_rows.loc["figure_dir", "resolved_path"] == str(tmp_path / "figures")
+    assert status_rows.loc["figure_dir", "path"] == str(tmp_path / "figures")
+    assert bool(status_rows.loc["figure_dir", "exists"]) is True
 
 
 def test_spatial_figure_context_reports_spectral_contract_by_table(tmp_path: Path) -> None:

@@ -309,11 +309,13 @@ standard row factories used by the large-run notebooks:
    Return small notebook tables that summarize the configured metric input,
    loaded columns, selected row count, default filters, sidecar settings, and
    metric/passband/component/model/event/station coverage before figures are
-   rendered. These checks do not read additional large files. ``status_frame``
-   also includes ``spectral_contract_status`` plus PSA/FAS broadband and legacy
-   passband row counts, so notebooks can warn users to rebuild metric rows
-   before PSA plots are skipped because they came from older passband-scoped
-   spectral outputs.
+   rendered. These checks do not read additional large files. Path rows include
+   normalized ``artifact_label``, ``resolved_path``, ``path``, and ``exists``
+   columns while preserving the scalar ``name``/``value`` display used by
+   notebooks. ``status_frame`` also includes ``spectral_contract_status`` plus
+   PSA/FAS broadband and legacy passband row counts, so notebooks can warn
+   users to rebuild metric rows before PSA plots are skipped because they came
+   from older passband-scoped spectral outputs.
 
 ``spectral_metric_contract_status``
    Return a compact PSA/FAS audit table with row counts, broadband row counts,

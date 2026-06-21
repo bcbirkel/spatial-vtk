@@ -275,7 +275,7 @@ class MetricFigureContext:
                         (f"{metric_key}_period_count", int(spectral_row["period_count"])),
                     ]
                 )
-        return pd.DataFrame(rows, columns=["name", "value"])
+        return _metric_context_status_frame(rows)
 
     def spectral_metric_contract_status(self) -> pd.DataFrame:
         """Return PSA/FAS broadband-passband contract status for notebook audits.
@@ -3001,6 +3001,28 @@ def _aggregate_spectral_contract_status(status: pd.DataFrame) -> dict[str, str]:
         metrics = ", ".join(unchecked["metric"].astype(str).tolist())
         return {"status": "not_checked", "message": f"{metrics} rows could not be checked because no passband column is loaded."}
     return {"status": "ok", "message": "Spectral metric rows use blank/broadband passbands with oscillator periods in period_s."}
+
+
+def _metric_context_status_frame(rows: list[tuple[str, object]]) -> pd.DataFrame:
+    """Return metric figure context status rows with normalized path columns."""
+
+    frame = pd.DataFrame(rows, columns=["name", "value"])
+    if frame.empty:
+        return frame
+    frame["artifact_label"] = frame["name"].astype(str).map(lambda value: value.replace("_", " ").title())
+    frame["resolved_path"] = ""
+    frame["path"] = ""
+    frame["exists"] = pd.NA
+    path_mask = frame["name"].astype(str).str.endswith(("_path", "_dir"))
+    for index, row in frame.loc[path_mask].iterrows():
+        value = row["value"]
+        if value in (None, ""):
+            continue
+        path = Path(str(value))
+        frame.at[index, "resolved_path"] = str(path)
+        frame.at[index, "path"] = str(path)
+        frame.at[index, "exists"] = path.exists()
+    return frame
 
 
 def _station_aggregation_attrs(

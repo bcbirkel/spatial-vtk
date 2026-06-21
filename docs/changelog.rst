@@ -45,6 +45,9 @@ Changelog
     ``status_frame()`` outputs so notebook tables expose ``name``,
     ``artifact_label``, ``resolved_path``, ``path``, and ``exists`` while
     preserving legacy figure/table path columns.
+  - Added normalized path columns to ``MetricFigureContext.status_frame()`` for
+    metric input, figure directory, and sidecar directory rows while preserving
+    the existing scalar ``name``/``value`` notebook display.
 
 - **CLI help and generated-reference wording** *(Changed)*
 
