@@ -4184,6 +4184,17 @@ def test_cli_dashboard_qc_accepts_clear_trace_summary_alias(tmp_path, monkeypatc
     assert "QC dashboard running at http://127.0.0.1:8556" in captured.out
 
 
+def test_dashboard_cli_display_host_returns_browser_friendly_hosts():
+    """Dashboard CLI launch messages should print URLs users can open directly."""
+
+    assert cli._dashboard_cli_display_host("") == "127.0.0.1"
+    assert cli._dashboard_cli_display_host("0.0.0.0") == "127.0.0.1"
+    assert cli._dashboard_cli_display_host("::") == "127.0.0.1"
+    assert cli._dashboard_cli_display_host("::1") == "[::1]"
+    assert cli._dashboard_cli_display_host("[::1]") == "[::1]"
+    assert cli._dashboard_cli_display_host("localhost") == "localhost"
+
+
 def test_cli_dashboard_status_reports_configured_paths_without_launching(tmp_path, capsys):
     config = tmp_path / "spatial-vtk.yaml"
     config.write_text(

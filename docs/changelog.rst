@@ -83,6 +83,9 @@ Changelog
   - Made dashboard CLI launch messages print browser-friendly URLs for
     wildcard bind addresses such as ``0.0.0.0`` while still passing the
     requested bind address to Streamlit.
+  - Hardened those dashboard CLI launch URLs for IPv6 literals by printing
+    bracketed hosts such as ``[::1]`` while preserving the actual server bind
+    address.
 
 2026-06-19
 ----------

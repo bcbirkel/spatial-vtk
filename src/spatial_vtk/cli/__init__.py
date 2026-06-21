@@ -3267,6 +3267,8 @@ def _dashboard_cli_display_host(server_address: str) -> str:
     address = str(server_address).strip()
     if address in {"", "0.0.0.0", "::"}:
         return "127.0.0.1"
+    if ":" in address and not (address.startswith("[") and address.endswith("]")):
+        return f"[{address}]"
     return address
 
 
