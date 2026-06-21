@@ -85,12 +85,19 @@ def test_tutorial_notebook_runtime_preflight_reports_missing_modules() -> None:
     expected_install = 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
     assert module.SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND == expected_install
     assert module.SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND == "conda env create -f svtk_environment.yaml"
+    assert (
+        module.SOURCE_CHECKOUT_TUTORIAL_RUNTIME_CHECK_COMMAND
+        == "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run"
+    )
     with pytest.raises(SystemExit) as excinfo:
         module.check_notebook_runtime({"demo": "definitely_missing_svtk_module"})
     message = str(excinfo.value)
     assert "Missing tutorial runtime modules: demo" in message
     assert "Jupyter, mapping, dashboard, and waveform readers" in message
+    assert f"Current Python executable: {sys.executable}" in message
+    assert "Make sure the install command targets this environment" in message
     assert module.SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND in message
+    assert module.SOURCE_CHECKOUT_TUTORIAL_RUNTIME_CHECK_COMMAND in message
     assert module.SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND in message
 
 

@@ -223,6 +223,9 @@ Changelog
     custom-script and notebook-local-gate wording.
   - Removed stale lower-level workflow and plotting implementation import
     paths from public workflow docs while preserving public namespace guidance.
+  - Made tutorial notebook runtime-check failures name the active Python
+    executable and the exact runtime-check command to rerun after installing
+    notebook extras.
   - Reworded lazy I/O package loader docs so public API references describe
     resolved public helpers instead of implementation-module plumbing.
   - Reworded config-backed metric workflow module docs so large-run notebooks

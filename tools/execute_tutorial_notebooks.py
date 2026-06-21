@@ -84,6 +84,9 @@ SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND = (
     'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
 )
 SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND = "conda env create -f svtk_environment.yaml"
+SOURCE_CHECKOUT_TUTORIAL_RUNTIME_CHECK_COMMAND = (
+    "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run"
+)
 KERNEL_EXTRA_ARGUMENTS = ("--IPKernelApp.log_level=ERROR",)
 TUTORIAL_EXAMPLE_ROOT = Path("data/examples/example_five_event_subset")
 TUTORIAL_SYNTHETIC_MODEL = "cvmsi_20260506_material_0p6x1p2_asdf"
@@ -267,8 +270,12 @@ def check_notebook_runtime(required: dict[str, str] | None = None) -> None:
         "Missing tutorial runtime modules: "
         f"{missing_text}. These modules are required before executing the "
         "tutorial notebooks, including Jupyter, mapping, dashboard, and "
-        "waveform readers. From a source checkout, install the package runtime "
-        f"plus tutorial extras with {SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND}. "
+        f"waveform readers. Current Python executable: {sys.executable}. "
+        "Make sure the install command targets this environment, or activate "
+        "the intended environment first. From a source checkout, install the "
+        "package runtime plus tutorial extras with "
+        f"{SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND}. After installing, rerun "
+        f"{SOURCE_CHECKOUT_TUTORIAL_RUNTIME_CHECK_COMMAND}. "
         "If compiled mapping or waveform dependencies are difficult to solve "
         f"with pip, create the full conda environment with {SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND}."
     )
