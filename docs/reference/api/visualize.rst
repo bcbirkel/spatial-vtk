@@ -120,8 +120,8 @@ Public helpers exposed by ``spatial_vtk.visualize``:
        written outputs, and bounded previews without local formatting helpers.
        ``preparation_frame()`` and ``written_frame()`` use the same
        ``name``, ``artifact``, ``artifact_label``, ``artifact_role``,
-       ``status``, ``resolved_path``, and ``exists`` vocabulary as other
-       notebook workflow status tables.
+       ``status``, ``resolved_path``, ``path``, and ``exists`` vocabulary as
+       other notebook workflow status tables.
    * - ``write_configured_dashboard_datasets``
      - Lower-level script helper that writes dashboard-ready row and summary
        datasets from configured metric outputs after the caller has decided a
@@ -134,7 +134,8 @@ Public helpers exposed by ``spatial_vtk.visualize``:
      - Launch requested dashboards or show terminal fallback commands from
        config-backed notebook settings. Returned ``DashboardLaunchResult``
        objects expose ``status_frame()`` for URLs, fallback commands, process
-       ids, and launch-error messages.
+       ids, launch-error messages, and the same normalized artifact/path
+       columns used by dashboard readiness tables.
    * - ``launch_configured_metrics_dashboard`` and
        ``launch_configured_qc_dashboard``
      - Lower-level launch helpers for scripts that already know which
@@ -363,9 +364,10 @@ Public dashboard helpers exposed by ``spatial_vtk.visualize``:
        terminal fallback commands and launch errors in one compact
        ``DashboardLaunchResult.status_frame()``. The status frame includes
        ``name``, ``artifact``, ``artifact_label``, ``artifact_role``,
-       requested port, resolved port, server address, auto-port, proxy-mode,
-       show/headless, terminal command, URL, process id, and error message
-       columns. Pass ``dashboards=("qc",)`` for QC-only notebook cells.
+       ``resolved_path``, ``path``, ``exists``, requested port, resolved port,
+       server address, auto-port, proxy-mode, show/headless, terminal command,
+       URL, process id, and error message columns. Pass ``dashboards=("qc",)``
+       for QC-only notebook cells.
    * - ``launch_configured_metrics_dashboard`` and
        ``launch_configured_qc_dashboard``
      - Lower-level launch helpers for scripts that already know which

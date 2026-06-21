@@ -2004,11 +2004,18 @@ def test_notebook_dashboard_launch_helper_returns_running_and_command_rows(monke
     assert result.metrics_process is not None
     assert result.qc_process is None
     assert called["metrics"]["show"] is False
+    assert {"item_type", "artifact_role", "artifact_label", "resolved_path", "path", "exists"} <= set(
+        status.columns
+    )
+    assert status["item_type"].tolist() == ["dashboard_launch", "dashboard_launch"]
     assert status.loc[status["dashboard"].eq("metrics"), "name"].item() == "metrics_dashboard"
     assert status.loc[status["dashboard"].eq("metrics"), "artifact"].item() == "metrics_dashboard"
     assert status.loc[status["dashboard"].eq("metrics"), "artifact_label"].item() == "metrics dashboard"
     assert status.loc[status["dashboard"].eq("metrics"), "artifact_role"].item() == "dashboard_process"
     assert status.loc[status["dashboard"].eq("metrics"), "status"].item() == "running"
+    assert status.loc[status["dashboard"].eq("metrics"), "resolved_path"].item() == ""
+    assert status.loc[status["dashboard"].eq("metrics"), "path"].item() == ""
+    assert bool(status.loc[status["dashboard"].eq("metrics"), "exists"].item()) is False
     assert status.loc[status["dashboard"].eq("metrics"), "resolved_port"].item() == 8751
     assert status.loc[status["dashboard"].eq("metrics"), "server_address"].item() == "0.0.0.0"
     assert bool(status.loc[status["dashboard"].eq("metrics"), "auto_port"].item()) is True

@@ -3834,6 +3834,10 @@ outputs:
     assert preparation_frame.loc[0, "artifact_label"] == "dashboard preparation"
     assert preparation_frame.loc[0, "artifact_role"] == "workflow_step"
     assert preparation_frame.loc[0, "status"] == "skipped"
+    assert {"resolved_path", "path", "exists"} <= set(preparation_frame.columns)
+    assert preparation_frame.loc[0, "resolved_path"] == ""
+    assert preparation_frame.loc[0, "path"] == ""
+    assert preparation_frame.loc[0, "exists"] == ""
     assert bool(preparation_frame.loc[0, "should_run"]) is True
     assert "Slurm-aware dashboard preparation cell" in preparation_frame.loc[0, "message"]
     displayed_frames: list[pd.DataFrame] = []

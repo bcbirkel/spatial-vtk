@@ -26,7 +26,18 @@ class DashboardLaunchResult:
 
         import pandas as pd
 
-        return pd.DataFrame(list(self.rows))
+        if not self.rows:
+            return pd.DataFrame()
+        from spatial_vtk.visualize.dashboard.contracts import (
+            _dashboard_status_column_order,
+            _normalize_dashboard_status_row,
+        )
+
+        rows = [
+            _normalize_dashboard_status_row(dict(row), item_type="dashboard_launch")
+            for row in self.rows
+        ]
+        return pd.DataFrame(rows, columns=_dashboard_status_column_order(rows))
 
 
 def build_streamlit_command(

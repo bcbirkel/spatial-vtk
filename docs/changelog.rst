@@ -99,6 +99,9 @@ Changelog
   - Applied the same normalized figure status vocabulary to Step 4 spatial,
     Step 5 GeoJSON/corridor, Step 6 additional-plotting, and compact spatial
     summary figure result objects.
+  - Normalized dashboard preparation and launch status frames so notebook
+    dashboard cells expose the same ``resolved_path``, ``path``, and ``exists``
+    columns as dashboard readiness and output status tables.
   - Added dashboard launch port validation so invalid ports or impossible
     auto-port search ranges raise clear configuration errors before Streamlit
     startup.
