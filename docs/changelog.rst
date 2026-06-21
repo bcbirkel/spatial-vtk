@@ -105,6 +105,9 @@ Changelog
   - Reworded Step 2 QC readiness docs so notebooks are steered to the standard
     QC result object's inventory, overlap, and summary runners instead of
     direct readiness-helper wiring.
+  - Streamed metric batch merges directly into the merged CSV/Parquet output so
+    large metric runs no longer need to materialize every batch table before
+    writing ``metric_rows``.
 
 - **Step 1 workflow helpers** *(Added)*
 

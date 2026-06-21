@@ -24,8 +24,9 @@ import argparse
 from dataclasses import dataclass
 import os
 from pathlib import Path
+import tempfile
 import time
-from typing import Any
+from typing import Any, Sequence
 
 import pandas as pd
 
@@ -456,18 +457,19 @@ def merge_batch_outputs(
 
     parsed = read_task_manifest(manifest) if not isinstance(manifest, MetricWorkflowManifest) else manifest
     resolved_output = _resolve_merge_output_path(output_path)
-    frames: list[pd.DataFrame] = []
+    paths: list[Path] = []
     missing: list[str] = []
     for batch in parsed.batches:
         path = Path(batch["output_path"]).expanduser()
         if not path.exists():
             missing.append(str(path))
             continue
-        frames.append(_read_table(path))
+        paths.append(path)
     if missing and require_all:
         raise FileNotFoundError(f"Missing metric batch outputs: {missing}")
-    merged = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
-    return write_metric_rows(merged, resolved_output)
+    if not paths:
+        return write_metric_rows(pd.DataFrame(), resolved_output)
+    return _write_merged_batch_tables(paths, resolved_output)
 
 
 def _resolve_merge_output_path(output_path: str | Path) -> Path:
@@ -480,6 +482,177 @@ def _resolve_merge_output_path(output_path: str | Path) -> Path:
     if raw_path.endswith(("/", os.sep)):
         return path / "metric_rows.parquet"
     return path
+
+
+def _write_merged_batch_tables(paths: Sequence[Path], output_path: Path) -> Path:
+    """Write existing metric batch tables to one output without holding all rows."""
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    suffix = output_path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        return _write_merged_batch_tables_parquet(paths, output_path)
+    return _write_merged_batch_tables_csv(paths, output_path)
+
+
+def _write_merged_batch_tables_csv(paths: Sequence[Path], output_path: Path) -> Path:
+    """Stream existing batch tables into one CSV output."""
+
+    columns = _merged_batch_columns(paths)
+    tmp_path = _temporary_output_path(output_path)
+    wrote_header = False
+    try:
+        for path in paths:
+            frame = _normalize_merged_batch_frame(_read_table(path), columns)
+            frame.to_csv(tmp_path, mode="a", header=not wrote_header, index=False)
+            wrote_header = True
+        tmp_path.replace(output_path)
+    except Exception:
+        tmp_path.unlink(missing_ok=True)
+        raise
+    return output_path
+
+
+def _write_merged_batch_tables_parquet(paths: Sequence[Path], output_path: Path) -> Path:
+    """Stream existing batch tables into one Parquet output."""
+
+    import pyarrow as pa
+    import pyarrow.parquet as pq
+
+    columns = _merged_batch_columns(paths)
+    schema_frame = _merged_batch_schema_frame(paths, columns)
+    tmp_path = _temporary_output_path(output_path)
+    writer: pq.ParquetWriter | None = None
+    try:
+        if schema_frame.empty:
+            pd.DataFrame(columns=columns).to_parquet(tmp_path, index=False)
+            tmp_path.replace(output_path)
+            return output_path
+        schema = pa.Table.from_pandas(schema_frame, preserve_index=False).schema
+        writer = pq.ParquetWriter(tmp_path, schema)
+        for path in paths:
+            frame = _normalize_merged_batch_frame(_read_table(path), columns)
+            if frame.empty:
+                continue
+            table = pa.Table.from_pandas(frame, schema=schema, preserve_index=False)
+            writer.write_table(table)
+        writer.close()
+        writer = None
+        tmp_path.replace(output_path)
+    except Exception:
+        if writer is not None:
+            writer.close()
+        tmp_path.unlink(missing_ok=True)
+        raise
+    return output_path
+
+
+def _temporary_output_path(output_path: Path) -> Path:
+    """Return a same-directory temporary path for one output file."""
+
+    handle = tempfile.NamedTemporaryFile(
+        delete=False,
+        dir=output_path.parent,
+        prefix=f".{output_path.name}.",
+        suffix=".tmp",
+    )
+    tmp_path = Path(handle.name)
+    handle.close()
+    return tmp_path
+
+
+def _merged_batch_columns(paths: Sequence[Path]) -> list[str]:
+    """Return the union of metric batch columns without loading full tables."""
+
+    columns: list[str] = []
+    seen: set[str] = set()
+    for path in paths:
+        for column in _table_columns(path):
+            if column not in seen:
+                columns.append(column)
+                seen.add(column)
+    return columns
+
+
+def _table_columns(path: Path) -> list[str]:
+    """Return column names from one CSV or Parquet table."""
+
+    if path.suffix.lower() in {".parquet", ".pq"}:
+        try:
+            import pyarrow.parquet as pq
+
+            return list(pq.ParquetFile(path).schema.names)
+        except ImportError:
+            return list(pd.read_parquet(path).head(0).columns)
+    return list(pd.read_csv(path, nrows=0).columns)
+
+
+def _merged_batch_schema_frame(paths: Sequence[Path], columns: Sequence[str], *, max_rows_per_batch: int = 100) -> pd.DataFrame:
+    """Return a bounded sample used to infer a stable merged Parquet schema."""
+
+    records: list[dict[str, Any]] = []
+    for path in paths:
+        preview = _read_table_preview(path, max_rows=max_rows_per_batch)
+        if preview.empty:
+            continue
+        normalized = _normalize_merged_batch_frame(preview, columns)
+        records.extend(normalized.to_dict("records"))
+    if not records:
+        return pd.DataFrame(columns=list(columns))
+    return pd.DataFrame.from_records(records, columns=list(columns))
+
+
+def _read_table_preview(path: Path, *, max_rows: int) -> pd.DataFrame:
+    """Read a bounded preview from one CSV or Parquet batch table."""
+
+    if path.suffix.lower() in {".parquet", ".pq"}:
+        try:
+            import pyarrow.parquet as pq
+
+            parquet_file = pq.ParquetFile(path)
+            records: list[dict[str, Any]] = []
+            remaining = max(0, int(max_rows))
+            for batch in parquet_file.iter_batches(batch_size=min(max(remaining, 1), 100_000)):
+                frame = batch.to_pandas()
+                bounded = frame.head(remaining)
+                if not bounded.empty:
+                    records.extend(bounded.to_dict("records"))
+                remaining -= len(bounded)
+                if remaining <= 0:
+                    break
+            if not records:
+                return pd.DataFrame(columns=parquet_file.schema.names)
+            return pd.DataFrame.from_records(records, columns=parquet_file.schema.names)
+        except ImportError:
+            return pd.read_parquet(path).head(max_rows)
+    text_columns = _csv_text_columns(path)
+    dtype = {column: str for column in text_columns}
+    return pd.read_csv(path, dtype=dtype, nrows=max_rows, low_memory=False)
+
+
+def _normalize_merged_batch_frame(df: pd.DataFrame, columns: Sequence[str]) -> pd.DataFrame:
+    """Return one batch frame with stable text columns and merged-column order."""
+
+    out = df.copy()
+    for column in METRIC_TEXT_COLUMNS:
+        if column in out.columns:
+            out[column] = out[column].map(_metric_text_value)
+    for column in columns:
+        if column not in out.columns:
+            out[column] = pd.NA
+    return out.loc[:, list(columns)]
+
+
+def _metric_text_value(value: Any) -> str:
+    """Return one metric identifier/status/path value as text."""
+
+    if value is None:
+        return ""
+    try:
+        if pd.isna(value):
+            return ""
+    except Exception:
+        pass
+    return str(value)
 
 
 def _batch_by_index(manifest: MetricWorkflowManifest, batch_index: int) -> dict[str, Any]:
