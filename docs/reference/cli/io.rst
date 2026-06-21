@@ -135,7 +135,7 @@ svtk io master-events
    * - ``--master-event-output``, ``--output``
      - Yes
      -
-     - Filesystem path. Master event-list output CSV path. Prefer --master-event-output; --output is a legacy alias.
+     - Filesystem path. Master event-list output CSV/parquet table. Prefer --master-event-output; --output is a legacy alias.
 
 .. _cli-svtk-io-master-stations:
 
@@ -170,7 +170,7 @@ svtk io master-stations
    * - ``--master-station-output``, ``--output``
      - Yes
      -
-     - Filesystem path. Master station-list output CSV path. Prefer --master-station-output; --output is a legacy alias.
+     - Filesystem path. Master station-list output CSV/parquet table. Prefer --master-station-output; --output is a legacy alias.
 
 .. _cli-svtk-io-prepare-event-stations:
 

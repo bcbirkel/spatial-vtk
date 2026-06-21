@@ -704,7 +704,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         metavar="PATH",
         dest="output",
         required=True,
-        help="Master station-list output CSV path. Prefer --master-station-output; --output is a legacy alias.",
+        help="Master station-list output CSV/parquet table. Prefer --master-station-output; --output is a legacy alias.",
     )
     master_stations.set_defaults(handler=_cmd_io_master_stations)
 
@@ -724,7 +724,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         metavar="PATH",
         dest="output",
         required=True,
-        help="Master event-list output CSV path. Prefer --master-event-output; --output is a legacy alias.",
+        help="Master event-list output CSV/parquet table. Prefer --master-event-output; --output is a legacy alias.",
     )
     master_events.set_defaults(handler=_cmd_io_master_events)
 

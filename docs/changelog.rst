@@ -160,7 +160,7 @@ Changelog
   - Routed manual QC decision, manual-review queue, trace-metadata,
     arrival-pick catalog, geology-contrast, GeoJSON summary, and master-list
     helper writes through the shared table writer while preserving explicit
-    ``overwrite=False`` behavior.
+    ``overwrite=False`` behavior and matching CLI help text.
   - Added a shared ``table_columns()`` helper for schema-only CSV/Parquet
     inspection and routed dashboard, metric workflow, metric batch merge, and
     large-run plotting column probes through it.

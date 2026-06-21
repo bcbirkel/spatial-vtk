@@ -1463,10 +1463,12 @@ def test_generated_cli_reference_names_io_prepare_aliases():
 
     assert "``--station-tables``, ``--input``" in master_stations
     assert "``--master-station-output``, ``--output``" in master_stations
+    assert "Filesystem path. Master station-list output CSV/parquet table" in master_stations
     assert "Prefer --station-tables; --input is a legacy alias." in master_stations
     assert "Prefer --master-station-output; --output is a legacy alias." in master_stations
     assert "``--event-tables``, ``--input``" in master_events
     assert "``--master-event-output``, ``--output``" in master_events
+    assert "Filesystem path. Master event-list output CSV/parquet table" in master_events
     assert "Prefer --event-tables; --input is a legacy alias." in master_events
     assert "Prefer --master-event-output; --output is a legacy alias." in master_events
 
