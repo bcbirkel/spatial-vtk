@@ -957,7 +957,7 @@ def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monke
     assert status.loc["qc", "qc_trace_summary_table"] == str(
         tmp_path / "outputs" / "tables" / "qc_trace_summary.csv"
     )
-    assert status.loc["qc", "trace_summary_table"] == str(tmp_path / "outputs" / "tables" / "qc_trace_summary.csv")
+    assert "trace_summary_table" not in status.columns
     assert "svtk dashboard metrics" in status.loc["metrics", "terminal_command"]
 
 

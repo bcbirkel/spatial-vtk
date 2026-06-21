@@ -399,7 +399,8 @@ Changelog
     ``dashboard_summary_table_dir`` for ``launch_metrics_dashboard`` while
     preserving ``metrics_root`` and ``summary_root``.
   - Added ``qc_trace_summary_table`` to notebook dashboard launch status
-    frames while preserving ``trace_summary_table`` for existing code.
+    frames while preserving the ``trace_summary`` runtime alias for existing
+    code.
   - Added ``resolved_path`` to dashboard output status, readiness summary, and
     written-output frames while preserving ``path`` for existing notebooks.
   - Added dashboard value-family readiness metadata so status tables show
@@ -630,6 +631,9 @@ Changelog
   - Changed compact dashboard readiness summaries to use user-facing input
     labels such as ``metrics_long source table`` as displayed items instead of
     internal path keys such as ``metrics_long_path``.
+  - Removed the legacy ``trace_summary_table`` alias column from notebook
+    dashboard launch status frames; launch helpers still accept the legacy
+    ``trace_summary`` keyword for existing Python callers.
 
 2026-06-18
 ----------
