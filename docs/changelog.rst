@@ -944,6 +944,9 @@ Changelog
     the browser by default.
   - Added a separate metrics-dashboard download row cap so filtered row-level
     CSV downloads do not serialize every loaded distribution row by default.
+  - Made config-backed dashboard dataset writes partitioned by default so
+    standard workflow helpers use the large-run-safe dashboard layout unless a
+    caller explicitly requests a single output table.
 
 - **Dashboard path and value contracts** *(Hardened)*
 

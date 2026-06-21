@@ -1050,7 +1050,7 @@ def write_configured_dashboard_datasets(
     *,
     cfg: SpatialVTKConfig | str | Path | None = None,
     residual_mode: str = "logratio",
-    partitioned: bool = False,
+    partitioned: bool = True,
     hex_dist: float = 10.0,
     hex_az: float = 10.0,
     format: str = "parquet",

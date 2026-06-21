@@ -284,6 +284,42 @@ outputs:
     assert summaries["model_metric_band"]["n"].sum() == 2
 
 
+def test_write_configured_dashboard_datasets_defaults_to_partitioned_output(tmp_path) -> None:
+    """Config-backed dashboard export should use the large-run-safe dataset layout by default."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    metrics_path = tmp_path / "outputs" / "tables" / "metrics_long.parquet"
+    metrics_path.parent.mkdir(parents=True)
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  dashboards: outputs/dashboards
+""",
+        encoding="utf-8",
+    )
+    pd.DataFrame(
+        {
+            "model": ["m1"],
+            "metric": ["PGA"],
+            "band": ["1-2 sec"],
+            "event_id": ["ev1"],
+            "station": ["STA1"],
+            "component": ["Z"],
+            "log2_residual": [0.25],
+        }
+    ).to_parquet(metrics_path, index=False)
+
+    written = write_configured_dashboard_datasets(cfg=config_path)
+    metric_root = written["metrics_dashboard_root"]
+
+    assert not (metric_root / "metrics_long.parquet").exists()
+    assert (metric_root / "model=m1" / "band=1-2_sec" / "metric=PGA" / "part.parquet").exists()
+    assert written["dashboard_summary_model_metric_band"].exists()
+
+
 def test_write_configured_dashboard_datasets_accepts_config_path(tmp_path) -> None:
     """Notebook Slurm workers should be able to pass a JSON-safe config path."""
 
