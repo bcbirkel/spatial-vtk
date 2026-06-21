@@ -2028,6 +2028,11 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
 
     manifest = write_task_manifest(tasks, tmp_path / "manifest.json", output_dir=tmp_path / "batches", batch_size=1)
     manifest_status = manifest.status_frame()
+    assert manifest_status.loc[0, "name"] == "metric_manifest_path"
+    assert manifest_status.loc[0, "artifact_label"] == "metric workflow manifest"
+    assert manifest_status.loc[0, "resolved_path"] == str(tmp_path / "manifest.json")
+    assert manifest_status.loc[0, "path"] == str(tmp_path / "manifest.json")
+    assert bool(manifest_status.loc[0, "exists"]) is True
     assert manifest_status.loc[0, "manifest_path"] == str(tmp_path / "manifest.json")
     assert bool(manifest_status.loc[0, "manifest_exists"]) is True
     assert manifest_status.loc[0, "task_count"] == len(tasks)

@@ -73,6 +73,11 @@ class MetricWorkflowManifest:
         return pd.DataFrame(
             [
                 {
+                    "name": "metric_manifest_path",
+                    "artifact_label": "metric workflow manifest",
+                    "resolved_path": str(self.manifest_path),
+                    "path": str(self.manifest_path),
+                    "exists": self.manifest_path.exists(),
                     "manifest_path": str(self.manifest_path),
                     "manifest_exists": self.manifest_path.exists(),
                     "task_count": len(self.tasks),

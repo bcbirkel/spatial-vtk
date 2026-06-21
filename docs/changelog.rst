@@ -232,6 +232,9 @@ Changelog
   - Expanded notebook dashboard launch status frames with server address,
     auto-port, proxy-mode, show/headless, and browser URL provenance so remote
     dashboard launch cells are easier to debug.
+  - Normalized ``MetricWorkflowManifest.status_frame()`` with ``name``,
+    ``artifact_label``, ``resolved_path``, ``path``, and ``exists`` columns
+    while preserving legacy manifest-path aliases.
   - Reworded lazy I/O package loader docs so public API references describe
     resolved public helpers instead of implementation-module plumbing.
   - Reworded config-backed metric workflow module docs so large-run notebooks
