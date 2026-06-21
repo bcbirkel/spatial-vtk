@@ -134,6 +134,35 @@ def test_tutorial_notebook_runtime_preflight_includes_package_runtime_modules() 
 
     module = _load_executor_module()
 
+    assert set(module.NOTEBOOK_RUNTIME_MODULES) == {
+        "spatial_vtk",
+        "nbformat",
+        "nbclient",
+        "ipykernel",
+        "IPython",
+        "branca",
+        "contextily",
+        "folium",
+        "geopandas",
+        "gmprocess",
+        "h5py",
+        "matplotlib",
+        "numpy",
+        "obspy",
+        "pandas",
+        "plotly",
+        "pyarrow",
+        "pyasdf",
+        "pyproj",
+        "PyYAML",
+        "rasterio",
+        "scikit-learn",
+        "scipy",
+        "shapely",
+        "statsmodels",
+        "streamlit",
+        "streamlit-folium",
+    }
     assert module.NOTEBOOK_RUNTIME_MODULES["spatial_vtk"] == "spatial_vtk"
     assert module.NOTEBOOK_RUNTIME_MODULES["pandas"] == "pandas"
     assert module.NOTEBOOK_RUNTIME_MODULES["PyYAML"] == "yaml"

@@ -93,6 +93,9 @@ Changelog
     whitespace regressions are caught before release validation continues.
   - Tightened release-checklist regression coverage so the documented notebook
     runtime dependency check remains part of the required validation sequence.
+  - Added exact-set regression coverage for tutorial runtime module checks so
+    notebook-critical dependency additions or removals require an intentional
+    test update.
 
 2026-06-19
 ----------
