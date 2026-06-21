@@ -2559,6 +2559,18 @@ def test_metric_manifest_waveform_cache_rewrites_paths_and_runs_batches(tmp_path
         "metric_ready_waveform_cache_root",
         "metric_batches_cached_dir",
     ]
+    assert status["artifact"].tolist() == [
+        "metric_manifest_cached",
+        "metric_ready_waveform_cache",
+        "metric_batches_cached",
+    ]
+    assert status["artifact_role"].tolist() == ["manifest", "cache", "batch_output_dir"]
+    assert status["status"].tolist() == ["ready", "ready", "ready"]
+    assert status["artifact_label"].tolist() == [
+        "cached metric manifest",
+        "metric-ready waveform cache",
+        "cached metric batch output directory",
+    ]
     assert status["resolved_path"].tolist() == status["path"].tolist()
     assert status["exists"].tolist() == [True, True, True]
     assert status["rows"].tolist() == [2, 4, 1]

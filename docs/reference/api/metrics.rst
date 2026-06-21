@@ -116,7 +116,10 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
        ready before planning the metric manifest.
    * - ``cache_metric_manifest_waveforms``
      - Materialize metric-ready waveform cache files for repeated large-run
-       batch execution.
+       batch execution. The returned ``MetricWaveformCacheResult`` exposes
+       ``status_frame()`` with ``name``, ``artifact``, ``artifact_label``,
+       ``artifact_role``, ``status``, ``resolved_path``, ``exists``, row
+       counts, and cache reuse counts for notebook display.
    * - ``metric_slurm_submission_readiness_from_config``
      - Check whether a metric Slurm array should be submitted or skipped.
    * - ``write_metrics_slurm_script_from_config``

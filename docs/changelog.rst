@@ -66,6 +66,9 @@ Changelog
   - Added config and dashboard-output existence flags to
     ``NotebookDashboardCommands.status_frame()`` so dashboard launch cells show
     missing metrics, summary, or QC inputs before starting Streamlit.
+  - Standardized ``MetricWaveformCacheResult.status_frame()`` so metric cache
+    notebook status tables expose artifact names, roles, readiness status,
+    normalized paths, row counts, and cache reuse counters.
 
 - **CLI help and generated-reference wording** *(Changed)*
 
