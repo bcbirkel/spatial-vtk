@@ -332,6 +332,12 @@ Changelog
     so common notebook examples point to result-object loaders and Step 4/5
     runner methods instead of lower-level readiness/build helper pairs.
 
+- **Spatial API import guidance** *(Changed)*
+
+  - Split the Spatial API import examples into notebook-facing result loaders,
+    direct config-backed helpers for scripts/workers/custom orchestration, and
+    individual plot/map functions for focused scripts.
+
 - **Step 5 workflow guidance** *(Changed)*
 
   - Clarified Python workflow guidance so Step 5 notebooks use the GeoJSON

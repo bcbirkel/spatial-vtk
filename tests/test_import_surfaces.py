@@ -1616,6 +1616,19 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "Start with ``spatial_vtk.spatial`` for spatial-statistics" in text
     assert "from spatial_vtk.spatial import (" in text
     assert "load_standard_spatial_workflow_output_status" in text
+    assert "Direct config-backed spatial helpers remain public for scripts, generated\nworkers, and custom orchestration" in text
+    notebook_spatial_import = text.split("Direct config-backed spatial helpers remain public", maxsplit=1)[0]
+    direct_spatial_import = text.split("Direct config-backed spatial helpers remain public", maxsplit=1)[1].split(
+        "Individual plot and map functions are available",
+        maxsplit=1,
+    )[0]
+    assert "load_standard_spatial_workflow_output_status" in notebook_spatial_import
+    assert "load_standard_geojson_workflow_output_status" in notebook_spatial_import
+    assert "run_geojson_region_summary_workflow_from_config" not in notebook_spatial_import
+    assert "run_boundary_corridor_workflow_from_config" not in notebook_spatial_import
+    assert "run_geojson_region_summary_workflow_from_config" in direct_spatial_import
+    assert "run_boundary_corridor_workflow_from_config" in direct_spatial_import
+    assert "Individual plot and map functions are available for focused scripts" in text
     assert text.index("load_standard_spatial_workflow_output_status") < text.index("run_spatial_statistics_workflow_from_config")
     assert "Display the run/skip/submission payload" in text
     assert "``spatial_vtk.config.display_notebook_step_result``" in text

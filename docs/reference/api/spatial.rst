@@ -27,11 +27,24 @@ module names.
        load_standard_geojson_plotting_inputs,
        load_standard_additional_plotting_output_status,
        load_standard_additional_plotting_inputs,
+   )
+
+Direct config-backed spatial helpers remain public for scripts, generated
+workers, and custom orchestration that already owns execution control:
+
+.. code-block:: python
+
+   from spatial_vtk.spatial import (
        run_geojson_region_summary_workflow_from_config,
        run_boundary_corridor_workflow_from_config,
        build_path_table,
        summarize_residuals_by_path_bin,
    )
+
+Individual plot and map functions are available for focused scripts; tutorial
+notebooks should prefer the result-object figure-suite methods listed below:
+
+.. code-block:: python
 
    from spatial_vtk.spatial.plot import (
        write_large_run_spatial_figure_suite_from_notebook_settings,
