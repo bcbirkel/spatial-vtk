@@ -70,7 +70,8 @@ already filtered and sampled the way you want. Use either
 after filtering.
 
 For a full run, preprocess the waveform files once and point later QC, metric,
-dashboard, and figure steps at the saved processed files:
+dashboard, and figure steps at the saved processed files. From a terminal, run
+the config-backed CLI commands:
 
 .. code-block:: bash
 
@@ -88,6 +89,25 @@ metadata, and an updated event-station table under
 want to write one run somewhere else. Spatial-VTK only filters or resamples
 waveforms when your config, run scenario, Python call, or CLI override asks it
 to.
+
+In notebooks, use the Step 1 result object instead of shelling out to the CLI.
+The helper checks whether the configured preprocessing outputs are already
+current, submits to Slurm when requested by the notebook context, and returns a
+displayable result frame:
+
+.. code-block:: python
+
+   from spatial_vtk.config import SpatialVTKConfig, notebook_run_context
+   from spatial_vtk.io import load_standard_ingest_workflow_outputs
+
+   cfg = SpatialVTKConfig.from_file("spatial-vtk.yaml", run_scenario="tutorial").activate()
+   context = notebook_run_context()
+   ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)
+   preprocessing_result = ingest_outputs.run_preprocessing_step_if_needed(
+       context=context,
+       continue_on_error=context.preprocess_continue_on_error,
+   )
+   preprocessing_result.status_frame()
 
 Set Automatic QC Thresholds
 ---------------------------

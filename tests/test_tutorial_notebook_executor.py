@@ -796,6 +796,11 @@ def test_public_docs_describe_committed_tutorial_waveforms() -> None:
     assert "load_standard_ingest_workflow_outputs" in configuration
     assert "load_standard_metric_workflow_outputs" in configuration
     assert "ingest_outputs.metadata_summary_frame()" in configuration
+    assert "In notebooks, use the Step 1 result object instead of shelling out to the CLI." in configuration
+    assert 'cfg = SpatialVTKConfig.from_file("spatial-vtk.yaml", run_scenario="tutorial").activate()' in configuration
+    assert "context = notebook_run_context()" in configuration
+    assert "preprocessing_result = ingest_outputs.run_preprocessing_step_if_needed(" in configuration
+    assert "preprocessing_result.status_frame()" in configuration
     assert 'output_group("step_01_ingest").load_tables' not in configuration
     assert "load_output_table(" not in configuration
     assert "write_output_table(" not in configuration
