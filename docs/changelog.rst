@@ -6,6 +6,10 @@ Changelog
 
 - **Workflow import guidance** *(Fixed)*
 
+  - Reworded Config API figure-helper guidance so routine notebooks are
+    directed to workflow result-object figure methods, while figure settings
+    and ``render_notebook_figure`` are framed as package/custom-helper
+    building blocks.
   - Cleaned the I/O API entry-point import example so it starts with
     task-level ingest/preprocessing/record-coverage helpers instead of
     lower-level output-group and table-read/write utilities.

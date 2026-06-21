@@ -1291,6 +1291,10 @@ def test_config_api_docs_include_compute_helpers():
     assert "``summary_frame()``" in text
     assert "``NotebookFigureSettings`` and ``notebook_figure_settings``" in text
     assert "``render_notebook_figure``" in text
+    assert "Standard notebooks should receive these settings through workflow\n       result-object figure methods" in text
+    assert "Custom package helpers and focused\n       scripts can use ``context_kwargs()``" in text
+    assert "Lower-level rendering delegate for package figure wrappers or custom\n       helpers" in text
+    assert "Routine notebooks\n       should call workflow result-object figure methods instead" in text
     assert "``NotebookFigureSidecarSettings`` and" in text
     assert "``readiness_frame()`` reports whether sidecars are enabled" in text
     assert "``status_frame()`` reports per-figure provenance" in text
