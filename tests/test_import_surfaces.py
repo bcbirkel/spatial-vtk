@@ -2266,8 +2266,10 @@ def test_dashboard_export_docstring_starts_with_configured_helper():
 
     assert "prepare_configured_dashboard_datasets_from_notebook_settings(cfg=cfg)" in source
     assert "write_dashboard_metric_dataset(metrics_df, \"dashboard_data\")" not in source
+    assert "write_dashboard_metric_dataset(metrics_df, output_root)" not in source
+    assert "when a custom script intentionally bypasses configured dashboard outputs" in source
     assert source.index("prepare_configured_dashboard_datasets_from_notebook_settings") < source.index(
-        "write_dashboard_metric_dataset(metrics_df, output_root)"
+        "write_dashboard_metric_dataset(...)"
     )
 
 

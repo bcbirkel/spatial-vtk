@@ -11,7 +11,8 @@ Prepare configured dashboard datasets from a notebook or script:
   ``result = prepare_configured_dashboard_datasets_from_notebook_settings(cfg=cfg)``
 
 Write one explicit dashboard row dataset in an advanced script:
-  ``path = write_dashboard_metric_dataset(metrics_df, output_root)``
+  ``write_dashboard_metric_dataset(...)`` writes caller-owned row datasets
+  when a custom script intentionally bypasses configured dashboard outputs.
 """
 
 from __future__ import annotations

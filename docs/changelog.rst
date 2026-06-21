@@ -80,6 +80,9 @@ Changelog
   - Reworded the preprocessing direct-call example so advanced scripts prefer
     config-backed output resolution instead of a literal preprocessed-output
     directory.
+  - Reworded dashboard export examples so notebooks start from configured
+    dashboard dataset preparation and raw dataset writers are framed as
+    custom-script APIs.
 
 - **Step 1 workflow helpers** *(Added)*
 
