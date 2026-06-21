@@ -56,9 +56,10 @@ notebooks:
 The runtime check does not execute notebooks or clean outputs. It checks the
 notebook source contract, committed five-event metadata, snapshot tables, and
 observed/synthetic NPZ waveform subset, then makes the source tree importable
-and verifies the Jupyter, ``spatial_vtk``, scientific Python, mapping,
-dashboard, and waveform modules that tutorial cells import. Missing dependency
-extras are reported before execution starts.
+and verifies the active Python version plus the Jupyter, ``spatial_vtk``,
+scientific Python, mapping, dashboard, and waveform modules that tutorial cells
+import. Unsupported Python versions and missing dependency extras are reported
+before execution starts.
 The source contract catches saved execution state, private absolute paths,
 shell/CLI workflow cells, implementation plotting/workflow imports, fixed
 run-layout paths, raw output-path/table reads, and notebook-local dataframe

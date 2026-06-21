@@ -57,7 +57,7 @@ part of the PyPI wheel.
    <p>
    From a source checkout, use the editable form:
    </p>
-   <pre><code>python -m pip install -e ".[dashboard,docs,notebooks,validation,waveforms]"</code></pre>
+   <pre><code>python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"</code></pre>
    <p>
    After installing the validation extras, you can run:
    </p>
@@ -117,6 +117,10 @@ the committed example data, install the tutorial runtime extras and run:
 
    python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run
    python tools/execute_tutorial_notebooks.py --clean --include-large-run
+
+The runtime check first confirms that the active interpreter is supported by
+the package, then verifies the Jupyter, mapping, dashboard, and waveform
+modules used by the tutorial notebooks.
 
 The tutorial checker first verifies that the committed five-event metadata,
 snapshot tables, and observed/synthetic NPZ waveform subset are present. It

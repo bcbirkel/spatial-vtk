@@ -642,6 +642,7 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "standard and large-run tutorial notebooks" in installation
     assert 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"' in readme
     assert "\n    python -m pip install -e .\n" not in readme
+    assert 'python -m pip install -e ".[dashboard,docs,notebooks,validation,waveforms]"' not in combined
     assert "source-checkout extras" in readme
     assert "If pip has trouble solving compiled geospatial or waveform packages" in readme
     assert "conda env create -f svtk_environment.yaml" in readme
@@ -660,6 +661,8 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run" in combined
     assert "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run" in combined
     assert "The runtime check does not execute notebooks or clean outputs." in examples_index
+    assert "active Python version plus the Jupyter" in examples_index
+    assert "Unsupported Python versions and missing dependency extras are reported" in examples_index
     assert "The command executes the seven notebooks" not in examples_index
     assert "The clean command executes the standard and large-run notebooks" in examples_index
     assert "outputs/tutorials/notebook_execution_report.json" in examples_index
