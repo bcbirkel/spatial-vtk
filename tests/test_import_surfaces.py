@@ -2464,6 +2464,9 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "run_notebook_step_if_needed" in workflows
     assert "display_notebook_step_result" in workflows
     assert "MetricPlan.summary_frame()" in workflows
+    assert "Standard result objects call this internally\n       for skipped ``run_*_step_if_needed()`` payloads" in workflows
+    assert "custom workflow cells\n       can call it directly when they already own the readiness object" in workflows
+    assert "Use this with ``run_notebook_step_if_needed``\n       fallbacks" not in workflows
     assert "instead of ``print(result)``" in workflows
     assert "``print(result.summary_message())``" in workflows
     assert "package helper returns a displayable workflow result" in workflows
@@ -2919,6 +2922,9 @@ def test_notebook_helper_docs_prefer_standard_result_objects():
     assert "New notebooks should" in notebook_helpers
     assert "prefer :func:`run_notebook_step_if_needed`" in notebook_helpers
     assert "This execution primitive is used by :func:`run_notebook_step_if_needed`" in notebook_helpers
+    assert "Standard workflow result objects use this helper internally" in notebook_helpers
+    assert "Custom workflow cells can call it\n    directly when they already own the readiness object" in notebook_helpers
+    assert "Notebook workflow cells often call :func:`run_notebook_step_if_needed`" not in notebook_helpers
     assert "This lower-level helper powers :func:`run_notebook_step_if_needed`" not in notebook_helpers
     assert "matching the lower-level notebook Slurm" not in notebook_helpers
     assert "Large-run notebooks use this helper" not in notebook_helpers

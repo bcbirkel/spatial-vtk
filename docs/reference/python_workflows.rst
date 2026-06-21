@@ -258,10 +258,12 @@ the large-run notebooks.
        Slurm workers.
    * - ``spatial_vtk.config.notebook_step_result``
      - Return a compact JSON-friendly status dictionary for current/skipped
-       notebook workflow steps. Use this with ``run_notebook_step_if_needed``
-       fallbacks instead of writing inline dictionaries that repeat
-       ``str(path)`` conversion, ``reused`` flags, or generic ``path`` keys in
-       notebook cells.
+       notebook workflow steps. Standard result objects call this internally
+       for skipped ``run_*_step_if_needed()`` payloads; custom workflow cells
+       can call it directly when they already own the readiness object and
+       fallback values. Use it instead of writing inline dictionaries that
+       repeat ``str(path)`` conversion, ``reused`` flags, or generic ``path``
+       keys in notebook cells.
    * - ``spatial_vtk.config.display_notebook_step_result``
      - Display current/skipped step dictionaries, Slurm submissions, and
        result objects with ``status_frame()`` or ``summary_frame()`` as compact

@@ -1427,11 +1427,11 @@ def run_notebook_step_if_needed(
 def notebook_step_result(readiness: Any, **values: Any) -> dict[str, Any]:
     """Return a compact JSON-friendly notebook result for a skipped step.
 
-    Notebook workflow cells often call :func:`run_notebook_step_if_needed` and
-    then need a displayable result even when the step is current and no function
-    ran. This helper keeps that fallback status in package code instead of
-    repeating ``{"path": str(...), "reused": ...}`` dictionaries in notebook
-    cells.
+    Standard workflow result objects use this helper internally for skipped
+    ``run_*_step_if_needed()`` payloads. Custom workflow cells can call it
+    directly when they already own the readiness object and fallback values.
+    Keeping the fallback status in package code avoids notebook-local
+    ``{"path": str(...), "reused": ...}`` dictionaries with generic keys.
 
     Parameters
     ----------
