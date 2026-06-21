@@ -3498,6 +3498,27 @@ def test_dashboard_summary_writes_use_shared_writer():
     assert ".to_parquet(" not in helper
 
 
+def test_dashboard_metric_dataset_writes_use_shared_writer():
+    """Dashboard metric parquet dataset files should use package writer semantics."""
+
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "visualize"
+        / "dashboard"
+        / "export.py"
+    ).read_text(encoding="utf-8")
+    helper = source.split("def write_dashboard_metric_dataset", 1)[1].split("\ndef load_dashboard_metric_dataset", 1)[0]
+    streaming_helper = source.split("def _write_partitioned_dashboard_metric_dataset_streaming", 1)[1].split("\ndef ", 1)[0]
+    assert "from spatial_vtk.io.tables import read_table, write_table" in source
+    assert 'write_table(long_df, root / "metrics_long.parquet", index=False)' in helper
+    assert "write_table(group, out_path, index=False)" in helper
+    assert "write_table(group, out_path, index=False)" in streaming_helper
+    assert ".to_parquet(" not in helper
+    assert ".to_parquet(" not in streaming_helper
+
+
 def test_small_public_table_writes_use_shared_writer():
     """Small public helper outputs should use package table writer semantics."""
 

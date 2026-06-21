@@ -29,7 +29,7 @@ from spatial_vtk.config.labels import normalize_metric_name
 from spatial_vtk.config.outputs import resolve_output_path
 from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.io import table_columns
-from spatial_vtk.io.tables import read_table
+from spatial_vtk.io.tables import read_table, write_table
 from spatial_vtk.visualize.dashboard.tables import (
     build_dashboard_summaries,
     dashboard_summary_input_columns,
@@ -314,12 +314,11 @@ def write_dashboard_metric_dataset(
     long_df = pd.concat(long_frames, ignore_index=True)
     long_df = add_dashboard_path_geometry(long_df)
     if not partitioned:
-        long_df.to_parquet(root / "metrics_long.parquet", index=False)
+        write_table(long_df, root / "metrics_long.parquet", index=False)
         return root
     for keys, group in _iter_dashboard_partition_groups(long_df):
         out_path = _dashboard_partition_path(root, keys, part_index=0)
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        group.to_parquet(out_path, index=False)
+        write_table(group, out_path, index=False)
     return root
 
 
@@ -657,8 +656,7 @@ def _write_partitioned_dashboard_metric_dataset_streaming(
                 part_index = partition_counts.get(token_key, 0)
                 partition_counts[token_key] = part_index + 1
                 out_path = _dashboard_partition_path(root, token_key, part_index=part_index)
-                out_path.parent.mkdir(parents=True, exist_ok=True)
-                group.to_parquet(out_path, index=False)
+                write_table(group, out_path, index=False)
 
 
 def _iter_dashboard_partition_groups(df: pd.DataFrame):

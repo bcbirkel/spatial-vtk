@@ -154,9 +154,9 @@ Changelog
   - Routed generic CLI table-output writing through the shared table writer so
     ``svtk`` commands get the same atomic write and suffix handling as package
     APIs.
-  - Routed dashboard summary-table writing through the shared table writer so
-    dashboard exports keep atomic-write behavior while preserving stale
-    cross-format cleanup.
+  - Routed dashboard summary-table and metric dataset writes through the
+    shared table writer so dashboard exports keep atomic-write behavior while
+    preserving stale cross-format cleanup and partitioned dataset layouts.
   - Routed manual QC decision, manual-review queue, trace-metadata,
     arrival-pick catalog, geology-contrast, GeoJSON summary, and master-list
     helper writes through the shared table writer while preserving explicit
