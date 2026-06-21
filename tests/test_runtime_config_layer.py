@@ -3577,6 +3577,7 @@ outputs:
     assert [
         "item_type",
         "name",
+        "artifact",
         "artifact_role",
         "artifact_label",
         "ready",
@@ -3593,6 +3594,7 @@ outputs:
         in {
             "item_type",
             "name",
+            "artifact",
             "artifact_role",
             "artifact_label",
             "ready",
@@ -3608,6 +3610,7 @@ outputs:
     assert set(readiness_status["item_type"]) >= {"input", "dataset", "summary_table", "qc_table"}
     metrics_long_row = readiness_status.loc[readiness_status["name"].eq("metrics_long_path")].iloc[0]
     assert metrics_long_row["item_type"] == "input"
+    assert metrics_long_row["artifact"] == "metrics_long"
     assert metrics_long_row["artifact_label"] == "metrics_long source table"
     assert bool(metrics_long_row["ready"]) is True
     assert metrics_long_row["readiness"] == "ready"
@@ -3617,6 +3620,7 @@ outputs:
     assert metrics_long_row["suggested_action"] == ""
     metric_root_row = readiness_status.loc[readiness_status["name"].eq("metrics_dashboard_root")].iloc[0]
     assert metric_root_row["item_type"] == "dataset"
+    assert metric_root_row["artifact"] == "metrics_dashboard"
     assert metric_root_row["artifact_label"] == "metrics dashboard row dataset"
     assert metric_root_row["resolved_path"] == metric_root_row["path"]
     assert by_item.loc["metrics_dashboard_dataset", "readiness"] == "missing_dataset_files"

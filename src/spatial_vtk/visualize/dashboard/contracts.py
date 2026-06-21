@@ -117,7 +117,7 @@ class DashboardOutputReadiness:
 
         The child readiness frames are built by different inspectors. This
         method keeps their detailed columns while normalizing the notebook
-        contract used by large-run status cells: ``item_type``,
+        contract used by large-run status cells: ``item_type``, ``artifact``,
         ``artifact_label``, ``resolved_path``, ``path``, ``exists``,
         ``readiness``, ``message``, and ``suggested_action`` are always present
         when at least one child frame has rows.
@@ -979,6 +979,8 @@ def _normalize_dashboard_status_row(row: dict[str, object], *, item_type: str) -
     normalized = dict(row)
     normalized["item_type"] = item_type
     name = str(_blank_if_missing(normalized.get("name")))
+    if "artifact" not in normalized or _blank_if_missing(normalized.get("artifact")) == "":
+        normalized["artifact"] = _dashboard_status_artifact_name(name, item_type=item_type)
     if name and not _blank_if_missing(normalized.get("artifact_role")):
         role, label = _dashboard_artifact_role_and_label(name)
         normalized["artifact_role"] = role
@@ -1020,6 +1022,7 @@ def _dashboard_status_column_order(rows: list[dict[str, object]]) -> list[str]:
     preferred = [
         "item_type",
         "name",
+        "artifact",
         "artifact_role",
         "artifact_label",
         "dashboard_table",
@@ -1051,6 +1054,18 @@ def _dashboard_status_column_order(rows: list[dict[str, object]]) -> list[str]:
     columns = [column for column in preferred if column in present]
     columns.extend(sorted(column for column in present if column not in set(columns)))
     return columns
+
+
+def _dashboard_status_artifact_name(name: str, *, item_type: str) -> str:
+    """Return a stable artifact id for one dashboard readiness row."""
+
+    token = str(name).strip()
+    if not token:
+        return item_type
+    for suffix in ("_path", "_root"):
+        if token.endswith(suffix):
+            return token[: -len(suffix)]
+    return token
 
 
 def _dashboard_artifact_role_and_label(name: str) -> tuple[str, str]:

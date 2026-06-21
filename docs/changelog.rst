@@ -77,6 +77,9 @@ Changelog
     ``written_frame()`` so dashboard preparation cells expose artifact names,
     labels, roles, status, normalized paths, and existence checks without
     notebook-local formatting.
+  - Added explicit ``artifact`` ids to ``DashboardOutputReadiness.status_frame()``
+    rows so dashboard readiness displays line up with the artifact vocabulary
+    used by workflow output, preparation, launch, and figure status tables.
 
 - **CLI help and generated-reference wording** *(Changed)*
 

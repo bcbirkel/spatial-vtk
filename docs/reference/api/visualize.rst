@@ -275,10 +275,10 @@ because of missing schema, missing values, or missing map coordinate data.
 The ``DashboardOutputReadiness.status_frame()`` method carries the same
 ``ready`` / ``readiness`` / ``message`` / ``suggested_action`` fields for each
 source input, metric dataset, summary table, and QC table. It also normalizes
-``item_type``, ``artifact_label``, ``exists``, ``resolved_path``, and the
-compatibility ``path`` alias, so notebooks can display the rebuild decision
-object directly without losing the first actionable blocker or the configured
-artifact location.
+``item_type``, ``artifact``, ``artifact_label``, ``exists``,
+``resolved_path``, and the compatibility ``path`` alias, so notebooks can
+display the rebuild decision object directly without losing the first
+actionable blocker or the configured artifact location.
 
 Dashboard contract helpers accept ``cfg=`` as either a config object or a
 config file path. Use ``cfg=config_path`` in generated workers or lightweight
