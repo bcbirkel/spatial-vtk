@@ -21,6 +21,14 @@ helpers without requiring notebooks to import lower-level builder modules.
    from spatial_vtk.qc import (
        load_standard_qc_inputs,
        load_standard_qc_workflow_outputs,
+   )
+
+Direct config-backed helpers remain public for scripts, generated workers, and
+custom orchestration that already owns execution control:
+
+.. code-block:: python
+
+   from spatial_vtk.qc import (
        build_metric_pair_retention_table_from_qc_inventory,
        build_qc_drop_cause_table_from_qc_inventory,
        qc_inventory_readiness_from_config,

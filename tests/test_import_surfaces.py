@@ -1478,6 +1478,15 @@ def test_qc_api_docs_use_public_package_entry_point():
     assert "Use ``spatial_vtk.qc`` for notebook-facing QC build helpers" in text
     assert "lower-level review table module is implementation" in text
     assert "lower-level summary rules module is implementation" in text
+    assert "Direct config-backed helpers remain public for scripts, generated workers, and\ncustom orchestration" in text
+    notebook_import_block = text.split("Direct config-backed helpers remain public", maxsplit=1)[0]
+    direct_import_block = text.split("Direct config-backed helpers remain public", maxsplit=1)[1].split(".. automodule:: spatial_vtk.qc", maxsplit=1)[0]
+    assert "load_standard_qc_inputs" in notebook_import_block
+    assert "load_standard_qc_workflow_outputs" in notebook_import_block
+    assert "run_qc_inventory_from_config" not in notebook_import_block
+    assert "qc_inventory_readiness_from_config" not in notebook_import_block
+    assert "run_qc_inventory_from_config" in direct_import_block
+    assert "qc_inventory_readiness_from_config" in direct_import_block
     import_block = text.split(".. automodule:: spatial_vtk.qc", maxsplit=1)[0]
     assert import_block.index("load_standard_qc_workflow_outputs") < import_block.index(
         "run_qc_inventory_from_config"

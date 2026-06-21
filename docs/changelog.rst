@@ -297,6 +297,9 @@ Changelog
   - Updated Python workflow guidance so the stable notebook import surface for
     metric plotting points to figure suites and result objects, while keeping
     row-selection helpers documented only as advanced script APIs.
+  - Split the QC API import example into notebook-facing result loaders and
+    direct config-backed helpers for scripts, generated workers, and custom
+    orchestration.
 
 - **Spatial and workflow API documentation** *(Changed)*
 
