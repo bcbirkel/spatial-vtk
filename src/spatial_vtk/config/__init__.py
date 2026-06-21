@@ -4,7 +4,8 @@
 objects, notebook run contexts, output-registry previews, Slurm settings,
 metric settings, labels, and figure controls. Routine notebooks should import
 from this package rather than reaching into runtime, output, or notebook
-implementation modules directly.
+implementation modules directly; add a stable re-export here before using a
+lower-level config helper in notebook code.
 
 The package keeps its broad public surface lazy: importing ``spatial_vtk.config``
 does not import runtime YAML parsing, compute helpers, notebook utilities, or

@@ -2375,6 +2375,7 @@ def test_core_package_docstrings_describe_public_entry_points():
     assert "``spatial_vtk.config`` is the public import surface" in config_source
     assert "notebook run contexts" in config_source
     assert "rather than reaching into runtime, output, or notebook\nimplementation modules directly" in config_source
+    assert "add a stable re-export here before using a\nlower-level config helper in notebook code" in config_source
 
     assert "``spatial_vtk.visualize`` is the public import surface" in visualize_source
     assert "``spatial_vtk.visualize.context``" in visualize_source

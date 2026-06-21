@@ -44,6 +44,8 @@ Changelog
   - Tightened the I/O API entry-point guidance so notebooks are told to use
     stable ``spatial_vtk.io`` re-exports instead of reaching into
     implementation modules, with regression coverage for that public wording.
+  - Aligned the ``spatial_vtk.config`` package docstring with the same
+    re-export-first rule for notebook-facing config helpers.
 
 - **Tutorial runtime and preview checks** *(Fixed)*
 
