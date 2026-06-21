@@ -148,8 +148,10 @@ event, record-coverage, and study-domain context figures.
    :members:
 
 The context figure and map submodules are implementation
-organization. Import context helpers from ``spatial_vtk.visualize.context`` in
-notebooks and scripts.
+organization. Routine notebooks should use the context helpers re-exported by
+``spatial_vtk.visualize`` or the standard result-object figure methods; scripts
+and custom extensions that intentionally work inside one visualization family
+can import context helpers from ``spatial_vtk.visualize.context``.
 
 Quality Control Figures
 -----------------------
@@ -161,8 +163,10 @@ drop-cause, waveform-sample, and post-QC map figures.
    :members:
 
 The QC overview, retention, and sample submodules are implementation
-organization. Import QC visualization helpers from ``spatial_vtk.visualize.qc``
-in notebooks and scripts.
+organization. Routine notebooks should use the QC helpers re-exported by
+``spatial_vtk.visualize`` or the standard QC result-object figure methods;
+scripts and custom extensions that intentionally work inside one visualization
+family can import QC visualization helpers from ``spatial_vtk.visualize.qc``.
 
 Waveform Figures
 ----------------
@@ -185,9 +189,11 @@ keyword arguments.
    :members:
 
 The waveform comparison, overlay, radial-section, record-section,
-and station-event modules are implementation organization. Import waveform
-figure helpers from ``spatial_vtk.visualize.waveforms`` in notebooks and
-scripts.
+and station-event modules are implementation organization. Routine notebooks
+should use the waveform helpers re-exported by ``spatial_vtk.visualize`` or
+the standard QC/additional-plotting result-object figure methods; scripts and
+custom extensions that intentionally work inside one visualization family can
+import waveform figure helpers from ``spatial_vtk.visualize.waveforms``.
 
 Dashboard Helpers
 -----------------

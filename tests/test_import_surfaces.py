@@ -2447,9 +2447,15 @@ def test_visualize_api_docs_use_public_entry_points():
     assert ".. automodule:: spatial_vtk.visualize.dashboard\n" in text
     assert ".. automodule:: spatial_vtk.visualize.qc\n" in text
     assert ".. automodule:: spatial_vtk.visualize.waveforms\n" in text
-    assert "Import context helpers from ``spatial_vtk.visualize.context``" in text
-    assert "Import QC visualization helpers from ``spatial_vtk.visualize.qc``" in text
-    assert "Import waveform\nfigure helpers from ``spatial_vtk.visualize.waveforms``" in text
+    assert "Routine notebooks should use the context helpers re-exported by\n``spatial_vtk.visualize``" in text
+    assert "Routine notebooks should use the QC helpers re-exported by\n``spatial_vtk.visualize``" in text
+    assert "Routine notebooks\nshould use the waveform helpers re-exported by ``spatial_vtk.visualize``" in text
+    assert "can import context helpers from ``spatial_vtk.visualize.context``" in text
+    assert "can import QC visualization helpers from ``spatial_vtk.visualize.qc``" in text
+    assert "can\nimport waveform figure helpers from ``spatial_vtk.visualize.waveforms``" in text
+    assert "Import context helpers from ``spatial_vtk.visualize.context`` in\nnotebooks" not in text
+    assert "Import QC visualization helpers from ``spatial_vtk.visualize.qc``\nin notebooks" not in text
+    assert "Import waveform\nfigure helpers from ``spatial_vtk.visualize.waveforms`` in notebooks" not in text
     assert "Import routine dashboard\nhelpers from ``spatial_vtk.visualize``" in text
     assert "metrics dashboard row dataset" in text
     assert "internal output registry names" in text

@@ -49,6 +49,9 @@ Changelog
   - Reworded the Spatial API map section so public map imports are framed for
     focused scripts and custom extensions, while routine notebooks are kept on
     standard result-object figure helpers.
+  - Reworded the Visualize API context, QC, and waveform family sections so
+    routine notebooks use top-level re-exports or result-object figure methods,
+    while family subpackage imports are framed for scripts and extensions.
 
 - **Tutorial runtime and preview checks** *(Fixed)*
 
