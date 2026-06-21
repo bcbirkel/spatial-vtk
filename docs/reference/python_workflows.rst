@@ -110,7 +110,6 @@ and notebooks should depend on the stable namespaces above.
    from spatial_vtk.config import (
        notebook_figure_settings,
        notebook_run_context,
-       render_notebook_figure,
    )
    from spatial_vtk.io import event_rows_for_records, load_configured_input_paths, load_configured_input_tables
    from spatial_vtk.qc import load_standard_qc_workflow_outputs
@@ -336,11 +335,12 @@ the large-run notebooks.
        row-provenance sidecars to package code, so notebooks do not build
        spatial figure contexts or per-plot paths by hand.
    * - ``spatial_vtk.config.render_notebook_figure``
-     - Call one plotting helper with a configured ``OutputGroup`` figure path,
-       the relevant ``NotebookFigureSettings`` object, optional basemap
-       settings, save/display/close behavior, and row-sidecar settings. Use it
-       in standard notebooks instead of repeating ``outpath``, ``savefig``,
-       ``showfig``, sidecar kwargs, and ``plt.close`` around every plot call.
+     - Building block for custom package helpers or focused scripts that need
+       to call one plotting helper with a configured ``OutputGroup`` figure
+       path, the relevant ``NotebookFigureSettings`` object, optional basemap
+       settings, save/display/close behavior, and row-sidecar settings.
+       Standard tutorial notebooks should prefer workflow result-object figure
+       methods, which call these lower-level render helpers internally.
    * - ``spatial_vtk.config.notebook_dashboard_launch_commands``
      - Return config-backed dashboard launch settings. Use
        ``metrics_launch_kwargs()`` and ``qc_launch_kwargs()`` with the package

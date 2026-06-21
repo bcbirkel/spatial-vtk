@@ -2671,6 +2671,13 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "notebooks should prefer the standard metric result-object methods above" in workflows
     assert "notebook_figure_settings" in workflows
     assert "render_notebook_figure" in workflows
+    starter_config_import = workflows.split("from spatial_vtk.config import (", 1)[1].split(")", 1)[0]
+    assert "notebook_figure_settings" in starter_config_import
+    assert "notebook_run_context" in starter_config_import
+    assert "render_notebook_figure" not in starter_config_import
+    assert "Building block for custom package helpers or focused scripts" in workflows
+    assert "Standard tutorial notebooks should prefer workflow result-object figure\n       methods" in workflows
+    assert "Use it\n       in standard notebooks instead of repeating" not in workflows
     assert "from spatial_vtk.config.notebook import" not in workflows
     assert "exact signatures, return contracts, and supporting public helpers" in workflows
     assert "exact signatures and lower-level utilities" not in workflows
