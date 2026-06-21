@@ -2046,7 +2046,10 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     manifest = write_task_manifest(tasks, tmp_path / "manifest.json", output_dir=tmp_path / "batches", batch_size=1)
     manifest_status = manifest.status_frame()
     assert manifest_status.loc[0, "name"] == "metric_manifest_path"
+    assert manifest_status.loc[0, "artifact"] == "metric_manifest"
     assert manifest_status.loc[0, "artifact_label"] == "metric workflow manifest"
+    assert manifest_status.loc[0, "artifact_role"] == "metric_manifest"
+    assert manifest_status.loc[0, "status"] == "ready"
     assert manifest_status.loc[0, "resolved_path"] == str(tmp_path / "manifest.json")
     assert manifest_status.loc[0, "path"] == str(tmp_path / "manifest.json")
     assert bool(manifest_status.loc[0, "exists"]) is True
@@ -2069,12 +2072,24 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     assert initial_status.total_batches == 1
     assert initial_status.completed_count == 0
     assert initial_status.missing_batches == (0,)
-    assert bool(initial_status.status_frame().loc[0, "all_complete"]) is False
+    initial_status_frame = initial_status.status_frame()
+    assert initial_status_frame.loc[0, "name"] == "metric_batch_outputs"
+    assert initial_status_frame.loc[0, "artifact"] == "metric_batch_outputs"
+    assert initial_status_frame.loc[0, "artifact_label"] == "metric batch outputs"
+    assert initial_status_frame.loc[0, "artifact_role"] == "metric_batch_outputs"
+    assert initial_status_frame.loc[0, "status"] == "incomplete"
+    assert initial_status_frame.loc[0, "resolved_path"] == str(tmp_path / "manifest.json")
+    assert initial_status_frame.loc[0, "path"] == str(tmp_path / "manifest.json")
+    assert bool(initial_status_frame.loc[0, "exists"]) is True
+    assert bool(initial_status_frame.loc[0, "all_complete"]) is False
     initial_readiness = metric_slurm_submission_readiness(initial_status)
     assert initial_readiness.should_run is True
     assert initial_readiness.reason == "incomplete_batches"
     assert "1 missing batch output" in initial_readiness.message
-    assert bool(initial_readiness.status_frame().loc[0, "should_submit"]) is True
+    initial_readiness_frame = initial_readiness.status_frame()
+    assert initial_readiness_frame.loc[0, "artifact"] == "metric_batch_outputs"
+    assert initial_readiness_frame.loc[0, "status"] == "incomplete"
+    assert bool(initial_readiness_frame.loc[0, "should_submit"]) is True
 
     batch_output = run_manifest_batch(parsed, batch_index=0)
     assert batch_output.exists()
@@ -2082,6 +2097,7 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     assert completed_status.completed_batches == (0,)
     assert completed_status.missing_count == 0
     assert completed_status.all_complete
+    assert completed_status.status_frame().loc[0, "status"] == "complete"
     completed_readiness = metric_slurm_submission_readiness(completed_status)
     assert completed_readiness.should_run is False
     assert completed_readiness.reason == "current"

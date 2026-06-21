@@ -131,13 +131,16 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
    * - ``read_task_manifest`` and ``run_manifest_batch``
      - Load a manifest and execute one planned batch from Python or a generated
        worker script. ``MetricWorkflowManifest.status_frame()`` reports
-       ``name``, ``artifact_label``, ``resolved_path``, ``exists``, task count,
-       batch count, batch output directory, per-batch task range, first/last
-       batch outputs, and QC table without loading waveform files. Legacy
-       ``manifest_path`` and ``manifest_exists`` aliases remain present.
+       ``name``, ``artifact``, ``artifact_label``, ``artifact_role``,
+       ``status``, ``resolved_path``, ``exists``, task count, batch count,
+       batch output directory, per-batch task range, first/last batch outputs,
+       and QC table without loading waveform files. Legacy ``manifest_path``
+       and ``manifest_exists`` aliases remain present.
    * - ``metric_manifest_batch_status`` and
        ``metric_batch_merge_readiness_from_config``
      - Report which metric batches are complete before merging outputs.
+       Batch status frames expose the same artifact columns plus completion
+       counts, percent complete, and ``complete``/``incomplete`` status.
    * - ``merge_batch_outputs`` and ``merge_metric_batches_from_config``
      - Merge completed metric batch files into the registered metric-row table.
    * - ``write_metric_outputs_from_config``

@@ -74,7 +74,10 @@ class MetricWorkflowManifest:
             [
                 {
                     "name": "metric_manifest_path",
+                    "artifact": "metric_manifest",
                     "artifact_label": "metric workflow manifest",
+                    "artifact_role": "metric_manifest",
+                    "status": "ready" if self.manifest_path.exists() else "missing",
                     "resolved_path": str(self.manifest_path),
                     "path": str(self.manifest_path),
                     "exists": self.manifest_path.exists(),
@@ -136,6 +139,14 @@ class MetricManifestBatchStatus:
         return pd.DataFrame(
             [
                 {
+                    "name": "metric_batch_outputs",
+                    "artifact": "metric_batch_outputs",
+                    "artifact_label": "metric batch outputs",
+                    "artifact_role": "metric_batch_outputs",
+                    "status": "complete" if self.all_complete else "incomplete",
+                    "resolved_path": str(self.manifest_path),
+                    "path": str(self.manifest_path),
+                    "exists": self.manifest_path.exists(),
                     "manifest": str(self.manifest_path),
                     "total_batches": int(self.total_batches),
                     "completed_batches": int(self.completed_count),

@@ -87,6 +87,10 @@ Changelog
     direct preprocessing calls expose preprocessed event-station, manifest, and
     trace-metadata artifacts with ids, labels, roles, readiness status,
     normalized paths, and row counts.
+  - Standardized metric manifest and batch-status frames so large-run Step 3
+    planning, Slurm submission, and merge-readiness displays expose artifact
+    ids, labels, roles, ready/missing or complete/incomplete status, normalized
+    manifest paths, and completion counts.
 
 - **CLI help and generated-reference wording** *(Changed)*
 
