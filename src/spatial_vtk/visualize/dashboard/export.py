@@ -67,11 +67,34 @@ class DashboardDatasetPreparationResult:
     def written_frame(self) -> pd.DataFrame:
         """Return paths written by this preparation step."""
 
-        rows = [
-            {"name": name, "resolved_path": str(path), "path": str(path)}
-            for name, path in self.written_paths.items()
-        ]
-        return pd.DataFrame(rows, columns=["name", "resolved_path", "path"])
+        rows: list[dict[str, Any]] = []
+        for name, path in self.written_paths.items():
+            resolved = Path(path)
+            rows.append(
+                {
+                    "name": name,
+                    "artifact": name.removesuffix("_root").removesuffix("_path"),
+                    "artifact_label": str(name).replace("_", " "),
+                    "artifact_role": "dashboard_output",
+                    "status": "wrote",
+                    "resolved_path": str(resolved),
+                    "path": str(resolved),
+                    "exists": resolved.exists(),
+                }
+            )
+        return pd.DataFrame(
+            rows,
+            columns=[
+                "name",
+                "artifact",
+                "artifact_label",
+                "artifact_role",
+                "status",
+                "resolved_path",
+                "path",
+                "exists",
+            ],
+        )
 
     def preparation_frame(self) -> pd.DataFrame:
         """Return the preparation decision as a one-row status table."""
@@ -81,13 +104,26 @@ class DashboardDatasetPreparationResult:
         return pd.DataFrame(
             [
                 {
+                    "name": "dashboard_preparation",
+                    "artifact": "dashboard_preparation",
+                    "artifact_label": "dashboard preparation",
+                    "artifact_role": "workflow_step",
                     "status": self.status,
                     "should_run": should_run,
                     "readiness_reason": readiness_reason,
                     "message": self.message,
                 }
             ],
-            columns=["status", "should_run", "readiness_reason", "message"],
+            columns=[
+                "name",
+                "artifact",
+                "artifact_label",
+                "artifact_role",
+                "status",
+                "should_run",
+                "readiness_reason",
+                "message",
+            ],
         )
 
     def display_output_previews(

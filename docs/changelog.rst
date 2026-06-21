@@ -73,6 +73,10 @@ Changelog
     cells expose artifact names, labels, roles, launch status, ports, fallback
     commands, URLs, process ids, and error messages in the same status-table
     vocabulary used by other notebook workflow helpers.
+  - Standardized ``DashboardDatasetPreparationResult.preparation_frame()`` and
+    ``written_frame()`` so dashboard preparation cells expose artifact names,
+    labels, roles, status, normalized paths, and existence checks without
+    notebook-local formatting.
 
 - **CLI help and generated-reference wording** *(Changed)*
 

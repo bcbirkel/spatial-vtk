@@ -3744,6 +3744,10 @@ outputs:
     assert not result.status_frame().empty
     assert result.written_frame().empty
     preparation_frame = result.preparation_frame()
+    assert preparation_frame.loc[0, "name"] == "dashboard_preparation"
+    assert preparation_frame.loc[0, "artifact"] == "dashboard_preparation"
+    assert preparation_frame.loc[0, "artifact_label"] == "dashboard preparation"
+    assert preparation_frame.loc[0, "artifact_role"] == "workflow_step"
     assert preparation_frame.loc[0, "status"] == "skipped"
     assert bool(preparation_frame.loc[0, "should_run"]) is True
     assert "Slurm-aware dashboard preparation cell" in preparation_frame.loc[0, "message"]
@@ -3870,7 +3874,12 @@ outputs:
     assert not result.summary_frame().empty
     written = result.written_frame().set_index("name")
     assert "dashboard_summary_root" in written.index
+    assert written.loc["dashboard_summary_root", "artifact"] == "dashboard_summary"
+    assert written.loc["dashboard_summary_root", "artifact_label"] == "dashboard summary root"
+    assert written.loc["dashboard_summary_root", "artifact_role"] == "dashboard_output"
+    assert written.loc["dashboard_summary_root", "status"] == "wrote"
     assert written.loc["dashboard_summary_root", "resolved_path"] == written.loc["dashboard_summary_root", "path"]
+    assert bool(written.loc["dashboard_summary_root", "exists"]) is False
 
 
 def test_display_dashboard_preparation_result_returns_named_frames(tmp_path):

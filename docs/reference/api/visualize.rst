@@ -116,6 +116,10 @@ Public helpers exposed by ``spatial_vtk.visualize``:
        ``status_frame()``, ``preparation_frame()``, and
        ``display_output_previews(...)`` so notebooks can show readiness,
        written outputs, and bounded previews without local formatting helpers.
+       ``preparation_frame()`` and ``written_frame()`` use the same
+       ``name``, ``artifact``, ``artifact_label``, ``artifact_role``,
+       ``status``, ``resolved_path``, and ``exists`` vocabulary as other
+       notebook workflow status tables.
    * - ``write_configured_dashboard_datasets``
      - Lower-level script helper that writes dashboard-ready row and summary
        datasets from configured metric outputs after the caller has decided a
