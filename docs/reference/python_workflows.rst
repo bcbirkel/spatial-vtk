@@ -715,7 +715,6 @@ paths without requiring global config activation.
        conditionals in cells
    * - Write dashboard-ready row and summary datasets
      - ``spatial_vtk.visualize.prepare_configured_dashboard_datasets_from_notebook_settings``
-       and ``spatial_vtk.visualize.write_configured_dashboard_datasets``
      - dashboard metric dataset root and dashboard summary table root; standard
        dashboard artifacts are replaced so stale partitions or stale
        CSV/Parquet summary files do not mix with the current run. The notebook
@@ -736,7 +735,10 @@ paths without requiring global config activation.
        summary tables. Display the result from
        ``DashboardDatasetPreparationResult.run_if_needed(...)`` with
        ``spatial_vtk.config.display_notebook_step_result`` so submitted,
-       skipped, and local-run states appear as labelled notebook tables. The
+       skipped, and local-run states appear as labelled notebook tables.
+       Scripts that intentionally own dashboard preparation control can call
+       ``spatial_vtk.visualize.write_configured_dashboard_datasets`` directly
+       with ``cfg=`` or explicit roots. The
        metrics dashboard loads the primary
        ``model_metric_band`` summary at startup, then reads optional
        station/event/path summaries lazily in chunks after the active

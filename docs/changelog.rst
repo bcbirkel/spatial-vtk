@@ -92,6 +92,9 @@ Changelog
   - Reworded Step 6 region-boxplot workflow guidance so notebooks use the
     standard additional-plotting output result method, with direct region
     boxplot helpers framed as script APIs.
+  - Reworded Step 7 dashboard-preparation workflow guidance so notebooks use
+    the dashboard preparation result object, with direct dashboard dataset
+    writers framed as script APIs.
   - Reworded the preprocessing direct-call example so advanced scripts prefer
     config-backed output resolution instead of a literal preprocessed-output
     directory.

@@ -2689,6 +2689,25 @@ def test_python_workflow_docs_prefer_region_boxplot_result_object_method():
     assert "the preferred pattern for standard notebooks" in workflows
 
 
+def test_python_workflow_docs_prefer_dashboard_preparation_result_object():
+    """Dashboard workflow docs should keep direct writers out of notebook entry-point cells."""
+
+    workflows_path = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "python_workflows.rst"
+    workflows = workflows_path.read_text(encoding="utf-8")
+    dashboard_row = workflows.split("* - Write dashboard-ready row and summary datasets", 1)[1].split(
+        "* - Launch dashboards from Python",
+        1,
+    )[0]
+
+    assert "spatial_vtk.visualize.prepare_configured_dashboard_datasets_from_notebook_settings" in dashboard_row
+    entry_point_cell = dashboard_row.split("- dashboard metric dataset root", 1)[0]
+    assert "spatial_vtk.visualize.write_configured_dashboard_datasets" not in entry_point_cell
+    assert "DashboardDatasetPreparationResult`` also owns the Slurm-aware" in dashboard_row
+    assert "Scripts that intentionally own dashboard preparation control can call" in dashboard_row
+    assert "``spatial_vtk.visualize.write_configured_dashboard_datasets`` directly" in dashboard_row
+    assert "with ``cfg=`` or explicit roots" in dashboard_row
+
+
 def test_python_workflow_docs_prefer_metric_figure_suite_wrapper():
     """Metric workflow docs should point notebook users at the task-level figure suite."""
 
