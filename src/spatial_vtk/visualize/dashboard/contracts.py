@@ -113,22 +113,32 @@ class DashboardOutputReadiness:
     qc_status: pd.DataFrame | None = None
 
     def status_frame(self) -> pd.DataFrame:
-        """Return combined input, metric-dataset, summary-table, and QC status."""
+        """Return combined input, metric-dataset, summary-table, and QC status.
 
-        frames = [
-            frame
-            for frame in (self.input_status, self.metrics_status, self.summary_status, self.qc_status)
-            if frame is not None and not frame.empty
+        The child readiness frames are built by different inspectors. This
+        method keeps their detailed columns while normalizing the notebook
+        contract used by large-run status cells: ``item_type``,
+        ``artifact_label``, ``resolved_path``, ``path``, ``exists``,
+        ``readiness``, ``message``, and ``suggested_action`` are always present
+        when at least one child frame has rows.
+        """
+
+        frame_specs = [
+            ("input", self.input_status),
+            ("dataset", self.metrics_status),
+            ("summary_table", self.summary_status),
+            ("qc_table", self.qc_status),
         ]
-        if not frames:
+        if not any(frame is not None and not frame.empty for _, frame in frame_specs):
             return pd.DataFrame()
-        columns: list[str] = []
         rows: list[dict[str, object]] = []
-        for frame in frames:
-            for column in frame.columns:
-                if column not in columns:
-                    columns.append(str(column))
-            rows.extend(frame.astype(object).to_dict("records"))
+        for item_type, frame in frame_specs:
+            if frame is None or frame.empty:
+                continue
+            for row in frame.astype(object).to_dict("records"):
+                normalized = _normalize_dashboard_status_row(row, item_type=item_type)
+                rows.append(normalized)
+        columns = _dashboard_status_column_order(rows)
         return pd.DataFrame(rows, columns=columns)
 
     def summary_frame(self) -> pd.DataFrame:
@@ -961,6 +971,86 @@ def _dashboard_input_status_frame(paths: dict[str, str | Path]) -> pd.DataFrame:
             {"name": name, "artifact_role": row.get("artifact_role", ""), "readiness": "missing"}
         )
     return out
+
+
+def _normalize_dashboard_status_row(row: dict[str, object], *, item_type: str) -> dict[str, object]:
+    """Return one stable notebook-facing dashboard readiness row."""
+
+    normalized = dict(row)
+    normalized["item_type"] = item_type
+    name = str(_blank_if_missing(normalized.get("name")))
+    if name and not _blank_if_missing(normalized.get("artifact_role")):
+        role, label = _dashboard_artifact_role_and_label(name)
+        normalized["artifact_role"] = role
+        normalized["artifact_label"] = _blank_if_missing(normalized.get("artifact_label")) or label
+    elif name and not _blank_if_missing(normalized.get("artifact_label")):
+        normalized["artifact_label"] = name
+    elif "artifact_label" not in normalized:
+        normalized["artifact_label"] = ""
+
+    resolved_path = _blank_if_missing(normalized.get("resolved_path", normalized.get("path", "")))
+    path_alias = _blank_if_missing(normalized.get("path", resolved_path))
+    if not resolved_path and path_alias:
+        resolved_path = path_alias
+    if not path_alias and resolved_path:
+        path_alias = resolved_path
+    normalized["resolved_path"] = resolved_path
+    normalized["path"] = path_alias
+
+    if "exists" not in normalized or _blank_if_missing(normalized.get("exists")) == "":
+        normalized["exists"] = Path(str(resolved_path)).exists() if resolved_path else False
+    if "ready" not in normalized or _blank_if_missing(normalized.get("ready")) == "":
+        normalized["ready"] = bool(normalized.get("exists", False))
+    if not _blank_if_missing(normalized.get("readiness")):
+        normalized["readiness"] = "ready" if dashboard_ready_value(normalized.get("ready"), default=False) else "missing"
+    if not _blank_if_missing(normalized.get("message")):
+        label = str(_blank_if_missing(normalized.get("artifact_label")) or name or item_type)
+        normalized["message"] = f"{label} is ready." if dashboard_ready_value(normalized.get("ready"), default=False) else f"{label} is missing."
+    if "suggested_action" not in normalized:
+        normalized["suggested_action"] = ""
+    for column in ("dashboard_table", "dashboard_tabs", "required_columns", "purpose"):
+        if column not in normalized:
+            normalized[column] = ""
+    return normalized
+
+
+def _dashboard_status_column_order(rows: list[dict[str, object]]) -> list[str]:
+    """Return stable status columns followed by any inspector-specific details."""
+
+    preferred = [
+        "item_type",
+        "name",
+        "artifact_role",
+        "artifact_label",
+        "dashboard_table",
+        "dashboard_tabs",
+        "required_columns",
+        "ready",
+        "readiness",
+        "exists",
+        "row_count",
+        "file_count",
+        "map_ready",
+        "missing_columns",
+        "missing_map_columns",
+        "value_columns",
+        "nonempty_value_columns",
+        "value_families",
+        "nonempty_value_families",
+        "message",
+        "tab_message",
+        "map_message",
+        "suggested_action",
+        "resolved_path",
+        "path",
+        "size_gb",
+        "modified",
+        "purpose",
+    ]
+    present = {str(column) for row in rows for column in row}
+    columns = [column for column in preferred if column in present]
+    columns.extend(sorted(column for column in present if column not in set(columns)))
+    return columns
 
 
 def _dashboard_artifact_role_and_label(name: str) -> tuple[str, str]:

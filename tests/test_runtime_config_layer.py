@@ -3574,12 +3574,51 @@ outputs:
     assert readiness.reason == "missing_outputs"
     assert "recognized files" in readiness.message
     readiness_status = readiness.status_frame()
+    assert [
+        "item_type",
+        "name",
+        "artifact_role",
+        "artifact_label",
+        "ready",
+        "readiness",
+        "exists",
+        "message",
+        "suggested_action",
+        "resolved_path",
+        "path",
+    ] == [
+        column
+        for column in readiness_status.columns
+        if column
+        in {
+            "item_type",
+            "name",
+            "artifact_role",
+            "artifact_label",
+            "ready",
+            "readiness",
+            "exists",
+            "message",
+            "suggested_action",
+            "resolved_path",
+            "path",
+        }
+    ]
     assert "metrics_dashboard_root" in set(readiness_status["name"])
+    assert set(readiness_status["item_type"]) >= {"input", "dataset", "summary_table", "qc_table"}
     metrics_long_row = readiness_status.loc[readiness_status["name"].eq("metrics_long_path")].iloc[0]
-    assert metrics_long_row["ready"] is True
+    assert metrics_long_row["item_type"] == "input"
+    assert metrics_long_row["artifact_label"] == "metrics_long source table"
+    assert bool(metrics_long_row["ready"]) is True
     assert metrics_long_row["readiness"] == "ready"
+    assert bool(metrics_long_row["exists"]) is True
+    assert metrics_long_row["resolved_path"] == metrics_long_row["path"]
     assert metrics_long_row["message"] == "metrics_long source table is ready."
     assert metrics_long_row["suggested_action"] == ""
+    metric_root_row = readiness_status.loc[readiness_status["name"].eq("metrics_dashboard_root")].iloc[0]
+    assert metric_root_row["item_type"] == "dataset"
+    assert metric_root_row["artifact_label"] == "metrics dashboard row dataset"
+    assert metric_root_row["resolved_path"] == metric_root_row["path"]
     assert by_item.loc["metrics_dashboard_dataset", "readiness"] == "missing_dataset_files"
     assert by_item.loc["metrics_dashboard_dataset", "resolved_path"] == by_item.loc["metrics_dashboard_dataset", "path"]
     assert by_item.loc["model_metric_band", "readiness"] == "missing"
