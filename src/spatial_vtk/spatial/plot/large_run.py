@@ -18,7 +18,7 @@ from spatial_vtk.metrics.plot.large_run import (
 )
 from spatial_vtk.spatial.calculate import add_geojson_metadata_to_metrics
 from spatial_vtk.spatial.plot.metrics import _categorical_metric_plot_data, boxplot
-from spatial_vtk.visualize.figure_sidecars import write_figure_row_sidecar
+from spatial_vtk.visualize.figure_sidecars import normalize_figure_status_rows, write_figure_row_sidecar
 
 
 ConfigInput = SpatialVTKConfig | str | Path
@@ -1477,16 +1477,21 @@ class StandardGeoJSONFigureResult:
     def status_frame(self) -> pd.DataFrame:
         """Return one row per Step 5 region figure written or skipped."""
 
-        return pd.DataFrame(
-            self.rows,
+        frame = normalize_figure_status_rows(self.rows)
+        return frame.reindex(
             columns=[
+                "name",
+                "artifact_label",
+                "resolved_path",
+                "path",
+                "exists",
                 "artifact",
                 "status",
                 "row_count",
                 "figure_path",
                 "figure_exists",
                 "message",
-            ],
+            ]
         )
 
     def preview_frame(self) -> pd.DataFrame:
@@ -1514,16 +1519,21 @@ class StandardGeoJSONCorridorFigureResult:
     def status_frame(self) -> pd.DataFrame:
         """Return one row per Step 5 corridor figure written or skipped."""
 
-        return pd.DataFrame(
-            self.rows,
+        frame = normalize_figure_status_rows(self.rows)
+        return frame.reindex(
             columns=[
+                "name",
+                "artifact_label",
+                "resolved_path",
+                "path",
+                "exists",
                 "artifact",
                 "status",
                 "row_count",
                 "figure_path",
                 "figure_exists",
                 "message",
-            ],
+            ]
         )
 
     def boundary_crossing_frame(self) -> pd.DataFrame:

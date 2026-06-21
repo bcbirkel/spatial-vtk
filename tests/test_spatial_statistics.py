@@ -319,8 +319,11 @@ def test_write_standard_geojson_region_figures_returns_status_tables(monkeypatch
     assert set(result.metrics_by_regions["event_region"]) == {"Glendale"}
     assert result.summary_frame().loc[0, "rows"] == 2
     status = result.status_frame()
+    assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
     assert status["status"].tolist() == ["wrote", "wrote", "wrote"]
     assert status["figure_exists"].tolist() == [True, True, True]
+    assert status["exists"].tolist() == [True, True, True]
+    assert status["path"].tolist() == status["figure_path"].tolist()
     assert status["artifact"].tolist() == ["geojson_regions", "pga_region_boxplot", "regional_pga_station_map"]
     assert len(calls) == 3
     assert calls[-1][2]["value_col"] == "mean_centered"
@@ -478,8 +481,11 @@ def test_write_standard_geojson_corridor_figures_returns_status_tables(monkeypat
     assert result.boundary_crossing_frame()["corridor_id"].tolist() == ["through_boundary", "through_boundary"]
     assert result.outward_event_frame()["event_id"].tolist() == ["e1"]
     status = result.status_frame()
+    assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
     assert status["status"].tolist() == ["wrote", "wrote", "wrote", "wrote"]
     assert status["figure_exists"].tolist() == [True, True, True, True]
+    assert status["exists"].tolist() == [True, True, True, True]
+    assert status["path"].tolist() == status["figure_path"].tolist()
     assert status["artifact"].tolist() == [
         "through_boundary_corridor_map",
         "outward_corridor_map",

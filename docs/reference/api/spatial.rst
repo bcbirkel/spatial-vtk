@@ -353,7 +353,10 @@ Public plotting helpers and notebook workflow loaders:
        table generation, configured figure paths, and sidecar options in
        package code. The returned ``StandardGeoJSONFigureResult`` exposes
        ``summary_frame()`` and ``status_frame()`` for written region figures
-       and source-row sidecars.
+       and source-row sidecars. Its status frame includes normalized
+       ``name``, ``artifact_label``, ``resolved_path``, ``path``, and
+       ``exists`` columns while preserving ``figure_path`` and
+       ``figure_exists``.
    * - ``write_standard_geojson_corridor_figures``
      - Write the standard Step 5 boundary-corridor maps, boundary-crossing
        waveform record section, and outward-corridor PGV station map while
@@ -361,7 +364,8 @@ Public plotting helpers and notebook workflow loaders:
        selection, metric filtering, figure paths, and preview tables in
        package code. The returned ``StandardGeoJSONCorridorFigureResult``
        exposes ``status_frame()`` for corridor figure paths, statuses,
-       messages, and sidecars.
+       messages, and sidecars. Its status frame uses the same normalized
+       figure path columns as the standard region figure result.
    * - ``write_standard_additional_plotting_figures``
      - Write the standard Step 6 waveform map, pattern-similarity figure,
        residual scatterplot, region boxplot, and region heatmap while keeping

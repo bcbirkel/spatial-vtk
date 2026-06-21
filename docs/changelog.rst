@@ -51,6 +51,9 @@ Changelog
   - Standardized ``StandardMetricDiagnosticFigureResult.status_frame()`` so
     Step 3 diagnostic figure rows include normalized figure path columns while
     preserving ``figure_path`` and ``figure_exists``.
+  - Standardized standard Step 5 GeoJSON region and corridor figure
+    ``status_frame()`` outputs so notebook tables expose normalized figure
+    path columns while preserving legacy figure path fields.
 
 - **CLI help and generated-reference wording** *(Changed)*
 
