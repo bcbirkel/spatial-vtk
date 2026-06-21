@@ -7,9 +7,13 @@ name output files without repeatedly spelling out filenames in each workflow.
 
 Usage examples
 --------------
-Create explicit CSV paths:
-  ``tables = default_output_paths(output_root, ["prepared_stations", "prepared_events"])``
-  ``stations.to_csv(tables.prepared_stations, index=False)``
+Routine notebooks should start from standard workflow result loaders:
+  ``from spatial_vtk.io import load_standard_ingest_workflow_outputs``
+  ``ingest_outputs = load_standard_ingest_workflow_outputs()``
+  ``status = ingest_outputs.status_frame()``
+
+Use ``output_group()`` or ``default_output_paths()`` directly only in custom
+scripts or package helpers that intentionally need lower-level artifact access.
 """
 
 from __future__ import annotations

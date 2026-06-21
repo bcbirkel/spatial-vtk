@@ -1228,6 +1228,23 @@ def test_output_registry_docstring_prefers_standard_workflow_outputs_for_noteboo
     assert 'path = resolve_output_path("record_coverage", kind="figure")' not in text
 
 
+def test_output_paths_docstring_prefers_standard_workflow_results_for_notebooks():
+    source = (
+        pathlib.Path(__file__).resolve().parents[1]
+        / "src"
+        / "spatial_vtk"
+        / "io"
+        / "output_paths.py"
+    )
+    text = source.read_text(encoding="utf-8")
+
+    assert "from spatial_vtk.io import load_standard_ingest_workflow_outputs" in text
+    assert "ingest_outputs = load_standard_ingest_workflow_outputs()" in text
+    assert "Use ``output_group()`` or ``default_output_paths()`` directly only in custom" in text
+    assert "Create explicit CSV paths" not in text
+    assert "stations.to_csv(tables.prepared_stations" not in text
+
+
 def test_runtime_config_docstring_prefers_notebook_context_over_path_plumbing():
     source = (
         pathlib.Path(__file__).resolve().parents[1]

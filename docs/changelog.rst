@@ -70,6 +70,10 @@ Changelog
   - Reworded the runtime configuration module example so scripts see the
     explicit ``SpatialVTKConfig`` load path while notebooks are steered toward
     ``notebook_run_context()`` instead of individual path resolution.
+  - Reworded the I/O output-path module example so notebooks start from the
+    standard ingest workflow result and direct ``output_group()`` or
+    ``default_output_paths()`` usage is framed as custom-script/package-helper
+    access.
 
 - **Step 1 workflow helpers** *(Added)*
 
