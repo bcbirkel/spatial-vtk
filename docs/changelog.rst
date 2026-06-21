@@ -621,6 +621,9 @@ Changelog
   - Added ``existing_figure_count`` fields to large-run metric and spatial
     figure-suite status tables so notebooks distinguish planned figure paths
     from artifacts that are already present on disk.
+  - Added ``table_exists`` and ``figure_exists`` fields to Step 1 context and
+    Step 2 QC figure-suite status tables so notebooks show missing inputs and
+    written artifacts without requiring manual path checks.
 
 2026-06-18
 ----------

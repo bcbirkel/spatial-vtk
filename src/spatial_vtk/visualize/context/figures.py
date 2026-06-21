@@ -1990,7 +1990,12 @@ def _context_figure_status_row(
             name: None if path is None else str(path)
             for name, path in table_paths.items()
         },
+        "table_exists": {
+            name: bool(path is not None and path.exists())
+            for name, path in table_paths.items()
+        },
         "figure_path": None if figure_path is None else str(figure_path),
+        "figure_exists": bool(figure_path is not None and figure_path.exists()),
         "message": message,
     }
 

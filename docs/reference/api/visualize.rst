@@ -51,7 +51,8 @@ Public helpers exposed by ``spatial_vtk.visualize``:
        metadata and record-coverage outputs without notebook-local readiness
        checks, table loading, basemap kwargs, or sidecar kwargs. The returned
        ``ContextFigureResult`` exposes ``status_frame()`` for compact notebook
-       display of figure paths, statuses, messages, and sidecar paths.
+       display of table paths, figure paths, existence flags, statuses, and
+       messages.
    * - ``plot_retention_summary`` and
        ``plot_event_station_retention_heatmap``
      - Render compact QC retention figures from summary tables instead of full
@@ -64,8 +65,8 @@ Public helpers exposed by ``spatial_vtk.visualize``:
      - Render the standard QC figure suite from compact configured QC outputs
        without notebook-local readiness checks, table loading, map kwargs, or
        sidecar kwargs. The returned ``QCFigureResult`` exposes
-       ``status_frame()`` for QC figure artifact paths, statuses, messages,
-       row counts, and sidecar metadata.
+       ``status_frame()`` for QC table paths, figure paths, existence flags,
+       statuses, messages, and row counts.
    * - ``plot_observed_synthetic_record_section`` and ``plot_record_section``
      - Render record-section waveform figures from prepared waveform tables.
    * - ``station_event_waveform_order_frame``

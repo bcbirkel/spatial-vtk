@@ -564,6 +564,8 @@ outputs:
     assert set(status["status"]) == {"wrote"}
     assert len(status) == 5
     assert all(path and Path(path).exists() for path in status["figure_path"])
+    assert status["figure_exists"].tolist() == [True] * 5
+    assert all(all(value is True for value in table_map.values()) for table_map in status["table_exists"])
     plot_calls = [call for call in calls if call["kind"] == "plot"]
     assert len(plot_calls) == 5
     context_call = next(call for call in plot_calls if Path(call["outpath"]).name == "station_event_context.png")
@@ -619,7 +621,10 @@ outputs:
 
     result = write_large_run_context_figures_from_outputs(Outputs(), Settings(), cfg=cfg)
 
-    assert set(result.status_frame()["status"]) == {"exists"}
+    status = result.status_frame()
+    assert set(status["status"]) == {"exists"}
+    assert status["figure_exists"].tolist() == [True] * 5
+    assert all(all(value is True for value in table_map.values()) for table_map in status["table_exists"])
 
 
 def test_write_large_run_context_figures_reports_missing_inputs(tmp_path: Path) -> None:
@@ -643,6 +648,8 @@ def test_write_large_run_context_figures_reports_missing_inputs(tmp_path: Path) 
 
     assert len(status) == 5
     assert set(status["status"]) == {"missing_input"}
+    assert status["figure_exists"].tolist() == [False] * 5
+    assert all(all(value is False for value in table_map.values()) for table_map in status["table_exists"])
     assert status["message"].str.contains("Step 1 context tables").all()
 
 
@@ -721,6 +728,8 @@ outputs:
     assert set(status["status"]) == {"wrote"}
     assert len(status) == 6
     assert all(path and Path(path).exists() for path in status["figure_path"])
+    assert status["figure_exists"].tolist() == [True] * 6
+    assert status["table_exists"].tolist() == [True] * 6
     plot_calls = [call for call in calls if call["kind"] == "plot"]
     assert len(plot_calls) == 6
     post_qc_call = next(call for call in plot_calls if Path(call["outpath"]).name == "post_qc_station_event_map.png")
@@ -780,7 +789,10 @@ outputs:
 
     result = write_large_run_qc_figures_from_outputs(Outputs(), Settings(), cfg=cfg)
 
-    assert set(result.status_frame()["status"]) == {"exists"}
+    status = result.status_frame()
+    assert set(status["status"]) == {"exists"}
+    assert status["figure_exists"].tolist() == [True] * 6
+    assert status["table_exists"].tolist() == [True] * 6
 
 
 def test_write_large_run_qc_figures_reports_missing_inputs(tmp_path: Path) -> None:
@@ -807,6 +819,8 @@ def test_write_large_run_qc_figures_reports_missing_inputs(tmp_path: Path) -> No
 
     assert len(status) == 6
     assert set(status["status"]) == {"missing_input"}
+    assert status["figure_exists"].tolist() == [False] * 6
+    assert status["table_exists"].tolist() == [False] * 6
     assert status["message"].str.contains("compact QC tables").all()
 
 

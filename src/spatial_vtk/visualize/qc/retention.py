@@ -561,7 +561,9 @@ def _qc_figure_status_row(
         "status": status,
         "row_count": int(row_count),
         "table_path": None if table_path is None else str(table_path),
+        "table_exists": bool(table_path is not None and table_path.exists()),
         "figure_path": None if figure_path is None else str(figure_path),
+        "figure_exists": bool(figure_path is not None and figure_path.exists()),
         "message": message,
     }
 
