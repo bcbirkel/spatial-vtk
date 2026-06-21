@@ -392,7 +392,9 @@ def test_private_agent_planning_files_are_ignored_for_public_release():
         f"*_exec{plan_stem}.md",
     ):
         assert snippet in gitignore
-        assert snippet in checklist
+    assert "private planning files" in checklist
+    assert "repository ignore rules cover those\nprivate working files" in checklist
+    assert f"exec{plan_stem}" not in checklist.lower()
 
 
 def test_release_checklist_exists_and_matches_public_validation_gates():

@@ -226,6 +226,9 @@ Changelog
   - Made tutorial notebook runtime-check failures name the active Python
     executable and the exact runtime-check command to rerun after installing
     notebook extras.
+  - Reworded the public release checklist so it refers to private planning
+    files generically while ``.gitignore`` retains the concrete ignored
+    patterns.
   - Reworded lazy I/O package loader docs so public API references describe
     resolved public helpers instead of implementation-module plumbing.
   - Reworded config-backed metric workflow module docs so large-run notebooks
