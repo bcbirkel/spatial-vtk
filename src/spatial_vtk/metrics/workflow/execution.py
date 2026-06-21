@@ -508,9 +508,12 @@ def _write_merged_batch_tables_csv(paths: Sequence[Path], output_path: Path) -> 
     wrote_header = False
     try:
         for path in paths:
-            frame = _normalize_merged_batch_frame(_read_table(path), columns)
-            frame.to_csv(tmp_path, mode="a", header=not wrote_header, index=False)
-            wrote_header = True
+            for frame in _iter_table_frames(path):
+                normalized = _normalize_merged_batch_frame(frame, columns)
+                normalized.to_csv(tmp_path, mode="a", header=not wrote_header, index=False)
+                wrote_header = True
+        if not wrote_header:
+            pd.DataFrame(columns=columns).to_csv(tmp_path, index=False)
         tmp_path.replace(output_path)
     except Exception:
         tmp_path.unlink(missing_ok=True)
@@ -536,11 +539,12 @@ def _write_merged_batch_tables_parquet(paths: Sequence[Path], output_path: Path)
         schema = pa.Table.from_pandas(schema_frame, preserve_index=False).schema
         writer = pq.ParquetWriter(tmp_path, schema)
         for path in paths:
-            frame = _normalize_merged_batch_frame(_read_table(path), columns)
-            if frame.empty:
-                continue
-            table = pa.Table.from_pandas(frame, schema=schema, preserve_index=False)
-            writer.write_table(table)
+            for frame in _iter_table_frames(path):
+                normalized = _normalize_merged_batch_frame(frame, columns)
+                if normalized.empty:
+                    continue
+                table = pa.Table.from_pandas(normalized, schema=schema, preserve_index=False)
+                writer.write_table(table)
         writer.close()
         writer = None
         tmp_path.replace(output_path)
@@ -639,6 +643,27 @@ def _read_table_preview(path: Path, *, max_rows: int) -> pd.DataFrame:
     text_columns = _csv_text_columns(path)
     dtype = {column: str for column in text_columns}
     return pd.read_csv(path, dtype=dtype, nrows=max_rows, low_memory=False)
+
+
+def _iter_table_frames(path: Path, *, chunksize: int = 100_000):
+    """Yield table frames from one metric batch without full-file reads."""
+
+    size = max(int(chunksize), 1)
+    if path.suffix.lower() in {".parquet", ".pq"}:
+        try:
+            import pyarrow.parquet as pq
+        except ImportError as exc:
+            raise RuntimeError(
+                f"Could not stream metric batch parquet table for {path}: pyarrow is required. "
+                "Install the package dependencies or rewrite metric batches as CSV before merging."
+            ) from exc
+        parquet_file = pq.ParquetFile(path)
+        for batch in parquet_file.iter_batches(batch_size=size):
+            yield batch.to_pandas()
+        return
+    text_columns = _csv_text_columns(path)
+    dtype = {column: str for column in text_columns}
+    yield from pd.read_csv(path, dtype=dtype, chunksize=size, low_memory=False)
 
 
 def _normalize_merged_batch_frame(df: pd.DataFrame, columns: Sequence[str]) -> pd.DataFrame:

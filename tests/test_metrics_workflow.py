@@ -58,6 +58,7 @@ from spatial_vtk.visualize import figure_sidecar_status_frame
 from spatial_vtk.spatial.map import plot_event_residual_map
 from spatial_vtk.spatial.plot import boxplot, heatmap, scatterplot
 from spatial_vtk.visualize.dashboard import available_dashboard_value_columns, build_dashboard_summaries, load_dashboard_metric_dataset
+import spatial_vtk.metrics.workflow.execution as metric_execution
 
 
 def test_metric_inventories_from_trace_metadata_use_explicit_path_columns(tmp_path) -> None:
@@ -2375,7 +2376,11 @@ def test_metric_batch_merge_streams_without_dataframe_concat(tmp_path, monkeypat
     def fail_concat(*_args, **_kwargs):  # noqa: ANN202
         raise AssertionError("merge_batch_outputs should stream batch tables instead of concatenating them")
 
+    def fail_full_batch_read(*_args, **_kwargs):  # noqa: ANN202
+        raise AssertionError("merge_batch_outputs should stream chunks instead of full-reading each batch")
+
     monkeypatch.setattr(pd, "concat", fail_concat)
+    monkeypatch.setattr(metric_execution, "_read_table", fail_full_batch_read)
 
     merged_path = merge_batch_outputs(manifest_path, tmp_path / "merged.parquet")
     monkeypatch.undo()

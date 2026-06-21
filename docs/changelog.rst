@@ -730,6 +730,9 @@ Changelog
   - Made metric batch parquet merges fail with actionable PyArrow dependency
     errors instead of falling back to full-table pandas reads when inspecting
     schemas or bounded previews.
+  - Changed metric batch merges to stream each CSV or Parquet batch in row
+    chunks instead of full-reading one batch file at a time before writing the
+    merged metric-row table.
   - Made shared parquet preview helpers stream bounded rows with PyArrow and
     report actionable metadata/dependency errors instead of full-reading large
     tables before taking ``head()``.
