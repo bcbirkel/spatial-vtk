@@ -39,6 +39,7 @@ from spatial_vtk.io import (
     load_output_table,
     output_group,
     read_table,
+    table_row_count,
     write_output_table,
     write_table,
 )
@@ -1515,7 +1516,7 @@ def run_spatial_derived_outputs_workflow(
         path = paths[key]
         if path.exists() and not overwrite:
             try:
-                rows[key] = len(read_table(path))
+                rows[key] = table_row_count(path)
             except Exception:
                 rows[key] = -1
             reused.append(key)

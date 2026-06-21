@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import glob
 from collections.abc import Callable, Sequence
 from pathlib import Path
@@ -210,6 +211,29 @@ def parquet_table_row_count(path: str | Path) -> int:
             "Repair or rewrite the table before using this workflow."
         ) from exc
     return int(metadata.num_rows)
+
+
+def table_row_count(path: str | Path) -> int:
+    """Return a CSV or Parquet row count without materializing the table.
+
+    Parquet counts are read from file metadata. CSV counts are streamed with
+    Python's CSV parser so quoted newlines are handled without loading rows
+    into memory. Empty CSV files return zero rows.
+    """
+
+    input_path = Path(path).expanduser()
+    suffix = input_path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        return parquet_table_row_count(input_path)
+    try:
+        with input_path.open("r", newline="", encoding="utf-8") as handle:
+            rows = sum(1 for _ in csv.reader(handle))
+    except UnicodeDecodeError as exc:
+        raise RuntimeError(
+            f"Could not count CSV rows for {input_path}: the file is not valid UTF-8. "
+            "Rewrite the table with UTF-8 encoding or use Parquet for large-run status checks."
+        ) from exc
+    return max(int(rows) - 1, 0)
 
 
 def first_nonempty_table_value(

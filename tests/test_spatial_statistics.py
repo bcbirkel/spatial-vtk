@@ -1774,6 +1774,19 @@ spatial:
     }
 
 
+def test_spatial_derived_reuse_counts_use_lightweight_table_counter() -> None:
+    """Reused derived outputs should not full-read existing large tables for row counts."""
+
+    import inspect
+
+    import spatial_vtk.spatial.calculate.workflow as workflow_module
+
+    source = inspect.getsource(workflow_module.run_spatial_derived_outputs_workflow)
+    should_skip_source = source.split("def should_skip", 1)[1].split('if "block_holdout_predictions"', 1)[0]
+    assert "table_row_count(path)" in should_skip_source
+    assert "len(read_table(path))" not in should_skip_source
+
+
 def test_spatial_statistics_config_wrappers_return_json_ready_payloads(tmp_path: Path) -> None:
     """Notebook Step 4 helpers should run from a config path and summarize outputs."""
 

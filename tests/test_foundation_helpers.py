@@ -17,6 +17,7 @@ from spatial_vtk.io import (
     read_bounded_table,
     resolve_model_aliases,
     slugify,
+    table_row_count,
     wide_to_long_metrics,
     write_station_event_kml,
 )
@@ -82,6 +83,21 @@ def test_table_helpers(tmp_path):
 
     aggregated = aggregate_metric_by_station_over_events(long, metric_col="residual")
     assert aggregated.loc[0, "n_events"] == 2
+    assert table_row_count(csv_path) == 2
+
+
+def test_table_row_count_streams_csv_without_materializing_rows(tmp_path, monkeypatch):
+    """Generic row-count helper should not full-read CSV status tables."""
+
+    csv_path = tmp_path / "quoted.csv"
+    csv_path.write_text('id,text\n1,"line one\nline two"\n2,plain\n', encoding="utf-8")
+
+    def fail_read_csv(*args, **kwargs):  # noqa: ANN001, ANN002, ANN003
+        raise AssertionError("table_row_count must not materialize CSV rows")
+
+    monkeypatch.setattr(pd, "read_csv", fail_read_csv)
+
+    assert table_row_count(csv_path) == 2
 
 
 def test_bounded_parquet_previews_require_streaming_reader(tmp_path, monkeypatch):

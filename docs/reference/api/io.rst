@@ -155,6 +155,9 @@ Public helpers exposed by ``spatial_vtk.io``:
        row counts.
    * - ``read_bounded_table`` and ``preview_table``
      - Inspect large CSV or Parquet tables without loading all rows.
+   * - ``table_row_count``
+     - Count CSV or Parquet table rows without materializing the table. CSV
+       inputs are streamed and Parquet inputs use metadata.
    * - ``parquet_table_columns`` and ``parquet_table_row_count``
      - Inspect Parquet schemas and row counts through metadata only. These
        helpers fail with actionable PyArrow/metadata errors instead of

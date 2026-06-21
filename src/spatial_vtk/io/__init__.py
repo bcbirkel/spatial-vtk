@@ -131,6 +131,7 @@ _EXPORT_MODULES = {
     "synthetic_reader_for": "spatial_vtk.io.synthetic_formats",
     "should_rebuild_paths": "spatial_vtk.io.output_paths",
     "should_rebuild_outputs": "spatial_vtk.io.output_paths",
+    "table_row_count": "spatial_vtk.io.tables",
     "trace_metadata_table": "spatial_vtk.io.waveforms",
     "utc_run_id": "spatial_vtk.io.compute_manifest",
     "waveform_preprocessing_from_config": "spatial_vtk.io.waveforms",

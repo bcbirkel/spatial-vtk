@@ -735,6 +735,9 @@ Changelog
   - Reused the same shared parquet schema helper inside dashboard metric
     dataset exports so filtered dashboard readers and writers use one
     large-table-safe schema path.
+  - Added a shared CSV/Parquet ``table_row_count`` helper and used it when
+    reusing existing spatial derived-output tables, avoiding full-table reads
+    just to report skip row counts.
   - Made configured metric-output and dashboard-output helpers write
     partitioned dashboard metric datasets by default, and changed
     ``svtk metrics outputs`` to default to that large-run-safe layout while
