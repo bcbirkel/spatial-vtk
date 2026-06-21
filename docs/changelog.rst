@@ -96,6 +96,8 @@ Changelog
   - Added exact-set regression coverage for tutorial runtime module checks so
     notebook-critical dependency additions or removals require an intentional
     test update.
+  - Added regression coverage that every tutorial runtime module check maps to
+    a declared base or tutorial-extra dependency in ``pyproject.toml``.
 
 2026-06-19
 ----------

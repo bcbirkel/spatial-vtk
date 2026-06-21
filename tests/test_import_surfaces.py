@@ -814,6 +814,55 @@ def test_notebook_and_waveform_extras_include_runtime_dependencies():
         assert f"  - {dependency}" in environment_text
 
 
+def test_tutorial_runtime_modules_are_installable_from_declared_extras():
+    """The tutorial runtime preflight should not check undeclared dependencies."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    pyproject_text = (root / "pyproject.toml").read_text(encoding="utf-8")
+    executor_path = root / "tools" / "execute_tutorial_notebooks.py"
+    spec = importlib.util.spec_from_file_location("svtk_tutorial_executor", executor_path)
+    assert spec is not None
+    executor = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(executor)
+
+    requirement_fragments = {
+        "branca": '"branca>=',
+        "contextily": '"contextily>=',
+        "folium": '"folium>=',
+        "geopandas": '"geopandas>=',
+        "gmprocess": '"gmprocess>=',
+        "h5py": '"h5py>=',
+        "IPython": '"ipython>=',
+        "ipykernel": '"ipykernel>=',
+        "matplotlib": '"matplotlib>=',
+        "nbclient": '"nbclient>=',
+        "nbformat": '"nbformat>=',
+        "numpy": '"numpy>=',
+        "obspy": '"obspy>=',
+        "pandas": '"pandas>=',
+        "plotly": '"plotly>=',
+        "pyarrow": '"pyarrow>=',
+        "pyasdf": '"pyasdf>=',
+        "pyproj": '"pyproj>=',
+        "PyYAML": '"PyYAML>=',
+        "rasterio": '"rasterio>=',
+        "scikit-learn": '"scikit-learn>=',
+        "scipy": '"scipy>=',
+        "shapely": '"shapely>=',
+        "spatial_vtk": None,
+        "statsmodels": '"statsmodels>=',
+        "streamlit": '"streamlit>=',
+        "streamlit-folium": '"streamlit-folium>=',
+    }
+    missing_fragments = [
+        label
+        for label in executor.NOTEBOOK_RUNTIME_MODULES
+        if requirement_fragments[label] is not None and requirement_fragments[label] not in pyproject_text
+    ]
+    assert not missing_fragments, f"Runtime modules missing from declared pip requirements: {missing_fragments}"
+
+
 def test_dashboard_extra_names_dashboard_runtime_dependencies():
     """The advertised dashboard extra should not be empty package metadata."""
 
