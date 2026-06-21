@@ -89,6 +89,7 @@ SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND = (
 )
 SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND = "conda env create -f svtk_environment.yaml"
 SOURCE_CHECKOUT_TUTORIAL_RUNTIME_CHECK_COMMAND = (
+    "MPLCONFIGDIR=/tmp/mplconfig_svtk "
     "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run"
 )
 KERNEL_EXTRA_ARGUMENTS = ("--IPKernelApp.log_level=ERROR",)
@@ -389,7 +390,10 @@ def current_python_tutorial_runtime_check_command() -> str:
     """Return the tutorial runtime-check command for the currently running Python."""
 
     executable = shlex.quote(sys.executable)
-    return f"{executable} tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run"
+    return (
+        "MPLCONFIGDIR=/tmp/mplconfig_svtk "
+        f"{executable} tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run"
+    )
 
 
 def check_tutorial_example_data(repo_root: Path) -> None:

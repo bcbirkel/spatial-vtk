@@ -110,10 +110,12 @@ def test_tutorial_notebook_runtime_preflight_reports_missing_modules(monkeypatch
     assert module.SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND == "conda env create -f svtk_environment.yaml"
     assert (
         module.SOURCE_CHECKOUT_TUTORIAL_RUNTIME_CHECK_COMMAND
-        == "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run"
+        == "MPLCONFIGDIR=/tmp/mplconfig_svtk "
+        "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run"
     )
     assert sys.executable in module.current_python_tutorial_install_command()
     assert sys.executable in module.current_python_tutorial_runtime_check_command()
+    assert module.current_python_tutorial_runtime_check_command().startswith("MPLCONFIGDIR=/tmp/mplconfig_svtk ")
     monkeypatch.setattr(module, "check_tutorial_python_version", lambda: None)
     with pytest.raises(SystemExit) as excinfo:
         module.check_notebook_runtime({"demo": "definitely_missing_svtk_module"})

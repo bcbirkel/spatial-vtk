@@ -53,6 +53,9 @@ Changelog
     examples index, large-run README, and CI preflight so runtime notebook
     checks use a writable ``MPLCONFIGDIR`` instead of relying on user-level
     matplotlib cache locations.
+  - Updated tutorial missing-dependency diagnostics so the suggested rerun
+    commands use the same writable ``MPLCONFIGDIR`` prefix as the public
+    tutorial docs and release checks.
 
 - **Notebook source-contract checks** *(Fixed)*
 
