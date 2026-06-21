@@ -2043,6 +2043,21 @@ outputs:
     clear_active_config()
 
 
+def test_output_status_frame_expands_user_home_paths(tmp_path, monkeypatch):
+    """Status tables should report expanded home paths and truthful existence."""
+
+    monkeypatch.setenv("HOME", str(tmp_path))
+    home_table = tmp_path / "status_table.csv"
+    home_table.write_text("x\n1\n", encoding="utf-8")
+
+    status_frame = output_status_frame({"home_table_path": "~/status_table.csv"})
+
+    assert status_frame.loc[0, "name"] == "home_table_path"
+    assert status_frame.loc[0, "resolved_path"] == str(home_table)
+    assert status_frame.loc[0, "path"] == str(home_table)
+    assert bool(status_frame.loc[0, "exists"]) is True
+
+
 def test_output_group_accepts_public_event_station_records_alias(tmp_path, monkeypatch):
     """Output-group helpers should accept public result-object path names."""
 

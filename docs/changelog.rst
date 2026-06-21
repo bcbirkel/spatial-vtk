@@ -43,6 +43,9 @@ Changelog
   - Hardened QC overview bounded reads so DataFrame previews clamp negative
     row limits to zero and path-backed previews keep using the bounded table
     reader instead of falling through to full-table parquet reads.
+  - Fixed output status tables so user-home paths such as ``~/outputs`` are
+    expanded before existence checks and displayed through the ``resolved_path``
+    column.
 
 2026-06-19
 ----------

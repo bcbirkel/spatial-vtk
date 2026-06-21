@@ -1292,7 +1292,7 @@ def output_status_rows(paths: dict[str, str | Path | None]) -> list[dict[str, ob
                 }
             )
             continue
-        path = Path(raw_path)
+        path = Path(raw_path).expanduser()
         resolved = str(path)
         row: dict[str, object] = {
             "name": str(name),
