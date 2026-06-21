@@ -240,7 +240,7 @@ Clear the saved default with:
    svtk config unset
 
 In a notebook or script, load the same file with Python and preview the
-registered outputs without hard-coding individual path variables:
+registered outputs without hard-coding individual path plumbing:
 
 .. code-block:: python
 

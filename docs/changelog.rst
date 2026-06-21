@@ -105,6 +105,8 @@ Changelog
     notebook-local path/table plumbing instead of output-group table mappings.
   - Reworded QC API standard-input guidance so Step 2 notebooks avoid Step 1
     path/table plumbing rather than output-group table mapping.
+  - Reworded configuration output-registry guidance so notebooks and scripts
+    avoid hard-coded path plumbing rather than path variables.
 
 - **Public surface guardrails** *(Fixed)*
 

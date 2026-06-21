@@ -2698,6 +2698,8 @@ def test_configuration_examples_use_registered_output_keys():
     combined = configuration + "\n" + runtime_doc
     assert 'cfg.path("outputs.metrics")' not in combined
     assert "outputs.metrics" not in combined
+    assert "registered outputs without hard-coding individual path plumbing" in configuration
+    assert "registered outputs without hard-coding individual path variables" not in configuration
     assert "configured_output_registry_preview_frame(cfg=cfg, kinds=(\"table\",)).head()" in configuration
     assert "resolve_output_path(" not in configuration
     assert "plan.summary_frame()" in configuration
