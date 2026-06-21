@@ -3506,6 +3506,10 @@ def test_small_public_table_writes_use_shared_writer():
             "def write_manual_review_queue",
             "path = write_table(pd.DataFrame(normalized, columns=list(QUEUE_COLUMNS)), path, index=False)",
         ),
+        "src/spatial_vtk/spatial/calculate/geology.py": (
+            "def bootstrap_contrast_table",
+            "write_table(out, Path(outpath).expanduser(), index=False)",
+        ),
     }
     for relative_path, (function_marker, expected_write) in helpers.items():
         source = (repo_root / relative_path).read_text(encoding="utf-8")

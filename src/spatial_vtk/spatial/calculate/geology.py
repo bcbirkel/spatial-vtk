@@ -501,7 +501,7 @@ def bootstrap_contrast_table(
         Station-summary statistic for each contrast. Choose ``"mean"`` or
         ``"median"``.
     outpath
-        Optional CSV output path.
+        Optional CSV or Parquet output path.
 
     Returns
     -------
@@ -610,9 +610,9 @@ def bootstrap_contrast_table(
         rows.append(row)
     out = pd.DataFrame(rows, columns=columns) if rows else pd.DataFrame(columns=columns)
     if outpath is not None:
-        path = Path(outpath).expanduser()
-        path.parent.mkdir(parents=True, exist_ok=True)
-        out.to_csv(path, index=False)
+        from spatial_vtk.io.tables import write_table
+
+        write_table(out, Path(outpath).expanduser(), index=False)
     return out
 
 
