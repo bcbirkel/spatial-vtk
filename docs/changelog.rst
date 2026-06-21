@@ -148,6 +148,9 @@ Changelog
   - Routed optional event patch/context table loading through the shared table
     reader and updated catalog wrapper docstrings so public context helpers no
     longer imply CSV-only inputs.
+  - Routed generic CLI input-table loading through the shared table reader so
+    ``svtk`` metadata, plot, map, and visualization commands use the same
+    CSV/Parquet behavior as package APIs.
   - Added a shared ``table_columns()`` helper for schema-only CSV/Parquet
     inspection and routed dashboard, metric workflow, metric batch merge, and
     large-run plotting column probes through it.

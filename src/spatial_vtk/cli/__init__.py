@@ -3727,11 +3727,10 @@ def _is_pandas_series(value: Any) -> bool:
 def _read_table(path: str | Path) -> Any:
     """Read one CSV or Parquet table."""
 
-    pd = _pandas()
     table_path = Path(path).expanduser()
-    if table_path.suffix.lower() in {".parquet", ".pq"}:
-        return pd.read_parquet(table_path)
-    return pd.read_csv(table_path, low_memory=False)
+    from spatial_vtk.io.tables import read_table
+
+    return read_table(table_path)
 
 
 def _write_table(df: Any, path: str | Path) -> Path:

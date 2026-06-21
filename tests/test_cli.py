@@ -10,12 +10,24 @@ import pytest
 
 from spatial_vtk.cli import main
 from spatial_vtk.cli import _dashboard_cli_readiness_columns
+from spatial_vtk.cli import _read_table
 
 
 def test_cli_help(capsys):
     assert main([]) == 0
     captured = capsys.readouterr()
     assert "Spatial validation tools" in captured.out
+
+
+def test_cli_read_table_uses_shared_csv_parquet_reader(tmp_path):
+    """CLI table inputs should support the same CSV/Parquet reader as package helpers."""
+
+    table_path = tmp_path / "rows.parquet"
+    pd.DataFrame({"station": ["001"], "value": [1.5]}).to_parquet(table_path, index=False)
+
+    table = _read_table(table_path)
+
+    assert table.to_dict("records") == [{"station": "001", "value": 1.5}]
 
 
 def test_cli_main_reports_missing_runtime_dependency(monkeypatch, capsys):
