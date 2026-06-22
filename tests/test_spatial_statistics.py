@@ -379,11 +379,12 @@ def test_write_standard_geojson_region_figures_returns_status_tables(monkeypatch
     assert set(result.metrics_by_regions["event_region"]) == {"Glendale"}
     assert result.summary_frame().loc[0, "rows"] == 2
     status = result.status_frame()
-    assert {"name", "artifact_label", "artifact_role", "resolved_path", "path", "exists"} <= set(
+    assert {"name", "artifact_label", "artifact_role", "status_reason", "resolved_path", "path", "exists"} <= set(
         status.columns
     )
     assert status["artifact_role"].tolist() == ["figure", "figure", "figure"]
     assert status["status"].tolist() == ["wrote", "wrote", "wrote"]
+    assert status["status_reason"].tolist() == ["wrote", "wrote", "wrote"]
     assert status["figure_exists"].tolist() == [True, True, True]
     assert status["exists"].tolist() == [True, True, True]
     assert status["path"].tolist() == status["figure_path"].tolist()
@@ -544,11 +545,12 @@ def test_write_standard_geojson_corridor_figures_returns_status_tables(monkeypat
     assert result.boundary_crossing_frame()["corridor_id"].tolist() == ["through_boundary", "through_boundary"]
     assert result.outward_event_frame()["event_id"].tolist() == ["e1"]
     status = result.status_frame()
-    assert {"name", "artifact_label", "artifact_role", "resolved_path", "path", "exists"} <= set(
+    assert {"name", "artifact_label", "artifact_role", "status_reason", "resolved_path", "path", "exists"} <= set(
         status.columns
     )
     assert status["artifact_role"].tolist() == ["figure", "figure", "figure", "figure"]
     assert status["status"].tolist() == ["wrote", "wrote", "wrote", "wrote"]
+    assert status["status_reason"].tolist() == ["wrote", "wrote", "wrote", "wrote"]
     assert status["figure_exists"].tolist() == [True, True, True, True]
     assert status["exists"].tolist() == [True, True, True, True]
     assert status["path"].tolist() == status["figure_path"].tolist()
@@ -890,11 +892,12 @@ def test_write_standard_additional_plotting_figures_returns_previews(tmp_path) -
 
     assert isinstance(result, StandardAdditionalPlottingFigureResult)
     status = result.status_frame()
-    assert {"name", "artifact_label", "artifact_role", "resolved_path", "path", "exists"} <= set(
+    assert {"name", "artifact_label", "artifact_role", "status_reason", "resolved_path", "path", "exists"} <= set(
         status.columns
     )
     assert status["artifact_role"].tolist() == ["figure", "figure", "figure", "figure", "figure"]
     assert status["status"].tolist() == ["wrote", "wrote", "wrote", "wrote", "wrote"]
+    assert status["status_reason"].tolist() == ["wrote", "wrote", "wrote", "wrote", "wrote"]
     assert status["figure_exists"].tolist() == [True, True, True, True, True]
     assert status["exists"].tolist() == [True, True, True, True, True]
     assert status["path"].tolist() == status["figure_path"].tolist()
@@ -1146,12 +1149,13 @@ def test_write_standard_spatial_map_figures_owns_step04_map_calls(tmp_path: Path
         assert kwargs["sidecar_rows"] == 25
         assert kwargs["sidecar_dir"] == tmp_path / "sidecars"
     status = result.status_frame()
-    assert {"name", "artifact_label", "artifact_role", "resolved_path", "path", "exists"} <= set(
+    assert {"name", "artifact_label", "artifact_role", "status_reason", "resolved_path", "path", "exists"} <= set(
         status.columns
     )
     assert status["artifact"].tolist() == ["station_bias_map", "residual_grid_map"]
     assert status["artifact_role"].tolist() == ["figure", "figure"]
     assert set(status["status"]) == {"wrote"}
+    assert status["status_reason"].tolist() == ["wrote", "wrote"]
     assert status["row_count"].tolist() == [1, 1]
     assert status["figure_exists"].tolist() == [True, True]
     assert status["exists"].tolist() == [True, True]
@@ -3022,6 +3026,7 @@ def test_write_large_run_geojson_region_figures_from_outputs_orchestrates_notebo
     status = result.status_frame()
     assert status["artifact"].tolist() == ["geojson_overview", "corridor_map", "region_boxplot"]
     assert set(status["status"]) == {"wrote"}
+    assert status["status_reason"].tolist() == ["wrote", "wrote", "wrote"]
     assert "resolved_path" in status.columns
     assert status.loc[status["artifact"].eq("geojson_overview"), "resolved_path"].iloc[0] == str(
         outputs.geojson_polygons_map_path
