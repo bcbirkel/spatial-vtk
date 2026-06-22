@@ -26,10 +26,6 @@ import numpy as np
 import pandas as pd
 
 from spatial_vtk.config.labels import normalize_metric_name
-from spatial_vtk.config.outputs import resolve_output_path
-from spatial_vtk.config.runtime import SpatialVTKConfig
-from spatial_vtk.io import table_columns
-from spatial_vtk.io.tables import read_table, write_table
 from spatial_vtk.visualize.dashboard.tables import (
     build_dashboard_summaries,
     dashboard_summary_input_columns,
@@ -47,7 +43,7 @@ class DashboardDatasetPreparationResult:
     status: str
     message: str
     current_status: pd.DataFrame | None = None
-    cfg: SpatialVTKConfig | str | Path | None = None
+    cfg: Any | str | Path | None = None
 
     def summary_frame(self) -> pd.DataFrame:
         """Return the dashboard readiness summary captured before preparation."""
@@ -250,7 +246,7 @@ def write_dashboard_metric_dataset(
     tables: pd.DataFrame | str | Path | Sequence[pd.DataFrame | str | Path],
     output_root: str | Path | None = None,
     *,
-    cfg: SpatialVTKConfig | str | Path | None = None,
+    cfg: Any | str | Path | None = None,
     residual_mode: str = "logratio",
     partitioned: bool = True,
     replace_existing: bool = True,
@@ -296,7 +292,7 @@ def write_dashboard_metric_dataset(
     root = (
         Path(output_root).expanduser()
         if output_root is not None
-        else resolve_output_path("metrics_dashboard", kind="dashboard", cfg=config, create_parent=True)
+        else _resolve_output_path("metrics_dashboard", kind="dashboard", cfg=config, create_parent=True)
     )
     root.mkdir(parents=True, exist_ok=True)
     if replace_existing:
@@ -314,11 +310,11 @@ def write_dashboard_metric_dataset(
     long_df = pd.concat(long_frames, ignore_index=True)
     long_df = add_dashboard_path_geometry(long_df)
     if not partitioned:
-        write_table(long_df, root / "metrics_long.parquet", index=False)
+        _write_table(long_df, root / "metrics_long.parquet", index=False)
         return root
     for keys, group in _iter_dashboard_partition_groups(long_df):
         out_path = _dashboard_partition_path(root, keys, part_index=0)
-        write_table(group, out_path, index=False)
+        _write_table(group, out_path, index=False)
     return root
 
 
@@ -656,7 +652,7 @@ def _write_partitioned_dashboard_metric_dataset_streaming(
                 part_index = partition_counts.get(token_key, 0)
                 partition_counts[token_key] = part_index + 1
                 out_path = _dashboard_partition_path(root, token_key, part_index=part_index)
-                write_table(group, out_path, index=False)
+                _write_table(group, out_path, index=False)
 
 
 def _iter_dashboard_partition_groups(df: pd.DataFrame):
@@ -918,12 +914,12 @@ def _read_dashboard_metric_table(path: Path, *, columns: Sequence[str] | None = 
     suffix = path.suffix.lower()
     selected = _selected_existing_columns(path, columns)
     if suffix in {".parquet", ".pq"}:
-        return read_table(path, columns=selected)
+        return _read_table(path, columns=selected)
     if suffix == ".csv":
         if selected is None:
-            return read_table(path)
+            return _read_table(path)
         wanted = set(selected)
-        return read_table(path, usecols=lambda column: column in wanted)
+        return _read_table(path, usecols=lambda column: column in wanted)
     raise ValueError(f"Unsupported dashboard metric table format for {path}. Use Parquet or CSV.")
 
 
@@ -980,7 +976,7 @@ def _dashboard_metric_table_columns(path: Path) -> list[str]:
 
     suffix = path.suffix.lower()
     if suffix in {".parquet", ".pq", ".csv"}:
-        return table_columns(path)
+        return _table_columns(path)
     raise ValueError(f"Unsupported dashboard metric table format for {path}. Use Parquet or CSV.")
 
 
@@ -988,7 +984,7 @@ def write_dashboard_summary_dataset(
     input_root: str | Path | None = None,
     output_root: str | Path | None = None,
     *,
-    cfg: SpatialVTKConfig | str | Path | None = None,
+    cfg: Any | str | Path | None = None,
     hex_dist: float = 10.0,
     hex_az: float = 10.0,
     format: str = "parquet",
@@ -1028,8 +1024,8 @@ def write_dashboard_summary_dataset(
     """
 
     config = _coerce_dashboard_config(cfg)
-    resolved_input_root = input_root or resolve_output_path("metrics_dashboard", kind="dashboard", cfg=config)
-    resolved_output_root = output_root or resolve_output_path(
+    resolved_input_root = input_root or _resolve_output_path("metrics_dashboard", kind="dashboard", cfg=config)
+    resolved_output_root = output_root or _resolve_output_path(
         "dashboard_summaries",
         kind="dashboard",
         cfg=config,
@@ -1046,7 +1042,7 @@ def write_dashboard_summary_dataset(
 def write_configured_dashboard_datasets(
     tables: pd.DataFrame | str | Path | Sequence[pd.DataFrame | str | Path] | None = None,
     *,
-    cfg: SpatialVTKConfig | str | Path | None = None,
+    cfg: Any | str | Path | None = None,
     residual_mode: str = "logratio",
     partitioned: bool = True,
     hex_dist: float = 10.0,
@@ -1090,9 +1086,9 @@ def write_configured_dashboard_datasets(
     """
 
     config = _coerce_dashboard_config(cfg)
-    metric_tables = tables if tables is not None else resolve_output_path("metrics_long", kind="table", cfg=config)
-    dashboard_root = resolve_output_path("metrics_dashboard", kind="dashboard", cfg=config, create_parent=True)
-    summary_root = resolve_output_path("dashboard_summaries", kind="dashboard", cfg=config, create_parent=True)
+    metric_tables = tables if tables is not None else _resolve_output_path("metrics_long", kind="table", cfg=config)
+    dashboard_root = _resolve_output_path("metrics_dashboard", kind="dashboard", cfg=config, create_parent=True)
+    summary_root = _resolve_output_path("dashboard_summaries", kind="dashboard", cfg=config, create_parent=True)
     metric_root = write_dashboard_metric_dataset(
         metric_tables,
         dashboard_root,
@@ -1118,7 +1114,7 @@ def write_configured_dashboard_datasets(
 
 def prepare_configured_dashboard_datasets_from_notebook_settings(
     *,
-    cfg: SpatialVTKConfig | str | Path | None = None,
+    cfg: Any | str | Path | None = None,
     prepare_locally: bool = True,
     overwrite: bool = False,
     residual_mode: str = "logratio",
@@ -1183,15 +1179,17 @@ def prepare_configured_dashboard_datasets_from_notebook_settings(
     )
 
 
-def _coerce_dashboard_config(cfg: SpatialVTKConfig | str | Path | None) -> SpatialVTKConfig | None:
+def _coerce_dashboard_config(cfg: Any | str | Path | None) -> Any | None:
     """Return a config object for dashboard output resolution."""
+
+    from spatial_vtk.config.runtime import SpatialVTKConfig
 
     if cfg is None or isinstance(cfg, SpatialVTKConfig):
         return cfg
     return SpatialVTKConfig.from_file(cfg)
 
 
-def _dashboard_config_payload(cfg: SpatialVTKConfig | str | Path | None, context: Any | None = None) -> str | None:
+def _dashboard_config_payload(cfg: Any | str | Path | None, context: Any | None = None) -> str | None:
     """Return a JSON-serializable config argument for dashboard worker calls."""
 
     context_path = getattr(context, "config_path", None)
@@ -1334,13 +1332,13 @@ def _read_metric_table(table: pd.DataFrame | str | Path, *, columns: Sequence[st
     path = Path(table).expanduser()
     if path.suffix.lower() in {".parquet", ".pq"}:
         selected = _selected_existing_columns(path, columns)
-        return read_table(path, columns=selected)
+        return _read_table(path, columns=selected)
     if path.suffix.lower() == ".csv":
         selected = _selected_existing_columns(path, columns)
         if selected is None:
-            return read_table(path)
+            return _read_table(path)
         wanted = set(selected)
-        return read_table(path, usecols=lambda column: column in wanted)
+        return _read_table(path, usecols=lambda column: column in wanted)
     raise ValueError(f"Unsupported metric table format for {path}. Use Parquet or CSV.")
 
 
@@ -1362,6 +1360,38 @@ def _as_sequence(value: pd.DataFrame | str | Path | Sequence[pd.DataFrame | str 
     if isinstance(value, (pd.DataFrame, str, Path)):
         return [value]
     return list(value)
+
+
+def _resolve_output_path(*args: Any, **kwargs: Any) -> Path:
+    """Resolve a configured dashboard output path only when requested."""
+
+    from spatial_vtk.config.outputs import resolve_output_path
+
+    return resolve_output_path(*args, **kwargs)
+
+
+def _read_table(*args: Any, **kwargs: Any) -> pd.DataFrame:
+    """Read a CSV or Parquet table only when dashboard rows are requested."""
+
+    from spatial_vtk.io.tables import read_table
+
+    return read_table(*args, **kwargs)
+
+
+def _write_table(*args: Any, **kwargs: Any) -> Path:
+    """Write a CSV or Parquet table only when dashboard exports run."""
+
+    from spatial_vtk.io.tables import write_table
+
+    return write_table(*args, **kwargs)
+
+
+def _table_columns(path: Path) -> list[str]:
+    """Return table columns only when dashboard table metadata is requested."""
+
+    from spatial_vtk.io import table_columns
+
+    return table_columns(path)
 
 
 __all__ = [

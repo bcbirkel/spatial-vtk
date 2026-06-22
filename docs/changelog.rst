@@ -4,6 +4,17 @@ Changelog
 2026-06-21
 ----------
 
+- **Lightweight dashboard data imports** *(Changed)*
+
+  - Deferred config-output resolution and shared table I/O imports in
+    dashboard contract and export helpers until configured dashboard paths or
+    table rows are actually requested.
+  - Kept dashboard dataclasses, table contracts, summary loaders, and dataset
+    writer helpers importable in minimal environments before PyYAML-backed
+    config dependencies are available.
+  - Added source-contract coverage so dashboard data helpers do not
+    reintroduce top-level config-bound imports.
+
 - **Lightweight metric plan imports** *(Changed)*
 
   - Deferred config-runtime, config-metric, and shared table I/O imports in

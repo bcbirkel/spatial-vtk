@@ -3564,8 +3564,8 @@ def test_large_run_csv_readers_use_stable_dtype_inference():
         "src/spatial_vtk/io/master_lists.py": "return read_disk_table(path)",
         "src/spatial_vtk/io/tables.py": "df = pd.read_csv(path, low_memory=False)",
         "src/spatial_vtk/cli/__init__.py": "return read_table(table_path)",
-        "src/spatial_vtk/visualize/dashboard/contracts.py": "return read_table(path)",
-        "src/spatial_vtk/visualize/dashboard/export.py": "return read_table(path)",
+        "src/spatial_vtk/visualize/dashboard/contracts.py": "return _read_table(path)",
+        "src/spatial_vtk/visualize/dashboard/export.py": "return _read_table(path)",
         "src/spatial_vtk/visualize/qc/overview.py": "return read_disk_table(path)",
         "src/spatial_vtk/visualize/context/figures.py": "return read_disk_table(path)",
         "src/spatial_vtk/qc/review/tables.py": "normalize_manual_qc_decisions(read_table(source))",
@@ -3776,6 +3776,8 @@ def test_lightweight_table_helper_modules_defer_config_bound_table_imports():
         "src/spatial_vtk/io/catalogs.py",
         "src/spatial_vtk/io/plans.py",
         "src/spatial_vtk/qc/review/tables.py",
+        "src/spatial_vtk/visualize/dashboard/contracts.py",
+        "src/spatial_vtk/visualize/dashboard/export.py",
         "src/spatial_vtk/visualize/dashboard/tables.py",
     ]
     for relative_path in modules:
@@ -3809,6 +3811,29 @@ def test_metric_plan_helpers_defer_config_runtime_imports():
     assert not offenders, "\n".join(str(module) for module in offenders)
 
 
+def test_dashboard_data_helpers_defer_config_runtime_imports():
+    """Dashboard data helpers should not import config or table I/O at module import time."""
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    forbidden_modules = {
+        "spatial_vtk.config.outputs",
+        "spatial_vtk.config.runtime",
+        "spatial_vtk.io.tables",
+    }
+    for relative_path in [
+        "src/spatial_vtk/visualize/dashboard/contracts.py",
+        "src/spatial_vtk/visualize/dashboard/export.py",
+    ]:
+        source = (repo_root / relative_path).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        offenders = [
+            node.module
+            for node in tree.body
+            if isinstance(node, ast.ImportFrom) and node.module in forbidden_modules
+        ]
+        assert not offenders, relative_path
+
+
 def test_dashboard_metric_dataset_writes_use_shared_writer():
     """Dashboard metric parquet dataset files should use package writer semantics."""
 
@@ -3822,10 +3847,10 @@ def test_dashboard_metric_dataset_writes_use_shared_writer():
     ).read_text(encoding="utf-8")
     helper = source.split("def write_dashboard_metric_dataset", 1)[1].split("\ndef load_dashboard_metric_dataset", 1)[0]
     streaming_helper = source.split("def _write_partitioned_dashboard_metric_dataset_streaming", 1)[1].split("\ndef ", 1)[0]
-    assert "from spatial_vtk.io.tables import read_table, write_table" in source
-    assert 'write_table(long_df, root / "metrics_long.parquet", index=False)' in helper
-    assert "write_table(group, out_path, index=False)" in helper
-    assert "write_table(group, out_path, index=False)" in streaming_helper
+    assert "from spatial_vtk.io.tables import write_table" in source
+    assert '_write_table(long_df, root / "metrics_long.parquet", index=False)' in helper
+    assert "_write_table(group, out_path, index=False)" in helper
+    assert "_write_table(group, out_path, index=False)" in streaming_helper
     assert ".to_parquet(" not in helper
     assert ".to_parquet(" not in streaming_helper
 

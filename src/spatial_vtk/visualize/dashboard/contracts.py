@@ -17,13 +17,8 @@ from typing import Any
 
 import pandas as pd
 
-from spatial_vtk.config.outputs import resolve_output_path
-from spatial_vtk.config.runtime import SpatialVTKConfig
-from spatial_vtk.io import table_columns, table_row_count
-from spatial_vtk.io.tables import read_table
 
-
-ConfigInput = SpatialVTKConfig | str | Path
+ConfigInput = Any | str | Path
 
 
 METRICS_TABLES: tuple[str, ...] = ("model_metric_band", "station_rollup", "event_rollup", "path_hex")
@@ -157,7 +152,7 @@ def read_dashboard_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
     if not path.exists():
         raise FileNotFoundError(f"Dashboard table does not exist: {path}")
     if path.suffix.lower() in {".csv", ".parquet", ".pq"}:
-        return read_table(path)
+        return _read_table(path)
     raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
 
 
@@ -406,7 +401,7 @@ def dashboard_summary_table_paths(
     root = (
         Path(summary_root).expanduser()
         if summary_root is not None
-        else resolve_output_path("dashboard_summaries", kind="dashboard", cfg=cfg, create_parent=create_parent)
+        else _resolve_output_path("dashboard_summaries", kind="dashboard", cfg=cfg, create_parent=create_parent)
     )
     if create_parent:
         root.mkdir(parents=True, exist_ok=True)
@@ -459,12 +454,12 @@ def dashboard_output_paths(
     """Resolve the standard metrics and QC dashboard inputs from config."""
 
     paths = {
-        "metrics_long_path": resolve_output_path("metrics_long", kind="table", cfg=cfg, create_parent=create_parent),
-        "qc_trace_summary_path": resolve_output_path("qc_trace_summary", kind="table", cfg=cfg, create_parent=create_parent),
-        "qc_inventory_path": resolve_output_path("qc_inventory", kind="table", cfg=cfg, create_parent=create_parent),
-        "qc_inventory_overlap_path": resolve_output_path("qc_inventory_overlap", kind="table", cfg=cfg, create_parent=create_parent),
-        "metrics_dashboard_root": resolve_output_path("metrics_dashboard", kind="dashboard", cfg=cfg, create_parent=create_parent),
-        "dashboard_summary_root": resolve_output_path("dashboard_summaries", kind="dashboard", cfg=cfg, create_parent=create_parent),
+        "metrics_long_path": _resolve_output_path("metrics_long", kind="table", cfg=cfg, create_parent=create_parent),
+        "qc_trace_summary_path": _resolve_output_path("qc_trace_summary", kind="table", cfg=cfg, create_parent=create_parent),
+        "qc_inventory_path": _resolve_output_path("qc_inventory", kind="table", cfg=cfg, create_parent=create_parent),
+        "qc_inventory_overlap_path": _resolve_output_path("qc_inventory_overlap", kind="table", cfg=cfg, create_parent=create_parent),
+        "metrics_dashboard_root": _resolve_output_path("metrics_dashboard", kind="dashboard", cfg=cfg, create_parent=create_parent),
+        "dashboard_summary_root": _resolve_output_path("dashboard_summaries", kind="dashboard", cfg=cfg, create_parent=create_parent),
     }
     if include_summary_tables:
         paths.update(
@@ -762,7 +757,7 @@ def dashboard_qc_trace_readiness_frame(
     path = (
         Path(trace_summary).expanduser()
         if trace_summary is not None
-        else resolve_output_path("qc_trace_summary", kind="table", cfg=cfg, create_parent=create_parent)
+        else _resolve_output_path("qc_trace_summary", kind="table", cfg=cfg, create_parent=create_parent)
     )
     return _attach_qc_trace_readiness(pd.DataFrame(_status_rows({"qc_trace_summary_path": path})))
 
@@ -1489,7 +1484,7 @@ def _dashboard_table_columns(path: Path) -> list[str]:
 
     suffix = path.suffix.lower()
     if suffix in {".parquet", ".pq", ".csv"}:
-        return table_columns(path)
+        return _table_columns(path)
     raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
 
 
@@ -1621,7 +1616,7 @@ def _dashboard_table_row_count(path: Path) -> int:
 
     suffix = path.suffix.lower()
     if suffix in {".parquet", ".pq", ".csv"}:
-        return table_row_count(path)
+        return _table_row_count(path)
     raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
 
 
@@ -1633,10 +1628,10 @@ def _read_dashboard_table_columns(path: Path, columns: list[str] | tuple[str, ..
         return pd.DataFrame()
     suffix = path.suffix.lower()
     if suffix in {".parquet", ".pq"}:
-        return read_table(path, columns=selected)
+        return _read_table(path, columns=selected)
     if suffix == ".csv":
         wanted = set(selected)
-        return read_table(path, usecols=lambda column: column in wanted)
+        return _read_table(path, usecols=lambda column: column in wanted)
     raise ValueError(f"Unsupported dashboard table format for {path}. Use Parquet or CSV.")
 
 
@@ -2019,6 +2014,38 @@ def _require_columns(df: pd.DataFrame, columns: set[str], *, table_name: str) ->
     missing = sorted(column for column in columns if column not in df.columns)
     if missing:
         raise ValueError(f"{table_name} is missing required columns: {missing}")
+
+
+def _resolve_output_path(*args: Any, **kwargs: Any) -> Path:
+    """Resolve a configured output path only when a config-backed helper runs."""
+
+    from spatial_vtk.config.outputs import resolve_output_path
+
+    return resolve_output_path(*args, **kwargs)
+
+
+def _read_table(*args: Any, **kwargs: Any) -> pd.DataFrame:
+    """Read a CSV or Parquet table only when dashboard data is requested."""
+
+    from spatial_vtk.io.tables import read_table
+
+    return read_table(*args, **kwargs)
+
+
+def _table_columns(path: Path) -> list[str]:
+    """Return table columns only when dashboard table metadata is requested."""
+
+    from spatial_vtk.io import table_columns
+
+    return table_columns(path)
+
+
+def _table_row_count(path: Path) -> int:
+    """Return table row count only when dashboard table metadata is requested."""
+
+    from spatial_vtk.io import table_row_count
+
+    return table_row_count(path)
 
 
 __all__ = [
