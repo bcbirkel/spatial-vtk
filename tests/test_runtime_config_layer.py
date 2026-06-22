@@ -2718,9 +2718,11 @@ outputs:
     input_status = status.loc[status["artifact_role"].eq("input_table")].set_index("table")
     assert set(input_status.index) == {"stations", "events", "event_stations"}
     assert input_status["rows"].tolist() == [1, 1, 1]
+    assert input_status["status_reason"].tolist() == ["loaded", "loaded", "loaded"]
     assert input_status.loc["stations", "artifact_label"] == "prepared stations input table"
     output_status = status.loc[status["artifact_role"].ne("input_table")].set_index("name")
     assert "qc_inventory_path" in output_status.index
+    assert "status_reason" in output_status.columns
     assert output_status.loc["qc_inventory_path", "resolved_path"] == str(qc_outputs.qc_inventory_path)
     assert output_status.loc["qc_inventory_path", "path"] == str(qc_outputs.qc_inventory_path)
     displayed: list[pd.DataFrame] = []

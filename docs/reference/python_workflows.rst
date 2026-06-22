@@ -525,7 +525,9 @@ Use
 to inspect QC resume progress before rerunning a large job. That frame reports
 the combined waveform QC table, source-specific waveform checkpoints, and the
 metric QC inventory checkpoint with row counts and completed key counts while
-streaming only identifier columns from CSV checkpoints.
+streaming only identifier columns from CSV checkpoints. It also includes
+``status_reason`` so driver notebooks can filter ready, missing, and
+unconfigured checkpoints without parsing messages.
 
 The direct ``spatial_vtk.qc.run_qc_inventory_from_config``,
 ``spatial_vtk.qc.write_qc_inventory_overlap_from_config``, and

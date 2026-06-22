@@ -64,7 +64,7 @@ Public helpers exposed by ``spatial_vtk.qc``:
        ``StandardQCWorkflowOutputResult.status_frame()`` in notebooks for the
        compact configured-output readiness table instead of resolving QC paths
        in cells. Compact QC summary results also expose normalized
-       ``name``, ``artifact_label``, ``artifact_role``, ``exists``,
+       ``name``, ``artifact_label``, ``artifact_role``, ``status_reason``, ``exists``,
        ``resolved_path``, and ``path`` columns while preserving the older
        ``artifact`` column for existing notebooks.
    * - ``load_standard_qc_inputs``
@@ -79,9 +79,9 @@ Public helpers exposed by ``spatial_vtk.qc``:
        ``StandardQCInputResult.status_frame()`` before running QC cells to
        confirm input row counts and configured output paths without loading
        full inventories. The frame uses normalized ``name``,
-       ``artifact_label``, ``artifact_role``, ``resolved_path``, ``path``, and
-       ``exists`` columns for both loaded input tables and configured output
-       artifacts.
+       ``artifact_label``, ``artifact_role``, ``status_reason``,
+       ``resolved_path``, ``path``, and ``exists`` columns for both loaded
+       input tables and configured output artifacts.
    * - ``run_qc_inventory_from_config``
      - Build or resume the configured waveform and metric QC inventory with
        checkpointed outputs for large datasets. Routine notebooks should
@@ -95,6 +95,9 @@ Public helpers exposed by ``spatial_vtk.qc``:
        without loading full QC inventories. Routine notebooks should usually
        call this through
        ``load_standard_qc_workflow_outputs(...).checkpoint_status_frame()``.
+       The returned rows include ``status_reason`` so large-run notebooks can
+       filter ready, missing, and unconfigured checkpoints without parsing
+       messages or path existence.
    * - ``qc_inventory_readiness_from_config``
      - Check whether configured event-station records, trace QC, and full QC
        inventory outputs are ready without loading large tables, with

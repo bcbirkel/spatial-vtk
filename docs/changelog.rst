@@ -4,6 +4,16 @@ Changelog
 2026-06-22
 ----------
 
+- **QC status reason codes** *(Changed)*
+
+  - Added ``status_reason`` to compact QC summary status frames, loaded Step 2
+    input status rows, and QC checkpoint status rows.
+  - Filled missing configured-output reason codes from ``status`` when Step 2
+    input/output status tables are combined.
+  - Documented the QC checkpoint reason-code contract so large-run notebooks can
+    filter ready, missing, and unconfigured checkpoints without parsing
+    messages.
+
 - **Metric task estimate clarity** *(Changed)*
 
   - Added separate ``Passband metric tasks`` and ``Spectral metric tasks`` rows

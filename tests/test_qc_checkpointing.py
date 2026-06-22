@@ -115,13 +115,17 @@ def test_standard_qc_workflow_outputs_report_checkpoint_status(tmp_path: Path) -
     status = qc_outputs.checkpoint_status_frame(sources=("observed", "synthetic")).set_index("name")
 
     assert status.loc["qc_trace_summary_path", "checkpoint_role"] == "combined_trace_qc"
+    assert status.loc["qc_trace_summary_path", "status_reason"] == "ready"
     assert status.loc["qc_trace_summary_path", "row_count"] == 2
     assert status.loc["qc_trace_summary_path", "completed_event_station_records"] == 2
     assert status.loc["qc_trace_summary_path", "completed_component_groups"] == 2
     assert status.loc["qc_trace_summary_observed_checkpoint_path", "checkpoint_role"] == "source_trace_qc"
+    assert status.loc["qc_trace_summary_observed_checkpoint_path", "status_reason"] == "ready"
     assert status.loc["qc_trace_summary_observed_checkpoint_path", "row_count"] == 1
     assert status.loc["qc_trace_summary_synthetic_checkpoint_path", "status"] == "missing"
+    assert status.loc["qc_trace_summary_synthetic_checkpoint_path", "status_reason"] == "missing"
     assert status.loc["qc_inventory_path", "checkpoint_role"] == "metric_qc"
+    assert status.loc["qc_inventory_path", "status_reason"] == "ready"
     assert status.loc["qc_inventory_path", "row_count"] == 2
     assert status.loc["qc_inventory_path", "completed_event_station_records"] == 1
 

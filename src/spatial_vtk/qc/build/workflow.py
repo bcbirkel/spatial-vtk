@@ -106,6 +106,7 @@ class QCSummaryWorkflowResult:
                     "artifact_label": f"{str(name).replace('_', ' ')} table",
                     "artifact_role": "output_table",
                     "status": "ready" if exists else "missing",
+                    "status_reason": "ready" if exists else "missing",
                     "exists": exists,
                     "rows": self.rows.get(name),
                     "resolved_path": str(path),
@@ -121,6 +122,7 @@ class QCSummaryWorkflowResult:
                 "artifact_label",
                 "artifact_role",
                 "status",
+                "status_reason",
                 "exists",
                 "rows",
                 "resolved_path",
@@ -150,6 +152,7 @@ class StandardQCInputResult:
                 "artifact_label": "prepared stations input table",
                 "artifact_role": "input_table",
                 "status": "loaded",
+                "status_reason": "loaded",
                 "exists": True,
                 "table": "stations",
                 "rows": len(self.stations),
@@ -162,6 +165,7 @@ class StandardQCInputResult:
                 "artifact_label": "prepared events input table",
                 "artifact_role": "input_table",
                 "status": "loaded",
+                "status_reason": "loaded",
                 "exists": True,
                 "table": "events",
                 "rows": len(self.events),
@@ -174,6 +178,7 @@ class StandardQCInputResult:
                 "artifact_label": "event-station records input table",
                 "artifact_role": "input_table",
                 "status": "loaded",
+                "status_reason": "loaded",
                 "exists": True,
                 "table": "event_stations",
                 "rows": len(self.event_stations),
@@ -189,6 +194,7 @@ class StandardQCInputResult:
                 "artifact_label",
                 "artifact_role",
                 "status",
+                "status_reason",
                 "exists",
                 "table",
                 "rows",
@@ -201,6 +207,8 @@ class StandardQCInputResult:
         output_status = self.outputs.status_frame()
         if output_status.empty:
             return input_status
+        if "status_reason" not in output_status.columns:
+            output_status = output_status.assign(status_reason=output_status.get("status", ""))
         if "table" not in output_status.columns:
             output_status = output_status.assign(table="")
         if "rows" not in output_status.columns:
@@ -715,6 +723,7 @@ def qc_checkpoint_status_frame(
             "checkpoint_role",
             "source",
             "status",
+            "status_reason",
             "exists",
             "row_count",
             "completed_event_station_records",
@@ -1127,6 +1136,7 @@ def _qc_checkpoint_status_record(
             "checkpoint_role": checkpoint_role,
             "source": source,
             "status": "unconfigured",
+            "status_reason": "unconfigured",
             "exists": False,
             "row_count": 0,
             "completed_event_station_records": 0,
@@ -1150,6 +1160,7 @@ def _qc_checkpoint_status_record(
         "checkpoint_role": checkpoint_role,
         "source": source,
         "status": "ready" if exists else "missing",
+        "status_reason": "ready" if exists else "missing",
         "exists": bool(exists),
         "row_count": int(row_count),
         "completed_event_station_records": int(completed_records),

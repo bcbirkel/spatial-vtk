@@ -2038,6 +2038,7 @@ def test_qc_api_docs_use_public_package_entry_point():
     assert "full trace/QC inventory inspection" in text
     assert "``StandardQCWorkflowOutputResult.status_frame()``" in text
     assert "``load_standard_qc_workflow_outputs(...).checkpoint_status_frame()``" in text
+    assert "The returned rows include ``status_reason``" in text
     assert "configured-output readiness table instead of resolving QC paths" in text
     assert "``StandardQCInputResult.status_frame()``" in text
     assert "output group without notebook-local Step 1 path/table plumbing" in text
@@ -3172,6 +3173,7 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "run_notebook_step_if_needed(\n       context,\n       readiness,\n       run_qc_inventory_from_config" not in workflows
     assert "spatial_vtk.qc.load_standard_qc_workflow_outputs(...).run_inventory_step_if_needed(...)" in workflows
     assert "spatial_vtk.qc.load_standard_qc_workflow_outputs(...).checkpoint_status_frame()" in workflows
+    assert "``status_reason`` so driver notebooks can filter ready, missing, and\nunconfigured checkpoints" in workflows
     assert "spatial_vtk.qc.load_standard_qc_workflow_outputs(...).run_overlap_step_if_needed(...)" in workflows
     assert "spatial_vtk.qc.load_standard_qc_workflow_outputs(...).run_summary_step_if_needed(...)" in workflows
     assert "spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).run_manifest_step_if_needed(...)" in workflows
