@@ -489,6 +489,24 @@ def test_public_workflows_check_generated_cli_reference():
     assert '      - "tools/generate_cli_reference.py"' in workflows["docs.yml"]
 
 
+def test_ci_wheel_inspection_matches_release_packaging_gate():
+    """CI should enforce the same wheel-content guardrails as the release checklist."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    ci = (root / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    checklist = (root / "RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
+
+    for text in (ci, checklist):
+        assert 'required = ["spatial_vtk/config/default_outputs.yaml"]' in text
+        assert 'forbidden_prefixes = ("data/", "docs/", "tests/", "tools/", "outputs/")' in text
+        assert "Wheel is missing required file" in text
+        assert "Wheel contains repository-only content." in text
+        assert "Wheel contains generated files or notebooks." in text
+        assert "zipfile.ZipFile" in text
+    assert "Wheel unexpectedly contains docs." not in ci
+    assert "Wheel unexpectedly contains notebooks." not in ci
+
+
 def test_cli_reference_generator_has_no_write_check_mode():
     """The CLI reference generator should support help and no-write checks."""
 

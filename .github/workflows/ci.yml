@@ -140,12 +140,15 @@ jobs:
               raise SystemExit("No wheel was built.")
           with zipfile.ZipFile(wheels[0]) as zf:
               names = zf.namelist()
-          if any(name.startswith("validation_toolkit/") for name in names):
-              raise SystemExit("Wheel unexpectedly contains validation_toolkit.")
-          if any(name.startswith("docs/") for name in names):
-              raise SystemExit("Wheel unexpectedly contains docs.")
-          if any(name.endswith(".ipynb") for name in names):
-              raise SystemExit("Wheel unexpectedly contains notebooks.")
+          required = ["spatial_vtk/config/default_outputs.yaml"]
+          for name in required:
+              if name not in names:
+                  raise SystemExit(f"Wheel is missing required file: {name}")
+          forbidden_prefixes = ("data/", "docs/", "tests/", "tools/", "outputs/")
+          if any(name.startswith(forbidden_prefixes) for name in names):
+              raise SystemExit("Wheel contains repository-only content.")
+          if any("__pycache__" in name or name.endswith((".pyc", ".DS_Store", ".ipynb")) for name in names):
+              raise SystemExit("Wheel contains generated files or notebooks.")
           if not any(name.startswith("spatial_vtk/") for name in names):
               raise SystemExit("Wheel does not contain spatial_vtk.")
           print(f"checked {wheels[0].name}: {len(names)} files")

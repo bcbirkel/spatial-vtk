@@ -36,6 +36,14 @@ Changelog
   - Kept legacy ``--manifest`` and ``--output`` support and added parser
     coverage for both preferred and legacy forms.
 
+- **CI wheel-content gate** *(Changed)*
+
+  - Aligned the CI wheel-inspection step with the public release checklist so
+    CI also requires packaged config data and rejects repository-only content
+    prefixes.
+  - Added regression coverage that keeps the workflow and release checklist
+    wheel-content guardrails in sync.
+
 - **Master-list CLI defaults** *(Changed)*
 
   - Made ``svtk io master-stations`` and ``svtk io master-events`` resolve
