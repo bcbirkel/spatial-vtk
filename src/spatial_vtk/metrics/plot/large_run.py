@@ -292,6 +292,7 @@ class MetricFigureContext:
         sidecar_rows: int | None = None,
         sidecar_dir: str | Path | None = None,
         station_aggregation: str = "median",
+        verbose: bool = True,
     ) -> "MetricFigureContext":
         """Create a context from an already loaded metrics dataframe."""
 
@@ -314,6 +315,7 @@ class MetricFigureContext:
             sidecar_rows=None if sidecar_rows is None else int(sidecar_rows),
             sidecar_dir=None if sidecar_dir is None else Path(sidecar_dir).expanduser(),
             station_aggregation=str(station_aggregation or "median").lower(),
+            verbose=bool(verbose),
         )
         if metrics is None or metrics.empty:
             return context

@@ -147,6 +147,7 @@ class SpatialFigureContext:
     tables: dict[str, pd.DataFrame | None] = field(default_factory=dict)
     paths: dict[str, Path] = field(default_factory=dict)
     site_metadata: pd.DataFrame | None = None
+    verbose: bool = True
 
     @classmethod
     def from_config(
@@ -167,6 +168,7 @@ class SpatialFigureContext:
         sidecar_rows: int | None = None,
         sidecar_dir: str | Path | None = None,
         station_aggregation: str = "median",
+        verbose: bool = True,
     ) -> "SpatialFigureContext":
         """Load compact spatial output tables and return a plotting context."""
 
@@ -209,6 +211,7 @@ class SpatialFigureContext:
             sidecar_rows=sidecar_rows,
             sidecar_dir=sidecar_output_dir,
             station_aggregation=station_aggregation,
+            verbose=verbose,
         )
         event_context = MetricFigureContext.from_frame(
             tables["event_centered_residuals"],
@@ -227,13 +230,14 @@ class SpatialFigureContext:
             sidecar_rows=sidecar_rows,
             sidecar_dir=sidecar_output_dir,
             station_aggregation=station_aggregation,
+            verbose=verbose,
         )
+        station_metadata_message = ""
         try:
             site_metadata = load_output_table("prepared_stations", cfg=cfg)
         except Exception as exc:
             site_metadata = None
-            if make_figures:
-                print(f"Station metadata unavailable for geology contrast plots: {exc}")
+            station_metadata_message = f"Station metadata unavailable for geology contrast plots: {exc}"
         context = cls(
             figure_dir=output_dir,
             make_figures=bool(make_figures),
@@ -249,10 +253,13 @@ class SpatialFigureContext:
             tables=tables,
             paths=paths,
             site_metadata=site_metadata,
+            verbose=bool(verbose),
         )
+        if make_figures and station_metadata_message:
+            context._progress(station_metadata_message)
         if make_figures:
-            print(f"Rendering spatial figures into {output_dir}")
-            print(
+            context._progress(f"Rendering spatial figures into {output_dir}")
+            context._progress(
                 f"metric_value_col={context.metric_value_col} "
                 f"event_value_col={context.event_value_col} "
                 f"default_passband={default_passband} "
@@ -260,6 +267,12 @@ class SpatialFigureContext:
                 f"default_model={default_model}"
             )
         return context
+
+    def _progress(self, message: str) -> None:
+        """Print one progress message when verbose output is enabled."""
+
+        if self.verbose:
+            print(message)
 
     def status_frame(self) -> pd.DataFrame:
         """Return loaded table status for this spatial figure context.
@@ -811,13 +824,13 @@ class SpatialFigureContext:
         """Return whether metric-field figures can render, printing a bounded reason."""
 
         if not self.make_figures:
-            print(f"Skipping {label}. Enable spatial figures to render it.")
+            self._progress(f"Skipping {label}. Enable spatial figures to render it.")
             return False
         if self.metric_field is None or self.metric_field.empty:
-            print(f"Skipping {label}: metric_field table missing or empty.")
+            self._progress(f"Skipping {label}: metric_field table missing or empty.")
             return False
         if not value_col:
-            print(f"Skipping {label}: no metric value column is available.")
+            self._progress(f"Skipping {label}: no metric value column is available.")
             return False
         return True
 
@@ -825,13 +838,13 @@ class SpatialFigureContext:
         """Return whether event-centered figures can render, printing a bounded reason."""
 
         if not self.make_figures:
-            print(f"Skipping {label}. Enable spatial figures to render it.")
+            self._progress(f"Skipping {label}. Enable spatial figures to render it.")
             return False
         if self.event_centered is None or self.event_centered.empty:
-            print(f"Skipping {label}: event_centered_residuals table missing or empty.")
+            self._progress(f"Skipping {label}: event_centered_residuals table missing or empty.")
             return False
         if not value_col:
-            print(f"Skipping {label}: no event-centered value column is available.")
+            self._progress(f"Skipping {label}: no event-centered value column is available.")
             return False
         return True
 
@@ -1122,16 +1135,16 @@ class SpatialFigureContext:
         explained_variance = self.table("pca_explained_variance")
         feature_loadings = self.table("pca_feature_loadings")
         if metric_field is None or metric_field.empty:
-            print("skip spatial_pca_summary: metric_field table missing or empty")
+            self._progress("skip spatial_pca_summary: metric_field table missing or empty")
             return []
         if station_scores is None or station_scores.empty:
-            print("skip spatial_pca_summary: pca_station_scores table missing or empty")
+            self._progress("skip spatial_pca_summary: pca_station_scores table missing or empty")
             return []
         if explained_variance is None or explained_variance.empty:
-            print("skip spatial_pca_summary: pca_explained_variance table missing or empty")
+            self._progress("skip spatial_pca_summary: pca_explained_variance table missing or empty")
             return []
         if feature_loadings is None or feature_loadings.empty:
-            print("skip spatial_pca_summary: pca_feature_loadings table missing or empty")
+            self._progress("skip spatial_pca_summary: pca_feature_loadings table missing or empty")
             return []
 
         resolved_score_col = score_col or f"{mode}_score"
@@ -1147,21 +1160,21 @@ class SpatialFigureContext:
             explained_rows = self.filter_like_item(explained_variance, item, include_period=False)
             loading_rows = self.filter_like_item(feature_loadings, item, include_period=False)
             if score_rows is None or score_rows.empty:
-                print(f"skip spatial_pca_summary {item['label']}: no PCA station score rows")
+                self._progress(f"skip spatial_pca_summary {item['label']}: no PCA station score rows")
                 continue
             if explained_rows is None or explained_rows.empty:
-                print(f"skip spatial_pca_summary {item['label']}: no PCA explained-variance rows")
+                self._progress(f"skip spatial_pca_summary {item['label']}: no PCA explained-variance rows")
                 continue
             if loading_rows is None or loading_rows.empty:
-                print(f"skip spatial_pca_summary {item['label']}: no PCA feature-loading rows")
+                self._progress(f"skip spatial_pca_summary {item['label']}: no PCA feature-loading rows")
                 continue
             if resolved_score_col not in score_rows.columns:
-                print(f"skip spatial_pca_summary {item['label']}: missing score column {resolved_score_col!r}")
+                self._progress(f"skip spatial_pca_summary {item['label']}: missing score column {resolved_score_col!r}")
                 continue
 
             output = self.figure_dir / f"{self.metric_context.figure_name('spatial_pca_summary', item, resolved_score_col)}.png"
             if output.exists() and not self.overwrite:
-                print(f"skip {output.name}: exists")
+                self._progress(f"skip {output.name}: exists")
                 self._write_pca_summary_sidecar(
                     output,
                     station_scores=score_rows,
@@ -1191,11 +1204,11 @@ class SpatialFigureContext:
                     **kwargs,
                 )
                 _close_matplotlib_figures()
-                print(f"wrote {output}")
+                self._progress(f"wrote {output}")
                 outputs.append(output)
             except Exception as exc:
                 _close_matplotlib_figures()
-                print(f"skip {output.name}: {type(exc).__name__}: {exc}")
+                self._progress(f"skip {output.name}: {type(exc).__name__}: {exc}")
         return outputs
 
     def _write_pca_summary_sidecar(
@@ -1242,7 +1255,7 @@ class SpatialFigureContext:
         outputs: list[Path] = []
         pattern_rows = self.table("pattern_similarity_station_anomalies")
         if pattern_rows is None or pattern_rows.empty:
-            print("skip spatial_pattern_similarity: pattern_similarity_station_anomalies table missing or empty")
+            self._progress("skip spatial_pattern_similarity: pattern_similarity_station_anomalies table missing or empty")
             return outputs
         work = pattern_rows.copy()
         if passband is not None and "bin" in work.columns:
@@ -1253,7 +1266,7 @@ class SpatialFigureContext:
         if model is not None and "model" in work.columns:
             work = work.loc[work["model"].astype(str).eq(str(model))].copy()
         if work.empty:
-            print("skip spatial_pattern_similarity: no rows match the requested passband/component/model filters")
+            self._progress("skip spatial_pattern_similarity: no rows match the requested passband/component/model filters")
             return outputs
         for (metric_name, bin_label), subset in work.groupby(["metric", "bin"], dropna=False):
             if subset.empty:
@@ -1333,13 +1346,13 @@ class SpatialFigureContext:
         event_centered = self.event_centered
         geology_contrasts = self.table("geology_contrasts")
         if event_centered is None or event_centered.empty:
-            print("skip spatial_geology_contrast: event-centered residual table missing or empty")
+            self._progress("skip spatial_geology_contrast: event-centered residual table missing or empty")
             return outputs
         if geology_value_col is None or geology_value_col not in event_centered.columns:
-            print(f"skip spatial_geology_contrast: value column unavailable ({geology_value_col!r})")
+            self._progress(f"skip spatial_geology_contrast: value column unavailable ({geology_value_col!r})")
             return outputs
         if geology_contrasts is None or geology_contrasts.empty:
-            print("skip spatial_geology_contrast: geology_contrasts table missing or empty")
+            self._progress("skip spatial_geology_contrast: geology_contrasts table missing or empty")
             return outputs
         for item in self.iter_metric_frames(
             event_centered,
@@ -2401,6 +2414,7 @@ def prepare_spatial_figure_context_from_notebook_settings(
     """
 
     context_kwargs = dict(settings.context_kwargs(include_station_aggregation=include_station_aggregation))
+    context_kwargs.setdefault("verbose", False)
     context_kwargs.update(overrides)
     return prepare_spatial_figure_context(
         figure_dir=settings.figure_dir,

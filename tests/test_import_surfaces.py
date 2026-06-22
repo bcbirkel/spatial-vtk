@@ -2377,6 +2377,8 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "Advanced Spatial Figure Extension Helpers" in text
     assert "not the preferred tutorial or notebook entry\npoints" in text
     assert "New notebooks should call\n``load_standard_spatial_workflow_output_status(...).write_figure_suite(...)``" in text
+    assert "Direct script\n   contexts are verbose by default" in text
+    assert "The notebook adapter suppresses\n   per-file stdout by default" in text
     assert "exact ``figure_paths`` lists" in text
     assert "preview-oriented path fields" in text
     assert "``status_reason`` distinguishes written figure\n   families from disabled suites" in text
@@ -3780,6 +3782,10 @@ def test_spatial_plot_public_entry_point_is_lazy():
     assert callable(spatial_plot.write_large_run_spatial_figure_suite_from_notebook_settings)
     assert callable(spatial_plot.build_categorical_comparison_table)
     assert callable(spatial_plot.write_large_run_spatial_summary_figures_from_outputs)
+    context_signature = inspect.signature(spatial_plot.SpatialFigureContext.from_config)
+    assert context_signature.parameters["verbose"].default is True
+    notebook_source = inspect.getsource(spatial_plot.prepare_spatial_figure_context_from_notebook_settings)
+    assert 'setdefault("verbose", False)' in notebook_source
 
 
 def test_spatial_workflow_loaders_are_top_level_and_lightweight():
@@ -3816,6 +3822,8 @@ def test_metric_plot_public_entry_point_exposes_large_run_suite():
     assert callable(metric_plot.write_standard_metric_diagnostic_figures)
     context_signature = inspect.signature(metric_plot.MetricFigureContext.from_metrics_long)
     assert context_signature.parameters["verbose"].default is True
+    frame_context_signature = inspect.signature(metric_plot.MetricFigureContext.from_frame)
+    assert frame_context_signature.parameters["verbose"].default is True
     assert (
         metric_plot.write_large_run_metric_figure_suite_from_notebook_settings
         is metric_plot.write_large_run_metric_figure_suite_from_notebook_settings

@@ -522,11 +522,15 @@ readiness checks, output bookkeeping, sidecars, and figure-family iteration.
 ``prepare_spatial_figure_context``
    Build a reusable ``SpatialFigureContext`` for scripts that need to control
    large-run spatial filtering, station aggregation, PSA-period handling, and
-   sidecar metadata before rendering selected figure families.
+   sidecar metadata before rendering selected figure families. Direct script
+   contexts are verbose by default; set ``verbose=False`` when status tables
+   should be the only progress channel.
 
 ``prepare_spatial_figure_context_from_notebook_settings``
    Compatibility helper for scripts that need a ``SpatialFigureContext`` built
-   from ``notebook_figure_settings(...)``.
+   from ``notebook_figure_settings(...)``. The notebook adapter suppresses
+   per-file stdout by default so large-run notebooks can rely on returned
+   figure-family status rows.
 
 ``RegionFigureResult`` and ``RegionBoxplotResult``
    Return normalized ``status_frame()`` tables with ``name``,
