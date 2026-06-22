@@ -1193,6 +1193,7 @@ def test_tutorial_notebook_code_uses_python_package_apis_not_cli_calls() -> None
         "subprocess.",
         "os.system(",
         "os.popen(",
+        "get_ipython().system(",
         "run_or_submit_notebook_cli_command(",
         "write_notebook_cli_slurm_script(",
     )

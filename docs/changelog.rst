@@ -110,6 +110,9 @@ Changelog
   - Extended the same public-import guardrail to
     ``spatial_vtk.config.paths`` so notebook path helpers also come through
     the stable ``spatial_vtk.config`` namespace.
+  - Extended tutorial notebook CLI-regression coverage to reject
+    ``get_ipython().system(...)`` shell calls in addition to direct subprocess
+    and ``!svtk`` patterns.
 
 - **Workflow readiness and dashboard parsing** *(Fixed)*
 
