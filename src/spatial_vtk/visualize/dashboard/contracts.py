@@ -54,29 +54,49 @@ MAP_COORDINATE_CANDIDATES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = 
 VALUE_COLUMN_FAMILY_ORDER: tuple[str, ...] = ("residual", "score/gof", "observed", "synthetic", "metric value")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, init=False)
 class MetricsDashboardPaths:
     """Paths used by the metrics dashboard.
 
     ``metrics_dataset_dir`` and ``dashboard_summary_table_dir`` are the
-    preferred public names. ``metrics_root`` and ``summary_root`` remain as
-    dataclass fields for compatibility with earlier dashboard helpers.
+    public fields. ``metrics_root`` and ``summary_root`` remain accepted
+    constructor aliases and read-only properties for compatibility with earlier
+    dashboard helpers.
     """
 
-    metrics_root: Path
-    summary_root: Path
+    metrics_dataset_dir: Path
+    dashboard_summary_table_dir: Path
+
+    def __init__(
+        self,
+        metrics_dataset_dir: str | Path | None = None,
+        dashboard_summary_table_dir: str | Path | None = None,
+        *,
+        metrics_root: str | Path | None = None,
+        summary_root: str | Path | None = None,
+    ) -> None:
+        """Create dashboard paths using preferred names or legacy aliases."""
+
+        resolved_metrics = metrics_dataset_dir if metrics_dataset_dir is not None else metrics_root
+        resolved_summary = dashboard_summary_table_dir if dashboard_summary_table_dir is not None else summary_root
+        if resolved_metrics is None:
+            raise TypeError("metrics_dataset_dir is required")
+        if resolved_summary is None:
+            raise TypeError("dashboard_summary_table_dir is required")
+        object.__setattr__(self, "metrics_dataset_dir", Path(resolved_metrics).expanduser())
+        object.__setattr__(self, "dashboard_summary_table_dir", Path(resolved_summary).expanduser())
 
     @property
-    def metrics_dataset_dir(self) -> Path:
-        """Metrics dashboard row dataset directory or direct row table."""
+    def metrics_root(self) -> Path:
+        """Compatibility alias for ``metrics_dataset_dir``."""
 
-        return self.metrics_root
+        return self.metrics_dataset_dir
 
     @property
-    def dashboard_summary_table_dir(self) -> Path:
-        """Dashboard summary-table directory used by overview tabs."""
+    def summary_root(self) -> Path:
+        """Compatibility alias for ``dashboard_summary_table_dir``."""
 
-        return self.summary_root
+        return self.dashboard_summary_table_dir
 
 
 @dataclass(frozen=True)

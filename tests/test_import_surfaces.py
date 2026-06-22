@@ -1224,6 +1224,8 @@ def test_autodoc_fallback_parameter_docs_are_descriptive():
 def test_dashboard_path_contracts_expose_primary_names(tmp_path):
     """Dashboard path objects should expose current public path vocabulary."""
 
+    from dataclasses import fields
+
     from spatial_vtk.visualize import MetricsDashboardPaths as VisualizeMetricsDashboardPaths
     from spatial_vtk.visualize import QCDashboardPaths as VisualizeQCDashboardPaths
     from spatial_vtk.visualize.dashboard import MetricsDashboardPaths, QCDashboardPaths
@@ -1239,13 +1241,24 @@ def test_dashboard_path_contracts_expose_primary_names(tmp_path):
     summary_tables = tmp_path / "dashboard_summaries"
     trace_summary = tmp_path / "qc_trace_summary.parquet"
 
-    metrics_paths = MetricsDashboardPaths(metrics_root=metrics_dataset, summary_root=summary_tables)
+    assert [field.name for field in fields(MetricsDashboardPaths)] == [
+        "metrics_dataset_dir",
+        "dashboard_summary_table_dir",
+    ]
+
+    metrics_paths = MetricsDashboardPaths(
+        metrics_dataset_dir=metrics_dataset,
+        dashboard_summary_table_dir=summary_tables,
+    )
+    legacy_metrics_paths = MetricsDashboardPaths(metrics_root=metrics_dataset, summary_root=summary_tables)
     qc_paths = QCDashboardPaths(trace_summary=trace_summary)
 
     assert metrics_paths.metrics_dataset_dir == metrics_dataset
     assert metrics_paths.dashboard_summary_table_dir == summary_tables
     assert metrics_paths.metrics_root == metrics_paths.metrics_dataset_dir
     assert metrics_paths.summary_root == metrics_paths.dashboard_summary_table_dir
+    assert legacy_metrics_paths.metrics_dataset_dir == metrics_dataset
+    assert legacy_metrics_paths.dashboard_summary_table_dir == summary_tables
     assert qc_paths.qc_trace_summary_table == trace_summary
     assert qc_paths.trace_summary == qc_paths.qc_trace_summary_table
 

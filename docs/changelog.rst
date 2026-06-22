@@ -4,6 +4,14 @@ Changelog
 2026-06-22
 ----------
 
+- **Dashboard path object vocabulary** *(Changed)*
+
+  - Made ``MetricsDashboardPaths`` store ``metrics_dataset_dir`` and
+    ``dashboard_summary_table_dir`` as its public dataclass fields.
+  - Kept ``metrics_root`` and ``summary_root`` as accepted constructor aliases
+    and read-only compatibility properties for older dashboard helper code.
+  - Documented the path-object naming contract in the visualization API guide.
+
 - **Notebook run-context status display** *(Changed)*
 
   - Added ``NotebookRunContext.status_frame()`` so tutorial setup cells can
