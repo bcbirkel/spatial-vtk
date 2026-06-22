@@ -745,10 +745,12 @@ paths without requiring global config activation.
        they can report schema/value/map readiness without materializing complete
        summary tables. ``ready`` reports whether the underlying summary data is
        usable, while ``tab_ready`` reports whether the dashboard tab can render
-       correctly after map-coordinate requirements are considered; startup and
-       optional-tab skip decisions use ``tab_ready`` when it is present so
-       value-ready but map-blocked station/event tabs are not treated as fully
-       ready. Display the result from
+       correctly after map-coordinate requirements are considered. Startup
+       warnings use ``tab_ready`` so value-ready but map-blocked station/event
+       tabs are reported clearly, while optional summary-table loading skips
+       only tables whose underlying data ``ready`` value is false. This lets a
+       map-blocked station or event tab still show its filtered table and Data
+       Status rows. Display the result from
        ``DashboardDatasetPreparationResult.run_if_needed(...)`` with
        ``spatial_vtk.config.display_notebook_step_result`` so submitted,
        skipped, and local-run states appear as labelled notebook tables.

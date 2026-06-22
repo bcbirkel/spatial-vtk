@@ -755,7 +755,14 @@ def _metrics_dashboard_startup_blocker(readiness: pd.DataFrame) -> str | None:
 
 
 def _not_ready_optional_summary_tables(readiness: pd.DataFrame) -> list[str]:
-    """Return optional dashboard summary tables that should not be loaded."""
+    """Return optional dashboard summary tables whose data should not be loaded.
+
+    ``tab_ready`` can be false for display-specific blockers, such as a station
+    or event summary that can populate its table but cannot render a map because
+    coordinate columns are missing. Those tables should still be lazily loaded
+    for table displays and Data Status. Only the underlying data ``ready`` value
+    should suppress loading.
+    """
 
     if readiness.empty or "dashboard_table" not in readiness.columns or "ready" not in readiness.columns:
         return []
@@ -764,8 +771,7 @@ def _not_ready_optional_summary_tables(readiness: pd.DataFrame) -> list[str]:
         table = str(row.get("dashboard_table") or "").strip()
         if not table or table == "model_metric_band":
             continue
-        ready_value = row.get("tab_ready", row.get("ready")) if "tab_ready" in readiness.columns else row.get("ready")
-        if not dashboard_ready_value(ready_value, default=False):
+        if not dashboard_ready_value(row.get("ready"), default=False):
             skip.append(table)
     return sorted(dict.fromkeys(skip))
 

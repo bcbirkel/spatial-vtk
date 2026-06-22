@@ -34,6 +34,14 @@ Changelog
     finite, dropped, coordinate, event-count, and aggregation metadata for
     auditing plotted station values and PSA oscillator-period panels.
 
+- **Dashboard optional-tab loading** *(Fixed)*
+
+  - Split metrics-dashboard optional summary loading from map/tab readiness so
+    station or event summaries with usable table data are still lazily loaded
+    when their maps are blocked by missing coordinate columns.
+  - Kept startup warnings and Data Status rows on ``tab_ready`` so map-specific
+    blockers remain visible without making the rest of the tab look empty.
+
 - **CLI config path metavar** *(Changed)*
 
   - Standardized live ``svtk`` help so optional config-file arguments render as

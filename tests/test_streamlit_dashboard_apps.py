@@ -1424,7 +1424,7 @@ def test_metrics_dashboard_readiness_warning_summarizes_multiple_tab_messages(mo
 
 
 def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
-    """Optional summaries that fail readiness should not be loaded eagerly."""
+    """Optional summaries with data blockers should not be loaded eagerly."""
 
     summaries = {
         "model_metric_band": pd.DataFrame({"model": ["m1"], "metric": ["PGA"], "band": ["2-4"], "n": [1], "med_log2_residual": [0.5]}),
@@ -1496,9 +1496,33 @@ def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
     assert rendered["summaries"] is summaries
     assert rendered["metrics_root"] == ""
     assert rendered["summary_root"] == "summary-root"
-    assert rendered["optional_skip_tables"] == ("event_rollup", "path_hex", "station_rollup")
+    assert rendered["optional_skip_tables"] == ("path_hex", "station_rollup")
     assert rendered["readiness"] is readiness
     assert rendered["metric_dataset_readiness"].empty
+
+
+def test_metrics_dashboard_optional_skip_keeps_map_blocked_tables_loadable():
+    """Map-only tab blockers should still allow lazy table loading."""
+
+    readiness = pd.DataFrame(
+        {
+            "dashboard_table": ["station_rollup", "event_rollup", "path_hex"],
+            "ready": [False, True, pd.NA],
+            "tab_ready": [False, False, pd.NA],
+            "message": [
+                "station_rollup schema is not ready.",
+                "event_rollup summary is ready.",
+                "path_hex summary file is missing.",
+            ],
+            "tab_message": [
+                "station_rollup schema is not ready.",
+                "event_rollup can populate its table, but its map needs coordinate columns.",
+                "path_hex summary file is missing.",
+            ],
+        }
+    )
+
+    assert streamlit_metrics._not_ready_optional_summary_tables(readiness) == ["path_hex", "station_rollup"]
 
 
 def test_metrics_tab_readiness_message_explains_optional_summary_gaps():

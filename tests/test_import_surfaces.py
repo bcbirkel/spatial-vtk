@@ -3204,8 +3204,9 @@ def test_python_workflow_docs_prefer_dashboard_preparation_result_object():
     assert "DashboardDatasetPreparationResult`` also owns the Slurm-aware" in dashboard_row
     assert "``ready`` reports whether the underlying summary data is" in dashboard_row
     assert "``tab_ready`` reports whether the dashboard tab can render" in dashboard_row
-    assert "optional-tab skip decisions use ``tab_ready`` when it is present" in dashboard_row
-    assert "value-ready but map-blocked station/event tabs are not treated as fully\n       ready" in dashboard_row
+    assert "Startup\n       warnings use ``tab_ready``" in dashboard_row
+    assert "optional summary-table loading skips\n       only tables whose underlying data ``ready`` value is false" in dashboard_row
+    assert "map-blocked station or event tab still show its filtered table" in dashboard_row
     assert "Scripts that intentionally own dashboard preparation control can call" in dashboard_row
     assert "``spatial_vtk.visualize.write_configured_dashboard_datasets`` directly" in dashboard_row
     assert "with ``cfg=`` or explicit roots" in dashboard_row
