@@ -4436,10 +4436,15 @@ outputs:
 def test_cli_dashboard_help_exposes_clear_path_aliases(capsys):
     root = Path(__file__).resolve().parents[1]
     dashboard_reference = (root / "docs" / "reference" / "cli" / "dashboard.rst").read_text(encoding="utf-8")
+    cli_source = (root / "src" / "spatial_vtk" / "cli" / "__init__.py").read_text(encoding="utf-8")
     assert "METRICS_ROOT" not in dashboard_reference
     assert "SUMMARY_ROOT" not in dashboard_reference
     assert "--metrics-dataset-dir" in dashboard_reference
     assert "--dashboard-summary-table-dir" in dashboard_reference
+    assert 'dest="metrics_dataset_dir"' in cli_source
+    assert 'dest="dashboard_summary_table_dir"' in cli_source
+    assert "args.metrics_root" not in cli_source
+    assert "args.summary_root" not in cli_source
 
     with pytest.raises(SystemExit) as excinfo:
         main(["dashboard", "metrics", "--help"])

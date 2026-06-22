@@ -4,6 +4,14 @@ Changelog
 2026-06-22
 ----------
 
+- **Dashboard CLI argument names** *(Changed)*
+
+  - Renamed the internal argparse destinations for metrics-dashboard overrides
+    to ``metrics_dataset_dir`` and ``dashboard_summary_table_dir`` so command
+    handlers use the same vocabulary as the public flags and docs.
+  - Kept ``--metrics-root``, ``--metrics-dataset``, ``--summary-root``, and
+    ``--dashboard-summary-dir`` working as legacy aliases.
+
 - **Dashboard readiness summary status** *(Changed)*
 
   - Added the stable ``artifact`` identifier to compact dashboard readiness

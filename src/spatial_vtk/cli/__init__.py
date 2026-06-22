@@ -1582,7 +1582,7 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
         "--metrics-root",
         "--metrics-dataset",
         metavar="PATH",
-        dest="metrics_root",
+        dest="metrics_dataset_dir",
         default=None,
         help=(
             "Metrics dashboard row dataset directory or direct metrics_long CSV or Parquet table "
@@ -1597,7 +1597,7 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
         "--summary-root",
         "--dashboard-summary-dir",
         metavar="DIR",
-        dest="summary_root",
+        dest="dashboard_summary_table_dir",
         default=None,
         help=(
             "Dashboard summary-table directory containing model_metric_band, station_rollup, "
@@ -2212,23 +2212,23 @@ def _default_metric_qc_table(config: Any, *, no_qc: bool) -> Path | None:
 
 def _resolve_metrics_dashboard_paths(
     *,
-    metrics_root: str | None,
-    summary_root: str | None,
+    metrics_dataset_dir: str | None,
+    dashboard_summary_table_dir: str | None,
     config_path: str | None,
     run_scenario: str | None,
 ) -> tuple[Path, Path, str | None]:
     """Resolve metrics dashboard dataset and summary directories."""
 
-    if metrics_root and summary_root:
+    if metrics_dataset_dir and dashboard_summary_table_dir:
         resolved_config_path = _effective_config_path(config_path)
-        return Path(metrics_root).expanduser(), Path(summary_root).expanduser(), resolved_config_path
+        return Path(metrics_dataset_dir).expanduser(), Path(dashboard_summary_table_dir).expanduser(), resolved_config_path
 
     config = _optional_cli_config(config_path, run_scenario=run_scenario)
     if config is None:
-        if metrics_root or summary_root:
-            supplied = "--metrics-dataset-dir" if metrics_root else "--dashboard-summary-table-dir"
-            missing = "--dashboard-summary-table-dir" if metrics_root else "--metrics-dataset-dir"
-            missing_role = "dashboard_summaries table directory" if metrics_root else "metrics_dashboard row dataset"
+        if metrics_dataset_dir or dashboard_summary_table_dir:
+            supplied = "--metrics-dataset-dir" if metrics_dataset_dir else "--dashboard-summary-table-dir"
+            missing = "--dashboard-summary-table-dir" if metrics_dataset_dir else "--metrics-dataset-dir"
+            missing_role = "dashboard_summaries table directory" if metrics_dataset_dir else "metrics_dashboard row dataset"
             raise ValueError(
                 f"{supplied} was provided, but no Spatial-VTK config was found to resolve the companion "
                 f"{missing_role}. Pass {missing}, pass --config, or run 'svtk config set PATH'."
@@ -2243,10 +2243,16 @@ def _resolve_metrics_dashboard_paths(
     from spatial_vtk.visualize.dashboard import dashboard_output_paths
 
     paths = dashboard_output_paths(cfg=config, include_summary_tables=False)
-    resolved_metrics_root = Path(metrics_root).expanduser() if metrics_root else paths["metrics_dashboard_root"]
-    resolved_summary_root = Path(summary_root).expanduser() if summary_root else paths["dashboard_summary_root"]
+    resolved_metrics_dataset_dir = (
+        Path(metrics_dataset_dir).expanduser() if metrics_dataset_dir else paths["metrics_dashboard_root"]
+    )
+    resolved_dashboard_summary_table_dir = (
+        Path(dashboard_summary_table_dir).expanduser()
+        if dashboard_summary_table_dir
+        else paths["dashboard_summary_root"]
+    )
     resolved_config_path = str(config.config_path) if config.config_path is not None else None
-    return resolved_metrics_root, resolved_summary_root, resolved_config_path
+    return resolved_metrics_dataset_dir, resolved_dashboard_summary_table_dir, resolved_config_path
 
 
 def _resolve_qc_dashboard_path(
@@ -3182,17 +3188,17 @@ def _spatial_suggested_action(output_key: str, *, role: str, state: str, reason:
 def _cmd_dashboard_metrics(args: argparse.Namespace) -> int:
     """Run ``svtk dashboard metrics``."""
 
-    metrics_root, summary_root, config_path = _resolve_metrics_dashboard_paths(
-        metrics_root=args.metrics_root,
-        summary_root=args.summary_root,
+    metrics_dataset_dir, dashboard_summary_table_dir, config_path = _resolve_metrics_dashboard_paths(
+        metrics_dataset_dir=args.metrics_dataset_dir,
+        dashboard_summary_table_dir=args.dashboard_summary_table_dir,
         config_path=args.config,
         run_scenario=args.run_scenario,
     )
     from spatial_vtk.visualize.dashboard import launch_metrics_dashboard
 
     process = launch_metrics_dashboard(
-        metrics_dataset_dir=metrics_root,
-        dashboard_summary_table_dir=summary_root,
+        metrics_dataset_dir=metrics_dataset_dir,
+        dashboard_summary_table_dir=dashboard_summary_table_dir,
         config_path=config_path,
         server_address=args.address,
         server_port=args.port,
@@ -3204,8 +3210,8 @@ def _cmd_dashboard_metrics(args: argparse.Namespace) -> int:
         show=args.show,
     )
     resolved_port = getattr(process, "spatial_vtk_server_port", args.port)
-    print(f"Metrics dashboard row dataset: {metrics_root}")
-    print(f"Metrics dashboard summary tables: {summary_root}")
+    print(f"Metrics dashboard row dataset: {metrics_dataset_dir}")
+    print(f"Metrics dashboard summary tables: {dashboard_summary_table_dir}")
     if args.proxy_mode:
         print("Metrics dashboard proxy mode: enabled")
     if args.row_limit is not None:
