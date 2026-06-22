@@ -17,8 +17,6 @@ import math
 from pathlib import Path
 from typing import Any
 
-from spatial_vtk.config.outputs import resolve_output_path
-from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io.output_paths import OutputReadiness, output_readiness
 from spatial_vtk.metrics.workflow.standard import (
     StandardMetricWorkflowOutputResult,
@@ -53,12 +51,12 @@ def build_metric_waveform_inventories_from_config(
     observed_path = (
         Path(observed_output).expanduser()
         if observed_output is not None
-        else resolve_output_path("observed_metric_inventory", kind="table", cfg=config, create_parent=True)
+        else _resolve_output_path("observed_metric_inventory", kind="table", cfg=config, create_parent=True)
     )
     synthetic_path = (
         Path(synthetic_output).expanduser()
         if synthetic_output is not None
-        else resolve_output_path("synthetic_metric_inventory", kind="table", cfg=config, create_parent=True)
+        else _resolve_output_path("synthetic_metric_inventory", kind="table", cfg=config, create_parent=True)
     )
     result = build_metric_waveform_inventories_from_trace_metadata(
         trace_metadata_path,
@@ -108,18 +106,18 @@ def plan_metric_tasks_from_config(
     observed_path = (
         Path(observed_inventory).expanduser()
         if observed_inventory is not None
-        else resolve_output_path("observed_metric_inventory", kind="table", cfg=config, create_parent=True)
+        else _resolve_output_path("observed_metric_inventory", kind="table", cfg=config, create_parent=True)
     )
     synthetic_path = (
         Path(synthetic_inventory).expanduser()
         if synthetic_inventory is not None
-        else resolve_output_path("synthetic_metric_inventory", kind="table", cfg=config, create_parent=True)
+        else _resolve_output_path("synthetic_metric_inventory", kind="table", cfg=config, create_parent=True)
     )
     qc_path = Path(qc_table).expanduser() if qc_table is not None else _default_metric_qc_table(config, no_qc=no_qc)
     output_path = (
         Path(output).expanduser()
         if output is not None
-        else resolve_output_path("metric_manifest" if manifest else "metric_tasks", kind="table", cfg=config, create_parent=True)
+        else _resolve_output_path("metric_manifest" if manifest else "metric_tasks", kind="table", cfg=config, create_parent=True)
     )
     plan = metric_plan_from_config(config, command="metrics.calculate", overrides=overrides or {})
     tasks = plan_metric_tasks(
@@ -270,12 +268,12 @@ def summarize_metric_snapshot_tasks_from_config(
     task_path = (
         Path(task_output).expanduser()
         if task_output is not None
-        else resolve_output_path("metric_tasks", kind="table", cfg=config, create_parent=True)
+        else _resolve_output_path("metric_tasks", kind="table", cfg=config, create_parent=True)
     )
     estimate_path = (
         Path(estimate_output).expanduser()
         if estimate_output is not None
-        else resolve_output_path("metric_task_estimate", kind="table", cfg=config, create_parent=True)
+        else _resolve_output_path("metric_task_estimate", kind="table", cfg=config, create_parent=True)
     )
     snapshot = read_table(snapshot_path)
     tasks = _metric_snapshot_task_table(snapshot, config)
@@ -430,7 +428,7 @@ def metric_batch_merge_readiness_from_config(
     output_path = (
         Path(output).expanduser()
         if output is not None
-        else resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
+        else _resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
     )
     if not manifest_path.exists():
         return output_readiness(
@@ -485,13 +483,13 @@ def metric_outputs_readiness_from_config(
     metric_rows_path = (
         Path(metric_rows).expanduser()
         if metric_rows is not None
-        else resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
+        else _resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
     )
     return output_readiness(
         {
-            "metrics_long_path": resolve_output_path("metrics_long", kind="table", cfg=config, create_parent=True),
-            "path_table_path": resolve_output_path("path_table", kind="table", cfg=config, create_parent=True),
-            "path_summary_path": resolve_output_path("path_summary", kind="table", cfg=config, create_parent=True),
+            "metrics_long_path": _resolve_output_path("metrics_long", kind="table", cfg=config, create_parent=True),
+            "path_table_path": _resolve_output_path("path_table", kind="table", cfg=config, create_parent=True),
+            "path_summary_path": _resolve_output_path("path_summary", kind="table", cfg=config, create_parent=True),
         },
         inputs={"metric_rows_path": metric_rows_path},
         sources={"metric_rows_path": metric_rows_path},
@@ -522,7 +520,7 @@ def merge_metric_batches_from_config(
     output_path = (
         Path(output).expanduser()
         if output is not None
-        else resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
+        else _resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
     )
     path = merge_batch_outputs(manifest_path, output_path, require_all=require_all)
     return {
@@ -567,8 +565,10 @@ def write_metric_outputs_from_config(
     return {key: str(path) for key, path in written.items()}
 
 
-def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None) -> SpatialVTKConfig:
+def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None) -> Any:
     """Return an activated config for a metric workflow helper."""
+
+    from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 
     if config_path is not None:
         return SpatialVTKConfig.from_file(config_path, run_scenario=run_scenario).activate()
@@ -578,7 +578,15 @@ def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None
     return cfg
 
 
-def _metric_workflow_dir(config: SpatialVTKConfig, name: str) -> Path:
+def _resolve_output_path(*args: Any, **kwargs: Any) -> Path:
+    """Resolve configured metric workflow output paths only when needed."""
+
+    from spatial_vtk.config.outputs import resolve_output_path
+
+    return resolve_output_path(*args, **kwargs)
+
+
+def _metric_workflow_dir(config: Any, name: str) -> Path:
     """Return a standard metric workflow directory below the configured output root."""
 
     root = config.path("outputs.root", must_exist=False) or (config.root_dir / "outputs")
@@ -587,7 +595,7 @@ def _metric_workflow_dir(config: SpatialVTKConfig, name: str) -> Path:
     return path
 
 
-def _metric_slurm_script_path(config: SpatialVTKConfig) -> Path:
+def _metric_slurm_script_path(config: Any) -> Path:
     """Return the standard metric Slurm script path."""
 
     root = config.path("outputs.root", must_exist=False) or (config.root_dir / "outputs")
@@ -596,26 +604,26 @@ def _metric_slurm_script_path(config: SpatialVTKConfig) -> Path:
     return path
 
 
-def _default_metric_manifest_path(config: SpatialVTKConfig, *, prefer_cached: bool = False) -> Path:
+def _default_metric_manifest_path(config: Any, *, prefer_cached: bool = False) -> Path:
     """Return the configured metric manifest path, optionally preferring cached."""
 
     if prefer_cached:
-        cached = resolve_output_path("metric_manifest_cached", kind="table", cfg=config, create_parent=True)
+        cached = _resolve_output_path("metric_manifest_cached", kind="table", cfg=config, create_parent=True)
         if cached.exists():
             return cached
-    return resolve_output_path("metric_manifest", kind="table", cfg=config, create_parent=True)
+    return _resolve_output_path("metric_manifest", kind="table", cfg=config, create_parent=True)
 
 
-def _default_metric_qc_table(config: SpatialVTKConfig, *, no_qc: bool) -> Path | None:
+def _default_metric_qc_table(config: Any, *, no_qc: bool) -> Path | None:
     """Return the configured metric QC table, respecting no-QC mode."""
 
     if no_qc:
         return None
-    overlap = resolve_output_path("qc_inventory_overlap", kind="table", cfg=config, create_parent=True)
-    return overlap if overlap.exists() else resolve_output_path("qc_inventory", kind="table", cfg=config, create_parent=True)
+    overlap = _resolve_output_path("qc_inventory_overlap", kind="table", cfg=config, create_parent=True)
+    return overlap if overlap.exists() else _resolve_output_path("qc_inventory", kind="table", cfg=config, create_parent=True)
 
 
-def _configured_metric_snapshot(config: SpatialVTKConfig) -> Path:
+def _configured_metric_snapshot(config: Any) -> Path:
     """Return the configured metric snapshot path."""
 
     value = config.section("paths.metric_snapshot")
@@ -630,26 +638,27 @@ def _configured_metric_snapshot(config: SpatialVTKConfig) -> Path:
     return path
 
 
-def _configured_metric_rows_or_snapshot(config: SpatialVTKConfig) -> Path:
+def _configured_metric_rows_or_snapshot(config: Any) -> Path:
     """Return configured metric rows, falling back to the tutorial snapshot."""
 
-    metric_rows = resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
+    metric_rows = _resolve_output_path("metric_rows", kind="table", cfg=config, create_parent=True)
     if metric_rows.exists():
         return metric_rows
     return _configured_metric_snapshot(config)
 
 
-def _existing_output_path(key: str, *, config: SpatialVTKConfig) -> Path | None:
+def _existing_output_path(key: str, *, config: Any) -> Path | None:
     """Return one configured output path only when it already exists."""
 
-    path = resolve_output_path(key, kind="table", cfg=config, create_parent=False)
+    path = _resolve_output_path(key, kind="table", cfg=config, create_parent=False)
     return path if path.exists() else None
 
 
-def _metric_snapshot_task_table(snapshot: Any, config: SpatialVTKConfig) -> Any:
+def _metric_snapshot_task_table(snapshot: Any, config: Any) -> Any:
     """Return deduplicated metric tasks from a metric snapshot dataframe."""
 
     import pandas as pd
+    from spatial_vtk.config.metrics import metrics_settings_from_config
 
     settings = metrics_settings_from_config(config)
     df = pd.DataFrame(snapshot).copy()

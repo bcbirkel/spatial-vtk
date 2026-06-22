@@ -23,21 +23,29 @@ from typing import Any, Sequence
 
 import pandas as pd
 
-from spatial_vtk.config.outputs import resolve_output_path
-from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io import table_columns
 from spatial_vtk.io.tables import read_table as read_disk_table
-from spatial_vtk.metrics.calculate.enrich import enrich_metric_table
-from spatial_vtk.metrics.workflow.run import METRIC_TEXT_COLUMNS, write_metric_rows
-from spatial_vtk.visualize.dashboard import (
-    build_dashboard_summaries,
-    prepare_dashboard_metric_table,
-    write_dashboard_metric_dataset,
-    write_dashboard_summaries,
+
+
+ConfigInput = Any | str | Path
+METRIC_TEXT_COLUMNS: tuple[str, ...] = (
+    "task_id",
+    "event_id",
+    "station",
+    "component",
+    "model",
+    "passband",
+    "metric_group",
+    "metric",
+    "obs_qc_status",
+    "obs_qc_reason",
+    "syn_qc_status",
+    "syn_qc_reason",
+    "comparison_qc_status",
+    "comparison_qc_reason",
+    "obs_waveform_path",
+    "syn_waveform_path",
 )
-
-
-ConfigInput = SpatialVTKConfig | str | Path
 
 
 def prepare_metric_workflow_outputs(
@@ -78,7 +86,9 @@ def prepare_metric_workflow_outputs(
         ``dashboard_metrics``, and ``dashboard_summaries``.
     """
 
+    from spatial_vtk.metrics.calculate.enrich import enrich_metric_table
     from spatial_vtk.spatial.calculate.paths import build_path_table, summarize_residuals_by_path_bin
+    from spatial_vtk.visualize.dashboard import build_dashboard_summaries, prepare_dashboard_metric_table
 
     raw = _read_metric_table(metric_rows, columns=_metric_workflow_output_input_columns(metric_rows))
     metrics_long = enrich_metric_table(
@@ -182,10 +192,12 @@ def write_metric_outputs(
         dashboard_azimuth_bin_deg=dashboard_azimuth_bin_deg,
     )
     output_paths = _metric_output_paths(root, suffix=suffix, cfg=cfg)
-    metrics_path = write_metric_rows(tables["metrics_long"], output_paths["metrics_long"])
-    metrics_enriched_path = write_metric_rows(tables["metrics_long"], output_paths["metrics_enriched"])
-    path_table_path = write_metric_rows(tables["path_table"], output_paths["path_table"])
-    path_summary_path = write_metric_rows(tables["path_summary"], output_paths["path_summary"])
+    metrics_path = _write_metric_rows(tables["metrics_long"], output_paths["metrics_long"])
+    metrics_enriched_path = _write_metric_rows(tables["metrics_long"], output_paths["metrics_enriched"])
+    path_table_path = _write_metric_rows(tables["path_table"], output_paths["path_table"])
+    path_summary_path = _write_metric_rows(tables["path_summary"], output_paths["path_summary"])
+    from spatial_vtk.visualize.dashboard import write_dashboard_metric_dataset, write_dashboard_summaries
+
     dashboard_root = write_dashboard_metric_dataset(
         tables["dashboard_metrics"],
         output_paths["dashboard_metrics"],
@@ -219,14 +231,14 @@ def _metric_output_paths(root: Path | None, *, suffix: str, cfg: ConfigInput | N
             "dashboard_metrics": root / "dashboard_metrics",
             "dashboard_summaries": root / "dashboard_summaries",
         }
-    config = cfg or active_config()
+    config = cfg or _active_config()
     return {
-        "metrics_long": resolve_output_path("metrics_long", kind="table", cfg=config, create_parent=True),
-        "metrics_enriched": resolve_output_path("metrics_enriched", kind="table", cfg=config, create_parent=True),
-        "path_table": resolve_output_path("path_table", kind="table", cfg=config, create_parent=True),
-        "path_summary": resolve_output_path("path_summary", kind="table", cfg=config, create_parent=True),
-        "dashboard_metrics": resolve_output_path("metrics_dashboard", kind="dashboard", cfg=config, create_parent=True),
-        "dashboard_summaries": resolve_output_path("dashboard_summaries", kind="dashboard", cfg=config, create_parent=True),
+        "metrics_long": _resolve_output_path("metrics_long", kind="table", cfg=config, create_parent=True),
+        "metrics_enriched": _resolve_output_path("metrics_enriched", kind="table", cfg=config, create_parent=True),
+        "path_table": _resolve_output_path("path_table", kind="table", cfg=config, create_parent=True),
+        "path_summary": _resolve_output_path("path_summary", kind="table", cfg=config, create_parent=True),
+        "dashboard_metrics": _resolve_output_path("metrics_dashboard", kind="dashboard", cfg=config, create_parent=True),
+        "dashboard_summaries": _resolve_output_path("dashboard_summaries", kind="dashboard", cfg=config, create_parent=True),
     }
 
 
@@ -349,6 +361,30 @@ def _metric_table_columns(path: Path) -> list[str]:
     if suffix in {".parquet", ".pq", ".csv"}:
         return table_columns(path)
     raise ValueError(f"Unsupported metric workflow output table format for {path}. Use Parquet or CSV.")
+
+
+def _active_config() -> Any:
+    """Return the active config only when config-backed output paths are requested."""
+
+    from spatial_vtk.config.runtime import active_config
+
+    return active_config()
+
+
+def _resolve_output_path(*args: Any, **kwargs: Any) -> Path:
+    """Resolve configured metric output paths only when requested."""
+
+    from spatial_vtk.config.outputs import resolve_output_path
+
+    return resolve_output_path(*args, **kwargs)
+
+
+def _write_metric_rows(*args: Any, **kwargs: Any) -> Path:
+    """Write metric rows only when downstream metric outputs are produced."""
+
+    from spatial_vtk.metrics.workflow.run import write_metric_rows
+
+    return write_metric_rows(*args, **kwargs)
 
 
 __all__ = [

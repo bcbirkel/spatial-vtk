@@ -4,6 +4,16 @@ Changelog
 2026-06-21
 ----------
 
+- **Metric workflow import boundary** *(Changed)*
+
+  - Deferred config-output, active-config, metric-enrichment, and metric-runner
+    imports in metric workflow orchestration helpers until configured planning
+    or downstream output writing actually runs.
+  - Kept lightweight metric workflow output contracts, input-column helpers,
+    and configured workflow entry points importable before PyYAML or SciPy are
+    available.
+  - Added source-contract coverage for metric workflow import boundaries.
+
 - **Step 1 workflow import boundary** *(Changed)*
 
   - Deferred config-runtime imports in waveform preprocessing and configured
