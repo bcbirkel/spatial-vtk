@@ -90,6 +90,7 @@ class MetricWorkflowManifest:
         output_dirs = sorted({str(path.parent) for path in output_paths})
         task_counts = [len(batch.get("task_indices", ())) for batch in self.batches]
         planning = dict(self.planning_metadata or {})
+        manifest_exists = self.manifest_path.exists()
         return pd.DataFrame(
             [
                 {
@@ -97,12 +98,13 @@ class MetricWorkflowManifest:
                     "artifact": "metric_manifest",
                     "artifact_label": "metric workflow manifest",
                     "artifact_role": "metric_manifest",
-                    "status": "ready" if self.manifest_path.exists() else "missing",
+                    "status": "ready" if manifest_exists else "missing",
+                    "status_reason": "ready" if manifest_exists else "missing_output",
                     "resolved_path": str(self.manifest_path),
                     "path": str(self.manifest_path),
-                    "exists": self.manifest_path.exists(),
+                    "exists": manifest_exists,
                     "manifest_path": str(self.manifest_path),
-                    "manifest_exists": self.manifest_path.exists(),
+                    "manifest_exists": manifest_exists,
                     "task_count": len(self.tasks),
                     "batch_count": len(self.batches),
                     "batch_output_dir": output_dirs[0] if len(output_dirs) == 1 else ("mixed" if output_dirs else ""),
@@ -163,6 +165,7 @@ class MetricManifestBatchStatus:
     def status_frame(self) -> pd.DataFrame:
         """Return a one-row dataframe suitable for notebook display."""
 
+        complete = self.all_complete
         return pd.DataFrame(
             [
                 {
@@ -170,7 +173,8 @@ class MetricManifestBatchStatus:
                     "artifact": "metric_batch_outputs",
                     "artifact_label": "metric batch outputs",
                     "artifact_role": "metric_batch_outputs",
-                    "status": "complete" if self.all_complete else "incomplete",
+                    "status": "complete" if complete else "incomplete",
+                    "status_reason": "complete" if complete else "missing_batches",
                     "resolved_path": str(self.manifest_path),
                     "path": str(self.manifest_path),
                     "exists": self.manifest_path.exists(),
@@ -229,6 +233,9 @@ class MetricSlurmSubmissionReadiness:
         """Return a one-row dataframe suitable for notebook display."""
 
         frame = self.batch_status.status_frame().copy()
+        if "status_reason" in frame.columns:
+            frame["batch_status_reason"] = frame["status_reason"]
+        frame["status_reason"] = self.reason
         frame["should_submit"] = bool(self.should_run)
         frame["reason"] = self.reason
         frame["message"] = self.message

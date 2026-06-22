@@ -110,7 +110,7 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
        active config and preprocessed waveform metadata. The returned
        ``MetricWaveformInventoryResult.status_frame()`` reports observed and
        synthetic inventory artifacts with normalized names, roles, readiness
-       status, paths, row counts, and reuse flags.
+       status, ``status_reason`` values, paths, row counts, and reuse flags.
    * - ``metric_inventories_readiness_from_config``
      - Check whether metric-ready observed/synthetic waveform inventories are
        missing, stale, current, or forced by ``overwrite`` without repeating the
@@ -138,10 +138,11 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
      - Materialize metric-ready waveform cache files for repeated large-run
        batch execution. The returned ``MetricWaveformCacheResult`` exposes
        ``status_frame()`` with ``name``, ``artifact``, ``artifact_label``,
-       ``artifact_role``, ``status``, ``resolved_path``, ``exists``, row
-       counts, and cache reuse counts for notebook display. Cache status and
-       existing-cache reuse paths remain lightweight; waveform readers are only
-       imported when a missing cache file must be materialized.
+       ``artifact_role``, ``status``, ``status_reason``, ``resolved_path``,
+       ``exists``, row counts, and cache reuse counts for notebook display.
+       Cache status and existing-cache reuse paths remain lightweight; waveform
+       readers are only imported when a missing cache file must be
+       materialized.
    * - ``metric_slurm_submission_readiness_from_config``
      - Check whether a metric Slurm array should be submitted or skipped.
    * - ``write_metrics_slurm_script_from_config``
@@ -151,15 +152,18 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
      - Load a manifest and execute one planned batch from Python or a generated
        worker script. ``MetricWorkflowManifest.status_frame()`` reports
        ``name``, ``artifact``, ``artifact_label``, ``artifact_role``,
-       ``status``, ``resolved_path``, ``exists``, task count, batch count,
-       batch output directory, per-batch task range, first/last batch outputs,
-       and QC table without loading waveform files. Legacy ``manifest_path``
-       and ``manifest_exists`` aliases remain present.
+       ``status``, ``status_reason``, ``resolved_path``, ``exists``, task
+       count, batch count, batch output directory, per-batch task range,
+       first/last batch outputs, and QC table without loading waveform files.
+       Legacy ``manifest_path`` and ``manifest_exists`` aliases remain present.
    * - ``metric_manifest_batch_status`` and
        ``metric_batch_merge_readiness_from_config``
      - Report which metric batches are complete before merging outputs.
        Batch status frames expose the same artifact columns plus completion
-       counts, percent complete, and ``complete``/``incomplete`` status.
+       counts, percent complete, ``complete``/``incomplete`` status, and
+       ``status_reason``. Slurm submission readiness frames preserve the batch
+       completion code as ``batch_status_reason`` and use ``status_reason`` for
+       the submit/skip decision.
    * - ``merge_batch_outputs`` and ``merge_metric_batches_from_config``
      - Merge completed metric batch files into the registered metric-row table.
    * - ``write_metric_outputs_from_config``

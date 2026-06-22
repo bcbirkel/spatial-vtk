@@ -58,16 +58,19 @@ class MetricWaveformInventoryResult:
     def status_frame(self) -> pd.DataFrame:
         """Return a compact summary of metric inventory outputs."""
 
+        observed_exists = self.observed_metric_inventory_path.exists()
+        synthetic_exists = self.synthetic_metric_inventory_path.exists()
         rows = [
             {
                 "name": "observed_metric_inventory_path",
                 "artifact": "observed_metric_inventory",
                 "artifact_label": "observed metric waveform inventory",
                 "artifact_role": "metric_inventory",
-                "status": "ready" if self.observed_metric_inventory_path.exists() else "missing",
+                "status": "ready" if observed_exists else "missing",
+                "status_reason": "ready" if observed_exists else "missing_output",
                 "resolved_path": str(self.observed_metric_inventory_path),
                 "path": str(self.observed_metric_inventory_path),
-                "exists": self.observed_metric_inventory_path.exists(),
+                "exists": observed_exists,
                 "rows": self.observed_rows,
                 "reused": self.reused,
             },
@@ -76,10 +79,11 @@ class MetricWaveformInventoryResult:
                 "artifact": "synthetic_metric_inventory",
                 "artifact_label": "synthetic metric waveform inventory",
                 "artifact_role": "metric_inventory",
-                "status": "ready" if self.synthetic_metric_inventory_path.exists() else "missing",
+                "status": "ready" if synthetic_exists else "missing",
+                "status_reason": "ready" if synthetic_exists else "missing_output",
                 "resolved_path": str(self.synthetic_metric_inventory_path),
                 "path": str(self.synthetic_metric_inventory_path),
-                "exists": self.synthetic_metric_inventory_path.exists(),
+                "exists": synthetic_exists,
                 "rows": self.synthetic_rows,
                 "reused": self.reused,
             },

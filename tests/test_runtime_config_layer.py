@@ -117,9 +117,14 @@ from spatial_vtk.qc import (
     qc_summary_readiness_from_config,
 )
 from spatial_vtk.metrics import (
+    MetricManifestBatchStatus,
+    MetricWaveformCacheResult,
+    MetricWaveformInventoryResult,
+    MetricWorkflowManifest,
     load_standard_metric_workflow_outputs,
     metric_inventories_readiness_from_config,
     metric_manifest_readiness_from_config,
+    metric_slurm_submission_readiness,
 )
 from spatial_vtk.spatial import (
     load_standard_additional_plotting_output_status,
@@ -2485,6 +2490,64 @@ outputs:
     assert manifest_current.message == "Metric manifest is current."
     assert metric_manifest_readiness_from_config(config_path=config_path, overwrite=True).reason == "overwrite"
     clear_active_config()
+
+
+def test_metric_workflow_status_frames_include_reason_codes(tmp_path):
+    """Metric Step 3 status frames should expose machine-readable reason codes."""
+
+    observed_path = tmp_path / "observed_inventory.parquet"
+    synthetic_path = tmp_path / "synthetic_inventory.parquet"
+    observed_path.write_text("ready\n", encoding="utf-8")
+    inventory_status = MetricWaveformInventoryResult(
+        observed_path=observed_path,
+        synthetic_path=synthetic_path,
+        observed_rows=3,
+        synthetic_rows=None,
+        reused=True,
+    ).status_frame().set_index("artifact")
+    assert inventory_status.loc["observed_metric_inventory", "status_reason"] == "ready"
+    assert inventory_status.loc["synthetic_metric_inventory", "status_reason"] == "missing_output"
+
+    manifest_path = tmp_path / "metric_manifest.json"
+    batch_dir = tmp_path / "metric_batches"
+    manifest_path.write_text('{"tasks": [], "batches": []}\n', encoding="utf-8")
+    manifest = MetricWorkflowManifest(
+        manifest_path=manifest_path,
+        tasks=(),
+        batches=({"task_indices": [], "output_path": str(batch_dir / "metrics_batch_0000.csv")},),
+        qc_table="qc_inventory_overlap.parquet",
+    )
+    manifest_status = manifest.status_frame().iloc[0]
+    assert manifest_status["status_reason"] == "ready"
+
+    cache_root = tmp_path / "metric_ready_waveform_cache"
+    cache_root.mkdir()
+    cache_status = MetricWaveformCacheResult(
+        manifest=manifest,
+        cache_root=cache_root,
+        materialized_files=2,
+        reused_files=1,
+        in_memory_reuses=0,
+        source_references=3,
+    ).status_frame().set_index("artifact")
+    assert cache_status.loc["metric_manifest_cached", "status_reason"] == "ready"
+    assert cache_status.loc["metric_ready_waveform_cache", "status_reason"] == "ready"
+    assert cache_status.loc["metric_batches_cached", "status_reason"] == "missing_output"
+
+    batch_status = MetricManifestBatchStatus(
+        manifest_path=manifest_path,
+        total_batches=2,
+        completed_batches=(0,),
+        missing_batches=(1,),
+        completed_outputs=(batch_dir / "metrics_batch_0000.csv",),
+        missing_outputs=(batch_dir / "metrics_batch_0001.csv",),
+    )
+    batch_status_row = batch_status.status_frame().iloc[0]
+    assert batch_status_row["status_reason"] == "missing_batches"
+    submission_status = metric_slurm_submission_readiness(batch_status).status_frame().iloc[0]
+    assert submission_status["status_reason"] == "incomplete_batches"
+    assert submission_status["batch_status_reason"] == "missing_batches"
+    assert bool(submission_status["should_submit"]) is True
 
 
 def test_geojson_readiness_helpers_own_step05_input_contract(tmp_path, monkeypatch):

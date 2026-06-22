@@ -4,6 +4,17 @@ Changelog
 2026-06-22
 ----------
 
+- **Metric status reason codes** *(Changed)*
+
+  - Added ``status_reason`` to metric waveform inventory, cached waveform
+    manifest/cache, metric manifest, and metric batch status frames.
+  - Preserved metric batch completion state as ``batch_status_reason`` in
+    Slurm submission readiness rows while using ``status_reason`` for the
+    submit/skip decision.
+  - Documented the Step 3 metric reason-code contract so large-run notebooks
+    can filter missing manifests, cache directories, and incomplete batch
+    outputs without parsing messages.
+
 - **QC status reason codes** *(Changed)*
 
   - Added ``status_reason`` to compact QC summary status frames, loaded Step 2

@@ -60,16 +60,19 @@ class MetricWaveformCacheResult:
 
         import pandas as pd
 
+        manifest_exists = self.metric_manifest_cached_path.exists()
+        cache_exists = self.metric_ready_waveform_cache_root.exists()
         rows = [
             {
                 "name": "metric_manifest_cached_path",
                 "artifact": "metric_manifest_cached",
                 "artifact_label": "cached metric manifest",
                 "artifact_role": "manifest",
-                "status": "ready" if self.metric_manifest_cached_path.exists() else "missing",
+                "status": "ready" if manifest_exists else "missing",
+                "status_reason": "ready" if manifest_exists else "missing_output",
                 "resolved_path": str(self.metric_manifest_cached_path),
                 "path": str(self.metric_manifest_cached_path),
-                "exists": self.metric_manifest_cached_path.exists(),
+                "exists": manifest_exists,
                 "rows": len(self.manifest.tasks),
                 "materialized_files": self.materialized_files,
                 "reused_files": self.reused_files,
@@ -81,10 +84,11 @@ class MetricWaveformCacheResult:
                 "artifact": "metric_ready_waveform_cache",
                 "artifact_label": "metric-ready waveform cache",
                 "artifact_role": "cache",
-                "status": "ready" if self.metric_ready_waveform_cache_root.exists() else "missing",
+                "status": "ready" if cache_exists else "missing",
+                "status_reason": "ready" if cache_exists else "missing_output",
                 "resolved_path": str(self.metric_ready_waveform_cache_root),
                 "path": str(self.metric_ready_waveform_cache_root),
-                "exists": self.metric_ready_waveform_cache_root.exists(),
+                "exists": cache_exists,
                 "rows": self.source_references,
                 "materialized_files": self.materialized_files,
                 "reused_files": self.reused_files,
@@ -94,16 +98,18 @@ class MetricWaveformCacheResult:
         ]
         batch_dir = self.metric_batches_cached_dir
         if batch_dir is not None:
+            batch_dir_exists = batch_dir.exists()
             rows.append(
                 {
                     "name": "metric_batches_cached_dir",
                     "artifact": "metric_batches_cached",
                     "artifact_label": "cached metric batch output directory",
                     "artifact_role": "batch_output_dir",
-                    "status": "ready" if batch_dir.exists() else "missing",
+                    "status": "ready" if batch_dir_exists else "missing",
+                    "status_reason": "ready" if batch_dir_exists else "missing_output",
                     "resolved_path": str(batch_dir),
                     "path": str(batch_dir),
-                    "exists": batch_dir.exists(),
+                    "exists": batch_dir_exists,
                     "rows": len(self.manifest.batches),
                     "materialized_files": self.materialized_files,
                     "reused_files": self.reused_files,
