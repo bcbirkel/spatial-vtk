@@ -1337,14 +1337,6 @@ def run_spatial_statistics_workflow(
     progress(f"running {len(metrics_to_run)} metric(s): {', '.join(metrics_to_run)}")
     station_df = _load_station_metadata(station_metadata, cfg=config, progress=progress)
     failures: list[dict[str, str]] = []
-    from spatial_vtk.spatial.calculate.clustering import run_residual_feature_clustering
-    from spatial_vtk.spatial.calculate.correlation import (
-        build_distance_bin_summary,
-        compute_global_morans_i,
-        moran_result_to_frame,
-    )
-    from spatial_vtk.spatial.calculate.geology import bootstrap_contrast_table
-    from spatial_vtk.spatial.calculate.pca import compute_pca_spatial_modes
 
     checkpoint_run_dir: Path | None = None
     if resume and (metrics_path is not None or checkpoint_dir is not None):
@@ -1447,6 +1439,8 @@ def run_spatial_statistics_workflow(
 
         progress(f"{prefix}: computing Moran's I")
         try:
+            from spatial_vtk.spatial.calculate.correlation import compute_global_morans_i, moran_result_to_frame
+
             morans_i = moran_result_to_frame(
                 compute_global_morans_i(
                     station_bias,
@@ -1461,6 +1455,8 @@ def run_spatial_statistics_workflow(
 
         progress(f"{prefix}: building distance-bin correlations")
         try:
+            from spatial_vtk.spatial.calculate.correlation import build_distance_bin_summary
+
             distance_corr = build_distance_bin_summary(
                 centered,
                 bin_width_km=settings.distance_bin_width_km,
@@ -1479,6 +1475,8 @@ def run_spatial_statistics_workflow(
 
         progress(f"{prefix}: running residual-feature clustering")
         try:
+            from spatial_vtk.spatial.calculate.clustering import run_residual_feature_clustering
+
             clusters, cluster_scores, cluster_features, cluster_summary, _best, _feature_cols = run_residual_feature_clustering(
                 features,
                 cluster_min_k=settings.cluster_min_k,
@@ -1494,6 +1492,8 @@ def run_spatial_statistics_workflow(
 
         progress(f"{prefix}: running PCA spatial modes")
         try:
+            from spatial_vtk.spatial.calculate.pca import compute_pca_spatial_modes
+
             pca_result = compute_pca_spatial_modes(features, n_components=settings.pca_components)
             pca_score_tables.append(_with_metric(pca_result.station_scores, metric_name))
             pca_loading_tables.append(_with_metric(pca_result.feature_loadings, metric_name))
@@ -1506,6 +1506,8 @@ def run_spatial_statistics_workflow(
             _record_failure(failures, metric_name, "geology_contrasts", RuntimeError("prepared station metadata is unavailable"), progress)
         else:
             try:
+                from spatial_vtk.spatial.calculate.geology import bootstrap_contrast_table
+
                 geology = bootstrap_contrast_table(
                     centered,
                     station_metadata=station_df,

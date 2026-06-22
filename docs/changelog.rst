@@ -12,6 +12,9 @@ Changelog
   - Kept spatial workflow status/result helpers importable for lightweight
     notebook readiness checks without importing expensive spatial-analysis
     backends first.
+  - Kept per-metric checkpoint reuse from front-loading those calculators, and
+    left each optional spatial diagnostic import inside the same non-fatal
+    failure boundary as its computation.
   - Added source-contract coverage so Step 4 status helpers keep those
     optional calculators lazy.
 

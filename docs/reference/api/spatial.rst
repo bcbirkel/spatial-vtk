@@ -216,7 +216,10 @@ bounded summaries of existing spatial outputs.
 The status/result helpers keep expensive spatial calculators lazy: importing
 them for notebook readiness checks does not import clustering, PCA,
 autocorrelation, geology, or pattern-similarity backends until a compute step
-actually runs.
+actually runs. The main spatial-summary workflow also checks reusable
+per-metric checkpoints before importing those optional calculators for a
+metric, so interrupted large runs can resume without front-loading unused
+diagnostic backends.
 
 ``StandardSpatialWorkflowOutputResult`` is the standard Step 4 output bundle
 for already-loaded notebook workflows. Use its ``status_frame()`` and

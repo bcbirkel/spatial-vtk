@@ -1010,6 +1010,21 @@ def test_spatial_workflow_status_keeps_optional_calculators_lazy():
             eager_imports.append(str(node.module))
 
     assert not eager_imports
+    workflow_fn = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "run_spatial_statistics_workflow"
+    )
+    pre_checkpoint_imports: list[str] = []
+    for node in workflow_fn.body:
+        if isinstance(node, ast.For):
+            break
+        if isinstance(node, ast.Import):
+            pre_checkpoint_imports.extend(alias.name for alias in node.names if alias.name in heavy_modules)
+        elif isinstance(node, ast.ImportFrom) and str(node.module or "") in heavy_modules:
+            pre_checkpoint_imports.append(str(node.module))
+
+    assert not pre_checkpoint_imports
 
 
 def test_dashboard_extra_names_dashboard_runtime_dependencies():
