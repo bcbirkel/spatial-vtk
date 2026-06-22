@@ -873,7 +873,14 @@ def _completed_batch_count(manifest: MetricWorkflowManifest) -> int:
 
 
 def _workflow_elapsed_seconds(manifest: MetricWorkflowManifest) -> float:
-    """Estimate workflow wall time from the manifest mtime."""
+    """Estimate workflow wall time from a Slurm start stamp or manifest mtime."""
+
+    start_time = os.environ.get("SVTK_METRIC_WORKFLOW_START_TIME", "").strip()
+    if start_time:
+        try:
+            return max(0.0, time.time() - float(start_time))
+        except ValueError:
+            pass
 
     try:
         return max(0.0, time.time() - manifest.manifest_path.expanduser().stat().st_mtime)

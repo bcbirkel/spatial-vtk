@@ -4,6 +4,16 @@ Changelog
 2026-06-22
 ----------
 
+- **Metric Slurm progress timing** *(Fixed)*
+
+  - Made generated metric Slurm scripts create a shared workflow start-time
+    stamp next to the script when the array starts.
+  - Taught metric batch progress output to prefer that Slurm start time over
+    the manifest modification time, avoiding misleading elapsed times when a
+    manifest was planned well before the job was submitted.
+  - Added regression coverage for the generated start-time export and elapsed
+    time fallback.
+
 - **Metric manifest planning metadata** *(Changed)*
 
   - Added optional planning metadata to metric workflow manifests so status

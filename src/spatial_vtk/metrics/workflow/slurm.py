@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import shlex
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -90,16 +91,24 @@ def write_metrics_slurm_script(
     target = Path(script_path).expanduser()
     target.parent.mkdir(parents=True, exist_ok=True)
     manifest_abs = Path(manifest_path).expanduser().resolve()
+    start_file = target.with_suffix(f"{target.suffix}.start")
     array_spec = _slurm_array_spec(selected_indices, max_concurrent=max(1, int(settings.max_concurrent)))
     overwrite_flag = " --overwrite" if overwrite_batches else ""
     lines = _slurm_header(settings, array=array_spec)
     lines.extend(
         [
+            f"SVTK_METRIC_WORKFLOW_START_FILE=${{SVTK_METRIC_WORKFLOW_START_FILE:-{shlex.quote(str(start_file))}}}",
+            'if [ ! -f "$SVTK_METRIC_WORKFLOW_START_FILE" ]; then',
+            '  ( set -C; printf "%s\\n" "$(date +%s)" > "$SVTK_METRIC_WORKFLOW_START_FILE" ) 2>/dev/null || true',
+            "fi",
+            'export SVTK_METRIC_WORKFLOW_START_FILE',
+            'export SVTK_METRIC_WORKFLOW_START_TIME="$(cat "$SVTK_METRIC_WORKFLOW_START_FILE" 2>/dev/null || date +%s)"',
             f'echo "Metric Slurm array: task $SLURM_ARRAY_TASK_ID of {len(manifest.batches)} batch(es)"',
             f'echo "Metric selected batches: {len(selected_indices)} of {len(manifest.batches)}"',
             f'echo "Metric manifest: {manifest_abs}"',
+            'echo "Metric workflow start: $SVTK_METRIC_WORKFLOW_START_TIME"',
             f'echo "Metric max concurrent batches: {max(1, int(settings.max_concurrent))}"',
-            f"{settings.python_command} -m spatial_vtk.metrics.workflow.execution --manifest {manifest_abs} --batch-index $SLURM_ARRAY_TASK_ID{overwrite_flag}",
+            f"{settings.python_command} -m spatial_vtk.metrics.workflow.execution --manifest {shlex.quote(str(manifest_abs))} --batch-index $SLURM_ARRAY_TASK_ID{overwrite_flag}",
             "",
         ]
     )

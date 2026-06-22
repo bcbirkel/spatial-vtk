@@ -2197,6 +2197,9 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     )
     text = script.read_text(encoding="utf-8")
     assert "#SBATCH --array=0%2" in text
+    assert "SVTK_METRIC_WORKFLOW_START_FILE" in text
+    assert "run_metrics.slurm.start" in text
+    assert 'echo "Metric workflow start: $SVTK_METRIC_WORKFLOW_START_TIME"' in text
     assert "python -m spatial_vtk.metrics.workflow.execution" in text
     assert "source activate spatial-vtk" in text
 
@@ -2249,6 +2252,25 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     assert "#SBATCH --array=1-2,4%3" in incomplete_text
     assert "Metric selected batches: 3 of 4" in incomplete_text
     assert "--batch-index $SLURM_ARRAY_TASK_ID --overwrite" in incomplete_text
+
+
+def test_metric_workflow_elapsed_prefers_slurm_start_time(tmp_path, monkeypatch) -> None:
+    """Metric stdout elapsed time should use the Slurm run stamp before manifest mtime."""
+
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text('{"manifest_version": 1, "tasks": [], "batches": []}\n', encoding="utf-8")
+    old_time = 1_600_000_000
+    manifest_path.touch()
+    import os
+    import time
+
+    os.utime(manifest_path, (old_time, old_time))
+    manifest = read_task_manifest(manifest_path)
+    monkeypatch.setenv("SVTK_METRIC_WORKFLOW_START_TIME", str(time.time() - 12.0))
+
+    elapsed = metric_execution._workflow_elapsed_seconds(manifest)
+
+    assert 0.0 <= elapsed < 60.0
 
 
 def test_metric_slurm_module_docs_name_manifest_array_contract() -> None:
