@@ -267,6 +267,7 @@ class StandardIngestWorkflowOutputResult:
         context: Any,
         *,
         overwrite: bool = False,
+        component: str | None = None,
         missing_input_message: str = "Trace metadata or event-station records are not ready yet.",
         current_message: str = "Record coverage table is current; skipping.",
         script_name: str = "step01_record_coverage.slurm",
@@ -298,6 +299,7 @@ class StandardIngestWorkflowOutputResult:
             kwargs={
                 "config_path": str(config_path) if config_path is not None else None,
                 "run_scenario": run_scenario,
+                "component": component,
             },
             script_name=script_name,
             job_name=job_name,

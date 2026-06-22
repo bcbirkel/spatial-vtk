@@ -4,6 +4,18 @@ Changelog
 2026-06-22
 ----------
 
+- **Step 1 notebook workflow ownership** *(Changed)*
+
+  - Switched the standard Step 1 notebook to
+    ``load_standard_ingest_workflow_outputs(...).run_*_step_if_needed(...)``
+    methods for metadata, waveform preprocessing, and record coverage.
+  - Added a ``component`` pass-through to
+    ``StandardIngestWorkflowOutputResult.run_record_coverage_step_if_needed()``
+    so the notebook can keep its configured record-coverage component without
+    direct path-wrapper calls.
+  - Added notebook contract coverage so Step 1 no longer depends on local
+    ``config_path=str(config_path)`` boilerplate in workflow cells.
+
 - **Step 2 notebook checkpoint visibility** *(Fixed)*
 
   - Bound the standard Step 2 dashboard launch cell to

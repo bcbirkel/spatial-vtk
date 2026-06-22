@@ -2904,7 +2904,7 @@ outputs:
         continue_on_error=False,
         verbose=False,
     ) == {"readiness": "preprocess-readiness"}
-    assert ingest_outputs.run_record_coverage_step_if_needed(context, overwrite=True) == {
+    assert ingest_outputs.run_record_coverage_step_if_needed(context, overwrite=True, component="Z") == {
         "readiness": "coverage-readiness"
     }
 
@@ -2944,6 +2944,7 @@ outputs:
     assert run_calls[2]["kwargs"]["kwargs"] == {
         "config_path": str(cfg.config_path),
         "run_scenario": cfg.run_scenario,
+        "component": "Z",
     }
     clear_active_config()
 

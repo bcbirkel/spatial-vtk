@@ -1512,9 +1512,12 @@ def test_standard_step01_uses_configured_io_workflows() -> None:
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "prepare_metadata_tables_from_config(" in source
-    assert "preprocess_waveforms_from_config(" in source
-    assert "build_record_coverage_from_config(" in source
+    assert "prepare_metadata_tables_from_config(" not in source
+    assert "preprocess_waveforms_from_config(" not in source
+    assert "build_record_coverage_from_config(" not in source
+    assert "ingest_outputs.run_metadata_step_if_needed(" in source
+    assert "ingest_outputs.run_preprocessing_step_if_needed(" in source
+    assert "ingest_outputs.run_record_coverage_step_if_needed(" in source
     assert "display_notebook_step_result," in source
     assert "load_standard_ingest_workflow_outputs," in source
     assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in source
@@ -1529,6 +1532,7 @@ def test_standard_step01_uses_configured_io_workflows() -> None:
     assert 'display_notebook_step_result(metadata_result, label="Metadata tables", display=display)' in source
     assert 'display_notebook_step_result(preprocessing_result, label="Preprocessed waveforms", display=display)' in source
     assert 'display_notebook_step_result(coverage_result, label="Record coverage", display=display)' in source
+    assert "config_path=str(config_path)" not in source
     assert "print(metadata_result.summary_message())" not in source
     assert "print(preprocessing_result.summary_message())" not in source
     assert "print(coverage_result.summary_message())" not in source
