@@ -82,7 +82,10 @@ contract.
 
 Run `python tools/check_validation_environment.py --groups tutorial` first to
 report missing Jupyter, mapping, dashboard, or waveform modules before the
-heavier notebook checks start.
+heavier notebook checks start. If dependencies are missing, the checker prints
+both the generic source-checkout install command and the active-Python install
+command so the package extras are installed into the same environment that will
+run the notebooks.
 Run `python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run`
 for the same source-contract and example-data checks without notebook runtime
 dependencies.

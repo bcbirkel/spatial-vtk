@@ -851,6 +851,7 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     ) in readme
     assert "The runtime check does not execute notebooks or clean outputs." in readme
     assert "keeps matplotlib font/cache files in a writable" in readme
+    assert "same command with the active Python executable" in readme
     assert 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"' in examples_index
     assert 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"' in large_run_readme
     assert (
@@ -873,6 +874,8 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "The runtime check does not execute notebooks or clean outputs." in examples_index
     assert "active Python version plus the Jupyter" in examples_index
     assert "Unsupported Python versions and missing dependency extras are reported" in examples_index
+    assert "active-Python install command" in combined
+    assert "wrong Python environment" in combined
     assert "The command executes the seven notebooks" not in examples_index
     assert "The clean command executes the standard and large-run notebooks" in examples_index
     assert "outputs/tutorials/notebook_execution_report.json" in examples_index

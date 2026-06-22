@@ -4,6 +4,17 @@ Changelog
 2026-06-22
 ----------
 
+- **Validation environment diagnostics** *(Changed)*
+
+  - Updated ``tools/check_validation_environment.py`` so missing-dependency
+    failures print both generic source-checkout commands and exact
+    active-Python install/rerun commands.
+  - Documented the exact-environment guidance in the README, installation
+    guide, and tutorial notebook guides so users can catch installs sent to the
+    wrong Python environment before running notebooks.
+  - Added regression coverage for the active-Python command text in the
+    validation checker.
+
 - **Metric figure selection audit** *(Changed)*
 
   - Added ``MetricFigureContext.metric_selection_status_frame()`` so large-run

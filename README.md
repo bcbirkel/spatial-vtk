@@ -59,7 +59,10 @@ data, run:
 The `MPLCONFIGDIR` prefix keeps matplotlib font/cache files in a writable
 temporary directory and out of the repository.
 The validation-environment check reports missing Jupyter, mapping, dashboard,
-or waveform modules before the heavier notebook checks start.
+or waveform modules before the heavier notebook checks start. If dependencies
+are missing, it prints both the generic source-checkout install command and the
+same command with the active Python executable, which helps catch installs sent
+to the wrong Python environment.
 
 ## Structure
 

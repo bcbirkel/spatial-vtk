@@ -425,7 +425,7 @@ svtk metrics outputs
    * - ``--dashboard-partitioned``, ``--no-dashboard-partitioned``
      - No
      - Default: ``True``
-     - Partition dashboard metric rows by model, passband, and metric. Enabled by default for large-run dashboard reads; use --no-dashboard-partitioned to write one direct metrics_long dashboard table. (default: True)
+     - Partition dashboard metric rows by model, passband, and metric. Enabled by default for large-run dashboard reads; use --no-dashboard-partitioned to write one direct metrics_long dashboard table.
 
 .. _cli-svtk-metrics-plan:
 

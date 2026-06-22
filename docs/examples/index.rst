@@ -61,7 +61,10 @@ observed/synthetic NPZ waveform subset, then makes the source tree importable
 and verifies the active Python version plus the Jupyter, ``spatial_vtk``,
 scientific Python, mapping, dashboard, and waveform modules that tutorial cells
 import. Unsupported Python versions and missing dependency extras are reported
-before execution starts.
+before execution starts. Missing-dependency messages include both the generic
+source-checkout install command and the active-Python install command so users
+can confirm that dependencies are being installed into the kernel environment
+that will run the notebooks.
 The source contract catches saved execution state, private absolute paths,
 shell/CLI workflow cells, implementation plotting/workflow imports, fixed
 run-layout paths, raw output-path/table reads, and notebook-local dataframe

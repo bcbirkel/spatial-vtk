@@ -121,13 +121,16 @@ the committed example data, install the tutorial runtime extras and run:
    MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --clean --include-large-run
 
 The validation-environment check reports missing Jupyter, mapping, dashboard,
-and waveform modules before the heavier notebook checks start. The preflight
-check verifies source-contract rules and committed example data without
-importing notebook runtime dependencies. The runtime check then confirms that
-the active interpreter is supported by the package and verifies the Jupyter,
-mapping, dashboard, and waveform modules used by the tutorial notebooks. The
-``MPLCONFIGDIR`` prefix keeps matplotlib font/cache files in a writable
-temporary directory and out of the repository.
+and waveform modules before the heavier notebook checks start. If dependencies
+are missing, it prints both the generic source-checkout install command and the
+same command with the active Python executable, which helps catch installs sent
+to the wrong Python environment. The preflight check verifies source-contract
+rules and committed example data without importing notebook runtime
+dependencies. The runtime check then confirms that the active interpreter is
+supported by the package and verifies the Jupyter, mapping, dashboard, and
+waveform modules used by the tutorial notebooks. The ``MPLCONFIGDIR`` prefix
+keeps matplotlib font/cache files in a writable temporary directory and out of
+the repository.
 
 The tutorial checker first verifies that the committed five-event metadata,
 snapshot tables, and observed/synthetic NPZ waveform subset are present. It
@@ -137,7 +140,8 @@ makes the source checkout importable, and verifies the Jupyter,
 ``spatial_vtk``, scientific Python, mapping, dashboard, and waveform modules
 used by the tutorial cells without deleting outputs or executing notebooks. If
 modules are missing, the checker prints the source-checkout install command
-needed for the tutorial runtime.
+needed for the tutorial runtime and the exact active-Python variant of that
+command.
 
 You are ready to continue once the import prints a version, ``svtk --help``
 shows the command groups, and the tests or tutorial notebook check pass if you
