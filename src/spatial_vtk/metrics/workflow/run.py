@@ -261,7 +261,7 @@ def write_metric_rows(df: pd.DataFrame, path: str | Path) -> Path:
 
 
 def _normalize_metric_row_dtypes(df: pd.DataFrame) -> pd.DataFrame:
-    """Return metric rows with stable dtypes for CSV/parquet output."""
+    """Return metric rows with stable dtypes for CSV or Parquet output."""
 
     out = df.copy()
     for column in METRIC_TEXT_COLUMNS:
@@ -955,9 +955,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
     """Build a CLI parser for direct task-table execution."""
 
     parser = argparse.ArgumentParser(description="Run Spatial-VTK metric tasks from a task table.")
-    parser.add_argument("--tasks-csv", required=True, help="CSV or parquet file created by metric task planning.")
+    parser.add_argument("--tasks-csv", required=True, help="CSV or Parquet file created by metric task planning.")
     parser.add_argument("--qc-table", default=None, help="Optional side-specific QC table.")
-    parser.add_argument("--output", required=True, help="Metric rows output CSV or parquet.")
+    parser.add_argument("--output", required=True, help="Metric rows output CSV or Parquet table.")
     return parser
 
 

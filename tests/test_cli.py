@@ -21,7 +21,7 @@ def test_cli_help(capsys):
 
 
 def test_cli_read_table_uses_shared_csv_parquet_reader(tmp_path):
-    """CLI table inputs should support the same CSV/Parquet reader as package helpers."""
+    """CLI table inputs should support the same CSV or Parquet reader as package helpers."""
 
     table_path = tmp_path / "rows.parquet"
     pd.DataFrame({"station": ["001"], "value": [1.5]}).to_parquet(table_path, index=False)
@@ -1027,7 +1027,7 @@ def test_cli_registered_plot_help_names_config_defaults(capsys):
     assert excinfo.value.code == 0
     captured = capsys.readouterr()
     help_text = " ".join(captured.out.split())
-    assert "Primary figure input table (metrics long); accepts CSV or parquet" in help_text
+    assert "Primary figure input table (metrics long); accepts CSV or Parquet" in help_text
     assert "function argument 'df'" not in help_text
     assert "Advanced extra table mapping as function_argument=path" in help_text
     assert "--input-table" in help_text
@@ -1045,7 +1045,7 @@ def test_cli_registered_map_help_names_config_defaults(capsys):
     assert excinfo.value.code == 0
     captured = capsys.readouterr()
     help_text = " ".join(captured.out.split())
-    assert "Primary figure input table (station bias); accepts CSV or parquet" in help_text
+    assert "Primary figure input table (station bias); accepts CSV or Parquet" in help_text
     assert "function argument 'station_df'" not in help_text
     assert "Advanced extra table mapping as function_argument=path" in help_text
     assert "--input-table" in help_text
@@ -1078,7 +1078,7 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "``--max-traces``" in text
     assert "``--no-connect-points``" in text
     assert "Registered table defaults may be CSV or Parquet" in text
-    assert "commands that say they accept CSV or parquet read either suffix through the package table helpers" in text
+    assert "commands that say they accept CSV or Parquet read either suffix through the package table helpers" in text
     assert "``svtk visualize qc list``" in text
     assert "``svtk visualize context list``" in text
     assert "``svtk visualize waveforms list``" in text
@@ -1216,7 +1216,7 @@ def test_generated_cli_reference_names_plot_defaults():
         for path in sorted((root / "docs" / "reference" / "cli").glob("*.rst"))
     )
 
-    assert "Primary figure input table (metrics long); accepts CSV or parquet" in plot_text
+    assert "Primary figure input table (metrics long); accepts CSV or Parquet" in plot_text
     assert "function argument 'df'" not in plot_text
     assert "``--input-table``, ``--input``" in plot_text
     assert "``--figure-output``, ``--output``" in plot_text
@@ -1228,7 +1228,7 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Override with ``--figure-output`` or ``--output``." in plot_text
     assert "``--resolve-paths``" in plot_text
     assert "Add ``--resolve-paths --config PATH``" in plot_text
-    assert "Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet" in plot_text
+    assert "Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet" in plot_text
     assert "Filesystem path. Output figure path." in plot_text
     assert "Value: ``PATH``. Primary figure input table" not in plot_text
     assert "Value: ``PATH``. Output figure path" not in plot_text
@@ -1250,7 +1250,7 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Prefer config-backed defaults and named table flags" in plot_text
     assert "Extra table as argument_name=path" not in plot_text
     assert "Filesystem path. Advanced extra table mapping" not in plot_text
-    assert "Primary figure input table (station bias); accepts CSV or parquet" in map_text
+    assert "Primary figure input table (station bias); accepts CSV or Parquet" in map_text
     assert "function argument 'station_df'" not in map_text
     assert "``--input-table``, ``--input``" in map_text
     assert "``--figure-output``, ``--output``" in map_text
@@ -1259,7 +1259,7 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Uses configured output table ``station_bias`` when ``--config`` is passed" in map_text
     assert "Uses configured figure output ``station_residual_map`` when ``--config`` is passed" in map_text
     assert "``--resolve-paths``" in map_text
-    assert "Filesystem path. Primary figure input table (station bias); accepts CSV or parquet" in map_text
+    assert "Filesystem path. Primary figure input table (station bias); accepts CSV or Parquet" in map_text
     assert "Filesystem path. Output figure path." in map_text
     assert "Value: ``PATH``. Primary figure input table" not in map_text
     assert "Value: ``PATH``. Output figure path" not in map_text
@@ -1386,8 +1386,8 @@ def test_generated_cli_reference_names_metrics_run_defaults():
     assert "[--tasks PATH]" in section
     assert "[--output PATH]" in section
     assert "--tasks TASKS --output OUTPUT" not in section
-    assert "Filesystem path. Metric task table CSV/parquet path" in section
-    assert "Filesystem path. Metric row output CSV/parquet path" in section
+    assert "Filesystem path. Metric task table CSV or Parquet path" in section
+    assert "Filesystem path. Metric row output CSV or Parquet path" in section
     assert "Defaults to configured output table 'metric_tasks'" in section
     assert "Defaults to configured output table 'metric_rows'" in section
     assert "Spatial-VTK config used to resolve default task/output paths" in section
@@ -1408,7 +1408,7 @@ def test_generated_cli_reference_names_io_inventory_defaults():
     assert "SYNTHETIC_ROOT" not in section
     assert "[--waveform-inventory-output PATH]" in section
     assert "``--waveform-inventory-output``, ``--output``" in section
-    assert "Filesystem path. Waveform inventory output CSV/parquet table" in section
+    assert "Filesystem path. Waveform inventory output CSV or Parquet table" in section
     assert "Prefer --waveform-inventory-output; --output is a legacy alias." in section
     assert "Defaults to paths.observed_root or paths.observed_template from config" in section
     assert "Defaults to paths.synthetic_root or paths.synthetic_template from config" in section
@@ -1463,12 +1463,12 @@ def test_generated_cli_reference_names_io_prepare_aliases():
 
     assert "``--station-tables``, ``--input``" in master_stations
     assert "``--master-station-output``, ``--output``" in master_stations
-    assert "Filesystem path. Master station-list output CSV/parquet table" in master_stations
+    assert "Filesystem path. Master station-list output CSV or Parquet table" in master_stations
     assert "Prefer --station-tables; --input is a legacy alias." in master_stations
     assert "Prefer --master-station-output; --output is a legacy alias." in master_stations
     assert "``--event-tables``, ``--input``" in master_events
     assert "``--master-event-output``, ``--output``" in master_events
-    assert "Filesystem path. Master event-list output CSV/parquet table" in master_events
+    assert "Filesystem path. Master event-list output CSV or Parquet table" in master_events
     assert "Prefer --event-tables; --input is a legacy alias." in master_events
     assert "Prefer --master-event-output; --output is a legacy alias." in master_events
 
@@ -1524,8 +1524,8 @@ def test_cli_metrics_workflow_help_exposes_artifact_aliases(capsys):
     run_help = " ".join(capsys.readouterr().out.split())
     assert "--task-table" in run_help
     assert "--metric-rows" in run_help
-    assert "Metric task table CSV/parquet path" in run_help
-    assert "Metric row output CSV/parquet path" in run_help
+    assert "Metric task table CSV or Parquet path" in run_help
+    assert "Metric row output CSV or Parquet path" in run_help
 
     with pytest.raises(SystemExit) as excinfo:
         main(["metrics", "batch-status", "--help"])
@@ -1594,7 +1594,7 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     assert "``--synthetic-inventory-output``, ``--synthetic-output``" in inventories_section
     assert "Prefer --observed-inventory-output; --observed-output is a legacy alias." in inventories_section
     assert "Prefer --synthetic-inventory-output; --synthetic-output is a legacy alias." in inventories_section
-    assert "Preprocessed trace metadata CSV/parquet path" in inventories_section
+    assert "Preprocessed trace metadata CSV or Parquet path" in inventories_section
     assert "``--observed-inventory``, ``--observed-metric-inventory``" in plan_section
     assert "``--synthetic-inventory``, ``--synthetic-metric-inventory``" in plan_section
     assert "``--metric-plan-output``, ``--output``" in plan_section
@@ -1607,8 +1607,8 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     assert "Prefer --metric-plan-output; --output is a legacy alias." in plan_section
     assert "``--tasks``, ``--task-table``" in run_section
     assert "``--metric-rows``, ``--output``" in run_section
-    assert "Metric task table CSV/parquet path" in run_section
-    assert "Metric row output CSV/parquet path" in run_section
+    assert "Metric task table CSV or Parquet path" in run_section
+    assert "Metric row output CSV or Parquet path" in run_section
     assert "Prefer --metric-rows; --output is a legacy alias." in run_section
     assert "``--missing-limit``" in batch_status_section
     assert "``--metric-manifest``, ``--manifest``" in batch_status_section
@@ -1622,7 +1622,7 @@ def test_generated_cli_reference_names_metrics_workflow_artifact_aliases():
     assert "Prefer --cached-metric-manifest-output; --output is a legacy alias." in cache_section
     assert "``--metric-manifest``, ``--manifest``" in estimate_section
     assert "``--metric-task-estimate-output``, ``--output``" in estimate_section
-    assert "Metric task CSV/parquet path. Overrides --metric-manifest." in estimate_section
+    assert "Metric task CSV or Parquet path. Overrides --metric-manifest." in estimate_section
     assert "Prefer --metric-manifest; --manifest is a legacy alias." in estimate_section
     assert "Prefer --metric-task-estimate-output; --output is a legacy alias." in estimate_section
     assert "``--metric-manifest``, ``--manifest``" in merge_section
@@ -1648,7 +1648,7 @@ def test_generated_cli_reference_names_metrics_outputs_aliases():
         ".. _cli-svtk-metrics-plan:", maxsplit=1
     )[0]
     assert "``--metric-rows``, ``--metrics``" in section
-    assert "Raw metric workflow rows CSV/parquet path" in section
+    assert "Raw metric workflow rows CSV or Parquet path" in section
     assert "Prefer --metric-rows; --metrics is a legacy alias." in section
     assert "``--metrics-output-dir``, ``--output-dir``" in section
     assert "Custom downstream metric output directory" in section

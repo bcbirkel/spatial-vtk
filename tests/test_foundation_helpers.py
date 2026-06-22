@@ -109,7 +109,7 @@ def test_table_helpers(tmp_path):
 
 
 def test_event_patch_reader_accepts_parquet_tables(tmp_path):
-    """Catalog patch readers should follow the same CSV/Parquet table contract as metadata readers."""
+    """Catalog patch readers should follow the same CSV or Parquet table contract as metadata readers."""
 
     patch_path = tmp_path / "event_patches.parquet"
     pd.DataFrame({"event_id": ["e1"], "region": ["north"]}).to_parquet(patch_path, index=False)

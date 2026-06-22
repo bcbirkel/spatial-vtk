@@ -559,7 +559,7 @@ def _read_table(value: pd.DataFrame | str | Path) -> pd.DataFrame:
     Parameters
     ----------
     value
-        DataFrame or path to a CSV/Parquet table.
+        DataFrame or path to a CSV or Parquet table.
 
     Returns
     -------

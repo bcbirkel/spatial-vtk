@@ -169,7 +169,7 @@ Map block-holdout prediction errors.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (block holdout predictions); accepts CSV or parquet. Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (block holdout predictions); accepts CSV or Parquet. Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -398,7 +398,7 @@ Map cluster assignments.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (clusters); accepts CSV or parquet. Defaults to configured output table 'clusters' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (clusters); accepts CSV or Parquet. Defaults to configured output table 'clusters' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -631,7 +631,7 @@ Map corridor selections.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (corridors); accepts CSV or parquet. Defaults to configured output table 'corridors' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (corridors); accepts CSV or Parquet. Defaults to configured output table 'corridors' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -779,15 +779,15 @@ Map corridor selections.
    * - ``--events``
      - No
      -
-     - Filesystem path. Convenience prepared events table path; accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Convenience prepared events table path; accepts CSV or Parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--records``
      - No
      -
-     - Filesystem path. Convenience event station records table path; accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Convenience event station records table path; accepts CSV or Parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--stations``
      - No
      -
-     - Filesystem path. Convenience prepared stations table path; accepts CSV or parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Convenience prepared stations table path; accepts CSV or Parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--bounds``
      - No
      -
@@ -875,7 +875,7 @@ Map event residual paths.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (path); accepts CSV or parquet. Defaults to configured output table 'path_table' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (path); accepts CSV or Parquet. Defaults to configured output table 'path_table' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -1149,7 +1149,7 @@ Map metric values by model.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -1385,7 +1385,7 @@ Map model improvement values.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -1614,7 +1614,7 @@ Map one PCA spatial mode.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (pca station scores); accepts CSV or parquet. Defaults to configured output table 'pca_station_scores' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (pca station scores); accepts CSV or Parquet. Defaults to configured output table 'pca_station_scores' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -1846,7 +1846,7 @@ Map REDCAP cluster values.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (redcap clusters); accepts CSV or parquet. Defaults to configured output table 'redcap_clusters' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (redcap clusters); accepts CSV or Parquet. Defaults to configured output table 'redcap_clusters' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -2078,7 +2078,7 @@ Map residual grid values.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metric field); accepts CSV or parquet. Defaults to configured output table 'metric_field' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metric field); accepts CSV or Parquet. Defaults to configured output table 'metric_field' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -2304,7 +2304,7 @@ Map score values.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -2536,7 +2536,7 @@ Map station bias values.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (station bias); accepts CSV or parquet. Defaults to configured output table 'station_bias' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (station bias); accepts CSV or Parquet. Defaults to configured output table 'station_bias' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -2768,7 +2768,7 @@ Map station metric values.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -

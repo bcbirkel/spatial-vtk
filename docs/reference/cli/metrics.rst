@@ -198,7 +198,7 @@ svtk metrics estimate
    * - ``--tasks``
      - No
      -
-     - Filesystem path. Metric task CSV/parquet path. Overrides --metric-manifest.
+     - Filesystem path. Metric task CSV or Parquet path. Overrides --metric-manifest.
    * - ``--metric-manifest``, ``--manifest``
      - No
      -
@@ -214,7 +214,7 @@ svtk metrics estimate
    * - ``--metric-task-estimate-output``, ``--output``
      - No
      -
-     - Filesystem path. Optional output CSV/parquet path for the metric task estimate table. Defaults to configured output table 'metric_task_estimate' when a config is available. Prefer --metric-task-estimate-output; --output is a legacy alias.
+     - Filesystem path. Optional output CSV or Parquet path for the metric task estimate table. Defaults to configured output table 'metric_task_estimate' when a config is available. Prefer --metric-task-estimate-output; --output is a legacy alias.
    * - ``--seconds-per-task``
      - No
      - Default: ``60.0``
@@ -267,15 +267,15 @@ svtk metrics inventories
    * - ``--trace-metadata``
      - No
      -
-     - Filesystem path. Preprocessed trace metadata CSV/parquet path. Defaults to the configured preprocessing trace_metadata output.
+     - Filesystem path. Preprocessed trace metadata CSV or Parquet path. Defaults to the configured preprocessing trace_metadata output.
    * - ``--observed-inventory-output``, ``--observed-output``
      - No
      -
-     - Filesystem path. Observed metric waveform inventory output CSV/parquet path. Defaults to configured output table 'observed_metric_inventory'. Prefer --observed-inventory-output; --observed-output is a legacy alias.
+     - Filesystem path. Observed metric waveform inventory output CSV or Parquet path. Defaults to configured output table 'observed_metric_inventory'. Prefer --observed-inventory-output; --observed-output is a legacy alias.
    * - ``--synthetic-inventory-output``, ``--synthetic-output``
      - No
      -
-     - Filesystem path. Synthetic metric waveform inventory output CSV/parquet path. Defaults to configured output table 'synthetic_metric_inventory'. Prefer --synthetic-inventory-output; --synthetic-output is a legacy alias.
+     - Filesystem path. Synthetic metric waveform inventory output CSV or Parquet path. Defaults to configured output table 'synthetic_metric_inventory'. Prefer --synthetic-inventory-output; --synthetic-output is a legacy alias.
    * - ``--config``
      - No
      -
@@ -340,7 +340,7 @@ svtk metrics merge-batches
    * - ``--metric-rows-output``, ``--output``
      - No
      -
-     - Filesystem path. Merged output CSV/parquet path. If an existing directory or directory-style path is passed, writes metric_rows.parquet inside it. Defaults to configured output table 'metric_rows'. Prefer --metric-rows-output; --output is a legacy alias.
+     - Filesystem path. Merged output CSV or Parquet path. If an existing directory or directory-style path is passed, writes metric_rows.parquet inside it. Defaults to configured output table 'metric_rows'. Prefer --metric-rows-output; --output is a legacy alias.
    * - ``--config``
      - No
      -
@@ -389,7 +389,7 @@ svtk metrics outputs
    * - ``--metric-rows``, ``--metrics``
      - No
      -
-     - Filesystem path. Raw metric workflow rows CSV/parquet path. Defaults to configured output table 'metric_rows'. Prefer --metric-rows; --metrics is a legacy alias.
+     - Filesystem path. Raw metric workflow rows CSV or Parquet path. Defaults to configured output table 'metric_rows'. Prefer --metric-rows; --metrics is a legacy alias.
    * - ``--metrics-output-dir``, ``--output-dir``
      - No
      -
@@ -405,11 +405,11 @@ svtk metrics outputs
    * - ``--event-table``, ``--events``
      - No
      -
-     - Filesystem path. Optional prepared event metadata CSV/parquet path. Defaults to configured output table 'prepared_events' when it exists. Prefer --event-table; --events is a legacy alias.
+     - Filesystem path. Optional prepared event metadata CSV or Parquet path. Defaults to configured output table 'prepared_events' when it exists. Prefer --event-table; --events is a legacy alias.
    * - ``--station-table``, ``--stations``
      - No
      -
-     - Filesystem path. Optional prepared station metadata CSV/parquet path. Defaults to configured output table 'prepared_stations' when it exists. Prefer --station-table; --stations is a legacy alias.
+     - Filesystem path. Optional prepared station metadata CSV or Parquet path. Defaults to configured output table 'prepared_stations' when it exists. Prefer --station-table; --stations is a legacy alias.
    * - ``--residual-column``
      - No
      -
@@ -467,11 +467,11 @@ svtk metrics plan
    * - ``--observed-inventory``, ``--observed-metric-inventory``
      - No
      -
-     - Filesystem path. Observed metric waveform inventory CSV/parquet path. Defaults to configured output table 'observed_metric_inventory'.
+     - Filesystem path. Observed metric waveform inventory CSV or Parquet path. Defaults to configured output table 'observed_metric_inventory'.
    * - ``--synthetic-inventory``, ``--synthetic-metric-inventory``
      - No
      -
-     - Filesystem path. Synthetic metric waveform inventory CSV/parquet path. Defaults to configured output table 'synthetic_metric_inventory'.
+     - Filesystem path. Synthetic metric waveform inventory CSV or Parquet path. Defaults to configured output table 'synthetic_metric_inventory'.
    * - ``--config``
      - No
      -
@@ -579,11 +579,11 @@ svtk metrics run
    * - ``--tasks``, ``--task-table``
      - No
      -
-     - Filesystem path. Metric task table CSV/parquet path. Defaults to configured output table 'metric_tasks'.
+     - Filesystem path. Metric task table CSV or Parquet path. Defaults to configured output table 'metric_tasks'.
    * - ``--metric-rows``, ``--output``
      - No
      -
-     - Filesystem path. Metric row output CSV/parquet path. Defaults to configured output table 'metric_rows'. Prefer --metric-rows; --output is a legacy alias.
+     - Filesystem path. Metric row output CSV or Parquet path. Defaults to configured output table 'metric_rows'. Prefer --metric-rows; --output is a legacy alias.
    * - ``--config``
      - No
      -

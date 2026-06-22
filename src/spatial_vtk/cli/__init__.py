@@ -592,7 +592,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         dest="input",
         default=None,
         help=(
-            "Station metadata CSV/parquet table. Defaults to config paths.station_metadata. "
+            "Station metadata CSV or Parquet table. Defaults to config paths.station_metadata. "
             "Prefer --station-metadata-table; --input is a legacy alias."
         ),
     )
@@ -603,7 +603,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         dest="output",
         default=None,
         help=(
-            "Prepared station metadata output CSV/parquet table. Defaults to configured output table "
+            "Prepared station metadata output CSV or Parquet table. Defaults to configured output table "
             "'prepared_stations'. Prefer --prepared-stations-output; --output is a legacy alias."
         ),
     )
@@ -619,7 +619,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         dest="input",
         default=None,
         help=(
-            "Event metadata CSV/parquet table. Defaults to config paths.event_metadata. "
+            "Event metadata CSV or Parquet table. Defaults to config paths.event_metadata. "
             "Prefer --event-metadata-table; --input is a legacy alias."
         ),
     )
@@ -630,7 +630,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         dest="output",
         default=None,
         help=(
-            "Prepared event metadata output CSV/parquet table. Defaults to configured output table "
+            "Prepared event metadata output CSV or Parquet table. Defaults to configured output table "
             "'prepared_events'. Prefer --prepared-events-output; --output is a legacy alias."
         ),
     )
@@ -646,7 +646,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         dest="input",
         default=None,
         help=(
-            "Event-station CSV/parquet table. Defaults to config paths.event_station_table when that file "
+            "Event-station CSV or Parquet table. Defaults to config paths.event_station_table when that file "
             "exists; otherwise all station/event pairs are built. Prefer --event-station-table; "
             "--input is a legacy alias."
         ),
@@ -680,7 +680,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         dest="output",
         default=None,
         help=(
-            "Event-station records output CSV/parquet table. Defaults to configured output table "
+            "Event-station records output CSV or Parquet table. Defaults to configured output table "
             "'event_station_records'. Prefer --event-station-records-output; --output is a legacy alias."
         ),
     )
@@ -696,7 +696,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         nargs="+",
         dest="input",
         required=True,
-        help="Station CSV/parquet input tables. Prefer --station-tables; --input is a legacy alias.",
+        help="Station CSV or Parquet input tables. Prefer --station-tables; --input is a legacy alias.",
     )
     master_stations.add_argument(
         "--master-station-output",
@@ -704,7 +704,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         metavar="PATH",
         dest="output",
         required=True,
-        help="Master station-list output CSV/parquet table. Prefer --master-station-output; --output is a legacy alias.",
+        help="Master station-list output CSV or Parquet table. Prefer --master-station-output; --output is a legacy alias.",
     )
     master_stations.set_defaults(handler=_cmd_io_master_stations)
 
@@ -716,7 +716,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         nargs="+",
         dest="input",
         required=True,
-        help="Event CSV/parquet input tables. Prefer --event-tables; --input is a legacy alias.",
+        help="Event CSV or Parquet input tables. Prefer --event-tables; --input is a legacy alias.",
     )
     master_events.add_argument(
         "--master-event-output",
@@ -724,7 +724,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         metavar="PATH",
         dest="output",
         required=True,
-        help="Master event-list output CSV/parquet table. Prefer --master-event-output; --output is a legacy alias.",
+        help="Master event-list output CSV or Parquet table. Prefer --master-event-output; --output is a legacy alias.",
     )
     master_events.set_defaults(handler=_cmd_io_master_events)
 
@@ -748,7 +748,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         dest="output",
         default=None,
         help=(
-            "Waveform inventory output CSV/parquet table. Defaults to configured output table "
+            "Waveform inventory output CSV or Parquet table. Defaults to configured output table "
             "'waveform_inventory'. Prefer --waveform-inventory-output; --output is a legacy alias."
         ),
     )
@@ -760,7 +760,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
     inventory.set_defaults(handler=_cmd_io_inventory)
 
     preprocess = io_sub.add_parser("preprocess-waveforms", help="Filter/resample waveform files and write reusable processed copies.")
-    preprocess.add_argument("--records", metavar="PATH", default=None, help="Event-station CSV/parquet with waveform path columns. Defaults to configured output table 'event_station_records'.")
+    preprocess.add_argument("--records", metavar="PATH", default=None, help="Event-station CSV or Parquet with waveform path columns. Defaults to configured output table 'event_station_records'.")
     preprocess.add_argument(
         "--output-root",
         metavar="DIR",
@@ -845,7 +845,7 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         dest="trace_summary",
         default=None,
         help=(
-            "QC trace-summary CSV/parquet table. Defaults to configured output table "
+            "QC trace-summary CSV or Parquet table. Defaults to configured output table "
             "'qc_trace_summary'. Prefer --qc-trace-summary; --trace-summary is a legacy alias."
         ),
     )
@@ -856,7 +856,7 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         dest="output",
         default=None,
         help=(
-            "Output manual-review queue CSV/parquet table. Defaults to configured output table "
+            "Output manual-review queue CSV or Parquet table. Defaults to configured output table "
             "'manual_review_queue'. Prefer --manual-review-queue-output; --output is a legacy alias."
         ),
     )
@@ -951,7 +951,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     metrics_sub = metrics.add_subparsers(dest="metrics_command", required=True)
 
     inventories = metrics_sub.add_parser("inventories", help="Build observed/synthetic metric waveform inventories from trace metadata.")
-    inventories.add_argument("--trace-metadata", metavar="PATH", default=None, help="Preprocessed trace metadata CSV/parquet path. Defaults to the configured preprocessing trace_metadata output.")
+    inventories.add_argument("--trace-metadata", metavar="PATH", default=None, help="Preprocessed trace metadata CSV or Parquet path. Defaults to the configured preprocessing trace_metadata output.")
     inventories.add_argument(
         "--observed-inventory-output",
         "--observed-output",
@@ -959,7 +959,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         metavar="PATH",
         default=None,
         help=(
-            "Observed metric waveform inventory output CSV/parquet path. Defaults to configured output table "
+            "Observed metric waveform inventory output CSV or Parquet path. Defaults to configured output table "
             "'observed_metric_inventory'. Prefer --observed-inventory-output; --observed-output is a legacy alias."
         ),
     )
@@ -970,7 +970,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         metavar="PATH",
         default=None,
         help=(
-            "Synthetic metric waveform inventory output CSV/parquet path. Defaults to configured output table "
+            "Synthetic metric waveform inventory output CSV or Parquet path. Defaults to configured output table "
             "'synthetic_metric_inventory'. Prefer --synthetic-inventory-output; --synthetic-output is a legacy alias."
         ),
     )
@@ -990,7 +990,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         dest="observed_inventory",
         metavar="PATH",
         default=None,
-        help="Observed metric waveform inventory CSV/parquet path. Defaults to configured output table 'observed_metric_inventory'.",
+        help="Observed metric waveform inventory CSV or Parquet path. Defaults to configured output table 'observed_metric_inventory'.",
     )
     plan.add_argument(
         "--synthetic-inventory",
@@ -998,7 +998,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         dest="synthetic_inventory",
         metavar="PATH",
         default=None,
-        help="Synthetic metric waveform inventory CSV/parquet path. Defaults to configured output table 'synthetic_metric_inventory'.",
+        help="Synthetic metric waveform inventory CSV or Parquet path. Defaults to configured output table 'synthetic_metric_inventory'.",
     )
     plan.add_argument("--config", default=None, help="Spatial-VTK config file.")
     plan.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
@@ -1053,7 +1053,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     plan.set_defaults(handler=_cmd_metrics_plan)
 
     estimate = metrics_sub.add_parser("estimate", help="Summarize metric task counts and resource estimates.")
-    estimate.add_argument("--tasks", metavar="PATH", default=None, help="Metric task CSV/parquet path. Overrides --metric-manifest.")
+    estimate.add_argument("--tasks", metavar="PATH", default=None, help="Metric task CSV or Parquet path. Overrides --metric-manifest.")
     estimate.add_argument(
         "--metric-manifest",
         "--manifest",
@@ -1074,7 +1074,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         metavar="PATH",
         default=None,
         help=(
-            "Optional output CSV/parquet path for the metric task estimate table. Defaults to configured output "
+            "Optional output CSV or Parquet path for the metric task estimate table. Defaults to configured output "
             "table 'metric_task_estimate' when a config is available. Prefer --metric-task-estimate-output; "
             "--output is a legacy alias."
         ),
@@ -1092,7 +1092,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         dest="tasks",
         metavar="PATH",
         default=None,
-        help="Metric task table CSV/parquet path. Defaults to configured output table 'metric_tasks'.",
+        help="Metric task table CSV or Parquet path. Defaults to configured output table 'metric_tasks'.",
     )
     run.add_argument(
         "--metric-rows",
@@ -1101,7 +1101,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         metavar="PATH",
         default=None,
         help=(
-            "Metric row output CSV/parquet path. Defaults to configured output table "
+            "Metric row output CSV or Parquet path. Defaults to configured output table "
             "'metric_rows'. Prefer --metric-rows; --output is a legacy alias."
         ),
     )
@@ -1206,7 +1206,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         metavar="PATH",
         default=None,
         help=(
-            "Merged output CSV/parquet path. If an existing directory or directory-style path is passed, "
+            "Merged output CSV or Parquet path. If an existing directory or directory-style path is passed, "
             "writes metric_rows.parquet inside it. Defaults to configured output table 'metric_rows'. "
             "Prefer --metric-rows-output; --output is a legacy alias."
         ),
@@ -1224,7 +1224,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         metavar="PATH",
         default=None,
         help=(
-            "Raw metric workflow rows CSV/parquet path. Defaults to configured output table "
+            "Raw metric workflow rows CSV or Parquet path. Defaults to configured output table "
             "'metric_rows'. Prefer --metric-rows; --metrics is a legacy alias."
         ),
     )
@@ -1248,7 +1248,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         metavar="PATH",
         default=None,
         help=(
-            "Optional prepared event metadata CSV/parquet path. Defaults to configured output table "
+            "Optional prepared event metadata CSV or Parquet path. Defaults to configured output table "
             "'prepared_events' when it exists. Prefer --event-table; --events is a legacy alias."
         ),
     )
@@ -1259,7 +1259,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         metavar="PATH",
         default=None,
         help=(
-            "Optional prepared station metadata CSV/parquet path. Defaults to configured output table "
+            "Optional prepared station metadata CSV or Parquet path. Defaults to configured output table "
             "'prepared_stations' when it exists. Prefer --station-table; --stations is a legacy alias."
         ),
     )
@@ -1569,7 +1569,7 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
         dest="metrics_root",
         default=None,
         help=(
-            "Metrics dashboard row dataset directory or direct metrics_long CSV/parquet table "
+            "Metrics dashboard row dataset directory or direct metrics_long CSV or Parquet table "
             "(the row-level data used by metric filters, station/event maps, and detail tables). "
             "Defaults to configured dashboard output key 'metrics_dashboard' when --config is passed "
             "or a default config is set with 'svtk config set'. Prefer --metrics-dataset-dir; "
@@ -1585,7 +1585,7 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
         default=None,
         help=(
             "Dashboard summary-table directory containing model_metric_band, station_rollup, "
-            "event_rollup, and path_hex CSV/parquet tables for dashboard overview tabs. "
+            "event_rollup, and path_hex CSV or Parquet tables for dashboard overview tabs. "
             "Defaults to configured dashboard output key 'dashboard_summaries' when --config is passed "
             "or a default config is set with 'svtk config set'. Prefer --dashboard-summary-table-dir; "
             "--summary-root and --dashboard-summary-dir are legacy aliases."
@@ -1626,7 +1626,7 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
         dest="trace_summary",
         default=None,
         help=(
-            "QC trace-summary CSV/parquet table. Defaults to the configured output table "
+            "QC trace-summary CSV or Parquet table. Defaults to the configured output table "
             "'qc_trace_summary'. Prefer --qc-trace-summary; --trace-summary is a legacy alias."
         ),
     )
@@ -1778,7 +1778,7 @@ def _registered_input_help(argument_name: str, input_key: str | None) -> str:
     """Return clear help for a registered plotting input table."""
 
     role = _registered_table_role(argument_name, input_key, fallback="figure input")
-    help_text = f"Primary figure input table ({role}); accepts CSV or parquet."
+    help_text = f"Primary figure input table ({role}); accepts CSV or Parquet."
     if input_key:
         help_text += f" Defaults to configured output table '{input_key}' when --config is passed or a default config is set with 'svtk config set'."
     else:
@@ -1799,7 +1799,7 @@ def _registered_alias_help(argument_name: str, table_key: str | None) -> str:
     """Return clear help for an extra table option."""
 
     role = _registered_table_role(argument_name, table_key, fallback="extra")
-    help_text = f"Convenience {role} table path; accepts CSV or parquet."
+    help_text = f"Convenience {role} table path; accepts CSV or Parquet."
     if table_key:
         help_text += f" Defaults to configured output table '{table_key}' when --config is passed or a default config is set with 'svtk config set'."
     return help_text

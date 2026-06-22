@@ -88,7 +88,7 @@ svtk dashboard qc
    * - ``--qc-trace-summary``, ``--trace-summary``
      - No
      -
-     - Filesystem path. QC trace-summary CSV/parquet table. Defaults to the configured output table 'qc_trace_summary'. Prefer --qc-trace-summary; --trace-summary is a legacy alias.
+     - Filesystem path. QC trace-summary CSV or Parquet table. Defaults to the configured output table 'qc_trace_summary'. Prefer --qc-trace-summary; --trace-summary is a legacy alias.
    * - ``--port``
      - No
      - Default: ``8502``
@@ -153,11 +153,11 @@ svtk dashboard metrics
    * - ``--metrics-dataset-dir``, ``--metrics-root``, ``--metrics-dataset``
      - No
      -
-     - Filesystem path. Metrics dashboard row dataset directory or direct metrics_long CSV/parquet table (the row-level data used by metric filters, station/event maps, and detail tables). Defaults to configured dashboard output key 'metrics_dashboard' when --config is passed or a default config is set with 'svtk config set'. Prefer --metrics-dataset-dir; --metrics-root and --metrics-dataset are legacy aliases.
+     - Filesystem path. Metrics dashboard row dataset directory or direct metrics_long CSV or Parquet table (the row-level data used by metric filters, station/event maps, and detail tables). Defaults to configured dashboard output key 'metrics_dashboard' when --config is passed or a default config is set with 'svtk config set'. Prefer --metrics-dataset-dir; --metrics-root and --metrics-dataset are legacy aliases.
    * - ``--dashboard-summary-table-dir``, ``--summary-root``, ``--dashboard-summary-dir``
      - No
      -
-     - Directory path. Dashboard summary-table directory containing model_metric_band, station_rollup, event_rollup, and path_hex CSV/parquet tables for dashboard overview tabs. Defaults to configured dashboard output key 'dashboard_summaries' when --config is passed or a default config is set with 'svtk config set'. Prefer --dashboard-summary-table-dir; --summary-root and --dashboard-summary-dir are legacy aliases.
+     - Directory path. Dashboard summary-table directory containing model_metric_band, station_rollup, event_rollup, and path_hex CSV or Parquet tables for dashboard overview tabs. Defaults to configured dashboard output key 'dashboard_summaries' when --config is passed or a default config is set with 'svtk config set'. Prefer --dashboard-summary-table-dir; --summary-root and --dashboard-summary-dir are legacy aliases.
    * - ``--port``
      - No
      - Default: ``8501``

@@ -365,10 +365,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
     """Build the module-level metric-plan CLI parser."""
 
     parser = argparse.ArgumentParser(description="Check expected metric rows against an existing metrics table.")
-    parser.add_argument("--inventory", required=True, help="QC inventory CSV/parquet table.")
-    parser.add_argument("--metrics", required=True, help="Existing metrics CSV/parquet table.")
+    parser.add_argument("--inventory", required=True, help="QC inventory CSV or Parquet table.")
+    parser.add_argument("--metrics", required=True, help="Existing metrics CSV or Parquet table.")
     parser.add_argument("--config", default=None, help="Spatial-VTK config YAML/JSON.")
-    parser.add_argument("--missing-output", default=None, help="Optional output CSV/parquet table for missing rows.")
+    parser.add_argument("--missing-output", default=None, help="Optional output CSV or Parquet table for missing rows.")
     return parser
 
 

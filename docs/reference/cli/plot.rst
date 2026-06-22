@@ -188,7 +188,7 @@ Plot residual or score distributions by passband.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -403,7 +403,7 @@ Plot metric distributions by categorical variables.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -846,7 +846,7 @@ Plot metric values by geologic class.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -1061,7 +1061,7 @@ Plot categorical metric summaries as a heatmap.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -1318,7 +1318,7 @@ Plot a general metric trend.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -1544,7 +1544,7 @@ Plot a model-by-metric heatmap.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -1765,7 +1765,7 @@ Plot period spectra.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -1989,7 +1989,7 @@ Plot a precomputed period-spectrogram table. This advanced figure does not have 
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (spectrogram); accepts CSV or parquet. This advanced figure requires an explicit table; pass --input-table or --input.
+     - Filesystem path. Primary figure input table (spectrogram); accepts CSV or Parquet. This advanced figure requires an explicit table; pass --input-table or --input.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -2216,7 +2216,7 @@ Plot phase delay against distance.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -2438,7 +2438,7 @@ Plot PSA values by period.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -2662,7 +2662,7 @@ Plot residuals against event depth.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -2888,7 +2888,7 @@ Plot residuals against distance.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -3106,7 +3106,7 @@ Plot any metric-table variable against another variable.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -3324,7 +3324,7 @@ Plot score trends.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -3542,7 +3542,7 @@ Plot metric values against Vs30.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -3763,7 +3763,7 @@ Plot a winner/class heatmap.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (metrics long); accepts CSV or parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (metrics long); accepts CSV or Parquet. Defaults to configured output table 'metrics_long' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -4015,7 +4015,7 @@ Plot residuals by azimuth.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (event centered residuals); accepts CSV or parquet. Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event centered residuals); accepts CSV or Parquet. Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -4241,7 +4241,7 @@ Plot observed versus held-out predictions.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (block holdout predictions); accepts CSV or parquet. Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (block holdout predictions); accepts CSV or Parquet. Defaults to configured output table 'block_holdout_predictions' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -4468,7 +4468,7 @@ Plot cluster feature summaries.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (cluster feature summary); accepts CSV or parquet. Defaults to configured output table 'cluster_feature_summary' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (cluster feature summary); accepts CSV or Parquet. Defaults to configured output table 'cluster_feature_summary' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -4695,7 +4695,7 @@ Plot clustering solution scores.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (cluster solution scores); accepts CSV or parquet. Defaults to configured output table 'cluster_solution_scores' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (cluster solution scores); accepts CSV or Parquet. Defaults to configured output table 'cluster_solution_scores' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -4913,7 +4913,7 @@ Plot a spatial correlogram.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or Parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -5143,7 +5143,7 @@ Plot directional spatial correlations.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or Parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -5287,7 +5287,7 @@ Plot directional spatial correlations.
    * - ``--fit``
      - No
      -
-     - Filesystem path. Convenience fit table path; accepts CSV or parquet.
+     - Filesystem path. Convenience fit table path; accepts CSV or Parquet.
 
 .. _cli-svtk-plot-spatial-list:
 
@@ -5404,7 +5404,7 @@ Plot path-bin summary values.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (path summary); accepts CSV or parquet. Defaults to configured output table 'path_summary' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (path summary); accepts CSV or Parquet. Defaults to configured output table 'path_summary' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -5628,7 +5628,7 @@ Plot observed/synthetic pattern similarity.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (pattern similarity station anomalies); accepts CSV or parquet. Defaults to configured output table 'pattern_similarity_station_anomalies' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (pattern similarity station anomalies); accepts CSV or Parquet. Defaults to configured output table 'pattern_similarity_station_anomalies' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -5855,7 +5855,7 @@ Plot PCA explained variance.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (pca explained variance); accepts CSV or parquet. Defaults to configured output table 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (pca explained variance); accepts CSV or Parquet. Defaults to configured output table 'pca_explained_variance' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -6081,7 +6081,7 @@ Plot PCA feature loadings.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (pca feature loadings); accepts CSV or parquet. Defaults to configured output table 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (pca feature loadings); accepts CSV or Parquet. Defaults to configured output table 'pca_feature_loadings' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -6303,7 +6303,7 @@ Plot residuals in polar coordinates.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (event centered residuals); accepts CSV or parquet. Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event centered residuals); accepts CSV or Parquet. Defaults to configured output table 'event_centered_residuals' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -6529,7 +6529,7 @@ Plot residual correlation values.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or Parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -6747,7 +6747,7 @@ Plot a semivariogram.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (distance bin correlations); accepts CSV or Parquet. Defaults to configured output table 'distance_bin_correlations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -

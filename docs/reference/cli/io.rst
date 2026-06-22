@@ -80,7 +80,7 @@ svtk io inventory
    * - ``--waveform-inventory-output``, ``--output``
      - No
      -
-     - Filesystem path. Waveform inventory output CSV/parquet table. Defaults to configured output table 'waveform_inventory'. Prefer --waveform-inventory-output; --output is a legacy alias.
+     - Filesystem path. Waveform inventory output CSV or Parquet table. Defaults to configured output table 'waveform_inventory'. Prefer --waveform-inventory-output; --output is a legacy alias.
    * - ``--config``
      - No
      -
@@ -131,11 +131,11 @@ svtk io master-events
    * - ``--event-tables``, ``--input``
      - Yes
      - Nargs: ``+``
-     - Filesystem path. Event CSV/parquet input tables. Prefer --event-tables; --input is a legacy alias.
+     - Filesystem path. Event CSV or Parquet input tables. Prefer --event-tables; --input is a legacy alias.
    * - ``--master-event-output``, ``--output``
      - Yes
      -
-     - Filesystem path. Master event-list output CSV/parquet table. Prefer --master-event-output; --output is a legacy alias.
+     - Filesystem path. Master event-list output CSV or Parquet table. Prefer --master-event-output; --output is a legacy alias.
 
 .. _cli-svtk-io-master-stations:
 
@@ -166,11 +166,11 @@ svtk io master-stations
    * - ``--station-tables``, ``--input``
      - Yes
      - Nargs: ``+``
-     - Filesystem path. Station CSV/parquet input tables. Prefer --station-tables; --input is a legacy alias.
+     - Filesystem path. Station CSV or Parquet input tables. Prefer --station-tables; --input is a legacy alias.
    * - ``--master-station-output``, ``--output``
      - Yes
      -
-     - Filesystem path. Master station-list output CSV/parquet table. Prefer --master-station-output; --output is a legacy alias.
+     - Filesystem path. Master station-list output CSV or Parquet table. Prefer --master-station-output; --output is a legacy alias.
 
 .. _cli-svtk-io-prepare-event-stations:
 
@@ -205,7 +205,7 @@ svtk io prepare-event-stations
    * - ``--event-station-table``, ``--input``
      - No
      -
-     - Filesystem path. Event-station CSV/parquet table. Defaults to config paths.event_station_table when that file exists; otherwise all station/event pairs are built. Prefer --event-station-table; --input is a legacy alias.
+     - Filesystem path. Event-station CSV or Parquet table. Defaults to config paths.event_station_table when that file exists; otherwise all station/event pairs are built. Prefer --event-station-table; --input is a legacy alias.
    * - ``--station-table``, ``--stations``
      - No
      -
@@ -217,7 +217,7 @@ svtk io prepare-event-stations
    * - ``--event-station-records-output``, ``--output``
      - No
      -
-     - Filesystem path. Event-station records output CSV/parquet table. Defaults to configured output table 'event_station_records'. Prefer --event-station-records-output; --output is a legacy alias.
+     - Filesystem path. Event-station records output CSV or Parquet table. Defaults to configured output table 'event_station_records'. Prefer --event-station-records-output; --output is a legacy alias.
    * - ``--config``
      - No
      -
@@ -257,11 +257,11 @@ svtk io prepare-events
    * - ``--event-metadata-table``, ``--input``
      - No
      -
-     - Filesystem path. Event metadata CSV/parquet table. Defaults to config paths.event_metadata. Prefer --event-metadata-table; --input is a legacy alias.
+     - Filesystem path. Event metadata CSV or Parquet table. Defaults to config paths.event_metadata. Prefer --event-metadata-table; --input is a legacy alias.
    * - ``--prepared-events-output``, ``--output``
      - No
      -
-     - Filesystem path. Prepared event metadata output CSV/parquet table. Defaults to configured output table 'prepared_events'. Prefer --prepared-events-output; --output is a legacy alias.
+     - Filesystem path. Prepared event metadata output CSV or Parquet table. Defaults to configured output table 'prepared_events'. Prefer --prepared-events-output; --output is a legacy alias.
    * - ``--config``
      - No
      -
@@ -301,11 +301,11 @@ svtk io prepare-stations
    * - ``--station-metadata-table``, ``--input``
      - No
      -
-     - Filesystem path. Station metadata CSV/parquet table. Defaults to config paths.station_metadata. Prefer --station-metadata-table; --input is a legacy alias.
+     - Filesystem path. Station metadata CSV or Parquet table. Defaults to config paths.station_metadata. Prefer --station-metadata-table; --input is a legacy alias.
    * - ``--prepared-stations-output``, ``--output``
      - No
      -
-     - Filesystem path. Prepared station metadata output CSV/parquet table. Defaults to configured output table 'prepared_stations'. Prefer --prepared-stations-output; --output is a legacy alias.
+     - Filesystem path. Prepared station metadata output CSV or Parquet table. Defaults to configured output table 'prepared_stations'. Prefer --prepared-stations-output; --output is a legacy alias.
    * - ``--config``
      - No
      -
@@ -356,7 +356,7 @@ svtk io preprocess-waveforms
    * - ``--records``
      - No
      -
-     - Filesystem path. Event-station CSV/parquet with waveform path columns. Defaults to configured output table 'event_station_records'.
+     - Filesystem path. Event-station CSV or Parquet with waveform path columns. Defaults to configured output table 'event_station_records'.
    * - ``--output-root``
      - No
      -

@@ -314,7 +314,7 @@ def tasks_to_frame(tasks: list[MetricWorkflowTask]) -> pd.DataFrame:
 
 
 def tasks_from_frame(table: pd.DataFrame | str | Path) -> list[MetricWorkflowTask]:
-    """Read tasks from a dataframe or CSV/parquet path.
+    """Read tasks from a dataframe or path to a CSV or Parquet table.
 
     Parameters
     ----------

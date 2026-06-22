@@ -189,7 +189,7 @@ Plot observed/synthetic availability.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (qc availability); accepts CSV or parquet. Defaults to configured output table 'qc_availability' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (qc availability); accepts CSV or Parquet. Defaults to configured output table 'qc_availability' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -431,7 +431,7 @@ Plot QC drop-cause diagnostics.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (qc drop causes); accepts CSV or parquet. Defaults to configured output table 'qc_drop_causes' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (qc drop causes); accepts CSV or Parquet. Defaults to configured output table 'qc_drop_causes' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -673,7 +673,7 @@ Plot retained comparison-pair percentages by station and event.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (qc event station pair retention); accepts CSV or parquet. Defaults to configured output table 'qc_event_station_pair_retention' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (qc event station pair retention); accepts CSV or Parquet. Defaults to configured output table 'qc_event_station_pair_retention' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -954,7 +954,7 @@ Map retained station/event records after QC.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (post qc records); accepts CSV or parquet. Defaults to configured output table 'post_qc_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (post qc records); accepts CSV or Parquet. Defaults to configured output table 'post_qc_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -1190,7 +1190,7 @@ Plot QC retention summary.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (qc metric pair retention); accepts CSV or parquet. Defaults to configured output table 'qc_metric_pair_retention' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (qc metric pair retention); accepts CSV or Parquet. Defaults to configured output table 'qc_metric_pair_retention' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -1432,7 +1432,7 @@ Plot sample QC traces.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (sample); accepts CSV or parquet. This advanced figure requires an explicit table; pass --input-table or --input.
+     - Filesystem path. Primary figure input table (sample); accepts CSV or Parquet. This advanced figure requires an explicit table; pass --input-table or --input.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -1678,7 +1678,7 @@ Plot distance/amplitude diagnostics.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or Parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -1916,7 +1916,7 @@ Plot event record coverage.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or Parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -2158,7 +2158,7 @@ Map events by magnitude.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (prepared events); accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (prepared events); accepts CSV or Parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -2400,7 +2400,7 @@ Plot event trace comparisons.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or Parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -2680,7 +2680,7 @@ Plot record-window coverage.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (record coverage); accepts CSV or parquet. Defaults to configured output table 'record_coverage' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (record coverage); accepts CSV or Parquet. Defaults to configured output table 'record_coverage' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -2921,7 +2921,7 @@ Plot station record coverage.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or Parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -3169,7 +3169,7 @@ Map station/event context with beachballs.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (prepared events); accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (prepared events); accepts CSV or Parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -3317,7 +3317,7 @@ Map station/event context with beachballs.
    * - ``--stations``
      - No
      -
-     - Filesystem path. Convenience prepared stations table path; accepts CSV or parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Convenience prepared stations table path; accepts CSV or Parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--bounds``
      - No
      -
@@ -3419,7 +3419,7 @@ Plot station and event context.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (prepared stations); accepts CSV or parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (prepared stations); accepts CSV or Parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -3567,7 +3567,7 @@ Plot station and event context.
    * - ``--events``
      - No
      -
-     - Filesystem path. Convenience prepared events table path; accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Convenience prepared events table path; accepts CSV or Parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--bounds``
      - No
      -
@@ -3669,7 +3669,7 @@ Map station/event network geometry.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (prepared stations); accepts CSV or parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (prepared stations); accepts CSV or Parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -3817,7 +3817,7 @@ Map station/event network geometry.
    * - ``--events``
      - No
      -
-     - Filesystem path. Convenience prepared events table path; accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Convenience prepared events table path; accepts CSV or Parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--bounds``
      - No
      -
@@ -3912,7 +3912,7 @@ Plot the study domain map.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (prepared stations); accepts CSV or parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (prepared stations); accepts CSV or Parquet. Defaults to configured output table 'prepared_stations' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -4060,7 +4060,7 @@ Plot the study domain map.
    * - ``--events``
      - No
      -
-     - Filesystem path. Convenience prepared events table path; accepts CSV or parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Convenience prepared events table path; accepts CSV or Parquet. Defaults to configured output table 'prepared_events' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--bounds``
      - No
      -
@@ -4248,7 +4248,7 @@ Plot event radial trace section.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or Parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -4506,7 +4506,7 @@ Plot observed/synthetic record sections.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or Parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -4747,7 +4747,7 @@ Plot a waveform record section.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or Parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -4991,7 +4991,7 @@ Map station/event waveforms.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or Parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -
@@ -5235,7 +5235,7 @@ Plot waveform overlay matrix.
    * - ``--input-table``, ``--input``
      - No
      -
-     - Filesystem path. Primary figure input table (event station records); accepts CSV or parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
+     - Filesystem path. Primary figure input table (event station records); accepts CSV or Parquet. Defaults to configured output table 'event_station_records' when --config is passed or a default config is set with 'svtk config set'.
    * - ``--figure-output``, ``--output``
      - No
      -

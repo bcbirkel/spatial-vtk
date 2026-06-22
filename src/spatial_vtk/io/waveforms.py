@@ -1006,7 +1006,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("paths", nargs="+", help="Waveform files to inspect.")
     parser.add_argument("--format", default=None, help="Optional ObsPy format string.")
     parser.add_argument("--event-id", default="", help="Event ID copied into output rows.")
-    parser.add_argument("--output", required=True, help="Output trace metadata CSV/parquet table.")
+    parser.add_argument("--output", required=True, help="Output trace metadata CSV or Parquet table.")
     return parser
 
 

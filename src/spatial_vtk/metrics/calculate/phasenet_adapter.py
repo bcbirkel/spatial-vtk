@@ -422,7 +422,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Normalize PhaseNet picks into a Spatial-VTK arrival-pick catalog.")
     parser.add_argument("--phasenet-csv", required=True, help="PhaseNet picks CSV to normalize.")
     parser.add_argument("--records-csv", required=True, help="CSV containing PhaseNet input records.")
-    parser.add_argument("--output", required=True, help="Output pick catalog CSV/parquet.")
+    parser.add_argument("--output", required=True, help="Output pick catalog CSV or Parquet table.")
     parser.add_argument("--min-p-prob", type=float, default=0.0)
     parser.add_argument("--min-s-prob", type=float, default=0.0)
     return parser

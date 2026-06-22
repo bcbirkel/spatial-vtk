@@ -326,7 +326,7 @@ def preprocess_waveform_files(
     Parameters
     ----------
     event_station_records
-        DataFrame or CSV/Parquet path with event IDs and waveform paths.
+        DataFrame or CSV or Parquet path with event IDs and waveform paths.
     output_root
         Folder where processed waveforms and metadata tables will be written.
         When omitted, ``outputs.preprocessed_waveforms`` is read from

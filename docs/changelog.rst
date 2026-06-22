@@ -4,6 +4,14 @@ Changelog
 2026-06-21
 ----------
 
+- **Table-format wording** *(Changed)*
+
+  - Standardized current CLI help, API docs, generated CLI reference pages,
+    and table-helper docstrings on ``CSV or Parquet`` wording so public table
+    format support is described consistently.
+  - Added regression coverage that rejects mixed ``CSV/parquet`` and
+    ``CSV/Parquet`` phrasing in current user-facing help and docs sources.
+
 - **Workflow import guidance** *(Fixed)*
 
   - Cleaned the configuration guide's Python examples so metric settings are

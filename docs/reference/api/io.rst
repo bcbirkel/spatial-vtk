@@ -137,7 +137,7 @@ Public helpers exposed by ``spatial_vtk.io``:
        Each helper accepts ``cfg=`` as either a ``SpatialVTKConfig`` object or
        a config file path, so worker scripts can resolve configured paths
        without activating global config state. Use ``preview_output_table`` for
-       bounded notebook previews of large CSV/Parquet outputs.
+       bounded notebook previews of large CSV or Parquet outputs.
    * - ``load_configured_input_paths``
      - Resolve optional non-table inputs from dotted config path keys, such as
        ``paths.region_geojson``, without putting direct ``cfg.path`` calls in

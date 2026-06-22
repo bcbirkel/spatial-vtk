@@ -180,7 +180,7 @@ NOTEBOOK_CONTRACT_SNIPPET_REMEDIATIONS = {
     "vars(step_outputs)": "Use result-object status_frame methods instead of expanding path dictionaries.",
     "runs/outputs": "Resolve output paths through the active config and workflow helpers.",
     "runs/spatial_vtk_config.yaml": "Load configs through the shared source-checkout bootstrap and notebook_run_context.",
-    "pd.read_": "Use package table/workflow loaders so CSV/Parquet handling and bounded reads stay centralized.",
+    "pd.read_": "Use package table/workflow loaders so CSV or Parquet handling and bounded reads stay centralized.",
     ".to_csv(": "Use package workflow/table writers so output formats and atomic writes stay centralized.",
     ".to_parquet(": "Use package workflow/table writers so output formats and atomic writes stay centralized.",
     ".loc[": "Move reusable filtering into package helpers when it is part of the tutorial workflow.",

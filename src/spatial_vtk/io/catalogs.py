@@ -26,7 +26,7 @@ def read_events(path: str | Path | None = None, **kwargs) -> pd.DataFrame:
     path
         Event catalog path. When omitted, the public example path is used.
     **kwargs
-        Additional arguments forwarded to the shared CSV/Parquet metadata reader.
+        Additional arguments forwarded to the shared CSV or Parquet metadata reader.
 
     Returns
     -------
@@ -45,7 +45,7 @@ def read_stations(path: str | Path, **kwargs) -> pd.DataFrame:
     path
         Station catalog path.
     **kwargs
-        Additional arguments forwarded to the shared CSV/Parquet metadata reader.
+        Additional arguments forwarded to the shared CSV or Parquet metadata reader.
 
     Returns
     -------
@@ -64,7 +64,7 @@ def read_event_patch_table(path: str | Path | None = None, **kwargs) -> pd.DataF
     path
         Event patch table path. When omitted, the public example path is used.
     **kwargs
-        Additional arguments forwarded to the shared CSV/Parquet table reader.
+        Additional arguments forwarded to the shared CSV or Parquet table reader.
 
     Returns
     -------

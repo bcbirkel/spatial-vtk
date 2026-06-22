@@ -95,7 +95,7 @@ _PARAMETER_DESCRIPTIONS = {
     "manifest_path": "Path to the metric or QC manifest file used for resumable planning, execution, or merging.",
     "metric": "Metric name or metric filter used for the calculation or figure.",
     "metrics_dataset_dir": (
-        "Metrics dashboard row dataset directory or direct ``metrics_long`` CSV/parquet table; "
+        "Metrics dashboard row dataset directory or direct ``metrics_long`` CSV or Parquet table; "
         "standard dashboard workflows resolve this from the active config."
     ),
     "metrics_root": (
@@ -117,7 +117,7 @@ _PARAMETER_DESCRIPTIONS = {
     "passband": "Passband label or passband filter used for the calculation or figure.",
     "path": "Filesystem path, registered artifact key, or dotted config path key accepted by this helper.",
     "qc_trace_summary_table": (
-        "QC trace-summary CSV/parquet table used by the QC dashboard; standard QC dashboard "
+        "QC trace-summary CSV or Parquet table used by the QC dashboard; standard QC dashboard "
         "workflows resolve this from the configured ``qc_trace_summary`` output."
     ),
     "run_scenario": "Configured run scenario name used to resolve scenario-specific settings.",

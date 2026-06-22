@@ -728,7 +728,7 @@ paths without requiring global config activation.
      - ``spatial_vtk.visualize.prepare_configured_dashboard_datasets_from_notebook_settings``
      - dashboard metric dataset root and dashboard summary table root; standard
        dashboard artifacts are replaced so stale partitions or stale
-       CSV/Parquet summary files do not mix with the current run. The notebook
+       CSV or Parquet summary files do not mix with the current run. The notebook
        preparation helper owns local-skip/current/rebuild decisions and returns
        readiness, status, and written-output frames for display. The returned
        ``DashboardDatasetPreparationResult`` also owns the Slurm-aware

@@ -545,7 +545,7 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert "Import from the public spatial_vtk package namespace or the standard workflow result helpers." in combined
     assert "Use standard workflow result objects or notebook_run_context helpers for configured outputs." in combined
     assert "Use load_standard_*_workflow_outputs result loaders" in combined
-    assert "Use package table/workflow loaders so CSV/Parquet handling and bounded reads stay centralized." in combined
+    assert "Use package table/workflow loaders so CSV or Parquet handling and bounded reads stay centralized." in combined
     assert "Move reusable joins into package helpers when they are part of the tutorial workflow." in combined
     assert "Move reusable aggregations into package helpers when they are part of the tutorial workflow." in combined
     assert "Move reusable ordering into package helpers when it is part of the tutorial workflow." in combined
@@ -869,7 +869,7 @@ def test_public_docs_describe_committed_tutorial_waveforms() -> None:
 
 
 def test_public_docs_describe_registered_table_formats() -> None:
-    """Docs should explain CSV/Parquet defaults through registered output names."""
+    """Docs should explain CSV or Parquet defaults through registered output names."""
 
     repo_root = Path(__file__).resolve().parents[1]
     configuration = (repo_root / "docs" / "configuration.rst").read_text(encoding="utf-8")

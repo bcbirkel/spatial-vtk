@@ -96,7 +96,7 @@ class QCDashboardPaths:
 
     @property
     def qc_trace_summary_table(self) -> Path:
-        """QC trace-summary CSV/parquet table."""
+        """QC trace-summary CSV or Parquet table."""
 
         return self.trace_summary
 

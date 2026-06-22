@@ -100,7 +100,7 @@ def normalize_metric_waveform_inventory(
     Parameters
     ----------
     table
-        Raw inventory table or CSV/parquet path.
+        Raw inventory table or path to a CSV or Parquet table.
     source
         Optional source override, usually ``"observed"`` or ``"synthetic"``.
     synthetic_max_frequency_hz
@@ -134,7 +134,7 @@ def normalize_metric_qc_table(table: pd.DataFrame | str | Path, *, source: str |
     Parameters
     ----------
     table
-        Raw QC table or CSV/parquet path.
+        Raw QC table or path to a CSV or Parquet table.
     source
         Optional source override.
 

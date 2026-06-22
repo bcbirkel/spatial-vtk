@@ -784,7 +784,7 @@ def _format_timing_summary(label: str, timing: dict[str, float]) -> str:
 
 
 def _read_table(path: str | Path) -> pd.DataFrame:
-    """Read one CSV or parquet table."""
+    """Read one CSV or Parquet table."""
 
     table_path = Path(path).expanduser()
     if table_path.suffix.lower() in {".parquet", ".pq"}:

@@ -1011,7 +1011,7 @@ def test_autodoc_fallback_parameter_docs_are_descriptive():
     assert conf._parameter_description(parameter("artifact_path")).startswith("Filesystem path, registered artifact key")
     assert conf._parameter_description(parameter("summary")).startswith("Summary table, dashboard summary dataset")
     assert conf._parameter_description(parameter("metrics_dataset_dir")).startswith("Metrics dashboard row dataset directory")
-    assert "direct ``metrics_long`` CSV/parquet table" in conf._parameter_description(parameter("metrics_dataset_dir"))
+    assert "direct ``metrics_long`` CSV or Parquet table" in conf._parameter_description(parameter("metrics_dataset_dir"))
     assert conf._parameter_description(parameter("metrics_root")).startswith("Backward-compatible alias for ``metrics_dataset_dir``")
     assert "Prefer ``metrics_dataset_dir``" in conf._parameter_description(parameter("metrics_root"))
     assert conf._parameter_description(parameter("dashboard_summary_table_dir")).startswith("Dashboard summary-table directory")
@@ -1020,7 +1020,7 @@ def test_autodoc_fallback_parameter_docs_are_descriptive():
         "Backward-compatible alias for ``dashboard_summary_table_dir``"
     )
     assert "Prefer ``dashboard_summary_table_dir``" in conf._parameter_description(parameter("summary_root"))
-    assert conf._parameter_description(parameter("qc_trace_summary_table")).startswith("QC trace-summary CSV/parquet table")
+    assert conf._parameter_description(parameter("qc_trace_summary_table")).startswith("QC trace-summary CSV or Parquet table")
     assert "``qc_trace_summary``" in conf._parameter_description(parameter("qc_trace_summary_table"))
     assert conf._parameter_description(parameter("trace_summary")).startswith(
         "Backward-compatible alias for ``qc_trace_summary_table``"
@@ -3489,21 +3489,21 @@ def test_large_run_csv_readers_use_stable_dtype_inference():
 
 
 def test_table_helper_docstrings_describe_csv_and_parquet_paths():
-    """Public helper docstrings should match shared CSV/Parquet table support."""
+    """Public helper docstrings should match shared CSV or Parquet table support."""
 
     repo_root = pathlib.Path(__file__).resolve().parents[1]
     required = {
         "src/spatial_vtk/qc/review/tables.py": [
             "Load manual QC decisions from a CSV or Parquet table.",
-            "Decision CSV or Parquet path.",
-            "Decision table or CSV/Parquet path.",
+            "Path to a CSV or Parquet decision table.",
+            "Decision table or path to a CSV or Parquet table.",
         ],
         "src/spatial_vtk/io/master_lists.py": [
-            "Station metadata tables or CSV/Parquet paths.",
-            "Event metadata tables or CSV/Parquet paths.",
+            "Station metadata tables or paths to CSV or Parquet tables.",
+            "Event metadata tables or paths to CSV or Parquet tables.",
         ],
         "src/spatial_vtk/metrics/calculate/enrich.py": [
-            "Optional metadata tables or CSV/Parquet paths.",
+            "Optional metadata tables or paths to CSV or Parquet tables.",
         ],
     }
     forbidden = {
@@ -3511,13 +3511,17 @@ def test_table_helper_docstrings_describe_csv_and_parquet_paths():
             "Load manual QC decisions from CSV.",
             "Decision CSV path.",
             "Decision table or CSV path.",
+            "Decision table or CSV or Parquet path.",
         ],
         "src/spatial_vtk/io/master_lists.py": [
             "Station metadata tables or CSV paths.",
             "Event metadata tables or CSV paths.",
+            "Station metadata tables or CSV or Parquet paths.",
+            "Event metadata tables or CSV or Parquet paths.",
         ],
         "src/spatial_vtk/metrics/calculate/enrich.py": [
             "Optional metadata tables or CSV paths.",
+            "Optional metadata tables or CSV or Parquet paths.",
         ],
     }
     for relative_path, snippets in required.items():
@@ -3528,6 +3532,51 @@ def test_table_helper_docstrings_describe_csv_and_parquet_paths():
         text = (repo_root / relative_path).read_text(encoding="utf-8")
         for snippet in snippets:
             assert snippet not in text, (relative_path, snippet)
+
+
+def test_current_table_format_help_uses_consistent_wording():
+    """Current user-facing help/docs should describe CSV or Parquet support consistently."""
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    checked = [
+        "src/spatial_vtk/cli/__init__.py",
+        "src/spatial_vtk/io/catalogs.py",
+        "src/spatial_vtk/io/master_lists.py",
+        "src/spatial_vtk/io/metric_inputs.py",
+        "src/spatial_vtk/io/plans.py",
+        "src/spatial_vtk/io/preprocessing.py",
+        "src/spatial_vtk/io/waveforms.py",
+        "src/spatial_vtk/io/workflows.py",
+        "src/spatial_vtk/metrics/calculate/enrich.py",
+        "src/spatial_vtk/metrics/calculate/phasenet_adapter.py",
+        "src/spatial_vtk/metrics/workflow/execution.py",
+        "src/spatial_vtk/metrics/workflow/run.py",
+        "src/spatial_vtk/metrics/workflow/tasks.py",
+        "src/spatial_vtk/qc/build/inventory.py",
+        "src/spatial_vtk/qc/review/tables.py",
+        "src/spatial_vtk/spatial/calculate/geojson.py",
+        "src/spatial_vtk/visualize/dashboard/contracts.py",
+        "docs/conf.py",
+        "docs/reference/api/io.rst",
+        "docs/reference/cli/dashboard.rst",
+        "docs/reference/cli/io.rst",
+        "docs/reference/cli/map.rst",
+        "docs/reference/cli/metrics.rst",
+        "docs/reference/cli/plot.rst",
+        "docs/reference/cli/qc.rst",
+        "docs/reference/cli/visualize.rst",
+        "docs/reference/cli_api.rst",
+        "docs/reference/python_workflows.rst",
+        "tools/generate_cli_reference.py",
+    ]
+    forbidden = ("CSV/parquet", "csv/parquet", "CSV/Parquet", "CSV or parquet", "csv or parquet")
+    offenders: list[str] = []
+    for relative_path in checked:
+        text = (repo_root / relative_path).read_text(encoding="utf-8")
+        for token in forbidden:
+            if token in text:
+                offenders.append(f"{relative_path}: {token}")
+    assert not offenders, "\n".join(offenders)
 
 
 def test_cli_table_writes_use_shared_writer():
@@ -3556,8 +3605,8 @@ def test_io_plan_cli_uses_shared_table_helpers():
     assert "write_table(missing, args.missing_output, index=False)" in helper
     assert ".to_csv(" not in helper
     assert ".to_parquet(" not in helper
-    assert "QC inventory CSV/parquet table." in source
-    assert "Existing metrics CSV/parquet table." in source
+    assert "QC inventory CSV or Parquet table." in source
+    assert "Existing metrics CSV or Parquet table." in source
 
 
 def test_dashboard_summary_writes_use_shared_writer():

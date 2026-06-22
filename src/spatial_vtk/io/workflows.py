@@ -80,7 +80,7 @@ class StandardIngestWorkflowOutputResult:
 
         This helper keeps tutorial notebooks from loading the prepared station,
         event, and event-station tables only to print basic counts. Row counts
-        are read through lightweight CSV/Parquet counters instead of
+        are read through lightweight CSV or Parquet counters instead of
         materializing full metadata tables.
         """
 

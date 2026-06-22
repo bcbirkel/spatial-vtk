@@ -127,8 +127,8 @@ def load_manual_qc_decisions(path: str | Path | None) -> pd.DataFrame:
     Parameters
     ----------
     path
-        Decision CSV or Parquet path. Missing or ``None`` returns an empty
-        table.
+        Path to a CSV or Parquet decision table. Missing or ``None`` returns
+        an empty table.
 
     Returns
     -------
@@ -152,7 +152,7 @@ def write_manual_qc_decisions(df: pd.DataFrame, path: str | Path, *, overwrite: 
     df
         Decision rows.
     path
-        Output CSV or Parquet path.
+        Output path for a CSV or Parquet table.
     overwrite
         Whether to replace an existing file.
 
@@ -188,7 +188,7 @@ def apply_manual_qc_decisions(
     inventory_df
         Automated QC inventory.
     decisions
-        Decision table or CSV/Parquet path.
+        Decision table or path to a CSV or Parquet table.
     band_columns
         Optional reject-column suffixes. When omitted, columns named
         ``reject_*`` are inferred.

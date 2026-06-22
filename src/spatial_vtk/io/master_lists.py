@@ -63,7 +63,7 @@ def build_master_station_list(
     Parameters
     ----------
     station_tables
-        Station metadata tables or CSV/Parquet paths.
+        Station metadata tables or paths to CSV or Parquet tables.
     streams
         Optional waveform streams whose trace metadata includes station fields.
     extra_columns
@@ -110,7 +110,7 @@ def build_master_event_list(
     Parameters
     ----------
     event_tables
-        Event metadata tables or CSV/Parquet paths.
+        Event metadata tables or paths to CSV or Parquet tables.
     event_records
         Optional mapping records.
     extra_columns
@@ -301,11 +301,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Build Spatial-VTK master station or event lists.")
     subparsers = parser.add_subparsers(dest="command", required=True)
     stations = subparsers.add_parser("stations", help="Build a master station list.")
-    stations.add_argument("--input", nargs="+", required=True, help="Station CSV/parquet paths.")
-    stations.add_argument("--output", required=True, help="Output station CSV/parquet table.")
+    stations.add_argument("--input", nargs="+", required=True, help="Station CSV or Parquet paths.")
+    stations.add_argument("--output", required=True, help="Output station CSV or Parquet table.")
     events = subparsers.add_parser("events", help="Build a master event list.")
-    events.add_argument("--input", nargs="+", required=True, help="Event CSV/parquet paths.")
-    events.add_argument("--output", required=True, help="Output event CSV/parquet table.")
+    events.add_argument("--input", nargs="+", required=True, help="Event CSV or Parquet paths.")
+    events.add_argument("--output", required=True, help="Output event CSV or Parquet table.")
     return parser
 
 

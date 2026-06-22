@@ -132,11 +132,11 @@ svtk qc manual-queue
    * - ``--qc-trace-summary``, ``--trace-summary``
      - No
      -
-     - Filesystem path. QC trace-summary CSV/parquet table. Defaults to configured output table 'qc_trace_summary'. Prefer --qc-trace-summary; --trace-summary is a legacy alias.
+     - Filesystem path. QC trace-summary CSV or Parquet table. Defaults to configured output table 'qc_trace_summary'. Prefer --qc-trace-summary; --trace-summary is a legacy alias.
    * - ``--manual-review-queue-output``, ``--output``
      - No
      -
-     - Filesystem path. Output manual-review queue CSV/parquet table. Defaults to configured output table 'manual_review_queue'. Prefer --manual-review-queue-output; --output is a legacy alias.
+     - Filesystem path. Output manual-review queue CSV or Parquet table. Defaults to configured output table 'manual_review_queue'. Prefer --manual-review-queue-output; --output is a legacy alias.
    * - ``--config``
      - No
      -
