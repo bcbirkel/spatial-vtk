@@ -4,6 +4,14 @@ Changelog
 2026-06-21
 ----------
 
+- **CLI config path metavar** *(Changed)*
+
+  - Standardized live ``svtk`` help so optional config-file arguments render as
+    ``--config PATH`` across config, I/O, QC, metrics, dashboard, plotting,
+    mapping, and visualization commands.
+  - Added regression coverage that prevents terminal help from falling back to
+    argparse's generic ``--config CONFIG`` placeholder.
+
 - **CLI path placeholder guard** *(Changed)*
 
   - Added regression coverage that keeps registered plot, map, and visualization

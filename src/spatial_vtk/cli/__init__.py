@@ -540,7 +540,7 @@ def _add_config_commands(subparsers: argparse._SubParsersAction[argparse.Argumen
     config_sub = config.add_subparsers(dest="config_command", required=True)
 
     find = config_sub.add_parser("find", help="Print the resolved config path.")
-    find.add_argument("--config", default=None, help="Explicit config file.")
+    find.add_argument("--config", metavar="PATH", default=None, help="Explicit config file.")
     find.add_argument("--start-dir", metavar="DIR", default=None, help="Directory used for config discovery.")
     find.set_defaults(handler=_cmd_config_find)
 
@@ -552,14 +552,14 @@ def _add_config_commands(subparsers: argparse._SubParsersAction[argparse.Argumen
     unset_config.set_defaults(handler=_cmd_config_unset)
 
     show = config_sub.add_parser("show", help="Print the active config or one section.")
-    show.add_argument("--config", default=None, help="Explicit config file.")
+    show.add_argument("--config", metavar="PATH", default=None, help="Explicit config file.")
     show.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay before printing.")
     show.add_argument("--section", default=None, help="Optional dotted section key.")
     show.add_argument("--json", action="store_true", help="Write JSON instead of YAML.")
     show.set_defaults(handler=_cmd_config_show)
 
     outputs = config_sub.add_parser("outputs", help="List registered output keys, filenames, and resolved paths.")
-    outputs.add_argument("--config", default=None, help="Explicit config file used to resolve output paths.")
+    outputs.add_argument("--config", metavar="PATH", default=None, help="Explicit config file used to resolve output paths.")
     outputs.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay before resolving paths.")
     outputs.add_argument(
         "--kind",
@@ -572,7 +572,7 @@ def _add_config_commands(subparsers: argparse._SubParsersAction[argparse.Argumen
     outputs.set_defaults(handler=_cmd_config_outputs)
 
     bounds = config_sub.add_parser("bounds", help="List configured named bounds presets.")
-    bounds.add_argument("--config", default=None, help="Explicit config file.")
+    bounds.add_argument("--config", metavar="PATH", default=None, help="Explicit config file.")
     bounds.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay before listing bounds.")
     bounds.add_argument("--json", action="store_true", help="Write JSON instead of YAML.")
     bounds.set_defaults(handler=_cmd_config_bounds)
@@ -607,7 +607,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
             "'prepared_stations'. Prefer --prepared-stations-output; --output is a legacy alias."
         ),
     )
-    stations.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
+    stations.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
     stations.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     stations.set_defaults(handler=_cmd_io_prepare_stations)
 
@@ -634,7 +634,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
             "'prepared_events'. Prefer --prepared-events-output; --output is a legacy alias."
         ),
     )
-    events.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
+    events.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
     events.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     events.set_defaults(handler=_cmd_io_prepare_events)
 
@@ -684,7 +684,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
             "'event_station_records'. Prefer --event-station-records-output; --output is a legacy alias."
         ),
     )
-    event_stations.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
+    event_stations.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
     event_stations.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     event_stations.set_defaults(handler=_cmd_io_prepare_event_stations)
 
@@ -712,7 +712,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
             "'prepared_stations'. Prefer --master-station-output; --output is a legacy alias."
         ),
     )
-    master_stations.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
+    master_stations.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
     master_stations.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     master_stations.set_defaults(handler=_cmd_io_master_stations)
 
@@ -740,7 +740,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
             "'prepared_events'. Prefer --master-event-output; --output is a legacy alias."
         ),
     )
-    master_events.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
+    master_events.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
     master_events.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     master_events.set_defaults(handler=_cmd_io_master_events)
 
@@ -768,7 +768,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
             "'waveform_inventory'. Prefer --waveform-inventory-output; --output is a legacy alias."
         ),
     )
-    inventory.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default roots and output path.")
+    inventory.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file used to resolve default roots and output path.")
     inventory.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     inventory.add_argument("--suffix", action="append", default=None, help="Waveform suffix to include. May be repeated.")
     inventory.add_argument("--relative-to", metavar="DIR", default=None, help="Base path used for relative inventory paths.")
@@ -783,7 +783,7 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         default=None,
         help="Folder where processed waveforms and metadata tables are written. Defaults to outputs.preprocessed_waveforms from config.",
     )
-    preprocess.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    preprocess.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file.")
     preprocess.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     preprocess.add_argument("--observed-column", default=None, help="Observed waveform path column. Auto-detected when omitted.")
     preprocess.add_argument("--synthetic-column", default=None, help="Synthetic waveform path column. Auto-detected when omitted.")
@@ -817,7 +817,7 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         default=None,
         help="Prepared event-station table. Defaults to configured output table 'event_station_records'.",
     )
-    build.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    build.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file.")
     build.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     build.add_argument(
         "--qc-trace-summary-output",
@@ -876,7 +876,7 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
             "'manual_review_queue'. Prefer --manual-review-queue-output; --output is a legacy alias."
         ),
     )
-    queue.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default input/output paths.")
+    queue.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config used to resolve default input/output paths.")
     queue.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     queue.add_argument("--event-id", default="", help="Optional event id filter.")
     queue.add_argument("--station-family", default="all", help="Optional station-family filter.")
@@ -908,7 +908,7 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
             "Prefer --qc-slurm-script-output; --output is a legacy alias."
         ),
     )
-    slurm.add_argument("--config", default=None, help="Config file containing compute.slurm or qc.slurm settings.")
+    slurm.add_argument("--config", metavar="PATH", default=None, help="Config file containing compute.slurm or qc.slurm settings.")
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     slurm.add_argument(
         "--qc-trace-summary-output",
@@ -952,7 +952,7 @@ def _add_qc_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         help="Build compact QC summary tables from configured QC inventories.",
         description="Build compact QC summary tables from configured QC inventories.",
     )
-    summaries.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    summaries.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file.")
     summaries.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     summaries.add_argument("--chunksize", type=int, default=1_000_000, help="Rows per streamed QC chunk.")
     summaries.add_argument("--overwrite", action="store_true", help="Replace existing disk-backed summary outputs.")
@@ -990,7 +990,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
             "'synthetic_metric_inventory'. Prefer --synthetic-inventory-output; --synthetic-output is a legacy alias."
         ),
     )
-    inventories.add_argument("--config", default=None, help="Optional Spatial-VTK config used to infer a single synthetic model.")
+    inventories.add_argument("--config", metavar="PATH", default=None, help="Optional Spatial-VTK config used to infer a single synthetic model.")
     inventories.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     inventories.add_argument("--synthetic-model", default=None, help="Synthetic model label override.")
     inventories.add_argument("--observed-path-column", default="output_file", help="Trace metadata column used for observed waveform_path.")
@@ -1016,7 +1016,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         default=None,
         help="Synthetic metric waveform inventory CSV or Parquet path. Defaults to configured output table 'synthetic_metric_inventory'.",
     )
-    plan.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    plan.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file.")
     plan.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     plan.add_argument("--metric", action="append", dest="metrics", default=None, help="Metric override. Repeat or use 'all'.")
     plan.add_argument("--metric-group", action="append", dest="metric_groups", default=None, help="Metric-group override. Repeat or use 'all'.")
@@ -1081,7 +1081,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
             "'metric_manifest'. Prefer --metric-manifest; --manifest is a legacy alias."
         ),
     )
-    estimate.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default manifest and output paths.")
+    estimate.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config used to resolve default manifest and output paths.")
     estimate.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     estimate.add_argument(
         "--metric-task-estimate-output",
@@ -1121,7 +1121,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
             "'metric_rows'. Prefer --metric-rows; --output is a legacy alias."
         ),
     )
-    run.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default task/output paths.")
+    run.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config used to resolve default task/output paths.")
     run.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     run.add_argument("--qc-table", metavar="PATH", default=None, help="Optional QC inventory.")
     run.set_defaults(handler=_cmd_metrics_run)
@@ -1138,7 +1138,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
             "otherwise metric_manifest. Prefer --metric-manifest; --manifest is a legacy alias."
         ),
     )
-    batch.add_argument("--config", default=None, help="Spatial-VTK config used to resolve the default manifest path.")
+    batch.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config used to resolve the default manifest path.")
     batch.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     batch.add_argument("--batch-index", type=int, required=True, help="Batch index to run.")
     batch.add_argument("--overwrite", action="store_true", help="Replace an existing batch output.")
@@ -1156,7 +1156,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
             "otherwise metric_manifest. Prefer --metric-manifest; --manifest is a legacy alias."
         ),
     )
-    batch_status.add_argument("--config", default=None, help="Spatial-VTK config used to resolve the default manifest path.")
+    batch_status.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config used to resolve the default manifest path.")
     batch_status.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     batch_status.add_argument("--missing-limit", type=int, default=20, help="Maximum missing batch outputs to list. Use -1 for all.")
     batch_status.add_argument("--json", action="store_true", help="Print JSON instead of YAML.")
@@ -1195,7 +1195,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
             "the configured outputs.root/metric_batches_cached directory."
         ),
     )
-    cache.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default paths.")
+    cache.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config used to resolve default paths.")
     cache.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     cache.add_argument("--overwrite", action="store_true", help="Rewrite existing cached waveform files.")
     cache.add_argument("--compressed", action="store_true", help="Write compressed .npz files instead of faster uncompressed .npz files.")
@@ -1227,7 +1227,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
             "Prefer --metric-rows-output; --output is a legacy alias."
         ),
     )
-    merge.add_argument("--config", default=None, help="Spatial-VTK config used to resolve default paths.")
+    merge.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config used to resolve default paths.")
     merge.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     merge.add_argument("--allow-missing", action="store_true", help="Allow missing batch outputs.")
     merge.set_defaults(handler=_cmd_metrics_merge_batches)
@@ -1255,7 +1255,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
             "Prefer --metrics-output-dir; --output-dir is a legacy alias."
         ),
     )
-    outputs.add_argument("--config", default=None, help="Config file used to resolve standard output paths.")
+    outputs.add_argument("--config", metavar="PATH", default=None, help="Config file used to resolve standard output paths.")
     outputs.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     outputs.add_argument(
         "--event-table",
@@ -1317,7 +1317,7 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
             "Prefer --metrics-slurm-script-output; --output is a legacy alias."
         ),
     )
-    slurm.add_argument("--config", default=None, help="Config file containing metrics.slurm settings.")
+    slurm.add_argument("--config", metavar="PATH", default=None, help="Config file containing metrics.slurm settings.")
     slurm.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     slurm.add_argument("--submit", action="store_true", help="Submit the script with sbatch after writing it.")
     slurm.add_argument("--incomplete-only", action="store_true", help="Only include manifest batches whose output files are missing.")
@@ -1340,7 +1340,7 @@ def _add_spatial_commands(subparsers: argparse._SubParsersAction[argparse.Argume
         help="Inspect configured spatial-statistics inputs and outputs.",
         description="Inspect configured spatial-statistics inputs and outputs without running calculations.",
     )
-    status.add_argument("--config", default=None, help="Spatial-VTK config file.")
+    status.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config file.")
     status.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     status.add_argument("--include-optional", action="store_true", help="Include optional spatial output artifacts in the status table.")
     status.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
@@ -1568,14 +1568,14 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     dashboard_sub = dashboard.add_subparsers(dest="dashboard_command", required=True)
 
     status = dashboard_sub.add_parser("status", help="Inspect configured dashboard inputs without launching Streamlit.")
-    status.add_argument("--config", default=None, help="Spatial-VTK config used to resolve dashboard inputs.")
+    status.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config used to resolve dashboard inputs.")
     status.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     status.add_argument("--summary-format", choices=("parquet", "csv"), default="parquet", help="Expected dashboard summary table format for missing files.")
     status.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
     status.set_defaults(handler=_cmd_dashboard_status)
 
     metrics = dashboard_sub.add_parser("metrics", help="Launch the metrics Streamlit dashboard.")
-    metrics.add_argument("--config", default=None, help="Spatial-VTK config used to find default dashboard outputs.")
+    metrics.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config used to find default dashboard outputs.")
     metrics.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     metrics.add_argument(
         "--metrics-dataset-dir",
@@ -1633,7 +1633,7 @@ def _add_dashboard_commands(subparsers: argparse._SubParsersAction[argparse.Argu
     metrics.set_defaults(handler=_cmd_dashboard_metrics)
 
     qc = dashboard_sub.add_parser("qc", help="Launch the QC Streamlit dashboard.")
-    qc.add_argument("--config", default=None, help="Spatial-VTK config used to find the default trace-summary output.")
+    qc.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config used to find the default trace-summary output.")
     qc.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     qc.add_argument(
         "--qc-trace-summary",
@@ -1755,7 +1755,7 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
         help=output_help,
     )
     if spec.input_key or spec.output_key or spec.table_alias_defaults:
-        parser.add_argument("--config", default=None, help="Optional Spatial-VTK config for default input/output paths.")
+        parser.add_argument("--config", metavar="PATH", default=None, help="Optional Spatial-VTK config for default input/output paths.")
         parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     parser.add_argument(
         "--table",
@@ -1783,7 +1783,7 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
         parser.add_argument(f"--{option.replace('_', '-')}", metavar="PATH", default=None, help=alias_help)
     if include_map_options:
         if not (spec.input_key or spec.output_key or spec.table_alias_defaults):
-            parser.add_argument("--config", default=None, help="Optional Spatial-VTK config for named bounds.")
+            parser.add_argument("--config", metavar="PATH", default=None, help="Optional Spatial-VTK config for named bounds.")
             parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
         parser.add_argument("--bounds", default=None, help="Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.")
         parser.add_argument("--no-basemap", action="store_true", help="Disable basemap rendering for map figures.")

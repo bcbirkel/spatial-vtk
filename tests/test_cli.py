@@ -1436,6 +1436,24 @@ def test_config_cli_help_marks_config_values_as_paths(capsys):
     assert "   * - ``config_path``" not in config_reference
     assert "Value: ``config``. Explicit config file." not in config_reference
 
+    for args in (
+        ["io", "prepare-stations", "--help"],
+        ["io", "master-events", "--help"],
+        ["qc", "build", "--help"],
+        ["metrics", "plan", "--help"],
+        ["metrics", "merge-batches", "--help"],
+        ["dashboard", "metrics", "--help"],
+        ["plot", "metrics", "band-score-distribution", "--help"],
+        ["map", "spatial", "station-bias", "--help"],
+        ["visualize", "context", "station-event-context", "--help"],
+    ):
+        with pytest.raises(SystemExit) as excinfo:
+            main(args)
+        assert excinfo.value.code == 0
+        help_text = capsys.readouterr().out
+        assert "[--config PATH]" in help_text
+        assert "[--config CONFIG]" not in help_text
+
 
 def test_cli_config_error_messages_use_path_metavar():
     """Runtime guidance should match ``svtk config set`` help."""
@@ -1572,7 +1590,7 @@ def test_generated_cli_reference_names_io_prepare_aliases():
     assert "Filesystem path. Master station-list output CSV or Parquet table" in master_stations
     assert "[--station-tables PATH [PATH ...]]" in master_stations
     assert "[--master-station-output PATH]" in master_stations
-    assert "[--config CONFIG]" in master_stations
+    assert "[--config PATH]" in master_stations
     assert "Defaults to config paths.station_metadata" in master_stations
     assert "Defaults to configured output table 'prepared_stations'" in master_stations
     assert "Prefer --station-tables; --input is a legacy alias." in master_stations
@@ -1582,7 +1600,7 @@ def test_generated_cli_reference_names_io_prepare_aliases():
     assert "Filesystem path. Master event-list output CSV or Parquet table" in master_events
     assert "[--event-tables PATH [PATH ...]]" in master_events
     assert "[--master-event-output PATH]" in master_events
-    assert "[--config CONFIG]" in master_events
+    assert "[--config PATH]" in master_events
     assert "Defaults to config paths.event_metadata" in master_events
     assert "Defaults to configured output table 'prepared_events'" in master_events
     assert "Prefer --event-tables; --input is a legacy alias." in master_events
