@@ -13,6 +13,14 @@ Changelog
   - Documented the finite-value render gate in the metric plotting API
     reference and added source-contract coverage for the status fields.
 
+- **Spatial figure-suite config resolution** *(Fixed)*
+
+  - Updated the Step 4 spatial workflow status result so
+    ``write_figure_suite(...)`` passes the result object's config to the
+    package figure-suite writer by default.
+  - Preserved explicit ``cfg=`` overrides for scripts that intentionally render
+    figures from a different configured output registry.
+
 - **Standard notebook setup imports** *(Changed)*
 
   - Moved ``notebook_run_context`` imports for standard Steps 1, 4, 5, 6, and

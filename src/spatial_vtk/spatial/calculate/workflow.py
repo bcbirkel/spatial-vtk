@@ -735,6 +735,7 @@ class StandardSpatialWorkflowOutputStatusResult:
         self,
         settings: Any,
         *,
+        cfg: ConfigInput | None = None,
         overwrite: bool = False,
         **kwargs: Any,
     ) -> object:
@@ -749,6 +750,7 @@ class StandardSpatialWorkflowOutputStatusResult:
 
         return write_large_run_spatial_figure_suite_from_notebook_settings(
             settings,
+            cfg=cfg or self.cfg,
             overwrite=overwrite,
             **kwargs,
         )

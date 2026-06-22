@@ -50,6 +50,7 @@ from spatial_vtk.spatial.calculate.workflow import spatial_statistics_output_pat
 from spatial_vtk.spatial.calculate.workflow import (
     StandardSpatialProductSummaryResult,
     StandardSpatialWorkflowOutputResult,
+    StandardSpatialWorkflowOutputStatusResult,
     run_spatial_derived_outputs_workflow,
     run_spatial_derived_outputs_workflow_from_config,
     run_spatial_statistics_workflow,
@@ -1456,6 +1457,34 @@ def test_standard_spatial_workflow_output_result_writes_figures(tmp_path: Path) 
     assert map_result.status_frame()["figure_exists"].tolist() == [True, True]
     assert diagnostic_result.status_frame()["status"].tolist() == ["wrote", "wrote", "wrote"]
     assert diagnostic_result.status_frame()["figure_exists"].tolist() == [True, True, True]
+
+
+def test_standard_spatial_workflow_status_result_passes_config_to_figure_suite(monkeypatch, tmp_path: Path) -> None:
+    """Step 4 figure-suite helper should use the result object's config by default."""
+
+    calls: list[dict[str, object]] = []
+
+    def fake_figure_suite(settings, **kwargs):
+        calls.append({"settings": settings, "kwargs": kwargs})
+        return "spatial-figures"
+
+    monkeypatch.setattr(
+        "spatial_vtk.spatial.plot.write_large_run_spatial_figure_suite_from_notebook_settings",
+        fake_figure_suite,
+    )
+
+    outputs = OutputGroup(name="step_04_spatial", paths={})
+    config_path = tmp_path / "spatial-vtk.yaml"
+    override_config_path = tmp_path / "override.yaml"
+    result = StandardSpatialWorkflowOutputStatusResult(outputs=outputs, cfg=config_path)
+    settings = object()
+
+    assert result.write_figure_suite(settings, overwrite=True) == "spatial-figures"
+    assert result.write_figure_suite(settings, cfg=override_config_path, overwrite=False) == "spatial-figures"
+    assert calls == [
+        {"settings": settings, "kwargs": {"cfg": config_path, "overwrite": True}},
+        {"settings": settings, "kwargs": {"cfg": override_config_path, "overwrite": False}},
+    ]
 
 
 def test_spatial_pca_product_frames_selects_all_pca_products() -> None:
