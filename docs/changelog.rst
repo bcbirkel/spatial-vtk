@@ -4,6 +4,14 @@ Changelog
 2026-06-22
 ----------
 
+- **Generated CLI reference synchronization** *(Fixed)*
+
+  - Regenerated the metrics CLI reference so ``svtk metrics outputs``
+    documents the current ``--dashboard-partitioned`` default exactly as
+    emitted by the parser.
+  - Re-ran the generated-reference check to keep the published CLI docs aligned
+    with the command-line surface.
+
 - **Tutorial validation dependency contract** *(Changed)*
 
   - Made the tutorial notebook executor derive its runtime dependency map from
