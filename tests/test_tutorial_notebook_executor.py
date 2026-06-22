@@ -389,6 +389,23 @@ def test_standard_tutorial_notebooks_use_notebook_run_context() -> None:
         assert 'cfg.path("outputs.figures")' not in source, f"{notebook_path.relative_to(repo_root)}"
 
 
+def test_standard_tutorial_notebooks_keep_context_imports_in_setup_cells() -> None:
+    """Standard tutorial task cells should not re-import notebook context helpers."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").glob("step_*.ipynb"))
+    assert notebooks
+    forbidden = (
+        "from spatial_vtk.config import notebook_figure_settings, notebook_run_context",
+        "from spatial_vtk.config import notebook_run_context",
+    )
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        matches = [pattern for pattern in forbidden if pattern in source]
+        assert not matches, f"{notebook_path.relative_to(repo_root)} repeats setup imports: {matches}"
+
+
 def test_tutorial_notebooks_have_stable_cell_ids() -> None:
     """Committed notebooks should not trigger nbformat cell-id warnings."""
 

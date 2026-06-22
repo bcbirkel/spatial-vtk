@@ -4,6 +4,13 @@ Changelog
 2026-06-22
 ----------
 
+- **Standard notebook setup imports** *(Changed)*
+
+  - Moved ``notebook_run_context`` imports for standard Steps 1, 4, 5, 6, and
+    7 into each notebook's setup import cell.
+  - Removed repeated context-helper imports from task/configuration cells so
+    those cells stay focused on workflow settings and package helper calls.
+
 - **Step 3 metric preview context** *(Fixed)*
 
   - Updated ``summarize_metric_snapshot_tasks_from_config`` to accept the
