@@ -456,6 +456,20 @@ def test_readme_install_guidance_names_supported_python_range():
     assert "Python 3.14 is not currently supported" in readme
 
 
+def test_package_python_classifiers_and_ci_match_supported_range():
+    """Package metadata and CI should exercise the declared Python range."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    pyproject = (root / "pyproject.toml").read_text(encoding="utf-8")
+    ci = (root / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    assert 'requires-python = ">=3.10,<3.14"' in pyproject
+    for minor in ("3.10", "3.11", "3.12", "3.13"):
+        assert f'"Programming Language :: Python :: {minor}"' in pyproject
+        assert f'"{minor}"' in ci
+    assert '"Programming Language :: Python :: 3.14"' not in pyproject
+    assert '"3.14"' not in ci
+
+
 def test_public_workflows_check_generated_cli_reference():
     """Public CI should fail when generated CLI reference pages are stale."""
 

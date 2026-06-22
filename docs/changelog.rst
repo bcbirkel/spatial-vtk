@@ -79,6 +79,8 @@ Changelog
     tutorial docs and release checks.
   - Aligned README and release-checklist Python-version guidance with the
     declared ``>=3.10,<3.14`` package range and the tutorial waveform stack.
+  - Added Python 3.13 to package classifiers and CI coverage so public package
+    metadata and validation match the declared supported range.
 
 - **Notebook source-contract checks** *(Fixed)*
 
