@@ -1,6 +1,19 @@
 Changelog
 =========
 
+2026-06-22
+----------
+
+- **Notebook config resolution cleanup** *(Changed)*
+
+  - Updated standard tutorial notebooks to let ``notebook_run_context()``
+    resolve the committed example config instead of hard-coding the example
+    config path in each notebook.
+  - Kept dashboard launch helpers using ``context.config_path`` so generated
+    commands still point at the active config.
+  - Added source-contract coverage so tutorial notebooks keep config discovery
+    centralized in the notebook context helper.
+
 2026-06-21
 ----------
 

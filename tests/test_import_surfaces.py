@@ -1442,6 +1442,27 @@ def test_public_docs_avoid_plot_implementation_import_paths():
         assert token not in text
 
 
+def test_tutorial_notebooks_use_context_default_config_resolution():
+    """Tutorial notebooks should not hard-code the example config path in cells."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    notebooks = sorted((root / "docs" / "examples").rglob("*.ipynb"))
+    assert notebooks
+    combined = "\n".join(path.read_text(encoding="utf-8") for path in notebooks)
+    forbidden = (
+        "example_spatial_vtk_config.yaml",
+        "config_path = repo_root",
+        "notebook_run_context(config_path",
+    )
+    offenders = [token for token in forbidden if token in combined]
+    assert not offenders, "\n".join(offenders)
+    standard_notebooks = sorted((root / "docs" / "examples").glob("step_*.ipynb"))
+    assert standard_notebooks
+    for path in standard_notebooks:
+        text = path.read_text(encoding="utf-8")
+        assert "notebook_run_context(run_scenario=\\\"tutorial\\\")" in text, str(path)
+
+
 def test_public_docs_import_only_stable_workflow_surfaces():
     root = pathlib.Path(__file__).resolve().parents[1]
     docs = list((root / "docs").rglob("*.rst")) + list((root / "docs").rglob("*.md")) + [root / "README.md"]
