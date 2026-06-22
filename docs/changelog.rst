@@ -4,6 +4,15 @@ Changelog
 2026-06-21
 ----------
 
+- **CLI path placeholder guard** *(Changed)*
+
+  - Added regression coverage that keeps registered plot, map, and visualization
+    command help on ``--input-table PATH`` and ``--figure-output PATH`` instead
+    of reverting to generic ``--input INPUT`` or ``--output OUTPUT`` usage.
+  - Added dashboard help/reference coverage that prevents the old
+    ``METRICS_ROOT`` and ``SUMMARY_ROOT`` placeholders from returning to the
+    metrics-dashboard command docs.
+
 - **Tutorial setup documentation** *(Changed)*
 
   - Added the validation-environment preflight to the examples overview and

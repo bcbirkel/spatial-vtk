@@ -1332,6 +1332,8 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Filesystem path. Output figure path." in plot_text
     assert "Value: ``PATH``. Primary figure input table" not in plot_text
     assert "Value: ``PATH``. Output figure path" not in plot_text
+    assert "--input INPUT" not in plot_text
+    assert "--output OUTPUT" not in plot_text
     assert "configured output table 'metrics_long' when --config is passed" in plot_text
     assert "svtk plot metrics winner-heatmap [-h] [--input-table PATH]" in plot_text
     assert "[--figure-output PATH]" in plot_text
@@ -1363,6 +1365,8 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "Filesystem path. Output figure path." in map_text
     assert "Value: ``PATH``. Primary figure input table" not in map_text
     assert "Value: ``PATH``. Output figure path" not in map_text
+    assert "--input INPUT" not in map_text
+    assert "--output OUTPUT" not in map_text
     assert "configured output table 'station_bias' when --config is passed" in map_text
     assert "svtk map spatial model-improvement [-h] [--input-table PATH]" in map_text
     assert "svtk map spatial list [-h] [--config PATH]" in map_text
@@ -1371,6 +1375,8 @@ def test_generated_cli_reference_names_plot_defaults():
     assert "configured figure output 'station_residual_map' when --config is passed" in map_text
     assert "``--input-table``, ``--input``" in visualize_text
     assert "``--figure-output``, ``--output``" in visualize_text
+    assert "--input INPUT" not in visualize_text
+    assert "--output OUTPUT" not in visualize_text
     assert "Override with ``--input-table`` or ``--input``." in visualize_text
     assert "Override with ``--figure-output`` or ``--output``." in visualize_text
     assert "``--mode``" in map_text
@@ -4262,6 +4268,13 @@ outputs:
 
 
 def test_cli_dashboard_help_exposes_clear_path_aliases(capsys):
+    root = Path(__file__).resolve().parents[1]
+    dashboard_reference = (root / "docs" / "reference" / "cli" / "dashboard.rst").read_text(encoding="utf-8")
+    assert "METRICS_ROOT" not in dashboard_reference
+    assert "SUMMARY_ROOT" not in dashboard_reference
+    assert "--metrics-dataset-dir" in dashboard_reference
+    assert "--dashboard-summary-table-dir" in dashboard_reference
+
     with pytest.raises(SystemExit) as excinfo:
         main(["dashboard", "metrics", "--help"])
     assert excinfo.value.code == 0
@@ -4287,6 +4300,8 @@ def test_cli_dashboard_help_exposes_clear_path_aliases(capsys):
     assert "--metrics-root and --metrics-dataset are legacy aliases" in metrics_help
     assert "Prefer --dashboard-summary-table-dir" in metrics_help
     assert "--summary-root and --dashboard-summary-dir are legacy aliases" in metrics_help
+    assert "METRICS_ROOT" not in metrics_help
+    assert "SUMMARY_ROOT" not in metrics_help
 
     with pytest.raises(SystemExit) as excinfo:
         main(["dashboard", "qc", "--help"])
