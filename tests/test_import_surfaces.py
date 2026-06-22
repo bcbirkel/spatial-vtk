@@ -2151,6 +2151,8 @@ def test_io_api_docs_use_public_workflow_helpers():
     assert "``run_preprocessing_step_if_needed()``" in helper_table
     assert "``run_record_coverage_step_if_needed()``" in helper_table
     assert "``MetricPlan.summary_frame()``" in text
+    assert "``status_reason``, ``exists``, ``resolved_path``, and ``path`` columns" in text
+    assert "readiness status, ``status_reason`` values, paths, and\n       row counts" in text
     assert "Use ``preview_table()`` and\n       ``preview_tables()`` for bounded table previews" in text
     assert "reserve\n       ``load_table()`` and ``load_tables()`` for explicit full-table reads" in text
     assert "``status_frame()`` and\n       ``output_group_status_frame()`` include clear ``resolved_path`` values\n       plus ``output_key``, ``kind``, ``required``, ``artifact_label``" in text

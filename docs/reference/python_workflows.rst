@@ -496,6 +496,9 @@ helper and build function for each Step 1 stage. Use the direct
 and ``build_record_coverage_from_config`` functions in tests, scripts, or
 custom orchestration that needs that extra control. Tutorial notebooks should
 prefer the result-object methods so they do not duplicate path-selection logic.
+Step 1 status and summary frames include ``status_reason`` alongside
+``status`` so notebooks can filter ready and missing output artifacts without
+parsing display messages.
 
 Step 2: Quality Control
 -----------------------

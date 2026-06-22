@@ -115,6 +115,7 @@ class StandardIngestWorkflowOutputResult:
                     "resolved_path": path_text,
                     "path": path_text,
                     "status": status,
+                    "status_reason": "ready" if status == "ready" else "missing_output",
                     "row_count": row_count,
                 }
             )
@@ -128,6 +129,7 @@ class StandardIngestWorkflowOutputResult:
                 "path",
                 "output_path",
                 "status",
+                "status_reason",
                 "row_count",
             ],
         )
@@ -347,6 +349,7 @@ def _workflow_summary_frame(
             "artifact_label": artifact.replace("_", " "),
             "artifact_role": "output_table",
             "status": "ready" if exists else "missing",
+            "status_reason": "ready" if exists else "missing_output",
             "exists": exists,
             "rows": row_count,
             "resolved_path": str(path),
@@ -360,6 +363,7 @@ def _workflow_summary_frame(
         "artifact_label",
         "artifact_role",
         "status",
+        "status_reason",
         "exists",
         "rows",
         "resolved_path",
@@ -507,6 +511,7 @@ class RecordCoverageWorkflowResult(_SummaryMappingMixin):
                 "artifact_label",
                 "artifact_role",
                 "status",
+                "status_reason",
                 "exists",
                 "rows",
                 "resolved_path",

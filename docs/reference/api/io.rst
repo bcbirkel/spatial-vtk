@@ -74,8 +74,8 @@ Public helpers exposed by ``spatial_vtk.io``:
        mapping-compatible access, ``summary_message()`` for scripts and logs,
        and ``summary_frame()`` for notebook display helpers. The summary frame
        uses normalized ``artifact_label``, ``artifact_role``, ``status``,
-       ``exists``, ``resolved_path``, and ``path`` columns while preserving the
-       row-count and ``reused`` fields.
+       ``status_reason``, ``exists``, ``resolved_path``, and ``path`` columns
+       while preserving the row-count and ``reused`` fields.
    * - ``WaveformPreprocessingSummaryResult``
      - Report preprocessed event-station, manifest, and trace-metadata outputs
        with mapping-compatible access plus notebook summary helpers using the
@@ -84,7 +84,8 @@ Public helpers exposed by ``spatial_vtk.io``:
      - Return the full preprocessing dataframes and written path artifacts from
        direct preprocessing calls. ``status_frame()`` reports preprocessed
        event-station, manifest, and trace-metadata artifacts with normalized
-       names, roles, readiness status, paths, and row counts.
+       names, roles, readiness status, ``status_reason`` values, paths, and
+       row counts.
    * - ``RecordCoverageWorkflowResult``
      - Report the record-coverage output and the exact trace metadata and
        event-station inputs used to build it. ``summary_frame()`` keeps those

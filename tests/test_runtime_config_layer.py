@@ -2941,6 +2941,7 @@ outputs:
         "event_station_records_path",
     ]
     assert "event_station_path" not in set(summary["name"])
+    assert summary["status_reason"].tolist() == ["ready", "ready", "ready"]
     assert summary.loc[summary["table"].eq("event_stations"), "row_count"].iloc[0] == 1
     clear_active_config()
 

@@ -23,7 +23,11 @@ from spatial_vtk.io.workflows import (
     prepare_metadata_tables_from_config,
     preprocess_waveforms_from_config,
 )
-from spatial_vtk.io.preprocessing import preprocessed_waveform_metadata_paths, preprocess_waveform_files
+from spatial_vtk.io.preprocessing import (
+    WaveformPreprocessingWorkflowResult,
+    preprocessed_waveform_metadata_paths,
+    preprocess_waveform_files,
+)
 from spatial_vtk.io.waveforms import waveform_preprocessing_from_config
 
 
@@ -128,10 +132,18 @@ outputs:
         seen["overwrite"] = kwargs["overwrite"]
         seen["continue_on_error"] = kwargs["continue_on_error"]
         seen["verbose"] = kwargs["verbose"]
+        metadata_dir = tmp_path / "outputs" / "preprocessed_waveforms" / "metadata"
+        metadata_dir.mkdir(parents=True, exist_ok=True)
+        event_station_path = metadata_dir / "event_station_records_preprocessed.csv"
+        manifest_path = metadata_dir / "waveform_preprocessing_manifest.csv"
+        trace_metadata_path = metadata_dir / "trace_metadata_preprocessed.csv"
+        event_station_path.write_text("event_id\nE1\n", encoding="utf-8")
+        manifest_path.write_text("event_id\nE1\n", encoding="utf-8")
+        trace_metadata_path.write_text("event_id\nE1\nE1\n", encoding="utf-8")
         return SimpleNamespace(
-            event_station_path=tmp_path / "outputs" / "preprocessed_waveforms" / "metadata" / "event_station_records_preprocessed.csv",
-            manifest_path=tmp_path / "outputs" / "preprocessed_waveforms" / "metadata" / "waveform_preprocessing_manifest.csv",
-            trace_metadata_path=tmp_path / "outputs" / "preprocessed_waveforms" / "metadata" / "trace_metadata_preprocessed.csv",
+            event_station_path=event_station_path,
+            manifest_path=manifest_path,
+            trace_metadata_path=trace_metadata_path,
             manifest=pd.DataFrame({"event_id": ["E1"]}),
             trace_metadata=pd.DataFrame({"event_id": ["E1", "E1"]}),
             event_station_records=pd.DataFrame({"event_id": ["E1"]}),
@@ -159,7 +171,7 @@ outputs:
     assert isinstance(result, WaveformPreprocessingSummaryResult)
     assert "Preprocessed waveforms: 1 event-station row(s)" in result.summary_message()
     summary = result.summary_frame()
-    assert {"artifact_label", "artifact_role", "status", "exists", "resolved_path", "path"} <= set(
+    assert {"artifact_label", "artifact_role", "status", "status_reason", "exists", "resolved_path", "path"} <= set(
         summary.columns
     )
     assert summary["artifact"].tolist() == [
@@ -168,10 +180,35 @@ outputs:
         "preprocessed_trace_metadata",
     ]
     assert summary["artifact_role"].tolist() == ["output_table", "output_table", "output_table"]
+    assert summary["status_reason"].tolist() == ["ready", "ready", "ready"]
     assert result["preprocessed_event_station_records_path"] == result["event_station_records"]
     assert result["preprocessed_manifest_path"] == result["manifest"]
     assert result["preprocessing_manifest_path"] == result["manifest"]
     assert result["preprocessed_trace_metadata_path"] == result["trace_metadata"]
+
+
+def test_waveform_preprocessing_workflow_status_frame_reports_reason_codes(tmp_path: Path) -> None:
+    """Direct preprocessing results should expose machine-readable output reasons."""
+
+    event_station_path = tmp_path / "event_station_records_preprocessed.csv"
+    manifest_path = tmp_path / "waveform_preprocessing_manifest.csv"
+    trace_metadata_path = tmp_path / "trace_metadata_preprocessed.csv"
+    event_station_path.write_text("event_id\nE1\n", encoding="utf-8")
+    manifest_path.write_text("event_id\nE1\n", encoding="utf-8")
+
+    result = WaveformPreprocessingWorkflowResult(
+        event_station_records=pd.DataFrame({"event_id": ["E1"]}),
+        manifest=pd.DataFrame({"event_id": ["E1"]}),
+        trace_metadata=pd.DataFrame({"event_id": ["E1", "E1"]}),
+        event_station_path=event_station_path,
+        manifest_path=manifest_path,
+        trace_metadata_path=trace_metadata_path,
+    )
+
+    status = result.status_frame().set_index("artifact")
+    assert status.loc["preprocessed_event_station", "status_reason"] == "ready"
+    assert status.loc["preprocessed_manifest", "status_reason"] == "ready"
+    assert status.loc["preprocessed_trace_metadata", "status_reason"] == "missing_output"
 
 
 def test_prepare_metadata_tables_from_config_writes_registered_outputs(tmp_path: Path, monkeypatch) -> None:
@@ -211,7 +248,7 @@ outputs:
     assert isinstance(result, MetadataPreparationResult)
     assert result.summary_message() == "Prepared metadata: 1 station(s), 1 event(s), 1 event-station row(s)."
     summary = result.summary_frame()
-    assert {"artifact_label", "artifact_role", "status", "exists", "resolved_path", "path"} <= set(
+    assert {"artifact_label", "artifact_role", "status", "status_reason", "exists", "resolved_path", "path"} <= set(
         summary.columns
     )
     assert summary["artifact"].tolist() == [
@@ -220,6 +257,7 @@ outputs:
         "event_station_records",
     ]
     assert summary["artifact_role"].tolist() == ["output_table", "output_table", "output_table"]
+    assert summary["status_reason"].tolist() == ["ready", "ready", "ready"]
     assert summary["reused"].tolist() == [False, False, False]
     assert result["reused"] is False
     assert Path(result["prepared_stations_path"]).exists()
@@ -358,11 +396,12 @@ outputs:
     assert isinstance(result, RecordCoverageWorkflowResult)
     assert result.summary_message() == "Built record coverage: 1 row(s)."
     summary = result.summary_frame()
-    assert {"artifact_label", "artifact_role", "status", "exists", "resolved_path", "path"} <= set(
+    assert {"artifact_label", "artifact_role", "status", "status_reason", "exists", "resolved_path", "path"} <= set(
         summary.columns
     )
     assert summary.loc[0, "artifact"] == "record_coverage"
     assert summary.loc[0, "artifact_role"] == "output_table"
+    assert summary.loc[0, "status_reason"] == "ready"
     assert result["record_coverage"] == str(output)
     assert result["record_coverage_path"] == str(output)
     assert result["preprocessed_trace_metadata_path"].endswith("trace_metadata_preprocessed.csv")

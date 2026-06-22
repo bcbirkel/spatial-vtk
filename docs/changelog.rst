@@ -4,6 +4,17 @@ Changelog
 2026-06-22
 ----------
 
+- **Step 1 I/O status reason codes** *(Changed)*
+
+  - Added ``status_reason`` to direct waveform preprocessing status rows and
+    configured Step 1 workflow summary frames for metadata, preprocessing, and
+    record coverage outputs.
+  - Added ``status_reason`` to the Step 1 metadata row-count summary helper so
+    notebooks can filter missing prepared metadata outputs without parsing the
+    display status.
+  - Documented the I/O reason-code contract for Step 1 output and
+    preprocessing helpers.
+
 - **Metric status reason codes** *(Changed)*
 
   - Added ``status_reason`` to metric waveform inventory, cached waveform
