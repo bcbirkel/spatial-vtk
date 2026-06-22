@@ -658,7 +658,7 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
         "row_count": "",
         "value_columns": "",
         "value_families": "",
-        "message": f"Dashboard metric dataset root is missing: {path}",
+        "message": f"Dashboard metric dataset directory is missing: {path}",
         "suggested_action": _dashboard_suggested_action({"name": "metrics_dashboard_root", "readiness": "missing"}),
     }
     if not path.exists():
@@ -1977,7 +1977,7 @@ def load_metric_long_table(
     max_rows: int | None = None,
     chunksize: int = 50_000,
 ) -> pd.DataFrame:
-    """Load the dashboard long metric table from a dataset root."""
+    """Load the dashboard long metric table from a dataset directory or table."""
 
     from spatial_vtk.visualize.dashboard.export import load_dashboard_metric_dataset
 

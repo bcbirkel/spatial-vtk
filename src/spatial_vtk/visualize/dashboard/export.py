@@ -545,7 +545,7 @@ def dashboard_metric_dataset_paths(input_root: str | Path) -> list[Path]:
     -------
     list[pathlib.Path]
         Existing direct or partitioned metric table files. The list is empty
-        when the root is missing or contains no recognized dashboard files.
+        when the directory is missing or contains no recognized dashboard files.
     """
 
     root = Path(input_root).expanduser()
@@ -617,7 +617,7 @@ def _dashboard_metric_parquet_paths(root: Path) -> list[Path]:
 
 
 def _dashboard_partitioned_metric_path_groups(root: Path) -> list[list[Path]]:
-    """Return partition file groups for one dashboard metric dataset root."""
+    """Return partition file groups for one dashboard metric dataset directory."""
 
     if root.is_file() or (root / "metrics_long.parquet").exists():
         return []
@@ -1011,7 +1011,7 @@ def write_dashboard_summary_dataset(
     Parameters
     ----------
     input_root
-        Dashboard metric dataset root. When omitted, the standard
+        Dashboard metric dataset directory or direct table. When omitted, the standard
         ``metrics_dashboard`` path is resolved from ``cfg`` or the active
         config.
     output_root

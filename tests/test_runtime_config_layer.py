@@ -3758,6 +3758,11 @@ outputs:
         paths.metrics_long_path,
         index=False,
     )
+    missing_metric_status = dashboard_metric_dataset_readiness_frame(paths.metrics_dashboard_root)
+    missing_metric_message = str(missing_metric_status["message"].iloc[0])
+    assert missing_metric_message.startswith("Dashboard metric dataset directory is missing:")
+    assert "dataset root" not in missing_metric_message
+
     paths.metrics_dashboard_root.mkdir(parents=True, exist_ok=True)
     paths.dashboard_summary_root.mkdir(parents=True, exist_ok=True)
 
