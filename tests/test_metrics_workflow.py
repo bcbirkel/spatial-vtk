@@ -165,6 +165,27 @@ def test_direct_metric_task_runner_prefers_task_table_alias() -> None:
     assert not hasattr(args, "output")
 
 
+def test_direct_metric_batch_runner_prefers_metric_manifest_alias() -> None:
+    """The direct batch runner should describe its manifest artifact explicitly."""
+
+    parser = metric_execution.build_arg_parser()
+    help_text = parser.format_help()
+
+    assert "--metric-manifest" in help_text
+    assert "--manifest" in help_text
+    assert "Metric workflow manifest JSON." in help_text
+    assert "legacy alias" in help_text
+
+    args = parser.parse_args(["--metric-manifest", "metric_manifest.json", "--batch-index", "0"])
+    legacy_args = parser.parse_args(["--manifest", "legacy_manifest.json", "--batch-index", "1"])
+
+    assert args.metric_manifest == "metric_manifest.json"
+    assert args.batch_index == 0
+    assert legacy_args.metric_manifest == "legacy_manifest.json"
+    assert legacy_args.batch_index == 1
+    assert not hasattr(args, "manifest")
+
+
 def test_metric_plot_input_summary_frame_reports_notebook_inputs() -> None:
     """Plotting notebooks should use package-owned metric input summaries."""
 

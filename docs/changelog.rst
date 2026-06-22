@@ -23,6 +23,13 @@ Changelog
   - Kept legacy ``--phasenet-csv``, ``--records-csv``, and ``--output``
     support and added parser coverage for both preferred and legacy forms.
 
+- **Direct metric batch parser alias** *(Changed)*
+
+  - Added artifact-named ``--metric-manifest`` to the direct
+    ``spatial_vtk.metrics.workflow.execution`` batch runner parser.
+  - Kept legacy ``--manifest`` support and added parser coverage for both
+    preferred and legacy forms.
+
 - **Direct metric task-runner input flag** *(Changed)*
 
   - Added ``--tasks-table`` as the preferred input flag for the direct metric

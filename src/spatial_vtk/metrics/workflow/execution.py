@@ -860,7 +860,13 @@ def build_arg_parser() -> argparse.ArgumentParser:
     """Build the batch-execution CLI parser."""
 
     parser = argparse.ArgumentParser(description="Run one Spatial-VTK metric manifest batch.")
-    parser.add_argument("--manifest", required=True, help="Metric workflow manifest JSON.")
+    parser.add_argument(
+        "--metric-manifest",
+        "--manifest",
+        dest="metric_manifest",
+        required=True,
+        help="Metric workflow manifest JSON. Prefer --metric-manifest; --manifest is a legacy alias.",
+    )
     parser.add_argument("--batch-index", type=int, required=True, help="Batch index to run.")
     parser.add_argument("--overwrite", action="store_true", help="Replace an existing batch output.")
     return parser
@@ -870,7 +876,7 @@ def main(argv: list[str] | None = None) -> int:
     """Run one manifest batch from CLI arguments."""
 
     args = build_arg_parser().parse_args(argv)
-    run_manifest_batch(args.manifest, batch_index=args.batch_index, overwrite=args.overwrite)
+    run_manifest_batch(args.metric_manifest, batch_index=args.batch_index, overwrite=args.overwrite)
     return 0
 
 
