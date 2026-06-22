@@ -1689,9 +1689,16 @@ def _add_visualize_commands(subparsers: argparse._SubParsersAction[argparse.Argu
         "--sidecar-dir",
         "--sidecars-dir",
         metavar="DIR",
-        required=True,
-        help="Directory containing figure sidecar JSON files.",
+        default=None,
+        help=(
+            "Directory containing figure sidecar JSON files. When omitted, the command "
+            "uses --config and notebook figure settings to inspect outputs.figures[/--figure-subdir]/sidecars."
+        ),
     )
+    status.add_argument("--config", metavar="PATH", default=None, help="Spatial-VTK config used to resolve the default sidecar directory.")
+    status.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
+    status.add_argument("--figure-kind", default=None, help="Notebook figure family, such as metric, spatial, context, qc, or waveform.")
+    status.add_argument("--figure-subdir", metavar="DIR", default=None, help="Optional subdirectory under configured outputs.figures before sidecars.")
     status.add_argument("--json", action="store_true", help="Print machine-readable JSON.")
     status.set_defaults(handler=_cmd_visualize_sidecars_status)
 
@@ -3346,7 +3353,7 @@ def _cmd_visualize_sidecars_status(args: argparse.Namespace) -> int:
 
     from spatial_vtk.visualize import figure_sidecar_status_frame
 
-    sidecar_dir = Path(args.sidecar_dir).expanduser()
+    sidecar_dir = _resolve_visualize_sidecar_status_dir(args)
     status = figure_sidecar_status_frame(sidecar_dir)
     sidecar_dir_exists = sidecar_dir.exists()
     payload = {
@@ -3370,6 +3377,32 @@ def _cmd_visualize_sidecars_status(args: argparse.Namespace) -> int:
     else:
         print(status.to_string(index=False))
     return 0
+
+
+def _resolve_visualize_sidecar_status_dir(args: argparse.Namespace) -> Path:
+    """Resolve the sidecar directory inspected by ``svtk visualize sidecars status``."""
+
+    if args.sidecar_dir:
+        return Path(args.sidecar_dir).expanduser()
+
+    config = _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    figure_dir = None
+    if config is not None:
+        figure_dir = config.path("outputs.figures", create_parent=False)
+    from spatial_vtk.config import notebook_figure_settings
+
+    settings = notebook_figure_settings(
+        args.figure_kind,
+        figure_dir=figure_dir,
+        figure_subdir=args.figure_subdir,
+    )
+    if settings.sidecars.directory is None:
+        raise ValueError(
+            "No figure sidecar directory could be resolved. Pass --sidecar-dir, pass --config, "
+            "or run 'svtk config set PATH'. Use --figure-subdir for figure-family subdirectories "
+            "such as metrics."
+        )
+    return Path(settings.sidecars.directory).expanduser()
 
 
 def _cmd_list_registered_plots(args: argparse.Namespace) -> int:

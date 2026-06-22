@@ -4,6 +4,16 @@ Changelog
 2026-06-21
 ----------
 
+- **Config-backed sidecar status CLI** *(Changed)*
+
+  - Made ``svtk visualize sidecars status`` resolve the notebook-standard
+    sidecar directory from ``--config`` when ``--sidecar-dir`` is omitted.
+  - Added ``--figure-kind`` and ``--figure-subdir`` so large-run figure
+    families such as metric and spatial plots can be inspected without
+    repeating full sidecar paths.
+  - Kept explicit ``--sidecar-dir`` behavior and added regression coverage for
+    config-backed and missing-config cases.
+
 - **CLI and notebook public import surfaces** *(Changed)*
 
   - Routed curated ``svtk`` helpers for dashboard paths, preprocessing metadata

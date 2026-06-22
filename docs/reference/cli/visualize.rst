@@ -4109,7 +4109,10 @@ svtk visualize sidecars status
 
 .. code-block:: bash
 
-   svtk visualize sidecars status [-h] --sidecar-dir DIR [--json]
+   svtk visualize sidecars status [-h] [--sidecar-dir DIR] [--config PATH]
+                                      [--run-scenario RUN_SCENARIO]
+                                      [--figure-kind FIGURE_KIND]
+                                      [--figure-subdir DIR] [--json]
 
 .. rubric:: Parameters
 
@@ -4126,9 +4129,25 @@ svtk visualize sidecars status
      -
      - show this help message and exit
    * - ``--sidecar-dir``, ``--sidecars-dir``
-     - Yes
+     - No
      -
-     - Directory path. Directory containing figure sidecar JSON files.
+     - Directory path. Directory containing figure sidecar JSON files. When omitted, the command uses --config and notebook figure settings to inspect outputs.figures[/--figure-subdir]/sidecars.
+   * - ``--config``
+     - No
+     -
+     - Filesystem path. Spatial-VTK config used to resolve the default sidecar directory.
+   * - ``--run-scenario``
+     - No
+     -
+     - Apply one named run_scenarios overlay.
+   * - ``--figure-kind``
+     - No
+     -
+     - Notebook figure family, such as metric, spatial, context, qc, or waveform.
+   * - ``--figure-subdir``
+     - No
+     -
+     - Directory path. Optional subdirectory under configured outputs.figures before sidecars.
    * - ``--json``
      - No
      - Flag

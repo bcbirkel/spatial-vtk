@@ -1097,6 +1097,61 @@ def test_cli_visualize_sidecars_status_reports_metadata_without_csv_loads(tmp_pa
     assert payload["status"][0]["plot_sidecar_exact"] is False
 
 
+def test_cli_visualize_sidecars_status_resolves_notebook_config_default(tmp_path, capsys):
+    """Sidecar status should inspect notebook-standard sidecar dirs from config."""
+
+    from spatial_vtk.visualize.figure_sidecars import write_figure_row_sidecar
+
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  figures: outputs/figures
+""",
+        encoding="utf-8",
+    )
+    rows = pd.DataFrame(
+        {
+            "event_id": ["E1"],
+            "station": ["STA"],
+            "metric": ["PGA"],
+            "log2_residual": [0.1],
+        }
+    )
+    sidecar_dir = tmp_path / "outputs" / "figures" / "metrics" / "sidecars"
+    write_figure_row_sidecar(
+        tmp_path / "outputs" / "figures" / "metrics" / "station_metric_map.png",
+        rows,
+        sidecar_dir=sidecar_dir,
+    )
+
+    assert (
+        main(
+            [
+                "visualize",
+                "sidecars",
+                "status",
+                "--config",
+                str(config),
+                "--figure-kind",
+                "metric",
+                "--figure-subdir",
+                "metrics",
+                "--json",
+            ]
+        )
+        == 0
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["sidecar_dir"] == str(sidecar_dir)
+    assert payload["sidecar_dir_exists"] is True
+    assert payload["sidecar_count"] == 1
+    assert payload["status"][0]["figure"] == "station_metric_map.png"
+
+
 def test_cli_visualize_sidecars_status_distinguishes_missing_and_empty_directories(tmp_path, capsys):
     """Sidecar status should distinguish missing sidecar dirs from empty dirs."""
 
@@ -1117,6 +1172,18 @@ def test_cli_visualize_sidecars_status_distinguishes_missing_and_empty_directori
     empty_text = capsys.readouterr().out
     assert "Figure sidecar directory exists: True" in empty_text
     assert "No figure sidecar JSON files found in the existing directory." in empty_text
+
+
+def test_cli_visualize_sidecars_status_requires_resolvable_directory(tmp_path, capsys, monkeypatch):
+    """Sidecar status should give a clear path-resolution error without config."""
+
+    monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(tmp_path / "missing-settings.json"))
+
+    assert main(["visualize", "sidecars", "status"]) == 2
+
+    captured = capsys.readouterr()
+    assert "No figure sidecar directory could be resolved" in captured.err
+    assert "Pass --sidecar-dir, pass --config" in captured.err
 
 
 def test_cli_registered_plot_help_names_config_defaults(capsys):

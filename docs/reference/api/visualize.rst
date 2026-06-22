@@ -500,7 +500,15 @@ aggregation row, station, event, and panel counts.
 Missing sidecar directories and existing empty sidecar directories both produce
 an empty status table; use ``svtk visualize sidecars status --sidecar-dir DIR``
 when a workflow needs the human-readable message or JSON
-``sidecar_dir_exists`` field that distinguishes those cases.
+``sidecar_dir_exists`` field that distinguishes those cases. The CLI can also
+resolve the notebook-standard sidecar directory from a config:
+
+.. code-block:: bash
+
+   svtk visualize sidecars status --config runs/spatial_vtk_config.yaml --figure-kind metric --figure-subdir metrics
+
+That command inspects the sidecars under the configured metric-figure directory
+without repeating the full filesystem path.
 ``read_figure_sidecar_metadata`` reads one JSON sidecar from a figure path,
 main sidecar CSV path, source sidecar CSV path, or JSON metadata path.
 
