@@ -3924,6 +3924,40 @@ def test_metric_workflow_helpers_defer_config_and_runner_imports():
         assert not offenders, relative_path
 
 
+def test_slurm_and_qc_workflow_helpers_defer_config_imports():
+    """Slurm and QC workflow helpers should not require config dependencies to import."""
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    checks = {
+        "src/spatial_vtk/metrics/workflow/slurm.py": {
+            "spatial_vtk.config.compute",
+            "spatial_vtk.config.runtime",
+        },
+        "src/spatial_vtk/qc/build/slurm.py": {
+            "spatial_vtk.config.compute",
+            "spatial_vtk.config.metrics",
+            "spatial_vtk.config.outputs",
+            "spatial_vtk.config.runtime",
+            "spatial_vtk.io.tables",
+        },
+        "src/spatial_vtk/qc/build/workflow.py": {
+            "spatial_vtk.config.metrics",
+            "spatial_vtk.config.outputs",
+            "spatial_vtk.config.runtime",
+            "spatial_vtk.io.tables",
+        },
+    }
+    for relative_path, forbidden_modules in checks.items():
+        source = (repo_root / relative_path).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        offenders = [
+            node.module
+            for node in tree.body
+            if isinstance(node, ast.ImportFrom) and node.module in forbidden_modules
+        ]
+        assert not offenders, relative_path
+
+
 def test_dashboard_metric_dataset_writes_use_shared_writer():
     """Dashboard metric parquet dataset files should use package writer semantics."""
 

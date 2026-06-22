@@ -3,23 +3,19 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import replace
 from pathlib import Path
 import shlex
+from typing import TYPE_CHECKING, Any
 
-from spatial_vtk.config.compute import (
-    SlurmSettings,
-    slurm_header,
-    slurm_settings_from_config as _shared_slurm_settings_from_config,
-    submit_slurm_script,
-)
-from spatial_vtk.config.metrics import metrics_settings_from_config
-from spatial_vtk.config.outputs import resolve_output_path
-from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
-from spatial_vtk.io.tables import read_table
+if TYPE_CHECKING:
+    from spatial_vtk.config.compute import SlurmSettings
+    from spatial_vtk.config.runtime import SpatialVTKConfig
+
 
 def slurm_settings_from_config(config: SpatialVTKConfig, *, section: str = "qc.slurm") -> SlurmSettings:
     """Read QC SLURM settings from ``compute.slurm`` plus ``qc.slurm`` overrides."""
+
+    from dataclasses import replace
 
     settings = _shared_slurm_settings_from_config(config, section=section)
     if settings.job_name == "svtk-job":
@@ -45,22 +41,22 @@ def run_qc_inventory_job(
     )
 
     config.activate()
-    event_stations = read_table(event_station_records)
-    metric_settings = metrics_settings_from_config(config)
+    event_stations = _read_table(event_station_records)
+    metric_settings = _metrics_settings_from_config(config)
     trace_path = (
         Path(trace_qc_output).expanduser()
         if trace_qc_output
-        else resolve_output_path("qc_trace_summary", kind="table", cfg=config, create_parent=True)
+        else _resolve_output_path("qc_trace_summary", kind="table", cfg=config, create_parent=True)
     )
     inventory_path = (
         Path(qc_inventory_output).expanduser()
         if qc_inventory_output
-        else resolve_output_path("qc_inventory", kind="table", cfg=config, create_parent=True)
+        else _resolve_output_path("qc_inventory", kind="table", cfg=config, create_parent=True)
     )
     overlap_inventory_path = (
         Path(qc_inventory_overlap_output).expanduser()
         if qc_inventory_overlap_output
-        else resolve_output_path("qc_inventory_overlap", kind="table", cfg=config, create_parent=True)
+        else _resolve_output_path("qc_inventory_overlap", kind="table", cfg=config, create_parent=True)
     )
     build_waveform_qc_summary(
         event_stations,
@@ -118,17 +114,18 @@ def run_qc_inventory_from_config(
     do not need to duplicate QC path plumbing.
     """
 
+    SpatialVTKConfig = _spatial_vtk_config_type()
     config = (
         SpatialVTKConfig.from_file(config_path, run_scenario=run_scenario).activate()
         if config_path is not None
-        else active_config()
+        else _active_config()
     )
     if config_path is None and run_scenario:
         config = SpatialVTKConfig.from_file(config.config_path, run_scenario=run_scenario).activate()
     event_station_path = (
         Path(event_station_records).expanduser()
         if event_station_records is not None
-        else resolve_output_path("event_station_records", kind="table", cfg=config, create_parent=True)
+        else _resolve_output_path("event_station_records", kind="table", cfg=config, create_parent=True)
     )
     written = run_qc_inventory_job(
         event_station_path,
@@ -176,7 +173,7 @@ def write_qc_slurm_script(
         args.append(
             f"--qc-overlap-inventory-output {shlex.quote(str(Path(qc_inventory_overlap_output).expanduser().resolve()))}"
         )
-    lines = slurm_header(settings)
+    lines = _slurm_header(settings)
     lines.extend(
         [
             f"{settings.python_command} -m spatial_vtk.qc.build.slurm {' '.join(args)}",
@@ -211,7 +208,71 @@ def submit_qc_slurm_job(
         qc_inventory_output=qc_inventory_output,
         qc_inventory_overlap_output=qc_inventory_overlap_output,
     )
-    return submit_slurm_script(script, settings)
+    return _submit_slurm_script(script, settings)
+
+
+def _shared_slurm_settings_from_config(*args: Any, **kwargs: Any) -> Any:
+    """Load shared Slurm settings only when QC Slurm settings are requested."""
+
+    from spatial_vtk.config.compute import slurm_settings_from_config
+
+    return slurm_settings_from_config(*args, **kwargs)
+
+
+def _slurm_header(*args: Any, **kwargs: Any) -> list[str]:
+    """Load shared Slurm header rendering only when writing a script."""
+
+    from spatial_vtk.config.compute import slurm_header
+
+    return slurm_header(*args, **kwargs)
+
+
+def _submit_slurm_script(*args: Any, **kwargs: Any) -> Any:
+    """Load shared Slurm submission only when submitting a script."""
+
+    from spatial_vtk.config.compute import submit_slurm_script
+
+    return submit_slurm_script(*args, **kwargs)
+
+
+def _metrics_settings_from_config(*args: Any, **kwargs: Any) -> Any:
+    """Load metric config parsing only when a QC job runs."""
+
+    from spatial_vtk.config.metrics import metrics_settings_from_config
+
+    return metrics_settings_from_config(*args, **kwargs)
+
+
+def _resolve_output_path(*args: Any, **kwargs: Any) -> Path:
+    """Load output-registry resolution only when configured outputs are needed."""
+
+    from spatial_vtk.config.outputs import resolve_output_path
+
+    return resolve_output_path(*args, **kwargs)
+
+
+def _active_config() -> Any:
+    """Load the active-config runtime only when a configured QC job runs."""
+
+    from spatial_vtk.config.runtime import active_config
+
+    return active_config()
+
+
+def _spatial_vtk_config_type() -> Any:
+    """Load the config class only when parsing a config path."""
+
+    from spatial_vtk.config.runtime import SpatialVTKConfig
+
+    return SpatialVTKConfig
+
+
+def _read_table(*args: Any, **kwargs: Any) -> Any:
+    """Load shared table reading only when the QC worker reads inputs."""
+
+    from spatial_vtk.io.tables import read_table
+
+    return read_table(*args, **kwargs)
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -259,6 +320,7 @@ def main(argv: list[str] | None = None) -> int:
     """Run the QC inventory worker from CLI arguments."""
 
     args = build_arg_parser().parse_args(argv)
+    SpatialVTKConfig = _spatial_vtk_config_type()
     config = SpatialVTKConfig.from_file(args.config, run_scenario=args.run_scenario)
     written = run_qc_inventory_job(
         args.event_stations,

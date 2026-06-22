@@ -4,6 +4,17 @@ Changelog
 2026-06-21
 ----------
 
+- **Slurm and QC workflow import boundary** *(Changed)*
+
+  - Deferred config-runtime, output-registry, Slurm-compute, and shared table
+    imports in metric Slurm, QC Slurm, and QC workflow helpers until scripts
+    are written, jobs are submitted, or config-backed QC tables are built.
+  - Kept public QC result classes, readiness helpers, Slurm script writers,
+    and QC summary helpers importable before optional config parsing
+    dependencies are installed.
+  - Added source-contract coverage so Slurm and QC workflow helpers do not
+    reintroduce top-level config-bound imports.
+
 - **Metric workflow import boundary** *(Changed)*
 
   - Deferred config-output, active-config, metric-enrichment, and metric-runner

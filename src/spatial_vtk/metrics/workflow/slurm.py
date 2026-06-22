@@ -16,16 +16,12 @@ Write a script from config settings:
 from __future__ import annotations
 
 import argparse
-from dataclasses import replace
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
-from spatial_vtk.config.compute import (
-    SlurmSettings,
-    slurm_header,
-    slurm_settings_from_config as _shared_slurm_settings_from_config,
-    submit_slurm_script,
-)
-from spatial_vtk.config.runtime import SpatialVTKConfig
+if TYPE_CHECKING:
+    from spatial_vtk.config.compute import SlurmSettings
+    from spatial_vtk.config.runtime import SpatialVTKConfig
 
 
 def slurm_settings_from_config(config: SpatialVTKConfig, *, section: str = "metrics.slurm") -> SlurmSettings:
@@ -44,6 +40,8 @@ def slurm_settings_from_config(config: SpatialVTKConfig, *, section: str = "metr
     SlurmSettings
         Normalized SLURM settings.
     """
+
+    from dataclasses import replace
 
     settings = _shared_slurm_settings_from_config(config, section=section)
     if settings.job_name == "svtk-job":
@@ -94,7 +92,7 @@ def write_metrics_slurm_script(
     manifest_abs = Path(manifest_path).expanduser().resolve()
     array_spec = _slurm_array_spec(selected_indices, max_concurrent=max(1, int(settings.max_concurrent)))
     overwrite_flag = " --overwrite" if overwrite_batches else ""
-    lines = slurm_header(settings, array=array_spec)
+    lines = _slurm_header(settings, array=array_spec)
     lines.extend(
         [
             f'echo "Metric Slurm array: task $SLURM_ARRAY_TASK_ID of {len(manifest.batches)} batch(es)"',
@@ -127,7 +125,7 @@ def submit_metrics_slurm_job(
         batch_indices=batch_indices,
         overwrite_batches=overwrite_batches,
     )
-    return submit_slurm_script(script, settings)
+    return _submit_slurm_script(script, settings)
 
 
 def _selected_batch_indices(manifest, *, batch_indices: list[int] | tuple[int, ...] | None) -> tuple[int, ...]:
@@ -159,6 +157,40 @@ def _slurm_array_spec(indices: tuple[int, ...], *, max_concurrent: int) -> str:
         start = previous = index
     ranges.append(str(start) if start == previous else f"{start}-{previous}")
     return f"{','.join(ranges)}%{max(1, int(max_concurrent))}"
+
+
+def _shared_slurm_settings_from_config(*args: Any, **kwargs: Any) -> Any:
+    """Load shared Slurm settings only when Slurm settings are requested."""
+
+    from spatial_vtk.config.compute import slurm_settings_from_config
+
+    return slurm_settings_from_config(*args, **kwargs)
+
+
+def _slurm_header(*args: Any, **kwargs: Any) -> list[str]:
+    """Load shared Slurm header rendering only when writing a script."""
+
+    from spatial_vtk.config.compute import slurm_header
+
+    return slurm_header(*args, **kwargs)
+
+
+def _submit_slurm_script(*args: Any, **kwargs: Any) -> Any:
+    """Load shared Slurm submission only when submitting a script."""
+
+    from spatial_vtk.config.compute import submit_slurm_script
+
+    return submit_slurm_script(*args, **kwargs)
+
+
+def __getattr__(name: str) -> Any:
+    """Load legacy module attributes lazily."""
+
+    if name == "SlurmSettings":
+        from spatial_vtk.config.compute import SlurmSettings
+
+        return SlurmSettings
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -215,6 +247,8 @@ def main(argv: list[str] | None = None) -> int:
     """
 
     args = build_arg_parser().parse_args(argv)
+    from spatial_vtk.config.runtime import SpatialVTKConfig
+
     config = (
         SpatialVTKConfig.from_file(args.config, run_scenario=args.run_scenario)
         if args.config

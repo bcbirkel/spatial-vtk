@@ -11,7 +11,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 import re
 import time
 import warnings
@@ -20,15 +20,14 @@ import numpy as np
 import pandas as pd
 
 from spatial_vtk.config.metric_catalog import metric_group_for
-from spatial_vtk.config.metrics import metrics_settings_from_config
-from spatial_vtk.config.outputs import resolve_output_path
-from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 from spatial_vtk.io import OutputReadiness, output_group
 from spatial_vtk.io.inventory import build_file_inventory
-from spatial_vtk.io.tables import load_output_table, read_table, table_columns, write_output_table, write_table
 from spatial_vtk.io.waveforms import WaveformPreprocessing, read_waveform_file, select_waveform_trace
 from spatial_vtk.visualize.dashboard import write_manual_review_queue
 from spatial_vtk.visualize.dashboard.exports import QUEUE_COLUMNS
+
+if TYPE_CHECKING:
+    from spatial_vtk.config.runtime import SpatialVTKConfig
 
 _COMPARISON_METADATA_COLUMNS = (
     "event_title",
@@ -666,14 +665,14 @@ def load_standard_qc_inputs(
     )
 
 
-def _qc_result_config_path(cfg: Any | None, context: Any | None) -> object | None:
+def _qc_result_config_path(cfg: SpatialVTKConfig | None, context: Any | None) -> object | None:
     """Return the config path carried by a QC result or notebook context."""
 
     value = getattr(cfg, "config_path", None)
     return value if value is not None else getattr(context, "config_path", None)
 
 
-def _qc_result_run_scenario(cfg: Any | None, context: Any | None) -> str | None:
+def _qc_result_run_scenario(cfg: SpatialVTKConfig | None, context: Any | None) -> str | None:
     """Return the active run scenario carried by a QC result or context."""
 
     value = getattr(cfg, "run_scenario", None)
@@ -683,9 +682,10 @@ def _qc_result_run_scenario(cfg: Any | None, context: Any | None) -> str | None:
 def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None) -> SpatialVTKConfig:
     """Return an activated config for a config-backed QC workflow."""
 
+    SpatialVTKConfig = _spatial_vtk_config_type()
     if config_path is not None:
         return SpatialVTKConfig.from_file(config_path, run_scenario=run_scenario).activate()
-    cfg = active_config()
+    cfg = _active_config()
     if run_scenario:
         return SpatialVTKConfig.from_file(cfg.config_path, run_scenario=run_scenario).activate()
     return cfg
@@ -866,7 +866,7 @@ def _write_qc_checkpoint(df: pd.DataFrame, path: str | Path | None) -> None:
         return
     checkpoint = Path(path).expanduser()
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
-    write_table(df, checkpoint)
+    _write_table(df, checkpoint)
 
 
 def _reset_qc_checkpoint(path: str | Path | None) -> None:
@@ -896,7 +896,7 @@ def _append_qc_checkpoint_rows(rows: list[dict[str, object]], path: str | Path |
     write_header = not checkpoint.exists() or checkpoint.stat().st_size == 0
     frame = pd.DataFrame(rows)
     if not write_header:
-        frame = frame.reindex(columns=table_columns(checkpoint))
+        frame = frame.reindex(columns=_table_columns(checkpoint))
     frame.to_csv(checkpoint, mode="a", header=write_header, index=False)
 
 
@@ -966,7 +966,7 @@ def _metric_qc_completed_records_from_path(path: str | Path | None) -> tuple[set
     suffix = checkpoint.suffix.lower()
     if suffix in {"", ".csv"}:
         try:
-            if not {"event_id", "station"} <= set(table_columns(checkpoint)):
+            if not {"event_id", "station"} <= set(_table_columns(checkpoint)):
                 return set(), 0
             completed: set[tuple[str, str]] = set()
             row_count = 0
@@ -1070,7 +1070,7 @@ def write_qc_inventory_overlap_from_full(
     output = Path(
         output_path
         if output_path is not None
-        else resolve_output_path("qc_inventory_overlap", kind="table", cfg=cfg, create_parent=True)
+        else _resolve_output_path("qc_inventory_overlap", kind="table", cfg=cfg, create_parent=True)
     ).expanduser()
     suffix = output.suffix.lower()
     if suffix not in {"", ".csv", ".parquet", ".pq"}:
@@ -1512,10 +1512,14 @@ def build_waveform_qc_summary(
 
     records = _read_table(event_station_records)
     try:
-        config = cfg or active_config()
+        config = cfg or _active_config()
     except Exception:
         config = None
-    metric_settings = metrics_settings_from_config(config) if config is not None and (components is None or passbands is None) else None
+    metric_settings = (
+        _metrics_settings_from_config(config)
+        if config is not None and (components is None or passbands is None)
+        else None
+    )
     if components is not None:
         resolved_components = tuple(components)
     elif metric_settings is not None:
@@ -1754,13 +1758,13 @@ def run_qc_summary_workflow(
     """
 
     start = time.monotonic()
-    config = cfg or active_config()
+    config = cfg or _active_config()
     config.activate()
 
-    qc_inventory = resolve_output_path("qc_inventory", kind="table", cfg=config, create_parent=True)
-    qc_overlap = resolve_output_path("qc_inventory_overlap", kind="table", cfg=config, create_parent=True)
-    event_station_path = resolve_output_path("event_station_records", kind="table", cfg=config, create_parent=True)
-    comparison_path = resolve_output_path("comparison_eligible_records", kind="table", cfg=config, create_parent=True)
+    qc_inventory = _resolve_output_path("qc_inventory", kind="table", cfg=config, create_parent=True)
+    qc_overlap = _resolve_output_path("qc_inventory_overlap", kind="table", cfg=config, create_parent=True)
+    event_station_path = _resolve_output_path("event_station_records", kind="table", cfg=config, create_parent=True)
+    comparison_path = _resolve_output_path("comparison_eligible_records", kind="table", cfg=config, create_parent=True)
     if not Path(qc_overlap).exists():
         raise FileNotFoundError(f"Overlap QC inventory is not ready: {qc_overlap}")
     if not Path(event_station_path).exists():
@@ -1779,7 +1783,7 @@ def run_qc_summary_workflow(
     )
 
     retention = build_metric_pair_retention_table_from_qc_inventory(qc_overlap, chunksize=chunksize, verbose=verbose)
-    paths["qc_metric_pair_retention"] = write_output_table("qc_metric_pair_retention", retention, cfg=config)
+    paths["qc_metric_pair_retention"] = _write_output_table("qc_metric_pair_retention", retention, cfg=config)
     rows["qc_metric_pair_retention"] = len(retention)
 
     event_station_retention = build_event_station_pair_retention_table_from_qc_inventory(
@@ -1787,20 +1791,20 @@ def run_qc_summary_workflow(
         chunksize=chunksize,
         verbose=verbose,
     )
-    paths["qc_event_station_pair_retention"] = write_output_table(
+    paths["qc_event_station_pair_retention"] = _write_output_table(
         "qc_event_station_pair_retention",
         event_station_retention,
         cfg=config,
     )
     rows["qc_event_station_pair_retention"] = len(event_station_retention)
 
-    event_stations = load_output_table("event_station_records", cfg=config)
+    event_stations = _load_output_table("event_station_records", cfg=config)
     overlap_records = filter_event_station_records_for_source_overlap(event_stations, scope="event_station")
     availability = build_qc_availability_table(overlap_records, qc_summary=qc_overlap, qc_aggregate="any_pass")
-    paths["qc_availability"] = write_output_table("qc_availability", availability, cfg=config)
+    paths["qc_availability"] = _write_output_table("qc_availability", availability, cfg=config)
     rows["qc_availability"] = len(availability)
     try:
-        events = load_output_table("prepared_events", cfg=config)
+        events = _load_output_table("prepared_events", cfg=config)
     except Exception:
         events = None
     post_qc = build_post_qc_record_table_from_qc_inventory(
@@ -1811,12 +1815,12 @@ def run_qc_summary_workflow(
         pair_retention=event_station_retention,
         verbose=verbose,
     )
-    paths["post_qc_records"] = write_output_table("post_qc_records", post_qc, cfg=config)
+    paths["post_qc_records"] = _write_output_table("post_qc_records", post_qc, cfg=config)
     rows["post_qc_records"] = len(post_qc)
 
     if Path(qc_inventory).exists():
         drop_causes = build_qc_drop_cause_table_from_qc_inventory(qc_inventory, chunksize=chunksize, verbose=verbose)
-        paths["qc_drop_causes"] = write_output_table("qc_drop_causes", drop_causes, cfg=config)
+        paths["qc_drop_causes"] = _write_output_table("qc_drop_causes", drop_causes, cfg=config)
         rows["qc_drop_causes"] = len(drop_causes)
         paths["manual_review_queue"] = export_manual_review_queue_from_qc_inventory(
             qc_inventory,
@@ -1829,7 +1833,7 @@ def run_qc_summary_workflow(
         _progress(verbose, f"QC summaries: full QC inventory is not ready, skipping full drop causes and manual queue: {qc_inventory}")
 
     drop_causes_overlap = build_qc_drop_cause_table_from_qc_inventory(qc_overlap, chunksize=chunksize, verbose=verbose)
-    paths["qc_drop_causes_overlap"] = write_output_table("qc_drop_causes_overlap", drop_causes_overlap, cfg=config)
+    paths["qc_drop_causes_overlap"] = _write_output_table("qc_drop_causes_overlap", drop_causes_overlap, cfg=config)
     rows["qc_drop_causes_overlap"] = len(drop_causes_overlap)
 
     elapsed = time.monotonic() - start
@@ -1856,10 +1860,10 @@ def write_qc_inventory_overlap_from_config(
     """
 
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
-    metric_settings = metrics_settings_from_config(config)
-    qc_inventory = resolve_output_path("qc_inventory", kind="table", cfg=config, create_parent=True)
-    event_stations = resolve_output_path("event_station_records", kind="table", cfg=config, create_parent=True)
-    output = resolve_output_path("qc_inventory_overlap", kind="table", cfg=config, create_parent=True)
+    metric_settings = _metrics_settings_from_config(config)
+    qc_inventory = _resolve_output_path("qc_inventory", kind="table", cfg=config, create_parent=True)
+    event_stations = _resolve_output_path("event_station_records", kind="table", cfg=config, create_parent=True)
+    output = _resolve_output_path("qc_inventory_overlap", kind="table", cfg=config, create_parent=True)
     selected_scope = scope or metric_settings.source_overlap_scope
     path = write_qc_inventory_overlap_from_full(
         qc_inventory,
@@ -1944,7 +1948,7 @@ def build_qc_availability_table(
     if qc_summary is not None:
         return _qc_availability_from_summary(out, qc_summary, aggregate=qc_aggregate)
 
-    config = cfg or active_config()
+    config = cfg or _active_config()
     resolved_observed_root = observed_root or config.path("paths.observed_root")
     resolved_synthetic_root = synthetic_root or config.path("paths.synthetic_root")
     observed_events = _event_ids_from_inventory(observed_inventory, resolved_observed_root, dataset="observed")
@@ -2683,7 +2687,7 @@ def export_manual_review_queue(
         Written queue path.
     """
 
-    resolved_path = output_path or resolve_output_path("manual_review_queue", kind="table", cfg=cfg, create_parent=True)
+    resolved_path = output_path or _resolve_output_path("manual_review_queue", kind="table", cfg=cfg, create_parent=True)
     return write_manual_review_queue(_read_table(qc_summary), resolved_path)
 
 
@@ -2701,7 +2705,7 @@ def export_manual_review_queue_from_qc_inventory(
     Set ``overwrite=False`` to reuse an existing queue on notebook reruns.
     """
 
-    resolved_path = output_path or resolve_output_path("manual_review_queue", kind="table", cfg=cfg, create_parent=True)
+    resolved_path = output_path or _resolve_output_path("manual_review_queue", kind="table", cfg=cfg, create_parent=True)
     resolved_path = Path(resolved_path).expanduser()
     if resolved_path.exists() and not overwrite:
         _progress(verbose, f"Manual review queue: reusing existing {resolved_path}")
@@ -2739,7 +2743,39 @@ def _read_table(value: pd.DataFrame | str | Path) -> pd.DataFrame:
     if isinstance(value, pd.DataFrame):
         return value.copy()
     path = Path(value).expanduser()
-    return read_table(path)
+    return _shared_read_table(path)
+
+
+def _shared_read_table(*args: Any, **kwargs: Any) -> pd.DataFrame:
+    """Load shared table reading only when a workflow reads a table."""
+
+    from spatial_vtk.io.tables import read_table
+
+    return read_table(*args, **kwargs)
+
+
+def _write_table(*args: Any, **kwargs: Any) -> Path:
+    """Load shared table writing only when a workflow writes a table."""
+
+    from spatial_vtk.io.tables import write_table
+
+    return write_table(*args, **kwargs)
+
+
+def _load_output_table(*args: Any, **kwargs: Any) -> pd.DataFrame:
+    """Load configured output-table reading only when needed."""
+
+    from spatial_vtk.io.tables import load_output_table
+
+    return load_output_table(*args, **kwargs)
+
+
+def _write_output_table(*args: Any, **kwargs: Any) -> Path:
+    """Load configured output-table writing only when needed."""
+
+    from spatial_vtk.io.tables import write_output_table
+
+    return write_output_table(*args, **kwargs)
 
 
 def _table_columns(value: pd.DataFrame | str | Path) -> list[str]:
@@ -2748,7 +2784,47 @@ def _table_columns(value: pd.DataFrame | str | Path) -> list[str]:
     if isinstance(value, pd.DataFrame):
         return list(value.columns)
     path = Path(value).expanduser()
-    return table_columns(path)
+    return _shared_table_columns(path)
+
+
+def _shared_table_columns(*args: Any, **kwargs: Any) -> list[str]:
+    """Load table schema inspection only when needed."""
+
+    from spatial_vtk.io.tables import table_columns
+
+    return table_columns(*args, **kwargs)
+
+
+def _metrics_settings_from_config(*args: Any, **kwargs: Any) -> Any:
+    """Load metric config parsing only for config-backed QC workflows."""
+
+    from spatial_vtk.config.metrics import metrics_settings_from_config
+
+    return metrics_settings_from_config(*args, **kwargs)
+
+
+def _resolve_output_path(*args: Any, **kwargs: Any) -> Path:
+    """Load output-registry resolution only for config-backed outputs."""
+
+    from spatial_vtk.config.outputs import resolve_output_path
+
+    return resolve_output_path(*args, **kwargs)
+
+
+def _active_config() -> Any:
+    """Load active-config runtime only when a config default is needed."""
+
+    from spatial_vtk.config.runtime import active_config
+
+    return active_config()
+
+
+def _spatial_vtk_config_type() -> Any:
+    """Load config class only when parsing a config path."""
+
+    from spatial_vtk.config.runtime import SpatialVTKConfig
+
+    return SpatialVTKConfig
 
 
 def _waveform_path_records_and_column(
@@ -3001,10 +3077,10 @@ def _read_trace_qc_lookup_table(trace_qc_summary: pd.DataFrame | str | Path) -> 
     path = Path(trace_qc_summary).expanduser()
     wanted = set(_TRACE_QC_REQUIRED_COLUMNS) | set(_TRACE_QC_PAYLOAD_COLUMNS)
     if path.suffix.lower() in {".csv", ""}:
-        columns = [column for column in table_columns(path) if column in wanted]
+        columns = [column for column in _table_columns(path) if column in wanted]
         return pd.read_csv(path, usecols=columns, low_memory=False)
     if path.suffix.lower() in {".parquet", ".pq"}:
-        available = set(table_columns(path))
+        available = set(_table_columns(path))
         columns = [column for column in wanted if column in available]
         return pd.read_parquet(path, columns=columns)
     return _read_table(path)
