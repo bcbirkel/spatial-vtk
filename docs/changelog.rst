@@ -4,6 +4,18 @@ Changelog
 2026-06-21
 ----------
 
+- **Validation-environment preflight** *(Added)*
+
+  - Added a stdlib-only ``tools/check_validation_environment.py`` helper that
+    checks the active Python version and importable modules for release,
+    tutorial, dashboard, docs, notebook, validation, waveform, or core
+    dependency groups.
+  - Documented the checker in the release checklist, README, and installation
+    guide so missing dependencies are reported before expensive pytest,
+    Sphinx, dashboard, or notebook checks start.
+  - Added regression coverage for dependency-group expansion and missing-module
+    messages.
+
 - **Tutorial notebook helper guard** *(Changed)*
 
   - Added regression coverage that scans committed tutorial notebooks for

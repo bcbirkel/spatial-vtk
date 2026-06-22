@@ -34,6 +34,7 @@ waveform/tutorial dependency stack supports it.
 
 ```bash
 git diff --check
+python tools/check_validation_environment.py --groups release
 MPLCONFIGDIR=/tmp/mplconfig_svtk python -m pytest -q
 PYTHONPYCACHEPREFIX=/tmp/svtk_pycache python -m compileall -q src tests tools
 PYTHONPATH=src python tools/generate_cli_reference.py --check

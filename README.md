@@ -46,6 +46,7 @@ The package imports as `spatial_vtk` and installs the `svtk` command:
 From a source checkout, verify the committed example data and notebook imports
 before running the notebooks:
 
+    python tools/check_validation_environment.py --groups tutorial
     python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run
     MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run
 
@@ -57,6 +58,8 @@ data, run:
 
 The `MPLCONFIGDIR` prefix keeps matplotlib font/cache files in a writable
 temporary directory and out of the repository.
+The validation-environment check reports missing Jupyter, mapping, dashboard,
+or waveform modules before the heavier notebook checks start.
 
 ## Structure
 

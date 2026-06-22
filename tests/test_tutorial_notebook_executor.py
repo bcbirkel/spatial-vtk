@@ -782,6 +782,8 @@ def test_ci_runs_clean_tutorial_notebooks_with_notebook_extras() -> None:
     install = 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
     assert install in workflow
     assert install in docs_workflow
+    assert "python tools/check_validation_environment.py --groups release" in workflow
+    assert "python tools/check_validation_environment.py --groups release" in docs_workflow
     assert (
         "MPLCONFIGDIR=/tmp/mplconfig_svtk "
         "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run"
@@ -812,6 +814,7 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "If pip has trouble solving compiled geospatial or waveform packages" in examples_index
     assert "If pip has trouble solving compiled geospatial or waveform packages" in large_run_readme
     assert "## Run the Tutorial Notebooks" in readme
+    assert "python tools/check_validation_environment.py --groups tutorial" in combined
     assert "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run" in readme
     assert (
         "MPLCONFIGDIR=/tmp/mplconfig_svtk "

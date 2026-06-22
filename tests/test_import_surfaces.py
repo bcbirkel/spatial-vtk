@@ -413,6 +413,7 @@ def test_release_checklist_exists_and_matches_public_validation_gates():
         assert "RELEASE_CHECKLIST.md" in agents
         for snippet in (
             'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"',
+            "python tools/check_validation_environment.py --groups release",
             "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run",
             "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run",
         ):
@@ -421,6 +422,7 @@ def test_release_checklist_exists_and_matches_public_validation_gates():
     for snippet in (
         'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"',
         "git diff --check",
+        "python tools/check_validation_environment.py --groups release",
         "python -m pytest -q",
         "PYTHONPYCACHEPREFIX=/tmp/svtk_pycache python -m compileall -q src tests tools",
         "PYTHONPATH=src python tools/generate_cli_reference.py --check",
@@ -487,6 +489,7 @@ def test_public_workflows_check_generated_cli_reference():
     assert workflows["ci.yml"].count("Check generated CLI reference") >= 2
     assert "Build docs with warnings as errors" in workflows["ci.yml"]
     assert '      - "tools/generate_cli_reference.py"' in workflows["docs.yml"]
+    assert '      - "tools/check_validation_environment.py"' in workflows["docs.yml"]
 
 
 def test_ci_wheel_inspection_matches_release_packaging_gate():
