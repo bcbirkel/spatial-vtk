@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import shlex
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -153,6 +154,25 @@ def format_missing_modules(missing: Sequence[ModuleRequirement]) -> str:
     return ", ".join(f"{item.label} ({item.module})" for item in missing)
 
 
+def current_python_install_command() -> str:
+    """Return the tutorial/release install command for the active Python."""
+
+    return f'{shlex.quote(sys.executable)} -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
+
+
+def validation_check_command(groups: Iterable[str], *, executable: str = "python") -> str:
+    """Return a command that reruns this checker for ``groups``."""
+
+    args = " ".join(shlex.quote(str(group)) for group in groups)
+    return f"{shlex.quote(executable)} tools/check_validation_environment.py --groups {args}"
+
+
+def current_python_validation_check_command(groups: Iterable[str]) -> str:
+    """Return the checker rerun command for the active Python executable."""
+
+    return validation_check_command(groups, executable=sys.executable)
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Build the command parser."""
 
@@ -202,6 +222,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         print(f"Current Python executable: {sys.executable}.", file=sys.stderr)
         print(f"From a source checkout, install with: {INSTALL_COMMAND}", file=sys.stderr)
+        print(
+            "For this exact Python environment, install with: "
+            f"{current_python_install_command()}",
+            file=sys.stderr,
+        )
+        print(
+            "After installing, rerun this check with: "
+            f"{validation_check_command(args.groups)}",
+            file=sys.stderr,
+        )
+        print(
+            "For this exact Python environment, rerun: "
+            f"{current_python_validation_check_command(args.groups)}",
+            file=sys.stderr,
+        )
         print(
             "If compiled geospatial or waveform dependencies are difficult to "
             f"solve with pip, create the conda environment with: {CONDA_COMMAND}",

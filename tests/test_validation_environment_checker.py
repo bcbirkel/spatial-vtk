@@ -122,3 +122,21 @@ def test_validation_environment_rejects_unsupported_python_versions() -> None:
     assert module.python_version_supported((3, 13, 9))
     assert not module.python_version_supported((3, 9, 18))
     assert not module.python_version_supported((3, 14, 0))
+
+
+def test_validation_environment_missing_report_names_exact_python(monkeypatch, capsys) -> None:
+    """Missing-module failures should show commands for the active environment."""
+
+    module = _load_checker_module()
+    monkeypatch.setattr(module, "_module_available", lambda name: name == "spatial_vtk")
+
+    result = module.main(["--groups", "tutorial"])
+
+    captured = capsys.readouterr()
+    assert result == 1
+    assert "Missing Spatial-VTK validation modules:" in captured.err
+    assert f"Current Python executable: {sys.executable}." in captured.err
+    assert module.INSTALL_COMMAND in captured.err
+    assert module.current_python_install_command() in captured.err
+    assert module.validation_check_command(["tutorial"]) in captured.err
+    assert module.current_python_validation_check_command(["tutorial"]) in captured.err
