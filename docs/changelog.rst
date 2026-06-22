@@ -20,6 +20,9 @@ Changelog
     the dependency groups declared by ``tools/check_validation_environment.py``.
   - Replaced the hard-coded ``pyproject.toml`` dependency-fragment test with
     the same checker-derived package-name contract.
+  - Made both validation helper scripts derive the supported Python range from
+    ``pyproject.toml`` when running from a source checkout, with the current
+    range retained as a fallback.
 
 - **Tutorial validation dependency contract** *(Changed)*
 

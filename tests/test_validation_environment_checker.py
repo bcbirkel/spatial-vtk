@@ -106,7 +106,14 @@ def test_validation_environment_rejects_unsupported_python_versions() -> None:
     """The checker should mirror the package's public Python range."""
 
     module = _load_checker_module()
+    root = Path(__file__).resolve().parents[1]
+    pyproject_text = (root / "pyproject.toml").read_text(encoding="utf-8")
+    requires_python = re.search(r'^\s*requires-python\s*=\s*"([^"]+)"', pyproject_text, re.MULTILINE)
+    assert requires_python is not None
 
+    assert module.REQUIRES_PYTHON == requires_python.group(1)
+    assert module.MIN_PYTHON == (3, 10)
+    assert module.MAX_PYTHON == (3, 14)
     assert module.python_version_supported((3, 10, 0))
     assert module.python_version_supported((3, 13, 9))
     assert not module.python_version_supported((3, 9, 18))

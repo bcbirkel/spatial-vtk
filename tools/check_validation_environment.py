@@ -5,16 +5,54 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import re
 import shlex
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Iterable, Sequence
 
-MIN_PYTHON = (3, 10)
-MAX_PYTHON = (3, 14)
+FALLBACK_REQUIRES_PYTHON = ">=3.10,<3.14"
 INSTALL_COMMAND = 'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
 CONDA_COMMAND = "conda env create -f svtk_environment.yaml"
+
+
+def _python_bound_tuple(version_text: str) -> tuple[int, int]:
+    """Return ``(major, minor)`` from a Python version constraint fragment."""
+
+    parts = version_text.strip().split(".")
+    return (int(parts[0]), int(parts[1]))
+
+
+def _requires_python_from_pyproject(repo_root: Path | None = None) -> str:
+    """Return the package ``requires-python`` value when available."""
+
+    root = Path.cwd() if repo_root is None else repo_root
+    candidates = [root / "pyproject.toml", Path(__file__).resolve().parents[1] / "pyproject.toml"]
+    for path in candidates:
+        if not path.exists():
+            continue
+        match = re.search(r'^\s*requires-python\s*=\s*"([^"]+)"', path.read_text(encoding="utf-8"), re.MULTILINE)
+        if match:
+            return match.group(1)
+    return FALLBACK_REQUIRES_PYTHON
+
+
+def _python_range_from_requires_python(requires_python: str) -> tuple[tuple[int, int], tuple[int, int]]:
+    """Return inclusive lower and exclusive upper bounds from ``requires-python``."""
+
+    lower_match = re.search(r">=\s*([0-9]+(?:\.[0-9]+)+)", requires_python)
+    upper_match = re.search(r"<\s*([0-9]+(?:\.[0-9]+)+)", requires_python)
+    if lower_match is None or upper_match is None:
+        requires_python = FALLBACK_REQUIRES_PYTHON
+        lower_match = re.search(r">=\s*([0-9]+(?:\.[0-9]+)+)", requires_python)
+        upper_match = re.search(r"<\s*([0-9]+(?:\.[0-9]+)+)", requires_python)
+    assert lower_match is not None and upper_match is not None
+    return _python_bound_tuple(lower_match.group(1)), _python_bound_tuple(upper_match.group(1))
+
+
+REQUIRES_PYTHON = _requires_python_from_pyproject()
+MIN_PYTHON, MAX_PYTHON = _python_range_from_requires_python(REQUIRES_PYTHON)
 
 
 @dataclass(frozen=True)

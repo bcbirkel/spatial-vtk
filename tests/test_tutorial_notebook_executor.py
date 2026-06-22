@@ -114,8 +114,14 @@ def test_tutorial_notebook_runtime_preflight_reports_unsupported_python() -> Non
     """The notebook runner should report unsupported Python before dependency imports."""
 
     module = _load_executor_module()
+    root = Path(__file__).resolve().parents[1]
+    pyproject_text = (root / "pyproject.toml").read_text(encoding="utf-8")
+    requires_python = re.search(r'^\s*requires-python\s*=\s*"([^"]+)"', pyproject_text, re.MULTILINE)
+    assert requires_python is not None
 
-    assert module.SUPPORTED_TUTORIAL_PYTHON_RANGE == ">=3.10,<3.14"
+    assert module.SUPPORTED_TUTORIAL_PYTHON_RANGE == requires_python.group(1)
+    assert module.MIN_TUTORIAL_PYTHON == (3, 10)
+    assert module.MAX_TUTORIAL_PYTHON == (3, 14)
     assert module.tutorial_python_version_supported((3, 10, 0)) is True
     assert module.tutorial_python_version_supported((3, 13, 9)) is True
     assert module.tutorial_python_version_supported((3, 9, 18)) is False

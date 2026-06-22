@@ -107,9 +107,7 @@ def _tutorial_runtime_modules_from_validation_checker() -> dict[str, str]:
 
 
 NOTEBOOK_RUNTIME_MODULES = _tutorial_runtime_modules_from_validation_checker()
-SUPPORTED_TUTORIAL_PYTHON_RANGE = ">=3.10,<3.14"
-MIN_TUTORIAL_PYTHON = (3, 10)
-MAX_TUTORIAL_PYTHON = (3, 14)
+FALLBACK_SUPPORTED_TUTORIAL_PYTHON_RANGE = ">=3.10,<3.14"
 SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND = (
     'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
 )
@@ -265,6 +263,44 @@ NOTEBOOK_CONTRACT_FORBIDDEN_IMPORT_PATTERNS = (
     re.compile(r"^\s*from\s+spatial_vtk\.spatial\.plot\.[\w.]+\s+import\b", re.MULTILINE),
     re.compile(r"^\s*import\s+spatial_vtk\.spatial\.plot\.[\w.]+(?:\s+as\s+\w+)?", re.MULTILINE),
 )
+
+
+def _python_bound_tuple(version_text: str) -> tuple[int, int]:
+    """Return ``(major, minor)`` from a Python version constraint fragment."""
+
+    parts = version_text.strip().split(".")
+    return (int(parts[0]), int(parts[1]))
+
+
+def _requires_python_from_pyproject(repo_root: Path | None = None) -> str:
+    """Return the package ``requires-python`` value when available."""
+
+    root = Path.cwd() if repo_root is None else repo_root
+    candidates = [root / "pyproject.toml", Path(__file__).resolve().parents[1] / "pyproject.toml"]
+    for path in candidates:
+        if not path.exists():
+            continue
+        match = re.search(r'^\s*requires-python\s*=\s*"([^"]+)"', path.read_text(encoding="utf-8"), re.MULTILINE)
+        if match:
+            return match.group(1)
+    return FALLBACK_SUPPORTED_TUTORIAL_PYTHON_RANGE
+
+
+def _python_range_from_requires_python(requires_python: str) -> tuple[tuple[int, int], tuple[int, int]]:
+    """Return inclusive lower and exclusive upper bounds from ``requires-python``."""
+
+    lower_match = re.search(r">=\s*([0-9]+(?:\.[0-9]+)+)", requires_python)
+    upper_match = re.search(r"<\s*([0-9]+(?:\.[0-9]+)+)", requires_python)
+    if lower_match is None or upper_match is None:
+        requires_python = FALLBACK_SUPPORTED_TUTORIAL_PYTHON_RANGE
+        lower_match = re.search(r">=\s*([0-9]+(?:\.[0-9]+)+)", requires_python)
+        upper_match = re.search(r"<\s*([0-9]+(?:\.[0-9]+)+)", requires_python)
+    assert lower_match is not None and upper_match is not None
+    return _python_bound_tuple(lower_match.group(1)), _python_bound_tuple(upper_match.group(1))
+
+
+SUPPORTED_TUTORIAL_PYTHON_RANGE = _requires_python_from_pyproject()
+MIN_TUTORIAL_PYTHON, MAX_TUTORIAL_PYTHON = _python_range_from_requires_python(SUPPORTED_TUTORIAL_PYTHON_RANGE)
 NOTEBOOK_CONTRACT_PRIVATE_PATH_PATTERNS = (
     re.compile(r"(?<![\w.-])/(?:Users|home|home\d*|project\d*|scratch|work|lustre)/[^\s'\"),\]]+"),
     re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
