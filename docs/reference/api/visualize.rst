@@ -415,13 +415,17 @@ resolving dashboard summary paths or passing ``cfg`` into standalone preview
 helpers.
 
 ``dashboard_summary_table_contracts`` documents which summary table feeds each
-dashboard tab and the required columns for that table. Use it in notebooks next
-to ``dashboard_output_status_frame`` when a tab is empty, because the status
-table reports whether the issue is a missing file, missing required columns,
-missing map coordinates, or value columns that exist but contain no finite
-data. Use ``preview_dashboard_summary_tables`` for small, bounded samples of
-the configured summary tables after readiness checks pass; it keeps large-run
-notebooks from loading whole dashboard inputs just to inspect the first rows.
+dashboard tab and the required, optional, and map-coordinate columns for that
+table. Use it in notebooks next to ``dashboard_output_status_frame`` when a
+tab is empty, because the status table reports whether the issue is a missing
+file, missing required columns, missing map coordinates, or value columns that
+exist but contain no finite data. The readiness/status frames also carry
+``optional_columns`` and ``map_coordinate_columns`` so the Data Status tab and
+notebook status tables show the relevant contract without requiring users to
+open a separate reference table. Use ``preview_dashboard_summary_tables`` for
+small, bounded samples of the configured summary tables after readiness checks
+pass; it keeps large-run notebooks from loading whole dashboard inputs just to
+inspect the first rows.
 The path summary is optional when the source ``metrics_long`` table has no
 ``distance_km`` and ``azimuth_deg`` columns. In that case the status table still
 reports the missing or empty ``path_hex`` artifact for the Paths tab, but

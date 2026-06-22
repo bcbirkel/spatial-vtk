@@ -337,6 +337,8 @@ outputs:
     assert "artifact_label" in summary_display.columns
     assert "dashboard_table" in summary_display.columns
     assert "required_columns" in summary_display.columns
+    assert "optional_columns" in summary_display.columns
+    assert "map_coordinate_columns" in summary_display.columns
     assert "missing_columns" in summary_display.columns
     assert "missing_map_columns" in summary_display.columns
     assert "tab_ready" in summary_display.columns
@@ -349,10 +351,15 @@ outputs:
     assert "resolved_path" in summary_display.columns
     assert "path" not in summary_display.columns
     assert "station_rollup dashboard summary table" in set(summary_display["artifact_label"])
+    station_display = summary_display.loc[summary_display["dashboard_table"].eq("station_rollup")].iloc[0]
+    assert "period_s" in station_display["optional_columns"]
+    assert "sta_lon" in station_display["map_coordinate_columns"]
+    assert "sta_lat" in station_display["map_coordinate_columns"]
     metric_display = _select_readiness_columns(status_with_dataset, METRIC_DATASET_READINESS_DISPLAY_COLUMNS)
     assert "artifact_label" in metric_display.columns
     assert "status_reason" in metric_display.columns
     assert "value_families" in metric_display.columns
+    assert "optional_columns" in metric_display.columns
     assert "suggested_action" in metric_display.columns
     assert "resolved_path" in metric_display.columns
     assert "path" not in metric_display.columns
@@ -380,6 +387,7 @@ outputs:
     assert "sta_lat" in station_contract["map_coordinate_columns"]
     assert "event_lon" in event_contract["map_coordinate_columns"]
     assert "event_lat" in event_contract["map_coordinate_columns"]
+    assert "Vs30" in station_contract["optional_columns"]
 
     station_map_status = dashboard_map_readiness(
         pd.DataFrame({"station": ["STA"], "model": ["m1"], "metric": ["PGA"], "band": ["1-2 sec"], "n": [1], "med_log2_residual": [0.1]}),
@@ -428,6 +436,8 @@ def test_dashboard_summary_readiness_uses_chunked_projected_scans(tmp_path, monk
     assert station["map_ready"] is True
     assert station["nonempty_value_columns"] == "med_log2_residual"
     assert station["nonempty_value_families"] == "residual"
+    assert "Vs30" in station["optional_columns"]
+    assert "sta_lon" in station["map_coordinate_columns"]
 
 
 def test_dashboard_value_column_families_are_schema_level_status():
@@ -1715,6 +1725,8 @@ def test_metrics_dashboard_readiness_display_columns_are_bounded():
         {
             "dashboard_table": ["station_rollup"],
             "dashboard_tabs": ["Stations"],
+            "optional_columns": ["period_s, component"],
+            "map_coordinate_columns": ["lon: sta_lon | station_lon; lat: sta_lat | station_lat"],
             "ready": [False],
             "readiness": ["missing_columns"],
             "row_count": [10],
@@ -1732,6 +1744,8 @@ def test_metrics_dashboard_readiness_display_columns_are_bounded():
             "dashboard_tabs",
             "ready",
             "readiness",
+            "optional_columns",
+            "map_coordinate_columns",
             "row_count",
             "missing_columns",
             "message",
@@ -1743,6 +1757,8 @@ def test_metrics_dashboard_readiness_display_columns_are_bounded():
         "dashboard_tabs",
         "ready",
         "readiness",
+        "optional_columns",
+        "map_coordinate_columns",
         "row_count",
         "missing_columns",
         "message",

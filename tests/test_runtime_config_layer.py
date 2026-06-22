@@ -3665,6 +3665,9 @@ def test_dashboard_summary_readiness_reports_missing_empty_and_value_states(tmp_
     assert "coordinate columns" in by_table.loc["event_rollup", "map_message"]
     assert by_table.loc["path_hex", "readiness"] == "missing"
     assert "dist_bin_km" in by_table.loc["path_hex", "missing_columns"]
+    assert "period_s" in by_table.loc["station_rollup", "optional_columns"]
+    assert "sta_lon" in by_table.loc["station_rollup", "map_coordinate_columns"]
+    assert "event_lon" in by_table.loc["event_rollup", "map_coordinate_columns"]
 
     ready_map = dashboard_map_readiness(
         pd.DataFrame({"station": ["STA"], "sta_lon": [-118.1], "sta_lat": [34.2]}),

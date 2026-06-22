@@ -4,6 +4,16 @@ Changelog
 2026-06-22
 ----------
 
+- **Dashboard readiness contracts** *(Changed)*
+
+  - Added ``optional_columns`` and ``map_coordinate_columns`` to dashboard
+    summary readiness/status rows.
+  - Displayed those columns in the metrics dashboard Data Status tab so map
+    blockers and optional value columns are visible without opening a separate
+    contract table.
+  - Documented the expanded dashboard readiness contract in the visualization
+    API guide.
+
 - **Large-run notebook figure-table contracts** *(Changed)*
 
   - Added regression coverage that tutorial notebooks drive workflow steps

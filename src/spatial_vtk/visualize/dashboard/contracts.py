@@ -572,6 +572,8 @@ def dashboard_readiness_summary_frame(
                 "dashboard_table": "",
                 "dashboard_tabs": "Dashboard preparation",
                 "required_columns": "",
+                "optional_columns": "",
+                "map_coordinate_columns": "",
                 "ready": ready,
                 "readiness": readiness,
                 "status_reason": readiness,
@@ -612,6 +614,8 @@ def dashboard_readiness_summary_frame(
         "dashboard_table",
         "dashboard_tabs",
         "required_columns",
+        "optional_columns",
+        "map_coordinate_columns",
         "ready",
         "readiness",
         "status_reason",
@@ -649,6 +653,9 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
         "name": "metrics_dashboard_root",
         "artifact_role": "dashboard_dataset",
         "artifact_label": "metrics dashboard row dataset",
+        "required_columns": "recognized residual/score/value column",
+        "optional_columns": "residual, score, observed, synthetic, or metric-value columns",
+        "map_coordinate_columns": "",
         "resolved_path": str(path),
         "path": str(path),
         "exists": path.exists(),
@@ -1037,6 +1044,9 @@ def _normalize_dashboard_status_row(row: dict[str, object], *, item_type: str) -
     for column in ("dashboard_table", "dashboard_tabs", "required_columns", "purpose"):
         if column not in normalized:
             normalized[column] = ""
+    for column in ("optional_columns", "map_coordinate_columns"):
+        if column not in normalized:
+            normalized[column] = ""
     return normalized
 
 
@@ -1052,6 +1062,8 @@ def _dashboard_status_column_order(rows: list[dict[str, object]]) -> list[str]:
         "dashboard_table",
         "dashboard_tabs",
         "required_columns",
+        "optional_columns",
+        "map_coordinate_columns",
         "ready",
         "readiness",
         "status_reason",
@@ -1137,6 +1149,8 @@ def _dashboard_summary_row(row: dict[str, object], *, item_type: str) -> dict[st
         "dashboard_table": _blank_if_missing(row.get("dashboard_table")),
         "dashboard_tabs": tabs,
         "required_columns": _blank_if_missing(row.get("required_columns")),
+        "optional_columns": _blank_if_missing(row.get("optional_columns")),
+        "map_coordinate_columns": _blank_if_missing(row.get("map_coordinate_columns")),
         "ready": ready,
         "readiness": _blank_if_missing(row.get("readiness")),
         "status_reason": _blank_if_missing(row.get("status_reason")) or _blank_if_missing(row.get("readiness")),
@@ -1201,6 +1215,8 @@ def _attach_dashboard_contract(status: pd.DataFrame) -> pd.DataFrame:
     out["dashboard_table"] = ""
     out["dashboard_tabs"] = ""
     out["required_columns"] = ""
+    out["optional_columns"] = ""
+    out["map_coordinate_columns"] = ""
     out["purpose"] = ""
     contracts = dashboard_summary_table_contracts().set_index("table")
     for table_name, contract in contracts.iterrows():
@@ -1208,6 +1224,8 @@ def _attach_dashboard_contract(status: pd.DataFrame) -> pd.DataFrame:
         out.loc[mask, "dashboard_table"] = str(table_name)
         out.loc[mask, "dashboard_tabs"] = str(contract["tabs"])
         out.loc[mask, "required_columns"] = str(contract["required_columns"])
+        out.loc[mask, "optional_columns"] = str(contract["optional_columns"])
+        out.loc[mask, "map_coordinate_columns"] = str(contract["map_coordinate_columns"])
         out.loc[mask, "purpose"] = str(contract["purpose"])
     return _attach_dashboard_status_reason(out)
 
@@ -1266,6 +1284,8 @@ def _attach_metric_dataset_readiness(status: pd.DataFrame) -> pd.DataFrame:
         "dashboard_table": "",
         "dashboard_tabs": "",
         "required_columns": "",
+        "optional_columns": "",
+        "map_coordinate_columns": "",
         "purpose": "",
     }
     for column, value in defaults.items():
@@ -1277,6 +1297,8 @@ def _attach_metric_dataset_readiness(status: pd.DataFrame) -> pd.DataFrame:
     out.loc[mask, "dashboard_table"] = "metrics_dashboard_dataset"
     out.loc[mask, "dashboard_tabs"] = "Overview, Compare Models, Stations, Events, Paths"
     out.loc[mask, "required_columns"] = "recognized residual/score/value column"
+    out.loc[mask, "optional_columns"] = "residual, score, observed, synthetic, or metric-value columns"
+    out.loc[mask, "map_coordinate_columns"] = ""
     out.loc[mask, "purpose"] = "Partitioned or single-file long metric dataset used by all metrics dashboard tabs."
     for index, row in out.loc[mask].iterrows():
         readiness = dashboard_metric_dataset_readiness_frame(_dashboard_status_path(row)).iloc[0].to_dict()
@@ -1305,6 +1327,8 @@ def _attach_qc_trace_readiness(status: pd.DataFrame) -> pd.DataFrame:
         "dashboard_table": "",
         "dashboard_tabs": "",
         "required_columns": "",
+        "optional_columns": "",
+        "map_coordinate_columns": "",
         "purpose": "",
         "ready": pd.NA,
         "readiness": pd.NA,
@@ -1323,6 +1347,8 @@ def _attach_qc_trace_readiness(status: pd.DataFrame) -> pd.DataFrame:
     out.loc[mask, "dashboard_table"] = "qc_trace_summary"
     out.loc[mask, "dashboard_tabs"] = "QC Overview, Charts, Review Queue"
     out.loc[mask, "required_columns"] = ", ".join(REQUIRED_TRACE_QC_TABLE_COLUMNS)
+    out.loc[mask, "optional_columns"] = "qc_status, qc_reason, timing, amplitude, signal/noise, and manual-review columns"
+    out.loc[mask, "map_coordinate_columns"] = ""
     out.loc[mask, "purpose"] = "Trace-level QC decisions used by the QC dashboard and manual-review queue."
     for index, row in out.loc[mask].iterrows():
         readiness = _inspect_qc_trace_summary_table(_dashboard_status_path(row))
