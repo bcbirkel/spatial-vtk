@@ -120,6 +120,12 @@ def plan_metric_tasks_from_config(
         else _resolve_output_path("metric_manifest" if manifest else "metric_tasks", kind="table", cfg=config, create_parent=True)
     )
     plan = metric_plan_from_config(config, command="metrics.calculate", overrides=overrides or {})
+    planning_metadata = _metric_planning_metadata(
+        plan,
+        use_qc=not no_qc,
+        include_qc_failed_tasks=include_qc_failed_tasks,
+        qc_table=qc_path,
+    )
     tasks = plan_metric_tasks(
         observed_path,
         synthetic_path,
@@ -140,6 +146,7 @@ def plan_metric_tasks_from_config(
         "synthetic_inventory": str(synthetic_path),
         "qc_table": str(qc_path) if qc_path is not None else "",
         "manifest": bool(manifest),
+        **planning_metadata,
     }
     if manifest:
         selected_batch_size = int(batch_size)
@@ -154,6 +161,7 @@ def plan_metric_tasks_from_config(
             output_dir=batch_dir,
             batch_size=selected_batch_size,
             qc_table=qc_path,
+            planning_metadata=planning_metadata,
         )
         manifest_status = written.status_frame().iloc[0].to_dict()
         payload.update(
@@ -179,6 +187,35 @@ def plan_metric_tasks_from_config(
     else:
         write_table(tasks_to_frame(tasks), output_path)
     return payload
+
+
+def _metric_planning_metadata(
+    plan: Any,
+    *,
+    use_qc: bool,
+    include_qc_failed_tasks: bool,
+    qc_table: str | Path | None,
+) -> dict[str, object]:
+    """Return manifest/status metadata describing configured task filters."""
+
+    require_passing = bool(use_qc and qc_table is not None and not include_qc_failed_tasks)
+    if not use_qc:
+        policy = "qc_disabled"
+    elif include_qc_failed_tasks:
+        policy = "include_qc_failed_tasks"
+    elif qc_table is None:
+        policy = "qc_enabled_without_planning_filter"
+    else:
+        policy = "passing_observed_synthetic_qc_pairs"
+    return {
+        "planning_policy": policy,
+        "use_qc": bool(use_qc),
+        "require_passing_qc_pairs": require_passing,
+        "include_qc_failed_tasks": bool(include_qc_failed_tasks),
+        "require_source_overlap": bool(getattr(plan, "require_source_overlap", False)),
+        "source_overlap_scope": str(getattr(plan, "source_overlap_scope", "")),
+        "output_mode": str(getattr(plan, "output_mode", "")),
+    }
 
 
 def metric_inventories_readiness_from_config(

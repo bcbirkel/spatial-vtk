@@ -2100,7 +2100,22 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     syn_inventory = pd.DataFrame({"event_id": ["e1"], "station": ["ABC"], "component": ["Z"], "model": ["m1"], "waveform_path": [syn_path], "dt": [dt]})
     tasks = plan_metric_tasks(obs_inventory, syn_inventory, plan=plan)
 
-    manifest = write_task_manifest(tasks, tmp_path / "manifest.json", output_dir=tmp_path / "batches", batch_size=1)
+    planning_metadata = {
+        "planning_policy": "passing_observed_synthetic_qc_pairs",
+        "use_qc": True,
+        "require_passing_qc_pairs": True,
+        "include_qc_failed_tasks": False,
+        "require_source_overlap": True,
+        "source_overlap_scope": "event_station",
+        "output_mode": "full",
+    }
+    manifest = write_task_manifest(
+        tasks,
+        tmp_path / "manifest.json",
+        output_dir=tmp_path / "batches",
+        batch_size=1,
+        planning_metadata=planning_metadata,
+    )
     manifest_status = manifest.status_frame()
     assert manifest_status.loc[0, "name"] == "metric_manifest_path"
     assert manifest_status.loc[0, "artifact"] == "metric_manifest"
@@ -2120,10 +2135,19 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     assert manifest_status.loc[0, "first_batch_output"] == str(tmp_path / "batches" / "metrics_batch_0000.csv")
     assert manifest_status.loc[0, "last_batch_output"] == str(tmp_path / "batches" / "metrics_batch_0000.csv")
     assert manifest_status.loc[0, "qc_table"] == ""
+    assert manifest_status.loc[0, "planning_policy"] == "passing_observed_synthetic_qc_pairs"
+    assert bool(manifest_status.loc[0, "use_qc"]) is True
+    assert bool(manifest_status.loc[0, "require_passing_qc_pairs"]) is True
+    assert bool(manifest_status.loc[0, "include_qc_failed_tasks"]) is False
+    assert bool(manifest_status.loc[0, "require_source_overlap"]) is True
+    assert manifest_status.loc[0, "source_overlap_scope"] == "event_station"
+    assert manifest_status.loc[0, "output_mode"] == "full"
     parsed = read_task_manifest(manifest.manifest_path)
     parsed_status = parsed.status_frame()
     assert parsed_status.loc[0, "task_count"] == len(tasks)
     assert parsed_status.loc[0, "batch_count"] == 1
+    assert parsed.planning_metadata == planning_metadata
+    assert parsed_status.loc[0, "planning_policy"] == "passing_observed_synthetic_qc_pairs"
     assert len(parsed.batches) == 1
     initial_status = metric_manifest_batch_status(parsed)
     assert initial_status.total_batches == 1
@@ -2357,7 +2381,16 @@ metrics:
     assert plan_result["observed_metric_inventory_path"] == str(tables / "observed_metric_inventory.parquet")
     assert plan_result["synthetic_metric_inventory_path"] == str(tables / "synthetic_metric_inventory.parquet")
     assert plan_result["metric_qc_table_path"] == str(tables / "qc_inventory_overlap.parquet")
+    assert plan_result["planning_policy"] == "passing_observed_synthetic_qc_pairs"
+    assert bool(plan_result["use_qc"]) is True
+    assert bool(plan_result["require_passing_qc_pairs"]) is True
+    assert bool(plan_result["include_qc_failed_tasks"]) is False
+    assert bool(plan_result["require_source_overlap"]) is False
+    assert plan_result["source_overlap_scope"] == "event_station"
+    assert plan_result["output_mode"] == "full"
     assert len(manifest.tasks) == 1
+    assert manifest.planning_metadata["planning_policy"] == "passing_observed_synthetic_qc_pairs"
+    assert manifest.status_frame().loc[0, "planning_policy"] == "passing_observed_synthetic_qc_pairs"
     assert manifest.batches[0]["output_path"].endswith("outputs/metric_batches/metrics_batch_0000.csv")
 
     incomplete_slurm = metric_slurm_submission_readiness_from_config(config_path=config_path)
@@ -2621,7 +2654,16 @@ def test_metric_manifest_orders_tasks_for_waveform_cache_reuse(tmp_path) -> None
         MetricWorkflowTask("task-a1", "e1", "AAA", "Z", obs_waveform_path="obs_a.pkl", syn_waveform_path="syn_a.asdf", period_min_s=1.0, period_max_s=2.0),
     ]
 
-    manifest = write_task_manifest(tasks, tmp_path / "manifest.json", output_dir=tmp_path / "batches", batch_size=2)
+    manifest = write_task_manifest(
+        tasks,
+        tmp_path / "manifest.json",
+        output_dir=tmp_path / "batches",
+        batch_size=2,
+        planning_metadata={
+            "planning_policy": "passing_observed_synthetic_qc_pairs",
+            "require_passing_qc_pairs": True,
+        },
+    )
     parsed = read_task_manifest(manifest.manifest_path)
 
     assert [task.task_id for task in parsed.tasks] == ["task-a1", "task-a2", "task-b"]
@@ -2659,7 +2701,16 @@ def test_metric_manifest_waveform_cache_rewrites_paths_and_runs_batches(tmp_path
             transforms=("log2_residual",),
         ),
     ]
-    manifest = write_task_manifest(tasks, tmp_path / "manifest.json", output_dir=tmp_path / "batches", batch_size=2)
+    manifest = write_task_manifest(
+        tasks,
+        tmp_path / "manifest.json",
+        output_dir=tmp_path / "batches",
+        batch_size=2,
+        planning_metadata={
+            "planning_policy": "passing_observed_synthetic_qc_pairs",
+            "require_passing_qc_pairs": True,
+        },
+    )
 
     result = cache_metric_manifest_waveforms(
         manifest.manifest_path,
@@ -2696,6 +2747,8 @@ def test_metric_manifest_waveform_cache_rewrites_paths_and_runs_batches(tmp_path
     assert status["rows"].tolist() == [2, 4, 1]
     cached_manifest = read_task_manifest(result.manifest.manifest_path)
     assert len(cached_manifest.tasks) == 2
+    assert cached_manifest.planning_metadata["planning_policy"] == "passing_observed_synthetic_qc_pairs"
+    assert bool(cached_manifest.status_frame().loc[0, "require_passing_qc_pairs"]) is True
     assert cached_manifest.tasks[0].obs_waveform_path.endswith(".npz")
     assert cached_manifest.tasks[0].obs_waveform_path != str(obs_path)
     assert cached_manifest.tasks[0].obs_waveform_path == cached_manifest.tasks[1].obs_waveform_path

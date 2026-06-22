@@ -194,6 +194,7 @@ def cache_metric_manifest_waveforms(
     payload = {
         "manifest_version": MANIFEST_VERSION,
         "qc_table": parsed.qc_table,
+        "planning_metadata": dict(parsed.planning_metadata or {}),
         "tasks": [task.to_dict() for task in cached_tasks],
         "batches": batches,
     }

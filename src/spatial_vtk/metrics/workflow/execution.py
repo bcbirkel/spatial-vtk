@@ -81,6 +81,7 @@ class MetricWorkflowManifest:
     tasks: tuple[MetricWorkflowTask, ...]
     batches: tuple[dict[str, Any], ...]
     qc_table: str = ""
+    planning_metadata: dict[str, Any] | None = None
 
     def status_frame(self) -> pd.DataFrame:
         """Return a compact summary of manifest planning outputs."""
@@ -88,6 +89,7 @@ class MetricWorkflowManifest:
         output_paths = [Path(str(batch.get("output_path", ""))).expanduser() for batch in self.batches if batch.get("output_path")]
         output_dirs = sorted({str(path.parent) for path in output_paths})
         task_counts = [len(batch.get("task_indices", ())) for batch in self.batches]
+        planning = dict(self.planning_metadata or {})
         return pd.DataFrame(
             [
                 {
@@ -109,6 +111,13 @@ class MetricWorkflowManifest:
                     "first_batch_output": str(output_paths[0]) if output_paths else "",
                     "last_batch_output": str(output_paths[-1]) if output_paths else "",
                     "qc_table": self.qc_table,
+                    "planning_policy": planning.get("planning_policy", ""),
+                    "use_qc": planning.get("use_qc", ""),
+                    "require_passing_qc_pairs": planning.get("require_passing_qc_pairs", ""),
+                    "include_qc_failed_tasks": planning.get("include_qc_failed_tasks", ""),
+                    "require_source_overlap": planning.get("require_source_overlap", ""),
+                    "source_overlap_scope": planning.get("source_overlap_scope", ""),
+                    "output_mode": planning.get("output_mode", ""),
                 }
             ]
         )
@@ -311,6 +320,7 @@ def write_task_manifest(
     output_dir: str | Path,
     batch_size: int = 100,
     qc_table: str | Path | None = None,
+    planning_metadata: dict[str, Any] | None = None,
     output_suffix: str = ".csv",
 ) -> MetricWorkflowManifest:
     """Write a metric task manifest.
@@ -327,6 +337,10 @@ def write_task_manifest(
         Maximum tasks per batch.
     qc_table
         Optional QC table path copied into the manifest.
+    planning_metadata
+        Optional JSON-serializable metadata describing the planning filters
+        used to create the manifest, such as QC-passing-pair filtering and
+        observed/synthetic overlap scope.
     output_suffix
         Output suffix for batch tables, usually ``.csv`` or ``.parquet``.
 
@@ -358,11 +372,18 @@ def write_task_manifest(
     payload = {
         "manifest_version": MANIFEST_VERSION,
         "qc_table": str(qc_table or ""),
+        "planning_metadata": dict(planning_metadata or {}),
         "tasks": [task.to_dict() for task in ordered_tasks],
         "batches": batches,
     }
     write_json(manifest, payload)
-    return MetricWorkflowManifest(manifest_path=manifest, tasks=tuple(ordered_tasks), batches=tuple(batches), qc_table=str(qc_table or ""))
+    return MetricWorkflowManifest(
+        manifest_path=manifest,
+        tasks=tuple(ordered_tasks),
+        batches=tuple(batches),
+        qc_table=str(qc_table or ""),
+        planning_metadata=dict(planning_metadata or {}),
+    )
 
 
 def read_task_manifest(path: str | Path) -> MetricWorkflowManifest:
@@ -390,6 +411,7 @@ def read_task_manifest(path: str | Path) -> MetricWorkflowManifest:
         tasks=tasks,
         batches=batches,
         qc_table=str(payload.get("qc_table", "")),
+        planning_metadata=dict(payload.get("planning_metadata") or {}),
     )
 
 

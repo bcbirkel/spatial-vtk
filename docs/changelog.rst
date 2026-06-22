@@ -4,6 +4,17 @@ Changelog
 2026-06-22
 ----------
 
+- **Metric manifest planning metadata** *(Changed)*
+
+  - Added optional planning metadata to metric workflow manifests so status
+    frames can show whether tasks were filtered to passing observed/synthetic
+    QC pairs.
+  - Recorded configured planning policy, QC filtering mode, output mode, and
+    observed/synthetic overlap settings when manifests are created from the
+    active config.
+  - Preserved planning metadata when rewriting manifests to use metric-ready
+    waveform caches.
+
 - **Large-run metric plotting import boundary** *(Changed)*
 
   - Deferred matplotlib imports in large-run metric plotting helpers until a
