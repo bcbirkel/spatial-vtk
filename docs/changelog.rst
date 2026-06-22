@@ -52,6 +52,13 @@ Changelog
   - Kept legacy ``--inventory``, ``--metrics``, and ``--missing-output``
     support and added parser coverage for both preferred and legacy forms.
 
+- **Direct metric task-runner output alias** *(Changed)*
+
+  - Added artifact-named ``--metric-rows-output`` to the direct
+    ``spatial_vtk.metrics.workflow.run`` task-runner parser.
+  - Kept legacy ``--output`` support and extended parser coverage for both
+    preferred and legacy output spellings.
+
 - **Master-list CLI defaults** *(Changed)*
 
   - Made ``svtk io master-stations`` and ``svtk io master-events`` resolve

@@ -966,7 +966,16 @@ def build_arg_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument("--qc-table", default=None, help="Optional side-specific QC table.")
-    parser.add_argument("--output", required=True, help="Metric rows output CSV or Parquet table.")
+    parser.add_argument(
+        "--metric-rows-output",
+        "--output",
+        dest="metric_rows_output",
+        required=True,
+        help=(
+            "Metric rows output CSV or Parquet table. "
+            "Prefer --metric-rows-output; --output is a legacy alias."
+        ),
+    )
     return parser
 
 
@@ -975,7 +984,7 @@ def main(argv: list[str] | None = None) -> int:
 
     args = build_arg_parser().parse_args(argv)
     rows = run_metric_tasks(tasks_from_frame(args.tasks_table), qc_table=args.qc_table)
-    write_metric_rows(rows, args.output)
+    write_metric_rows(rows, args.metric_rows_output)
     return 0
 
 

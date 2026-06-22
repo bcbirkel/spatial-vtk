@@ -147,15 +147,22 @@ def test_direct_metric_task_runner_prefers_task_table_alias() -> None:
 
     assert "--tasks-table" in help_text
     assert "--tasks-csv" in help_text
+    assert "--metric-rows-output" in help_text
+    assert "--output" in help_text
     assert "legacy alias" in help_text
     assert "CSV or Parquet metric task table" in help_text
 
-    args = parser.parse_args(["--tasks-table", "tasks.parquet", "--output", "rows.parquet"])
+    args = parser.parse_args(
+        ["--tasks-table", "tasks.parquet", "--metric-rows-output", "rows.parquet"]
+    )
     legacy_args = parser.parse_args(["--tasks-csv", "tasks.csv", "--output", "rows.csv"])
 
     assert args.tasks_table == "tasks.parquet"
+    assert args.metric_rows_output == "rows.parquet"
     assert legacy_args.tasks_table == "tasks.csv"
+    assert legacy_args.metric_rows_output == "rows.csv"
     assert not hasattr(args, "tasks_csv")
+    assert not hasattr(args, "output")
 
 
 def test_metric_plot_input_summary_frame_reports_notebook_inputs() -> None:
