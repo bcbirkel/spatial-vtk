@@ -35,6 +35,16 @@ Changelog
   - Added regression coverage for mixed exact/sampled sidecars and missing
     source sidecars.
 
+- **Large-run spatial plotting import boundary** *(Changed)*
+
+  - Deferred Matplotlib imports in large-run spatial plotting helpers until a
+    figure is actually rendered or cleaned up.
+  - Kept ``SpatialFigureSuiteResult`` and spatial figure status helpers usable
+    in lightweight table/status environments without plotting dependencies
+    installed.
+  - Added source-contract coverage that rejects top-level Matplotlib imports in
+    the large-run spatial plotting module.
+
 - **Step 2 notebook checkpoint visibility** *(Fixed)*
 
   - Bound the standard Step 2 dashboard launch cell to

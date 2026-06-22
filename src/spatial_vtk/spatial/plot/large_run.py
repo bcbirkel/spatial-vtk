@@ -6,7 +6,6 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
-import matplotlib.pyplot as plt
 import pandas as pd
 
 from spatial_vtk.config.outputs import resolve_output_path
@@ -30,6 +29,16 @@ from spatial_vtk.visualize.figure_sidecars import (
 
 
 ConfigInput = SpatialVTKConfig | str | Path
+
+
+def _close_matplotlib_figures(target: Any = "all") -> None:
+    """Close Matplotlib figures when Matplotlib is installed."""
+
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        return
+    plt.close(target)
 
 
 SPATIAL_FIGURE_TABLE_KEYS: tuple[str, ...] = (
@@ -1173,11 +1182,11 @@ class SpatialFigureContext:
                     title=f"{item['label']} PCA Spatial Mode Summary",
                     **kwargs,
                 )
-                plt.close("all")
+                _close_matplotlib_figures()
                 print(f"wrote {output}")
                 outputs.append(output)
             except Exception as exc:
-                plt.close("all")
+                _close_matplotlib_figures()
                 print(f"skip {output.name}: {type(exc).__name__}: {exc}")
         return outputs
 
@@ -2621,9 +2630,9 @@ def write_large_run_spatial_summary_figures_from_outputs(
             savefig=True,
             **settings.plot_kwargs(),
         )
-        plt.close("all")
+        _close_matplotlib_figures()
     except Exception as exc:
-        plt.close("all")
+        _close_matplotlib_figures()
         return SpatialSummaryFigureResult(
             station_bias_path,
             figure_path,
@@ -2693,7 +2702,7 @@ def write_standard_spatial_map_figures(
                 outpath=station_path,
                 **plot_kwargs,
             )
-            plt.close("all")
+            _close_matplotlib_figures()
             rows.append(
                 {
                     "artifact": "station_bias_map",
@@ -2706,7 +2715,7 @@ def write_standard_spatial_map_figures(
                 }
             )
         except Exception as exc:
-            plt.close("all")
+            _close_matplotlib_figures()
             rows.append(
                 {
                     "artifact": "station_bias_map",
@@ -2735,7 +2744,7 @@ def write_standard_spatial_map_figures(
                 outpath=grid_path,
                 **plot_kwargs,
             )
-            plt.close("all")
+            _close_matplotlib_figures()
             rows.append(
                 {
                     "artifact": "residual_grid_map",
@@ -2748,7 +2757,7 @@ def write_standard_spatial_map_figures(
                 }
             )
         except Exception as exc:
-            plt.close("all")
+            _close_matplotlib_figures()
             rows.append(
                 {
                     "artifact": "residual_grid_map",
@@ -2936,11 +2945,11 @@ def _write_standard_spatial_diagnostic_figure(
 
     try:
         plot_func(frame, *args, outpath=figure_path, **kwargs)
-        plt.close("all")
+        _close_matplotlib_figures()
         status = "wrote"
         message = f"wrote {figure_path}"
     except Exception as exc:
-        plt.close("all")
+        _close_matplotlib_figures()
         status = "plot_failed"
         message = f"{type(exc).__name__}: {exc}"
     return {
@@ -3148,11 +3157,11 @@ def _write_standard_geojson_figure(
 
     try:
         plot_func(*args, outpath=figure_path, **kwargs)
-        plt.close("all")
+        _close_matplotlib_figures()
         status = "wrote"
         message = f"wrote {figure_path}"
     except Exception as exc:
-        plt.close("all")
+        _close_matplotlib_figures()
         status = "plot_failed"
         message = f"{type(exc).__name__}: {exc}"
     return {
@@ -3835,7 +3844,7 @@ def _write_standard_notebook_figure(
             stem=kwargs.get("stem"),
             stem_parts=kwargs.get("stem_parts"),
         )
-        plt.close("all")
+        _close_matplotlib_figures()
         status = "plot_failed"
         message = f"{type(exc).__name__}: {exc}"
     return {
@@ -3952,11 +3961,11 @@ def write_large_run_geojson_region_figures_from_outputs(
                 sidecar_rows=sidecar_rows,
                 sidecar_dir=sidecar_dir,
             )
-            plt.close("all")
+            _close_matplotlib_figures()
             geojson_status = "wrote"
             messages.append(f"geojson_overview: wrote {geojson_overview_path}")
         except Exception as exc:
-            plt.close("all")
+            _close_matplotlib_figures()
             geojson_status = "plot_failed"
             messages.append(f"geojson_overview: skip {geojson_overview_path.name}: {type(exc).__name__}: {exc}")
 
@@ -3987,11 +3996,11 @@ def write_large_run_geojson_region_figures_from_outputs(
                 sidecar_rows=sidecar_rows,
                 sidecar_dir=sidecar_dir,
             )
-            plt.close("all")
+            _close_matplotlib_figures()
             corridor_status = "wrote"
             messages.append(f"corridor_map: wrote {corridor_map_path}")
         except Exception as exc:
-            plt.close("all")
+            _close_matplotlib_figures()
             corridor_status = "plot_failed"
             messages.append(f"corridor_map: skip {corridor_map_path.name}: {type(exc).__name__}: {exc}")
 
@@ -4208,8 +4217,6 @@ def write_large_run_region_boxplot(
         return RegionBoxplotResult(output, sidecar_path, len(plot_rows), "exists", message, comparison_table)
 
     try:
-        import matplotlib.pyplot as plt
-
         boxplot(
             data=plot_rows,
             output_path=output,
@@ -4225,7 +4232,7 @@ def write_large_run_region_boxplot(
             showfig=showfig,
             savefig=True,
         )
-        plt.close("all")
+        _close_matplotlib_figures()
         sidecar_path = _write_region_boxplot_sidecar(
             output,
             plot_rows,
@@ -4240,12 +4247,7 @@ def write_large_run_region_boxplot(
             compare_to=compare_to,
         )
     except Exception as exc:
-        try:
-            import matplotlib.pyplot as plt
-
-            plt.close("all")
-        except Exception:
-            pass
+        _close_matplotlib_figures()
         return RegionBoxplotResult(
             output,
             None,
