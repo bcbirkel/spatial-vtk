@@ -984,6 +984,13 @@ def test_large_run_spatial_helpers_keep_matplotlib_lazy():
             eager_matplotlib_imports.extend(alias.name for alias in node.names if alias.name.startswith("matplotlib"))
         elif isinstance(node, ast.ImportFrom) and str(node.module or "").startswith("matplotlib"):
             eager_matplotlib_imports.append(str(node.module))
+        elif isinstance(node, ast.ImportFrom) and str(node.module or "") == "spatial_vtk.spatial.plot.metrics":
+            eager_matplotlib_imports.append(str(node.module))
+        elif isinstance(node, ast.ImportFrom) and str(node.module or "") in {
+            "spatial_vtk.spatial.calculate",
+            "spatial_vtk.spatial.calculate.geojson",
+        }:
+            eager_matplotlib_imports.append(str(node.module))
 
     assert not eager_matplotlib_imports
 

@@ -665,6 +665,9 @@ and ``write_corridor_figures(...)`` for the standard figure suites. These
 result methods own the configured output bundle, skip/rebuild decisions,
 bounded previews, and figure paths, so notebook cells do not need to pass
 resolved table paths around.
+The output-status result imports remain lightweight: Matplotlib-backed figure
+helpers and Shapely-backed GeoJSON annotation helpers are loaded only when a
+figure or annotation step is actually requested.
 
 Direct configured workflow functions can still receive configured path keys
 for optional inputs in scripts or custom orchestration. For example, pass

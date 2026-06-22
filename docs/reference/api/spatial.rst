@@ -572,6 +572,11 @@ resolve paths.
 .. autoclass:: spatial_vtk.spatial.plot.StandardGeoJSONWorkflowOutputStatusResult
    :members:
 
+Step 5/6 output-status helpers avoid importing Matplotlib-backed plot modules
+or Shapely-backed GeoJSON annotation modules until a figure or annotation
+method is called. Use them for lightweight large-run readiness checks before
+opening plotting or mapping backends.
+
 .. autofunction:: spatial_vtk.spatial.load_standard_geojson_workflow_output_status
 
 .. autoclass:: spatial_vtk.spatial.plot.StandardAdditionalPlottingInputResult

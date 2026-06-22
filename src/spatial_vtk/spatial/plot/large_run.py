@@ -19,8 +19,6 @@ from spatial_vtk.metrics.plot.large_run import (
     SIDECAR_TABLE_ROLE_ATTR,
     first_existing,
 )
-from spatial_vtk.spatial.calculate import add_geojson_metadata_to_metrics
-from spatial_vtk.spatial.plot.metrics import _categorical_metric_plot_data, boxplot, build_categorical_comparison_table
 from spatial_vtk.visualize.figure_sidecars import (
     add_figure_family_sidecar_status,
     normalize_figure_status_rows,
@@ -4139,6 +4137,8 @@ def write_large_run_region_boxplot(
     geojson_file = None if geojson_path is None else Path(geojson_path).expanduser()
     if region_col is None and annotate_if_missing and geojson_file is not None and geojson_file.exists():
         try:
+            from spatial_vtk.spatial.calculate import add_geojson_metadata_to_metrics
+
             metric_rows = add_geojson_metadata_to_metrics(metric_rows, geojson_file, target="station", selector="all")
             region_col = first_existing(metric_rows, ["station_region", "station_geojson_region", "station_geojson_labels"])
         except Exception as exc:
@@ -4217,6 +4217,8 @@ def write_large_run_region_boxplot(
         return RegionBoxplotResult(output, sidecar_path, len(plot_rows), "exists", message, comparison_table)
 
     try:
+        from spatial_vtk.spatial.plot.metrics import boxplot
+
         boxplot(
             data=plot_rows,
             output_path=output,
@@ -4615,6 +4617,8 @@ def _write_region_boxplot_sidecar(
 
     if not write_sidecar:
         return None
+    from spatial_vtk.spatial.plot.metrics import _categorical_metric_plot_data
+
     plot_df, category_col, plot_value_col, dep_labels, resolved_value_col, _subset_label = _categorical_metric_plot_data(
         data,
         dep=metric,
@@ -4662,6 +4666,8 @@ def _region_boxplot_comparison_table(
     """Return the statistical comparison table for one large-run region boxplot."""
 
     try:
+        from spatial_vtk.spatial.plot.metrics import build_categorical_comparison_table
+
         return build_categorical_comparison_table(
             data,
             dep=metric,

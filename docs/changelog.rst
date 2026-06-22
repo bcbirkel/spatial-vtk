@@ -18,6 +18,17 @@ Changelog
   - Added source-contract coverage so Step 4 status helpers keep those
     optional calculators lazy.
 
+- **Step 5/6 spatial plotting status imports** *(Changed)*
+
+  - Moved Matplotlib-backed region-boxplot imports and Shapely-backed GeoJSON
+    annotation imports out of the large-run spatial plotting module import
+    path.
+  - Kept Step 5/6 output-status result classes importable for lightweight
+    notebook readiness checks before figure rendering or GeoJSON annotation
+    is requested.
+  - Added source-contract coverage so the large-run spatial plotting module
+    does not reintroduce eager plotting or GeoJSON calculator imports.
+
 - **Step 4 spatial output status** *(Fixed)*
 
   - Updated ``StandardSpatialWorkflowOutputResult.status_frame()`` to start
