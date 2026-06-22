@@ -81,6 +81,8 @@ Changelog
     declared ``>=3.10,<3.14`` package range and the tutorial waveform stack.
   - Added Python 3.13 to package classifiers and CI coverage so public package
     metadata and validation match the declared supported range.
+  - Added PhaseNet to the tutorial runtime preflight so arrival-pick workflow
+    dependencies are reported before notebooks or generated workers run.
 
 - **Notebook source-contract checks** *(Fixed)*
 

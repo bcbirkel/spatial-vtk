@@ -152,6 +152,7 @@ def test_tutorial_notebook_runtime_preflight_includes_package_runtime_modules() 
         "numpy",
         "obspy",
         "pandas",
+        "phasenet",
         "plotly",
         "pyarrow",
         "pyasdf",
@@ -171,6 +172,7 @@ def test_tutorial_notebook_runtime_preflight_includes_package_runtime_modules() 
     assert module.NOTEBOOK_RUNTIME_MODULES["gmprocess"] == "gmprocess"
     assert module.NOTEBOOK_RUNTIME_MODULES["h5py"] == "h5py"
     assert module.NOTEBOOK_RUNTIME_MODULES["obspy"] == "obspy"
+    assert module.NOTEBOOK_RUNTIME_MODULES["phasenet"] == "phasenet"
     assert module.NOTEBOOK_RUNTIME_MODULES["plotly"] == "plotly"
     assert module.NOTEBOOK_RUNTIME_MODULES["streamlit-folium"] == "streamlit_folium"
 

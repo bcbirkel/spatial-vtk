@@ -873,6 +873,7 @@ def test_tutorial_runtime_modules_are_installable_from_declared_extras():
         "numpy": '"numpy>=',
         "obspy": '"obspy>=',
         "pandas": '"pandas>=',
+        "phasenet": '"phasenet>=',
         "plotly": '"plotly>=',
         "pyarrow": '"pyarrow>=',
         "pyasdf": '"pyasdf>=',

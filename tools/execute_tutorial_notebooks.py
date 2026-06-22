@@ -68,6 +68,7 @@ NOTEBOOK_RUNTIME_MODULES = {
     "numpy": "numpy",
     "obspy": "obspy",
     "pandas": "pandas",
+    "phasenet": "phasenet",
     "plotly": "plotly",
     "pyarrow": "pyarrow",
     "pyasdf": "pyasdf",
