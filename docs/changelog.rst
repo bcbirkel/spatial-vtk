@@ -4,6 +4,15 @@ Changelog
 2026-06-22
 ----------
 
+- **Step 3 metric preview context** *(Fixed)*
+
+  - Updated ``summarize_metric_snapshot_tasks_from_config`` to accept the
+    shared notebook context object and inherit its config path and run
+    scenario.
+  - Updated the standard Step 3 notebook to call the helper with
+    ``context=context`` instead of referencing an undefined ``config_path``
+    variable.
+
 - **Standard dashboard launch context** *(Changed)*
 
   - Updated the standard Step 2 and Step 7 notebooks to pass the resolved

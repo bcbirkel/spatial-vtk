@@ -2364,6 +2364,10 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "summarize_metric_snapshot_tasks_from_config(" in source
+    assert "context=context" in source
+    assert "config_path=str(config_path)" not in source
+    assert "run_scenario=context.run_scenario" not in source
+    assert "config_path = context.config_path" not in source
     assert "metric_outputs.write_configured_outputs(" in source
     assert "display_notebook_step_result," in source
     assert "write_metric_outputs_from_config(" not in source

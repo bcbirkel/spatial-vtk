@@ -3406,6 +3406,57 @@ metrics:
     assert "Metric tasks" in set(estimate["Estimate"])
 
 
+def test_summarize_metric_snapshot_tasks_from_config_accepts_notebook_context(tmp_path) -> None:
+    """Notebook metric preview helpers should accept the shared run context."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    snapshot_path = tmp_path / "inputs" / "metrics_snapshot.parquet"
+    snapshot_path.parent.mkdir(parents=True)
+    pd.DataFrame(
+        {
+            "event_id": ["e1", "e1"],
+            "station": ["STA", "STA"],
+            "component": ["Z", "Z"],
+            "model": ["base", "base"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "metric": ["PGA", "PGV"],
+            "log2_residual": [1.0, 0.5],
+        }
+    ).to_parquet(snapshot_path, index=False)
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+paths:
+  metric_snapshot: {snapshot_path}
+outputs:
+  tables: outputs/tables
+metrics:
+  metrics: [PGA, PGV]
+  transforms: [log2_residual]
+  output_mode: full
+run_scenarios:
+  tutorial:
+    metrics:
+      metrics: [PGA]
+""",
+        encoding="utf-8",
+    )
+
+    class Context:
+        pass
+
+    Context.config_path = config_path
+    Context.run_scenario = "tutorial"
+
+    result = summarize_metric_snapshot_tasks_from_config(context=Context())
+
+    tasks = pd.read_csv(result["metric_tasks_path"])
+    assert result["task_count"] == 1
+    assert tasks["metrics"].tolist() == ["PGA"]
+
+
 def test_write_metric_outputs_from_config_can_use_configured_snapshot(tmp_path) -> None:
     """Metric output helper should support tutorial snapshots without notebook path plumbing."""
 

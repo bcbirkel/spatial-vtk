@@ -274,6 +274,7 @@ def metric_manifest_readiness_from_config(
 
 def summarize_metric_snapshot_tasks_from_config(
     *,
+    context: Any | None = None,
     config_path: str | Path | None = None,
     run_scenario: str | None = None,
     metric_snapshot: str | Path | None = None,
@@ -296,6 +297,11 @@ def summarize_metric_snapshot_tasks_from_config(
     from spatial_vtk.io.tables import read_table, write_table
     from spatial_vtk.metrics.workflow.tasks import summarize_metric_tasks
 
+    config_path, run_scenario = _workflow_config_context(
+        context,
+        config_path=config_path,
+        run_scenario=run_scenario,
+    )
     config = _workflow_config(config_path=config_path, run_scenario=run_scenario)
     snapshot_path = (
         Path(metric_snapshot).expanduser()
@@ -613,6 +619,29 @@ def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None
     if run_scenario:
         return SpatialVTKConfig.from_file(cfg.config_path, run_scenario=run_scenario).activate()
     return cfg
+
+
+def _workflow_config_context(
+    context: Any | None,
+    *,
+    config_path: str | Path | None,
+    run_scenario: str | None,
+) -> tuple[str | Path | None, str | None]:
+    """Resolve config path and run scenario from an optional notebook context."""
+
+    if context is None:
+        return config_path, run_scenario
+    resolved_config_path = (
+        config_path
+        if config_path is not None
+        else getattr(context, "config_path", None)
+    )
+    resolved_run_scenario = (
+        run_scenario
+        if run_scenario is not None
+        else getattr(context, "run_scenario", None)
+    )
+    return resolved_config_path, resolved_run_scenario
 
 
 def _resolve_output_path(*args: Any, **kwargs: Any) -> Path:
