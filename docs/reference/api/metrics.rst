@@ -353,8 +353,9 @@ factories used by the large-run figure suite:
    inputs.
    The returned ``MetricFigureSuiteResult`` also owns
    ``context_status_frames()`` and ``display_context_status(...)`` so notebooks
-   can display metric-table readiness, spectral-contract checks, and dimension
-   summaries without branching on context readiness in notebook cells.
+   can display metric-table readiness, target metric selection, spectral-contract
+   checks, and dimension summaries without branching on context readiness in
+   notebook cells.
 
 ``station_grid_for_item`` and ``station_model_summary_for_item``
    Prepare station summaries for grid and model-map plotting while preserving
@@ -375,6 +376,13 @@ factories used by the large-run figure suite:
    ``spectral_contract_status`` plus PSA/FAS broadband and legacy passband row
    counts, so notebooks can warn users to rebuild metric rows before PSA plots
    are skipped because they came from older passband-scoped spectral outputs.
+
+``metric_selection_status_frame``
+   Return one row per target metric showing raw matched rows, selected rows,
+   ``status``, ``status_reason``, and skip guidance after the figure filters
+   have been applied. This replaces ad hoc skip prints in large-run notebooks;
+   legacy passband-scoped PSA rows are reported as
+   ``status_reason="no_broadband_spectral_rows"``.
 
 ``spectral_metric_contract_status``
    Return a compact PSA/FAS audit table with row counts, broadband row counts,

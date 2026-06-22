@@ -4,6 +4,18 @@ Changelog
 2026-06-22
 ----------
 
+- **Metric figure selection audit** *(Changed)*
+
+  - Added ``MetricFigureContext.metric_selection_status_frame()`` so large-run
+    plotting notebooks can display selected/skipped target metrics with
+    ``status_reason`` and row counts.
+  - Removed ad hoc skip prints from metric figure selection; skipped target
+    metrics and legacy passband-scoped PSA rows are now reported through
+    status tables.
+  - Added the metric-selection audit table to the standard metric figure-suite
+    context display frames and documented the contract in the metric API and
+    Python workflow guides.
+
 - **Step 1 I/O status reason codes** *(Changed)*
 
   - Added ``status_reason`` to direct waveform preprocessing status rows and

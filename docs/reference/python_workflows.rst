@@ -576,9 +576,10 @@ Step 3: Metric Calculation and Metric Figures
    * - Render many large-run metric figures with auditable row sidecars
      - ``spatial_vtk.metrics.load_standard_metric_workflow_outputs(...).write_large_run_figure_suite(...)``
      - saved metric figures, package-generated context status and dimension
-       summary tables, spectral-contract status, and optional
-       ``*.csv``/``*.source.csv``/``*.json`` sidecars without notebook-local
-       row filtering, figure-context construction, or per-plot path plumbing
+       summary tables, target-metric selection status, spectral-contract
+       status, and optional ``*.csv``/``*.source.csv``/``*.json`` sidecars
+       without notebook-local row filtering, figure-context construction, or
+       per-plot path plumbing
 
 Use direct metric helpers such as
 ``spatial_vtk.metrics.build_metric_waveform_inventories_from_config``,

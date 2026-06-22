@@ -780,6 +780,12 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert bool(context_status.loc["value_col_present"]) is True
     assert context_status.loc["finite_value_rows"] == 6
     assert context_status.loc["nonfinite_value_rows"] == 2
+    selection_status = context.metric_selection_status_frame(components=["Z"], model="m1").set_index("metric_key")
+    assert selection_status.loc["pga", "status_reason"] == "selected"
+    assert selection_status.loc["pga", "selected_row_count"] == 4
+    assert selection_status.loc["psa", "status_reason"] == "selected"
+    assert selection_status.loc["psa", "selected_row_count"] == 3
+    assert selection_status.loc["traveltime_delay", "status_reason"] == "no_matching_rows"
     pga_item = next(context.iter_metric_frames(passband="1-2 sec", components=["Z"], model="m1", split_psa_period=False))
     station_summary = context.station_summary_for_map(pga_item["df"])
     item_station_summary = context.station_summary_for_item(pga_item)
@@ -1038,6 +1044,39 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
         metadata = json.loads(diagnostic_metadata.read_text(encoding="utf-8"))
         assert metadata["plot_row_count"] >= metadata["written_row_count"] > 0
         assert metadata["source_row_count"] >= metadata["written_row_count"]
+
+
+def test_metric_figure_context_reports_legacy_psa_selection_without_printing(tmp_path, capsys) -> None:
+    """Passband-scoped legacy PSA rows should be skipped through status tables."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2"],
+            "station": ["STA", "STA"],
+            "sta_lon": [-118.0, -118.0],
+            "sta_lat": [34.0, 34.0],
+            "metric": ["PSA", "PSA"],
+            "band": ["1-2 sec", "2-3 sec"],
+            "model": ["m1", "m1"],
+            "component": ["Z", "Z"],
+            "period_s": [1.0, 2.0],
+            "log2_residual": [0.5, 0.75],
+        }
+    )
+    metrics_path = tmp_path / "metrics_long.parquet"
+    metrics.to_parquet(metrics_path, index=False)
+    context = MetricFigureContext.from_metrics_long(metrics_path, tmp_path / "figures", make_figures=True)
+    capsys.readouterr()
+
+    assert list(context.iter_metric_frames(split_psa_period=False)) == []
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    selection = context.metric_selection_status_frame().set_index("metric_key")
+    assert selection.loc["psa", "status"] == "skipped"
+    assert selection.loc["psa", "row_count"] == 2
+    assert selection.loc["psa", "selected_row_count"] == 0
+    assert selection.loc["psa", "status_reason"] == "no_broadband_spectral_rows"
+    assert "blank/broadband passbands" in selection.loc["psa", "message"]
 
 
 def test_metric_figure_context_writes_single_named_station_map_with_source_sidecar(tmp_path) -> None:
@@ -1470,6 +1509,9 @@ def test_metric_figure_suite_result_displays_context_status_frames() -> None:
         def status_frame(self) -> pd.DataFrame:
             return pd.DataFrame([{"frame": "status"}])
 
+        def metric_selection_status_frame(self) -> pd.DataFrame:
+            return pd.DataFrame([{"frame": "selection"}])
+
         def spectral_metric_contract_status(self) -> pd.DataFrame:
             return pd.DataFrame([{"frame": "spectral"}])
 
@@ -1480,8 +1522,8 @@ def test_metric_figure_suite_result_displays_context_status_frames() -> None:
     displayed: list[pd.DataFrame] = []
     frames = result.display_context_status(display=displayed.append)
 
-    assert list(frames) == ["context_status", "spectral_metric_contract"]
-    assert [frame["frame"].iloc[0] for frame in displayed] == ["status", "spectral"]
+    assert list(frames) == ["context_status", "metric_selection", "spectral_metric_contract"]
+    assert [frame["frame"].iloc[0] for frame in displayed] == ["status", "selection", "spectral"]
 
     class ReadyContext(FakeContext):
         ready = True
@@ -1491,7 +1533,7 @@ def test_metric_figure_suite_result_displays_context_status_frames() -> None:
 
     ready_result = MetricFigureSuiteResult(context=ReadyContext(), rows=())
     ready_frames = ready_result.context_status_frames()
-    assert list(ready_frames) == ["context_status", "spectral_metric_contract", "dimension_summary"]
+    assert list(ready_frames) == ["context_status", "metric_selection", "spectral_metric_contract", "dimension_summary"]
 
 
 def test_metric_figure_suite_status_reports_skip_reasons() -> None:

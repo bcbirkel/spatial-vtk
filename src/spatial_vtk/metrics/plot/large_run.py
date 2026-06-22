@@ -530,6 +530,61 @@ class MetricFigureContext:
             )
         return pd.DataFrame(rows)
 
+    def metric_selection_status_frame(
+        self,
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+    ) -> pd.DataFrame:
+        """Return target-metric selection status without emitting skip prints.
+
+        Large-run plotting helpers target a curated set of metrics. This frame
+        lets notebooks show which targets are selected or skipped after
+        passband/component/model filtering, including the common PSA legacy case
+        where spectral rows still carry waveform passbands instead of
+        blank/broadband passbands with oscillator periods in ``period_s``.
+        """
+
+        rows: list[dict[str, Any]] = []
+        for spec in TARGET_METRIC_SPECS:
+            base = self.filtered_base(
+                passband=passband,
+                components=components,
+                model=model,
+                include_passband=spec["key"] != "psa",
+            )
+            raw_subset = base.loc[self.metric_mask(base, tuple(spec["aliases"]))].copy()
+            selected = self._broadband_spectral_rows(raw_subset) if spec["key"] == "psa" else raw_subset
+            raw_count = int(len(raw_subset))
+            selected_count = int(len(selected))
+            status = "selected"
+            reason = "selected"
+            message = f"{selected_count:,} row(s) selected."
+            if raw_count == 0:
+                status = "skipped"
+                reason = "no_matching_rows"
+                message = f"No rows matched {spec['label']} after figure filters."
+            elif selected_count == 0:
+                status = "skipped"
+                reason = str(selected.attrs.get("svtk_metric_selection_reason") or "no_selected_rows")
+                message = str(
+                    selected.attrs.get("svtk_metric_selection_message")
+                    or f"No {spec['label']} rows remained after figure-specific filtering."
+                )
+            rows.append(
+                {
+                    "metric_key": spec["key"],
+                    "metric": spec["label"],
+                    "row_count": raw_count,
+                    "selected_row_count": selected_count,
+                    "status": status,
+                    "status_reason": reason,
+                    "message": message,
+                }
+            )
+        return pd.DataFrame(rows)
+
     def metric_mask(self, df: pd.DataFrame, aliases: tuple[str, ...]) -> pd.Series:
         """Return rows whose metric text matches one alias."""
 
@@ -599,7 +654,6 @@ class MetricFigureContext:
             if spec["key"] == "psa":
                 subset = self._broadband_spectral_rows(subset)
             if subset.empty:
-                print(f"skip {spec['label']}: no matching rows")
                 continue
             if spec["key"] == "psa" and split_psa_period and self.period_col in subset.columns:
                 periods = sorted(pd.to_numeric(subset[self.period_col], errors="coerce").dropna().unique())
@@ -2068,8 +2122,15 @@ class MetricFigureContext:
         broadband = _broadband_passband_mask(df[self.band_col])
         if broadband.any():
             return df.loc[broadband].copy()
-        print("skip PSA: no broadband PSA rows found. Rebuild the metric manifest/metrics so spectral metrics are calculated once with blank passband instead of once per passband.")
-        return df.iloc[0:0].copy()
+        out = df.iloc[0:0].copy()
+        out.attrs.update(getattr(df, "attrs", {}))
+        out.attrs["svtk_metric_selection_reason"] = "no_broadband_spectral_rows"
+        out.attrs["svtk_metric_selection_message"] = (
+            "PSA rows were found, but none use blank/broadband passbands. "
+            "Rebuild the metric manifest and metric rows so spectral metrics are "
+            "calculated once with blank passband and split by period_s."
+        )
+        return out
 
 
 def prepare_large_run_metric_figure_context(
@@ -2099,6 +2160,7 @@ class MetricFigureSuiteResult:
 
         frames = {
             "context_status": self.context.status_frame(),
+            "metric_selection": self.context.metric_selection_status_frame(),
             "spectral_metric_contract": self.context.spectral_metric_contract_status(),
         }
         if self.context.ready:

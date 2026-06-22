@@ -1454,6 +1454,9 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "``status_reason`` distinguishes written figures from disabled optional\n   families" in text
     assert "``MetricFigureSuiteResult`` also owns" in text
     assert "``context_status_frames()`` and ``display_context_status(...)``" in text
+    assert "target metric selection" in text
+    assert "``metric_selection_status_frame``" in text
+    assert "``status_reason=\"no_broadband_spectral_rows\"``" in text
     assert "large-run notebooks do not import individual plotting\n   functions" in text
     assert "``StationMetricMapResult.status_frame()`` includes a clear" in text
     assert "``resolved_path`` row for the rendered figure" in text
