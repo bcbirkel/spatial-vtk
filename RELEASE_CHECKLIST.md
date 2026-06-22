@@ -26,8 +26,9 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"
 ```
 
-Use Python 3.10, 3.11, or 3.12. The package currently declares
-`>=3.10,<3.14`.
+Use Python 3.10 through 3.13. The package currently declares
+`>=3.10,<3.14`; do not run release validation on Python 3.14 until the
+waveform/tutorial dependency stack supports it.
 
 ## 3. Run Local Validation
 

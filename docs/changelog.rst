@@ -77,6 +77,8 @@ Changelog
   - Updated tutorial missing-dependency diagnostics so the suggested rerun
     commands use the same writable ``MPLCONFIGDIR`` prefix as the public
     tutorial docs and release checks.
+  - Aligned README and release-checklist Python-version guidance with the
+    declared ``>=3.10,<3.14`` package range and the tutorial waveform stack.
 
 - **Notebook source-contract checks** *(Fixed)*
 

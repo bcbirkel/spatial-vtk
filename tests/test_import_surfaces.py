@@ -441,6 +441,19 @@ def test_release_checklist_exists_and_matches_public_validation_gates():
     assert "/pro" + "ject" not in text
     assert "jvi" + "dale" not in text
     assert "CA" + "RC" not in text
+    assert "Use Python 3.10 through 3.13" in text
+    assert "Python 3.10, 3.11, or 3.12" not in text
+
+
+def test_readme_install_guidance_names_supported_python_range():
+    """First-run README install guidance should match the package Python range."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    readme = (root / "README.md").read_text(encoding="utf-8")
+    pyproject = (root / "pyproject.toml").read_text(encoding="utf-8")
+    assert 'requires-python = ">=3.10,<3.14"' in pyproject
+    assert "Use Python 3.10 through 3.13." in readme
+    assert "Python 3.14 is not currently supported" in readme
 
 
 def test_public_workflows_check_generated_cli_reference():

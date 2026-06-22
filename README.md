@@ -15,6 +15,9 @@ performance patterns.
 
 ## Install
 
+Use Python 3.10 through 3.13. The package declares `>=3.10,<3.14`;
+Python 3.14 is not currently supported by the tutorial waveform stack.
+
 Install from PyPI:
 
     python -m pip install spatial-vtk
