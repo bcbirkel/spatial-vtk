@@ -175,8 +175,26 @@ def build_arg_parser() -> argparse.ArgumentParser:
     """
 
     parser = argparse.ArgumentParser(description="Write a metric Slurm array script from a Spatial-VTK manifest.")
-    parser.add_argument("--manifest", required=True, help="Metric workflow manifest JSON with batch output paths.")
-    parser.add_argument("--output", required=True, help="Output metric Slurm array script path.")
+    parser.add_argument(
+        "--metric-manifest",
+        "--manifest",
+        dest="metric_manifest",
+        required=True,
+        help=(
+            "Metric workflow manifest JSON with batch output paths. "
+            "Prefer --metric-manifest; --manifest is a legacy alias."
+        ),
+    )
+    parser.add_argument(
+        "--metrics-slurm-script-output",
+        "--output",
+        dest="metrics_slurm_script_output",
+        required=True,
+        help=(
+            "Metric Slurm array script output path. "
+            "Prefer --metrics-slurm-script-output; --output is a legacy alias."
+        ),
+    )
     parser.add_argument("--config", default=None, help="Spatial-VTK config with metrics.slurm settings.")
     parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     return parser
@@ -203,7 +221,7 @@ def main(argv: list[str] | None = None) -> int:
         else SpatialVTKConfig.empty(root_dir=".")
     )
     settings = slurm_settings_from_config(config)
-    path = write_metrics_slurm_script(args.manifest, args.output, settings)
+    path = write_metrics_slurm_script(args.metric_manifest, args.metrics_slurm_script_output, settings)
     print(f"Wrote metric Slurm script: {path}")
     print("No job was submitted. Submit the script with sbatch.")
     return 0

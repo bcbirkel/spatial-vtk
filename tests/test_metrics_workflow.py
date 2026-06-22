@@ -2200,7 +2200,27 @@ def test_metric_slurm_module_docs_name_manifest_array_contract() -> None:
     help_text = parser.format_help()
     assert "Write a metric Slurm array script from a Spatial-VTK manifest." in help_text
     assert "Metric workflow manifest JSON with batch output paths." in help_text
-    assert "Output metric Slurm array script path." in help_text
+    assert "Metric Slurm array script output path." in help_text
+    assert "--metric-manifest" in help_text
+    assert "--metrics-slurm-script-output" in help_text
+    assert "legacy" in help_text
+    assert "alias" in help_text
+
+    args = parser.parse_args(
+        [
+            "--metric-manifest",
+            "metric_manifest.json",
+            "--metrics-slurm-script-output",
+            "run_metrics.slurm",
+        ]
+    )
+    legacy_args = parser.parse_args(["--manifest", "legacy_manifest.json", "--output", "legacy_metrics.slurm"])
+    assert args.metric_manifest == "metric_manifest.json"
+    assert args.metrics_slurm_script_output == "run_metrics.slurm"
+    assert legacy_args.metric_manifest == "legacy_manifest.json"
+    assert legacy_args.metrics_slurm_script_output == "legacy_metrics.slurm"
+    assert not hasattr(args, "manifest")
+    assert not hasattr(args, "output")
 
 
 def test_configured_metric_plan_slurm_and_merge_helpers_use_registered_paths(tmp_path) -> None:

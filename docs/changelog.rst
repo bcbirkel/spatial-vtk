@@ -28,6 +28,14 @@ Changelog
   - Kept legacy ``--output`` support and added parser coverage for both
     spellings.
 
+- **Direct metric Slurm parser aliases** *(Changed)*
+
+  - Added artifact-named ``--metric-manifest`` and
+    ``--metrics-slurm-script-output`` aliases to the direct
+    ``spatial_vtk.metrics.workflow.slurm`` parser.
+  - Kept legacy ``--manifest`` and ``--output`` support and added parser
+    coverage for both preferred and legacy forms.
+
 - **Master-list CLI defaults** *(Changed)*
 
   - Made ``svtk io master-stations`` and ``svtk io master-events`` resolve
