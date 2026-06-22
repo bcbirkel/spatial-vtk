@@ -733,11 +733,12 @@ paths without requiring global config activation.
        conditionals in cells
    * - Write dashboard-ready row and summary datasets
      - ``spatial_vtk.visualize.prepare_configured_dashboard_datasets_from_notebook_settings``
-     - dashboard metric dataset root and dashboard summary table root; standard
-       dashboard artifacts are replaced so stale partitions or stale
-       CSV or Parquet summary files do not mix with the current run. The notebook
-       preparation helper owns local-skip/current/rebuild decisions and returns
-       readiness, status, and written-output frames for display. The returned
+     - configured ``metrics_dashboard`` row dataset directory and
+       ``dashboard_summaries`` summary-table directory; standard dashboard
+       artifacts are replaced so stale partitions or stale CSV or Parquet
+       summary files do not mix with the current run. The notebook preparation
+       helper owns local-skip/current/rebuild decisions and returns readiness,
+       status, and written-output frames for display. The returned
        ``DashboardDatasetPreparationResult`` also owns the Slurm-aware
        ``run_if_needed(...)`` call used by large-run notebooks, including the
        configured writer function, serializable config path, and standard

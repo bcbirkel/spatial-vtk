@@ -3353,7 +3353,11 @@ def test_python_workflow_docs_prefer_dashboard_preparation_result_object():
     )[0]
 
     assert "spatial_vtk.visualize.prepare_configured_dashboard_datasets_from_notebook_settings" in dashboard_row
-    entry_point_cell = dashboard_row.split("- dashboard metric dataset root", 1)[0]
+    assert "configured ``metrics_dashboard`` row dataset directory and" in dashboard_row
+    assert "``dashboard_summaries`` summary-table directory" in dashboard_row
+    assert "dashboard metric dataset root" not in dashboard_row
+    assert "dashboard summary table root" not in dashboard_row
+    entry_point_cell = dashboard_row.split("configured ``metrics_dashboard`` row dataset directory", 1)[0]
     assert "spatial_vtk.visualize.write_configured_dashboard_datasets" not in entry_point_cell
     assert "DashboardDatasetPreparationResult`` also owns the Slurm-aware" in dashboard_row
     assert "``ready`` reports whether the underlying summary data is" in dashboard_row

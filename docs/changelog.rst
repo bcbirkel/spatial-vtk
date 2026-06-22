@@ -4,6 +4,14 @@ Changelog
 2026-06-22
 ----------
 
+- **Dashboard workflow path vocabulary** *(Changed)*
+
+  - Replaced ambiguous dashboard ``root`` wording in the Python workflow guide
+    with the configured ``metrics_dashboard`` row dataset directory and
+    ``dashboard_summaries`` summary-table directory names.
+  - Added source-contract coverage so dashboard workflow docs stay aligned with
+    the config, CLI, and dashboard launcher vocabulary.
+
 - **Visualize API public helper surface** *(Changed)*
 
   - Replaced the lower-level shared visualize utility automodule block with
