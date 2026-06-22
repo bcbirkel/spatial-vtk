@@ -18,6 +18,7 @@ extras and run:
 
 ```bash
 python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"
+python tools/check_validation_environment.py --groups tutorial
 MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --clean --include-large-run
 ```
 
@@ -78,6 +79,9 @@ deeper implementation modules below those packages in notebooks; preflight
 rejects those paths because they are internal organization, not the tutorial
 contract.
 
+Run `python tools/check_validation_environment.py --groups tutorial` first to
+report missing Jupyter, mapping, dashboard, or waveform modules before the
+heavier notebook checks start.
 Run `python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run`
 for the same source-contract and example-data checks without notebook runtime
 dependencies.

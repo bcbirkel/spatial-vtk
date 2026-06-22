@@ -815,6 +815,8 @@ def test_examples_docs_advertise_fresh_checkout_large_run_gate_and_sidecars() ->
     assert "If pip has trouble solving compiled geospatial or waveform packages" in large_run_readme
     assert "## Run the Tutorial Notebooks" in readme
     assert "python tools/check_validation_environment.py --groups tutorial" in combined
+    assert "python tools/check_validation_environment.py --groups tutorial" in examples_index
+    assert "python tools/check_validation_environment.py --groups tutorial" in large_run_readme
     assert "python tools/execute_tutorial_notebooks.py --preflight-only --include-large-run" in readme
     assert (
         "MPLCONFIGDIR=/tmp/mplconfig_svtk "

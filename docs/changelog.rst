@@ -4,6 +4,15 @@ Changelog
 2026-06-21
 ----------
 
+- **Tutorial setup documentation** *(Changed)*
+
+  - Added the validation-environment preflight to the examples overview and
+    large-run notebook README so all tutorial entry points start with the same
+    lightweight dependency check.
+  - Extended tutorial documentation coverage so the examples index and large-run
+    README keep that dependency-check command alongside the README and
+    installation guide.
+
 - **Validation-environment preflight** *(Added)*
 
   - Added a stdlib-only ``tools/check_validation_environment.py`` helper that

@@ -27,6 +27,7 @@ To verify the full standard tutorial from a clean output directory, run:
 .. code-block:: bash
 
    python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"
+   python tools/check_validation_environment.py --groups tutorial
    MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --clean
 
 If pip has trouble solving compiled geospatial or waveform packages in an
@@ -51,6 +52,7 @@ notebooks:
 
 .. code-block:: bash
 
+   python tools/check_validation_environment.py --groups tutorial
    MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run
 
 The runtime check does not execute notebooks or clean outputs. It checks the
@@ -72,6 +74,7 @@ source checkout, run:
 .. code-block:: bash
 
    python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"
+   python tools/check_validation_environment.py --groups tutorial
    MPLCONFIGDIR=/tmp/mplconfig_svtk python tools/execute_tutorial_notebooks.py --clean --include-large-run
 
 The large-run notebooks still use the committed example data during this
