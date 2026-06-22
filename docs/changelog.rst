@@ -35,6 +35,14 @@ Changelog
   - Added source-contract coverage so the Step 5 region section stays aligned
     with the helper that writes all three outputs.
 
+- **Notebook workflow-section contract** *(Changed)*
+
+  - Extended tutorial notebook preflight to catch ``Purpose:``/``Outputs:``
+    task sections that are immediately followed by another markdown section.
+  - The new diagnostic asks authors to combine narrative with the package
+    helper section or add the missing package-helper code cell, preventing
+    notebooks from looking like required workflow steps or plots were skipped.
+
 - **Metric figure selection audit** *(Changed)*
 
   - Added ``MetricFigureContext.metric_selection_status_frame()`` so large-run

@@ -504,6 +504,30 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
                         "source": ["## Run Expensive Work\n", "\n", "Do the step.\n"],
                     },
                     {
+                        "cell_type": "markdown",
+                        "id": "orphan-purpose-output-section",
+                        "metadata": {},
+                        "source": [
+                            "## Plot Required Figures\n",
+                            "\n",
+                            "Purpose: render required figures.\n",
+                            "\n",
+                            "Outputs: figure files.\n",
+                        ],
+                    },
+                    {
+                        "cell_type": "markdown",
+                        "id": "next-section-without-code",
+                        "metadata": {},
+                        "source": [
+                            "## Next Workflow Step\n",
+                            "\n",
+                            "Purpose: run the next workflow helper.\n",
+                            "\n",
+                            "Outputs: next output table.\n",
+                        ],
+                    },
+                    {
                         "cell_type": "code",
                         "id": "bad-cell",
                         "execution_count": 1,
@@ -584,6 +608,8 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert "committed cell metadata should not contain saved runtime state keys: execution" in combined
     assert "committed notebook metadata should not contain saved runtime state keys: widgets" in combined
     assert "markdown section should include Purpose: and Outputs:" in combined
+    assert "markdown section with Purpose:/Outputs: is followed by another markdown section" in combined
+    assert "combine the text with the package helper section or add the missing package-helper code cell" in combined
     assert "import subprocess" in combined
     assert "forbidden shell/CLI workflow pattern" in combined
     assert "get_ipython().system(" in combined

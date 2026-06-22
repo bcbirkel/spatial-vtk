@@ -567,6 +567,7 @@ def tutorial_notebook_contract_violations(notebooks: list[Path], *, repo_root: P
                     )
             if cell.get("cell_type") == "markdown":
                 violations.extend(_notebook_markdown_section_violations(source, cell_label))
+                violations.extend(_notebook_markdown_flow_violations(cells, index - 1, cell_label))
             if not str(cell.get("id", "")).strip():
                 violations.append(f"{cell_label}: missing cell id")
             if cell.get("cell_type") == "code":
@@ -614,11 +615,41 @@ def _notebook_markdown_section_violations(source: str, cell_label: str) -> list[
     """Return tutorial section headings that do not document task intent."""
 
     first_line = next((line.strip() for line in source.splitlines() if line.strip()), "")
-    if not first_line.startswith("##"):
+    if not _is_task_markdown_heading(first_line):
         return []
     if "Purpose:" in source and "Outputs:" in source:
         return []
     return [f"{cell_label}: markdown section should include Purpose: and Outputs:"]
+
+
+def _notebook_markdown_flow_violations(cells: list[dict[str, object]], index: int, cell_label: str) -> list[str]:
+    """Return markdown task sections that look disconnected from executable work."""
+
+    source = "".join(cells[index].get("source", []))
+    first_line = next((line.strip() for line in source.splitlines() if line.strip()), "")
+    if not _is_task_markdown_heading(first_line):
+        return []
+    if "Purpose:" not in source or "Outputs:" not in source:
+        return []
+    for next_cell in cells[index + 1 :]:
+        next_source = "".join(next_cell.get("source", []))
+        if not next_source.strip():
+            continue
+        if next_cell.get("cell_type") == "markdown":
+            next_first_line = next((line.strip() for line in next_source.splitlines() if line.strip()), "")
+            return [
+                f"{cell_label}: markdown section with Purpose:/Outputs: is followed by another "
+                f"markdown section {next_first_line!r}; combine the text with the package helper "
+                "section or add the missing package-helper code cell."
+            ]
+        return []
+    return []
+
+
+def _is_task_markdown_heading(first_line: str) -> bool:
+    """Return whether ``first_line`` is a notebook task-section heading."""
+
+    return first_line.startswith("##")
 
 
 def _notebook_local_definition_violations(source: str, cell_label: str) -> list[str]:
