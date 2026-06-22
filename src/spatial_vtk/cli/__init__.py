@@ -2233,7 +2233,7 @@ def _resolve_metrics_dashboard_paths(
             "--dashboard-summary-table-dir for the dashboard_summaries table directory, "
             "pass --config, or run 'svtk config set PATH'."
         )
-    from spatial_vtk.visualize.dashboard.contracts import dashboard_output_paths
+    from spatial_vtk.visualize.dashboard import dashboard_output_paths
 
     paths = dashboard_output_paths(cfg=config, include_summary_tables=False)
     resolved_metrics_root = Path(metrics_root).expanduser() if metrics_root else paths["metrics_dashboard_root"]
@@ -2652,8 +2652,8 @@ def _cmd_metrics_inventories(args: argparse.Namespace) -> int:
 
     needs_config = not (args.trace_metadata and args.observed_output and args.synthetic_output)
     config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    from spatial_vtk.io import preprocessed_waveform_metadata_paths
     from spatial_vtk.metrics import build_metric_waveform_inventories_from_trace_metadata
-    from spatial_vtk.io.preprocessing import preprocessed_waveform_metadata_paths
 
     trace_metadata = (
         Path(args.trace_metadata).expanduser()
@@ -3786,7 +3786,7 @@ def _read_table(path: str | Path) -> Any:
     """Read one CSV or Parquet table."""
 
     table_path = Path(path).expanduser()
-    from spatial_vtk.io.tables import read_table
+    from spatial_vtk.io import read_table
 
     return read_table(table_path)
 
@@ -3795,7 +3795,7 @@ def _write_table(df: Any, path: str | Path) -> Path:
     """Write one CSV or Parquet table."""
 
     output = Path(path).expanduser()
-    from spatial_vtk.io.tables import write_table
+    from spatial_vtk.io import write_table
 
     written = write_table(df, output, index=False)
     print(written)

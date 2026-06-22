@@ -3689,10 +3689,30 @@ def test_cli_table_writes_use_shared_writer():
         encoding="utf-8"
     )
     helper = source.split("def _write_table", 1)[1].split("\ndef ", 1)[0]
-    assert "from spatial_vtk.io.tables import write_table" in helper
+    assert "from spatial_vtk.io import write_table" in helper
     assert "written = write_table(df, output, index=False)" in helper
     assert ".to_csv(" not in helper
     assert ".to_parquet(" not in helper
+
+
+def test_cli_workflow_helpers_use_public_package_surfaces():
+    """Curated CLI helpers should not reach into notebook-facing implementation modules."""
+
+    source = (pathlib.Path(__file__).resolve().parents[1] / "src" / "spatial_vtk" / "cli" / "__init__.py").read_text(
+        encoding="utf-8"
+    )
+    forbidden_imports = [
+        "from spatial_vtk.visualize.dashboard.contracts import dashboard_output_paths",
+        "from spatial_vtk.io.preprocessing import preprocessed_waveform_metadata_paths",
+        "from spatial_vtk.io.tables import read_table",
+        "from spatial_vtk.io.tables import write_table",
+    ]
+    offenders = [import_line for import_line in forbidden_imports if import_line in source]
+    assert not offenders, "\n".join(offenders)
+    assert "from spatial_vtk.visualize.dashboard import dashboard_output_paths" in source
+    assert "from spatial_vtk.io import preprocessed_waveform_metadata_paths" in source
+    assert "from spatial_vtk.io import read_table" in source
+    assert "from spatial_vtk.io import write_table" in source
 
 
 def test_io_plan_cli_uses_shared_table_helpers():
