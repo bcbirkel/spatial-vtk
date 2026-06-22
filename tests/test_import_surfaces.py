@@ -2725,7 +2725,12 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Import waveform\nfigure helpers from ``spatial_vtk.visualize.waveforms`` in notebooks" not in text
     assert "Import routine dashboard\nhelpers from ``spatial_vtk.visualize``" in text
     assert "metrics dashboard row dataset" in text
+    assert "configured ``metrics_dashboard`` row\ndataset directory" in text
+    assert "``dashboard_summaries`` summary tables used by the overview" in text
     assert "internal output registry names" in text
+    assert "row-level metric dataset root" not in text
+    assert "pass explicit roots" not in text
+    assert "when their output\nroots are omitted" not in text
     assert "other configured\nmetric-value coverage" in text
     assert "generic metric-value\ncoverage" not in text
     assert "``metrics_dashboard_root``" not in text
@@ -3367,7 +3372,8 @@ def test_python_workflow_docs_prefer_dashboard_preparation_result_object():
     assert "map-blocked station or event tab still show its filtered table" in dashboard_row
     assert "Scripts that intentionally own dashboard preparation control can call" in dashboard_row
     assert "``spatial_vtk.visualize.write_configured_dashboard_datasets`` directly" in dashboard_row
-    assert "with ``cfg=`` or explicit roots" in dashboard_row
+    assert "with ``cfg=`` or explicit output directories" in dashboard_row
+    assert "explicit roots" not in dashboard_row
 
 
 def test_python_workflow_docs_prefer_dashboard_launch_wrapper():

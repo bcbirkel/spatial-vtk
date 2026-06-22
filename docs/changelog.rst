@@ -4,6 +4,16 @@ Changelog
 2026-06-22
 ----------
 
+- **Dashboard documentation vocabulary** *(Changed)*
+
+  - Replaced remaining dashboard ``root`` wording in the visualize API and
+    Python workflow references with the configured ``metrics_dashboard`` row
+    dataset directory and ``dashboard_summaries`` summary-table directory
+    terminology.
+  - Added source-contract coverage so dashboard docs keep using explicit
+    dataset, summary-table, and output-directory labels instead of ambiguous
+    root vocabulary.
+
 - **CLI PSA plotting workflow** *(Fixed)*
 
   - Removed ``PSA`` from the passband heatmap command in the CLI workflow

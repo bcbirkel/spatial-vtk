@@ -764,7 +764,7 @@ paths without requiring global config activation.
        skipped, and local-run states appear as labelled notebook tables.
        Scripts that intentionally own dashboard preparation control can call
        ``spatial_vtk.visualize.write_configured_dashboard_datasets`` directly
-       with ``cfg=`` or explicit roots. The
+       with ``cfg=`` or explicit output directories. The
        metrics dashboard loads the primary
        ``model_metric_band`` summary at startup, then reads optional
        station/event/path summaries lazily in chunks after the active

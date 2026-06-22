@@ -208,15 +208,16 @@ starting Streamlit.
 
 ``dashboard_readiness_summary_frame`` returns a compact preflight table for
 notebooks, while ``dashboard_output_status_frame`` returns the detailed
-artifact status. Together they cover the row-level metric dataset root used by
-distribution/download tabs, the four metrics-dashboard summary tables used by
-the overview, station, event, path, and model-comparison tabs, and the trace-QC
-table used by the QC dashboard. ``ready`` and ``readiness`` values describe
-whether the underlying table data can be read and summarized. ``tab_ready`` and
-``tab_message`` add dashboard-tab readiness, including map-coordinate blockers
-for station and event summary tabs. These checks inspect paths, schemas, row
-counts, map-coordinate availability, and recognized dashboard value columns
-without loading the full large-run metric inventory.
+artifact status. Together they cover the configured ``metrics_dashboard`` row
+dataset directory used by distribution/download tabs, the four
+``dashboard_summaries`` summary tables used by the overview, station, event,
+path, and model-comparison tabs, and the trace-QC table used by the QC
+dashboard. ``ready`` and ``readiness`` values describe whether the underlying
+table data can be read and summarized. ``tab_ready`` and ``tab_message`` add
+dashboard-tab readiness, including map-coordinate blockers for station and
+event summary tabs. These checks inspect paths, schemas, row counts,
+map-coordinate availability, and recognized dashboard value columns without
+loading the full large-run metric inventory.
 The detailed status table includes both the configured path key in ``name``
 and user-facing ``artifact_role`` / ``artifact_label`` columns, plus
 ``resolved_path`` as the clear path column. The legacy ``path`` column remains
@@ -390,9 +391,9 @@ recognized dashboard artifacts, so reruns cannot accidentally mix old metric
 partitions or stale summary files with newly written outputs.
 Lower-level writers such as ``write_dashboard_metric_dataset`` and
 ``write_dashboard_summary_dataset`` also accept ``cfg=cfg`` when their output
-roots are omitted. Use that form in scripts that need registered dashboard
-paths without depending on global active-config state; pass explicit roots for
-custom exports outside the configured run directory.
+directories are omitted. Use that form in scripts that need registered
+dashboard paths without depending on global active-config state; pass explicit
+directories for custom exports outside the configured run directory.
 ``prepare_configured_dashboard_datasets_from_notebook_settings`` wraps that
 writer for notebooks: it calls the bounded dashboard readiness checks, skips
 local preparation when requested for large datasets, and reports the readiness,
