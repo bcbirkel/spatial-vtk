@@ -948,6 +948,23 @@ def test_tutorial_runtime_modules_are_installable_from_declared_extras():
     assert not missing_fragments, f"Runtime modules missing from declared pip requirements: {missing_fragments}"
 
 
+def test_large_run_metric_helpers_keep_matplotlib_lazy():
+    """Large-run metric aggregation/status helpers should import without plotting deps."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    source_path = root / "src" / "spatial_vtk" / "metrics" / "plot" / "large_run.py"
+    tree = ast.parse(source_path.read_text(encoding="utf-8"))
+
+    eager_matplotlib_imports: list[str] = []
+    for node in tree.body:
+        if isinstance(node, ast.Import):
+            eager_matplotlib_imports.extend(alias.name for alias in node.names if alias.name.startswith("matplotlib"))
+        elif isinstance(node, ast.ImportFrom) and str(node.module or "").startswith("matplotlib"):
+            eager_matplotlib_imports.append(str(node.module))
+
+    assert not eager_matplotlib_imports
+
+
 def test_dashboard_extra_names_dashboard_runtime_dependencies():
     """The advertised dashboard extra should not be empty package metadata."""
 

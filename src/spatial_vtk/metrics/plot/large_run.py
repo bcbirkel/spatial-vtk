@@ -9,13 +9,10 @@ import re
 from tempfile import TemporaryDirectory
 from typing import Any, Callable, Iterable, Sequence
 
-import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 from spatial_vtk.io import parquet_table_columns, table_columns
-from spatial_vtk.visualize.figure_context import value_requires_model
 from spatial_vtk.visualize.figure_sidecars import (
     normalize_figure_status_rows,
     read_figure_sidecar_metadata,
@@ -41,6 +38,99 @@ SIDECAR_TABLE_ROLE_ATTR = "svtk_sidecar_table_role"
 SIDECAR_PLOT_ROWS_ROLE_ATTR = "svtk_sidecar_plot_rows_role"
 SIDECAR_SOURCE_ROWS_ROLE_ATTR = "svtk_sidecar_source_rows_role"
 SIDECAR_EVENT_CENTERED_ATTR = "svtk_sidecar_event_centered"
+
+
+def _matplotlib_pyplot() -> Any:
+    """Import pyplot only when a figure is actually rendered."""
+
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError as exc:  # pragma: no cover - environment guardrail
+        raise ImportError(
+            "Metric figure rendering requires matplotlib. Install spatial-vtk[validation] "
+            "or the full tutorial environment before rendering metric figures."
+        ) from exc
+    return plt
+
+
+def _matplotlib_image() -> Any:
+    """Import matplotlib image helpers only for PSA contact sheets."""
+
+    try:
+        import matplotlib.image as mpimg
+    except ImportError as exc:  # pragma: no cover - environment guardrail
+        raise ImportError(
+            "PSA period contact sheets require matplotlib. Install spatial-vtk[validation] "
+            "or the full tutorial environment before rendering metric figures."
+        ) from exc
+    return mpimg
+
+
+def _close_matplotlib_figures(target: Any = "all") -> None:
+    """Close matplotlib figures when matplotlib is installed."""
+
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        return
+    plt.close(target)
+
+
+def _value_requires_model(value_col: str | None, df: pd.DataFrame | None = None) -> bool:
+    """Return whether a value column depends on synthetic model output."""
+
+    try:
+        from spatial_vtk.visualize.figure_context import value_requires_model
+    except ImportError:
+        return _value_requires_model_fallback(value_col, df)
+    return bool(value_requires_model(value_col, df))
+
+
+def _value_requires_model_fallback(value_col: str | None, df: pd.DataFrame | None = None) -> bool:
+    """Pure fallback for model-context decisions when plotting deps are absent."""
+
+    key = _value_key(value_col)
+    if key in {"valueobs", "observed", "observedvalue", "medvalueobs", "medianobservedvalue"}:
+        return False
+    if key in {"valuesyn", "synthetic", "syntheticvalue", "medvaluesyn", "mediansyntheticvalue"}:
+        return True
+    if key in {"fieldvalue", "fieldcentered", "meancentered", "stationmeancentered"} and df is not None:
+        source = _source_text(df)
+        return any(token in source for token in ("syn", "synthetic", "residual", "score", "gof", "log2", "ln"))
+    return any(
+        token in key
+        for token in (
+            "syn",
+            "synthetic",
+            "residual",
+            "score",
+            "gof",
+            "fieldcentered",
+            "fieldvalue",
+            "predictionerror",
+            "heldoutbiaserror",
+        )
+    )
+
+
+def _value_key(value_col: str | None) -> str:
+    """Normalize a value-column name for fallback semantic checks."""
+
+    return re.sub(r"[^a-z0-9]+", "", str(value_col or "").strip().lower())
+
+
+def _source_text(df: pd.DataFrame) -> str:
+    """Return field-source metadata text used by fallback semantic checks."""
+
+    values: list[str] = []
+    if "field_source" in df.columns:
+        values.extend(str(value) for value in df["field_source"].dropna().unique())
+    attrs = getattr(df, "attrs", {})
+    for key in ("field_source", "source", "value_source"):
+        value = attrs.get(key)
+        if value is not None:
+            values.append(str(value))
+    return " ".join(values).lower()
 
 
 @dataclass
@@ -864,12 +954,12 @@ class MetricFigureContext:
             kwargs["value_col"] = resolved_value_col
         try:
             func(plot_df, output_path=output, showfig=showfig, savefig=True, **kwargs)
-            plt.close("all")
+            _close_matplotlib_figures("all")
             self.write_figure_sidecar(output, plot_df, source_df=source_df)
             print(f"wrote {output}")
             return output
         except Exception as exc:
-            plt.close("all")
+            _close_matplotlib_figures("all")
             print(f"skip {output.name}: {type(exc).__name__}: {exc}")
             return None
 
@@ -920,6 +1010,8 @@ class MetricFigureContext:
             return output
         ncols = min(3, max(1, len(period_items)))
         nrows = int(np.ceil(len(period_items) / ncols))
+        plt = _matplotlib_pyplot()
+        mpimg = _matplotlib_image()
         fig, axes = plt.subplots(nrows, ncols, figsize=(5.8 * ncols, 4.7 * nrows), dpi=160, squeeze=False)
         axes_flat = axes.ravel()
         with TemporaryDirectory() as tmpdir_raw:
@@ -941,13 +1033,13 @@ class MetricFigureContext:
                     call_kwargs["value_col"] = resolved_value_col
                 try:
                     func(plot_df, output_path=panel_path, showfig=False, savefig=True, **call_kwargs)
-                    plt.close("all")
+                    _close_matplotlib_figures("all")
                     image = mpimg.imread(panel_path)
                     ax.imshow(image)
                     ax.set_title(psa_period_label(period_item["period_s"]), fontsize=9)
                     ax.set_axis_off()
                 except Exception as exc:
-                    plt.close("all")
+                    _close_matplotlib_figures("all")
                     ax.text(0.5, 0.5, f"{type(exc).__name__}: {exc}", ha="center", va="center", wrap=True)
                     ax.set_axis_off()
             for ax in axes_flat[len(period_items):]:
@@ -1545,7 +1637,7 @@ class MetricFigureContext:
 
         if model is not None or self.model_col is None or self.model_col not in item["df"].columns:
             return [(item, model if isinstance(model, str) else None)]
-        if not value_requires_model(value_col, item["df"]):
+        if not _value_requires_model(value_col, item["df"]):
             return [(item, None)]
         values = [str(value) for value in pd.unique(item["df"][self.model_col].dropna()) if str(value).strip()]
         if len(values) <= 1:
@@ -2538,11 +2630,11 @@ def _write_standard_metric_diagnostic_figure(
 
     try:
         plot_func(frame, outpath=figure_path, **kwargs)
-        plt.close("all")
+        _close_matplotlib_figures("all")
         status = "wrote"
         message = f"wrote {figure_path}"
     except Exception as exc:
-        plt.close("all")
+        _close_matplotlib_figures("all")
         status = "plot_failed"
         message = f"{type(exc).__name__}: {exc}"
     return {

@@ -4,6 +4,16 @@ Changelog
 2026-06-22
 ----------
 
+- **Large-run metric plotting import boundary** *(Changed)*
+
+  - Deferred matplotlib imports in large-run metric plotting helpers until a
+    figure is actually rendered.
+  - Kept ``MetricFigureContext`` importable in lightweight table-only
+    environments so status checks, station aggregation, and sidecar planning
+    can run without plotting dependencies installed.
+  - Added a source-contract regression test that rejects top-level matplotlib
+    imports in the large-run metric plotting module.
+
 - **Large-run figure table parity** *(Changed)*
 
   - Added a public ``build_categorical_comparison_table()`` helper that returns
