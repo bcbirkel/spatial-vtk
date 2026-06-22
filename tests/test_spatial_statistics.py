@@ -117,6 +117,7 @@ from spatial_vtk.spatial.plot.large_run import (
 from spatial_vtk.spatial.map import plot_metric_map_by_model, plot_station_metric_map_by_period
 from spatial_vtk.spatial.plot.metrics import plot_geology_contrast
 from spatial_vtk.spatial.plot.pca import plot_pca_explained_variance, plot_pca_feature_loadings
+from spatial_vtk.visualize import figure_sidecar_status_frame
 from spatial_vtk.visualize.figure_context import value_color_settings
 from spatial_vtk.visualize.figure_sidecars import (
     figure_sidecar_metadata_path,
@@ -3949,12 +3950,16 @@ def test_spatial_figure_context_uses_explicit_table_owner_for_overlapping_schema
             figure_dir,
             make_figures=True,
             value_col="field_value",
+            write_sidecars=True,
+            sidecar_rows=None,
         ),
         event_context=MetricFigureContext.from_frame(
             event_centered,
             figure_dir,
             make_figures=True,
             value_col="event_centered_residual",
+            write_sidecars=True,
+            sidecar_rows=None,
         ),
         tables={
             "metric_field": metric_field,
@@ -3970,7 +3975,63 @@ def test_spatial_figure_context_uses_explicit_table_owner_for_overlapping_schema
     assert event_item["svtk_spatial_context"] == "event"
     assert context._context_for_item(metric_item) is context.metric_context
     assert context._context_for_item(event_item) is context.event_context
-    assert context.station_summary_for_item(metric_item, "field_value")["field_value"].tolist() == [0.25, 0.5]
+
+    assert metric_item["df"].attrs["svtk_sidecar_table_role"] == "metric field rows; event means retained"
+    assert metric_item["df"].attrs["svtk_sidecar_plot_rows_role"] == "metric_field_rows"
+    assert metric_item["df"].attrs["svtk_sidecar_source_rows_role"] == "metric_field_rows"
+    assert metric_item["df"].attrs["svtk_sidecar_event_centered"] is False
+    assert event_item["df"].attrs["svtk_sidecar_table_role"] == "event-centered residuals; event means removed"
+    assert event_item["df"].attrs["svtk_sidecar_plot_rows_role"] == "event_centered_residual_rows"
+    assert event_item["df"].attrs["svtk_sidecar_source_rows_role"] == "event_centered_residual_rows"
+    assert event_item["df"].attrs["svtk_sidecar_event_centered"] is True
+
+    metric_summary = context.station_summary_for_item(metric_item, "field_value")
+    event_summary = context.station_summary_for_item(event_item, "event_centered_residual")
+    event_source_rows = context.item_source_rows(event_item)
+    metadata = context.event_context.figure_sidecar_metadata(event_summary, source_df=event_source_rows)
+
+    assert metric_summary["field_value"].tolist() == [0.25, 0.5]
+    assert metric_summary.attrs["svtk_sidecar_table_role"] == "metric field rows; event means retained"
+    assert metric_summary.attrs["svtk_sidecar_plot_rows_role"] == "post_aggregation_station_summary_from_metric_field"
+    assert metric_summary.attrs["svtk_sidecar_source_rows_role"] == "pre_aggregation_metric_field_rows"
+    assert event_summary["event_centered_residual"].tolist() == [0.1, -0.1]
+    assert event_summary.attrs["svtk_sidecar_table_role"] == "event-centered residuals; event means removed"
+    assert event_summary.attrs["svtk_sidecar_plot_rows_role"] == "post_aggregation_station_summary_from_event_centered_residuals"
+    assert event_summary.attrs["svtk_sidecar_source_rows_role"] == "pre_aggregation_event_centered_residual_rows"
+    assert event_summary.attrs["svtk_sidecar_event_centered"] is True
+    assert event_source_rows.attrs["svtk_sidecar_source_rows_role"] == "event_centered_residual_rows"
+    assert metadata["event_centered"] is True
+    assert metadata["event_centering"] == "event_mean_removed"
+    assert metadata["plot_table_role"] == "event-centered residuals; event means removed"
+    assert metadata["source_table_role"] == "event-centered residuals; event means removed"
+    assert metadata["plot_rows_role"] == "post_aggregation_station_summary_from_event_centered_residuals"
+    assert metadata["source_rows_role"] == "pre_aggregation_event_centered_residual_rows"
+
+    def _dummy_plot(frame: pd.DataFrame, *, output_path, **kwargs) -> None:
+        Path(output_path).write_text(f"rows={len(frame)}", encoding="utf-8")
+
+    output = context.write_spatial_plot(
+        "debug_event_centered",
+        event_item,
+        _dummy_plot,
+        df=event_summary,
+        source_df=event_source_rows,
+    )
+    assert output is not None
+    written_metadata_path = context.event_context.sidecar_output_dir / f"{output.stem}.json"
+    written_metadata = json.loads(written_metadata_path.read_text(encoding="utf-8"))
+    assert written_metadata["event_centered"] is True
+    assert written_metadata["event_centering"] == "event_mean_removed"
+    assert written_metadata["plot_table_role"] == "event-centered residuals; event means removed"
+    assert written_metadata["source_table_role"] == "event-centered residuals; event means removed"
+    assert written_metadata["plot_rows_role"] == "post_aggregation_station_summary_from_event_centered_residuals"
+    assert written_metadata["source_rows_role"] == "pre_aggregation_event_centered_residual_rows"
+    status = figure_sidecar_status_frame(context.event_context.sidecar_output_dir).set_index("figure")
+    status_row = status.loc[output.name]
+    assert status_row["event_centered"] is True
+    assert status_row["event_centering"] == "event_mean_removed"
+    assert status_row["plot_table_role"] == "event-centered residuals; event means removed"
+    assert status_row["source_table_role"] == "event-centered residuals; event means removed"
 
 
 def test_spatial_figure_context_labels_event_centered_path_plots(tmp_path: Path) -> None:

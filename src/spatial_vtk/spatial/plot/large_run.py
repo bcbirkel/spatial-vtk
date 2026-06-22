@@ -14,6 +14,10 @@ from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.io import load_output_table, read_bounded_table, read_table, slugify, table_columns
 from spatial_vtk.metrics.plot.large_run import (
     MetricFigureContext,
+    SIDECAR_EVENT_CENTERED_ATTR,
+    SIDECAR_PLOT_ROWS_ROLE_ATTR,
+    SIDECAR_SOURCE_ROWS_ROLE_ATTR,
+    SIDECAR_TABLE_ROLE_ATTR,
     first_existing,
 )
 from spatial_vtk.spatial.calculate import add_geojson_metadata_to_metrics
@@ -406,6 +410,7 @@ class SpatialFigureContext:
             frame = tagged.get("df")
             if isinstance(frame, pd.DataFrame):
                 frame.attrs[SPATIAL_CONTEXT_ATTR] = context_name
+                _tag_spatial_sidecar_roles(frame, context=context, aggregated=False)
             yield tagged
 
     def write_spatial_plot(
@@ -819,7 +824,9 @@ class SpatialFigureContext:
         """Aggregate event-station spatial rows to one plotted value per station."""
 
         context = self._context_for(df) or self.metric_context
-        return context.station_summary_for_map(df, value_col=value_col, extra_group_cols=extra_group_cols)
+        out = context.station_summary_for_map(df, value_col=value_col, extra_group_cols=extra_group_cols)
+        _tag_spatial_sidecar_roles(out, context_name=self._context_name(context), aggregated=True)
+        return out
 
     def station_period_summary_for_map(
         self,
@@ -831,13 +838,17 @@ class SpatialFigureContext:
         """Aggregate PSA spatial rows to one plotted value per station and oscillator period."""
 
         context = self._context_for(df) or self.metric_context
-        return context.station_period_summary_for_map(df, value_col=value_col, extra_group_cols=extra_group_cols)
+        out = context.station_period_summary_for_map(df, value_col=value_col, extra_group_cols=extra_group_cols)
+        _tag_spatial_sidecar_roles(out, context_name=self._context_name(context), aggregated=True)
+        return out
 
     def item_source_rows(self, item: dict[str, Any]) -> pd.DataFrame:
         """Return the spatial rows represented by one figure item."""
 
         context = self._context_for_item(item) or self.metric_context
-        return context.item_source_rows(item)
+        out = context.item_source_rows(item)
+        _tag_spatial_sidecar_roles(out, context_name=self._context_name(context), aggregated=False)
+        return out
 
     def station_summary_for_item(
         self,
@@ -849,7 +860,9 @@ class SpatialFigureContext:
         """Aggregate one figure item's rows to one plotted value per station."""
 
         context = self._context_for_item(item) or self.metric_context
-        return context.station_summary_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
+        out = context.station_summary_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
+        _tag_spatial_sidecar_roles(out, context_name=self._context_name(context), aggregated=True)
+        return out
 
     def station_period_summary_for_item(
         self,
@@ -861,7 +874,9 @@ class SpatialFigureContext:
         """Aggregate one PSA figure item's rows to one plotted value per station and period."""
 
         context = self._context_for_item(item) or self.metric_context
-        return context.station_period_summary_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
+        out = context.station_period_summary_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
+        _tag_spatial_sidecar_roles(out, context_name=self._context_name(context), aggregated=True)
+        return out
 
     def station_grid_for_item(
         self,
@@ -873,7 +888,9 @@ class SpatialFigureContext:
         """Aggregate one figure item and expose station coordinates as lon/lat."""
 
         context = self._context_for_item(item) or self.metric_context
-        return context.station_grid_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
+        out = context.station_grid_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
+        _tag_spatial_sidecar_roles(out, context_name=self._context_name(context), aggregated=True)
+        return out
 
     def station_period_grid_for_item(
         self,
@@ -885,7 +902,9 @@ class SpatialFigureContext:
         """Aggregate one PSA figure item by station/period and expose lon/lat columns."""
 
         context = self._context_for_item(item) or self.metric_context
-        return context.station_period_grid_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
+        out = context.station_period_grid_for_item(item, value_col=value_col, extra_group_cols=extra_group_cols)
+        _tag_spatial_sidecar_roles(out, context_name=self._context_name(context), aggregated=True)
+        return out
 
     def station_model_summary_for_item(
         self,
@@ -895,7 +914,9 @@ class SpatialFigureContext:
         """Aggregate one figure item by station and model."""
 
         context = self._context_for_item(item) or self.metric_context
-        return context.station_model_summary_for_item(item, value_col=value_col)
+        out = context.station_model_summary_for_item(item, value_col=value_col)
+        _tag_spatial_sidecar_roles(out, context_name=self._context_name(context), aggregated=True)
+        return out
 
     def station_model_grid_for_item(
         self,
@@ -905,7 +926,9 @@ class SpatialFigureContext:
         """Aggregate one figure item by station/model and expose lon/lat columns."""
 
         context = self._context_for_item(item) or self.metric_context
-        return context.station_model_grid_for_item(item, value_col=value_col)
+        out = context.station_model_grid_for_item(item, value_col=value_col)
+        _tag_spatial_sidecar_roles(out, context_name=self._context_name(context), aggregated=True)
+        return out
 
     def write_overview_plots(
         self,
@@ -1355,6 +1378,11 @@ class SpatialFigureContext:
         if owner == "metric":
             return self.metric_context
         return self._context_for(item.get("df"))
+
+    def _context_name(self, context: MetricFigureContext | None) -> str:
+        """Return the sidecar context name for one metric figure context."""
+
+        return "event" if context is self.event_context else "metric"
 
 
 @dataclass(frozen=True)
@@ -4325,8 +4353,52 @@ def _tag_spatial_table(df: pd.DataFrame | None, *, key: str) -> pd.DataFrame | N
         df.attrs[SPATIAL_TABLE_KEY_ATTR] = str(key)
         if key == "event_centered_residuals":
             df.attrs[SPATIAL_CONTEXT_ATTR] = "event"
+            _tag_spatial_sidecar_roles(df, context_name="event", aggregated=False)
         elif key == "metric_field":
             df.attrs[SPATIAL_CONTEXT_ATTR] = "metric"
+            _tag_spatial_sidecar_roles(df, context_name="metric", aggregated=False)
+    return df
+
+
+def _tag_spatial_sidecar_roles(
+    df: pd.DataFrame | None,
+    *,
+    context: MetricFigureContext | None = None,
+    context_name: str | None = None,
+    aggregated: bool,
+) -> pd.DataFrame | None:
+    """Attach sidecar role metadata for Step 4 spatial figure rows."""
+
+    if df is None:
+        return None
+    resolved_context = str(context_name or "").strip().lower()
+    if not resolved_context and context is not None:
+        table_key = getattr(df, "attrs", {}).get(SPATIAL_TABLE_KEY_ATTR)
+        existing_context = getattr(df, "attrs", {}).get(SPATIAL_CONTEXT_ATTR)
+        if existing_context:
+            resolved_context = str(existing_context).strip().lower()
+        elif table_key == "event_centered_residuals":
+            resolved_context = "event"
+        elif table_key == "metric_field":
+            resolved_context = "metric"
+    if resolved_context == "event":
+        df.attrs[SIDECAR_TABLE_ROLE_ATTR] = "event-centered residuals; event means removed"
+        df.attrs[SIDECAR_EVENT_CENTERED_ATTR] = True
+        if aggregated:
+            df.attrs[SIDECAR_PLOT_ROWS_ROLE_ATTR] = "post_aggregation_station_summary_from_event_centered_residuals"
+            df.attrs[SIDECAR_SOURCE_ROWS_ROLE_ATTR] = "pre_aggregation_event_centered_residual_rows"
+        else:
+            df.attrs[SIDECAR_PLOT_ROWS_ROLE_ATTR] = "event_centered_residual_rows"
+            df.attrs[SIDECAR_SOURCE_ROWS_ROLE_ATTR] = "event_centered_residual_rows"
+    elif resolved_context == "metric":
+        df.attrs[SIDECAR_TABLE_ROLE_ATTR] = "metric field rows; event means retained"
+        df.attrs[SIDECAR_EVENT_CENTERED_ATTR] = False
+        if aggregated:
+            df.attrs[SIDECAR_PLOT_ROWS_ROLE_ATTR] = "post_aggregation_station_summary_from_metric_field"
+            df.attrs[SIDECAR_SOURCE_ROWS_ROLE_ATTR] = "pre_aggregation_metric_field_rows"
+        else:
+            df.attrs[SIDECAR_PLOT_ROWS_ROLE_ATTR] = "metric_field_rows"
+            df.attrs[SIDECAR_SOURCE_ROWS_ROLE_ATTR] = "metric_field_rows"
     return df
 
 

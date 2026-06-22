@@ -37,6 +37,10 @@ SPECTRAL_CONTRACT_METRICS = (
     ("PSA", ("PSA", "Pseudo-spectral acceleration", "Pseudo spectral acceleration")),
     ("FAS", ("FAS", "Fourier amplitude spectrum", "Fourier amplitude spectra")),
 )
+SIDECAR_TABLE_ROLE_ATTR = "svtk_sidecar_table_role"
+SIDECAR_PLOT_ROWS_ROLE_ATTR = "svtk_sidecar_plot_rows_role"
+SIDECAR_SOURCE_ROWS_ROLE_ATTR = "svtk_sidecar_source_rows_role"
+SIDECAR_EVENT_CENTERED_ATTR = "svtk_sidecar_event_centered"
 
 
 @dataclass
@@ -1795,9 +1799,15 @@ class MetricFigureContext:
             if source_df_factory is not None:
                 source_rows = source_df_factory(period_item)
                 if source_rows is not None:
-                    source_sidecar_frames.append(source_rows.copy().assign(__svtk_panel_period_s=period_item.get("period_s")))
+                    panel_source_df = source_rows.copy().assign(__svtk_panel_period_s=period_item.get("period_s"))
+                    panel_source_df.attrs.update(getattr(source_rows, "attrs", {}))
+                    source_sidecar_frames.append(panel_source_df)
         sidecar_df = pd.concat(sidecar_frames, ignore_index=True, sort=False) if sidecar_frames else item["df"].iloc[0:0].copy()
         source_sidecar_df = pd.concat(source_sidecar_frames, ignore_index=True, sort=False) if source_sidecar_frames else None
+        if sidecar_frames:
+            sidecar_df.attrs.update(getattr(sidecar_frames[0], "attrs", {}))
+        if source_sidecar_df is not None and source_sidecar_frames:
+            source_sidecar_df.attrs.update(getattr(source_sidecar_frames[0], "attrs", {}))
         if any(getattr(frame, "attrs", {}).get("svtk_aggregation_kind") for frame in sidecar_frames):
             aggregation_frames = [frame for frame in sidecar_frames if getattr(frame, "attrs", {}).get("svtk_aggregation_kind")]
             first_attrs = getattr(aggregation_frames[0], "attrs", {}) if aggregation_frames else {}
@@ -1855,6 +1865,12 @@ class MetricFigureContext:
             return None
         figure = Path(figure_path)
         source_for_plotted_rows = _source_rows_for_plotted_groups(df, source_df)
+        aggregation_attrs = {
+            str(key): value
+            for key, value in getattr(df, "attrs", {}).items()
+            if str(key).startswith("svtk_aggregation_")
+        }
+        source_role_df = df if source_for_plotted_rows is not None and aggregation_attrs else source_for_plotted_rows
         result = write_figure_row_sidecar(
             figure,
             df,
@@ -1863,6 +1879,8 @@ class MetricFigureContext:
             sidecar_dir=self.sidecar_output_dir,
             source_rows=source_for_plotted_rows,
             metadata=self.figure_sidecar_metadata(df, source_df=source_for_plotted_rows),
+            plot_rows_role=_sidecar_plot_rows_role(df),
+            source_rows_role=_sidecar_source_rows_role(source_role_df if source_role_df is not None else df),
         )
         return None if result is None else result.sidecar_path
 
@@ -1875,6 +1893,15 @@ class MetricFigureContext:
             "metrics_long_path": str(self.metrics_long_path) if str(self.metrics_long_path) != "." else None,
             "loaded_columns": list(self.loaded_columns),
         }
+        table_role = _sidecar_table_role(df)
+        source_table_role = _sidecar_table_role(source_df)
+        if table_role:
+            metadata["plot_table_role"] = table_role
+        if source_table_role:
+            metadata["source_table_role"] = source_table_role
+        if _sidecar_event_centered(df) or _sidecar_event_centered(source_df):
+            metadata["event_centered"] = True
+            metadata["event_centering"] = "event_mean_removed"
         aggregation_attrs = {
             str(key): value
             for key, value in getattr(df, "attrs", {}).items()
@@ -1883,7 +1910,7 @@ class MetricFigureContext:
         metadata.update(aggregation_attrs)
         if aggregation_attrs:
             metadata["aggregation_contract"] = "station_event_rows_to_station_summary"
-            metadata["plot_rows_role"] = "post_aggregation_station_summary"
+            metadata["plot_rows_role"] = _sidecar_plot_rows_role(df, default="post_aggregation_station_summary")
             metadata["aggregation_kind"] = aggregation_attrs.get("svtk_aggregation_kind")
             metadata["aggregation_value_col"] = aggregation_attrs.get("svtk_aggregation_value_col")
             metadata["aggregation_method"] = aggregation_attrs.get("svtk_aggregation_method")
@@ -1897,7 +1924,11 @@ class MetricFigureContext:
                 "source sidecar rows are the metric rows aggregated into those station values."
             )
         if source_df is not None:
-            metadata["source_rows_role"] = "pre_aggregation_metric_rows" if aggregation_attrs else "figure_source_rows"
+            source_role_df = df if aggregation_attrs else source_df
+            metadata["source_rows_role"] = _sidecar_source_rows_role(
+                source_role_df,
+                default="pre_aggregation_metric_rows" if aggregation_attrs else "figure_source_rows",
+            )
             if aggregation_attrs:
                 metadata["source_rows_filter"] = "aggregation_groups_present_in_plot_rows"
         return metadata
@@ -2860,6 +2891,49 @@ def _ordered_existing_columns(df: pd.DataFrame, columns: Iterable[str | None]) -
     return out
 
 
+def _sidecar_table_role(df: pd.DataFrame | None) -> str | None:
+    """Return a human-readable table role stored on a dataframe."""
+
+    if df is None:
+        return None
+    value = getattr(df, "attrs", {}).get(SIDECAR_TABLE_ROLE_ATTR)
+    text = "" if value is None else str(value).strip()
+    return text or None
+
+
+def _sidecar_plot_rows_role(df: pd.DataFrame | None, *, default: str = "figure_plot_rows") -> str:
+    """Return the role label for rows handed to a plotting function."""
+
+    if df is not None:
+        value = getattr(df, "attrs", {}).get(SIDECAR_PLOT_ROWS_ROLE_ATTR)
+        text = "" if value is None else str(value).strip()
+        if text:
+            return text
+    return default
+
+
+def _sidecar_source_rows_role(df: pd.DataFrame | None, *, default: str = "figure_source_rows") -> str:
+    """Return the role label for source rows represented by a figure."""
+
+    if df is not None:
+        value = getattr(df, "attrs", {}).get(SIDECAR_SOURCE_ROWS_ROLE_ATTR)
+        text = "" if value is None else str(value).strip()
+        if text:
+            return text
+    return default
+
+
+def _sidecar_event_centered(df: pd.DataFrame | None) -> bool:
+    """Return whether dataframe attrs mark rows as event-centered."""
+
+    if df is None:
+        return False
+    value = getattr(df, "attrs", {}).get(SIDECAR_EVENT_CENTERED_ATTR)
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y"}
+    return bool(value)
+
+
 def _station_coordinate_columns(df: pd.DataFrame) -> tuple[str | None, str | None]:
     """Resolve station longitude and latitude columns from supported schemas."""
 
@@ -3177,7 +3251,11 @@ def _source_rows_for_plotted_groups(plot_rows: pd.DataFrame, source_rows: pd.Dat
     attrs = getattr(plot_rows, "attrs", {})
     group_cols = [str(column) for column in attrs.get("svtk_aggregation_group_columns", [])]
     if not group_cols or plot_rows.empty:
-        return source_rows.iloc[0:0].copy() if plot_rows.empty else source_rows
+        if plot_rows.empty:
+            out = source_rows.iloc[0:0].copy()
+            out.attrs.update(getattr(source_rows, "attrs", {}))
+            return out
+        return source_rows
     pairs = _source_plot_group_column_pairs(plot_rows, source_rows, group_cols, attrs)
     if not pairs:
         return source_rows
@@ -3186,12 +3264,16 @@ def _source_rows_for_plotted_groups(plot_rows: pd.DataFrame, source_rows: pd.Dat
         for _, row in plot_rows.iterrows()
     }
     if not plot_keys:
-        return source_rows.iloc[0:0].copy()
+        out = source_rows.iloc[0:0].copy()
+        out.attrs.update(getattr(source_rows, "attrs", {}))
+        return out
     source_keys = source_rows.apply(
         lambda row: tuple(_group_key_value(row[source_col]) for source_col, _ in pairs),
         axis=1,
     )
-    return source_rows.loc[source_keys.isin(plot_keys)].copy()
+    out = source_rows.loc[source_keys.isin(plot_keys)].copy()
+    out.attrs.update(getattr(source_rows, "attrs", {}))
+    return out
 
 
 def _source_plot_group_column_pairs(

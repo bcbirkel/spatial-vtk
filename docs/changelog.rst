@@ -4,6 +4,18 @@ Changelog
 2026-06-22
 ----------
 
+- **Spatial figure sidecar provenance** *(Changed)*
+
+  - Labeled spatial figure sidecars with explicit plot/source table roles so
+    users can distinguish metric-field rows from event-centered residual rows.
+  - Preserved sidecar role metadata through PSA period-sheet concatenation and
+    source-row filtering for aggregated station plots.
+  - Added event-centered flags to sidecar JSON metadata and sidecar status
+    frames, including an ``event_mean_removed`` marker for event-centered
+    residual figures.
+  - Added regression coverage for overlapping metric-field and event-centered
+    schemas so routing and sidecar labels do not depend on ambiguous columns.
+
 - **PSA map sheet layout** *(Fixed)*
 
   - Reworked PSA period station maps to reserve a dedicated GridSpec column for
