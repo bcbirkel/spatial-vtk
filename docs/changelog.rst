@@ -51,6 +51,14 @@ Changelog
     ``tools/check_validation_environment.py`` module checks aligned with
     declared ``pyproject.toml`` dependencies.
 
+- **Config-first CLI workflow docs** *(Changed)*
+
+  - Simplified the CLI workflow tutorial so ``svtk metrics outputs`` relies on
+    the saved config and registered ``prepared_events``/``prepared_stations``
+    tables instead of repeating explicit table paths.
+  - Updated regression coverage so future CLI tutorial edits do not re-add
+    those unnecessary prepared-table flags.
+
 - **CLI config path metavar** *(Changed)*
 
   - Standardized live ``svtk`` help so optional config-file arguments render as

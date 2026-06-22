@@ -1929,8 +1929,9 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert '--config "$CONFIG"' not in text
     assert "--require-source-overlap" in text
     assert "--source-overlap-scope event_station" in text
-    assert '--event-table "$TABLES/prepared_events.csv"' in text
-    assert '--station-table "$TABLES/prepared_stations.csv"' in text
+    assert '--event-table "$TABLES/prepared_events.csv"' not in text
+    assert '--station-table "$TABLES/prepared_stations.csv"' not in text
+    assert "svtk metrics outputs \\\n     --run-scenario \"$SCENARIO\"" in text
     assert "SVTK_METRICS_DASHBOARD_ROW_LIMIT" in text
     assert "SVTK_QC_DASHBOARD_MAX_ROWS" in text
     assert "--kwargs dep=" not in text
