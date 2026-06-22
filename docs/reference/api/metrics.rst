@@ -129,7 +129,9 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
        batch execution. The returned ``MetricWaveformCacheResult`` exposes
        ``status_frame()`` with ``name``, ``artifact``, ``artifact_label``,
        ``artifact_role``, ``status``, ``resolved_path``, ``exists``, row
-       counts, and cache reuse counts for notebook display.
+       counts, and cache reuse counts for notebook display. Cache status and
+       existing-cache reuse paths remain lightweight; waveform readers are only
+       imported when a missing cache file must be materialized.
    * - ``metric_slurm_submission_readiness_from_config``
      - Check whether a metric Slurm array should be submitted or skipped.
    * - ``write_metrics_slurm_script_from_config``

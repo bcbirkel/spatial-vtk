@@ -4,6 +4,16 @@ Changelog
 2026-06-22
 ----------
 
+- **Metric waveform cache imports** *(Changed)*
+
+  - Deferred the metric runner import inside
+    ``cache_metric_manifest_waveforms`` until a missing cache file actually
+    needs waveform samples materialized.
+  - Kept metric cache status frames and existing-cache reuse paths lightweight
+    for large-run notebooks that only need readiness/output inspection.
+  - Added source-contract coverage so the cache helper does not reintroduce
+    eager metric-runner or waveform-reader imports.
+
 - **Step 4 spatial status imports** *(Changed)*
 
   - Moved clustering, PCA, autocorrelation, geology, and pattern-similarity

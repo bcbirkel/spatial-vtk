@@ -20,7 +20,6 @@ import numpy as np
 
 from spatial_vtk.io.compute_manifest import write_json
 from spatial_vtk.metrics.workflow.execution import MANIFEST_VERSION, MetricWorkflowManifest, read_task_manifest
-from spatial_vtk.metrics.workflow.run import _load_component_samples
 from spatial_vtk.metrics.workflow.tasks import MetricWorkflowTask
 
 
@@ -292,6 +291,8 @@ def _cache_one_waveform(
         stats.reused_files += 1
         cache_index[key] = str(output_path)
         return str(output_path)
+
+    from spatial_vtk.metrics.workflow.run import _load_component_samples
 
     side = _load_component_samples(path, station, component)
     output_path.parent.mkdir(parents=True, exist_ok=True)

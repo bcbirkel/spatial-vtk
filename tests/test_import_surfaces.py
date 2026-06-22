@@ -971,6 +971,27 @@ def test_large_run_metric_helpers_keep_matplotlib_lazy():
     assert not eager_matplotlib_imports
 
 
+def test_metric_waveform_cache_status_keeps_runner_lazy():
+    """Metric cache status helpers should not import waveform readers until materialization."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    source_path = root / "src" / "spatial_vtk" / "metrics" / "workflow" / "cache.py"
+    tree = ast.parse(source_path.read_text(encoding="utf-8"))
+
+    eager_imports: list[str] = []
+    forbidden_modules = {
+        "spatial_vtk.metrics.workflow.run",
+        "spatial_vtk.io.waveforms",
+    }
+    for node in tree.body:
+        if isinstance(node, ast.Import):
+            eager_imports.extend(alias.name for alias in node.names if alias.name in forbidden_modules)
+        elif isinstance(node, ast.ImportFrom) and str(node.module or "") in forbidden_modules:
+            eager_imports.append(str(node.module))
+
+    assert not eager_imports
+
+
 def test_large_run_spatial_helpers_keep_matplotlib_lazy():
     """Large-run spatial status helpers should import without plotting deps."""
 
