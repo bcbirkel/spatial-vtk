@@ -17,13 +17,25 @@ Package Entry Point
 Runtime Configuration
 ---------------------
 
-Start routine notebooks from ``spatial_vtk.config`` helpers such as
-``notebook_run_context()`` and ``SpatialVTKConfig``. The runtime module remains
-documented for advanced configuration scripts and package extension work, but
-notebooks should avoid reaching into it directly.
+Start routine notebooks, scripts, and Slurm workers from
+``spatial_vtk.config`` helpers such as ``notebook_run_context()``,
+``SpatialVTKConfig``, ``active_config()``, ``load_config()``,
+``find_config_file()``, and ``resolve_run_defaults()``. These runtime helpers
+are re-exported by the package entry point so public code does not need to
+reach into implementation modules directly.
 
-.. automodule:: spatial_vtk.config.runtime
-   :members:
+.. autosummary::
+   :nosignatures:
+
+   spatial_vtk.config.SpatialVTKConfig
+   spatial_vtk.config.active_config
+   spatial_vtk.config.clear_active_config
+   spatial_vtk.config.find_config_file
+   spatial_vtk.config.get_saved_config_path
+   spatial_vtk.config.load_config
+   spatial_vtk.config.resolve_path
+   spatial_vtk.config.resolve_run_defaults
+   spatial_vtk.config.set_saved_config_path
 
 Paths and Outputs
 -----------------

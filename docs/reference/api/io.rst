@@ -241,14 +241,28 @@ Routine notebooks should start with standard workflow result loaders and
 bounded preview helpers from ``spatial_vtk.io``. Use ``output_group()`` only
 when no standard workflow result helper exists for the step yet, or when an
 advanced script needs direct access to a configured group of artifacts. The
-lower-level table, output-path, artifact, manifest, and plan modules are
-documented for scripts and package extension points, not as notebook
-path-plumbing examples.
+lower-level table, artifact, manifest, and plan modules are documented for
+scripts and package extension points, not as notebook path-plumbing examples.
+Configured output helpers are part of the public ``spatial_vtk.io`` surface and
+are listed here through their stable re-export names.
+
+.. autosummary::
+   :nosignatures:
+
+   spatial_vtk.io.OutputArtifact
+   spatial_vtk.io.OutputGroup
+   spatial_vtk.io.OutputReadiness
+   spatial_vtk.io.default_output_paths
+   spatial_vtk.io.output_group
+   spatial_vtk.io.output_group_artifacts
+   spatial_vtk.io.output_group_status_frame
+   spatial_vtk.io.output_readiness
+   spatial_vtk.io.output_status_frame
+   spatial_vtk.io.required_outputs_exist
+   spatial_vtk.io.should_rebuild_outputs
+   spatial_vtk.io.should_rebuild_paths
 
 .. automodule:: spatial_vtk.io.tables
-   :members:
-
-.. automodule:: spatial_vtk.io.output_paths
    :members:
 
 .. automodule:: spatial_vtk.io.artifacts

@@ -2614,6 +2614,33 @@ def test_core_package_docstrings_describe_public_entry_points():
     assert "package remains lazy" in visualize_source
 
 
+def test_api_reference_uses_public_config_and_io_entry_points():
+    """API docs should document public re-exports before implementation modules."""
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    config_docs = repo_root / "docs" / "reference" / "api" / "config.rst"
+    io_docs = repo_root / "docs" / "reference" / "api" / "io.rst"
+    docs_conf = repo_root / "docs" / "conf.py"
+
+    config_text = config_docs.read_text(encoding="utf-8")
+    io_text = io_docs.read_text(encoding="utf-8")
+    conf_text = docs_conf.read_text(encoding="utf-8")
+
+    assert ".. automodule:: spatial_vtk.config" in config_text
+    assert ".. automodule:: spatial_vtk.config.runtime" not in config_text
+    assert "spatial_vtk.config.SpatialVTKConfig" in config_text
+    assert "spatial_vtk.config.load_config" in config_text
+    assert "reach into implementation modules directly" in config_text
+
+    assert ".. automodule:: spatial_vtk.io" in io_text
+    assert ".. automodule:: spatial_vtk.io.output_paths" not in io_text
+    assert "spatial_vtk.io.OutputGroup" in io_text
+    assert "spatial_vtk.io.output_group" in io_text
+    assert "spatial_vtk.io.output_readiness" in io_text
+
+    assert '"spatial_vtk.io.output_paths"' not in conf_text
+
+
 def test_visualize_api_docs_use_public_entry_points():
     docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "visualize.rst"
     text = docs.read_text(encoding="utf-8")

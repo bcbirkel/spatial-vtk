@@ -31,7 +31,6 @@ _PACKAGE_LABELS = {
 }
 
 _MODULE_LABELS = {
-    "spatial_vtk.io.output_paths": "Output Paths",
     "spatial_vtk.metrics.calculate": "Metric Calculations",
     "spatial_vtk.spatial.calculate": "Spatial Calculations",
     "spatial_vtk.spatial.map": "Spatial Maps",
