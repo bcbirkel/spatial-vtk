@@ -16,6 +16,14 @@ Changelog
     QC build workers, visualization context/QC/waveform internals, dashboard
     Streamlit entry modules, and spatial path-map internals.
 
+- **Notebook readiness path guard** *(Changed)*
+
+  - Added tutorial-notebook regression coverage that allows source-checkout
+    bootstrap path discovery but prevents workflow cells from reintroducing
+    direct ``Path.exists()``, ``Path.is_file()``, or ``Path.is_dir()`` checks.
+  - Keeps notebook readiness and skip decisions routed through package
+    output/status helpers instead of ad hoc path probing in cells.
+
 - **CLI config path metavar** *(Changed)*
 
   - Standardized live ``svtk`` help so optional config-file arguments render as

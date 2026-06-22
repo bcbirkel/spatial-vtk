@@ -2928,6 +2928,36 @@ def test_tutorial_notebooks_avoid_low_level_io_and_shell_workflow_cells() -> Non
             assert not matches, f"{notebook_path.relative_to(repo_root)} cell {index} uses {matches}"
 
 
+def test_tutorial_notebooks_only_check_paths_in_source_bootstrap() -> None:
+    """Notebook workflow cells should not hand-roll existence/readiness checks."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+    assert notebooks
+    allowed_markers = (
+        "docs/examples/_source_bootstrap.py",
+        "use_source_checkout",
+    )
+    forbidden_checks = (
+        ".exists()",
+        ".is_file()",
+        ".is_dir()",
+    )
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            if cell.get("cell_type") != "code":
+                continue
+            source = "".join(cell.get("source", []))
+            matches = [check for check in forbidden_checks if check in source]
+            if not matches:
+                continue
+            assert all(marker in source for marker in allowed_markers), (
+                f"{notebook_path.relative_to(repo_root)} cell {index} uses direct path checks {matches}; "
+                "workflow readiness should come from package output/status helpers"
+            )
+
+
 def test_large_run_notebooks_use_figure_render_gates_for_prerequisite_tables() -> None:
     """Large-run figure cells should report missing inputs through package gates."""
 
