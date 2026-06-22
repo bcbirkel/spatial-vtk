@@ -106,6 +106,7 @@ class StandardMetricWorkflowOutputResult:
     def write_configured_outputs(
         self,
         *,
+        context: Any | None = None,
         metric_rows: object | None = None,
         events: object | None = None,
         stations: object | None = None,
@@ -114,14 +115,14 @@ class StandardMetricWorkflowOutputResult:
         table_format: str = "parquet",
         dashboard_partitioned: bool = True,
     ) -> dict[str, str]:
-        """Write downstream metric outputs using this result's active config."""
+        """Write downstream metric outputs using this result or notebook context config."""
 
         from spatial_vtk.metrics.workflow.configured import write_metric_outputs_from_config
 
-        config_path = _metric_result_config_path(self.cfg, None)
+        config_path = _metric_result_config_path(self.cfg, context)
         return write_metric_outputs_from_config(
             config_path=config_path,
-            run_scenario=_metric_result_run_scenario(self.cfg, None),
+            run_scenario=_metric_result_run_scenario(self.cfg, context),
             metric_rows=metric_rows,
             events=events,
             stations=stations,

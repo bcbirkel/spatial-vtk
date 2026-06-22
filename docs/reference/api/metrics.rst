@@ -98,6 +98,9 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
        rendering through ``write_large_run_figure_suite()``. Pass ``cfg=`` as
        either a config object or a config file path; the result resolves
        Step 3 outputs and preprocessing trace metadata from the same config.
+       ``write_configured_outputs(context=...)`` can also derive the config
+       path and run scenario from a notebook run context, matching the other
+       Step 3 result-object driver methods.
        Display ``StandardMetricWorkflowOutputResult.status_frame()`` for
        configured output readiness and use its preview/figure methods instead
        of repeating manifest, metric-row, or output-table path plumbing in

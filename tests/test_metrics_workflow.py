@@ -502,6 +502,29 @@ def test_standard_metric_workflow_output_result_owns_outputs_and_station_map(mon
             "dashboard_partitioned": True,
         }
     ]
+    output_calls.clear()
+
+    class Context:
+        config_path = tmp_path / "context-config.yaml"
+        run_scenario = "large-run"
+
+    context_result = StandardMetricWorkflowOutputResult(outputs=Outputs())
+    assert context_result.write_configured_outputs(context=Context(), table_format="csv") == {
+        "metrics_long": "metrics_long.parquet"
+    }
+    assert output_calls == [
+        {
+            "config_path": Context.config_path,
+            "run_scenario": "large-run",
+            "metric_rows": None,
+            "events": None,
+            "stations": None,
+            "residual_column": None,
+            "score_column": None,
+            "table_format": "csv",
+            "dashboard_partitioned": True,
+        }
+    ]
 
     settings = object()
     assert result.write_station_metric_map(

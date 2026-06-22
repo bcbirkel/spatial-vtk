@@ -4,6 +4,17 @@ Changelog
 2026-06-22
 ----------
 
+- **Step 3 output writer context** *(Fixed)*
+
+  - Added optional ``context=`` support to
+    ``StandardMetricWorkflowOutputResult.write_configured_outputs()`` so the
+    documented notebook call can derive config path and run scenario from the
+    same notebook context used by the Step 3 driver methods.
+  - Preserved existing ``cfg=`` behavior for scripts and notebooks that already
+    load the Step 3 result with a config object or config path.
+  - Added regression coverage for context-derived downstream metric output
+    writing.
+
 - **Metric waveform cache imports** *(Changed)*
 
   - Deferred the metric runner import inside
