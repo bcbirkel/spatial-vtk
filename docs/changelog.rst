@@ -4,6 +4,17 @@ Changelog
 2026-06-21
 ----------
 
+- **Lightweight metric batch status** *(Changed)*
+
+  - Made metric manifest batch-status checks read only manifest batch
+    metadata, so status does not deserialize metric tasks or import the metric
+    runner.
+  - Kept explicit-manifest ``svtk metrics batch-status`` independent of saved
+    config loading, which makes the command usable as a cheap progress check
+    even in minimal terminal environments.
+  - Added regression coverage for invalid task payloads in status-only
+    manifests and for explicit CLI manifest checks that must not load config.
+
 - **Config-backed sidecar status CLI** *(Changed)*
 
   - Made ``svtk visualize sidecars status`` resolve the notebook-standard

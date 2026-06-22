@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import spatial_vtk.cli as cli
 from spatial_vtk.cli import main
 from spatial_vtk.cli import _dashboard_cli_readiness_columns
 from spatial_vtk.cli import _read_table
@@ -4195,6 +4196,35 @@ metrics:
     assert "#SBATCH --array=1-2%2" in text
     assert "Metric selected batches: 2 of 3" in text
     assert "--batch-index $SLURM_ARRAY_TASK_ID --overwrite" in text
+
+
+def test_cli_metrics_batch_status_with_explicit_manifest_does_not_load_config(tmp_path, monkeypatch, capsys):
+    """Explicit manifest status should stay a cheap check independent of configured YAML."""
+
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "manifest_version": 1,
+                "qc_table": "",
+                "tasks": [{"this": "is intentionally not a metric task"}],
+                "batches": [{"batch_index": 0, "task_indices": [0], "output_path": str(tmp_path / "batch_0.csv")}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def fail_config(*_args, **_kwargs):
+        raise AssertionError("explicit manifest status should not load config")
+
+    monkeypatch.setattr(cli, "_optional_cli_config", fail_config)
+    monkeypatch.setattr(cli, "_required_cli_config", fail_config)
+
+    assert main(["metrics", "batch-status", "--metric-manifest", str(manifest), "--json"]) == 0
+
+    output = json.loads(capsys.readouterr().out)
+    assert output["total_batches"] == 1
+    assert output["missing_batches"] == 1
 
 
 def test_cli_metrics_slurm_uses_configured_defaults(tmp_path, capsys):

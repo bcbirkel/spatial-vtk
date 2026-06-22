@@ -31,9 +31,26 @@ from typing import Any, Sequence
 import pandas as pd
 
 from spatial_vtk.io.compute_manifest import read_json, write_json
-from spatial_vtk.io.tables import table_columns
-from spatial_vtk.metrics.workflow.run import METRIC_TEXT_COLUMNS, run_metric_tasks, write_metric_rows
-from spatial_vtk.metrics.workflow.tasks import MetricWorkflowTask
+
+
+METRIC_TEXT_COLUMNS: tuple[str, ...] = (
+    "task_id",
+    "event_id",
+    "station",
+    "component",
+    "model",
+    "passband",
+    "metric_group",
+    "metric",
+    "obs_qc_status",
+    "obs_qc_reason",
+    "syn_qc_status",
+    "syn_qc_reason",
+    "comparison_qc_status",
+    "comparison_qc_reason",
+    "obs_waveform_path",
+    "syn_waveform_path",
+)
 
 
 MANIFEST_VERSION = 1
@@ -364,6 +381,8 @@ def read_task_manifest(path: str | Path) -> MetricWorkflowManifest:
 
     manifest_path = Path(path).expanduser()
     payload = read_json(manifest_path)
+    from spatial_vtk.metrics.workflow.tasks import MetricWorkflowTask
+
     tasks = tuple(MetricWorkflowTask.from_dict(item) for item in payload.get("tasks", []))
     batches = tuple(dict(item) for item in payload.get("batches", []))
     return MetricWorkflowManifest(
@@ -374,15 +393,27 @@ def read_task_manifest(path: str | Path) -> MetricWorkflowManifest:
     )
 
 
+def _read_manifest_batch_payload(path: str | Path) -> tuple[Path, tuple[dict[str, Any], ...]]:
+    """Read only manifest batch metadata without deserializing metric tasks."""
+
+    manifest_path = Path(path).expanduser()
+    payload = read_json(manifest_path)
+    return manifest_path, tuple(dict(item) for item in payload.get("batches", []))
+
+
 def metric_manifest_batch_status(manifest: MetricWorkflowManifest | str | Path) -> MetricManifestBatchStatus:
     """Return completion status for all batch outputs listed in a manifest."""
 
-    parsed = read_task_manifest(manifest) if not isinstance(manifest, MetricWorkflowManifest) else manifest
+    if isinstance(manifest, MetricWorkflowManifest):
+        manifest_path = manifest.manifest_path
+        batches = manifest.batches
+    else:
+        manifest_path, batches = _read_manifest_batch_payload(manifest)
     completed_batches: list[int] = []
     missing_batches: list[int] = []
     completed_outputs: list[Path] = []
     missing_outputs: list[Path] = []
-    for batch in parsed.batches:
+    for batch in batches:
         batch_index = int(batch["batch_index"])
         output_path = Path(batch["output_path"]).expanduser()
         if output_path.exists():
@@ -392,8 +423,8 @@ def metric_manifest_batch_status(manifest: MetricWorkflowManifest | str | Path) 
             missing_batches.append(batch_index)
             missing_outputs.append(output_path)
     return MetricManifestBatchStatus(
-        manifest_path=parsed.manifest_path,
-        total_batches=len(parsed.batches),
+        manifest_path=manifest_path,
+        total_batches=len(batches),
         completed_batches=tuple(completed_batches),
         missing_batches=tuple(missing_batches),
         completed_outputs=tuple(completed_outputs),
@@ -453,6 +484,8 @@ def run_manifest_batch(
         f"Metric batch {batch_number}/{total_batches}: running {len(selected_tasks)} task(s) -> {output_path}",
         flush=True,
     )
+    from spatial_vtk.metrics.workflow.run import run_metric_tasks, write_metric_rows
+
     rows = run_metric_tasks(
         selected_tasks,
         qc_table=parsed.qc_table or None,
@@ -514,7 +547,9 @@ def merge_batch_outputs(
     if missing and require_all:
         raise FileNotFoundError(f"Missing metric batch outputs: {missing}")
     if not paths:
-        return write_metric_rows(pd.DataFrame(), resolved_output)
+        from spatial_vtk.io.tables import write_table
+
+        return write_table(pd.DataFrame(columns=METRIC_TEXT_COLUMNS), resolved_output, index=False)
     return _write_merged_batch_tables(paths, resolved_output)
 
 
@@ -625,6 +660,8 @@ def _merged_batch_columns(paths: Sequence[Path]) -> list[str]:
 
 def _table_columns(path: Path) -> list[str]:
     """Return column names from one CSV or Parquet table."""
+
+    from spatial_vtk.io.tables import table_columns
 
     return table_columns(path)
 
@@ -798,6 +835,8 @@ def _csv_text_columns(path: Path) -> list[str]:
     """Return known metric text columns present in a CSV header."""
 
     try:
+        from spatial_vtk.io.tables import table_columns
+
         columns = table_columns(path)
     except pd.errors.EmptyDataError:
         return []

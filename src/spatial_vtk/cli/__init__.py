@@ -2777,7 +2777,7 @@ def _cmd_metrics_run(args: argparse.Namespace) -> int:
 def _cmd_metrics_run_batch(args: argparse.Namespace) -> int:
     """Run ``svtk metrics run-batch``."""
 
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if args.manifest is None else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if args.manifest is None else None
     from spatial_vtk.metrics import run_manifest_batch
 
     manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config, prefer_cached=True)
@@ -2789,7 +2789,7 @@ def _cmd_metrics_run_batch(args: argparse.Namespace) -> int:
 def _cmd_metrics_batch_status(args: argparse.Namespace) -> int:
     """Run ``svtk metrics batch-status``."""
 
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if args.manifest is None else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if args.manifest is None else None
     from spatial_vtk.metrics import metric_manifest_batch_status
 
     manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config, prefer_cached=True)

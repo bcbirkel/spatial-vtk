@@ -2197,6 +2197,23 @@ def test_metric_workflow_manifest_batches_merge_and_slurm_script(tmp_path) -> No
     partial_status = metric_manifest_batch_status(partial_manifest)
     assert partial_status.completed_batches == (0,)
     assert partial_status.missing_batches == (1, 2, 4)
+
+    status_only_manifest = tmp_path / "status_only_manifest.json"
+    status_only_manifest.write_text(
+        json.dumps(
+            {
+                "manifest_version": 1,
+                "qc_table": "",
+                "tasks": [{"this": "is intentionally not a metric task"}],
+                "batches": [{"batch_index": 0, "task_indices": [0], "output_path": str(tmp_path / "status_only.csv")}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    status_only = metric_manifest_batch_status(status_only_manifest)
+    assert status_only.total_batches == 1
+    assert status_only.missing_batches == (0,)
+
     incomplete_script = write_metrics_slurm_script(
         partial_manifest,
         tmp_path / "run_incomplete_metrics.slurm",
