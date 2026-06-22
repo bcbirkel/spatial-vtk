@@ -219,11 +219,15 @@ for already-loaded notebook workflows. Use its ``status_frame()`` and
 ``summary_frame()`` methods for configured output status and product row-count
 summaries, and use its figure-writing helpers instead of repeating output-path
 variables or figure-function imports in notebook cells. The loaded-output
-``status_frame()`` preserves ``table`` and ``rows`` while adding normalized
-``name``, ``artifact``, ``artifact_label``, ``artifact_role``, ``status``,
-``exists``, ``resolved_path``, and ``path`` columns. Rows backed by configured
-output paths report ``ready`` or ``missing`` from the filesystem; in-memory
-rows without a configured path report ``loaded`` with blank paths.
+``status_frame()`` starts from the configured Step 4 table artifacts so missing
+or unloaded outputs such as Moran, PCA, cluster, or geology tables remain
+visible in large-run notebooks. It preserves ``table`` and ``rows`` while
+adding normalized ``name``, ``artifact``, ``artifact_label``,
+``artifact_role``, ``output_key``, ``kind``, ``required``, ``status``,
+``readiness``, ``exists``, ``loaded``, ``resolved_path``, and ``path`` columns.
+Rows backed by configured output paths report ``ready`` or ``missing`` from
+the filesystem and set ``loaded`` only when an in-memory table was loaded; rows
+without a configured path report ``loaded`` with blank paths.
 
 .. autofunction:: spatial_vtk.spatial.load_standard_spatial_workflow_output_status
 

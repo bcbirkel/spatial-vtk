@@ -425,9 +425,16 @@ class StandardSpatialWorkflowOutputResult:
         return self.product_summary.station_bias_preview_frame()
 
     def status_frame(self) -> pd.DataFrame:
-        """Return a compact status table for loaded Step 4 outputs."""
+        """Return configured Step 4 table status with loaded row counts.
+
+        The status starts from the output group so notebooks can see required
+        table artifacts that were not loaded or are missing on disk. Loaded
+        in-memory tables then annotate those rows with ``loaded`` and ``rows``
+        without hiding missing configured files.
+        """
 
         path_names = {
+            "metrics_long": "metrics_long_path",
             "metric_field": "metric_field_path",
             "event_centered_residuals": "event_centered_path",
             "station_bias": "station_bias_path",
@@ -444,14 +451,36 @@ class StandardSpatialWorkflowOutputResult:
             "pca_explained_variance": "pca_explained_path",
             "geology_contrasts": "geology_path",
         }
-        rows: list[dict[str, Any]] = []
+        path_name_to_table = {path_name: table for table, path_name in path_names.items()}
+        rows_by_table: dict[str, dict[str, Any]] = {}
+        try:
+            configured = self.outputs.status_frame()
+        except Exception:
+            configured = pd.DataFrame()
+        if not configured.empty:
+            configured_rows = configured.astype(object).to_dict("records")
+            for row in configured_rows:
+                if row.get("kind") != "table":
+                    continue
+                table_name = path_name_to_table.get(str(row.get("name", "")), str(row.get("output_key") or row.get("name") or ""))
+                if not table_name:
+                    continue
+                normalized = dict(row)
+                normalized["table"] = table_name
+                normalized["artifact"] = table_name
+                normalized.setdefault("artifact_label", f"{table_name.replace('_', ' ')} table")
+                normalized.setdefault("artifact_role", "output_table")
+                normalized["loaded"] = False
+                normalized["rows"] = pd.NA
+                rows_by_table[table_name] = normalized
         for name, frame in self.tables.items():
             path_attr = path_names.get(name, f"{name}_path")
             raw_path = getattr(self.outputs, path_attr, None)
             path = Path(raw_path).expanduser() if raw_path is not None else None
             exists = True if path is None else path.exists()
             status = "loaded" if path is None else ("ready" if exists else "missing")
-            rows.append(
+            row = rows_by_table.get(name, {})
+            row.update(
                 {
                     "name": name,
                     "table": name,
@@ -461,10 +490,13 @@ class StandardSpatialWorkflowOutputResult:
                     "status": status,
                     "exists": exists,
                     "rows": len(frame),
+                    "loaded": True,
                     "resolved_path": "" if path is None else str(path),
                     "path": "" if path is None else str(path),
                 }
             )
+            rows_by_table[name] = row
+        rows = list(rows_by_table.values())
         return pd.DataFrame(
             rows,
             columns=[
@@ -473,11 +505,18 @@ class StandardSpatialWorkflowOutputResult:
                 "artifact",
                 "artifact_label",
                 "artifact_role",
+                "output_key",
+                "kind",
+                "required",
                 "status",
+                "readiness",
                 "exists",
+                "loaded",
                 "rows",
                 "resolved_path",
                 "path",
+                "message",
+                "suggested_action",
             ],
         )
 

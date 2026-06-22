@@ -4,6 +4,18 @@ Changelog
 2026-06-22
 ----------
 
+- **Step 4 spatial output status** *(Fixed)*
+
+  - Updated ``StandardSpatialWorkflowOutputResult.status_frame()`` to start
+    from the configured Step 4 table artifacts instead of only reporting
+    tables that were already loaded into memory.
+  - Added a ``loaded`` column and preserved row counts for loaded tables, so
+    large-run notebooks can distinguish missing configured outputs from
+    outputs that exist but were not materialized in the current process.
+  - Added regression coverage for a configured but unloaded
+    ``permutation_moran`` table so spatial status cells keep exposing missing
+    Moran/PCA/cluster/geology products.
+
 - **Package overview dashboard guidance** *(Changed)*
 
   - Updated the top-level package overview to point routine notebooks to

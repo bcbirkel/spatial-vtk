@@ -1373,6 +1373,7 @@ def test_standard_spatial_workflow_output_result_writes_figures(tmp_path: Path) 
         paths={
             "metric_field_path": tmp_path / "tables" / "metric_field.csv",
             "station_bias_path": tmp_path / "tables" / "station_bias.csv",
+            "permutation_moran_path": tmp_path / "tables" / "permutation_moran.csv",
             "station_bias_figure_path": tmp_path / "figures" / "station_bias.png",
             "residual_grid_figure_path": tmp_path / "figures" / "residual_grid.png",
             "spatial_correlation_distance_figure_path": tmp_path / "figures" / "distance.png",
@@ -1400,12 +1401,19 @@ def test_standard_spatial_workflow_output_result_writes_figures(tmp_path: Path) 
     assert status.loc["metric_field", "artifact_role"] == "output_table"
     assert status.loc["metric_field", "status"] == "ready"
     assert bool(status.loc["metric_field", "exists"]) is True
+    assert bool(status.loc["metric_field", "loaded"]) is True
     assert status.loc["metric_field", "rows"] == 1
     assert status.loc["metric_field", "resolved_path"] == str(outputs.metric_field_path)
     assert status.loc["metric_field", "path"] == status.loc["metric_field", "resolved_path"]
     assert status.loc["station_bias", "status"] == "missing"
     assert bool(status.loc["station_bias", "exists"]) is False
+    assert bool(status.loc["station_bias", "loaded"]) is True
     assert status.loc["station_bias", "resolved_path"] == str(outputs.station_bias_path)
+    assert status.loc["permutation_moran", "status"] == "missing"
+    assert bool(status.loc["permutation_moran", "exists"]) is False
+    assert bool(status.loc["permutation_moran", "loaded"]) is False
+    assert pd.isna(status.loc["permutation_moran", "rows"])
+    assert status.loc["permutation_moran", "resolved_path"] == str(outputs.permutation_moran_path)
     seen: list[tuple[str, str, int]] = []
 
     class Sidecars:
