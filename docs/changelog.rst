@@ -20,6 +20,14 @@ Changelog
   - Kept legacy ``--input`` and ``--output`` spellings for existing scripts
     and added parser coverage for both preferred and legacy forms.
 
+- **Direct waveform parser output alias** *(Changed)*
+
+  - Added artifact-named ``--trace-metadata-output`` to the direct
+    ``spatial_vtk.io.waveforms`` metadata parser so the output role is clear
+    in scripts.
+  - Kept legacy ``--output`` support and added parser coverage for both
+    spellings.
+
 - **Master-list CLI defaults** *(Changed)*
 
   - Made ``svtk io master-stations`` and ``svtk io master-events`` resolve

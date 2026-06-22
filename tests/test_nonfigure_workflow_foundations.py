@@ -18,7 +18,13 @@ from spatial_vtk.io.master_lists import (
 )
 from spatial_vtk.io.metadata import prepare_event_station_table
 from spatial_vtk.io.plans import MetricPlan, compare_metric_plan_to_table, expected_metric_rows_from_inventory
-from spatial_vtk.io.waveforms import WaveformPreprocessing, read_waveform_file, trace_metadata_table, write_trace_metadata_table
+from spatial_vtk.io.waveforms import (
+    WaveformPreprocessing,
+    build_arg_parser as build_waveform_arg_parser,
+    read_waveform_file,
+    trace_metadata_table,
+    write_trace_metadata_table,
+)
 from spatial_vtk.io.preprocessing import preprocess_waveform_files
 from spatial_vtk.metrics.calculate.arrival_picks import load_arrival_pick_catalog, write_arrival_pick_catalog
 from spatial_vtk.metrics.calculate.phasenet_adapter import (
@@ -216,6 +222,40 @@ def test_master_list_module_cli_uses_artifact_named_aliases(capsys) -> None:
     assert not hasattr(stations_help, "output")
     assert not hasattr(events_help, "input")
     assert not hasattr(events_help, "output")
+
+
+def test_waveform_module_cli_uses_trace_metadata_output_alias(capsys) -> None:
+    """The direct waveform metadata parser should name its output artifact."""
+
+    parser = build_waveform_arg_parser()
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--help"])
+    help_text = capsys.readouterr().out
+    args = parser.parse_args(
+        [
+            "observed.mseed",
+            "--trace-metadata-output",
+            "trace_metadata.parquet",
+            "--event-id",
+            "ci123",
+        ]
+    )
+    legacy_args = parser.parse_args(
+        [
+            "observed.mseed",
+            "--output",
+            "trace_metadata.csv",
+        ]
+    )
+
+    assert "--trace-metadata-output" in help_text
+    assert "--output" in help_text
+    assert "legacy alias" in help_text
+    assert args.paths == ["observed.mseed"]
+    assert args.trace_metadata_output == "trace_metadata.parquet"
+    assert args.event_id == "ci123"
+    assert legacy_args.trace_metadata_output == "trace_metadata.csv"
+    assert not hasattr(args, "output")
 
 
 def test_small_public_table_writers_use_suffixless_csv_targets(tmp_path) -> None:

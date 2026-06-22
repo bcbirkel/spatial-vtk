@@ -1006,7 +1006,16 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("paths", nargs="+", help="Waveform files to inspect.")
     parser.add_argument("--format", default=None, help="Optional ObsPy format string.")
     parser.add_argument("--event-id", default="", help="Event ID copied into output rows.")
-    parser.add_argument("--output", required=True, help="Output trace metadata CSV or Parquet table.")
+    parser.add_argument(
+        "--trace-metadata-output",
+        "--output",
+        dest="trace_metadata_output",
+        required=True,
+        help=(
+            "Trace metadata output CSV or Parquet table. "
+            "Prefer --trace-metadata-output; --output is a legacy alias."
+        ),
+    )
     return parser
 
 
@@ -1015,7 +1024,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     args = build_arg_parser().parse_args(argv)
     stream = load_waveform_collection(args.paths, format=args.format)
-    write_trace_metadata_table(stream, args.output, event_id=args.event_id)
+    write_trace_metadata_table(stream, args.trace_metadata_output, event_id=args.event_id)
     return 0
 
 
