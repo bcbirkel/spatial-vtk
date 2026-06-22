@@ -1380,9 +1380,70 @@ def test_public_docs_avoid_plot_implementation_import_paths():
         "spatial_vtk.spatial.map.path.corridors",
         "spatial_vtk.spatial.map.path.residuals",
         "spatial_vtk.spatial.map.pca",
+        "spatial_vtk.visualize.context.figures",
+        "spatial_vtk.visualize.context.maps",
+        "spatial_vtk.visualize.qc.overview",
+        "spatial_vtk.visualize.qc.retention",
+        "spatial_vtk.visualize.qc.samples",
+        "spatial_vtk.visualize.dashboard.streamlit_metrics",
+        "spatial_vtk.visualize.dashboard.streamlit_qc",
+        "spatial_vtk.visualize.waveforms.comparison",
+        "spatial_vtk.visualize.waveforms.overlays",
+        "spatial_vtk.visualize.waveforms.radial_sections",
+        "spatial_vtk.visualize.waveforms.record_sections",
+        "spatial_vtk.visualize.waveforms.station_event",
     )
     for token in forbidden:
         assert token not in text
+
+
+def test_public_docs_import_only_stable_workflow_surfaces():
+    root = pathlib.Path(__file__).resolve().parents[1]
+    docs = list((root / "docs").rglob("*.rst")) + list((root / "docs").rglob("*.md")) + [root / "README.md"]
+    notebooks = list((root / "docs" / "examples").rglob("*.ipynb"))
+    text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in [*docs, *notebooks]
+        if "_build" not in path.parts
+    )
+    import_lines = [
+        line.strip()
+        for line in text.splitlines()
+        if line.lstrip().startswith(("from spatial_vtk.", "import spatial_vtk."))
+    ]
+    forbidden_prefixes = (
+        "from spatial_vtk.metrics.workflow.",
+        "import spatial_vtk.metrics.workflow.",
+        "from spatial_vtk.metrics.calculate.",
+        "import spatial_vtk.metrics.calculate.",
+        "from spatial_vtk.qc.build.",
+        "import spatial_vtk.qc.build.",
+        "from spatial_vtk.visualize.context.figures",
+        "import spatial_vtk.visualize.context.figures",
+        "from spatial_vtk.visualize.context.maps",
+        "import spatial_vtk.visualize.context.maps",
+        "from spatial_vtk.visualize.qc.overview",
+        "import spatial_vtk.visualize.qc.overview",
+        "from spatial_vtk.visualize.qc.retention",
+        "import spatial_vtk.visualize.qc.retention",
+        "from spatial_vtk.visualize.qc.samples",
+        "import spatial_vtk.visualize.qc.samples",
+        "from spatial_vtk.visualize.dashboard.streamlit_",
+        "import spatial_vtk.visualize.dashboard.streamlit_",
+        "from spatial_vtk.visualize.waveforms.",
+        "import spatial_vtk.visualize.waveforms.",
+        "from spatial_vtk.spatial.map.path.",
+        "import spatial_vtk.spatial.map.path.",
+        "from spatial_vtk.spatial.map.metrics",
+        "import spatial_vtk.spatial.map.metrics",
+    )
+
+    violations = [
+        line
+        for line in import_lines
+        if any(line.startswith(prefix) for prefix in forbidden_prefixes)
+    ]
+    assert violations == []
 
 
 def test_config_api_docs_include_compute_helpers():

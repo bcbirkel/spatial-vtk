@@ -4,6 +4,18 @@ Changelog
 2026-06-21
 ----------
 
+- **Public documentation import boundary** *(Changed)*
+
+  - Expanded public docs and tutorial-notebook regression coverage so examples
+    keep importing from stable workflow surfaces such as
+    ``spatial_vtk.metrics``, ``spatial_vtk.metrics.plot``,
+    ``spatial_vtk.spatial``, ``spatial_vtk.spatial.plot``,
+    ``spatial_vtk.spatial.map``, and ``spatial_vtk.visualize``.
+  - Added guards against reintroducing notebook-facing imports from deeper
+    implementation modules for metric workflow workers, calculation adapters,
+    QC build workers, visualization context/QC/waveform internals, dashboard
+    Streamlit entry modules, and spatial path-map internals.
+
 - **CLI config path metavar** *(Changed)*
 
   - Standardized live ``svtk`` help so optional config-file arguments render as
