@@ -4,6 +4,14 @@ Changelog
 2026-06-22
 ----------
 
+- **Dashboard readiness summary status** *(Changed)*
+
+  - Added the stable ``artifact`` identifier to compact dashboard readiness
+    summaries, matching the detailed dashboard status frame.
+  - Kept input, metrics-dashboard dataset, dashboard summary-table, and
+    trace-QC rows aligned so notebooks can filter readiness displays without
+    relying on path keys or labels.
+
 - **Spatial figure context status** *(Changed)*
 
   - Added normalized ``artifact``, ``artifact_label``, ``artifact_role``, and

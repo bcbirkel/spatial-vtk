@@ -563,6 +563,8 @@ def dashboard_readiness_summary_frame(
             {
                 "item_type": "input",
                 "item": label,
+                "artifact": _blank_if_missing(row.get("artifact"))
+                or _dashboard_status_artifact_name(name, item_type="input"),
                 "artifact_role": _blank_if_missing(row.get("artifact_role")),
                 "artifact_label": label,
                 "dashboard_table": "",
@@ -601,6 +603,7 @@ def dashboard_readiness_summary_frame(
     columns = [
         "item_type",
         "item",
+        "artifact",
         "artifact_role",
         "artifact_label",
         "dashboard_table",
@@ -1099,6 +1102,8 @@ def _dashboard_summary_row(row: dict[str, object], *, item_type: str) -> dict[st
     return {
         "item_type": item_type,
         "item": item,
+        "artifact": _blank_if_missing(row.get("artifact"))
+        or _dashboard_status_artifact_name(str(row.get("name") or item), item_type=item_type),
         "artifact_role": _blank_if_missing(row.get("artifact_role")),
         "artifact_label": _blank_if_missing(row.get("artifact_label")),
         "dashboard_table": _blank_if_missing(row.get("dashboard_table")),

@@ -295,6 +295,7 @@ outputs:
     assert "Step 2 QC workflow" in qc_status["suggested_action"]
 
     summary = dashboard_readiness_summary_frame(cfg=cfg)
+    assert "artifact" in summary.columns
     assert "artifact_role" in summary.columns
     assert "artifact_label" in summary.columns
     assert "dashboard_table" in summary.columns
@@ -315,9 +316,12 @@ outputs:
 
     summary_by_item = summary.set_index("item")
     assert "metrics_long_path" not in summary_by_item.index
+    assert summary_by_item.loc["metrics_long source table", "artifact"] == "metrics_long"
     assert summary_by_item.loc["metrics_long source table", "artifact_label"] == "metrics_long source table"
     assert summary_by_item.loc["metrics_long source table", "message"] == "metrics_long source table is missing."
+    assert summary_by_item.loc["metrics_dashboard_dataset", "artifact"] == "metrics_dashboard"
     assert summary_by_item.loc["station_rollup", "dashboard_table"] == "station_rollup"
+    assert summary_by_item.loc["station_rollup", "artifact"] == "station_rollup_summary"
     assert "station" in summary_by_item.loc["station_rollup", "required_columns"]
     assert "coordinate columns" in summary_by_item.loc["station_rollup", "map_message"]
     assert "sta_lat" in summary_by_item.loc["station_rollup", "missing_map_columns"]

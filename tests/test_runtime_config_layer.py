@@ -3731,6 +3731,11 @@ outputs:
     assert by_item.loc["model_metric_band", "readiness"] == "missing"
     assert by_item.loc["qc_trace_summary", "readiness"] == "missing"
     assert readiness.summary_frame().equals(summary)
+    assert "artifact" in summary.columns
+    assert by_item.loc["metrics_long source table", "artifact"] == "metrics_long"
+    assert by_item.loc["metrics_dashboard_dataset", "artifact"] == "metrics_dashboard"
+    assert by_item.loc["model_metric_band", "artifact"] == "model_metric_band_summary"
+    assert by_item.loc["qc_trace_summary", "artifact"] == "qc_trace_summary"
 
 
 def test_dashboard_readiness_attachments_prefer_resolved_path_without_path_alias(tmp_path):

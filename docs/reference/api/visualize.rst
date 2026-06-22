@@ -228,8 +228,8 @@ Dashboard readiness also reports ``value_families`` and
 ``nonempty_value_families`` so notebooks and dashboard Data Status tabs can
 distinguish residual, GOF score, observed, synthetic, and other configured
 metric-value coverage before opening plots that depend on one family.
-The compact dashboard readiness summary carries the same
-``artifact_role`` / ``artifact_label`` and ``resolved_path`` columns, and the
+The compact dashboard readiness summary carries the same stable ``artifact``,
+``artifact_role`` / ``artifact_label``, and ``resolved_path`` columns, and the
 metrics/QC dashboard Data Status tabs show those labels while keeping
 readiness displays bounded to small status metadata. Metrics Data Status also
 shows ``required_columns``, ``missing_columns``, ``tab_ready``,
