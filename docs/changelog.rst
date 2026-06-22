@@ -98,6 +98,10 @@ Changelog
     can run without plotting dependencies installed.
   - Added a source-contract regression test that rejects top-level matplotlib
     imports in the large-run metric plotting module.
+  - Expanded focused station metric-map status frames with station aggregation
+    coordinate columns, collapsed dimensions, collapsed-dimension unique counts,
+    and input/finite station counts from the sidecar metadata so notebooks can
+    audit aggregation without opening JSON sidecars.
 
 - **Large-run figure table parity** *(Changed)*
 

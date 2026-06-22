@@ -304,7 +304,8 @@ factories used by the large-run figure suite:
    ``resolved_path``, and ``path`` columns; audit rows preserve the same
    ``name`` / ``value`` pattern used by existing notebooks. The status frame
    also includes the station-aggregation contract, source-row role/filter,
-   input/finite row and event counts, and sidecar exactness flags from the
+   input/finite row, station, and event counts, grouping and coordinate
+   columns, collapsed-dimension summaries, and sidecar exactness flags from the
    saved JSON metadata.
 
 ``write_standard_metric_diagnostic_figures``

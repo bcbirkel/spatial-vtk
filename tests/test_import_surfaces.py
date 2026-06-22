@@ -1387,6 +1387,9 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "``resolved_path`` row for the rendered figure" in text
     assert "preserving\n   ``output_path`` for compatibility" in text
     assert "source-row role/filter" in text
+    assert "input/finite row, station, and event counts" in text
+    assert "grouping and coordinate\n   columns" in text
+    assert "collapsed-dimension summaries" in text
     assert "without hand-filtering dataframes in the notebook" in normalized_text
     assert "Station grouping is based on station identifiers, not exact\n   coordinate values" in text
     assert "input and finite\n   source-row/event counts" in text
