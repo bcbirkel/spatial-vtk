@@ -2099,6 +2099,22 @@ def test_metric_cli_explicit_path_commands_use_config_defaults_helper():
         assert "_optional_cli_config(" not in source
 
 
+def test_io_and_qc_cli_explicit_path_commands_use_config_defaults_helper():
+    """Explicit-path IO/QC commands should not load a saved config implicitly."""
+
+    import spatial_vtk.cli as cli_module
+
+    guarded_handlers = (
+        "_cmd_io_prepare_event_stations",
+        "_cmd_io_inventory",
+        "_cmd_qc_manual_queue",
+    )
+    for handler_name in guarded_handlers:
+        source = inspect.getsource(getattr(cli_module, handler_name))
+        assert "_cli_config_for_defaults(" in source
+        assert "_optional_cli_config(" not in source
+
+
 def test_spatial_cli_commands_use_public_spatial_surface():
     """Curated spatial CLI commands should use the top-level spatial API surface."""
 

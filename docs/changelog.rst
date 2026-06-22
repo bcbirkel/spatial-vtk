@@ -26,6 +26,17 @@ Changelog
     independent of ambient config unless ``--config`` or ``--run-scenario`` is
     passed.
 
+- **Explicit-path IO and QC CLI defaults** *(Changed)*
+
+  - Routed event-station preparation, waveform inventory scanning, and manual
+    QC queue export commands through the shared config-default helper.
+  - Kept those commands independent of saved ``svtk config set`` state when
+    users provide all required input and output paths explicitly.
+  - Deferred config-bound metadata table imports so explicit dataframe/table
+    preparation does not require config parsing dependencies.
+  - Added source-contract coverage so these lightweight file commands keep the
+    same explicit-path behavior as metric workflow commands.
+
 - **Config-backed sidecar status CLI** *(Changed)*
 
   - Made ``svtk visualize sidecars status`` resolve the notebook-standard

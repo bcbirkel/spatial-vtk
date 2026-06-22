@@ -2324,13 +2324,7 @@ def _cmd_io_prepare_event_stations(args: argparse.Namespace) -> int:
         value is None
         for value in (args.input, args.stations, args.events, args.output)
     )
-    config = (
-        _required_cli_config(args.config, run_scenario=args.run_scenario)
-        if needs_config
-        else _optional_cli_config(args.config, run_scenario=args.run_scenario)
-        if args.config is not None or args.run_scenario
-        else None
-    )
+    config = _cli_config_for_defaults(args.config, run_scenario=args.run_scenario, needs_config=needs_config)
     from spatial_vtk.io import prepare_event_station_table
 
     input_path = (
@@ -2417,11 +2411,7 @@ def _cmd_io_inventory(args: argparse.Namespace) -> int:
     """Run ``svtk io inventory``."""
 
     needs_config = args.observed_root is None or args.synthetic_root is None or args.output is None
-    config = (
-        _required_cli_config(args.config, run_scenario=args.run_scenario)
-        if needs_config
-        else _optional_cli_config(args.config, run_scenario=args.run_scenario)
-    )
+    config = _cli_config_for_defaults(args.config, run_scenario=args.run_scenario, needs_config=needs_config)
     from spatial_vtk.io import DEFAULT_WAVEFORM_SUFFIXES, build_observed_synthetic_inventory
 
     observed_root = (
@@ -2506,7 +2496,7 @@ def _cmd_qc_manual_queue(args: argparse.Namespace) -> int:
     """Run ``svtk qc manual-queue``."""
 
     needs_config = args.trace_summary is None or args.output is None
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    config = _cli_config_for_defaults(args.config, run_scenario=args.run_scenario, needs_config=needs_config)
     from spatial_vtk.visualize.dashboard import filter_qc_dashboard_rows, write_manual_review_queue
     from spatial_vtk.visualize.qc import load_trace_qc_summary
 

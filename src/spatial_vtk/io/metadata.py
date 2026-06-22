@@ -16,8 +16,6 @@ import re
 
 import pandas as pd
 
-from spatial_vtk.io.tables import read_config_table, read_table
-
 
 STATION_COLUMN_CANDIDATES: Mapping[str, tuple[str, ...]] = {
     "station": ("station", "station_id", "stationid", "station_code", "stationcode", "station_name", "stationname", "sta", "sta_id", "site", "site_id"),
@@ -181,7 +179,12 @@ def prepare_station_metadata(
         Prepared table containing at least ``station``, ``lat``, and ``lon``.
     """
 
-    df = (station_metadata.copy() if station_metadata is not None else read_config_table("paths.station_metadata"))
+    if station_metadata is not None:
+        df = station_metadata.copy()
+    else:
+        from spatial_vtk.io.tables import read_config_table
+
+        df = read_config_table("paths.station_metadata")
     mapping: dict[str, str] = {}
     required = set(required_columns)
     for target, candidates in STATION_COLUMN_CANDIDATES.items():
@@ -218,6 +221,8 @@ def read_station_metadata(path: str | Path, **kwargs) -> pd.DataFrame:
         Prepared station metadata table.
     """
 
+    from spatial_vtk.io.tables import read_table
+
     return prepare_station_metadata(read_table(path), **kwargs)
 
 
@@ -246,7 +251,12 @@ def prepare_event_metadata(
         ``event_lon``.
     """
 
-    df = (event_metadata.copy() if event_metadata is not None else read_config_table("paths.event_metadata"))
+    if event_metadata is not None:
+        df = event_metadata.copy()
+    else:
+        from spatial_vtk.io.tables import read_config_table
+
+        df = read_config_table("paths.event_metadata")
     mapping: dict[str, str] = {}
     required = set(required_columns)
     for target, candidates in EVENT_COLUMN_CANDIDATES.items():
@@ -280,6 +290,8 @@ def read_event_metadata(path: str | Path, **kwargs) -> pd.DataFrame:
     pandas.DataFrame
         Prepared event metadata table.
     """
+
+    from spatial_vtk.io.tables import read_table
 
     return prepare_event_metadata(read_table(path), **kwargs)
 
@@ -536,6 +548,8 @@ def prepare_event_station_table(
     elif prepared_station_metadata is not None and prepared_event_metadata is not None:
         df = _build_event_station_pairs(station_metadata=prepared_station_metadata, event_metadata=prepared_event_metadata)
     else:
+        from spatial_vtk.io.tables import read_config_table
+
         df = read_config_table("paths.event_station_table")
     mapping: dict[str, str] = {}
     for target, candidates in EVENT_STATION_COLUMN_CANDIDATES.items():
@@ -587,6 +601,8 @@ def read_event_station_table(path: str | Path, **kwargs) -> pd.DataFrame:
     pandas.DataFrame
         Prepared event-station table.
     """
+
+    from spatial_vtk.io.tables import read_table
 
     return prepare_event_station_table(read_table(path), **kwargs)
 
