@@ -239,12 +239,23 @@ Common tasks:
 
 Main areas:
 
-- ``visualize.context`` for project overview figures
-- ``visualize.qc`` for QC and retention figures
-- ``visualize.waveforms`` for record sections and waveform comparisons
-- ``visualize.dashboard`` for dashboard tables and Streamlit apps, including
-  result-owned ``run_if_needed(...)`` helpers for large-run dashboard dataset
-  preparation
+- ``spatial_vtk.visualize`` for the routine notebook surface: context figures,
+  QC figures, waveform comparisons, figure sidecars, dashboard readiness, and
+  dashboard launch/preparation helpers
+- ``prepare_configured_dashboard_datasets_from_notebook_settings`` for Step 7
+  dashboard dataset preparation through a result object with
+  ``run_if_needed(...)``, ``summary_frame()``, ``status_frame()``, and
+  ``display_output_previews(...)``
+- ``dashboard_readiness_summary_frame`` and
+  ``dashboard_output_status_frame`` for bounded dashboard status tables that
+  name the configured ``metrics_dashboard`` row dataset directory,
+  ``dashboard_summaries`` summary-table directory, and ``qc_trace_summary``
+  table
+- ``launch_configured_dashboards_from_notebook_settings`` for notebook
+  dashboard launch settings and terminal fallback commands
+- ``visualize.context``, ``visualize.qc``, ``visualize.waveforms``, and
+  ``visualize.dashboard`` remain public subpackages for custom scripts and
+  package extensions that intentionally work inside one visualization family
 
 ``cli``
 -------

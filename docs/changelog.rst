@@ -4,6 +4,15 @@ Changelog
 2026-06-22
 ----------
 
+- **Package overview dashboard guidance** *(Changed)*
+
+  - Updated the top-level package overview to point routine notebooks to
+    ``spatial_vtk.visualize`` dashboard readiness, preparation, preview, and
+    launch helpers instead of a vague dashboard subpackage description.
+  - Named the configured ``metrics_dashboard``, ``dashboard_summaries``, and
+    ``qc_trace_summary`` dashboard outputs in the overview so users see the
+    same vocabulary across docs, CLI, notebooks, and API reference pages.
+
 - **Large-run notebook import guidance** *(Changed)*
 
   - Clarified that large-run notebooks should use workflow result objects for

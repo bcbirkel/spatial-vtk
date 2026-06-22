@@ -3520,6 +3520,15 @@ def test_package_overview_points_to_public_workflow_helpers():
         "``spatial_vtk.spatial.plot`` and ``spatial_vtk.spatial.map``",
         "Routine notebooks should use the standard spatial and plotting result helpers\nfirst.",
         "custom orchestration that need to bypass the\nresult-owned notebook status/skip wrappers",
+        "``spatial_vtk.visualize`` for the routine notebook surface",
+        "``prepare_configured_dashboard_datasets_from_notebook_settings`` for Step 7",
+        "``run_if_needed(...)``, ``summary_frame()``, ``status_frame()``, and",
+        "``dashboard_readiness_summary_frame`` and",
+        "``dashboard_output_status_frame`` for bounded dashboard status tables",
+        "configured ``metrics_dashboard`` row dataset directory",
+        "``dashboard_summaries`` summary-table directory",
+        "``launch_configured_dashboards_from_notebook_settings`` for notebook",
+        "public subpackages for custom scripts and\n  package extensions",
     ]
     for snippet in required:
         assert snippet in text
@@ -3530,6 +3539,7 @@ def test_package_overview_points_to_public_workflow_helpers():
         "``qc.build``",
         "``metrics.workflow`` for",
         "``spatial.calculate``",
+        "``visualize.dashboard`` for dashboard tables and Streamlit apps",
     )
     for snippet in forbidden:
         assert snippet not in text
