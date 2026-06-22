@@ -975,7 +975,8 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "qc_summary_readiness_from_config," not in standard_text
     assert "qc_inputs = load_standard_qc_inputs(cfg=cfg)" in standard_text
     assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in standard_text
-    assert "config_path = context.config_path" in standard_text
+    assert "config_path = context.config_path" not in standard_text
+    assert "dashboard_launch = notebook_dashboard_launch_commands(context)" in standard_text
     assert "qc_outputs.run_inventory_step_if_needed(" in standard_text
     assert "qc_outputs.run_overlap_step_if_needed(" in standard_text
     assert "qc_outputs.run_summary_step_if_needed(" in standard_text
@@ -2058,6 +2059,9 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     assert "launch_configured_metrics_dashboard(" not in source
     assert "launch_configured_qc_dashboard(" not in source
     assert "notebook_dashboard_launch_commands(" in source
+    assert "notebook_dashboard_launch_commands(\n    context," in source
+    assert "config_path = context.config_path" not in source
+    assert "run_scenario=context.run_scenario" not in source
     assert 'launch_metrics_dashboard=notebook_overrides["launch_metrics_dashboard"]' in source
     assert 'launch_qc_dashboard=notebook_overrides["launch_qc_dashboard"]' in source
     assert "dashboard_launch.metrics_launch_kwargs(show=True)" not in source

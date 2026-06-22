@@ -4,6 +4,14 @@ Changelog
 2026-06-22
 ----------
 
+- **Standard dashboard launch context** *(Changed)*
+
+  - Updated the standard Step 2 and Step 7 notebooks to pass the resolved
+    ``NotebookRunContext`` directly to ``notebook_dashboard_launch_commands``.
+  - Removed local config-path and run-scenario plumbing from dashboard launch
+    cells so standard and large-run notebook drivers use the same package
+    helper pattern.
+
 - **Large-run dashboard launch context** *(Changed)*
 
   - Updated ``notebook_dashboard_launch_commands`` to accept a resolved
