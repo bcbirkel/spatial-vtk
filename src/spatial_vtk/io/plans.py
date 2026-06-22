@@ -365,10 +365,31 @@ def build_arg_parser() -> argparse.ArgumentParser:
     """Build the module-level metric-plan CLI parser."""
 
     parser = argparse.ArgumentParser(description="Check expected metric rows against an existing metrics table.")
-    parser.add_argument("--inventory", required=True, help="QC inventory CSV or Parquet table.")
-    parser.add_argument("--metrics", required=True, help="Existing metrics CSV or Parquet table.")
+    parser.add_argument(
+        "--qc-inventory",
+        "--inventory",
+        dest="qc_inventory",
+        required=True,
+        help="QC inventory CSV or Parquet table. Prefer --qc-inventory; --inventory is a legacy alias.",
+    )
+    parser.add_argument(
+        "--metrics-table",
+        "--metrics",
+        dest="metrics_table",
+        required=True,
+        help="Existing metrics CSV or Parquet table. Prefer --metrics-table; --metrics is a legacy alias.",
+    )
     parser.add_argument("--config", default=None, help="Spatial-VTK config YAML/JSON.")
-    parser.add_argument("--missing-output", default=None, help="Optional output CSV or Parquet table for missing rows.")
+    parser.add_argument(
+        "--missing-metrics-output",
+        "--missing-output",
+        dest="missing_metrics_output",
+        default=None,
+        help=(
+            "Optional missing-metric rows output CSV or Parquet table. "
+            "Prefer --missing-metrics-output; --missing-output is a legacy alias."
+        ),
+    )
     return parser
 
 
@@ -378,9 +399,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_arg_parser().parse_args(argv)
     config = SpatialVTKConfig.from_file(args.config) if args.config else SpatialVTKConfig.empty(root_dir=Path.cwd())
     plan = metric_plan_from_config(config)
-    expected = expected_metric_rows_from_inventory(read_table(args.inventory), plan)
-    missing, summary = compare_metric_plan_to_table(expected, read_table(args.metrics))
-    if args.missing_output:
-        write_table(missing, args.missing_output, index=False)
+    expected = expected_metric_rows_from_inventory(read_table(args.qc_inventory), plan)
+    missing, summary = compare_metric_plan_to_table(expected, read_table(args.metrics_table))
+    if args.missing_metrics_output:
+        write_table(missing, args.missing_metrics_output, index=False)
     print(f"expected={summary.expected} present={summary.present} missing={summary.missing}")
     return 0 if summary.missing == 0 else 1

@@ -44,6 +44,14 @@ Changelog
   - Added regression coverage that keeps the workflow and release checklist
     wheel-content guardrails in sync.
 
+- **Direct metric-plan parser aliases** *(Changed)*
+
+  - Added artifact-named ``--qc-inventory``, ``--metrics-table``, and
+    ``--missing-metrics-output`` aliases to the direct
+    ``spatial_vtk.io.plans`` metric-completeness parser.
+  - Kept legacy ``--inventory``, ``--metrics``, and ``--missing-output``
+    support and added parser coverage for both preferred and legacy forms.
+
 - **Master-list CLI defaults** *(Changed)*
 
   - Made ``svtk io master-stations`` and ``svtk io master-events`` resolve

@@ -17,7 +17,12 @@ from spatial_vtk.io.master_lists import (
     write_master_station_list,
 )
 from spatial_vtk.io.metadata import prepare_event_station_table
-from spatial_vtk.io.plans import MetricPlan, compare_metric_plan_to_table, expected_metric_rows_from_inventory
+from spatial_vtk.io.plans import (
+    MetricPlan,
+    build_arg_parser as build_metric_plan_arg_parser,
+    compare_metric_plan_to_table,
+    expected_metric_rows_from_inventory,
+)
 from spatial_vtk.io.waveforms import (
     WaveformPreprocessing,
     build_arg_parser as build_waveform_arg_parser,
@@ -256,6 +261,47 @@ def test_waveform_module_cli_uses_trace_metadata_output_alias(capsys) -> None:
     assert args.event_id == "ci123"
     assert legacy_args.trace_metadata_output == "trace_metadata.csv"
     assert not hasattr(args, "output")
+
+
+def test_metric_plan_module_cli_uses_artifact_named_table_aliases() -> None:
+    """The direct metric completeness parser should expose clear table roles."""
+
+    parser = build_metric_plan_arg_parser()
+    help_text = parser.format_help()
+    args = parser.parse_args(
+        [
+            "--qc-inventory",
+            "qc_inventory.parquet",
+            "--metrics-table",
+            "metrics_long.parquet",
+            "--missing-metrics-output",
+            "missing_metrics.parquet",
+        ]
+    )
+    legacy_args = parser.parse_args(
+        [
+            "--inventory",
+            "qc_inventory.csv",
+            "--metrics",
+            "metrics_long.csv",
+            "--missing-output",
+            "missing_metrics.csv",
+        ]
+    )
+
+    assert "--qc-inventory" in help_text
+    assert "--metrics-table" in help_text
+    assert "--missing-metrics-output" in help_text
+    assert "legacy alias" in help_text
+    assert args.qc_inventory == "qc_inventory.parquet"
+    assert args.metrics_table == "metrics_long.parquet"
+    assert args.missing_metrics_output == "missing_metrics.parquet"
+    assert legacy_args.qc_inventory == "qc_inventory.csv"
+    assert legacy_args.metrics_table == "metrics_long.csv"
+    assert legacy_args.missing_metrics_output == "missing_metrics.csv"
+    assert not hasattr(args, "inventory")
+    assert not hasattr(args, "metrics")
+    assert not hasattr(args, "missing_output")
 
 
 def test_small_public_table_writers_use_suffixless_csv_targets(tmp_path) -> None:
