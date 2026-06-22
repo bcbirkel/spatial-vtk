@@ -4285,9 +4285,12 @@ outputs:
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     names = {row["name"] for row in payload["status"]}
+    summary_items = {row["item"] for row in payload["readiness_summary"]}
     assert payload["reason"] == "missing_inputs"
     assert payload["should_build_dashboard_outputs"] is False
     assert "metrics_long.parquet is not ready yet" in payload["message"]
+    assert "metrics_long source table" in summary_items
+    assert "QC trace-summary table" in summary_items
     assert "metrics_long_path" in names
     assert "qc_trace_summary_path" in names
     assert "qc_inventory_overlap_path" in names

@@ -126,6 +126,9 @@ Changelog
   - Applied the same empty-output guard to lower-level output-existence and
     rebuild helpers so path-based workflow checks cannot silently no-op when
     no targets are configured.
+  - Added the compact dashboard readiness summary to
+    ``svtk dashboard status --json`` so machine-readable status output includes
+    the same tab/input readiness view shown in human output.
   - Added workflow-doc regression coverage so notebook guidance keeps using
     stable package import surfaces and does not reintroduce metrics plotting
     implementation-module paths.

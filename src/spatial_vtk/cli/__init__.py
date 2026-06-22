@@ -3194,11 +3194,13 @@ def _cmd_dashboard_status(args: argparse.Namespace) -> int:
         create_parent=False,
         summary_format=args.summary_format,
     )
+    summary = readiness.summary_frame()
     payload = {
         "config": str(config.config_path) if config.config_path is not None else None,
         "should_build_dashboard_outputs": readiness.should_run,
         "reason": readiness.reason,
         "message": readiness.message,
+        "readiness_summary": summary,
         "status": status,
     }
     if args.json:
@@ -3210,7 +3212,6 @@ def _cmd_dashboard_status(args: argparse.Namespace) -> int:
     print(f"Dashboard build recommended: {readiness.should_run}")
     print(f"Reason: {readiness.reason}")
     print(f"Message: {readiness.message}")
-    summary = readiness.summary_frame()
     if summary.empty and status.empty:
         print("No configured dashboard paths were resolved.")
     else:
