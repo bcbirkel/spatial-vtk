@@ -59,6 +59,7 @@ from spatial_vtk.spatial.map import plot_event_residual_map
 from spatial_vtk.spatial.plot import boxplot, heatmap, scatterplot
 from spatial_vtk.visualize.dashboard import available_dashboard_value_columns, build_dashboard_summaries, load_dashboard_metric_dataset
 import spatial_vtk.metrics.workflow.execution as metric_execution
+import spatial_vtk.metrics.workflow.run as metric_run_module
 import spatial_vtk.metrics.workflow.tasks as metric_tasks_module
 
 
@@ -136,6 +137,25 @@ def test_metric_inventories_from_trace_metadata_use_explicit_path_columns(tmp_pa
     assert reused.observed_rows is None
     assert reused.synthetic_rows is None
     assert reused.status_frame()["reused"].tolist() == [True, True]
+
+
+def test_direct_metric_task_runner_prefers_task_table_alias() -> None:
+    """The direct task runner should describe CSV/Parquet inputs without CSV-only naming."""
+
+    parser = metric_run_module.build_arg_parser()
+    help_text = parser.format_help()
+
+    assert "--tasks-table" in help_text
+    assert "--tasks-csv" in help_text
+    assert "legacy alias" in help_text
+    assert "CSV or Parquet metric task table" in help_text
+
+    args = parser.parse_args(["--tasks-table", "tasks.parquet", "--output", "rows.parquet"])
+    legacy_args = parser.parse_args(["--tasks-csv", "tasks.csv", "--output", "rows.csv"])
+
+    assert args.tasks_table == "tasks.parquet"
+    assert legacy_args.tasks_table == "tasks.csv"
+    assert not hasattr(args, "tasks_csv")
 
 
 def test_metric_plot_input_summary_frame_reports_notebook_inputs() -> None:

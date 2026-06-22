@@ -955,7 +955,16 @@ def build_arg_parser() -> argparse.ArgumentParser:
     """Build a CLI parser for direct task-table execution."""
 
     parser = argparse.ArgumentParser(description="Run Spatial-VTK metric tasks from a task table.")
-    parser.add_argument("--tasks-csv", required=True, help="CSV or Parquet file created by metric task planning.")
+    parser.add_argument(
+        "--tasks-table",
+        "--tasks-csv",
+        dest="tasks_table",
+        required=True,
+        help=(
+            "CSV or Parquet metric task table created by metric task planning. "
+            "Prefer --tasks-table; --tasks-csv is a legacy alias."
+        ),
+    )
     parser.add_argument("--qc-table", default=None, help="Optional side-specific QC table.")
     parser.add_argument("--output", required=True, help="Metric rows output CSV or Parquet table.")
     return parser
@@ -965,7 +974,7 @@ def main(argv: list[str] | None = None) -> int:
     """Run metric tasks from a task table."""
 
     args = build_arg_parser().parse_args(argv)
-    rows = run_metric_tasks(tasks_from_frame(args.tasks_csv), qc_table=args.qc_table)
+    rows = run_metric_tasks(tasks_from_frame(args.tasks_table), qc_table=args.qc_table)
     write_metric_rows(rows, args.output)
     return 0
 

@@ -4,6 +4,14 @@ Changelog
 2026-06-21
 ----------
 
+- **Direct metric task-runner input flag** *(Changed)*
+
+  - Added ``--tasks-table`` as the preferred input flag for the direct metric
+    task-runner module so CSV and Parquet task tables are not described with a
+    CSV-only option name.
+  - Kept ``--tasks-csv`` as a legacy alias and added parser regression
+    coverage for both spellings.
+
 - **Master-list CLI defaults** *(Changed)*
 
   - Made ``svtk io master-stations`` and ``svtk io master-events`` resolve
