@@ -1243,6 +1243,9 @@ def test_cli_reference_describes_config_defaults_before_kwargs():
     assert "``--components``" in text
     assert "``--time-limit-s``" in text
     assert "``--max-records``" in text
+    assert "Config Defaults And Explicit Paths" in text
+    assert "complete explicit input and output paths" in text
+    assert "does not load the saved config unless you also" in text
     assert "``--max-traces``" in text
     assert "``--no-connect-points``" in text
     assert "Registered table defaults may be CSV or Parquet" in text

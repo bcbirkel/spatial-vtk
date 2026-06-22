@@ -37,6 +37,16 @@ Changelog
   - Added source-contract coverage so these lightweight file commands keep the
     same explicit-path behavior as metric workflow commands.
 
+- **CLI config behavior documentation** *(Changed)*
+
+  - Added a CLI API section that distinguishes config-backed default paths from
+    complete explicit input and output paths.
+  - Documented that explicit-path commands do not load saved ``svtk config
+    set`` state unless ``--config`` or ``--run-scenario`` is passed.
+  - Updated source-contract coverage for lightweight CLI CSV/Parquet table
+    writes while keeping the shared table-writer fallback for nonstandard
+    suffixes.
+
 - **Config-backed sidecar status CLI** *(Changed)*
 
   - Made ``svtk visualize sidecars status`` resolve the notebook-standard

@@ -3682,17 +3682,17 @@ def test_current_table_format_help_uses_consistent_wording():
     assert not offenders, "\n".join(offenders)
 
 
-def test_cli_table_writes_use_shared_writer():
-    """Generic CLI table writes should use package table writer semantics."""
+def test_cli_table_writes_keep_standard_csv_parquet_lightweight():
+    """Generic CLI table writes should avoid config imports for standard paths."""
 
     source = (pathlib.Path(__file__).resolve().parents[1] / "src" / "spatial_vtk" / "cli" / "__init__.py").read_text(
         encoding="utf-8"
     )
     helper = source.split("def _write_table", 1)[1].split("\ndef ", 1)[0]
+    assert "df.to_csv(written, index=False)" in helper
+    assert "df.to_parquet(output, index=False)" in helper
     assert "from spatial_vtk.io import write_table" in helper
     assert "written = write_table(df, output, index=False)" in helper
-    assert ".to_csv(" not in helper
-    assert ".to_parquet(" not in helper
 
 
 def test_cli_workflow_helpers_use_public_package_surfaces():
