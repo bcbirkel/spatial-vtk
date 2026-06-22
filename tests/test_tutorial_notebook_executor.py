@@ -2252,6 +2252,8 @@ def test_large_run_step03_uses_metric_batch_status_before_submit_and_merge() -> 
     assert "metric_outputs.run_slurm_step_if_needed(" in source
     assert "metric_outputs.run_merge_step_if_needed(" in source
     assert "metric_outputs.run_downstream_outputs_step_if_needed(" in source
+    assert "at least one passing observed/synthetic QC pair" in source
+    assert "skip records that cannot contribute paired comparison metrics" in source
     assert "metric_slurm_submission_readiness_from_config," not in source
     assert "metric_inventories_readiness_from_config," not in source
     assert "metric_manifest_readiness_from_config," not in source

@@ -84,6 +84,10 @@ Changelog
     active config.
   - Preserved planning metadata when rewriting manifests to use metric-ready
     waveform caches.
+  - Clarified the metrics API reference and large-run Step 3 notebook so users
+    can see that default metric manifests are planned from
+    ``qc_inventory_overlap`` and passing observed/synthetic event-station QC
+    pairs, not from every row in the full QC inventory.
 
 - **Large-run metric plotting import boundary** *(Changed)*
 

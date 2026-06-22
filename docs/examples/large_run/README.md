@@ -92,7 +92,7 @@ by the notebooks, without cleaning outputs or starting execution.
 
 Environment switches:
 
-- `SVTK_SUBMIT_SLURM=1`: submit generated Slurm scripts from notebook cells. Otherwise cells print `sbatch ...` commands.
+- `SVTK_SUBMIT_SLURM=1`: submit generated Slurm scripts through package helpers from notebook cells. Otherwise cells write the script and show a structured result with the script path and the submission command to run from a terminal.
 - `SVTK_RUN_SCENARIO=tutorial`: choose a configured run scenario. Large-run notebooks let `notebook_run_context()` read this once and reuse `context.run_scenario`.
 - `SVTK_RUN_LOCAL=1`: run lightweight package helper calls directly from the notebook. Otherwise heavy cells write Slurm scripts and print or submit them.
 - `SVTK_OVERWRITE=1`: rebuild outputs even when they already exist.

@@ -113,10 +113,14 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
        missing, stale, current, or forced by ``overwrite`` without repeating the
        preprocessed trace-metadata dependency in notebooks.
    * - ``plan_metric_tasks_from_config``
-     - Plan metric tasks from configured inventories, QC overlap tables, and
-       metric settings. When writing a manifest, the returned payload includes
-       task count, batch count, per-batch task range, batch output directory,
-       and first/last batch output paths for notebook display.
+     - Plan metric tasks from configured inventories, the
+       ``qc_inventory_overlap`` table, and metric settings. By default, paired
+       observed/synthetic metric tasks are restricted to event-station records
+       with at least one passing observed/synthetic QC pair, so the manifest
+       avoids events or stations that cannot contribute comparison metrics. When
+       writing a manifest, the returned payload includes task count, batch count,
+       per-batch task range, batch output directory, first/last batch output
+       paths, and planning-policy metadata for notebook display.
    * - ``metric_manifest_readiness_from_config``
      - Check whether configured metric inventories and the overlap QC table are
        ready before planning the metric manifest.

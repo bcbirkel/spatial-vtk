@@ -1325,6 +1325,9 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "``PSA`` and ``FAS`` are broadband spectral metrics" in text
     assert "writes blank\n``passband`` values for spectral tasks" in text
     assert "older output table contains PSA rows repeated under passband labels" in text
+    assert "``qc_inventory_overlap`` table" in text
+    assert "at least one passing observed/synthetic QC pair" in text
+    assert "planning-policy metadata" in text
     assert "``write_standard_metric_diagnostic_plots``" in text
     assert ".. autoclass:: spatial_vtk.metrics.StandardMetricWorkflowOutputResult" in text
     assert ".. autofunction:: spatial_vtk.metrics.load_standard_metric_workflow_outputs" in text
