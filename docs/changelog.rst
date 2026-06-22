@@ -12,6 +12,14 @@ Changelog
   - Kept ``--tasks-csv`` as a legacy alias and added parser regression
     coverage for both spellings.
 
+- **Direct master-list parser aliases** *(Changed)*
+
+  - Added artifact-named ``--station-tables``, ``--master-station-output``,
+    ``--event-tables``, and ``--master-event-output`` aliases to the direct
+    ``spatial_vtk.io.master_lists`` module parser.
+  - Kept legacy ``--input`` and ``--output`` spellings for existing scripts
+    and added parser coverage for both preferred and legacy forms.
+
 - **Master-list CLI defaults** *(Changed)*
 
   - Made ``svtk io master-stations`` and ``svtk io master-events`` resolve

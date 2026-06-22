@@ -301,11 +301,43 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Build Spatial-VTK master station or event lists.")
     subparsers = parser.add_subparsers(dest="command", required=True)
     stations = subparsers.add_parser("stations", help="Build a master station list.")
-    stations.add_argument("--input", nargs="+", required=True, help="Station CSV or Parquet paths.")
-    stations.add_argument("--output", required=True, help="Output station CSV or Parquet table.")
+    stations.add_argument(
+        "--station-tables",
+        "--input",
+        dest="station_tables",
+        nargs="+",
+        required=True,
+        help="Station metadata CSV or Parquet table path(s). Prefer --station-tables; --input is a legacy alias.",
+    )
+    stations.add_argument(
+        "--master-station-output",
+        "--output",
+        dest="master_station_output",
+        required=True,
+        help=(
+            "Master station-list output CSV or Parquet table. "
+            "Prefer --master-station-output; --output is a legacy alias."
+        ),
+    )
     events = subparsers.add_parser("events", help="Build a master event list.")
-    events.add_argument("--input", nargs="+", required=True, help="Event CSV or Parquet paths.")
-    events.add_argument("--output", required=True, help="Output event CSV or Parquet table.")
+    events.add_argument(
+        "--event-tables",
+        "--input",
+        dest="event_tables",
+        nargs="+",
+        required=True,
+        help="Event metadata CSV or Parquet table path(s). Prefer --event-tables; --input is a legacy alias.",
+    )
+    events.add_argument(
+        "--master-event-output",
+        "--output",
+        dest="master_event_output",
+        required=True,
+        help=(
+            "Master event-list output CSV or Parquet table. "
+            "Prefer --master-event-output; --output is a legacy alias."
+        ),
+    )
     return parser
 
 
@@ -314,9 +346,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     args = build_arg_parser().parse_args(argv)
     if args.command == "stations":
-        write_master_station_list(build_master_station_list(station_tables=args.input), args.output)
+        write_master_station_list(build_master_station_list(station_tables=args.station_tables), args.master_station_output)
     elif args.command == "events":
-        write_master_event_list(build_master_event_list(event_tables=args.input), args.output)
+        write_master_event_list(build_master_event_list(event_tables=args.event_tables), args.master_event_output)
     return 0
 
 

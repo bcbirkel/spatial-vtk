@@ -10,7 +10,12 @@ import pytest
 
 from spatial_vtk.io.artifacts import ArtifactRegistry, ArtifactSpec
 from spatial_vtk.config import SpatialVTKConfig, clear_active_config
-from spatial_vtk.io.master_lists import build_master_event_list, build_master_station_list, write_master_station_list
+from spatial_vtk.io.master_lists import (
+    build_arg_parser as build_master_list_arg_parser,
+    build_master_event_list,
+    build_master_station_list,
+    write_master_station_list,
+)
 from spatial_vtk.io.metadata import prepare_event_station_table
 from spatial_vtk.io.plans import MetricPlan, compare_metric_plan_to_table, expected_metric_rows_from_inventory
 from spatial_vtk.io.waveforms import WaveformPreprocessing, read_waveform_file, trace_metadata_table, write_trace_metadata_table
@@ -143,6 +148,74 @@ def test_master_event_list_uses_common_aliases() -> None:
     assert events.loc[0, "event_id"] == "ci123"
     assert events.loc[0, "lat"] == 34.0
     assert events.loc[0, "magnitude"] == 4.2
+
+
+def test_master_list_module_cli_uses_artifact_named_aliases(capsys) -> None:
+    """The direct module CLI should not expose only generic input/output names."""
+
+    parser = build_master_list_arg_parser()
+    with pytest.raises(SystemExit):
+        parser.parse_args(["stations", "--help"])
+    stations_help_text = capsys.readouterr().out
+    with pytest.raises(SystemExit):
+        parser.parse_args(["events", "--help"])
+    events_help_text = capsys.readouterr().out
+    stations_help = parser.parse_args(
+        [
+            "stations",
+            "--station-tables",
+            "stations_a.parquet",
+            "stations_b.csv",
+            "--master-station-output",
+            "prepared_stations.parquet",
+        ]
+    )
+    legacy_stations = parser.parse_args(
+        [
+            "stations",
+            "--input",
+            "stations.csv",
+            "--output",
+            "prepared_stations.csv",
+        ]
+    )
+    events_help = parser.parse_args(
+        [
+            "events",
+            "--event-tables",
+            "events.parquet",
+            "--master-event-output",
+            "prepared_events.parquet",
+        ]
+    )
+    legacy_events = parser.parse_args(
+        [
+            "events",
+            "--input",
+            "events.csv",
+            "--output",
+            "prepared_events.csv",
+        ]
+    )
+
+    assert "--station-tables" in stations_help_text
+    assert "--master-station-output" in stations_help_text
+    assert "legacy alias" in stations_help_text
+    assert "--event-tables" in events_help_text
+    assert "--master-event-output" in events_help_text
+    assert "legacy alias" in events_help_text
+    assert stations_help.station_tables == ["stations_a.parquet", "stations_b.csv"]
+    assert stations_help.master_station_output == "prepared_stations.parquet"
+    assert legacy_stations.station_tables == ["stations.csv"]
+    assert legacy_stations.master_station_output == "prepared_stations.csv"
+    assert events_help.event_tables == ["events.parquet"]
+    assert events_help.master_event_output == "prepared_events.parquet"
+    assert legacy_events.event_tables == ["events.csv"]
+    assert legacy_events.master_event_output == "prepared_events.csv"
+    assert not hasattr(stations_help, "input")
+    assert not hasattr(stations_help, "output")
+    assert not hasattr(events_help, "input")
+    assert not hasattr(events_help, "output")
 
 
 def test_small_public_table_writers_use_suffixless_csv_targets(tmp_path) -> None:
