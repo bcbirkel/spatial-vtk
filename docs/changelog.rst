@@ -11,6 +11,9 @@ Changelog
   - Kept ``metrics_root`` and ``summary_root`` as accepted constructor aliases
     and read-only compatibility properties for older dashboard helper code.
   - Documented the path-object naming contract in the visualization API guide.
+  - Renamed the metrics Streamlit dashboard internals to use
+    ``metrics_dataset_dir`` and ``dashboard_summary_table_dir`` while keeping
+    legacy query keys as compatibility aliases.
 
 - **Notebook run-context status display** *(Changed)*
 

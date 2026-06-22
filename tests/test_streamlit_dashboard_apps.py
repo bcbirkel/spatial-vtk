@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import csv
 import importlib
 from pathlib import Path
@@ -503,7 +504,7 @@ def test_metrics_dashboard_row_level_loader_uses_selected_filters(monkeypatch):
     captured = {}
 
     def fake_load(
-        metrics_root,
+        metrics_dataset_dir,
         columns,
         models,
         metric,
@@ -514,7 +515,7 @@ def test_metrics_dashboard_row_level_loader_uses_selected_filters(monkeypatch):
         vs30_range,
         max_rows,
     ):  # noqa: ANN001
-        captured["metrics_root"] = metrics_root
+        captured["metrics_dataset_dir"] = metrics_dataset_dir
         captured["columns"] = columns
         captured["models"] = models
         captured["metric"] = metric
@@ -543,7 +544,7 @@ def test_metrics_dashboard_row_level_loader_uses_selected_filters(monkeypatch):
     )
 
     assert rows["log2_residual"].tolist() == [0.25]
-    assert captured["metrics_root"] == "/tmp/dashboard_metrics"
+    assert captured["metrics_dataset_dir"] == "/tmp/dashboard_metrics"
     assert captured["models"] == ("m1",)
     assert captured["metric"] == "PGA"
     assert captured["bands"] == ("1-2 sec",)
@@ -1259,6 +1260,22 @@ def test_metrics_dashboard_path_setting_accepts_clear_and_legacy_query_keys(monk
     assert streamlit_metrics._path_setting("metrics_dataset_dir", "SVTK_METRICS_ROOT", aliases=("metrics_root",)) == "env-metrics"
 
 
+def test_metrics_dashboard_internals_use_current_path_names():
+    """Streamlit internals should not drift back to legacy root variable names."""
+
+    tree = ast.parse(Path(streamlit_metrics.__file__).read_text(encoding="utf-8"))
+    legacy_names = {"metrics_root", "summary_root"}
+    offenders: list[str] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name) and node.id in legacy_names:
+            offenders.append(node.id)
+        elif isinstance(node, ast.arg) and node.arg in legacy_names:
+            offenders.append(node.arg)
+        elif isinstance(node, ast.keyword) and node.arg in legacy_names:
+            offenders.append(node.arg)
+    assert offenders == []
+
+
 def test_qc_dashboard_path_setting_accepts_clear_and_legacy_query_keys(monkeypatch):
     """QC dashboard URLs should prefer qc_trace_summary but preserve trace_summary."""
 
@@ -1320,27 +1337,27 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
             "config": "",
         }.get(query_key, "")
 
-    def fake_cached_loader(summary_root: str, skip_tables: tuple[str, ...] = ()) -> dict[str, pd.DataFrame]:
-        calls.append((summary_root, skip_tables))
+    def fake_cached_loader(dashboard_summary_table_dir: str, skip_tables: tuple[str, ...] = ()) -> dict[str, pd.DataFrame]:
+        calls.append((dashboard_summary_table_dir, skip_tables))
         return summaries
 
-    def fail_uncached_loader(summary_root: str):  # noqa: ANN001, ARG001
+    def fail_uncached_loader(dashboard_summary_table_dir: str):  # noqa: ANN001, ARG001
         raise AssertionError("main should use _load_summary_tables_cached")
 
     def fake_render_dashboard(  # noqa: ANN001
         loaded,
-        metrics_root,
+        metrics_dataset_dir,
         config,
         *,
-        summary_root=None,
+        dashboard_summary_table_dir=None,
         optional_skip_tables=(),
         readiness,
         metric_dataset_readiness=None,
     ):
         rendered["summaries"] = loaded
-        rendered["metrics_root"] = metrics_root
+        rendered["metrics_dataset_dir"] = metrics_dataset_dir
         rendered["config"] = config
-        rendered["summary_root"] = summary_root
+        rendered["dashboard_summary_table_dir"] = dashboard_summary_table_dir
         rendered["optional_skip_tables"] = optional_skip_tables
         rendered["readiness"] = readiness
         rendered["metric_dataset_readiness"] = metric_dataset_readiness
@@ -1352,7 +1369,7 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
     monkeypatch.setattr(streamlit_metrics, "_load_optional_config", lambda config_path: None)
     monkeypatch.setattr(streamlit_metrics, "_render_dashboard_readiness", lambda frame, **kwargs: None)
     monkeypatch.setattr(streamlit_metrics, "_render_metric_dataset_readiness", lambda frame: None)
-    monkeypatch.setattr(streamlit_metrics, "dashboard_metric_dataset_readiness_frame", lambda metrics_root: pd.DataFrame({"ready": [True], "message": ["ready"]}))
+    monkeypatch.setattr(streamlit_metrics, "dashboard_metric_dataset_readiness_frame", lambda metrics_dataset_dir: pd.DataFrame({"ready": [True], "message": ["ready"]}))
     monkeypatch.setattr(streamlit_metrics, "_metrics_dashboard_startup_blocker", lambda frame: None)
     monkeypatch.setattr(streamlit_metrics, "_render_metrics_dashboard", fake_render_dashboard)
     monkeypatch.setattr(streamlit_metrics.st, "set_page_config", lambda **kwargs: None)
@@ -1363,8 +1380,8 @@ def test_metrics_dashboard_main_uses_cached_summary_loader(monkeypatch):
 
     assert calls == [("summary-root", ("event_rollup", "path_hex", "station_rollup"))]
     assert rendered["summaries"] is summaries
-    assert rendered["metrics_root"] == "metrics-root"
-    assert rendered["summary_root"] == "summary-root"
+    assert rendered["metrics_dataset_dir"] == "metrics-root"
+    assert rendered["dashboard_summary_table_dir"] == "summary-root"
     assert rendered["optional_skip_tables"] == ()
     assert rendered["readiness"] is readiness
     assert list(rendered["metric_dataset_readiness"]["ready"]) == [True]
@@ -1506,24 +1523,24 @@ def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
             "config": "",
         }.get(query_key, "")
 
-    def fake_cached_loader(summary_root: str, skip_tables: tuple[str, ...] = ()) -> dict[str, pd.DataFrame]:
-        calls.append((summary_root, skip_tables))
+    def fake_cached_loader(dashboard_summary_table_dir: str, skip_tables: tuple[str, ...] = ()) -> dict[str, pd.DataFrame]:
+        calls.append((dashboard_summary_table_dir, skip_tables))
         return summaries
 
     def fake_render_dashboard(  # noqa: ANN001
         loaded,
-        metrics_root,
+        metrics_dataset_dir,
         config,
         *,
-        summary_root=None,
+        dashboard_summary_table_dir=None,
         optional_skip_tables=(),
         readiness,
         metric_dataset_readiness=None,
     ):
         rendered["summaries"] = loaded
-        rendered["metrics_root"] = metrics_root
+        rendered["metrics_dataset_dir"] = metrics_dataset_dir
         rendered["config"] = config
-        rendered["summary_root"] = summary_root
+        rendered["dashboard_summary_table_dir"] = dashboard_summary_table_dir
         rendered["optional_skip_tables"] = optional_skip_tables
         rendered["readiness"] = readiness
         rendered["metric_dataset_readiness"] = metric_dataset_readiness
@@ -1542,8 +1559,8 @@ def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
 
     assert calls == [("summary-root", ("event_rollup", "path_hex", "station_rollup"))]
     assert rendered["summaries"] is summaries
-    assert rendered["metrics_root"] == ""
-    assert rendered["summary_root"] == "summary-root"
+    assert rendered["metrics_dataset_dir"] == ""
+    assert rendered["dashboard_summary_table_dir"] == "summary-root"
     assert rendered["optional_skip_tables"] == ("path_hex", "station_rollup")
     assert rendered["readiness"] is readiness
     assert rendered["metric_dataset_readiness"].empty

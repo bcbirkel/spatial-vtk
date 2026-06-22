@@ -103,24 +103,24 @@ def main() -> None:
 
     st.set_page_config(page_title="Spatial-VTK Metrics Explorer", layout="wide")
     st.title("Spatial-VTK Metrics Explorer")
-    metrics_root = _path_setting(
+    metrics_dataset_dir = _path_setting(
         "metrics_dataset_dir",
         "SVTK_METRICS_ROOT",
         aliases=("metrics_root", "metrics_dataset"),
     )
-    summary_root = _path_setting(
+    dashboard_summary_table_dir = _path_setting(
         "dashboard_summary_table_dir",
         "SVTK_SUMMARY_ROOT",
         aliases=("summary_root", "dashboard_summary_dir"),
     )
     config_path = _path_setting("config", "SVTK_CONFIG_FILE")
-    if not summary_root:
-        st.info("Choose a dashboard summary directory to begin.")
-        summary_root = st.text_input("Dashboard summary directory", value="")
-        if not summary_root:
+    if not dashboard_summary_table_dir:
+        st.info("Choose a dashboard summary-table directory to begin.")
+        dashboard_summary_table_dir = st.text_input("Dashboard summary-table directory", value="")
+        if not dashboard_summary_table_dir:
             return
     try:
-        readiness = dashboard_summary_readiness_frame(summary_root, create_parent=False)
+        readiness = dashboard_summary_readiness_frame(dashboard_summary_table_dir, create_parent=False)
     except Exception as exc:
         st.error(str(exc))
         return
@@ -128,19 +128,19 @@ def main() -> None:
     _render_dashboard_readiness(readiness, message=blocker)
     if blocker:
         return
-    metric_dataset_readiness = dashboard_metric_dataset_readiness_frame(metrics_root) if metrics_root else pd.DataFrame()
+    metric_dataset_readiness = dashboard_metric_dataset_readiness_frame(metrics_dataset_dir) if metrics_dataset_dir else pd.DataFrame()
     skip_tables = _startup_skip_summary_tables(readiness)
     try:
-        summaries = _load_summary_tables_cached(summary_root, tuple(skip_tables))
+        summaries = _load_summary_tables_cached(dashboard_summary_table_dir, tuple(skip_tables))
     except Exception as exc:
         st.error(str(exc))
         return
     config = _load_optional_config(config_path)
     _render_metrics_dashboard(
         summaries,
-        metrics_root,
+        metrics_dataset_dir,
         config,
-        summary_root=summary_root,
+        dashboard_summary_table_dir=dashboard_summary_table_dir,
         optional_skip_tables=tuple(_not_ready_optional_summary_tables(readiness)),
         readiness=readiness,
         metric_dataset_readiness=metric_dataset_readiness,
@@ -149,10 +149,10 @@ def main() -> None:
 
 def _render_metrics_dashboard(
     summaries: dict[str, pd.DataFrame],
-    metrics_root: str,
+    metrics_dataset_dir: str,
     config: SpatialVTKConfig | None = None,
     *,
-    summary_root: str | None = None,
+    dashboard_summary_table_dir: str | None = None,
     optional_skip_tables: tuple[str, ...] = (),
     readiness: pd.DataFrame | None = None,
     metric_dataset_readiness: pd.DataFrame | None = None,
@@ -209,7 +209,7 @@ def _render_metrics_dashboard(
         summary_chunksize = _metrics_dashboard_summary_chunksize()
         station_source = _optional_summary_for_selection(
             summaries,
-            summary_root,
+            dashboard_summary_table_dir,
             "station_rollup",
             skip_tables=optional_skip_tables,
             models=selected_models,
@@ -254,7 +254,7 @@ def _render_metrics_dashboard(
     )
     event_source = _optional_summary_for_selection(
         summaries,
-        summary_root,
+        dashboard_summary_table_dir,
         "event_rollup",
         skip_tables=optional_skip_tables,
         models=selected_models,
@@ -273,7 +273,7 @@ def _render_metrics_dashboard(
     )
     path_source = _optional_summary_for_selection(
         summaries,
-        summary_root,
+        dashboard_summary_table_dir,
         "path_hex",
         skip_tables=optional_skip_tables,
         models=selected_models,
@@ -295,7 +295,7 @@ def _render_metrics_dashboard(
     metric_dataset_message = _metric_dataset_readiness_message(metric_dataset_readiness)
     if metric_dataset_message:
         row_value_message = metric_dataset_message
-    elif metrics_root:
+    elif metrics_dataset_dir:
         row_value = row_value_column_for_summary(value_col, pd.DataFrame(columns=dashboard_row_level_columns()))
         if row_value is None:
             row_value_message = _missing_row_value_message(value_col)
@@ -303,7 +303,7 @@ def _render_metrics_dashboard(
             needed_columns = _row_level_columns_for_selection(row_value)
             try:
                 loaded_rows = _try_load_filtered_long_metrics(
-                    metrics_root,
+                    metrics_dataset_dir,
                     columns=needed_columns,
                     models=selected_models,
                     metric=selected_metric,
@@ -433,15 +433,15 @@ def _render_metrics_dashboard(
 
 
 @st.cache_data(show_spinner=False)
-def _load_summary_tables_cached(summary_root: str, skip_tables: tuple[str, ...] = ()) -> dict[str, pd.DataFrame]:
+def _load_summary_tables_cached(dashboard_summary_table_dir: str, skip_tables: tuple[str, ...] = ()) -> dict[str, pd.DataFrame]:
     """Load summary tables with Streamlit caching."""
 
-    return validate_dashboard_tables(load_dashboard_summary_tables(summary_root, skip_tables=skip_tables))
+    return validate_dashboard_tables(load_dashboard_summary_tables(dashboard_summary_table_dir, skip_tables=skip_tables))
 
 
 @st.cache_data(show_spinner=False)
 def _load_filtered_summary_table_cached(
-    summary_root: str,
+    dashboard_summary_table_dir: str,
     table_name: str,
     models: tuple[str, ...],
     metric: str,
@@ -456,7 +456,7 @@ def _load_filtered_summary_table_cached(
     """Load one filtered optional summary table with Streamlit caching."""
 
     return load_filtered_dashboard_summary_table(
-        summary_root,
+        dashboard_summary_table_dir,
         table_name,
         models=models,
         metric=metric or None,
@@ -472,7 +472,7 @@ def _load_filtered_summary_table_cached(
 
 def _optional_summary_for_selection(
     summaries: dict[str, pd.DataFrame],
-    summary_root: str | None,
+    dashboard_summary_table_dir: str | None,
     table_name: str,
     *,
     skip_tables: tuple[str, ...],
@@ -488,10 +488,10 @@ def _optional_summary_for_selection(
 ) -> pd.DataFrame:
     """Return a lazily loaded optional summary table for current filters."""
 
-    if table_name in set(skip_tables) or not summary_root:
+    if table_name in set(skip_tables) or not dashboard_summary_table_dir:
         return summaries.get(table_name, pd.DataFrame()).copy()
     return _load_filtered_summary_table_cached(
-        str(summary_root),
+        str(dashboard_summary_table_dir),
         str(table_name),
         tuple(str(model) for model in models),
         str(metric or ""),
@@ -507,7 +507,7 @@ def _optional_summary_for_selection(
 
 @st.cache_data(show_spinner=False)
 def _load_long_metrics_cached(
-    metrics_root: str,
+    metrics_dataset_dir: str,
     columns: tuple[str, ...],
     models: tuple[str, ...],
     metric: str,
@@ -521,7 +521,7 @@ def _load_long_metrics_cached(
     """Load long metrics with Streamlit caching."""
 
     return load_metric_long_table(
-        metrics_root,
+        metrics_dataset_dir,
         columns=columns,
         models=models,
         metrics=[metric] if metric else None,
@@ -535,7 +535,7 @@ def _load_long_metrics_cached(
 
 
 def _try_load_filtered_long_metrics(
-    metrics_root: str,
+    metrics_dataset_dir: str,
     *,
     columns: tuple[str, ...],
     models: list[str],
@@ -547,10 +547,10 @@ def _try_load_filtered_long_metrics(
     vs30_range: tuple[float | None, float | None] | None = None,
     max_rows: int = 200_000,
 ) -> pd.DataFrame:
-    """Load selected long metric rows when a root is configured."""
+    """Load selected long metric rows when a dashboard dataset is configured."""
 
     return _load_long_metrics_cached(
-        metrics_root,
+        metrics_dataset_dir,
         tuple(columns),
         tuple(str(model) for model in models),
         str(metric),
