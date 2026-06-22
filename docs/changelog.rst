@@ -4,6 +4,16 @@ Changelog
 2026-06-21
 ----------
 
+- **Direct QC Slurm parser aliases** *(Changed)*
+
+  - Added artifact-named ``--event-station-records``,
+    ``--qc-trace-summary-output``, ``--qc-inventory-output``, and
+    ``--qc-overlap-inventory-output`` aliases to the direct
+    ``spatial_vtk.qc.build.slurm`` worker parser.
+  - Kept legacy ``--event-stations``, ``--trace-output``,
+    ``--inventory-output``, and ``--overlap-inventory-output`` support and
+    added parser coverage for both preferred and legacy forms.
+
 - **Direct metric task-runner input flag** *(Changed)*
 
   - Added ``--tasks-table`` as the preferred input flag for the direct metric

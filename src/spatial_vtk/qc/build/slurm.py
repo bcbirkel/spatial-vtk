@@ -218,29 +218,38 @@ def build_arg_parser() -> argparse.ArgumentParser:
     """Build the QC SLURM worker parser."""
 
     parser = argparse.ArgumentParser(description="Run or script Spatial-VTK QC inventory jobs.")
-    parser.add_argument("--event-stations", required=True, help="Prepared event-station table.")
+    parser.add_argument(
+        "--event-station-records",
+        "--event-stations",
+        dest="event_stations",
+        required=True,
+        help="Prepared event-station records table. Prefer --event-station-records; --event-stations is a legacy alias.",
+    )
     parser.add_argument("--config", required=True, help="Spatial-VTK config YAML/JSON.")
     parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     parser.add_argument(
-        "--trace-output",
         "--qc-trace-summary-output",
+        "--trace-output",
         dest="trace_output",
         default=None,
-        help="Output waveform QC table path.",
+        help="Output QC trace-summary table path. Prefer --qc-trace-summary-output; --trace-output is a legacy alias.",
     )
     parser.add_argument(
-        "--inventory-output",
         "--qc-inventory-output",
+        "--inventory-output",
         dest="inventory_output",
         default=None,
-        help="Output metric QC inventory path.",
+        help="Output metric QC inventory table path. Prefer --qc-inventory-output; --inventory-output is a legacy alias.",
     )
     parser.add_argument(
-        "--overlap-inventory-output",
         "--qc-overlap-inventory-output",
+        "--overlap-inventory-output",
         dest="overlap_inventory_output",
         default=None,
-        help="Output overlap-only metric QC inventory path.",
+        help=(
+            "Output observed/synthetic-overlap metric QC inventory path. "
+            "Prefer --qc-overlap-inventory-output; --overlap-inventory-output is a legacy alias."
+        ),
     )
     parser.add_argument("--quiet", action="store_true", help="Disable progress messages.")
     return parser

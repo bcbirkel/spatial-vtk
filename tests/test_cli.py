@@ -813,6 +813,71 @@ outputs:
     assert str(trace) in captured.out
 
 
+def test_qc_slurm_worker_parser_prefers_artifact_named_aliases() -> None:
+    """Direct QC Slurm worker help should prefer artifact names without dropping legacy aliases."""
+
+    from spatial_vtk.qc.build.slurm import build_arg_parser
+
+    parser = build_arg_parser()
+    help_text = " ".join(parser.format_help().split())
+    assert "--event-station-records" in help_text
+    assert "--event-stations" in help_text
+    assert "--qc-trace-summary-output" in help_text
+    assert "--trace-output" in help_text
+    assert "--qc-inventory-output" in help_text
+    assert "--inventory-output" in help_text
+    assert "--qc-overlap-inventory-output" in help_text
+    assert "--overlap-inventory-output" in help_text
+    assert help_text.count("legacy alias") >= 4
+    assert "Prepared event-station records table." in help_text
+    assert "Output QC trace-summary table path." in help_text
+    assert "Output metric QC inventory table path." in help_text
+    assert "Output observed/synthetic-overlap metric QC inventory path." in help_text
+
+    args = parser.parse_args(
+        [
+            "--event-station-records",
+            "event_station_records.parquet",
+            "--config",
+            "spatial_vtk_config.yaml",
+            "--qc-trace-summary-output",
+            "qc_trace_summary.parquet",
+            "--qc-inventory-output",
+            "qc_inventory.parquet",
+            "--qc-overlap-inventory-output",
+            "qc_inventory_overlap.parquet",
+        ]
+    )
+    legacy_args = parser.parse_args(
+        [
+            "--event-stations",
+            "legacy_event_stations.csv",
+            "--config",
+            "legacy_config.yaml",
+            "--trace-output",
+            "legacy_trace.csv",
+            "--inventory-output",
+            "legacy_inventory.csv",
+            "--overlap-inventory-output",
+            "legacy_overlap.csv",
+        ]
+    )
+
+    assert args.event_stations == "event_station_records.parquet"
+    assert args.config == "spatial_vtk_config.yaml"
+    assert args.trace_output == "qc_trace_summary.parquet"
+    assert args.inventory_output == "qc_inventory.parquet"
+    assert args.overlap_inventory_output == "qc_inventory_overlap.parquet"
+    assert legacy_args.event_stations == "legacy_event_stations.csv"
+    assert legacy_args.trace_output == "legacy_trace.csv"
+    assert legacy_args.inventory_output == "legacy_inventory.csv"
+    assert legacy_args.overlap_inventory_output == "legacy_overlap.csv"
+    assert not hasattr(args, "event_station_records")
+    assert not hasattr(args, "qc_trace_summary_output")
+    assert not hasattr(args, "qc_inventory_output")
+    assert not hasattr(args, "qc_inventory_overlap_output")
+
+
 def test_cli_metrics_estimate_writes_summary(tmp_path, capsys):
     tasks = tmp_path / "metric_tasks.csv"
     output = tmp_path / "metric_task_estimate.csv"
