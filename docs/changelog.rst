@@ -12,6 +12,13 @@ Changelog
   - Re-ran the generated-reference check to keep the published CLI docs aligned
     with the command-line surface.
 
+- **Validation environment dependency contract** *(Changed)*
+
+  - Replaced a hard-coded conda-environment dependency test with a
+    checker-derived contract.
+  - The public ``svtk_environment.yaml`` file is now guarded against drift from
+    the dependency groups declared by ``tools/check_validation_environment.py``.
+
 - **Tutorial validation dependency contract** *(Changed)*
 
   - Made the tutorial notebook executor derive its runtime dependency map from

@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import inspect
 import importlib
+import importlib.util
 import json
 import os
 import pathlib
@@ -49,6 +50,52 @@ def _public_helper_names_from_list_table(table_text: str) -> set[str]:
                         names.add(name)
         else:
             index += 1
+    return names
+
+
+def _environment_dependency_names(environment_text: str) -> set[str]:
+    """Return normalized dependency package names from ``svtk_environment.yaml``."""
+
+    dependency_text = environment_text.split("dependencies:", maxsplit=1)[1]
+    names: set[str] = set()
+    for raw_line in dependency_text.splitlines():
+        line = raw_line.strip()
+        if not line.startswith("- "):
+            continue
+        dependency = line.removeprefix("- ").strip()
+        if not dependency or dependency == "pip" or dependency.startswith("python"):
+            continue
+        name = re.split(r"[<>=!~\s]", dependency, maxsplit=1)[0].strip().lower()
+        if name:
+            names.add(name)
+    return names
+
+
+def _validation_checker_dependency_names(groups: tuple[str, ...]) -> set[str]:
+    """Return environment-package names required by the validation checker."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    checker_path = root / "tools" / "check_validation_environment.py"
+    spec = importlib.util.spec_from_file_location("svtk_validation_checker_for_env_contract", checker_path)
+    assert spec is not None
+    checker = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    sys.modules[spec.name] = checker
+    spec.loader.exec_module(checker)
+
+    label_to_environment_name = {
+        "IPython": "ipython",
+        "PyYAML": "pyyaml",
+        "scikit-learn": "scikit-learn",
+        "spatial_vtk": None,
+        "sphinx-rtd-theme": "sphinx-rtd-theme",
+    }
+    names: set[str] = set()
+    for group in checker.normalize_groups(groups):
+        for requirement in checker.MODULE_GROUPS[group]:
+            mapped = label_to_environment_name.get(requirement.label, requirement.label.lower())
+            if mapped is not None:
+                names.add(mapped)
     return names
 
 
@@ -1086,46 +1133,16 @@ def test_example_tutorial_scenario_uses_event_station_metric_overlap():
     assert "source_overlap_scope: event\n" not in tutorial_section
 
 
-def test_environment_file_covers_tutorial_runtime_modules():
-    """The public conda environment should cover the notebook runtime surface."""
+def test_environment_file_covers_validation_checker_dependencies():
+    """The public conda environment should cover checker-declared dependencies."""
 
     root = pathlib.Path(__file__).resolve().parents[1]
     environment_text = (root / "svtk_environment.yaml").read_text(encoding="utf-8")
-    conda_dependencies = (
-        "branca",
-        "contextily",
-        "folium",
-        "geopandas",
-        "h5py",
-        "ipykernel",
-        "ipython",
-        "matplotlib",
-        "nbclient",
-        "nbformat",
-        "numpy",
-        "obspy",
-        "pandas",
-        "plotly",
-        "pyarrow",
-        "pyproj",
-        "pyyaml",
-        "rasterio",
-        "scikit-learn",
-        "scipy",
-        "shapely",
-        "statsmodels",
-        "streamlit",
-    )
-    pip_dependencies = (
-        "gmprocess>=",
-        "phasenet>=",
-        "pyasdf>=",
-        "streamlit-folium>=",
-    )
-    for dependency in conda_dependencies:
-        assert f"  - {dependency}" in environment_text
-    for dependency in pip_dependencies:
-        assert f"      - {dependency}" in environment_text
+    environment_dependencies = _environment_dependency_names(environment_text)
+    checker_dependencies = _validation_checker_dependency_names(("release",))
+
+    missing = sorted(checker_dependencies - environment_dependencies)
+    assert not missing, f"svtk_environment.yaml is missing validation dependency declarations: {missing}"
 
 
 def test_environment_file_covers_release_validation_tools():
