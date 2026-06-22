@@ -30,7 +30,6 @@ import warnings
 
 import pandas as pd
 
-from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.io.tables import read_table, write_table
 from spatial_vtk.io.waveforms import (
     WaveformPreprocessing,
@@ -794,6 +793,8 @@ def _resolve_output_root(output_root: str | Path | None, config: Any | None) -> 
 
 def _coerce_preprocessing_config(config: Any | None) -> Any | None:
     """Return a config object for preprocessing helpers when one is available."""
+
+    from spatial_vtk.config.runtime import SpatialVTKConfig
 
     if config is None:
         try:

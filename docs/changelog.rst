@@ -4,6 +4,15 @@ Changelog
 2026-06-21
 ----------
 
+- **Step 1 workflow import boundary** *(Changed)*
+
+  - Deferred config-runtime imports in waveform preprocessing and configured
+    ingest workflow helpers so Step 1 result classes, readiness helpers, and
+    explicit-path preprocessing utilities can import without PyYAML.
+  - Kept active-config and output-registry resolution available at call time
+    for config-backed metadata, preprocessing, and record-coverage workflows.
+  - Added source-contract coverage for the Step 1 workflow import boundary.
+
 - **Generic table I/O import boundary** *(Changed)*
 
   - Deferred config-output and active-config imports in ``spatial_vtk.io.tables``

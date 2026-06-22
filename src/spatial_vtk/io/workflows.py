@@ -18,7 +18,6 @@ from typing import Any, Literal
 
 import pandas as pd
 
-from spatial_vtk.config import SpatialVTKConfig, active_config, resolve_output_path
 from spatial_vtk.io.output_paths import OutputReadiness, output_group
 from spatial_vtk.io.preprocessing import (
     preprocessed_waveform_output_group,
@@ -38,7 +37,7 @@ class StandardIngestWorkflowOutputResult:
 
     outputs: Any
     preprocessed_outputs: Any
-    cfg: SpatialVTKConfig | None = None
+    cfg: Any | None = None
 
     def status_frame(self) -> Any:
         """Return combined Step 1 ingest and preprocessing output status."""
@@ -153,7 +152,7 @@ class StandardIngestWorkflowOutputResult:
         self,
         settings: Any,
         *,
-        cfg: SpatialVTKConfig | None = None,
+        cfg: Any | None = None,
         overwrite: bool = False,
     ) -> Any:
         """Write Step 1 context figures from this configured output bundle."""
@@ -518,7 +517,7 @@ class RecordCoverageWorkflowResult(_SummaryMappingMixin):
 
 def load_standard_ingest_workflow_outputs(
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: Any | None = None,
     ingest_group_name: str = "step_01_ingest",
 ) -> StandardIngestWorkflowOutputResult:
     """Load standard Step 1 ingest and preprocessing output handles.
@@ -587,9 +586,9 @@ def prepare_metadata_tables_from_config(
     """
 
     cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
-    station_path = resolve_output_path("prepared_stations", kind="table", cfg=cfg, create_parent=True)
-    event_path = resolve_output_path("prepared_events", kind="table", cfg=cfg, create_parent=True)
-    event_station_path = resolve_output_path("event_station_records", kind="table", cfg=cfg, create_parent=True)
+    station_path = _resolve_output_path("prepared_stations", kind="table", cfg=cfg, create_parent=True)
+    event_path = _resolve_output_path("prepared_events", kind="table", cfg=cfg, create_parent=True)
+    event_station_path = _resolve_output_path("event_station_records", kind="table", cfg=cfg, create_parent=True)
 
     if not overwrite and station_path.exists() and event_path.exists() and event_station_path.exists():
         stations = load_output_table("prepared_stations", cfg=cfg)
@@ -684,7 +683,7 @@ def preprocess_waveforms_from_config(
     """
 
     cfg = _workflow_config(config_path=config_path, run_scenario=run_scenario)
-    event_station_records = resolve_output_path("event_station_records", kind="table", cfg=cfg)
+    event_station_records = _resolve_output_path("event_station_records", kind="table", cfg=cfg)
     result = preprocess_waveform_files(
         event_station_records,
         config=cfg,
@@ -847,7 +846,7 @@ def record_coverage_readiness_from_config(
 def load_configured_input_tables(
     tables: Mapping[str, str] | Sequence[str],
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: Any | None = None,
     config_path: str | Path | None = None,
     run_scenario: str | None = None,
     **read_kwargs: Any,
@@ -894,7 +893,7 @@ def load_configured_input_tables(
 def load_configured_input_paths(
     paths: Mapping[str, str] | Sequence[str],
     *,
-    cfg: SpatialVTKConfig | None = None,
+    cfg: Any | None = None,
     config_path: str | Path | None = None,
     run_scenario: str | None = None,
     must_exist: bool = True,
@@ -941,8 +940,10 @@ def load_configured_input_paths(
     }
 
 
-def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None) -> SpatialVTKConfig:
+def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None) -> Any:
     """Return an activated config for a package workflow helper."""
+
+    from spatial_vtk.config import SpatialVTKConfig, active_config
 
     if config_path is not None:
         return SpatialVTKConfig.from_file(config_path, run_scenario=run_scenario).activate()
@@ -950,6 +951,14 @@ def _workflow_config(*, config_path: str | Path | None, run_scenario: str | None
     if run_scenario:
         return SpatialVTKConfig.from_file(cfg.config_path, run_scenario=run_scenario).activate()
     return cfg
+
+
+def _resolve_output_path(*args: Any, **kwargs: Any) -> Path:
+    """Resolve configured workflow output paths only when needed."""
+
+    from spatial_vtk.config import resolve_output_path
+
+    return resolve_output_path(*args, **kwargs)
 
 
 def _configured_input_table_map(tables: Mapping[str, str] | Sequence[str]) -> dict[str, str]:

@@ -3715,6 +3715,29 @@ def test_generic_table_io_defers_config_runtime_imports():
     assert not offenders, "\n".join(str(module) for module in offenders)
 
 
+def test_step1_workflow_helpers_defer_config_runtime_imports():
+    """Step 1 workflow helper modules should not import config runtime at module import time."""
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    forbidden_modules = {
+        "spatial_vtk.config",
+        "spatial_vtk.config.outputs",
+        "spatial_vtk.config.runtime",
+    }
+    for relative_path in [
+        "src/spatial_vtk/io/preprocessing.py",
+        "src/spatial_vtk/io/workflows.py",
+    ]:
+        source = (repo_root / relative_path).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        offenders = [
+            node.module
+            for node in tree.body
+            if isinstance(node, ast.ImportFrom) and node.module in forbidden_modules
+        ]
+        assert not offenders, relative_path
+
+
 def test_cli_workflow_helpers_use_public_package_surfaces():
     """Curated CLI helpers should not reach into notebook-facing implementation modules."""
 
