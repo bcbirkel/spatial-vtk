@@ -1036,6 +1036,35 @@ def test_notebook_dashboard_launch_commands_default_to_auto_port(tmp_path, monke
     assert "svtk dashboard metrics" in status.loc["metrics", "terminal_command"]
 
 
+def test_notebook_dashboard_launch_commands_accept_context(tmp_path, monkeypatch):
+    """Dashboard notebook helpers should accept the resolved notebook context."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        """
+project:
+  root_dir: .
+run_scenarios:
+  large-run: {}
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.delenv("SVTK_METRICS_DASHBOARD_PORT", raising=False)
+    monkeypatch.delenv("SVTK_QC_DASHBOARD_PORT", raising=False)
+    monkeypatch.delenv("SVTK_LAUNCH_METRICS_DASHBOARD", raising=False)
+    monkeypatch.delenv("SVTK_LAUNCH_QC_DASHBOARD", raising=False)
+    context = types.SimpleNamespace(config_path=config_path, run_scenario="large-run")
+
+    commands = notebook_dashboard_launch_commands(context)
+
+    assert commands.config_path == config_path.resolve()
+    assert commands.run_scenario == "large-run"
+    assert "--run-scenario large-run" in commands.metrics_command
+    assert "--run-scenario large-run" in commands.qc_command
+    assert commands.metrics_launch_kwargs(show=False)["run_scenario"] == "large-run"
+    assert commands.qc_launch_kwargs(show=False)["run_scenario"] == "large-run"
+
+
 def test_notebook_dashboard_launch_commands_parse_env_and_scenario(tmp_path, monkeypatch):
     """Notebook dashboard commands should expose proxy and scenario options clearly."""
 

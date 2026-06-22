@@ -2128,7 +2128,9 @@ def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
     assert "launch_configured_metrics_dashboard(" not in source
     assert "launch_configured_qc_dashboard(" not in source
     assert "notebook_dashboard_launch_commands(" in source
-    assert "run_scenario=context.run_scenario" in source
+    assert "notebook_dashboard_launch_commands(context)" in source
+    assert "config_path = context.config_path" not in source
+    assert "run_scenario=context.run_scenario" not in source
     assert 'run_scenario=os.environ.get("SVTK_RUN_SCENARIO", "tutorial")' not in source
     assert 'os.environ.get("SVTK_RUN_SCENARIO"' not in source
     assert "if dashboard_launch.launch_metrics_dashboard:" not in source
@@ -2288,6 +2290,7 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "run_notebook_step_if_needed(" not in source
+    assert "config_path = context.config_path" not in source
     assert "run_or_submit_notebook_function(" not in source
     assert "display_notebook_step_result," in source
     assert "from spatial_vtk.metrics import (" in source
@@ -2413,6 +2416,7 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "run_notebook_step_if_needed(" not in source
+    assert "config_path = context.config_path" not in source
     assert "ingest_outputs.run_metadata_step_if_needed(" in source
     assert "ingest_outputs.run_preprocessing_step_if_needed(" in source
     assert "ingest_outputs.run_record_coverage_step_if_needed(" in source
@@ -2501,6 +2505,7 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
     assert "run_notebook_step_if_needed(" not in source
+    assert "config_path = context.config_path" not in source
     assert "run_or_submit_notebook_function(" not in source
     assert "display_notebook_step_result," in source
     assert "from spatial_vtk.qc import (" in source

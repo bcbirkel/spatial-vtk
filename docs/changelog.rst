@@ -4,6 +4,15 @@ Changelog
 2026-06-22
 ----------
 
+- **Large-run dashboard launch context** *(Changed)*
+
+  - Updated ``notebook_dashboard_launch_commands`` to accept a resolved
+    ``NotebookRunContext`` directly and inherit its run scenario when one is
+    not passed explicitly.
+  - Removed unused ``config_path = context.config_path`` assignments from the
+    large-run Step 1, Step 2, Step 3, and Step 7 notebooks so driver cells stay
+    focused on workflow settings instead of path plumbing.
+
 - **Dashboard CLI argument names** *(Changed)*
 
   - Renamed the internal argparse destinations for metrics-dashboard overrides

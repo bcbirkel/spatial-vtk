@@ -1145,7 +1145,7 @@ def _resolve_notebook_figure_dir(
 
 
 def notebook_dashboard_launch_commands(
-    config_path: str | Path | None = None,
+    config_path: str | Path | NotebookRunContext | None = None,
     *,
     metrics_port: int | None = None,
     qc_port: int | None = None,
@@ -1163,8 +1163,9 @@ def notebook_dashboard_launch_commands(
     Parameters
     ----------
     config_path
-        Config file passed to dashboard launch helpers. When omitted, the
-        active config path or ``SVTK_CONFIG`` is used when available.
+        Config file or ``NotebookRunContext`` passed to dashboard launch
+        helpers. When omitted, the active config path or ``SVTK_CONFIG`` is
+        used when available.
     metrics_port, qc_port
         Optional dashboard ports. Defaults come from
         ``SVTK_METRICS_DASHBOARD_PORT`` and ``SVTK_QC_DASHBOARD_PORT``.
@@ -1195,6 +1196,8 @@ def notebook_dashboard_launch_commands(
         the notebook kernel.
     """
 
+    context_run_scenario = getattr(config_path, "run_scenario", None)
+    resolved_run_scenario = run_scenario if run_scenario is not None else context_run_scenario
     resolved_config_path = _resolve_dashboard_config_path(config_path)
     resolved_metrics_port = int(
         metrics_port if metrics_port is not None else _env_int("SVTK_METRICS_DASHBOARD_PORT", default=8501)
@@ -1238,8 +1241,8 @@ def notebook_dashboard_launch_commands(
 
     def command(kind: str, port: int) -> str:
         parts = ["svtk", "dashboard", kind, "--config", str(resolved_config_path), "--port", str(port)]
-        if run_scenario:
-            parts.extend(["--run-scenario", str(run_scenario)])
+        if resolved_run_scenario:
+            parts.extend(["--run-scenario", str(resolved_run_scenario)])
         if resolved_auto_port:
             parts.append("--auto-port")
         if resolved_proxy_mode:
@@ -1266,7 +1269,7 @@ def notebook_dashboard_launch_commands(
         metrics_row_limit=resolved_metrics_row_limit,
         metrics_summary_display_rows=resolved_metrics_summary_display_rows,
         metrics_download_rows=resolved_metrics_download_rows,
-        run_scenario=run_scenario,
+        run_scenario=resolved_run_scenario,
     )
 
 
@@ -1995,10 +1998,13 @@ def _resolve_notebook_config_path(repo_root: Path, config_path: str | Path | Non
     return next((path.resolve() for path in candidates if path.exists()), candidates[0].resolve())
 
 
-def _resolve_dashboard_config_path(config_path: str | Path | None) -> Path:
+def _resolve_dashboard_config_path(config_path: str | Path | NotebookRunContext | None) -> Path:
     """Resolve a config path for dashboard commands without loading tables."""
 
     if config_path is not None:
+        context_path = getattr(config_path, "config_path", None)
+        if context_path is not None:
+            return Path(context_path).expanduser().resolve()
         return Path(config_path).expanduser().resolve()
     try:
         active = active_config()
