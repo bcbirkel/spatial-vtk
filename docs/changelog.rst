@@ -24,6 +24,16 @@ Changelog
   - Keeps notebook readiness and skip decisions routed through package
     output/status helpers instead of ad hoc path probing in cells.
 
+- **Metric station-map aggregation documentation** *(Changed)*
+
+  - Clarified the Metrics API reference that large-run station maps aggregate
+    all selected event-station rows by station identifier rather than exact
+    station coordinates, so coordinate jitter does not split one station into
+    multiple plotted values.
+  - Documented that station-summary rows and source-row sidecars carry input,
+    finite, dropped, coordinate, event-count, and aggregation metadata for
+    auditing plotted station values and PSA oscillator-period panels.
+
 - **CLI config path metavar** *(Changed)*
 
   - Standardized live ``svtk`` help so optional config-file arguments render as

@@ -270,7 +270,14 @@ factories used by the large-run figure suite:
 
 ``station_summary_for_item`` and ``station_period_summary_for_item``
    Collapse all selected event-station metric rows to station summaries before
-   plotting. PSA period sheets use the period-aware variant.
+   plotting. Station grouping is based on station identifiers, not exact
+   coordinate values, so small coordinate jitter does not split one station
+   into multiple plotted points. The summary rows retain input and finite
+   source-row/event counts, finite-value drop counts, coordinate counts, and
+   aggregation metadata so users can audit whether every selected event
+   contributed to the plotted station value. PSA period sheets use the
+   period-aware variant and preserve the same source-row sidecar contract for
+   each oscillator-period panel.
 
 ``metric_item``, ``station_summary_for_metric``,
 ``station_summary_preview_for_metric``, and

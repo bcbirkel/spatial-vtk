@@ -1140,7 +1140,8 @@ def test_synthetic_format_errors_are_user_facing():
 
 
 def test_metrics_api_docs_use_public_plot_entry_point():
-    docs = pathlib.Path(__file__).resolve().parents[1] / "docs" / "reference" / "api" / "metrics.rst"
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    docs = repo_root / "docs" / "reference" / "api" / "metrics.rst"
     text = docs.read_text(encoding="utf-8")
     assert ".. automodule:: spatial_vtk.metrics.calculate\n" in text
     assert ".. automodule:: spatial_vtk.metrics.workflow\n" in text
@@ -1210,10 +1211,10 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert ".. autofunction:: spatial_vtk.metrics.plot.write_standard_metric_diagnostic_figures" in text
     assert ".. autofunction:: spatial_vtk.metrics.plot.write_station_metric_map_from_notebook_settings" in text
     assert "Public plotting helpers exposed by ``spatial_vtk.metrics.plot``" in text
-    model_comparison_source = (docs_root.parent / "src" / "spatial_vtk" / "metrics" / "plot" / "model_comparison.py").read_text(
+    model_comparison_source = (repo_root / "src" / "spatial_vtk" / "metrics" / "plot" / "model_comparison.py").read_text(
         encoding="utf-8"
     )
-    period_source = (docs_root.parent / "src" / "spatial_vtk" / "metrics" / "plot" / "periods.py").read_text(encoding="utf-8")
+    period_source = (repo_root / "src" / "spatial_vtk" / "metrics" / "plot" / "periods.py").read_text(encoding="utf-8")
     assert "Plot residual or score distributions grouped by period band." in model_comparison_source
     assert "Plot score distributions grouped by period band." not in model_comparison_source
     assert "Plot spectral residual or score distributions by oscillator period." in period_source
@@ -1233,7 +1234,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "Compare PSA and period-indexed residual or score distributions by" in helper_table
     assert "Render the standard Step 3 residual-distance, score-trend, and\n   band residual-distribution diagnostics" in text
     assert "Render the standard Step 3 residual-distance, GOF-distance" not in text
-    assert "Notebook-facing metric plotting should use the result-object and suite helpers" in text
+    assert "Notebook-facing metric plotting should use\n``load_standard_metric_workflow_outputs(...).write_large_run_figure_suite(...)``" in text
     assert "Advanced Figure Extension Helpers" in text
     assert "not the preferred tutorial or notebook entry points" in text
     assert "Use ``MetricFigureContext`` in scripts or custom extensions" in text
@@ -1285,7 +1286,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     for module_name in forbidden_modules:
         assert f".. automodule:: {module_name}" not in text
     assert "For PSA, large-run figure helpers compare oscillator periods instead of\nwaveform passbands" in text
-    assert "``status_frame``\n   also includes ``spectral_contract_status``" in text
+    assert "``status_frame`` also includes ``spectral_contract_status``" in text
     assert "``spectral_metric_contract_status``" in text
     assert "legacy passband-scoped row counts" in text
     assert "``write_station_metric_map_for_metric``" in text
@@ -1296,12 +1297,16 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "do not parse preview strings" in text
     assert "``MetricFigureSuiteResult`` also owns" in text
     assert "``context_status_frames()`` and ``display_context_status(...)``" in text
-    assert "without notebook-local plot-function imports" in text
-    assert "``StationMetricMapResult.status_frame()`` includes the" in text
+    assert "large-run notebooks do not import individual plotting\n   functions" in text
+    assert "``StationMetricMapResult.status_frame()`` includes a clear" in text
     assert "``resolved_path`` row for the rendered figure" in text
     assert "preserving\n   ``output_path`` for compatibility" in text
     assert "source-row role/filter" in text
-    assert "without hand-filtering\n   dataframes in the notebook" in text
+    assert "without hand-filtering dataframes in the notebook" in normalized_text
+    assert "Station grouping is based on station identifiers, not exact\n   coordinate values" in text
+    assert "input and finite\n   source-row/event counts" in text
+    assert "audit whether every selected event\n   contributed to the plotted station value" in text
+    assert "source-row sidecar contract for\n   each oscillator-period panel" in text
     for helper in (
         "plot_band_score_distribution",
         "plot_period_score_distribution",
