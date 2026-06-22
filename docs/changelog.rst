@@ -27,6 +27,9 @@ Changelog
     status frames so notebooks can distinguish written figures, disabled
     optional suites, context-not-ready skips, and figure families with no
     matching rows or inputs.
+  - Added the same structured ``status_reason`` field to Step 1 context and
+    Step 2 QC figure status frames so standard tutorial figure helpers expose
+    reason codes consistently.
   - Documented the status reason contract in the metric and spatial API
     references and added source-contract coverage for the field.
 

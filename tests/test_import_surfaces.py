@@ -2882,6 +2882,7 @@ def test_visualize_api_docs_use_public_entry_points():
     assert "Lower-level launch helpers for scripts that already know which" in dashboard_helper_table
     assert "The returned\n       ``ContextFigureResult`` exposes ``status_frame()``" in text
     assert "The returned ``QCFigureResult`` exposes\n       ``status_frame()``" in text
+    assert "``status_reason``, ``resolved_path``, ``path``, and ``exists``" in text
     assert "``WaveformComparisonFigureResult`` exposes ``status_frame()``" in text
     assert "``DashboardDatasetPreparationResult`` exposes ``summary_frame()``" in text
     assert "``display_output_previews(...)`` so notebooks can show readiness" in text

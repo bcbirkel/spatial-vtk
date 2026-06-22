@@ -559,6 +559,7 @@ def _qc_figure_status_row(
     return {
         "artifact": artifact,
         "status": status,
+        "status_reason": status,
         "row_count": int(row_count),
         "table_path": None if table_path is None else str(table_path),
         "table_exists": bool(table_path is not None and table_path.exists()),

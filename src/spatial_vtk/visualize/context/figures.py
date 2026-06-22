@@ -1984,6 +1984,7 @@ def _context_figure_status_row(
     return {
         "artifact": artifact,
         "status": status,
+        "status_reason": status,
         "row_count": int(row_count),
         "table_paths": {
             name: None if path is None else str(path)

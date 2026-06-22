@@ -588,6 +588,7 @@ outputs:
 
     assert isinstance(result, ContextFigureResult)
     assert set(status["status"]) == {"wrote"}
+    assert set(status["status_reason"]) == {"wrote"}
     assert len(status) == 5
     assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
     assert status["path"].tolist() == status["figure_path"].tolist()
@@ -652,6 +653,7 @@ outputs:
 
     status = result.status_frame()
     assert set(status["status"]) == {"exists"}
+    assert set(status["status_reason"]) == {"exists"}
     assert status["figure_exists"].tolist() == [True] * 5
     assert all(all(value is True for value in table_map.values()) for table_map in status["table_exists"])
 
@@ -677,6 +679,7 @@ def test_write_large_run_context_figures_reports_missing_inputs(tmp_path: Path) 
 
     assert len(status) == 5
     assert set(status["status"]) == {"missing_input"}
+    assert set(status["status_reason"]) == {"missing_input"}
     assert status["figure_exists"].tolist() == [False] * 5
     assert all(all(value is False for value in table_map.values()) for table_map in status["table_exists"])
     assert status["message"].str.contains("Step 1 context tables").all()
@@ -755,6 +758,7 @@ outputs:
 
     assert isinstance(result, QCFigureResult)
     assert set(status["status"]) == {"wrote"}
+    assert set(status["status_reason"]) == {"wrote"}
     assert len(status) == 6
     assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
     assert status["path"].tolist() == status["figure_path"].tolist()
@@ -823,6 +827,7 @@ outputs:
 
     status = result.status_frame()
     assert set(status["status"]) == {"exists"}
+    assert set(status["status_reason"]) == {"exists"}
     assert status["figure_exists"].tolist() == [True] * 6
     assert status["table_exists"].tolist() == [True] * 6
 
@@ -851,6 +856,7 @@ def test_write_large_run_qc_figures_reports_missing_inputs(tmp_path: Path) -> No
 
     assert len(status) == 6
     assert set(status["status"]) == {"missing_input"}
+    assert set(status["status_reason"]) == {"missing_input"}
     assert status["figure_exists"].tolist() == [False] * 6
     assert status["table_exists"].tolist() == [False] * 6
     assert status["message"].str.contains("compact QC tables").all()
