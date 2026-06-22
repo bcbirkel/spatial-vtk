@@ -4,6 +4,17 @@ Changelog
 2026-06-22
 ----------
 
+- **Large-run Step 5/6 sidecar visibility** *(Changed)*
+
+  - Added package-owned sidecar readiness and status displays to the large-run
+    GeoJSON/corridor and additional-plotting notebooks.
+  - Kept provenance review visible for Step 5 region figures plus Step 6
+    waveform and region-boxplot figures without notebook-local sidecar path
+    plumbing.
+  - Added notebook source-contract coverage so these large-run figure families
+    continue to expose sidecar readiness before rendering and sidecar status
+    after rendering.
+
 - **Step 3 output writer context** *(Fixed)*
 
   - Added optional ``context=`` support to

@@ -1990,6 +1990,8 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "display_output_table_previews(" not in source
     assert "geojson_outputs.write_region_figures(" in source
     assert "    REGION_FIGURE_SETTINGS,\n" in source
+    assert "REGION_FIGURE_SETTINGS.sidecars.readiness_frame()" in source
+    assert "REGION_FIGURE_SETTINGS.sidecars.status_frame()" in source
     assert "region_figure_result.comparison_frame()" in source
     assert "geojson_path=geojson_path" not in source
     assert "ingest_outputs," not in source
@@ -2776,6 +2778,8 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     assert "write_waveform_comparison_from_notebook_settings(" not in source
     assert "step_outputs" not in source
     assert "waveform_result.status_frame()" in source
+    assert "WAVEFORM_FIGURE_SETTINGS.sidecars.readiness_frame()" in source
+    assert "WAVEFORM_FIGURE_SETTINGS.sidecars.status_frame()" in source
     assert "waveform_figure_gate = WAVEFORM_FIGURE_SETTINGS.render_gate(" not in source
     assert "write_waveform_comparison_from_outputs(" not in source
     assert "write_large_run_waveform_comparison_from_outputs(" not in source
@@ -2788,6 +2792,8 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     assert "plotting_outputs.display_first_existing_table_preview(" not in source
     assert "plotting_outputs.preview_first_existing_table(" not in source
     assert "plotting_outputs.write_region_boxplot(" in source
+    assert "REGION_FIGURE_SETTINGS.sidecars.readiness_frame()" in source
+    assert "REGION_FIGURE_SETTINGS.sidecars.status_frame()" in source
     assert "display(region_result.comparison_frame())" in source
     assert "display(region_result.status_frame())" in source
     assert "print(region_result.message)" not in source
