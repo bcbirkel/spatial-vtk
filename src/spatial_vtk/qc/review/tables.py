@@ -14,8 +14,6 @@ from typing import Any
 
 import pandas as pd
 
-from spatial_vtk.io.tables import read_table, write_table
-
 DECISION_COLUMNS: tuple[str, ...] = (
     "event_id",
     "station",
@@ -141,6 +139,8 @@ def load_manual_qc_decisions(path: str | Path | None) -> pd.DataFrame:
     source = Path(path).expanduser()
     if not source.exists():
         return pd.DataFrame(columns=DECISION_COLUMNS)
+    from spatial_vtk.io.tables import read_table
+
     return normalize_manual_qc_decisions(read_table(source))
 
 
@@ -165,6 +165,8 @@ def write_manual_qc_decisions(df: pd.DataFrame, path: str | Path, *, overwrite: 
     output = _table_output_path(path)
     if output.exists() and not overwrite:
         return output
+    from spatial_vtk.io.tables import write_table
+
     return write_table(normalize_manual_qc_decisions(df), output, index=False)
 
 

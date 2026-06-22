@@ -47,6 +47,15 @@ Changelog
     writes while keeping the shared table-writer fallback for nonstandard
     suffixes.
 
+- **Lightweight table helper imports** *(Changed)*
+
+  - Deferred config-bound table reader and writer imports in metric input,
+    master-list, catalog, manual-QC review, and dashboard summary helpers.
+  - Kept dataframe-only normalization and summary helper imports usable in
+    minimal environments before a Spatial-VTK config or PyYAML is available.
+  - Added source-contract coverage that prevents those helper modules from
+    reintroducing top-level config-bound table imports.
+
 - **Config-backed sidecar status CLI** *(Changed)*
 
   - Made ``svtk visualize sidecars status`` resolve the notebook-standard

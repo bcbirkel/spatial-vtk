@@ -19,8 +19,6 @@ from typing import Any
 
 import pandas as pd
 
-from spatial_vtk.io.tables import read_table as read_disk_table
-
 
 METRIC_WAVEFORM_COLUMNS: tuple[str, ...] = (
     "source",
@@ -350,6 +348,8 @@ def _read_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
     if isinstance(table, pd.DataFrame):
         return table.copy()
     path = Path(table).expanduser()
+    from spatial_vtk.io.tables import read_table as read_disk_table
+
     return read_disk_table(path)
 
 

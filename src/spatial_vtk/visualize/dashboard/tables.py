@@ -7,8 +7,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from spatial_vtk.io.tables import write_table
-
 DEFAULT_DASHBOARD_VALUE_COLUMNS: tuple[str, ...] = (
     "value_obs",
     "value_syn",
@@ -217,6 +215,8 @@ def write_dashboard_summaries(
             path = out_dir / f"{name}.parquet"
         else:
             raise ValueError("format must be 'csv' or 'parquet'.")
+        from spatial_vtk.io.tables import write_table
+
         written[name] = write_table(table, path, index=False)
     return written
 

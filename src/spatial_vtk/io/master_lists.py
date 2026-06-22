@@ -26,8 +26,6 @@ from typing import Any
 
 import pandas as pd
 
-from spatial_vtk.io.tables import read_table as read_disk_table
-from spatial_vtk.io.tables import write_table
 from spatial_vtk.io.waveforms import stream_station_table
 
 
@@ -253,6 +251,8 @@ def _read_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
     if isinstance(table, pd.DataFrame):
         return table.copy()
     path = Path(table).expanduser()
+    from spatial_vtk.io.tables import read_table as read_disk_table
+
     return read_disk_table(path)
 
 
@@ -262,6 +262,8 @@ def _write_table(df: pd.DataFrame, path: str | Path, *, overwrite: bool) -> Path
     output = _table_output_path(path)
     if output.exists() and not overwrite:
         return output
+    from spatial_vtk.io.tables import write_table
+
     return write_table(df, output, index=False)
 
 

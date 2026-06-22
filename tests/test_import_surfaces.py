@@ -3760,10 +3760,32 @@ def test_dashboard_summary_writes_use_shared_writer():
         / "tables.py"
     ).read_text(encoding="utf-8")
     helper = source.split("def write_dashboard_summaries", 1)[1].split("\ndef ", 1)[0]
-    assert "from spatial_vtk.io.tables import write_table" in source
+    assert "from spatial_vtk.io.tables import write_table" in helper
     assert "written[name] = write_table(table, path, index=False)" in helper
     assert ".to_csv(" not in helper
     assert ".to_parquet(" not in helper
+
+
+def test_lightweight_table_helper_modules_defer_config_bound_table_imports():
+    """Table helper modules should not import config-bound table I/O at module import time."""
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    modules = [
+        "src/spatial_vtk/io/metric_inputs.py",
+        "src/spatial_vtk/io/master_lists.py",
+        "src/spatial_vtk/io/catalogs.py",
+        "src/spatial_vtk/qc/review/tables.py",
+        "src/spatial_vtk/visualize/dashboard/tables.py",
+    ]
+    for relative_path in modules:
+        source = (repo_root / relative_path).read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        offenders = [
+            node
+            for node in tree.body
+            if isinstance(node, ast.ImportFrom) and node.module == "spatial_vtk.io.tables"
+        ]
+        assert not offenders, relative_path
 
 
 def test_dashboard_metric_dataset_writes_use_shared_writer():
