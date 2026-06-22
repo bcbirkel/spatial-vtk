@@ -4,6 +4,17 @@ Changelog
 2026-06-22
 ----------
 
+- **CLI PSA plotting workflow** *(Fixed)*
+
+  - Removed ``PSA`` from the passband heatmap command in the CLI workflow
+    tutorial so the example no longer mixes broadband spectral rows with
+    passband-dependent metrics.
+  - Added a ``svtk plot metrics psa-period-curve`` example for PSA
+    ``log2_residual`` diagnostics by oscillator period.
+  - Added source-contract coverage so the CLI workflow keeps passband heatmaps
+    focused on passband-dependent metrics and routes PSA through period-based
+    plotting.
+
 - **Dashboard workflow path vocabulary** *(Changed)*
 
   - Replaced ambiguous dashboard ``root`` wording in the Python workflow guide

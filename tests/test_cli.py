@@ -2000,6 +2000,18 @@ def test_cli_workflow_uses_curated_commands_for_standard_steps():
     assert '--config "$CONFIG"' not in text
     assert "--require-source-overlap" in text
     assert "--source-overlap-scope event_station" in text
+    heatmap_block = text.split("svtk plot metrics heatmap", maxsplit=1)[1].split("\n\n", maxsplit=1)[0]
+    psa_period_block = text.split("svtk plot metrics psa-period-curve", maxsplit=1)[1].split(
+        "\n\n", maxsplit=1
+    )[0]
+    assert "--dep PGA" in heatmap_block
+    assert "--dep PGV" in heatmap_block
+    assert "--dep PSA" not in heatmap_block
+    assert '--figure-output "$FIGURES/psa_period_curve.png"' in psa_period_block
+    assert "--metric PSA" in psa_period_block
+    assert "--value-col log2_residual" in psa_period_block
+    assert "``PSA`` and ``FAS`` are broadband spectral metrics" in text
+    assert "oscillator ``period_s``" in text
     assert '--event-table "$TABLES/prepared_events.csv"' not in text
     assert '--station-table "$TABLES/prepared_stations.csv"' not in text
     assert "svtk metrics outputs \\\n     --run-scenario \"$SCENARIO\"" in text

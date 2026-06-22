@@ -354,8 +354,21 @@ Create waveform maps, pattern-similarity diagnostics, and flexible metric plots 
      --model cvmsi_20260506_material_0p6x1p2_asdf \
      --dep PGA \
      --dep PGV \
-     --dep PSA \
      --indep station_geojson_labels
+
+   svtk plot metrics psa-period-curve \
+     --run-scenario "$SCENARIO" \
+     --figure-output "$FIGURES/psa_period_curve.png" \
+     --value-col log2_residual \
+     --model cvmsi_20260506_material_0p6x1p2_asdf \
+     --metric PSA
+
+Passband heatmaps should stay limited to passband-dependent metrics such as
+``PGA`` and ``PGV``. ``PSA`` and ``FAS`` are broadband spectral metrics, so
+current metric outputs write them with blank ``passband`` values and separate
+them by oscillator ``period_s``. Use period-based commands such as
+``psa-period-curve`` for PSA diagnostics instead of combining PSA with
+waveform-passband figures.
 
 
 Step 7: Dashboards
