@@ -532,6 +532,10 @@ Public sidecar helpers exposed by ``spatial_vtk.visualize``:
    * - ``figure_sidecar_status_frame``
      - Summarize a directory of JSON sidecars without opening large CSV row
        files.
+   * - ``figure_family_sidecar_summary`` and
+       ``add_figure_family_sidecar_status``
+     - Summarize the sidecar coverage for a figure family or append those fields
+       to a suite status table without opening large CSV row files.
    * - ``read_figure_sidecar_metadata``
      - Read one sidecar metadata JSON from any related figure or sidecar path.
    * - ``figure_sidecar_dimension_counts``

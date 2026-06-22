@@ -14,6 +14,7 @@ import pandas as pd
 
 from spatial_vtk.io import parquet_table_columns, table_columns
 from spatial_vtk.visualize.figure_sidecars import (
+    add_figure_family_sidecar_status,
     normalize_figure_status_rows,
     read_figure_sidecar_metadata,
     write_figure_row_sidecar,
@@ -2105,7 +2106,11 @@ class MetricFigureSuiteResult:
         """Return one row per metric figure family rendered or skipped."""
 
         frame = normalize_figure_status_rows(self.rows)
-        frame = _add_metric_suite_sidecar_status(frame, self.context)
+        frame = add_figure_family_sidecar_status(
+            frame,
+            sidecar_dir=getattr(self.context, "sidecar_output_dir", None),
+            enabled=bool(getattr(self.context, "write_sidecars", False)),
+        )
         return frame.reindex(
             columns=[
                 "name",
@@ -2157,139 +2162,6 @@ def _metric_suite_status_row(artifact: str, outputs: Sequence[Path], *, message:
         "figure_paths_preview": preview,
         "message": message if message else ("" if paths else "No figures were written; check context status and missing-table messages above."),
     }
-
-
-def _add_metric_suite_sidecar_status(frame: pd.DataFrame, context: Any) -> pd.DataFrame:
-    """Add cheap per-family sidecar audit fields to a metric suite status frame."""
-
-    if frame.empty:
-        return frame
-
-    enriched = frame.copy()
-    summaries = [
-        _metric_suite_sidecar_summary(
-            row.get("figure_paths", []),
-            sidecar_dir=getattr(context, "sidecar_output_dir", None),
-            enabled=bool(getattr(context, "write_sidecars", False)),
-        )
-        for row in enriched.to_dict("records")
-    ]
-    summary_frame = pd.DataFrame(summaries, index=enriched.index)
-    return pd.concat([enriched, summary_frame], axis=1)
-
-
-def _metric_suite_sidecar_summary(
-    figure_paths: Any,
-    *,
-    sidecar_dir: str | Path | None,
-    enabled: bool,
-) -> dict[str, Any]:
-    """Return JSON-only sidecar counts for one metric figure family."""
-
-    paths = _metric_suite_figure_paths(figure_paths)
-    output_dir = None if sidecar_dir is None else Path(sidecar_dir).expanduser()
-    blank = {
-        "sidecar_dir": "" if output_dir is None else str(output_dir),
-        "sidecar_metadata_count": 0,
-        "sidecar_count": 0,
-        "sidecar_missing_count": 0,
-        "source_sidecar_count": 0,
-        "source_sidecar_missing_count": 0,
-        "plot_row_count_total": 0,
-        "written_row_count_total": 0,
-        "plot_sidecar_all_exact": "",
-        "source_row_count_total": 0,
-        "source_written_row_count_total": 0,
-        "source_sidecar_all_exact": "",
-        "sidecar_sampled_count": 0,
-        "source_sidecar_sampled_count": 0,
-    }
-    if not enabled or output_dir is None or not paths:
-        return blank
-
-    metadata_rows: list[dict[str, Any]] = []
-    sidecar_count = 0
-    source_sidecar_count = 0
-    for figure in paths:
-        metadata_path = output_dir / f"{figure.stem}.json"
-        sidecar_path = output_dir / f"{figure.stem}.csv"
-        source_sidecar_path = output_dir / f"{figure.stem}.source.csv"
-        if metadata_path.exists():
-            metadata = read_figure_sidecar_metadata(metadata_path)
-            metadata_rows.append(metadata)
-            sidecar_path = Path(str(metadata.get("sidecar") or sidecar_path)).expanduser()
-            source_sidecar_value = metadata.get("source_sidecar")
-            if source_sidecar_value:
-                source_sidecar_path = Path(str(source_sidecar_value)).expanduser()
-        if sidecar_path.exists():
-            sidecar_count += 1
-        if source_sidecar_path.exists():
-            source_sidecar_count += 1
-
-    blank.update(
-        {
-            "sidecar_metadata_count": int(len(metadata_rows)),
-            "sidecar_count": int(sidecar_count),
-            "sidecar_missing_count": int(max(len(paths) - sidecar_count, 0)),
-            "source_sidecar_count": int(source_sidecar_count),
-            "source_sidecar_missing_count": int(max(len(paths) - source_sidecar_count, 0)),
-            "plot_row_count_total": _metadata_sum(metadata_rows, "plot_row_count"),
-            "written_row_count_total": _metadata_sum(metadata_rows, "written_row_count"),
-            "plot_sidecar_all_exact": _metadata_all_true(metadata_rows, "plot_sidecar_exact"),
-            "source_row_count_total": _metadata_sum(metadata_rows, "source_row_count"),
-            "source_written_row_count_total": _metadata_sum(metadata_rows, "source_written_row_count"),
-            "source_sidecar_all_exact": _metadata_all_true(metadata_rows, "source_sidecar_exact"),
-            "sidecar_sampled_count": _metadata_true_count(metadata_rows, "sampled"),
-            "source_sidecar_sampled_count": _metadata_true_count(metadata_rows, "source_sampled"),
-        }
-    )
-    return blank
-
-
-def _metric_suite_figure_paths(figure_paths: Any) -> list[Path]:
-    """Normalize one suite status ``figure_paths`` value into paths."""
-
-    if figure_paths is None:
-        return []
-    if isinstance(figure_paths, (str, Path)):
-        values: Iterable[Any] = [figure_paths]
-    elif isinstance(figure_paths, Iterable):
-        values = figure_paths
-    else:
-        return []
-    return [Path(str(path)) for path in values if str(path)]
-
-
-def _metadata_sum(rows: Sequence[dict[str, Any]], key: str) -> int:
-    """Sum numeric metadata values while ignoring missing fields."""
-
-    total = 0
-    for row in rows:
-        value = row.get(key)
-        if value is None or value == "":
-            continue
-        try:
-            total += int(value)
-        except (TypeError, ValueError):
-            continue
-    return int(total)
-
-
-def _metadata_true_count(rows: Sequence[dict[str, Any]], key: str) -> int:
-    """Count metadata rows where a boolean-ish field is true."""
-
-    return int(sum(bool(row.get(key)) for row in rows))
-
-
-def _metadata_all_true(rows: Sequence[dict[str, Any]], key: str) -> bool | str:
-    """Return whether every metadata row has a true value for ``key``."""
-
-    if not rows:
-        return ""
-    values = [row.get(key) for row in rows if key in row]
-    if not values:
-        return ""
-    return bool(all(bool(value) for value in values))
 
 
 def write_large_run_metric_figure_suite_from_notebook_settings(

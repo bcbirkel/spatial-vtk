@@ -7,7 +7,7 @@ from datetime import date, datetime
 import json
 import math
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable, Sequence
 
 import pandas as pd
 
@@ -428,6 +428,126 @@ def figure_sidecar_status_frame(sidecar_dir: str | Path | None) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=_FIGURE_SIDECAR_STATUS_COLUMNS)
 
 
+def add_figure_family_sidecar_status(
+    frame: pd.DataFrame,
+    *,
+    sidecar_dir: str | Path | None,
+    enabled: bool,
+    figure_paths_col: str = "figure_paths",
+) -> pd.DataFrame:
+    """Add per-family sidecar audit fields to a figure-suite status frame.
+
+    The helper reads only sidecar JSON metadata and checks file existence. It
+    intentionally does not open the potentially large CSV sidecars, so notebook
+    status cells stay cheap on large runs.
+    """
+
+    if frame.empty:
+        return frame
+
+    enriched = frame.copy()
+    summaries = [
+        figure_family_sidecar_summary(
+            row.get(figure_paths_col, []),
+            sidecar_dir=sidecar_dir,
+            enabled=enabled,
+        )
+        for row in enriched.to_dict("records")
+    ]
+    summary_frame = pd.DataFrame(summaries, index=enriched.index)
+    return pd.concat([enriched, summary_frame], axis=1)
+
+
+def figure_family_sidecar_summary(
+    figure_paths: Any,
+    *,
+    sidecar_dir: str | Path | None,
+    enabled: bool,
+) -> dict[str, Any]:
+    """Return JSON-only sidecar counts for one figure family."""
+
+    paths = _figure_family_paths(figure_paths)
+    output_dir = None if sidecar_dir is None else Path(sidecar_dir).expanduser()
+    blank = {
+        "sidecar_dir": "" if output_dir is None else str(output_dir),
+        "sidecar_metadata_count": 0,
+        "sidecar_count": 0,
+        "sidecar_missing_count": 0,
+        "source_sidecar_count": 0,
+        "source_sidecar_missing_count": 0,
+        "plot_row_count_total": 0,
+        "written_row_count_total": 0,
+        "plot_sidecar_all_exact": "",
+        "source_row_count_total": 0,
+        "source_written_row_count_total": 0,
+        "source_sidecar_all_exact": "",
+        "sidecar_sampled_count": 0,
+        "source_sidecar_sampled_count": 0,
+    }
+    if not enabled or output_dir is None or not paths:
+        return blank
+
+    metadata_rows: list[dict[str, Any]] = []
+    sidecar_count = 0
+    source_sidecar_count = 0
+    source_sidecar_expected = 0
+    for figure in paths:
+        metadata_path = output_dir / f"{figure.stem}.json"
+        sidecar_path = output_dir / f"{figure.stem}.csv"
+        source_sidecar_path = output_dir / f"{figure.stem}.source.csv"
+        source_sidecar_value: Any = None
+        source_expected = False
+        if metadata_path.exists():
+            metadata = read_figure_sidecar_metadata(metadata_path)
+            metadata_rows.append(metadata)
+            sidecar_path = Path(str(metadata.get("sidecar") or sidecar_path)).expanduser()
+            source_sidecar_value = metadata.get("source_sidecar")
+            source_expected = bool(metadata.get("source_sidecar_written") or source_sidecar_value)
+            if source_sidecar_value:
+                source_sidecar_path = Path(str(source_sidecar_value)).expanduser()
+        else:
+            source_expected = source_sidecar_path.exists()
+        if sidecar_path.exists():
+            sidecar_count += 1
+        if source_expected:
+            source_sidecar_expected += 1
+            if source_sidecar_path.exists():
+                source_sidecar_count += 1
+
+    blank.update(
+        {
+            "sidecar_metadata_count": int(len(metadata_rows)),
+            "sidecar_count": int(sidecar_count),
+            "sidecar_missing_count": int(max(len(paths) - sidecar_count, 0)),
+            "source_sidecar_count": int(source_sidecar_count),
+            "source_sidecar_missing_count": int(max(source_sidecar_expected - source_sidecar_count, 0)),
+            "plot_row_count_total": _metadata_sum(metadata_rows, "plot_row_count"),
+            "written_row_count_total": _metadata_sum(metadata_rows, "written_row_count"),
+            "plot_sidecar_all_exact": _metadata_all_true(metadata_rows, "plot_sidecar_exact"),
+            "source_row_count_total": _metadata_sum(metadata_rows, "source_row_count"),
+            "source_written_row_count_total": _metadata_sum(metadata_rows, "source_written_row_count"),
+            "source_sidecar_all_exact": _metadata_all_true(metadata_rows, "source_sidecar_exact"),
+            "sidecar_sampled_count": _metadata_true_count(metadata_rows, "sampled"),
+            "source_sidecar_sampled_count": _metadata_true_count(metadata_rows, "source_sampled"),
+        }
+    )
+    return blank
+
+
+def _figure_family_paths(figure_paths: Any) -> list[Path]:
+    """Normalize one suite status ``figure_paths`` value into paths."""
+
+    if figure_paths is None:
+        return []
+    if isinstance(figure_paths, (str, Path)):
+        values: Iterable[Any] = [figure_paths]
+    elif isinstance(figure_paths, Iterable):
+        values = figure_paths
+    else:
+        return []
+    return [Path(str(path)) for path in values if str(path)]
+
+
 def _figure_sidecar_status_row(metadata_path: Path, metadata: dict[str, Any]) -> dict[str, Any]:
     """Return one display-ready sidecar audit row."""
 
@@ -520,6 +640,38 @@ _FIGURE_SIDECAR_STATUS_COLUMNS = list(
 )
 
 
+def _metadata_sum(rows: Sequence[dict[str, Any]], key: str) -> int:
+    """Sum numeric metadata values while ignoring missing fields."""
+
+    total = 0
+    for row in rows:
+        value = row.get(key)
+        if value is None or value == "":
+            continue
+        try:
+            total += int(value)
+        except (TypeError, ValueError):
+            continue
+    return int(total)
+
+
+def _metadata_true_count(rows: Sequence[dict[str, Any]], key: str) -> int:
+    """Count metadata rows where a boolean-ish field is true."""
+
+    return int(sum(bool(row.get(key)) for row in rows))
+
+
+def _metadata_all_true(rows: Sequence[dict[str, Any]], key: str) -> bool | str:
+    """Return whether every metadata row has a true value for ``key``."""
+
+    if not rows:
+        return ""
+    values = [row.get(key) for row in rows if key in row]
+    if not values:
+        return ""
+    return bool(all(bool(value) for value in values))
+
+
 def figure_sidecar_dimension_counts(df: pd.DataFrame | None, *, prefix: str) -> dict[str, int]:
     """Return cheap dimension counts for figure sidecar metadata."""
 
@@ -581,6 +733,8 @@ def _json_ready(value: Any) -> Any:
 
 __all__ = [
     "FigureSidecarResult",
+    "add_figure_family_sidecar_status",
+    "figure_family_sidecar_summary",
     "figure_sidecar_dimension_counts",
     "figure_sidecar_metadata_path",
     "figure_sidecar_status_frame",

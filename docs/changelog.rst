@@ -22,6 +22,13 @@ Changelog
     ``MetricFigureSuiteResult.status_frame()`` so Step 3 notebooks show
     provenance sidecar counts, source-sidecar counts, total plot/source row
     counts, and exact-versus-sampled flags for each figure family.
+  - Added the same sidecar coverage fields to
+    ``SpatialFigureSuiteResult.status_frame()`` so Step 4 spatial figures expose
+    the same provenance contract.
+  - Promoted the JSON-only suite summarizer to
+    ``spatial_vtk.visualize.figure_family_sidecar_summary`` and
+    ``spatial_vtk.visualize.add_figure_family_sidecar_status`` for reuse by
+    figure-suite result objects.
   - Kept the suite status lightweight by reading only small sidecar JSON
     metadata files and checking file existence, not the potentially large CSV
     sidecars.

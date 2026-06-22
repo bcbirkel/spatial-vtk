@@ -3558,6 +3558,95 @@ def test_spatial_figure_suite_result_displays_context_status_frames() -> None:
     assert preview["artifact"].tolist() == ["morans_i", "distance_bin_correlations", "geology_contrasts"]
 
 
+def test_spatial_figure_suite_status_summarizes_sidecar_provenance(tmp_path: Path) -> None:
+    """Step 4 suite status should expose sidecar coverage like Step 3."""
+
+    figure_dir = tmp_path / "figures"
+    sidecar_dir = tmp_path / "sidecars"
+    figure_dir.mkdir()
+    sidecar_dir.mkdir()
+    figure_a = figure_dir / "station_bias_map__pga.png"
+    figure_b = figure_dir / "residual_grid__pga.png"
+    figure_a.write_text("png-a", encoding="utf-8")
+    figure_b.write_text("png-b", encoding="utf-8")
+    (sidecar_dir / "station_bias_map__pga.csv").write_text("too,large,to,read\n", encoding="utf-8")
+    (sidecar_dir / "residual_grid__pga.csv").write_text("too,large,to,read\n", encoding="utf-8")
+    (sidecar_dir / "station_bias_map__pga.source.csv").write_text("too,large,to,read\n", encoding="utf-8")
+    (sidecar_dir / "station_bias_map__pga.json").write_text(
+        json.dumps(
+            {
+                "figure": str(figure_a),
+                "sidecar": str(sidecar_dir / "station_bias_map__pga.csv"),
+                "source_sidecar": str(sidecar_dir / "station_bias_map__pga.source.csv"),
+                "source_sidecar_written": True,
+                "plot_row_count": 3,
+                "written_row_count": 3,
+                "plot_sidecar_exact": True,
+                "source_row_count": 12,
+                "source_written_row_count": 6,
+                "source_sidecar_exact": False,
+                "sampled": False,
+                "source_sampled": True,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (sidecar_dir / "residual_grid__pga.json").write_text(
+        json.dumps(
+            {
+                "figure": str(figure_b),
+                "sidecar": str(sidecar_dir / "residual_grid__pga.csv"),
+                "source_sidecar_written": False,
+                "plot_row_count": 4,
+                "written_row_count": 4,
+                "plot_sidecar_exact": True,
+                "source_row_count": 4,
+                "source_written_row_count": 4,
+                "source_sidecar_exact": True,
+                "sampled": False,
+                "source_sampled": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    class Context:
+        write_sidecars = True
+        sidecar_output_dir = sidecar_dir
+
+    result = SpatialFigureSuiteResult(
+        context=Context(),
+        rows=(
+            {
+                "artifact": "spatial_maps",
+                "status": "written",
+                "figure_count": 2,
+                "existing_figure_count": 2,
+                "figure_paths": [str(figure_a), str(figure_b)],
+                "first_figure_path": str(figure_a),
+                "figure_paths_preview": f"{figure_a}, {figure_b}",
+                "message": "",
+            },
+        ),
+    )
+
+    row = result.status_frame().set_index("artifact").loc["spatial_maps"]
+    assert row["sidecar_dir"] == str(sidecar_dir)
+    assert row["sidecar_metadata_count"] == 2
+    assert row["sidecar_count"] == 2
+    assert row["sidecar_missing_count"] == 0
+    assert row["source_sidecar_count"] == 1
+    assert row["source_sidecar_missing_count"] == 0
+    assert row["plot_row_count_total"] == 7
+    assert row["written_row_count_total"] == 7
+    assert bool(row["plot_sidecar_all_exact"]) is True
+    assert row["source_row_count_total"] == 16
+    assert row["source_written_row_count_total"] == 10
+    assert bool(row["source_sidecar_all_exact"]) is False
+    assert row["sidecar_sampled_count"] == 0
+    assert row["source_sidecar_sampled_count"] == 1
+
+
 def test_psa_period_sheet_existing_file_writes_panel_source_sidecars(tmp_path: Path) -> None:
     """Existing PSA sheets should refresh sidecars for every oscillator panel."""
 

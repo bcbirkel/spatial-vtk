@@ -22,7 +22,11 @@ from spatial_vtk.metrics.plot.large_run import (
 )
 from spatial_vtk.spatial.calculate import add_geojson_metadata_to_metrics
 from spatial_vtk.spatial.plot.metrics import _categorical_metric_plot_data, boxplot, build_categorical_comparison_table
-from spatial_vtk.visualize.figure_sidecars import normalize_figure_status_rows, write_figure_row_sidecar
+from spatial_vtk.visualize.figure_sidecars import (
+    add_figure_family_sidecar_status,
+    normalize_figure_status_rows,
+    write_figure_row_sidecar,
+)
 
 
 ConfigInput = SpatialVTKConfig | str | Path
@@ -2287,6 +2291,11 @@ class SpatialFigureSuiteResult:
         """Return one row per spatial figure family rendered or skipped."""
 
         frame = normalize_figure_status_rows(self.rows)
+        frame = add_figure_family_sidecar_status(
+            frame,
+            sidecar_dir=getattr(self.context, "sidecar_output_dir", None),
+            enabled=bool(getattr(self.context, "write_sidecars", False)),
+        )
         return frame.reindex(
             columns=[
                 "name",
@@ -2302,6 +2311,20 @@ class SpatialFigureSuiteResult:
                 "figure_paths",
                 "first_figure_path",
                 "figure_paths_preview",
+                "sidecar_dir",
+                "sidecar_metadata_count",
+                "sidecar_count",
+                "sidecar_missing_count",
+                "source_sidecar_count",
+                "source_sidecar_missing_count",
+                "plot_row_count_total",
+                "written_row_count_total",
+                "plot_sidecar_all_exact",
+                "source_row_count_total",
+                "source_written_row_count_total",
+                "source_sidecar_all_exact",
+                "sidecar_sampled_count",
+                "source_sidecar_sampled_count",
                 "message",
             ]
         )

@@ -59,6 +59,8 @@ _EXPORT_MODULES = {
     "finish_figure": "spatial_vtk.visualize.figure_io",
     "savefig": "spatial_vtk.visualize.figure_io",
     "FigureSidecarResult": "spatial_vtk.visualize.figure_sidecars",
+    "add_figure_family_sidecar_status": "spatial_vtk.visualize.figure_sidecars",
+    "figure_family_sidecar_summary": "spatial_vtk.visualize.figure_sidecars",
     "figure_sidecar_dimension_counts": "spatial_vtk.visualize.figure_sidecars",
     "figure_sidecar_metadata_path": "spatial_vtk.visualize.figure_sidecars",
     "figure_sidecar_status_frame": "spatial_vtk.visualize.figure_sidecars",

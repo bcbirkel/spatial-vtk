@@ -764,6 +764,7 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         from spatial_vtk.spatial import run_spatial_statistics_workflow
         from spatial_vtk.spatial.calculate import load_standard_spatial_workflow_output_status
         from spatial_vtk.visualize import (
+            add_figure_family_sidecar_status,
             dashboard_chart_columns_or_message,
             dashboard_empty_rows_message,
             dashboard_metric_dataset_readiness_frame,
@@ -779,6 +780,7 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
             display_dashboard_preparation_result,
             filter_dashboard_metrics,
             filter_qc_dashboard_rows,
+            figure_family_sidecar_summary,
             figure_sidecar_status_frame,
             launch_configured_dashboards_from_notebook_settings,
             load_dashboard_summary_tables,
@@ -805,6 +807,8 @@ def test_public_package_entry_points_keep_optional_imports_lazy():
         assert slurm_settings_from_config.__module__ == "spatial_vtk.qc.build.slurm"
         assert run_spatial_statistics_workflow.__module__ == "spatial_vtk.spatial.calculate.workflow"
         assert load_standard_spatial_workflow_output_status.__module__ == "spatial_vtk.spatial.calculate.workflow"
+        assert add_figure_family_sidecar_status.__module__ == "spatial_vtk.visualize.figure_sidecars"
+        assert figure_family_sidecar_summary.__module__ == "spatial_vtk.visualize.figure_sidecars"
         assert read_figure_sidecar_metadata.__module__ == "spatial_vtk.visualize.figure_sidecars"
         assert write_figure_row_sidecar.__module__ == "spatial_vtk.visualize.figure_sidecars"
         assert figure_sidecar_status_frame.__module__ == "spatial_vtk.visualize.figure_sidecars"

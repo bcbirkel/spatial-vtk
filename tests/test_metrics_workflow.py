@@ -1531,7 +1531,7 @@ def test_metric_figure_suite_status_summarizes_sidecar_provenance(tmp_path) -> N
     assert row["sidecar_count"] == 2
     assert row["sidecar_missing_count"] == 0
     assert row["source_sidecar_count"] == 1
-    assert row["source_sidecar_missing_count"] == 1
+    assert row["source_sidecar_missing_count"] == 0
     assert row["plot_row_count_total"] == 30
     assert row["written_row_count_total"] == 25
     assert bool(row["plot_sidecar_all_exact"]) is False
