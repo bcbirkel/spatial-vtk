@@ -3214,6 +3214,54 @@ def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> 
     assert "source_df_factory=self.item_source_rows" in metric_context_source
 
 
+def test_large_run_spatial_figures_display_diagnostic_preview_tables() -> None:
+    """Step 4 large-run figures should keep their statistical tables visible."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_04_large_run_spatial_statistics.ipynb"
+    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+
+    assert "spatial_outputs.write_figure_suite(" in source
+    assert "spatial_figure_suite.display_context_status(display=display)" in source
+    assert "display(spatial_figure_suite.diagnostic_preview_frame(nrows=PREVIEW_ROWS))" in source
+    assert "display(spatial_figure_suite.status_frame())" in source
+    assert "diagnostic_preview_frame(" not in source.replace(
+        "display(spatial_figure_suite.diagnostic_preview_frame(nrows=PREVIEW_ROWS))",
+        "",
+    )
+
+
+def test_tutorial_notebooks_use_python_package_helpers_not_cli_shells() -> None:
+    """Tutorial notebooks should drive workflows through Python APIs, not shell commands."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").glob("**/step_*.ipynb"))
+    forbidden = (
+        "subprocess.",
+        "os.system(",
+        "shlex.",
+        "cmd = [",
+        "svtk ",
+        "!svtk",
+        "%%bash",
+        "sbatch ",
+        "srun ",
+    )
+    offenders: list[str] = []
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            if cell.get("cell_type") != "code":
+                continue
+            source = "".join(cell.get("source", []))
+            found = [snippet for snippet in forbidden if snippet in source]
+            if found:
+                offenders.append(f"{notebook_path.relative_to(repo_root)} cell {index}: {found}")
+
+    assert offenders == []
+
+
 def test_public_saved_plot_functions_expose_sidecar_controls() -> None:
     """Saved plotting helpers should let users write row-provenance sidecars."""
 

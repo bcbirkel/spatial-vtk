@@ -645,7 +645,18 @@ should build only a curated subset.
    * - Render large-run spatial figures
      - ``spatial_vtk.spatial.load_standard_spatial_workflow_output_status(...).write_figure_suite(...)``
      - saved spatial figures, package-generated spatial table/dimension status
-       summaries, and optional row-provenance sidecars
+       summaries, compact diagnostic preview tables for statistics used by
+       the figures, and optional row-provenance sidecars
+
+The large-run Step 4 figure suite returns a result object, not just paths.
+Use ``spatial_figure_suite.display_context_status(display=display)`` to show
+the loaded-table, dimension, and spectral-contract audit frames, display
+``spatial_figure_suite.diagnostic_preview_frame(nrows=...)`` under the figure
+cell to keep Moran, distance-correlation, clustering, PCA, and geology
+diagnostic rows visible, and display ``spatial_figure_suite.status_frame()``
+for the figure/sidecar write status. This mirrors the smaller tutorial's
+"figure plus table" layout while avoiding notebook-local table joins or full
+metric-table reads.
 
 Display results returned by the Step 4 ``run_*_step_if_needed(...)`` methods
 with ``spatial_vtk.config.display_notebook_step_result``. That keeps submitted,

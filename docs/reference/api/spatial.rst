@@ -494,6 +494,14 @@ schemas.
    families from disabled suites and figure families that matched no rows or
    inputs.
 
+``SpatialFigureSuiteResult.diagnostic_preview_frame``
+   Returns bounded preview rows from the compact statistical tables that feed
+   Step 4 diagnostic figures, including Moran's I, distance-bin correlations,
+   PCA summaries, clustering summaries, and geology contrasts when those
+   outputs exist. Large-run notebooks should display this table next to the
+   spatial figure status so significance and metric-summary rows remain
+   visible without loading the full metric inventory.
+
 ``spectral_metric_contract_status``
    Return a compact PSA/FAS audit table for both ``metric_field`` and
    ``event_centered_residuals``. Use it before spatial figure rendering to

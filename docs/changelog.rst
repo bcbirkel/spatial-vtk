@@ -4,6 +4,17 @@ Changelog
 2026-06-22
 ----------
 
+- **Large-run notebook figure-table contracts** *(Changed)*
+
+  - Added regression coverage that tutorial notebooks drive workflow steps
+    through Python package helpers rather than shelling out to ``svtk`` or
+    ``sbatch`` command cells.
+  - Guarded the large-run Step 4 figure-suite cell so it continues displaying
+    the compact diagnostic preview table alongside context and figure-status
+    tables.
+  - Documented the Step 4 ``diagnostic_preview_frame()`` contract in the
+    Python workflow guide and spatial API reference.
+
 - **Validation environment diagnostics** *(Changed)*
 
   - Updated ``tools/check_validation_environment.py`` so missing-dependency
