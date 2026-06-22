@@ -9,8 +9,8 @@ Changelog
   - Added ``NotebookRunContext.status_frame()`` so tutorial setup cells can
     show the resolved config, run scenario, output directories, and execution
     flags as a labelled status table.
-  - Updated the large-run notebooks to display that table instead of printing
-    raw setup lines.
+  - Updated the standard and large-run notebooks to display that table instead
+    of omitting context diagnostics or printing raw setup lines.
   - Documented the context status contract in the config API and Python
     workflow guides.
 

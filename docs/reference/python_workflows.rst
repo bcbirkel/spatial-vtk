@@ -160,10 +160,11 @@ the large-run notebooks.
        common execution controls such as ``SVTK_QC_CHUNKSIZE``,
        ``SVTK_DASHBOARD_CHUNKSIZE``, ``SVTK_METRIC_BATCH_COUNT``, and
        ``SVTK_PREPROCESS_CONTINUE_ON_ERROR`` so cells can pass
-       ``context.<field>`` values into package workflow functions. Display
-       ``context.status_frame()`` in setup cells to show the active config,
-       output directories, run scenario, and execution flags with the same
-       labelled path/status columns used by later workflow status tables.
+       ``context.<field>`` values into package workflow functions. Standard
+       and large-run tutorial setup cells should display
+       ``context.status_frame()`` to show the active config, output
+       directories, run scenario, and execution flags with the same labelled
+       path/status columns used by later workflow status tables.
    * - ``spatial_vtk.io.output_readiness``
      - Report whether configured outputs are missing, stale relative to inputs,
        blocked by missing inputs, or ready to reuse.
