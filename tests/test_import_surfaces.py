@@ -3472,8 +3472,18 @@ def test_large_run_csv_readers_use_stable_dtype_inference():
         "src/spatial_vtk/io/catalogs.py": "return read_table(path or default_event_patch_csv(), **kwargs)",
         "src/spatial_vtk/io/plans.py": "read_table(args.metrics)",
         "src/spatial_vtk/spatial/calculate/geojson.py": "pd.read_csv(path, usecols=columns, chunksize=chunksize, low_memory=False)",
+        "src/spatial_vtk/metrics/workflow/execution.py": "columns = table_columns(path)",
     }
     for relative_path, snippet in snippets.items():
+        text = (repo_root / relative_path).read_text(encoding="utf-8")
+        assert snippet in text, relative_path
+    checkpoint_header_snippets = [
+        ("src/spatial_vtk/qc/build/inventory.py", "frame = frame.reindex(columns=table_columns(checkpoint))"),
+        ("src/spatial_vtk/qc/build/workflow.py", "frame = frame.reindex(columns=table_columns(checkpoint))"),
+        ("src/spatial_vtk/qc/build/workflow.py", 'if not {"event_id", "station"} <= set(table_columns(checkpoint)):'),
+        ("src/spatial_vtk/spatial/calculate/geojson.py", "pd.read_csv(path, nrows=0, low_memory=False)"),
+    ]
+    for relative_path, snippet in checkpoint_header_snippets:
         text = (repo_root / relative_path).read_text(encoding="utf-8")
         assert snippet in text, relative_path
 

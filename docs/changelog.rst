@@ -83,6 +83,9 @@ Changelog
     metadata and validation match the declared supported range.
   - Added PhaseNet to the tutorial runtime preflight so arrival-pick workflow
     dependencies are reported before notebooks or generated workers run.
+  - Routed large-run checkpoint and metric-batch CSV header probes through the
+    shared table-column helper so schema-only reads use consistent table
+    defaults and avoid warning-prone ad hoc ``read_csv`` calls.
 
 - **Notebook source-contract checks** *(Fixed)*
 

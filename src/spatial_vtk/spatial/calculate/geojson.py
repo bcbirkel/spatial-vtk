@@ -983,7 +983,7 @@ def _geojson_summary_input(
         return _dedupe_geojson_summary_frame(frame), row_count if row_count is not None else len(frame)
 
     if suffix in {".csv", ".txt"}:
-        available = table_columns(path) if suffix == ".csv" else list(pd.read_csv(path, nrows=0).columns)
+        available = table_columns(path) if suffix == ".csv" else list(pd.read_csv(path, nrows=0, low_memory=False).columns)
         columns = _available_geojson_summary_columns(available)
         if not columns:
             raise KeyError(f"No GeoJSON summary coordinate columns were found in {path}")

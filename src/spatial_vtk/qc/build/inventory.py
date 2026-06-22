@@ -13,7 +13,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from spatial_vtk.io.tables import read_table, write_table
+from spatial_vtk.io.tables import read_table, table_columns, write_table
 from spatial_vtk.io.waveforms import (
     WaveformPreprocessing,
     apply_waveform_preprocessing_with_metadata,
@@ -683,8 +683,7 @@ def _append_qc_checkpoint_rows(rows: list[dict[str, object]], path: str | Path |
     write_header = not checkpoint.exists() or checkpoint.stat().st_size == 0
     frame = pd.DataFrame(rows)
     if not write_header:
-        header = pd.read_csv(checkpoint, nrows=0)
-        frame = frame.reindex(columns=list(header.columns))
+        frame = frame.reindex(columns=table_columns(checkpoint))
     frame.to_csv(checkpoint, mode="a", header=write_header, index=False)
 
 

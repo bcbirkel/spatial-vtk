@@ -896,8 +896,7 @@ def _append_qc_checkpoint_rows(rows: list[dict[str, object]], path: str | Path |
     write_header = not checkpoint.exists() or checkpoint.stat().st_size == 0
     frame = pd.DataFrame(rows)
     if not write_header:
-        header = pd.read_csv(checkpoint, nrows=0)
-        frame = frame.reindex(columns=list(header.columns))
+        frame = frame.reindex(columns=table_columns(checkpoint))
     frame.to_csv(checkpoint, mode="a", header=write_header, index=False)
 
 
@@ -967,8 +966,7 @@ def _metric_qc_completed_records_from_path(path: str | Path | None) -> tuple[set
     suffix = checkpoint.suffix.lower()
     if suffix in {"", ".csv"}:
         try:
-            header = pd.read_csv(checkpoint, nrows=0)
-            if not {"event_id", "station"} <= set(header.columns):
+            if not {"event_id", "station"} <= set(table_columns(checkpoint)):
                 return set(), 0
             completed: set[tuple[str, str]] = set()
             row_count = 0

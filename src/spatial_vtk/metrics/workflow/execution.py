@@ -798,10 +798,10 @@ def _csv_text_columns(path: Path) -> list[str]:
     """Return known metric text columns present in a CSV header."""
 
     try:
-        header = pd.read_csv(path, nrows=0)
+        columns = table_columns(path)
     except pd.errors.EmptyDataError:
         return []
-    present = set(header.columns)
+    present = set(columns)
     return [column for column in METRIC_TEXT_COLUMNS if column in present]
 
 
