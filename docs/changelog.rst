@@ -15,6 +15,17 @@ Changelog
   - Added regression coverage for invalid task payloads in status-only
     manifests and for explicit CLI manifest checks that must not load config.
 
+- **Explicit-path metric CLI defaults** *(Changed)*
+
+  - Routed metric inventory, estimate, local-run, waveform-cache,
+    batch-merge, and output-writing commands through the shared config-default
+    helper.
+  - Prevented those commands from loading a saved ``svtk config set`` path when
+    all required file paths are provided explicitly.
+  - Added source-contract coverage so explicit-path metric commands stay
+    independent of ambient config unless ``--config`` or ``--run-scenario`` is
+    passed.
+
 - **Config-backed sidecar status CLI** *(Changed)*
 
   - Made ``svtk visualize sidecars status`` resolve the notebook-standard

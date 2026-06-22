@@ -2080,6 +2080,25 @@ def test_metric_cli_commands_use_public_metrics_surface():
     assert "from spatial_vtk.metrics import write_metric_outputs" in source
 
 
+def test_metric_cli_explicit_path_commands_use_config_defaults_helper():
+    """Explicit-path metric commands should not load a saved config implicitly."""
+
+    import spatial_vtk.cli as cli_module
+
+    guarded_handlers = (
+        "_cmd_metrics_inventories",
+        "_cmd_metrics_estimate",
+        "_cmd_metrics_run",
+        "_cmd_metrics_cache_waveforms",
+        "_cmd_metrics_merge_batches",
+        "_cmd_metrics_outputs",
+    )
+    for handler_name in guarded_handlers:
+        source = inspect.getsource(getattr(cli_module, handler_name))
+        assert "_cli_config_for_defaults(" in source
+        assert "_optional_cli_config(" not in source
+
+
 def test_spatial_cli_commands_use_public_spatial_surface():
     """Curated spatial CLI commands should use the top-level spatial API surface."""
 

@@ -2658,7 +2658,7 @@ def _cmd_metrics_inventories(args: argparse.Namespace) -> int:
     """Run ``svtk metrics inventories``."""
 
     needs_config = not (args.trace_metadata and args.observed_output and args.synthetic_output)
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    config = _cli_config_for_defaults(args.config, run_scenario=args.run_scenario, needs_config=needs_config)
     from spatial_vtk.io import preprocessed_waveform_metadata_paths
     from spatial_vtk.metrics import build_metric_waveform_inventories_from_trace_metadata
 
@@ -2705,7 +2705,7 @@ def _cmd_metrics_estimate(args: argparse.Namespace) -> int:
     """Run ``svtk metrics estimate``."""
 
     needs_config = args.tasks is None and args.manifest is None
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    config = _cli_config_for_defaults(args.config, run_scenario=args.run_scenario, needs_config=needs_config)
     from spatial_vtk.metrics import read_task_manifest, summarize_metric_tasks
 
     if args.tasks:
@@ -2757,11 +2757,7 @@ def _cmd_metrics_run(args: argparse.Namespace) -> int:
     """Run ``svtk metrics run``."""
 
     needs_config = args.tasks is None or args.output is None
-    config = (
-        _required_cli_config(args.config, run_scenario=args.run_scenario)
-        if needs_config
-        else _optional_cli_config(args.config, run_scenario=args.run_scenario)
-    )
+    config = _cli_config_for_defaults(args.config, run_scenario=args.run_scenario, needs_config=needs_config)
     from spatial_vtk.metrics import run_metric_tasks, tasks_from_frame, write_metric_rows
 
     tasks_path = Path(args.tasks).expanduser() if args.tasks else _configured_output_path("metric_tasks", config=config)
@@ -2802,7 +2798,7 @@ def _cmd_metrics_cache_waveforms(args: argparse.Namespace) -> int:
     """Run ``svtk metrics cache-waveforms``."""
 
     needs_config = not (args.manifest and args.output and args.cache_root)
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    config = _cli_config_for_defaults(args.config, run_scenario=args.run_scenario, needs_config=needs_config)
     from spatial_vtk.metrics import cache_metric_manifest_waveforms
 
     manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config)
@@ -2836,7 +2832,7 @@ def _cmd_metrics_merge_batches(args: argparse.Namespace) -> int:
     """Run ``svtk metrics merge-batches``."""
 
     needs_config = not (args.manifest and args.output)
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    config = _cli_config_for_defaults(args.config, run_scenario=args.run_scenario, needs_config=needs_config)
     from spatial_vtk.metrics import merge_batch_outputs
 
     manifest = Path(args.manifest).expanduser() if args.manifest else _default_metric_manifest_path(config, prefer_cached=True)
@@ -2850,7 +2846,7 @@ def _cmd_metrics_outputs(args: argparse.Namespace) -> int:
     """Run ``svtk metrics outputs``."""
 
     needs_config = args.metrics is None or args.output_dir is None
-    config = _required_cli_config(args.config, run_scenario=args.run_scenario) if needs_config else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+    config = _cli_config_for_defaults(args.config, run_scenario=args.run_scenario, needs_config=needs_config)
     from spatial_vtk.metrics import write_metric_outputs
 
     if config is not None:
@@ -3819,6 +3815,14 @@ def _read_table(path: str | Path) -> Any:
     """Read one CSV or Parquet table."""
 
     table_path = Path(path).expanduser()
+    if table_path.suffix.lower() in {".parquet", ".pq"}:
+        import pandas as pd
+
+        return pd.read_parquet(table_path)
+    if table_path.suffix.lower() in {"", ".csv"}:
+        import pandas as pd
+
+        return pd.read_csv(table_path, low_memory=False)
     from spatial_vtk.io import read_table
 
     return read_table(table_path)
@@ -3828,9 +3832,18 @@ def _write_table(df: Any, path: str | Path) -> Path:
     """Write one CSV or Parquet table."""
 
     output = Path(path).expanduser()
-    from spatial_vtk.io import write_table
+    output.parent.mkdir(parents=True, exist_ok=True)
+    suffix = output.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        df.to_parquet(output, index=False)
+        written = output
+    elif suffix in {"", ".csv"}:
+        written = output if suffix == ".csv" else output.with_suffix(".csv")
+        df.to_csv(written, index=False)
+    else:
+        from spatial_vtk.io import write_table
 
-    written = write_table(df, output, index=False)
+        written = write_table(df, output, index=False)
     print(written)
     return written
 

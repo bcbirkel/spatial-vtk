@@ -24,9 +24,6 @@ import numpy as np
 import pandas as pd
 
 from spatial_vtk.config.metric_catalog import DEFAULT_METRICS_BY_GROUP, LEGACY_METRIC_ALIASES, metric_group_for, resolve_metric_names
-from spatial_vtk.io.metric_inputs import normalize_metric_waveform_inventory
-from spatial_vtk.io.plans import MetricPlan
-from spatial_vtk.io.tables import read_table as read_disk_table
 
 
 @dataclass(frozen=True)
@@ -763,6 +760,8 @@ def _normalize_source_overlap_scope(value: object) -> str:
 def _normalize_inventory_or_empty(table: pd.DataFrame | str | Path, *, source: str, synthetic_max_frequency_hz: float | None = None) -> pd.DataFrame:
     """Normalize one inventory table."""
 
+    from spatial_vtk.io.metric_inputs import normalize_metric_waveform_inventory
+
     return normalize_metric_waveform_inventory(table, source=source, synthetic_max_frequency_hz=synthetic_max_frequency_hz)
 
 
@@ -860,6 +859,13 @@ def _read_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
     if isinstance(table, pd.DataFrame):
         return table.copy()
     path = Path(table).expanduser()
+    suffix = path.suffix.lower()
+    if suffix in {".parquet", ".pq"}:
+        return pd.read_parquet(path)
+    if suffix in {"", ".csv"}:
+        return pd.read_csv(path, low_memory=False)
+    from spatial_vtk.io.tables import read_table as read_disk_table
+
     return read_disk_table(path)
 
 
