@@ -52,6 +52,7 @@ WARNING_PATTERN = re.compile(
     r"\bWARNING\s*:",
     re.IGNORECASE,
 )
+FALLBACK_SUPPORTED_TUTORIAL_PYTHON_RANGE = ">=3.10,<3.14"
 FALLBACK_NOTEBOOK_RUNTIME_MODULES = {
     "spatial_vtk": "spatial_vtk",
     "nbformat": "nbformat",
@@ -84,19 +85,31 @@ FALLBACK_NOTEBOOK_RUNTIME_MODULES = {
 }
 
 
-def _tutorial_runtime_modules_from_validation_checker() -> dict[str, str]:
-    """Return tutorial runtime imports from the validation checker contract."""
+def _validation_checker_module() -> Any | None:
+    """Return the validation checker module when it can be loaded."""
 
     checker_path = Path(__file__).with_name("check_validation_environment.py")
     if not checker_path.exists():
-        return dict(FALLBACK_NOTEBOOK_RUNTIME_MODULES)
+        return None
     try:
         spec = importlib.util.spec_from_file_location("_svtk_validation_checker", checker_path)
         if spec is None or spec.loader is None:
-            return dict(FALLBACK_NOTEBOOK_RUNTIME_MODULES)
+            return None
         module = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = module
         spec.loader.exec_module(module)
+        return module
+    except Exception:
+        return None
+
+
+def _tutorial_runtime_modules_from_validation_checker() -> dict[str, str]:
+    """Return tutorial runtime imports from the validation checker contract."""
+
+    module = _validation_checker_module()
+    if module is None:
+        return dict(FALLBACK_NOTEBOOK_RUNTIME_MODULES)
+    try:
         runtime: dict[str, str] = {}
         for group in module.normalize_groups(["tutorial"]):
             for requirement in module.MODULE_GROUPS[group]:
@@ -107,7 +120,6 @@ def _tutorial_runtime_modules_from_validation_checker() -> dict[str, str]:
 
 
 NOTEBOOK_RUNTIME_MODULES = _tutorial_runtime_modules_from_validation_checker()
-FALLBACK_SUPPORTED_TUTORIAL_PYTHON_RANGE = ">=3.10,<3.14"
 SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND = (
     'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
 )
@@ -299,8 +311,25 @@ def _python_range_from_requires_python(requires_python: str) -> tuple[tuple[int,
     return _python_bound_tuple(lower_match.group(1)), _python_bound_tuple(upper_match.group(1))
 
 
-SUPPORTED_TUTORIAL_PYTHON_RANGE = _requires_python_from_pyproject()
-MIN_TUTORIAL_PYTHON, MAX_TUTORIAL_PYTHON = _python_range_from_requires_python(SUPPORTED_TUTORIAL_PYTHON_RANGE)
+def _tutorial_python_contract_from_validation_checker() -> tuple[str, tuple[int, int], tuple[int, int]] | None:
+    """Return supported Python bounds from the validation checker contract."""
+
+    module = _validation_checker_module()
+    if module is None:
+        return None
+    try:
+        requires_python = str(module.REQUIRES_PYTHON)
+        return requires_python, tuple(module.MIN_PYTHON), tuple(module.MAX_PYTHON)
+    except Exception:
+        return None
+
+
+_TUTORIAL_PYTHON_CONTRACT = _tutorial_python_contract_from_validation_checker()
+if _TUTORIAL_PYTHON_CONTRACT is None:
+    SUPPORTED_TUTORIAL_PYTHON_RANGE = _requires_python_from_pyproject()
+    MIN_TUTORIAL_PYTHON, MAX_TUTORIAL_PYTHON = _python_range_from_requires_python(SUPPORTED_TUTORIAL_PYTHON_RANGE)
+else:
+    SUPPORTED_TUTORIAL_PYTHON_RANGE, MIN_TUTORIAL_PYTHON, MAX_TUTORIAL_PYTHON = _TUTORIAL_PYTHON_CONTRACT
 NOTEBOOK_CONTRACT_PRIVATE_PATH_PATTERNS = (
     re.compile(r"(?<![\w.-])/(?:Users|home|home\d*|project\d*|scratch|work|lustre)/[^\s'\"),\]]+"),
     re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),

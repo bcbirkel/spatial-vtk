@@ -118,10 +118,13 @@ def test_tutorial_notebook_runtime_preflight_reports_unsupported_python() -> Non
     pyproject_text = (root / "pyproject.toml").read_text(encoding="utf-8")
     requires_python = re.search(r'^\s*requires-python\s*=\s*"([^"]+)"', pyproject_text, re.MULTILINE)
     assert requires_python is not None
+    checker = module._validation_checker_module()
+    assert checker is not None
 
+    assert module.SUPPORTED_TUTORIAL_PYTHON_RANGE == checker.REQUIRES_PYTHON
     assert module.SUPPORTED_TUTORIAL_PYTHON_RANGE == requires_python.group(1)
-    assert module.MIN_TUTORIAL_PYTHON == (3, 10)
-    assert module.MAX_TUTORIAL_PYTHON == (3, 14)
+    assert module.MIN_TUTORIAL_PYTHON == checker.MIN_PYTHON == (3, 10)
+    assert module.MAX_TUTORIAL_PYTHON == checker.MAX_PYTHON == (3, 14)
     assert module.tutorial_python_version_supported((3, 10, 0)) is True
     assert module.tutorial_python_version_supported((3, 13, 9)) is True
     assert module.tutorial_python_version_supported((3, 9, 18)) is False

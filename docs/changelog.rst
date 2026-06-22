@@ -28,6 +28,9 @@ Changelog
 
   - Made the tutorial notebook executor derive its runtime dependency map from
     ``tools/check_validation_environment.py`` when available.
+  - Made the tutorial notebook executor reuse the validation checker's
+    supported-Python range when that checker is available, falling back to
+    ``pyproject.toml`` only when the checker cannot be loaded.
   - Added regression coverage so the notebook runtime preflight and
     ``--groups tutorial`` validation checker cannot silently drift apart.
 
