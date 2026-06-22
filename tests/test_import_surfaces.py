@@ -1440,6 +1440,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     for module_name in forbidden_modules:
         assert f".. automodule:: {module_name}" not in text
     assert "For PSA, large-run figure helpers compare oscillator periods instead of\nwaveform passbands" in text
+    assert "PSA passband heatmaps are intentionally skipped" in text
     assert "``status_frame`` also includes ``spectral_contract_status``" in text
     assert "``ready`` is only true when the requested value column is present" in text
     assert "``value_col_present``, ``finite_value_rows``, and\n   ``nonfinite_value_rows``" in text
@@ -3816,6 +3817,9 @@ def test_metric_plot_public_entry_point_exposes_large_run_suite():
         metric_plot.write_large_run_metric_figure_suite_from_notebook_settings
         is metric_plot.write_large_run_metric_figure_suite_from_notebook_settings
     )
+    suite_source = inspect.getsource(metric_plot.write_large_run_metric_figure_suite_from_notebook_settings)
+    assert "PSA passband heatmaps are intentionally skipped" in suite_source
+    assert "skip heatmap for PSA" not in suite_source
 
 
 def test_waveform_large_run_helper_is_public():

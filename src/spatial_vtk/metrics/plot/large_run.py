@@ -1774,7 +1774,6 @@ class MetricFigureContext:
             )
             if output is not None:
                 outputs.append(output)
-            print("skip heatmap for PSA: use the PSA period curve and period distribution figures instead of passband heatmaps")
             return outputs
         output = self.write_metric_plot(
             "scatterplot",
@@ -2501,6 +2500,10 @@ def write_large_run_metric_figure_suite_from_notebook_settings(
                     compare_to=settings.compare_to,
                     table=settings.comparison_table,
                 ),
+            ),
+            message=(
+                "PSA passband heatmaps are intentionally skipped; PSA diagnostics use "
+                "oscillator-period scatter sheets and period distributions."
             ),
         )
     )

@@ -410,7 +410,9 @@ For PSA, large-run figure helpers compare oscillator periods instead of
 waveform passbands. Station maps, model maps, residual grids, event maps,
 scatter plots, and distribution plots are written as PSA period sheets when the
 input rows contain multiple ``period_s`` values; period curves use the same
-``period_s`` values directly.
+``period_s`` values directly. PSA passband heatmaps are intentionally skipped;
+the metric figure-suite status row records that PSA diagnostics use
+oscillator-period scatter sheets and period distributions instead.
 
 Advanced Figure Extension Helpers
 ---------------------------------
