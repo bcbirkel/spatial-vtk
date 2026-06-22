@@ -10,12 +10,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
-from spatial_vtk.config.runtime import SpatialVTKConfig
 from spatial_vtk.io.metric_inputs import normalize_metric_waveform_inventory
-from spatial_vtk.io.tables import read_table, write_table
 
 
 TRACE_METADATA_COLUMNS = (
@@ -93,7 +92,7 @@ def build_metric_waveform_inventories_from_trace_metadata(
     observed_output: str | Path,
     synthetic_output: str | Path,
     *,
-    config: SpatialVTKConfig | None = None,
+    config: Any | None = None,
     synthetic_model: str | None = None,
     observed_path_column: str = "output_file",
     synthetic_path_column: str = "input_file",
@@ -152,8 +151,8 @@ def build_metric_waveform_inventories_from_trace_metadata(
         observed_path_column=observed_path_column,
         synthetic_path_column=synthetic_path_column,
     )
-    write_table(observed, observed_path)
-    write_table(synthetic, synthetic_path)
+    _write_table(observed, observed_path)
+    _write_table(synthetic, synthetic_path)
     if verbose:
         print(f"Wrote observed metric inventory: {observed_path} ({len(observed)} row(s))", flush=True)
         print(f"Wrote synthetic metric inventory: {synthetic_path} ({len(synthetic)} row(s))", flush=True)
@@ -230,12 +229,12 @@ def _read_trace_metadata(table: pd.DataFrame | str | Path) -> pd.DataFrame:
         try:
             return pd.read_parquet(path, columns=list(TRACE_METADATA_COLUMNS))
         except Exception:
-            return read_table(path)
+            return _read_table(path)
     requested = set(TRACE_METADATA_COLUMNS)
     return pd.read_csv(path, usecols=lambda column: column in requested, low_memory=False)
 
 
-def _resolve_synthetic_model(config: SpatialVTKConfig | None, synthetic_model: str | None) -> str:
+def _resolve_synthetic_model(config: Any | None, synthetic_model: str | None) -> str:
     """Return explicit or config-derived synthetic model label."""
 
     if synthetic_model is not None:
@@ -246,6 +245,22 @@ def _resolve_synthetic_model(config: SpatialVTKConfig | None, synthetic_model: s
     if len(models) == 1:
         return str(models[0])
     return ""
+
+
+def _read_table(*args: Any, **kwargs: Any) -> pd.DataFrame:
+    """Read a CSV or Parquet table only when inventory inputs need fallback I/O."""
+
+    from spatial_vtk.io.tables import read_table
+
+    return read_table(*args, **kwargs)
+
+
+def _write_table(*args: Any, **kwargs: Any) -> Path:
+    """Write a CSV or Parquet table only when inventory outputs are produced."""
+
+    from spatial_vtk.io.tables import write_table
+
+    return write_table(*args, **kwargs)
 
 
 def _require_columns(df: pd.DataFrame, columns: list[str], *, table_name: str) -> None:

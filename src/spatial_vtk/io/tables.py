@@ -13,11 +13,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from spatial_vtk.config.outputs import resolve_output_path
-from spatial_vtk.config.outputs import output_description
-from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 
-ConfigInput = SpatialVTKConfig | str | Path
+ConfigInput = Any | str | Path
 
 
 RENAME_MAP = {
@@ -531,7 +528,7 @@ def load_output_table(
         Loaded table.
     """
 
-    path = resolve_output_path(key, kind="table", cfg=cfg)
+    path = _resolve_output_path(key, kind="table", cfg=cfg)
     return read_table(path, **kwargs)
 
 
@@ -577,7 +574,7 @@ def preview_output_table(
 ) -> pd.DataFrame:
     """Preview a standard output table without loading the full file."""
 
-    path = resolve_output_path(key, kind="table", cfg=cfg)
+    path = _resolve_output_path(key, kind="table", cfg=cfg)
     return preview_table(path, nrows=nrows, columns=columns, **kwargs)
 
 
@@ -623,7 +620,7 @@ def load_or_build_output_table(
         Existing or rebuilt output table.
     """
 
-    output_path = resolve_output_path(key, kind="table", cfg=cfg, create_parent=True)
+    output_path = _resolve_output_path(key, kind="table", cfg=cfg, create_parent=True)
     sources = _table_source_paths(source_path)
     output_exists = output_path.exists()
     stale_sources = [
@@ -726,7 +723,7 @@ def write_output_table(
         Written table path.
     """
 
-    path = resolve_output_path(key, kind="table", outpath=outpath, cfg=cfg, create_parent=True)
+    path = _resolve_output_path(key, kind="table", outpath=outpath, cfg=cfg, create_parent=True)
     return write_table(df, path, index=index)
 
 
@@ -764,8 +761,10 @@ def write_output_tables(
     return {key: write_output_table(key, table, cfg=cfg, index=index) for key, table in combined.items()}
 
 
-def _coerce_table_config(cfg: ConfigInput | None) -> SpatialVTKConfig:
+def _coerce_table_config(cfg: ConfigInput | None) -> Any:
     """Return a config object for table path resolution."""
+
+    from spatial_vtk.config.runtime import SpatialVTKConfig, active_config
 
     if cfg is None:
         return active_config()
@@ -837,9 +836,25 @@ def written_files_table(
                 display_path = path.resolve().relative_to(root)
             except ValueError:
                 display_path = path
-        description = (descriptions or {}).get(name) or output_description(name) or _title_from_name(name)
+        description = (descriptions or {}).get(name) or _output_description(name) or _title_from_name(name)
         rows.append({"File": str(display_path), "Description": description})
     return pd.DataFrame(rows, columns=["File", "Description"])
+
+
+def _resolve_output_path(*args: Any, **kwargs: Any) -> Path:
+    """Resolve configured output paths only for config-backed table helpers."""
+
+    from spatial_vtk.config.outputs import resolve_output_path
+
+    return resolve_output_path(*args, **kwargs)
+
+
+def _output_description(name: str) -> str | None:
+    """Return an output description only when written-file summaries request it."""
+
+    from spatial_vtk.config.outputs import output_description
+
+    return output_description(name)
 
 
 def _table_source_paths(source_path: str | Path | Sequence[str | Path] | None) -> list[Path]:

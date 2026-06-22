@@ -4,6 +4,16 @@ Changelog
 2026-06-21
 ----------
 
+- **Generic table I/O import boundary** *(Changed)*
+
+  - Deferred config-output and active-config imports in ``spatial_vtk.io.tables``
+    so generic CSV/Parquet helpers such as ``read_table()``, ``write_table()``,
+    ``table_columns()``, and ``table_row_count()`` can run without PyYAML.
+  - Kept config-backed output table helpers resolving paths through the same
+    output registry at call time.
+  - Made metric waveform inventory builders import and write explicit
+    CSV/Parquet outputs without importing config dependencies.
+
 - **Lightweight dashboard data imports** *(Changed)*
 
   - Deferred config-output resolution and shared table I/O imports in

@@ -3559,6 +3559,7 @@ def test_large_run_csv_readers_use_stable_dtype_inference():
         "src/spatial_vtk/qc/build/workflow.py": "return read_table(path)",
         "src/spatial_vtk/metrics/workflow/tasks.py": "return read_disk_table(path)",
         "src/spatial_vtk/metrics/workflow/outputs.py": "return read_disk_table(path)",
+        "src/spatial_vtk/metrics/workflow/inventory.py": "return _read_table(path)",
         "src/spatial_vtk/metrics/calculate/enrich.py": "return read_disk_table(path)",
         "src/spatial_vtk/io/metric_inputs.py": "return read_disk_table(path)",
         "src/spatial_vtk/io/master_lists.py": "return read_disk_table(path)",
@@ -3695,6 +3696,25 @@ def test_cli_table_writes_keep_standard_csv_parquet_lightweight():
     assert "written = write_table(df, output, index=False)" in helper
 
 
+def test_generic_table_io_defers_config_runtime_imports():
+    """Generic CSV/Parquet table helpers should import without config dependencies."""
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    relative_path = "src/spatial_vtk/io/tables.py"
+    source = (repo_root / relative_path).read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    forbidden_modules = {
+        "spatial_vtk.config.outputs",
+        "spatial_vtk.config.runtime",
+    }
+    offenders = [
+        node.module
+        for node in tree.body
+        if isinstance(node, ast.ImportFrom) and node.module in forbidden_modules
+    ]
+    assert not offenders, "\n".join(str(module) for module in offenders)
+
+
 def test_cli_workflow_helpers_use_public_package_surfaces():
     """Curated CLI helpers should not reach into notebook-facing implementation modules."""
 
@@ -3775,6 +3795,7 @@ def test_lightweight_table_helper_modules_defer_config_bound_table_imports():
         "src/spatial_vtk/io/master_lists.py",
         "src/spatial_vtk/io/catalogs.py",
         "src/spatial_vtk/io/plans.py",
+        "src/spatial_vtk/metrics/workflow/inventory.py",
         "src/spatial_vtk/qc/review/tables.py",
         "src/spatial_vtk/visualize/dashboard/contracts.py",
         "src/spatial_vtk/visualize/dashboard/export.py",
@@ -3832,6 +3853,25 @@ def test_dashboard_data_helpers_defer_config_runtime_imports():
             if isinstance(node, ast.ImportFrom) and node.module in forbidden_modules
         ]
         assert not offenders, relative_path
+
+
+def test_metric_inventory_helpers_defer_config_runtime_imports():
+    """Metric inventory helpers should import before config dependencies are installed."""
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    relative_path = "src/spatial_vtk/metrics/workflow/inventory.py"
+    source = (repo_root / relative_path).read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    forbidden_modules = {
+        "spatial_vtk.config.runtime",
+        "spatial_vtk.io.tables",
+    }
+    offenders = [
+        node.module
+        for node in tree.body
+        if isinstance(node, ast.ImportFrom) and node.module in forbidden_modules
+    ]
+    assert not offenders, "\n".join(str(module) for module in offenders)
 
 
 def test_dashboard_metric_dataset_writes_use_shared_writer():
