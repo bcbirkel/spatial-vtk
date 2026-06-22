@@ -4,6 +4,17 @@ Changelog
 2026-06-21
 ----------
 
+- **Lightweight metric plan imports** *(Changed)*
+
+  - Deferred config-runtime, config-metric, and shared table I/O imports in
+    ``spatial_vtk.io.plans`` until config-backed planning or the metric-plan
+    CLI is actually invoked.
+  - Kept ``MetricPlan`` and dataframe-only expected-row helpers importable in
+    minimal environments before PyYAML-backed config dependencies are
+    available.
+  - Added source-contract coverage so metric planning helpers do not
+    reintroduce top-level config-bound imports.
+
 - **Lightweight metric batch status** *(Changed)*
 
   - Made metric manifest batch-status checks read only manifest batch

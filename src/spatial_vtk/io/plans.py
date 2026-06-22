@@ -11,9 +11,16 @@ import re
 import pandas as pd
 
 from spatial_vtk.config.metric_catalog import metric_group_for
-from spatial_vtk.config.metrics import metrics_settings_from_config, transform_columns
-from spatial_vtk.config.runtime import SpatialVTKConfig
-from spatial_vtk.io.tables import read_table, write_table
+
+
+_DEFAULT_TRANSFORMS: tuple[str, ...] = ("log2_residual",)
+_VALID_TRANSFORMS: tuple[str, ...] = (
+    "residual",
+    "log2_residual",
+    "ln_residual",
+    "anderson_2004_gof",
+    "olsen_mayhew_gof",
+)
 
 
 @dataclass(frozen=True)
@@ -67,7 +74,7 @@ class MetricPlan:
     def transform_columns(self) -> tuple[str, ...]:
         """Return requested transform output columns."""
 
-        return transform_columns(self.transforms)
+        return _transform_columns(self.transforms)
 
     def summary_frame(self) -> pd.DataFrame:
         """Return a compact table of resolved metric-plan settings."""
@@ -117,7 +124,7 @@ class MetricCompleteness:
 
 
 def metric_plan_from_config(
-    config: SpatialVTKConfig,
+    config: Any,
     *,
     command: str = "metrics.calculate",
     overrides: dict[str, Any] | None = None,
@@ -139,6 +146,8 @@ def metric_plan_from_config(
     MetricPlan
         Resolved metric plan.
     """
+
+    from spatial_vtk.config.metrics import metrics_settings_from_config
 
     settings = metrics_settings_from_config(config, command=command, overrides=overrides)
     metric_cfg = dict(config.section("metrics", {}) or {})
@@ -208,7 +217,7 @@ def expected_metric_rows_from_inventory(
     passbands = plan.passbands or (("", ""),)
     metric_names = plan.metrics or ("",)
     metric_groups = plan.metric_groups or ("",)
-    transform_cols = transform_columns(plan.transforms)
+    transform_cols = _transform_columns(plan.transforms)
     base = inventory_df.loc[:, ["event_id", "station", "component"]].drop_duplicates()
     for _, item in base.iterrows():
         for model in models:
@@ -291,6 +300,35 @@ def _as_tuple(value: object) -> tuple[str, ...]:
     if isinstance(value, (list, tuple, set)):
         return tuple(str(item) for item in value if item not in (None, ""))
     return (str(value),)
+
+
+def _transform_columns(transforms: tuple[str, ...] | list[str] | None = None) -> tuple[str, ...]:
+    """Return requested transform output columns without importing config runtime."""
+
+    selected = _normalize_transforms(transforms or _DEFAULT_TRANSFORMS)
+    return tuple(transform for transform in selected)
+
+
+def _normalize_transforms(value: object) -> tuple[str, ...]:
+    """Normalize requested transform names and preserve config-compatible aliases."""
+
+    transforms = []
+    aliases = {
+        "log_residual": "ln_residual",
+        "ln": "ln_residual",
+        "log2": "log2_residual",
+        "anderson": "anderson_2004_gof",
+        "anderson_gof": "anderson_2004_gof",
+        "olsen_mayhew": "olsen_mayhew_gof",
+        "olsen_mayhew_2011": "olsen_mayhew_gof",
+    }
+    for item in _as_tuple(value):
+        token = item.strip().lower().replace("-", "_")
+        transforms.append(aliases.get(token, token))
+    unknown = [item for item in transforms if item not in _VALID_TRANSFORMS]
+    if unknown:
+        raise ValueError(f"Unknown metric transforms {unknown}. Expected a subset of {_VALID_TRANSFORMS}.")
+    return tuple(dict.fromkeys(transforms))
 
 
 def _normalized_key_frame(df: pd.DataFrame, keys: Sequence[str]) -> pd.DataFrame:
@@ -395,6 +433,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the metric completeness CLI wrapper."""
+
+    from spatial_vtk.config.runtime import SpatialVTKConfig
+    from spatial_vtk.io.tables import read_table, write_table
 
     args = build_arg_parser().parse_args(argv)
     config = SpatialVTKConfig.from_file(args.config) if args.config else SpatialVTKConfig.empty(root_dir=Path.cwd())

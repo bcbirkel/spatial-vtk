@@ -3573,7 +3573,7 @@ def test_large_run_csv_readers_use_stable_dtype_inference():
         "src/spatial_vtk/metrics/calculate/arrival_picks.py": "df = read_table(source)",
         "src/spatial_vtk/io/metadata.py": "prepare_event_station_table(read_table(path)",
         "src/spatial_vtk/io/catalogs.py": "return read_table(path or default_event_patch_csv(), **kwargs)",
-        "src/spatial_vtk/io/plans.py": "read_table(args.metrics)",
+        "src/spatial_vtk/io/plans.py": "read_table(args.metrics_table)",
         "src/spatial_vtk/spatial/calculate/geojson.py": "pd.read_csv(path, usecols=columns, chunksize=chunksize, low_memory=False)",
         "src/spatial_vtk/metrics/workflow/execution.py": "columns = table_columns(path)",
     }
@@ -3738,10 +3738,10 @@ def test_io_plan_cli_uses_shared_table_helpers():
         encoding="utf-8"
     )
     helper = source.split("def main", 1)[1].split("\ndef ", 1)[0]
-    assert "from spatial_vtk.io.tables import read_table, write_table" in source
-    assert "expected_metric_rows_from_inventory(read_table(args.inventory), plan)" in helper
-    assert "compare_metric_plan_to_table(expected, read_table(args.metrics))" in helper
-    assert "write_table(missing, args.missing_output, index=False)" in helper
+    assert "from spatial_vtk.io.tables import read_table, write_table" in helper
+    assert "expected_metric_rows_from_inventory(read_table(args.qc_inventory), plan)" in helper
+    assert "compare_metric_plan_to_table(expected, read_table(args.metrics_table))" in helper
+    assert "write_table(missing, args.missing_metrics_output, index=False)" in helper
     assert ".to_csv(" not in helper
     assert ".to_parquet(" not in helper
     assert "QC inventory CSV or Parquet table." in source
@@ -3774,6 +3774,7 @@ def test_lightweight_table_helper_modules_defer_config_bound_table_imports():
         "src/spatial_vtk/io/metric_inputs.py",
         "src/spatial_vtk/io/master_lists.py",
         "src/spatial_vtk/io/catalogs.py",
+        "src/spatial_vtk/io/plans.py",
         "src/spatial_vtk/qc/review/tables.py",
         "src/spatial_vtk/visualize/dashboard/tables.py",
     ]
@@ -3786,6 +3787,26 @@ def test_lightweight_table_helper_modules_defer_config_bound_table_imports():
             if isinstance(node, ast.ImportFrom) and node.module == "spatial_vtk.io.tables"
         ]
         assert not offenders, relative_path
+
+
+def test_metric_plan_helpers_defer_config_runtime_imports():
+    """In-memory metric plan helpers should import before config dependencies are installed."""
+
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    relative_path = "src/spatial_vtk/io/plans.py"
+    source = (repo_root / relative_path).read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    forbidden_modules = {
+        "spatial_vtk.config.metrics",
+        "spatial_vtk.config.runtime",
+        "spatial_vtk.io.tables",
+    }
+    offenders = [
+        node.module
+        for node in tree.body
+        if isinstance(node, ast.ImportFrom) and node.module in forbidden_modules
+    ]
+    assert not offenders, "\n".join(str(module) for module in offenders)
 
 
 def test_dashboard_metric_dataset_writes_use_shared_writer():
