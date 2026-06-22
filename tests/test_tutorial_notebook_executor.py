@@ -529,12 +529,19 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert ".to_csv(" in combined
     assert ".to_parquet(" in combined
     assert "subprocess.run(" in combined
+    assert "Use package workflow helpers from spatial_vtk instead of shelling out from notebooks." in combined
     assert "from spatial_vtk.metrics.plot." in combined
     assert "Path('../')" in combined
     assert "Path('..')" in combined
     assert "Path('../docs')" in combined
     assert "parent-directory Path(" in combined
     assert "forbidden implementation import pattern" in combined
+    assert "Import from the public spatial_vtk package namespace or the standard workflow result helpers." in combined
+    assert "Use standard workflow result objects or notebook_run_context helpers for configured outputs." in combined
+    assert "Use load_standard_*_workflow_outputs result loaders" in combined
+    assert "Use package table/workflow loaders so CSV/Parquet handling and bounded reads stay centralized." in combined
+    assert "Move reusable joins into package helpers when they are part of the tutorial workflow." in combined
+    assert "Use imported package workflow helpers; notebooks should not run svtk commands through shell cells." in combined
     assert "metrics" in combined
     assert "notebook" in combined
     assert "paths" in combined

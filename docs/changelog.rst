@@ -113,6 +113,9 @@ Changelog
   - Extended tutorial notebook CLI-regression coverage to reject
     ``get_ipython().system(...)`` shell calls in addition to direct subprocess
     and ``!svtk`` patterns.
+  - Made tutorial notebook source-contract diagnostics actionable by naming
+    the package workflow, result-object, table-loader, or figure-helper pattern
+    that should replace each forbidden shell, path, table, or DataFrame idiom.
 
 - **Workflow readiness and dashboard parsing** *(Fixed)*
 

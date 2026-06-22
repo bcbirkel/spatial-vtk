@@ -150,6 +150,42 @@ NOTEBOOK_CONTRACT_FORBIDDEN_SNIPPETS = (
     ".loc[",
     ".merge(",
 )
+NOTEBOOK_CONTRACT_SNIPPET_REMEDIATIONS = {
+    "import subprocess": "Use package workflow helpers from spatial_vtk instead of shelling out from notebooks.",
+    "from subprocess": "Use package workflow helpers from spatial_vtk instead of shelling out from notebooks.",
+    "subprocess.": "Use package workflow helpers from spatial_vtk instead of shelling out from notebooks.",
+    "subprocess.run(": "Use package workflow helpers from spatial_vtk instead of shelling out from notebooks.",
+    "os.system(": "Use package workflow helpers from spatial_vtk instead of shelling out from notebooks.",
+    "os.popen(": "Use package workflow helpers from spatial_vtk instead of shelling out from notebooks.",
+    "get_ipython().system(": "Use package workflow helpers from spatial_vtk instead of shelling out from notebooks.",
+    "run_or_submit_notebook_cli_command(": "Use imported package callables with run_notebook_step_if_needed.",
+    "write_notebook_cli_slurm_script(": "Use imported package callables with run_notebook_step_if_needed.",
+    "resolve_output_path(": "Use standard workflow result objects or notebook_run_context helpers for configured outputs.",
+    "load_output_table(": "Use load_standard_*_workflow_outputs result loaders and their bounded preview/status helpers.",
+    "write_output_table(": "Use the relevant workflow result method so configured output paths stay inside package code.",
+    "write_output_tables(": "Use the relevant workflow result method so configured output paths stay inside package code.",
+    "preview_output_table(": "Use standard workflow result preview/status helpers.",
+    "read_config_table(": "Use task-level package loaders or standard workflow result objects.",
+    "output_group_namespace": "Use standard workflow result loaders instead of exposing output groups in notebook cells.",
+    "output_group_status_frame": "Use standard workflow result status_frame methods.",
+    "step_outputs[": "Use standard workflow result attributes instead of dictionary-style path plumbing.",
+    "dashboard_paths[": "Use dashboard workflow/status helpers instead of notebook-local dashboard path dictionaries.",
+    ".bind(globals())": "Keep workflow outputs on result objects; do not inject path variables into notebook globals.",
+    "vars(step_outputs)": "Use result-object status_frame methods instead of expanding path dictionaries.",
+    "runs/outputs": "Resolve output paths through the active config and workflow helpers.",
+    "runs/spatial_vtk_config.yaml": "Load configs through the shared source-checkout bootstrap and notebook_run_context.",
+    "pd.read_": "Use package table/workflow loaders so CSV/Parquet handling and bounded reads stay centralized.",
+    ".to_csv(": "Use package workflow/table writers so output formats and atomic writes stay centralized.",
+    ".to_parquet(": "Use package workflow/table writers so output formats and atomic writes stay centralized.",
+    ".loc[": "Move reusable filtering into package helpers when it is part of the tutorial workflow.",
+    ".merge(": "Move reusable joins into package helpers when they are part of the tutorial workflow.",
+}
+NOTEBOOK_CONTRACT_SHELL_PATTERN_REMEDIATION = (
+    "Use imported package workflow helpers; notebooks should not run svtk commands through shell cells."
+)
+NOTEBOOK_CONTRACT_IMPORT_PATTERN_REMEDIATION = (
+    "Import from the public spatial_vtk package namespace or the standard workflow result helpers."
+)
 NOTEBOOK_CONTRACT_FORBIDDEN_METADATA_KEYS = frozenset(
     {
         "widgets",
@@ -525,13 +561,19 @@ def tutorial_notebook_contract_violations(notebooks: list[Path], *, repo_root: P
                     violations.append(f"{cell_label}: committed outputs should be empty")
             for token in NOTEBOOK_CONTRACT_FORBIDDEN_SNIPPETS:
                 if token in source:
-                    violations.append(f"{cell_label}: forbidden source snippet {token!r}")
+                    violations.append(_notebook_forbidden_snippet_message(cell_label, token))
             for pattern in NOTEBOOK_CONTRACT_FORBIDDEN_LINE_PATTERNS:
                 if pattern.search(source):
-                    violations.append(f"{cell_label}: forbidden shell/CLI workflow pattern {pattern.pattern!r}")
+                    violations.append(
+                        f"{cell_label}: forbidden shell/CLI workflow pattern {pattern.pattern!r}. "
+                        f"{NOTEBOOK_CONTRACT_SHELL_PATTERN_REMEDIATION}"
+                    )
             for pattern in NOTEBOOK_CONTRACT_FORBIDDEN_IMPORT_PATTERNS:
                 if pattern.search(source):
-                    violations.append(f"{cell_label}: forbidden implementation import pattern {pattern.pattern!r}")
+                    violations.append(
+                        f"{cell_label}: forbidden implementation import pattern {pattern.pattern!r}. "
+                        f"{NOTEBOOK_CONTRACT_IMPORT_PATTERN_REMEDIATION}"
+                    )
             for pattern in NOTEBOOK_CONTRACT_PRIVATE_PATH_PATTERNS:
                 match = pattern.search(source)
                 if match:
@@ -541,6 +583,16 @@ def tutorial_notebook_contract_violations(notebooks: list[Path], *, repo_root: P
                 violations.extend(_notebook_parent_path_violations(source, cell_label))
                 violations.extend(_notebook_package_callable_violations(source, cell_label))
     return violations
+
+
+def _notebook_forbidden_snippet_message(cell_label: str, token: str) -> str:
+    """Return an actionable source-contract diagnostic for a forbidden token."""
+
+    remediation = NOTEBOOK_CONTRACT_SNIPPET_REMEDIATIONS.get(token)
+    message = f"{cell_label}: forbidden source snippet {token!r}"
+    if remediation:
+        message = f"{message}. {remediation}"
+    return message
 
 
 def _notebook_markdown_section_violations(source: str, cell_label: str) -> list[str]:
