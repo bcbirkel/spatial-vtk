@@ -1646,6 +1646,9 @@ def test_step04_uses_spatial_workflow_instead_of_recomputing_tables() -> None:
     assert "spatial_map_result.status_frame()" in source
     assert "spatial_diagnostic_result.preview_frame()" in source
     assert "spatial_diagnostic_result.status_frame()" in source
+    assert "## Station Bias and Residual Grid Maps" in source
+    assert "Outputs: station-bias map figures, residual-grid map figures" in source
+    assert "## Residual Grid Maps" not in source
     assert "plot_station_bias_map(" not in source
     assert "plot_residual_grid(" not in source
     assert "plot_distance_correlation_by_metric(" not in source

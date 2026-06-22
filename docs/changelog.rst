@@ -15,6 +15,16 @@ Changelog
   - Added regression coverage for the active-Python command text in the
     validation checker.
 
+- **Step 4 map notebook flow** *(Fixed)*
+
+  - Combined the standard Step 4 station-bias and residual-grid map
+    explanation into the package-owned map helper section.
+  - Removed the orphan residual-grid heading that made the notebook look like
+    it skipped a required map cell even though ``write_map_figures(...)``
+    already writes both map families.
+  - Added notebook source-contract coverage so the Step 4 map section stays
+    aligned with the package helper.
+
 - **Metric figure selection audit** *(Changed)*
 
   - Added ``MetricFigureContext.metric_selection_status_frame()`` so large-run
