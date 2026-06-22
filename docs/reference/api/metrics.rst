@@ -404,7 +404,10 @@ factories used by the large-run figure suite:
    Render the standard large-run metric figure families from one context. These
    methods keep target-metric iteration, PSA period sheets, robust axis
    settings, station aggregation, and raw source-row sidecars in package code
-   instead of notebook-local loops.
+   instead of notebook-local loops. The package-owned notebook suite suppresses
+   per-file stdout and returns figure-family status rows for progress review;
+   scripts that instantiate ``MetricFigureContext`` directly can set
+   ``verbose=True`` for progress messages.
 
 For PSA, large-run figure helpers compare oscillator periods instead of
 waveform passbands. Station maps, model maps, residual grids, event maps,

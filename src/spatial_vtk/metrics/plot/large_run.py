@@ -154,6 +154,7 @@ class MetricFigureContext:
     sidecar_rows: int | None = None
     sidecar_dir: Path | None = None
     station_aggregation: str = "median"
+    verbose: bool = True
     metrics_for_figures: pd.DataFrame = field(default_factory=pd.DataFrame)
     loaded_columns: list[str] = field(default_factory=list)
     available_columns: list[str] = field(default_factory=list)
@@ -187,8 +188,9 @@ class MetricFigureContext:
         sidecar_rows: int | None = None,
         sidecar_dir: str | Path | None = None,
         station_aggregation: str = "median",
+        verbose: bool = True,
     ) -> "MetricFigureContext":
-        """Create a context from a metric table path and print readiness."""
+        """Create a context from a metric table path and report readiness."""
 
         path = Path(metrics_long_path).expanduser()
         output_dir = Path(figure_dir).expanduser()
@@ -210,12 +212,13 @@ class MetricFigureContext:
             sidecar_rows=None if sidecar_rows is None else int(sidecar_rows),
             sidecar_dir=None if sidecar_dir is None else Path(sidecar_dir).expanduser(),
             station_aggregation=str(station_aggregation or "median").lower(),
+            verbose=bool(verbose),
         )
         if not context.make_figures:
-            print("Skipping metric figures. Set SVTK_MAKE_METRIC_FIGURES=1 or SVTK_MAKE_FIGURES=1 to render them.")
+            context._progress("Skipping metric figures. Set SVTK_MAKE_METRIC_FIGURES=1 or SVTK_MAKE_FIGURES=1 to render them.")
             return context
         if not path.exists():
-            print(f"metrics_long.parquet is not ready yet: {path}")
+            context._progress(f"metrics_long.parquet is not ready yet: {path}")
             return context
         available_columns = _table_columns(path)
         columns = _metric_figure_columns(available_columns, value_col=context.value_col)
@@ -234,11 +237,13 @@ class MetricFigureContext:
         metrics = context._apply_load_filters(metrics)
         context.metrics_for_figures = metrics
         if context.value_col not in metrics.columns:
-            print(f"Cannot render metric figures: {context.value_col!r} is not present in metrics_long.")
+            context._progress(f"Cannot render metric figures: {context.value_col!r} is not present in metrics_long.")
             return context
         finite_value_rows = _finite_value_row_count(metrics, context.value_col)
         if finite_value_rows == 0:
-            print(f"Cannot render metric figures: no finite {context.value_col!r} values are present in selected metric rows.")
+            context._progress(
+                f"Cannot render metric figures: no finite {context.value_col!r} values are present in selected metric rows."
+            )
             return context
         context.ready = True
         limit_text = "no per-figure row limit" if context.sample_rows <= 0 else f"up to {context.sample_rows:,} raw row(s) per figure"
@@ -247,8 +252,8 @@ class MetricFigureContext:
             if context.available_columns
             else f"{len(context.loaded_columns)} column(s)"
         )
-        print(f"Rendering metric figures from {len(metrics):,} selected metric row(s) and {column_text} into {output_dir}; {limit_text}")
-        print(
+        context._progress(f"Rendering metric figures from {len(metrics):,} selected metric row(s) and {column_text} into {output_dir}; {limit_text}")
+        context._progress(
             f"value_col={context.value_col} "
             f"default_passband={context.default_passband} "
             f"default_components={context.default_components} "
@@ -258,8 +263,14 @@ class MetricFigureContext:
         if context.write_sidecars:
             sidecar_dir = context.sidecar_output_dir
             rows_text = "all plotted rows" if context.sidecar_rows is None or context.sidecar_rows <= 0 else f"up to {context.sidecar_rows:,} plotted row(s)"
-            print(f"Figure sidecars enabled: {sidecar_dir} ({rows_text}; source-row sidecars are written for aggregated figures)")
+            context._progress(f"Figure sidecars enabled: {sidecar_dir} ({rows_text}; source-row sidecars are written for aggregated figures)")
         return context
+
+    def _progress(self, message: str) -> None:
+        """Print one progress message when verbose output is enabled."""
+
+        if self.verbose:
+            print(message)
 
     @classmethod
     def from_frame(
@@ -1008,18 +1019,18 @@ class MetricFigureContext:
         showfig: bool = False,
         **kwargs: Any,
     ) -> Path | None:
-        """Write one figure or print a skip reason."""
+        """Write one figure and optionally report progress."""
 
         resolved_value_col = self.value_col if value_col is None else value_col
         plot_df = self.plot_rows(item["df"] if df is None else df)
         output = self.figure_dir / f"{self.figure_name(base, item, resolved_value_col)}.png"
         if output.exists() and not self.overwrite:
-            print(f"skip {output.name}: exists")
+            self._progress(f"skip {output.name}: exists")
             self.write_figure_sidecar(output, plot_df, source_df=source_df)
             return output
         missing = [column for column in required if column not in plot_df.columns]
         if missing:
-            print(f"skip {output.name}: missing columns {missing}")
+            self._progress(f"skip {output.name}: missing columns {missing}")
             return None
         if forward_value_col and resolved_value_col is not None and "value_col" not in kwargs:
             kwargs["value_col"] = resolved_value_col
@@ -1027,11 +1038,11 @@ class MetricFigureContext:
             func(plot_df, output_path=output, showfig=showfig, savefig=True, **kwargs)
             _close_matplotlib_figures("all")
             self.write_figure_sidecar(output, plot_df, source_df=source_df)
-            print(f"wrote {output}")
+            self._progress(f"wrote {output}")
             return output
         except Exception as exc:
             _close_matplotlib_figures("all")
-            print(f"skip {output.name}: {type(exc).__name__}: {exc}")
+            self._progress(f"skip {output.name}: {type(exc).__name__}: {exc}")
             return None
 
     def write_psa_period_sheet(
@@ -1066,7 +1077,7 @@ class MetricFigureContext:
             )
         output = self.figure_dir / f"{self.figure_name(base, item, resolved_value_col)}.png"
         if output.exists() and not self.overwrite:
-            print(f"skip {output.name}: exists")
+            self._progress(f"skip {output.name}: exists")
             sidecar_df, source_sidecar_df = self.psa_period_sheet_sidecar_rows(
                 item,
                 df_factory=df_factory,
@@ -1128,7 +1139,7 @@ class MetricFigureContext:
         if showfig:
             plt.show()
         plt.close(fig)
-        print(f"wrote {output}")
+        self._progress(f"wrote {output}")
         return output
 
     def write_residuals_vs_distance_plots(
@@ -1229,7 +1240,7 @@ class MetricFigureContext:
         if not self._can_render_metric_figures("vs30_scatter", resolved_value_col):
             return outputs
         if self.vs30_col is None:
-            print("Skipping Vs30 figures: no Vs30 column found.")
+            self._progress("Skipping Vs30 figures: no Vs30 column found.")
             return outputs
         for item in self.iter_metric_frames(
             passband=passband,
@@ -1638,7 +1649,7 @@ class MetricFigureContext:
         """
 
         if not self.ready:
-            print("Skipping standard metric diagnostics: metric figure context is not ready.")
+            self._progress("Skipping standard metric diagnostics: metric figure context is not ready.")
             return []
         resolved_value_col = self.value_col if value_col is None else value_col
         outputs: list[Path] = []
@@ -1848,7 +1859,7 @@ class MetricFigureContext:
         """
 
         if not self.ready:
-            print("Skipping score trend figures: metric figure context is not ready.")
+            self._progress("Skipping score trend figures: metric figure context is not ready.")
             return []
         candidates = tuple(score_columns or DEFAULT_SCORE_TREND_COLUMNS)
         available = [
@@ -1858,7 +1869,7 @@ class MetricFigureContext:
             and pd.to_numeric(self.metrics_for_figures[column], errors="coerce").notna().any()
         ]
         if not available:
-            print(f"Skipping score trend figures: no finite score column found from {list(candidates)}")
+            self._progress(f"Skipping score trend figures: no finite score column found from {list(candidates)}")
             return []
         outputs: list[Path] = []
         for item in self.iter_metric_frames(
@@ -1905,10 +1916,10 @@ class MetricFigureContext:
         """Return whether a metric figure family can be rendered."""
 
         if not self.ready:
-            print(f"Skipping {label}: metric figure context is not ready.")
+            self._progress(f"Skipping {label}: metric figure context is not ready.")
             return False
         if value_col is None or value_col not in self.metrics_for_figures.columns:
-            print(f"Skipping {label}: value column {value_col!r} is not present.")
+            self._progress(f"Skipping {label}: value column {value_col!r} is not present.")
             return False
         return True
 
@@ -2346,6 +2357,7 @@ def write_large_run_metric_figure_suite_from_notebook_settings(
         settings.figure_dir,
         value_col=resolved_value_col,
         overwrite=overwrite,
+        verbose=False,
         **settings.context_kwargs(include_station_aggregation=True),
     )
     rows: list[dict[str, Any]] = []

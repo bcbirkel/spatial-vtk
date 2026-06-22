@@ -1450,6 +1450,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "``write_station_metric_map_from_notebook_settings``" in text
     assert "``write_standard_metric_diagnostic_figures``" in text
     assert "``write_large_run_metric_figure_suite_from_notebook_settings``" in text
+    assert "The package-owned notebook suite suppresses\n   per-file stdout" in text
     assert "exact ``figure_paths`` lists" in text
     assert "do not parse preview strings" in text
     assert "``status_reason`` distinguishes written figures from disabled optional\n   families" in text
@@ -3813,11 +3814,14 @@ def test_metric_plot_public_entry_point_exposes_large_run_suite():
     assert callable(metric_plot.StandardMetricDiagnosticFigureResult)
     assert callable(metric_plot.write_large_run_metric_figure_suite_from_notebook_settings)
     assert callable(metric_plot.write_standard_metric_diagnostic_figures)
+    context_signature = inspect.signature(metric_plot.MetricFigureContext.from_metrics_long)
+    assert context_signature.parameters["verbose"].default is True
     assert (
         metric_plot.write_large_run_metric_figure_suite_from_notebook_settings
         is metric_plot.write_large_run_metric_figure_suite_from_notebook_settings
     )
     suite_source = inspect.getsource(metric_plot.write_large_run_metric_figure_suite_from_notebook_settings)
+    assert "verbose=False" in suite_source
     assert "PSA passband heatmaps are intentionally skipped" in suite_source
     assert "skip heatmap for PSA" not in suite_source
 
