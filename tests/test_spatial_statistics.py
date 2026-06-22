@@ -3093,10 +3093,20 @@ def test_write_large_run_geojson_region_figures_from_notebook_settings_delegates
         calls["outputs"] = outputs_arg
         calls["ingest_outputs"] = ingest_outputs_arg
         calls["kwargs"] = kwargs
+        comparison_table = pd.DataFrame(
+            [{"comparison": "Region - LA Basin", "effect": "+0.1", "ci95": "-0.1 to +0.2", "p": "0.500", "n": "2/2"}]
+        )
         return large_run_plot.RegionFigureResult(
             geojson_overview_path=tmp_path / "figures" / "regions.png",
             corridor_map_path=None,
-            boxplot_result=large_run_plot.RegionBoxplotResult(None, None, 0, "wrote", "ok"),
+            boxplot_result=large_run_plot.RegionBoxplotResult(
+                None,
+                None,
+                0,
+                "wrote",
+                "ok",
+                comparison_table=comparison_table,
+            ),
             geojson_status="wrote",
             corridor_status="missing_input",
             messages=("geojson_overview: ok", "corridor_map: missing", "region_boxplot: ok"),
@@ -3118,6 +3128,7 @@ def test_write_large_run_geojson_region_figures_from_notebook_settings_delegates
     assert {"artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
     assert "geojson_overview" in status.index
     assert "region_boxplot" in status.index
+    assert result.comparison_frame()["comparison"].tolist() == ["Region - LA Basin"]
     assert calls["gate_paths"] == [stations_path, events_path, geojson_path]
     assert calls["outputs"] is outputs
     assert calls["ingest_outputs"] is ingest_outputs
@@ -3518,6 +3529,13 @@ def test_spatial_figure_suite_result_displays_context_status_frames() -> None:
     """Spatial figure-suite results should own context status display plumbing."""
 
     class FakeContext:
+        def __init__(self) -> None:
+            self.tables = {
+                "morans_i": pd.DataFrame([{"metric": "PGA", "morans_i": 0.2}]),
+                "distance_bin_correlations": pd.DataFrame([{"metric": "PGA", "distance_bin": "0-25"}]),
+                "geology_contrasts": pd.DataFrame([{"metric": "PGA", "bootstrap_p": 0.04}]),
+            }
+
         def status_frame(self) -> pd.DataFrame:
             return pd.DataFrame([{"frame": "status"}])
 
@@ -3527,12 +3545,17 @@ def test_spatial_figure_suite_result_displays_context_status_frames() -> None:
         def spectral_metric_contract_status(self) -> pd.DataFrame:
             return pd.DataFrame([{"frame": "spectral"}])
 
+        def table(self, key: str) -> pd.DataFrame | None:
+            return self.tables.get(key)
+
     result = SpatialFigureSuiteResult(context=FakeContext(), rows=())
     displayed: list[pd.DataFrame] = []
     frames = result.display_context_status(display=displayed.append)
+    preview = result.diagnostic_preview_frame(nrows=1)
 
     assert list(frames) == ["context_status", "dimension_summary", "spectral_metric_contract"]
     assert [frame["frame"].iloc[0] for frame in displayed] == ["status", "dimension", "spectral"]
+    assert preview["artifact"].tolist() == ["morans_i", "distance_bin_correlations", "geology_contrasts"]
 
 
 def test_psa_period_sheet_existing_file_writes_panel_source_sidecars(tmp_path: Path) -> None:

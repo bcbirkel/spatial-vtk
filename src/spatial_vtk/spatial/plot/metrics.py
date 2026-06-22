@@ -483,6 +483,96 @@ def boxplot(
     )
 
 
+def build_categorical_comparison_table(
+    data: pd.DataFrame,
+    *,
+    dep: str | Sequence[str],
+    indep: str,
+    value_col: str,
+    compare_to: str | Sequence[str] | None,
+    passband: str | Sequence[str] | None = None,
+    model: str | Sequence[str] | None = None,
+    component: str | Sequence[str] | None = None,
+    station: str | Sequence[str] | None = None,
+    event_id: str | Sequence[str] | None = None,
+    filters: dict[str, object] | None = None,
+    spatial_selection: FigureSpatialSelection | dict[str, object] | None = None,
+    station_region_col: str | None = None,
+    station_regions: Sequence[str] | str | None = None,
+    station_region_relation: str = "inside",
+    event_region_col: str | None = None,
+    event_regions: Sequence[str] | str | None = None,
+    event_region_relation: str = "inside",
+    station_bounds: tuple[float, float, float, float] | None = None,
+    station_bounds_relation: str = "inside",
+    event_bounds: tuple[float, float, float, float] | None = None,
+    event_bounds_relation: str = "inside",
+    station_corridor_col: str | None = None,
+    station_corridors: Sequence[str] | str | None = None,
+    station_corridor_relation: str = "inside",
+    event_corridor_col: str | None = None,
+    event_corridors: Sequence[str] | str | None = None,
+    event_corridor_relation: str = "inside",
+    statistic: str = "median",
+    n_bootstrap: int = 1000,
+    random_seed: int = 42,
+) -> pd.DataFrame:
+    """Return the baseline-comparison table used by categorical boxplots.
+
+    The returned rows use the same filtering, long-form normalization,
+    bootstrap confidence intervals, and p-value calculation as
+    :func:`boxplot(..., table=True)`. This lets notebooks display the exact
+    statistical table drawn under a figure without reparsing figure metadata or
+    loading sidecar CSV files.
+    """
+
+    columns = ["comparison", "effect", "ci95", "p", "n"]
+    if compare_to is None:
+        return pd.DataFrame(columns=columns)
+    plot_df, category_col, value_column, _dep_labels, _resolved_value_col, _subset_label = _categorical_metric_plot_data(
+        data,
+        dep=dep,
+        indep=indep,
+        value_col=value_col,
+        passband=passband,
+        model=model,
+        component=component,
+        station=station,
+        event_id=event_id,
+        filters=filters,
+        spatial_selection=spatial_selection,
+        station_region_col=station_region_col,
+        station_regions=station_regions,
+        station_region_relation=station_region_relation,
+        event_region_col=event_region_col,
+        event_regions=event_regions,
+        event_region_relation=event_region_relation,
+        station_bounds=station_bounds,
+        station_bounds_relation=station_bounds_relation,
+        event_bounds=event_bounds,
+        event_bounds_relation=event_bounds_relation,
+        station_corridor_col=station_corridor_col,
+        station_corridors=station_corridors,
+        station_corridor_relation=station_corridor_relation,
+        event_corridor_col=event_corridor_col,
+        event_corridors=event_corridors,
+        event_corridor_relation=event_corridor_relation,
+    )
+    if plot_df.empty:
+        return pd.DataFrame(columns=columns)
+    rows = _categorical_comparison_rows(
+        plot_df,
+        category_col=category_col,
+        color_col="dep",
+        value_col=value_column,
+        compare_to=compare_to,
+        statistic=statistic,
+        n_bootstrap=n_bootstrap,
+        random_seed=random_seed,
+    )
+    return pd.DataFrame(rows, columns=columns)
+
+
 def heatmap(
     data: pd.DataFrame,
     output_path: str | Path | None = None,
@@ -2648,9 +2738,13 @@ def _format_pvalue(value: float) -> str:
 
 
 __all__ = [
+    "boxplot",
+    "build_categorical_comparison_table",
+    "heatmap",
     "plot_azimuthal_residuals",
     "plot_geology_contrast",
     "plot_path_bin_summary",
     "plot_polar_residuals",
     "plot_residual_correlation",
+    "scatterplot",
 ]

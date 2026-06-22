@@ -4,6 +4,19 @@ Changelog
 2026-06-22
 ----------
 
+- **Large-run figure table parity** *(Changed)*
+
+  - Added a public ``build_categorical_comparison_table()`` helper that returns
+    the same baseline comparison rows drawn under categorical boxplots.
+  - Added comparison-table accessors to large-run region figure results so
+    Step 5 and Step 6 notebooks can display the statistical table without
+    rebuilding it locally.
+  - Added compact diagnostic previews to the large-run Step 4 spatial figure
+    suite for Moran's I, distance-correlation, PCA, clustering, and geology
+    tables used by the figures.
+  - Updated large-run plotting notebooks to display the package-owned
+    comparison and diagnostic tables alongside figure status frames.
+
 - **Spatial figure sidecar provenance** *(Changed)*
 
   - Labeled spatial figure sidecars with explicit plot/source table roles so

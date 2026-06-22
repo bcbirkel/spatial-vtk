@@ -413,6 +413,10 @@ Public plotting helpers and notebook workflow loaders:
      - Plot clustering diagnostics and feature summaries.
    * - ``boxplot``, ``scatterplot``, and ``heatmap``
      - Plot custom spatial metric distributions from prepared tables.
+   * - ``build_categorical_comparison_table``
+     - Return the same baseline comparison table used by
+       ``boxplot(..., table=True)`` so notebooks can display the statistical
+       rows under a figure without rebuilding them locally.
    * - ``plot_geology_contrast`` and ``plot_path_bin_summary``
      - Plot geologic-class and path-bin diagnostic tables.
    * - ``plot_pca_explained_variance`` and ``plot_pca_feature_loadings``
@@ -586,6 +590,8 @@ columns used by existing notebooks.
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_outputs
 
 .. autofunction:: spatial_vtk.spatial.plot.write_large_run_region_boxplot_from_notebook_settings
+
+.. autofunction:: spatial_vtk.spatial.plot.build_categorical_comparison_table
 
 Maps
 ----

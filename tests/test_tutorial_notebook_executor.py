@@ -1875,6 +1875,7 @@ def test_large_run_step04_uses_spatial_context_row_factories() -> None:
     assert "spatial_outputs.write_figure_suite(" in source
     assert "write_large_run_spatial_figure_suite_from_notebook_settings(" not in source
     assert "spatial_figure_suite.status_frame()" in source
+    assert "spatial_figure_suite.diagnostic_preview_frame(nrows=PREVIEW_ROWS)" in source
     assert "spatial_figures.write_station_metric_maps(" not in source
     assert "spatial_figures.write_residual_grid_maps(" not in source
     assert "spatial_figures.write_metric_by_model_maps(" not in source
@@ -1981,6 +1982,7 @@ def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
     assert "display_output_table_previews(" not in source
     assert "geojson_outputs.write_region_figures(" in source
     assert "    REGION_FIGURE_SETTINGS,\n" in source
+    assert "region_figure_result.comparison_frame()" in source
     assert "geojson_path=geojson_path" not in source
     assert "ingest_outputs," not in source
     assert "write_large_run_geojson_region_figures_from_notebook_settings(" not in source
@@ -2776,6 +2778,7 @@ def test_large_run_step06_uses_grouped_table_loading() -> None:
     assert "plotting_outputs.display_first_existing_table_preview(" not in source
     assert "plotting_outputs.preview_first_existing_table(" not in source
     assert "plotting_outputs.write_region_boxplot(" in source
+    assert "display(region_result.comparison_frame())" in source
     assert "display(region_result.status_frame())" in source
     assert "print(region_result.message)" not in source
     assert "write_large_run_region_boxplot_from_notebook_settings(" not in source

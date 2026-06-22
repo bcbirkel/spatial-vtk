@@ -65,6 +65,7 @@ _EXPORT_MODULES = {
     "write_large_run_spatial_summary_figures_from_outputs": "spatial_vtk.spatial.plot.large_run",
     "write_large_run_spatial_figure_suite_from_notebook_settings": "spatial_vtk.spatial.plot.large_run",
     "boxplot": "spatial_vtk.spatial.plot.metrics",
+    "build_categorical_comparison_table": "spatial_vtk.spatial.plot.metrics",
     "heatmap": "spatial_vtk.spatial.plot.metrics",
     "plot_azimuthal_residuals": "spatial_vtk.spatial.plot.metrics",
     "plot_geology_contrast": "spatial_vtk.spatial.plot.metrics",

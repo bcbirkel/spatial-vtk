@@ -193,6 +193,7 @@ def test_public_imports():
         StandardGeoJSONWorkflowOutputStatusResult,
         StandardSpatialDiagnosticFigureResult,
         StandardSpatialMapFigureResult,
+        build_categorical_comparison_table,
         prepare_spatial_figure_context_from_notebook_settings,
         write_standard_additional_plotting_figures,
         write_standard_geojson_corridor_figures,
@@ -212,6 +213,7 @@ def test_public_imports():
     assert callable(StandardAdditionalPlottingFigureResult)
     assert callable(StandardAdditionalPlottingInputResult)
     assert callable(StandardAdditionalPlottingOutputStatusResult)
+    assert callable(build_categorical_comparison_table)
     assert callable(load_standard_additional_plotting_output_status)
     assert callable(load_standard_additional_plotting_inputs)
     assert callable(write_standard_additional_plotting_figures)
@@ -3524,6 +3526,7 @@ def test_spatial_plot_public_entry_point_is_lazy():
     assert "write_large_run_region_boxplot_from_notebook_settings" in spatial_plot.__all__
     assert "write_large_run_spatial_figure_suite_from_notebook_settings" in spatial_plot.__all__
     assert "write_large_run_spatial_summary_figures_from_outputs" in spatial_plot.__all__
+    assert "build_categorical_comparison_table" in spatial_plot.__all__
     assert "write_standard_spatial_diagnostic_figures" in spatial_plot.__all__
     assert "write_standard_spatial_map_figures" in spatial_plot.__all__
     assert callable(spatial_plot.plot_correlogram)
@@ -3538,6 +3541,7 @@ def test_spatial_plot_public_entry_point_is_lazy():
     assert callable(spatial_plot.write_large_run_region_boxplot_from_outputs)
     assert callable(spatial_plot.write_large_run_region_boxplot_from_notebook_settings)
     assert callable(spatial_plot.write_large_run_spatial_figure_suite_from_notebook_settings)
+    assert callable(spatial_plot.build_categorical_comparison_table)
     assert callable(spatial_plot.write_large_run_spatial_summary_figures_from_outputs)
 
 

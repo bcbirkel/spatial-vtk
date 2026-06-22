@@ -21,7 +21,7 @@ from spatial_vtk.metrics.plot.large_run import (
     first_existing,
 )
 from spatial_vtk.spatial.calculate import add_geojson_metadata_to_metrics
-from spatial_vtk.spatial.plot.metrics import _categorical_metric_plot_data, boxplot
+from spatial_vtk.spatial.plot.metrics import _categorical_metric_plot_data, boxplot, build_categorical_comparison_table
 from spatial_vtk.visualize.figure_sidecars import normalize_figure_status_rows, write_figure_row_sidecar
 
 
@@ -1394,6 +1394,7 @@ class RegionBoxplotResult:
     rows: int
     status: str
     message: str
+    comparison_table: pd.DataFrame = field(default_factory=pd.DataFrame)
 
     def status_frame(self) -> pd.DataFrame:
         """Return a compact notebook status table for the region boxplot."""
@@ -1432,6 +1433,11 @@ class RegionBoxplotResult:
                 "message",
             ]
         )
+
+    def comparison_frame(self) -> pd.DataFrame:
+        """Return the statistical comparison table drawn below the boxplot."""
+
+        return self.comparison_table.copy()
 
 
 @dataclass(frozen=True)
@@ -1513,6 +1519,11 @@ class RegionFigureResult:
             if message.startswith(prefix):
                 return message[len(prefix):]
         return None
+
+    def comparison_frame(self) -> pd.DataFrame:
+        """Return the region-boxplot statistical comparison table."""
+
+        return self.boxplot_result.comparison_frame()
 
 
 @dataclass(frozen=True)
@@ -2294,6 +2305,29 @@ class SpatialFigureSuiteResult:
                 "message",
             ]
         )
+
+    def diagnostic_preview_frame(self, nrows: int = 5) -> pd.DataFrame:
+        """Return bounded previews of statistical tables used by spatial figures."""
+
+        frames: list[pd.DataFrame] = []
+        for artifact, key in (
+            ("morans_i", "morans_i"),
+            ("distance_bin_correlations", "distance_bin_correlations"),
+            ("pca_explained_variance", "pca_explained_variance"),
+            ("pca_feature_loadings", "pca_feature_loadings"),
+            ("cluster_solution_scores", "cluster_solution_scores"),
+            ("cluster_feature_summary", "cluster_feature_summary"),
+            ("geology_contrasts", "geology_contrasts"),
+        ):
+            table = self.context.table(key)
+            if table is None or table.empty:
+                continue
+            preview = table.head(max(int(nrows), 0)).copy()
+            preview.insert(0, "artifact", artifact)
+            frames.append(preview)
+        if not frames:
+            return pd.DataFrame(columns=["artifact"])
+        return pd.concat(frames, ignore_index=True, sort=False)
 
 
 def prepare_spatial_figure_context(**kwargs: Any) -> SpatialFigureContext:
@@ -4112,6 +4146,15 @@ def write_large_run_region_boxplot(
             "empty_region_labels",
             "skip region boxplot: no rows have station-region labels",
         )
+    comparison_table = _region_boxplot_comparison_table(
+        plot_rows,
+        metric=metric,
+        passband=passband,
+        component=component,
+        model=model,
+        value_col=value_col,
+        compare_to=compare_to,
+    )
 
     output = output_dir / _region_boxplot_name(
         output_prefix,
@@ -4139,7 +4182,7 @@ def write_large_run_region_boxplot(
         message = f"skip {output.name}: exists"
         if sidecar_path is not None:
             message += f"; wrote {sidecar_path}"
-        return RegionBoxplotResult(output, sidecar_path, len(plot_rows), "exists", message)
+        return RegionBoxplotResult(output, sidecar_path, len(plot_rows), "exists", message, comparison_table)
 
     try:
         import matplotlib.pyplot as plt
@@ -4190,7 +4233,7 @@ def write_large_run_region_boxplot(
     message = f"wrote {output}"
     if sidecar_path is not None:
         message += f" and {sidecar_path}"
-    return RegionBoxplotResult(output, sidecar_path, len(plot_rows), "wrote", message)
+    return RegionBoxplotResult(output, sidecar_path, len(plot_rows), "wrote", message, comparison_table)
 
 
 def write_large_run_region_boxplot_from_outputs(
@@ -4579,6 +4622,33 @@ def _write_region_boxplot_sidecar(
         },
     )
     return None if result is None else result.sidecar_path
+
+
+def _region_boxplot_comparison_table(
+    data: pd.DataFrame,
+    *,
+    metric: str,
+    passband: str | Sequence[str],
+    component: str | Sequence[str] | None,
+    model: str | Sequence[str] | None,
+    value_col: str,
+    compare_to: str | Sequence[str] | None,
+) -> pd.DataFrame:
+    """Return the statistical comparison table for one large-run region boxplot."""
+
+    try:
+        return build_categorical_comparison_table(
+            data,
+            dep=metric,
+            indep="station_region",
+            value_col=value_col,
+            passband=passband,
+            model=model,
+            component=component,
+            compare_to=compare_to,
+        )
+    except Exception:
+        return pd.DataFrame(columns=["comparison", "effect", "ci95", "p", "n"])
 
 
 def _label_for_slug(value: object) -> str | None:
