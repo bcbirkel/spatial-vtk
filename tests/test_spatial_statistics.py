@@ -114,6 +114,7 @@ from spatial_vtk.spatial.plot.large_run import (
     load_standard_additional_plotting_inputs,
     load_standard_geojson_plotting_inputs,
 )
+from spatial_vtk.spatial.map import plot_metric_map_by_model, plot_station_metric_map_by_period
 from spatial_vtk.spatial.plot.metrics import plot_geology_contrast
 from spatial_vtk.spatial.plot.pca import plot_pca_explained_variance, plot_pca_feature_loadings
 from spatial_vtk.visualize.figure_context import value_color_settings
@@ -153,6 +154,63 @@ def _toy_metrics_table() -> pd.DataFrame:
                     }
                 )
     return pd.DataFrame(records)
+
+
+def test_psa_period_and_model_maps_reserve_colorbar_column(tmp_path: Path) -> None:
+    """PSA/map sheets should not overlay the shared colorbar on a map panel."""
+
+    import matplotlib.pyplot as plt
+
+    rows = []
+    periods = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0]
+    for period_index, period in enumerate(periods):
+        for station_index in range(4):
+            rows.append(
+                {
+                    "station": f"STA{station_index}",
+                    "metric": "PSA",
+                    "period_s": period,
+                    "model": "m1" if station_index % 2 == 0 else "m2",
+                    "sta_lon": -118.4 + 0.12 * station_index,
+                    "sta_lat": 33.8 + 0.05 * station_index,
+                    "log2_residual": (period_index - 3) * 0.2 + station_index * 0.05,
+                }
+            )
+    frame = pd.DataFrame(rows)
+
+    period_output = tmp_path / "psa_period_map.png"
+    period_fig = plot_station_metric_map_by_period(
+        frame,
+        period_output,
+        value_col="log2_residual",
+        add_basemap=False,
+        showfig=False,
+        savefig=True,
+    )
+    assert period_output.exists()
+    period_axes = [ax for ax in period_fig.axes if ax.get_visible() and ax.has_data()]
+    period_colorbar = period_fig.axes[-1].get_position()
+    assert len(period_axes) == len(periods)
+    assert all(period_colorbar.x0 > ax.get_position().x1 for ax in period_axes[:3])
+    assert "PSA oscillator periods" in period_fig._suptitle.get_text()
+    plt.close(period_fig)
+
+    model_output = tmp_path / "metric_by_model_map.png"
+    model_fig = plot_metric_map_by_model(
+        frame,
+        model_output,
+        value_col="log2_residual",
+        add_basemap=False,
+        showfig=False,
+        savefig=True,
+    )
+    assert model_output.exists()
+    model_axes = [ax for ax in model_fig.axes if ax.get_visible() and ax.has_data()]
+    model_colorbar = model_fig.axes[-1].get_position()
+    assert len(model_axes) == 2
+    assert all(model_colorbar.x0 > ax.get_position().x1 for ax in model_axes)
+    assert "PSA" in model_fig._suptitle.get_text()
+    plt.close(model_fig)
 
 
 def test_spatial_workflow_failure_frame_formats_result_failures() -> None:

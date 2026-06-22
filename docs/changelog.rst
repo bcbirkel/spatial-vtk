@@ -4,6 +4,17 @@ Changelog
 2026-06-22
 ----------
 
+- **PSA map sheet layout** *(Fixed)*
+
+  - Reworked PSA period station maps to reserve a dedicated GridSpec column for
+    the shared colorbar instead of placing it with fixed figure coordinates.
+  - Reworked metric-by-model maps to use the same explicit colorbar-column
+    layout so model facets and colorbars cannot overlap.
+  - Wrapped long metric/context subtitles before positioning map panels, which
+    keeps PSA oscillator-period summaries readable without covering the maps.
+  - Added direct regression coverage for multi-period PSA maps and model-facet
+    maps so figure layout is tested at the plotting-function level.
+
 - **Notebook config resolution cleanup** *(Changed)*
 
   - Updated standard tutorial notebooks to let ``notebook_run_context()``

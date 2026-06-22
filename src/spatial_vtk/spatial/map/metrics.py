@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 import math
+import textwrap
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -118,8 +119,34 @@ def plot_station_metric_map_by_period(
 
     ncols = min(3, max(1, len(periods)))
     nrows = int(math.ceil(len(periods) / ncols))
-    fig, axes = plt.subplots(nrows, ncols, figsize=(5.4 * ncols + 1.4, 4.2 * nrows + 1.2), dpi=180, squeeze=False)
-    axes_flat = axes.ravel()
+    fig = plt.figure(figsize=(5.25 * ncols + 1.15, 4.05 * nrows + 1.35), dpi=180)
+    title_text = _title_with_value(title, value_col, plot_df)
+    context = figure_context_text(
+        plot_df,
+        value_col=value_col,
+        max_values=3,
+        include_value=True,
+        include_counts=True,
+        include_metric=True,
+        include_model=True,
+        include_period=False,
+        include_component=True,
+        extra=[_psa_periods_summary(periods), subset_label] if subset_label else [_psa_periods_summary(periods)],
+    )
+    top = _wrapped_suptitle(fig, title_text, context, fontsize=10)
+    grid = fig.add_gridspec(
+        nrows,
+        ncols + 1,
+        width_ratios=[1.0] * ncols + [0.055],
+        left=0.055,
+        right=0.965,
+        bottom=0.075,
+        top=top,
+        wspace=0.24,
+        hspace=0.45,
+    )
+    axes_flat = [fig.add_subplot(grid[row, col]) for row in range(nrows) for col in range(ncols)]
+    cbar_ax = fig.add_subplot(grid[:, -1])
     values_all = pd.to_numeric(plot_df[value_col], errors="coerce")
     cmap, vmin, vmax = _color_settings(values_all.to_numpy(dtype=float), value_col, plot_df)
     basemap_options = dict(basemap_kwargs or {})
@@ -148,23 +175,9 @@ def plot_station_metric_map_by_period(
     for ax in axes_flat[len(periods) :]:
         ax.set_axis_off()
     if scatter is not None:
-        cbar_ax = fig.add_axes([0.925, 0.18, 0.016, 0.58])
         fig.colorbar(scatter, cax=cbar_ax, label=value_column_display_name(value_col))
-    title_text = _title_with_value(title, value_col, plot_df)
-    context = figure_context_text(
-        plot_df,
-        value_col=value_col,
-        max_values=3,
-        include_value=True,
-        include_counts=True,
-        include_metric=True,
-        include_model=True,
-        include_period=False,
-        include_component=True,
-        extra=[_psa_periods_summary(periods), subset_label] if subset_label else [_psa_periods_summary(periods)],
-    )
-    fig.suptitle(f"{title_text}\n{context}" if context else title_text, y=0.985, fontsize=10)
-    fig.subplots_adjust(left=0.055, right=0.89, bottom=0.07, top=0.80, wspace=0.24, hspace=0.46)
+    else:
+        cbar_ax.set_axis_off()
     return finish_figure_with_sidecar(
         fig,
         output_path,
@@ -293,8 +306,34 @@ def plot_metric_map_by_model(
     plot_df, subset_label = apply_figure_spatial_selection(df, spatial_selection, **spatial_kwargs)
     _require(plot_df, [model_col, value_col, lon_col, lat_col])
     models = list(plot_df[model_col].dropna().astype(str).unique())[: int(max_models)]
-    fig, axes = plt.subplots(1, max(len(models), 1), figsize=(5.8 * max(len(models), 1), 4.6), dpi=180, squeeze=False)
-    axes_flat = axes.ravel()
+    panel_count = max(len(models), 1)
+    fig = plt.figure(figsize=(5.45 * panel_count + 1.15, 4.9), dpi=180)
+    title_text = _title_with_value(title, value_col, plot_df)
+    context = figure_context_text(
+        plot_df,
+        value_col=value_col,
+        max_values=3,
+        include_value=True,
+        include_counts=False,
+        include_model=False,
+        include_metric=True,
+        include_period=True,
+        include_component=True,
+        extra=[subset_label] if subset_label else None,
+    )
+    top = _wrapped_suptitle(fig, title_text, context, fontsize=11)
+    grid = fig.add_gridspec(
+        1,
+        panel_count + 1,
+        width_ratios=[1.0] * panel_count + [0.055],
+        left=0.055,
+        right=0.965,
+        bottom=0.13,
+        top=top,
+        wspace=0.24,
+    )
+    axes_flat = [fig.add_subplot(grid[0, index]) for index in range(panel_count)]
+    cbar_ax = fig.add_subplot(grid[0, -1])
     values_all = pd.to_numeric(plot_df[value_col], errors="coerce")
     cmap, vmin, vmax = _color_settings(values_all.to_numpy(dtype=float), value_col, plot_df)
     for ax, model in zip(axes_flat, models or [""]):
@@ -315,23 +354,7 @@ def plot_metric_map_by_model(
             include_period=False,
             include_component=False,
         )
-    fig.subplots_adjust(left=0.055, right=0.87, bottom=0.13, top=0.68, wspace=0.22)
-    cbar_ax = fig.add_axes([0.91, 0.18, 0.016, 0.44])
     fig.colorbar(scatter, cax=cbar_ax, label=value_column_display_name(value_col))
-    title_text = _title_with_value(title, value_col, plot_df)
-    context = figure_context_text(
-        plot_df,
-        value_col=value_col,
-        max_values=3,
-        include_value=True,
-        include_counts=False,
-        include_model=False,
-        include_metric=True,
-        include_period=True,
-        include_component=True,
-        extra=[subset_label] if subset_label else None,
-    )
-    fig.suptitle(f"{title_text}\n{context}" if context else title_text, y=0.975, fontsize=11)
     return finish_figure_with_sidecar(
         fig,
         output_path,
@@ -850,6 +873,20 @@ def _title_with_value(title: str, value_col: str, df: pd.DataFrame | None = None
     if suffix and suffix.lower() not in title_text.lower():
         return f"{title_text} - {suffix}"
     return title_text
+
+
+def _wrapped_suptitle(fig: plt.Figure, title: str, context: str | None, *, fontsize: float) -> float:
+    """Set a wrapped suptitle and return a safe subplot top margin."""
+
+    lines = [str(title).strip()]
+    context_text = str(context or "").strip()
+    if context_text:
+        for chunk in context_text.splitlines():
+            wrapped = textwrap.wrap(chunk, width=125, break_long_words=False, break_on_hyphens=False)
+            lines.extend(wrapped or [chunk])
+    title_lines = [line for line in lines if line]
+    fig.suptitle("\n".join(title_lines), y=0.985, fontsize=fontsize)
+    return max(0.62, 0.90 - 0.035 * max(len(title_lines) - 1, 0))
 
 
 def _single_metric_label(df: pd.DataFrame | None) -> str:
