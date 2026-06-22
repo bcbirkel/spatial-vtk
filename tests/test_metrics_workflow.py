@@ -1455,6 +1455,93 @@ def test_metric_figure_suite_result_displays_context_status_frames() -> None:
     assert list(ready_frames) == ["context_status", "spectral_metric_contract", "dimension_summary"]
 
 
+def test_metric_figure_suite_status_summarizes_sidecar_provenance(tmp_path) -> None:
+    """Suite status should report sidecar coverage without reading large CSVs."""
+
+    figure_dir = tmp_path / "figures"
+    sidecar_dir = tmp_path / "sidecars"
+    figure_dir.mkdir()
+    sidecar_dir.mkdir()
+    figure_a = figure_dir / "station_metric_map__pga.png"
+    figure_b = figure_dir / "station_metric_map__pgv.png"
+    figure_a.write_text("png-a", encoding="utf-8")
+    figure_b.write_text("png-b", encoding="utf-8")
+    (sidecar_dir / "station_metric_map__pga.csv").write_text("too,large,to,read\n", encoding="utf-8")
+    (sidecar_dir / "station_metric_map__pgv.csv").write_text("too,large,to,read\n", encoding="utf-8")
+    (sidecar_dir / "station_metric_map__pga.source.csv").write_text("too,large,to,read\n", encoding="utf-8")
+    (sidecar_dir / "station_metric_map__pga.json").write_text(
+        json.dumps(
+            {
+                "figure": str(figure_a),
+                "sidecar": str(sidecar_dir / "station_metric_map__pga.csv"),
+                "source_sidecar": str(sidecar_dir / "station_metric_map__pga.source.csv"),
+                "plot_row_count": 10,
+                "written_row_count": 5,
+                "plot_sidecar_exact": False,
+                "source_row_count": 100,
+                "source_written_row_count": 25,
+                "source_sidecar_exact": False,
+                "sampled": True,
+                "source_sampled": True,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (sidecar_dir / "station_metric_map__pgv.json").write_text(
+        json.dumps(
+            {
+                "figure": str(figure_b),
+                "sidecar": str(sidecar_dir / "station_metric_map__pgv.csv"),
+                "plot_row_count": 20,
+                "written_row_count": 20,
+                "plot_sidecar_exact": True,
+                "source_row_count": 200,
+                "source_written_row_count": 200,
+                "source_sidecar_exact": True,
+                "sampled": False,
+                "source_sampled": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    class Context:
+        write_sidecars = True
+        sidecar_output_dir = sidecar_dir
+
+    result = MetricFigureSuiteResult(
+        context=Context(),
+        rows=(
+            {
+                "artifact": "station_metric_maps",
+                "status": "written",
+                "figure_count": 2,
+                "existing_figure_count": 2,
+                "figure_paths": [str(figure_a), str(figure_b)],
+                "first_figure_path": str(figure_a),
+                "figure_paths_preview": f"{figure_a}, {figure_b}",
+                "message": "",
+            },
+        ),
+    )
+
+    row = result.status_frame().set_index("artifact").loc["station_metric_maps"]
+    assert row["sidecar_dir"] == str(sidecar_dir)
+    assert row["sidecar_metadata_count"] == 2
+    assert row["sidecar_count"] == 2
+    assert row["sidecar_missing_count"] == 0
+    assert row["source_sidecar_count"] == 1
+    assert row["source_sidecar_missing_count"] == 1
+    assert row["plot_row_count_total"] == 30
+    assert row["written_row_count_total"] == 25
+    assert bool(row["plot_sidecar_all_exact"]) is False
+    assert row["source_row_count_total"] == 300
+    assert row["source_written_row_count_total"] == 225
+    assert bool(row["source_sidecar_all_exact"]) is False
+    assert row["sidecar_sampled_count"] == 1
+    assert row["source_sidecar_sampled_count"] == 1
+
+
 def test_standard_metric_diagnostics_split_residuals_by_model(tmp_path) -> None:
     """Standard residual diagnostics should not require notebook-local model loops."""
 

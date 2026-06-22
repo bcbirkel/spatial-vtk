@@ -16,6 +16,18 @@ Changelog
   - Added notebook contract coverage so Step 1 no longer depends on local
     ``config_path=str(config_path)`` boilerplate in workflow cells.
 
+- **Metric figure suite sidecar status** *(Added)*
+
+  - Added suite-level sidecar coverage fields to
+    ``MetricFigureSuiteResult.status_frame()`` so Step 3 notebooks show
+    provenance sidecar counts, source-sidecar counts, total plot/source row
+    counts, and exact-versus-sampled flags for each figure family.
+  - Kept the suite status lightweight by reading only small sidecar JSON
+    metadata files and checking file existence, not the potentially large CSV
+    sidecars.
+  - Added regression coverage for mixed exact/sampled sidecars and missing
+    source sidecars.
+
 - **Step 2 notebook checkpoint visibility** *(Fixed)*
 
   - Bound the standard Step 2 dashboard launch cell to
