@@ -11,6 +11,8 @@ Changelog
     correctly, such as station/event map tabs missing coordinate columns.
   - Extended dashboard startup coverage so map-blocked optional tabs are
     reported consistently instead of being treated as fully ready.
+  - Clarified the Step 7 Python workflow docs so notebook users can distinguish
+    data-level ``ready`` from dashboard-tab-level ``tab_ready``.
 
 - **Direct QC Slurm parser aliases** *(Changed)*
 

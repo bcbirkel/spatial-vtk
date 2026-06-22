@@ -3133,6 +3133,10 @@ def test_python_workflow_docs_prefer_dashboard_preparation_result_object():
     entry_point_cell = dashboard_row.split("- dashboard metric dataset root", 1)[0]
     assert "spatial_vtk.visualize.write_configured_dashboard_datasets" not in entry_point_cell
     assert "DashboardDatasetPreparationResult`` also owns the Slurm-aware" in dashboard_row
+    assert "``ready`` reports whether the underlying summary data is" in dashboard_row
+    assert "``tab_ready`` reports whether the dashboard tab can render" in dashboard_row
+    assert "optional-tab skip decisions use ``tab_ready`` when it is present" in dashboard_row
+    assert "value-ready but map-blocked station/event tabs are not treated as fully\n       ready" in dashboard_row
     assert "Scripts that intentionally own dashboard preparation control can call" in dashboard_row
     assert "``spatial_vtk.visualize.write_configured_dashboard_datasets`` directly" in dashboard_row
     assert "with ``cfg=`` or explicit roots" in dashboard_row

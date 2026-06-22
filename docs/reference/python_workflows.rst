@@ -743,7 +743,12 @@ paths without requiring global config activation.
        dashboard metric dataset. Dashboard startup/readiness checks inspect
        summary value and map-coordinate columns with projected chunk scans, so
        they can report schema/value/map readiness without materializing complete
-       summary tables. Display the result from
+       summary tables. ``ready`` reports whether the underlying summary data is
+       usable, while ``tab_ready`` reports whether the dashboard tab can render
+       correctly after map-coordinate requirements are considered; startup and
+       optional-tab skip decisions use ``tab_ready`` when it is present so
+       value-ready but map-blocked station/event tabs are not treated as fully
+       ready. Display the result from
        ``DashboardDatasetPreparationResult.run_if_needed(...)`` with
        ``spatial_vtk.config.display_notebook_step_result`` so submitted,
        skipped, and local-run states appear as labelled notebook tables.
