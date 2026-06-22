@@ -81,6 +81,102 @@ class NotebookRunContext:
     metric_batch_count: int
     preprocess_continue_on_error: bool
 
+    def status_frame(self) -> Any:
+        """Return a compact notebook table for the resolved run context.
+
+        This is intended for setup cells. It gives notebooks one labelled
+        display for the active config, run scenario, output directories, and
+        execution flags instead of ad hoc ``print`` statements or local
+        path tables.
+        """
+
+        import pandas as pd
+
+        rows = [
+            ("repo_root", self.repo_root),
+            ("config_path", self.config_path),
+            ("run_scenario", self.run_scenario),
+            ("outputs_root", self.outputs_root),
+            ("tables_dir", self.tables_dir),
+            ("figures_dir", self.figures_dir),
+            ("dashboards_dir", self.dashboards_dir),
+            ("slurm_dir", self.slurm_dir),
+            ("logs_dir", self.logs_dir),
+            ("run_local", self.run_local),
+            ("submit_slurm", self.submit_slurm),
+            ("overwrite", self.overwrite),
+            ("preview_rows", self.preview_rows),
+            ("qc_chunksize", self.qc_chunksize),
+            ("dashboard_chunksize", self.dashboard_chunksize),
+            ("metric_batch_count", self.metric_batch_count),
+            ("preprocess_continue_on_error", self.preprocess_continue_on_error),
+        ]
+        frame = pd.DataFrame(rows, columns=["name", "value"])
+        roles_and_labels = frame["name"].astype(str).map(_notebook_context_role_and_label)
+        frame["artifact"] = frame["name"].astype(str).map(lambda value: f"notebook_context_{value}")
+        frame["artifact_role"] = roles_and_labels.map(lambda item: item[0])
+        frame["artifact_label"] = roles_and_labels.map(lambda item: item[1])
+        frame["status"] = [
+            _notebook_context_status(str(row["name"]), row["value"])
+            for _, row in frame.iterrows()
+        ]
+        frame["resolved_path"] = ""
+        frame["path"] = ""
+        frame["exists"] = pd.NA
+        path_mask = frame["artifact_role"].isin({"project_root", "config_file", "output_directory"})
+        for index, row in frame.loc[path_mask].iterrows():
+            value = row["value"]
+            if value in (None, ""):
+                continue
+            path = Path(value).expanduser()
+            frame.at[index, "value"] = str(path)
+            frame.at[index, "resolved_path"] = str(path)
+            frame.at[index, "path"] = str(path)
+            frame.at[index, "exists"] = path.exists()
+            frame.at[index, "status"] = "ready" if path.exists() else "missing"
+        return frame
+
+
+def _notebook_context_role_and_label(name: str) -> tuple[str, str]:
+    """Return a stable role and display label for one run-context field."""
+
+    mapping = {
+        "repo_root": ("project_root", "project root"),
+        "config_path": ("config_file", "Spatial-VTK config"),
+        "run_scenario": ("run_setting", "run scenario"),
+        "outputs_root": ("output_directory", "output root directory"),
+        "tables_dir": ("output_directory", "tables output directory"),
+        "figures_dir": ("output_directory", "figures output directory"),
+        "dashboards_dir": ("output_directory", "dashboard output directory"),
+        "slurm_dir": ("output_directory", "Slurm script directory"),
+        "logs_dir": ("output_directory", "log output directory"),
+        "run_local": ("execution_flag", "run steps locally"),
+        "submit_slurm": ("execution_flag", "submit Slurm jobs"),
+        "overwrite": ("execution_flag", "overwrite existing outputs"),
+        "preview_rows": ("notebook_setting", "preview row count"),
+        "qc_chunksize": ("notebook_setting", "QC chunk size"),
+        "dashboard_chunksize": ("notebook_setting", "dashboard chunk size"),
+        "metric_batch_count": ("notebook_setting", "metric batch count"),
+        "preprocess_continue_on_error": ("execution_flag", "allow partial preprocessing"),
+    }
+    return mapping.get(name, ("notebook_run_context", name.replace("_", " ")))
+
+
+def _notebook_context_status(name: str, value: object) -> str:
+    """Return one compact status code for a run-context field."""
+
+    if name in {"repo_root", "config_path", "outputs_root", "tables_dir", "figures_dir", "dashboards_dir", "slurm_dir", "logs_dir"}:
+        if value in (None, ""):
+            return "missing"
+        return "ready" if Path(value).expanduser().exists() else "missing"
+    if name == "run_scenario":
+        return "active" if value not in (None, "") else "not_configured"
+    if isinstance(value, bool):
+        return "enabled" if value else "disabled"
+    if value in (None, ""):
+        return "not_configured"
+    return "ok"
+
 
 @dataclass(frozen=True)
 class NotebookFigureSidecarSettings:

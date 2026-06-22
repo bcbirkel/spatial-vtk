@@ -120,6 +120,7 @@ and notebooks should depend on the stable namespaces above.
    ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)
    qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)
    metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)
+   display(context.status_frame())
    display(configured_output_registry_preview_frame(cfg=cfg, kinds=("table",)))
    display(ingest_outputs.status_frame())
    display(qc_outputs.status_frame())
@@ -159,7 +160,10 @@ the large-run notebooks.
        common execution controls such as ``SVTK_QC_CHUNKSIZE``,
        ``SVTK_DASHBOARD_CHUNKSIZE``, ``SVTK_METRIC_BATCH_COUNT``, and
        ``SVTK_PREPROCESS_CONTINUE_ON_ERROR`` so cells can pass
-       ``context.<field>`` values into package workflow functions.
+       ``context.<field>`` values into package workflow functions. Display
+       ``context.status_frame()`` in setup cells to show the active config,
+       output directories, run scenario, and execution flags with the same
+       labelled path/status columns used by later workflow status tables.
    * - ``spatial_vtk.io.output_readiness``
      - Report whether configured outputs are missing, stale relative to inputs,
        blocked by missing inputs, or ready to reuse.

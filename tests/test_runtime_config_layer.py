@@ -414,6 +414,29 @@ outputs:
     assert context.metric_batch_count == 37
     assert context.preprocess_continue_on_error is False
     assert context.tables_dir.exists()
+    status = context.status_frame().set_index("name")
+    assert {
+        "value",
+        "artifact",
+        "artifact_role",
+        "artifact_label",
+        "status",
+        "resolved_path",
+        "path",
+        "exists",
+    } <= set(status.columns)
+    assert status.loc["config_path", "artifact_label"] == "Spatial-VTK config"
+    assert status.loc["config_path", "artifact_role"] == "config_file"
+    assert status.loc["config_path", "resolved_path"] == str(config_path.resolve())
+    assert status.loc["config_path", "status"] == "ready"
+    assert bool(status.loc["config_path", "exists"]) is True
+    assert status.loc["outputs_root", "artifact_label"] == "output root directory"
+    assert status.loc["outputs_root", "status"] == "ready"
+    assert status.loc["run_scenario", "status"] == "not_configured"
+    assert status.loc["submit_slurm", "artifact_role"] == "execution_flag"
+    assert status.loc["submit_slurm", "status"] == "enabled"
+    assert status.loc["run_local", "status"] == "disabled"
+    assert status.loc["qc_chunksize", "artifact_label"] == "QC chunk size"
 
     clear_active_config()
 

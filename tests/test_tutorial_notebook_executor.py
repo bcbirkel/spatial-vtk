@@ -2263,6 +2263,19 @@ def test_large_run_notebooks_use_context_run_scenario_resolution() -> None:
         assert 'run_scenario=os.environ.get("SVTK_RUN_SCENARIO"' not in source, notebook_path.relative_to(repo_root)
 
 
+def test_large_run_notebooks_display_notebook_context_status() -> None:
+    """Large-run setup cells should show labelled context status tables."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
+    assert notebooks
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        assert "display(context.status_frame())" in source, notebook_path.relative_to(repo_root)
+        assert "print_notebook_context(context)" not in source, notebook_path.relative_to(repo_root)
+
+
 def test_standard_notebooks_reuse_context_run_scenario_after_setup() -> None:
     """Standard notebooks should not repeat literal tutorial scenarios in workflow cells."""
 

@@ -103,6 +103,10 @@ the stable package surface below.
    * - ``NotebookRunContext`` and ``notebook_run_context``
      - Resolve config, run scenario, output directories, overwrite flags,
        Slurm/local execution flags, and notebook runtime settings once.
+       ``NotebookRunContext.status_frame()`` returns a display-ready setup
+       table with labelled ``artifact_role`` / ``artifact_label`` fields,
+       compact ``status`` values, and normalized ``resolved_path`` / ``path`` /
+       ``exists`` columns for config and output-directory rows.
    * - ``run_notebook_step_if_needed``
      - Display readiness, skip current outputs, run a Python package function
        locally, or write/submit a Slurm script for the same function.
