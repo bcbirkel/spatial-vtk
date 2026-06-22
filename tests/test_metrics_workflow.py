@@ -3163,12 +3163,15 @@ def test_summarize_metric_tasks_reports_task_and_resource_estimates() -> None:
     rows = dict(zip(summary["Estimate"], summary["Value"]))
 
     assert rows["Metric tasks"] == "2"
+    assert rows["Passband metric tasks"] == "2"
+    assert rows["Spectral metric tasks"] == "0"
     assert rows["Approximate metric evaluations"] == "4"
     assert rows["Unique events"] == "1"
     assert rows["Unique stations"] == "2"
     assert rows["Components"] == "R, Z"
     assert rows["Models"] == "m1"
     assert rows["Passbands"] == "1-2 sec"
+    assert rows["Spectral periods"] == "none"
     assert rows["Approximate CPU-hours"] == "0.033"
     assert rows["Memory per task"] == "1.5 GB"
     assert rows["Wall time at 2 parallel tasks"] == "30 sec"
@@ -3186,7 +3189,8 @@ def test_summarize_metric_tasks_streams_path_backed_task_tables(tmp_path, monkey
             "component": ["R", "T"],
             "model": ["m1", "m1"],
             "passband": ["1-2 sec", "2-3 sec"],
-            "metrics": ["PGA,PGV", "PSA"],
+            "metrics": ["['PGA','PGV']", "['PSA']"],
+            "spectral_periods_s": ["", "1,2,3"],
             "obs_waveform_path": ["unused-a", "unused-b"],
             "syn_waveform_path": ["unused-a", "unused-b"],
         }
@@ -3201,9 +3205,13 @@ def test_summarize_metric_tasks_streams_path_backed_task_tables(tmp_path, monkey
     rows = dict(zip(summary["Estimate"], summary["Value"]))
 
     assert rows["Metric tasks"] == "2"
+    assert rows["Passband metric tasks"] == "1"
+    assert rows["Spectral metric tasks"] == "1"
     assert rows["Approximate metric evaluations"] == "3"
     assert rows["Unique events"] == "2"
     assert rows["Components"] == "R, T"
+    assert rows["Passbands"] == "1-2 sec"
+    assert rows["Spectral periods"] == "1, 2, 3"
 
 
 def test_metric_workflow_outputs_feed_downstream_modules(tmp_path) -> None:

@@ -124,6 +124,13 @@ Public workflow helpers exposed by ``spatial_vtk.metrics``:
        writing a manifest, the returned payload includes task count, batch count,
        per-batch task range, batch output directory, first/last batch output
        paths, and planning-policy metadata for notebook display.
+   * - ``summarize_metric_tasks``
+     - Build a compact task-estimate table from a task frame, path-backed task
+       CSV/Parquet, or manifest-loaded tasks without loading waveform files.
+       The estimate separates passband-dependent task rows from broadband
+       spectral task rows and reports requested spectral periods, so large-run
+       notebooks can confirm PSA/FAS work is not being repeated for each
+       waveform passband.
    * - ``metric_manifest_readiness_from_config``
      - Check whether configured metric inventories and the overlap QC table are
        ready before planning the metric manifest.

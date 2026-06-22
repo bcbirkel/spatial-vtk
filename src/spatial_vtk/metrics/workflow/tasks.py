@@ -370,7 +370,17 @@ def summarize_metric_tasks(
         {
             "Estimate": "Metric tasks",
             "Value": f"{task_count:,}",
-            "Notes": "One task is one event-station-component-model-passband calculation unit.",
+            "Notes": "One row is one event-station-component-model calculation unit; spectral rows use a blank passband.",
+        },
+        {
+            "Estimate": "Passband metric tasks",
+            "Value": f"{int(task_summary['passband_task_count']):,}",
+            "Notes": "Task rows containing passband-dependent metrics such as PGA, PGV, CAV, durations, delays, or correlations.",
+        },
+        {
+            "Estimate": "Spectral metric tasks",
+            "Value": f"{int(task_summary['spectral_task_count']):,}",
+            "Notes": "Task rows containing broadband spectral metrics such as PSA or FAS; these should not repeat once per waveform passband.",
         },
         {
             "Estimate": "Approximate metric evaluations",
@@ -400,7 +410,12 @@ def summarize_metric_tasks(
         {
             "Estimate": "Passbands",
             "Value": _summary_unique_values_text(task_summary["passbands"]),
-            "Notes": "Period-band labels, for example 1-2 sec.",
+            "Notes": "Period-band labels for passband-dependent tasks, for example 1-2 sec.",
+        },
+        {
+            "Estimate": "Spectral periods",
+            "Value": _summary_unique_values_text(task_summary["spectral_periods_s"]),
+            "Notes": "Oscillator periods requested by broadband spectral tasks such as PSA and FAS.",
         },
         {
             "Estimate": "Approximate CPU-hours",
@@ -872,7 +887,7 @@ def _read_table(table: pd.DataFrame | str | Path) -> pd.DataFrame:
 def _metric_task_summary_columns() -> tuple[str, ...]:
     """Return task-table columns needed for compact planning summaries."""
 
-    return ("event_id", "station", "component", "model", "passband", "band", "metrics", "metric")
+    return ("event_id", "station", "component", "model", "passband", "band", "metrics", "metric", "spectral_periods_s")
 
 
 def _metric_task_summary_stats(tasks: list[MetricWorkflowTask] | pd.DataFrame | str | Path) -> dict[str, Any]:
@@ -892,18 +907,22 @@ def _metric_task_summary_stats(tasks: list[MetricWorkflowTask] | pd.DataFrame | 
         "components": set(),
         "models": set(),
         "passbands": set(),
+        "spectral_periods_s": set(),
+        "passband_task_count": 0,
+        "spectral_task_count": 0,
     }
     for chunk in chunks:
         summary["task_count"] += int(len(chunk))
         summary["metric_evaluations"] += _estimate_metric_evaluations(chunk)
+        passband_count, spectral_count = _metric_task_group_counts(chunk)
+        summary["passband_task_count"] += passband_count
+        summary["spectral_task_count"] += spectral_count
         _update_summary_values(summary["event_ids"], chunk, "event_id")
         _update_summary_values(summary["stations"], chunk, "station")
         _update_summary_values(summary["components"], chunk, "component")
         _update_summary_values(summary["models"], chunk, "model")
-        before_passbands = len(summary["passbands"])
-        _update_summary_values(summary["passbands"], chunk, "passband")
-        if len(summary["passbands"]) == before_passbands:
-            _update_summary_values(summary["passbands"], chunk, "band")
+        _update_passband_task_values(summary["passbands"], chunk)
+        _update_spectral_period_values(summary["spectral_periods_s"], chunk)
     return summary
 
 
@@ -928,6 +947,78 @@ def _estimate_metric_evaluations(task_table: pd.DataFrame) -> int:
     if "metric" in task_table.columns:
         return int(task_table["metric"].notna().sum())
     return int(len(task_table))
+
+
+def _metric_task_group_counts(task_table: pd.DataFrame) -> tuple[int, int]:
+    """Return passband-dependent and spectral task-row counts."""
+
+    passband_tasks = 0
+    spectral_tasks = 0
+    for _, row in task_table.iterrows():
+        metrics = _task_metric_names(row)
+        groups = {metric_group_for(metric) for metric in metrics}
+        if "spectral" in groups:
+            spectral_tasks += 1
+        if not metrics or any(group != "spectral" for group in groups):
+            passband_tasks += 1
+    return passband_tasks, spectral_tasks
+
+
+def _task_metric_names(row: pd.Series) -> tuple[str, ...]:
+    """Return metric names from a serialized task row."""
+
+    if "metrics" in row.index:
+        metrics = _clean_metric_tokens(_tuple_from_serialized(row.get("metrics")))
+        if metrics:
+            return metrics
+    if "metric" in row.index:
+        metrics = _clean_metric_tokens((row.get("metric", ""),))
+        return metrics
+    return ()
+
+
+def _clean_metric_tokens(values: tuple[object, ...]) -> tuple[str, ...]:
+    """Return normalized metric-name tokens from loose serialized values."""
+
+    metrics: list[str] = []
+    for value in values:
+        text = str(value).strip().strip("[](){}'\"")
+        if text.lower() in {"", "nan", "none", "null"}:
+            continue
+        metrics.append(text)
+    return tuple(metrics)
+
+
+def _update_passband_task_values(values: set[str], frame: pd.DataFrame) -> None:
+    """Add passband labels only from passband-dependent task rows."""
+
+    if frame.empty:
+        return
+    passband_rows: list[object] = []
+    for index, row in frame.iterrows():
+        metrics = _task_metric_names(row)
+        groups = {metric_group_for(metric) for metric in metrics}
+        if not metrics or any(group != "spectral" for group in groups):
+            passband_rows.append(index)
+    if not passband_rows:
+        return
+    subset = frame.loc[passband_rows]
+    before_passbands = len(values)
+    _update_summary_values(values, subset, "passband")
+    if len(values) == before_passbands:
+        _update_summary_values(values, subset, "band")
+
+
+def _update_spectral_period_values(values: set[str], frame: pd.DataFrame) -> None:
+    """Add serialized spectral periods from a projected task frame."""
+
+    if "spectral_periods_s" not in frame.columns:
+        return
+    for value in frame["spectral_periods_s"].dropna():
+        for period in _tuple_from_serialized(value):
+            text = str(period).strip()
+            if text:
+                values.add(text)
 
 
 def _summary_unique_count_text(values: set[str]) -> str:

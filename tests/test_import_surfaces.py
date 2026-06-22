@@ -1395,6 +1395,8 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "``qc_inventory_overlap`` table" in text
     assert "at least one passing observed/synthetic QC pair" in text
     assert "planning-policy metadata" in text
+    assert "The estimate separates passband-dependent task rows from broadband" in text
+    assert "confirm PSA/FAS work is not being repeated for each\n       waveform passband" in text
     assert "``write_standard_metric_diagnostic_plots``" in text
     assert ".. autoclass:: spatial_vtk.metrics.StandardMetricWorkflowOutputResult" in text
     assert ".. autofunction:: spatial_vtk.metrics.load_standard_metric_workflow_outputs" in text
@@ -3218,6 +3220,7 @@ def test_reference_docs_map_python_workflow_entry_points():
     assert "new notebooks should use ``output_group()``" not in workflows
     assert "``PSA`` and\n``FAS`` are broadband spectral calculations" in workflows
     assert "one blank-passband spectral task" in workflows
+    assert "The task estimate separates passband-dependent tasks from broadband\n       spectral tasks" in workflows
     assert "PSA figures should use\noscillator-period sheets" in workflows
     assert "legacy metric table repeats PSA rows under waveform\npassbands" in workflows
     assert "bind(globals())" not in workflows

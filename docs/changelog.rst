@@ -4,6 +4,17 @@ Changelog
 2026-06-22
 ----------
 
+- **Metric task estimate clarity** *(Changed)*
+
+  - Added separate ``Passband metric tasks`` and ``Spectral metric tasks`` rows
+    to metric task estimates so large-run notebooks can distinguish waveform
+    passband work from broadband PSA/FAS work.
+  - Added a ``Spectral periods`` row and excluded spectral-only task rows from
+    the passband summary, making it easier to verify that PSA/FAS tasks are not
+    repeated for each waveform passband.
+  - Updated the metric workflow docs to describe the passband/spectral split in
+    task-estimate displays.
+
 - **Dashboard readiness reason codes** *(Fixed)*
 
   - Added ``status_reason`` to dashboard readiness and status frames so

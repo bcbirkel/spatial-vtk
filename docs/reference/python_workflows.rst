@@ -400,6 +400,10 @@ fallbacks, and bounded previews stay in package code.
        downstream output writer, large-run inventory/manifest/Slurm/merge
        step runners, standard diagnostic figure writer, focused station-map
        writer, large-run figure-suite writer, and task-estimate reload helper.
+       The task estimate separates passband-dependent tasks from broadband
+       spectral tasks and reports spectral periods so users can confirm PSA/FAS
+       work is planned once per event/station/component/model, not once per
+       waveform passband.
    * - Step 4 spatial statistics
      - ``spatial_vtk.spatial.load_standard_spatial_workflow_output_status``
        and ``spatial_vtk.spatial.load_standard_spatial_workflow_outputs``
