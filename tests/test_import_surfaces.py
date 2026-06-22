@@ -370,6 +370,35 @@ def test_cli_parser_builds_without_optional_runtime_dependencies():
     assert result.stdout.strip() == "ok"
 
 
+def test_slurm_entry_modules_import_without_site_packages():
+    """Slurm script entry modules should import before optional packages are installed."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(root / "src")
+    code = textwrap.dedent(
+        """
+        import importlib
+        for name in (
+            "spatial_vtk.metrics.workflow.slurm",
+            "spatial_vtk.qc.build.slurm",
+        ):
+            importlib.import_module(name)
+        print("ok")
+        """
+    )
+    result = subprocess.run(
+        [sys.executable, "-S", "-c", code],
+        cwd=root,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "ok"
+
+
 def test_public_package_discovery_excludes_legacy_namespace():
     pyproject = pathlib.Path(__file__).resolve().parents[1] / "pyproject.toml"
     text = pyproject.read_text(encoding="utf-8")

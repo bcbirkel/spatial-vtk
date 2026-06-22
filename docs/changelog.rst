@@ -14,6 +14,8 @@ Changelog
     dependencies are installed.
   - Added source-contract coverage so Slurm and QC workflow helpers do not
     reintroduce top-level config-bound imports.
+  - Added a no-site-packages import regression check for the metric and QC
+    Slurm entry modules.
 
 - **Metric workflow import boundary** *(Changed)*
 
