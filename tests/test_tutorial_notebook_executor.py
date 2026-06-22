@@ -2275,6 +2275,7 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
 
     assert "run_notebook_step_if_needed(" not in source
     assert "run_or_submit_notebook_function(" not in source
+    assert "display_notebook_step_result," in source
     assert "from spatial_vtk.metrics import (" in source
     assert "metric_settings_summary," in source
     assert "metrics_settings_from_config," in source
@@ -2301,6 +2302,16 @@ def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
     assert "metric_outputs.run_slurm_step_if_needed(" in source
     assert "metric_outputs.run_merge_step_if_needed(" in source
     assert "metric_outputs.run_downstream_outputs_step_if_needed(" in source
+    assert "metric_inventory_result = metric_outputs.run_inventory_step_if_needed(" in source
+    assert "metric_manifest_result = metric_outputs.run_manifest_step_if_needed(" in source
+    assert "metric_slurm_result = metric_outputs.run_slurm_step_if_needed(" in source
+    assert "metric_merge_result = metric_outputs.run_merge_step_if_needed(" in source
+    assert "metric_output_result = metric_outputs.run_downstream_outputs_step_if_needed(" in source
+    assert 'display_notebook_step_result(metric_inventory_result, label="Metric waveform inventories", display=display)' in source
+    assert 'display_notebook_step_result(metric_manifest_result, label="Metric manifest", display=display)' in source
+    assert 'display_notebook_step_result(metric_slurm_result, label="Metric Slurm script", display=display)' in source
+    assert 'display_notebook_step_result(metric_merge_result, label="Metric batch merge", display=display)' in source
+    assert 'display_notebook_step_result(metric_output_result, label="Metric output tables", display=display)' in source
     assert "metric_outputs.display_metrics_preview(nrows=PREVIEW_ROWS)" in source
     assert "display(metric_settings_summary(metric_settings))" in source
     assert 'print(f"Metric batch count: {METRIC_BATCH_COUNT}")' not in source
@@ -2397,6 +2408,7 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     assert "step_outputs.readiness(" not in source
     assert "preprocessed_outputs.readiness(" not in source
     assert "run_or_submit_notebook_function(" not in source
+    assert "display_notebook_step_result," in source
     assert "from spatial_vtk.io import (" in source
     assert "load_standard_ingest_workflow_outputs," in source
     assert "metadata_tables_readiness_from_config," not in source
@@ -2408,6 +2420,12 @@ def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
     assert 'step_outputs = output_group("step_01_ingest")' not in source
     assert "preprocessed_outputs = preprocessed_waveform_output_group(config=cfg)" not in source
     assert "display(ingest_outputs.metadata_summary_frame())" in source
+    assert "metadata_result = ingest_outputs.run_metadata_step_if_needed(" in source
+    assert "preprocessing_result = ingest_outputs.run_preprocessing_step_if_needed(" in source
+    assert "coverage_result = ingest_outputs.run_record_coverage_step_if_needed(" in source
+    assert 'display_notebook_step_result(metadata_result, label="Metadata tables", display=display)' in source
+    assert 'display_notebook_step_result(preprocessing_result, label="Preprocessed waveforms", display=display)' in source
+    assert 'display_notebook_step_result(coverage_result, label="Record coverage", display=display)' in source
     assert "metadata_tables = step_outputs.load_tables(" not in source
     assert "stations = metadata_tables" not in source
     assert "event_stations = metadata_tables" not in source
@@ -2470,6 +2488,7 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
 
     assert "run_notebook_step_if_needed(" not in source
     assert "run_or_submit_notebook_function(" not in source
+    assert "display_notebook_step_result," in source
     assert "from spatial_vtk.qc import (" in source
     assert "metric_settings_summary," in source
     assert "load_standard_qc_workflow_outputs," in source
@@ -2491,6 +2510,12 @@ def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
     assert "qc_summary_readiness_from_config," not in source
     assert "qc_outputs.run_inventory_step_if_needed(" in source
     assert "qc_outputs.run_overlap_step_if_needed(" in source
+    assert "qc_inventory_result = qc_outputs.run_inventory_step_if_needed(" in source
+    assert "qc_overlap_result = qc_outputs.run_overlap_step_if_needed(" in source
+    assert "qc_summary_result = qc_outputs.run_summary_step_if_needed(" in source
+    assert 'display_notebook_step_result(qc_inventory_result, label="QC inventory", display=display)' in source
+    assert 'display_notebook_step_result(qc_overlap_result, label="Observed/synthetic overlap QC", display=display)' in source
+    assert 'display_notebook_step_result(qc_summary_result, label="QC summary tables", display=display)' in source
     assert "scope=QC_OVERLAP_SCOPE" in source
     assert "qc_outputs.run_summary_step_if_needed(" in source
     assert "qc_outputs.write_figures(" in source

@@ -59,6 +59,16 @@ Changelog
   - Updated regression coverage so future CLI tutorial edits do not re-add
     those unnecessary prepared-table flags.
 
+- **Large-run notebook result displays** *(Changed)*
+
+  - Updated the first three large-run driver notebooks so metadata,
+    preprocessing, QC, metric-planning, Slurm-script, merge, and downstream
+    output steps assign their package result objects and render them through
+    ``display_notebook_step_result``.
+  - Extended notebook source-contract coverage so heavy cells keep showing
+    normalized skipped/submitted/local-run status frames instead of relying on
+    implicit cell output or raw dataclass/dictionary displays.
+
 - **CLI config path metavar** *(Changed)*
 
   - Standardized live ``svtk`` help so optional config-file arguments render as
