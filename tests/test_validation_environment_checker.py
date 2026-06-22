@@ -55,6 +55,64 @@ def test_validation_environment_missing_report_uses_package_labels() -> None:
     )
 
 
+def test_validation_environment_modules_are_declared_package_dependencies() -> None:
+    """The validation preflight should not check undeclared pip dependencies."""
+
+    module = _load_checker_module()
+    root = Path(__file__).resolve().parents[1]
+    pyproject_text = (root / "pyproject.toml").read_text(encoding="utf-8")
+
+    requirement_fragments = {
+        "branca": '"branca>=',
+        "build": '"build>=',
+        "contextily": '"contextily>=',
+        "coverage": '"coverage',
+        "folium": '"folium>=',
+        "geopandas": '"geopandas>=',
+        "gmprocess": '"gmprocess>=',
+        "h5py": '"h5py>=',
+        "IPython": '"ipython>=',
+        "ipykernel": '"ipykernel>=',
+        "matplotlib": '"matplotlib>=',
+        "nbclient": '"nbclient>=',
+        "nbformat": '"nbformat>=',
+        "numpy": '"numpy>=',
+        "obspy": '"obspy>=',
+        "pandas": '"pandas>=',
+        "phasenet": '"phasenet>=',
+        "plotly": '"plotly>=',
+        "pyarrow": '"pyarrow>=',
+        "pyasdf": '"pyasdf>=',
+        "pyproj": '"pyproj>=',
+        "pytest": '"pytest>=',
+        "PyYAML": '"PyYAML>=',
+        "rasterio": '"rasterio>=',
+        "scikit-learn": '"scikit-learn>=',
+        "scipy": '"scipy>=',
+        "shapely": '"shapely>=',
+        "sphinx": '"sphinx>=',
+        "sphinx-rtd-theme": '"sphinx-rtd-theme>=',
+        "statsmodels": '"statsmodels>=',
+        "streamlit": '"streamlit>=',
+        "streamlit-folium": '"streamlit-folium>=',
+        "twine": '"twine>=',
+    }
+
+    labels = {
+        requirement.label
+        for requirements in module.MODULE_GROUPS.values()
+        for requirement in requirements
+        if requirement.label != "spatial_vtk"
+    }
+    missing_mappings = sorted(labels - set(requirement_fragments))
+    assert not missing_mappings, f"Missing dependency-fragment mappings: {missing_mappings}"
+
+    undeclared = [
+        label for label in sorted(labels) if requirement_fragments[label] not in pyproject_text
+    ]
+    assert not undeclared, f"Validation modules missing from pyproject.toml: {undeclared}"
+
+
 def test_validation_environment_rejects_unsupported_python_versions() -> None:
     """The checker should mirror the package's public Python range."""
 

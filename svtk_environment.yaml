@@ -14,7 +14,6 @@ dependencies:
   - matplotlib
   - nbclient
   - nbformat
-  - nbsphinx
   - numpy
   - obspy
   - pandas

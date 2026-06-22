@@ -42,6 +42,15 @@ Changelog
   - Kept startup warnings and Data Status rows on ``tab_ready`` so map-specific
     blockers remain visible without making the rest of the tab look empty.
 
+- **Dependency metadata consistency** *(Changed)*
+
+  - Removed the stale ``nbsphinx`` entry from the source-checkout conda
+    environment because public docs now render notebooks as downloadable
+    source assets rather than through a Sphinx notebook renderer.
+  - Added regression coverage that keeps
+    ``tools/check_validation_environment.py`` module checks aligned with
+    declared ``pyproject.toml`` dependencies.
+
 - **CLI config path metavar** *(Changed)*
 
   - Standardized live ``svtk`` help so optional config-file arguments render as

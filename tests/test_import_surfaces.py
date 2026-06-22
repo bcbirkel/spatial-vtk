@@ -1004,6 +1004,17 @@ def test_environment_file_covers_release_validation_tools():
         assert f"  - {dependency}" in environment_text or f"      - {dependency}" in environment_text
 
 
+def test_environment_file_avoids_unused_sphinx_notebook_renderer():
+    """The public conda environment should not advertise stale docs dependencies."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    environment_text = (root / "svtk_environment.yaml").read_text(encoding="utf-8")
+    docs_conf_text = (root / "docs" / "conf.py").read_text(encoding="utf-8")
+
+    assert "nbsphinx" not in docs_conf_text
+    assert "  - nbsphinx" not in environment_text
+
+
 def test_autodoc_fallback_parameter_docs_are_descriptive():
     """Generated API docs should not fall back to placeholder parameter text."""
 
