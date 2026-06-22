@@ -14,6 +14,15 @@ Changelog
     ``--inventory-output``, and ``--overlap-inventory-output`` support and
     added parser coverage for both preferred and legacy forms.
 
+- **Direct PhaseNet parser aliases** *(Changed)*
+
+  - Added artifact-named ``--phasenet-picks``,
+    ``--phasenet-input-records``, and ``--arrival-pick-catalog-output``
+    aliases to the direct ``spatial_vtk.metrics.calculate.phasenet_adapter``
+    parser.
+  - Kept legacy ``--phasenet-csv``, ``--records-csv``, and ``--output``
+    support and added parser coverage for both preferred and legacy forms.
+
 - **Direct metric task-runner input flag** *(Changed)*
 
   - Added ``--tasks-table`` as the preferred input flag for the direct metric

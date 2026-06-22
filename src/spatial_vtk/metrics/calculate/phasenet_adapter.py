@@ -420,9 +420,33 @@ def build_arg_parser() -> argparse.ArgumentParser:
     """Build the module-level CLI parser."""
 
     parser = argparse.ArgumentParser(description="Normalize PhaseNet picks into a Spatial-VTK arrival-pick catalog.")
-    parser.add_argument("--phasenet-csv", required=True, help="PhaseNet picks CSV to normalize.")
-    parser.add_argument("--records-csv", required=True, help="CSV containing PhaseNet input records.")
-    parser.add_argument("--output", required=True, help="Output pick catalog CSV or Parquet table.")
+    parser.add_argument(
+        "--phasenet-picks",
+        "--phasenet-csv",
+        dest="phasenet_picks",
+        required=True,
+        help="PhaseNet picks CSV to normalize. Prefer --phasenet-picks; --phasenet-csv is a legacy alias.",
+    )
+    parser.add_argument(
+        "--phasenet-input-records",
+        "--records-csv",
+        dest="phasenet_input_records",
+        required=True,
+        help=(
+            "CSV containing PhaseNet input records. "
+            "Prefer --phasenet-input-records; --records-csv is a legacy alias."
+        ),
+    )
+    parser.add_argument(
+        "--arrival-pick-catalog-output",
+        "--output",
+        dest="arrival_pick_catalog_output",
+        required=True,
+        help=(
+            "Output arrival-pick catalog CSV or Parquet table. "
+            "Prefer --arrival-pick-catalog-output; --output is a legacy alias."
+        ),
+    )
     parser.add_argument("--min-p-prob", type=float, default=0.0)
     parser.add_argument("--min-s-prob", type=float, default=0.0)
     return parser
@@ -432,7 +456,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Run the PhaseNet normalization CLI wrapper."""
 
     args = build_arg_parser().parse_args(argv)
-    records_df = pd.read_csv(args.records_csv, low_memory=False)
+    records_df = pd.read_csv(args.phasenet_input_records, low_memory=False)
     records = [
         PhaseNetInputRecord(
             file_name=str(row.get("file_name", "")),
@@ -446,8 +470,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         for _, row in records_df.iterrows()
     ]
-    catalog = normalize_phasenet_output(args.phasenet_csv, records, min_p_prob=args.min_p_prob, min_s_prob=args.min_s_prob)
-    write_arrival_pick_catalog(catalog, args.output, overwrite=True)
+    catalog = normalize_phasenet_output(
+        args.phasenet_picks,
+        records,
+        min_p_prob=args.min_p_prob,
+        min_s_prob=args.min_s_prob,
+    )
+    write_arrival_pick_catalog(catalog, args.arrival_pick_catalog_output, overwrite=True)
     return 0
 
 

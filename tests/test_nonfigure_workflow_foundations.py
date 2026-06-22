@@ -34,6 +34,7 @@ from spatial_vtk.io.preprocessing import preprocess_waveform_files
 from spatial_vtk.metrics.calculate.arrival_picks import load_arrival_pick_catalog, write_arrival_pick_catalog
 from spatial_vtk.metrics.calculate.phasenet_adapter import (
     PhaseNetInputRecord,
+    build_arg_parser as build_phasenet_arg_parser,
     normalize_phasenet_output,
     prepare_phasenet_numpy_inputs,
 )
@@ -1254,6 +1255,54 @@ def test_artifact_registry_records_missing_outputs(tmp_path) -> None:
 
     assert len(registry.records()) == 2
     assert [record.name for record in registry.missing()] == ["missing"]
+
+
+def test_phasenet_adapter_parser_prefers_artifact_named_aliases() -> None:
+    """PhaseNet normalization parser should expose concrete artifact roles."""
+
+    parser = build_phasenet_arg_parser()
+    help_text = " ".join(parser.format_help().split())
+    assert "--phasenet-picks" in help_text
+    assert "--phasenet-csv" in help_text
+    assert "--phasenet-input-records" in help_text
+    assert "--records-csv" in help_text
+    assert "--arrival-pick-catalog-output" in help_text
+    assert "--output" in help_text
+    assert help_text.count("legacy alias") >= 3
+    assert "PhaseNet picks CSV to normalize." in help_text
+    assert "CSV containing PhaseNet input records." in help_text
+    assert "Output arrival-pick catalog CSV or Parquet table." in help_text
+
+    args = parser.parse_args(
+        [
+            "--phasenet-picks",
+            "phasenet_picks.csv",
+            "--phasenet-input-records",
+            "phasenet_input_records.csv",
+            "--arrival-pick-catalog-output",
+            "arrival_pick_catalog.parquet",
+        ]
+    )
+    legacy_args = parser.parse_args(
+        [
+            "--phasenet-csv",
+            "legacy_picks.csv",
+            "--records-csv",
+            "legacy_records.csv",
+            "--output",
+            "legacy_catalog.csv",
+        ]
+    )
+
+    assert args.phasenet_picks == "phasenet_picks.csv"
+    assert args.phasenet_input_records == "phasenet_input_records.csv"
+    assert args.arrival_pick_catalog_output == "arrival_pick_catalog.parquet"
+    assert legacy_args.phasenet_picks == "legacy_picks.csv"
+    assert legacy_args.phasenet_input_records == "legacy_records.csv"
+    assert legacy_args.arrival_pick_catalog_output == "legacy_catalog.csv"
+    assert not hasattr(args, "phasenet_csv")
+    assert not hasattr(args, "records_csv")
+    assert not hasattr(args, "output")
 
 
 def test_phasenet_prepare_and_normalize(tmp_path) -> None:
