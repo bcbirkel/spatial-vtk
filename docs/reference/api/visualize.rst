@@ -117,8 +117,11 @@ Public helpers exposed by ``spatial_vtk.visualize``:
        written outputs, and bounded previews without local formatting helpers.
        ``preparation_frame()`` and ``written_frame()`` use the same
        ``name``, ``artifact``, ``artifact_label``, ``artifact_role``,
-       ``status``, ``resolved_path``, ``path``, and ``exists`` vocabulary as
-       other notebook workflow status tables.
+       ``status``, ``status_reason``, ``resolved_path``, ``path``, and
+       ``exists`` vocabulary as other notebook workflow status tables. Legacy
+       written-path keys remain in the ``name`` column for compatibility,
+       while labels use the public ``metrics_dashboard`` row dataset and
+       ``dashboard_summaries`` summary-table directory vocabulary.
    * - ``write_configured_dashboard_datasets``
      - Lower-level script helper that writes dashboard-ready row and summary
        datasets from configured metric outputs after the caller has decided a

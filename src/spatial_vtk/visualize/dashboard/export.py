@@ -67,13 +67,15 @@ class DashboardDatasetPreparationResult:
         rows: list[dict[str, Any]] = []
         for name, path in self.written_paths.items():
             resolved = Path(path)
+            artifact, artifact_label = _dashboard_written_artifact(str(name))
             rows.append(
                 {
                     "name": name,
-                    "artifact": name.removesuffix("_root").removesuffix("_path"),
-                    "artifact_label": str(name).replace("_", " "),
+                    "artifact": artifact,
+                    "artifact_label": artifact_label,
                     "artifact_role": "dashboard_output",
                     "status": "wrote",
+                    "status_reason": "wrote",
                     "resolved_path": str(resolved),
                     "path": str(resolved),
                     "exists": resolved.exists(),
@@ -87,6 +89,7 @@ class DashboardDatasetPreparationResult:
                 "artifact_label",
                 "artifact_role",
                 "status",
+                "status_reason",
                 "resolved_path",
                 "path",
                 "exists",
@@ -106,6 +109,7 @@ class DashboardDatasetPreparationResult:
                     "artifact_label": "dashboard preparation",
                     "artifact_role": "workflow_step",
                     "status": self.status,
+                    "status_reason": self.status,
                     "resolved_path": "",
                     "path": "",
                     "exists": "",
@@ -120,6 +124,7 @@ class DashboardDatasetPreparationResult:
                 "artifact_label",
                 "artifact_role",
                 "status",
+                "status_reason",
                 "resolved_path",
                 "path",
                 "exists",
@@ -207,6 +212,17 @@ class DashboardDatasetPreparationResult:
             section=section,
             display_fn=display_fn,
         )
+
+
+def _dashboard_written_artifact(name: str) -> tuple[str, str]:
+    """Return public artifact id and label for dashboard preparation outputs."""
+
+    if name == "metrics_dashboard_root":
+        return "metrics_dashboard", "metrics dashboard row dataset"
+    if name == "dashboard_summary_root":
+        return "dashboard_summaries", "dashboard summary-table directory"
+    artifact = name.removesuffix("_root").removesuffix("_path")
+    return artifact, artifact.replace("_", " ")
 
 
 def display_dashboard_preparation_result(

@@ -4085,10 +4085,14 @@ outputs:
     assert not result.summary_frame().empty
     written = result.written_frame().set_index("name")
     assert "dashboard_summary_root" in written.index
-    assert written.loc["dashboard_summary_root", "artifact"] == "dashboard_summary"
-    assert written.loc["dashboard_summary_root", "artifact_label"] == "dashboard summary root"
+    assert written.loc["metrics_dashboard_root", "artifact"] == "metrics_dashboard"
+    assert written.loc["metrics_dashboard_root", "artifact_label"] == "metrics dashboard row dataset"
+    assert written.loc["metrics_dashboard_root", "status_reason"] == "wrote"
+    assert written.loc["dashboard_summary_root", "artifact"] == "dashboard_summaries"
+    assert written.loc["dashboard_summary_root", "artifact_label"] == "dashboard summary-table directory"
     assert written.loc["dashboard_summary_root", "artifact_role"] == "dashboard_output"
     assert written.loc["dashboard_summary_root", "status"] == "wrote"
+    assert written.loc["dashboard_summary_root", "status_reason"] == "wrote"
     assert written.loc["dashboard_summary_root", "resolved_path"] == written.loc["dashboard_summary_root", "path"]
     assert bool(written.loc["dashboard_summary_root", "exists"]) is False
 
