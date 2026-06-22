@@ -605,7 +605,7 @@ def _render_dashboard_readiness(readiness: pd.DataFrame, *, message: str | None 
     if bool(ready.all()):
         return
     detail = str(message or "").strip() or _dashboard_readiness_warning_detail(readiness, ready_column=ready_column)
-    warning = "Some dashboard summary tables are not ready."
+    warning = "Some dashboard inputs or tabs are not ready."
     if detail and detail != warning:
         warning = f"{warning} {detail}"
     else:

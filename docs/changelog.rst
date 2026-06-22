@@ -129,6 +129,10 @@ Changelog
   - Added the compact dashboard readiness summary to
     ``svtk dashboard status --json`` so machine-readable status output includes
     the same tab/input readiness view shown in human output.
+  - Clarified metrics dashboard startup warnings so map-only tab blockers,
+    missing summary tables, and missing row-level datasets are reported as
+    dashboard input or tab readiness issues rather than only summary-table
+    failures.
   - Added workflow-doc regression coverage so notebook guidance keeps using
     stable package import surfaces and does not reintroduce metrics plotting
     implementation-module paths.

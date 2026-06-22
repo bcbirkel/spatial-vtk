@@ -1361,7 +1361,7 @@ def test_metrics_dashboard_main_preflights_before_summary_load(monkeypatch):
 
     assert len(rendered_readiness) == 1
     assert rendered_readiness[0].loc[0, "Message"] == "model_metric_band summary file is missing."
-    assert warnings == ["Some dashboard summary tables are not ready. model_metric_band summary file is missing."]
+    assert warnings == ["Some dashboard inputs or tabs are not ready. model_metric_band summary file is missing."]
 
 
 def test_metrics_dashboard_readiness_warning_uses_tab_ready(monkeypatch):
@@ -1386,7 +1386,7 @@ def test_metrics_dashboard_readiness_warning_uses_tab_ready(monkeypatch):
     streamlit_metrics._render_dashboard_readiness(readiness)
 
     assert warnings == [
-        "Some dashboard summary tables are not ready. station_rollup summary can populate its table, but its map needs coordinate columns."
+        "Some dashboard inputs or tabs are not ready. station_rollup summary can populate its table, but its map needs coordinate columns."
     ]
     assert len(rendered) == 1
     assert rendered[0].loc[0, "Tab Ready"] is False
@@ -1418,7 +1418,7 @@ def test_metrics_dashboard_readiness_warning_summarizes_multiple_tab_messages(mo
     streamlit_metrics._render_dashboard_readiness(readiness)
 
     assert warnings == [
-        "Some dashboard summary tables are not ready. station map needs coordinates. "
+        "Some dashboard inputs or tabs are not ready. station map needs coordinates. "
         "event map needs coordinates. path_hex summary is missing. 1 more issue(s) are listed in Data Status."
     ]
 
