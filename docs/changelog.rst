@@ -4,6 +4,14 @@ Changelog
 2026-06-21
 ----------
 
+- **Metrics dashboard tab readiness** *(Fixed)*
+
+  - Made Streamlit metrics-dashboard optional-tab skip decisions honor
+    ``tab_ready`` when dashboard summary data exists but the tab cannot render
+    correctly, such as station/event map tabs missing coordinate columns.
+  - Extended dashboard startup coverage so map-blocked optional tabs are
+    reported consistently instead of being treated as fully ready.
+
 - **Direct QC Slurm parser aliases** *(Changed)*
 
   - Added artifact-named ``--event-station-records``,

@@ -1436,7 +1436,14 @@ def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
         {
             "dashboard_table": ["model_metric_band", "station_rollup", "event_rollup", "path_hex"],
             "ready": [True, False, True, pd.NA],
+            "tab_ready": [True, False, False, pd.NA],
             "message": ["ready", "station_rollup schema is not ready.", "ready", "path_hex summary file is missing."],
+            "tab_message": [
+                "ready",
+                "station_rollup schema is not ready.",
+                "event_rollup can populate its table, but its map needs coordinate columns.",
+                "path_hex summary file is missing.",
+            ],
         }
     )
     calls: list[tuple[str, tuple[str, ...]]] = []
@@ -1489,7 +1496,7 @@ def test_metrics_dashboard_main_skips_not_ready_optional_summaries(monkeypatch):
     assert rendered["summaries"] is summaries
     assert rendered["metrics_root"] == ""
     assert rendered["summary_root"] == "summary-root"
-    assert rendered["optional_skip_tables"] == ("path_hex", "station_rollup")
+    assert rendered["optional_skip_tables"] == ("event_rollup", "path_hex", "station_rollup")
     assert rendered["readiness"] is readiness
     assert rendered["metric_dataset_readiness"].empty
 

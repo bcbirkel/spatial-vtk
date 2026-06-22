@@ -764,7 +764,8 @@ def _not_ready_optional_summary_tables(readiness: pd.DataFrame) -> list[str]:
         table = str(row.get("dashboard_table") or "").strip()
         if not table or table == "model_metric_band":
             continue
-        if not dashboard_ready_value(row.get("ready"), default=False):
+        ready_value = row.get("tab_ready", row.get("ready")) if "tab_ready" in readiness.columns else row.get("ready")
+        if not dashboard_ready_value(ready_value, default=False):
             skip.append(table)
     return sorted(dict.fromkeys(skip))
 
