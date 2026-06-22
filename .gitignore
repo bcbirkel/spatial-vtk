@@ -8,6 +8,7 @@ htmlcov/
 /dist/
 /docs/_build/
 /outputs/
+/runs/
 .cache/
 .ipynb_checkpoints/
 AGENTS.md
