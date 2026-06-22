@@ -3897,15 +3897,23 @@ def test_spatial_figure_context_writes_overview_plots_with_empty_missing_tables(
             "pattern_similarity_station_anomalies": None,
             "geology_contrasts": None,
         },
-        paths={},
+        paths={"station_bias": tmp_path / "missing_station_bias.parquet"},
     )
     status = context.status_frame().set_index("name")
     assert bool(status.loc["metric_field", "loaded"]) is True
+    assert status.loc["metric_field", "artifact"] == "metric_field"
+    assert status.loc["metric_field", "artifact_label"] == "Metric Field"
+    assert status.loc["metric_field", "artifact_role"] == "spatial_figure_input"
+    assert status.loc["metric_field", "status"] == "ready"
     assert status.loc["metric_field", "row_count"] == 1
     assert status.loc["metric_field", "value_col"] == "log2_residual"
     assert status.loc["metric_field", "value_role"] == "raw event-station residuals; event means retained"
     assert "event-station metric field" in status.loc["metric_field", "role"]
     assert status.loc["event_centered_residuals", "value_role"] == "event-centered residuals; event means removed"
+    assert status.loc["station_bias", "status"] == "missing"
+    assert bool(status.loc["station_bias", "exists"]) is False
+    assert status.loc["prepared_stations", "artifact_role"] == "site_metadata"
+    assert status.loc["prepared_stations", "status"] == "not_loaded"
     assert pd.isna(status.loc["metric_field", "resolved_path"])
     assert pd.isna(status.loc["metric_field", "path"])
     dimensions = context.dimension_summary_frame()

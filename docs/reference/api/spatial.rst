@@ -467,8 +467,11 @@ schemas.
    metric/event-centered dimension coverage. Use them before rendering figures
    to confirm which spatial outputs exist, which value columns will be plotted,
    and how many metric/passband/component/model/event/station values are
-   represented. ``status_frame`` uses ``resolved_path`` as the clear path
-   column while preserving ``path`` for compatibility.
+   represented. ``status_frame`` includes normalized ``artifact``,
+   ``artifact_label``, ``artifact_role``, and compact ``status`` values such
+   as ``ready``, ``missing``, ``available_not_loaded``, and
+   ``not_configured``. It uses ``resolved_path`` as the clear path column
+   while preserving ``path`` for compatibility.
 
 ``SpatialFigureSuiteResult.context_status_frames`` and
 ``SpatialFigureSuiteResult.display_context_status(...)``

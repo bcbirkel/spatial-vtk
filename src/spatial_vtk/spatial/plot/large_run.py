@@ -265,9 +265,10 @@ class SpatialFigureContext:
         """Return loaded table status for this spatial figure context.
 
         The frame reports the configured Step 4 table paths, whether each table
-        exists and was loaded, and the loaded row/column counts. It is safe to
-        display in notebooks because it summarizes tables already loaded by the
-        context and does not read additional large files.
+        exists and was loaded, normalized artifact labels/roles/status values,
+        and the loaded row/column counts. It is safe to display in notebooks
+        because it summarizes tables already loaded by the context and does not
+        read additional large files.
         """
 
         rows: list[dict[str, Any]] = []
@@ -276,13 +277,18 @@ class SpatialFigureContext:
             resolved_path = None if path is None else str(path)
             table = self.tables.get(key)
             loaded = table is not None
+            exists = bool(path.exists()) if path is not None else None
             rows.append(
                 {
                     "name": key,
+                    "artifact": key,
+                    "artifact_label": key.replace("_", " ").title(),
+                    "artifact_role": "spatial_figure_input",
+                    "status": _spatial_context_table_status(loaded=loaded, exists=exists),
                     "role": _spatial_table_role(key),
                     "resolved_path": resolved_path,
                     "path": resolved_path,
-                    "exists": bool(path.exists()) if path is not None else None,
+                    "exists": exists,
                     "loaded": loaded,
                     "row_count": int(len(table)) if loaded else 0,
                     "column_count": int(len(table.columns)) if loaded else 0,
@@ -294,6 +300,10 @@ class SpatialFigureContext:
         rows.append(
             {
                 "name": "prepared_stations",
+                "artifact": "prepared_stations",
+                "artifact_label": "Prepared Stations",
+                "artifact_role": "site_metadata",
+                "status": "ready" if station_table is not None else "not_loaded",
                 "role": "site metadata for geology and station diagnostics",
                 "resolved_path": None,
                 "path": None,
@@ -4548,6 +4558,18 @@ def _spatial_table_value_role(key: str) -> str | None:
         "geology_contrasts": "event-centered residual contrast by geologic group",
     }
     return roles.get(key)
+
+
+def _spatial_context_table_status(*, loaded: bool, exists: bool | None) -> str:
+    """Return a compact status for one spatial figure input table."""
+
+    if loaded:
+        return "ready"
+    if exists is True:
+        return "available_not_loaded"
+    if exists is False:
+        return "missing"
+    return "not_configured"
 
 
 def _existing_columns(path: Path, columns: Sequence[str] | None) -> list[str] | None:

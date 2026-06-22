@@ -2365,7 +2365,9 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "preview-oriented path fields" in text
     assert "station_summary_for_item" in text
     assert "item_source_rows" in text
-    assert "``status_frame`` uses ``resolved_path`` as the clear path\n   column while preserving ``path`` for compatibility" in text
+    assert "``status_frame`` includes normalized ``artifact``" in text
+    assert "``available_not_loaded``" in text
+    assert "It uses ``resolved_path`` as the clear path column\n   while preserving ``path`` for compatibility" in text
     assert "``SpatialFigureSuiteResult.context_status_frames``" in text
     assert "``SpatialFigureSuiteResult.display_context_status(...)``" in text
     assert "instead of branching in notebook cells" in text

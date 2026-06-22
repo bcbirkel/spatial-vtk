@@ -4,6 +4,13 @@ Changelog
 2026-06-22
 ----------
 
+- **Spatial figure context status** *(Changed)*
+
+  - Added normalized ``artifact``, ``artifact_label``, ``artifact_role``, and
+    compact ``status`` fields to Step 4 spatial figure context status frames.
+  - Kept the status frame lightweight by reporting only already-loaded tables
+    and configured paths, without reading additional large spatial outputs.
+
 - **Notebook figure sidecar status** *(Changed)*
 
   - Updated notebook-facing figure sidecar status frames so disabled,
