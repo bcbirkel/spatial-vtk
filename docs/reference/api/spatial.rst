@@ -205,8 +205,11 @@ notebooks can call ``run_summary_step_if_needed(...)``,
 ``display_table_previews(nrows=...)``, ``write_summary_figures(...)``, and
 ``write_figure_suite(...)``
 without repeating readiness checks, Slurm submission plumbing, ``cfg``, or
-direct writer imports in each cell. Display the run/skip/submission payload
-from the ``run_*_step_if_needed(...)`` methods with
+direct writer imports in each cell. ``write_figure_suite(...)`` inherits that
+stored config by default while still accepting an explicit ``cfg=`` override
+for scripts that intentionally render from another configured output registry.
+Display the run/skip/submission payload from the ``run_*_step_if_needed(...)``
+methods with
 ``spatial_vtk.config.display_notebook_step_result`` rather than printing the
 raw result object. Display
 ``StandardSpatialWorkflowOutputStatusResult.status_frame()`` for the compact

@@ -2259,6 +2259,8 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "notebook-local table/path plumbing" not in text
     assert "config-table plumbing" not in text
     assert "remembers the config used to create it" in text
+    assert "``write_figure_suite(...)`` inherits that\nstored config by default" in text
+    assert "explicit ``cfg=`` override" in text
     assert "display_table_previews(nrows=...)" in text
     assert "status result retains its config" in text
     assert "display_metric_source_preview(nrows=...)" in text
