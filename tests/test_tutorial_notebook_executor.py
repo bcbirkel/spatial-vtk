@@ -477,7 +477,13 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
                             "outputs = output_group_namespace('step_03_metrics')\n",
                             "step_outputs['metrics_long_path']\n",
                             "subset = metrics.loc[metrics['metric'].eq('PGA')]\n",
+                            "filtered = metrics.query(\"metric == 'PGA'\")\n",
+                            "mask = metrics['event_id'].isin(['E1'])\n",
                             "joined = subset.merge(metrics, on='event_id')\n",
+                            "grouped = joined.groupby('station').agg({'metric': 'count'})\n",
+                            "reshaped = grouped.pivot(columns='metric')\n",
+                            "ordered = metrics.sort_values('distance_km')\n",
+                            "deduped = metrics.drop_duplicates(['event_id', 'station'])\n",
                             "layout = 'runs/outputs/tables'\n",
                             "def local_helper():\n",
                             "    return joined\n",
@@ -541,6 +547,9 @@ def test_tutorial_notebook_contract_preflight_detects_brittle_cells(tmp_path: Pa
     assert "Use load_standard_*_workflow_outputs result loaders" in combined
     assert "Use package table/workflow loaders so CSV/Parquet handling and bounded reads stay centralized." in combined
     assert "Move reusable joins into package helpers when they are part of the tutorial workflow." in combined
+    assert "Move reusable aggregations into package helpers when they are part of the tutorial workflow." in combined
+    assert "Move reusable ordering into package helpers when it is part of the tutorial workflow." in combined
+    assert "Move reusable de-duplication into package helpers when it is part of the tutorial workflow." in combined
     assert "Use imported package workflow helpers; notebooks should not run svtk commands through shell cells." in combined
     assert "metrics" in combined
     assert "notebook" in combined
@@ -2852,6 +2861,14 @@ def test_tutorial_notebooks_avoid_low_level_io_and_shell_workflow_cells() -> Non
         "subprocess.run(",
         "run_or_submit_notebook_cli_command(",
         "run_or_submit_notebook_function(",
+        ".loc[",
+        ".query(",
+        ".isin(",
+        ".merge(",
+        ".groupby(",
+        ".pivot",
+        ".sort_values(",
+        ".drop_duplicates(",
         "display_table_previews(cfg=",
         "display_metric_source_preview(cfg=",
         "display_dashboard_output_previews(",

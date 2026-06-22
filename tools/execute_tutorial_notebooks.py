@@ -148,7 +148,13 @@ NOTEBOOK_CONTRACT_FORBIDDEN_SNIPPETS = (
     ".to_parquet(",
     "subprocess.run(",
     ".loc[",
+    ".query(",
+    ".isin(",
     ".merge(",
+    ".groupby(",
+    ".pivot",
+    ".sort_values(",
+    ".drop_duplicates(",
 )
 NOTEBOOK_CONTRACT_SNIPPET_REMEDIATIONS = {
     "import subprocess": "Use package workflow helpers from spatial_vtk instead of shelling out from notebooks.",
@@ -178,7 +184,13 @@ NOTEBOOK_CONTRACT_SNIPPET_REMEDIATIONS = {
     ".to_csv(": "Use package workflow/table writers so output formats and atomic writes stay centralized.",
     ".to_parquet(": "Use package workflow/table writers so output formats and atomic writes stay centralized.",
     ".loc[": "Move reusable filtering into package helpers when it is part of the tutorial workflow.",
+    ".query(": "Move reusable filtering into package helpers when it is part of the tutorial workflow.",
+    ".isin(": "Move reusable set-membership filtering into package helpers when it is part of the tutorial workflow.",
     ".merge(": "Move reusable joins into package helpers when they are part of the tutorial workflow.",
+    ".groupby(": "Move reusable aggregations into package helpers when they are part of the tutorial workflow.",
+    ".pivot": "Move reusable reshaping into package helpers when it is part of the tutorial workflow.",
+    ".sort_values(": "Move reusable ordering into package helpers when it is part of the tutorial workflow.",
+    ".drop_duplicates(": "Move reusable de-duplication into package helpers when it is part of the tutorial workflow.",
 }
 NOTEBOOK_CONTRACT_SHELL_PATTERN_REMEDIATION = (
     "Use imported package workflow helpers; notebooks should not run svtk commands through shell cells."

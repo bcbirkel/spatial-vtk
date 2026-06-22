@@ -116,6 +116,9 @@ Changelog
   - Made tutorial notebook source-contract diagnostics actionable by naming
     the package workflow, result-object, table-loader, or figure-helper pattern
     that should replace each forbidden shell, path, table, or DataFrame idiom.
+  - Extended tutorial notebook source-contract checks to reject additional
+    notebook-local DataFrame filtering, joining, aggregation, reshaping,
+    ordering, and de-duplication idioms that should live in package helpers.
 
 - **Workflow readiness and dashboard parsing** *(Fixed)*
 
