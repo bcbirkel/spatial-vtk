@@ -545,24 +545,33 @@ Public sidecar helpers exposed by ``spatial_vtk.visualize``:
 Routine notebooks should use the public helpers listed above and the
 family-specific ``spatial_vtk.visualize.context``, ``spatial_vtk.visualize.qc``,
 ``spatial_vtk.visualize.waveforms``, and ``spatial_vtk.visualize.dashboard``
-entry points. The shared utility modules below are documented for advanced
-scripts and package extension points; they are not notebook workflow entry
-points.
+entry points. Shared figure helpers that are useful in scripts or package
+extension code are exposed through ``spatial_vtk.visualize`` so callers do not
+need to import implementation modules directly.
 
-.. automodule:: spatial_vtk.visualize.figure_context
-   :members:
+.. autosummary::
+   :nosignatures:
 
-.. automodule:: spatial_vtk.visualize.figure_io
-   :members:
-
-.. automodule:: spatial_vtk.visualize.figure_sidecars
-   :members:
-
-.. automodule:: spatial_vtk.visualize.fit
-   :members:
-
-.. automodule:: spatial_vtk.visualize.record_sections
-   :members:
-
-.. automodule:: spatial_vtk.visualize.selection
-   :members:
+   spatial_vtk.visualize.FigureSidecarResult
+   spatial_vtk.visualize.add_figure_family_sidecar_status
+   spatial_vtk.visualize.apply_figure_context
+   spatial_vtk.visualize.build_record_section_rows
+   spatial_vtk.visualize.context_value_label
+   spatial_vtk.visualize.default_figure_paths
+   spatial_vtk.visualize.figure_context_lines
+   spatial_vtk.visualize.figure_context_text
+   spatial_vtk.visualize.figure_family_sidecar_summary
+   spatial_vtk.visualize.figure_sidecar_dimension_counts
+   spatial_vtk.visualize.figure_sidecar_metadata_path
+   spatial_vtk.visualize.figure_sidecar_status_frame
+   spatial_vtk.visualize.finish_figure
+   spatial_vtk.visualize.finish_figure_with_sidecar
+   spatial_vtk.visualize.is_log2_ratio_field
+   spatial_vtk.visualize.layered_figure_rows
+   spatial_vtk.visualize.log2_effect_to_percent
+   spatial_vtk.visualize.plot_observed_synthetic_record_section
+   spatial_vtk.visualize.plot_record_section
+   spatial_vtk.visualize.read_figure_sidecar_metadata
+   spatial_vtk.visualize.savefig
+   spatial_vtk.visualize.sidecar_rows_for_write
+   spatial_vtk.visualize.write_figure_row_sidecar

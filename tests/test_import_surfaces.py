@@ -2705,6 +2705,15 @@ def test_visualize_api_docs_use_public_entry_points():
     assert ".. automodule:: spatial_vtk.visualize.dashboard\n" in text
     assert ".. automodule:: spatial_vtk.visualize.qc\n" in text
     assert ".. automodule:: spatial_vtk.visualize.waveforms\n" in text
+    assert "Shared figure helpers that are useful in scripts or package\nextension code are exposed through ``spatial_vtk.visualize``" in text
+    assert "spatial_vtk.visualize.FigureSidecarResult" in text
+    assert "spatial_vtk.visualize.add_figure_family_sidecar_status" in text
+    assert "spatial_vtk.visualize.apply_figure_context" in text
+    assert "spatial_vtk.visualize.build_record_section_rows" in text
+    assert "spatial_vtk.visualize.default_figure_paths" in text
+    assert "spatial_vtk.visualize.finish_figure_with_sidecar" in text
+    assert "spatial_vtk.visualize.figure_sidecar_status_frame" in text
+    assert "spatial_vtk.visualize.plot_observed_synthetic_record_section" in text
     assert "Routine notebooks should use the context helpers re-exported by\n``spatial_vtk.visualize``" in text
     assert "Routine notebooks should use the QC helpers re-exported by\n``spatial_vtk.visualize``" in text
     assert "Routine notebooks\nshould use the waveform helpers re-exported by ``spatial_vtk.visualize``" in text
@@ -2747,6 +2756,12 @@ def test_visualize_api_docs_use_public_entry_points():
         "spatial_vtk.visualize.dashboard.launch",
         "spatial_vtk.visualize.dashboard.maps",
         "spatial_vtk.visualize.dashboard.tables",
+        "spatial_vtk.visualize.figure_context",
+        "spatial_vtk.visualize.figure_io",
+        "spatial_vtk.visualize.figure_sidecars",
+        "spatial_vtk.visualize.fit",
+        "spatial_vtk.visualize.record_sections",
+        "spatial_vtk.visualize.selection",
     )
     for module_name in forbidden_modules:
         assert f".. automodule:: {module_name}" not in text

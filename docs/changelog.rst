@@ -4,6 +4,17 @@ Changelog
 2026-06-22
 ----------
 
+- **Visualize API public helper surface** *(Changed)*
+
+  - Replaced the lower-level shared visualize utility automodule block with
+    public ``spatial_vtk.visualize`` autosummary entries for figure sidecars,
+    figure context labels, figure saving, and record-section helpers.
+  - Kept the family-specific public modules documented for context, QC,
+    waveform, and dashboard workflows while steering reusable helpers through
+    stable package re-exports.
+  - Added source-contract coverage so internal visualize utility modules are
+    not reintroduced as notebook-facing API reference sections.
+
 - **Step 1 notebook workflow ownership** *(Changed)*
 
   - Switched the standard Step 1 notebook to
