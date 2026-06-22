@@ -1701,6 +1701,11 @@ def test_step05_uses_configured_geojson_workflow_and_table_io() -> None:
     assert "geojson_corridor_result.boundary_crossing_frame()" in source
     assert "geojson_corridor_result.outward_event_frame()" in source
     assert "geojson_corridor_result.status_frame()" in source
+    assert "## GeoJSON Region Overview, Contrast, and Residual Map" in source
+    assert "Outputs: a region overview map, region contrast figure" in source
+    assert "targeted region residual map" in source
+    assert "## Regional PGA Contrast" not in source
+    assert "## Residual Map for Events and Stations in Different Regions" not in source
     assert "write_standard_geojson_region_figures," not in source
     assert "write_standard_geojson_corridor_figures," not in source
     assert "from spatial_vtk.spatial import load_standard_geojson_workflow_output_status" in source

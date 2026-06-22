@@ -25,6 +25,16 @@ Changelog
   - Added notebook source-contract coverage so the Step 4 map section stays
     aligned with the package helper.
 
+- **Step 5 region-figure notebook flow** *(Fixed)*
+
+  - Combined the standard Step 5 GeoJSON overview, regional contrast, and
+    targeted residual-map descriptions into the package-owned
+    ``write_region_figures(...)`` section.
+  - Removed orphan region-contrast and targeted residual-map headings that made
+    the notebook look like those figures were skipped.
+  - Added source-contract coverage so the Step 5 region section stays aligned
+    with the helper that writes all three outputs.
+
 - **Metric figure selection audit** *(Changed)*
 
   - Added ``MetricFigureContext.metric_selection_status_frame()`` so large-run
