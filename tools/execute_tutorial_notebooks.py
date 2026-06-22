@@ -52,7 +52,7 @@ WARNING_PATTERN = re.compile(
     r"\bWARNING\s*:",
     re.IGNORECASE,
 )
-NOTEBOOK_RUNTIME_MODULES = {
+FALLBACK_NOTEBOOK_RUNTIME_MODULES = {
     "spatial_vtk": "spatial_vtk",
     "nbformat": "nbformat",
     "nbclient": "nbclient",
@@ -82,6 +82,31 @@ NOTEBOOK_RUNTIME_MODULES = {
     "streamlit": "streamlit",
     "streamlit-folium": "streamlit_folium",
 }
+
+
+def _tutorial_runtime_modules_from_validation_checker() -> dict[str, str]:
+    """Return tutorial runtime imports from the validation checker contract."""
+
+    checker_path = Path(__file__).with_name("check_validation_environment.py")
+    if not checker_path.exists():
+        return dict(FALLBACK_NOTEBOOK_RUNTIME_MODULES)
+    try:
+        spec = importlib.util.spec_from_file_location("_svtk_validation_checker", checker_path)
+        if spec is None or spec.loader is None:
+            return dict(FALLBACK_NOTEBOOK_RUNTIME_MODULES)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+        runtime: dict[str, str] = {}
+        for group in module.normalize_groups(["tutorial"]):
+            for requirement in module.MODULE_GROUPS[group]:
+                runtime.setdefault(requirement.label, requirement.module)
+        return runtime or dict(FALLBACK_NOTEBOOK_RUNTIME_MODULES)
+    except Exception:
+        return dict(FALLBACK_NOTEBOOK_RUNTIME_MODULES)
+
+
+NOTEBOOK_RUNTIME_MODULES = _tutorial_runtime_modules_from_validation_checker()
 SUPPORTED_TUTORIAL_PYTHON_RANGE = ">=3.10,<3.14"
 MIN_TUTORIAL_PYTHON = (3, 10)
 MAX_TUTORIAL_PYTHON = (3, 14)

@@ -177,6 +177,18 @@ def test_tutorial_notebook_runtime_preflight_includes_package_runtime_modules() 
     """The runtime check should cover more than the Jupyter kernel packages."""
 
     module = _load_executor_module()
+    checker_path = Path(__file__).resolve().parents[1] / "tools" / "check_validation_environment.py"
+    spec = importlib.util.spec_from_file_location("check_validation_environment_for_executor_test", checker_path)
+    assert spec is not None
+    checker = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    sys.modules[spec.name] = checker
+    spec.loader.exec_module(checker)
+    expected_from_checker = {
+        requirement.label: requirement.module
+        for group in checker.normalize_groups(["tutorial"])
+        for requirement in checker.MODULE_GROUPS[group]
+    }
 
     assert set(module.NOTEBOOK_RUNTIME_MODULES) == {
         "spatial_vtk",
@@ -208,6 +220,7 @@ def test_tutorial_notebook_runtime_preflight_includes_package_runtime_modules() 
         "streamlit",
         "streamlit-folium",
     }
+    assert module.NOTEBOOK_RUNTIME_MODULES == expected_from_checker
     assert module.NOTEBOOK_RUNTIME_MODULES["spatial_vtk"] == "spatial_vtk"
     assert module.NOTEBOOK_RUNTIME_MODULES["pandas"] == "pandas"
     assert module.NOTEBOOK_RUNTIME_MODULES["PyYAML"] == "yaml"
