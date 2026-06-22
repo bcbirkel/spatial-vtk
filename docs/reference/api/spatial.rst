@@ -213,6 +213,10 @@ raw result object. Display
 configured-output readiness table and
 ``StandardSpatialWorkflowOutputStatusResult.display_table_previews(...)`` for
 bounded summaries of existing spatial outputs.
+The status/result helpers keep expensive spatial calculators lazy: importing
+them for notebook readiness checks does not import clustering, PCA,
+autocorrelation, geology, or pattern-similarity backends until a compute step
+actually runs.
 
 ``StandardSpatialWorkflowOutputResult`` is the standard Step 4 output bundle
 for already-loaded notebook workflows. Use its ``status_frame()`` and

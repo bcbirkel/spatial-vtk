@@ -4,6 +4,17 @@ Changelog
 2026-06-22
 ----------
 
+- **Step 4 spatial status imports** *(Changed)*
+
+  - Moved clustering, PCA, autocorrelation, geology, and pattern-similarity
+    calculator imports out of the Step 4 workflow module import path and into
+    the compute functions that use them.
+  - Kept spatial workflow status/result helpers importable for lightweight
+    notebook readiness checks without importing expensive spatial-analysis
+    backends first.
+  - Added source-contract coverage so Step 4 status helpers keep those
+    optional calculators lazy.
+
 - **Step 4 spatial output status** *(Fixed)*
 
   - Updated ``StandardSpatialWorkflowOutputResult.status_frame()`` to start

@@ -988,6 +988,30 @@ def test_large_run_spatial_helpers_keep_matplotlib_lazy():
     assert not eager_matplotlib_imports
 
 
+def test_spatial_workflow_status_keeps_optional_calculators_lazy():
+    """Step 4 status helpers should not eagerly import heavy calculators."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    source_path = root / "src" / "spatial_vtk" / "spatial" / "calculate" / "workflow.py"
+    tree = ast.parse(source_path.read_text(encoding="utf-8"))
+
+    heavy_modules = {
+        "spatial_vtk.spatial.calculate.clustering",
+        "spatial_vtk.spatial.calculate.correlation",
+        "spatial_vtk.spatial.calculate.geology",
+        "spatial_vtk.spatial.calculate.patterns",
+        "spatial_vtk.spatial.calculate.pca",
+    }
+    eager_imports: list[str] = []
+    for node in tree.body:
+        if isinstance(node, ast.Import):
+            eager_imports.extend(alias.name for alias in node.names if alias.name in heavy_modules)
+        elif isinstance(node, ast.ImportFrom) and str(node.module or "") in heavy_modules:
+            eager_imports.append(str(node.module))
+
+    assert not eager_imports
+
+
 def test_dashboard_extra_names_dashboard_runtime_dependencies():
     """The advertised dashboard extra should not be empty package metadata."""
 

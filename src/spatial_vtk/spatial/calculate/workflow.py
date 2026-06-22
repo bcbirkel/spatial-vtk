@@ -44,16 +44,6 @@ from spatial_vtk.io import (
     write_output_table,
     write_table,
 )
-from spatial_vtk.spatial.calculate.clustering import assign_redcap_clusters, run_residual_feature_clustering
-from spatial_vtk.spatial.calculate.correlation import (
-    build_distance_bin_summary,
-    compute_global_morans_i,
-    evaluate_spatial_block_holdouts,
-    moran_result_to_frame,
-)
-from spatial_vtk.spatial.calculate.geology import bootstrap_contrast_table
-from spatial_vtk.spatial.calculate.patterns import build_pattern_similarity_station_anomalies
-from spatial_vtk.spatial.calculate.pca import compute_pca_spatial_modes
 from spatial_vtk.spatial.calculate.prepare_stats import (
     EVENT_CENTERED_FIELD_COLUMNS,
     METRIC_FIELD_COLUMNS,
@@ -1347,6 +1337,14 @@ def run_spatial_statistics_workflow(
     progress(f"running {len(metrics_to_run)} metric(s): {', '.join(metrics_to_run)}")
     station_df = _load_station_metadata(station_metadata, cfg=config, progress=progress)
     failures: list[dict[str, str]] = []
+    from spatial_vtk.spatial.calculate.clustering import run_residual_feature_clustering
+    from spatial_vtk.spatial.calculate.correlation import (
+        build_distance_bin_summary,
+        compute_global_morans_i,
+        moran_result_to_frame,
+    )
+    from spatial_vtk.spatial.calculate.geology import bootstrap_contrast_table
+    from spatial_vtk.spatial.calculate.pca import compute_pca_spatial_modes
 
     checkpoint_run_dir: Path | None = None
     if resume and (metrics_path is not None or checkpoint_dir is not None):
@@ -1925,6 +1923,8 @@ def _build_block_holdout_predictions(
         if subset.empty:
             continue
         progress(f"block_holdout_predictions {metric_name}: evaluating {len(subset)} field row(s)")
+        from spatial_vtk.spatial.calculate.correlation import evaluate_spatial_block_holdouts
+
         _blocks, predictions, _summary = evaluate_spatial_block_holdouts(
             subset,
             block_size_km=settings.block_size_km,
@@ -1966,6 +1966,8 @@ def _build_redcap_clusters(
             }
         )
         progress(f"redcap_clusters {metric_name}: clustering {len(redcap_input)} station row(s)")
+        from spatial_vtk.spatial.calculate.clustering import assign_redcap_clusters
+
         clustered, _scores = assign_redcap_clusters(
             redcap_input,
             min_k=settings.cluster_min_k,
@@ -2031,6 +2033,8 @@ def _build_pattern_similarity_anomalies(
                         f"{metric_name}/{band_name}/{component_name or 'all-components'}/{model_name or 'all-models'}: "
                         f"{len(subset)} metric row(s)"
                     )
+                    from spatial_vtk.spatial.calculate.patterns import build_pattern_similarity_station_anomalies
+
                     anomalies = build_pattern_similarity_station_anomalies(
                         subset,
                         metric=metric_name,
