@@ -975,12 +975,14 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "qc_summary_readiness_from_config," not in standard_text
     assert "qc_inputs = load_standard_qc_inputs(cfg=cfg)" in standard_text
     assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in standard_text
+    assert "config_path = context.config_path" in standard_text
     assert "qc_outputs.run_inventory_step_if_needed(" in standard_text
     assert "qc_outputs.run_overlap_step_if_needed(" in standard_text
     assert "qc_outputs.run_summary_step_if_needed(" in standard_text
     assert 'display_notebook_step_result(qc_inventory_result, label="Full QC inventory", display=display)' in standard_text
     assert 'display_notebook_step_result(qc_overlap_result, label="Overlap QC inventory", display=display)' in standard_text
     assert 'display_notebook_step_result(qc_summary_workflow_result, label="QC summary tables", display=display)' in standard_text
+    assert "display(qc_outputs.checkpoint_status_frame())" in standard_text
     assert "print(qc_inventory_result)" not in standard_text
     assert "print(qc_overlap_result)" not in standard_text
     assert "print(qc_summary_workflow_result)" not in standard_text
@@ -1049,6 +1051,7 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
     assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in large_run_text
     assert "step_outputs = qc_outputs.outputs" not in large_run_text
     assert "display(qc_outputs.status_frame())" in large_run_text
+    assert "display(qc_outputs.checkpoint_status_frame())" in large_run_text
     assert 'from spatial_vtk.io import output_group' not in large_run_text
     assert 'step_outputs = output_group("step_02_qc")' not in large_run_text
     assert "run_qc_inventory_from_config," not in large_run_text

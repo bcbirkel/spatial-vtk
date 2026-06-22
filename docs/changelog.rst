@@ -4,6 +4,15 @@ Changelog
 2026-06-22
 ----------
 
+- **Step 2 notebook checkpoint visibility** *(Fixed)*
+
+  - Bound the standard Step 2 dashboard launch cell to
+    ``context.config_path`` so the notebook can run cleanly from a fresh kernel.
+  - Displayed ``qc_outputs.checkpoint_status_frame()`` after Step 2 QC
+    inventory work in both standard and large-run notebooks.
+  - Added notebook contract coverage so checkpoint progress stays visible in
+    future Step 2 edits.
+
 - **QC checkpoint status frames** *(Added)*
 
   - Added ``qc_checkpoint_status_frame()`` for lightweight inspection of trace
