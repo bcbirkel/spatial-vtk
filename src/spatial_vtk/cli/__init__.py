@@ -2192,6 +2192,14 @@ def _resolve_metrics_dashboard_paths(
 
     config = _optional_cli_config(config_path, run_scenario=run_scenario)
     if config is None:
+        if metrics_root or summary_root:
+            supplied = "--metrics-dataset-dir" if metrics_root else "--dashboard-summary-table-dir"
+            missing = "--dashboard-summary-table-dir" if metrics_root else "--metrics-dataset-dir"
+            missing_role = "dashboard_summaries table directory" if metrics_root else "metrics_dashboard row dataset"
+            raise ValueError(
+                f"{supplied} was provided, but no Spatial-VTK config was found to resolve the companion "
+                f"{missing_role}. Pass {missing}, pass --config, or run 'svtk config set PATH'."
+            )
         raise ValueError(
             "No metrics dashboard row dataset or dashboard summary-table directory was provided, "
             "and no Spatial-VTK config was found. "

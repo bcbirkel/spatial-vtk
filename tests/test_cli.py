@@ -4091,6 +4091,28 @@ def test_cli_dashboard_missing_config_errors_name_dashboard_artifacts(tmp_path, 
     assert "trace-summary path" not in qc_error
 
 
+def test_cli_dashboard_metrics_partial_path_without_config_names_missing_companion(tmp_path, monkeypatch, capsys):
+    """Partial dashboard overrides should explain which companion path is missing."""
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("SVTK_CONFIG_FILE", raising=False)
+    monkeypatch.setenv("SVTK_CLI_CONFIG_FILE", str(tmp_path / "missing-settings.json"))
+
+    assert main(["dashboard", "metrics", "--metrics-dataset-dir", str(tmp_path / "dashboard_metrics")]) == 2
+    metrics_only_error = capsys.readouterr().err
+    assert "--metrics-dataset-dir was provided" in metrics_only_error
+    assert "dashboard_summaries table directory" in metrics_only_error
+    assert "Pass --dashboard-summary-table-dir" in metrics_only_error
+    assert "dashboard roots" not in metrics_only_error
+
+    assert main(["dashboard", "metrics", "--dashboard-summary-table-dir", str(tmp_path / "dashboard_summaries")]) == 2
+    summary_only_error = capsys.readouterr().err
+    assert "--dashboard-summary-table-dir was provided" in summary_only_error
+    assert "metrics_dashboard row dataset" in summary_only_error
+    assert "Pass --metrics-dataset-dir" in summary_only_error
+    assert "dashboard roots" not in summary_only_error
+
+
 def test_cli_dashboard_metrics_accepts_clear_path_aliases(tmp_path, monkeypatch, capsys):
     metrics_path = tmp_path / "dashboard_metrics"
     summary_path = tmp_path / "dashboard_summaries"

@@ -1012,6 +1012,9 @@ Changelog
   - Hardened Streamlit dashboard launch checks so occupied ports are detected
     before launch and delayed startup failures are reported before the CLI
     prints a running-dashboard URL.
+  - Made partial metrics-dashboard path overrides without a config name the
+    supplied flag and the missing companion dashboard artifact instead of
+    reporting that both dashboard paths were omitted.
 
 - **Lazy dashboard and workflow imports** *(Hardened)*
 
