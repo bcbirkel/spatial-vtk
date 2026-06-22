@@ -144,8 +144,9 @@ the stable package surface below.
        metadata will be read, how row sampling is configured, and normalized
        ``artifact``, ``artifact_role``, ``status``, ``resolved_path``,
        ``path``, and ``exists`` columns for the sidecar directory;
-       ``status_frame()`` reports per-figure provenance from saved JSON
-       sidecars without loading large CSV row files.
+       ``status_frame()`` reports disabled/not-configured/missing-directory
+       states when no metadata exists yet and per-figure provenance from saved
+       JSON sidecars after rendering, without loading large CSV row files.
    * - ``NotebookDashboardCommands`` and
        ``notebook_dashboard_launch_commands``
      - Resolve dashboard launch settings from config-backed dashboard outputs;

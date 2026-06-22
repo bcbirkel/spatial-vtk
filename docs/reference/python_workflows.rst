@@ -292,9 +292,11 @@ the large-run notebooks.
      - Read the notebook-side figure sidecar settings and return keyword
        arguments accepted by supported plotting helpers. The returned settings
        object also has ``status_frame()``, which reads only the small sidecar
-       JSON files and shows which figures were written, whether row sidecars
-       are exact or sampled, and which aggregated figures include source-row
-       provenance.
+       JSON files. Before any JSON metadata exists, it reports disabled,
+       not-configured, missing-directory, and empty-directory states as an
+       explanatory notebook row; after figures are written, it shows which
+       figures were written, whether row sidecars are exact or sampled, and
+       which aggregated figures include source-row provenance.
    * - ``spatial_vtk.config.notebook_figure_settings``
      - Read common notebook figure controls such as ``SVTK_MAKE_FIGURES``,
        ``SVTK_MAKE_METRIC_FIGURES``, ``SVTK_ADD_BASEMAP``,

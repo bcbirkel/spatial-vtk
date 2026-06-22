@@ -1665,7 +1665,8 @@ def test_config_api_docs_include_compute_helpers():
     assert "Routine notebooks\n       should call workflow result-object figure methods instead" in text
     assert "``NotebookFigureSidecarSettings`` and" in text
     assert "``readiness_frame()`` reports whether sidecars are enabled" in text
-    assert "``status_frame()`` reports per-figure provenance" in text
+    assert "``status_frame()`` reports disabled/not-configured/missing-directory" in text
+    assert "per-figure provenance from saved\n       JSON sidecars after rendering" in text
     assert "``NotebookDashboardCommands`` and" in text
     assert "``notebook_dashboard_launch_commands``" in text
     assert "``metrics_dataset_dir``" in text
