@@ -335,8 +335,11 @@ factories used by the large-run figure suite:
    ``first_figure_path`` and ``figure_paths_preview`` display fields so
    notebooks do not parse preview strings to inspect generated figures. It
    also includes normalized ``name``, ``artifact_label``, ``resolved_path``,
-   ``path``, ``exists``, ``artifact_role``, and ``status`` columns keyed to
-   the first figure in each family.
+   ``path``, ``exists``, ``artifact_role``, ``status``, and
+   ``status_reason`` columns keyed to the first figure in each family.
+   ``status_reason`` distinguishes written figures from disabled optional
+   families, not-ready contexts, and figure families that matched no rows or
+   inputs.
    The returned ``MetricFigureSuiteResult`` also owns
    ``context_status_frames()`` and ``display_context_status(...)`` so notebooks
    can display metric-table readiness, spectral-contract checks, and dimension

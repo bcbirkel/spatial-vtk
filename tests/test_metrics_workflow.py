@@ -1452,6 +1452,7 @@ def test_write_large_run_metric_figure_suite_from_notebook_settings_delegates(tm
     assert {"name", "artifact_label", "resolved_path", "path", "exists"} <= set(status.columns)
     assert status["artifact"].tolist() == expected
     assert status["status"].tolist() == ["written"] * len(expected)
+    assert status["status_reason"].tolist() == ["written"] * len(expected)
     assert status["figure_count"].tolist() == [1] * len(expected)
     assert status["existing_figure_count"].tolist() == [0] * len(expected)
     assert status["figure_paths"].tolist() == [[str(tmp_path / "figures" / f"{name}.png")] for name in expected]
@@ -1491,6 +1492,34 @@ def test_metric_figure_suite_result_displays_context_status_frames() -> None:
     ready_result = MetricFigureSuiteResult(context=ReadyContext(), rows=())
     ready_frames = ready_result.context_status_frames()
     assert list(ready_frames) == ["context_status", "spectral_metric_contract", "dimension_summary"]
+
+
+def test_metric_figure_suite_status_reports_skip_reasons() -> None:
+    """Figure-suite status rows should expose structured skip reasons."""
+
+    class FakeContext:
+        write_sidecars = False
+        sidecar_output_dir = None
+
+    result = MetricFigureSuiteResult(
+        context=FakeContext(),
+        rows=(
+            {
+                "artifact": "score_trends",
+                "status": "skipped",
+                "status_reason": "disabled",
+                "figure_count": 0,
+                "existing_figure_count": 0,
+                "figure_paths": [],
+                "message": "Set SVTK_MAKE_SCORE_TRENDS=1 to render optional GOF score trends.",
+            },
+        ),
+    )
+
+    status = result.status_frame().set_index("artifact")
+    assert status.loc["score_trends", "status"] == "skipped"
+    assert status.loc["score_trends", "status_reason"] == "disabled"
+    assert "SVTK_MAKE_SCORE_TRENDS" in status.loc["score_trends", "message"]
 
 
 def test_metric_figure_context_not_ready_without_finite_values(tmp_path) -> None:

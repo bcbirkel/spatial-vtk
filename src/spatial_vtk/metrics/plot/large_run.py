@@ -2137,6 +2137,7 @@ class MetricFigureSuiteResult:
                 "exists",
                 "artifact",
                 "status",
+                "status_reason",
                 "figure_count",
                 "existing_figure_count",
                 "figure_paths",
@@ -2161,16 +2162,24 @@ class MetricFigureSuiteResult:
         )
 
 
-def _metric_suite_status_row(artifact: str, outputs: Sequence[Path], *, message: str = "") -> dict[str, Any]:
+def _metric_suite_status_row(
+    artifact: str,
+    outputs: Sequence[Path],
+    *,
+    message: str = "",
+    status_reason: str | None = None,
+) -> dict[str, Any]:
     """Return one notebook status row for a metric figure family."""
 
     paths = [Path(path) for path in outputs]
     preview = ", ".join(str(path) for path in paths[:3])
     if len(paths) > 3:
         preview += f", ... (+{len(paths) - 3} more)"
+    resolved_status_reason = status_reason or ("written" if paths else "no_figures_written")
     return {
         "artifact": artifact,
         "status": "written" if paths else "skipped",
+        "status_reason": resolved_status_reason,
         "figure_count": int(len(paths)),
         "existing_figure_count": int(sum(path.exists() for path in paths)),
         "figure_paths": [str(path) for path in paths],
@@ -2284,6 +2293,7 @@ def write_large_run_metric_figure_suite_from_notebook_settings(
             {
                 "artifact": "metric_figure_suite",
                 "status": "skipped",
+                "status_reason": "disabled",
                 "figure_count": 0,
                 "existing_figure_count": 0,
                 "figure_paths": [],
@@ -2298,6 +2308,7 @@ def write_large_run_metric_figure_suite_from_notebook_settings(
             {
                 "artifact": "metric_figure_suite",
                 "status": "skipped",
+                "status_reason": "context_not_ready",
                 "figure_count": 0,
                 "existing_figure_count": 0,
                 "figure_paths": [],
@@ -2333,6 +2344,7 @@ def write_large_run_metric_figure_suite_from_notebook_settings(
                 "score_trends",
                 [],
                 message="Set SVTK_MAKE_SCORE_TRENDS=1 to render optional GOF score trends.",
+                status_reason="disabled",
             )
         )
     else:

@@ -1449,6 +1449,7 @@ def test_metrics_api_docs_use_public_plot_entry_point():
     assert "``write_large_run_metric_figure_suite_from_notebook_settings``" in text
     assert "exact ``figure_paths`` lists" in text
     assert "do not parse preview strings" in text
+    assert "``status_reason`` distinguishes written figures from disabled optional\n   families" in text
     assert "``MetricFigureSuiteResult`` also owns" in text
     assert "``context_status_frames()`` and ``display_context_status(...)``" in text
     assert "large-run notebooks do not import individual plotting\n   functions" in text
@@ -2367,6 +2368,7 @@ def test_spatial_api_docs_use_public_plot_and_map_entry_points():
     assert "New notebooks should call\n``load_standard_spatial_workflow_output_status(...).write_figure_suite(...)``" in text
     assert "exact ``figure_paths`` lists" in text
     assert "preview-oriented path fields" in text
+    assert "``status_reason`` distinguishes written figure\n   families from disabled suites" in text
     assert "station_summary_for_item" in text
     assert "item_source_rows" in text
     assert "``status_frame`` includes normalized ``artifact``" in text

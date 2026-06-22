@@ -21,6 +21,15 @@ Changelog
   - Preserved explicit ``cfg=`` overrides for scripts that intentionally render
     figures from a different configured output registry.
 
+- **Figure-suite skip diagnostics** *(Changed)*
+
+  - Added ``status_reason`` to Step 3 metric and Step 4 spatial figure-suite
+    status frames so notebooks can distinguish written figures, disabled
+    optional suites, context-not-ready skips, and figure families with no
+    matching rows or inputs.
+  - Documented the status reason contract in the metric and spatial API
+    references and added source-contract coverage for the field.
+
 - **Standard notebook setup imports** *(Changed)*
 
   - Moved ``notebook_run_context`` imports for standard Steps 1, 4, 5, 6, and

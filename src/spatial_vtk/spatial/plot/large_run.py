@@ -2323,6 +2323,7 @@ class SpatialFigureSuiteResult:
                 "exists",
                 "artifact",
                 "status",
+                "status_reason",
                 "figure_count",
                 "existing_figure_count",
                 "figure_paths",
@@ -2400,22 +2401,30 @@ def prepare_spatial_figure_context_from_notebook_settings(
     )
 
 
-def _spatial_suite_status_row(artifact: str, outputs: Sequence[Path]) -> dict[str, Any]:
+def _spatial_suite_status_row(
+    artifact: str,
+    outputs: Sequence[Path],
+    *,
+    message: str = "",
+    status_reason: str | None = None,
+) -> dict[str, Any]:
     """Return one notebook status row for a spatial figure family."""
 
     paths = [Path(path) for path in outputs]
     preview = ", ".join(str(path) for path in paths[:3])
     if len(paths) > 3:
         preview += f", ... (+{len(paths) - 3} more)"
+    resolved_status_reason = status_reason or ("written" if paths else "no_figures_written")
     return {
         "artifact": artifact,
         "status": "written" if paths else "skipped",
+        "status_reason": resolved_status_reason,
         "figure_count": int(len(paths)),
         "existing_figure_count": int(sum(path.exists() for path in paths)),
         "figure_paths": [str(path) for path in paths],
         "first_figure_path": None if not paths else str(paths[0]),
         "figure_paths_preview": preview,
-        "message": "" if paths else "No figures were written; check context status and missing-table messages above.",
+        "message": message if message else ("" if paths else "No figures were written; check context status and missing-table messages above."),
     }
 
 
@@ -2483,6 +2492,7 @@ def write_large_run_spatial_figure_suite_from_notebook_settings(
             {
                 "artifact": "spatial_figure_suite",
                 "status": "skipped",
+                "status_reason": "disabled",
                 "figure_count": 0,
                 "existing_figure_count": 0,
                 "figure_paths": [],

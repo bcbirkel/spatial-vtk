@@ -486,8 +486,11 @@ schemas.
 ``SpatialFigureSuiteResult.status_frame``
    Returns one row per spatial figure family with exact ``figure_paths``,
    ``first_figure_path``, ``figure_paths_preview``, and normalized ``name``,
-   ``artifact_label``, ``artifact_role``, ``status``, ``resolved_path``,
-   ``path``, and ``exists`` columns keyed to the first figure in each family.
+   ``artifact_label``, ``artifact_role``, ``status``, ``status_reason``,
+   ``resolved_path``, ``path``, and ``exists`` columns keyed to the first
+   figure in each family. ``status_reason`` distinguishes written figure
+   families from disabled suites and figure families that matched no rows or
+   inputs.
 
 ``spectral_metric_contract_status``
    Return a compact PSA/FAS audit table for both ``metric_field`` and
