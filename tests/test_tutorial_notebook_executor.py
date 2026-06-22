@@ -1467,7 +1467,8 @@ def test_large_run_readme_distinguishes_public_and_implementation_imports() -> N
     assert "from spatial_vtk.metrics.plot import write_large_run_metric_figure_suite_from_notebook_settings" not in readme
     assert "spatial_outputs.write_figure_suite(" in readme
     assert "write_large_run_spatial_figure_suite_from_notebook_settings" not in readme
-    assert "Import from stable public packages" in readme
+    assert "large-run notebooks should use workflow result objects first" in readme
+    assert "For custom\nscripts or package extensions, import from stable public packages" in readme
     assert "deeper implementation modules below those packages" in readme
     for pattern in (
         "from spatial_vtk.metrics.plot.periods",

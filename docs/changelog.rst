@@ -4,6 +4,15 @@ Changelog
 2026-06-22
 ----------
 
+- **Large-run notebook import guidance** *(Changed)*
+
+  - Clarified that large-run notebooks should use workflow result objects for
+    plotting and output bookkeeping instead of hand-wiring individual plotting
+    calls.
+  - Kept ``spatial_vtk.metrics.plot``, ``spatial_vtk.spatial.plot``,
+    ``spatial_vtk.spatial.map``, and ``spatial_vtk.visualize`` documented as
+    stable public imports for custom scripts and package extensions.
+
 - **Dashboard documentation vocabulary** *(Changed)*
 
   - Replaced remaining dashboard ``root`` wording in the visualize API and

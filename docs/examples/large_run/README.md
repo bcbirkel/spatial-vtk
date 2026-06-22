@@ -71,8 +71,9 @@ metric_figure_suite = metric_outputs.write_large_run_figure_suite(metric_figure_
 ```
 
 Single-figure helpers remain available for custom Python scripts, but the
-large-run notebooks should not hand-wire individual plot calls, figure paths, or
-dataframe joins. Import from stable public packages such as
+large-run notebooks should use workflow result objects first and should not
+hand-wire individual plot calls, figure paths, or dataframe joins. For custom
+scripts or package extensions, import from stable public packages such as
 `spatial_vtk.metrics.plot`, `spatial_vtk.spatial.plot`,
 `spatial_vtk.spatial.map`, and `spatial_vtk.visualize`. Do not import from
 deeper implementation modules below those packages in notebooks; preflight
