@@ -236,6 +236,10 @@ class MetricFigureContext:
         if context.value_col not in metrics.columns:
             print(f"Cannot render metric figures: {context.value_col!r} is not present in metrics_long.")
             return context
+        finite_value_rows = _finite_value_row_count(metrics, context.value_col)
+        if finite_value_rows == 0:
+            print(f"Cannot render metric figures: no finite {context.value_col!r} values are present in selected metric rows.")
+            return context
         context.ready = True
         limit_text = "no per-figure row limit" if context.sample_rows <= 0 else f"up to {context.sample_rows:,} raw row(s) per figure"
         column_text = (
@@ -317,7 +321,10 @@ class MetricFigureContext:
         context.available_columns = list(metrics.columns)
         context.loaded_columns = list(metrics.columns)
         context.metrics_for_figures = context._apply_load_filters(context.metrics_for_figures)
-        context.ready = context.value_col in metrics.columns
+        context.ready = (
+            context.value_col in context.metrics_for_figures.columns
+            and _finite_value_row_count(context.metrics_for_figures, context.value_col) > 0
+        )
         return context
 
     @property
@@ -343,6 +350,15 @@ class MetricFigureContext:
             ),
             ("figure_dir", str(self.figure_dir)),
             ("selected_metric_rows", int(len(self.metrics_for_figures))),
+            ("value_col_present", self.value_col in self.metrics_for_figures.columns),
+            (
+                "finite_value_rows",
+                _finite_value_row_count(self.metrics_for_figures, self.value_col),
+            ),
+            (
+                "nonfinite_value_rows",
+                _nonfinite_value_row_count(self.metrics_for_figures, self.value_col),
+            ),
             ("available_column_count", int(len(self.available_columns))),
             ("loaded_column_count", int(len(self.loaded_columns))),
             ("value_col", self.value_col),
@@ -3168,6 +3184,23 @@ def _finite_value_rows(df: pd.DataFrame, value_col: str) -> pd.DataFrame:
     values = pd.to_numeric(out[value_col], errors="coerce")
     out[value_col] = values
     return out.loc[np.isfinite(values)].copy()
+
+
+def _finite_value_row_count(df: pd.DataFrame, value_col: str) -> int:
+    """Return the number of rows with finite numeric values in ``value_col``."""
+
+    if value_col not in df.columns:
+        return 0
+    values = pd.to_numeric(df[value_col], errors="coerce")
+    return int(np.isfinite(values).sum())
+
+
+def _nonfinite_value_row_count(df: pd.DataFrame, value_col: str) -> int:
+    """Return the number of selected rows lacking finite numeric values."""
+
+    if value_col not in df.columns:
+        return int(len(df))
+    return int(len(df) - _finite_value_row_count(df, value_col))
 
 
 def _input_group_counts(df: pd.DataFrame, group_cols: list[str], *, event_col: str | None) -> pd.DataFrame:

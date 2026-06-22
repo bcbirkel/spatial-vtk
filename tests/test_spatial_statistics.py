@@ -4367,6 +4367,9 @@ def test_metric_figure_context_reads_plot_columns_and_filters_defaults(tmp_path:
     status = context.status_frame().set_index("name")["value"]
     assert bool(status["ready"]) is True
     assert status["selected_metric_rows"] == 1
+    assert bool(status["value_col_present"]) is True
+    assert status["finite_value_rows"] == 1
+    assert status["nonfinite_value_rows"] == 0
     assert status["loaded_column_count"] == len(context.loaded_columns)
     assert status["default_components"] == "R"
     assert status["default_model"] == "m1"

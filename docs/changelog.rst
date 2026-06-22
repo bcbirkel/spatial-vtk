@@ -4,6 +4,13 @@ Changelog
 2026-06-22
 ----------
 
+- **Metric figure readiness** *(Fixed)*
+
+  - Updated large-run metric figure context readiness so a present value column
+    with no finite selected values is not reported as ready to render.
+  - Added finite and non-finite selected-value row counts to the metric figure
+    context status frame for easier notebook diagnostics on large datasets.
+
 - **Standard notebook setup imports** *(Changed)*
 
   - Moved ``notebook_run_context`` imports for standard Steps 1, 4, 5, 6, and

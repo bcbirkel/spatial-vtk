@@ -776,6 +776,10 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
 
     assert context.ready
     assert len(context.metrics_for_figures) == len(metrics)
+    context_status = context.status_frame().set_index("name")["value"]
+    assert bool(context_status.loc["value_col_present"]) is True
+    assert context_status.loc["finite_value_rows"] == 6
+    assert context_status.loc["nonfinite_value_rows"] == 2
     pga_item = next(context.iter_metric_frames(passband="1-2 sec", components=["Z"], model="m1", split_psa_period=False))
     station_summary = context.station_summary_for_map(pga_item["df"])
     item_station_summary = context.station_summary_for_item(pga_item)
@@ -1487,6 +1491,36 @@ def test_metric_figure_suite_result_displays_context_status_frames() -> None:
     ready_result = MetricFigureSuiteResult(context=ReadyContext(), rows=())
     ready_frames = ready_result.context_status_frames()
     assert list(ready_frames) == ["context_status", "spectral_metric_contract", "dimension_summary"]
+
+
+def test_metric_figure_context_not_ready_without_finite_values(tmp_path) -> None:
+    """Metric figure readiness should distinguish present but unusable values."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2"],
+            "station": ["STA", "STB"],
+            "metric": ["PGA", "PGV"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "component": ["Z", "Z"],
+            "model": ["m1", "m1"],
+            "log2_residual": [np.nan, np.inf],
+        }
+    )
+
+    context = MetricFigureContext.from_frame(
+        metrics,
+        tmp_path / "figures",
+        make_figures=True,
+        value_col="log2_residual",
+    )
+
+    assert context.ready is False
+    status = context.status_frame().set_index("name")["value"]
+    assert bool(status.loc["value_col_present"]) is True
+    assert status.loc["selected_metric_rows"] == 2
+    assert status.loc["finite_value_rows"] == 0
+    assert status.loc["nonfinite_value_rows"] == 2
 
 
 def test_metric_figure_suite_status_summarizes_sidecar_provenance(tmp_path) -> None:
