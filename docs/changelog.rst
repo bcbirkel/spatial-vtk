@@ -4,6 +4,16 @@ Changelog
 2026-06-22
 ----------
 
+- **QC checkpoint status frames** *(Added)*
+
+  - Added ``qc_checkpoint_status_frame()`` for lightweight inspection of trace
+    QC and metric QC checkpoint paths, row counts, completed event-station
+    records, and completed waveform component groups.
+  - Added ``StandardQCWorkflowOutputResult.checkpoint_status_frame()`` so
+    notebooks can display resume progress through the configured Step 2 result
+    object instead of reconstructing checkpoint filenames.
+  - Documented the status frame in the QC API and Python workflow references.
+
 - **Metric Slurm progress timing** *(Fixed)*
 
   - Made generated metric Slurm scripts create a shared workflow start-time

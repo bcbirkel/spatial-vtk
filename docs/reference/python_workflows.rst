@@ -514,6 +514,13 @@ The full QC inventory can be useful for observed-only or synthetic-only
 analysis, but metric calculations should normally use the overlap inventory so
 they only plan observed/synthetic pairs that can be compared.
 
+Use
+``spatial_vtk.qc.load_standard_qc_workflow_outputs(...).checkpoint_status_frame()``
+to inspect QC resume progress before rerunning a large job. That frame reports
+the combined waveform QC table, source-specific waveform checkpoints, and the
+metric QC inventory checkpoint with row counts and completed key counts while
+streaming only identifier columns from CSV checkpoints.
+
 The direct ``spatial_vtk.qc.run_qc_inventory_from_config``,
 ``spatial_vtk.qc.write_qc_inventory_overlap_from_config``, and
 ``spatial_vtk.qc.run_qc_summary_workflow_from_config`` functions remain public

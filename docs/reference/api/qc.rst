@@ -31,6 +31,7 @@ custom orchestration that already owns execution control:
    from spatial_vtk.qc import (
        build_metric_pair_retention_table_from_qc_inventory,
        build_qc_drop_cause_table_from_qc_inventory,
+       qc_checkpoint_status_frame,
        qc_inventory_readiness_from_config,
        qc_overlap_readiness_from_config,
        qc_summary_readiness_from_config,
@@ -88,6 +89,12 @@ Public helpers exposed by ``spatial_vtk.qc``:
        ``load_standard_qc_workflow_outputs(...).run_inventory_step_if_needed(...)``
        so skipped-step payloads, output status, and stale-output checks stay
        consistent.
+   * - ``qc_checkpoint_status_frame``
+     - Report configured waveform and metric QC checkpoint paths, row counts,
+       completed event-station counts, and completed component-group counts
+       without loading full QC inventories. Routine notebooks should usually
+       call this through
+       ``load_standard_qc_workflow_outputs(...).checkpoint_status_frame()``.
    * - ``qc_inventory_readiness_from_config``
      - Check whether configured event-station records, trace QC, and full QC
        inventory outputs are ready without loading large tables, with

@@ -65,6 +65,7 @@ _WORKFLOW_EXPORTS = {
     "load_standard_qc_workflow_outputs",
     "load_comparison_eligible_records",
     "QCSummaryWorkflowResult",
+    "qc_checkpoint_status_frame",
     "qc_inventory_readiness_from_config",
     "qc_overlap_readiness_from_config",
     "qc_summary_readiness_from_config",

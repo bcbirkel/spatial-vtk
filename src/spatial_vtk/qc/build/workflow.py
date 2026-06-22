@@ -363,6 +363,21 @@ class StandardQCWorkflowOutputResult:
 
         return self.outputs.status_frame()
 
+    def checkpoint_status_frame(self, *, sources: Sequence[str] = ("observed", "synthetic")) -> pd.DataFrame:
+        """Return lightweight progress status for Step 2 QC checkpoint files.
+
+        The frame reports the combined trace QC table, source-specific trace QC
+        checkpoints, and the metric QC inventory checkpoint without loading
+        full QC inventories into memory. CSV checkpoints are scanned in chunks
+        using only identifier columns.
+        """
+
+        return qc_checkpoint_status_frame(
+            trace_qc_path=self.outputs.trace_qc_path,
+            qc_inventory_path=self.outputs.qc_inventory_path,
+            sources=sources,
+        )
+
     def step_result(self, readiness: OutputReadiness, **values: Any) -> dict[str, Any]:
         """Return a standard fallback payload for a skipped Step 2 QC gate."""
 
@@ -621,6 +636,93 @@ def load_standard_qc_workflow_outputs(
     """
 
     return StandardQCWorkflowOutputResult(outputs=output_group(qc_group_name, cfg=cfg), cfg=cfg)
+
+
+def qc_checkpoint_status_frame(
+    *,
+    trace_qc_path: str | Path | None = None,
+    qc_inventory_path: str | Path | None = None,
+    sources: Sequence[str] = ("observed", "synthetic"),
+) -> pd.DataFrame:
+    """Return lightweight row/key counts for QC checkpoint outputs.
+
+    Parameters
+    ----------
+    trace_qc_path
+        Combined waveform QC table path. Source-specific checkpoint paths are
+        inferred next to this table using the same names as
+        ``build_waveform_qc_summary``.
+    qc_inventory_path
+        Metric QC inventory checkpoint/table path.
+    sources
+        Source labels used to infer per-source waveform QC checkpoint paths.
+
+    Returns
+    -------
+    pandas.DataFrame
+        One row per configured checkpoint with path existence, row counts, and
+        completed key counts. This is safe for notebooks because CSV scans use
+        bounded chunks and only identifier columns.
+    """
+
+    records: list[dict[str, object]] = []
+    if trace_qc_path is not None:
+        trace_path = Path(trace_qc_path).expanduser()
+        records.append(
+            _qc_checkpoint_status_record(
+                name="qc_trace_summary_path",
+                artifact="qc_trace_summary",
+                artifact_label="combined waveform QC table",
+                checkpoint_role="combined_trace_qc",
+                path=trace_path,
+                source="",
+            )
+        )
+        for source in sources:
+            source_key = str(source).strip().lower()
+            if not source_key:
+                continue
+            source_path = _source_checkpoint_path(trace_path, source_key)
+            records.append(
+                _qc_checkpoint_status_record(
+                    name=f"qc_trace_summary_{source_key}_checkpoint_path",
+                    artifact=f"qc_trace_summary_{source_key}_checkpoint",
+                    artifact_label=f"{source_key} waveform QC checkpoint",
+                    checkpoint_role="source_trace_qc",
+                    path=source_path,
+                    source=source_key,
+                )
+            )
+    if qc_inventory_path is not None:
+        inventory_path = Path(qc_inventory_path).expanduser()
+        records.append(
+            _qc_checkpoint_status_record(
+                name="qc_inventory_path",
+                artifact="qc_inventory",
+                artifact_label="metric QC inventory checkpoint",
+                checkpoint_role="metric_qc",
+                path=inventory_path,
+                source="",
+            )
+        )
+    return pd.DataFrame(
+        records,
+        columns=[
+            "name",
+            "artifact",
+            "artifact_label",
+            "artifact_role",
+            "checkpoint_role",
+            "source",
+            "status",
+            "exists",
+            "row_count",
+            "completed_event_station_records",
+            "completed_component_groups",
+            "resolved_path",
+            "path",
+        ],
+    )
 
 
 def load_standard_qc_inputs(
@@ -1003,6 +1105,139 @@ def _metric_qc_completed_records_from_path(path: str | Path | None) -> tuple[set
         return _metric_qc_completed_records(checkpoint_rows), len(checkpoint_rows)
     checkpoint_rows = _load_qc_checkpoint(checkpoint)
     return _metric_qc_completed_records(checkpoint_rows), len(checkpoint_rows)
+
+
+def _qc_checkpoint_status_record(
+    *,
+    name: str,
+    artifact: str,
+    artifact_label: str,
+    checkpoint_role: str,
+    path: Path | None,
+    source: str,
+) -> dict[str, object]:
+    """Return one lightweight QC checkpoint status row."""
+
+    if path is None:
+        return {
+            "name": name,
+            "artifact": artifact,
+            "artifact_label": artifact_label,
+            "artifact_role": "qc_checkpoint",
+            "checkpoint_role": checkpoint_role,
+            "source": source,
+            "status": "unconfigured",
+            "exists": False,
+            "row_count": 0,
+            "completed_event_station_records": 0,
+            "completed_component_groups": 0,
+            "resolved_path": "",
+            "path": "",
+        }
+    checkpoint = Path(path).expanduser()
+    exists = checkpoint.exists()
+    if checkpoint_role == "metric_qc":
+        completed_record_keys, row_count = _metric_qc_completed_records_from_path(checkpoint)
+        completed_records = len(completed_record_keys)
+        component_groups = 0
+    else:
+        completed_records, component_groups, row_count = _waveform_qc_completed_counts_from_path(checkpoint)
+    return {
+        "name": name,
+        "artifact": artifact,
+        "artifact_label": artifact_label,
+        "artifact_role": "qc_checkpoint",
+        "checkpoint_role": checkpoint_role,
+        "source": source,
+        "status": "ready" if exists else "missing",
+        "exists": bool(exists),
+        "row_count": int(row_count),
+        "completed_event_station_records": int(completed_records),
+        "completed_component_groups": int(component_groups),
+        "resolved_path": str(checkpoint),
+        "path": str(checkpoint),
+    }
+
+
+def _waveform_qc_completed_counts_from_path(path: str | Path | None) -> tuple[int, int, int]:
+    """Return event/station, component-group, and row counts for a trace QC table."""
+
+    if path is None:
+        return 0, 0, 0
+    checkpoint = Path(path).expanduser()
+    if not checkpoint.exists() or checkpoint.stat().st_size == 0:
+        return 0, 0, 0
+    required = ["source", "event_id", "station", "component"]
+    suffix = checkpoint.suffix.lower()
+    try:
+        if suffix in {"", ".csv"}:
+            columns = set(_table_columns(checkpoint))
+            if not set(required) <= columns:
+                return 0, 0, _csv_row_count(checkpoint)
+            event_station_keys: set[tuple[str, str, str]] = set()
+            component_keys: set[tuple[str, str, str, str]] = set()
+            row_count = 0
+            for chunk in pd.read_csv(
+                checkpoint,
+                usecols=required,
+                chunksize=1_000_000,
+                low_memory=False,
+            ):
+                row_count += len(chunk)
+                _update_waveform_qc_key_counts(chunk, event_station_keys, component_keys)
+            return len(event_station_keys), len(component_keys), row_count
+        if suffix in {".parquet", ".pq"}:
+            frame = pd.read_parquet(checkpoint, columns=required)
+            event_station_keys: set[tuple[str, str, str]] = set()
+            component_keys: set[tuple[str, str, str, str]] = set()
+            _update_waveform_qc_key_counts(frame, event_station_keys, component_keys)
+            return len(event_station_keys), len(component_keys), len(frame)
+        frame = _load_qc_checkpoint(checkpoint)
+        if frame.empty or not set(required) <= set(frame.columns):
+            return 0, 0, len(frame)
+        event_station_keys: set[tuple[str, str, str]] = set()
+        component_keys: set[tuple[str, str, str, str]] = set()
+        _update_waveform_qc_key_counts(frame, event_station_keys, component_keys)
+        return len(event_station_keys), len(component_keys), len(frame)
+    except Exception as exc:
+        warnings.warn(
+            f"Could not scan waveform QC checkpoint completion keys from {checkpoint}; "
+            "checkpoint status will report zero completed keys. "
+            f"Original error: {exc}",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        return 0, 0, 0
+
+
+def _update_waveform_qc_key_counts(
+    df: pd.DataFrame,
+    event_station_keys: set[tuple[str, str, str]],
+    component_keys: set[tuple[str, str, str, str]],
+) -> None:
+    """Update waveform QC event-station and component key sets from one frame."""
+
+    if df.empty:
+        return
+    work = df.loc[:, ["source", "event_id", "station", "component"]].drop_duplicates()
+    for row in work.itertuples(index=False):
+        source = str(row.source).strip().lower()
+        event_id = str(row.event_id).strip()
+        station = str(row.station).strip().upper()
+        component = str(row.component).strip().upper()
+        event_station_keys.add((source, event_id, station))
+        component_keys.add((source, event_id, station, component))
+
+
+def _csv_row_count(path: Path) -> int:
+    """Return data-row count for a CSV without loading it."""
+
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            line_count = sum(1 for _line in handle)
+    except OSError:
+        return 0
+    return max(line_count - 1, 0)
 
 
 def filter_event_station_records_for_source_overlap(
@@ -3351,6 +3586,7 @@ __all__ = [
     "load_standard_qc_workflow_outputs",
     "load_comparison_eligible_records",
     "QCSummaryWorkflowResult",
+    "qc_checkpoint_status_frame",
     "qc_inventory_readiness_from_config",
     "qc_overlap_readiness_from_config",
     "qc_summary_readiness_from_config",

@@ -17,6 +17,7 @@ from spatial_vtk.qc.build.workflow import (
     build_metric_qc_summary,
     build_waveform_qc_summary,
     load_standard_qc_workflow_outputs,
+    qc_checkpoint_status_frame,
 )
 
 
@@ -56,6 +57,80 @@ def test_standard_qc_workflow_outputs_display_compact_summary_previews(tmp_path:
     assert set(previews) == {"retention", "availability"}
     assert previews["retention"]["metric"].tolist() == ["PGA"]
     assert len(displayed) == 2
+
+
+def test_standard_qc_workflow_outputs_report_checkpoint_status(tmp_path: Path) -> None:
+    """Step 2 helpers should report QC checkpoint progress without full table reads."""
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  root_dir: .",
+                "outputs:",
+                "  tables: outputs/tables",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    cfg = SpatialVTKConfig.from_file(config_path)
+    qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)
+    trace_path = qc_outputs.outputs.trace_qc_path
+    metric_path = qc_outputs.outputs.qc_inventory_path
+    observed_checkpoint = trace_path.with_name(f"{trace_path.stem}.observed.checkpoint{trace_path.suffix}")
+    trace_path.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(
+        {
+            "source": ["observed", "synthetic"],
+            "event_id": ["E1", "E1"],
+            "station": ["S1", "S1"],
+            "component": ["Z", "R"],
+            "passband": ["1-2 sec", "1-2 sec"],
+            "qc_status": ["pass", "fail"],
+        }
+    ).to_csv(trace_path, index=False)
+    pd.DataFrame(
+        {
+            "source": ["observed"],
+            "event_id": ["E1"],
+            "station": ["S1"],
+            "component": ["Z"],
+            "passband": ["1-2 sec"],
+            "qc_status": ["pass"],
+        }
+    ).to_csv(observed_checkpoint, index=False)
+    pd.DataFrame(
+        {
+            "source": ["observed", "synthetic"],
+            "event_id": ["E1", "E1"],
+            "station": ["S1", "S1"],
+            "component": ["Z", "Z"],
+            "passband": ["1-2 sec", "1-2 sec"],
+            "metric": ["PGA", "PGA"],
+            "qc_status": ["pass", "pass"],
+        }
+    ).to_csv(metric_path, index=False)
+
+    status = qc_outputs.checkpoint_status_frame(sources=("observed", "synthetic")).set_index("name")
+
+    assert status.loc["qc_trace_summary_path", "checkpoint_role"] == "combined_trace_qc"
+    assert status.loc["qc_trace_summary_path", "row_count"] == 2
+    assert status.loc["qc_trace_summary_path", "completed_event_station_records"] == 2
+    assert status.loc["qc_trace_summary_path", "completed_component_groups"] == 2
+    assert status.loc["qc_trace_summary_observed_checkpoint_path", "checkpoint_role"] == "source_trace_qc"
+    assert status.loc["qc_trace_summary_observed_checkpoint_path", "row_count"] == 1
+    assert status.loc["qc_trace_summary_synthetic_checkpoint_path", "status"] == "missing"
+    assert status.loc["qc_inventory_path", "checkpoint_role"] == "metric_qc"
+    assert status.loc["qc_inventory_path", "row_count"] == 2
+    assert status.loc["qc_inventory_path", "completed_event_station_records"] == 1
+
+    direct = qc_checkpoint_status_frame(
+        trace_qc_path=trace_path,
+        qc_inventory_path=metric_path,
+        sources=("observed",),
+    )
+    assert "qc_trace_summary_observed_checkpoint_path" in set(direct["name"])
 
 
 def test_waveform_qc_checkpoint_read_failure_warns_and_starts_empty(
