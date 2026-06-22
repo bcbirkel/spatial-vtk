@@ -3821,6 +3821,83 @@ metrics:
     assert script.exists()
 
 
+def test_cli_metrics_slurm_submit_reports_script_and_job_id(tmp_path, monkeypatch, capsys):
+    """Submitted metric Slurm jobs should print normalized submission details."""
+
+    from spatial_vtk.config import SlurmSubmission
+    import spatial_vtk.metrics as metrics_package
+
+    config = tmp_path / "spatial-vtk.yaml"
+    manifest = tmp_path / "manifest.json"
+    script = tmp_path / "run_metrics.slurm"
+    config.write_text(
+        """
+project:
+  root_dir: .
+metrics:
+  slurm:
+    python_command: python
+    max_concurrent: 2
+""",
+        encoding="utf-8",
+    )
+    manifest.write_text(
+        json.dumps(
+            {
+                "manifest_version": 1,
+                "qc_table": "",
+                "tasks": [],
+                "batches": [{"batch_index": 0, "task_indices": [], "output_path": str(tmp_path / "batch.csv")}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    seen = {}
+
+    def fake_submit_metrics_slurm_job(manifest_path, script_path, settings, **kwargs):
+        seen["manifest_path"] = Path(manifest_path)
+        seen["script_path"] = Path(script_path)
+        seen["max_concurrent"] = settings.max_concurrent
+        seen["kwargs"] = kwargs
+        Path(script_path).write_text("#!/bin/bash\n", encoding="utf-8")
+        return SlurmSubmission(
+            script_path=Path(script_path),
+            command=("sbatch", str(script_path)),
+            stdout="",
+            stderr="",
+            returncode=0,
+            job_id="98765",
+        )
+
+    monkeypatch.setattr(metrics_package, "submit_metrics_slurm_job", fake_submit_metrics_slurm_job)
+
+    assert (
+        main(
+            [
+                "metrics",
+                "slurm",
+                "--config",
+                str(config),
+                "--metric-manifest",
+                str(manifest),
+                "--metrics-slurm-script-output",
+                str(script),
+                "--submit",
+            ]
+        )
+        == 0
+    )
+
+    captured = capsys.readouterr()
+    assert seen["manifest_path"] == manifest
+    assert seen["script_path"] == script
+    assert seen["max_concurrent"] == 2
+    assert "Submitted metric Slurm script" in captured.out
+    assert f"script: {script}" in captured.out
+    assert "job_id: 98765" in captured.out
+    assert script.exists()
+
+
 def test_cli_metrics_batch_status_and_incomplete_slurm(tmp_path, monkeypatch, capsys):
     config = tmp_path / "spatial-vtk.yaml"
     manifest = tmp_path / "manifest.json"

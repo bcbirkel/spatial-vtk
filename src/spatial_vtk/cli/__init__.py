@@ -2852,7 +2852,12 @@ def _cmd_metrics_slurm(args: argparse.Namespace) -> int:
             batch_indices=batch_indices,
             overwrite_batches=args.overwrite_batches,
         )
-        print(submission.stdout or f"submitted {submission.script_path}")
+        if submission.stdout:
+            print(submission.stdout)
+        else:
+            print(f"Submitted metric Slurm script: {submission.script_path}")
+        print(f"script: {submission.script_path}")
+        print(f"job_id: {submission.job_id or ''}")
         return int(submission.returncode)
     path = write_metrics_slurm_script(
         manifest,

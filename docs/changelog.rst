@@ -156,6 +156,12 @@ Changelog
   - Routed notebook-facing QC overview and context-figure full-table reads
     through the shared loader while preserving bounded preview behavior.
 
+- **CLI submission feedback** *(Fixed)*
+
+  - Made ``svtk metrics slurm --submit`` print normalized submission details,
+    including the written script path and parsed job id, even when ``sbatch``
+    stdout is empty or scheduler-specific.
+
 - **Table reader consistency** *(Changed)*
 
   - Routed manual QC decision and arrival-pick catalog loading through the
