@@ -595,7 +595,7 @@ class NotebookDashboardCommands:
 
         import pandas as pd
 
-        from spatial_vtk.visualize.dashboard.contracts import dashboard_output_paths
+        from spatial_vtk.visualize.dashboard import dashboard_output_paths
 
         cfg = SpatialVTKConfig.from_file(self.config_path, run_scenario=self.run_scenario)
         paths = dashboard_output_paths(cfg=cfg, create_parent=False, include_summary_tables=False)
@@ -853,7 +853,7 @@ def display_output_table_previews(
     """
 
     from spatial_vtk.config.outputs import resolve_output_path
-    from spatial_vtk.io.tables import preview_output_table
+    from spatial_vtk.io import preview_output_table
 
     display = _notebook_display(display_fn)
     resolved: dict[str, Path] = {}

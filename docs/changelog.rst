@@ -4,11 +4,13 @@ Changelog
 2026-06-21
 ----------
 
-- **CLI public import surface** *(Changed)*
+- **CLI and notebook public import surfaces** *(Changed)*
 
   - Routed curated ``svtk`` helpers for dashboard paths, preprocessing metadata
     paths, and generic table I/O through the stable ``spatial_vtk.io`` and
     ``spatial_vtk.visualize.dashboard`` package surfaces.
+  - Routed notebook dashboard-status and bounded-output-preview helpers through
+    the same public package surfaces.
   - Added regression coverage so notebook-facing CLI workflows do not drift
     back to importing directly from lower-level implementation modules.
 

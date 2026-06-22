@@ -3715,6 +3715,22 @@ def test_cli_workflow_helpers_use_public_package_surfaces():
     assert "from spatial_vtk.io import write_table" in source
 
 
+def test_config_notebook_helpers_use_public_package_surfaces():
+    """Notebook config helpers should delegate through stable package surfaces."""
+
+    source = (
+        pathlib.Path(__file__).resolve().parents[1] / "src" / "spatial_vtk" / "config" / "notebook.py"
+    ).read_text(encoding="utf-8")
+    forbidden_imports = [
+        "from spatial_vtk.visualize.dashboard.contracts import dashboard_output_paths",
+        "from spatial_vtk.io.tables import preview_output_table",
+    ]
+    offenders = [import_line for import_line in forbidden_imports if import_line in source]
+    assert not offenders, "\n".join(offenders)
+    assert "from spatial_vtk.visualize.dashboard import dashboard_output_paths" in source
+    assert "from spatial_vtk.io import preview_output_table" in source
+
+
 def test_io_plan_cli_uses_shared_table_helpers():
     """Metric completeness CLI wrapper should accept CSV or Parquet tables."""
 
