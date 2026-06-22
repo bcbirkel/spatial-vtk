@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 import sys
 from pathlib import Path
 
@@ -16,6 +17,38 @@ def _load_checker_module():
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+def _pyproject_dependency_names(pyproject_text: str) -> set[str]:
+    """Return normalized dependency package names declared in ``pyproject.toml``."""
+
+    names: set[str] = set()
+    for requirement in re.findall(r'"([^"]+)"', pyproject_text):
+        if any(token in requirement for token in ("://", "@")):
+            continue
+        name = re.split(r"[\[<>=!~\s]", requirement, maxsplit=1)[0].strip().lower()
+        if name:
+            names.add(name)
+    return names
+
+
+def _checker_distribution_names(module) -> set[str]:
+    """Return normalized package/distribution names required by the checker."""
+
+    label_to_distribution_name = {
+        "IPython": "ipython",
+        "PyYAML": "pyyaml",
+        "scikit-learn": "scikit-learn",
+        "spatial_vtk": None,
+        "sphinx-rtd-theme": "sphinx-rtd-theme",
+    }
+    names: set[str] = set()
+    for requirements in module.MODULE_GROUPS.values():
+        for requirement in requirements:
+            mapped = label_to_distribution_name.get(requirement.label, requirement.label.lower())
+            if mapped is not None:
+                names.add(mapped)
+    return names
 
 
 def test_validation_environment_group_aliases_expand_and_deduplicate() -> None:
@@ -62,54 +95,10 @@ def test_validation_environment_modules_are_declared_package_dependencies() -> N
     root = Path(__file__).resolve().parents[1]
     pyproject_text = (root / "pyproject.toml").read_text(encoding="utf-8")
 
-    requirement_fragments = {
-        "branca": '"branca>=',
-        "build": '"build>=',
-        "contextily": '"contextily>=',
-        "coverage": '"coverage',
-        "folium": '"folium>=',
-        "geopandas": '"geopandas>=',
-        "gmprocess": '"gmprocess>=',
-        "h5py": '"h5py>=',
-        "IPython": '"ipython>=',
-        "ipykernel": '"ipykernel>=',
-        "matplotlib": '"matplotlib>=',
-        "nbclient": '"nbclient>=',
-        "nbformat": '"nbformat>=',
-        "numpy": '"numpy>=',
-        "obspy": '"obspy>=',
-        "pandas": '"pandas>=',
-        "phasenet": '"phasenet>=',
-        "plotly": '"plotly>=',
-        "pyarrow": '"pyarrow>=',
-        "pyasdf": '"pyasdf>=',
-        "pyproj": '"pyproj>=',
-        "pytest": '"pytest>=',
-        "PyYAML": '"PyYAML>=',
-        "rasterio": '"rasterio>=',
-        "scikit-learn": '"scikit-learn>=',
-        "scipy": '"scipy>=',
-        "shapely": '"shapely>=',
-        "sphinx": '"sphinx>=',
-        "sphinx-rtd-theme": '"sphinx-rtd-theme>=',
-        "statsmodels": '"statsmodels>=',
-        "streamlit": '"streamlit>=',
-        "streamlit-folium": '"streamlit-folium>=',
-        "twine": '"twine>=',
-    }
+    declared_names = _pyproject_dependency_names(pyproject_text)
+    checker_names = _checker_distribution_names(module)
 
-    labels = {
-        requirement.label
-        for requirements in module.MODULE_GROUPS.values()
-        for requirement in requirements
-        if requirement.label != "spatial_vtk"
-    }
-    missing_mappings = sorted(labels - set(requirement_fragments))
-    assert not missing_mappings, f"Missing dependency-fragment mappings: {missing_mappings}"
-
-    undeclared = [
-        label for label in sorted(labels) if requirement_fragments[label] not in pyproject_text
-    ]
+    undeclared = sorted(checker_names - declared_names)
     assert not undeclared, f"Validation modules missing from pyproject.toml: {undeclared}"
 
 

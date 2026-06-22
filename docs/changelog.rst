@@ -18,6 +18,8 @@ Changelog
     checker-derived contract.
   - The public ``svtk_environment.yaml`` file is now guarded against drift from
     the dependency groups declared by ``tools/check_validation_environment.py``.
+  - Replaced the hard-coded ``pyproject.toml`` dependency-fragment test with
+    the same checker-derived package-name contract.
 
 - **Tutorial validation dependency contract** *(Changed)*
 
