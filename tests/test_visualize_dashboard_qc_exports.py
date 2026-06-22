@@ -808,6 +808,7 @@ def test_dashboard_metric_dataset_readiness_uses_partition_column_union(tmp_path
 
     assert readiness["ready"] is True
     assert readiness["readiness"] == "ready"
+    assert readiness["status_reason"] == "ready"
     assert readiness["file_count"] == 2
     assert readiness["row_count"] == 2
     assert readiness["value_columns"] == "log2_residual"
@@ -828,6 +829,7 @@ def test_dashboard_metric_dataset_readiness_counts_csv_with_quoted_newlines(tmp_
 
     assert readiness["ready"] is True
     assert readiness["readiness"] == "ready"
+    assert readiness["status_reason"] == "ready"
     assert readiness["row_count"] == 2
 
 

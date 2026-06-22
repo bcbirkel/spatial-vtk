@@ -279,15 +279,19 @@ artifacts before loading full metric or QC inventories:
 
 The readiness and status frames are intentionally small. Use ``artifact_label``
 to find the user-facing dataset, ``dashboard_tabs`` to see which dashboard tab
-uses it, ``readiness`` / ``message`` to identify the failure, and
-``suggested_action`` to see the next rebuild step. Use
+uses it, ``readiness`` / ``status_reason`` / ``message`` to identify the
+failure, and ``suggested_action`` to see the next rebuild step. The
+``status_reason`` column preserves detailed machine-readable blockers such as
+``missing_columns``, ``no_value_data``, and ``missing_dataset_files`` instead
+of collapsing them to a generic missing/not-ready state. Use
 ``required_columns`` / ``missing_columns`` / ``tab_message`` /
 ``map_message`` to decide whether the dashboard inputs need to be rebuilt
 because of missing schema, missing values, or missing map coordinate data.
 The ``DashboardOutputReadiness.status_frame()`` method carries the same
-``ready`` / ``readiness`` / ``message`` / ``suggested_action`` fields for each
-source input, metric dataset, summary table, and QC table. It also normalizes
-``item_type``, ``artifact``, ``artifact_label``, ``exists``,
+``ready`` / ``readiness`` / ``status_reason`` / ``message`` /
+``suggested_action`` fields for each source input, metric dataset, summary
+table, and QC table. It also normalizes ``item_type``, ``artifact``,
+``artifact_label``, ``exists``,
 ``resolved_path``, and the compatibility ``path`` alias, so notebooks can
 display the rebuild decision object directly without losing the first
 actionable blocker or the configured artifact location.

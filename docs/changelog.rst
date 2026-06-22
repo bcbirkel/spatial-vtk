@@ -4,6 +4,17 @@ Changelog
 2026-06-22
 ----------
 
+- **Dashboard readiness reason codes** *(Fixed)*
+
+  - Added ``status_reason`` to dashboard readiness and status frames so
+    notebooks can filter source inputs, row-level datasets, summary tables, and
+    QC tables by stable blocker codes.
+  - Preserved detailed readiness values such as ``missing_columns`` in
+    ``DashboardOutputReadiness.status_frame()`` instead of collapsing them to a
+    generic missing state.
+  - Preserved inspector messages in combined dashboard status rows so large-run
+    notebooks show the exact schema, value, or map-coordinate blocker.
+
 - **Metric figure readiness** *(Fixed)*
 
   - Updated large-run metric figure context readiness so a present value column

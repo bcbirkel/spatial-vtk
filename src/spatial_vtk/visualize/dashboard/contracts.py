@@ -115,8 +115,9 @@ class DashboardOutputReadiness:
         method keeps their detailed columns while normalizing the notebook
         contract used by large-run status cells: ``item_type``, ``artifact``,
         ``artifact_label``, ``resolved_path``, ``path``, ``exists``,
-        ``readiness``, ``message``, and ``suggested_action`` are always present
-        when at least one child frame has rows.
+        ``readiness``, ``status_reason``, ``message``, and
+        ``suggested_action`` are always present when at least one child frame
+        has rows.
         """
 
         frame_specs = [
@@ -134,8 +135,9 @@ class DashboardOutputReadiness:
             for row in frame.astype(object).to_dict("records"):
                 normalized = _normalize_dashboard_status_row(row, item_type=item_type)
                 rows.append(normalized)
-        columns = _dashboard_status_column_order(rows)
-        return pd.DataFrame(rows, columns=columns)
+        frame = _attach_dashboard_status_reason(pd.DataFrame(rows))
+        columns = _dashboard_status_column_order(frame.astype(object).to_dict("records"))
+        return frame.reindex(columns=columns)
 
     def summary_frame(self) -> pd.DataFrame:
         """Return a compact dashboard/tab readiness summary."""
@@ -572,6 +574,7 @@ def dashboard_readiness_summary_frame(
                 "required_columns": "",
                 "ready": ready,
                 "readiness": readiness,
+                "status_reason": readiness,
                 "tab_ready": ready,
                 "row_count": "",
                 "file_count": "",
@@ -611,6 +614,7 @@ def dashboard_readiness_summary_frame(
         "required_columns",
         "ready",
         "readiness",
+        "status_reason",
         "tab_ready",
         "row_count",
         "file_count",
@@ -628,7 +632,7 @@ def dashboard_readiness_summary_frame(
         "resolved_path",
         "path",
     ]
-    return pd.DataFrame(rows, columns=columns)
+    return _attach_dashboard_status_reason(pd.DataFrame(rows, columns=columns))
 
 
 def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.DataFrame:
@@ -658,7 +662,7 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
         "suggested_action": _dashboard_suggested_action({"name": "metrics_dashboard_root", "readiness": "missing"}),
     }
     if not path.exists():
-        return pd.DataFrame([row])
+        return _attach_dashboard_status_reason(pd.DataFrame([row]))
     files = _dashboard_metric_files(path)
     row["file_count"] = len(files)
     if not files:
@@ -674,7 +678,7 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
                 ),
             }
         )
-        return pd.DataFrame([row])
+        return _attach_dashboard_status_reason(pd.DataFrame([row]))
     try:
         row_count = sum(_dashboard_metric_row_count(file_path) for file_path in files)
         columns = _dashboard_metric_column_union(files)
@@ -687,7 +691,7 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
                 "suggested_action": _dashboard_suggested_action({"name": "metrics_dashboard_root", "readiness": "read_error"}),
             }
         )
-        return pd.DataFrame([row])
+        return _attach_dashboard_status_reason(pd.DataFrame([row]))
     value_columns = _dashboard_value_columns(pd.DataFrame(columns=columns))
     value_families = dashboard_value_column_families(value_columns)
     row["row_count"] = row_count
@@ -713,7 +717,7 @@ def dashboard_metric_dataset_readiness_frame(metrics_root: str | Path) -> pd.Dat
         )
     else:
         row.update({"ready": True, "readiness": "ready", "message": "Dashboard metric dataset is ready.", "suggested_action": ""})
-    return pd.DataFrame([row])
+    return _attach_dashboard_status_reason(pd.DataFrame([row]))
 
 
 def _rebuildable_dashboard_map_tables(summary_status: pd.DataFrame, metrics_long_path: Path) -> list[str]:
@@ -762,7 +766,9 @@ def dashboard_qc_trace_readiness_frame(
         if trace_summary is not None
         else _resolve_output_path("qc_trace_summary", kind="table", cfg=cfg, create_parent=create_parent)
     )
-    return _attach_qc_trace_readiness(pd.DataFrame(_status_rows({"qc_trace_summary_path": path})))
+    return _attach_dashboard_status_reason(
+        _attach_qc_trace_readiness(pd.DataFrame(_status_rows({"qc_trace_summary_path": path})))
+    )
 
 
 def dashboard_output_readiness(
@@ -918,7 +924,7 @@ def dashboard_summary_readiness_frame(
             )
         )
     )
-    return _attach_dashboard_readiness(_attach_dashboard_contract(status))
+    return _attach_dashboard_status_reason(_attach_dashboard_readiness(_attach_dashboard_contract(status)))
 
 
 def _status_rows(paths: dict[str, str | Path]) -> list[dict[str, object]]:
@@ -954,7 +960,7 @@ def _dashboard_input_status_frame(paths: dict[str, str | Path]) -> pd.DataFrame:
     if status.empty:
         return status
     out = status.copy()
-    for column in ("ready", "readiness", "message", "suggested_action"):
+    for column in ("ready", "readiness", "status_reason", "message", "suggested_action"):
         if column not in out.columns:
             out[column] = pd.Series([pd.NA] * len(out), index=out.index, dtype="object")
     for index, row in out.iterrows():
@@ -963,10 +969,29 @@ def _dashboard_input_status_frame(paths: dict[str, str | Path]) -> pd.DataFrame:
         label = str(row.get("artifact_label") or name)
         out.at[index, "ready"] = exists
         out.at[index, "readiness"] = "ready" if exists else "missing"
+        out.at[index, "status_reason"] = out.at[index, "readiness"]
         out.at[index, "message"] = f"{label} is ready." if exists else f"{label} is missing."
         out.at[index, "suggested_action"] = "" if exists else _dashboard_suggested_action(
             {"name": name, "artifact_role": row.get("artifact_role", ""), "readiness": "missing"}
         )
+    return _attach_dashboard_status_reason(out)
+
+
+def _attach_dashboard_status_reason(status: pd.DataFrame) -> pd.DataFrame:
+    """Attach a stable machine-readable readiness reason to dashboard rows."""
+
+    if status.empty:
+        return status
+    out = status.copy()
+    reasons: list[str] = []
+    for _, row in out.astype(object).iterrows():
+        reason = _blank_if_missing(row.get("status_reason"))
+        if reason == "":
+            reason = _blank_if_missing(row.get("readiness"))
+        if reason == "":
+            reason = "ready" if dashboard_ready_value(row.get("ready"), default=False) else "missing"
+        reasons.append(str(reason))
+    out["status_reason"] = pd.Series(reasons, index=out.index, dtype="object")
     return out
 
 
@@ -1000,9 +1025,11 @@ def _normalize_dashboard_status_row(row: dict[str, object], *, item_type: str) -
         normalized["exists"] = Path(str(resolved_path)).exists() if resolved_path else False
     if "ready" not in normalized or _blank_if_missing(normalized.get("ready")) == "":
         normalized["ready"] = bool(normalized.get("exists", False))
-    if not _blank_if_missing(normalized.get("readiness")):
+    if _blank_if_missing(normalized.get("readiness")) == "":
         normalized["readiness"] = "ready" if dashboard_ready_value(normalized.get("ready"), default=False) else "missing"
-    if not _blank_if_missing(normalized.get("message")):
+    if _blank_if_missing(normalized.get("status_reason")) == "":
+        normalized["status_reason"] = str(_blank_if_missing(normalized.get("readiness")) or "ready")
+    if _blank_if_missing(normalized.get("message")) == "":
         label = str(_blank_if_missing(normalized.get("artifact_label")) or name or item_type)
         normalized["message"] = f"{label} is ready." if dashboard_ready_value(normalized.get("ready"), default=False) else f"{label} is missing."
     if "suggested_action" not in normalized:
@@ -1027,6 +1054,7 @@ def _dashboard_status_column_order(rows: list[dict[str, object]]) -> list[str]:
         "required_columns",
         "ready",
         "readiness",
+        "status_reason",
         "exists",
         "row_count",
         "file_count",
@@ -1111,6 +1139,7 @@ def _dashboard_summary_row(row: dict[str, object], *, item_type: str) -> dict[st
         "required_columns": _blank_if_missing(row.get("required_columns")),
         "ready": ready,
         "readiness": _blank_if_missing(row.get("readiness")),
+        "status_reason": _blank_if_missing(row.get("status_reason")) or _blank_if_missing(row.get("readiness")),
         "row_count": _blank_if_missing(row.get("row_count")),
         "file_count": _blank_if_missing(row.get("file_count")),
         "map_ready": _blank_if_missing(row.get("map_ready")),
@@ -1180,7 +1209,7 @@ def _attach_dashboard_contract(status: pd.DataFrame) -> pd.DataFrame:
         out.loc[mask, "dashboard_tabs"] = str(contract["tabs"])
         out.loc[mask, "required_columns"] = str(contract["required_columns"])
         out.loc[mask, "purpose"] = str(contract["purpose"])
-    return out
+    return _attach_dashboard_status_reason(out)
 
 
 def _attach_dashboard_readiness(status: pd.DataFrame) -> pd.DataFrame:
@@ -1192,6 +1221,7 @@ def _attach_dashboard_readiness(status: pd.DataFrame) -> pd.DataFrame:
     for column in (
         "ready",
         "readiness",
+        "status_reason",
         "row_count",
         "missing_columns",
         "map_ready",
@@ -1214,7 +1244,7 @@ def _attach_dashboard_readiness(status: pd.DataFrame) -> pd.DataFrame:
         readiness = _inspect_dashboard_summary_table(_dashboard_status_path(row), table_name)
         for key, value in readiness.items():
             out.at[index, key] = value
-    return out
+    return _attach_dashboard_status_reason(out)
 
 
 def _attach_metric_dataset_readiness(status: pd.DataFrame) -> pd.DataFrame:
@@ -1226,6 +1256,7 @@ def _attach_metric_dataset_readiness(status: pd.DataFrame) -> pd.DataFrame:
     defaults = {
         "ready": pd.NA,
         "readiness": pd.NA,
+        "status_reason": pd.NA,
         "row_count": pd.NA,
         "file_count": pd.NA,
         "value_columns": pd.NA,
@@ -1249,9 +1280,19 @@ def _attach_metric_dataset_readiness(status: pd.DataFrame) -> pd.DataFrame:
     out.loc[mask, "purpose"] = "Partitioned or single-file long metric dataset used by all metrics dashboard tabs."
     for index, row in out.loc[mask].iterrows():
         readiness = dashboard_metric_dataset_readiness_frame(_dashboard_status_path(row)).iloc[0].to_dict()
-        for key in ("ready", "readiness", "file_count", "row_count", "value_columns", "value_families", "message", "suggested_action"):
+        for key in (
+            "ready",
+            "readiness",
+            "status_reason",
+            "file_count",
+            "row_count",
+            "value_columns",
+            "value_families",
+            "message",
+            "suggested_action",
+        ):
             out.at[index, key] = readiness.get(key, pd.NA)
-    return out
+    return _attach_dashboard_status_reason(out)
 
 
 def _attach_qc_trace_readiness(status: pd.DataFrame) -> pd.DataFrame:
@@ -1267,6 +1308,7 @@ def _attach_qc_trace_readiness(status: pd.DataFrame) -> pd.DataFrame:
         "purpose": "",
         "ready": pd.NA,
         "readiness": pd.NA,
+        "status_reason": pd.NA,
         "row_count": pd.NA,
         "missing_columns": pd.NA,
         "message": pd.NA,
@@ -1286,7 +1328,7 @@ def _attach_qc_trace_readiness(status: pd.DataFrame) -> pd.DataFrame:
         readiness = _inspect_qc_trace_summary_table(_dashboard_status_path(row))
         for key, value in readiness.items():
             out.at[index, key] = value
-    return out
+    return _attach_dashboard_status_reason(out)
 
 
 def _dashboard_status_path(row: Any) -> Path:

@@ -18,6 +18,7 @@ from spatial_vtk.visualize.dashboard import (
     build_qc_histogram_figure,
     build_station_folium_map,
     build_streamlit_command,
+    DashboardOutputReadiness,
     dashboard_chart_columns_or_message,
     dashboard_empty_rows_message,
     dashboard_map_readiness,
@@ -340,6 +341,7 @@ outputs:
     assert "missing_map_columns" in summary_display.columns
     assert "tab_ready" in summary_display.columns
     assert "tab_message" in summary_display.columns
+    assert "status_reason" in summary_display.columns
     assert "value_columns" in summary_display.columns
     assert "nonempty_value_families" in summary_display.columns
     assert "nonempty_value_columns" in summary_display.columns
@@ -349,6 +351,7 @@ outputs:
     assert "station_rollup dashboard summary table" in set(summary_display["artifact_label"])
     metric_display = _select_readiness_columns(status_with_dataset, METRIC_DATASET_READINESS_DISPLAY_COLUMNS)
     assert "artifact_label" in metric_display.columns
+    assert "status_reason" in metric_display.columns
     assert "value_families" in metric_display.columns
     assert "suggested_action" in metric_display.columns
     assert "resolved_path" in metric_display.columns
@@ -359,6 +362,7 @@ outputs:
     readiness = dashboard_summary_readiness_frame(paths["dashboard_summary_root"])
     assert set(readiness["dashboard_table"]) == {"model_metric_band", "station_rollup", "event_rollup", "path_hex"}
     assert readiness.loc[readiness["dashboard_table"].eq("model_metric_band"), "ready"].iloc[0] is True
+    assert readiness.loc[readiness["dashboard_table"].eq("model_metric_band"), "status_reason"].iloc[0] == "ready"
     assert _metrics_dashboard_startup_blocker(readiness) is None
 
     blocked = readiness.copy()
@@ -651,8 +655,38 @@ def test_dashboard_qc_trace_readiness_is_bounded_and_schema_aware(tmp_path):
     missing_row = missing_column.iloc[0]
     assert missing_row["ready"] is False
     assert missing_row["readiness"] == "missing_columns"
+    assert missing_row["status_reason"] == "missing_columns"
     assert missing_row["row_count"] == 1
     assert missing_row["missing_columns"] == "station"
+
+
+def test_dashboard_output_readiness_status_frame_preserves_detailed_reason():
+    readiness = DashboardOutputReadiness(
+        should_run=True,
+        reason="missing_outputs",
+        message="Dashboard summaries need to be rebuilt.",
+        input_status=pd.DataFrame(),
+        metrics_status=pd.DataFrame(),
+        summary_status=pd.DataFrame(
+            [
+                {
+                    "name": "station_rollup_summary_path",
+                    "artifact_role": "dashboard_summary_table",
+                    "artifact_label": "station_rollup dashboard summary table",
+                    "dashboard_table": "station_rollup",
+                    "ready": False,
+                    "readiness": "missing_columns",
+                    "message": "station_rollup summary is missing required columns: sta_lon.",
+                }
+            ]
+        ),
+    )
+
+    status = readiness.status_frame().iloc[0]
+
+    assert status["readiness"] == "missing_columns"
+    assert status["status_reason"] == "missing_columns"
+    assert status["message"] == "station_rollup summary is missing required columns: sta_lon."
 
 
 def test_qc_dashboard_preflights_trace_summary_before_full_load(tmp_path, monkeypatch):
