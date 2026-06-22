@@ -45,6 +45,41 @@ def test_cli_write_table_uses_shared_csv_parquet_writer(tmp_path, capsys):
     assert pd.read_csv(written).to_dict("records") == [{"station": "STA001", "value": 1.5}]
 
 
+def test_cli_config_for_defaults_ignores_discovered_config_for_explicit_paths(monkeypatch):
+    """Explicit CLI paths should not load a saved/default config unless requested."""
+
+    import spatial_vtk.cli as cli
+
+    def fail_optional(*_args, **_kwargs):
+        raise AssertionError("optional config should not be loaded")
+
+    def fail_required(*_args, **_kwargs):
+        raise AssertionError("required config should not be loaded")
+
+    monkeypatch.setattr(cli, "_optional_cli_config", fail_optional)
+    monkeypatch.setattr(cli, "_required_cli_config", fail_required)
+
+    assert cli._cli_config_for_defaults(None, run_scenario=None, needs_config=False) is None
+
+
+def test_cli_config_for_defaults_loads_config_when_defaults_are_needed(monkeypatch):
+    """Commands with omitted config-backed paths should still require a config."""
+
+    import spatial_vtk.cli as cli
+
+    seen: dict[str, object] = {}
+
+    def fake_required(config_path, *, run_scenario=None):
+        seen["config_path"] = config_path
+        seen["run_scenario"] = run_scenario
+        return "config"
+
+    monkeypatch.setattr(cli, "_required_cli_config", fake_required)
+
+    assert cli._cli_config_for_defaults("run.yaml", run_scenario="large", needs_config=True) == "config"
+    assert seen == {"config_path": "run.yaml", "run_scenario": "large"}
+
+
 def test_cli_main_reports_missing_runtime_dependency(monkeypatch, capsys):
     """Missing runtime dependencies should produce install guidance, not a traceback."""
 
@@ -1464,11 +1499,21 @@ def test_generated_cli_reference_names_io_prepare_aliases():
     assert "``--station-tables``, ``--input``" in master_stations
     assert "``--master-station-output``, ``--output``" in master_stations
     assert "Filesystem path. Master station-list output CSV or Parquet table" in master_stations
+    assert "[--station-tables PATH [PATH ...]]" in master_stations
+    assert "[--master-station-output PATH]" in master_stations
+    assert "[--config CONFIG]" in master_stations
+    assert "Defaults to config paths.station_metadata" in master_stations
+    assert "Defaults to configured output table 'prepared_stations'" in master_stations
     assert "Prefer --station-tables; --input is a legacy alias." in master_stations
     assert "Prefer --master-station-output; --output is a legacy alias." in master_stations
     assert "``--event-tables``, ``--input``" in master_events
     assert "``--master-event-output``, ``--output``" in master_events
     assert "Filesystem path. Master event-list output CSV or Parquet table" in master_events
+    assert "[--event-tables PATH [PATH ...]]" in master_events
+    assert "[--master-event-output PATH]" in master_events
+    assert "[--config CONFIG]" in master_events
+    assert "Defaults to config paths.event_metadata" in master_events
+    assert "Defaults to configured output table 'prepared_events'" in master_events
     assert "Prefer --event-tables; --input is a legacy alias." in master_events
     assert "Prefer --master-event-output; --output is a legacy alias." in master_events
 
@@ -2991,6 +3036,49 @@ outputs:
     prepared_events = pd.read_csv(tables / "prepared_events.csv")
     assert prepared_stations.loc[0, "station"] == "STA1"
     assert prepared_events.loc[0, "event_id"] == "ev1"
+
+
+def test_cli_master_metadata_uses_configured_defaults(tmp_path):
+    inputs = tmp_path / "inputs"
+    inputs.mkdir()
+    tables = tmp_path / "outputs" / "tables"
+    stations = inputs / "stations.csv"
+    events = inputs / "events.csv"
+    config = tmp_path / "spatial-vtk.yaml"
+    pd.DataFrame(
+        {
+            "stationcode": ["sta1", "STA1", "sta2"],
+            "station_latitude": [34.0, 34.0, 35.0],
+            "station_longitude": [-118.0, -118.0, -119.0],
+        }
+    ).to_csv(stations, index=False)
+    pd.DataFrame(
+        {
+            "event_title": ["ev1", "ev1", "ev2"],
+            "event_latitude": [33.9, 33.9, 34.2],
+            "event_longitude": [-118.2, -118.2, -118.5],
+        }
+    ).to_csv(events, index=False)
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+paths:
+  station_metadata: inputs/stations.csv
+  event_metadata: inputs/events.csv
+outputs:
+  tables: outputs/tables
+""",
+        encoding="utf-8",
+    )
+
+    assert main(["io", "master-stations", "--config", str(config)]) == 0
+    assert main(["io", "master-events", "--config", str(config)]) == 0
+
+    master_stations = pd.read_csv(tables / "prepared_stations.csv")
+    master_events = pd.read_csv(tables / "prepared_events.csv")
+    assert list(master_stations["station"]) == ["STA1", "STA2"]
+    assert list(master_events["event_id"]) == ["ev1", "ev2"]
 
 
 def test_cli_inventory_uses_configured_template_roots_and_output(tmp_path):

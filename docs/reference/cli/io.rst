@@ -111,8 +111,9 @@ svtk io master-events
 
 .. code-block:: bash
 
-   svtk io master-events [-h] --event-tables PATH [PATH ...]
-                             --master-event-output PATH
+   svtk io master-events [-h] [--event-tables PATH [PATH ...]]
+                             [--master-event-output PATH] [--config PATH]
+                             [--run-scenario RUN_SCENARIO]
 
 .. rubric:: Parameters
 
@@ -129,13 +130,21 @@ svtk io master-events
      -
      - show this help message and exit
    * - ``--event-tables``, ``--input``
-     - Yes
+     - No
      - Nargs: ``+``
-     - Filesystem path. Event CSV or Parquet input tables. Prefer --event-tables; --input is a legacy alias.
+     - Filesystem path. Event CSV or Parquet input tables. Defaults to config paths.event_metadata. Prefer --event-tables; --input is a legacy alias.
    * - ``--master-event-output``, ``--output``
-     - Yes
+     - No
      -
-     - Filesystem path. Master event-list output CSV or Parquet table. Prefer --master-event-output; --output is a legacy alias.
+     - Filesystem path. Master event-list output CSV or Parquet table. Defaults to configured output table 'prepared_events'. Prefer --master-event-output; --output is a legacy alias.
+   * - ``--config``
+     - No
+     -
+     - Filesystem path. Spatial-VTK config file used to resolve default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Apply one named run_scenarios overlay.
 
 .. _cli-svtk-io-master-stations:
 
@@ -146,8 +155,9 @@ svtk io master-stations
 
 .. code-block:: bash
 
-   svtk io master-stations [-h] --station-tables PATH [PATH ...]
-                               --master-station-output PATH
+   svtk io master-stations [-h] [--station-tables PATH [PATH ...]]
+                               [--master-station-output PATH] [--config PATH]
+                               [--run-scenario RUN_SCENARIO]
 
 .. rubric:: Parameters
 
@@ -164,13 +174,21 @@ svtk io master-stations
      -
      - show this help message and exit
    * - ``--station-tables``, ``--input``
-     - Yes
+     - No
      - Nargs: ``+``
-     - Filesystem path. Station CSV or Parquet input tables. Prefer --station-tables; --input is a legacy alias.
+     - Filesystem path. Station CSV or Parquet input tables. Defaults to config paths.station_metadata. Prefer --station-tables; --input is a legacy alias.
    * - ``--master-station-output``, ``--output``
-     - Yes
+     - No
      -
-     - Filesystem path. Master station-list output CSV or Parquet table. Prefer --master-station-output; --output is a legacy alias.
+     - Filesystem path. Master station-list output CSV or Parquet table. Defaults to configured output table 'prepared_stations'. Prefer --master-station-output; --output is a legacy alias.
+   * - ``--config``
+     - No
+     -
+     - Filesystem path. Spatial-VTK config file used to resolve default input/output paths.
+   * - ``--run-scenario``
+     - No
+     -
+     - Apply one named run_scenarios overlay.
 
 .. _cli-svtk-io-prepare-event-stations:
 

@@ -4,6 +4,15 @@ Changelog
 2026-06-21
 ----------
 
+- **Master-list CLI defaults** *(Changed)*
+
+  - Made ``svtk io master-stations`` and ``svtk io master-events`` resolve
+    their standard inputs and outputs from the active config, matching the
+    other Step 1 I/O commands when explicit table paths are omitted.
+  - Updated generated CLI reference coverage so those commands advertise
+    artifact-named flags, config-backed defaults, and legacy ``--input`` /
+    ``--output`` aliases consistently.
+
 - **Table-format wording** *(Changed)*
 
   - Standardized current CLI help, API docs, generated CLI reference pages,

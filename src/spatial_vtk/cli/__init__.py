@@ -695,17 +695,25 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         metavar="PATH",
         nargs="+",
         dest="input",
-        required=True,
-        help="Station CSV or Parquet input tables. Prefer --station-tables; --input is a legacy alias.",
+        default=None,
+        help=(
+            "Station CSV or Parquet input tables. Defaults to config paths.station_metadata. "
+            "Prefer --station-tables; --input is a legacy alias."
+        ),
     )
     master_stations.add_argument(
         "--master-station-output",
         "--output",
         metavar="PATH",
         dest="output",
-        required=True,
-        help="Master station-list output CSV or Parquet table. Prefer --master-station-output; --output is a legacy alias.",
+        default=None,
+        help=(
+            "Master station-list output CSV or Parquet table. Defaults to configured output table "
+            "'prepared_stations'. Prefer --master-station-output; --output is a legacy alias."
+        ),
     )
+    master_stations.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
+    master_stations.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     master_stations.set_defaults(handler=_cmd_io_master_stations)
 
     master_events = io_sub.add_parser("master-events", help="Build a master event list from one or more tables.")
@@ -715,17 +723,25 @@ def _add_io_commands(subparsers: argparse._SubParsersAction[argparse.ArgumentPar
         metavar="PATH",
         nargs="+",
         dest="input",
-        required=True,
-        help="Event CSV or Parquet input tables. Prefer --event-tables; --input is a legacy alias.",
+        default=None,
+        help=(
+            "Event CSV or Parquet input tables. Defaults to config paths.event_metadata. "
+            "Prefer --event-tables; --input is a legacy alias."
+        ),
     )
     master_events.add_argument(
         "--master-event-output",
         "--output",
         metavar="PATH",
         dest="output",
-        required=True,
-        help="Master event-list output CSV or Parquet table. Prefer --master-event-output; --output is a legacy alias.",
+        default=None,
+        help=(
+            "Master event-list output CSV or Parquet table. Defaults to configured output table "
+            "'prepared_events'. Prefer --master-event-output; --output is a legacy alias."
+        ),
     )
+    master_events.add_argument("--config", default=None, help="Spatial-VTK config file used to resolve default input/output paths.")
+    master_events.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
     master_events.set_defaults(handler=_cmd_io_master_events)
 
     inventory = io_sub.add_parser("inventory", help="Build a lightweight observed/synthetic file inventory.")
@@ -2037,6 +2053,16 @@ def _required_cli_config(config_path: str | None = None, *, run_scenario: str | 
     return SpatialVTKConfig.from_file(path, run_scenario=run_scenario)
 
 
+def _cli_config_for_defaults(config_path: str | None, *, run_scenario: str | None, needs_config: bool):
+    """Load CLI config only when defaults or explicit config options require it."""
+
+    if needs_config:
+        return _required_cli_config(config_path, run_scenario=run_scenario)
+    if config_path is not None or run_scenario:
+        return _optional_cli_config(config_path, run_scenario=run_scenario)
+    return None
+
+
 def _configured_output_path(
     key: str,
     *,
@@ -2244,11 +2270,7 @@ def _cmd_io_prepare_stations(args: argparse.Namespace) -> int:
     """Run ``svtk io prepare-stations``."""
 
     needs_config = args.input is None or args.output is None
-    config = (
-        _required_cli_config(args.config, run_scenario=args.run_scenario)
-        if needs_config
-        else _optional_cli_config(args.config, run_scenario=args.run_scenario)
-    )
+    config = _cli_config_for_defaults(args.config, run_scenario=args.run_scenario, needs_config=needs_config)
     from spatial_vtk.io import prepare_station_metadata
 
     input_path = (
@@ -2270,11 +2292,7 @@ def _cmd_io_prepare_events(args: argparse.Namespace) -> int:
     """Run ``svtk io prepare-events``."""
 
     needs_config = args.input is None or args.output is None
-    config = (
-        _required_cli_config(args.config, run_scenario=args.run_scenario)
-        if needs_config
-        else _optional_cli_config(args.config, run_scenario=args.run_scenario)
-    )
+    config = _cli_config_for_defaults(args.config, run_scenario=args.run_scenario, needs_config=needs_config)
     from spatial_vtk.io import prepare_event_metadata
 
     input_path = (
@@ -2303,6 +2321,8 @@ def _cmd_io_prepare_event_stations(args: argparse.Namespace) -> int:
         _required_cli_config(args.config, run_scenario=args.run_scenario)
         if needs_config
         else _optional_cli_config(args.config, run_scenario=args.run_scenario)
+        if args.config is not None or args.run_scenario
+        else None
     )
     from spatial_vtk.io import prepare_event_station_table
 
@@ -2347,18 +2367,42 @@ def _cmd_io_prepare_event_stations(args: argparse.Namespace) -> int:
 def _cmd_io_master_stations(args: argparse.Namespace) -> int:
     """Run ``svtk io master-stations``."""
 
+    needs_config = args.input is None or args.output is None
+    config = _cli_config_for_defaults(args.config, run_scenario=args.run_scenario, needs_config=needs_config)
     from spatial_vtk.io import build_master_station_list, write_master_station_list
 
-    write_master_station_list(build_master_station_list(station_tables=args.input), args.output)
+    station_tables = (
+        args.input
+        if args.input is not None
+        else [_configured_project_path("paths.station_metadata", config=config)]
+    )
+    output = (
+        Path(args.output).expanduser()
+        if args.output is not None
+        else _configured_output_path("prepared_stations", config=config)
+    )
+    write_master_station_list(build_master_station_list(station_tables=station_tables), output)
     return 0
 
 
 def _cmd_io_master_events(args: argparse.Namespace) -> int:
     """Run ``svtk io master-events``."""
 
+    needs_config = args.input is None or args.output is None
+    config = _cli_config_for_defaults(args.config, run_scenario=args.run_scenario, needs_config=needs_config)
     from spatial_vtk.io import build_master_event_list, write_master_event_list
 
-    write_master_event_list(build_master_event_list(event_tables=args.input), args.output)
+    event_tables = (
+        args.input
+        if args.input is not None
+        else [_configured_project_path("paths.event_metadata", config=config)]
+    )
+    output = (
+        Path(args.output).expanduser()
+        if args.output is not None
+        else _configured_output_path("prepared_events", config=config)
+    )
+    write_master_event_list(build_master_event_list(event_tables=event_tables), output)
     return 0
 
 
