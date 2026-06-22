@@ -149,6 +149,10 @@ def test_tutorial_notebook_runtime_preflight_reports_missing_modules(monkeypatch
         == "MPLCONFIGDIR=/tmp/mplconfig_svtk "
         "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run"
     )
+    assert (
+        module.SOURCE_CHECKOUT_TUTORIAL_VALIDATION_COMMAND
+        == "python tools/check_validation_environment.py --groups tutorial"
+    )
     assert sys.executable in module.current_python_tutorial_install_command()
     assert sys.executable in module.current_python_tutorial_runtime_check_command()
     assert module.current_python_tutorial_runtime_check_command().startswith("MPLCONFIGDIR=/tmp/mplconfig_svtk ")
@@ -160,6 +164,8 @@ def test_tutorial_notebook_runtime_preflight_reports_missing_modules(monkeypatch
     assert "Jupyter, mapping, dashboard, and waveform readers" in message
     assert f"Current Python executable: {sys.executable}" in message
     assert "Make sure the install command targets this environment" in message
+    assert "lightweight environment check used by the public docs" in message
+    assert module.SOURCE_CHECKOUT_TUTORIAL_VALIDATION_COMMAND in message
     assert module.SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND in message
     assert module.SOURCE_CHECKOUT_TUTORIAL_RUNTIME_CHECK_COMMAND in message
     assert module.current_python_tutorial_install_command() in message

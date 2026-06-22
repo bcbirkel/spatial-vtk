@@ -89,6 +89,7 @@ SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND = (
     'python -m pip install -e ".[validation,docs,dashboard,notebooks,waveforms]"'
 )
 SOURCE_CHECKOUT_TUTORIAL_CONDA_COMMAND = "conda env create -f svtk_environment.yaml"
+SOURCE_CHECKOUT_TUTORIAL_VALIDATION_COMMAND = "python tools/check_validation_environment.py --groups tutorial"
 SOURCE_CHECKOUT_TUTORIAL_RUNTIME_CHECK_COMMAND = (
     "MPLCONFIGDIR=/tmp/mplconfig_svtk "
     "python tools/execute_tutorial_notebooks.py --runtime-check-only --include-large-run"
@@ -353,7 +354,9 @@ def check_notebook_runtime(required: dict[str, str] | None = None) -> None:
         "tutorial notebooks, including Jupyter, mapping, dashboard, and "
         f"waveform readers. Current Python executable: {sys.executable}. "
         "Make sure the install command targets this environment, or activate "
-        "the intended environment first. From a source checkout, install the "
+        "the intended environment first. From a source checkout, first run "
+        f"{SOURCE_CHECKOUT_TUTORIAL_VALIDATION_COMMAND} to get the same "
+        "lightweight environment check used by the public docs. Install the "
         "package runtime plus tutorial extras with "
         f"{SOURCE_CHECKOUT_TUTORIAL_INSTALL_COMMAND}. For this exact Python "
         f"environment, run {current_python_tutorial_install_command()}. "
