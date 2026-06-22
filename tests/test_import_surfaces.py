@@ -1439,6 +1439,8 @@ def test_metrics_api_docs_use_public_plot_entry_point():
         assert f".. automodule:: {module_name}" not in text
     assert "For PSA, large-run figure helpers compare oscillator periods instead of\nwaveform passbands" in text
     assert "``status_frame`` also includes ``spectral_contract_status``" in text
+    assert "``ready`` is only true when the requested value column is present" in text
+    assert "``value_col_present``, ``finite_value_rows``, and\n   ``nonfinite_value_rows``" in text
     assert "``spectral_metric_contract_status``" in text
     assert "legacy passband-scoped row counts" in text
     assert "``write_station_metric_map_for_metric``" in text

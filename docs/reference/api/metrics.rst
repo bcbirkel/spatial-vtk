@@ -353,10 +353,14 @@ factories used by the large-run figure suite:
    rendered. These checks do not read additional large files. Path rows include
    normalized ``artifact_label``, ``resolved_path``, ``path``, and ``exists``
    columns while preserving the scalar ``name``/``value`` display used by
-   notebooks. ``status_frame`` also includes ``spectral_contract_status`` plus
-   PSA/FAS broadband and legacy passband row counts, so notebooks can warn
-   users to rebuild metric rows before PSA plots are skipped because they came
-   from older passband-scoped spectral outputs.
+   notebooks. ``ready`` is only true when the requested value column is present
+   and at least one selected row has a finite value; the same status frame
+   reports ``value_col_present``, ``finite_value_rows``, and
+   ``nonfinite_value_rows`` so notebooks can explain empty or skipped plots
+   without loading additional tables. ``status_frame`` also includes
+   ``spectral_contract_status`` plus PSA/FAS broadband and legacy passband row
+   counts, so notebooks can warn users to rebuild metric rows before PSA plots
+   are skipped because they came from older passband-scoped spectral outputs.
 
 ``spectral_metric_contract_status``
    Return a compact PSA/FAS audit table with row counts, broadband row counts,

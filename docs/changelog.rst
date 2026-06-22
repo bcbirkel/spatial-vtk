@@ -10,6 +10,8 @@ Changelog
     with no finite selected values is not reported as ready to render.
   - Added finite and non-finite selected-value row counts to the metric figure
     context status frame for easier notebook diagnostics on large datasets.
+  - Documented the finite-value render gate in the metric plotting API
+    reference and added source-contract coverage for the status fields.
 
 - **Standard notebook setup imports** *(Changed)*
 
