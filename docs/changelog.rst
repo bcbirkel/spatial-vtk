@@ -4,6 +4,14 @@ Changelog
 2026-06-21
 ----------
 
+- **Tutorial notebook helper guard** *(Changed)*
+
+  - Added regression coverage that scans committed tutorial notebooks for
+    top-level functions and classes, keeping reusable workflow logic in
+    importable package helpers instead of notebook cells.
+  - Verified the current tutorial and large-run notebooks pass that
+    package-boundary contract.
+
 - **Metrics dashboard tab readiness** *(Fixed)*
 
   - Made Streamlit metrics-dashboard optional-tab skip decisions honor

@@ -24,6 +24,42 @@ def _load_executor_module():
     return module
 
 
+def test_committed_tutorial_notebooks_do_not_define_local_helpers() -> None:
+    """Reusable tutorial helpers should live in the package, not notebook cells."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
+
+    assert notebooks
+    violations: list[str] = []
+    for notebook_path in notebooks:
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+        for index, cell in enumerate(notebook.get("cells", []), start=1):
+            if cell.get("cell_type") != "code":
+                continue
+            source = "".join(cell.get("source", []))
+            if not source.strip():
+                continue
+            try:
+                tree = ast.parse(source)
+            except SyntaxError as exc:
+                relative = notebook_path.relative_to(repo_root)
+                violations.append(f"{relative}: cell {index} has invalid Python: {exc}")
+                continue
+            local_defs = [
+                node.name
+                for node in tree.body
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+            ]
+            if local_defs:
+                relative = notebook_path.relative_to(repo_root)
+                violations.append(
+                    f"{relative}: cell {index} defines notebook-local helpers: {', '.join(local_defs)}"
+                )
+
+    assert violations == []
+
+
 def test_tutorial_notebook_warning_scan_detects_warning_like_outputs() -> None:
     """The tutorial verifier should flag warning-like cell output."""
 
