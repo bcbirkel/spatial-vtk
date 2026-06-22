@@ -1434,10 +1434,16 @@ def test_write_large_run_metric_figure_suite_from_notebook_settings_delegates(tm
             return self._record("standard_metric_diagnostics", *args, **kwargs)
 
     fake_context = FakeContext()
+    prepare_kwargs: dict[str, object] = {}
+
+    def _fake_prepare_metric_context(*args: object, **kwargs: object) -> FakeContext:
+        prepare_kwargs.update(kwargs)
+        return fake_context
+
     monkeypatch.setattr(
         large_run_module,
         "prepare_large_run_metric_figure_context",
-        lambda *args, **kwargs: fake_context,
+        _fake_prepare_metric_context,
     )
 
     def _dummy_plot(*_args: object, **_kwargs: object) -> None:
@@ -1479,6 +1485,8 @@ def test_write_large_run_metric_figure_suite_from_notebook_settings_delegates(tm
         "standard_metric_diagnostics",
     ]
     assert result.context is fake_context
+    assert prepare_kwargs["verbose"] is False
+    assert prepare_kwargs["station_aggregation"] == "mean"
     assert [call[0] for call in calls] == expected
     assert calls[0][2]["value_col"] == "log2_residual"
     assert calls[0][2]["robust_axis_percentile"] == 95.0

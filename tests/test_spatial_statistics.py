@@ -2404,6 +2404,7 @@ def test_prepare_spatial_figure_context_from_notebook_settings_delegates(
         "make_figures": True,
         "default_model": "override-model",
         "station_aggregation": "median",
+        "verbose": False,
     }
 
 
@@ -2476,11 +2477,16 @@ def test_write_large_run_spatial_figure_suite_from_notebook_settings_delegates(
             return self._record("overview_plots", *args, **kwargs)
 
     fake_context = FakeContext(tmp_path / "figures")
+    prepare_kwargs: dict[str, object] = {}
+
+    def _fake_prepare_spatial_context(*args: object, **kwargs: object) -> FakeContext:
+        prepare_kwargs.update(kwargs)
+        return fake_context
 
     monkeypatch.setattr(
         large_run_module,
         "prepare_spatial_figure_context_from_notebook_settings",
-        lambda *args, **kwargs: fake_context,
+        _fake_prepare_spatial_context,
     )
 
     def _dummy_plot(*_args: object, **_kwargs: object) -> None:
@@ -2500,6 +2506,7 @@ def test_write_large_run_spatial_figure_suite_from_notebook_settings_delegates(
     )
 
     assert result.context is fake_context
+    assert prepare_kwargs["include_station_aggregation"] is True
     assert [call[0] for call in calls] == [
         "station_metric_maps",
         "residual_grid_maps",
