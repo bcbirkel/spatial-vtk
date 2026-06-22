@@ -776,10 +776,30 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
 
     assert context.ready
     assert len(context.metrics_for_figures) == len(metrics)
-    context_status = context.status_frame().set_index("name")["value"]
-    assert bool(context_status.loc["value_col_present"]) is True
-    assert context_status.loc["finite_value_rows"] == 6
-    assert context_status.loc["nonfinite_value_rows"] == 2
+    context_status_frame = context.status_frame()
+    assert {
+        "name",
+        "value",
+        "artifact_role",
+        "artifact_label",
+        "status",
+        "resolved_path",
+        "path",
+        "exists",
+    } <= set(context_status_frame.columns)
+    context_status = context_status_frame.set_index("name")
+    assert bool(context_status.loc["value_col_present", "value"]) is True
+    assert context_status.loc["value_col_present", "artifact_role"] == "schema_check"
+    assert context_status.loc["value_col_present", "status"] == "ready"
+    assert context_status.loc["finite_value_rows", "value"] == 6
+    assert context_status.loc["finite_value_rows", "status"] == "ready"
+    assert context_status.loc["nonfinite_value_rows", "value"] == 2
+    assert context_status.loc["metrics_long_path", "artifact_label"] == "metrics long source table"
+    assert context_status.loc["metrics_long_path", "artifact_role"] == "input_table"
+    assert context_status.loc["metrics_long_path", "resolved_path"] == str(metrics_path)
+    assert bool(context_status.loc["metrics_long_path", "exists"]) is True
+    assert context_status.loc["metrics_long_path", "status"] == "ready"
+    assert context_status.loc["figure_dir", "artifact_role"] == "figure_directory"
     selection_status = context.metric_selection_status_frame(components=["Z"], model="m1").set_index("metric_key")
     assert selection_status.loc["pga", "status_reason"] == "selected"
     assert selection_status.loc["pga", "selected_row_count"] == 4

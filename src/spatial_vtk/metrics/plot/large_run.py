@@ -3373,12 +3373,18 @@ def _aggregate_spectral_contract_status(status: pd.DataFrame) -> dict[str, str]:
 
 
 def _metric_context_status_frame(rows: list[tuple[str, object]]) -> pd.DataFrame:
-    """Return metric figure context status rows with normalized path columns."""
+    """Return metric figure context status rows with notebook-friendly metadata."""
 
     frame = pd.DataFrame(rows, columns=["name", "value"])
     if frame.empty:
         return frame
-    frame["artifact_label"] = frame["name"].astype(str).map(lambda value: value.replace("_", " ").title())
+    roles_and_labels = frame["name"].astype(str).map(_metric_context_artifact_role_and_label)
+    frame["artifact_role"] = roles_and_labels.map(lambda item: item[0])
+    frame["artifact_label"] = roles_and_labels.map(lambda item: item[1])
+    frame["status"] = [
+        _metric_context_row_status(str(row["name"]), row["value"])
+        for _, row in frame.iterrows()
+    ]
     frame["resolved_path"] = ""
     frame["path"] = ""
     frame["exists"] = pd.NA
@@ -3391,7 +3397,87 @@ def _metric_context_status_frame(rows: list[tuple[str, object]]) -> pd.DataFrame
         frame.at[index, "resolved_path"] = str(path)
         frame.at[index, "path"] = str(path)
         frame.at[index, "exists"] = path.exists()
+        frame.at[index, "status"] = "ready" if path.exists() else "missing"
     return frame
+
+
+def _metric_context_artifact_role_and_label(name: str) -> tuple[str, str]:
+    """Return a stable role and display label for a metric context status row."""
+
+    labels = {
+        "ready": ("notebook_render_gate", "metric figure render gate"),
+        "make_figures": ("notebook_render_gate", "metric figure render setting"),
+        "metrics_long_path": ("input_table", "metrics long source table"),
+        "figure_dir": ("figure_directory", "metric figure output directory"),
+        "selected_metric_rows": ("row_count", "selected metric rows"),
+        "value_col_present": ("schema_check", "selected value column"),
+        "finite_value_rows": ("row_count", "finite selected value rows"),
+        "nonfinite_value_rows": ("row_count", "non-finite selected value rows"),
+        "available_column_count": ("schema_check", "available metric-table columns"),
+        "loaded_column_count": ("schema_check", "loaded metric-table columns"),
+        "value_col": ("figure_setting", "selected value column name"),
+        "default_passband": ("figure_setting", "default passband filter"),
+        "default_components": ("figure_setting", "default component filter"),
+        "default_model": ("figure_setting", "default model filter"),
+        "sample_rows_per_figure": ("figure_setting", "sample rows per figure"),
+        "station_aggregation": ("figure_setting", "station aggregation method"),
+        "write_sidecars": ("figure_sidecar_setting", "figure sidecar write setting"),
+        "sidecar_dir": ("figure_sidecar_setting", "figure sidecar directory"),
+        "sidecar_rows": ("figure_sidecar_setting", "figure sidecar row limit"),
+        "spectral_contract_status": ("spectral_metric_contract", "spectral metric contract status"),
+        "spectral_contract_message": ("spectral_metric_contract", "spectral metric contract message"),
+    }
+    if name in labels:
+        return labels[name]
+    if name.endswith("_metric_rows"):
+        return "spectral_metric_contract", name.replace("_", " ")
+    if name.endswith("_broadband_rows"):
+        return "spectral_metric_contract", name.replace("_", " ")
+    if name.endswith("_legacy_passband_rows"):
+        return "spectral_metric_contract", name.replace("_", " ")
+    if name.endswith("_period_count"):
+        return "spectral_metric_contract", name.replace("_", " ")
+    if name.endswith("_path"):
+        return "path", name.replace("_", " ")
+    if name.endswith("_dir"):
+        return "directory", name.replace("_", " ")
+    return "metric_figure_context", name.replace("_", " ")
+
+
+def _metric_context_row_status(name: str, value: object) -> str:
+    """Return a stable compact status code for one metric context row."""
+
+    if name == "ready":
+        return "ready" if bool(value) else "not_ready"
+    if name == "make_figures":
+        return "enabled" if bool(value) else "disabled"
+    if name == "value_col_present":
+        return "ready" if bool(value) else "missing"
+    if name == "finite_value_rows":
+        return "ready" if _numeric_value(value) > 0 else "no_finite_values"
+    if name == "selected_metric_rows":
+        return "ready" if _numeric_value(value) > 0 else "empty"
+    if name == "write_sidecars":
+        return "enabled" if bool(value) else "disabled"
+    if name == "spectral_contract_status":
+        return str(value or "unknown")
+    if name.endswith(("_path", "_dir")):
+        return "unconfigured" if value in (None, "") else "unknown"
+    return "ok"
+
+
+def _numeric_value(value: object) -> float:
+    """Return a float for status checks, treating missing/non-numeric values as zero."""
+
+    try:
+        if pd.isna(value):
+            return 0.0
+    except (TypeError, ValueError):
+        pass
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0
 
 
 def _station_aggregation_attrs(

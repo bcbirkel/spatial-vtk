@@ -366,11 +366,12 @@ factories used by the large-run figure suite:
    loaded columns, selected row count, default filters, sidecar settings, and
    metric/passband/component/model/event/station coverage before figures are
    rendered. These checks do not read additional large files. Path rows include
-   normalized ``artifact_label``, ``resolved_path``, ``path``, and ``exists``
-   columns while preserving the scalar ``name``/``value`` display used by
-   notebooks. ``ready`` is only true when the requested value column is present
-   and at least one selected row has a finite value; the same status frame
-   reports ``value_col_present``, ``finite_value_rows``, and
+   normalized ``artifact_label``, ``artifact_role``, ``status``,
+   ``resolved_path``, ``path``, and ``exists`` columns while preserving the
+   scalar ``name``/``value`` display used by notebooks. ``ready`` is only true
+   when the requested value column is present and at least one selected row has
+   a finite value; the same status frame reports ``value_col_present``,
+   ``finite_value_rows``, and
    ``nonfinite_value_rows`` so notebooks can explain empty or skipped plots
    without loading additional tables. ``status_frame`` also includes
    ``spectral_contract_status`` plus PSA/FAS broadband and legacy passband row

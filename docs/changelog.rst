@@ -4,6 +4,17 @@ Changelog
 2026-06-22
 ----------
 
+- **Metric figure context status labels** *(Changed)*
+
+  - Added ``artifact_role`` and compact ``status`` fields to
+    ``MetricFigureContext.status_frame()`` while keeping the existing
+    ``name``/``value`` notebook display contract.
+  - Replaced title-cased internal row names with stable labels such as
+    ``metrics long source table`` and ``metric figure output directory``.
+  - Kept path and directory rows normalized with ``resolved_path``, ``path``,
+    and ``exists`` so large-run Step 3 status tables match the other workflow
+    readiness/status tables.
+
 - **Generated CLI reference synchronization** *(Fixed)*
 
   - Regenerated the metrics CLI reference so ``svtk metrics outputs``
