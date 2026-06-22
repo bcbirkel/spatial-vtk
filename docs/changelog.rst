@@ -4,6 +4,15 @@ Changelog
 2026-06-22
 ----------
 
+- **API reference export guard** *(Added)*
+
+  - Added source-contract coverage for public API ``autofunction`` and
+    ``autoclass`` targets so docs cannot point at helpers missing from the
+    documented package namespace ``__all__`` exports.
+  - Kept the check source-based and lazy so it validates public documentation
+    targets without importing heavy plotting or workflow implementation
+    objects.
+
 - **Large-run Step 5/6 sidecar visibility** *(Changed)*
 
   - Added package-owned sidecar readiness and status displays to the large-run

@@ -2985,6 +2985,39 @@ def test_public_helper_tables_match_package_exports():
     assert missing_by_module == {}
 
 
+def test_api_reference_autodoc_targets_match_public_exports():
+    """Autodoc targets should resolve through the documented public namespaces."""
+
+    root = pathlib.Path(__file__).resolve().parents[1]
+    docs_root = root / "docs" / "reference" / "api"
+    public_modules = {
+        "spatial_vtk.metrics",
+        "spatial_vtk.metrics.plot",
+        "spatial_vtk.spatial",
+        "spatial_vtk.spatial.plot",
+        "spatial_vtk.spatial.map",
+        "spatial_vtk.visualize",
+        "spatial_vtk.visualize.dashboard",
+    }
+    public_exports = {
+        module_name: set(importlib.import_module(module_name).__all__)
+        for module_name in public_modules
+    }
+    missing: dict[str, list[str]] = {}
+    target_pattern = re.compile(r"^\s*\.\. auto(?:function|class):: (?P<target>\S+)", re.MULTILINE)
+    for docs_path in sorted(docs_root.glob("*.rst")):
+        text = docs_path.read_text(encoding="utf-8")
+        for match in target_pattern.finditer(text):
+            target = match.group("target")
+            module_name, _, attribute_name = target.rpartition(".")
+            if module_name not in public_exports:
+                continue
+            if attribute_name not in public_exports[module_name]:
+                missing.setdefault(str(docs_path.relative_to(root)), []).append(target)
+
+    assert missing == {}
+
+
 def test_dashboard_export_docstring_starts_with_configured_helper():
     """Dashboard export module docs should not lead notebooks to raw dataset writers."""
 
