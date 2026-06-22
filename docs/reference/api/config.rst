@@ -147,6 +147,8 @@ the stable package surface below.
        ``status_frame()`` reports disabled/not-configured/missing-directory
        states when no metadata exists yet and per-figure provenance from saved
        JSON sidecars after rendering, without loading large CSV row files.
+       Normalized figure status rows include ``status_reason`` for structured
+       notebook filtering.
    * - ``NotebookDashboardCommands`` and
        ``notebook_dashboard_launch_commands``
      - Resolve dashboard launch settings from config-backed dashboard outputs;

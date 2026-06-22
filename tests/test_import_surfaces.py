@@ -1670,6 +1670,7 @@ def test_config_api_docs_include_compute_helpers():
     assert "``readiness_frame()`` reports whether sidecars are enabled" in text
     assert "``status_frame()`` reports disabled/not-configured/missing-directory" in text
     assert "per-figure provenance from saved\n       JSON sidecars after rendering" in text
+    assert "Normalized figure status rows include ``status_reason``" in text
     assert "``NotebookDashboardCommands`` and" in text
     assert "``notebook_dashboard_launch_commands``" in text
     assert "``metrics_dataset_dir``" in text
@@ -2783,6 +2784,7 @@ def test_visualize_api_docs_use_public_entry_points():
     assert ".. automodule:: spatial_vtk.visualize.waveforms\n" in text
     assert "Shared figure helpers that are useful in scripts or package\nextension code are exposed through ``spatial_vtk.visualize``" in text
     assert "spatial_vtk.visualize.FigureSidecarResult" in text
+    assert "Normalized figure\n       status tables include ``status_reason``" in text
     assert "spatial_vtk.visualize.add_figure_family_sidecar_status" in text
     assert "spatial_vtk.visualize.apply_figure_context" in text
     assert "spatial_vtk.visualize.build_record_section_rows" in text

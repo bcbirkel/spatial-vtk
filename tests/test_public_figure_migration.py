@@ -128,20 +128,30 @@ def test_normalized_figure_status_rows_include_artifact_role_and_status(tmp_path
     status = normalize_figure_status_rows(
         [
             {"artifact": "context_figure", "figure_path": str(figure), "figure_exists": True},
-            {"name": "missing_figure", "figure_path": str(tmp_path / "missing.png")},
+            {
+                "name": "missing_figure",
+                "figure_path": str(tmp_path / "missing.png"),
+                "status": "skipped",
+                "status_reason": "disabled",
+            },
+            {"name": "implicit_missing_figure", "figure_path": str(tmp_path / "implicit_missing.png")},
         ]
     ).set_index("name")
 
-    assert {"artifact_label", "artifact_role", "status", "exists", "resolved_path", "path"} <= set(
+    assert {"artifact_label", "artifact_role", "status", "status_reason", "exists", "resolved_path", "path"} <= set(
         status.columns
     )
     assert status.loc["context_figure", "artifact_role"] == "figure"
     assert status.loc["context_figure", "status"] == "ready"
+    assert status.loc["context_figure", "status_reason"] == "ready"
     assert status.loc["context_figure", "resolved_path"] == str(figure)
     assert status.loc["context_figure", "path"] == str(figure)
     assert bool(status.loc["context_figure", "exists"]) is True
-    assert status.loc["missing_figure", "status"] == "missing"
+    assert status.loc["missing_figure", "status"] == "skipped"
+    assert status.loc["missing_figure", "status_reason"] == "disabled"
     assert bool(status.loc["missing_figure", "exists"]) is False
+    assert status.loc["implicit_missing_figure", "status"] == "missing"
+    assert status.loc["implicit_missing_figure", "status_reason"] == "missing"
 
 
 def test_scatterplot_keyword_normalization_and_errors(tmp_path: Path, capsys) -> None:

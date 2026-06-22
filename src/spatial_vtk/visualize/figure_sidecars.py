@@ -21,8 +21,11 @@ def normalize_figure_status_rows(
 
     Existing figure helpers historically exposed different path column names.
     This helper preserves those columns while adding standard ``name``,
-    ``artifact_label``, ``artifact_role``, ``status``, ``resolved_path``,
-    ``path``, and ``exists`` columns for notebook status cells.
+    ``artifact_label``, ``artifact_role``, ``status``, ``status_reason``,
+    ``resolved_path``, ``path``, and ``exists`` columns for notebook status
+    cells. ``status_reason`` preserves explicit reason codes when supplied and
+    otherwise mirrors ``status`` so notebooks can filter status tables without
+    parsing human-readable messages.
     """
 
     frame = pd.DataFrame(list(rows))
@@ -73,6 +76,13 @@ def normalize_figure_status_rows(
     status.loc[blank_status & normalized["exists"].astype(bool)] = "ready"
     status.loc[blank_status & ~normalized["exists"].astype(bool)] = "missing"
     normalized["status"] = status
+    if "status_reason" in frame.columns:
+        status_reason = frame["status_reason"].fillna("").astype(str)
+    else:
+        status_reason = pd.Series([""] * len(frame), index=frame.index, dtype=object)
+    blank_status_reason = status_reason.astype(str).str.len().eq(0)
+    status_reason.loc[blank_status_reason] = status.loc[blank_status_reason]
+    normalized["status_reason"] = status_reason
     return pd.concat([normalized, frame.drop(columns=[col for col in normalized.columns if col in frame.columns])], axis=1)
 
 
