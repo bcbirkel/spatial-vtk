@@ -586,8 +586,16 @@ def test_notebook_figure_sidecar_settings_parse_env(tmp_path, monkeypatch):
     assert explicit.directory == tmp_path / "custom_sidecars"
 
     empty_status = explicit.status_frame()
-    assert list(empty_status.columns) == list(figure_sidecar_status_frame(explicit.directory).columns)
-    assert empty_status.empty
+    assert list(figure_sidecar_status_frame(explicit.directory).columns) == [
+        column for column in empty_status.columns if column in figure_sidecar_status_frame(explicit.directory).columns
+    ]
+    assert len(empty_status) == 1
+    assert empty_status.loc[0, "figure"] == "figure_sidecar_status"
+    assert empty_status.loc[0, "sidecar_status"] == "missing_directory"
+    assert "has not been created" in empty_status.loc[0, "sidecar_message"]
+    assert bool(empty_status.loc[0, "sidecars_enabled"]) is True
+    assert bool(empty_status.loc[0, "sidecar_dir_exists"]) is False
+    assert empty_status.loc[0, "sidecar_metadata_count"] == 0
     readiness = explicit.readiness_frame().set_index("name")
     assert {"artifact", "artifact_label", "artifact_role", "status", "resolved_path", "path", "exists"} <= set(
         readiness.columns
@@ -624,7 +632,13 @@ def test_notebook_figure_sidecar_settings_parse_env(tmp_path, monkeypatch):
     assert "metadata is available" in ready_after_write.loc["message", "value"]
 
     no_directory = notebook_figure_sidecar_settings("metric")
-    assert no_directory.status_frame().empty
+    no_directory_status = no_directory.status_frame()
+    assert len(no_directory_status) == 1
+    assert no_directory_status.loc[0, "figure"] == "figure_sidecar_status"
+    assert no_directory_status.loc[0, "sidecar_status"] == "disabled"
+    assert "disabled" in no_directory_status.loc[0, "sidecar_message"]
+    assert bool(no_directory_status.loc[0, "sidecars_enabled"]) is False
+    assert bool(no_directory_status.loc[0, "sidecar_dir_exists"]) is False
     disabled = no_directory.readiness_frame().set_index("name")
     assert disabled.loc["enabled", "value"] is False
     assert disabled.loc["enabled", "status"] == "disabled"

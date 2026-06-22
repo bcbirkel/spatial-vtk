@@ -123,12 +123,42 @@ class NotebookFigureSidecarSettings:
 
         The helper reads only the small JSON metadata files, not the plotted-row
         CSV sidecars. It is intended for notebook review cells after a figure
-        block has run.
+        block has run. When no figure metadata has been written yet, the frame
+        contains one explanatory settings row instead of displaying as a blank
+        notebook output.
         """
+
+        import pandas as pd
 
         from spatial_vtk.visualize.figure_sidecars import figure_sidecar_status_frame
 
-        return figure_sidecar_status_frame(self.directory)
+        frame = figure_sidecar_status_frame(self.directory)
+        if not frame.empty:
+            return frame
+
+        metadata_count = None
+        directory_path = None if self.directory is None else Path(self.directory).expanduser()
+        if directory_path is not None:
+            metadata_count = len(list(directory_path.glob("*.json")))
+        status = self._readiness_status(metadata_count)
+        row: dict[str, object] = {column: "" for column in frame.columns}
+        row.update(
+            {
+                "figure": "figure_sidecar_status",
+                "metadata_path": "" if directory_path is None else str(directory_path),
+                "sidecar_status": status,
+                "sidecar_message": self._readiness_message(metadata_count),
+                "sidecars_enabled": bool(self.enabled),
+                "sidecar_dir": "" if directory_path is None else str(directory_path),
+                "sidecar_dir_exists": False if directory_path is None else directory_path.exists(),
+                "sidecar_metadata_count": metadata_count,
+                "sidecar_row_policy": "all_rows"
+                if self.rows is None or int(self.rows) <= 0
+                else "deterministic_sample",
+                "sidecar_row_limit": None if self.rows is None or int(self.rows) <= 0 else int(self.rows),
+            }
+        )
+        return pd.DataFrame([row], columns=[*frame.columns, *[key for key in row if key not in frame.columns]])
 
     def readiness_frame(self) -> Any:
         """Return a compact notebook table describing sidecar readiness.

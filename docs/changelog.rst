@@ -4,6 +4,15 @@ Changelog
 2026-06-22
 ----------
 
+- **Notebook figure sidecar status** *(Changed)*
+
+  - Updated notebook-facing figure sidecar status frames so disabled,
+    not-configured, missing-directory, and empty-directory states display an
+    explanatory row instead of a blank table.
+  - Kept the low-level figure-sidecar scanner focused on per-figure metadata
+    rows, so script and CLI callers can still distinguish no metadata from
+    written sidecars directly.
+
 - **API reference export guard** *(Added)*
 
   - Added source-contract coverage for public API ``autofunction`` and
