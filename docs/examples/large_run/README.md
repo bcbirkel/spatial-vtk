@@ -1,17 +1,18 @@
 # Large-Run Notebook Set
 
-These notebooks mirror the seven tutorial steps, but they are designed for full
-large-dataset runs. They default to skipping existing outputs and submitting
-heavy package-helper work to Slurm or printing the generated submission script.
-The same notebooks
-also run against the committed example data from a fresh source checkout; they
-must not require private paths, pre-existing outputs, or user-specific shell
-state.
+These notebooks are action-oriented drivers for full large-dataset runs. They
+skip existing outputs by default and either submit heavy work to Slurm or print
+the generated submission script/command. The same notebooks also run against
+the committed example data from a fresh source checkout; they must not require
+private paths, pre-existing outputs, or user-specific shell state.
 
-Notebook cells call importable `spatial_vtk` package functions directly. They
-do not shell out to `svtk` CLI commands for workflow work; the CLI remains a
-terminal-oriented interface and an implementation detail of generated batch
-scripts.
+Notebook cells call importable `spatial_vtk` package functions directly,
+specifically public `spatial_vtk.large_run` actions. The
+package owns config activation, path resolution, skip/rebuild checks, chunking,
+Slurm script generation, figure settings, dashboard launch details, and
+bounded diagnostics. They do not shell out to `svtk` CLI commands for workflow work.
+The notebooks should read as the scientific workflow, not as implementation
+plumbing.
 
 To verify the public notebooks from a clean checkout, install the tutorial
 extras and run:
@@ -38,47 +39,24 @@ checks that tutorial notebooks have no saved execution state, private absolute
 paths, shell/CLI workflow cells, implementation plotting/workflow imports,
 fixed run layout paths, raw output-path/table reads, or notebook-local
 dataframe filtering and joins that should live in package helpers.
-Notebook driver cells should use package workflow helpers that own path
-resolution, skip/rebuild checks, chunking, Slurm script generation, figure
-sidecars, and bounded previews. Common large-run entry points include:
+The action-oriented large-run notebooks avoid notebook-local dataframe filtering
+and joins entirely.
+Notebook driver cells should use action helpers such as:
 
 ```python
-from spatial_vtk.config import notebook_run_context, notebook_figure_settings
-from spatial_vtk.io import load_standard_ingest_workflow_outputs
-from spatial_vtk.metrics import load_standard_metric_workflow_outputs
-from spatial_vtk.qc import load_standard_qc_workflow_outputs
-from spatial_vtk.spatial import (
-    load_standard_geojson_workflow_output_status,
-    load_standard_spatial_workflow_output_status,
+from spatial_vtk.large_run import (
+    activate_large_run,
+    run_quality_control,
+    launch_qc_dashboard,
+    calculate_metrics,
+    launch_metrics_dashboard,
 )
-from spatial_vtk.visualize import prepare_configured_dashboard_datasets_from_notebook_settings
 ```
 
-Step 4 large-run spatial figures should be rendered through the standard
-spatial output result:
-
-```python
-spatial_outputs = load_standard_spatial_workflow_output_status(cfg=context.cfg)
-spatial_figure_suite = spatial_outputs.write_figure_suite(spatial_figure_settings)
-```
-
-Step 3 large-run metric figures should use the standard metric output result
-for the same reason:
-
-```python
-metric_outputs = load_standard_metric_workflow_outputs(cfg=context.cfg)
-metric_figure_suite = metric_outputs.write_large_run_figure_suite(metric_figure_settings)
-```
-
-Single-figure helpers remain available for custom Python scripts, but the
-large-run notebooks should use workflow result objects first and should not
-hand-wire individual plot calls, figure paths, or dataframe joins. For custom
-scripts or package extensions, import from stable public packages such as
-`spatial_vtk.metrics.plot`, `spatial_vtk.spatial.plot`,
-`spatial_vtk.spatial.map`, and `spatial_vtk.visualize`. Do not import from
-deeper implementation modules below those packages in notebooks; preflight
-rejects those paths because they are internal organization, not the tutorial
-contract.
+Lower-level workflow, plotting, dashboard, and sidecar helpers remain available
+for scripts and package extensions, but the large-run notebooks should not
+hand-wire individual plot calls, figure paths, status frames, dataframe joins,
+or dashboard contracts.
 
 Run `python tools/check_validation_environment.py --groups tutorial` first to
 report missing Jupyter, mapping, dashboard, or waveform modules before the
@@ -100,7 +78,9 @@ Environment switches:
 - `SVTK_RUN_SCENARIO=tutorial`: choose a configured run scenario. Large-run notebooks let `notebook_run_context()` read this once and reuse `context.run_scenario`.
 - `SVTK_RUN_LOCAL=1`: run lightweight package helper calls directly from the notebook. Otherwise heavy cells write Slurm scripts and print or submit them.
 - `SVTK_OVERWRITE=1`: rebuild outputs even when they already exist.
-- `SVTK_MAKE_FIGURES=1`: render figure cells after compact input tables exist.
+- `SVTK_MAKE_FIGURES=1`: environment-backed default for figure rendering. The
+  large-run notebooks also expose `make_figures=` in their setup cell so the
+  choice is visible and editable in the notebook.
 - `SVTK_MAKE_SCORE_TRENDS=1`: render optional GOF score-trend diagnostics in Step 3. The main metric figure suite uses log2 residuals and does not render GOF score figures unless this is set.
 - `SVTK_SCORE_TREND_COLUMNS=anderson_2004_gof`: choose the score columns for optional Step 3 GOF trend diagnostics.
 - `SVTK_QC_CHUNKSIZE=1000000`: chunk size for disk-backed QC readers.
@@ -132,13 +112,19 @@ Spectral metrics:
 Run order:
 
 1. `step_01_large_run_ingest_and_prepare_data.ipynb`
-2. `step_02_large_run_quality_control.ipynb`
-3. `step_03_large_run_calculate_metrics.ipynb`
+2. `step_02_large_run_quality_control.ipynb` and review the QC dashboard
+3. `step_03_large_run_calculate_metrics.ipynb` and review the metrics dashboard
 4. `step_04_large_run_spatial_statistics.ipynb`
 5. `step_05_large_run_geojson_corridors.ipynb`
 6. `step_06_large_run_additional_plotting.ipynb`
-7. `step_07_large_run_dashboards.ipynb`
 
-Each notebook is a driver: it should show paths, skip completed outputs, submit
-or print heavy package-helper jobs, and preview only small bounded tables.
-Reusable logic belongs in the package, not in notebook-local helper functions.
+Dashboards are not a separate final step in the large-run workflow. The QC
+dashboard belongs in Step 2 because it supports QC review before metrics. The
+metrics dashboard belongs in Step 3 because it supports metric review before
+spatial analysis. In short: QC dashboard belongs in Step 2; metrics dashboard
+belongs in Step 3.
+
+Each notebook is a driver: it should expose one setup cell and action cells,
+skip completed outputs, submit or print heavy package jobs, and keep
+troubleshooting details inside package helpers rather than notebook-local
+helper functions.

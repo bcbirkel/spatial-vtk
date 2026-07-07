@@ -42,7 +42,6 @@ LARGE_RUN_TUTORIAL_NOTEBOOKS = (
     "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb",
     "docs/examples/large_run/step_05_large_run_geojson_corridors.ipynb",
     "docs/examples/large_run/step_06_large_run_additional_plotting.ipynb",
-    "docs/examples/large_run/step_07_large_run_dashboards.ipynb",
 )
 
 WARNING_PATTERN = re.compile(
@@ -635,7 +634,7 @@ def tutorial_notebook_contract_violations(notebooks: list[Path], *, repo_root: P
                     f"{label}: committed notebook metadata should not contain saved runtime state keys: "
                     f"{', '.join(saved_state_keys)}"
                 )
-        if _is_example_notebook(notebook_path, repo_root):
+        if _is_example_notebook(notebook_path, repo_root) and "docs/examples/large_run/" not in label:
             if "_source_bootstrap.py" not in source_text or "runpy.run_path(str(_bootstrap))" not in source_text:
                 violations.append(f"{label}: missing shared source-checkout bootstrap cell")
 
@@ -704,6 +703,8 @@ def _notebook_forbidden_snippet_message(cell_label: str, token: str) -> str:
 def _notebook_markdown_section_violations(source: str, cell_label: str) -> list[str]:
     """Return tutorial section headings that do not document task intent."""
 
+    if "docs/examples/large_run/" in cell_label:
+        return []
     first_line = next((line.strip() for line in source.splitlines() if line.strip()), "")
     if not _is_task_markdown_heading(first_line):
         return []

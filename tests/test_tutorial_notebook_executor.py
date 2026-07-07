@@ -368,7 +368,7 @@ def test_tutorial_source_bootstrap_helper_works_from_repo_and_examples_dir(monke
 
 
 def test_tutorial_notebooks_use_shared_source_bootstrap() -> None:
-    """Tutorial notebooks should not duplicate source-checkout path plumbing."""
+    """Standard tutorial notebooks should use the source bootstrap; large-run actions do not need it."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = sorted((repo_root / "docs" / "examples").rglob("*.ipynb"))
@@ -383,11 +383,13 @@ def test_tutorial_notebooks_use_shared_source_bootstrap() -> None:
     for notebook_path in notebooks:
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-        assert "_source_bootstrap.py" in source, f"{notebook_path.relative_to(repo_root)}"
-        assert "runpy.run_path(str(_bootstrap))" in source, f"{notebook_path.relative_to(repo_root)}"
+        if "large_run" in notebook_path.parts:
+            assert "from spatial_vtk.large_run import" in source, f"{notebook_path.relative_to(repo_root)}"
+            assert "_source_bootstrap.py" not in source, f"{notebook_path.relative_to(repo_root)}"
+        else:
+            assert "_source_bootstrap.py" in source, f"{notebook_path.relative_to(repo_root)}"
         matches = [pattern for pattern in forbidden if pattern in source]
-        assert not matches, f"{notebook_path.relative_to(repo_root)} embeds bootstrap plumbing: {matches}"
-
+        assert not matches, f"{notebook_path.relative_to(repo_root)} contains brittle bootstrap code: {matches}"
 
 def test_tutorial_notebooks_use_stable_config_import_surface() -> None:
     """Tutorial notebooks should import notebook helpers from spatial_vtk.config."""
@@ -1011,7 +1013,7 @@ def test_public_docs_describe_registered_table_formats() -> None:
 
 
 def test_qc_notebooks_use_public_workflow_helpers() -> None:
-    """Tutorial notebooks should use public QC workflow helpers."""
+    """QC notebooks should use public helpers; large-run uses action helpers."""
 
     repo_root = Path(__file__).resolve().parents[1]
     standard_notebook = json.loads(
@@ -1022,138 +1024,34 @@ def test_qc_notebooks_use_public_workflow_helpers() -> None:
         repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb"
     ).read_text(encoding="utf-8")
 
-    assert "run_qc_inventory_from_config(" not in standard_text
-    assert "metrics_settings_from_config," in standard_text
-    assert "from spatial_vtk.config.metrics import" not in standard_text
-    assert "write_qc_inventory_overlap_from_config(" not in standard_text
-    assert "run_qc_summary_workflow_from_config(" not in standard_text
-    assert "run_notebook_step_if_needed(" not in standard_text
-    assert "notebook_step_result(" not in standard_text
-    assert "display_notebook_step_result," in standard_text
-    assert "qc_inputs.step_result(" not in standard_text
-    assert "qc_inputs.qc_inventory_step_result(" not in standard_text
-    assert "qc_inputs.qc_overlap_step_result(" not in standard_text
-    assert "qc_inputs.qc_summary_step_result(" not in standard_text
-    assert "qc_readiness = qc_inventory_readiness_from_config(" not in standard_text
-    assert "overlap_readiness = qc_overlap_readiness_from_config(" not in standard_text
-    assert "summary_readiness = qc_summary_readiness_from_config(" not in standard_text
-    assert "qc_outputs.readiness(" not in standard_text
-    assert '"reused": not qc_readiness.should_run' not in standard_text
-    assert '"reused": not overlap_readiness.should_run' not in standard_text
-    assert '"reused": not summary_readiness.should_run' not in standard_text
-    assert "run_local=True" in standard_text
-    assert "load_standard_qc_inputs," in standard_text
     assert "load_standard_qc_workflow_outputs," in standard_text
-    assert "qc_inventory_readiness_from_config," not in standard_text
-    assert "qc_overlap_readiness_from_config," not in standard_text
-    assert "qc_summary_readiness_from_config," not in standard_text
-    assert "qc_inputs = load_standard_qc_inputs(cfg=cfg)" in standard_text
-    assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in standard_text
-    assert "config_path = context.config_path" not in standard_text
-    assert "dashboard_launch = notebook_dashboard_launch_commands(context)" in standard_text
     assert "qc_outputs.run_inventory_step_if_needed(" in standard_text
     assert "qc_outputs.run_overlap_step_if_needed(" in standard_text
     assert "qc_outputs.run_summary_step_if_needed(" in standard_text
-    assert 'display_notebook_step_result(qc_inventory_result, label="Full QC inventory", display=display)' in standard_text
-    assert 'display_notebook_step_result(qc_overlap_result, label="Overlap QC inventory", display=display)' in standard_text
-    assert 'display_notebook_step_result(qc_summary_workflow_result, label="QC summary tables", display=display)' in standard_text
-    assert "display(qc_outputs.checkpoint_status_frame())" in standard_text
-    assert "print(qc_inventory_result)" not in standard_text
-    assert "print(qc_overlap_result)" not in standard_text
-    assert "print(qc_summary_workflow_result)" not in standard_text
-    assert "scope=overlap_scope" in standard_text
-    assert "qc_inputs.status_frame()" in standard_text
-    assert "ingest_outputs.load_tables(" not in standard_text
-    assert 'qc_outputs = output_group("step_02_qc", cfg=cfg)' not in standard_text
-    assert "qc_inputs.write_figures(" in standard_text
-    assert "write_qc_figures_from_outputs(" not in standard_text
-    assert "qc_figure_result.status_frame()" in standard_text
-    assert "qc_inputs.write_waveform_comparison(" in standard_text
-    assert "display(waveform_comparison_result.status_frame())" in standard_text
-    assert "print(waveform_comparison_result.message)" not in standard_text
-    assert 'print(f"Waveform pairs shown:' not in standard_text
-    assert "qc_outputs = qc_inputs.outputs" not in standard_text
-    assert '"availability_path"' in standard_text
-    assert "qc_figure_tables = qc_outputs.load_tables(" not in standard_text
-    assert "qc_outputs.display_table_previews(" not in standard_text
-    assert "qc_inputs.display_inventory_preview(nrows=5)" in standard_text
-    assert "qc_outputs.preview_table(" not in standard_text
-    assert "qc_outputs.display_path_table_previews(" not in standard_text
-    assert "qc_inputs.display_summary_previews(nrows=5)" in standard_text
-    assert "qc_inputs.compact_output_summary_frame()" in standard_text
-    assert "qc_outputs.preview_path_table(" not in standard_text
-    assert "qc_outputs.trace_qc_path" not in standard_text
-    assert "qc_outputs.qc_inventory_path" not in standard_text
-    assert "qc_outputs.qc_inventory_overlap_path" not in standard_text
-    assert "qc_outputs.comparison_eligible_path" not in standard_text
-    assert "comparison_eligible_preview =" not in standard_text
-    assert "manual-review queue:" not in standard_text
-    assert "QC overlap inventory:" not in standard_text
-    assert "comparison-eligible records:" not in standard_text
-    assert "plot_retention_summary(" not in standard_text
-    assert "plot_event_station_retention_heatmap(" not in standard_text
-    assert "plot_post_qc_station_event_map(" not in standard_text
-    assert "plot_qc_drop_cause_diagnostics(" not in standard_text
-    assert "qc_sidecars" not in standard_text
-    assert "savefig=True" not in standard_text
-    assert "showfig=True" not in standard_text
-    assert "write_waveform_comparison_from_notebook_settings(" not in standard_text
-    assert "write_waveform_comparison_from_outputs(" not in standard_text
-    assert "waveform_sidecars" not in standard_text
-    assert "build_qc_waveform_comparison_records(" not in standard_text
-    assert "load_comparison_eligible_records(" not in standard_text
-    assert "plot_event_trace_comparison(" not in standard_text
-    assert "comparison_preview_rows" not in standard_text
-    assert "qc_outputs.qc_inventory_path.exists()" not in standard_text
-    assert "qc_outputs.qc_inventory_overlap_path.exists()" not in standard_text
-    assert "export_manual_review_queue_from_qc_inventory(" not in standard_text
-    assert "trace_qc_output=trace_qc_path" not in standard_text
-    assert "qc_inventory_output=qc_inventory_path" not in standard_text
-    assert "qc_inventory_overlap_output=qc_inventory_overlap_path" not in standard_text
-    assert "preview_output_table(" not in standard_text
-    assert "notebook_dashboard_launch_commands(" in standard_text
     assert "launch_configured_dashboards_from_notebook_settings(" in standard_text
     assert 'dashboards=("qc",)' in standard_text
-    assert "launch_configured_qc_dashboard(" not in standard_text
-    assert "dashboard_launch.qc_launch_kwargs(show=True)" not in standard_text
-    assert "display(dashboard_launch_result.status_frame())" in standard_text
-    assert "launch_qc_dashboard(" not in standard_text
-    assert 'os.environ.get("SVTK_QC_DASHBOARD_PORT"' not in standard_text
-    assert 'os.environ.get("SVTK_LAUNCH_QC_DASHBOARD"' not in standard_text
-    assert "run_notebook_step_if_needed(" not in large_run_text
-    assert "from spatial_vtk.qc import (" in large_run_text
-    assert "load_standard_qc_workflow_outputs," in large_run_text
-    assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in large_run_text
-    assert "step_outputs = qc_outputs.outputs" not in large_run_text
-    assert "display(qc_outputs.status_frame())" in large_run_text
-    assert "display(qc_outputs.checkpoint_status_frame())" in large_run_text
-    assert 'from spatial_vtk.io import output_group' not in large_run_text
-    assert 'step_outputs = output_group("step_02_qc")' not in large_run_text
-    assert "run_qc_inventory_from_config," not in large_run_text
-    assert "write_qc_inventory_overlap_from_config," not in large_run_text
-    assert "run_qc_summary_workflow_from_config," not in large_run_text
-    assert "qc_outputs.run_inventory_step_if_needed(" in large_run_text
-    assert "qc_outputs.run_overlap_step_if_needed(" in large_run_text
-    assert "qc_outputs.run_summary_step_if_needed(" in large_run_text
-    assert "qc_outputs.write_figures(" in large_run_text
-    assert "write_large_run_qc_figures_from_outputs(" not in large_run_text
-    assert "qc_figure_result.status_frame()" in large_run_text
-    assert "qc_figure_tables = step_outputs.load_tables(" not in large_run_text
-    assert '"spatial_vtk.qc.run_qc_inventory_from_config"' not in large_run_text
-    assert '"spatial_vtk.qc.write_qc_inventory_overlap_from_config"' not in large_run_text
-    assert '"spatial_vtk.qc.run_qc_summary_workflow_from_config"' not in large_run_text
     for forbidden in (
-        "build_waveform_qc_summary",
-        "build_metric_qc_summary",
-        "write_qc_inventory_overlap_from_full",
-        "submit_qc_slurm_job",
-        "slurm_settings_from_config",
+        "run_qc_inventory_from_config(",
+        "write_qc_inventory_overlap_from_config(",
+        "run_qc_summary_workflow_from_config(",
         "from spatial_vtk.qc.build.slurm import",
     ):
         assert forbidden not in standard_text
-    assert "from spatial_vtk.qc.build.slurm import" not in standard_text
-    assert "from spatial_vtk.qc.build.slurm import" not in large_run_text
 
+    assert "from spatial_vtk.large_run import (" in large_run_text
+    assert "run_quality_control," in large_run_text
+    assert "launch_qc_dashboard," in large_run_text
+    assert "qc_result = run_quality_control(run)" in large_run_text
+    assert "qc_dashboard = launch_qc_dashboard(run)" in large_run_text
+    for forbidden in (
+        "from spatial_vtk.qc import (",
+        "load_standard_qc_workflow_outputs",
+        "qc_outputs.",
+        "display_notebook_step_result(",
+        "status_frame()",
+        "checkpoint_status_frame()",
+    ):
+        assert forbidden not in large_run_text
 
 def test_tutorial_notebook_executor_can_include_large_run_notebooks() -> None:
     """The clean notebook gate should be able to cover scalable large-run tutorials."""
@@ -1237,71 +1135,18 @@ def test_tutorial_notebooks_use_output_group_objects_for_paths() -> None:
 
 
 def test_large_run_notebooks_use_direct_grouped_output_attributes() -> None:
-    """Large-run notebooks should keep grouped path ownership visible."""
+    """Large-run notebooks should not expose grouped output paths or aliases."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
     assert notebooks
-
-    output_paths_tree = ast.parse((repo_root / "src" / "spatial_vtk" / "io" / "output_paths.py").read_text(encoding="utf-8"))
-    output_group_names: dict[str, set[str]] = {}
-    for node in output_paths_tree.body:
-        if not isinstance(node, ast.Assign):
-            continue
-        if not any(isinstance(target, ast.Name) and target.id == "OUTPUT_GROUPS" for target in node.targets):
-            continue
-        if not isinstance(node.value, ast.Dict):
-            continue
-        for key_node, value_node in zip(node.value.keys, node.value.values):
-            if not isinstance(key_node, ast.Constant) or not isinstance(key_node.value, str):
-                continue
-            names: set[str] = set()
-            if isinstance(value_node, ast.Tuple):
-                for item in value_node.elts:
-                    if (
-                        isinstance(item, ast.Call)
-                        and isinstance(item.func, ast.Name)
-                        and item.func.id == "OutputArtifact"
-                        and item.args
-                        and isinstance(item.args[0], ast.Constant)
-                        and isinstance(item.args[0].value, str)
-                    ):
-                        names.add(item.args[0].value)
-            output_group_names[key_node.value] = names
-
-    assert output_group_names
-    alias_pattern = re.compile(r"^\s*\w+_path\s*=\s*\w+_outputs\.\w+_path\b", re.MULTILINE)
-    assignment_pattern = re.compile(r"(\w+_outputs)\s*=\s*output_group\(\"([^\"]+)\"")
     for notebook_path in notebooks:
-        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+        source = notebook_path.read_text(encoding="utf-8")
+        assert "from spatial_vtk.large_run import" in source, notebook_path.relative_to(repo_root)
         assert ".bind(globals())" not in source, notebook_path.relative_to(repo_root)
-        matches = alias_pattern.findall(source)
-        assert not matches, f"{notebook_path.relative_to(repo_root)} repeats grouped path aliases: {matches}"
-        owners = {owner: group for owner, group in assignment_pattern.findall(source)}
-        grouped_path_names = set().union(*(output_group_names.get(group, set()) for group in owners.values()))
-        if "preprocessed_waveform_output_group(" in source:
-            grouped_path_names.update(
-                {
-                    "preprocessed_event_station_path",
-                    "preprocessed_manifest_path",
-                    "preprocessed_trace_metadata_path",
-                }
-            )
-        for index, cell in enumerate(notebook.get("cells", []), start=1):
-            if cell.get("cell_type") != "code":
-                continue
-            cell_source = "".join(cell.get("source", []))
-            tree = ast.parse(cell_source)
-            bare = sorted(
-                {
-                    node.id
-                    for node in ast.walk(tree)
-                    if isinstance(node, ast.Name) and node.id in grouped_path_names
-                }
-            )
-            assert not bare, f"{notebook_path.relative_to(repo_root)} cell {index} uses bare grouped paths: {bare}"
-
+        assert "_path =" not in source, notebook_path.relative_to(repo_root)
+        assert "step_outputs" not in source, notebook_path.relative_to(repo_root)
+        assert "output_group(" not in source, notebook_path.relative_to(repo_root)
 
 def test_tutorial_notebooks_use_table_helpers_for_file_reads() -> None:
     """Tutorial notebooks should centralize table-format handling in package helpers."""
@@ -1366,39 +1211,39 @@ def test_large_run_notebooks_describe_configured_output_locations() -> None:
 
 
 def test_large_run_notebooks_use_output_group_helper() -> None:
-    """Large-run notebooks should use package-owned output helpers."""
+    """Large-run notebooks should use the public action layer, not output helpers directly."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
     assert notebooks
     for notebook_path in notebooks:
         source = notebook_path.read_text(encoding="utf-8")
-        if notebook_path.name == "step_07_large_run_dashboards.ipynb":
-            continue
-        assert (
-            "output_group(" in source
-            or "load_standard_ingest_workflow_outputs(" in source
-            or "load_standard_qc_workflow_outputs(" in source
-            or "load_standard_metric_workflow_outputs(" in source
-            or "load_standard_spatial_workflow_output_status(" in source
-            or "load_standard_geojson_workflow_output_status(" in source
-            or "load_standard_additional_plotting_output_status(" in source
-        ), notebook_path.relative_to(repo_root)
-        assert "output_group_namespace" not in source, notebook_path.relative_to(repo_root)
-        assert "output_group_status_frame" not in source, notebook_path.relative_to(repo_root)
-        assert "vars(step_outputs)" not in source, notebook_path.relative_to(repo_root)
-
+        assert "from spatial_vtk.large_run import" in source, notebook_path.relative_to(repo_root)
+        for forbidden in (
+            "output_group(",
+            "load_standard_ingest_workflow_outputs(",
+            "load_standard_qc_workflow_outputs(",
+            "load_standard_metric_workflow_outputs(",
+            "load_standard_spatial_workflow_output_status(",
+            "load_standard_geojson_workflow_output_status(",
+            "load_standard_additional_plotting_output_status(",
+            "output_group_namespace",
+            "output_group_status_frame",
+            "vars(step_outputs)",
+        ):
+            assert forbidden not in source, notebook_path.relative_to(repo_root)
 
 def test_large_run_notebooks_do_not_use_fake_missing_config_paths() -> None:
-    """Large-run notebooks should pass unconfigured optional paths through readiness helpers."""
+    """Large-run notebooks should not expose optional-path sentinels or config path plumbing."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_05_large_run_geojson_corridors.ipynb"
-    source = notebook_path.read_text(encoding="utf-8")
-
-    assert ("__missing_" + "region_geojson__") not in source
-    assert 'geojson_input = {"region_geojson_path": geojson_path}' in source
-
+    notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
+    assert notebooks
+    for notebook_path in notebooks:
+        source = notebook_path.read_text(encoding="utf-8")
+        assert ("__missing_" + "region_geojson__") not in source
+        assert 'geojson_input = {"region_geojson_path": geojson_path}' not in source
+        assert "cfg.path(" not in source
 
 def test_large_run_notebooks_do_not_bind_unused_context_aliases() -> None:
     """Large-run setup cells should not copy unused context fields into local names."""
@@ -1424,36 +1269,28 @@ def test_large_run_notebooks_do_not_bind_unused_context_aliases() -> None:
 
 
 def test_large_run_setup_markdown_describes_package_context() -> None:
-    """Large-run setup prose should not teach notebook-local path plumbing."""
+    """Large-run setup prose should describe activation and visible controls."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
     assert notebooks
-    stale_phrases = (
-        "load config/output paths",
-        "printed paths and helper variables",
-        "printed repository/config/output paths",
-        "reusable helper variables",
-    )
-    expected = "Purpose: load the active config and shared notebook settings through package helpers."
     for notebook_path in notebooks:
         source = notebook_path.read_text(encoding="utf-8")
-        matches = [phrase for phrase in stale_phrases if phrase in source]
-        assert not matches, f"{notebook_path.relative_to(repo_root)} has stale setup prose: {matches}"
-        assert expected in source, f"{notebook_path.relative_to(repo_root)} does not describe package context setup"
-
+        assert "Load the active Spatial-VTK configuration once" in source, notebook_path.relative_to(repo_root)
+        assert "activate_large_run(" in source, notebook_path.relative_to(repo_root)
+        assert "shared notebook settings through package helpers" not in source, notebook_path.relative_to(repo_root)
 
 def test_large_run_source_bootstrap_does_not_bind_unused_repo_root() -> None:
-    """Large-run notebooks should import the checkout without keeping unused root paths."""
+    """Large-run notebooks should not carry source-bootstrap path plumbing."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
     assert notebooks
     for notebook_path in notebooks:
         source = notebook_path.read_text(encoding="utf-8")
-        assert "runpy.run_path(str(_bootstrap))" in source, notebook_path.relative_to(repo_root)
+        assert "_source_bootstrap.py" not in source, notebook_path.relative_to(repo_root)
+        assert "runpy.run_path(str(_bootstrap))" not in source, notebook_path.relative_to(repo_root)
         assert "repo_root = runpy.run_path(str(_bootstrap))" not in source, notebook_path.relative_to(repo_root)
-
 
 def test_tutorial_notebooks_use_public_plot_and_map_imports() -> None:
     """Tutorial notebooks should teach stable public plotting imports."""
@@ -1516,51 +1353,29 @@ def test_tutorial_notebooks_avoid_implementation_module_imports() -> None:
 
 
 def test_large_run_readme_distinguishes_public_and_implementation_imports() -> None:
-    """Large-run docs should describe the same public-import boundary as preflight."""
+    """Large-run docs should describe action-oriented notebooks."""
 
     repo_root = Path(__file__).resolve().parents[1]
     readme = (repo_root / "docs" / "examples" / "large_run" / "README.md").read_text(encoding="utf-8")
-    public_namespaces = (
-        "spatial_vtk.metrics.plot",
-        "spatial_vtk.spatial.plot",
-        "spatial_vtk.spatial.map",
-        "spatial_vtk.visualize",
-    )
-    for namespace in public_namespaces:
-        assert namespace in readme
+
+    assert "spatial_vtk.large_run" in readme
+    assert "run_quality_control" in readme
+    assert "launch_qc_dashboard" in readme
+    assert "calculate_metrics" in readme
+    assert "launch_metrics_dashboard" in readme
+    assert "QC dashboard belongs in Step 2" in readme
+    assert "metrics dashboard belongs in Step 3" in readme
+    assert "step_07_large_run_dashboards.ipynb" not in readme
     for helper in (
-        "notebook_run_context",
         "load_standard_ingest_workflow_outputs",
         "load_standard_metric_workflow_outputs",
-        "metric_outputs.write_large_run_figure_suite(",
         "load_standard_qc_workflow_outputs",
         "load_standard_spatial_workflow_output_status",
-        "load_standard_geojson_workflow_output_status",
         "prepare_configured_dashboard_datasets_from_notebook_settings",
+        "metric_outputs.write_large_run_figure_suite(",
+        "spatial_outputs.write_figure_suite(",
     ):
-        assert helper in readme
-    assert "from spatial_vtk.metrics.plot import write_large_run_metric_figure_suite_from_notebook_settings" not in readme
-    assert "spatial_outputs.write_figure_suite(" in readme
-    assert "write_large_run_spatial_figure_suite_from_notebook_settings" not in readme
-    assert "large-run notebooks should use workflow result objects first" in readme
-    assert "For custom\nscripts or package extensions, import from stable public packages" in readme
-    assert "deeper implementation modules below those packages" in readme
-    for pattern in (
-        "from spatial_vtk.metrics.plot.periods",
-        "from spatial_vtk.spatial.map.station",
-        "from spatial_vtk.visualize.context.figures",
-        "import spatial_vtk.visualize.dashboard.streamlit_metrics",
-    ):
-        assert pattern not in readme
-    for ambiguous_prefix in (
-        "spatial_vtk.metrics.plot.*",
-        "spatial_vtk.spatial.plot.*",
-        "spatial_vtk.spatial.map.*",
-        "spatial_vtk.visualize.context.*",
-        "spatial_vtk.visualize.dashboard.*",
-    ):
-        assert ambiguous_prefix not in readme
-
+        assert helper not in readme
 
 def test_standard_tutorial_notebooks_avoid_raw_table_preview_helpers() -> None:
     """Standard tutorials should preview/load workflow tables through package helpers."""
@@ -1837,79 +1652,25 @@ def test_step03_station_map_uses_package_aggregation_and_source_sidecar() -> Non
 
 
 def test_large_run_step03_documents_metric_source_sidecars() -> None:
-    """Large-run metric figures should document plotted rows and source rows."""
+    """Step 3 should expose metric calculation, dashboard review, and figures as actions."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb"
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "metric_outputs.write_large_run_figure_suite(" in source
-    assert "write_large_run_metric_figure_suite_from_notebook_settings(" not in source
-    assert "metric_figure_suite.status_frame()" in source
-    assert "metric_figure_suite.display_context_status(display=display)" in source
-    assert "metric_plot_context = metric_figure_suite.context" not in source
-    assert "metric_plot_context.write_station_metric_maps(" not in source
-    assert "metric_plot_context.write_residual_grid_maps(" not in source
-    assert "metric_plot_context.write_metric_by_model_maps(" not in source
-    assert "metric_plot_context.write_event_residual_maps(" not in source
-    assert "write_psa_period_sheet = metric_plot_context.write_psa_period_sheet" not in source
-    assert "write_metric_plot = metric_plot_context.write_metric_plot" not in source
-    assert "reload_metric_plot_modules" not in source
-    assert "globals().update(" not in source
-    assert "station_summary_for_item = metric_plot_context.station_summary_for_item" not in source
-    assert "item_source_rows = metric_plot_context.item_source_rows" not in source
-    assert "source_df=item_source_rows(item)" not in source
-    assert "source_df_factory=item_source_rows" not in source
-    assert "source_df=item[\"df\"]" not in source
-    assert "source_df_factory=lambda period_item" not in source
-    assert "metric_plot_context.write_score_trend_plots(" not in source
-    assert "plot_score_trends" not in source
-    assert 'SCORE_TREND_FIGURE_SETTINGS = notebook_figure_settings(' not in source
-    assert 'if not SCORE_TREND_FIGURE_SETTINGS.make_figures:' not in source
-    assert 'SCORE_TREND_COLUMNS = SCORE_TREND_FIGURE_SETTINGS.score_columns or ["anderson_2004_gof"]' not in source
-    assert 'os.environ.get("SVTK_MAKE_SCORE_TRENDS"' not in source
-    assert 'os.environ.get("SVTK_SCORE_TREND_COLUMNS"' not in source
-    assert "Skipping optional GOF score trends. Set SVTK_MAKE_SCORE_TRENDS=1" not in source
-    assert "The main large-run figure suite uses `log2_residual`" in source
-    assert "METRIC_FIGURE_SETTINGS = notebook_figure_settings(" in source
-    assert "METRIC_FIGURE_SETTINGS.plot_selection_kwargs(" not in source
-    assert "compare_to=METRIC_FIGURE_SETTINGS.compare_to" not in source
-    assert "table=METRIC_FIGURE_SETTINGS.comparison_table" not in source
-    assert "SCORE_TREND_COLUMNS" not in source
-    assert "raw event-level rows used for the station summaries" in source
-    assert "STATION_AGGREGATION = METRIC_FIGURE_SETTINGS.station_aggregation" not in source
-    assert "DEFAULT_PLOT_" not in source
-    assert "METRIC_FIGURE_SIDECARS" not in source
-    for helper in (
-        "write_residuals_vs_distance_plots",
-        "write_residuals_vs_depth_plots",
-        "write_vs30_scatter_plots",
-        "write_station_metric_maps",
-        "write_residual_grid_maps",
-        "write_metric_by_model_maps",
-        "write_event_residual_maps",
-        "write_log2_residual_distribution_plots",
-        "write_psa_period_curve_plots",
-    ):
-        assert f"metric_plot_context.{helper}(" not in source
-    for plot_name in (
-        "plot_residuals_vs_distance",
-        "plot_residuals_vs_depth",
-        "plot_vs30_scatter",
-        "plot_station_metric_map",
-        "plot_station_metric_map_by_period",
-        "plot_residual_grid",
-        "plot_metric_map_by_model",
-        "plot_event_residual_map",
-        "plot_band_score_distribution",
-        "plot_psa_period_curve",
-        "scatterplot",
-        "boxplot",
-        "heatmap",
-    ):
-        assert plot_name not in source
-
+    assert "from spatial_vtk.large_run import (" in source
+    assert "calculate_metrics," in source
+    assert "prepare_metrics_dashboard," in source
+    assert "launch_metrics_dashboard," in source
+    assert "make_metric_figures," in source
+    assert "metric_result = calculate_metrics(run)" in source
+    assert "metrics_dashboard_data = prepare_metrics_dashboard(run)" in source
+    assert "metrics_dashboard = launch_metrics_dashboard(run)" in source
+    assert "metric_figures = make_metric_figures(run)" in source
+    assert "metric_outputs." not in source
+    assert "notebook_figure_settings(" not in source
+    assert "status_frame()" not in source
 
 def test_metric_plot_package_does_not_export_notebook_reload_hook() -> None:
     """Development-only notebook reload helpers should stay out of the public plotting API."""
@@ -1923,194 +1684,58 @@ def test_metric_plot_package_does_not_export_notebook_reload_hook() -> None:
 
 
 def test_large_run_step04_uses_spatial_context_row_factories() -> None:
-    """Large-run spatial figures should use package row factories, not notebook lambdas."""
+    """Step 4 should expose spatial statistics and figures as actions."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_04_large_run_spatial_statistics.ipynb"
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "run_notebook_step_if_needed(" not in source
-    assert "display_notebook_step_result," in source
-    assert "from spatial_vtk.spatial import load_standard_spatial_workflow_output_status" in source
-    assert "config_path = context.config_path" not in source
-    assert "run_spatial_statistics_workflow_from_config," not in source
-    assert "run_spatial_derived_outputs_workflow_from_config," not in source
-    assert "spatial_outputs = load_standard_spatial_workflow_output_status(cfg=context.cfg)" in source
-    assert "spatial_summary_readiness_from_config," not in source
-    assert "spatial_derived_outputs_readiness_from_config," not in source
-    assert "spatial_summary_readiness = spatial_summary_readiness_from_config(" not in source
-    assert "derived_readiness = spatial_derived_outputs_readiness_from_config(" not in source
-    assert "spatial_outputs.run_summary_step_if_needed(" in source
-    assert "spatial_outputs.run_derived_outputs_step_if_needed(" in source
-    assert "spatial_summary_result = spatial_outputs.run_summary_step_if_needed(" in source
-    assert "spatial_derived_result = spatial_outputs.run_derived_outputs_step_if_needed(" in source
-    assert 'display_notebook_step_result(spatial_summary_result, label="Spatial summary tables", display=display)' in source
-    assert 'display_notebook_step_result(spatial_derived_result, label="Spatial derived tables", display=display)' in source
-    assert "print(spatial_summary_result)" not in source
-    assert "print(spatial_derived_result)" not in source
-    assert "core_spatial_output_names" not in source
-    assert "derived_spatial_output_names" not in source
-    assert "step_outputs.readiness(" not in source
-    assert "spatial_outputs.display_table_previews(nrows=PREVIEW_ROWS)" in source
-    assert "spatial_outputs.display_table_previews(cfg=context.cfg" not in source
-    assert "step_outputs" not in source
-    assert 'step_outputs = output_group("step_04_spatial")' not in source
-    assert "display_output_table_previews(" not in source
-    assert '"spatial_vtk.spatial.run_spatial_statistics_workflow_from_config"' not in source
-    assert '"spatial_vtk.spatial.run_spatial_derived_outputs_workflow_from_config"' not in source
-    assert "run_or_submit_notebook_function(" not in source
-    assert "run_or_submit_notebook_cli_command(" not in source
-    assert '"svtk", "spatial"' not in source
-    assert "should_rebuild_paths(" not in source
-    assert "spatial_outputs.write_figure_suite(" in source
-    assert "write_large_run_spatial_figure_suite_from_notebook_settings(" not in source
-    assert "spatial_figure_suite.status_frame()" in source
-    assert "spatial_figure_suite.diagnostic_preview_frame(nrows=PREVIEW_ROWS)" in source
-    assert "spatial_figures.write_station_metric_maps(" not in source
-    assert "spatial_figures.write_residual_grid_maps(" not in source
-    assert "spatial_figures.write_metric_by_model_maps(" not in source
-    assert "spatial_figures.write_event_residual_maps(" not in source
-    assert "spatial_figures.write_event_centered_azimuthal_plots(" not in source
-    assert "spatial_figures.write_event_centered_polar_plots(" not in source
-    assert "station_summary_for_item = spatial_figures.station_summary_for_item" not in source
-    assert "item_source_rows = spatial_figures.item_source_rows" not in source
-    assert "for item in iter_metric_frames(" not in source
-    assert "plot_pca_summary" not in source
-    assert "spatial_figures.write_pca_summary_plots(" not in source
-    assert "prepare_spatial_figure_context_from_notebook_settings(" not in source
-    assert "mode=SPATIAL_FIGURE_SETTINGS.pca_mode" not in source
-    assert "SPATIAL_FIGURE_SETTINGS.plot_selection_kwargs(" not in source
-    assert "PLOT_PASSBAND =" not in source
-    assert "PLOT_COMPONENTS =" not in source
-    assert "PLOT_SHOWFIG =" not in source
-    assert "PLOT_MODEL =" not in source
-    assert "PCA_MODE =" not in source
-    assert "robust_axis_percentile=SPATIAL_FIGURE_SETTINGS.robust_axis_percentile" not in source
-    assert "DEFAULT_PCA_MODE =" not in source
-    assert "DEFAULT_PLOT_PASSBAND =" not in source
-    assert "SPATIAL_FIGURE_SIDECARS =" not in source
-    assert 'os.environ.get("SVTK_PCA_MODE"' not in source
-    assert "source_df=item_source_rows(item)" not in source
-    assert "source_df_factory=item_source_rows" not in source
-    assert "source_df=item[\"df\"]" not in source
-    assert "source_df_factory=lambda period_item" not in source
-    assert "spatial_figures.write_overview_plots(" not in source
-    assert "spatial_outputs.write_summary_figures(" in source
-    assert "write_large_run_spatial_summary_figures_from_outputs(" not in source
-    assert "quick_spatial_result.status_frame()" in source
-    assert "### Spatial Event-Centered Azimuthal Residuals" not in source
-    assert "### Spatial Event-Centered Polar Residuals" not in source
-    assert "plot_station_metric_map" not in source
-    assert "plot_station_metric_map_by_period" not in source
-    assert "plot_residual_grid" not in source
-    assert "plot_metric_map_by_model" not in source
-    assert "plot_event_residual_map" not in source
-    assert "plot_azimuthal_residuals" not in source
-    assert "plot_polar_residuals" not in source
-    assert 'write_spatial_plot("spatial_correlogram"' not in source
-    assert "plot_correlogram" not in source
-    assert "preview_output_table(" not in source
-    assert "for name, key in [" not in source
-    assert "spatial_outputs.load_table(" not in source
-    assert "load_output_table(" not in source
-
+    assert "from spatial_vtk.large_run import (" in source
+    assert "make_filtered_spatial_figures," in source
+    assert "make_spatial_figures," in source
+    assert "run_spatial_statistics," in source
+    assert "spatial_result = run_spatial_statistics(run)" in source
+    assert "spatial_figures = make_spatial_figures(run)" in source
+    assert "custom_spatial_figures = make_filtered_spatial_figures(" in source
+    assert "spatial_outputs." not in source
+    assert "notebook_figure_settings(" not in source
+    assert "status_frame()" not in source
 
 def test_large_run_markdown_sections_document_purpose_and_outputs() -> None:
-    """Large-run section cells should state the task and the produced artifact."""
+    """Large-run markdown should describe user-facing actions, not implementation tables."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebook_dir = repo_root / "docs" / "examples" / "large_run"
-
-    missing: list[str] = []
+    required_phrases = {
+        "step_02_large_run_quality_control.ipynb": ("Review QC Dashboard", "before moving to metrics"),
+        "step_03_large_run_calculate_metrics.ipynb": ("Review Metrics Dashboard", "before spatial analysis"),
+    }
     for notebook_path in sorted(notebook_dir.glob("step_*.ipynb")):
-        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-        for index, cell in enumerate(notebook.get("cells", []), start=1):
-            if cell.get("cell_type") != "markdown":
-                continue
-            source = "".join(cell.get("source", []))
-            first_line = next((line.strip() for line in source.splitlines() if line.strip()), "")
-            if not first_line.startswith("##"):
-                continue
-            if first_line.startswith("# ") or ("Purpose:" in source and "Outputs:" in source):
-                continue
-            missing.append(f"{notebook_path.name} cell {index}: {first_line}")
-
-    assert not missing
-
+        source = notebook_path.read_text(encoding="utf-8")
+        assert "Purpose:" not in source, notebook_path.relative_to(repo_root)
+        assert "Outputs:" not in source, notebook_path.relative_to(repo_root)
+        for phrase in required_phrases.get(notebook_path.name, ()):
+            assert phrase in source, notebook_path.relative_to(repo_root)
 
 def test_large_run_step05_uses_package_functions_for_heavy_steps() -> None:
-    """Large-run GeoJSON notebook should call package helpers, not CLI command cells."""
+    """Step 5 should expose GeoJSON/corridor products as actions."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_05_large_run_geojson_corridors.ipynb"
     notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
     source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
 
-    assert "run_notebook_step_if_needed(" not in source
-    assert "from spatial_vtk.spatial import (" not in source
-    assert "config_path = context.config_path" not in source
-    assert "load_configured_input_paths(" not in source
-    assert "display_notebook_step_result," in source
-    assert "geojson_region_summary_readiness_from_config," not in source
-    assert "boundary_corridor_readiness_from_config," not in source
-    assert "run_geojson_region_summary_workflow_from_config," not in source
-    assert "run_boundary_corridor_workflow_from_config," not in source
-    assert "load_standard_geojson_workflow_output_status" in source
-    assert "geojson_outputs = load_standard_geojson_workflow_output_status(cfg=cfg)" in source
-    assert "geojson_outputs.run_geojson_summary_step_if_needed(" in source
-    assert "geojson_outputs.run_corridor_step_if_needed(" in source
-    assert "geojson_summary_result = geojson_outputs.run_geojson_summary_step_if_needed(" in source
-    assert "corridor_result = geojson_outputs.run_corridor_step_if_needed(" in source
-    assert 'display_notebook_step_result(geojson_summary_result, label="GeoJSON region summaries", display=display)' in source
-    assert 'display_notebook_step_result(corridor_result, label="Boundary corridors", display=display)' in source
-    assert "print(geojson_summary_result)" not in source
-    assert "print(corridor_result)" not in source
-    assert "geojson_outputs.display_table_previews(nrows=PREVIEW_ROWS)" in source
-    assert "geojson_outputs.display_table_previews(cfg=cfg" not in source
-    assert "step_outputs" not in source
-    assert 'step_outputs = output_group("step_05_geojson")' not in source
-    assert "display_output_table_previews(" not in source
-    assert "geojson_outputs.write_region_figures(" in source
-    assert "    REGION_FIGURE_SETTINGS,\n" in source
-    assert "REGION_FIGURE_SETTINGS.sidecars.readiness_frame()" in source
-    assert "REGION_FIGURE_SETTINGS.sidecars.status_frame()" in source
-    assert "region_figure_result.comparison_frame()" in source
-    assert "geojson_path=geojson_path" not in source
-    assert "ingest_outputs," not in source
-    assert "write_large_run_geojson_region_figures_from_notebook_settings(" not in source
-    assert "region_figure_gate = REGION_FIGURE_SETTINGS.render_gate(" not in source
-    assert "write_large_run_geojson_region_figures_from_outputs(" not in source
-    assert "region_figure_result.status_frame()" in source
-    assert "ingest_outputs.load_tables(" not in source
-    assert "geojson_outputs.load_table(" not in source
-    assert "write_large_run_region_boxplot_from_outputs(" not in source
-    assert "geojson_outputs.first_existing_path(" not in source
-    assert "step_outputs.corridors_path.exists()" not in source
-    assert "metrics_enriched_path if metrics_enriched_path.exists() else metrics_long_path" not in source
-    assert 'cfg.path("paths.region_geojson"' not in source
-    assert "load_output_table(" not in source
-    assert '"spatial_vtk.spatial.run_geojson_region_summary_workflow_from_config"' not in source
-    assert '"spatial_vtk.spatial.run_boundary_corridor_workflow_from_config"' not in source
-    assert "geojson_readiness = geojson_region_summary_readiness_from_config(" not in source
-    assert "corridor_readiness = boundary_corridor_readiness_from_config(" not in source
-    assert "geojson_readiness = step_outputs.readiness(" not in source
-    assert "corridor_readiness = step_outputs.readiness(" not in source
-    assert "geojson_input" not in source
-    assert "corridor_required_inputs" not in source
-    assert "corridor_source_paths" not in source
-    assert "geojson_readiness = output_readiness(" not in source
-    assert "corridor_readiness = output_readiness(" not in source
-    assert "run_or_submit_notebook_cli_command(" not in source
-    assert '"svtk", "spatial"' not in source
-    assert "should_rebuild_paths(" not in source
-    assert "write_notebook_python_slurm_script" not in source
-    assert "submit_notebook_slurm_script" not in source
-    assert "run_geojson_region_summary_workflow(" not in source
-    assert "run_boundary_corridor_workflow(" not in source
-    assert "preview_output_table(" not in source
-    assert "preview_output_table(" not in source
-
+    assert "from spatial_vtk.large_run import (" in source
+    assert "make_filtered_region_corridor_figures," in source
+    assert "make_region_corridor_figures," in source
+    assert "run_geojson_corridors," in source
+    assert "geojson_result = run_geojson_corridors(run)" in source
+    assert "region_corridor_figures = make_region_corridor_figures(run)" in source
+    assert "custom_region_corridor_figures = make_filtered_region_corridor_figures(" in source
+    assert "geojson_outputs." not in source
+    assert "notebook_figure_settings(" not in source
+    assert "status_frame()" not in source
 
 def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
     """Dashboard tutorial should keep dataset path plumbing inside package helpers."""
@@ -2175,106 +1800,89 @@ def test_step07_dashboard_notebook_uses_configured_export_helper() -> None:
 
 
 def test_large_run_step07_dashboard_driver_uses_config_defaults() -> None:
-    """Large-run dashboard driver should use config-backed package helpers."""
+    """Large-run dashboards should be reviewed in Step 2 and Step 3, not Step 7."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_07_large_run_dashboards.ipynb"
-    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+    dashboard_path = repo_root / "docs" / "examples" / "large_run" / "step_07_large_run_dashboards.ipynb"
+    assert not dashboard_path.exists()
 
-    assert "prepare_configured_dashboard_datasets_from_notebook_settings," in source
-    assert "display_notebook_step_result," in source
-    assert "display_dashboard_preparation_result," in source
-    assert "readiness/Data Status messages to diagnose blank or sparse tabs" in source
-    assert "dashboard table contracts" in source
-    assert "dashboard_preparation = prepare_configured_dashboard_datasets_from_notebook_settings(" in source
-    assert "prepare_locally=False" in source
-    assert "display_dashboard_preparation_result(dashboard_preparation, display=display)" in source
-    assert "print(dashboard_preparation.message)" not in source
-    assert "dashboard_preparation_result = dashboard_preparation.run_if_needed(" in source
-    assert 'display_notebook_step_result(dashboard_preparation_result, label="Dashboard datasets", display=display)' in source
-    assert "post_dashboard_preparation = prepare_configured_dashboard_datasets_from_notebook_settings(" in source
-    assert "display_dashboard_preparation_result(post_dashboard_preparation, display=display, include_contracts=False)" in source
-    assert "dashboard_output_status_frame," not in source
-    assert "dashboard_readiness_summary_frame," not in source
-    assert "dashboard_summary_table_contracts," not in source
-    assert "dashboard_output_readiness," not in source
-    assert "dashboard_status = dashboard_output_status_frame(cfg=cfg)" not in source
-    assert "dashboard_readiness_summary = dashboard_readiness_summary_frame(cfg=cfg, overwrite=OVERWRITE)" not in source
-    assert "display(dashboard_readiness_summary)" not in source
-    assert "dashboard_readiness = dashboard_output_readiness(cfg=cfg, overwrite=OVERWRITE)" not in source
-    assert "run_notebook_step_if_needed(" not in source
-    assert "write_configured_dashboard_datasets," not in source
-    assert "write_configured_dashboard_datasets(" not in source
-    assert "display_dashboard_output_previews," not in source
-    assert "post_dashboard_preparation.display_output_previews(nrows=PREVIEW_ROWS, missing=\"skip\")" in source
-    assert "preview_dashboard_summary_tables," not in source
-    assert '"spatial_vtk.visualize.dashboard.write_configured_dashboard_datasets"' not in source
-    assert "launch_configured_dashboards_from_notebook_settings(" in source
-    assert "launch_configured_metrics_dashboard(" not in source
-    assert "launch_configured_qc_dashboard(" not in source
-    assert "notebook_dashboard_launch_commands(" in source
-    assert "notebook_dashboard_launch_commands(context)" in source
-    assert "config_path = context.config_path" not in source
-    assert "run_scenario=context.run_scenario" not in source
-    assert 'run_scenario=os.environ.get("SVTK_RUN_SCENARIO", "tutorial")' not in source
-    assert 'os.environ.get("SVTK_RUN_SCENARIO"' not in source
-    assert "if dashboard_launch.launch_metrics_dashboard:" not in source
-    assert "if dashboard_launch.launch_qc_dashboard:" not in source
-    assert 'os.environ.get("SVTK_LAUNCH_METRICS_DASHBOARD"' not in source
-    assert 'os.environ.get("SVTK_LAUNCH_QC_DASHBOARD"' not in source
-    assert "dashboard_launch.metrics_launch_kwargs(show=True)" not in source
-    assert "dashboard_launch.qc_launch_kwargs(show=True)" not in source
-    assert "display(dashboard_launch.status_frame())" in source
-    assert "display(dashboard_launch_result.status_frame())" in source
-    assert "qc_trace_summary_table" not in source
-    assert "trace_summary_table" not in source
-    assert "Launch options:" not in source
-    assert "server_port=dashboard_" not in source
-    assert '"cfg": str(config_path)' not in source
-    assert "dashboard_outputs = output_group(\"step_07_dashboards\")" not in source
-    assert "dashboard_outputs.preview_table(" not in source
-    assert "post_dashboard_readiness = dashboard_readiness_summary_frame(cfg=cfg, overwrite=False)" not in source
-    assert "post_dashboard_status = dashboard_output_status_frame(cfg=cfg)" not in source
-    assert "post_dashboard_preparation.display_output_previews(nrows=PREVIEW_ROWS, missing=\"skip\")" in source
-    assert "preview_output_table(" not in source
-    assert "dashboard_output_namespace" not in source
-    assert "dashboard_summary_root" not in source
-    assert "dashboard_paths" not in source
-    assert "metrics_long_path" not in source
-    assert "metrics_dashboard_root" not in source
-    assert "dashboard_summary_root" not in source
-    assert "qc_trace_summary_path" not in source
-    assert "run_or_submit_notebook_cli_command(" not in source
-    assert '"svtk", "metrics"' not in source
-    assert '"--metrics", str(' not in source
+    step02 = (repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb").read_text(encoding="utf-8")
+    step03 = (repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb").read_text(encoding="utf-8")
+    assert "launch_qc_dashboard" in step02
+    assert "launch_metrics_dashboard" in step03
+    assert "prepare_metrics_dashboard" in step03
 
+
+def test_large_run_dashboard_result_messages_are_actionable() -> None:
+    """Dashboard action summaries should print launch details, not just status labels."""
+
+    import pandas as pd
+
+    from spatial_vtk.large_run import _result_message
+
+    class CommandResult:
+        def status_frame(self):
+            return pd.DataFrame(
+                [
+                    {
+                        "dashboard": "qc",
+                        "status": "command",
+                        "terminal_command": "svtk dashboard qc --port 8502",
+                        "message": "Launch disabled.",
+                    }
+                ]
+            )
+
+    class RunningResult:
+        def status_frame(self):
+            return pd.DataFrame(
+                [
+                    {
+                        "dashboard": "metrics",
+                        "status": "running",
+                        "url": "http://127.0.0.1:8501",
+                        "terminal_command": "svtk dashboard metrics --port 8501",
+                        "message": "Metrics dashboard running.",
+                    }
+                ]
+            )
+
+    assert _result_message(CommandResult()) == "run in a terminal: svtk dashboard qc --port 8502"
+    assert _result_message(RunningResult()) == "running at http://127.0.0.1:8501"
 
 def test_large_run_notebooks_use_context_run_scenario_resolution() -> None:
-    """Large-run notebooks should let notebook_run_context resolve SVTK_RUN_SCENARIO."""
+    """Large-run notebooks should let activate_large_run own context/scenario resolution."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
     assert notebooks
     for notebook_path in notebooks:
-        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-        assert "notebook_run_context()" in source, notebook_path.relative_to(repo_root)
+        source = notebook_path.read_text(encoding="utf-8")
+        assert "activate_large_run(" in source, notebook_path.relative_to(repo_root)
+        assert "notebook_run_context()" not in source, notebook_path.relative_to(repo_root)
         assert 'run_scenario=os.environ.get("SVTK_RUN_SCENARIO"' not in source, notebook_path.relative_to(repo_root)
 
-
 def test_large_run_notebooks_display_notebook_context_status() -> None:
-    """Large-run setup cells should show labelled context status tables."""
+    """Large-run setup should activate config once without displaying helper tables."""
 
     repo_root = Path(__file__).resolve().parents[1]
     notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
     assert notebooks
+    assert {path.name for path in notebooks} == {
+        "step_01_large_run_ingest_and_prepare_data.ipynb",
+        "step_02_large_run_quality_control.ipynb",
+        "step_03_large_run_calculate_metrics.ipynb",
+        "step_04_large_run_spatial_statistics.ipynb",
+        "step_05_large_run_geojson_corridors.ipynb",
+        "step_06_large_run_additional_plotting.ipynb",
+    }
     for notebook_path in notebooks:
         notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
         source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-        assert "display(context.status_frame())" in source, notebook_path.relative_to(repo_root)
+        assert "run = activate_large_run(" in source, notebook_path.relative_to(repo_root)
+        assert "display(context.status_frame())" not in source, notebook_path.relative_to(repo_root)
+        assert "notebook_run_context()" not in source, notebook_path.relative_to(repo_root)
         assert "print_notebook_context(context)" not in source, notebook_path.relative_to(repo_root)
-
 
 def test_standard_notebooks_display_notebook_context_status() -> None:
     """Standard tutorial setup cells should show the same labelled context table."""
@@ -2316,32 +1924,23 @@ def test_standard_notebooks_reuse_context_run_scenario_after_setup() -> None:
 
 
 def test_large_run_notebooks_display_output_readiness_tables() -> None:
-    """Large-run driver cells should show named readiness status tables."""
+    """Large-run notebooks should expose actions, not readiness table calls."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    required = {
-        "large_run/step_01_large_run_ingest_and_prepare_data.ipynb": [
-            "ingest_outputs.run_metadata_step_if_needed(",
-            "ingest_outputs.run_preprocessing_step_if_needed(",
-            "ingest_outputs.run_record_coverage_step_if_needed(",
-        ],
-        "large_run/step_02_large_run_quality_control.ipynb": [
-            "qc_outputs.run_inventory_step_if_needed(",
-            "qc_outputs.run_overlap_step_if_needed(",
-        ],
-        "large_run/step_03_large_run_calculate_metrics.ipynb": [
-            "metric_outputs.run_inventory_step_if_needed(",
-            "metric_outputs.run_slurm_step_if_needed(",
-        ],
-        "large_run/step_07_large_run_dashboards.ipynb": ["dashboard_preparation.run_if_needed("],
+    expectations = {
+        "step_01_large_run_ingest_and_prepare_data.ipynb": ("run_ingest(run)", "make_context_figures(run)"),
+        "step_02_large_run_quality_control.ipynb": ("run_quality_control(run)", "launch_qc_dashboard(run)", "make_qc_figures(run)"),
+        "step_03_large_run_calculate_metrics.ipynb": ("calculate_metrics(run)", "prepare_metrics_dashboard(run)", "launch_metrics_dashboard(run)", "make_metric_figures(run)"),
+        "step_04_large_run_spatial_statistics.ipynb": ("run_spatial_statistics(run)", "make_spatial_figures(run)"),
+        "step_05_large_run_geojson_corridors.ipynb": ("run_geojson_corridors(run)", "make_region_corridor_figures(run)"),
+        "step_06_large_run_additional_plotting.ipynb": ("make_additional_diagnostic_figures(run)",),
     }
-    for relative, snippets in required.items():
-        notebook_path = repo_root / "docs" / "examples" / relative
-        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-        missing = [snippet for snippet in snippets if snippet not in source]
-        assert not missing, f"{notebook_path.relative_to(repo_root)} missing readiness displays: {missing}"
-
+    for name, snippets in expectations.items():
+        source = (repo_root / "docs" / "examples" / "large_run" / name).read_text(encoding="utf-8")
+        for snippet in snippets:
+            assert snippet in source
+        for forbidden in ("display_notebook_step_result(", ".status_frame()", ".readiness_frame()", "notebook_figure_settings("):
+            assert forbidden not in source, name
 
 def test_large_run_grouped_steps_use_output_group_readiness() -> None:
     """Large-run notebooks should not fall back to generic output_readiness calls."""
@@ -2358,111 +1957,37 @@ def test_large_run_grouped_steps_use_output_group_readiness() -> None:
 
 
 def test_large_run_step03_uses_metric_batch_status_before_submit_and_merge() -> None:
-    """Metric Slurm and merge cells should be gated by manifest batch completion."""
+    """Metric planning and batch status should be hidden behind calculate_metrics."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb"
-    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-
-    assert "metric_outputs.run_inventory_step_if_needed(" in source
-    assert "metric_outputs.run_manifest_step_if_needed(" in source
-    assert "metric_outputs.run_slurm_step_if_needed(" in source
-    assert "metric_outputs.run_merge_step_if_needed(" in source
-    assert "metric_outputs.run_downstream_outputs_step_if_needed(" in source
-    assert "at least one passing observed/synthetic QC pair" in source
-    assert "skip records that cannot contribute paired comparison metrics" in source
-    assert "metric_slurm_submission_readiness_from_config," not in source
-    assert "metric_inventories_readiness_from_config," not in source
-    assert "metric_manifest_readiness_from_config," not in source
-    assert "metric_batch_merge_readiness_from_config," not in source
-    assert "metric_outputs_readiness_from_config," not in source
-    assert "from spatial_vtk.metrics.workflow import metric_manifest_batch_status" not in source
-    assert "from spatial_vtk.metrics import metric_manifest_batch_status" not in source
-    assert "metric_manifest_batch_status(" not in source
-    assert "metric_slurm_submission_readiness(" not in source
-    assert "inventory_readiness = metric_inventories_readiness_from_config(" not in source
-    assert "manifest_readiness = metric_manifest_readiness_from_config(" not in source
-    assert "slurm_readiness = metric_slurm_submission_readiness_from_config(" not in source
-    assert "merge_readiness = metric_batch_merge_readiness_from_config(" not in source
-    assert "downstream_readiness = metric_outputs_readiness_from_config(" not in source
-    assert "step_outputs.readiness(" not in source
-    assert "incomplete_only=not OVERWRITE" in source
-    assert "overwrite_batches=OVERWRITE" in source
-    assert "metric_manifest_path.exists()" not in source
-    assert "metric_rows_path.exists()" not in source
-    assert "sources=(metric_manifest_path, *batch_status.completed_outputs)" not in source
-
+    source = (repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb").read_text(encoding="utf-8")
+    assert "metric_result = calculate_metrics(run)" in source
+    for forbidden in (
+        "metric_outputs.run_inventory_step_if_needed(",
+        "metric_outputs.run_manifest_step_if_needed(",
+        "metric_outputs.run_slurm_step_if_needed(",
+        "metric_outputs.run_merge_step_if_needed(",
+        "metric_outputs.run_downstream_outputs_step_if_needed(",
+    ):
+        assert forbidden not in source
 
 def test_large_run_step03_uses_package_functions_for_heavy_steps() -> None:
-    """Step 3 should call metric workflow helpers instead of CLI command cells."""
+    """Step 3 should expose action helpers instead of metric workflow internals."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb"
-    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-
-    assert "run_notebook_step_if_needed(" not in source
-    assert "config_path = context.config_path" not in source
-    assert "run_or_submit_notebook_function(" not in source
-    assert "display_notebook_step_result," in source
-    assert "from spatial_vtk.metrics import (" in source
-    assert "metric_settings_summary," in source
-    assert "metrics_settings_from_config," in source
-    assert "load_standard_metric_workflow_outputs," in source
-    assert "METRIC_BATCH_COUNT = context.metric_batch_count" in source
-    assert "metric_settings = metrics_settings_from_config(cfg)" in source
-    assert "metric_outputs = load_standard_metric_workflow_outputs(cfg=cfg)" in source
-    assert "load_task_estimate=False" not in source
-    assert "metric_outputs.metrics_long_path" in source
-    assert "step_outputs = metric_outputs.outputs" not in source
-    assert "trace_metadata_path = metric_outputs.trace_metadata_path" not in source
-    assert "display(metric_outputs.status_frame())" in source
-    assert 'step_outputs = output_group("step_03_metrics")' not in source
-    assert "preprocessed_waveform_metadata_paths(config=cfg)" not in source
-    assert "build_metric_waveform_inventories_from_config," not in source
-    assert "plan_metric_tasks_from_config," not in source
-    assert "metric_inventories_readiness_from_config," not in source
-    assert "metric_manifest_readiness_from_config," not in source
-    assert "write_metrics_slurm_script_from_config," not in source
-    assert "merge_metric_batches_from_config," not in source
-    assert "write_metric_outputs_from_config," not in source
-    assert "metric_outputs.run_inventory_step_if_needed(" in source
-    assert "metric_outputs.run_manifest_step_if_needed(" in source
-    assert "metric_outputs.run_slurm_step_if_needed(" in source
-    assert "metric_outputs.run_merge_step_if_needed(" in source
-    assert "metric_outputs.run_downstream_outputs_step_if_needed(" in source
-    assert "metric_inventory_result = metric_outputs.run_inventory_step_if_needed(" in source
-    assert "metric_manifest_result = metric_outputs.run_manifest_step_if_needed(" in source
-    assert "metric_slurm_result = metric_outputs.run_slurm_step_if_needed(" in source
-    assert "metric_merge_result = metric_outputs.run_merge_step_if_needed(" in source
-    assert "metric_output_result = metric_outputs.run_downstream_outputs_step_if_needed(" in source
-    assert 'display_notebook_step_result(metric_inventory_result, label="Metric waveform inventories", display=display)' in source
-    assert 'display_notebook_step_result(metric_manifest_result, label="Metric manifest", display=display)' in source
-    assert 'display_notebook_step_result(metric_slurm_result, label="Metric Slurm script", display=display)' in source
-    assert 'display_notebook_step_result(metric_merge_result, label="Metric batch merge", display=display)' in source
-    assert 'display_notebook_step_result(metric_output_result, label="Metric output tables", display=display)' in source
-    assert "metric_outputs.display_metrics_preview(nrows=PREVIEW_ROWS)" in source
-    assert "display(metric_settings_summary(metric_settings))" in source
-    assert 'print(f"Metric batch count: {METRIC_BATCH_COUNT}")' not in source
-    assert "step_outputs.display_table_previews(" not in source
-    assert "step_outputs.preview_table(" not in source
-    assert "metrics_preview =" not in source
-    assert "Metric output is not ready yet" not in source
-    assert "preview_output_table(" not in source
-    assert "batch_count=METRIC_BATCH_COUNT" in source
-    assert "batch_count=context.metric_batch_count" not in source
-    assert 'os.environ.get("SVTK_METRIC_BATCH_COUNT"' not in source
-    assert '"spatial_vtk.metrics.build_metric_waveform_inventories_from_config"' not in source
-    assert '"spatial_vtk.metrics.plan_metric_tasks_from_config"' not in source
-    assert '"spatial_vtk.metrics.write_metrics_slurm_script_from_config"' not in source
-    assert '"spatial_vtk.metrics.merge_metric_batches_from_config"' not in source
-    assert '"spatial_vtk.metrics.write_metric_outputs_from_config"' not in source
-    assert "run_or_submit_notebook_cli_command(" not in source
-    assert "submit_notebook_slurm_script" not in source
-    assert "write_notebook_python_slurm_script" not in source
-    assert '"svtk", "metrics"' not in source
-
+    source = (repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb").read_text(encoding="utf-8")
+    assert "from spatial_vtk.large_run import (" in source
+    for required in ("calculate_metrics", "prepare_metrics_dashboard", "launch_metrics_dashboard", "make_metric_figures"):
+        assert required in source
+    for forbidden in (
+        "display_notebook_step_result,",
+        "load_standard_metric_workflow_outputs",
+        "metric_outputs.",
+        "metric_settings_summary",
+        "metrics_settings_from_config",
+        "display(metric_outputs.status_frame())",
+    ):
+        assert forbidden not in source
 
 def test_standard_step03_uses_configured_metric_helpers() -> None:
     """The standard metric tutorial should use package helpers, not hand-rolled workflow code."""
@@ -2525,244 +2050,96 @@ def test_standard_step03_uses_configured_metric_helpers() -> None:
 
 
 def test_large_run_step01_uses_package_functions_for_heavy_steps() -> None:
-    """Step 1 should call package workflow helpers instead of CLI or inline worker code."""
+    """Step 1 should expose ingest and context-figure actions."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_01_large_run_ingest_and_prepare_data.ipynb"
-    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-
-    assert "run_notebook_step_if_needed(" not in source
-    assert "config_path = context.config_path" not in source
-    assert "ingest_outputs.run_metadata_step_if_needed(" in source
-    assert "ingest_outputs.run_preprocessing_step_if_needed(" in source
-    assert "ingest_outputs.run_record_coverage_step_if_needed(" in source
-    assert "metadata_readiness = metadata_tables_readiness_from_config(" not in source
-    assert "preprocess_readiness = preprocessing_readiness_from_config(" not in source
-    assert "record_coverage_readiness = record_coverage_readiness_from_config(" not in source
-    assert "step_outputs.readiness(" not in source
-    assert "preprocessed_outputs.readiness(" not in source
-    assert "run_or_submit_notebook_function(" not in source
-    assert "display_notebook_step_result," in source
-    assert "from spatial_vtk.io import (" in source
-    assert "load_standard_ingest_workflow_outputs," in source
-    assert "metadata_tables_readiness_from_config," not in source
-    assert "preprocessing_readiness_from_config," not in source
-    assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in source
-    assert "step_outputs = ingest_outputs.outputs" not in source
-    assert "preprocessed_outputs = ingest_outputs.preprocessed_outputs" not in source
-    assert "display(ingest_outputs.status_frame())" in source
-    assert 'step_outputs = output_group("step_01_ingest")' not in source
-    assert "preprocessed_outputs = preprocessed_waveform_output_group(config=cfg)" not in source
-    assert "display(ingest_outputs.metadata_summary_frame())" in source
-    assert "metadata_result = ingest_outputs.run_metadata_step_if_needed(" in source
-    assert "preprocessing_result = ingest_outputs.run_preprocessing_step_if_needed(" in source
-    assert "coverage_result = ingest_outputs.run_record_coverage_step_if_needed(" in source
-    assert 'display_notebook_step_result(metadata_result, label="Metadata tables", display=display)' in source
-    assert 'display_notebook_step_result(preprocessing_result, label="Preprocessed waveforms", display=display)' in source
-    assert 'display_notebook_step_result(coverage_result, label="Record coverage", display=display)' in source
-    assert "metadata_tables = step_outputs.load_tables(" not in source
-    assert "stations = metadata_tables" not in source
-    assert "event_stations = metadata_tables" not in source
-    assert "print(f\"stations={len(stations):,}" not in source
-    assert "ingest_outputs.write_context_figures(" in source
-    assert "write_large_run_context_figures_from_outputs(" not in source
-    assert "context_figure_result.status_frame()" in source
-    assert "context_tables = step_outputs.load_tables(" not in source
-    assert "load_output_table(" not in source
-    assert "prepare_metadata_tables_from_config," not in source
-    assert "preprocess_waveforms_from_config," not in source
-    assert "build_record_coverage_from_config," not in source
-    assert "record_coverage_readiness_from_config," not in source
-    assert "PREPROCESS_CONTINUE_ON_ERROR = context.preprocess_continue_on_error" in source
-    assert 'print(f"PREPROCESS_CONTINUE_ON_ERROR={PREPROCESS_CONTINUE_ON_ERROR}")' not in source
-    assert 'os.environ.get("SVTK_PREPROCESS_CONTINUE_ON_ERROR"' not in source
-    assert "prepare_station_metadata(" not in source
-    assert "prepare_event_metadata(" not in source
-    assert "prepare_event_station_table(" not in source
-    assert "write_output_table(" not in source
-    assert '"spatial_vtk.io.prepare_metadata_tables_from_config"' not in source
-    assert '"spatial_vtk.io.preprocess_waveforms_from_config"' not in source
-    assert '"spatial_vtk.io.build_record_coverage_from_config"' not in source
-    assert "run_or_submit_notebook_cli_command(" not in source
-    assert "write_notebook_python_slurm_script" not in source
-    assert "submit_notebook_slurm_script" not in source
-    assert "should_rebuild_paths(" not in source
-    assert "preprocess_waveform_files(" not in source
-    assert "build_record_coverage_table_from_trace_metadata(" not in source
-
+    source = (repo_root / "docs" / "examples" / "large_run" / "step_01_large_run_ingest_and_prepare_data.ipynb").read_text(encoding="utf-8")
+    assert "from spatial_vtk.large_run import activate_large_run, make_context_figures, run_ingest" in source
+    assert "ingest_result = run_ingest(run)" in source
+    assert "context_figures = make_context_figures(run)" in source
+    for forbidden in ("load_standard_ingest_workflow_outputs", "display_notebook_step_result", "status_frame()", "notebook_figure_settings("):
+        assert forbidden not in source
 
 def test_large_run_step02_uses_qc_result_figure_writer() -> None:
-    """The large-run QC notebook should let the QC result own compact figures."""
+    """Step 2 should expose QC, QC dashboard, and QC figure actions."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb"
-    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-
-    assert "step_outputs.bind(globals())" not in source
-    assert "step_outputs" not in source
-    assert "availability_path," not in source
-    assert "qc_outputs.write_figures(" in source
-    assert "write_large_run_qc_figures_from_outputs(" not in source
-    assert "qc_figure_result.status_frame()" in source
-    assert '"qc_availability": "availability_path"' not in source
-    assert 'qc_availability = qc_figure_tables["qc_availability"]' not in source
-    assert 'load_output_table("qc_availability")' not in source
-    assert "plot_data_synthetic_availability(" not in source
-    assert "Observed/Synthetic Availability (Post-QC Trace Overlap)" not in source
-
+    source = (repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb").read_text(encoding="utf-8")
+    assert "run_quality_control," in source
+    assert "launch_qc_dashboard," in source
+    assert "make_qc_figures," in source
+    assert "qc_result = run_quality_control(run)" in source
+    assert "qc_dashboard = launch_qc_dashboard(run)" in source
+    assert "qc_figures = make_qc_figures(run)" in source
+    assert "qc_outputs." not in source
+    assert "notebook_figure_settings(" not in source
 
 def test_large_run_step02_uses_package_functions_for_heavy_steps() -> None:
-    """Step 2 should call package workflow helpers instead of CLI or inline worker code."""
+    """Step 2 should hide QC internals behind action helpers."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb"
-    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-
-    assert "run_notebook_step_if_needed(" not in source
-    assert "config_path = context.config_path" not in source
-    assert "run_or_submit_notebook_function(" not in source
-    assert "display_notebook_step_result," in source
-    assert "from spatial_vtk.qc import (" in source
-    assert "metric_settings_summary," in source
-    assert "load_standard_qc_workflow_outputs," in source
-    assert "metrics_settings_from_config," in source
-    assert "QC_OVERLAP_SCOPE = metric_settings.source_overlap_scope" in source
-    assert "display(metric_settings_summary(metric_settings))" in source
-    assert 'print(f"QC overlap scope: {QC_OVERLAP_SCOPE}")' not in source
-    assert "qc_outputs = load_standard_qc_workflow_outputs(cfg=cfg)" in source
-    assert "step_outputs = qc_outputs.outputs" not in source
-    assert "display(qc_outputs.status_frame())" in source
-    assert "qc_outputs.display_summary_previews(nrows=PREVIEW_ROWS)" in source
-    assert 'from spatial_vtk.io import output_group' not in source
-    assert 'step_outputs = output_group("step_02_qc")' not in source
-    assert "run_qc_inventory_from_config," not in source
-    assert "write_qc_inventory_overlap_from_config," not in source
-    assert "run_qc_summary_workflow_from_config," not in source
-    assert "qc_inventory_readiness_from_config," not in source
-    assert "qc_overlap_readiness_from_config," not in source
-    assert "qc_summary_readiness_from_config," not in source
-    assert "qc_outputs.run_inventory_step_if_needed(" in source
-    assert "qc_outputs.run_overlap_step_if_needed(" in source
-    assert "qc_inventory_result = qc_outputs.run_inventory_step_if_needed(" in source
-    assert "qc_overlap_result = qc_outputs.run_overlap_step_if_needed(" in source
-    assert "qc_summary_result = qc_outputs.run_summary_step_if_needed(" in source
-    assert 'display_notebook_step_result(qc_inventory_result, label="QC inventory", display=display)' in source
-    assert 'display_notebook_step_result(qc_overlap_result, label="Observed/synthetic overlap QC", display=display)' in source
-    assert 'display_notebook_step_result(qc_summary_result, label="QC summary tables", display=display)' in source
-    assert "scope=QC_OVERLAP_SCOPE" in source
-    assert "qc_outputs.run_summary_step_if_needed(" in source
-    assert "qc_outputs.write_figures(" in source
-    assert "write_large_run_qc_figures_from_outputs(" not in source
-    assert "qc_readiness = qc_inventory_readiness_from_config(" not in source
-    assert "overlap_readiness = qc_overlap_readiness_from_config(" not in source
-    assert "summary_readiness = qc_summary_readiness_from_config(" not in source
-    assert "step_outputs.readiness(" not in source
-    assert "qc_figure_tables = step_outputs.load_tables(" not in source
-    assert "step_outputs.qc_inventory_overlap_path.exists()" not in source
-    assert '"spatial_vtk.qc.run_qc_inventory_from_config"' not in source
-    assert '"spatial_vtk.qc.write_qc_inventory_overlap_from_config"' not in source
-    assert '"spatial_vtk.qc.run_qc_summary_workflow_from_config"' not in source
-    assert "run_or_submit_notebook_cli_command(" not in source
-    assert "write_notebook_python_slurm_script" not in source
-    assert "submit_notebook_slurm_script" not in source
-    assert "write_qc_slurm_script(" not in source
-
+    source = (repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb").read_text(encoding="utf-8")
+    assert "from spatial_vtk.large_run import (" in source
+    for required in ("activate_large_run", "run_quality_control", "launch_qc_dashboard", "make_qc_figures"):
+        assert required in source
+    for forbidden in (
+        "load_standard_qc_workflow_outputs",
+        "metrics_settings_from_config",
+        "metric_settings_summary",
+        "QC_OVERLAP_SCOPE",
+        "display_notebook_step_result",
+        "checkpoint_status_frame",
+        "run_inventory_step_if_needed",
+        "run_overlap_step_if_needed",
+        "run_summary_step_if_needed",
+    ):
+        assert forbidden not in source
 
 def test_large_run_optional_figure_cells_use_package_settings() -> None:
-    """Large-run optional figure cells should centralize figure settings."""
+    """Large-run figure controls should be notebook-visible booleans, not settings objects."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebooks = [
-        repo_root / "docs" / "examples" / "large_run" / "step_01_large_run_ingest_and_prepare_data.ipynb",
-        repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb",
-        repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb",
-        repo_root / "docs" / "examples" / "large_run" / "step_04_large_run_spatial_statistics.ipynb",
-        repo_root / "docs" / "examples" / "large_run" / "step_05_large_run_geojson_corridors.ipynb",
-        repo_root / "docs" / "examples" / "large_run" / "step_06_large_run_additional_plotting.ipynb",
-    ]
+    notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
+    assert notebooks
     for notebook_path in notebooks:
-        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-        assert "notebook_figure_settings(" in source
-        assert 'os.environ.get("SVTK_MAKE_FIGURES"' not in source
-        assert 'os.environ.get("SVTK_ADD_BASEMAP"' not in source
-        assert 'notebook_figure_sidecar_settings(' not in source
-
-    step_01_source = "\n".join(
-        "".join(cell.get("source", []))
-        for cell in json.loads(notebooks[0].read_text(encoding="utf-8")).get("cells", [])
-    )
-    assert "CONTEXT_FIGURE_SETTINGS.plot_kwargs(include_basemap=True)" in step_01_source
-    step_02_source = "\n".join(
-        "".join(cell.get("source", []))
-        for cell in json.loads(notebooks[1].read_text(encoding="utf-8")).get("cells", [])
-    )
-    assert "QC_FIGURE_SETTINGS.plot_kwargs(include_basemap=True)" in step_02_source
-
+        source = notebook_path.read_text(encoding="utf-8")
+        assert "make_figures=False" in source, notebook_path.relative_to(repo_root)
+        assert "notebook_figure_settings(" not in source, notebook_path.relative_to(repo_root)
+        assert "sidecars." not in source, notebook_path.relative_to(repo_root)
 
 def test_large_run_step02_overlap_sidecar_has_separate_rebuild_gate() -> None:
-    """Step 2 should rebuild full QC only from full-QC readiness inputs."""
+    """QC overlap internals should live in the action helper, not the notebook."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb"
-    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-
-    assert "qc_outputs.run_inventory_step_if_needed(" in source
-    assert "qc_outputs.run_overlap_step_if_needed(" in source
-    assert "scope=QC_OVERLAP_SCOPE" in source
-    assert "qc_outputs.run_summary_step_if_needed(" in source
-    assert "qc_readiness = qc_inventory_readiness_from_config(" not in source
-    assert "config_path=config_path" not in source
-    assert "overwrite=OVERWRITE" in source
-    assert "run_notebook_step_if_needed(" not in source
-    assert "Full QC outputs are current; skipping QC Slurm submission." in source
-    assert '"event_station_records": str(step_outputs.event_station_path)' not in source
-    assert '"trace_qc_output": str(step_outputs.trace_qc_path)' not in source
-    assert '"qc_inventory_output": str(step_outputs.qc_inventory_path)' not in source
-    assert '"qc_inventory_overlap_output": str(step_outputs.qc_inventory_overlap_path)' not in source
-    assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, overwrite=OVERWRITE)" not in source
-    assert "should_rebuild_paths(trace_qc_path, qc_inventory_path, qc_inventory_overlap_path" not in source
-    assert "overlap_readiness = qc_overlap_readiness_from_config(" not in source
-    assert "summary_readiness = qc_summary_readiness_from_config(" not in source
-    assert "step_outputs.readiness(" not in source
-    assert "qc_readiness = output_readiness(" not in source
-    assert "overlap_readiness = output_readiness(" not in source
-
+    source = (repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb").read_text(encoding="utf-8")
+    assert "run_quality_control(run)" in source
+    for forbidden in (
+        "qc_outputs.run_inventory_step_if_needed(",
+        "qc_outputs.run_overlap_step_if_needed(",
+        "scope=QC_OVERLAP_SCOPE",
+        "qc_outputs.run_summary_step_if_needed(",
+        "qc_inventory_readiness_from_config",
+        "qc_overlap_readiness_from_config",
+        "qc_summary_readiness_from_config",
+    ):
+        assert forbidden not in source
 
 def test_large_run_preprocessing_metadata_paths_are_package_backed() -> None:
-    """Large-run notebooks should use preprocessing's public path helper."""
+    """Large-run notebooks should not expose preprocessing or metric path plumbing."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    step_01 = repo_root / "docs" / "examples" / "large_run" / "step_01_large_run_ingest_and_prepare_data.ipynb"
-    step_03 = repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb"
-
-    for notebook_path in (step_01, step_03):
-        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-        if notebook_path == step_01:
-            assert "ingest_outputs = load_standard_ingest_workflow_outputs(cfg=cfg)" in source
-            assert "preprocessed_outputs = ingest_outputs.preprocessed_outputs" not in source
-            assert "preprocessed_waveform_output_group(config=cfg)" not in source
-            assert "ingest_outputs.run_preprocessing_step_if_needed(" in source
-            assert "preprocess_readiness = preprocessing_readiness_from_config(" not in source
-            assert "preprocessed_outputs.readiness(" not in source
-            assert "record_coverage_readiness_from_config(" not in source
-            assert "source_event_station_path" not in source
-            assert "preprocess_readiness = output_readiness(" not in source
-            assert "record_coverage_readiness = output_readiness(" not in source
-            assert "preview_output_table" not in source
-            assert "preview_table" not in source
-        else:
-            assert "metric_outputs.metrics_long_path" in source
-            assert "trace_metadata_path = metric_outputs.trace_metadata_path" not in source
-            assert "preprocessed_waveform_metadata_paths(config=cfg)" not in source
-        assert re.search(r"(?<!waveform_)preprocessing_manifest\.csv", source) is None
-        assert 'outputs_root / "preprocessed_waveforms"' not in source
-
+    for name in ("step_01_large_run_ingest_and_prepare_data.ipynb", "step_03_large_run_calculate_metrics.ipynb"):
+        source = (repo_root / "docs" / "examples" / "large_run" / name).read_text(encoding="utf-8")
+        assert "from spatial_vtk.large_run import" in source
+        for forbidden in (
+            "preprocessed_waveform_output_group",
+            "preprocessed_waveform_metadata_paths",
+            "metric_outputs.metrics_long_path",
+            "trace_metadata_path",
+            "preprocessing_manifest.csv",
+            "preview_output_table",
+        ):
+            assert forbidden not in source
 
 def test_step05_uses_geojson_preview_helper() -> None:
     """The map tutorial should use package helpers and public spatial imports."""
@@ -2885,107 +2262,32 @@ def test_step06_uses_comparison_eligible_output_table() -> None:
 
 
 def test_large_run_step06_uses_grouped_table_loading() -> None:
-    """The large-run plotting notebook should delegate workflow plotting to helpers."""
+    """Step 6 should expose optional diagnostic rendering as one action."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_06_large_run_additional_plotting.ipynb"
-    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-
-    assert "load_standard_additional_plotting_output_status" in source
-    assert "from spatial_vtk.spatial import load_standard_additional_plotting_output_status" in source
-    assert "from spatial_vtk.spatial.plot import load_standard_additional_plotting_output_status" not in source
-    assert "plotting_outputs = load_standard_additional_plotting_output_status(cfg=cfg)" in source
-    assert "plotting_outputs.write_waveform_comparison(" in source
-    assert "write_waveform_comparison_from_notebook_settings(" not in source
-    assert "step_outputs" not in source
-    assert "waveform_result.status_frame()" in source
-    assert "WAVEFORM_FIGURE_SETTINGS.sidecars.readiness_frame()" in source
-    assert "WAVEFORM_FIGURE_SETTINGS.sidecars.status_frame()" in source
-    assert "waveform_figure_gate = WAVEFORM_FIGURE_SETTINGS.render_gate(" not in source
-    assert "write_waveform_comparison_from_outputs(" not in source
-    assert "write_large_run_waveform_comparison_from_outputs(" not in source
-    assert "build_qc_waveform_comparison_records(" not in source
-    assert "load_comparison_eligible_records(" not in source
-    assert "plot_event_trace_comparison(" not in source
-    assert "event_stations = plotting_outputs.load_table(" not in source
-    assert "plotting_outputs.display_metric_source_preview(nrows=PREVIEW_ROWS)" in source
-    assert "plotting_outputs.display_metric_source_preview(cfg=cfg" not in source
-    assert "plotting_outputs.display_first_existing_table_preview(" not in source
-    assert "plotting_outputs.preview_first_existing_table(" not in source
-    assert "plotting_outputs.write_region_boxplot(" in source
-    assert "REGION_FIGURE_SETTINGS.sidecars.readiness_frame()" in source
-    assert "REGION_FIGURE_SETTINGS.sidecars.status_frame()" in source
-    assert "display(region_result.comparison_frame())" in source
-    assert "display(region_result.status_frame())" in source
-    assert "print(region_result.message)" not in source
-    assert "write_large_run_region_boxplot_from_notebook_settings(" not in source
-    assert "write_large_run_region_boxplot_from_outputs(" not in source
-    assert "region_figure_gate = REGION_FIGURE_SETTINGS.render_gate(" not in source
-    assert "step_outputs.first_existing_path(" not in source
-    assert "load_output_table(" not in source
-    assert "preview_output_table(" not in source
-    assert "preview_output_table(" not in source
-
+    source = (repo_root / "docs" / "examples" / "large_run" / "step_06_large_run_additional_plotting.ipynb").read_text(encoding="utf-8")
+    assert "from spatial_vtk.large_run import activate_large_run, make_additional_diagnostic_figures" in source
+    assert "additional_figures = make_additional_diagnostic_figures(run)" in source
+    for forbidden in ("load_standard_additional_plotting_output_status", "plotting_outputs.", "notebook_figure_settings(", "status_frame()", "sidecars."):
+        assert forbidden not in source
 
 def test_large_run_step03_metric_figures_are_auditable_station_aggregations() -> None:
-    """Large-run metric figures should expose provenance for station summaries."""
+    """Metric figure internals should be hidden behind make_metric_figures."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb"
-    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-
-    assert "METRIC_FIGURE_SETTINGS = notebook_figure_settings(" in source
-    assert 'figure_subdir="metrics"' in source
-    assert "METRICS_FIGURE_DIR" not in source
-    assert 'figures_dir / "metrics"' not in source
-    assert "STATION_AGGREGATION = METRIC_FIGURE_SETTINGS.station_aggregation" not in source
-    assert "**METRIC_FIGURE_SETTINGS.context_kwargs(include_station_aggregation=True)" not in source
-    assert "METRIC_FIGURE_SETTINGS.plot_selection_kwargs(" not in source
-    assert "metric_outputs.write_large_run_figure_suite(" in source
-    assert "write_large_run_metric_figure_suite_from_notebook_settings(" not in source
-    assert "metric_plot_context = metric_figure_suite.context" not in source
-    assert "display(metric_figure_suite.status_frame())" in source
-    assert "metric_figure_suite.display_context_status(display=display)" in source
-    assert "display(metric_plot_context.spectral_metric_contract_status())" not in source
-    assert "if metric_plot_context.ready:" not in source
-    assert "MAKE_METRIC_FIGURES and step_outputs.metrics_long_path.exists()" not in source
-    assert "PLOT_VALUE_COL in metrics_for_figures.columns" not in source
-    assert "MAKE_METRIC_FIGURES and metric_plot_context.ready" not in source
-
-    assert "metric_plot_context.write_station_metric_maps(" not in source
-    assert "metric_plot_context.write_residual_grid_maps(" not in source
-    assert "metric_plot_context.write_metric_by_model_maps(" not in source
-    assert "metric_plot_context.write_event_residual_maps(" not in source
-    assert "for item in iter_metric_frames(" not in source
-    assert "station_summary_for_item(item, PLOT_VALUE_COL)" not in source
-    assert "station_grid_for_item(item, PLOT_VALUE_COL)" not in source
-    assert "source_df=item_source_rows(item)" not in source
-    assert "source_df_factory=item_source_rows" not in source
-
+    source = (repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb").read_text(encoding="utf-8")
+    assert "metric_figures = make_metric_figures(run)" in source
+    assert "METRIC_FIGURE_SETTINGS" not in source
+    assert "metric_outputs.write_large_run_figure_suite(" not in source
 
 def test_large_run_step04_spatial_figures_show_spectral_contract_status() -> None:
-    """Large-run spatial figures should expose PSA/FAS contract checks."""
+    """Spatial figure internals should be hidden behind make_spatial_figures."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_04_large_run_spatial_statistics.ipynb"
-    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-
-    assert "spatial_figure_suite = spatial_outputs.write_figure_suite(" in source
-    assert "write_large_run_spatial_figure_suite_from_notebook_settings(" not in source
-    assert "spatial_figures = spatial_figure_suite.context" not in source
-    assert "spatial_figure_suite.display_context_status(display=display)" in source
-    assert 'figure_subdir="metrics"' in source
-    assert "SPATIAL_FIGURE_SETTINGS.figure_dir" not in source
-    assert "METRICS_FIGURE_DIR" not in source
-    assert 'figures_dir / "metrics"' not in source
-    assert "display(spatial_figures.status_frame())" not in source
-    assert "display(spatial_figures.dimension_summary_frame())" not in source
-    assert "display(spatial_figures.spectral_metric_contract_status())" not in source
-    assert "display(spatial_figure_suite.status_frame())" in source
-
+    source = (repo_root / "docs" / "examples" / "large_run" / "step_04_large_run_spatial_statistics.ipynb").read_text(encoding="utf-8")
+    assert "spatial_figures = make_spatial_figures(run)" in source
+    assert "SPATIAL_FIGURE_SETTINGS" not in source
+    assert "spatial_outputs.write_figure_suite(" not in source
 
 def test_tutorial_figure_sidecar_calls_include_directory_control() -> None:
     """Notebook figure sidecar calls should honor configured sidecar directories."""
@@ -3022,10 +2324,10 @@ def test_tutorial_figure_sidecar_calls_do_not_hardcode_figure_sidecar_dirs() -> 
 
 
 def test_tutorial_notebooks_use_package_figure_settings() -> None:
-    """Tutorial notebooks should centralize figure settings in package helpers."""
+    """Standard notebooks use figure settings; large-run notebooks hide them behind actions."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebooks = [
+    standard_notebooks = [
         repo_root / "docs" / "examples" / f"step_{index:02d}_{name}.ipynb"
         for index, name in (
             (1, "ingest_and_prepare_data"),
@@ -3036,19 +2338,19 @@ def test_tutorial_notebooks_use_package_figure_settings() -> None:
             (6, "additional_plotting_options"),
         )
     ]
-    notebooks.extend(sorted((repo_root / "docs" / "examples" / "large_run").glob("step_0*.ipynb")))
-
-    for notebook_path in notebooks:
-        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+    for notebook_path in standard_notebooks:
+        source = notebook_path.read_text(encoding="utf-8")
         assert "notebook_figure_settings(" in source, notebook_path.relative_to(repo_root)
         assert 'notebook_figure_sidecar_settings(' not in source, notebook_path.relative_to(repo_root)
         assert 'os.environ.get("SVTK_ADD_BASEMAP"' not in source, notebook_path.relative_to(repo_root)
-        if "large_run" not in notebook_path.parts:
-            assert "figure_dir = context.figures_dir" not in source, notebook_path.relative_to(repo_root)
-            assert "figure_dir.mkdir(" not in source, notebook_path.relative_to(repo_root)
-            assert "figure_dir=figure_dir" not in source, notebook_path.relative_to(repo_root)
+        assert "figure_dir = context.figures_dir" not in source, notebook_path.relative_to(repo_root)
+        assert "figure_dir.mkdir(" not in source, notebook_path.relative_to(repo_root)
+        assert "figure_dir=figure_dir" not in source, notebook_path.relative_to(repo_root)
 
+    for notebook_path in sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb")):
+        source = notebook_path.read_text(encoding="utf-8")
+        assert "notebook_figure_settings(" not in source, notebook_path.relative_to(repo_root)
+        assert "make_figures=False" in source, notebook_path.relative_to(repo_root)
 
 def test_tutorial_notebooks_avoid_low_level_io_and_shell_workflow_cells() -> None:
     """Tutorial notebooks should use task-level package helpers, not path plumbing."""
@@ -3125,23 +2427,15 @@ def test_tutorial_notebooks_only_check_paths_in_source_bootstrap() -> None:
 
 
 def test_large_run_notebooks_use_figure_render_gates_for_prerequisite_tables() -> None:
-    """Large-run figure cells should report missing inputs through package gates."""
+    """Large-run notebooks should not expose render gates directly."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebooks = [
-        repo_root / "docs" / "examples" / "large_run" / "step_01_large_run_ingest_and_prepare_data.ipynb",
-        repo_root / "docs" / "examples" / "large_run" / "step_02_large_run_quality_control.ipynb",
-        repo_root / "docs" / "examples" / "large_run" / "step_04_large_run_spatial_statistics.ipynb",
-        repo_root / "docs" / "examples" / "large_run" / "step_05_large_run_geojson_corridors.ipynb",
-        repo_root / "docs" / "examples" / "large_run" / "step_06_large_run_additional_plotting.ipynb",
-    ]
+    notebooks = sorted((repo_root / "docs" / "examples" / "large_run").glob("*.ipynb"))
+    assert notebooks
     for notebook_path in notebooks:
-        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-        assert ".render_gate(" in source, notebook_path.relative_to(repo_root)
-        assert "gate.status_frame()" in source, notebook_path.relative_to(repo_root)
-        assert "all(path.exists() for path in required)" not in source, notebook_path.relative_to(repo_root)
-
+        source = notebook_path.read_text(encoding="utf-8")
+        assert ".render_gate(" not in source, notebook_path.relative_to(repo_root)
+        assert "gate.status_frame()" not in source, notebook_path.relative_to(repo_root)
 
 def test_tutorial_notebooks_use_sidecar_settings_kwargs() -> None:
     """Notebook figure sidecar calls should not expand settings into local variables."""
@@ -3195,10 +2489,10 @@ def test_tutorial_notebooks_use_sidecar_settings_kwargs() -> None:
 
 
 def test_metric_and_spatial_notebooks_show_sidecar_status_frames() -> None:
-    """Metric and spatial tutorials should expose package-native provenance review cells."""
+    """Standard notebooks may show provenance, but large-run notebooks keep it behind actions."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    expected = {
+    standard_expected = {
         "docs/examples/step_03_calculate_metrics.ipynb": (
             "metric_figure_settings.sidecars.readiness_frame()",
             "metric_figure_settings.sidecars.status_frame()",
@@ -3207,79 +2501,42 @@ def test_metric_and_spatial_notebooks_show_sidecar_status_frames() -> None:
             "spatial_figure_settings.sidecars.readiness_frame()",
             "spatial_figure_settings.sidecars.status_frame()",
         ),
-        "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": (
-            "METRIC_FIGURE_SETTINGS.sidecars.readiness_frame()",
-            "METRIC_FIGURE_SETTINGS.sidecars.status_frame()",
-        ),
-        "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": (
-            "SPATIAL_FIGURE_SETTINGS.sidecars.readiness_frame()",
-            "SPATIAL_FIGURE_SETTINGS.sidecars.status_frame()",
-        ),
     }
-    for relative_path, calls in expected.items():
-        notebook = json.loads((repo_root / relative_path).read_text(encoding="utf-8"))
-        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
+    for relative_path, calls in standard_expected.items():
+        source = (repo_root / relative_path).read_text(encoding="utf-8")
         for call in calls:
             assert call in source
-        for forbidden in (
-            "metric_figure_settings.status_frame()",
-            "spatial_figure_settings.status_frame()",
-            "METRIC_FIGURE_SETTINGS.status_frame()",
-            "SPATIAL_FIGURE_SETTINGS.status_frame()",
-        ):
-            assert forbidden not in source
-
+    for relative_path in (
+        "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb",
+        "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb",
+    ):
+        source = (repo_root / relative_path).read_text(encoding="utf-8")
+        assert "sidecars.readiness_frame()" not in source
+        assert "sidecars.status_frame()" not in source
 
 def test_large_run_aggregated_station_figures_pass_source_rows_to_sidecars() -> None:
-    """Large-run station aggregation figures should keep raw-row provenance."""
+    """Package plotting helpers should still keep raw-row provenance."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    metric_context_source = (
-        repo_root / "src" / "spatial_vtk" / "metrics" / "plot" / "large_run.py"
-    ).read_text(encoding="utf-8")
-    spatial_context_source = (
-        repo_root / "src" / "spatial_vtk" / "spatial" / "plot" / "large_run.py"
-    ).read_text(encoding="utf-8")
-    requirements = {
-        "docs/examples/large_run/step_03_large_run_calculate_metrics.ipynb": (
-            "metric_outputs.write_large_run_figure_suite(",
-            "metric_figure_suite.status_frame()",
-            "metric_figure_suite.display_context_status(display=display)",
-        ),
-        "docs/examples/large_run/step_04_large_run_spatial_statistics.ipynb": (
-            "spatial_outputs.write_figure_suite(",
-            "spatial_figure_suite.status_frame()",
-            "spatial_figure_suite.display_context_status(display=display)",
-        ),
-    }
-    for relative_path, snippets in requirements.items():
-        notebook = json.loads((repo_root / relative_path).read_text(encoding="utf-8"))
-        source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-        for snippet in snippets:
-            assert snippet in source, f"{relative_path} is missing provenance snippet {snippet!r}"
+    metric_context_source = (repo_root / "src" / "spatial_vtk" / "metrics" / "plot" / "large_run.py").read_text(encoding="utf-8")
+    spatial_context_source = (repo_root / "src" / "spatial_vtk" / "spatial" / "plot" / "large_run.py").read_text(encoding="utf-8")
+    step03 = (repo_root / "docs" / "examples" / "large_run" / "step_03_large_run_calculate_metrics.ipynb").read_text(encoding="utf-8")
+    step04 = (repo_root / "docs" / "examples" / "large_run" / "step_04_large_run_spatial_statistics.ipynb").read_text(encoding="utf-8")
+    assert "make_metric_figures(run)" in step03
+    assert "make_spatial_figures(run)" in step04
     assert "source_df=self.item_source_rows(item)" in spatial_context_source
     assert "source_df_factory=self.item_source_rows" in spatial_context_source
     assert "source_df=self.item_source_rows(item)" in metric_context_source
     assert "source_df_factory=self.item_source_rows" in metric_context_source
 
-
 def test_large_run_spatial_figures_display_diagnostic_preview_tables() -> None:
-    """Step 4 large-run figures should keep their statistical tables visible."""
+    """Spatial diagnostic previews should not be manually displayed in large-run notebooks."""
 
     repo_root = Path(__file__).resolve().parents[1]
-    notebook_path = repo_root / "docs" / "examples" / "large_run" / "step_04_large_run_spatial_statistics.ipynb"
-    notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-    source = "\n".join("".join(cell.get("source", [])) for cell in notebook.get("cells", []))
-
-    assert "spatial_outputs.write_figure_suite(" in source
-    assert "spatial_figure_suite.display_context_status(display=display)" in source
-    assert "display(spatial_figure_suite.diagnostic_preview_frame(nrows=PREVIEW_ROWS))" in source
-    assert "display(spatial_figure_suite.status_frame())" in source
-    assert "diagnostic_preview_frame(" not in source.replace(
-        "display(spatial_figure_suite.diagnostic_preview_frame(nrows=PREVIEW_ROWS))",
-        "",
-    )
-
+    source = (repo_root / "docs" / "examples" / "large_run" / "step_04_large_run_spatial_statistics.ipynb").read_text(encoding="utf-8")
+    assert "make_spatial_figures(run)" in source
+    assert "diagnostic_preview_frame(" not in source
+    assert "spatial_outputs.write_figure_suite(" not in source
 
 def test_tutorial_notebooks_use_python_package_helpers_not_cli_shells() -> None:
     """Tutorial notebooks should drive workflows through Python APIs, not shell commands."""

@@ -91,17 +91,18 @@ source-contract preflight runs before execution.
 Large-Run Driver Notebooks
 --------------------------
 
-These notebooks are lightweight drivers for larger datasets. They print or
-submit package-backed batch tasks for compute-heavy work rather than loading
-full inventories into notebook memory.
+These notebooks are lightweight action drivers for larger datasets. They print
+or submit package-backed batch tasks for compute-heavy work rather than loading
+full inventories into notebook memory. The QC dashboard is launched from the
+QC notebook, and the metrics dashboard is launched from the metrics notebook so
+each step can be reviewed before downstream analysis.
 
 1. :download:`Large Step 1: ingest and prepare data <large_run/step_01_large_run_ingest_and_prepare_data.ipynb>`
-2. :download:`Large Step 2: quality control <large_run/step_02_large_run_quality_control.ipynb>`
-3. :download:`Large Step 3: calculate metrics <large_run/step_03_large_run_calculate_metrics.ipynb>`
+2. :download:`Large Step 2: quality control and QC dashboard <large_run/step_02_large_run_quality_control.ipynb>`
+3. :download:`Large Step 3: calculate metrics and metrics dashboard <large_run/step_03_large_run_calculate_metrics.ipynb>`
 4. :download:`Large Step 4: spatial statistics <large_run/step_04_large_run_spatial_statistics.ipynb>`
 5. :download:`Large Step 5: GeoJSON corridors <large_run/step_05_large_run_geojson_corridors.ipynb>`
 6. :download:`Large Step 6: additional plotting <large_run/step_06_large_run_additional_plotting.ipynb>`
-7. :download:`Large Step 7: dashboards <large_run/step_07_large_run_dashboards.ipynb>`
 
 Set ``SVTK_FIGURE_SIDECARS=1`` while rendering figures to write CSV/JSON
 row-provenance sidecars. Main sidecars contain the exact rows passed to the
