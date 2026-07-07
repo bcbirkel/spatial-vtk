@@ -160,7 +160,7 @@ def plot_station_bias_map(
 
     plot_df, subset_label = apply_figure_spatial_selection(station_df, spatial_selection, **spatial_kwargs)
     fig, ax = plt.subplots(figsize=(10.5, 5.8), dpi=180, constrained_layout=False)
-    fig.subplots_adjust(left=0.07, right=0.72, bottom=0.13, top=0.88)
+    fig.subplots_adjust(left=0.07, right=0.72, bottom=0.19, top=0.88)
     if plot_df.empty:
         ax.text(0.5, 0.5, "No station bias estimates", ha="center", va="center", transform=ax.transAxes)
         ax.set_axis_off()
@@ -171,10 +171,10 @@ def plot_station_bias_map(
         _finish_map(ax, add_basemap=add_basemap, basemap_source=basemap_source, basemap_kwargs=basemap_kwargs)
         values = pd.to_numeric(plot_df[value_col], errors="coerce").to_numpy(dtype=float)
         cmap, vmin, vmax = value_color_settings(values, value_col, plot_df)
-        sizes = 34
-        if "n_events" in plot_df.columns:
-            sizes = 18 + 8 * np.sqrt(pd.to_numeric(plot_df["n_events"], errors="coerce").fillna(1).clip(lower=1))
+        size_col = _station_bias_size_column(plot_df)
+        sizes = _station_bias_marker_sizes(plot_df, size_col=size_col)
         scatter = ax.scatter(plot_df[lon_col], plot_df[lat_col], c=values, cmap=cmap, vmin=vmin, vmax=vmax, s=sizes, edgecolors="black", linewidths=0.35, zorder=3)
+        _add_station_bias_size_legend(ax, plot_df, size_col=size_col)
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="3.5%", pad=0.12)
         fig.colorbar(scatter, cax=cax, label=value_label or value_column_display_name(value_col))
@@ -191,6 +191,68 @@ def plot_station_bias_map(
         sidecar_rows=sidecar_rows,
         sidecar_dir=sidecar_dir,
         metadata={"figure_type": "station_bias_map", "value_col": value_col},
+    )
+
+
+def _station_bias_size_column(df: pd.DataFrame) -> str | None:
+    """Return the event-count column used for station-bias marker sizing."""
+
+    for column in ("n_events", "source_event_count"):
+        if column in df.columns:
+            return column
+    return None
+
+
+def _station_bias_marker_sizes(df: pd.DataFrame, *, size_col: str | None) -> float | pd.Series:
+    """Return station-bias marker sizes from event-count rows."""
+
+    if size_col is None:
+        return 34
+    counts = pd.to_numeric(df[size_col], errors="coerce").fillna(1).clip(lower=1)
+    return 18 + 8 * np.sqrt(counts)
+
+
+def _add_station_bias_size_legend(ax: plt.Axes, df: pd.DataFrame, *, size_col: str | None) -> None:
+    """Add a compact marker-size legend for station-bias maps."""
+
+    if size_col is None or df.empty:
+        return
+    counts = pd.to_numeric(df[size_col], errors="coerce").dropna().clip(lower=1)
+    if counts.empty:
+        return
+    candidates = [int(round(value)) for value in (counts.min(), counts.median(), counts.max())]
+    labels = []
+    handles = []
+    seen: set[int] = set()
+    for count in candidates:
+        if count in seen:
+            continue
+        seen.add(count)
+        labels.append(f"{count:g}")
+        handles.append(
+            plt.Line2D(
+                [],
+                [],
+                marker="o",
+                linestyle="",
+                markerfacecolor="white",
+                markeredgecolor="black",
+                markersize=float(np.sqrt(18 + 8 * np.sqrt(max(count, 1)))),
+            )
+        )
+    if len(handles) < 2:
+        return
+    ax.legend(
+        handles,
+        labels,
+        title="Events per station",
+        loc="upper left",
+        bbox_to_anchor=(0.0, -0.13),
+        frameon=True,
+        fontsize=7.5,
+        title_fontsize=8.0,
+        ncol=len(handles),
+        borderaxespad=0.0,
     )
 
 

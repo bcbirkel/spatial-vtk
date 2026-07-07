@@ -1807,6 +1807,31 @@ def test_qc_chart_tab_state_prioritizes_empty_filtered_rows():
     assert message is None
 
 
+def test_qc_dashboard_uses_existing_qc_summary_columns_for_amplitude_and_band_tabs():
+    """QC tabs should remain useful for summaries built before spectral columns existed."""
+
+    legacy = pd.DataFrame(
+        {
+            "passband": ["1-2 sec", "2-3 sec"],
+            "signal_rms": [2.0, 3.0],
+            "noise_rms": [0.5, 0.75],
+            "snr_rms": [4.0, 4.0],
+        }
+    )
+
+    amp_columns = streamlit_qc._amplitude_columns(legacy)
+    amp_columns, amp_message = _qc_chart_columns_or_message(legacy, amp_columns, "amplitude")
+    assert amp_message is None
+    assert {"signal_rms", "noise_rms", "snr_rms"} <= set(amp_columns)
+
+    assert streamlit_qc._band_label_column(legacy) == "passband"
+    band_columns = [streamlit_qc._band_label_column(legacy), *streamlit_qc._band_content_columns(legacy)]
+    band_columns, band_message = _qc_chart_columns_or_message(legacy, band_columns, "band-content")
+    assert band_message is None
+    assert "passband" in band_columns
+    assert "snr_rms" in band_columns
+
+
 def test_qc_dashboard_launcher_defaults_to_trace_summary_output(tmp_path, monkeypatch):
     config_path = tmp_path / "spatial-vtk.yaml"
     config_path.write_text(

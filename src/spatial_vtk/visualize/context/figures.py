@@ -1445,11 +1445,27 @@ def plot_event_trace_comparison(
         Written figure path.
     """
 
+    source_records_df = records_df.copy()
+    df = selection.apply(records_df, component_col=component_col or "component") if selection is not None else records_df.copy()
+    df = _preselect_event_trace_comparison_rows(
+        df,
+        component_col=component_col,
+        station_col=station_col,
+        distance_col=distance_col,
+        distance_limit_km=distance_limit_km,
+        max_records=max_records,
+    )
+    df = _prepare_event_trace_comparison_records(
+        df,
+        observed_col=observed_col,
+        synthetic_col=synthetic_col,
+        station_col=station_col,
+        component_col=component_col,
+    )
     required = {observed_col, synthetic_col, station_col}
-    missing = required - set(records_df.columns)
+    missing = required - set(df.columns)
     if missing:
         raise KeyError(f"records_df is missing required columns: {sorted(missing)}")
-    df = selection.apply(records_df, component_col=component_col or "component") if selection is not None else records_df.copy()
     components = [None]
     if component_col and component_col in df.columns:
         components = sorted(df[component_col].dropna().astype(str).unique().tolist()) or [None]
@@ -1463,7 +1479,10 @@ def plot_event_trace_comparison(
             subset[distance_col] = pd.to_numeric(subset[distance_col], errors="coerce")
             if distance_limit_km is not None:
                 subset = subset.loc[subset[distance_col].le(float(distance_limit_km))].copy()
-            subset = subset.sort_values([distance_col, station_col], na_position="last")
+            sort_columns = [distance_col]
+            if station_col in subset.columns:
+                sort_columns.append(station_col)
+            subset = subset.sort_values(sort_columns, na_position="last")
         else:
             subset = subset.sort_values(station_col)
         if max_records is not None:
@@ -1540,12 +1559,219 @@ def plot_event_trace_comparison(
         showfig=showfig,
         savefig=savefig,
         sidecar_df=sidecar_df,
-        source_rows=records_df,
+        source_rows=source_records_df,
         write_sidecar=write_sidecar,
         sidecar_rows=sidecar_rows,
         sidecar_dir=sidecar_dir,
         metadata={"figure_type": "event_trace_comparison", "max_records": max_records},
     )
+
+
+def _prepare_event_trace_comparison_records(
+    records_df: pd.DataFrame,
+    *,
+    observed_col: str,
+    synthetic_col: str,
+    station_col: str,
+    component_col: str | None,
+) -> pd.DataFrame:
+    """Return trace-comparison rows with waveform path columns loaded as traces."""
+
+    df = records_df.copy()
+    for source, column in (("observed", observed_col), ("synthetic", synthetic_col)):
+        if column in df.columns:
+            if _column_contains_waveform_paths(df[column]):
+                df[column] = [
+                    _load_trace_for_comparison(value, row, station_col=station_col, component_col=component_col)
+                    for _, row in df.iterrows()
+                ]
+            continue
+        path_column = _first_existing_waveform_path_column(df.columns, source)
+        if path_column is None:
+            continue
+        df[column] = [
+            _load_trace_for_comparison(row.get(path_column), row, station_col=station_col, component_col=component_col)
+            for _, row in df.iterrows()
+        ]
+    return df
+
+
+def _preselect_event_trace_comparison_rows(
+    records_df: pd.DataFrame,
+    *,
+    component_col: str | None,
+    station_col: str,
+    distance_col: str,
+    distance_limit_km: float | None,
+    max_records: int | None,
+) -> pd.DataFrame:
+    """Apply trace-comparison row limits before path-backed waveforms are loaded."""
+
+    components = [None]
+    if component_col and component_col in records_df.columns:
+        components = sorted(records_df[component_col].dropna().astype(str).unique().tolist()) or [None]
+    frames: list[pd.DataFrame] = []
+    for component in components:
+        subset = records_df if component is None else records_df.loc[records_df[component_col].astype(str) == str(component)].copy()
+        if distance_col in subset.columns:
+            subset = subset.copy()
+            subset[distance_col] = pd.to_numeric(subset[distance_col], errors="coerce")
+            if distance_limit_km is not None:
+                subset = subset.loc[subset[distance_col].le(float(distance_limit_km))].copy()
+            sort_columns = [distance_col]
+            if station_col in subset.columns:
+                sort_columns.append(station_col)
+            subset = subset.sort_values(sort_columns, na_position="last")
+        elif station_col in subset.columns:
+            subset = subset.sort_values(station_col)
+        if max_records is not None:
+            subset = subset.head(int(max_records))
+        frames.append(subset.copy())
+    return pd.concat(frames, ignore_index=True, sort=False) if frames else records_df.head(0).copy()
+
+
+def _first_existing_waveform_path_column(columns: Iterable[str], source: str) -> str | None:
+    """Return the first likely waveform path column for one source."""
+
+    source_key = str(source).strip().lower()
+    aliases = {
+        "observed": ("observed", "obs"),
+        "synthetic": ("synthetic", "syn"),
+    }.get(source_key, (source_key,))
+    explicit: list[str] = []
+    for alias in aliases:
+        explicit.extend(
+            [
+                f"{alias}_processed_waveform",
+                f"{alias}_raw_waveform",
+                f"{alias}_waveform",
+                f"{alias}_waveform_path",
+                f"{alias}_path",
+                f"{alias}_mseed",
+                f"{alias}_pickle",
+            ]
+        )
+    column_set = {str(column) for column in columns}
+    for column in explicit:
+        if column in column_set:
+            return column
+    for column in column_set:
+        text = column.strip().lower()
+        if not any(text.startswith(f"{alias}_") for alias in aliases):
+            continue
+        if "preprocessing" in text:
+            continue
+        if any(token in text for token in ("path", "waveform", "mseed", "pickle", "pkl", "asdf")):
+            return column
+    return None
+
+
+def _column_contains_waveform_paths(series: pd.Series) -> bool:
+    """Return whether a dataframe column appears to contain waveform paths."""
+
+    for value in series:
+        if not _nonempty_waveform_path_value(value):
+            continue
+        if isinstance(value, (str, Path)):
+            return True
+        return False
+    return False
+
+
+def _load_trace_for_comparison(
+    value: object,
+    row: pd.Series,
+    *,
+    station_col: str,
+    component_col: str | None,
+) -> object:
+    """Load one waveform path cell and select the row's best matching trace."""
+
+    if not _nonempty_waveform_path_value(value):
+        return np.asarray([], dtype=float)
+    from spatial_vtk.io.waveforms import read_waveform_file
+
+    traces = read_waveform_file(Path(str(value)).expanduser())
+    if isinstance(traces, (list, tuple)):
+        return _select_trace_for_comparison(traces, row, station_col=station_col, component_col=component_col)
+    if hasattr(traces, "select") and component_col and component_col in row.index:
+        component = str(row.get(component_col, "") or "").strip().upper()
+        if component:
+            try:
+                selected = traces.select(component=component)
+            except Exception:
+                selected = []
+            if selected:
+                return selected[0]
+    if hasattr(traces, "__iter__") and not hasattr(traces, "data") and not isinstance(traces, (str, bytes, dict)):
+        trace_list = list(traces)
+        if trace_list:
+            return _select_trace_for_comparison(trace_list, row, station_col=station_col, component_col=component_col)
+    return traces
+
+
+def _select_trace_for_comparison(
+    traces: Iterable[object],
+    row: pd.Series,
+    *,
+    station_col: str,
+    component_col: str | None,
+) -> object:
+    """Select the trace matching the row station/component when available."""
+
+    trace_list = list(traces)
+    if not trace_list:
+        return np.asarray([], dtype=float)
+    station = str(row.get(station_col, "") or "").strip().upper() if station_col in row.index else ""
+    component = str(row.get(component_col, "") or "").strip().upper() if component_col and component_col in row.index else ""
+    for require_station, require_component in ((True, True), (False, True), (True, False)):
+        for trace in trace_list:
+            if require_station and station and _trace_station(trace) not in {"", station}:
+                continue
+            if require_component and component and _trace_component(trace) not in {"", component}:
+                continue
+            return trace
+    return trace_list[0]
+
+
+def _trace_station(trace: object) -> str:
+    """Return a normalized station code from a trace-like object."""
+
+    stats = trace.get("stats", {}) if isinstance(trace, dict) else getattr(trace, "stats", None)
+    return str(_trace_stat_value(stats, "station", "") or "").strip().upper()
+
+
+def _trace_component(trace: object) -> str:
+    """Return a normalized component code from a trace-like object."""
+
+    stats = trace.get("stats", {}) if isinstance(trace, dict) else getattr(trace, "stats", None)
+    component = str(_trace_stat_value(stats, "component", "") or "").strip().upper()
+    channel = str(_trace_stat_value(stats, "channel", "") or "").strip().upper()
+    return component or (channel[-1:] if channel else "")
+
+
+def _trace_stat_value(stats: object, key: str, default: object = None) -> object:
+    """Read one stat value from mapping- or attribute-style metadata."""
+
+    if stats is None:
+        return default
+    if isinstance(stats, dict):
+        return stats.get(key, default)
+    return getattr(stats, key, default)
+
+
+def _nonempty_waveform_path_value(value: object) -> bool:
+    """Return whether a table cell contains a non-empty waveform path."""
+
+    if value is None:
+        return False
+    try:
+        if pd.isna(value):
+            return False
+    except Exception:
+        pass
+    text = str(value).strip()
+    return text.lower() not in {"", "nan", "none", "null"}
 
 
 def _resolve_trace_comparison_gain(

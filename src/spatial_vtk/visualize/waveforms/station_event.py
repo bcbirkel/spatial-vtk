@@ -19,7 +19,7 @@ import pandas as pd
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import title_with_subtitle
 from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
-from spatial_vtk.visualize.record_sections import normalize_trace, trace_to_array
+from spatial_vtk.visualize.record_sections import normalize_trace, prepare_waveform_plot_metadata, prepare_waveform_plot_records, trace_to_array
 from spatial_vtk.visualize.selection import FigureSelection
 
 
@@ -160,13 +160,34 @@ def plot_station_event_waveform_map(
         Written figure path.
     """
 
+    source_records = records_df.copy()
     work = selection.apply(records_df, component_col=component_col or "component") if selection is not None else records_df.copy()
-    _require_columns(work, [waveform_col, station_col, station_lon_col, station_lat_col, event_lon_col, event_lat_col])
+    work = prepare_waveform_plot_metadata(
+        work,
+        station_lon_col=station_lon_col,
+        station_lat_col=station_lat_col,
+        event_lon_col=event_lon_col,
+        event_lat_col=event_lat_col,
+        distance_col=distance_col,
+    )
+    _require_columns(work, [station_col, station_lon_col, station_lat_col, event_lon_col, event_lat_col])
     df = work.copy()
     if sort_by_distance and distance_col in df.columns:
         df[distance_col] = pd.to_numeric(df[distance_col], errors="coerce")
         df = df.sort_values([distance_col, station_col], kind="stable")
     df = df.head(int(max_traces)).copy()
+    df = prepare_waveform_plot_records(
+        df,
+        waveform_col=waveform_col,
+        station_col=station_col,
+        component_col=component_col,
+        station_lon_col=station_lon_col,
+        station_lat_col=station_lat_col,
+        event_lon_col=event_lon_col,
+        event_lat_col=event_lat_col,
+        distance_col=distance_col,
+    )
+    _require_columns(df, [waveform_col, station_col, station_lon_col, station_lat_col, event_lon_col, event_lat_col])
     fig = plt.figure(figsize=(12.0, max(6.0, 0.42 * len(df) + 3.2)), dpi=180)
     grid = fig.add_gridspec(1, 2, width_ratios=[1.05, 1.35], wspace=0.18)
     map_ax = fig.add_subplot(grid[0, 0])
@@ -183,7 +204,7 @@ def plot_station_event_waveform_map(
         showfig=showfig,
         savefig=savefig,
         sidecar_df=df,
-        source_rows=records_df,
+        source_rows=source_records,
         write_sidecar=write_sidecar,
         sidecar_rows=sidecar_rows,
         sidecar_dir=sidecar_dir,

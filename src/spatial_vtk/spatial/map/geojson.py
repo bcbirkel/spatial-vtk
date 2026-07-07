@@ -18,6 +18,7 @@ from typing import Any
 import math
 
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 import numpy as np
 import pandas as pd
 
@@ -38,6 +39,7 @@ def plot_geojson_polygons_map(
     basemap_source: str = "Esri.WorldImagery",
     basemap_kwargs: dict[str, Any] | None = None,
     label_polygons: bool = True,
+    legend_polygons: bool = False,
     showfig: bool | None = None,
     savefig: bool | None = None,
     outpath: str | Path | None = None,
@@ -65,6 +67,9 @@ def plot_geojson_polygons_map(
         Basemap provider settings forwarded to the shared basemap helper.
     label_polygons
         Whether to annotate polygon names at their representative points.
+    legend_polygons
+        Whether to add an outside-axes legend that maps polygon colors to
+        GeoJSON region names.
     showfig, savefig, outpath
         Standard Spatial-VTK figure display/save controls.
     write_sidecar, sidecar_rows, sidecar_dir
@@ -81,11 +86,31 @@ def plot_geojson_polygons_map(
     if not features:
         raise ValueError("No GeoJSON polygons were selected.")
 
-    fig, ax = plt.subplots(figsize=(8.0, 6.4), dpi=180, constrained_layout=True)
-    colors = plt.get_cmap("tab10")(np.linspace(0.0, 1.0, max(len(features), 1)))
+    if legend_polygons:
+        fig = plt.figure(figsize=(12.0, 6.4), dpi=180, constrained_layout=True)
+        gs = fig.add_gridspec(1, 2, width_ratios=[4.9, 1.25])
+        ax = fig.add_subplot(gs[0, 0])
+        legend_ax = fig.add_subplot(gs[0, 1])
+        legend_ax.axis("off")
+    else:
+        fig, ax = plt.subplots(figsize=(8.0, 6.4), dpi=180, constrained_layout=False)
+        legend_ax = None
+    colors = _region_colors(len(features))
+    effective_label_polygons = bool(label_polygons) and len(features) <= 8
+    legend_handles: list[Any] = []
     for idx, feature in enumerate(features):
-        _plot_feature(ax, feature.geometry, color=colors[idx % len(colors)])
-        if label_polygons:
+        color = colors[idx % len(colors)]
+        _plot_feature(ax, feature.geometry, color=color)
+        if legend_polygons:
+            legend_handles.append(
+                Patch(
+                    facecolor=color,
+                    edgecolor="#202020",
+                    alpha=0.42,
+                    label=_display_name(feature.name),
+                )
+            )
+        if effective_label_polygons:
             point = feature.geometry.representative_point()
             ax.text(
                 point.x,
@@ -106,7 +131,8 @@ def plot_geojson_polygons_map(
             lat_candidates=["station_lat", "station_latitude", "sta_lat", "lat", "latitude"],
             label="station",
         )
-        ax.scatter(stations_df[lon_col], stations_df[lat_col], s=28, marker="^", facecolor="#2b83ba", edgecolor="white", linewidth=0.45, zorder=6, label="Stations")
+        station_points = ax.scatter(stations_df[lon_col], stations_df[lat_col], s=28, marker="^", facecolor="#2b83ba", edgecolor="white", linewidth=0.45, zorder=6, label="Stations")
+        legend_handles.append(station_points)
 
     if events_df is not None and not events_df.empty:
         lon_col, lat_col = _resolve_xy(
@@ -115,7 +141,8 @@ def plot_geojson_polygons_map(
             lat_candidates=["event_lat", "event_latitude", "source_lat", "source_latitude", "lat", "latitude"],
             label="event",
         )
-        ax.scatter(events_df[lon_col], events_df[lat_col], s=92, marker="*", facecolor="#ffd92f", edgecolor="black", linewidth=0.55, zorder=7, label="Events")
+        event_points = ax.scatter(events_df[lon_col], events_df[lat_col], s=92, marker="*", facecolor="#ffd92f", edgecolor="black", linewidth=0.55, zorder=7, label="Events")
+        legend_handles.append(event_points)
 
     _set_bounds(ax, features, stations_df=stations_df, events_df=events_df)
     if add_basemap:
@@ -124,8 +151,26 @@ def plot_geojson_polygons_map(
     ax.set_xlabel("Longitude")
     ax.set_ylabel("Latitude")
     ax.grid(True, alpha=0.18, zorder=1)
-    if stations_df is not None or events_df is not None:
-        ax.legend(loc="best", frameon=True)
+    if legend_handles:
+        if legend_polygons:
+            assert legend_ax is not None
+            legend_ax.legend(
+                handles=legend_handles,
+                title="GeoJSON Region",
+                loc="center",
+                frameon=True,
+                fontsize=5.9,
+                title_fontsize=6.7,
+                borderpad=0.45,
+                labelspacing=0.22,
+                handlelength=1.25,
+                handletextpad=0.45,
+            )
+        else:
+            fig.tight_layout()
+            ax.legend(loc="best", frameon=True)
+    else:
+        fig.tight_layout()
     sidecar_df = layered_figure_rows(
         (
             ("polygon", _feature_sidecar_rows(features)),
@@ -133,12 +178,24 @@ def plot_geojson_polygons_map(
             ("event", events_df),
         )
     )
+    finish_savefig = savefig
+    should_manual_save = legend_polygons and (outpath is not None or output_path is not None)
+    if should_manual_save and (savefig is None or bool(savefig)):
+        saved_path = Path(outpath if outpath is not None else output_path).expanduser()
+        saved_path.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(saved_path, bbox_inches=None)
+        setattr(fig, "spatial_vtk_saved_path", saved_path)
+        setattr(fig, "exists", saved_path.exists)
+        setattr(fig, "stat", saved_path.stat)
+        finish_savefig = False
+
     return finish_figure_with_sidecar(
         fig,
         output_path,
         outpath=outpath,
         showfig=showfig,
-        savefig=savefig,
+        savefig=finish_savefig,
+        bbox_inches=None if legend_polygons else "tight",
         sidecar_df=sidecar_df,
         write_sidecar=write_sidecar,
         sidecar_rows=sidecar_rows,
@@ -159,6 +216,16 @@ def _plot_feature(ax: plt.Axes, geometry: object, *, color: object) -> None:
         for interior in getattr(geom, "interiors", []):
             hx, hy = interior.xy
             ax.fill(hx, hy, facecolor="white", edgecolor="#202020", linewidth=0.7, alpha=0.6, zorder=4)
+
+
+def _region_colors(count: int) -> np.ndarray:
+    """Return visually distinct polygon colors for the selected regions."""
+
+    if count <= 0:
+        return plt.get_cmap("tab20")(np.asarray([0]))
+    if count <= 20:
+        return plt.get_cmap("tab20")(np.arange(count) % 20)
+    return plt.get_cmap("hsv")(np.linspace(0.0, 1.0, count, endpoint=False))
 
 
 def _resolve_xy(df: pd.DataFrame, *, lon_candidates: list[str], lat_candidates: list[str], label: str) -> tuple[str, str]:

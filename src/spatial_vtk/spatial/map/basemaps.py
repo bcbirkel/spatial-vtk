@@ -12,6 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Iterable
 import math
+import os
 import re
 import warnings
 
@@ -151,6 +152,7 @@ def _draw_cached_geotiff_basemap(ax: Any, *, tif_path: Path, xlim: tuple[float, 
         ``True`` when the raster was drawn successfully, else ``False``.
     """
 
+    _prefer_pyproj_data_dir()
     try:
         import numpy as np
         import rasterio
@@ -426,6 +428,7 @@ def cache_contextily_basemap_raster(
         Written GeoTIFF path.
     """
 
+    _prefer_pyproj_data_dir()
     import contextily as ctx  # type: ignore
 
     cache_path = basemap_cache_path_for_extent(
@@ -498,6 +501,7 @@ def add_contextily_basemap(
         error string.
     """
 
+    _prefer_pyproj_data_dir()
     xlim = ax.get_xlim()
     ylim = ax.get_ylim()
     cache_root = Path(cache_dir).expanduser().resolve() if cache_dir is not None else default_basemap_cache_dir()
@@ -659,6 +663,21 @@ def add_contextily_basemap(
     message = _basemap_failure_message(errors, xlim=xlim, ylim=ylim, cache_dir=cache_root)
     _handle_basemap_failure(ax, message, xlim=xlim, ylim=ylim, crs=crs, on_error=error_mode)
     return False, message
+
+
+def _prefer_pyproj_data_dir() -> None:
+    """Prefer pyproj's matching PROJ database over externally loaded modules."""
+
+    try:
+        import pyproj.datadir
+
+        data_dir = pyproj.datadir.get_data_dir()
+    except Exception:
+        return
+    if not data_dir:
+        return
+    os.environ["PROJ_LIB"] = str(data_dir)
+    os.environ["PROJ_DATA"] = str(data_dir)
 
 
 def _basemap_failure_message(

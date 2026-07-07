@@ -1339,7 +1339,7 @@ def run_spatial_statistics_workflow(
 
     metrics_to_run = _spatial_metric_list(metrics_df, metric or settings.metric)
     progress(f"running {len(metrics_to_run)} metric(s): {', '.join(metrics_to_run)}")
-    station_df = _load_station_metadata(station_metadata, cfg=config, progress=progress)
+    station_df = _load_station_metadata(station_metadata, cfg=config, settings=settings, progress=progress)
     failures: list[dict[str, str]] = []
 
     checkpoint_run_dir: Path | None = None
@@ -2134,7 +2134,7 @@ def _spatial_checkpoint_signature(
             "metrics": sorted(metrics_df["metric"].dropna().astype(str).unique().tolist()) if "metric" in metrics_df.columns else [],
         }
     return {
-        "version": 1,
+        "version": 2,
         "metrics_input": input_signature,
         "metrics_to_run": [str(item) for item in metrics_to_run],
         "settings": _json_ready(asdict(settings)),
@@ -2337,21 +2337,82 @@ def _load_station_metadata(
     station_metadata: pd.DataFrame | str | Path | None,
     *,
     cfg: SpatialVTKConfig,
+    settings: SpatialStatisticsSettings,
     progress,
 ) -> pd.DataFrame | None:
     """Load optional station metadata for geology summaries."""
 
     if isinstance(station_metadata, pd.DataFrame):
-        return station_metadata.copy()
+        return _station_metadata_with_geology(station_metadata.copy(), settings=settings, progress=progress)
     if station_metadata is not None:
         path = Path(station_metadata).expanduser()
         progress(f"reading station metadata {path}")
-        return read_table(path)
+        return _station_metadata_with_geology(read_table(path), settings=settings, progress=progress)
     try:
-        return load_output_table("prepared_stations", cfg=cfg)
+        return _station_metadata_with_geology(load_output_table("prepared_stations", cfg=cfg), settings=settings, progress=progress)
     except Exception as exc:
         progress(f"prepared station metadata unavailable for geology contrasts: {exc}")
         return None
+
+
+def _station_metadata_with_geology(
+    station_df: pd.DataFrame,
+    *,
+    settings: SpatialStatisticsSettings,
+    progress,
+) -> pd.DataFrame:
+    """Add configured GeoJSON geology classes when the station table needs them."""
+
+    group_col = str(settings.geology_group_column)
+    if group_col in station_df.columns:
+        return station_df
+    geology_cols = {"target_region_zone", "target_region_edge_distance_km", "mapped_region", "mapped_region_type"}
+    if group_col not in geology_cols:
+        return station_df
+    if settings.region_geojson_path is None:
+        progress(f"station metadata is missing {group_col!r} and paths.region_geojson is not configured")
+        return station_df
+    coord_cols = _station_geology_coordinate_columns(station_df)
+    if coord_cols is None:
+        progress(f"station metadata is missing {group_col!r} and does not include station coordinates for GeoJSON classification")
+        return station_df
+
+    lon_col, lat_col = coord_cols
+    try:
+        from spatial_vtk.spatial.calculate.geology import add_station_geology_classes, load_region_geometries
+
+        records, target_geom = load_region_geometries(settings.region_geojson_path)
+        classified = add_station_geology_classes(
+            station_df,
+            region_records=records,
+            target_region_geom=target_geom,
+            edge_buffer_km=5.0,
+            lon_col=lon_col,
+            lat_col=lat_col,
+        )
+    except Exception as exc:
+        progress(f"could not add GeoJSON geology classes to station metadata: {exc}")
+        return station_df
+
+    added = [column for column in geology_cols if column in classified.columns and column not in station_df.columns]
+    if added:
+        progress(f"added station geology columns from paths.region_geojson: {', '.join(sorted(added))}")
+    return classified
+
+
+def _station_geology_coordinate_columns(station_df: pd.DataFrame) -> tuple[str, str] | None:
+    """Return longitude/latitude columns usable for station GeoJSON classification."""
+
+    candidates = (
+        ("station_longitude", "station_latitude"),
+        ("lon", "lat"),
+        ("sta_lon", "sta_lat"),
+        ("longitude", "latitude"),
+    )
+    for lon_col, lat_col in candidates:
+        if lon_col in station_df.columns and lat_col in station_df.columns:
+            return lon_col, lat_col
+    return None
 
 
 def _record_failure(failures: list[dict[str, str]], metric: str, step: str, exc: Exception, progress) -> None:

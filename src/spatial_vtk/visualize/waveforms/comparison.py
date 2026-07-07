@@ -109,6 +109,7 @@ def write_waveform_comparison_from_outputs(
     chunksize: int = 1_000_000,
     overwrite: bool = False,
     savefig: bool = True,
+    fallback_to_available: bool = False,
     **plot_kwargs: Any,
 ) -> WaveformComparisonFigureResult:
     """Write a waveform trace comparison figure from configured outputs.
@@ -138,6 +139,9 @@ def write_waveform_comparison_from_outputs(
     savefig
         Whether to save the figure. This defaults to true because the helper is
         intended for notebook workflow outputs.
+    fallback_to_available
+        When true, retry with available components and all passbands if the
+        requested component/passband selection has no plottable records.
     **plot_kwargs
         Additional keyword arguments forwarded to
         :func:`plot_event_trace_comparison`, including ``showfig`` and
@@ -173,23 +177,61 @@ def write_waveform_comparison_from_outputs(
         )
 
     selected_component = str(component or "Z").strip().upper()
-    eligible_sample = _load_comparison_eligible_records(
-        comparison_eligible,
-        component=selected_component,
-        passband=passband,
-        event_id=event_id,
-        max_records=max_records,
-        chunksize=chunksize,
-    )
-    records = _build_qc_waveform_comparison_records(
-        event_station,
-        comparison_eligible=eligible_sample,
-        component=selected_component,
-        passband=passband,
-        event_id=event_id,
-        max_distance_km=max_distance_km,
-        max_records=max_records,
-    )
+
+    def _build_records(selection_component: str, selection_passband: str | None) -> pd.DataFrame:
+        eligible_sample = _load_comparison_eligible_records(
+            comparison_eligible,
+            component=selection_component,
+            passband=selection_passband,
+            event_id=event_id,
+            max_records=max_records,
+            chunksize=chunksize,
+        )
+        return _build_qc_waveform_comparison_records(
+            event_station,
+            comparison_eligible=eligible_sample,
+            component=selection_component,
+            passband=selection_passband,
+            event_id=event_id,
+            max_distance_km=max_distance_km,
+            max_records=max_records,
+        )
+
+    records = _build_records(selected_component, passband)
+    fallback_note = ""
+    if records.empty and fallback_to_available:
+        unfiltered_sample = _load_comparison_eligible_records(
+            comparison_eligible,
+            component=None,
+            passband=None,
+            event_id=event_id,
+            max_records=max_records,
+            chunksize=chunksize,
+        )
+        if "component" in unfiltered_sample.columns:
+            fallback_components = [
+                str(value).strip().upper()
+                for value in unfiltered_sample["component"].dropna().drop_duplicates().tolist()
+                if str(value).strip()
+            ]
+        else:
+            fallback_components = []
+        for fallback_component in fallback_components:
+            candidate_records = _build_qc_waveform_comparison_records(
+                event_station,
+                comparison_eligible=unfiltered_sample,
+                component=fallback_component,
+                passband=None,
+                event_id=event_id,
+                max_distance_km=max_distance_km,
+                max_records=max_records,
+            )
+            if not candidate_records.empty:
+                records = candidate_records
+                fallback_note = (
+                    f" Used available waveform selection instead: component {fallback_component}, all passbands."
+                )
+                break
     if records.empty:
         return WaveformComparisonFigureResult(
             figure_path=figure_path,
@@ -214,7 +256,7 @@ def write_waveform_comparison_from_outputs(
         comparison_eligible_path=comparison_eligible,
         records=records,
         status="written",
-        message=f"Wrote waveform comparison figure: {figure_path}",
+        message=f"Wrote waveform comparison figure: {figure_path}.{fallback_note}",
     )
 
 
@@ -229,6 +271,7 @@ def write_waveform_comparison_from_notebook_settings(
     event_id: str | list[str] | tuple[str, ...] | None = None,
     component: str | None = None,
     passband: str | None = None,
+    fallback_to_available: bool = False,
     plot_options: dict[str, Any] | None = None,
 ) -> WaveformComparisonFigureResult:
     """Write a bounded waveform comparison figure using notebook settings.
@@ -240,9 +283,10 @@ def write_waveform_comparison_from_notebook_settings(
     :func:`plot_event_trace_comparison`.
     """
 
-    event_station = Path(getattr(step_outputs, "event_station_path"))
-    comparison_eligible = Path(getattr(step_outputs, "comparison_eligible_path"))
-    figure_path = Path(getattr(step_outputs, "event_trace_comparison_path"))
+    output_group = getattr(step_outputs, "outputs", step_outputs)
+    event_station = Path(getattr(output_group, "event_station_path"))
+    comparison_eligible = Path(getattr(output_group, "comparison_eligible_path"))
+    figure_path = Path(getattr(output_group, "event_trace_comparison_path"))
     gate = settings.render_gate(
         [comparison_eligible, event_station],
         missing_message="Comparison-eligible records or event-station records are not ready yet.",
@@ -261,7 +305,7 @@ def write_waveform_comparison_from_notebook_settings(
     if plot_options:
         plot_kwargs.update(plot_options)
     return write_waveform_comparison_from_outputs(
-        step_outputs,
+        output_group,
         component=component if component is not None else (settings.component or "Z"),
         passband=passband if passband is not None else settings.passband,
         event_id=event_id,
@@ -269,6 +313,7 @@ def write_waveform_comparison_from_notebook_settings(
         max_distance_km=max_distance_km,
         chunksize=chunksize,
         overwrite=overwrite,
+        fallback_to_available=fallback_to_available,
         **plot_kwargs,
     )
 

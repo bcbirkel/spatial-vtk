@@ -150,6 +150,7 @@ def plot_band_score_distribution(
     offsets = np.linspace(-0.30, 0.30, len(color_values)) if len(color_values) > 1 else np.array([0.0])
     width = min(0.56 / max(len(color_values), 1), 0.20)
     palette = plt.get_cmap("tab10")
+    plotted_groups: list[np.ndarray] = []
     for band_index, center in enumerate(centers):
         if band_index % 2 == 0:
             ax.axvspan(center - 0.55, center + 0.55, color="0.96", zorder=0)
@@ -165,6 +166,8 @@ def plot_band_score_distribution(
             series = pd.to_numeric(work.loc[selector, score_col], errors="coerce").dropna().to_numpy()
             values.append(series)
             positions.append(centers[band_index] + offsets[color_index])
+            if len(series):
+                plotted_groups.append(series)
         boxplot = ax.boxplot(values, positions=positions, widths=width, patch_artist=True, manage_ticks=False, showfliers=False)
         color = palette(color_index % 10)
         for patch in boxplot["boxes"]:
@@ -179,6 +182,7 @@ def plot_band_score_distribution(
     ax.set_ylabel(context_value_label(score_col, df))
     ax.set_xlabel("Passband")
     apply_robust_axis_limits(ax, pd.to_numeric(work[score_col], errors="coerce"), value_col=score_col, df=work, robust_percentile=robust_axis_percentile)
+    _ensure_axis_contains_boxplot_whiskers(ax, plotted_groups)
     apply_figure_context(
         ax,
         df,
@@ -252,6 +256,52 @@ def _heatmap(
         sidecar_dir=sidecar_dir,
         metadata=metadata,
     )
+
+
+def _ensure_axis_contains_boxplot_whiskers(ax: plt.Axes, groups: list[np.ndarray]) -> None:
+    """Expand the y-axis when robust limits clip rendered boxplot whiskers."""
+
+    limits = _boxplot_whisker_limits(groups)
+    if limits is None:
+        return
+    low, high = limits
+    ymin, ymax = ax.get_ylim()
+    span = max(float(ymax - ymin), float(high - low), 1.0e-12)
+    pad = max(span * 0.06, 1.0e-9)
+    changed = False
+    if low < ymin:
+        ymin = low - pad
+        changed = True
+    if high > ymax:
+        ymax = high + pad
+        changed = True
+    if changed:
+        ax.set_ylim(ymin, ymax)
+
+
+def _boxplot_whisker_limits(groups: list[np.ndarray]) -> tuple[float, float] | None:
+    """Return Tukey-whisker limits for the non-flier boxplot values."""
+
+    values: list[float] = []
+    for group in groups:
+        finite = np.asarray(group, dtype=float)
+        finite = finite[np.isfinite(finite)]
+        if finite.size == 0:
+            continue
+        if finite.size < 4:
+            values.extend([float(np.nanmin(finite)), float(np.nanmax(finite))])
+            continue
+        q1, q3 = np.nanpercentile(finite, [25.0, 75.0])
+        iqr = q3 - q1
+        lower = q1 - 1.5 * iqr
+        upper = q3 + 1.5 * iqr
+        whisker_values = finite[(finite >= lower) & (finite <= upper)]
+        if whisker_values.size == 0:
+            whisker_values = finite
+        values.extend([float(np.nanmin(whisker_values)), float(np.nanmax(whisker_values))])
+    if not values:
+        return None
+    return float(np.nanmin(values)), float(np.nanmax(values))
 
 
 def _require(df: pd.DataFrame, columns: list[str]) -> None:

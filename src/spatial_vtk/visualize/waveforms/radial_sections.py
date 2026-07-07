@@ -15,7 +15,7 @@ from matplotlib.ticker import MaxNLocator
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import title_with_subtitle
 from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
-from spatial_vtk.visualize.record_sections import normalize_trace, trace_to_array
+from spatial_vtk.visualize.record_sections import normalize_trace, prepare_waveform_plot_records, trace_to_array
 from spatial_vtk.visualize.selection import FigureSelection
 
 
@@ -90,7 +90,19 @@ def plot_event_radial_trace_section(
         Written figure path.
     """
 
+    source_records = records_df.copy()
     work = selection.apply(records_df) if selection is not None else records_df.copy()
+    work = prepare_waveform_plot_records(
+        work,
+        waveform_col=trace_col,
+        station_col=station_col,
+        station_lon_col=station_lon_col,
+        station_lat_col=station_lat_col,
+        event_lon_col=event_lon_col,
+        event_lat_col=event_lat_col,
+        distance_col=distance_col,
+        azimuth_col=azimuth_col,
+    )
     required = [trace_col, station_col, distance_col, azimuth_col, station_lon_col, station_lat_col, event_lon_col, event_lat_col]
     missing = [column for column in required if column not in work.columns]
     if missing:
@@ -111,7 +123,7 @@ def plot_event_radial_trace_section(
         showfig=showfig,
         savefig=savefig,
         sidecar_df=df,
-        source_rows=records_df,
+        source_rows=source_records,
         write_sidecar=write_sidecar,
         sidecar_rows=sidecar_rows,
         sidecar_dir=sidecar_dir,

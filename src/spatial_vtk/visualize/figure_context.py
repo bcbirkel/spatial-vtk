@@ -229,6 +229,8 @@ def context_value_label(value_col: str, df: pd.DataFrame | None = None) -> str:
         label = "Mean event-centered log2(observed / synthetic)"
     if str(value_col) == "log2_residual" and _has_event_centering_metadata(df):
         label = "Event-centered log2(observed / synthetic)"
+    elif str(value_col) == "log2_residual":
+        label = "Raw log2(observed / synthetic)"
     return label
 
 
@@ -613,6 +615,10 @@ def _processing_notes(df: pd.DataFrame, *, value_col: str | None) -> str:
         notes.append("event mean removed")
     if _has_event_centering_metadata(df):
         notes.append("event mean removed")
+    elif str(value_col) in {"log2_residual", "field_value"}:
+        source = _source_text(df)
+        if str(value_col) == "log2_residual" or "log2" in source or not source:
+            notes.append("event mean not removed")
     if _source_text(df).find("distance") >= 0:
         notes.append("distance scaled")
     return ", ".join(dict.fromkeys(notes))

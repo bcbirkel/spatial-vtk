@@ -162,7 +162,8 @@ def plot_distance_correlation_by_metric(
     )
     has_significance = any(sig_lookup.values())
 
-    fig, ax = plt.subplots(figsize=(8.4, 5.2), dpi=180)
+    fig, ax = plt.subplots(figsize=(12.4, 6.6), dpi=180)
+    fig.subplots_adjust(left=0.08, right=0.68, top=0.86, bottom=0.34)
     if plot_df.empty:
         ax.text(0.5, 0.5, "No distance-bin correlations", ha="center", va="center", transform=ax.transAxes)
     else:
@@ -184,7 +185,15 @@ def plot_distance_correlation_by_metric(
         ax.set_xlabel("Station separation bin center (km)")
         ax.set_ylabel("Mean pair correlation")
         legend_title = f"Metric (* p<{alpha:g})" if has_significance else "Metric"
-        ax.legend(title=legend_title, frameon=True, fontsize=8)
+        ax.legend(
+            title=legend_title,
+            loc="upper left",
+            bbox_to_anchor=(1.01, 1.0),
+            borderaxespad=0.0,
+            frameon=True,
+            fontsize=8.5,
+            title_fontsize=9.5,
+        )
         if significance_df is not None and not significance_df.empty:
             _add_metric_significance_table(
                 ax,
@@ -638,8 +647,9 @@ def _add_metric_significance_table(
         ax,
         rows=rows,
         columns=["Metric", "Moran's I", "p", f"p<{alpha:g}"],
-        col_widths=[0.44, 0.18, 0.18, 0.20],
-        font_size=7.5,
+        col_widths=[0.52, 0.18, 0.14, 0.16],
+        font_size=8.4,
+        max_visible_rows=8,
     )
 
 

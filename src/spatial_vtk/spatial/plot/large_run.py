@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import re
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Callable, Iterable, Mapping, Sequence
@@ -17,6 +19,7 @@ from spatial_vtk.metrics.plot.large_run import (
     SIDECAR_PLOT_ROWS_ROLE_ATTR,
     SIDECAR_SOURCE_ROWS_ROLE_ATTR,
     SIDECAR_TABLE_ROLE_ATTR,
+    dimension_value,
     first_existing,
 )
 from spatial_vtk.visualize.figure_sidecars import (
@@ -27,6 +30,172 @@ from spatial_vtk.visualize.figure_sidecars import (
 
 
 ConfigInput = SpatialVTKConfig | str | Path
+STEP06_METRIC_COMPARISON_VALUE_COL = "metric_comparison_value"
+STEP06_METRIC_COMPARISON_METRICS: tuple[tuple[str, frozenset[str]], ...] = (
+    ("PGA", frozenset({"pga", "peak_acceleration", "peak_acceleration_pga"})),
+    ("arias_duration", frozenset({"arias_duration", "arias_duration_5_95", "arias_duration_5_95_percent"})),
+    ("FAS", frozenset({"fas", "fourier_amplitude_spectrum"})),
+    ("traveltime_delay", frozenset({"traveltime_delay", "phase_delay", "delay_time", "phase_delay_time"})),
+    (
+        "delay_corrected_cc",
+        frozenset({"delay_corrected_cc", "delay_corrected_cross_correlation", "corrected_cc"}),
+    ),
+)
+STEP06_METRIC_COMPARISON_RAW_VALUE_KEYS = frozenset({"traveltime_delay", "delay_corrected_cc"})
+STEP06_MODEL_DELTA_HEATMAP_SPECS: tuple[dict[str, object], ...] = (
+    {
+        "token": "log2_residual_metrics",
+        "title": "Log2 residual metrics",
+        "quantity_label": "Difference in mean log2(observed / synthetic)",
+        "metric_keys": frozenset({"pga", "arias_duration", "fas"}),
+    },
+    {
+        "token": "phase_delay_fraction",
+        "title": "Phase delay",
+        "quantity_label": "Difference in delay / dominant period",
+        "metric_keys": frozenset({"traveltime_delay"}),
+    },
+    {
+        "token": "delay_corrected_cc",
+        "title": "Delay-corrected cross correlation",
+        "quantity_label": "Difference in correlation coefficient",
+        "metric_keys": frozenset({"delay_corrected_cc"}),
+    },
+)
+
+
+def _site_metadata_with_geology(
+    station_df: pd.DataFrame | None,
+    *,
+    cfg: ConfigInput | None,
+    progress: Callable[[str], None],
+) -> pd.DataFrame | None:
+    """Add configured GeoJSON geology classes when plotting needs them."""
+
+    if station_df is None or station_df.empty:
+        return station_df
+    try:
+        settings = _spatial_statistics_settings(cfg)
+    except Exception as exc:
+        progress(f"Station metadata geology labels unavailable: could not read spatial settings: {exc}")
+        return _site_metadata_with_geomorphology(station_df)
+
+    group_col = str(settings.geology_group_column)
+    if group_col in station_df.columns:
+        return _site_metadata_with_geomorphology(station_df)
+    geology_cols = {"target_region_zone", "target_region_edge_distance_km", "mapped_region", "mapped_region_type"}
+    if group_col not in geology_cols:
+        return _site_metadata_with_geomorphology(station_df)
+    if settings.region_geojson_path is None:
+        progress(f"Station metadata is missing {group_col!r}; paths.region_geojson is not configured.")
+        return _site_metadata_with_geomorphology(station_df)
+
+    coord_cols = _site_metadata_coordinate_columns(station_df)
+    if coord_cols is None:
+        progress(
+            f"Station metadata is missing {group_col!r} and does not include longitude/latitude columns "
+            "for GeoJSON classification."
+        )
+        return _site_metadata_with_geomorphology(station_df)
+
+    lon_col, lat_col = coord_cols
+    try:
+        from spatial_vtk.spatial.calculate.geology import add_station_geology_classes, load_region_geometries
+
+        records, target_geom = load_region_geometries(settings.region_geojson_path)
+        classified = add_station_geology_classes(
+            station_df,
+            region_records=records,
+            target_region_geom=target_geom,
+            edge_buffer_km=5.0,
+            lon_col=lon_col,
+            lat_col=lat_col,
+        )
+    except Exception as exc:
+        progress(f"Could not add GeoJSON geology classes to station metadata: {exc}")
+        return _site_metadata_with_geomorphology(station_df)
+
+    added = [column for column in geology_cols if column in classified.columns and column not in station_df.columns]
+    if added:
+        progress(f"Added station geology columns from paths.region_geojson: {', '.join(sorted(added))}.")
+    return _site_metadata_with_geomorphology(classified)
+
+
+def _site_metadata_with_geomorphology(station_df: pd.DataFrame | None) -> pd.DataFrame | None:
+    """Add a broad geomorphology class used for scientific review boxplots."""
+
+    if station_df is None or station_df.empty or "geomorphology" in station_df.columns:
+        return station_df
+    if "mapped_region_type" not in station_df.columns and "target_region_zone" not in station_df.columns:
+        return station_df
+    out = station_df.copy()
+    out["geomorphology"] = [_geomorphology_label(row) for _index, row in out.iterrows()]
+    return out
+
+
+def _geomorphology_label(row: pd.Series) -> object:
+    """Return Basin, Basin edge, Mountain/hills, or Valley for one station row."""
+
+    zone = str(row.get("target_region_zone", "")).strip().casefold()
+    mapped = str(row.get("mapped_region_type", "")).strip().casefold()
+    if zone in {"target_region_edge_inside", "target_region_edge_outside"}:
+        return "Basin edge"
+    if mapped == "basin" or zone == "target_region_interior":
+        return "Basin"
+    if mapped in {"mountain", "mountains", "hill", "hills"}:
+        return "Mountain/hills"
+    if mapped in {"valley", "valleys"}:
+        return "Valley"
+    return pd.NA
+
+
+def _geology_group_column(cfg: ConfigInput | None) -> str:
+    """Return the configured station geology grouping column."""
+
+    try:
+        return str(_spatial_statistics_settings(cfg).geology_group_column)
+    except Exception:
+        return "mapped_region_type"
+
+
+def _spatial_statistics_settings(cfg: ConfigInput | None) -> Any:
+    """Load spatial-statistics settings without importing calculation code at module import time."""
+
+    from spatial_vtk.spatial.calculate.settings import spatial_statistics_settings_from_config
+
+    return spatial_statistics_settings_from_config(cfg)
+
+
+def _site_metadata_coordinate_columns(station_df: pd.DataFrame) -> tuple[str, str] | None:
+    """Return longitude/latitude columns usable for station GeoJSON classification."""
+
+    candidates = (
+        ("station_longitude", "station_latitude"),
+        ("lon", "lat"),
+        ("sta_lon", "sta_lat"),
+        ("longitude", "latitude"),
+    )
+    for lon_col, lat_col in candidates:
+        if lon_col in station_df.columns and lat_col in station_df.columns:
+            return lon_col, lat_col
+    return None
+
+
+def _is_defined_geology_class(value: object) -> bool:
+    """Return True for usable mapped geology class labels."""
+
+    text = str(value).strip()
+    if not text:
+        return False
+    return text.casefold() not in {
+        "unknown",
+        "unmapped",
+        "undefined",
+        "unclassified",
+        "none",
+        "null",
+        "nan",
+    }
 
 
 def _close_matplotlib_figures(target: Any = "all") -> None:
@@ -147,6 +316,7 @@ class SpatialFigureContext:
     tables: dict[str, pd.DataFrame | None] = field(default_factory=dict)
     paths: dict[str, Path] = field(default_factory=dict)
     site_metadata: pd.DataFrame | None = None
+    geology_group_col: str = "mapped_region_type"
     verbose: bool = True
 
     @classmethod
@@ -168,6 +338,7 @@ class SpatialFigureContext:
         sidecar_rows: int | None = None,
         sidecar_dir: str | Path | None = None,
         station_aggregation: str = "median",
+        load_filters: dict[str, object] | None = None,
         verbose: bool = True,
     ) -> "SpatialFigureContext":
         """Load compact spatial output tables and return a plotting context."""
@@ -192,7 +363,7 @@ class SpatialFigureContext:
         )
         event_value_col = _first_existing(
             tables["event_centered_residuals"],
-            ["log2_residual", "mean_centered", "field_centered", "event_centered_residual", "residual"],
+            ["mean_centered", "field_centered", "event_centered_residual", "residual", "log2_residual"],
         )
         metric_context = MetricFigureContext.from_frame(
             tables["metric_field"],
@@ -211,6 +382,7 @@ class SpatialFigureContext:
             sidecar_rows=sidecar_rows,
             sidecar_dir=sidecar_output_dir,
             station_aggregation=station_aggregation,
+            load_filters=load_filters,
             verbose=verbose,
         )
         event_context = MetricFigureContext.from_frame(
@@ -230,14 +402,21 @@ class SpatialFigureContext:
             sidecar_rows=sidecar_rows,
             sidecar_dir=sidecar_output_dir,
             station_aggregation=station_aggregation,
+            load_filters=load_filters,
             verbose=verbose,
         )
-        station_metadata_message = ""
+        station_metadata_messages: list[str] = []
         try:
             site_metadata = load_output_table("prepared_stations", cfg=cfg)
+            site_metadata = _site_metadata_with_geology(
+                site_metadata,
+                cfg=cfg,
+                progress=station_metadata_messages.append,
+            )
         except Exception as exc:
             site_metadata = None
-            station_metadata_message = f"Station metadata unavailable for geology contrast plots: {exc}"
+            station_metadata_messages.append(f"Station metadata unavailable for geology contrast plots: {exc}")
+        geology_group_col = _geology_group_column(cfg)
         context = cls(
             figure_dir=output_dir,
             make_figures=bool(make_figures),
@@ -253,10 +432,12 @@ class SpatialFigureContext:
             tables=tables,
             paths=paths,
             site_metadata=site_metadata,
+            geology_group_col=geology_group_col,
             verbose=bool(verbose),
         )
-        if make_figures and station_metadata_message:
-            context._progress(station_metadata_message)
+        if make_figures:
+            for station_metadata_message in station_metadata_messages:
+                context._progress(station_metadata_message)
         if make_figures:
             context._progress(f"Rendering spatial figures into {output_dir}")
             context._progress(
@@ -455,6 +636,7 @@ class SpatialFigureContext:
         df: pd.DataFrame | None = None,
         source_df: pd.DataFrame | None = None,
         required: tuple[str, ...] | list[str | None] = (),
+        finite_columns: tuple[str | None, ...] | list[str | None] = (),
         value_col: str | None = None,
         forward_value_col: bool = False,
         showfig: bool = False,
@@ -471,6 +653,7 @@ class SpatialFigureContext:
             df=df,
             source_df=source_df,
             required=[column for column in required if column],
+            finite_columns=[column for column in finite_columns if column],
             value_col=value_col,
             forward_value_col=forward_value_col,
             showfig=showfig,
@@ -535,15 +718,19 @@ class SpatialFigureContext:
         value_col: str | None = None,
         add_basemap: bool | None = None,
         showfig: bool | None = None,
+        event_centered: bool = False,
     ) -> list[Path]:
         """Write station-level spatial metric maps for configured target metrics."""
 
-        resolved_value_col = value_col or self.metric_value_col
+        source = self.event_centered if event_centered else self.metric_field
+        base_name = "spatial_station_metric_map_event_centered" if event_centered else "spatial_station_metric_map"
+        resolved_value_col = value_col or (self.event_value_col if event_centered else self.metric_value_col)
         outputs: list[Path] = []
-        if not self._can_render_metric_figures("spatial_station_metric_map", resolved_value_col):
+        can_render = self._can_render_event_figures if event_centered else self._can_render_metric_figures
+        if not can_render(base_name, resolved_value_col):
             return outputs
         for item in self.iter_metric_frames(
-            self.metric_field,
+            source,
             passband=passband,
             components=components,
             model=model,
@@ -552,7 +739,7 @@ class SpatialFigureContext:
             if item["key"] == "psa" and self.period_col in item["df"].columns:
                 station_period_df = self.station_period_summary_for_item(item, resolved_value_col)
                 output = self.write_spatial_plot(
-                    "spatial_station_metric_map",
+                    base_name,
                     item,
                     station_metric_map_by_period_func,
                     df=station_period_df,
@@ -567,7 +754,7 @@ class SpatialFigureContext:
             else:
                 station_df = self.station_summary_for_item(item, resolved_value_col)
                 output = self.write_spatial_plot(
-                    "spatial_station_metric_map",
+                    base_name,
                     item,
                     station_metric_map_func,
                     df=station_df,
@@ -582,6 +769,96 @@ class SpatialFigureContext:
                 outputs.append(output)
         return outputs
 
+    def write_station_bias_maps(
+        self,
+        station_bias_map_func: Callable[..., Any],
+        *,
+        passband: str | None = None,
+        components: list[str] | str | None = None,
+        model: str | None = None,
+        value_col: str | None = None,
+        add_basemap: bool | None = None,
+        showfig: bool | None = None,
+        event_centered: bool = True,
+    ) -> list[Path]:
+        """Write station-bias summary maps for target metrics."""
+
+        outputs: list[Path] = []
+        if event_centered:
+            resolved_value_col = value_col or "mean_centered"
+            station_bias = self.table("station_bias")
+            if station_bias is None or station_bias.empty:
+                self._progress("skip spatial_station_bias_map: station_bias table missing or empty")
+                return outputs
+            if resolved_value_col not in station_bias.columns:
+                self._progress(f"skip spatial_station_bias_map: value column unavailable ({resolved_value_col!r})")
+                return outputs
+            if self.metric_field is None or self.metric_field.empty:
+                self._progress("skip spatial_station_bias_map: metric_field table missing or empty")
+                return outputs
+            items = self.iter_metric_frames(
+                self.metric_field,
+                passband=passband,
+                components=components,
+                model=model,
+                split_psa_period=False,
+            )
+            base_name = "spatial_station_bias_map"
+            value_label = "Mean event-centered log2(observed / synthetic)"
+            title = "Station Bias (Event Mean Removed)"
+            for item in items:
+                bias_for_item = self.filter_like_item(station_bias, item, include_period=False)
+                if bias_for_item is None or bias_for_item.empty:
+                    self._progress(f"skip {base_name} {item['label']}: no station-bias rows")
+                    continue
+                output = self.write_spatial_plot(
+                    base_name,
+                    item,
+                    station_bias_map_func,
+                    df=bias_for_item,
+                    required=[resolved_value_col],
+                    finite_columns=[resolved_value_col],
+                    value_col=resolved_value_col,
+                    forward_value_col=True,
+                    value_label=value_label,
+                    title=title,
+                    add_basemap=self._resolved_add_basemap(add_basemap),
+                    showfig=self._resolved_showfig(showfig),
+                )
+                if output is not None:
+                    outputs.append(output)
+            return outputs
+
+        resolved_value_col = value_col or self.metric_value_col
+        if not self._can_render_metric_figures("spatial_station_bias_map_raw", resolved_value_col):
+            return outputs
+        for item in self.iter_metric_frames(
+            self.metric_field,
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            bias_for_item = self.station_summary_for_item(item, resolved_value_col)
+            output = self.write_spatial_plot(
+                "spatial_station_bias_map_raw",
+                item,
+                station_bias_map_func,
+                df=bias_for_item,
+                source_df=self.item_source_rows(item),
+                required=[resolved_value_col],
+                finite_columns=[resolved_value_col],
+                value_col=resolved_value_col,
+                forward_value_col=True,
+                value_label="Mean raw log2(observed / synthetic)",
+                title="Station Mean Residual (Event Mean Not Removed)",
+                add_basemap=self._resolved_add_basemap(add_basemap),
+                showfig=self._resolved_showfig(showfig),
+            )
+            if output is not None:
+                outputs.append(output)
+        return outputs
+
     def write_residual_grid_maps(
         self,
         residual_grid_func: Callable[..., Any],
@@ -592,15 +869,19 @@ class SpatialFigureContext:
         value_col: str | None = None,
         add_basemap: bool | None = None,
         showfig: bool | None = None,
+        event_centered: bool = False,
     ) -> list[Path]:
         """Write station-interpolated residual grid maps for target metrics."""
 
-        resolved_value_col = value_col or self.metric_value_col
+        source = self.event_centered if event_centered else self.metric_field
+        base_name = "spatial_residual_grid_event_centered" if event_centered else "spatial_residual_grid"
+        resolved_value_col = value_col or (self.event_value_col if event_centered else self.metric_value_col)
         outputs: list[Path] = []
-        if not self._can_render_metric_figures("spatial_residual_grid", resolved_value_col):
+        can_render = self._can_render_event_figures if event_centered else self._can_render_metric_figures
+        if not can_render(base_name, resolved_value_col):
             return outputs
         for item in self.iter_metric_frames(
-            self.metric_field,
+            source,
             passband=passband,
             components=components,
             model=model,
@@ -608,7 +889,7 @@ class SpatialFigureContext:
         ):
             if item["key"] == "psa":
                 output = self.write_spatial_period_sheet(
-                    "spatial_residual_grid",
+                    base_name,
                     item,
                     residual_grid_func,
                     df_factory=self.station_grid_for_item,
@@ -622,7 +903,7 @@ class SpatialFigureContext:
             else:
                 grid_df = self.station_grid_for_item(item, resolved_value_col)
                 output = self.write_spatial_plot(
-                    "spatial_residual_grid",
+                    base_name,
                     item,
                     residual_grid_func,
                     df=grid_df,
@@ -647,15 +928,19 @@ class SpatialFigureContext:
         value_col: str | None = None,
         add_basemap: bool | None = None,
         showfig: bool | None = None,
+        event_centered: bool = False,
     ) -> list[Path]:
         """Write faceted station maps split by model for target metrics."""
 
-        resolved_value_col = value_col or self.metric_value_col
+        source = self.event_centered if event_centered else self.metric_field
+        base_name = "spatial_metric_by_model_map_event_centered" if event_centered else "spatial_metric_by_model_map"
+        resolved_value_col = value_col or (self.event_value_col if event_centered else self.metric_value_col)
         outputs: list[Path] = []
-        if not self._can_render_metric_figures("spatial_metric_by_model_map", resolved_value_col):
+        can_render = self._can_render_event_figures if event_centered else self._can_render_metric_figures
+        if not can_render(base_name, resolved_value_col):
             return outputs
         for item in self.iter_metric_frames(
-            self.metric_field,
+            source,
             passband=passband,
             components=components,
             model=model,
@@ -663,7 +948,7 @@ class SpatialFigureContext:
         ):
             if item["key"] == "psa":
                 output = self.write_spatial_period_sheet(
-                    "spatial_metric_by_model_map",
+                    base_name,
                     item,
                     metric_by_model_map_func,
                     df_factory=self.station_model_summary_for_item,
@@ -677,7 +962,7 @@ class SpatialFigureContext:
             else:
                 station_model_df = self.station_model_summary_for_item(item, resolved_value_col)
                 output = self.write_spatial_plot(
-                    "spatial_metric_by_model_map",
+                    base_name,
                     item,
                     metric_by_model_map_func,
                     df=station_model_df,
@@ -702,15 +987,19 @@ class SpatialFigureContext:
         value_col: str | None = None,
         add_basemap: bool | None = None,
         showfig: bool | None = None,
+        event_centered: bool = False,
     ) -> list[Path]:
         """Write event residual maps for target metric rows."""
 
-        resolved_value_col = value_col or self.metric_value_col
+        source = self.event_centered if event_centered else self.metric_field
+        base_name = "spatial_event_residual_map_event_centered" if event_centered else "spatial_event_residual_map"
+        resolved_value_col = value_col or (self.event_value_col if event_centered else self.metric_value_col)
         outputs: list[Path] = []
-        if not self._can_render_metric_figures("spatial_event_residual_map", resolved_value_col):
+        can_render = self._can_render_event_figures if event_centered else self._can_render_metric_figures
+        if not can_render(base_name, resolved_value_col):
             return outputs
         for item in self.iter_metric_frames(
-            self.metric_field,
+            source,
             passband=passband,
             components=components,
             model=model,
@@ -718,7 +1007,7 @@ class SpatialFigureContext:
         ):
             writer = self.write_spatial_period_sheet if item["key"] == "psa" else self.write_spatial_plot
             output = writer(
-                "spatial_event_residual_map",
+                base_name,
                 item,
                 event_residual_map_func,
                 required=["event_id", "sta_lon", "sta_lat", resolved_value_col],
@@ -1344,24 +1633,29 @@ class SpatialFigureContext:
         outputs: list[Path] = []
         geology_value_col = event_value_col or value_col
         event_centered = self.event_centered
-        geology_contrasts = self.table("geology_contrasts")
         if event_centered is None or event_centered.empty:
             self._progress("skip spatial_geology_contrast: event-centered residual table missing or empty")
             return outputs
         if geology_value_col is None or geology_value_col not in event_centered.columns:
             self._progress(f"skip spatial_geology_contrast: value column unavailable ({geology_value_col!r})")
             return outputs
-        if geology_contrasts is None or geology_contrasts.empty:
-            self._progress("skip spatial_geology_contrast: geology_contrasts table missing or empty")
+        geology_group_col = self.geology_group_col
+        event_has_geology = geology_group_col in event_centered.columns
+        metadata_has_geology = self.site_metadata is not None and geology_group_col in self.site_metadata.columns
+        if not event_has_geology and not metadata_has_geology:
+            self._progress("skip spatial_geology_contrast: station geology metadata missing")
             return outputs
-        for item in self.iter_metric_frames(
+        geomorphology_col = "geomorphology"
+        has_geomorphology = self.site_metadata is not None and geomorphology_col in self.site_metadata.columns
+        for item in self._iter_geology_contrast_items(
             event_centered,
             passband=passband,
             components=components,
             model=model,
-            split_psa_period=False,
         ):
-            contrast_for_item = self.filter_like_item(geology_contrasts, item, include_period=False)
+            class_values = self._defined_geology_class_values(item.get("df"))
+            baseline_values = ("Basin",) if class_values and "Basin" in class_values else None
+            compare_values = tuple(value for value in class_values or () if value != "Basin") if baseline_values else None
             output = self.write_spatial_plot(
                 "spatial_geology_contrast",
                 item,
@@ -1371,13 +1665,101 @@ class SpatialFigureContext:
                 forward_value_col=True,
                 showfig=showfig,
                 station_metadata=self.site_metadata,
-                contrast_df=contrast_for_item,
+                contrast_df=None,
+                group_col=geology_group_col,
+                baseline_values=baseline_values,
+                compare_values=compare_values,
+                class_values=class_values,
                 title=f"{item['label']} Residuals by Geology Class",
                 robust_axis_percentile=robust_axis_percentile,
             )
             if output is not None:
                 outputs.append(output)
+            if not has_geomorphology:
+                continue
+            geomorphology_values = self._defined_geology_class_values(item.get("df"), group_col=geomorphology_col)
+            if not geomorphology_values or len(geomorphology_values) < 2:
+                continue
+            geomorphology_output = self.write_spatial_plot(
+                "spatial_geomorphology_contrast",
+                item,
+                func,
+                required=["station", geology_value_col],
+                value_col=geology_value_col,
+                forward_value_col=True,
+                showfig=showfig,
+                station_metadata=self.site_metadata,
+                contrast_df=None,
+                group_col=geomorphology_col,
+                class_values=geomorphology_values,
+                pairwise_contrasts=True,
+                title=f"{item['label']} Residuals by Geomorphology",
+                robust_axis_percentile=robust_axis_percentile,
+            )
+            if geomorphology_output is not None:
+                outputs.append(geomorphology_output)
         return outputs
+
+    def _iter_geology_contrast_items(
+        self,
+        event_centered: pd.DataFrame,
+        *,
+        passband: str | None,
+        components: list[str] | str | None,
+        model: str | None,
+    ):
+        """Yield combined geology items plus per-passband items when useful."""
+
+        seen: set[tuple[str, str]] = set()
+        for item in self.iter_metric_frames(
+            event_centered,
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            key = (str(item.get("key")), str(dimension_value(item.get("df"), self.band_col, "all-passbands")))
+            seen.add(key)
+            yield item
+
+        if passband is not None or self.band_col is None or self.band_col not in event_centered.columns:
+            return
+        band_values = [
+            str(value)
+            for value in sorted(pd.unique(event_centered[self.band_col].dropna()), key=lambda value: str(value))
+            if str(value).strip()
+        ]
+        if len(band_values) <= 1:
+            return
+        for band_value in band_values:
+            for item in self.iter_metric_frames(
+                event_centered,
+                passband=band_value,
+                components=components,
+                model=model,
+                split_psa_period=False,
+            ):
+                key = (str(item.get("key")), str(dimension_value(item.get("df"), self.band_col, "all-passbands")))
+                if key in seen:
+                    continue
+                seen.add(key)
+                yield item
+
+    def _defined_geology_class_values(self, rows: pd.DataFrame | None, *, group_col: str | None = None) -> tuple[str, ...] | None:
+        """Return defined geology classes represented by a selected event-row frame."""
+
+        if rows is None or rows.empty:
+            return None
+        selected_group_col = group_col or self.geology_group_col
+        if selected_group_col in rows.columns:
+            values = rows[selected_group_col]
+        elif self.site_metadata is not None and "station" in rows.columns and selected_group_col in self.site_metadata.columns:
+            station_metadata = self.site_metadata[["station", selected_group_col]].drop_duplicates(subset=["station"])
+            values = rows[["station"]].merge(station_metadata, on="station", how="left")[selected_group_col]
+        else:
+            return None
+        classes = sorted({str(value).strip() for value in values.dropna() if _is_defined_geology_class(value)})
+        return tuple(classes) if classes else None
 
     def _context_for(self, df: pd.DataFrame | None) -> MetricFigureContext | None:
         """Return the metric or event context that owns one dataframe."""
@@ -1732,6 +2114,7 @@ class StandardGeoJSONPlottingInputResult:
         summary_metrics_table: pd.DataFrame | str | Path | None = "paths.metric_figure_snapshot",
         summary_geojson_path: str | Path | None = "paths.region_geojson",
         summary_chunksize: int | None = 100_000,
+        summary_func: Callable[..., Mapping[str, Any]] | None = None,
     ) -> "StandardGeoJSONFigureResult":
         """Write standard Step 5 region figures from configured inputs."""
 
@@ -1753,6 +2136,7 @@ class StandardGeoJSONPlottingInputResult:
             summary_metrics_table=summary_metrics_table,
             summary_geojson_path=summary_geojson_path,
             summary_chunksize=summary_chunksize,
+            summary_func=summary_func,
         )
 
     def write_corridor_figures(
@@ -1852,10 +2236,8 @@ class StandardGeoJSONWorkflowOutputStatusResult:
         """Run or submit configured Step 5 GeoJSON region summaries when stale."""
 
         from spatial_vtk.config import run_notebook_step_if_needed
-        from spatial_vtk.spatial.calculate.workflow import (
-            geojson_region_summary_readiness_from_config,
-            run_geojson_region_summary_workflow_from_config,
-        )
+        from spatial_vtk.spatial.calculate.geojson import run_geojson_region_summary_workflow_from_config
+        from spatial_vtk.spatial.calculate.workflow import geojson_region_summary_readiness_from_config
 
         config_path = _geojson_result_config_path(self.cfg, context)
         run_scenario = _geojson_result_run_scenario(self.cfg, context)
@@ -1906,10 +2288,8 @@ class StandardGeoJSONWorkflowOutputStatusResult:
         """Run or submit configured Step 5 corridor tables when stale."""
 
         from spatial_vtk.config import run_notebook_step_if_needed
-        from spatial_vtk.spatial.calculate.workflow import (
-            boundary_corridor_readiness_from_config,
-            run_boundary_corridor_workflow_from_config,
-        )
+        from spatial_vtk.spatial.calculate.corridors import run_boundary_corridor_workflow_from_config
+        from spatial_vtk.spatial.calculate.workflow import boundary_corridor_readiness_from_config
 
         config_path = _geojson_result_config_path(self.cfg, context)
         run_scenario = _geojson_result_run_scenario(self.cfg, context)
@@ -2139,6 +2519,7 @@ class StandardAdditionalPlottingOutputStatusResult:
         event_id: str | list[str] | tuple[str, ...] | None = None,
         component: str | None = None,
         passband: str | None = None,
+        fallback_to_available: bool = False,
         plot_options: dict[str, Any] | None = None,
     ) -> object:
         """Write a bounded Step 6 waveform comparison from this output bundle."""
@@ -2155,6 +2536,7 @@ class StandardAdditionalPlottingOutputStatusResult:
             event_id=event_id,
             component=component,
             passband=passband,
+            fallback_to_available=fallback_to_available,
             plot_options=plot_options,
         )
 
@@ -2174,6 +2556,7 @@ class StandardAdditionalPlottingOutputStatusResult:
             settings,
             output_prefix=output_prefix,
             geojson_path=geojson_path,
+            cfg=self.cfg,
             annotate_if_missing=annotate_if_missing,
             overwrite=overwrite,
         )
@@ -2453,9 +2836,11 @@ def _spatial_suite_status_row(
 def write_large_run_spatial_figure_suite_from_notebook_settings(
     settings: Any,
     *,
+    cfg: ConfigInput | None = None,
     overwrite: bool = False,
     station_metric_map_func: Callable[..., Any] | None = None,
     station_metric_map_by_period_func: Callable[..., Any] | None = None,
+    station_bias_map_func: Callable[..., Any] | None = None,
     residual_grid_func: Callable[..., Any] | None = None,
     metric_by_model_map_func: Callable[..., Any] | None = None,
     event_residual_map_func: Callable[..., Any] | None = None,
@@ -2476,6 +2861,7 @@ def write_large_run_spatial_figure_suite_from_notebook_settings(
         for func in (
             station_metric_map_func,
             station_metric_map_by_period_func,
+            station_bias_map_func,
             residual_grid_func,
             metric_by_model_map_func,
             event_residual_map_func,
@@ -2487,12 +2873,14 @@ def write_large_run_spatial_figure_suite_from_notebook_settings(
             plot_metric_map_by_model,
             plot_pca_summary,
             plot_residual_grid,
+            plot_station_bias_map,
             plot_station_metric_map,
             plot_station_metric_map_by_period,
         )
 
         station_metric_map_func = station_metric_map_func or plot_station_metric_map
         station_metric_map_by_period_func = station_metric_map_by_period_func or plot_station_metric_map_by_period
+        station_bias_map_func = station_bias_map_func or plot_station_bias_map
         residual_grid_func = residual_grid_func or plot_residual_grid
         metric_by_model_map_func = metric_by_model_map_func or plot_metric_map_by_model
         event_residual_map_func = event_residual_map_func or plot_event_residual_map
@@ -2505,6 +2893,7 @@ def write_large_run_spatial_figure_suite_from_notebook_settings(
 
     context = prepare_spatial_figure_context_from_notebook_settings(
         settings,
+        cfg=cfg,
         overwrite=overwrite,
         include_station_aggregation=True,
     )
@@ -2529,6 +2918,7 @@ def write_large_run_spatial_figure_suite_from_notebook_settings(
     event_value_col = context.event_value_col
 
     metric_kwargs = settings.plot_selection_kwargs(value_col=metric_value_col)
+    event_metric_kwargs = settings.plot_selection_kwargs(value_col=event_value_col)
     rows.append(
         _spatial_suite_status_row(
             "station_metric_maps",
@@ -2536,6 +2926,36 @@ def write_large_run_spatial_figure_suite_from_notebook_settings(
                 station_metric_map_func,
                 station_metric_map_by_period_func,
                 **metric_kwargs,
+            ),
+        )
+    )
+    rows.append(
+        _spatial_suite_status_row(
+            "station_metric_maps_event_centered",
+            context.write_station_metric_maps(
+                station_metric_map_func,
+                station_metric_map_by_period_func,
+                event_centered=True,
+                **event_metric_kwargs,
+            ),
+        )
+    )
+    rows.append(
+        _spatial_suite_status_row(
+            "station_bias_maps_raw",
+            context.write_station_bias_maps(
+                station_bias_map_func,
+                event_centered=False,
+                **metric_kwargs,
+            ),
+        )
+    )
+    rows.append(
+        _spatial_suite_status_row(
+            "station_bias_maps",
+            context.write_station_bias_maps(
+                station_bias_map_func,
+                **settings.plot_selection_kwargs(value_col="mean_centered"),
             ),
         )
     )
@@ -2550,6 +2970,16 @@ def write_large_run_spatial_figure_suite_from_notebook_settings(
     )
     rows.append(
         _spatial_suite_status_row(
+            "residual_grid_maps_event_centered",
+            context.write_residual_grid_maps(
+                residual_grid_func,
+                event_centered=True,
+                **event_metric_kwargs,
+            ),
+        )
+    )
+    rows.append(
+        _spatial_suite_status_row(
             "metric_by_model_maps",
             context.write_metric_by_model_maps(
                 metric_by_model_map_func,
@@ -2559,10 +2989,30 @@ def write_large_run_spatial_figure_suite_from_notebook_settings(
     )
     rows.append(
         _spatial_suite_status_row(
+            "metric_by_model_maps_event_centered",
+            context.write_metric_by_model_maps(
+                metric_by_model_map_func,
+                event_centered=True,
+                **settings.plot_selection_kwargs(value_col=event_value_col, model=None),
+            ),
+        )
+    )
+    rows.append(
+        _spatial_suite_status_row(
             "event_residual_maps",
             context.write_event_residual_maps(
                 event_residual_map_func,
                 **metric_kwargs,
+            ),
+        )
+    )
+    rows.append(
+        _spatial_suite_status_row(
+            "event_residual_maps_event_centered",
+            context.write_event_residual_maps(
+                event_residual_map_func,
+                event_centered=True,
+                **event_metric_kwargs,
             ),
         )
     )
@@ -3073,6 +3523,12 @@ def write_standard_geojson_region_figures(
         selector="all",
         region_col="station_region",
     )
+    metrics_by_station_region = _merge_geojson_region_class_metadata(
+        metrics_by_station_region,
+        Path(geojson_path),
+        region_col="station_region",
+    )
+    region_color_col = _region_boxplot_color_column(metrics_by_station_region)
     metrics_by_regions = geojson_metric_region_frame(
         metrics_by_station_region,
         geojson_path,
@@ -3124,6 +3580,7 @@ def write_standard_geojson_region_figures(
             passband=passbands,
             model=model_name,
             component=component,
+            colorby=region_color_col,
             compare_to=compare_to,
             table=True,
             title="PGA Residuals by Station Region",
@@ -3331,8 +3788,8 @@ def write_standard_geojson_corridor_figures(
     waveform_settings: Any,
     geojson_path: str | Path,
     value_col: str = "log2_residual",
-    passbands: Sequence[str] | str | None = ("1-2 sec", "2-3 sec"),
-    component: str | None = "Z",
+    passbands: Sequence[str] | str | None = None,
+    component: str | None = None,
     boundary_region: str = "LA Basin",
     through_anchor_station: str = "OLI",
     outward_event_id: str = "ci38695658",
@@ -3664,8 +4121,8 @@ def write_standard_additional_plotting_figures(
     waveform_time_limit_s: float = 90.0,
     model: str = "cvmsi",
     value_col: str = "log2_residual",
-    passbands: Sequence[str] | str | None = ("1-2 sec", "2-3 sec"),
-    component: str | None = "Z",
+    passbands: Sequence[str] | str | None = None,
+    component: str | None = None,
     pattern_metric: str = "PGA",
     pattern_passband: str = "1-2 sec",
     pattern_title: str = "PGA Observed/Synthetic Station Pattern Similarity",
@@ -3714,6 +4171,21 @@ def write_standard_additional_plotting_figures(
     boxplot_func = boxplot_func or boxplot
     heatmap_func = heatmap_func or heatmap
 
+    metrics = _with_step06_delay_fraction(metrics)
+    if model is None:
+        raise ValueError("Step 6 standard diagnostics require a single model. Use write_step06_model_comparison_figures for two-model comparison figures.")
+    selected_model = str(model)
+    model_filter = selected_model
+    model_metrics = _filter_step06_rows(metrics, model=selected_model)
+    if model_metrics.empty:
+        model_metrics = metrics
+    waveform_event_id = _select_step06_waveform_event_id(
+        event_stations,
+        comparison_eligible=comparison_eligible,
+        requested_event_id=waveform_event_id,
+        component=waveform_component,
+        passband=waveform_passband,
+    )
     waveform_records = waveform_records_func(
         event_stations,
         comparison_eligible=comparison_eligible,
@@ -3724,129 +4196,207 @@ def write_standard_additional_plotting_figures(
         max_records=12,
     )
     waveform_event_name = event_label_func(events, waveform_event_id)
-    metric_summary = metric_summary_func(metrics, comparison_eligible=comparison_eligible)
+    metric_summary = metric_summary_func(model_metrics, comparison_eligible=comparison_eligible)
     region_metrics = geojson_region_func(
-        metrics,
+        model_metrics,
         target="station",
         selector="all",
         region_col=station_region_col,
     )
+    comparison_region_metrics = _with_step06_metric_comparison_values(region_metrics, default_value_col=value_col)
     waveform_order = waveform_order_func(waveform_records, max_traces=12)
-    pattern_rows = pattern_rows_func(
-        metrics,
-        metric=pattern_metric,
-        passband=pattern_passband,
-        component=component,
-        model=model,
-    )
 
     rows: list[dict[str, Any]] = []
-    rows.append(
-        _write_standard_notebook_figure(
-            "station_event_waveform_map",
-            waveform_records,
-            render_notebook_figure,
-            waveform_map_func,
-            outputs,
-            "station_event_waveform_map_path",
-            waveform_settings,
-            waveform_records,
-            stem_parts=("step_06", "station_event_waveform_map"),
-            include_basemap=True,
-            display_func=display_func,
-            waveform_col="observed",
-            time_limit_s=waveform_time_limit_s,
-            normalize=True,
-            title=f"Observed Station-Event Waveform Map\n{waveform_event_name}",
-            filter_label=f"lowpass 1 Hz; {waveform_component} component; {waveform_passband} QC passband",
+    if not waveform_records.empty:
+        rows.append(
+            _write_standard_notebook_figure(
+                "station_event_waveform_map",
+                waveform_records,
+                render_notebook_figure,
+                waveform_map_func,
+                outputs,
+                "station_event_waveform_map_path",
+                waveform_settings,
+                waveform_records,
+                stem_parts=("step_06", "station_event_waveform_map", selected_model, waveform_event_id, waveform_passband, waveform_component),
+                include_basemap=True,
+                display_func=display_func,
+                waveform_col="observed",
+                time_limit_s=waveform_time_limit_s,
+                normalize=True,
+                title=f"Observed Station-Event Waveform Map\n{waveform_event_name}",
+                filter_label=f"lowpass 1 Hz; {waveform_component} component; {waveform_passband} QC passband",
+            )
         )
-    )
-    rows.append(
-        _write_standard_notebook_figure(
-            "pattern_similarity",
-            pattern_rows,
-            render_notebook_figure,
-            pattern_plot_func,
-            outputs,
-            "pattern_similarity_figure_path",
-            metric_settings,
-            pattern_rows,
-            stem_parts=("step_06", "pattern_similarity"),
-            display_func=display_func,
-            metric=pattern_metric,
-            bin_label=pattern_passband,
-            title=pattern_title,
-            fit="linear",
+    else:
+        rows.append(_step06_skipped_row("station_event_waveform_map", waveform_records, outputs, "station_event_waveform_map_path", ("step_06", "station_event_waveform_map", selected_model, waveform_event_id, waveform_passband, waveform_component), "no waveform records matched the selected event/component/passband"))
+
+    selected_passbands = _step06_available_values(model_metrics, "passband") or _step06_available_values(model_metrics, "band")
+    if passbands is not None:
+        selected_passbands = [value for value in _as_step06_list(passbands) if value in set(selected_passbands)] or selected_passbands
+    metric_names = _step06_available_values(model_metrics, "metric")
+    comparison_metrics = _step06_metric_comparison_metrics(metric_names)
+    all_pattern_rows: list[pd.DataFrame] = []
+
+    for metric_name in metric_names:
+        metric_value_col = _step06_metric_value_col(metric_name, model_metrics, value_col)
+        if not _has_step06_finite_rows(model_metrics, metric_name, model_filter, None, component, metric_value_col, require_distance=True):
+            rows.append(_step06_skipped_row("metric_scatterplot", model_metrics.iloc[0:0], outputs, "scatterplot_figure_path", ("step_06", "metric_scatterplot", selected_model, metric_name, "all-passbands", component or "all-components", metric_value_col), "no finite metric/distance rows"))
+            continue
+        scatter_passbands = None if _step06_is_spectral_metric(metric_name) else selected_passbands or None
+        rows.append(
+            _write_standard_notebook_figure(
+                "metric_scatterplot",
+                model_metrics,
+                render_notebook_figure,
+                scatterplot_func,
+                outputs,
+                "scatterplot_figure_path",
+                metric_settings,
+                data=model_metrics,
+                indep="distance",
+                dep=metric_name,
+                value_col=metric_value_col,
+                passband=scatter_passbands,
+                model=model_filter,
+                component=component,
+                colorby="passband" if scatter_passbands is not None and len(selected_passbands) > 1 else None,
+                fit="lowess",
+                title=f"{metric_name} vs Distance",
+                stem_parts=("step_06", "metric_scatterplot", selected_model, metric_name, "all-passbands", component or "all-components", metric_value_col),
+                display_func=display_func,
+            )
         )
-    )
-    rows.append(
-        _write_standard_notebook_figure(
-            "metric_scatterplot",
-            metrics,
-            render_notebook_figure,
-            scatterplot_func,
-            outputs,
-            "scatterplot_figure_path",
-            metric_settings,
-            data=metrics,
-            indep="distance",
-            dep=["PGA", "PGV"],
-            value_col=value_col,
-            passband=passbands,
-            model=model,
-            component=component,
-            colorby="dep",
-            fit="lowess",
-            title="PGA and PGV Residuals vs Distance",
-            stem_parts=("step_06", "metric_scatterplot"),
-            display_func=display_func,
+
+        for passband_name in [None, *selected_passbands]:
+            passband_label = passband_name or "all-passbands"
+            if not _has_step06_region_rows(region_metrics, metric_name, model_filter, passband_name, component, metric_value_col, station_region_col):
+                rows.append(_step06_skipped_row("metric_boxplot", region_metrics.iloc[0:0], outputs, "boxplot_figure_path", ("step_06", "metric_boxplot", selected_model, metric_name, passband_label, component or "all-components", metric_value_col), "no finite region rows"))
+                continue
+            rows.append(
+                _write_standard_notebook_figure(
+                    "metric_boxplot",
+                    region_metrics,
+                    render_notebook_figure,
+                    boxplot_func,
+                    outputs,
+                    "boxplot_figure_path",
+                    metric_settings,
+                    data=region_metrics,
+                    dep=metric_name,
+                    indep=station_region_col,
+                    value_col=metric_value_col,
+                    passband=passband_name,
+                    model=model_filter,
+                    component=component,
+                    compare_to="LA Basin",
+                    table=True,
+                    title=f"{metric_name} by GeoJSON Region",
+                    stem_parts=("step_06", "metric_boxplot", selected_model, metric_name, passband_label, component or "all-components", metric_value_col),
+                    display_func=display_func,
+                )
+            )
+
+        for passband_name in selected_passbands:
+            try:
+                pattern_rows = pattern_rows_func(
+                    model_metrics,
+                    metric=metric_name,
+                    passband=passband_name,
+                    component=component,
+                    model=model_filter,
+                )
+            except Exception:
+                pattern_rows = pd.DataFrame()
+            all_pattern_rows.append(pattern_rows)
+            if pattern_rows.empty:
+                rows.append(_step06_skipped_row("pattern_similarity", pattern_rows, outputs, "pattern_similarity_figure_path", ("step_06", "pattern_similarity", selected_model, metric_name, passband_name, component or "all-components"), "no matched observed/synthetic station anomalies"))
+                continue
+            rows.append(
+                _write_standard_notebook_figure(
+                    "pattern_similarity",
+                    pattern_rows,
+                    render_notebook_figure,
+                    pattern_plot_func,
+                    outputs,
+                    "pattern_similarity_figure_path",
+                    metric_settings,
+                    pattern_rows,
+                    stem_parts=("step_06", "pattern_similarity", selected_model, metric_name, passband_name, component or "all-components"),
+                    display_func=display_func,
+                    metric=metric_name,
+                    bin_label=passband_name,
+                    title=f"{metric_name} Observed/Synthetic Station Pattern Similarity",
+                    fit="linear",
+                )
+            )
+
+    for passband_name in [None, *selected_passbands]:
+        passband_label = passband_name or "all-passbands"
+        heatmap_metrics = [
+            name
+            for name in comparison_metrics
+            if _has_step06_region_rows(
+                comparison_region_metrics,
+                name,
+                model_filter,
+                passband_name,
+                component,
+                STEP06_METRIC_COMPARISON_VALUE_COL,
+                station_region_col,
+            )
+        ]
+        if not heatmap_metrics:
+            rows.append(
+                _step06_skipped_row(
+                    "metric_heatmap",
+                    comparison_region_metrics.iloc[0:0],
+                    outputs,
+                    "heatmap_figure_path",
+                    (
+                        "step_06",
+                        "metric_heatmap",
+                        selected_model,
+                        "requested-metric-comparison",
+                        passband_label,
+                        component or "all-components",
+                        STEP06_METRIC_COMPARISON_VALUE_COL,
+                    ),
+                    "no finite requested metric comparison region rows",
+                )
+            )
+            continue
+        rows.append(
+            _write_standard_notebook_figure(
+                "metric_heatmap",
+                comparison_region_metrics,
+                render_notebook_figure,
+                heatmap_func,
+                outputs,
+                "heatmap_figure_path",
+                metric_settings,
+                data=comparison_region_metrics,
+                dep=heatmap_metrics,
+                indep=station_region_col,
+                value_col=STEP06_METRIC_COMPARISON_VALUE_COL,
+                passband=passband_name,
+                model=model_filter,
+                component=component,
+                aggfunc="mean",
+                title="Mean Metric Comparison Value by GeoJSON Region",
+                stem_parts=(
+                    "step_06",
+                    "metric_heatmap",
+                    selected_model,
+                    "requested-metric-comparison",
+                    passband_label,
+                    component or "all-components",
+                    STEP06_METRIC_COMPARISON_VALUE_COL,
+                ),
+                display_func=display_func,
+            )
         )
-    )
-    rows.append(
-        _write_standard_notebook_figure(
-            "metric_boxplot",
-            region_metrics,
-            render_notebook_figure,
-            boxplot_func,
-            outputs,
-            "boxplot_figure_path",
-            metric_settings,
-            data=region_metrics,
-            dep=["PGA", "PGV"],
-            indep=station_region_col,
-            value_col=value_col,
-            passband=passbands,
-            model=model,
-            component=component,
-            compare_to="LA Basin",
-            table=True,
-            title="PGA and PGV Residuals by GeoJSON Region",
-            stem_parts=("step_06", "metric_boxplot"),
-            display_func=display_func,
-        )
-    )
-    rows.append(
-        _write_standard_notebook_figure(
-            "metric_heatmap",
-            region_metrics,
-            render_notebook_figure,
-            heatmap_func,
-            outputs,
-            "heatmap_figure_path",
-            metric_settings,
-            data=region_metrics,
-            dep=["PGA", "PGV", "PGD"],
-            indep=station_region_col,
-            value_col=value_col,
-            passband=passbands,
-            model=model,
-            component=component,
-            aggfunc="mean",
-            title="Mean Residual by GeoJSON Region and Metric",
-            stem_parts=("step_06", "metric_heatmap"),
-            display_func=display_func,
-        )
-    )
+    pattern_rows = pd.concat([frame for frame in all_pattern_rows if not frame.empty], ignore_index=True) if any(not frame.empty for frame in all_pattern_rows) else pd.DataFrame()
     return StandardAdditionalPlottingFigureResult(
         rows=tuple(rows),
         metric_summary=metric_summary,
@@ -3854,6 +4404,737 @@ def write_standard_additional_plotting_figures(
         region_metrics=region_metrics,
         pattern_rows=pattern_rows,
     )
+
+
+def write_step06_model_comparison_figures(
+    *,
+    metrics: pd.DataFrame,
+    figure_dir: str | Path,
+    metric_settings: Any,
+    cfg: ConfigInput | None = None,
+    models: Sequence[str] | None = None,
+    value_col: str = "log2_residual",
+    station_region_col: str = "station_geojson_region",
+    component: str | None = None,
+    geojson_region_func: Callable[..., pd.DataFrame] | None = None,
+    boxplot_func: Callable[..., Any] | None = None,
+    heatmap_delta_func: Callable[..., Any] | None = None,
+    metric_map_func: Callable[..., Any] | None = None,
+) -> StandardAdditionalPlottingFigureResult:
+    """Write Step 6 model-comparison figures without pooling model rows."""
+
+    if geojson_region_func is None:
+        from spatial_vtk.spatial import geojson_metric_region_frame
+
+        geojson_region_func = geojson_metric_region_frame
+    if boxplot_func is None:
+        from spatial_vtk.spatial.plot import boxplot
+
+        boxplot_func = boxplot
+    heatmap_delta_func = heatmap_delta_func or _plot_step06_model_delta_heatmap
+    if metric_map_func is None:
+        from spatial_vtk.spatial.map import plot_metric_map_by_model
+
+        metric_map_func = plot_metric_map_by_model
+
+    root = Path(figure_dir)
+    root.mkdir(parents=True, exist_ok=True)
+    metrics = _with_step06_delay_fraction(metrics)
+    metrics = _with_step06_station_region_classes(metrics, cfg=cfg)
+    model_pair = _step06_comparison_model_pair(metrics, models=models)
+    if len(model_pair) < 2:
+        return StandardAdditionalPlottingFigureResult(
+            rows=(
+                _step06_comparison_status_row(
+                    "model_comparison",
+                    "skipped",
+                    root / "model_comparison_unavailable.png",
+                    "fewer than two models are available for comparison",
+                    row_count=len(metrics),
+                ),
+            ),
+            metric_summary=pd.DataFrame(),
+            waveform_order=pd.DataFrame(),
+            region_metrics=pd.DataFrame(),
+            pattern_rows=pd.DataFrame(),
+        )
+
+    comparison_metrics = _step06_metric_comparison_metrics(_step06_available_values(metrics, "metric"))
+    selected_passbands = _step06_available_values(metrics, "passband") or _step06_available_values(metrics, "band")
+    passband_values: list[str | None] = [None, *selected_passbands]
+    try:
+        region_metrics = geojson_region_func(
+            metrics,
+            target="station",
+            selector="all",
+            region_col=station_region_col,
+        )
+    except Exception:
+        region_metrics = metrics.copy()
+    region_metrics = _with_step06_delay_fraction(region_metrics)
+    comparison_region_metrics = _with_step06_metric_comparison_values(region_metrics, default_value_col=value_col)
+    category_cols = [
+        column
+        for column in (station_region_col, "mapped_region_type", "geomorphology")
+        if column in comparison_region_metrics.columns
+    ]
+    rows: list[dict[str, Any]] = []
+
+    for passband_name in passband_values:
+        passband_label = _step06_label_token(passband_name or "all-passbands")
+        for heatmap_spec in _step06_model_delta_heatmap_specs(comparison_metrics):
+            heatmap_token = str(heatmap_spec["token"])
+            heatmap_path = root / "region_heatmaps" / f"step_06_model_delta_heatmap__{heatmap_token}__{passband_label}.png"
+            heatmap_path.parent.mkdir(parents=True, exist_ok=True)
+            heatmap_rows = _step06_model_delta_region_frame(
+                comparison_region_metrics,
+                metrics=heatmap_spec["metrics"],
+                models=model_pair,
+                passband=passband_name,
+                component=component,
+                value_col=STEP06_METRIC_COMPARISON_VALUE_COL,
+                region_col=station_region_col,
+            )
+            if heatmap_rows.empty:
+                rows.append(
+                    _step06_comparison_status_row(
+                        "model_delta_heatmap",
+                        "skipped",
+                        heatmap_path,
+                        f"no paired model region means are available for {heatmap_spec['title']}",
+                        row_count=0,
+                    )
+                )
+            else:
+                rows.append(
+                    _write_step06_comparison_plot(
+                        "model_delta_heatmap",
+                        heatmap_rows,
+                        heatmap_path,
+                        heatmap_delta_func,
+                        heatmap_rows,
+                        region_col=station_region_col,
+                        metric_col="metric",
+                        value_col="model_delta",
+                        model_labels=model_pair,
+                        passband=passband_name,
+                        quantity_title=str(heatmap_spec["title"]),
+                        quantity_label=str(heatmap_spec["quantity_label"]),
+                        value_kind=heatmap_token,
+                        settings=metric_settings,
+                    )
+                )
+
+        for category_col in category_cols:
+            for metric_name in comparison_metrics:
+                metric_value_col = _step06_metric_value_col(metric_name, comparison_region_metrics, value_col)
+                plot_rows = _filter_step06_rows(
+                    comparison_region_metrics,
+                    metric=metric_name,
+                    model=None,
+                    passband=passband_name,
+                    component=component,
+                )
+                if "model" in plot_rows.columns:
+                    plot_rows = plot_rows.loc[plot_rows["model"].astype(str).isin([str(item) for item in model_pair])]
+                if plot_rows.empty or category_col not in plot_rows.columns or metric_value_col not in plot_rows.columns:
+                    continue
+                finite = pd.to_numeric(plot_rows[metric_value_col], errors="coerce").notna()
+                plot_rows = plot_rows.loc[finite & plot_rows[category_col].notna()].copy()
+                if plot_rows.empty or plot_rows["model"].astype(str).nunique() < 2:
+                    continue
+                boxplot_path = (
+                    root
+                    / "model_boxplots"
+                    / _step06_label_token(category_col)
+                    / f"step_06_model_boxplot__{_step06_label_token(metric_name)}__{passband_label}__{_step06_label_token(category_col)}.png"
+                )
+                boxplot_path.parent.mkdir(parents=True, exist_ok=True)
+                rows.append(
+                    _write_step06_comparison_plot(
+                        "model_boxplot",
+                        plot_rows,
+                        boxplot_path,
+                        boxplot_func,
+                        plot_rows,
+                        dep=metric_name,
+                        indep=category_col,
+                        value_col=metric_value_col,
+                        passband=passband_name,
+                        model=model_pair,
+                        component=component,
+                        colorby="model",
+                        title=f"{metric_name} by {category_col}: model comparison",
+                        settings=metric_settings,
+                    )
+                )
+
+        for metric_name in comparison_metrics:
+            metric_value_col = _step06_metric_value_col(metric_name, metrics, value_col)
+            station_rows = _step06_station_model_map_frame(
+                metrics,
+                metric=metric_name,
+                models=model_pair,
+                passband=passband_name,
+                component=component,
+                value_col=metric_value_col,
+            )
+            map_path = root / "model_maps" / f"step_06_model_map__{_step06_label_token(metric_name)}__{passband_label}.png"
+            map_path.parent.mkdir(parents=True, exist_ok=True)
+            if station_rows.empty:
+                rows.append(
+                    _step06_comparison_status_row(
+                        "model_metric_map",
+                        "skipped",
+                        map_path,
+                        "no finite station rows are available for both models",
+                        row_count=0,
+                    )
+                )
+                continue
+            rows.append(
+                _write_step06_comparison_plot(
+                    "model_metric_map",
+                    station_rows,
+                    map_path,
+                    metric_map_func,
+                    station_rows,
+                    model_col="model",
+                    value_col=metric_value_col,
+                    lon_col="sta_lon",
+                    lat_col="sta_lat",
+                    title=f"{metric_name} spatial comparison by model",
+                    add_basemap=True,
+                    basemap_kwargs={"cache_download": False},
+                    settings=metric_settings,
+                )
+            )
+
+    return StandardAdditionalPlottingFigureResult(
+        rows=tuple(rows),
+        metric_summary=pd.DataFrame(
+            {
+                "Input": ["Models", "Comparison metrics", "Figure rows"],
+                "Value": [", ".join(model_pair), ", ".join(comparison_metrics), len(rows)],
+            }
+        ),
+        waveform_order=pd.DataFrame(),
+        region_metrics=region_metrics,
+        pattern_rows=pd.DataFrame(),
+    )
+
+
+def _step06_comparison_model_pair(frame: pd.DataFrame, *, models: Sequence[str] | None = None) -> list[str]:
+    """Return the two models to compare, preferring CVM-S then CVM-H labels."""
+
+    available = [str(value) for value in (models or _step06_available_values(frame, "model")) if str(value).strip()]
+    if not available:
+        return []
+    unique = list(dict.fromkeys(available))
+    preferred: list[str] = []
+    for needle in ("cvms", "cvm-s", "cvmh", "cvm-h"):
+        match = next((model for model in unique if needle in model.casefold().replace("_", "-")), None)
+        if match is not None and match not in preferred:
+            preferred.append(match)
+    for model in unique:
+        if model not in preferred:
+            preferred.append(model)
+    return preferred[:2]
+
+
+def _with_step06_station_region_classes(frame: pd.DataFrame, *, cfg: ConfigInput | None) -> pd.DataFrame:
+    """Attach GeoJSON-derived station class columns for Step 6 comparisons."""
+
+    if frame.empty or cfg is None:
+        return frame
+    if {"mapped_region_type", "geomorphology"}.issubset(frame.columns):
+        return frame
+    lon_col = _first_existing(frame, ["sta_lon", "station_lon", "lon", "longitude"])
+    lat_col = _first_existing(frame, ["sta_lat", "station_lat", "lat", "latitude"])
+    station_col = _first_existing(frame, ["station", "station_name", "station_id", "station_code"])
+    if lon_col is None or lat_col is None or station_col is None:
+        return frame
+    station_rows = (
+        frame[[station_col, lon_col, lat_col]]
+        .dropna(subset=[station_col, lon_col, lat_col])
+        .drop_duplicates(subset=[station_col])
+        .rename(columns={lon_col: "sta_lon", lat_col: "sta_lat"})
+    )
+    if station_rows.empty:
+        return frame
+    classified = _site_metadata_with_geology(
+        station_rows,
+        cfg=cfg,
+        progress=lambda _message: None,
+    )
+    return _merge_station_region_class_metadata(frame, classified)
+
+
+def _step06_label_token(value: object) -> str:
+    """Return a short filename token for Step 6 comparison outputs."""
+
+    return slugify(str(value).replace(" ", "_").replace("/", "_")).lower()
+
+
+def _step06_model_delta_region_frame(
+    frame: pd.DataFrame,
+    *,
+    metrics: Sequence[str],
+    models: Sequence[str],
+    passband: str | None,
+    component: str | None,
+    value_col: str,
+    region_col: str,
+) -> pd.DataFrame:
+    """Return per-region model deltas after separate model aggregation."""
+
+    if len(models) < 2 or frame.empty or region_col not in frame.columns or "model" not in frame.columns:
+        return pd.DataFrame()
+    parts: list[pd.DataFrame] = []
+    for metric_name in metrics:
+        subset = _filter_step06_rows(frame, metric=metric_name, model=None, passband=passband, component=component)
+        if subset.empty or value_col not in subset.columns:
+            continue
+        subset = subset.loc[subset["model"].astype(str).isin([str(item) for item in models])].copy()
+        subset[value_col] = pd.to_numeric(subset[value_col], errors="coerce")
+        subset = subset.loc[subset[value_col].notna() & subset[region_col].notna()].copy()
+        if subset.empty:
+            continue
+        grouped = subset.groupby([region_col, "model"], dropna=False)[value_col].mean().reset_index()
+        pivot = grouped.pivot(index=region_col, columns="model", values=value_col)
+        missing = [model for model in models if model not in pivot.columns]
+        if missing:
+            continue
+        delta = pivot[str(models[1])] - pivot[str(models[0])]
+        part = delta.rename("model_delta").reset_index()
+        part["metric"] = metric_name
+        part["model_a"] = str(models[0])
+        part["model_b"] = str(models[1])
+        part["comparison"] = f"{models[1]} minus {models[0]}"
+        parts.append(part)
+    return pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()
+
+
+def _step06_station_model_map_frame(
+    frame: pd.DataFrame,
+    *,
+    metric: str,
+    models: Sequence[str],
+    passband: str | None,
+    component: str | None,
+    value_col: str,
+) -> pd.DataFrame:
+    """Return station-mean rows for model-faceted comparison maps."""
+
+    if len(models) < 2 or frame.empty or "model" not in frame.columns or value_col not in frame.columns:
+        return pd.DataFrame()
+    lon_col = _first_existing(frame, ["sta_lon", "station_lon", "lon", "longitude"])
+    lat_col = _first_existing(frame, ["sta_lat", "station_lat", "lat", "latitude"])
+    if lon_col is None or lat_col is None:
+        return pd.DataFrame()
+    subset = _filter_step06_rows(frame, metric=metric, model=None, passband=passband, component=component)
+    subset = subset.loc[subset["model"].astype(str).isin([str(item) for item in models])].copy()
+    if subset.empty:
+        return pd.DataFrame()
+    subset[value_col] = pd.to_numeric(subset[value_col], errors="coerce")
+    subset = subset.loc[subset[value_col].notna()].copy()
+    if subset.empty or subset["model"].astype(str).nunique() < 2:
+        return pd.DataFrame()
+    group_cols = [column for column in ("model", "station", "metric", "passband", "component") if column in subset.columns]
+    out = (
+        subset.groupby(group_cols, dropna=False)
+        .agg(
+            sta_lon=(lon_col, "first"),
+            sta_lat=(lat_col, "first"),
+            **{
+                value_col: (value_col, "mean"),
+                "event_count": ("event_id", "nunique") if "event_id" in subset.columns else (value_col, "size"),
+            },
+        )
+        .reset_index()
+    )
+    return out.loc[pd.to_numeric(out[value_col], errors="coerce").notna()].copy()
+
+
+def _plot_step06_model_delta_heatmap(
+    data: pd.DataFrame,
+    output_path: str | Path | None = None,
+    *,
+    region_col: str,
+    metric_col: str,
+    value_col: str,
+    model_labels: Sequence[str],
+    passband: str | None = None,
+    quantity_title: str = "Metric values",
+    quantity_label: str = "Difference",
+    value_kind: str = "model_delta",
+    showfig: bool | None = None,
+    savefig: bool | None = None,
+    write_sidecar: bool = False,
+    sidecar_rows: int | None = None,
+    sidecar_dir: str | Path | None = None,
+) -> Any:
+    """Plot a model-delta heatmap with rows kept separate until differencing."""
+
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    from spatial_vtk.config.labels import display_label, metric_display_name, model_display_name
+    from spatial_vtk.spatial.plot.metrics import _heatmap
+
+    pivot = data.pivot_table(index=region_col, columns=metric_col, values=value_col, aggfunc="mean")
+    if not pivot.empty:
+        pivot = pivot.reindex(columns=[metric for metric in data[metric_col].dropna().astype(str).unique() if metric in pivot.columns])
+    label_a = model_display_name(str(model_labels[0])) if model_labels else "model A"
+    label_b = model_display_name(str(model_labels[1])) if len(model_labels) > 1 else "model B"
+    metric_labels = {column: metric_display_name(str(column)) for column in pivot.columns}
+    pivot = pivot.rename(columns=metric_labels)
+    values = pivot.to_numpy(dtype=float) if not pivot.empty else np.array([])
+    limit = np.nanpercentile(np.abs(values), 95) if values.size and np.isfinite(values).any() else 1.0
+    limit = float(limit) if np.isfinite(limit) and limit > 0 else 1.0
+    title = f"Model Difference by GeoJSON Region\n{label_b} minus {label_a}: {quantity_title}"
+    if passband is not None:
+        title += f" | Period: {passband}"
+    return _heatmap(
+        pivot,
+        output_path,
+        title=title,
+        cbar_label=f"{label_b} minus {label_a}\n{quantity_label}",
+        x_label="Metric",
+        y_label=display_label(region_col),
+        showfig=showfig,
+        savefig=savefig,
+        cmap="coolwarm",
+        vmin=-limit,
+        vmax=limit,
+        sidecar_df=data,
+        source_rows=data,
+        write_sidecar=write_sidecar,
+        sidecar_rows=sidecar_rows,
+        sidecar_dir=sidecar_dir,
+        metadata={"figure_type": "model_delta_heatmap", "value_col": value_col, "value_kind": value_kind},
+    )
+
+
+def _write_step06_comparison_plot(
+    artifact: str,
+    frame: pd.DataFrame,
+    path: Path,
+    plot_func: Callable[..., Any],
+    *args: Any,
+    settings: Any,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """Write one Step 6 comparison figure and return a status row."""
+
+    try:
+        plot_kwargs = _step06_direct_plot_kwargs(settings)
+        plot_func(*args, output_path=path, **kwargs, **plot_kwargs)
+        status = "wrote"
+        message = f"wrote {path}"
+    except Exception as exc:
+        _close_matplotlib_figures()
+        status = "plot_failed"
+        message = f"{type(exc).__name__}: {exc}"
+    return _step06_comparison_status_row(artifact, status, path, message, row_count=len(frame))
+
+
+def _step06_direct_plot_kwargs(settings: Any) -> dict[str, Any]:
+    """Return plotting kwargs safe for direct Step 6 comparison plot calls."""
+
+    return {
+        "showfig": False,
+        "savefig": True,
+        "write_sidecar": bool(getattr(settings, "write_sidecar", False)),
+        "sidecar_rows": getattr(settings, "sidecar_rows", None),
+    }
+
+
+def _step06_comparison_status_row(
+    artifact: str,
+    status: str,
+    path: Path,
+    message: str,
+    *,
+    row_count: int,
+) -> dict[str, Any]:
+    """Return a normalized status row for a Step 6 comparison figure."""
+
+    return {
+        "artifact": artifact,
+        "status": status,
+        "row_count": row_count,
+        "figure_path": str(path),
+        "figure_exists": path.exists(),
+        "message": message,
+    }
+
+
+def _first_available_value(frame: pd.DataFrame, column: str, *, fallback: str) -> str:
+    """Return the first non-empty string value in a dataframe column."""
+
+    if column not in frame.columns:
+        return fallback
+    values = frame[column].dropna().astype(str)
+    values = values[values.str.strip().ne("")]
+    return str(values.iloc[0]) if not values.empty else fallback
+
+
+def _step06_available_values(frame: pd.DataFrame, column: str) -> list[str]:
+    """Return sorted non-empty values for a Step 6 metric dimension."""
+
+    if column not in frame.columns:
+        return []
+    values = frame[column].dropna().astype(str)
+    values = values[values.str.strip().ne("")]
+    return sorted(values.unique().tolist())
+
+
+def _as_step06_list(values: Sequence[str] | str) -> list[str]:
+    """Normalize a scalar or sequence plotting option into a list."""
+
+    if isinstance(values, str):
+        return [values]
+    return [str(value) for value in values]
+
+
+def _step06_metric_key(metric: object) -> str:
+    """Return a tolerant key for matching configured Step 6 metric names."""
+
+    return re.sub(r"[^a-z0-9]+", "_", str(metric).strip().casefold()).strip("_")
+
+
+def _step06_metric_comparison_metrics(metric_names: Sequence[str]) -> list[str]:
+    """Return available metrics in the fixed Step 6 comparison-figure order."""
+
+    available_by_key = {_step06_metric_key(name): str(name) for name in metric_names}
+    ordered: list[str] = []
+    for canonical, aliases in STEP06_METRIC_COMPARISON_METRICS:
+        keys = {_step06_metric_key(canonical), *aliases}
+        for key in keys:
+            if key in available_by_key:
+                ordered.append(available_by_key[key])
+                break
+    return ordered
+
+
+def _step06_model_delta_heatmap_specs(metric_names: Sequence[str]) -> list[dict[str, object]]:
+    """Return model-delta heatmap specs with only available metrics included."""
+
+    available = {str(metric): _step06_metric_key(metric) for metric in metric_names}
+    specs: list[dict[str, object]] = []
+    for spec in STEP06_MODEL_DELTA_HEATMAP_SPECS:
+        keys = spec["metric_keys"]
+        selected = [metric for metric, key in available.items() if key in keys]
+        if not selected:
+            continue
+        out = dict(spec)
+        out["metrics"] = selected
+        specs.append(out)
+    return specs
+
+
+def _with_step06_metric_comparison_values(frame: pd.DataFrame, *, default_value_col: str) -> pd.DataFrame:
+    """Add the value column used by Step 6 metric comparison figures."""
+
+    if frame.empty or "metric" not in frame.columns:
+        out = frame.copy()
+        out[STEP06_METRIC_COMPARISON_VALUE_COL] = pd.Series(dtype="float64")
+        return out
+    out = frame.copy()
+    metric_keys = out["metric"].map(_step06_metric_key)
+    out[STEP06_METRIC_COMPARISON_VALUE_COL] = pd.Series(float("nan"), index=out.index, dtype="float64")
+    delay_mask = metric_keys.eq("traveltime_delay")
+    cc_mask = metric_keys.eq("delay_corrected_cc")
+    raw_mask = metric_keys.isin(STEP06_METRIC_COMPARISON_RAW_VALUE_KEYS)
+    if delay_mask.any() and "delay_fraction_dominant_period" in out.columns:
+        out.loc[delay_mask, STEP06_METRIC_COMPARISON_VALUE_COL] = pd.to_numeric(
+            out.loc[delay_mask, "delay_fraction_dominant_period"],
+            errors="coerce",
+        )
+    if "value" in out.columns:
+        value_mask = cc_mask | (delay_mask & out[STEP06_METRIC_COMPARISON_VALUE_COL].isna())
+        out.loc[value_mask, STEP06_METRIC_COMPARISON_VALUE_COL] = pd.to_numeric(
+            out.loc[value_mask, "value"],
+            errors="coerce",
+        )
+    if default_value_col in out.columns:
+        residual_mask = ~raw_mask
+        out.loc[residual_mask, STEP06_METRIC_COMPARISON_VALUE_COL] = pd.to_numeric(
+            out.loc[residual_mask, default_value_col],
+            errors="coerce",
+        )
+    return out
+
+
+def _with_step06_delay_fraction(frame: pd.DataFrame) -> pd.DataFrame:
+    """Add delay time as a fraction of dominant period when delay rows exist."""
+
+    if "metric" not in frame.columns or "delay_fraction_dominant_period" in frame.columns:
+        return frame
+    delay_mask = frame["metric"].astype(str).str.lower().eq("traveltime_delay")
+    if not delay_mask.any():
+        return frame
+    out = frame.copy()
+    source_col = "value" if "value" in out.columns else "residual"
+    delay_s = pd.to_numeric(out[source_col], errors="coerce") if source_col in out.columns else pd.Series(float("nan"), index=out.index)
+    if "dominant_period_s" in out.columns:
+        denominator = pd.to_numeric(out["dominant_period_s"], errors="coerce")
+    elif "period_s" in out.columns:
+        denominator = pd.to_numeric(out["period_s"], errors="coerce")
+    else:
+        band_col = "passband" if "passband" in out.columns else "band" if "band" in out.columns else None
+        denominator = out[band_col].map(_step06_passband_midpoint_s) if band_col else pd.Series(float("nan"), index=out.index)
+    denominator = denominator.where(denominator > 0)
+    out["delay_fraction_dominant_period"] = delay_s / denominator
+    return out
+
+
+def _step06_passband_midpoint_s(value: object) -> float:
+    """Return a simple period midpoint parsed from labels such as ``1-2 sec``."""
+
+    import re
+
+    numbers = [float(match) for match in re.findall(r"\d+(?:\.\d+)?", str(value))]
+    if len(numbers) >= 2:
+        return sum(numbers[:2]) / 2.0
+    if numbers:
+        return numbers[0]
+    return float("nan")
+
+
+def _step06_metric_value_col(metric: str, frame: pd.DataFrame, default: str) -> str:
+    """Choose the plotted value column appropriate for one metric."""
+
+    key = str(metric).lower()
+    if key in {"original_cc", "delay_corrected_cc"} and "value" in frame.columns:
+        return "value"
+    if key == "traveltime_delay" and "delay_fraction_dominant_period" in frame.columns:
+        return "delay_fraction_dominant_period"
+    return default
+
+
+def _filter_step06_rows(
+    frame: pd.DataFrame,
+    *,
+    metric: str | None = None,
+    model: str | None = None,
+    passband: str | None = None,
+    component: str | None = None,
+) -> pd.DataFrame:
+    """Apply exact Step 6 metric dimension filters that are present."""
+
+    out = frame
+    if metric is not None and "metric" in out.columns:
+        out = out.loc[out["metric"].astype(str).eq(str(metric))]
+    if model is not None and "model" in out.columns:
+        out = out.loc[out["model"].astype(str).eq(str(model))]
+    band_col = "passband" if "passband" in out.columns else "band" if "band" in out.columns else None
+    if passband is not None and band_col is not None:
+        out = out.loc[out[band_col].astype(str).eq(str(passband))]
+    if component is not None and "component" in out.columns:
+        out = out.loc[out["component"].astype(str).eq(str(component))]
+    return out
+
+
+def _step06_is_spectral_metric(metric: object) -> bool:
+    """Return whether Step 6 should treat a metric as period-scoped spectral data."""
+
+    text = str(metric).strip()
+    return text.upper() in {"FAS", "PSA"} or text.casefold() in {"fas", "psa"}
+
+
+def _has_step06_finite_rows(
+    frame: pd.DataFrame,
+    metric: str,
+    model: str | None,
+    passband: str | None,
+    component: str | None,
+    value_col: str,
+    *,
+    require_distance: bool = False,
+) -> bool:
+    """Return whether a requested Step 6 metric subset has finite values."""
+
+    subset = _filter_step06_rows(frame, metric=metric, model=model, passband=passband, component=component)
+    if subset.empty or value_col not in subset.columns:
+        return False
+    finite = pd.to_numeric(subset[value_col], errors="coerce").replace([float("inf"), float("-inf")], pd.NA).notna()
+    if require_distance:
+        distance_col = "distance_km" if "distance_km" in subset.columns else "distance" if "distance" in subset.columns else None
+        if distance_col is None:
+            return False
+        finite &= pd.to_numeric(subset[distance_col], errors="coerce").replace([float("inf"), float("-inf")], pd.NA).notna()
+    return bool(finite.any())
+
+
+def _has_step06_region_rows(
+    frame: pd.DataFrame,
+    metric: str,
+    model: str | None,
+    passband: str | None,
+    component: str | None,
+    value_col: str,
+    region_col: str,
+) -> bool:
+    """Return whether a Step 6 region plot has real categories and values."""
+
+    subset = _filter_step06_rows(frame, metric=metric, model=model, passband=passband, component=component)
+    if subset.empty or region_col not in subset.columns or value_col not in subset.columns:
+        return False
+    categories = subset[region_col].dropna().astype(str).str.strip()
+    finite = pd.to_numeric(subset[value_col], errors="coerce").replace([float("inf"), float("-inf")], pd.NA).notna()
+    return bool(categories.ne("").any() and finite.any())
+
+
+def _select_step06_waveform_event_id(
+    event_stations: pd.DataFrame,
+    *,
+    comparison_eligible: pd.DataFrame,
+    requested_event_id: str,
+    component: str,
+    passband: str,
+) -> str:
+    """Use the requested event when possible, otherwise choose the first available one."""
+
+    for frame in (comparison_eligible, event_stations):
+        if frame.empty or "event_id" not in frame.columns:
+            continue
+        subset = frame
+        if "component" in subset.columns:
+            subset = subset.loc[subset["component"].astype(str).eq(str(component))]
+        band_col = "passband" if "passband" in subset.columns else "band" if "band" in subset.columns else None
+        if band_col is not None:
+            subset = subset.loc[subset[band_col].astype(str).eq(str(passband))]
+        requested = subset.loc[subset["event_id"].astype(str).eq(str(requested_event_id))]
+        if not requested.empty:
+            return requested_event_id
+        values = subset["event_id"].dropna().astype(str)
+        values = values[values.str.strip().ne("")]
+        if not values.empty:
+            return str(values.iloc[0])
+    return requested_event_id
+
+
+def _step06_skipped_row(
+    artifact: str,
+    frame: pd.DataFrame,
+    outputs: Any,
+    figure_path_name: str,
+    stem_parts: Sequence[object],
+    reason: str,
+) -> dict[str, Any]:
+    """Return a status row for a Step 6 figure intentionally not written."""
+
+    path = outputs.figure_path(figure_path_name, stem_parts=stem_parts)
+    return {
+        "artifact": artifact,
+        "status": "skipped",
+        "row_count": len(frame),
+        "figure_path": str(path),
+        "figure_exists": path.exists(),
+        "message": reason,
+    }
 
 
 def _write_standard_notebook_figure(
@@ -3913,7 +5194,8 @@ def write_large_run_geojson_region_figures_from_outputs(
     max_rows: int = 200_000,
     region_boxplot_prefix: str = "geojson_region_boxplot",
     overview_add_basemap: bool = True,
-    corridor_add_basemap: bool = False,
+    corridor_add_basemap: bool = True,
+    corridor_filters: Mapping[str, object] | None = None,
     write_sidecar: bool = False,
     sidecar_rows: int | None = None,
     sidecar_dir: str | Path | None = None,
@@ -3932,24 +5214,27 @@ def write_large_run_geojson_region_figures_from_outputs(
 
     from spatial_vtk.spatial.map import plot_corridor_map, plot_geojson_polygons_map
 
+    output_group = getattr(outputs, "outputs", outputs)
     output_dir = Path(figure_dir).expanduser()
     output_dir.mkdir(parents=True, exist_ok=True)
     messages: list[str] = []
     geojson_status = "skipped"
     corridor_status = "skipped"
     geojson_overview_path = _resolve_region_figure_output(
-        outputs,
+        output_group,
         "geojson_polygons_map_path",
         "geojson_polygons_map",
         cfg=cfg,
         fallback_dir=output_dir,
+        prefer_fallback_dir=True,
     )
     corridor_map_path = _resolve_region_figure_output(
-        outputs,
+        output_group,
         "corridor_map_path",
         "corridor_map",
         cfg=cfg,
         fallback_dir=output_dir,
+        prefer_fallback_dir=True,
     )
 
     try:
@@ -3992,8 +5277,10 @@ def write_large_run_geojson_region_figures_from_outputs(
             plot_geojson_polygons_map(
                 geojson_path,
                 output_path=geojson_overview_path,
-                stations_df=stations,
-                events_df=events,
+                stations_df=None,
+                events_df=None,
+                label_polygons=False,
+                legend_polygons=True,
                 add_basemap=overview_add_basemap,
                 savefig=True,
                 showfig=showfig,
@@ -4009,16 +5296,21 @@ def write_large_run_geojson_region_figures_from_outputs(
             geojson_status = "plot_failed"
             messages.append(f"geojson_overview: skip {geojson_overview_path.name}: {type(exc).__name__}: {exc}")
 
-    corridor_table_path = getattr(outputs, "paths", {}).get("corridors_path")
+    corridor_table_path = getattr(output_group, "paths", {}).get("corridors_path")
     if corridor_table_path is not None and Path(corridor_table_path).exists():
         corridors = read_table(corridor_table_path)
-    elif hasattr(outputs, "load_table"):
-        corridors = outputs.load_table("corridors", cfg=cfg, missing="skip")
+    elif hasattr(output_group, "load_table"):
+        corridors = output_group.load_table("corridors", cfg=cfg, missing="skip")
     else:
         corridors = None
+    if corridors is not None:
+        corridors = _filter_table_by_values(corridors, corridor_filters)
     if corridors is None:
         corridor_status = "missing_input"
         messages.append("corridor_map: corridor table is not ready yet; skipping corridor map")
+    elif corridors.empty:
+        corridor_status = "no_data"
+        messages.append("corridor_map: no corridors match the requested filters; skipping corridor map")
     elif corridor_map_path.exists() and not overwrite:
         corridor_status = "exists"
         messages.append(f"corridor_map: skip {corridor_map_path.name}: exists")
@@ -4027,8 +5319,8 @@ def write_large_run_geojson_region_figures_from_outputs(
             plot_corridor_map(
                 corridors,
                 output_path=corridor_map_path,
-                stations_df=stations,
-                events_df=events,
+                stations_df=None,
+                events_df=None,
                 add_basemap=corridor_add_basemap,
                 savefig=True,
                 showfig=showfig,
@@ -4045,9 +5337,10 @@ def write_large_run_geojson_region_figures_from_outputs(
             messages.append(f"corridor_map: skip {corridor_map_path.name}: {type(exc).__name__}: {exc}")
 
     boxplot_result = write_large_run_region_boxplot_from_outputs(
-        outputs,
+        output_group,
         figure_dir=output_dir,
         geojson_path=geojson_path,
+        station_metadata=stations,
         metric=metric,
         passband=passband,
         component=component,
@@ -4073,6 +5366,23 @@ def write_large_run_geojson_region_figures_from_outputs(
         corridor_status=corridor_status,
         messages=tuple(messages),
     )
+
+
+def _filter_table_by_values(df: pd.DataFrame, filters: Mapping[str, object] | None) -> pd.DataFrame:
+    """Return rows matching scalar/list filters for columns present in a table."""
+
+    if not filters or df is None or df.empty:
+        return df
+    filtered = df
+    for column, value in filters.items():
+        if column not in filtered.columns or value is None:
+            continue
+        if isinstance(value, (list, tuple, set)):
+            values = [str(item) for item in value]
+        else:
+            values = [str(value)]
+        filtered = filtered[filtered[column].astype(str).isin(values)]
+    return filtered
 
 
 def write_large_run_geojson_region_figures_from_notebook_settings(
@@ -4131,6 +5441,7 @@ def write_large_run_geojson_region_figures_from_notebook_settings(
         compare_to=settings.compare_to,
         max_rows=settings.sample_rows,
         corridor_add_basemap=settings.add_basemap,
+        corridor_filters=getattr(settings, "corridor_filters", None),
         **settings.sidecars.kwargs(),
         annotate_if_missing=True,
         overwrite=overwrite,
@@ -4152,6 +5463,7 @@ def write_large_run_region_boxplot(
     max_rows: int = 200_000,
     output_prefix: str = "geojson_region_boxplot",
     annotate_if_missing: bool = True,
+    station_metadata: pd.DataFrame | str | Path | None = None,
     write_sidecar: bool = False,
     sidecar_rows: int | None = None,
     sidecar_dir: str | Path | None = None,
@@ -4209,9 +5521,11 @@ def write_large_run_region_boxplot(
             f"skip region boxplot: {value_col!r} is not present",
         )
 
+    metric_rows = _merge_station_region_class_metadata(metric_rows, station_metadata)
     plot_rows = metric_rows.copy()
     plot_rows["station_region"] = plot_rows[region_col].fillna("").astype(str).str.replace("_", " ", regex=False)
     plot_rows = plot_rows.loc[plot_rows["station_region"].str.len() > 0].copy()
+    plot_rows = _merge_geojson_region_class_metadata(plot_rows, geojson_file, region_col="station_region")
     if plot_rows.empty:
         return RegionBoxplotResult(
             None,
@@ -4261,6 +5575,7 @@ def write_large_run_region_boxplot(
     try:
         from spatial_vtk.spatial.plot.metrics import boxplot
 
+        color_col = _region_boxplot_color_column(plot_rows)
         boxplot(
             data=plot_rows,
             output_path=output,
@@ -4270,6 +5585,7 @@ def write_large_run_region_boxplot(
             passband=passband,
             model=model,
             component=component,
+            colorby=color_col,
             compare_to=compare_to,
             table=True,
             title=f"{metric} Residuals by Station Region",
@@ -4311,6 +5627,8 @@ def write_large_run_region_boxplot_from_outputs(
     figure_dir: str | Path,
     metric_candidates: Sequence[str] = ("metrics_enriched_path", "metrics_long_path"),
     default_metric_source: str | Path | None = "metrics_long_path",
+    cfg: ConfigInput | None = None,
+    station_metadata: pd.DataFrame | str | Path | None = None,
     **kwargs: Any,
 ) -> RegionBoxplotResult:
     """Write a region boxplot using a fallback metric table from an output group.
@@ -4322,7 +5640,8 @@ def write_large_run_region_boxplot_from_outputs(
     :func:`write_large_run_region_boxplot`.
     """
 
-    metric_source = outputs.first_existing_path(
+    output_group = getattr(outputs, "outputs", outputs)
+    metric_source = output_group.first_existing_path(
         tuple(metric_candidates),
         default=default_metric_source,
     )
@@ -4334,9 +5653,17 @@ def write_large_run_region_boxplot_from_outputs(
             "missing_input",
             "skip region boxplot: no configured metric table candidate is available",
         )
+    if station_metadata is None:
+        try:
+            from spatial_vtk.io import load_output_table
+
+            station_metadata = load_output_table("prepared_stations", cfg=cfg)
+        except Exception:
+            station_metadata = None
     return write_large_run_region_boxplot(
         metric_source,
         figure_dir=figure_dir,
+        station_metadata=station_metadata,
         **kwargs,
     )
 
@@ -4347,6 +5674,7 @@ def write_large_run_region_boxplot_from_notebook_settings(
     *,
     output_prefix: str = "additional_region_boxplot",
     geojson_path: str | Path | None = None,
+    cfg: ConfigInput | None = None,
     annotate_if_missing: bool = False,
     overwrite: bool = False,
 ) -> RegionBoxplotResult:
@@ -4375,6 +5703,7 @@ def write_large_run_region_boxplot_from_notebook_settings(
         outputs,
         figure_dir=settings.figure_dir,
         geojson_path=geojson_path,
+        cfg=cfg,
         metric=settings.metric,
         passband=settings.passband,
         component=settings.component,
@@ -4388,6 +5717,154 @@ def write_large_run_region_boxplot_from_notebook_settings(
         overwrite=overwrite,
         showfig=settings.showfig,
     )
+
+
+_REGION_BOXPLOT_COLOR_COLUMNS = (
+    "mapped_region_type",
+    "geomorphology",
+    "target_region_zone",
+    "mapped_region",
+    "station_region_class",
+    "region_class",
+    "geomorphic_region",
+    "geomorphic_province",
+)
+
+
+def _merge_station_region_class_metadata(
+    metric_rows: pd.DataFrame,
+    station_metadata: pd.DataFrame | str | Path | None,
+) -> pd.DataFrame:
+    """Attach station-level region class columns used to color region boxplots."""
+
+    if station_metadata is None or metric_rows.empty:
+        return metric_rows
+    try:
+        stations = read_table(station_metadata) if isinstance(station_metadata, (str, Path)) else station_metadata.copy()
+    except Exception:
+        return metric_rows
+    if stations is None or stations.empty:
+        return metric_rows
+    stations = _site_metadata_with_geomorphology(stations)
+    class_cols = [column for column in _REGION_BOXPLOT_COLOR_COLUMNS if column in stations.columns]
+    if not class_cols:
+        return metric_rows
+    key_pair = _station_metadata_key_pair(metric_rows, stations)
+    if key_pair is None:
+        return metric_rows
+    left_key, right_key = key_pair
+    out = metric_rows.copy()
+    left_tmp = "__svtk_region_boxplot_station_key"
+    out[left_tmp] = out[left_key].astype(str).str.strip()
+    station_subset = stations[[right_key, *class_cols]].copy()
+    station_subset[left_tmp] = station_subset[right_key].astype(str).str.strip()
+    station_subset = station_subset.loc[station_subset[left_tmp].str.len() > 0].drop_duplicates(left_tmp)
+    station_subset = station_subset.drop(columns=[right_key])
+    rename = {column: f"__svtk_station_meta_{column}" for column in class_cols}
+    station_subset = station_subset.rename(columns=rename)
+    out = out.merge(station_subset, on=left_tmp, how="left")
+    for column in class_cols:
+        meta_col = rename[column]
+        if meta_col not in out.columns:
+            continue
+        if column in out.columns:
+            existing_text = out[column].astype(str).str.strip()
+            missing = out[column].isna() | existing_text.eq("") | existing_text.str.casefold().isin(
+                {"unknown", "unmapped", "undefined", "unclassified", "none", "null", "nan"}
+            )
+            out.loc[missing, column] = out.loc[missing, meta_col]
+        else:
+            out[column] = out[meta_col]
+    return out.drop(columns=[left_tmp, *rename.values()], errors="ignore")
+
+
+def _merge_geojson_region_class_metadata(
+    plot_rows: pd.DataFrame,
+    geojson_path: Path | None,
+    *,
+    region_col: str,
+) -> pd.DataFrame:
+    """Attach GeoJSON region classes by matching plotted region labels."""
+
+    if geojson_path is None or not geojson_path.exists() or region_col not in plot_rows.columns:
+        return plot_rows
+    try:
+        lookup = _geojson_region_type_lookup(geojson_path)
+    except Exception:
+        return plot_rows
+    if not lookup:
+        return plot_rows
+    mapped = plot_rows[region_col].map(lambda value: lookup.get(_region_label_key(value), pd.NA))
+    if "mapped_region_type" in plot_rows.columns:
+        out = plot_rows.copy()
+        existing_text = out["mapped_region_type"].astype(str).str.strip()
+        missing = out["mapped_region_type"].isna() | existing_text.eq("") | existing_text.str.casefold().isin(
+            {"unknown", "unmapped", "undefined", "unclassified", "none", "null", "nan"}
+        )
+        out.loc[missing, "mapped_region_type"] = mapped.loc[missing]
+        return out
+    out = plot_rows.copy()
+    out["mapped_region_type"] = mapped
+    return out
+
+
+def _geojson_region_type_lookup(geojson_path: Path) -> dict[str, object]:
+    """Return normalized GeoJSON region label to region-class mapping."""
+
+    data = json.loads(geojson_path.read_text(encoding="utf-8"))
+    features = data.get("features", []) if isinstance(data, Mapping) else []
+    lookup: dict[str, object] = {}
+    label_props = ("long_name", "short_name", "name", "region_name", "label", "mapped_region")
+    class_props = ("region_type", "mapped_region_type", "geomorphology", "region_class", "class")
+    for feature in features:
+        properties = feature.get("properties", {}) if isinstance(feature, Mapping) else {}
+        if not isinstance(properties, Mapping):
+            continue
+        class_value = next((properties[prop] for prop in class_props if prop in properties and _is_defined_geology_class(properties[prop])), None)
+        if class_value is None:
+            continue
+        for prop in label_props:
+            if prop in properties:
+                key = _region_label_key(properties[prop])
+                if key:
+                    lookup[key] = class_value
+    return lookup
+
+
+def _region_label_key(value: object) -> str:
+    """Normalize region labels from figures and GeoJSON properties for matching."""
+
+    return " ".join(str(value).replace("_", " ").strip().casefold().split())
+
+
+def _station_metadata_key_pair(metric_rows: pd.DataFrame, stations: pd.DataFrame) -> tuple[str, str] | None:
+    """Return metric/station metadata columns that identify the same station."""
+
+    candidates = (
+        ("station", "station"),
+        ("station", "station_name"),
+        ("station", "name"),
+        ("station_name", "station"),
+        ("station_name", "station_name"),
+        ("station_id", "station"),
+        ("station_code", "station"),
+    )
+    for left_key, right_key in candidates:
+        if left_key in metric_rows.columns and right_key in stations.columns:
+            return left_key, right_key
+    return None
+
+
+def _region_boxplot_color_column(plot_rows: pd.DataFrame) -> str | None:
+    """Choose the best station region-class column for coloring the region boxplot."""
+
+    for column in _REGION_BOXPLOT_COLOR_COLUMNS:
+        if column not in plot_rows.columns:
+            continue
+        values = plot_rows[column].dropna().astype(str).str.strip()
+        if values.map(_is_defined_geology_class).any():
+            return column
+    return None
 
 
 def _group_path(outputs: Any, name: str) -> Path | None:
@@ -4410,9 +5887,12 @@ def _resolve_region_figure_output(
     *,
     cfg: ConfigInput | None,
     fallback_dir: Path,
+    prefer_fallback_dir: bool = False,
 ) -> Path:
     """Resolve one region figure path from an output group or config."""
 
+    if prefer_fallback_dir:
+        return fallback_dir / f"{output_key}.png"
     group_paths = getattr(outputs, "paths", {})
     if isinstance(group_paths, Mapping) and path_name in group_paths:
         return Path(group_paths[path_name]).expanduser()
@@ -4685,6 +6165,7 @@ def _write_region_boxplot_sidecar(
         event_id=None,
         filters=None,
     )
+    color_col = _region_boxplot_color_column(plot_df)
     result = write_figure_row_sidecar(
         figure_path,
         plot_df,
@@ -4701,6 +6182,7 @@ def _write_region_boxplot_sidecar(
             "value_col": value_col,
             "resolved_value_col": resolved_value_col,
             "plot_value_col": plot_value_col,
+            "color_col": color_col,
             "compare_to": compare_to,
         },
     )
@@ -4864,6 +6346,7 @@ __all__ = [
     "prepare_spatial_figure_context",
     "prepare_spatial_figure_context_from_notebook_settings",
     "write_standard_additional_plotting_figures",
+    "write_step06_model_comparison_figures",
     "write_standard_geojson_corridor_figures",
     "write_standard_spatial_diagnostic_figures",
     "write_standard_geojson_region_figures",

@@ -14,7 +14,7 @@ from matplotlib.ticker import MaxNLocator
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import title_with_subtitle
 from spatial_vtk.visualize.figure_sidecars import finish_figure_with_sidecar
-from spatial_vtk.visualize.record_sections import normalize_trace, trace_to_array
+from spatial_vtk.visualize.record_sections import normalize_trace, prepare_waveform_plot_metadata, prepare_waveform_plot_records, trace_to_array
 from spatial_vtk.visualize.selection import FigureSelection
 
 
@@ -107,8 +107,18 @@ def plot_waveform_overlay_matrix(
         Written figure path.
     """
 
+    source_records = records_df.copy()
     work = selection.apply(records_df) if selection is not None else records_df.copy()
-    required = [trace_col, group_col, station_col, station_lon_col, station_lat_col, event_lon_col, event_lat_col]
+    work = prepare_waveform_plot_metadata(
+        work,
+        station_lon_col=station_lon_col,
+        station_lat_col=station_lat_col,
+        event_lon_col=event_lon_col,
+        event_lat_col=event_lat_col,
+        distance_col=distance_col,
+        group_col=group_col,
+    )
+    required = [group_col, station_col, station_lon_col, station_lat_col, event_lon_col, event_lat_col]
     missing = [column for column in required if column not in work.columns]
     if missing:
         raise KeyError(f"Missing required columns: {missing}")
@@ -129,6 +139,17 @@ def plot_waveform_overlay_matrix(
             subset["_sort_distance"] = pd.to_numeric(subset[distance_col], errors="coerce")
             subset = subset.sort_values(["_sort_distance", station_col], na_position="last", kind="stable")
         subset = subset.head(int(max_traces_per_group))
+        subset = prepare_waveform_plot_records(
+            subset,
+            waveform_col=trace_col,
+            station_col=station_col,
+            station_lon_col=station_lon_col,
+            station_lat_col=station_lat_col,
+            event_lon_col=event_lon_col,
+            event_lat_col=event_lat_col,
+            distance_col=distance_col,
+            group_col=group_col,
+        )
         group_title = "Observed traces" if figure_event_label and len(groups) == 1 else _group_title(subset, group)
         _plot_group_traces(ax, subset, trace_col, station_col, distance_col, dt_col, normalize, title=group_title, time_limit_s=time_limit_s)
     full_title = title_with_subtitle(_figure_title(work, title), filter_label)
@@ -142,7 +163,7 @@ def plot_waveform_overlay_matrix(
         showfig=showfig,
         savefig=savefig,
         sidecar_df=work,
-        source_rows=records_df,
+        source_rows=source_records,
         write_sidecar=write_sidecar,
         sidecar_rows=sidecar_rows,
         sidecar_dir=sidecar_dir,

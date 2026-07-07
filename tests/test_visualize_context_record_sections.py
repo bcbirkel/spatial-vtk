@@ -20,9 +20,12 @@ from spatial_vtk.visualize.context import (
     plot_distance_amplitude_diagnostics,
     plot_event_trace_comparison,
     plot_record_coverage,
+    plot_station_event_beachball_map,
     plot_study_domain_map,
 )
 from spatial_vtk.visualize.record_sections import (
+    _preselect_record_section_records,
+    _select_record_section_event,
     build_record_section_rows,
     plot_observed_synthetic_record_section,
     plot_record_section,
@@ -76,6 +79,19 @@ def _records() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _write_npz_trace(path: Path, samples: np.ndarray, *, station: str, channels: list[str]) -> None:
+    """Write a lightweight waveform fixture readable by the package."""
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    np.savez(
+        path,
+        data=np.asarray(samples, dtype=float),
+        station=np.asarray(station),
+        channels=np.asarray(channels),
+        sampling_rate=np.asarray(20.0, dtype=float),
+    )
+
+
 def test_basic_context_figures_write_outputs(tmp_path: Path) -> None:
     """Migrated basic-context figures should render from public DataFrames."""
 
@@ -104,6 +120,71 @@ def test_basic_context_figures_write_outputs(tmp_path: Path) -> None:
     ]
     for output in outputs:
         _assert_png(output)
+
+
+def test_station_event_beachball_map_respects_explicit_bounds() -> None:
+    """Beachball context maps should apply caller-provided geographic bounds."""
+
+    stations = pd.DataFrame({"station": ["STA"], "lon": [-118.5], "lat": [34.2]})
+    events = pd.DataFrame(
+        {
+            "event_id": ["E1"],
+            "event_lon": [-118.2],
+            "event_lat": [34.1],
+            "magnitude": [4.1],
+            "strike": [120.0],
+            "dip": [45.0],
+            "rake": [90.0],
+        }
+    )
+
+    fig = plot_station_event_beachball_map(
+        events,
+        stations_df=stations,
+        bounds=(-121.0, -115.0, 32.0, 36.0),
+        add_basemap=False,
+        showfig=False,
+        savefig=False,
+    )
+    ax = fig.axes[0]
+
+    assert ax.get_xlim() == pytest.approx((-121.0, -115.0))
+    assert ax.get_ylim() == pytest.approx((32.0, 36.0))
+    plt.close(fig)
+
+
+def test_event_trace_comparison_loads_event_station_waveform_paths(tmp_path: Path) -> None:
+    """CLI-backed event-station rows should render from observed/synthetic path columns."""
+
+    time = np.linspace(0.0, 4.0, 81)
+    observed_path = tmp_path / "waveforms" / "observed.npz"
+    synthetic_path = tmp_path / "waveforms" / "synthetic.npz"
+    _write_npz_trace(
+        observed_path,
+        np.column_stack([np.sin(time), np.cos(time)]),
+        station="STA",
+        channels=["HNZ", "HNR"],
+    )
+    _write_npz_trace(
+        synthetic_path,
+        np.column_stack([0.8 * np.sin(time + 0.1), 0.8 * np.cos(time + 0.1)]),
+        station="STA",
+        channels=["HNZ", "HNR"],
+    )
+    records = pd.DataFrame(
+        {
+            "event_id": ["E1"],
+            "station": ["STA"],
+            "component": ["R"],
+            "distance_km": [12.0],
+            "observed_processed_waveform": [observed_path],
+            "synthetic_processed_waveform": [synthetic_path],
+        }
+    )
+
+    output = plot_event_trace_comparison(records, tmp_path / "trace_comparison_paths.png", max_records=1)
+
+    _assert_png(output)
 
 
 def test_waveform_comparison_helper_uses_configured_outputs(tmp_path: Path, monkeypatch) -> None:
@@ -191,6 +272,86 @@ def test_waveform_comparison_helper_uses_configured_outputs(tmp_path: Path, monk
     assert calls["event_station_records"] == event_station_path
     assert calls["component"] == "Z"
     assert calls["comparison_eligible"]["component"].tolist() == ["Z"]
+    _assert_png(figure_path)
+
+
+def test_waveform_comparison_falls_back_to_available_records(tmp_path: Path, monkeypatch) -> None:
+    """Step 6 can render an available waveform comparison when the default component is empty."""
+
+    import spatial_vtk.visualize.waveforms.comparison as comparison_helpers
+    from spatial_vtk.io.output_paths import OutputGroup
+
+    event_station_path = tmp_path / "event_station_records.csv"
+    comparison_eligible_path = tmp_path / "comparison_eligible.csv"
+    figure_path = tmp_path / "figures" / "event_trace_comparison.png"
+    pd.DataFrame(
+        {
+            "event_id": ["E1"],
+            "station": ["S1"],
+            "observed_processed_waveform": ["observed.npz"],
+            "synthetic_processed_waveform": ["synthetic.npz"],
+        }
+    ).to_csv(event_station_path, index=False)
+    pd.DataFrame(
+        {
+            "event_id": ["E1"],
+            "station": ["S1"],
+            "component": ["R"],
+            "passband": ["1-2 sec"],
+        }
+    ).to_csv(comparison_eligible_path, index=False)
+
+    calls: dict[str, list[object]] = {"load": [], "build": []}
+
+    def fake_load(comparison_eligible, *, component=None, passband=None, **kwargs):
+        calls["load"].append((component, passband))
+        frame = pd.read_csv(comparison_eligible)
+        if component is not None:
+            frame = frame.loc[frame["component"].astype(str).str.upper().eq(str(component).upper())]
+        if passband is not None:
+            frame = frame.loc[frame["passband"].astype(str).eq(str(passband))]
+        return frame.reset_index(drop=True)
+
+    def fake_build(event_station_records, qc_summary=None, *, comparison_eligible=None, component="Z", passband=None, **kwargs):
+        calls["build"].append((component, passband, len(comparison_eligible)))
+        if comparison_eligible.empty:
+            return pd.DataFrame()
+        if str(component).upper() == "R":
+            return _records().loc[lambda frame: frame["component"].eq("R")].head(1)
+        return pd.DataFrame()
+
+    def fake_plot(records_df, output_path=None, **kwargs):
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(output_path).write_bytes(b"png")
+        return Path(output_path)
+
+    monkeypatch.setattr(comparison_helpers, "_load_comparison_eligible_records", fake_load)
+    monkeypatch.setattr(comparison_helpers, "_build_qc_waveform_comparison_records", fake_build)
+    monkeypatch.setattr(comparison_helpers, "plot_event_trace_comparison", fake_plot)
+
+    outputs = OutputGroup(
+        "step_06_plotting",
+        {
+            "event_station_path": event_station_path,
+            "comparison_eligible_path": comparison_eligible_path,
+            "event_trace_comparison_path": figure_path,
+        },
+    )
+
+    result = write_waveform_comparison_from_outputs(
+        outputs,
+        component="Z",
+        max_records=12,
+        overwrite=True,
+        fallback_to_available=True,
+        showfig=False,
+    )
+
+    assert result.status == "written"
+    assert "component R, all passbands" in result.message
+    assert calls["load"] == [("Z", None), (None, None)]
+    assert calls["build"] == [("Z", None, 0), ("R", None, 1)]
+    assert result.records["component"].tolist() == ["R"]
     _assert_png(figure_path)
 
 
@@ -306,6 +467,68 @@ def test_waveform_comparison_notebook_settings_delegates_options(tmp_path: Path,
     assert calls["kwargs"]["write_sidecar"] is True
     assert calls["kwargs"]["title"] == "Custom title"
     assert calls["kwargs"]["normalize"] is False
+
+
+def test_waveform_comparison_notebook_settings_accepts_status_wrapper(tmp_path: Path, monkeypatch) -> None:
+    """Step 6 status wrappers should delegate waveform plotting to their output group."""
+
+    import spatial_vtk.visualize.waveforms.comparison as comparison_helpers
+    from spatial_vtk.io.output_paths import OutputGroup
+
+    event_station_path = tmp_path / "event_station_records.csv"
+    comparison_eligible_path = tmp_path / "comparison_eligible.csv"
+    figure_path = tmp_path / "figures" / "event_trace_comparison.png"
+    event_station_path.write_text("ready", encoding="utf-8")
+    comparison_eligible_path.write_text("ready", encoding="utf-8")
+    outputs = OutputGroup(
+        "step_06_plotting",
+        {
+            "event_station_path": event_station_path,
+            "comparison_eligible_path": comparison_eligible_path,
+            "event_trace_comparison_path": figure_path,
+        },
+    )
+
+    class OutputStatus:
+        pass
+
+    output_status = OutputStatus()
+    output_status.outputs = outputs
+
+    calls: dict[str, object] = {}
+
+    class Settings:
+        component = "R"
+        passband = "2-3 sec"
+
+        def render_gate(self, paths, *, missing_message: str):  # noqa: ANN001, ANN202
+            calls["gate_paths"] = list(paths)
+            return type("Gate", (), {"ready": True, "figures_enabled": True, "message": "ready"})()
+
+        def plot_kwargs(self) -> dict[str, object]:
+            return {"showfig": False}
+
+    def fake_write(step_outputs, **kwargs):  # noqa: ANN001, ANN202
+        calls["step_outputs"] = step_outputs
+        calls["kwargs"] = kwargs
+        return comparison_helpers.WaveformComparisonFigureResult(
+            figure_path=figure_path,
+            event_station_path=event_station_path,
+            comparison_eligible_path=comparison_eligible_path,
+            records=_records().head(1),
+            status="written",
+            message="ok",
+        )
+
+    monkeypatch.setattr(comparison_helpers, "write_waveform_comparison_from_outputs", fake_write)
+
+    result = write_waveform_comparison_from_notebook_settings(output_status, Settings())
+
+    assert result.status == "written"
+    assert calls["step_outputs"] is outputs
+    assert calls["gate_paths"] == [comparison_eligible_path, event_station_path]
+    assert calls["kwargs"]["component"] == "R"
+    assert calls["kwargs"]["passband"] == "2-3 sec"
 
 
 def test_record_coverage_table_from_waveform_qc(tmp_path: Path) -> None:
@@ -469,6 +692,151 @@ def test_record_section_figures_write_outputs(tmp_path: Path) -> None:
         plot_record_section(records, tmp_path / "record_section.png", components=["Z", "R"], max_records=4),
         plot_observed_synthetic_record_section(records, tmp_path / "obs_syn_record_section.png", components=["Z", "R"], max_records=4),
     ]
+    for output in outputs:
+        _assert_png(output)
+
+
+def test_record_section_loads_event_station_waveform_paths(tmp_path: Path) -> None:
+    """Configured event-station rows should render from observed waveform paths."""
+
+    time = np.linspace(0.0, 4.0, 81)
+    observed_path = tmp_path / "waveforms" / "observed.npz"
+    _write_npz_trace(
+        observed_path,
+        np.column_stack([np.sin(time), np.cos(time)]),
+        station="STA",
+        channels=["HNZ", "HNR"],
+    )
+    records = pd.DataFrame(
+        {
+            "event_id": ["E1"],
+            "station": ["STA"],
+            "component": ["R"],
+            "distance_km": [12.0],
+            "observed_processed_waveform": [observed_path],
+        }
+    )
+
+    output = plot_record_section(records, tmp_path / "record_section_paths.png", components=["R"], max_records=1)
+
+    _assert_png(output)
+
+
+def test_record_section_honors_time_limit_s() -> None:
+    """Single record sections should support the CLI-exposed time limit option."""
+
+    records = pd.DataFrame(
+        {
+            "station": ["STA"],
+            "component": ["R"],
+            "distance_km": [12.0],
+            "trace": [np.sin(np.linspace(0.0, 12.0, 121))],
+            "dt": [0.1],
+        }
+    )
+
+    fig = plot_record_section(records, components=["R"], max_records=1, time_limit_s=3.0, showfig=False)
+
+    assert fig.axes[0].get_xlim() == (0.0, 3.0)
+    plt.close(fig)
+
+
+def test_record_section_preselection_preserves_distance_range_and_expands_components() -> None:
+    """Path-backed defaults should not only draw the nearest records or first trace."""
+
+    records = pd.DataFrame(
+        {
+            "station": [f"STA{i:03d}" for i in range(101)],
+            "distance_km": np.linspace(0.0, 100.0, 101),
+            "observed_processed_waveform": ["/tmp/event.pkl"] * 101,
+        }
+    )
+
+    selected = _preselect_record_section_records(
+        records,
+        components=["R", "T", "Z"],
+        component_col="component",
+        station_col="station",
+        distance_col="distance_km",
+        max_records=5,
+    )
+
+    assert selected["component"].tolist() == ["R", "T", "Z"] * 5
+    for component in ["R", "T", "Z"]:
+        distances = selected.loc[selected["component"].eq(component), "distance_km"].to_numpy()
+        assert distances[0] == pytest.approx(0.0)
+        assert distances[-1] == pytest.approx(100.0)
+
+
+def test_record_section_event_selection_defaults_to_one_event() -> None:
+    """Multi-event record-section tables should not load every event by default."""
+
+    records = pd.DataFrame(
+        {
+            "event_id": ["E1", "E2", "E2", "E3"],
+            "station": ["A", "B", "C", "D"],
+            "distance_km": [1.0, 2.0, 3.0, 4.0],
+        }
+    )
+
+    selected = _select_record_section_event(records, event_col="event_id", event_id=None)
+
+    assert selected["event_id"].unique().tolist() == ["E2"]
+    assert _select_record_section_event(records, event_col="event_id", event_id="E3")["station"].tolist() == ["D"]
+    assert len(_select_record_section_event(records, event_col="event_id", event_id="all")) == len(records)
+
+
+def test_observed_synthetic_record_section_loads_event_station_waveform_paths(tmp_path: Path) -> None:
+    """Observed/synthetic record sections should load configured waveform path columns."""
+
+    time = np.linspace(0.0, 4.0, 81)
+    observed_path = tmp_path / "waveforms" / "observed_pair.npz"
+    synthetic_path = tmp_path / "waveforms" / "synthetic_pair.npz"
+    _write_npz_trace(observed_path, np.column_stack([np.sin(time), np.cos(time)]), station="STA", channels=["HNZ", "HNR"])
+    _write_npz_trace(synthetic_path, np.column_stack([0.8 * np.sin(time), 0.8 * np.cos(time)]), station="STA", channels=["HNZ", "HNR"])
+    records = pd.DataFrame(
+        {
+            "event_id": ["E1"],
+            "station": ["STA"],
+            "component": ["R"],
+            "distance_km": [12.0],
+            "observed_processed_waveform": [observed_path],
+            "synthetic_processed_waveform": [synthetic_path],
+        }
+    )
+
+    output = plot_observed_synthetic_record_section(records, tmp_path / "obs_syn_record_section_paths.png", components=["R"], max_records=1)
+
+    _assert_png(output)
+
+
+def test_waveform_map_style_figures_load_event_station_waveform_paths(tmp_path: Path) -> None:
+    """Map-backed waveform figures should accept event-station path/coordinate aliases."""
+
+    time = np.linspace(0.0, 4.0, 81)
+    observed_path = tmp_path / "waveforms" / "observed_map.npz"
+    _write_npz_trace(observed_path, np.column_stack([np.sin(time), np.cos(time)]), station="STA", channels=["HNZ", "HNR"])
+    records = pd.DataFrame(
+        {
+            "event_id": ["E1"],
+            "station": ["STA"],
+            "component": ["R"],
+            "distance_km": [12.0],
+            "azimuth_deg": [42.0],
+            "lon": [-118.2],
+            "lat": [34.1],
+            "event_lon": [-118.4],
+            "event_lat": [34.0],
+            "observed_processed_waveform": [observed_path],
+        }
+    )
+
+    outputs = [
+        plot_event_radial_trace_section(records, tmp_path / "radial_paths.png", add_basemap=False),
+        plot_waveform_overlay_matrix(records, tmp_path / "overlay_paths.png", add_basemap=False),
+        plot_station_event_waveform_map(records, tmp_path / "station_event_paths.png", add_basemap=False),
+    ]
+
     for output in outputs:
         _assert_png(output)
 

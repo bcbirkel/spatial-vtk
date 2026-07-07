@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from spatial_vtk.config.labels import metric_display_name, model_display_name, value_column_display_name
+from spatial_vtk.config.labels import metric_display_name, model_display_name
 from spatial_vtk.spatial.calculate.geojson import load_geojson_polygons, select_geojson_polygons
 from spatial_vtk.spatial.map.basemaps import add_contextily_basemap
 from spatial_vtk.visualize.figure_context import apply_figure_context, context_value_label, figure_context_text, value_color_settings
@@ -175,7 +175,7 @@ def plot_station_metric_map_by_period(
     for ax in axes_flat[len(periods) :]:
         ax.set_axis_off()
     if scatter is not None:
-        fig.colorbar(scatter, cax=cbar_ax, label=value_column_display_name(value_col))
+        fig.colorbar(scatter, cax=cbar_ax, label=context_value_label(value_col, plot_df))
     else:
         cbar_ax.set_axis_off()
     return finish_figure_with_sidecar(
@@ -262,7 +262,7 @@ def plot_residual_grid(
         add_contextily_basemap(ax, crs="EPSG:4326", primary_source=basemap_source, **dict(basemap_kwargs or {}))
     image = ax.imshow(values, extent=(west, east, south, north), origin="lower", cmap=cmap, vmin=vmin, vmax=vmax, alpha=0.72, zorder=3, aspect="auto")
     _set_geographic_aspect(ax)
-    fig.colorbar(image, ax=ax, pad=0.045, label=value_column_display_name(value_col))
+    fig.colorbar(image, ax=ax, pad=0.045, label=context_value_label(value_col, plot_df))
     _finish(ax, _title_with_value(title, value_col, plot_df), plot_df, value_col=value_col)
     return finish_figure_with_sidecar(
         fig,
@@ -353,8 +353,10 @@ def plot_metric_map_by_model(
             include_metric=False,
             include_period=False,
             include_component=False,
+            include_processing=False,
         )
-    fig.colorbar(scatter, cax=cbar_ax, label=value_column_display_name(value_col))
+    colorbar = fig.colorbar(scatter, cax=cbar_ax, label=context_value_label(value_col, plot_df))
+    colorbar.ax.yaxis.label.set_size(9)
     return finish_figure_with_sidecar(
         fig,
         output_path,
@@ -449,7 +451,7 @@ def _point_metric_map(
     _draw_event_overlays(ax, events_df, alpha=event_alpha)
     point_label = "Stations" if corridors_df is not None or events_df is not None or records_df is not None else None
     scatter = ax.scatter(plot_df[lon_col], plot_df[lat_col], c=values, cmap=cmap, vmin=vmin, vmax=vmax, s=42, edgecolors="black", linewidths=0.3, zorder=4, label=point_label)
-    fig.colorbar(scatter, ax=ax, pad=0.045, label=value_column_display_name(value_col))
+    fig.colorbar(scatter, ax=ax, pad=0.045, label=context_value_label(value_col, plot_df))
     _finish(ax, _title_with_value(title, value_col, plot_df), plot_df, value_col=value_col, extra=[subset_label] if subset_label else None)
     if corridors_df is not None or events_df is not None or records_df is not None:
         handles, labels = ax.get_legend_handles_labels()
@@ -833,6 +835,7 @@ def _finish(
     include_metric: bool = True,
     include_period: bool = True,
     include_component: bool = True,
+    include_processing: bool = True,
     extra: list[str] | None = None,
 ) -> None:
     """Apply common map labels."""
@@ -850,6 +853,7 @@ def _finish(
         include_metric=include_metric,
         include_period=include_period,
         include_component=include_component,
+        include_processing=include_processing,
         include_value=False,
         max_line_chars=72,
         extra=extra,

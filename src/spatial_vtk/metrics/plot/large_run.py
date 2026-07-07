@@ -26,9 +26,15 @@ TARGET_METRIC_SPECS = (
     {"key": "pga", "label": "PGA", "aliases": ("PGA", "Peak acceleration", "Peak ground acceleration")},
     {"key": "pgv", "label": "PGV", "aliases": ("PGV", "Peak velocity", "Peak ground velocity")},
     {"key": "psa", "label": "PSA", "aliases": ("PSA", "Pseudo-spectral acceleration", "Pseudo spectral acceleration")},
+    {"key": "fas", "label": "FAS", "aliases": ("FAS", "Fourier amplitude spectrum", "Fourier amplitude spectra")},
     {"key": "traveltime_delay", "label": "Traveltime delay", "aliases": ("traveltime delay", "travel time delay", "travel-time delay", "TT delay", "traveltime")},
+    {"key": "original_cc", "label": "Original cross correlation", "aliases": ("original_cc", "original cross correlation", "C10")},
+    {"key": "delay_corrected_cc", "label": "Delay-corrected cross correlation", "aliases": ("delay_corrected_cc", "delay corrected cross correlation", "C12")},
     {"key": "cav", "label": "CAV", "aliases": ("CAV", "Cumulative absolute velocity")},
 )
+SPECTRAL_METRIC_KEYS = frozenset({"psa", "fas"})
+CROSS_CORRELATION_METRIC_KEYS = frozenset({"original_cc", "delay_corrected_cc"})
+DELAY_FRACTION_VALUE_COL = "delay_fraction_dominant_period"
 DEFAULT_SCORE_TREND_COLUMNS = ("anderson_2004_gof", "olsen_mayhew_gof", "score")
 BROADBAND_PASSBAND_LABELS = frozenset({"", "all", "broadband", "none", "nan"})
 SPECTRAL_CONTRACT_METRICS = (
@@ -150,6 +156,7 @@ class MetricFigureContext:
     default_model: str | None = None
     add_basemap: bool = False
     robust_axis_percentile: float = 95.0
+    load_filters: dict[str, object] | None = None
     write_sidecars: bool = False
     sidecar_rows: int | None = None
     sidecar_dir: Path | None = None
@@ -184,6 +191,7 @@ class MetricFigureContext:
         default_model: str | None = None,
         add_basemap: bool = False,
         robust_axis_percentile: float = 95.0,
+        load_filters: dict[str, object] | None = None,
         write_sidecars: bool = False,
         sidecar_rows: int | None = None,
         sidecar_dir: str | Path | None = None,
@@ -208,6 +216,7 @@ class MetricFigureContext:
             default_model=default_model,
             add_basemap=bool(add_basemap),
             robust_axis_percentile=float(robust_axis_percentile),
+            load_filters=dict(load_filters or {}),
             write_sidecars=bool(write_sidecars),
             sidecar_rows=None if sidecar_rows is None else int(sidecar_rows),
             sidecar_dir=None if sidecar_dir is None else Path(sidecar_dir).expanduser(),
@@ -236,13 +245,9 @@ class MetricFigureContext:
         context.vs30_col = first_existing(metrics, ["Vs30", "vs30", "VS30", "site_vs30", "station_vs30", "vs30_mps", "Vs30_mps"])
         metrics = context._apply_load_filters(metrics)
         context.metrics_for_figures = metrics
-        if context.value_col not in metrics.columns:
-            context._progress(f"Cannot render metric figures: {context.value_col!r} is not present in metrics_long.")
-            return context
-        finite_value_rows = _finite_value_row_count(metrics, context.value_col)
-        if finite_value_rows == 0:
+        if not _metric_context_has_plot_value(metrics, context.value_col):
             context._progress(
-                f"Cannot render metric figures: no finite {context.value_col!r} values are present in selected metric rows."
+                f"Cannot render metric figures: no finite {context.value_col!r} or pair-metric 'value' values are present in selected metric rows."
             )
             return context
         context.ready = True
@@ -288,6 +293,7 @@ class MetricFigureContext:
         default_model: str | None = None,
         add_basemap: bool = False,
         robust_axis_percentile: float = 95.0,
+        load_filters: dict[str, object] | None = None,
         write_sidecars: bool = False,
         sidecar_rows: int | None = None,
         sidecar_dir: str | Path | None = None,
@@ -311,6 +317,7 @@ class MetricFigureContext:
             default_model=default_model,
             add_basemap=bool(add_basemap),
             robust_axis_percentile=float(robust_axis_percentile),
+            load_filters=dict(load_filters or {}),
             write_sidecars=bool(write_sidecars),
             sidecar_rows=None if sidecar_rows is None else int(sidecar_rows),
             sidecar_dir=None if sidecar_dir is None else Path(sidecar_dir).expanduser(),
@@ -334,10 +341,7 @@ class MetricFigureContext:
         context.available_columns = list(metrics.columns)
         context.loaded_columns = list(metrics.columns)
         context.metrics_for_figures = context._apply_load_filters(context.metrics_for_figures)
-        context.ready = (
-            context.value_col in context.metrics_for_figures.columns
-            and _finite_value_row_count(context.metrics_for_figures, context.value_col) > 0
-        )
+        context.ready = _metric_context_has_plot_value(context.metrics_for_figures, context.value_col)
         return context
 
     @property
@@ -550,25 +554,26 @@ class MetricFigureContext:
         components: list[str] | str | None = None,
         model: str | None = None,
     ) -> pd.DataFrame:
-        """Return target-metric selection status without emitting skip prints.
+        """Return metric selection status without emitting skip prints.
 
-        Large-run plotting helpers target a curated set of metrics. This frame
-        lets notebooks show which targets are selected or skipped after
-        passband/component/model filtering, including the common PSA legacy case
+        Large-run plotting helpers render the metrics present in the loaded
+        metric table after config/load filters. This frame lets notebooks show
+        which metrics are selected or skipped after passband/component/model
+        filtering, including the common spectral legacy case
         where spectral rows still carry waveform passbands instead of
         blank/broadband passbands with oscillator periods in ``period_s``.
         """
 
         rows: list[dict[str, Any]] = []
-        for spec in TARGET_METRIC_SPECS:
+        for spec in self.target_metric_specs():
             base = self.filtered_base(
                 passband=passband,
                 components=components,
                 model=model,
-                include_passband=spec["key"] != "psa",
+                include_passband=not _is_spectral_metric_key(spec["key"]),
             )
             raw_subset = base.loc[self.metric_mask(base, tuple(spec["aliases"]))].copy()
-            selected = self._broadband_spectral_rows(raw_subset) if spec["key"] == "psa" else raw_subset
+            selected = self._broadband_spectral_rows(raw_subset) if _is_spectral_metric_key(spec["key"]) else raw_subset
             raw_count = int(len(raw_subset))
             selected_count = int(len(selected))
             status = "selected"
@@ -611,6 +616,30 @@ class MetricFigureContext:
             return exact
         return normalized_metric.map(lambda value: any(alias in value or value in alias for alias in normalized_aliases))
 
+    def target_metric_specs(self) -> tuple[dict[str, object], ...]:
+        """Return metric specs discovered from the loaded metric table."""
+
+        if self.metric_col is None or self.metric_col not in self.metrics_for_figures.columns:
+            return tuple(dict(spec) for spec in TARGET_METRIC_SPECS)
+        metric_values = self.metrics_for_figures[self.metric_col].dropna().tolist()
+        specs: list[dict[str, object]] = []
+        seen: set[str] = set()
+        for metric_value in metric_values:
+            spec = _target_metric_spec(metric_value)
+            if spec is None:
+                label = _metric_display_label(metric_value)
+                spec = {
+                    "key": _metric_spec_key(metric_value),
+                    "label": label,
+                    "aliases": (str(metric_value), label),
+                }
+            key = str(spec["key"])
+            if key in seen:
+                continue
+            seen.add(key)
+            specs.append(dict(spec))
+        return tuple(specs)
+
     def filtered_base(
         self,
         *,
@@ -638,12 +667,7 @@ class MetricFigureContext:
             out = filter_optional(out, self.component_col, self.default_components)
         if self.model_col is not None and self.default_model is not None:
             out = filter_optional(out, self.model_col, self.default_model)
-        if self.metric_col is not None:
-            mask = pd.Series(False, index=out.index)
-            for spec in TARGET_METRIC_SPECS:
-                mask = mask | self.metric_mask(out, tuple(spec["aliases"]))
-            if mask.any():
-                out = out.loc[mask].copy()
+        out = _apply_metric_context_load_filters(out, self.load_filters)
         return out
 
     def iter_metric_frames(
@@ -654,21 +678,21 @@ class MetricFigureContext:
         model: str | None = None,
         split_psa_period: bool = True,
     ):
-        """Yield filtered frames for the configured target metrics."""
+        """Yield filtered frames for the metrics present after config filters."""
 
-        for spec in TARGET_METRIC_SPECS:
+        for spec in self.target_metric_specs():
             base = self.filtered_base(
                 passband=passband,
                 components=components,
                 model=model,
-                include_passband=spec["key"] != "psa",
+                include_passband=not _is_spectral_metric_key(spec["key"]),
             )
             subset = base.loc[self.metric_mask(base, tuple(spec["aliases"]))].copy()
-            if spec["key"] == "psa":
+            if _is_spectral_metric_key(spec["key"]):
                 subset = self._broadband_spectral_rows(subset)
             if subset.empty:
                 continue
-            if spec["key"] == "psa" and split_psa_period and self.period_col in subset.columns:
+            if _is_spectral_metric_key(spec["key"]) and split_psa_period and self.period_col in subset.columns:
                 periods = sorted(pd.to_numeric(subset[self.period_col], errors="coerce").dropna().unique())
                 for period in periods:
                     period_subset = subset.loc[pd.to_numeric(subset[self.period_col], errors="coerce").eq(period)].copy()
@@ -713,17 +737,42 @@ class MetricFigureContext:
             )
         return matches[0]
 
+    def item_value_column(self, item: dict[str, Any], default_value_col: str | None = None) -> str | None:
+        """Return the value column appropriate for one metric figure item."""
+
+        requested = self.value_col if default_value_col is None else default_value_col
+        key = str(item.get("key", ""))
+        df = item.get("df")
+        if key in CROSS_CORRELATION_METRIC_KEYS and isinstance(df, pd.DataFrame) and "value" in df.columns:
+            return "value"
+        if key == "traveltime_delay":
+            prepared = _with_delay_fraction_column(df, band_col=self.band_col) if isinstance(df, pd.DataFrame) else df
+            if isinstance(prepared, pd.DataFrame) and DELAY_FRACTION_VALUE_COL in prepared.columns:
+                item["df"] = prepared
+                return DELAY_FRACTION_VALUE_COL
+            if isinstance(df, pd.DataFrame) and "value" in df.columns:
+                return "value"
+        return requested
+
+    def item_for_value_column(self, item: dict[str, Any], value_col: str | None = None) -> tuple[dict[str, Any], str | None]:
+        """Return an item copy and metric-appropriate value column."""
+
+        out = dict(item)
+        out["df"] = item["df"].copy()
+        resolved_value_col = self.item_value_column(out, value_col)
+        return out, resolved_value_col
+
     def figure_name(self, base: str, item: dict[str, Any], value_col: str | None = None) -> str:
         """Build a stable figure filename stem from selected dimensions."""
 
         df = item["df"]
         resolved_value_col = self.value_col if value_col is None else value_col
         parts = [base, item["key"]]
-        if item.get("key") == "psa" and item.get("period_s") is None and self.period_col in df.columns:
-            parts.append("all-psa-periods")
+        if _is_spectral_metric_key(item.get("key")) and item.get("period_s") is None and self.period_col in df.columns:
+            parts.append(f"all-{item.get('key')}-periods")
         elif item.get("period_s") is not None:
             parts.append(f"period-{item['period_s']:g}s")
-        dimension_columns: list[tuple[str | None, str]] = [] if item.get("key") == "psa" else [(self.band_col, "all-passbands")]
+        dimension_columns: list[tuple[str | None, str]] = [] if _is_spectral_metric_key(item.get("key")) else [(self.band_col, "all-passbands")]
         dimension_columns.extend([(self.component_col, "all-components"), (self.model_col, "all-models")])
         for column, multi_label in dimension_columns:
             value = dimension_value(df, column, multi_label)
@@ -762,7 +811,7 @@ class MetricFigureContext:
         context_cols = [
             column
             for column in [self.metric_col, self.band_col, self.model_col, self.component_col, self.period_col]
-            if column and column in finite_df.columns and column not in group_cols
+            if column and column in finite_df.columns and column not in group_cols and finite_df[column].notna().any()
         ]
         grouped = finite_df.groupby(group_cols, dropna=False)
         values = _aggregate_grouped_values(grouped[resolved_value_col], self.station_aggregation).reset_index(name=resolved_value_col)
@@ -828,7 +877,7 @@ class MetricFigureContext:
         context_cols = [
             column
             for column in [self.metric_col, self.band_col, self.model_col, self.component_col]
-            if column and column in finite_df.columns and column not in group_cols
+            if column and column in finite_df.columns and column not in group_cols and finite_df[column].notna().any()
         ]
         grouped = finite_df.groupby(group_cols, dropna=False)
         values = _aggregate_grouped_values(grouped[resolved_value_col], self.station_aggregation).reset_index(name=resolved_value_col)
@@ -895,9 +944,10 @@ class MetricFigureContext:
         """Aggregate one named metric to station rows for notebook previews."""
 
         item = self.metric_item(metric, passband=passband, components=components, model=model)
-        if item["key"] == "psa" and self.period_col in item["df"].columns:
-            return self.station_period_summary_for_item(item, value_col=value_col)
-        return self.station_summary_for_item(item, value_col=value_col)
+        item, item_value_col = self.item_for_value_column(item, value_col)
+        if _is_spectral_metric_key(item["key"]) and self.period_col in item["df"].columns:
+            return self.station_period_summary_for_item(item, value_col=item_value_col)
+        return self.station_summary_for_item(item, value_col=item_value_col)
 
     def station_summary_preview_for_metric(
         self,
@@ -1016,6 +1066,7 @@ class MetricFigureContext:
         df: pd.DataFrame | None = None,
         source_df: pd.DataFrame | None = None,
         required: tuple[str, ...] | list[str] = (),
+        finite_columns: tuple[str | None, ...] | list[str | None] = (),
         value_col: str | None = None,
         forward_value_col: bool = False,
         showfig: bool = False,
@@ -1030,9 +1081,13 @@ class MetricFigureContext:
             self._progress(f"skip {output.name}: exists")
             self.write_figure_sidecar(output, plot_df, source_df=source_df)
             return output
-        missing = [column for column in required if column not in plot_df.columns]
+        missing = [column for column in required if column is not None and column not in plot_df.columns]
         if missing:
             self._progress(f"skip {output.name}: missing columns {missing}")
+            return None
+        finite_required = [column for column in finite_columns if column is not None]
+        if finite_required and not _has_finite_column_pairs(plot_df, finite_required):
+            self._progress(f"skip {output.name}: no finite {' / '.join(finite_required)} values.")
             return None
         if forward_value_col and resolved_value_col is not None and "value_col" not in kwargs:
             kwargs["value_col"] = resolved_value_col
@@ -1055,6 +1110,7 @@ class MetricFigureContext:
         df_factory: Callable[[dict[str, Any]], pd.DataFrame] | None = None,
         source_df_factory: Callable[[dict[str, Any]], pd.DataFrame | None] | None = None,
         required: tuple[str, ...] | list[str] = (),
+        finite_columns: tuple[str | None, ...] | list[str | None] = (),
         value_col: str | None = None,
         forward_value_col: bool = False,
         showfig: bool = False,
@@ -1072,11 +1128,27 @@ class MetricFigureContext:
                 df=_call_item_dataframe_factory(df_factory, item, value_col=resolved_value_col) if df_factory else None,
                 source_df=source_df_factory(item) if source_df_factory else None,
                 required=required,
+                finite_columns=finite_columns,
                 value_col=resolved_value_col,
                 forward_value_col=forward_value_col,
                 showfig=showfig,
                 **kwargs,
             )
+        finite_required = [column for column in finite_columns if column is not None]
+        if finite_required and not any(
+            _has_finite_column_pairs(
+                self.plot_rows(
+                    _call_item_dataframe_factory(df_factory, period_item, value_col=resolved_value_col)
+                    if df_factory
+                    else period_item["df"]
+                ),
+                finite_required,
+            )
+            for period_item in period_items
+        ):
+            output = self.figure_dir / f"{self.figure_name(base, item, resolved_value_col)}.png"
+            self._progress(f"skip {output.name}: no finite {' / '.join(finite_required)} values.")
+            return None
         output = self.figure_dir / f"{self.figure_name(base, item, resolved_value_col)}.png"
         if output.exists() and not self.overwrite:
             self._progress(f"skip {output.name}: exists")
@@ -1106,9 +1178,12 @@ class MetricFigureContext:
                     if df_factory
                     else period_item["df"]
                 )
-                missing = [column for column in required if column not in plot_df.columns]
+                missing = [column for column in required if column is not None and column not in plot_df.columns]
                 if missing:
                     ax.text(0.5, 0.5, f"Missing columns: {missing}", ha="center", va="center", wrap=True)
+                    ax.set_axis_off()
+                    continue
+                if finite_required and not _has_finite_column_pairs(plot_df, finite_required):
                     ax.set_axis_off()
                     continue
                 panel_path = tmpdir / f"panel_{period_item['period_s']:g}.png"
@@ -1167,13 +1242,16 @@ class MetricFigureContext:
             model=model,
             split_psa_period=False,
         ):
-            writer = self.write_psa_period_sheet if item["key"] == "psa" else self.write_metric_plot
+            item, item_value_col = self.item_for_value_column(item, resolved_value_col)
+            writer = self.write_psa_period_sheet if _is_spectral_metric_key(item["key"]) else self.write_metric_plot
             output = writer(
                 "residuals_vs_distance",
                 item,
                 residuals_vs_distance_func,
-                required=[self.distance_col, resolved_value_col],
-                y_col=resolved_value_col,
+                required=[self.distance_col, item_value_col],
+                finite_columns=[self.distance_col, item_value_col],
+                value_col=item_value_col,
+                y_col=item_value_col,
                 group_col=self.component_col,
                 fit="lowess",
                 connect_points=False,
@@ -1207,13 +1285,16 @@ class MetricFigureContext:
             model=model,
             split_psa_period=False,
         ):
-            writer = self.write_psa_period_sheet if item["key"] == "psa" else self.write_metric_plot
+            item, item_value_col = self.item_for_value_column(item, resolved_value_col)
+            writer = self.write_psa_period_sheet if _is_spectral_metric_key(item["key"]) else self.write_metric_plot
             output = writer(
                 "residuals_vs_depth",
                 item,
                 residuals_vs_depth_func,
-                required=[self.depth_col, resolved_value_col],
-                y_col=resolved_value_col,
+                required=[self.depth_col, item_value_col],
+                finite_columns=[self.depth_col, item_value_col],
+                value_col=item_value_col,
+                y_col=item_value_col,
                 group_col=self.component_col,
                 fit="lowess",
                 connect_points=False,
@@ -1250,14 +1331,22 @@ class MetricFigureContext:
             model=model,
             split_psa_period=False,
         ):
-            writer = self.write_psa_period_sheet if item["key"] == "psa" else self.write_metric_plot
+            item, item_value_col = self.item_for_value_column(item, resolved_value_col)
+            if not _has_finite_column_pairs(item["df"], [self.vs30_col, item_value_col]):
+                self._progress(
+                    f"Skipping {self.figure_name('vs30_scatter', item, item_value_col)}.png: "
+                    "no finite Vs30/value pairs."
+                )
+                continue
+            writer = self.write_psa_period_sheet if _is_spectral_metric_key(item["key"]) else self.write_metric_plot
             output = writer(
                 "vs30_scatter",
                 item,
                 vs30_scatter_func,
-                required=[self.vs30_col, resolved_value_col],
+                required=[self.vs30_col, item_value_col],
+                finite_columns=[self.vs30_col, item_value_col],
                 vs30_col=self.vs30_col,
-                value_col=resolved_value_col,
+                value_col=item_value_col,
                 forward_value_col=True,
                 group_col=self.component_col,
                 fit="lowess",
@@ -1293,31 +1382,34 @@ class MetricFigureContext:
             model=model,
             split_psa_period=False,
         ):
-            if item["key"] == "psa" and self.period_col in item["df"].columns:
-                station_df = self.station_period_summary_for_item(item, resolved_value_col)
+            item, item_value_col = self.item_for_value_column(item, resolved_value_col)
+            if _is_spectral_metric_key(item["key"]) and self.period_col in item["df"].columns:
+                station_df = self.station_period_summary_for_item(item, item_value_col)
                 output = self.write_metric_plot(
                     "station_metric_map",
                     item,
                     station_metric_map_by_period_func,
                     df=station_df,
                     source_df=self.item_source_rows(item),
-                    required=["sta_lon", "sta_lat", self.period_col, resolved_value_col],
-                    value_col=resolved_value_col,
+                    required=["sta_lon", "sta_lat", self.period_col, item_value_col],
+                    finite_columns=["sta_lon", "sta_lat", item_value_col],
+                    value_col=item_value_col,
                     forward_value_col=True,
                     period_col=self.period_col,
                     add_basemap=self._resolved_add_basemap(add_basemap),
                     showfig=self._resolved_showfig(showfig),
                 )
             else:
-                station_df = self.station_summary_for_item(item, resolved_value_col)
+                station_df = self.station_summary_for_item(item, item_value_col)
                 output = self.write_metric_plot(
                     "station_metric_map",
                     item,
                     station_metric_map_func,
                     df=station_df,
                     source_df=self.item_source_rows(item),
-                    required=["sta_lon", "sta_lat", resolved_value_col],
-                    value_col=resolved_value_col,
+                    required=["sta_lon", "sta_lat", item_value_col],
+                    finite_columns=["sta_lon", "sta_lat", item_value_col],
+                    value_col=item_value_col,
                     forward_value_col=True,
                     add_basemap=self._resolved_add_basemap(add_basemap),
                     showfig=self._resolved_showfig(showfig),
@@ -1352,34 +1444,37 @@ class MetricFigureContext:
         if not self._can_render_metric_figures("station_metric_map", resolved_value_col):
             return None
         item = self.metric_item(metric, passband=passband, components=components, model=model)
+        item, item_value_col = self.item_for_value_column(item, resolved_value_col)
         plot_kwargs: dict[str, Any] = {}
         if title is not None:
             plot_kwargs["title"] = title
-        if item["key"] == "psa" and self.period_col in item["df"].columns:
-            station_df = self.station_period_summary_for_item(item, resolved_value_col)
+        if _is_spectral_metric_key(item["key"]) and self.period_col in item["df"].columns:
+            station_df = self.station_period_summary_for_item(item, item_value_col)
             return self.write_metric_plot(
                 "station_metric_map",
                 item,
                 station_metric_map_by_period_func,
                 df=station_df,
                 source_df=self.item_source_rows(item),
-                required=["sta_lon", "sta_lat", self.period_col, resolved_value_col],
-                value_col=resolved_value_col,
+                required=["sta_lon", "sta_lat", self.period_col, item_value_col],
+                finite_columns=["sta_lon", "sta_lat", item_value_col],
+                value_col=item_value_col,
                 forward_value_col=True,
                 period_col=self.period_col,
                 add_basemap=self._resolved_add_basemap(add_basemap),
                 showfig=self._resolved_showfig(showfig),
                 **plot_kwargs,
             )
-        station_df = self.station_summary_for_item(item, resolved_value_col)
+        station_df = self.station_summary_for_item(item, item_value_col)
         return self.write_metric_plot(
             "station_metric_map",
             item,
             station_metric_map_func,
             df=station_df,
             source_df=self.item_source_rows(item),
-            required=["sta_lon", "sta_lat", resolved_value_col],
-            value_col=resolved_value_col,
+            required=["sta_lon", "sta_lat", item_value_col],
+            finite_columns=["sta_lon", "sta_lat", item_value_col],
+            value_col=item_value_col,
             forward_value_col=True,
             add_basemap=self._resolved_add_basemap(add_basemap),
             showfig=self._resolved_showfig(showfig),
@@ -1409,31 +1504,36 @@ class MetricFigureContext:
             model=model,
             split_psa_period=False,
         ):
-            if item["key"] == "psa":
+            item, item_value_col = self.item_for_value_column(item, resolved_value_col)
+            if _is_spectral_metric_key(item["key"]):
                 output = self.write_psa_period_sheet(
                     "residual_grid",
                     item,
                     residual_grid_func,
                     df_factory=self.station_grid_for_item,
                     source_df_factory=self.item_source_rows,
-                    required=["lon", "lat", resolved_value_col],
-                    value_col=resolved_value_col,
+                    required=["lon", "lat", item_value_col],
+                    finite_columns=["lon", "lat", item_value_col],
+                    value_col=item_value_col,
                     forward_value_col=True,
                     add_basemap=self._resolved_add_basemap(add_basemap),
+                    basemap_kwargs={"cache_download": False},
                     showfig=self._resolved_showfig(showfig),
                 )
             else:
-                station_df = self.station_grid_for_item(item, resolved_value_col)
+                station_df = self.station_grid_for_item(item, item_value_col)
                 output = self.write_metric_plot(
                     "residual_grid",
                     item,
                     residual_grid_func,
                     df=station_df,
                     source_df=self.item_source_rows(item),
-                    required=["lon", "lat", resolved_value_col],
-                    value_col=resolved_value_col,
+                    required=["lon", "lat", item_value_col],
+                    finite_columns=["lon", "lat", item_value_col],
+                    value_col=item_value_col,
                     forward_value_col=True,
                     add_basemap=self._resolved_add_basemap(add_basemap),
+                    basemap_kwargs={"cache_download": False},
                     showfig=self._resolved_showfig(showfig),
                 )
             if output is not None:
@@ -1463,29 +1563,32 @@ class MetricFigureContext:
             model=model,
             split_psa_period=False,
         ):
-            if item["key"] == "psa":
+            item, item_value_col = self.item_for_value_column(item, resolved_value_col)
+            if _is_spectral_metric_key(item["key"]):
                 output = self.write_psa_period_sheet(
                     "metric_by_model_map",
                     item,
                     metric_by_model_map_func,
                     df_factory=self.station_model_summary_for_item,
                     source_df_factory=self.item_source_rows,
-                    required=[self.model_col, "sta_lon", "sta_lat", resolved_value_col],
-                    value_col=resolved_value_col,
+                    required=[self.model_col, "sta_lon", "sta_lat", item_value_col],
+                    finite_columns=["sta_lon", "sta_lat", item_value_col],
+                    value_col=item_value_col,
                     forward_value_col=True,
                     add_basemap=self._resolved_add_basemap(add_basemap),
                     showfig=self._resolved_showfig(showfig),
                 )
             else:
-                station_model_df = self.station_model_summary_for_item(item, resolved_value_col)
+                station_model_df = self.station_model_summary_for_item(item, item_value_col)
                 output = self.write_metric_plot(
                     "metric_by_model_map",
                     item,
                     metric_by_model_map_func,
                     df=station_model_df,
                     source_df=self.item_source_rows(item),
-                    required=[self.model_col, "sta_lon", "sta_lat", resolved_value_col],
-                    value_col=resolved_value_col,
+                    required=[self.model_col, "sta_lon", "sta_lat", item_value_col],
+                    finite_columns=["sta_lon", "sta_lat", item_value_col],
+                    value_col=item_value_col,
                     forward_value_col=True,
                     add_basemap=self._resolved_add_basemap(add_basemap),
                     showfig=self._resolved_showfig(showfig),
@@ -1517,13 +1620,15 @@ class MetricFigureContext:
             model=model,
             split_psa_period=False,
         ):
-            writer = self.write_psa_period_sheet if item["key"] == "psa" else self.write_metric_plot
+            item, item_value_col = self.item_for_value_column(item, resolved_value_col)
+            writer = self.write_psa_period_sheet if _is_spectral_metric_key(item["key"]) else self.write_metric_plot
             output = writer(
                 "event_residual_map",
                 item,
                 event_residual_map_func,
-                required=["event_id", "sta_lon", "sta_lat", resolved_value_col],
-                value_col=resolved_value_col,
+                required=["event_id", "sta_lon", "sta_lat", item_value_col],
+                finite_columns=["sta_lon", "sta_lat", item_value_col],
+                value_col=item_value_col,
                 forward_value_col=True,
                 metric=None,
                 add_basemap=self._resolved_add_basemap(add_basemap),
@@ -1557,14 +1662,17 @@ class MetricFigureContext:
             model=model,
             split_psa_period=False,
         ):
-            if item["key"] == "psa":
+            item, item_value_col = self.item_for_value_column(item, resolved_value_col)
+            if _is_spectral_metric_key(item["key"]):
                 output = self.write_metric_plot(
                     "period_log2_residual_distribution",
                     item,
                     period_score_distribution_func,
-                    required=[self.period_col, resolved_value_col],
+                    required=[self.period_col, item_value_col],
+                    finite_columns=[self.period_col, item_value_col],
+                    value_col=item_value_col,
                     period_col=self.period_col,
-                    score_col=resolved_value_col,
+                    score_col=item_value_col,
                     color_col=self.component_col,
                     robust_axis_percentile=self._resolved_robust_axis_percentile(robust_axis_percentile),
                     showfig=self._resolved_showfig(showfig),
@@ -1574,9 +1682,11 @@ class MetricFigureContext:
                     "band_log2_residual_distribution",
                     item,
                     band_score_distribution_func,
-                    required=[self.band_col, resolved_value_col],
+                    required=[self.band_col, item_value_col],
+                    finite_columns=[item_value_col],
+                    value_col=item_value_col,
                     band_col=self.band_col,
-                    score_col=resolved_value_col,
+                    score_col=item_value_col,
                     color_col=self.component_col,
                     robust_axis_percentile=self._resolved_robust_axis_percentile(robust_axis_percentile),
                     showfig=self._resolved_showfig(showfig),
@@ -1677,6 +1787,16 @@ class MetricFigureContext:
                         table=table,
                     )
                 )
+        combined_heatmap = self._write_combined_standard_metric_heatmap(
+            heatmap_func,
+            passband=passband,
+            components=components,
+            model=model,
+            value_col=resolved_value_col,
+            showfig=showfig,
+        )
+        if combined_heatmap is not None:
+            outputs.append(combined_heatmap)
         return outputs
 
     def write_generic_metric_diagnostic_plots(
@@ -1754,13 +1874,15 @@ class MetricFigureContext:
         """Write standard diagnostic figures for one already filtered metric item."""
 
         outputs: list[Path] = []
+        item, value_col = self.item_for_value_column(item, value_col)
         metric_name = self.first_value(item["df"], self.metric_col) or item.get("metric", item["label"])
-        if item["key"] == "psa":
+        if _is_spectral_metric_key(item["key"]):
             output = self.write_psa_period_sheet(
                 "scatterplot",
                 item,
                 scatterplot_func,
                 required=[self.distance_col, value_col],
+                finite_columns=[self.distance_col, value_col],
                 indep=self.distance_col,
                 dep=metric_name,
                 value_col=value_col,
@@ -1779,6 +1901,7 @@ class MetricFigureContext:
                 item,
                 period_distribution_func,
                 required=[self.period_col, value_col],
+                finite_columns=[self.period_col, value_col],
                 period_col=self.period_col,
                 score_col=value_col,
                 color_col=self.component_col,
@@ -1793,6 +1916,7 @@ class MetricFigureContext:
             item,
             scatterplot_func,
             required=[self.distance_col, value_col],
+            finite_columns=[self.distance_col, value_col],
             indep=self.distance_col,
             dep=metric_name,
             value_col=value_col,
@@ -1811,6 +1935,7 @@ class MetricFigureContext:
             item,
             boxplot_func,
             required=[self.component_col, value_col] if self.component_col else [value_col],
+            finite_columns=[value_col],
             dep=metric_name,
             indep=self.component_col or self.model_col,
             value_col=value_col,
@@ -1825,23 +1950,82 @@ class MetricFigureContext:
         )
         if output is not None:
             outputs.append(output)
-        output = self.write_metric_plot(
+        return outputs
+
+    def _write_combined_standard_metric_heatmap(
+        self,
+        heatmap_func: Callable[..., Any],
+        *,
+        passband: str | None,
+        components: list[str] | str | None,
+        model: str | None,
+        value_col: str,
+        showfig: bool,
+    ) -> Path | None:
+        """Write one standard heatmap across all selected non-spectral metrics."""
+
+        if self.metric_col is None or self.metric_col not in self.metrics_for_figures.columns:
+            self._progress("Skipping combined metric heatmap: no metric column found.")
+            return None
+        row_col = "metric_component"
+        heatmap_value_col = "__svtk_metric_plot_value"
+        frames: list[pd.DataFrame] = []
+        metric_names: list[str] = []
+        for item in self.iter_metric_frames(
+            passband=passband,
+            components=components,
+            model=model,
+            split_psa_period=False,
+        ):
+            item, item_value_col = self.item_for_value_column(item, value_col)
+            if _is_spectral_metric_key(item["key"]):
+                continue
+            frame = item["df"].copy()
+            if frame.empty or item_value_col not in frame.columns:
+                continue
+            frame[heatmap_value_col] = pd.to_numeric(frame[item_value_col], errors="coerce")
+            metric_name = self.first_value(frame, self.metric_col) or item.get("metric", item["label"])
+            metric_names.append(str(metric_name))
+            metric_label = _metric_display_label(metric_name)
+            if self.component_col is not None and self.component_col in frame.columns:
+                frame[row_col] = [
+                    f"{metric_label} | {component}"
+                    for component in frame[self.component_col].astype(str)
+                ]
+            else:
+                frame[row_col] = metric_label
+            frames.append(frame)
+        if not frames:
+            self._progress("Skipping combined metric heatmap: no non-spectral metric rows selected.")
+            return None
+        heatmap_df = pd.concat(frames, ignore_index=True, sort=False)
+        if not _has_finite_column_pairs(heatmap_df, [heatmap_value_col]):
+            self._progress("Skipping combined metric heatmap: no finite metric values selected.")
+            return None
+        item = {
+            "key": "all_metrics",
+            "label": "All metrics",
+            "metric": "All metrics",
+            "period_s": None,
+            "df": heatmap_df,
+        }
+        column_col = self.model_col if self.model_col in heatmap_df.columns else None
+        return self.write_metric_plot(
             "heatmap",
             item,
             heatmap_func,
-            required=[value_col],
-            dep=metric_name,
-            indep=self.component_col or self.model_col,
-            column=self.model_col if self.model_col in item["df"].columns else None,
-            value_col=value_col,
+            required=[row_col, heatmap_value_col],
+            finite_columns=[heatmap_value_col],
+            dep=list(dict.fromkeys(metric_names)),
+            indep=row_col,
+            column=column_col,
+            value_col=heatmap_value_col,
             forward_value_col=True,
-            passband=passband,
+            passband=None,
             model=model,
+            title="All Metrics by Component Heatmap",
             showfig=showfig,
         )
-        if output is not None:
-            outputs.append(output)
-        return outputs
 
     def write_score_trend_plots(
         self,
@@ -1880,7 +2064,7 @@ class MetricFigureContext:
             model=model,
             split_psa_period=False,
         ):
-            writer = self.write_psa_period_sheet if item["key"] == "psa" else self.write_metric_plot
+            writer = self.write_psa_period_sheet if _is_spectral_metric_key(item["key"]) else self.write_metric_plot
             for score_col in available:
                 output = writer(
                     "score_trends",
@@ -1920,8 +2104,8 @@ class MetricFigureContext:
         if not self.ready:
             self._progress(f"Skipping {label}: metric figure context is not ready.")
             return False
-        if value_col is None or value_col not in self.metrics_for_figures.columns:
-            self._progress(f"Skipping {label}: value column {value_col!r} is not present.")
+        if not _metric_context_has_plot_value(self.metrics_for_figures, value_col):
+            self._progress(f"Skipping {label}: no finite values are available for {value_col!r} or pair-metric 'value'.")
             return False
         return True
 
@@ -1929,7 +2113,7 @@ class MetricFigureContext:
         """Return PSA item variants, one per oscillator period."""
 
         df = item["df"]
-        if item.get("key") != "psa" or self.period_col is None or self.period_col not in df.columns:
+        if not _is_spectral_metric_key(item.get("key")) or self.period_col is None or self.period_col not in df.columns:
             return []
         periods = sorted(pd.to_numeric(df[self.period_col], errors="coerce").dropna().unique())
         out = []
@@ -2511,8 +2695,8 @@ def write_large_run_metric_figure_suite_from_notebook_settings(
                 period_score_distribution_func,
                 **settings.plot_selection_kwargs(
                     value_col=resolved_value_col,
-                    compare_to=settings.compare_to,
-                    table=settings.comparison_table,
+                    compare_to=getattr(settings, "compare_to", None),
+                    table=getattr(settings, "comparison_table", False),
                 ),
             ),
             message=(
@@ -2967,6 +3151,30 @@ def norm_text(value: object) -> str:
     return re.sub(r"[^a-z0-9]+", "", str(value).lower())
 
 
+def _metric_display_label(value: object) -> str:
+    """Return a readable metric label without requiring plotting imports."""
+
+    try:
+        from spatial_vtk.config.labels import metric_display_name
+    except ImportError:
+        return str(value)
+    return metric_display_name(value)
+
+
+def _metric_spec_key(value: object) -> str:
+    """Return a stable key for a metric discovered from the metric table."""
+
+    key = str(value).strip().lower()
+    key = re.sub(r"[^a-z0-9]+", "_", key).strip("_")
+    return key or "metric"
+
+
+def _is_spectral_metric_key(key: object) -> bool:
+    """Return whether a metric key should use period-scoped spectral handling."""
+
+    return str(key) in SPECTRAL_METRIC_KEYS
+
+
 def _target_metric_spec(key: object) -> dict[str, object] | None:
     """Return one target metric spec by key, label, or alias."""
 
@@ -3054,9 +3262,14 @@ def _metric_figure_columns(available_columns: list[str], *, value_col: str) -> l
         value_col,
         "metric",
         "metric_name",
+        "metric_group",
         "band",
         "passband",
         "period_band",
+        "period_min_s",
+        "period_max_s",
+        "dominant_period_s",
+        "dominant_band_label",
         "model",
         "model_name",
         "component",
@@ -3093,11 +3306,61 @@ def _metric_figure_columns(available_columns: list[str], *, value_col: str) -> l
         "event_region",
         "event_geojson_region",
         "event_geojson_labels",
+        "network",
+        "station_network",
+        "station_family",
+        "channel",
+        "value",
+        "value_obs",
+        "value_syn",
+        "residual",
+        "log2_residual",
+        "ln_residual",
         "anderson_2004_gof",
         "olsen_mayhew_gof",
         "score",
     }
     return [column for column in available_columns if column in wanted]
+
+
+def _apply_metric_context_load_filters(
+    df: pd.DataFrame,
+    load_filters: dict[str, object] | None,
+) -> pd.DataFrame:
+    """Apply figure-set filters when the requested columns are available."""
+
+    if df.empty or not load_filters:
+        return df
+    out = _with_metric_context_derived_filter_columns(df, load_filters)
+    for column, values in load_filters.items():
+        if values is None or column not in out.columns:
+            continue
+        out = filter_optional(out, column, values)
+    return out
+
+
+def _with_metric_context_derived_filter_columns(
+    df: pd.DataFrame,
+    load_filters: dict[str, object],
+) -> pd.DataFrame:
+    """Add derived filter columns that notebooks commonly request."""
+
+    if "station_family" not in load_filters or "station_family" in df.columns:
+        return df
+    station_col = first_existing(df, ["station", "station_id", "station_code"])
+    network_col = first_existing(df, ["network", "station_network"])
+    if station_col is None or network_col is None:
+        return df
+    try:
+        from spatial_vtk.qc import classify_station_family
+    except ImportError:
+        return df
+    out = df.copy()
+    out["station_family"] = [
+        classify_station_family(network, station)
+        for network, station in zip(out[network_col], out[station_col])
+    ]
+    return out
 
 
 def _sample_rows(df: pd.DataFrame, *, n: int) -> pd.DataFrame:
@@ -3284,6 +3547,72 @@ def _finite_value_row_count(df: pd.DataFrame, value_col: str) -> int:
         return 0
     values = pd.to_numeric(df[value_col], errors="coerce")
     return int(np.isfinite(values).sum())
+
+
+def _metric_context_has_plot_value(df: pd.DataFrame, value_col: str | None) -> bool:
+    """Return whether the metric context has any finite plottable value."""
+
+    if df.empty:
+        return False
+    candidates = [value_col, "value", DELAY_FRACTION_VALUE_COL]
+    return any(_finite_value_row_count(df, str(column)) > 0 for column in candidates if column)
+
+
+def _with_delay_fraction_column(df: pd.DataFrame, *, band_col: str | None) -> pd.DataFrame:
+    """Return rows with traveltime delay normalized by dominant period."""
+
+    if df is None or df.empty or "value" not in df.columns:
+        return df
+    out = df.copy()
+    delay = pd.to_numeric(out["value"], errors="coerce")
+    denominator = _dominant_period_values(out, band_col=band_col)
+    fraction = delay / denominator
+    finite = np.isfinite(delay) & np.isfinite(denominator) & (denominator > 0.0)
+    out[DELAY_FRACTION_VALUE_COL] = np.where(finite, fraction, np.nan)
+    return out
+
+
+def _dominant_period_values(df: pd.DataFrame, *, band_col: str | None) -> pd.Series:
+    """Return dominant-period denominators from table columns or passband labels."""
+
+    if "dominant_period_s" in df.columns:
+        values = pd.to_numeric(df["dominant_period_s"], errors="coerce")
+        if np.isfinite(values).any():
+            return values
+    for min_col, max_col in (("period_min_s", "period_max_s"), ("min_period_s", "max_period_s")):
+        if min_col in df.columns and max_col in df.columns:
+            mins = pd.to_numeric(df[min_col], errors="coerce")
+            maxs = pd.to_numeric(df[max_col], errors="coerce")
+            values = np.sqrt(mins * maxs)
+            if np.isfinite(values).any():
+                return pd.Series(values, index=df.index)
+    if band_col is not None and band_col in df.columns:
+        return df[band_col].map(_period_from_passband_label)
+    return pd.Series(np.nan, index=df.index, dtype=float)
+
+
+def _period_from_passband_label(value: object) -> float:
+    """Return a representative period for a passband label."""
+
+    text = str(value or "").lower()
+    numbers = [float(match) for match in re.findall(r"\d+(?:\.\d+)?", text)]
+    if len(numbers) >= 2 and numbers[0] > 0.0 and numbers[1] > 0.0:
+        return float(np.sqrt(numbers[0] * numbers[1]))
+    if len(numbers) == 1 and numbers[0] > 0.0:
+        return float(numbers[0])
+    return float("nan")
+
+
+def _has_finite_column_pairs(df: pd.DataFrame, columns: Sequence[str | None]) -> bool:
+    """Return whether any row has finite numeric values for every column."""
+
+    real_columns = [column for column in columns if column is not None]
+    if not real_columns or any(column not in df.columns for column in real_columns):
+        return False
+    mask = pd.Series(True, index=df.index)
+    for column in real_columns:
+        mask &= np.isfinite(pd.to_numeric(df[column], errors="coerce"))
+    return bool(mask.any())
 
 
 def _nonfinite_value_row_count(df: pd.DataFrame, value_col: str) -> int:

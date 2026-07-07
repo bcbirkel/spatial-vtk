@@ -42,6 +42,7 @@ def plot_event_magnitude_map(
     lon_col: str = "event_lon",
     lat_col: str = "event_lat",
     label_col: str | None = "event_id",
+    bounds: tuple[float, float, float, float] | None = None,
     title: str = "Event Magnitudes",
     add_basemap: bool = True,
     basemap_source: str = "Esri.WorldImagery",
@@ -65,6 +66,8 @@ def plot_event_magnitude_map(
         Magnitude and coordinate columns.
     label_col
         Optional event label column.
+    bounds
+        Optional ``(west, east, south, north)`` map bounds.
     title
         Figure title.
     add_basemap
@@ -89,7 +92,7 @@ def plot_event_magnitude_map(
 
     _require_columns(events_df, [magnitude_col, lon_col, lat_col])
     fig, ax = plt.subplots(figsize=(8.0, 6.8), dpi=180)
-    _set_bounds(ax, events_df, lon_col, lat_col)
+    _set_bounds(ax, events_df, lon_col, lat_col, bounds=bounds)
     if add_basemap:
         add_contextily_basemap(ax, crs="EPSG:4326", primary_source=basemap_source, **dict(basemap_kwargs or {}))
     mag = pd.to_numeric(events_df[magnitude_col], errors="coerce")
@@ -127,6 +130,7 @@ def plot_station_event_network_map(
     event_lon_col: str = "event_lon",
     event_lat_col: str = "event_lat",
     network_col: str = "network",
+    bounds: tuple[float, float, float, float] | None = None,
     title: str = "Station Networks and Events",
     add_basemap: bool = True,
     basemap_source: str = "Esri.WorldImagery",
@@ -150,6 +154,8 @@ def plot_station_event_network_map(
         Coordinate columns.
     network_col
         Station network/category column.
+    bounds
+        Optional ``(west, east, south, north)`` map bounds.
     title
         Figure title.
     add_basemap
@@ -176,7 +182,7 @@ def plot_station_event_network_map(
     _require_columns(stations_df, [station_lon_col, station_lat_col])
     _require_columns(events_df, [event_lon_col, event_lat_col])
     fig, ax = plt.subplots(figsize=(8.4, 7.0), dpi=180)
-    _set_combined_bounds(ax, stations_df, events_df, station_lon_col, station_lat_col, event_lon_col, event_lat_col)
+    _set_combined_bounds(ax, stations_df, events_df, station_lon_col, station_lat_col, event_lon_col, event_lat_col, bounds=bounds)
     if add_basemap:
         add_contextily_basemap(ax, crs="EPSG:4326", primary_source=basemap_source, **dict(basemap_kwargs or {}))
     if network_col in stations_df.columns:
@@ -217,6 +223,7 @@ def plot_station_event_beachball_map(
     magnitude_cmap: str = "autumn_r",
     station_lon_col: str = "lon",
     station_lat_col: str = "lat",
+    bounds: tuple[float, float, float, float] | None = None,
     title: str = "Event Focal Mechanisms",
     add_basemap: bool = True,
     basemap_source: str = "Esri.WorldImagery",
@@ -249,6 +256,8 @@ def plot_station_event_beachball_map(
         Matplotlib colormap name for magnitude coloring.
     station_lon_col, station_lat_col
         Station coordinate columns.
+    bounds
+        Optional ``(west, east, south, north)`` map bounds.
     title
         Figure title.
     add_basemap
@@ -275,9 +284,9 @@ def plot_station_event_beachball_map(
     _require_columns(events_df, [event_lon_col, event_lat_col])
     fig, ax = plt.subplots(figsize=(8.4, 7.0), dpi=180)
     if stations_df is not None and {station_lon_col, station_lat_col} <= set(stations_df.columns):
-        _set_combined_bounds(ax, stations_df, events_df, station_lon_col, station_lat_col, event_lon_col, event_lat_col)
+        _set_combined_bounds(ax, stations_df, events_df, station_lon_col, station_lat_col, event_lon_col, event_lat_col, bounds=bounds)
     else:
-        _set_bounds(ax, events_df, event_lon_col, event_lat_col)
+        _set_bounds(ax, events_df, event_lon_col, event_lat_col, bounds=bounds)
     if add_basemap:
         basemap_success, basemap_source_used = add_contextily_basemap(
             ax,
@@ -458,9 +467,22 @@ def _require_columns(df: pd.DataFrame, columns: list[str]) -> None:
         raise KeyError(f"Missing required columns: {missing}")
 
 
-def _set_bounds(ax: plt.Axes, df: pd.DataFrame, lon_col: str, lat_col: str) -> None:
+def _set_bounds(
+    ax: plt.Axes,
+    df: pd.DataFrame,
+    lon_col: str,
+    lat_col: str,
+    *,
+    bounds: tuple[float, float, float, float] | None = None,
+) -> None:
     """Set padded map bounds from one coordinate table."""
 
+    if bounds is not None:
+        west, east, south, north = [float(value) for value in bounds]
+        ax.set_xlim(west, east)
+        ax.set_ylim(south, north)
+        _set_geographic_aspect(ax)
+        return
     lon = pd.to_numeric(df[lon_col], errors="coerce").to_numpy(dtype=float)
     lat = pd.to_numeric(df[lat_col], errors="coerce").to_numpy(dtype=float)
     finite = np.isfinite(lon) & np.isfinite(lat)
@@ -477,7 +499,17 @@ def _set_bounds(ax: plt.Axes, df: pd.DataFrame, lon_col: str, lat_col: str) -> N
     _set_geographic_aspect(ax)
 
 
-def _set_combined_bounds(ax: plt.Axes, stations_df: pd.DataFrame, events_df: pd.DataFrame, station_lon: str, station_lat: str, event_lon: str, event_lat: str) -> None:
+def _set_combined_bounds(
+    ax: plt.Axes,
+    stations_df: pd.DataFrame,
+    events_df: pd.DataFrame,
+    station_lon: str,
+    station_lat: str,
+    event_lon: str,
+    event_lat: str,
+    *,
+    bounds: tuple[float, float, float, float] | None = None,
+) -> None:
     """Set padded map bounds from station and event tables."""
 
     work = pd.DataFrame(
@@ -486,7 +518,7 @@ def _set_combined_bounds(ax: plt.Axes, stations_df: pd.DataFrame, events_df: pd.
             "lat": pd.concat([pd.to_numeric(stations_df[station_lat], errors="coerce"), pd.to_numeric(events_df[event_lat], errors="coerce")], ignore_index=True),
         }
     )
-    _set_bounds(ax, work, "lon", "lat")
+    _set_bounds(ax, work, "lon", "lat", bounds=bounds)
 
 
 def _finish_map(ax: plt.Axes, title: str) -> None:

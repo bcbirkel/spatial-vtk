@@ -157,16 +157,17 @@ def _render_qc_dashboard(
                 st.plotly_chart(build_qc_histogram_figure(filtered, value_col=column, title=_qc_column_label(column), clip_iqr=clip_iqr), width="stretch", key=f"timing_{column}")
     with band_tab:
         content_columns = _band_content_columns(filtered)
+        band_label_column = _band_label_column(filtered)
         columns, message = _qc_chart_columns_or_message(
             filtered,
-            (["dominant_band_label"] if "dominant_band_label" in filtered.columns else []) + content_columns,
+            ([band_label_column] if band_label_column else []) + content_columns,
             "band-content",
         )
         if message:
             st.info(message)
         else:
-            if "dominant_band_label" in filtered.columns:
-                st.plotly_chart(build_qc_bar_figure(filtered, column="dominant_band_label", title="Dominant Band Counts"), width="stretch", key="band_dominant_band_counts")
+            if band_label_column:
+                st.plotly_chart(build_qc_bar_figure(filtered, column=band_label_column, title="Passband Counts"), width="stretch", key="band_passband_counts")
             for column in content_columns:
                 st.plotly_chart(build_qc_histogram_figure(filtered, value_col=column, title=_qc_column_label(column), clip_iqr=clip_iqr), width="stretch", key=f"band_{column}")
     with table_tab:
@@ -498,13 +499,32 @@ def _band_options(df: pd.DataFrame) -> list[str]:
 def _amplitude_columns(df: pd.DataFrame) -> list[str]:
     """Return configured band-specific amplitude columns."""
 
-    return [column for column in df.columns if column == "raw_peak_abs" or column.startswith("band_peak_abs")]
+    preferred = ("raw_peak_abs", "raw_rms_amplitude", "signal_rms", "noise_rms", "snr_rms", "band_peak_abs")
+    return [
+        column
+        for column in df.columns
+        if column in preferred or column.startswith("band_peak_abs")
+    ]
 
 
 def _band_content_columns(df: pd.DataFrame) -> list[str]:
     """Return configured band-specific content columns."""
 
-    return [column for column in df.columns if column == "dominant_period_s" or column.startswith("energy_frac")]
+    preferred = ("dominant_period_s", "energy_frac", "snr_rms", "pre_origin_signal_ratio", "origin_signal_ratio")
+    return [
+        column
+        for column in df.columns
+        if column in preferred or column.startswith("energy_frac")
+    ]
+
+
+def _band_label_column(df: pd.DataFrame) -> str:
+    """Return the best categorical passband column for band-content counts."""
+
+    for column in ("dominant_band_label", "passband", "band"):
+        if column in df.columns:
+            return column
+    return ""
 
 
 def _qc_chart_columns_or_message(
@@ -526,6 +546,20 @@ def _qc_chart_columns_or_message(
 def _qc_column_label(column: str) -> str:
     """Return a readable QC column label."""
 
+    labels = {
+        "raw_peak_abs": "Raw Peak Absolute Amplitude",
+        "raw_rms_amplitude": "Raw RMS Amplitude",
+        "signal_rms": "Signal RMS",
+        "noise_rms": "Noise RMS",
+        "snr_rms": "Signal-to-Noise RMS Ratio",
+        "band_peak_abs": "Passband Peak Spectral Amplitude",
+        "energy_frac": "Passband Energy Fraction",
+        "dominant_period_s": "Dominant Period (sec)",
+        "pre_origin_signal_ratio": "Pre-Origin / Signal RMS Ratio",
+        "origin_signal_ratio": "Origin / Signal RMS Ratio",
+    }
+    if column in labels:
+        return labels[column]
     return column.replace("band_peak_abs_", "Peak amplitude ").replace("energy_frac_", "Energy fraction ").replace("_", " ").replace(" s", " sec").title()
 
 

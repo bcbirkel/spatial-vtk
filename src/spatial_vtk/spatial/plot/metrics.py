@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from itertools import combinations
 from pathlib import Path
 from typing import Any
 
@@ -421,7 +422,7 @@ def boxplot(
         color_values = _ordered_categories(plot_df[color_col])
     colors = _scatter_colors(cmap, len(color_values))
     color_lookup = dict(zip(color_values, colors))
-    _draw_grouped_boxplot(ax, plot_df, category_col=category_col, color_col=color_col, value_col=value_column, categories=categories, color_values=color_values, color_lookup=color_lookup)
+    plotted_groups = _draw_grouped_boxplot(ax, plot_df, category_col=category_col, color_col=color_col, value_col=value_column, categories=categories, color_values=color_values, color_lookup=color_lookup)
     if _uses_zero_reference(str(resolved_value_col)) or str(resolved_value_col).endswith("residual"):
         ax.axhline(0.0, color="black", linewidth=0.8, linestyle=":")
     ax.set_xlabel(display_label(category_col))
@@ -433,6 +434,7 @@ def boxplot(
         df=plot_df,
         robust_percentile=robust_axis_percentile,
     )
+    _ensure_axis_contains_boxplot_whiskers(ax, plotted_groups)
     apply_figure_context(
         ax,
         plot_df,
@@ -448,16 +450,19 @@ def boxplot(
     if color_col != "_box_color_group":
         _draw_boxplot_legend(ax, color_values, color_lookup, color_col)
     if table and compare_to is not None:
-        rows = _categorical_comparison_rows(
-            plot_df,
-            category_col=category_col,
-            color_col="dep",
-            value_col=value_column,
-            compare_to=compare_to,
-            statistic=statistic,
-            n_bootstrap=n_bootstrap,
-            random_seed=random_seed,
-        )
+        try:
+            rows = _categorical_comparison_rows(
+                plot_df,
+                category_col=category_col,
+                color_col="dep",
+                value_col=value_column,
+                compare_to=compare_to,
+                statistic=statistic,
+                n_bootstrap=n_bootstrap,
+                random_seed=random_seed,
+            )
+        except ValueError:
+            rows = []
         if rows:
             ax.set_xlabel("")
             add_below_axes_table(ax, rows=rows, columns=["Comparison", "Effect", "95% CI", "p", "n"], col_widths=[0.42, 0.12, 0.24, 0.10, 0.08], font_size=7.0, max_visible_rows=6)
@@ -1145,6 +1150,7 @@ def plot_geology_contrast(
     baseline_values: tuple[str, ...] | None = None,
     compare_values: tuple[str, ...] | list[str] | list[tuple[str, ...]] | None = None,
     class_values: tuple[str, ...] | list[str] | None = None,
+    pairwise_contrasts: bool = False,
     statistic: str | None = None,
     title: str | None = None,
     robust_axis_percentile: float | None = 95.0,
@@ -1210,7 +1216,16 @@ def plot_geology_contrast(
         work = work.merge(station_metadata[metadata_cols].drop_duplicates(subset=[station_col]), on=station_col, how="left")
     _require(work, [station_col, value_col, selected_group_col])
 
-    if contrast_df is None:
+    if contrast_df is None and pairwise_contrasts:
+        contrast_df = _pairwise_bootstrap_contrast_table(
+            work,
+            station_col=station_col,
+            value_col=value_col,
+            group_col=selected_group_col,
+            class_values=class_values,
+            statistic=selected_statistic,
+        )
+    elif contrast_df is None:
         contrast_df = bootstrap_contrast_table(
             work,
             station_col=station_col,
@@ -1267,11 +1282,15 @@ def plot_geology_contrast(
     ax.set_xlabel(display_label(selected_group_col))
     ax.set_ylabel(context_value_label(value_col, work))
     apply_robust_axis_limits(ax, pd.to_numeric(work[value_col], errors="coerce"), value_col=value_col, df=work, robust_percentile=robust_axis_percentile)
+    _ensure_axis_contains_values(ax, values)
     plot_title = title or _geology_title(contrast_df, labels)
     apply_figure_context(ax, work, value_col=value_col, title=plot_title, max_values=3, include_value=False)
     ax.grid(True, axis="y", alpha=0.25)
+    contrast_rows = _contrast_annotation_rows(contrast_df) if contrast_df is not None and not contrast_df.empty else []
+    if contrast_rows:
+        fig.set_size_inches(fig_width, max(6.4, 5.8 + 0.34 * (len(contrast_rows) + 1)), forward=True)
     _annotate_contrast(ax, contrast_df)
-    if contrast_df is not None and not contrast_df.empty:
+    if contrast_rows:
         fig.subplots_adjust(bottom=0.34)
     return _finish_spatial_figure(
         fig,
@@ -1290,8 +1309,54 @@ def plot_geology_contrast(
             "group_col": selected_group_col,
             "value_col": value_col,
             "statistic": selected_statistic,
+            "pairwise_contrasts": bool(pairwise_contrasts),
         },
     )
+
+
+def _pairwise_bootstrap_contrast_table(
+    work: pd.DataFrame,
+    *,
+    station_col: str,
+    value_col: str,
+    group_col: str,
+    class_values: tuple[str, ...] | list[str] | None,
+    statistic: str,
+) -> pd.DataFrame:
+    """Return all pairwise bootstrap contrasts for the selected classes."""
+
+    selected_classes = _as_string_tuple(class_values) if class_values is not None else _available_values(work[group_col])
+    selected_classes = tuple(value for value in selected_classes if str(value).strip())
+    tables = []
+    for left, right in combinations(selected_classes, 2):
+        table = bootstrap_contrast_table(
+            work,
+            station_col=station_col,
+            value_col=value_col,
+            group_col=group_col,
+            left_values=(left,),
+            right_values=(right,),
+            baseline_values=None,
+            compare_values=None,
+            class_values=selected_classes,
+            statistic=statistic,
+        )
+        if not table.empty:
+            tables.append(table)
+    if not tables:
+        return bootstrap_contrast_table(
+            work,
+            station_col=station_col,
+            value_col=value_col,
+            group_col=group_col,
+            left_values=tuple(selected_classes[:1]),
+            right_values=tuple(selected_classes[1:2]),
+            baseline_values=None,
+            compare_values=None,
+            class_values=selected_classes,
+            statistic=statistic,
+        ).iloc[0:0]
+    return pd.concat(tables, ignore_index=True, sort=False)
 
 
 def _heatmap(
@@ -1306,6 +1371,8 @@ def _heatmap(
     value_col: str | None = None,
     annotation_pivot: pd.DataFrame | None = None,
     cmap: str = "coolwarm",
+    vmin: float | None = None,
+    vmax: float | None = None,
     include_model: bool = True,
     extra: Sequence[str] | None = None,
     showfig: bool | None = None,
@@ -1338,7 +1405,9 @@ def _heatmap(
             metadata=metadata,
         )
     values = pivot.to_numpy(dtype=float)
-    cmap, vmin, vmax = value_color_settings(values, value_col, context_df, diverging_cmap=cmap, sequential_cmap="viridis")
+    cmap, auto_vmin, auto_vmax = value_color_settings(values, value_col, context_df, diverging_cmap=cmap, sequential_cmap="viridis")
+    vmin = auto_vmin if vmin is None else vmin
+    vmax = auto_vmax if vmax is None else vmax
     fig, ax = plt.subplots(figsize=(7.5, 5.2), dpi=180)
     image = ax.imshow(values, aspect="auto", cmap=cmap, vmin=vmin, vmax=vmax)
     ax.set_xticks(np.arange(pivot.shape[1]))
@@ -1598,7 +1667,7 @@ def _draw_grouped_boxplot(
     categories: list[str],
     color_values: list[str],
     color_lookup: dict[str, object],
-) -> None:
+) -> list[np.ndarray]:
     """Draw category-grouped boxplots with jittered sample points."""
 
     n_colors = max(1, len(color_values))
@@ -1637,13 +1706,90 @@ def _draw_grouped_boxplot(
     ax.set_xlim(0.4, len(categories) + 0.6)
     ax.set_xticks(np.arange(1, len(categories) + 1))
     ax.set_xticklabels(categories, rotation=20, ha="right")
+    return plotted_values
+
+
+def _ensure_axis_contains_boxplot_whiskers(ax: plt.Axes, groups: list[np.ndarray]) -> None:
+    """Expand the y-axis when robust limits clip rendered boxplot whiskers."""
+
+    limits = _boxplot_whisker_limits(groups)
+    if limits is None:
+        return
+    low, high = limits
+    ymin, ymax = ax.get_ylim()
+    span = max(float(ymax - ymin), float(high - low), 1.0e-12)
+    pad = max(span * 0.06, 1.0e-9)
+    changed = False
+    if low < ymin:
+        ymin = low - pad
+        changed = True
+    if high > ymax:
+        ymax = high + pad
+        changed = True
+    if changed:
+        ax.set_ylim(ymin, ymax)
+
+
+def _ensure_axis_contains_values(ax: plt.Axes, groups: Sequence[np.ndarray]) -> None:
+    """Expand the y-axis when robust limits clip plotted sample points."""
+
+    finite_groups = []
+    for group in groups:
+        finite = np.asarray(group, dtype=float)
+        finite = finite[np.isfinite(finite)]
+        if finite.size:
+            finite_groups.append(finite)
+    if not finite_groups:
+        return
+    values = np.concatenate(finite_groups)
+    low = float(np.nanmin(values))
+    high = float(np.nanmax(values))
+    if not np.isfinite(low) or not np.isfinite(high):
+        return
+    ymin, ymax = ax.get_ylim()
+    span = max(float(ymax - ymin), float(high - low), 1.0)
+    pad = max(span * 0.06, 1.0e-9)
+    ax.set_ylim(min(ymin, low - pad), max(ymax, high + pad))
+
+
+def _boxplot_whisker_limits(groups: list[np.ndarray]) -> tuple[float, float] | None:
+    """Return Tukey-whisker limits for the non-flier boxplot values."""
+
+    values: list[float] = []
+    for group in groups:
+        finite = np.asarray(group, dtype=float)
+        finite = finite[np.isfinite(finite)]
+        if finite.size == 0:
+            continue
+        if finite.size < 4:
+            values.extend([float(np.nanmin(finite)), float(np.nanmax(finite))])
+            continue
+        q1, q3 = np.nanpercentile(finite, [25.0, 75.0])
+        iqr = q3 - q1
+        lower = q1 - 1.5 * iqr
+        upper = q3 + 1.5 * iqr
+        whisker_values = finite[(finite >= lower) & (finite <= upper)]
+        if whisker_values.size == 0:
+            whisker_values = finite
+        values.extend([float(np.nanmin(whisker_values)), float(np.nanmax(whisker_values))])
+    if not values:
+        return None
+    return float(np.nanmin(values)), float(np.nanmax(values))
 
 
 def _draw_boxplot_legend(ax: plt.Axes, color_values: list[str], color_lookup: dict[str, object], color_col: str) -> None:
     """Draw a readable legend for grouped boxplots."""
 
     handles = [Patch(facecolor=color_lookup[value], edgecolor=color_lookup[value], alpha=0.35, label=_group_display_label(value, color_col)) for value in color_values]
-    ax.legend(handles=handles, frameon=True, fontsize=8, title=_scatter_group_title(color_col))
+    ax.figure.subplots_adjust(right=min(ax.figure.subplotpars.right, 0.80))
+    ax.legend(
+        handles=handles,
+        frameon=True,
+        fontsize=8,
+        title=_scatter_group_title(color_col),
+        loc="upper left",
+        bbox_to_anchor=(1.01, 1.0),
+    )
 
 
 def _categorical_comparison_rows(
@@ -2604,6 +2750,8 @@ def _plot_group_specs(
         specs.append((_values_label(selected_baseline), selected_baseline))
         for group in _comparison_groups_for_plot(compare_values, class_values=class_values, baseline_values=selected_baseline, available_values=_available_values(work[group_col])):
             specs.append((_values_label(group), group))
+    elif class_values is not None:
+        specs = [(_values_label(value), (str(value),)) for value in class_values if str(value).strip()]
     else:
         specs = [(_values_label(left_values), _as_string_tuple(left_values)), (_values_label(right_values), _as_string_tuple(right_values))]
     deduped: list[tuple[str, tuple[str, ...]]] = []
@@ -2669,13 +2817,14 @@ def _annotate_contrast(ax: plt.Axes, contrast_df: pd.DataFrame | None) -> None:
     rows = _contrast_annotation_rows(contrast_df)
     if not rows:
         return
+    font_size = 7.2 if len(rows) <= 6 else 6.4
     add_below_axes_table(
         ax,
         rows=rows,
         columns=["Contrast", "Effect", "95% CI", "p", "Result", "Events"],
         col_widths=[0.34, 0.10, 0.22, 0.08, 0.18, 0.08],
-        font_size=7.5,
-        max_visible_rows=5,
+        font_size=font_size,
+        max_visible_rows=0,
     )
 
 
@@ -2683,7 +2832,7 @@ def _contrast_annotation_rows(contrast_df: pd.DataFrame) -> list[list[str]]:
     """Return compact bootstrap summary rows for the below-plot table."""
 
     rows = []
-    for _index, row in contrast_df.head(5).iterrows():
+    for _index, row in contrast_df.iterrows():
         label = str(row.get("contrast_label", "") or row.get("effect_direction", "") or "Contrast")
         effect, interval = _effect_and_interval_labels(row)
         if not effect:
@@ -2692,8 +2841,6 @@ def _contrast_annotation_rows(contrast_df: pd.DataFrame) -> list[list[str]]:
         p_label = _format_pvalue(float(pvalue)) if np.isfinite(pvalue) else ""
         n_events = row.get("n_events", "")
         rows.append([label, effect, interval, p_label, _significance_label(row), str(n_events) if n_events != "" else ""])
-    if len(contrast_df) > 5:
-        rows.append([f"{len(contrast_df) - 5} additional contrasts omitted", "", "", "", "", ""])
     return rows
 
 

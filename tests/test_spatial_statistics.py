@@ -99,7 +99,10 @@ from spatial_vtk.spatial.plot.large_run import (
     StandardGeoJSONPlottingInputResult,
     StandardSpatialDiagnosticFigureResult,
     StandardSpatialMapFigureResult,
+    STEP06_METRIC_COMPARISON_VALUE_COL,
     prepare_spatial_figure_context_from_notebook_settings,
+    _step06_metric_comparison_metrics,
+    _with_step06_metric_comparison_values,
     write_standard_additional_plotting_figures,
     write_standard_geojson_corridor_figures,
     write_standard_geojson_region_figures,
@@ -116,10 +119,10 @@ from spatial_vtk.spatial.plot.large_run import (
     load_standard_geojson_plotting_inputs,
 )
 from spatial_vtk.spatial.map import plot_metric_map_by_model, plot_station_metric_map_by_period
-from spatial_vtk.spatial.plot.metrics import plot_geology_contrast
+from spatial_vtk.spatial.plot.metrics import boxplot, plot_geology_contrast
 from spatial_vtk.spatial.plot.pca import plot_pca_explained_variance, plot_pca_feature_loadings
 from spatial_vtk.visualize import figure_sidecar_status_frame
-from spatial_vtk.visualize.figure_context import value_color_settings
+from spatial_vtk.visualize.figure_context import context_value_label, figure_context_text, value_color_settings
 from spatial_vtk.visualize.figure_sidecars import (
     figure_sidecar_metadata_path,
     figure_sidecar_status_frame,
@@ -334,6 +337,28 @@ def test_write_standard_geojson_region_figures_returns_status_tables(monkeypatch
             }
         )
 
+    geojson_path = tmp_path / "regions.geojson"
+    geojson_path.write_text(
+        json.dumps(
+            {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {"name": "LA Basin", "region_type": "Basin"},
+                        "geometry": mapping(Polygon([(-119, 33), (-117, 33), (-117, 35), (-119, 35), (-119, 33)])),
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {"name": "Glendale", "region_type": "Valley"},
+                        "geometry": mapping(Polygon([(-119, 33), (-117, 33), (-117, 35), (-119, 35), (-119, 33)])),
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
     monkeypatch.setattr(spatial_public, "geojson_polygon_preview_table", fake_preview)
     monkeypatch.setattr(spatial_public, "geojson_metric_region_frame", fake_region_frame)
     monkeypatch.setattr(spatial_public, "geojson_metric_subset_frame", fake_subset)
@@ -365,7 +390,7 @@ def test_write_standard_geojson_region_figures_returns_status_tables(monkeypatch
         events=events,
         outputs=_Outputs(),
         settings=_Settings(),
-        geojson_path=tmp_path / "regions.geojson",
+        geojson_path=geojson_path,
         geojson_plot_func=fake_plot,
         boxplot_func=fake_plot,
         station_map_func=fake_plot,
@@ -390,6 +415,7 @@ def test_write_standard_geojson_region_figures_returns_status_tables(monkeypatch
     assert status["path"].tolist() == status["figure_path"].tolist()
     assert status["artifact"].tolist() == ["geojson_regions", "pga_region_boxplot", "regional_pga_station_map"]
     assert len(calls) == 3
+    assert calls[1][2]["colorby"] == "mapped_region_type"
     assert calls[-1][2]["value_col"] == "mean_centered"
 
 
@@ -895,11 +921,11 @@ def test_write_standard_additional_plotting_figures_returns_previews(tmp_path) -
     assert {"name", "artifact_label", "artifact_role", "status_reason", "resolved_path", "path", "exists"} <= set(
         status.columns
     )
-    assert status["artifact_role"].tolist() == ["figure", "figure", "figure", "figure", "figure"]
-    assert status["status"].tolist() == ["wrote", "wrote", "wrote", "wrote", "wrote"]
-    assert status["status_reason"].tolist() == ["wrote", "wrote", "wrote", "wrote", "wrote"]
-    assert status["figure_exists"].tolist() == [True, True, True, True, True]
-    assert status["exists"].tolist() == [True, True, True, True, True]
+    assert status["artifact_role"].tolist() == ["figure"] * 11
+    assert status["status"].tolist() == ["wrote"] * 11
+    assert status["status_reason"].tolist() == ["wrote"] * 11
+    assert status["figure_exists"].tolist() == [True] * 11
+    assert status["exists"].tolist() == [True] * 11
     assert status["path"].tolist() == status["figure_path"].tolist()
     assert result.metric_summary_frame().loc[0, "Value"] == 2
     assert result.waveform_order_frame().loc[0, "station"] == "STA1"
@@ -914,7 +940,35 @@ def test_write_standard_additional_plotting_figures_returns_previews(tmp_path) -
         }
     ]
     assert set(result.region_metrics["station_geojson_region"]) == {"LA Basin"}
-    assert len(calls) == 5
+    assert len(calls) == 11
+
+
+def test_step06_metric_comparison_values_use_requested_metrics_and_raw_delay_cc() -> None:
+    """Step 6 comparison heatmaps should use the requested metrics and raw delay/CC values."""
+
+    metrics = pd.DataFrame(
+        {
+            "metric": ["PGV", "PGA", "arias_duration", "FAS", "traveltime_delay", "delay_corrected_cc"],
+            "log2_residual": [9.0, 0.1, 0.2, 0.3, 99.0, 99.0],
+            "value": [90.0, 1.1, 1.2, 1.3, 0.45, 0.82],
+        }
+    )
+
+    assert _step06_metric_comparison_metrics(metrics["metric"].tolist()) == [
+        "PGA",
+        "arias_duration",
+        "FAS",
+        "traveltime_delay",
+        "delay_corrected_cc",
+    ]
+
+    with_values = _with_step06_metric_comparison_values(metrics, default_value_col="log2_residual")
+    values = dict(zip(with_values["metric"], with_values[STEP06_METRIC_COMPARISON_VALUE_COL]))
+    assert values["PGA"] == 0.1
+    assert values["arias_duration"] == 0.2
+    assert values["FAS"] == 0.3
+    assert values["traveltime_delay"] == 0.45
+    assert values["delay_corrected_cc"] == 0.82
 
 
 def test_standard_additional_plotting_input_result_writes_figures(tmp_path) -> None:
@@ -981,11 +1035,11 @@ def test_standard_additional_plotting_input_result_writes_figures(tmp_path) -> N
 
     assert isinstance(result, StandardAdditionalPlottingFigureResult)
     status = result.status_frame()
-    assert status["status"].tolist() == ["wrote", "wrote", "wrote", "wrote", "wrote"]
-    assert status["figure_exists"].tolist() == [True, True, True, True, True]
+    assert status["status"].tolist() == ["wrote"] * 11
+    assert status["figure_exists"].tolist() == [True] * 11
     assert result.metric_summary_frame().loc[0, "Value"] == 2
     assert result.waveform_order_frame().loc[0, "station"] == "STA1"
-    assert len(calls) == 5
+    assert len(calls) == 11
 
 
 def test_spatial_metric_product_summary_frame_counts_rows_events_and_stations() -> None:
@@ -2025,6 +2079,84 @@ spatial:
     }
 
 
+def test_spatial_statistics_auto_classifies_station_geology_from_config_geojson(tmp_path: Path) -> None:
+    """Step 4 should use paths.region_geojson when prepared stations lack geology labels."""
+
+    clear_active_config()
+    metrics = normalize_metrics_table(_toy_metrics_table(), default_model="example_model")
+    metrics_path = tmp_path / "outputs" / "tables" / "metrics_long.parquet"
+    write_table(metrics, metrics_path)
+
+    stations = (
+        metrics[["station", "sta_lat", "sta_lon"]]
+        .drop_duplicates(subset=["station"])
+        .rename(columns={"sta_lat": "lat", "sta_lon": "lon"})
+        .reset_index(drop=True)
+    )
+    station_path = tmp_path / "outputs" / "tables" / "prepared_stations.csv"
+    write_table(stations, station_path)
+
+    basin = Polygon([(-118.6, 33.8), (-118.22, 33.8), (-118.22, 34.6), (-118.6, 34.6), (-118.6, 33.8)])
+    mountains = Polygon([(-118.22, 33.8), (-117.8, 33.8), (-117.8, 34.6), (-118.22, 34.6), (-118.22, 33.8)])
+    geojson_path = tmp_path / "regions.geojson"
+    geojson_path.write_text(
+        json.dumps(
+            {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {"short_name": "Basin", "region_type": "Basin"},
+                        "geometry": mapping(basin),
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {"short_name": "Mountains", "region_type": "Mountains"},
+                        "geometry": mapping(mountains),
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+paths:
+  region_geojson: {geojson_path}
+outputs:
+  tables: outputs/tables
+spatial:
+  metric: C5
+  value_column: log2_residual
+  min_stations_per_event: 3
+  min_events_per_station: 1
+  moran_neighbors: 2
+  moran_permutations: 3
+  cluster_min_k: 2
+  cluster_max_k: 3
+  geology_group_column: mapped_region_type
+  geology_left_values: [Basin]
+  geology_right_values: [Mountains]
+  geology_min_stations_per_group: 1
+  geology_bootstrap_samples: 5
+""",
+        encoding="utf-8",
+    )
+
+    summary = run_spatial_statistics_workflow_from_config(config_path=config_path, verbose=True)
+
+    assert summary["failure_count"] == 0
+    assert summary["rows"]["geology_contrasts"] > 0
+    geology = read_table(summary["paths"]["geology_contrasts"])
+    assert set(geology["group_col"]) == {"mapped_region_type"}
+    assert set(geology["left_values"]) == {"Basin"}
+    assert set(geology["right_values"]) == {"Mountains"}
+
+
 def test_spatial_derived_reuse_counts_use_lightweight_table_counter() -> None:
     """Reused derived outputs should not full-read existing large tables for row counts."""
 
@@ -2455,6 +2587,9 @@ def test_write_large_run_spatial_figure_suite_from_notebook_settings_delegates(
         def write_station_metric_maps(self, *args: object, **kwargs: object) -> list[Path]:
             return self._record("station_metric_maps", *args, **kwargs)
 
+        def write_station_bias_maps(self, *args: object, **kwargs: object) -> list[Path]:
+            return self._record("station_bias_maps", *args, **kwargs)
+
         def write_residual_grid_maps(self, *args: object, **kwargs: object) -> list[Path]:
             return self._record("residual_grid_maps", *args, **kwargs)
 
@@ -2494,9 +2629,11 @@ def test_write_large_run_spatial_figure_suite_from_notebook_settings_delegates(
 
     result = write_large_run_spatial_figure_suite_from_notebook_settings(
         Settings(),
+        cfg="spatial-vtk.yaml",
         overwrite=True,
         station_metric_map_func=_dummy_plot,
         station_metric_map_by_period_func=_dummy_plot,
+        station_bias_map_func=_dummy_plot,
         residual_grid_func=_dummy_plot,
         metric_by_model_map_func=_dummy_plot,
         event_residual_map_func=_dummy_plot,
@@ -2506,11 +2643,18 @@ def test_write_large_run_spatial_figure_suite_from_notebook_settings_delegates(
     )
 
     assert result.context is fake_context
+    assert prepare_kwargs["cfg"] == "spatial-vtk.yaml"
     assert prepare_kwargs["include_station_aggregation"] is True
     assert [call[0] for call in calls] == [
         "station_metric_maps",
+        "station_metric_maps",
+        "station_bias_maps",
+        "station_bias_maps",
+        "residual_grid_maps",
         "residual_grid_maps",
         "metric_by_model_maps",
+        "metric_by_model_maps",
+        "event_residual_maps",
         "event_residual_maps",
         "event_centered_azimuthal_plots",
         "event_centered_polar_plots",
@@ -2518,24 +2662,50 @@ def test_write_large_run_spatial_figure_suite_from_notebook_settings_delegates(
         "overview_plots",
     ]
     assert calls[0][2]["value_col"] == "log2_residual"
-    assert calls[2][2]["model"] is None
-    assert calls[4][2]["value_col"] == "event_centered_residual"
-    assert calls[4][2]["include_robust_axis_percentile"] is True
-    assert calls[6][2]["mode"] == "PC2"
+    assert calls[1][2]["value_col"] == "event_centered_residual"
+    assert calls[1][2]["event_centered"] is True
+    assert calls[2][2]["value_col"] == "log2_residual"
+    assert calls[2][2]["event_centered"] is False
+    assert calls[3][2]["value_col"] == "mean_centered"
+    assert calls[5][2]["event_centered"] is True
+    assert calls[6][2]["model"] is None
+    assert calls[7][2]["model"] is None
+    assert calls[7][2]["event_centered"] is True
+    assert calls[9][2]["value_col"] == "event_centered_residual"
+    assert calls[9][2]["event_centered"] is True
+    assert calls[10][2]["value_col"] == "event_centered_residual"
+    assert calls[10][2]["include_robust_axis_percentile"] is True
+    assert calls[12][2]["mode"] == "PC2"
     status = result.status_frame()
     assert {"name", "artifact_label", "artifact_role", "resolved_path", "path", "exists"} <= set(
         status.columns
     )
-    assert status["artifact_role"].tolist() == ["figure"] * 8
-    assert status["artifact"].tolist() == [call[0] for call in calls]
-    assert status["status"].tolist() == ["written"] * 8
-    assert status["status_reason"].tolist() == ["written"] * 8
-    assert status["figure_count"].tolist() == [1] * 8
-    assert status["existing_figure_count"].tolist() == [0] * 8
+    expected_artifacts = [
+        "station_metric_maps",
+        "station_metric_maps_event_centered",
+        "station_bias_maps_raw",
+        "station_bias_maps",
+        "residual_grid_maps",
+        "residual_grid_maps_event_centered",
+        "metric_by_model_maps",
+        "metric_by_model_maps_event_centered",
+        "event_residual_maps",
+        "event_residual_maps_event_centered",
+        "event_centered_azimuthal_plots",
+        "event_centered_polar_plots",
+        "pca_summary_plots",
+        "overview_plots",
+    ]
+    assert status["artifact_role"].tolist() == ["figure"] * 14
+    assert status["artifact"].tolist() == expected_artifacts
+    assert status["status"].tolist() == ["written"] * 14
+    assert status["status_reason"].tolist() == ["written"] * 14
+    assert status["figure_count"].tolist() == [1] * 14
+    assert status["existing_figure_count"].tolist() == [0] * 14
     assert status["figure_paths"].tolist() == [[str(fake_context.figure_dir / f"{call[0]}.png")] for call in calls]
     assert status["first_figure_path"].tolist() == [str(fake_context.figure_dir / f"{call[0]}.png") for call in calls]
     assert status["path"].tolist() == status["first_figure_path"].tolist()
-    assert status["exists"].tolist() == [False] * 8
+    assert status["exists"].tolist() == [False] * 14
 
 
 def test_write_large_run_spatial_summary_figures_from_outputs(tmp_path: Path) -> None:
@@ -2695,16 +2865,26 @@ def test_write_large_run_region_boxplot_from_bounded_table(tmp_path: Path) -> No
             "band": ["2-3 sec", "2-3 sec", "2-3 sec", "2-3 sec"],
             "component": ["Z", "R", "Z", "R"],
             "model": ["example", "example", "example", "example"],
+            "station": ["S1", "S2", "S3", "S4"],
             "station_region": ["LA_Basin", "LA_Basin", "Mountains", "Mountains"],
             "log2_residual": [0.2, 0.1, -0.2, -0.1],
         }
     )
+    stations = pd.DataFrame(
+        {
+            "station": ["S1", "S2", "S3", "S4"],
+            "mapped_region_type": ["Basin", "Basin", "Mountains", "Mountains"],
+        }
+    )
     metrics_path = tmp_path / "metrics.csv"
+    stations_path = tmp_path / "stations.csv"
     metrics.to_csv(metrics_path, index=False)
+    stations.to_csv(stations_path, index=False)
 
     result = write_large_run_region_boxplot(
         metrics_path,
         figure_dir=tmp_path / "figures",
+        station_metadata=stations_path,
         metric="PGA",
         passband="2-3 sec",
         model="example",
@@ -2725,11 +2905,12 @@ def test_write_large_run_region_boxplot_from_bounded_table(tmp_path: Path) -> No
     sidecar_rows = pd.read_csv(result.sidecar_path)
     metadata = json.loads(result.sidecar_path.with_suffix(".json").read_text(encoding="utf-8"))
     assert len(sidecar_rows) == 2
-    assert {"station_region", "_plot_value", "dep"} <= set(sidecar_rows.columns)
+    assert {"station_region", "mapped_region_type", "_plot_value", "dep"} <= set(sidecar_rows.columns)
     assert metadata["source_row_count"] == 4
     assert metadata["written_row_count"] == 2
     assert metadata["sampled"] is True
     assert metadata["category_col"] == "station_region"
+    assert metadata["color_col"] == "mapped_region_type"
     assert metadata["resolved_value_col"] == "log2_residual"
     status = result.status_frame().iloc[0].to_dict()
     assert status["artifact"] == "region_boxplot"
@@ -2799,6 +2980,103 @@ def test_write_large_run_region_boxplot_from_outputs_uses_metric_fallback(tmp_pa
     assert result.figure_path is not None
     assert result.figure_path.exists()
     assert result.figure_path.name.startswith("fallback_region_boxplot__pga__2_3_sec")
+
+
+def test_write_large_run_region_boxplot_colors_from_geojson_region_type(tmp_path: Path) -> None:
+    """Station-region boxplots should color boxes by GeoJSON region class metadata."""
+
+    metrics = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGA", "PGA", "PGA"],
+            "band": ["2-3 sec", "2-3 sec", "2-3 sec", "2-3 sec"],
+            "component": ["Z", "R", "Z", "R"],
+            "model": ["example", "example", "example", "example"],
+            "station_region": ["Los_Angeles_Basin", "Los_Angeles_Basin", "San Gabriel Mountains", "San Gabriel Mountains"],
+            "log2_residual": [0.2, 0.1, -0.2, -0.1],
+        }
+    )
+    geojson = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {"long_name": "Los Angeles Basin", "region_type": "Basin"},
+                "geometry": None,
+            },
+            {
+                "type": "Feature",
+                "properties": {"long_name": "San Gabriel Mountains", "region_type": "Mountains"},
+                "geometry": None,
+            },
+        ],
+    }
+    metrics_path = tmp_path / "metrics.csv"
+    geojson_path = tmp_path / "regions.geojson"
+    metrics.to_csv(metrics_path, index=False)
+    geojson_path.write_text(json.dumps(geojson), encoding="utf-8")
+
+    result = write_large_run_region_boxplot(
+        metrics_path,
+        figure_dir=tmp_path / "figures",
+        geojson_path=geojson_path,
+        metric="PGA",
+        passband="2-3 sec",
+        model="example",
+        max_rows=10,
+        write_sidecar=True,
+        sidecar_rows=None,
+        overwrite=True,
+        showfig=False,
+    )
+
+    assert result.status == "wrote"
+    assert result.sidecar_path is not None
+    sidecar_rows = pd.read_csv(result.sidecar_path)
+    metadata = json.loads(result.sidecar_path.with_suffix(".json").read_text(encoding="utf-8"))
+    assert set(sidecar_rows["mapped_region_type"]) == {"Basin", "Mountains"}
+    assert metadata["color_col"] == "mapped_region_type"
+
+
+def test_write_large_run_region_boxplot_from_outputs_accepts_status_wrapper(tmp_path: Path) -> None:
+    """Step 5 status wrappers should delegate metric-table lookup to their output group."""
+
+    metrics = pd.DataFrame(
+        {
+            "metric": ["PGA", "PGA"],
+            "band": ["2-3 sec", "2-3 sec"],
+            "component": ["Z", "R"],
+            "model": ["example", "example"],
+            "station_region": ["LA_Basin", "Mountains"],
+            "log2_residual": [0.2, -0.2],
+        }
+    )
+    metrics_long = tmp_path / "metrics_long.csv"
+    metrics.to_csv(metrics_long, index=False)
+
+    class OutputStatus:
+        outputs = OutputGroup(
+            name="step_05_regions",
+            paths={
+                "metrics_enriched_path": tmp_path / "missing_metrics_enriched.parquet",
+                "metrics_long_path": metrics_long,
+            },
+        )
+
+    result = write_large_run_region_boxplot_from_outputs(
+        OutputStatus(),
+        figure_dir=tmp_path / "figures",
+        metric="PGA",
+        passband="2-3 sec",
+        model="example",
+        max_rows=10,
+        output_prefix="status_wrapper_region_boxplot",
+        overwrite=True,
+        showfig=False,
+    )
+
+    assert result.status == "wrote"
+    assert result.figure_path is not None
+    assert result.figure_path.exists()
 
 
 def test_write_large_run_region_boxplot_from_notebook_settings_disabled(tmp_path: Path, monkeypatch) -> None:
@@ -2986,6 +3264,12 @@ def test_write_large_run_geojson_region_figures_from_outputs_orchestrates_notebo
             "corridor_map_path": tmp_path / "figures" / "corridors.png",
         },
     )
+
+    class OutputStatus:
+        pass
+
+    output_status = OutputStatus()
+    output_status.outputs = outputs
     calls: list[tuple[str, Path, bool]] = []
 
     def _fake_geojson_plot(_geojson_path, *, output_path, add_basemap, **_kwargs):
@@ -3006,7 +3290,7 @@ def test_write_large_run_geojson_region_figures_from_outputs_orchestrates_notebo
     monkeypatch.setattr(spatial_map, "plot_corridor_map", _fake_corridor_plot)
 
     result = write_large_run_geojson_region_figures_from_outputs(
-        outputs,
+        output_status,
         ingest_outputs,
         geojson_path=tmp_path / "regions.geojson",
         figure_dir=tmp_path / "figures",
@@ -3023,20 +3307,20 @@ def test_write_large_run_geojson_region_figures_from_outputs_orchestrates_notebo
 
     assert result.geojson_status == "wrote"
     assert result.corridor_status == "wrote"
-    assert result.geojson_overview_path == outputs.geojson_polygons_map_path
-    assert result.corridor_map_path == outputs.corridor_map_path
+    assert result.geojson_overview_path == tmp_path / "figures" / "geojson_polygons_map.png"
+    assert result.corridor_map_path == tmp_path / "figures" / "corridor_map.png"
     assert result.boxplot_result.status == "wrote"
     assert result.boxplot_result.figure_path is not None
     assert result.boxplot_result.figure_path.exists()
-    assert ("geojson", outputs.geojson_polygons_map_path, True) in calls
-    assert ("corridor", outputs.corridor_map_path, True) in calls
+    assert ("geojson", tmp_path / "figures" / "geojson_polygons_map.png", True) in calls
+    assert ("corridor", tmp_path / "figures" / "corridor_map.png", True) in calls
     status = result.status_frame()
     assert status["artifact"].tolist() == ["geojson_overview", "corridor_map", "region_boxplot"]
     assert set(status["status"]) == {"wrote"}
     assert status["status_reason"].tolist() == ["wrote", "wrote", "wrote"]
     assert "resolved_path" in status.columns
     assert status.loc[status["artifact"].eq("geojson_overview"), "resolved_path"].iloc[0] == str(
-        outputs.geojson_polygons_map_path
+        tmp_path / "figures" / "geojson_polygons_map.png"
     )
     assert status.loc[status["artifact"].eq("geojson_overview"), "path"].iloc[0] == status.loc[
         status["artifact"].eq("geojson_overview"), "resolved_path"
@@ -4005,6 +4289,239 @@ def test_spatial_figure_context_writes_overview_plots_with_empty_missing_tables(
     assert not any(call["base"] == "spatial_geology_contrast" for call in calls)
 
 
+def test_spatial_figure_context_geology_boxplots_use_defined_classes_and_passbands(tmp_path: Path) -> None:
+    """Large-run geology boxplots should show defined classes and add per-passband figures."""
+
+    clear_active_config()
+    basin = Polygon([(-118.6, 33.8), (-118.2, 33.8), (-118.2, 34.4), (-118.6, 34.4), (-118.6, 33.8)])
+    hills = Polygon([(-118.2, 33.8), (-117.95, 33.8), (-117.95, 34.4), (-118.2, 34.4), (-118.2, 33.8)])
+    mountains = Polygon([(-117.95, 33.8), (-117.7, 33.8), (-117.7, 34.4), (-117.95, 34.4), (-117.95, 33.8)])
+    geojson_path = tmp_path / "regions.geojson"
+    geojson_path.write_text(
+        json.dumps(
+            {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {"short_name": "Basin", "region_type": "Basin"},
+                        "geometry": mapping(basin),
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {"short_name": "Hills", "region_type": "Hills"},
+                        "geometry": mapping(hills),
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {"short_name": "Mountains", "region_type": "Mountains"},
+                        "geometry": mapping(mountains),
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+paths:
+  region_geojson: {geojson_path}
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+spatial:
+  geology_group_column: mapped_region_type
+  geology_left_values: [Basin]
+  geology_right_values: [Mountains]
+  geology_min_stations_per_group: 1
+  geology_bootstrap_samples: 5
+""",
+        encoding="utf-8",
+    )
+    stations = pd.DataFrame(
+        {
+            "station": ["STA", "STB", "STC", "STD", "STE"],
+            "lat": [34.0, 34.1, 34.0, 34.1, 34.6],
+            "lon": [-118.45, -118.35, -118.05, -117.85, -117.5],
+        }
+    )
+    events = pd.DataFrame(
+        {
+            "event_id": ["e1"] * 10,
+            "station": ["STA", "STB", "STC", "STD", "STE"] * 2,
+            "metric": ["PGA"] * 10,
+            "band": ["1-2 sec"] * 5 + ["2-3 sec"] * 5,
+            "component": ["Z"] * 10,
+            "model": ["m1"] * 10,
+            "field_centered": [0.4, 0.3, 0.1, -0.2, 0.0, 0.5, 0.2, 0.0, -0.3, 0.1],
+        }
+    )
+    write_table(stations, resolve_output_path("prepared_stations", kind="table", cfg=config_path, create_parent=True))
+    write_table(events, resolve_output_path("event_centered_residuals", kind="table", cfg=config_path, create_parent=True))
+    write_table(events, resolve_output_path("metric_field", kind="table", cfg=config_path, create_parent=True))
+
+    context = SpatialFigureContext.from_config(
+        cfg=config_path,
+        figure_dir=tmp_path / "figures",
+        make_figures=True,
+        verbose=False,
+    )
+    assert context.site_metadata is not None
+    assert "mapped_region_type" in context.site_metadata.columns
+
+    calls: list[dict[str, object]] = []
+
+    def _fake_write_spatial_plot(base, item, func, df=None, **kwargs):  # noqa: ANN001, ANN202
+        calls.append({"base": base, "item": item, "df": df, "kwargs": kwargs})
+        return tmp_path / f"{base}.png"
+
+    context.write_spatial_plot = _fake_write_spatial_plot  # type: ignore[method-assign]
+    outputs = context._write_geology_contrast_overview_plots(
+        lambda *_args, **_kwargs: None,
+        value_col="field_centered",
+        event_value_col="field_centered",
+        passband=None,
+        components=["Z"],
+        model="m1",
+        showfig=False,
+        robust_axis_percentile=95.0,
+    )
+
+    assert len(outputs) == 6
+    assert [call["base"] for call in calls] == [
+        "spatial_geology_contrast",
+        "spatial_geomorphology_contrast",
+        "spatial_geology_contrast",
+        "spatial_geomorphology_contrast",
+        "spatial_geology_contrast",
+        "spatial_geomorphology_contrast",
+    ]
+    geology_calls = [call for call in calls if call["base"] == "spatial_geology_contrast"]
+    geomorphology_calls = [call for call in calls if call["base"] == "spatial_geomorphology_contrast"]
+    assert {str(call["kwargs"]["class_values"]) for call in geology_calls} == {"('Basin', 'Hills', 'Mountains')"}
+    assert {str(call["kwargs"]["baseline_values"]) for call in geology_calls} == {"('Basin',)"}
+    assert {str(call["kwargs"]["compare_values"]) for call in geology_calls} == {"('Hills', 'Mountains')"}
+    assert {str(call["kwargs"]["class_values"]) for call in geomorphology_calls} == {"('Basin', 'Mountain/hills')"}
+    assert all(call["kwargs"]["pairwise_contrasts"] is True for call in geomorphology_calls)
+    assert all(call["kwargs"]["contrast_df"] is None for call in calls)
+    plotted_bands = [set(call["item"]["df"]["band"]) for call in calls]
+    assert {"1-2 sec", "2-3 sec"} in plotted_bands
+    assert {"1-2 sec"} in plotted_bands
+    assert {"2-3 sec"} in plotted_bands
+    station_metadata = calls[0]["kwargs"]["station_metadata"]
+    assert isinstance(station_metadata, pd.DataFrame)
+    assert {"Basin", "Hills", "Mountains", "unmapped"} <= set(station_metadata["mapped_region_type"])
+    assert {"Basin", "Mountain/hills"} <= set(station_metadata["geomorphology"].dropna())
+
+
+def test_geology_contrast_pairwise_table_shows_all_rows_and_keeps_points_in_limits(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    """Geomorphology boxplots should show all pairwise contrast rows and not clip high samples."""
+
+    import spatial_vtk.spatial.plot.metrics as metrics_plot
+
+    classes = ("Basin", "Basin edge", "Mountain/hills", "Valley")
+    events = pd.DataFrame(
+        {
+            "event_id": ["e1"] * 8,
+            "station": [f"S{i}" for i in range(8)],
+            "field_centered": [0.1, 12.0, 0.3, 0.4, -0.1, 0.2, 0.0, 0.5],
+        }
+    )
+    station_metadata = pd.DataFrame(
+        {
+            "station": [f"S{i}" for i in range(8)],
+            "geomorphology": [classes[index % len(classes)] for index in range(8)],
+        }
+    )
+    captured: dict[str, object] = {}
+
+    def fake_bootstrap(*_args, left_values=None, right_values=None, **_kwargs):  # noqa: ANN002, ANN003, ANN202
+        left = " / ".join(left_values or ())
+        right = " / ".join(right_values or ())
+        return pd.DataFrame(
+            [
+                {
+                    "contrast_label": f"{left} minus {right}",
+                    "effect": 0.1,
+                    "ci_low": -0.1,
+                    "ci_high": 0.2,
+                    "bootstrap_p": 0.5,
+                    "significant_95": False,
+                    "significant_p05": False,
+                    "n_events": 1,
+                }
+            ]
+        )
+
+    def fake_table(ax, *, rows, columns, **kwargs):  # noqa: ANN001, ANN202
+        captured["rows"] = rows
+        captured["columns"] = columns
+        captured["kwargs"] = kwargs
+
+    monkeypatch.setattr(metrics_plot, "bootstrap_contrast_table", fake_bootstrap)
+    monkeypatch.setattr(metrics_plot, "add_below_axes_table", fake_table)
+
+    fig = plot_geology_contrast(
+        events,
+        tmp_path / "geomorphology.png",
+        station_metadata=station_metadata,
+        group_col="geomorphology",
+        value_col="field_centered",
+        class_values=classes,
+        pairwise_contrasts=True,
+        robust_axis_percentile=50.0,
+        savefig=False,
+        showfig=False,
+    )
+
+    assert len(captured["rows"]) == 6
+    assert captured["kwargs"]["max_visible_rows"] == 0
+    assert "additional contrasts omitted" not in str(captured["rows"])
+    assert fig.axes[0].get_ylim()[1] > 12.0
+
+
+def test_model_boxplot_legend_stays_outside_axes_and_xlabel(tmp_path: Path) -> None:
+    """Grouped boxplots should not place the model legend over the x-axis label."""
+
+    rows = []
+    for category in ("Mountain/hills", "Basin Edge", "Basin", "Valley"):
+        for model_index, model in enumerate(("CVM-SI", "CVM-H")):
+            for sample_index in range(8):
+                rows.append(
+                    {
+                        "metric": "PGA",
+                        "geomorphology": category,
+                        "model": model,
+                        "log2_residual": 0.1 * sample_index + 0.2 * model_index,
+                    }
+                )
+    fig = boxplot(
+        pd.DataFrame(rows),
+        tmp_path / "model_boxplot.png",
+        dep="PGA",
+        indep="geomorphology",
+        value_col="log2_residual",
+        model=("CVM-SI", "CVM-H"),
+        colorby="model",
+        title="PGA by geomorphology: model comparison",
+        savefig=False,
+        showfig=False,
+    )
+    ax = fig.axes[0]
+    legend = ax.get_legend()
+
+    assert legend is not None
+    assert ax.get_xlabel() == "Geomorphology"
+    assert legend.get_bbox_to_anchor()._bbox.x0 > 1.0
+    assert ax.get_position().x1 <= 0.80
+
+
 def test_spatial_figure_context_orchestrates_large_run_plot_families(tmp_path: Path) -> None:
     """Step 4 notebook plot families should be package methods with PSA branching."""
 
@@ -4556,6 +5073,57 @@ def test_spatial_plot_and_map_wrappers_write_pngs(tmp_path: Path) -> None:
         assert path.stat().st_size > 0, path
 
 
+def test_distance_correlation_by_metric_uses_outside_legend_and_readable_table(tmp_path: Path) -> None:
+    """Multi-metric correlation plot should reserve room for legend and table."""
+
+    rows = []
+    significance_rows = []
+    for metric_index, metric in enumerate(["PGA", "PGV", "PGD", "CAV", "FAS", "arias_duration", "arias_intensity"]):
+        significance_rows.append({"metric": metric, "moran_i": 0.4 - 0.01 * metric_index, "p_value": 0.01})
+        for distance in [10.0, 30.0, 50.0]:
+            rows.append(
+                {
+                    "metric": metric,
+                    "distance_center_km": distance,
+                    "mean_pair_correlation": 0.45 - 0.002 * distance - 0.01 * metric_index,
+                    "pair_count": 20,
+                }
+            )
+
+    fig = plot_distance_correlation_by_metric(
+        pd.DataFrame(rows),
+        tmp_path / "distance_correlation_by_metric.png",
+        significance_df=pd.DataFrame(significance_rows),
+    )
+    ax = fig.axes[0]
+
+    assert fig.get_size_inches()[0] >= 12.0
+    assert ax.get_position().x1 < 0.75
+    assert ax.get_legend() is not None
+    assert ax.get_legend().get_bbox_to_anchor()._bbox.x0 >= 1.0
+    assert ax.tables
+
+
+def test_station_bias_map_includes_event_count_size_legend() -> None:
+    """Station-bias maps should explain marker-size encoding."""
+
+    station_bias = pd.DataFrame(
+        {
+            "station": ["A", "B", "C"],
+            "lat": [34.0, 34.1, 34.2],
+            "lon": [-118.2, -118.1, -118.0],
+            "mean_centered": [-0.2, 0.1, 0.4],
+            "n_events": [2, 8, 18],
+        }
+    )
+
+    fig = plot_station_bias_map(station_bias, add_basemap=False, savefig=False, showfig=False)
+    legend = fig.axes[0].get_legend()
+
+    assert legend is not None
+    assert legend.get_title().get_text() == "Events per station"
+
+
 def test_spatial_statistics_figures_write_optional_row_sidecars(tmp_path: Path) -> None:
     """Spatial statistics figures should optionally write plotted/source rows."""
 
@@ -4677,6 +5245,90 @@ def test_residual_color_settings_use_seismic_diverging_scale() -> None:
     cmap, vmin, vmax = value_color_settings(np.asarray([-0.3, 0.2]), "field_centered", field_df)
     assert cmap == "seismic"
     assert vmin == -vmax
+
+
+def test_spatial_context_labels_distinguish_raw_and_event_centered_values() -> None:
+    """Figure labels should state whether event means were removed."""
+
+    raw = pd.DataFrame({"metric": ["PGA"], "log2_residual": [0.2]})
+    centered = pd.DataFrame(
+        {
+            "metric": ["PGA"],
+            "field_centered": [0.1],
+            "event_mean": [0.05],
+            "field_source": ["log2 observed/synthetic residual"],
+        }
+    )
+
+    assert context_value_label("log2_residual", raw) == "Raw log2(observed / synthetic)"
+    assert "Processing: event mean not removed" in figure_context_text(raw, value_col="log2_residual")
+    assert context_value_label("field_centered", centered) == "Event-centered log2(observed / synthetic)"
+    assert "Processing: event mean removed" in figure_context_text(centered, value_col="field_centered")
+
+
+def test_spatial_figure_context_metric_by_model_uses_centered_value_for_event_centered_outputs(
+    tmp_path: Path,
+) -> None:
+    """Event-centered metric-by-model maps should use centered values, not raw residual columns."""
+
+    clear_active_config()
+    config_path = tmp_path / "spatial-vtk.yaml"
+    config_path.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+""",
+        encoding="utf-8",
+    )
+    metric_field = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2"],
+            "station": ["STA", "STB"],
+            "metric": ["Energy duration", "Energy duration"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "component": ["Z", "Z"],
+            "model": ["m1", "m1"],
+            "sta_lon": [-118.0, -117.9],
+            "sta_lat": [34.0, 34.1],
+            "log2_residual": [1.0, 2.0],
+        }
+    )
+    event_centered = metric_field.assign(field_centered=[0.2, -0.2])
+    write_table(metric_field, resolve_output_path("metric_field", kind="table", cfg=config_path, create_parent=True))
+    write_table(
+        event_centered,
+        resolve_output_path("event_centered_residuals", kind="table", cfg=config_path, create_parent=True),
+    )
+    context = SpatialFigureContext.from_config(
+        cfg=config_path,
+        figure_dir=tmp_path / "figures",
+        make_figures=True,
+        verbose=False,
+    )
+
+    assert context.metric_value_col == "log2_residual"
+    assert context.event_value_col == "field_centered"
+
+    calls: list[dict[str, object]] = []
+
+    def fake_write_spatial_plot(base, item, func, df=None, **kwargs):  # noqa: ANN001, ANN202
+        calls.append({"base": base, "df": df, "kwargs": kwargs})
+        return tmp_path / f"{base}.png"
+
+    context.write_spatial_plot = fake_write_spatial_plot  # type: ignore[method-assign]
+    plot_func = lambda *args, **kwargs: None
+    context.write_metric_by_model_maps(plot_func)
+    context.write_metric_by_model_maps(plot_func, event_centered=True)
+
+    raw_call = next(call for call in calls if call["base"] == "spatial_metric_by_model_map")
+    event_call = next(call for call in calls if call["base"] == "spatial_metric_by_model_map_event_centered")
+    assert raw_call["kwargs"]["value_col"] == "log2_residual"
+    assert event_call["kwargs"]["value_col"] == "field_centered"
+    assert "field_centered" in event_call["df"].columns
+    assert event_call["df"]["field_centered"].tolist() == [0.2, -0.2]
 
 
 def test_geology_classes_bootstrap_moran_and_pattern_similarity(tmp_path: Path) -> None:

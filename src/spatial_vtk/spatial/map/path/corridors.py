@@ -288,8 +288,13 @@ def _plot_paths(ax: plt.Axes, records_df: pd.DataFrame) -> None:
         label="station",
     )
     ev_lon, ev_lat = _resolve_xy(records_df, lon_candidates=["event_lon", "event_longitude", "source_lon", "source_longitude"], lat_candidates=["event_lat", "event_latitude", "source_lat", "source_latitude"], label="event")
-    for row in records_df.itertuples(index=False):
-        ax.plot([getattr(row, ev_lon), getattr(row, sta_lon)], [getattr(row, ev_lat), getattr(row, sta_lat)], color="#202020", alpha=0.58, linewidth=1.15, zorder=5)
+    path_rows = records_df
+    if len(path_rows) > 500:
+        path_rows = path_rows.sample(n=500, random_state=20260624)
+    alpha = 0.5 if len(records_df) <= 250 else 0.26
+    linewidth = 0.95 if len(records_df) <= 250 else 0.45
+    for row in path_rows.itertuples(index=False):
+        ax.plot([getattr(row, ev_lon), getattr(row, sta_lon)], [getattr(row, ev_lat), getattr(row, sta_lat)], color="#202020", alpha=alpha, linewidth=linewidth, zorder=5)
 
 
 def _resolve_xy(df: pd.DataFrame, *, lon_candidates: list[str], lat_candidates: list[str], label: str) -> tuple[str, str]:
