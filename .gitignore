@@ -9,8 +9,12 @@ htmlcov/
 /docs/_build/
 /outputs/
 /runs/
+/tmp/
+/logs/
+/_codex_sync_delay/
 .cache/
 .ipynb_checkpoints/
+*.before_*
 AGENTS.md
 .agents/
 .codex/
