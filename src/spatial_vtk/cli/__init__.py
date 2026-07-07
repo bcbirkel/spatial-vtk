@@ -1025,6 +1025,13 @@ def _add_metrics_commands(subparsers: argparse._SubParsersAction[argparse.Argume
     plan.add_argument("--model", action="append", dest="models", default=None, help="Synthetic model override. Repeat for multiple models.")
     plan.add_argument("--transform", action="append", dest="transforms", default=None, help="Metric transform override. Repeat for multiple transforms.")
     plan.add_argument("--output-mode", default=None, help="Metric output mode override.")
+    plan.add_argument("--delay-method", default=None, help="Traveltime delay method override: phasenet_cycle, bounded, or legacy.")
+    plan.add_argument(
+        "--arrival-pick-catalog",
+        metavar="PATH",
+        default=None,
+        help="Optional observed/synthetic P-pick catalog used by PhaseNet-cycle delay metrics.",
+    )
     plan.add_argument("--require-source-overlap", action="store_true", help="Only plan metric tasks for events or event-station rows with both observed and synthetic data.")
     plan.add_argument("--source-overlap-scope", choices=("event", "event_station"), default=None, help="Overlap scope for --require-source-overlap.")
     plan.add_argument(
@@ -1793,6 +1800,7 @@ def _add_figure_io_arguments(parser: argparse.ArgumentParser, spec: PlotCommand,
             parser.add_argument("--config", metavar="PATH", default=None, help="Optional Spatial-VTK config for named bounds.")
             parser.add_argument("--run-scenario", default=None, help="Apply one named run_scenarios overlay.")
         parser.add_argument("--bounds", default=None, help="Named bounds from config or comma-separated lon_min,lon_max,lat_min,lat_max.")
+        parser.add_argument("--basemap", type=_parse_cli_bool, default=None, help="Enable or disable basemap rendering (true/false).")
         parser.add_argument("--no-basemap", action="store_true", help="Disable basemap rendering for map figures.")
         parser.add_argument("--basemap-source", default=None, help="Optional contextily basemap source.")
 
@@ -2627,6 +2635,7 @@ def _cmd_metrics_plan(args: argparse.Namespace) -> int:
         else _configured_output_path("metric_manifest" if args.manifest else "metric_tasks", config=config)
     )
     qc_table = Path(args.qc_table).expanduser() if args.qc_table else _default_metric_qc_table(config, no_qc=args.no_qc)
+    arrival_pick_catalog = Path(args.arrival_pick_catalog).expanduser() if args.arrival_pick_catalog else None
     plan = metric_plan_from_config(config, command="metrics.calculate", overrides=_metric_plan_overrides(args))
     tasks = plan_metric_tasks(
         observed_inventory,
@@ -2635,6 +2644,7 @@ def _cmd_metrics_plan(args: argparse.Namespace) -> int:
         use_qc=not args.no_qc,
         qc_table=qc_table,
         require_passing_qc_pairs=not args.include_qc_failed_tasks,
+        arrival_pick_catalog=arrival_pick_catalog,
     )
     if args.manifest:
         batch_dir = Path(args.batch_output_dir).expanduser() if args.batch_output_dir else _metric_workflow_dir(config, "metric_batches")
@@ -2742,6 +2752,8 @@ def _metric_plan_overrides(args: argparse.Namespace) -> dict[str, Any]:
         overrides["transforms"] = args.transforms
     if getattr(args, "output_mode", None):
         overrides["output_mode"] = args.output_mode
+    if getattr(args, "delay_method", None):
+        overrides["delay_method"] = args.delay_method
     if getattr(args, "require_source_overlap", False):
         overrides["require_source_overlap"] = True
     if getattr(args, "source_overlap_scope", None):
@@ -3495,10 +3507,13 @@ def _cmd_registered_plot(args: argparse.Namespace) -> int:
     _drop_unsupported_auto_plot_kwargs(function, kwargs)
     _validate_supported_plot_kwargs(function, kwargs, USER_FIGURE_OPTION_KEYS)
     result = function(**kwargs)
-    if result is not None and str(result) != str(kwargs["output_path"]):
+    output_path = Path(kwargs["output_path"])
+    if output_path.exists():
+        print(output_path)
+    elif result is not None and str(result) != str(output_path):
         print(result)
     else:
-        print(kwargs["output_path"])
+        print(output_path)
     return 0
 
 
@@ -3549,6 +3564,7 @@ def _registered_plot_kwargs(args: argparse.Namespace, spec: PlotCommand) -> dict
         kwargs.update(_parse_mapping(args.kwargs_json))
     kwargs.update(_parse_key_values(getattr(args, "kwargs", ())))
     _apply_common_figure_options(args, kwargs, exclude=set((spec.table_aliases or {}).keys()))
+    _apply_configured_waveform_components(args, spec, config, kwargs)
     if getattr(args, "figure_table", None) is not None:
         kwargs["table"] = args.figure_table
     elif figure_table_requested:
@@ -3559,6 +3575,8 @@ def _registered_plot_kwargs(args: argparse.Namespace, spec: PlotCommand) -> dict
         kwargs["sidecar_rows"] = args.sidecar_rows
     if getattr(args, "sidecar_dir", None):
         kwargs["sidecar_dir"] = Path(args.sidecar_dir).expanduser()
+    if getattr(args, "basemap", None) is not None:
+        kwargs["add_basemap"] = bool(args.basemap)
     if hasattr(args, "no_basemap") and args.no_basemap:
         kwargs["add_basemap"] = False
     if getattr(args, "basemap_source", None):
@@ -3599,6 +3617,45 @@ def _apply_common_figure_options(args: argparse.Namespace, kwargs: dict[str, Any
             kwargs[key] = clean[0] if len(clean) == 1 else clean
         else:
             kwargs[key] = value
+
+
+def _apply_configured_waveform_components(
+    args: argparse.Namespace,
+    spec: PlotCommand,
+    config: Any,
+    kwargs: dict[str, Any],
+) -> None:
+    """Use configured metric components for component-backed waveform sections."""
+
+    if "components" in kwargs or getattr(args, "components", None):
+        return
+    if config is None:
+        return
+    if spec.function not in {
+        "spatial_vtk.visualize.waveforms.plot_record_section",
+        "spatial_vtk.visualize.waveforms.plot_observed_synthetic_record_section",
+    }:
+        return
+    metric_cfg = config.section("metrics", {}) or {}
+    if not isinstance(metric_cfg, dict):
+        return
+    components = _normalize_cli_component_list(metric_cfg.get("components") or metric_cfg.get("component"))
+    if components:
+        kwargs["components"] = components
+
+
+def _normalize_cli_component_list(value: Any) -> list[str]:
+    """Normalize one config component value into CLI keyword values."""
+
+    if value in (None, "", []):
+        return []
+    if isinstance(value, str):
+        raw_values = [item.strip() for item in value.replace(",", " ").split()]
+    elif isinstance(value, Iterable) and not isinstance(value, (bytes, bytearray, dict)):
+        raw_values = [str(item).strip() for item in value]
+    else:
+        raw_values = [str(value).strip()]
+    return [item.upper() for item in raw_values if item]
 
 
 def _registered_plot_config(args: argparse.Namespace, spec: PlotCommand):
@@ -3930,6 +3987,22 @@ def _parse_value(value: str) -> Any:
         return yaml.safe_load(value)
     except yaml.YAMLError:
         return value
+
+
+def _parse_cli_bool(value: str) -> bool:
+    """Parse a user-facing true/false CLI value."""
+
+    parsed = _parse_value(value)
+    if isinstance(parsed, bool):
+        return parsed
+    if isinstance(parsed, (int, float)) and parsed in {0, 1}:
+        return bool(parsed)
+    token = str(value).strip().lower()
+    if token in {"true", "t", "yes", "y", "on", "1"}:
+        return True
+    if token in {"false", "f", "no", "n", "off", "0"}:
+        return False
+    raise argparse.ArgumentTypeError(f"Expected a boolean value, got {value!r}.")
 
 
 def _jsonable(value: Any) -> Any:

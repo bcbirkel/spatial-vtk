@@ -436,6 +436,13 @@ def test_waveform_trace_qc_propagates_to_metric_qc(tmp_path) -> None:
         "valid_end_sample",
         "sample_interval_s",
         "sample_count",
+        "raw_peak_abs",
+        "raw_rms_amplitude",
+        "dominant_period_s",
+        "band_peak_abs",
+        "energy_frac",
+        "band_peak_abs_1_2s",
+        "energy_frac_1_2s",
     } <= set(trace_qc.columns)
     assert trace_qc.loc[0, "trace_start_s"] == 0.0
     assert trace_qc.loc[0, "trace_duration_s"] == 100.0

@@ -66,6 +66,7 @@ class MetricPlan:
     waveform_lowpass_hz: float | None = None
     waveform_resample_hz: float | None = None
     waveform_filter_order: int | None = None
+    delay_method: str = "phasenet_cycle"
     require_source_overlap: bool = False
     source_overlap_scope: str = "event_station"
     output_path: Path | None = None
@@ -100,6 +101,7 @@ class MetricPlan:
             ("waveform_lowpass_hz", self.waveform_lowpass_hz),
             ("waveform_resample_hz", self.waveform_resample_hz),
             ("waveform_filter_order", self.waveform_filter_order),
+            ("delay_method", self.delay_method),
             ("output_path", str(self.output_path) if self.output_path is not None else None),
         ]
         return pd.DataFrame(
@@ -179,6 +181,7 @@ def metric_plan_from_config(
         waveform_lowpass_hz=_optional_float(waveform_cfg.get("lowpass_hz")),
         waveform_resample_hz=_optional_float(waveform_cfg.get("resample_hz") or waveform_cfg.get("target_sampling_rate_hz")),
         waveform_filter_order=_optional_int(waveform_cfg.get("filter_order")),
+        delay_method=str(merged.get("delay_method") or merged.get("traveltime_delay_method") or "phasenet_cycle").strip() or "phasenet_cycle",
         require_source_overlap=settings.require_source_overlap,
         source_overlap_scope=settings.source_overlap_scope,
         output_path=output_path,

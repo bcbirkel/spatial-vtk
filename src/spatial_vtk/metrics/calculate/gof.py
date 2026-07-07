@@ -1012,6 +1012,84 @@ def _xcorr_fft_fast(x: np.ndarray, y: np.ndarray, dt: float,
 
     return lag_samples * dt, r_peak
 
+
+def _local_normalized_xcorr_lag(
+    x: np.ndarray,
+    y: np.ndarray,
+    dt: float,
+    *,
+    max_lag_s: float,
+    min_overlap_fraction: float = 0.5,
+) -> Tuple[float, float]:
+    """Return the bounded lag peak from overlap-normalized correlations."""
+
+    x = np.asarray(x, float).reshape(-1)
+    y = np.asarray(y, float).reshape(-1)
+    n = min(x.size, y.size)
+    if n < 3 or dt <= 0.0 or not np.isfinite(max_lag_s) or max_lag_s <= 0.0:
+        return np.nan, np.nan
+    x = np.nan_to_num(x[:n], nan=0.0, posinf=0.0, neginf=0.0)
+    y = np.nan_to_num(y[:n], nan=0.0, posinf=0.0, neginf=0.0)
+    max_k = int(max(1, min(n - 2, round(float(max_lag_s) / float(dt)))))
+    min_overlap = int(max(3, min(n, round(float(min_overlap_fraction) * n))))
+    lag_samples: list[int] = []
+    correlations: list[float] = []
+    for lag in range(-max_k, max_k + 1):
+        if lag < 0:
+            xo = x[: n + lag]
+            yo = y[-lag:]
+        elif lag > 0:
+            xo = x[lag:]
+            yo = y[: n - lag]
+        else:
+            xo = x
+            yo = y
+        if xo.size < min_overlap or yo.size < min_overlap:
+            lag_samples.append(lag)
+            correlations.append(np.nan)
+            continue
+        xo = xo - float(np.nanmean(xo))
+        yo = yo - float(np.nanmean(yo))
+        denom = float(np.linalg.norm(xo) * np.linalg.norm(yo))
+        lag_samples.append(lag)
+        correlations.append(float(np.dot(xo, yo) / denom) if denom > 0.0 else np.nan)
+    lags = np.asarray(lag_samples, dtype=float)
+    corr = np.asarray(correlations, dtype=float)
+    if not np.any(np.isfinite(corr)):
+        return np.nan, np.nan
+    peak_idx = int(np.nanargmax(corr))
+    lag_peak = float(lags[peak_idx])
+    if 0 < peak_idx < corr.size - 1 and np.all(np.isfinite(corr[peak_idx - 1 : peak_idx + 2])):
+        left, center, right = corr[peak_idx - 1], corr[peak_idx], corr[peak_idx + 1]
+        denom = left - 2.0 * center + right
+        if abs(denom) > 1.0e-12:
+            offset = 0.5 * (left - right) / denom
+            lag_peak += float(np.clip(offset, -0.5, 0.5))
+    return lag_peak * float(dt), float(corr[peak_idx])
+
+
+def delay_search_cap_s(
+    dt: float,
+    *,
+    period_min_s: Optional[float] = None,
+    period_max_s: Optional[float] = None,
+    max_lag_s: Optional[float] = None,
+    max_lag_fraction: float = 0.5,
+    fallback_s: float = 1.0,
+) -> float:
+    """Return a bounded-delay search cap from explicit or passband settings."""
+
+    if max_lag_s is not None and np.isfinite(max_lag_s) and float(max_lag_s) > 0.0:
+        cap = float(max_lag_s)
+    elif period_min_s is not None and np.isfinite(period_min_s) and float(period_min_s) > 0.0:
+        cap = float(max_lag_fraction) * float(period_min_s)
+    elif period_max_s is not None and np.isfinite(period_max_s) and float(period_max_s) > 0.0:
+        cap = float(max_lag_fraction) * float(period_max_s)
+    else:
+        cap = float(fallback_s)
+    floor = 2.0 * float(dt) if dt > 0.0 and np.isfinite(dt) else 0.0
+    return float(max(floor, cap))
+
 def get_xcorr_full_func(a1, a2):
     """
     Computes the full normalized cross-correlation function for two signals.
@@ -1081,7 +1159,17 @@ def compute_phase_metrics(a1, a2, dt, lag_cap_s=None, override_lag_s: Optional[f
     return C11_score, C12_score, lag_s, r_peak, lag_cap_s
 
 
-def traveltime_delay(observed, synthetic, dt: float, *, max_lag_s: Optional[float] = None) -> float:
+def traveltime_delay(
+    observed,
+    synthetic,
+    dt: float,
+    *,
+    max_lag_s: Optional[float] = None,
+    method: str = "legacy",
+    period_min_s: Optional[float] = None,
+    period_max_s: Optional[float] = None,
+    max_lag_fraction: float = 0.5,
+) -> float:
     """Return the delay that maximizes observed/synthetic cross-correlation.
 
     Parameters
@@ -1094,6 +1182,15 @@ def traveltime_delay(observed, synthetic, dt: float, *, max_lag_s: Optional[floa
         Sample spacing in seconds.
     max_lag_s
         Optional maximum absolute lag searched in seconds.
+    method
+        ``"legacy"`` preserves the historical whole-trace FFT peak search.
+        ``"bounded"`` uses overlap-normalized correlations inside a finite
+        passband-aware lag window.
+    period_min_s, period_max_s
+        Optional passband period bounds used to choose a bounded default lag cap.
+    max_lag_fraction
+        Fraction of the shortest passband period used for the bounded lag cap
+        when ``max_lag_s`` is not supplied.
 
     Returns
     -------
@@ -1104,12 +1201,30 @@ def traveltime_delay(observed, synthetic, dt: float, *, max_lag_s: Optional[floa
 
     if dt <= 0.0:
         return np.nan
-    xcorr_lag_s, _r_peak = _xcorr_fft_fast(
-        normalize_rms(_as_metric_trace(observed)),
-        normalize_rms(_as_metric_trace(synthetic)),
-        dt,
-        max_lag_s=max_lag_s,
-    )
+    method_key = str(method or "legacy").strip().lower()
+    if method_key in {"legacy", "fft", "whole_trace", "whole-trace"}:
+        xcorr_lag_s, _r_peak = _xcorr_fft_fast(
+            normalize_rms(_as_metric_trace(observed)),
+            normalize_rms(_as_metric_trace(synthetic)),
+            dt,
+            max_lag_s=max_lag_s,
+        )
+    elif method_key in {"bounded", "bounded_xcorr", "local", "local_normalized"}:
+        cap_s = delay_search_cap_s(
+            dt,
+            period_min_s=period_min_s,
+            period_max_s=period_max_s,
+            max_lag_s=max_lag_s,
+            max_lag_fraction=max_lag_fraction,
+        )
+        xcorr_lag_s, _r_peak = _local_normalized_xcorr_lag(
+            _as_metric_trace(observed),
+            _as_metric_trace(synthetic),
+            dt,
+            max_lag_s=cap_s,
+        )
+    else:
+        raise ValueError("Unknown traveltime delay method: {!r}".format(method))
     if not np.isfinite(xcorr_lag_s):
         return np.nan
     return float(-xcorr_lag_s)
@@ -1141,6 +1256,10 @@ def delay_corrected_cc(
     *,
     delay_s: Optional[float] = None,
     max_lag_s: Optional[float] = None,
+    method: str = "legacy",
+    period_min_s: Optional[float] = None,
+    period_max_s: Optional[float] = None,
+    max_lag_fraction: float = 0.5,
 ) -> float:
     """Calculate correlation after applying the travel-time delay.
 
@@ -1157,6 +1276,8 @@ def delay_corrected_cc(
         :func:`traveltime_delay`.
     max_lag_s
         Optional maximum lag used when estimating ``delay_s``.
+    method, period_min_s, period_max_s, max_lag_fraction
+        Forwarded to :func:`traveltime_delay` when ``delay_s`` is omitted.
 
     Returns
     -------
@@ -1164,7 +1285,20 @@ def delay_corrected_cc(
         Zero-lag correlation coefficient after delay correction.
     """
 
-    lag_s = traveltime_delay(observed, synthetic, dt, max_lag_s=max_lag_s) if delay_s is None else float(delay_s)
+    lag_s = (
+        traveltime_delay(
+            observed,
+            synthetic,
+            dt,
+            max_lag_s=max_lag_s,
+            method=method,
+            period_min_s=period_min_s,
+            period_max_s=period_max_s,
+            max_lag_fraction=max_lag_fraction,
+        )
+        if delay_s is None
+        else float(delay_s)
+    )
     return float(
         _shifted_whole_waveform_correlation(
             _as_metric_trace(observed),
@@ -1173,6 +1307,115 @@ def delay_corrected_cc(
             lag_s,
         )
     )
+
+
+def phasenet_cycle_corrected_delay_metrics(
+    observed,
+    synthetic,
+    dt: float,
+    obs_pick_s: float,
+    syn_pick_s: float,
+    *,
+    period_min_s: Optional[float] = None,
+    period_max_s: Optional[float] = None,
+    obs_valid_mask=None,
+    syn_valid_mask=None,
+    cycle_step_fraction: float = 0.25,
+) -> dict[str, float | str]:
+    """Return PhaseNet P-delay and one-period cycle-corrected correlation.
+
+    ``traveltime_delay`` and ``delay_corrected_cc`` rows can use this result
+    when both observed and synthetic P picks are available. The raw pick delay
+    is retained, then candidate synthetic shifts within one period of the
+    lowest-frequency passband edge are evaluated against the filtered waveform.
+    """
+
+    if dt <= 0.0:
+        return _phasenet_cycle_result("invalid_dt")
+    obs_pick = _finite_or_nan(obs_pick_s)
+    syn_pick = _finite_or_nan(syn_pick_s)
+    if not np.isfinite(obs_pick):
+        return _phasenet_cycle_result("obs_p_pick_missing")
+    if not np.isfinite(syn_pick):
+        return _phasenet_cycle_result("syn_p_pick_missing")
+    raw_delay_s = float(syn_pick - obs_pick)
+    raw_cc = _shifted_whole_waveform_correlation(
+        _as_metric_trace(observed),
+        _as_metric_trace(synthetic),
+        dt,
+        raw_delay_s,
+        obs_valid_mask=obs_valid_mask,
+        syn_valid_mask=syn_valid_mask,
+    )
+    search_half_width_s = _cycle_search_half_width_s(period_min_s=period_min_s, period_max_s=period_max_s)
+    step_s = max(float(dt), float(cycle_step_fraction) * float(dt))
+    offsets = np.arange(-search_half_width_s, search_half_width_s + 0.5 * step_s, step_s, dtype=float)
+    candidates = raw_delay_s + offsets
+    if not np.any(np.isclose(candidates, raw_delay_s, atol=0.5 * step_s, rtol=0.0)):
+        candidates = np.append(candidates, raw_delay_s)
+    best_delay_s = np.nan
+    best_cc = -np.inf
+    for candidate in candidates:
+        cc = _shifted_whole_waveform_correlation(
+            _as_metric_trace(observed),
+            _as_metric_trace(synthetic),
+            dt,
+            float(candidate),
+            obs_valid_mask=obs_valid_mask,
+            syn_valid_mask=syn_valid_mask,
+        )
+        if np.isfinite(cc) and (not np.isfinite(best_cc) or cc > best_cc):
+            best_cc = float(cc)
+            best_delay_s = float(candidate)
+    if not np.isfinite(best_delay_s):
+        return {
+            "p_pick_delay_s": raw_delay_s,
+            "p_pick_delay_corrected_cc": raw_cc if np.isfinite(raw_cc) else np.nan,
+            "cycle_corrected_delay_s": np.nan,
+            "cycle_corrected_cc": np.nan,
+            "cycle_correction_s": np.nan,
+            "cycle_search_half_width_s": search_half_width_s,
+            "status": "unreliable",
+            "reason": "cycle_corrected_overlap_empty",
+        }
+    return {
+        "p_pick_delay_s": raw_delay_s,
+        "p_pick_delay_corrected_cc": raw_cc if np.isfinite(raw_cc) else np.nan,
+        "cycle_corrected_delay_s": best_delay_s,
+        "cycle_corrected_cc": best_cc,
+        "cycle_correction_s": float(best_delay_s - raw_delay_s),
+        "cycle_search_half_width_s": search_half_width_s,
+        "status": "ok",
+        "reason": "",
+    }
+
+
+def _phasenet_cycle_result(reason: str) -> dict[str, float | str]:
+    """Return an empty PhaseNet-cycle metric payload."""
+
+    return {
+        "p_pick_delay_s": np.nan,
+        "p_pick_delay_corrected_cc": np.nan,
+        "cycle_corrected_delay_s": np.nan,
+        "cycle_corrected_cc": np.nan,
+        "cycle_correction_s": np.nan,
+        "cycle_search_half_width_s": np.nan,
+        "status": "unreliable",
+        "reason": reason,
+    }
+
+
+def _cycle_search_half_width_s(*, period_min_s: Optional[float], period_max_s: Optional[float]) -> float:
+    """Return the one-period cycle search width for the passband."""
+
+    candidates = [
+        float(value)
+        for value in (period_max_s, period_min_s)
+        if value is not None and np.isfinite(value) and float(value) > 0.0
+    ]
+    if candidates:
+        return float(max(candidates))
+    return 1.0
 
 def _pick_value(arrival_picks, phase: str, role: str) -> float:
     """Return one arrival pick time in seconds, or NaN when unavailable.

@@ -17,10 +17,12 @@ from spatial_vtk.metrics.calculate import (
     build_metric_value_row,
     build_spectral_metric_rows,
     compare_metric_values,
+    delay_search_cap_s,
     delay_corrected_cc,
     energy_duration,
     energy_intensity,
     original_cc,
+    phasenet_cycle_corrected_delay_metrics,
     traveltime_delay,
 )
 from spatial_vtk.metrics.calculate.transforms import (
@@ -96,6 +98,71 @@ def test_public_delay_correction_uses_shift_needed_to_align_synthetic() -> None:
     assert delay_s == pytest.approx(0.2, abs=dt)
     assert original_cc(observed, synthetic) < 0.5
     assert delay_corrected_cc(observed, synthetic, dt, delay_s=delay_s) == pytest.approx(1.0, abs=1e-6)
+
+
+def test_bounded_traveltime_delay_limits_full_trace_cycle_skips() -> None:
+    """Bounded delay should avoid letting later waveform packets dominate."""
+
+    dt = 0.01
+    time = np.arange(0.0, 20.0, dt)
+
+    def packet(center_s: float, amplitude: float, width_s: float = 0.45) -> np.ndarray:
+        envelope = np.exp(-0.5 * ((time - center_s) / width_s) ** 2)
+        return amplitude * envelope * np.sin(2.0 * np.pi * 1.0 * (time - center_s))
+
+    observed = packet(4.0, 0.6) + packet(10.0, 1.4)
+    synthetic = packet(4.2, 0.6) + packet(9.05, 1.6)
+
+    legacy_delay = traveltime_delay(observed, synthetic, dt)
+    bounded_delay = traveltime_delay(
+        observed,
+        synthetic,
+        dt,
+        method="bounded",
+        period_min_s=1.0,
+        period_max_s=2.0,
+    )
+
+    assert legacy_delay < -0.5
+    assert abs(bounded_delay) <= delay_search_cap_s(dt, period_min_s=1.0)
+    assert abs(bounded_delay) < abs(legacy_delay)
+
+
+def test_bounded_delay_corrected_cc_uses_bounded_delay_estimate() -> None:
+    """Delay-corrected correlation should forward bounded delay options."""
+
+    dt = 0.01
+    time = np.arange(0.0, 5.0, dt)
+    observed = np.sin(2.0 * np.pi * 1.0 * time)
+    synthetic = np.interp(time - 0.2, time, observed, left=0.0, right=0.0)
+
+    delay_s = traveltime_delay(observed, synthetic, dt, method="bounded", period_min_s=1.0)
+    assert delay_s == pytest.approx(0.2, abs=dt)
+    assert delay_corrected_cc(observed, synthetic, dt, method="bounded", period_min_s=1.0) > 0.99
+
+
+def test_phasenet_cycle_corrected_delay_searches_one_low_frequency_period() -> None:
+    """Cycle correction should refine a P-pick delay within one passband period."""
+
+    dt = 0.01
+    time = np.arange(0.0, 8.0, dt)
+    envelope = np.exp(-0.5 * ((time - 4.0) / 1.0) ** 2)
+    observed = envelope * np.sin(2.0 * np.pi * 1.0 * time)
+    synthetic = np.interp(time - 0.25, time, observed, left=0.0, right=0.0)
+
+    result = phasenet_cycle_corrected_delay_metrics(
+        observed,
+        synthetic,
+        dt,
+        obs_pick_s=2.0,
+        syn_pick_s=3.25,
+        period_min_s=1.0,
+        period_max_s=2.0,
+    )
+
+    assert result["p_pick_delay_s"] == pytest.approx(1.25)
+    assert result["cycle_corrected_delay_s"] == pytest.approx(0.25, abs=dt)
+    assert result["cycle_corrected_cc"] > 0.99
 
 
 def test_metric_transforms_have_explicit_observed_over_synthetic_convention() -> None:

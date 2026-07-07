@@ -41,6 +41,7 @@ from spatial_vtk.metrics.calculate import (
     energy_duration,
     energy_intensity,
     original_cc,
+    phasenet_cycle_corrected_delay_metrics,
     traveltime_delay,
 )
 from spatial_vtk.metrics.workflow.tasks import MetricWorkflowTask, metric_group_for, tasks_from_frame
@@ -76,6 +77,12 @@ METRIC_TEXT_COLUMNS: tuple[str, ...] = (
     "comparison_qc_reason",
     "obs_waveform_path",
     "syn_waveform_path",
+    "obs_p_pick_abs",
+    "obs_p_pick_provenance",
+    "syn_p_pick_abs",
+    "syn_p_pick_provenance",
+    "phasenet_delay_status",
+    "phasenet_delay_reason",
 )
 
 
@@ -405,11 +412,31 @@ def _calculate_pair_metric_row(
     comparison_ok = _comparison_ok(task, obs_ok, syn_ok)
     pair_failure_reason = ""
     pair_value = np.nan
+    pair_metadata: dict[str, Any] = {}
     if comparison_ok and observed is not None and synthetic is not None:
         try:
             aligned_observed, aligned_synthetic, pair_dt = _align_pair_sample_intervals(observed, synthetic)
-            observed_pair, synthetic_pair = _trim_pair_to_common_valid(aligned_observed, aligned_synthetic)
-            pair_value = _calculate_pair_metric(metric, observed_pair, synthetic_pair, pair_dt)
+            if metric in {"traveltime_delay", "delay_corrected_cc"} and _uses_phasenet_cycle_delay(task.delay_method):
+                pair_value, pair_metadata, pair_failure_reason = _calculate_phasenet_cycle_pair_metric(
+                    task,
+                    metric,
+                    aligned_observed,
+                    aligned_synthetic,
+                    pair_dt,
+                )
+                if pair_failure_reason:
+                    comparison_ok = False
+            else:
+                observed_pair, synthetic_pair = _trim_pair_to_common_valid(aligned_observed, aligned_synthetic)
+                pair_value = _calculate_pair_metric(
+                    metric,
+                    observed_pair,
+                    synthetic_pair,
+                    pair_dt,
+                    period_min_s=task.period_min_s,
+                    period_max_s=task.period_max_s,
+                    delay_method=task.delay_method,
+                )
         except ValueError as exc:
             comparison_ok = False
             pair_failure_reason = str(exc)
@@ -421,7 +448,61 @@ def _calculate_pair_metric_row(
         **_qc_payload(task, obs_qc, syn_qc, obs_ok, syn_ok, comparison_ok, comparison_reason=pair_failure_reason),
     )
     row["value"] = pair_value
+    row.update(pair_metadata)
     return row
+
+
+def _calculate_phasenet_cycle_pair_metric(
+    task: MetricWorkflowTask,
+    metric: str,
+    observed: _LoadedSide,
+    synthetic: _LoadedSide,
+    dt: float,
+) -> tuple[float, dict[str, Any], str]:
+    """Calculate PhaseNet/cycle delay rows and audit metadata."""
+
+    result = phasenet_cycle_corrected_delay_metrics(
+        observed.data,
+        synthetic.data,
+        dt,
+        task.obs_p_pick_rel_s,
+        task.syn_p_pick_rel_s,
+        period_min_s=task.period_min_s,
+        period_max_s=task.period_max_s,
+        obs_valid_mask=observed.valid_mask,
+        syn_valid_mask=synthetic.valid_mask,
+    )
+    metadata: dict[str, Any] = {
+        "obs_p_pick_abs": task.obs_p_pick_abs,
+        "obs_p_pick_rel_s": task.obs_p_pick_rel_s,
+        "obs_p_pick_probability": task.obs_p_pick_probability,
+        "obs_p_pick_provenance": task.obs_p_pick_provenance,
+        "syn_p_pick_abs": task.syn_p_pick_abs,
+        "syn_p_pick_rel_s": task.syn_p_pick_rel_s,
+        "syn_p_pick_probability": task.syn_p_pick_probability,
+        "syn_p_pick_provenance": task.syn_p_pick_provenance,
+        "phasenet_traveltime_delay_s": result["p_pick_delay_s"],
+        "phasenet_p_pick_delayed_cc": result["p_pick_delay_corrected_cc"],
+        "phasenet_cycle_corrected_delay_s": result["cycle_corrected_delay_s"],
+        "phasenet_cycle_corrected_cc": result["cycle_corrected_cc"],
+        "phasenet_cycle_correction_s": result["cycle_correction_s"],
+        "phasenet_cycle_search_half_width_s": result["cycle_search_half_width_s"],
+        "phasenet_delay_status": result["status"],
+        "phasenet_delay_reason": result["reason"],
+    }
+    reason = "" if result["status"] == "ok" else str(result["reason"] or "phasenet_cycle_delay_unreliable")
+    if metric == "traveltime_delay":
+        return float(result["cycle_corrected_delay_s"]), metadata, reason
+    if metric == "delay_corrected_cc":
+        return float(result["cycle_corrected_cc"]), metadata, reason
+    raise ValueError(f"Unsupported PhaseNet-cycle pair metric: {metric}")
+
+
+def _uses_phasenet_cycle_delay(delay_method: str) -> bool:
+    """Return whether a delay method uses PhaseNet picks plus cycle correction."""
+
+    token = str(delay_method or "").strip().lower().replace("-", "_")
+    return token in {"phasenet", "phasenet_cycle", "phasenet_cycle_corrected", "cycle_corrected_phasenet"}
 
 
 def _calculate_trace_metric(metric: str, data: np.ndarray | None, dt: float, period_min_s: float | None, ok: bool) -> float:
@@ -460,17 +541,40 @@ def _calculate_spectral_values(metric: str, data: np.ndarray | None, dt: float, 
     raise ValueError(f"Unsupported spectral metric: {metric}")
 
 
-def _calculate_pair_metric(metric: str, observed: np.ndarray | None, synthetic: np.ndarray | None, dt: float) -> float:
+def _calculate_pair_metric(
+    metric: str,
+    observed: np.ndarray | None,
+    synthetic: np.ndarray | None,
+    dt: float,
+    *,
+    period_min_s: float | None = None,
+    period_max_s: float | None = None,
+    delay_method: str = "legacy",
+) -> float:
     """Calculate one pair-only metric."""
 
     if observed is None or synthetic is None:
         return np.nan
     if metric == "traveltime_delay":
-        return traveltime_delay(observed, synthetic, dt)
+        return traveltime_delay(
+            observed,
+            synthetic,
+            dt,
+            method=delay_method,
+            period_min_s=period_min_s,
+            period_max_s=period_max_s,
+        )
     if metric == "original_cc":
         return original_cc(observed, synthetic)
     if metric == "delay_corrected_cc":
-        return delay_corrected_cc(observed, synthetic, dt)
+        return delay_corrected_cc(
+            observed,
+            synthetic,
+            dt,
+            method=delay_method,
+            period_min_s=period_min_s,
+            period_max_s=period_max_s,
+        )
     raise ValueError(f"Unsupported pair-only metric: {metric}")
 
 
@@ -542,6 +646,16 @@ def _load_component_samples(path: str, station: str, component: str, *, waveform
         if trace_station == station_token and trace_component == component_token:
             selected = trace
             break
+    if selected is None and source_path.suffix.lower() != ".asdf":
+        component_aliases = {"R": "X", "T": "Y"}
+        alias_component = component_aliases.get(component_token)
+        if alias_component is not None:
+            for trace in traces:
+                trace_station = _trace_station(trace)
+                trace_component = _trace_component(trace)
+                if trace_station == station_token and trace_component == alias_component:
+                    selected = trace
+                    break
     if selected is None:
         available = sorted({_trace_station(trace) + "." + _trace_component(trace) for trace in traces})
         raise ValueError(

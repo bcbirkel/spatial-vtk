@@ -24,6 +24,7 @@ import numpy as np
 import pandas as pd
 
 from spatial_vtk.config.metric_catalog import DEFAULT_METRICS_BY_GROUP, LEGACY_METRIC_ALIASES, metric_group_for, resolve_metric_names
+from spatial_vtk.metrics.calculate.arrival_picks import load_arrival_pick_catalog, normalize_pick_catalog
 
 
 @dataclass(frozen=True)
@@ -86,6 +87,15 @@ class MetricWorkflowTask:
     waveform_lowpass_hz: float | None = None
     waveform_resample_hz: float | None = None
     waveform_filter_order: int | None = None
+    delay_method: str = "legacy"
+    obs_p_pick_abs: str = ""
+    obs_p_pick_rel_s: float = np.nan
+    obs_p_pick_probability: float = np.nan
+    obs_p_pick_provenance: str = ""
+    syn_p_pick_abs: str = ""
+    syn_p_pick_rel_s: float = np.nan
+    syn_p_pick_probability: float = np.nan
+    syn_p_pick_provenance: str = ""
     spectral_relative_amplitude_threshold: float = 0.25
     spectral_min_cycles_in_record: float = 3.0
     disable_spectral_relative_amplitude_qc: bool = False
@@ -131,9 +141,25 @@ class MetricWorkflowTask:
         data["metrics"] = _tuple_from_serialized(data.get("metrics"))
         data["transforms"] = _tuple_from_serialized(data.get("transforms"))
         data["spectral_periods_s"] = tuple(float(item) for item in _tuple_from_serialized(data.get("spectral_periods_s")))
-        for column in ("dt", "period_min_s", "period_max_s", "synthetic_max_frequency_hz", "waveform_lowpass_hz", "waveform_resample_hz", "spectral_relative_amplitude_threshold", "spectral_min_cycles_in_record"):
+        for column in (
+            "dt",
+            "period_min_s",
+            "period_max_s",
+            "synthetic_max_frequency_hz",
+            "waveform_lowpass_hz",
+            "waveform_resample_hz",
+            "obs_p_pick_rel_s",
+            "obs_p_pick_probability",
+            "syn_p_pick_rel_s",
+            "syn_p_pick_probability",
+            "spectral_relative_amplitude_threshold",
+            "spectral_min_cycles_in_record",
+        ):
             data[column] = _optional_float(data.get(column))
+        for column in ("obs_p_pick_abs", "obs_p_pick_provenance", "syn_p_pick_abs", "syn_p_pick_provenance"):
+            data[column] = str(data.get(column) or "")
         data["waveform_filter_order"] = _optional_int(data.get("waveform_filter_order"))
+        data["delay_method"] = str(data.get("delay_method") or "legacy")
         for column in ("disable_spectral_relative_amplitude_qc", "use_qc"):
             data[column] = _bool_value(data.get(column))
         return cls(**data)
@@ -152,6 +178,7 @@ def plan_metric_tasks(
     spectral_relative_amplitude_threshold: float | None = None,
     spectral_min_cycles_in_record: float | None = None,
     disable_spectral_relative_amplitude_qc: bool | None = None,
+    arrival_pick_catalog: pd.DataFrame | str | Path | None = None,
 ) -> list[MetricWorkflowTask]:
     """Plan metric workflow tasks from observed/synthetic inventories.
 
@@ -186,6 +213,10 @@ def plan_metric_tasks(
         Minimum usable cycles copied into each task for spectral QC.
     disable_spectral_relative_amplitude_qc
         Whether each task should skip relative-amplitude spectral QC.
+    arrival_pick_catalog
+        Optional normalized arrival-pick catalog. P picks are attached to pair
+        tasks so PhaseNet-based delay methods can supersede xcorr-only delay
+        estimates during execution.
 
     Returns
     -------
@@ -226,6 +257,7 @@ def plan_metric_tasks(
     metrics = resolve_metric_names(plan.metrics, plan.metric_groups)
     passband_metrics, spectral_metrics = _split_passband_and_spectral_metrics(metrics)
     passbands = plan.passbands or ((None, None),)
+    pick_lookup = _arrival_pick_lookup(arrival_pick_catalog)
     tasks: list[MetricWorkflowTask] = []
 
     if output_mode == "observed":
@@ -243,6 +275,7 @@ def plan_metric_tasks(
                     spectral_threshold,
                     spectral_min_cycles,
                     disable_spectral_qc,
+                    pick_lookup,
                 )
             )
         return tasks
@@ -262,6 +295,7 @@ def plan_metric_tasks(
                     spectral_threshold,
                     spectral_min_cycles,
                     disable_spectral_qc,
+                    pick_lookup,
                 )
             )
         return tasks
@@ -286,6 +320,7 @@ def plan_metric_tasks(
                     spectral_threshold,
                     spectral_min_cycles,
                     disable_spectral_qc,
+                    pick_lookup,
                 )
             )
     if use_qc and require_passing_qc_pairs and qc_table is not None:
@@ -458,6 +493,7 @@ def _task_from_rows(
     spectral_relative_amplitude_threshold: float,
     spectral_min_cycles_in_record: float,
     disable_spectral_relative_amplitude_qc: bool,
+    pick_lookup: dict[tuple[str, str, str, str], dict[str, Any]] | None = None,
 ) -> MetricWorkflowTask:
     """Build one workflow task from observed/synthetic inventory rows."""
 
@@ -466,6 +502,8 @@ def _task_from_rows(
         raise ValueError("At least one observed or synthetic row is required.")
     dt = _resolve_dt(obs_row, syn_row)
     model = str(syn_row.get("model", "") if syn_row is not None else row.get("model", ""))
+    obs_pick = _pick_payload(pick_lookup, obs_row, "observed")
+    syn_pick = _pick_payload(pick_lookup, syn_row, "synthetic")
     payload = {
         "event_id": str(row["event_id"]),
         "station": str(row["station"]).upper(),
@@ -485,6 +523,9 @@ def _task_from_rows(
         "waveform_lowpass_hz": plan.waveform_lowpass_hz,
         "waveform_resample_hz": plan.waveform_resample_hz,
         "waveform_filter_order": plan.waveform_filter_order,
+        "delay_method": plan.delay_method,
+        **obs_pick,
+        **syn_pick,
         "spectral_relative_amplitude_threshold": float(spectral_relative_amplitude_threshold),
         "spectral_min_cycles_in_record": float(spectral_min_cycles_in_record),
         "disable_spectral_relative_amplitude_qc": bool(disable_spectral_relative_amplitude_qc),
@@ -505,6 +546,7 @@ def _tasks_for_metric_families(
     spectral_relative_amplitude_threshold: float,
     spectral_min_cycles_in_record: float,
     disable_spectral_relative_amplitude_qc: bool,
+    pick_lookup: dict[tuple[str, str, str, str], dict[str, Any]] | None = None,
 ) -> list[MetricWorkflowTask]:
     """Build passband-dependent and broadband spectral tasks."""
 
@@ -523,6 +565,7 @@ def _tasks_for_metric_families(
                     spectral_relative_amplitude_threshold,
                     spectral_min_cycles_in_record,
                     disable_spectral_relative_amplitude_qc,
+                    pick_lookup,
                 )
             )
     if spectral_metrics:
@@ -538,6 +581,7 @@ def _tasks_for_metric_families(
                 spectral_relative_amplitude_threshold,
                 spectral_min_cycles_in_record,
                 disable_spectral_relative_amplitude_qc,
+                pick_lookup,
             )
         )
     return tasks
@@ -778,6 +822,125 @@ def _normalize_inventory_or_empty(table: pd.DataFrame | str | Path, *, source: s
     from spatial_vtk.io.metric_inputs import normalize_metric_waveform_inventory
 
     return normalize_metric_waveform_inventory(table, source=source, synthetic_max_frequency_hz=synthetic_max_frequency_hz)
+
+
+def _arrival_pick_lookup(arrival_pick_catalog: pd.DataFrame | str | Path | None) -> dict[tuple[str, str, str, str], dict[str, Any]]:
+    """Build a source/event/station/component lookup for P picks."""
+
+    if arrival_pick_catalog is None:
+        return {}
+    picks = (
+        load_arrival_pick_catalog(arrival_pick_catalog)
+        if not isinstance(arrival_pick_catalog, pd.DataFrame)
+        else normalize_pick_catalog(arrival_pick_catalog)
+    )
+    if picks.empty:
+        return {}
+    p_picks = picks.loc[picks["phase"].astype(str).str.upper().eq("P")].copy()
+    if p_picks.empty:
+        return {}
+    if "source" not in p_picks.columns:
+        p_picks["source"] = ""
+    p_picks["probability"] = pd.to_numeric(p_picks["probability"], errors="coerce")
+    p_picks = p_picks.sort_values("probability", ascending=False, na_position="last")
+    lookup: dict[tuple[str, str, str, str], dict[str, Any]] = {}
+    for _, row in p_picks.iterrows():
+        key = (
+            _source_key(row.get("source")),
+            str(row.get("event_id", "")).strip(),
+            str(row.get("station", "")).strip().upper(),
+            str(row.get("component", "")).strip().upper(),
+        )
+        if key[1] == "" or key[2] == "":
+            continue
+        lookup.setdefault(key, row.to_dict())
+    return lookup
+
+
+def _pick_payload(
+    pick_lookup: dict[tuple[str, str, str, str], dict[str, Any]] | None,
+    row: pd.Series | None,
+    source: str,
+) -> dict[str, Any]:
+    """Return task-field payload for one source P pick."""
+
+    prefix = "obs" if _source_key(source) == "observed" else "syn"
+    empty = {
+        f"{prefix}_p_pick_abs": "",
+        f"{prefix}_p_pick_rel_s": np.nan,
+        f"{prefix}_p_pick_probability": np.nan,
+        f"{prefix}_p_pick_provenance": "",
+    }
+    if not pick_lookup or row is None:
+        return empty
+    event_id = str(row.get("event_id", "")).strip()
+    station = str(row.get("station", "")).strip().upper()
+    component = str(row.get("component", "")).strip().upper()
+    for key in (
+        (_source_key(source), event_id, station, component),
+        (_source_key(source), event_id, station, "ALL"),
+        (_source_key(source), event_id, station, ""),
+        ("", event_id, station, component),
+        ("", event_id, station, "ALL"),
+        ("", event_id, station, ""),
+    ):
+        pick = pick_lookup.get(key)
+        if pick is not None:
+            return _format_pick_payload(pick, prefix=prefix, requested_component=component)
+    for source_key in (_source_key(source), ""):
+        pick = _best_station_pick(pick_lookup, source_key, event_id, station)
+        if pick is not None:
+            return _format_pick_payload(pick, prefix=prefix, requested_component=component)
+    return empty
+
+
+def _format_pick_payload(pick: dict[str, Any], *, prefix: str, requested_component: str) -> dict[str, Any]:
+    """Format one pick row as serialized task fields."""
+
+    provenance = str(pick.get("method", "") or "")
+    pick_component = str(pick.get("component", "") or "").strip().upper()
+    if pick_component and pick_component not in {requested_component, "ALL"}:
+        provenance = f"{provenance}:component:{pick_component}" if provenance else f"component:{pick_component}"
+    rel_s = _optional_float(pick.get("pick_time_rel_s"))
+    probability = _optional_float(pick.get("probability"))
+    return {
+        f"{prefix}_p_pick_abs": str(pick.get("pick_time_abs", "") or ""),
+        f"{prefix}_p_pick_rel_s": rel_s if rel_s is not None else np.nan,
+        f"{prefix}_p_pick_probability": probability if probability is not None else np.nan,
+        f"{prefix}_p_pick_provenance": provenance,
+    }
+
+
+def _best_station_pick(
+    pick_lookup: dict[tuple[str, str, str, str], dict[str, Any]],
+    source: str,
+    event_id: str,
+    station: str,
+) -> dict[str, Any] | None:
+    """Return the highest-probability component pick for one event-station."""
+
+    best: dict[str, Any] | None = None
+    best_probability = -np.inf
+    for (pick_source, pick_event, pick_station, _component), pick in pick_lookup.items():
+        if pick_source != source or pick_event != event_id or pick_station != station:
+            continue
+        probability = _optional_float(pick.get("probability"))
+        score = probability if probability is not None else -np.inf
+        if best is None or score > best_probability:
+            best = pick
+            best_probability = score
+    return best
+
+
+def _source_key(value: object) -> str:
+    """Normalize source labels used in pick catalogs."""
+
+    token = str(value or "").strip().lower()
+    if token in {"obs", "observed", "data"}:
+        return "observed"
+    if token in {"syn", "synthetic", "simulation"}:
+        return "synthetic"
+    return token
 
 
 def _resolve_dt(obs_row: pd.Series | None, syn_row: pd.Series | None) -> float:

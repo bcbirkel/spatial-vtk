@@ -47,6 +47,7 @@ from spatial_vtk.metrics.plot import (
     MetricFigureContext,
     MetricFigureSuiteResult,
     StandardMetricDiagnosticFigureResult,
+    plot_band_score_distribution,
     write_large_run_metric_figure_suite_from_notebook_settings,
     metric_plot_input_summary_frame,
     metric_rows_for_metrics,
@@ -805,7 +806,7 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     assert selection_status.loc["pga", "selected_row_count"] == 4
     assert selection_status.loc["psa", "status_reason"] == "selected"
     assert selection_status.loc["psa", "selected_row_count"] == 3
-    assert selection_status.loc["traveltime_delay", "status_reason"] == "no_matching_rows"
+    assert "traveltime_delay" not in selection_status.index
     pga_item = next(context.iter_metric_frames(passband="1-2 sec", components=["Z"], model="m1", split_psa_period=False))
     station_summary = context.station_summary_for_map(pga_item["df"])
     item_station_summary = context.station_summary_for_item(pga_item)
@@ -1053,7 +1054,7 @@ def test_metric_figure_context_aggregates_full_station_rows_and_writes_sidecars(
     stems = {path.stem for path in diagnostic_outputs}
     assert any(stem.startswith("scatterplot__pga") for stem in stems)
     assert any(stem.startswith("boxplot__pga") for stem in stems)
-    assert any(stem.startswith("heatmap__pga") for stem in stems)
+    assert any(stem.startswith("heatmap__all_metrics") for stem in stems)
     assert any(stem.startswith("scatterplot__psa") for stem in stems)
     assert any(stem.startswith("boxplot__psa") for stem in stems)
     for path in diagnostic_outputs:
@@ -1097,6 +1098,61 @@ def test_metric_figure_context_reports_legacy_psa_selection_without_printing(tmp
     assert selection.loc["psa", "selected_row_count"] == 0
     assert selection.loc["psa", "status_reason"] == "no_broadband_spectral_rows"
     assert "blank/broadband passbands" in selection.loc["psa", "message"]
+
+
+def test_metric_figure_context_discovers_config_metric_names_for_figures(tmp_path) -> None:
+    """Metric figures should render all metrics present after config/load filters."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e1", "e2", "e1", "e2"],
+            "station": ["STA", "STB", "STA", "STB", "STA", "STB"],
+            "sta_lon": [-118.0, -117.9, -118.0, -117.9, -118.0, -117.9],
+            "sta_lat": [34.0, 34.1, 34.0, 34.1, 34.0, 34.1],
+            "metric": ["PGA", "PGA", "RotD50 response", "RotD50 response", "FAS", "FAS"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec", "1-2 sec", "", ""],
+            "model": ["m1"] * 6,
+            "component": ["Z", "R", "Z", "R", "Z", "R"],
+            "period_s": [np.nan, np.nan, np.nan, np.nan, 1.0, 2.0],
+            "distance_km": [10.0, 20.0, 11.0, 21.0, 12.0, 22.0],
+            "log2_residual": [0.2, -0.1, 0.4, -0.3, 0.1, 0.2],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        metrics,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+    )
+    calls: list[dict[str, object]] = []
+
+    def _record_metric(base, item, func, df=None, source_df=None, required=(), **kwargs):
+        calls.append({"writer": "metric", "base": base, "key": item["key"], "rows": len(item["df"])})
+        return tmp_path / f"{base}_{item['key']}.png"
+
+    def _record_sheet(base, item, func, df_factory=None, source_df_factory=None, required=(), **kwargs):
+        calls.append({"writer": "sheet", "base": base, "key": item["key"], "rows": len(item["df"])})
+        return tmp_path / f"{base}_{item['key']}_sheet.png"
+
+    context.write_metric_plot = _record_metric  # type: ignore[method-assign]
+    context.write_psa_period_sheet = _record_sheet  # type: ignore[method-assign]
+
+    status = context.metric_selection_status_frame(components=["Z", "R"], model="m1").set_index("metric_key")
+    assert {"pga", "rotd50_response", "fas"} <= set(status.index)
+    assert status.loc["rotd50_response", "selected_row_count"] == 2
+    assert status.loc["fas", "selected_row_count"] == 2
+
+    outputs = context.write_residuals_vs_distance_plots(
+        lambda _df, *, output_path, **_kwargs: Path(output_path).write_text("plot", encoding="utf-8"),
+        passband="1-2 sec",
+        components=["Z", "R"],
+        model="m1",
+    )
+
+    assert outputs
+    assert {"pga", "rotd50_response", "fas"} <= {str(call["key"]) for call in calls}
+    assert any(call["writer"] == "sheet" and call["key"] == "fas" for call in calls)
 
 
 def test_metric_figure_context_writes_single_named_station_map_with_source_sidecar(tmp_path) -> None:
@@ -1361,6 +1417,9 @@ def test_metric_figure_context_orchestrates_large_run_plot_families(tmp_path) ->
         and getattr(call["source_factory"], "__func__", None) is item_source_func
         for call in sheet_calls
     )
+    residual_grid_calls = [call for call in calls if call["base"] == "residual_grid"]
+    assert residual_grid_calls
+    assert all(call["kwargs"].get("basemap_kwargs") == {"cache_download": False} for call in residual_grid_calls)
     assert any(
         call["base"] == "metric_by_model_map"
         and getattr(call["source_factory"], "__self__", None) is context
@@ -1368,6 +1427,138 @@ def test_metric_figure_context_orchestrates_large_run_plot_families(tmp_path) ->
         for call in sheet_calls
     )
     assert any("log2_residual" in call["required"] for call in calls)
+
+
+def test_metric_figure_context_skips_vs30_when_no_finite_pairs(tmp_path) -> None:
+    """Vs30 figures should be omitted when no finite Vs30/value pairs exist."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2"],
+            "station": ["STA", "STB"],
+            "metric": ["PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "model": ["m1", "m1"],
+            "component": ["Z", "R"],
+            "distance_km": [10.0, 20.0],
+            "vs30": [np.nan, np.nan],
+            "log2_residual": [0.2, -0.1],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        metrics,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+    )
+
+    def _unexpected_writer(*_args: object, **_kwargs: object) -> Path:
+        raise AssertionError("Vs30 writer should not be called without finite Vs30/value pairs")
+
+    context.write_metric_plot = _unexpected_writer  # type: ignore[method-assign]
+    outputs = context.write_vs30_scatter_plots(
+        _unexpected_writer,
+        passband="1-2 sec",
+        components=["Z", "R"],
+    )
+
+    assert outputs == []
+    assert not list((tmp_path / "figures").glob("vs30_scatter*.png"))
+
+
+def test_metric_figure_context_uses_pair_metric_values_for_trend_figures(tmp_path) -> None:
+    """Pair-only metrics should not be plotted as log2 residuals."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e3"],
+            "station": ["STA", "STB", "STC"],
+            "metric": ["PGA", "original_cc", "traveltime_delay"],
+            "metric_group": ["amplitude", "cross_correlation", "delay"],
+            "band": ["1-2 sec", "1-2 sec", "1-2 sec"],
+            "model": ["m1", "m1", "m1"],
+            "component": ["Z", "Z", "Z"],
+            "distance_km": [10.0, 20.0, 30.0],
+            "dominant_period_s": [np.nan, np.nan, 2.0],
+            "log2_residual": [0.25, np.nan, np.nan],
+            "value": [np.nan, 0.82, 0.5],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        metrics,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+    )
+    calls: list[dict[str, object]] = []
+
+    def _record_metric(base, item, func, df=None, source_df=None, required=(), **kwargs):
+        calls.append(
+            {
+                "key": item["key"],
+                "y_col": kwargs.get("y_col"),
+                "value_col": kwargs.get("value_col"),
+                "required": tuple(required),
+                "df": item["df"].copy(),
+            }
+        )
+        return tmp_path / f"{base}_{item['key']}.png"
+
+    context.write_metric_plot = _record_metric  # type: ignore[method-assign]
+
+    outputs = context.write_residuals_vs_distance_plots(
+        lambda _df, *, output_path, **_kwargs: Path(output_path).write_text("plot", encoding="utf-8"),
+        passband="1-2 sec",
+        components=["Z"],
+        model="m1",
+    )
+
+    assert outputs
+    by_key = {str(call["key"]): call for call in calls}
+    assert by_key["pga"]["y_col"] == "log2_residual"
+    assert by_key["original_cc"]["y_col"] == "value"
+    assert by_key["traveltime_delay"]["y_col"] == "delay_fraction_dominant_period"
+    delay_df = by_key["traveltime_delay"]["df"]
+    assert delay_df["delay_fraction_dominant_period"].iloc[0] == pytest.approx(0.25)
+
+
+def test_metric_figure_context_skips_trend_figures_without_finite_xy(tmp_path) -> None:
+    """Trend figures should be omitted instead of writing empty placeholder PNGs."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2"],
+            "station": ["STA", "STB"],
+            "metric": ["PGA", "PGA"],
+            "band": ["1-2 sec", "1-2 sec"],
+            "model": ["m1", "m1"],
+            "component": ["Z", "R"],
+            "distance_km": [np.nan, np.nan],
+            "log2_residual": [0.2, -0.1],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        metrics,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+    )
+
+    def _unexpected_plot(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("Plot function should not be called without finite x/y data")
+
+    outputs = context.write_residuals_vs_distance_plots(
+        _unexpected_plot,
+        passband="1-2 sec",
+        components=["Z", "R"],
+        model="m1",
+    )
+
+    assert outputs == []
+    assert not list((tmp_path / "figures").glob("residuals_vs_distance*.png"))
 
 
 def test_write_large_run_metric_figure_suite_from_notebook_settings_delegates(tmp_path, monkeypatch) -> None:
@@ -1526,6 +1717,324 @@ def test_write_large_run_metric_figure_suite_from_notebook_settings_delegates(tm
     assert status["first_figure_path"].tolist() == [str(tmp_path / "figures" / f"{name}.png") for name in expected]
     assert status["path"].tolist() == status["first_figure_path"].tolist()
     assert status["exists"].tolist() == [False] * len(expected)
+
+
+def test_large_run_metric_figures_enable_comparison_tables_by_default(tmp_path, monkeypatch) -> None:
+    """The action-oriented Step 3 helper should restore component comparison tables."""
+
+    import spatial_vtk.config as config_module
+    import spatial_vtk.large_run as large_run_module
+    import spatial_vtk.metrics as metrics_module
+    from spatial_vtk.config import NotebookFigureSettings
+
+    seen: dict[str, object] = {}
+    settings_kwargs: dict[str, object] = {}
+
+    class Outputs:
+        def write_large_run_figure_suite(self, settings, *, overwrite: bool = False):  # noqa: ANN001, ANN202
+            seen["settings"] = settings
+            seen["overwrite"] = overwrite
+            return {"status": "wrote"}
+
+    def fake_figure_settings(*args: object, **kwargs: object) -> NotebookFigureSettings:
+        settings_kwargs.update(kwargs)
+        return NotebookFigureSettings(
+            figure_dir=tmp_path / "figures" / "step_03_metrics" / "default",
+            make_figures=True,
+            add_basemap=bool(kwargs.get("default_add_basemap", False)),
+        )
+
+    monkeypatch.setattr(config_module, "notebook_figure_settings", fake_figure_settings)
+    monkeypatch.setattr(metrics_module, "load_standard_metric_workflow_outputs", lambda *, cfg=None: Outputs())
+
+    session = large_run_module.LargeRunSession(
+        context=object(),
+        cfg=object(),
+        overwrite=True,
+        submit_slurm=False,
+        run_local=False,
+        make_figures=True,
+        preview_rows=5,
+        qc_chunksize=100,
+        dashboard_chunksize=100,
+        metric_batch_count=1,
+        preprocess_continue_on_error=False,
+    )
+
+    result = large_run_module.make_metric_figures(session)
+
+    assert result.action == "Metric figures"
+    settings = seen["settings"]
+    assert settings.compare_to == "Z"
+    assert settings.comparison_table is True
+    assert settings.add_basemap is True
+    assert settings_kwargs["default_add_basemap"] is True
+    assert seen["overwrite"] is True
+
+
+def test_large_run_filtered_metric_figures_translate_filters_and_folders(tmp_path, monkeypatch) -> None:
+    """Filtered metric figure sets should write sibling folders with context load filters."""
+
+    import spatial_vtk.config as config_module
+    import spatial_vtk.large_run as large_run_module
+    import spatial_vtk.metrics as metrics_module
+    from spatial_vtk.config import NotebookFigureSettings
+
+    settings_seen: list[object] = []
+    settings_kwargs: dict[str, object] = {}
+
+    class Outputs:
+        def write_large_run_figure_suite(self, settings, *, overwrite: bool = False):  # noqa: ANN001, ANN202
+            settings_seen.append(settings)
+            return {"status": "wrote", "message": str(settings.figure_dir)}
+
+    def fake_figure_settings(*args: object, **kwargs: object) -> NotebookFigureSettings:
+        settings_kwargs.update(kwargs)
+        return NotebookFigureSettings(
+            figure_dir=tmp_path / "figures" / "step_03_metrics" / "default",
+            make_figures=True,
+            add_basemap=bool(kwargs.get("default_add_basemap", False)),
+        )
+
+    monkeypatch.setattr(config_module, "notebook_figure_settings", fake_figure_settings)
+    monkeypatch.setattr(metrics_module, "load_standard_metric_workflow_outputs", lambda *, cfg=None: Outputs())
+
+    session = large_run_module.LargeRunSession(
+        context=object(),
+        cfg=object(),
+        overwrite=False,
+        submit_slurm=False,
+        run_local=False,
+        make_figures=True,
+        preview_rows=5,
+        qc_chunksize=100,
+        dashboard_chunksize=100,
+        metric_batch_count=1,
+        preprocess_continue_on_error=False,
+    )
+
+    result = large_run_module.make_filtered_metric_figures(
+        session,
+        [
+            {"name": "1-2s_broadband_only", "passband": "1-2 sec", "station_family": "Broadband"},
+            {"passband": "2-3 sec", "components": ["Z"], "compare_to": None},
+        ],
+    )
+
+    assert result.action == "Filtered metric figures"
+    assert settings_kwargs["default_add_basemap"] is True
+    assert len(settings_seen) == 2
+    assert settings_seen[0].figure_dir == tmp_path / "figures" / "step_03_metrics" / "metrics_figures_1-2s_broadband_only"
+    assert settings_seen[0].context_kwargs(include_station_aggregation=True)["load_filters"] == {
+        "band": "1-2 sec",
+        "station_family": "broadband",
+    }
+    assert settings_seen[0].compare_to == "Z"
+    assert settings_seen[0].comparison_table is True
+    assert settings_seen[0].add_basemap is True
+    assert settings_seen[1].figure_dir == tmp_path / "figures" / "step_03_metrics" / "metrics_figures_2-3s_component_Z"
+    assert settings_seen[1].context_kwargs()["load_filters"] == {"band": "2-3 sec", "component": ["Z"]}
+    assert settings_seen[1].compare_to is None
+    assert settings_seen[1].comparison_table is False
+
+
+def test_large_run_filtered_spatial_figures_translate_filters_and_folders(tmp_path, monkeypatch) -> None:
+    """Filtered spatial figure sets should write Step 4 sibling folders with load filters."""
+
+    import spatial_vtk.config as config_module
+    import spatial_vtk.large_run as large_run_module
+    import spatial_vtk.spatial as spatial_module
+    from spatial_vtk.config import NotebookFigureSettings
+
+    settings_seen: list[object] = []
+
+    class Outputs:
+        def write_figure_suite(self, settings, *, overwrite: bool = False):  # noqa: ANN001, ANN202
+            settings_seen.append(settings)
+            return {"status": "wrote", "message": str(settings.figure_dir), "overwrite": overwrite}
+
+    def fake_figure_settings(*args: object, **kwargs: object) -> NotebookFigureSettings:
+        return NotebookFigureSettings(
+            figure_dir=tmp_path / "figures" / "step_04_spatial" / "default",
+            make_figures=True,
+            add_basemap=bool(kwargs.get("default_add_basemap", False)),
+        )
+
+    monkeypatch.setattr(config_module, "notebook_figure_settings", fake_figure_settings)
+    monkeypatch.setattr(spatial_module, "load_standard_spatial_workflow_output_status", lambda *, cfg=None: Outputs())
+
+    session = large_run_module.LargeRunSession(
+        context=object(),
+        cfg=object(),
+        overwrite=True,
+        submit_slurm=False,
+        run_local=False,
+        make_figures=True,
+        preview_rows=5,
+        qc_chunksize=100,
+        dashboard_chunksize=100,
+        metric_batch_count=1,
+        preprocess_continue_on_error=False,
+    )
+
+    result = large_run_module.make_filtered_spatial_figures(
+        session,
+        [{"passband": "1-2 sec", "components": ["Z"], "station_family": "Broadband"}],
+    )
+
+    assert result.action == "Filtered spatial figures"
+    assert len(settings_seen) == 1
+    assert settings_seen[0].figure_dir == (
+        tmp_path / "figures" / "step_04_spatial" / "spatial_figures_1-2s_component_Z_broadband_only"
+    )
+    assert settings_seen[0].context_kwargs(include_station_aggregation=True)["load_filters"] == {
+        "band": "1-2 sec",
+        "component": ["Z"],
+        "station_family": "broadband",
+    }
+    assert settings_seen[0].add_basemap is True
+
+
+def test_large_run_filtered_region_figures_translate_selection_and_corridor_filters(tmp_path, monkeypatch) -> None:
+    """Filtered Step 5 figure sets should keep region and corridor options in one settings object."""
+
+    import spatial_vtk.config as config_module
+    import spatial_vtk.large_run as large_run_module
+    import spatial_vtk.spatial as spatial_module
+    from spatial_vtk.config import NotebookFigureSettings
+
+    settings_seen: list[object] = []
+    geojson_seen: list[object] = []
+
+    class Outputs:
+        def write_region_figures(  # noqa: ANN202
+            self,
+            settings,  # noqa: ANN001
+            *,
+            geojson_path=None,  # noqa: ANN001
+            overwrite: bool = False,
+        ):
+            settings_seen.append(settings)
+            geojson_seen.append(geojson_path)
+            return {"status": "wrote", "message": str(settings.figure_dir), "overwrite": overwrite}
+
+    def fake_figure_settings(*args: object, **kwargs: object) -> NotebookFigureSettings:
+        return NotebookFigureSettings(
+            figure_dir=tmp_path / "figures" / "step_05_regions" / "default",
+            make_figures=True,
+            add_basemap=bool(kwargs.get("default_add_basemap", False)),
+            metric=str(kwargs.get("default_metric", "PGA")),
+            passband=str(kwargs.get("default_passband", "2-3 sec")),
+        )
+
+    monkeypatch.setattr(config_module, "notebook_figure_settings", fake_figure_settings)
+    monkeypatch.setattr(spatial_module, "load_standard_geojson_workflow_output_status", lambda *, cfg=None: Outputs())
+
+    session = large_run_module.LargeRunSession(
+        context=object(),
+        cfg=object(),
+        overwrite=False,
+        submit_slurm=False,
+        run_local=False,
+        make_figures=True,
+        preview_rows=5,
+        qc_chunksize=100,
+        dashboard_chunksize=100,
+        metric_batch_count=1,
+        preprocess_continue_on_error=False,
+    )
+
+    result = large_run_module.make_filtered_region_corridor_figures(
+        session,
+        [
+            {
+                "metric": "CAV",
+                "passband": "3-5 sec",
+                "components": ["R", "T"],
+                "compare_to": None,
+                "geojson_path": "/tmp/regions.geojson",
+                "corridor_filters": {"selector": "LA Basin"},
+            }
+        ],
+    )
+
+    assert result.action == "Filtered region and corridor figures"
+    assert len(settings_seen) == 1
+    assert settings_seen[0].figure_dir == (
+        tmp_path
+        / "figures"
+        / "step_05_regions"
+        / "region_figures_metric_CAV_3-5s_components_R-T_custom_geojson_corridors_filtered"
+    )
+    assert settings_seen[0].metric == "CAV"
+    assert settings_seen[0].passband == "3-5 sec"
+    assert settings_seen[0].component == ["R", "T"]
+    assert settings_seen[0].compare_to is None
+    assert settings_seen[0].corridor_filters == {"selector": "LA Basin"}
+    assert settings_seen[0].add_basemap is True
+    assert geojson_seen == ["/tmp/regions.geojson"]
+
+
+def test_large_run_additional_diagnostics_annotates_region_boxplot(tmp_path, monkeypatch) -> None:
+    """Step 6 should add configured GeoJSON labels before writing the region boxplot."""
+
+    import spatial_vtk.config as config_module
+    import spatial_vtk.io as io_module
+    import spatial_vtk.large_run as large_run_module
+    import spatial_vtk.spatial as spatial_module
+    from spatial_vtk.config import NotebookFigureSettings
+
+    calls: dict[str, object] = {}
+    region_geojson = tmp_path / "regions.geojson"
+
+    class Outputs:
+        def write_waveform_comparison(self, settings, **kwargs):  # noqa: ANN001, ANN202
+            calls["waveform_kwargs"] = kwargs
+            return {"status": "written"}
+
+        def write_region_boxplot(self, settings, **kwargs):  # noqa: ANN001, ANN202
+            calls["region_settings"] = settings
+            calls["region_kwargs"] = kwargs
+            return {"status": "written"}
+
+    def fake_figure_settings(kind: str, *args: object, **kwargs: object) -> NotebookFigureSettings:
+        return NotebookFigureSettings(
+            figure_dir=tmp_path / "figures" / str(kind),
+            make_figures=True,
+            metric=str(kwargs.get("default_metric", "PGA")),
+            passband=str(kwargs.get("default_passband", "2-3 sec")),
+        )
+
+    monkeypatch.setattr(config_module, "notebook_figure_settings", fake_figure_settings)
+    monkeypatch.setattr(spatial_module, "load_standard_additional_plotting_output_status", lambda *, cfg=None: Outputs())
+    monkeypatch.setattr(
+        io_module,
+        "load_configured_input_paths",
+        lambda mapping, *, cfg=None: {"region_geojson": region_geojson},
+    )
+
+    session = large_run_module.LargeRunSession(
+        context=object(),
+        cfg=object(),
+        overwrite=True,
+        submit_slurm=False,
+        run_local=False,
+        make_figures=True,
+        preview_rows=5,
+        qc_chunksize=100,
+        dashboard_chunksize=100,
+        metric_batch_count=1,
+        preprocess_continue_on_error=False,
+    )
+
+    result = large_run_module.make_additional_diagnostic_figures(session)
+
+    assert result.action == "Additional diagnostics"
+    assert calls["waveform_kwargs"]["fallback_to_available"] is True
+    assert calls["waveform_kwargs"]["max_distance_km"] is None
+    assert calls["region_kwargs"]["geojson_path"] == region_geojson
+    assert calls["region_kwargs"]["annotate_if_missing"] is True
+    assert calls["region_kwargs"]["overwrite"] is True
 
 
 def test_metric_figure_suite_result_displays_context_status_frames() -> None:
@@ -1755,6 +2264,64 @@ def test_standard_metric_diagnostics_split_residuals_by_model(tmp_path) -> None:
     assert all(path.exists() for path in outputs)
 
 
+def test_standard_metric_diagnostics_write_one_combined_metric_heatmap(tmp_path) -> None:
+    """Component heatmaps should summarize all selected metrics in one figure."""
+
+    metrics = pd.DataFrame(
+        {
+            "event_id": ["e1", "e2", "e1", "e2", "e1", "e2", "e1", "e2"],
+            "station": ["STA", "STB", "STA", "STB", "STA", "STB", "STA", "STB"],
+            "metric": ["PGA", "PGA", "PGV", "PGV", "PGA", "PGA", "PGV", "PGV"],
+            "band": ["1-2 sec"] * 8,
+            "model": ["m1", "m1", "m1", "m1", "m2", "m2", "m2", "m2"],
+            "component": ["Z", "R", "Z", "R", "Z", "R", "Z", "R"],
+            "distance_km": [10.0, 20.0, 11.0, 21.0, 12.0, 22.0, 13.0, 23.0],
+            "log2_residual": [0.2, -0.1, 0.4, -0.3, 0.1, -0.2, 0.5, -0.4],
+        }
+    )
+    context = MetricFigureContext.from_frame(
+        metrics,
+        tmp_path / "figures",
+        make_figures=True,
+        sample_rows=0,
+        value_col="log2_residual",
+    )
+    heatmap_calls: list[dict[str, object]] = []
+
+    def _spy_plot(_df, *, output_path, **kwargs):
+        heatmap_calls.append({"df": _df.copy(), "kwargs": dict(kwargs)})
+        Path(output_path).write_text("plot", encoding="utf-8")
+
+    def _write_plot(_df, *, output_path, **_kwargs):
+        Path(output_path).write_text("plot", encoding="utf-8")
+
+    outputs = context.write_standard_metric_diagnostic_plots(
+        _write_plot,
+        _write_plot,
+        _spy_plot,
+        _write_plot,
+        passband="1-2 sec",
+        components=["Z", "R"],
+        model=None,
+        value_col="log2_residual",
+    )
+
+    heatmap_outputs = [path for path in outputs if path.stem.startswith("heatmap__")]
+    assert len(heatmap_outputs) == 1
+    assert heatmap_outputs[0].stem.startswith("heatmap__all_metrics")
+    assert len(heatmap_calls) == 1
+    kwargs = heatmap_calls[0]["kwargs"]
+    assert kwargs["dep"] == ["PGA", "PGV"]
+    assert kwargs["indep"] == "metric_component"
+    assert kwargs["column"] == "model"
+    assert set(heatmap_calls[0]["df"]["metric_component"]) == {
+        "Peak acceleration (PGA) | Z",
+        "Peak acceleration (PGA) | R",
+        "Peak velocity (PGV) | Z",
+        "Peak velocity (PGV) | R",
+    }
+
+
 def test_standard_metric_diagnostics_forward_boxplot_comparison_options(tmp_path) -> None:
     """Large-run standard diagnostics should expose tutorial comparison tables."""
 
@@ -1805,6 +2372,31 @@ def test_standard_metric_diagnostics_forward_boxplot_comparison_options(tmp_path
     assert all("compare_to" not in call and "table" not in call for call in seen["scatter"])
     assert all("compare_to" not in call and "table" not in call for call in seen["heat"])
     assert not seen["period"]
+
+
+def test_band_score_distribution_limits_include_upper_whisker() -> None:
+    """Robust scaling should not clip visible band-distribution boxplot whiskers."""
+
+    rows = []
+    for band in ["1-2 sec", "2-3 sec"]:
+        for component in ["R", "T", "Z"]:
+            for value in [-2.0, -1.0, 0.0, 1.0, 5.0, 9.5]:
+                rows.append({"band": band, "component": component, "metric": "PGA", "log2_residual": value})
+    fig = plot_band_score_distribution(
+        pd.DataFrame(rows),
+        band_col="band",
+        score_col="log2_residual",
+        color_col="component",
+        robust_axis_percentile=80.0,
+        showfig=False,
+        savefig=False,
+    )
+    ymin, ymax = fig.axes[0].get_ylim()
+    assert ymax > 9.5
+    assert ymin < -2.0
+    import matplotlib.pyplot as plt
+
+    plt.close(fig)
 
 
 def test_generic_metric_diagnostics_method_delegates_to_standard_name(tmp_path, monkeypatch) -> None:
@@ -2946,6 +3538,44 @@ def test_metric_manifest_orders_tasks_for_waveform_cache_reuse(tmp_path) -> None
     assert parsed.batches[0]["task_indices"] == [0, 1]
 
 
+def test_metric_manifest_resolves_repo_relative_paths_from_slurm_workdir(tmp_path, monkeypatch) -> None:
+    """Batch jobs should resolve repo-relative manifest paths outside the repo cwd."""
+
+    repo = tmp_path / "repo"
+    tables = repo / "runs" / "outputs" / "tables"
+    batch_dir = repo / "runs" / "outputs" / "metric_batches"
+    tables.mkdir(parents=True)
+    batch_dir.mkdir(parents=True)
+    qc_table = tables / "qc_inventory_overlap.parquet"
+    qc_table.write_bytes(b"parquet placeholder")
+    manifest_path = tables / "metric_manifest.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "manifest_version": 1,
+                "qc_table": "runs/outputs/tables/qc_inventory_overlap.parquet",
+                "tasks": [],
+                "batches": [
+                    {
+                        "batch_index": 0,
+                        "task_indices": [],
+                        "output_path": "runs/outputs/metric_batches/metrics_batch_0000.csv",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    outside = tmp_path / "slurm-workdir"
+    outside.mkdir()
+    monkeypatch.chdir(outside)
+
+    manifest = read_task_manifest(manifest_path)
+
+    assert manifest.qc_table == str(qc_table)
+    assert manifest.batches[0]["output_path"] == str(batch_dir / "metrics_batch_0000.csv")
+
+
 def test_metric_manifest_waveform_cache_rewrites_paths_and_runs_batches(tmp_path) -> None:
     """Cached manifests should point at reusable .npz traces and run normally."""
 
@@ -3200,6 +3830,167 @@ def test_pair_only_metrics_resample_when_sample_intervals_differ(tmp_path) -> No
     assert row["syn_qc_status"] == "pass"
     assert row["comparison_qc_status"] == "pass"
     assert row["comparison_qc_reason"] == ""
+
+
+def test_metric_workflow_can_use_bounded_traveltime_delay_method(tmp_path) -> None:
+    """Metric tasks should preserve and apply the bounded delay method option."""
+
+    dt = 0.01
+    time = np.arange(0.0, 20.0, dt)
+
+    def packet(center_s: float, amplitude: float, width_s: float = 0.45) -> np.ndarray:
+        envelope = np.exp(-0.5 * ((time - center_s) / width_s) ** 2)
+        return amplitude * envelope * np.sin(2.0 * np.pi * 1.0 * (time - center_s))
+
+    observed = packet(4.0, 0.6) + packet(10.0, 1.4)
+    synthetic = packet(4.2, 0.6) + packet(9.05, 1.6)
+    obs_path = tmp_path / "obs_packets.npz"
+    syn_path = tmp_path / "syn_packets.npz"
+    _write_npz_waveform(obs_path, observed, station="ABC", channel="HNZ", sampling_rate=1.0 / dt)
+    _write_npz_waveform(syn_path, synthetic, station="ABC", channel="HNZ", sampling_rate=1.0 / dt)
+    task_kwargs = {
+        "task_id": "delay-method-test",
+        "event_id": "e1",
+        "station": "ABC",
+        "component": "Z",
+        "model": "m1",
+        "passband": "1-2 sec",
+        "obs_waveform_path": str(obs_path),
+        "syn_waveform_path": str(syn_path),
+        "dt": dt,
+        "period_min_s": 1.0,
+        "period_max_s": 2.0,
+        "metrics": ("traveltime_delay",),
+        "transforms": (),
+        "output_mode": "full",
+        "use_qc": False,
+    }
+    legacy_task = MetricWorkflowTask(**task_kwargs)
+    bounded_task = MetricWorkflowTask(**task_kwargs, delay_method="bounded")
+
+    assert MetricWorkflowTask.from_dict(bounded_task.to_dict()).delay_method == "bounded"
+    rows = run_metric_tasks([legacy_task, bounded_task])
+
+    values = rows["value"].to_numpy(dtype=float)
+    assert values[0] < -0.5
+    assert abs(values[1]) < abs(values[0])
+    assert abs(values[1]) <= 0.5 + dt
+
+
+def test_metric_workflow_uses_phasenet_cycle_corrected_delay(tmp_path) -> None:
+    """PhaseNet-cycle delay should set pair metric values and retain pick metadata."""
+
+    dt = 0.01
+    time = np.arange(0.0, 8.0, dt)
+    envelope = np.exp(-0.5 * ((time - 4.0) / 1.0) ** 2)
+    observed = envelope * np.sin(2.0 * np.pi * 1.0 * time)
+    synthetic = np.interp(time - 0.25, time, observed, left=0.0, right=0.0)
+    obs_path = tmp_path / "obs_cycle.npz"
+    syn_path = tmp_path / "syn_cycle.npz"
+    _write_npz_waveform(obs_path, observed, station="ABC", channel="HNZ", sampling_rate=1.0 / dt)
+    _write_npz_waveform(syn_path, synthetic, station="ABC", channel="HNZ", sampling_rate=1.0 / dt)
+    task = MetricWorkflowTask(
+        task_id="phasenet-cycle-test",
+        event_id="e1",
+        station="ABC",
+        component="Z",
+        model="m1",
+        passband="1-2 sec",
+        obs_waveform_path=str(obs_path),
+        syn_waveform_path=str(syn_path),
+        dt=dt,
+        period_min_s=1.0,
+        period_max_s=2.0,
+        metrics=("traveltime_delay", "delay_corrected_cc"),
+        transforms=(),
+        output_mode="full",
+        delay_method="phasenet_cycle",
+        obs_p_pick_rel_s=2.0,
+        syn_p_pick_rel_s=3.25,
+        obs_p_pick_probability=0.4,
+        syn_p_pick_probability=0.5,
+        obs_p_pick_provenance="phasenet",
+        syn_p_pick_provenance="phasenet",
+        use_qc=False,
+    )
+
+    rows = run_metric_tasks([task])
+    by_metric = rows.set_index("metric")
+
+    assert by_metric.loc["traveltime_delay", "value"] == pytest.approx(0.25, abs=dt)
+    assert by_metric.loc["traveltime_delay", "phasenet_traveltime_delay_s"] == pytest.approx(1.25)
+    assert by_metric.loc["delay_corrected_cc", "value"] > 0.98
+    assert by_metric.loc["delay_corrected_cc", "phasenet_cycle_corrected_cc"] > 0.98
+    assert by_metric.loc["traveltime_delay", "obs_p_pick_provenance"] == "phasenet"
+
+
+def test_metric_plan_attaches_arrival_pick_catalog_with_component_fallback(tmp_path) -> None:
+    """Planning should attach exact picks or inherited station-component picks."""
+
+    obs_inventory = pd.DataFrame(
+        {
+            "source": ["observed"],
+            "event_id": ["e1"],
+            "station": ["ABC"],
+            "component": ["R"],
+            "waveform_path": ["obs.npz"],
+            "dt": [0.01],
+        }
+    )
+    syn_inventory = pd.DataFrame(
+        {
+            "source": ["synthetic"],
+            "event_id": ["e1"],
+            "station": ["ABC"],
+            "component": ["R"],
+            "model": ["m1"],
+            "waveform_path": ["syn.npz"],
+            "dt": [0.01],
+        }
+    )
+    picks = pd.DataFrame(
+        [
+            {
+                "source": "observed",
+                "event_id": "e1",
+                "station": "ABC",
+                "component": "Z",
+                "phase": "P",
+                "pick_time_abs": "2026-01-01T00:00:01",
+                "pick_time_rel_s": 1.0,
+                "probability": 0.3,
+                "method": "phasenet",
+            },
+            {
+                "source": "synthetic",
+                "event_id": "e1",
+                "station": "ABC",
+                "component": "T",
+                "phase": "P",
+                "pick_time_abs": "2026-01-01T00:00:02",
+                "pick_time_rel_s": 2.0,
+                "probability": 0.7,
+                "method": "phasenet",
+            },
+        ]
+    )
+    plan = MetricPlan(
+        metrics=("traveltime_delay",),
+        passbands=((1.0, 2.0),),
+        components=("R",),
+        models=("m1",),
+        output_mode="full",
+        delay_method="phasenet_cycle",
+    )
+
+    tasks = plan_metric_tasks(obs_inventory, syn_inventory, plan=plan, use_qc=False, arrival_pick_catalog=picks)
+
+    assert len(tasks) == 1
+    task = tasks[0]
+    assert task.obs_p_pick_rel_s == pytest.approx(1.0)
+    assert task.syn_p_pick_rel_s == pytest.approx(2.0)
+    assert task.obs_p_pick_provenance == "phasenet:component:Z"
+    assert task.syn_p_pick_provenance == "phasenet:component:T"
 
 
 def test_slurm_settings_from_config_requires_python_command() -> None:

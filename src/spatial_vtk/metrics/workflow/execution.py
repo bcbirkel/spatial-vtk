@@ -359,7 +359,12 @@ def write_task_manifest(
 
     manifest = Path(manifest_path).expanduser()
     batch_dir = Path(output_dir).expanduser()
+    if not manifest.is_absolute():
+        manifest = manifest.resolve()
+    if not batch_dir.is_absolute():
+        batch_dir = batch_dir.resolve()
     batch_dir.mkdir(parents=True, exist_ok=True)
+    resolved_qc_table = _absolute_manifest_write_path(qc_table)
     ordered_tasks = _sort_tasks_for_cache(tasks)
     chunks = chunk_tasks(ordered_tasks, chunk_size=batch_size)
     batches: list[dict[str, Any]] = []
@@ -378,7 +383,7 @@ def write_task_manifest(
         )
     payload = {
         "manifest_version": MANIFEST_VERSION,
-        "qc_table": str(qc_table or ""),
+        "qc_table": str(resolved_qc_table or ""),
         "planning_metadata": dict(planning_metadata or {}),
         "tasks": [task.to_dict() for task in ordered_tasks],
         "batches": batches,
@@ -388,7 +393,7 @@ def write_task_manifest(
         manifest_path=manifest,
         tasks=tuple(ordered_tasks),
         batches=tuple(batches),
-        qc_table=str(qc_table or ""),
+        qc_table=str(resolved_qc_table or ""),
         planning_metadata=dict(planning_metadata or {}),
     )
 
@@ -408,26 +413,97 @@ def read_task_manifest(path: str | Path) -> MetricWorkflowManifest:
     """
 
     manifest_path = Path(path).expanduser()
+    if not manifest_path.is_absolute():
+        manifest_path = manifest_path.resolve()
     payload = read_json(manifest_path)
     from spatial_vtk.metrics.workflow.tasks import MetricWorkflowTask
 
     tasks = tuple(MetricWorkflowTask.from_dict(item) for item in payload.get("tasks", []))
-    batches = tuple(dict(item) for item in payload.get("batches", []))
+    batches = tuple(_resolve_manifest_batch_paths(dict(item), manifest_path) for item in payload.get("batches", []))
     return MetricWorkflowManifest(
         manifest_path=manifest_path,
         tasks=tasks,
         batches=batches,
-        qc_table=str(payload.get("qc_table", "")),
+        qc_table=_resolve_manifest_path_text(payload.get("qc_table", ""), manifest_path, require_existing=True),
         planning_metadata=dict(payload.get("planning_metadata") or {}),
     )
+
+
+def _absolute_manifest_write_path(path: str | Path | None) -> str:
+    """Return an absolute path string for newly written manifest paths."""
+
+    if path in (None, ""):
+        return ""
+    resolved = Path(path).expanduser()
+    if not resolved.is_absolute():
+        resolved = resolved.resolve()
+    return str(resolved)
+
+
+def _resolve_manifest_batch_paths(batch: dict[str, Any], manifest_path: Path) -> dict[str, Any]:
+    """Resolve path-valued fields in one manifest batch."""
+
+    if batch.get("output_path"):
+        batch["output_path"] = _resolve_manifest_path_text(
+            batch["output_path"],
+            manifest_path,
+            require_existing=False,
+        )
+    return batch
+
+
+def _resolve_manifest_path_text(
+    value: object,
+    manifest_path: Path,
+    *,
+    require_existing: bool,
+) -> str:
+    """Resolve a path stored in a manifest relative to likely workflow roots."""
+
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    path = Path(text).expanduser()
+    if path.is_absolute():
+        return str(path)
+    resolved = _resolve_manifest_relative_path(path, manifest_path, require_existing=require_existing)
+    return str(resolved)
+
+
+def _resolve_manifest_relative_path(path: Path, manifest_path: Path, *, require_existing: bool) -> Path:
+    """Resolve one relative manifest path from cwd or manifest ancestors."""
+
+    bases = [Path.cwd(), manifest_path.parent, *manifest_path.parent.parents]
+    candidates: list[Path] = []
+    seen: set[str] = set()
+    for base in bases:
+        candidate = (base / path).expanduser()
+        key = str(candidate)
+        if key in seen:
+            continue
+        seen.add(key)
+        candidates.append(candidate)
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    if not require_existing:
+        for candidate in candidates:
+            if candidate.parent.exists():
+                return candidate
+        for candidate in candidates:
+            if candidate.parent.parent.exists():
+                return candidate
+    return candidates[0]
 
 
 def _read_manifest_batch_payload(path: str | Path) -> tuple[Path, tuple[dict[str, Any], ...]]:
     """Read only manifest batch metadata without deserializing metric tasks."""
 
     manifest_path = Path(path).expanduser()
+    if not manifest_path.is_absolute():
+        manifest_path = manifest_path.resolve()
     payload = read_json(manifest_path)
-    return manifest_path, tuple(dict(item) for item in payload.get("batches", []))
+    return manifest_path, tuple(_resolve_manifest_batch_paths(dict(item), manifest_path) for item in payload.get("batches", []))
 
 
 def metric_manifest_batch_status(manifest: MetricWorkflowManifest | str | Path) -> MetricManifestBatchStatus:

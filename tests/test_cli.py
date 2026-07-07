@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from matplotlib import pyplot as plt
 
 import spatial_vtk.cli as cli
 from spatial_vtk.cli import main
@@ -2848,6 +2849,101 @@ outputs:
     assert captured.out.strip() == str(expected_output)
 
 
+def test_cli_record_section_uses_configured_components_by_default(tmp_path, monkeypatch):
+    tables = tmp_path / "outputs" / "tables"
+    tables.mkdir(parents=True)
+    records = tables / "event_station_records.csv"
+    records.write_text(
+        "event_id,station,distance_km,observed_processed_waveform\n"
+        "ev1,STA,10,/tmp/event.pkl\n",
+        encoding="utf-8",
+    )
+    config = tmp_path / "spatial-vtk.yaml"
+    config.write_text(
+        f"""
+project:
+  root_dir: {tmp_path}
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+metrics:
+  components: [R, T, Z]
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.visualize.waveforms as waveforms
+
+    def fake_plot_record_section(records, output_path=None, **kwargs):
+        seen["kwargs"] = kwargs
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(output_path).write_text("figure", encoding="utf-8")
+        return output_path
+
+    monkeypatch.setattr(waveforms, "plot_record_section", fake_plot_record_section)
+
+    assert main(["visualize", "waveforms", "record-section", "--config", str(config)]) == 0
+
+    assert seen["kwargs"]["components"] == ["R", "T", "Z"]
+
+
+def test_cli_registered_plot_prints_output_path_for_figure_result(tmp_path, monkeypatch, capsys):
+    records = tmp_path / "records.csv"
+    records.write_text("station,distance_km,component,trace\nSTA,10,R,\"[0,1,0]\"\n", encoding="utf-8")
+    output = tmp_path / "figures" / "record_section.png"
+
+    import spatial_vtk.visualize.waveforms as waveforms
+
+    def fake_plot_record_section(records, output_path=None, **kwargs):
+        fig = plt.figure()
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(output_path).write_text("figure", encoding="utf-8")
+        return fig
+
+    monkeypatch.setattr(waveforms, "plot_record_section", fake_plot_record_section)
+
+    assert main(["visualize", "waveforms", "record-section", "--input", str(records), "--output", str(output)]) == 0
+    captured = capsys.readouterr()
+    assert captured.out.strip() == str(output)
+    plt.close("all")
+
+
+def test_cli_record_section_accepts_time_limit_s(tmp_path, monkeypatch):
+    records = tmp_path / "records.csv"
+    records.write_text("station,distance_km,component,trace\nSTA,10,R,\"[0,1,0]\"\n", encoding="utf-8")
+    output = tmp_path / "figures" / "record_section.png"
+    seen = {}
+
+    import spatial_vtk.visualize.waveforms as waveforms
+
+    def fake_plot_record_section(records, output_path=None, **kwargs):
+        seen["kwargs"] = kwargs
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(output_path).write_text("figure", encoding="utf-8")
+        return output_path
+
+    monkeypatch.setattr(waveforms, "plot_record_section", fake_plot_record_section)
+
+    assert (
+        main(
+            [
+                "visualize",
+                "waveforms",
+                "record-section",
+                "--input",
+                str(records),
+                "--output",
+                str(output),
+                "--time-limit-s=90",
+            ]
+        )
+        == 0
+    )
+
+    assert seen["kwargs"]["time_limit_s"] == 90.0
+
+
 def test_cli_context_trace_comparison_uses_configured_event_station_records(tmp_path, monkeypatch, capsys):
     tables = tmp_path / "outputs" / "tables"
     tables.mkdir(parents=True)
@@ -3168,6 +3264,60 @@ outputs:
     assert seen["event_rows"] == 1
     assert seen["output_path"] == expected_output
     assert seen["kwargs"]["add_basemap"] is False
+    assert captured.out.strip() == str(expected_output)
+
+
+def test_cli_context_beachball_forwards_bounds_and_basemap_flag(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "spatial-vtk.yaml"
+    table_dir = tmp_path / "outputs" / "tables"
+    table_dir.mkdir(parents=True)
+    (table_dir / "prepared_stations.csv").write_text("station,lon,lat\nSTA,-118,34\n", encoding="utf-8")
+    (table_dir / "prepared_events.csv").write_text(
+        "event_id,event_lon,event_lat,magnitude,strike,dip,rake\nEV,-118.1,34.1,4.0,120,45,90\n",
+        encoding="utf-8",
+    )
+    config.write_text(
+        """
+project:
+  root_dir: .
+outputs:
+  tables: outputs/tables
+  figures: outputs/figures
+""",
+        encoding="utf-8",
+    )
+    seen = {}
+
+    import spatial_vtk.visualize.context as context
+
+    def fake_plot_station_event_beachball_map(events_df, output_path=None, **kwargs):
+        seen["event_rows"] = len(events_df)
+        seen["output_path"] = Path(output_path)
+        seen["kwargs"] = kwargs
+        seen["output_path"].parent.mkdir(parents=True, exist_ok=True)
+        seen["output_path"].write_text("figure", encoding="utf-8")
+        return seen["output_path"]
+
+    monkeypatch.setattr(context, "plot_station_event_beachball_map", fake_plot_station_event_beachball_map)
+
+    assert main(
+        [
+            "visualize",
+            "context",
+            "station-event-beachball",
+            "--config",
+            str(config),
+            "--bounds=-121,-115,32,36",
+            "--basemap=True",
+        ]
+    ) == 0
+    captured = capsys.readouterr()
+    expected_output = tmp_path / "outputs" / "figures" / "station_event_beachball.png"
+    assert seen["event_rows"] == 1
+    assert seen["output_path"] == expected_output
+    assert seen["kwargs"]["bounds"] == (-121.0, -115.0, 32.0, 36.0)
+    assert seen["kwargs"]["add_basemap"] is True
+    assert "basemap_source" not in seen["kwargs"]
     assert captured.out.strip() == str(expected_output)
 
 

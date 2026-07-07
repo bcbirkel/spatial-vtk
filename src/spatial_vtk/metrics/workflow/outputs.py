@@ -53,6 +53,7 @@ def prepare_metric_workflow_outputs(
     *,
     events: pd.DataFrame | str | Path | None = None,
     stations: pd.DataFrame | str | Path | None = None,
+    metric_sanity_qc_settings: Any | None = None,
     residual_column: str | None = None,
     score_column: str | None = None,
     distance_bin_km: float = 10.0,
@@ -87,6 +88,7 @@ def prepare_metric_workflow_outputs(
     """
 
     from spatial_vtk.metrics.calculate.enrich import enrich_metric_table
+    from spatial_vtk.qc.build import apply_metric_sanity_rejections_to_metric_table, build_metric_sanity_rejection_table
     from spatial_vtk.spatial.calculate.paths import build_path_table, summarize_residuals_by_path_bin
     from spatial_vtk.visualize.dashboard import build_dashboard_summaries, prepare_dashboard_metric_table
 
@@ -98,6 +100,9 @@ def prepare_metric_workflow_outputs(
         residual_column=residual_column,
         score_column=score_column,
     )
+    if _metric_sanity_qc_enabled(metric_sanity_qc_settings):
+        rejections = build_metric_sanity_rejection_table(metrics_long, settings=metric_sanity_qc_settings)
+        metrics_long = apply_metric_sanity_rejections_to_metric_table(metrics_long, rejections)
     path_table = build_path_table(metrics_long)
     path_summary = summarize_residuals_by_path_bin(
         path_table,
@@ -180,10 +185,12 @@ def write_metric_outputs(
     if root is not None:
         root.mkdir(parents=True, exist_ok=True)
     suffix = ".parquet" if fmt == "parquet" else ".csv"
+    metric_sanity_qc_settings = _metric_sanity_qc_settings_from_config(cfg)
     tables = prepare_metric_workflow_outputs(
         metric_rows,
         events=events,
         stations=stations,
+        metric_sanity_qc_settings=metric_sanity_qc_settings,
         residual_column=residual_column,
         score_column=score_column,
         distance_bin_km=distance_bin_km,
@@ -369,6 +376,32 @@ def _active_config() -> Any:
     from spatial_vtk.config.runtime import active_config
 
     return active_config()
+
+
+def _metric_sanity_qc_settings_from_config(cfg: ConfigInput | None) -> Any | None:
+    if cfg is None:
+        return None
+    config = cfg if hasattr(cfg, "section") else None
+    if config is None:
+        from spatial_vtk.config.runtime import SpatialVTKConfig
+
+        config = SpatialVTKConfig.from_file(cfg)
+    from spatial_vtk.qc.build import metric_sanity_settings_from_config
+
+    settings = metric_sanity_settings_from_config(config)
+    return settings if _metric_sanity_qc_enabled(settings) else None
+
+
+def _metric_sanity_qc_enabled(settings: Any | None) -> bool:
+    if settings is None:
+        return False
+    if getattr(settings, "value_limits", ()):
+        return True
+    residual = getattr(settings, "residual_limit", None)
+    if residual is not None and getattr(residual, "max_abs", None) is not None:
+        return True
+    spatial = getattr(settings, "spatial_residual", None)
+    return bool(spatial is not None and getattr(spatial, "enabled", False))
 
 
 def _resolve_output_path(*args: Any, **kwargs: Any) -> Path:

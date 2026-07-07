@@ -48,10 +48,12 @@ from spatial_vtk.metrics.calculate.gof import (
     arias_duration,
     arias_intensity,
     compute_metrics_pair,
+    delay_search_cap_s,
     delay_corrected_cc,
     energy_duration,
     energy_intensity,
     original_cc,
+    phasenet_cycle_corrected_delay_metrics,
     traveltime_delay,
 )
 from spatial_vtk.metrics.calculate.phasenet_adapter import (
@@ -157,6 +159,7 @@ __all__ = [
     "compute_paired_station_event_maxima",
     "compute_period_spectrogram",
     "compute_station_event_maxima",
+    "delay_search_cap_s",
     "delay_corrected_cc",
     "dbg",
     "energy_duration",
@@ -174,6 +177,7 @@ __all__ = [
     "normalize_phasenet_output",
     "olsen_mayhew_gof",
     "original_cc",
+    "phasenet_cycle_corrected_delay_metrics",
     "prepare_phasenet_numpy_inputs",
     "build_metric_value_row",
     "build_spectral_metric_rows",

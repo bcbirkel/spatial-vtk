@@ -158,6 +158,28 @@ qc:
     min_record_length_s: 60.0
     min_end_after_origin_s: 60.0
     snr_threshold: 3.0
+    # Post-metric sanity checks catch physically implausible amplitudes and
+    # isolated residual outliers that waveform-level QC cannot see yet.
+    post_metric:
+      value_limits:
+        PGA:
+          max_g: 1.0
+          value_unit: cm/s2
+          sources: [observed, synthetic]
+          reason: pga_above_1g
+      residual_limit:
+        column: log2_residual
+        max_abs: 8.0
+        reason: log2_residual_extreme
+      spatial_residual:
+        enabled: true
+        column: log2_residual
+        radius_km: 10.0
+        min_neighbors: 3
+        z_threshold: 8.0
+        min_abs_difference: 4.0
+        mad_floor: 0.25
+        reason: spatial_neighbor_residual_outlier
   # Optional SLURM overrides for building qc_trace_summary and qc_inventory.
   slurm:
     job_name: svtk-qc

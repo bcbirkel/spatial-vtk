@@ -50,7 +50,7 @@ METRIC_DISPLAY_NAMES: dict[str, str] = {
     "PGD": "Peak displacement (PGD)",
     "PSA": "Pseudo-spectral acceleration (PSA)",
     "FAS": "Fourier amplitude spectrum (FAS)",
-    "traveltime_delay": "Traveltime delay",
+    "traveltime_delay": "Phase delay",
     "original_cc": "Original cross correlation",
     "delay_corrected_cc": "Delay-corrected cross correlation",
     "CAV": "Cumulative absolute velocity (CAV)",
@@ -110,6 +110,8 @@ VALUE_COLUMN_LABELS: dict[str, str] = {
     "feature_mean": "Feature mean",
     "field_value": "Spatial field value",
     "field_centered": "Event-centered residual",
+    "delay_fraction_dominant_period": "Delay / dominant period",
+    "metric_comparison_value": "Metric comparison value (residuals; raw phase delay/CC)",
 }
 
 MODEL_DISPLAY_NAMES: dict[str, str] = {
@@ -119,6 +121,11 @@ MODEL_DISPLAY_NAMES: dict[str, str] = {
     "cvm_si": "CVM-SI",
     "cvmsi_20260506_material_0p6x1p2_asdf": "CVM-SI",
     "cvmsi_unstructuredmesh_qp2qs_abs2.5_minvs500_minvp1700": "CVM-SI",
+    "cvmh": "CVM-H",
+    "cvm-h": "CVM-H",
+    "cvm_h": "CVM-H",
+    "cvmh_20260506_material_0p6x1p2_mseed": "CVM-H",
+    "cvmh-20260506-material-0p6x1p2-mseed": "CVM-H",
 }
 
 COLUMN_DISPLAY_LABELS: dict[str, str] = {
@@ -151,6 +158,8 @@ COLUMN_DISPLAY_LABELS: dict[str, str] = {
     "anderson_2004_gof": "Anderson 2004 GOF",
     "olsen_mayhew_gof": "Olsen-Mayhew GOF",
     "score": "GOF Score",
+    "delay_fraction_dominant_period": "Delay / Dominant Period",
+    "metric_comparison_value": "Metric Comparison Value",
     "n": "Records",
     "n_records": "Records",
     "n_events": "Events",

@@ -3393,6 +3393,8 @@ outputs:
 
     monkeypatch.setattr("spatial_vtk.config.run_notebook_step_if_needed", fake_run_notebook_step_if_needed)
 
+    import spatial_vtk.spatial.calculate.corridors as spatial_corridors
+    import spatial_vtk.spatial.calculate.geojson as spatial_geojson
     import spatial_vtk.spatial.calculate.workflow as spatial_workflow
 
     readiness_calls: list[tuple[str, dict[str, object]]] = []
@@ -3504,8 +3506,8 @@ outputs:
 
     monkeypatch.setattr(spatial_workflow, "geojson_region_summary_readiness_from_config", readiness_factory("geojson"))
     monkeypatch.setattr(spatial_workflow, "boundary_corridor_readiness_from_config", readiness_factory("corridor"))
-    monkeypatch.setattr(spatial_workflow, "run_geojson_region_summary_workflow_from_config", fake_function)
-    monkeypatch.setattr(spatial_workflow, "run_boundary_corridor_workflow_from_config", fake_function)
+    monkeypatch.setattr(spatial_geojson, "run_geojson_region_summary_workflow_from_config", fake_function)
+    monkeypatch.setattr(spatial_corridors, "run_boundary_corridor_workflow_from_config", fake_function)
 
     outputs = load_standard_geojson_workflow_output_status(cfg=config_path)
     context = Context()

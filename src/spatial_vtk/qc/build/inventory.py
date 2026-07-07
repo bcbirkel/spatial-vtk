@@ -532,11 +532,18 @@ def build_waveform_trace_qc_summary(
                     "valid_end_sample": trace_summary["valid_end_sample"],
                     "sample_interval_s": trace_summary["dt"],
                     "sample_count": int(np.asarray(trace_summary.get("samples", [])).size),
+                    "raw_peak_abs": trace_summary["raw_peak_abs"],
+                    "raw_rms_amplitude": trace_summary["raw_rms_amplitude"],
+                    "dominant_period_s": band_summary["dominant_period_s"],
                     "load_message": row_load_message,
                     "onset_rel_s": band_summary["onset_rel_s"],
                     "snr_rms": band_summary["snr_rms"],
                     "noise_rms": band_summary["noise_rms"],
                     "signal_rms": band_summary["signal_rms"],
+                    "band_peak_abs": band_summary["band_peak_abs"],
+                    f"band_peak_abs_{band_key_from_label(label)}": band_summary["band_peak_abs"],
+                    "energy_frac": band_summary["energy_frac"],
+                    f"energy_frac_{band_key_from_label(label)}": band_summary["energy_frac"],
                     "pre_origin_signal_ratio": band_summary["pre_origin_signal_ratio"],
                     "origin_signal_ratio": band_summary["origin_signal_ratio"],
                 }
@@ -917,6 +924,8 @@ def _trace_quality_summary(
             "valid_end_rel_s": float("nan"),
             "valid_start_sample": float("nan"),
             "valid_end_sample": float("nan"),
+            "raw_peak_abs": float("nan"),
+            "raw_rms_amplitude": float("nan"),
             "global_reasons": reasons,
         }
     samples, dt, start_time = _trace_array_dt_start(trace)
@@ -984,6 +993,8 @@ def _trace_quality_summary(
         "valid_end_rel_s": valid_end_rel_s,
         "valid_start_sample": valid_start_sample if valid_start_sample is not None else np.nan,
         "valid_end_sample": valid_end_sample if valid_end_sample is not None else np.nan,
+        "raw_peak_abs": _peak_abs(processed),
+        "raw_rms_amplitude": _rms_amplitude(processed),
         "global_reasons": global_reasons,
         "preprocessing_message": preprocessing_message,
     }
@@ -1041,6 +1052,12 @@ def _passband_quality_summary(
         valid_finite &= (times_s >= valid_start) & (times_s < valid_end)
     valid_samples = samples[valid_finite]
     valid_times_s = times_s[valid_finite]
+    spectral = _spectral_band_summary(
+        valid_samples if valid_samples.size else full_samples,
+        float(trace_summary.get("dt", np.nan)),
+        period_min_s=period_min_s,
+        period_max_s=period_max_s,
+    )
     onset_samples = valid_samples if valid_samples.size else full_samples
     onset_times_s = valid_times_s if valid_times_s.size else full_times_s
     envelope = _smooth_abs(onset_samples, float(trace_summary.get("dt", np.nan)))
@@ -1089,12 +1106,76 @@ def _passband_quality_summary(
         "noise_rms": noise_rms,
         "signal_rms": signal_rms,
         "snr_rms": snr_rms,
+        "band_peak_abs": spectral["band_peak_abs"],
+        "energy_frac": spectral["energy_frac"],
+        "dominant_period_s": spectral["dominant_period_s"],
         "noise_window_valid": bool(noise_valid),
         "signal_window_valid": bool(signal_valid),
         "pre_origin_window_valid": bool(pre_valid),
         "origin_window_valid": bool(origin_valid),
         "pre_origin_signal_ratio": pre_ratio,
         "origin_signal_ratio": origin_ratio,
+    }
+
+
+def _peak_abs(samples: Any) -> float:
+    """Return finite peak absolute amplitude for one trace."""
+
+    values = np.asarray(samples, dtype=float).reshape(-1)
+    values = values[np.isfinite(values)]
+    return float(np.nanmax(np.abs(values))) if values.size else float("nan")
+
+
+def _rms_amplitude(samples: Any) -> float:
+    """Return finite RMS amplitude for one trace."""
+
+    values = np.asarray(samples, dtype=float).reshape(-1)
+    values = values[np.isfinite(values)]
+    return float(np.sqrt(np.nanmean(values**2))) if values.size else float("nan")
+
+
+def _spectral_band_summary(
+    samples: Any,
+    dt: float,
+    *,
+    period_min_s: float,
+    period_max_s: float,
+) -> dict[str, float]:
+    """Summarize simple FFT amplitude content for one QC passband."""
+
+    empty = {
+        "band_peak_abs": float("nan"),
+        "energy_frac": float("nan"),
+        "dominant_period_s": float("nan"),
+    }
+    values = np.asarray(samples, dtype=float).reshape(-1)
+    values = values[np.isfinite(values)]
+    if values.size < 2 or not np.isfinite(dt) or dt <= 0.0:
+        return empty
+    centered = values - float(np.nanmean(values))
+    frequencies = np.fft.rfftfreq(centered.size, d=float(dt))
+    amplitudes = np.abs(np.fft.rfft(centered))
+    positive = frequencies > 0.0
+    if not np.any(positive):
+        return empty
+    frequencies = frequencies[positive]
+    amplitudes = amplitudes[positive]
+    finite = np.isfinite(frequencies) & np.isfinite(amplitudes)
+    if not np.any(finite):
+        return empty
+    frequencies = frequencies[finite]
+    amplitudes = amplitudes[finite]
+    periods = 1.0 / frequencies
+    dominant_period_s = float(periods[int(np.nanargmax(amplitudes))])
+    low_freq = 1.0 / max(float(period_max_s), 1.0e-12)
+    high_freq = 1.0 / max(float(period_min_s), 1.0e-12)
+    band_mask = (frequencies >= min(low_freq, high_freq)) & (frequencies <= max(low_freq, high_freq))
+    total_energy = float(np.nansum(amplitudes**2))
+    band_energy = float(np.nansum(amplitudes[band_mask] ** 2)) if np.any(band_mask) else float("nan")
+    return {
+        "band_peak_abs": float(np.nanmax(amplitudes[band_mask])) if np.any(band_mask) else float("nan"),
+        "energy_frac": float(band_energy / total_energy) if total_energy > 0.0 and np.isfinite(band_energy) else float("nan"),
+        "dominant_period_s": dominant_period_s,
     }
 
 
@@ -1340,6 +1421,9 @@ def _empty_passband_summary(*, onset_rel_s: float = float("nan")) -> dict[str, f
         "noise_rms": float("nan"),
         "signal_rms": float("nan"),
         "snr_rms": float("nan"),
+        "band_peak_abs": float("nan"),
+        "energy_frac": float("nan"),
+        "dominant_period_s": float("nan"),
         "noise_window_valid": False,
         "signal_window_valid": False,
         "pre_origin_window_valid": False,

@@ -44,6 +44,20 @@ _SPECTRAL_EXPORTS = {
     "spectral_valid_period_bounds",
 }
 
+_METRIC_SANITY_EXPORTS = {
+    "G_CM_PER_S2",
+    "G_M_PER_S2",
+    "MetricResidualLimit",
+    "MetricSanityQCSettings",
+    "MetricValueLimit",
+    "SpatialResidualOutlierSettings",
+    "apply_metric_sanity_rejections_to_metric_table",
+    "apply_metric_sanity_rejections_to_qc_inventory",
+    "build_metric_sanity_rejection_table",
+    "metric_sanity_settings_from_config",
+    "summarize_metric_sanity_removals",
+}
+
 _WORKFLOW_EXPORTS = {
     "build_comparison_eligibility",
     "build_event_station_pair_retention_table",
@@ -86,7 +100,14 @@ _SLURM_EXPORTS = {
     "write_qc_slurm_script",
 }
 
-__all__ = sorted(_FILTERING_EXPORTS | _INVENTORY_EXPORTS | _SPECTRAL_EXPORTS | _WORKFLOW_EXPORTS | _SLURM_EXPORTS)
+__all__ = sorted(
+    _FILTERING_EXPORTS
+    | _INVENTORY_EXPORTS
+    | _SPECTRAL_EXPORTS
+    | _METRIC_SANITY_EXPORTS
+    | _WORKFLOW_EXPORTS
+    | _SLURM_EXPORTS
+)
 
 
 def __getattr__(name: str) -> Any:
@@ -98,6 +119,8 @@ def __getattr__(name: str) -> Any:
         value = getattr(import_module("spatial_vtk.qc.build.inventory"), name)
     elif name in _SPECTRAL_EXPORTS:
         value = getattr(import_module("spatial_vtk.qc.build.spectral"), name)
+    elif name in _METRIC_SANITY_EXPORTS:
+        value = getattr(import_module("spatial_vtk.qc.build.metric_sanity"), name)
     elif name in _WORKFLOW_EXPORTS:
         value = getattr(import_module("spatial_vtk.qc.build.workflow"), name)
     elif name in _SLURM_EXPORTS:
